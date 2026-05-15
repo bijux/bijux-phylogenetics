@@ -368,3 +368,54 @@ def test_shared_trait_table_fixture_catalog_supports_governed_discrete_sym_ace_c
     assert six_taxon_report.baseline_comparison.preferred_model_by_aic == "equal-rates"
     assert missing_report.taxon_count == 5
     assert missing_report.dropped_missing_taxa == ["F"]
+
+
+def test_shared_trait_table_fixture_catalog_supports_governed_discrete_ard_ace_cases() -> (
+    None
+):
+    binary_fixture = get_shared_trait_table_fixture("ace_discrete_ard_binary_balanced")
+    pectinate_fixture = get_shared_trait_table_fixture("ace_discrete_ard_pectinate")
+    six_taxon_fixture = get_shared_trait_table_fixture("ace_discrete_ard_six_taxon")
+    missing_fixture = get_shared_trait_table_fixture("ace_discrete_ard_missing_values")
+
+    binary_tree = get_shared_tree_fixture(binary_fixture.tree_fixture_id).path
+    pectinate_tree = get_shared_tree_fixture(pectinate_fixture.tree_fixture_id).path
+    six_taxon_tree = get_shared_tree_fixture(six_taxon_fixture.tree_fixture_id).path
+
+    binary_report = reconstruct_discrete_ancestral_states(
+        binary_tree,
+        binary_fixture.path,
+        trait="habitat",
+        model="all-rates-different",
+    )
+    pectinate_report = reconstruct_discrete_ancestral_states(
+        pectinate_tree,
+        pectinate_fixture.path,
+        trait="region",
+        model="all-rates-different",
+    )
+    six_taxon_report = reconstruct_discrete_ancestral_states(
+        six_taxon_tree,
+        six_taxon_fixture.path,
+        trait="region",
+        model="all-rates-different",
+    )
+    missing_report = reconstruct_discrete_ancestral_states(
+        six_taxon_tree,
+        missing_fixture.path,
+        trait="region",
+        model="all-rates-different",
+    )
+
+    assert binary_report.model == "all-rates-different"
+    assert binary_report.parameter_count == 2
+    assert len(binary_report.transition_rate_rows) == 2
+    assert pectinate_report.model == "all-rates-different"
+    assert pectinate_report.parameter_count == 6
+    assert pectinate_report.overparameterized is True
+    assert pectinate_report.optimizer_diagnostics is not None
+    assert six_taxon_report.taxon_count == 6
+    assert six_taxon_report.baseline_comparison is not None
+    assert six_taxon_report.baseline_comparison.preferred_model_by_aic == "equal-rates"
+    assert missing_report.taxon_count == 5
+    assert missing_report.dropped_missing_taxa == ["F"]

@@ -130,6 +130,85 @@
       "notes": "Six-taxon multistate geography table with one missing tip value used to prove explicit pruning before governed live `ape::ace(..., model='SYM')` comparison."
     },
     {
+      "fixture_id": "ace_discrete_ard_binary_balanced",
+      "relative_path": "metadata/example_traits_comparative.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "habitat"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "discrete-ace-ard-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "discrete-ancestral-states",
+        "all-rates-different-model",
+        "balanced-tree"
+      ],
+      "notes": "Balanced four-taxon binary habitat table used for governed `ape::ace(..., model='ARD')` parity on the smallest identified directional-rate surface."
+    },
+    {
+      "fixture_id": "ace_discrete_ard_pectinate",
+      "relative_path": "metadata/example_traits_geography.tsv",
+      "tree_fixture_id": "pectinate_rooted_non_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "region"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "discrete-ace-ard-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "discrete-ancestral-states",
+        "all-rates-different-model",
+        "pectinate-tree",
+        "non-ultrametric-tree",
+        "overparameterized-fit"
+      ],
+      "notes": "Shared four-taxon geography table paired with the ladderized rooted tree to prove governed ARD parity and explicit overparameterization reporting on a weak-fit multistate surface."
+    },
+    {
+      "fixture_id": "ace_discrete_ard_six_taxon",
+      "relative_path": "metadata/example_traits_geography_biased.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "region"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "discrete-ace-ard-ready",
+      "row_count": 6,
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "discrete-ancestral-states",
+        "all-rates-different-model",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon multistate geography table used to prove governed directional-rate parity on a more stable ARD surface than the smallest four-tip examples."
+    },
+    {
+      "fixture_id": "ace_discrete_ard_missing_values",
+      "relative_path": "metadata/example_traits_geography_biased_missing.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "region"
+      ],
+      "validation_expectation": "missing-values-present",
+      "ape_reference_expectation": "discrete-ace-ard-ready-after-pruning",
+      "row_count": 6,
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "discrete-ancestral-states",
+        "all-rates-different-model",
+        "missing-trait-values",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon multistate geography table with one missing tip value used to prove explicit pruning before governed live `ape::ace(..., model='ARD')` comparison."
+    },
+    {
       "fixture_id": "missing_trait_values",
       "relative_path": "metadata/example_traits_comparative_missing_habitat.tsv",
       "tree_fixture_id": "balanced_rooted_ultrametric",
