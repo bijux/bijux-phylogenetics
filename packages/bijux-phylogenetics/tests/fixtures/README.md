@@ -20,7 +20,11 @@ structural features that matter for cross-tool parity, including balanced,
 pectinate, star, polytomy, rooted, unrooted, ultrametric, non-ultrametric,
 zero-branch, long-branch, internal-label, branch-support, quoted-label, and
 malformed-Newick cases. The live `ape` parity harness resolves its tree inputs
-through those fixture ids instead of hardcoding ad hoc file paths.
+through those fixture ids instead of hardcoding ad hoc file paths. That same
+catalog now also owns the governed outgroup-rooting fixtures used to compare
+Bijux and `ape::root` on one-tip outgroups, monophyletic multi-tip outgroups,
+already-rooted trees, missing outgroups, and non-monophyletic outgroup
+failures.
 
 The tree fixture corpus now also has one governed shared tree-set catalog at
 `metadata/shared_tree_set_fixture_catalog.json`. That catalog assigns durable

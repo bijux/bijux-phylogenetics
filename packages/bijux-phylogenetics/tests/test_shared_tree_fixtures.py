@@ -20,6 +20,7 @@ def test_shared_tree_fixture_catalog_covers_required_tree_shapes() -> None:
         "pectinate",
         "star",
         "polytomy",
+        "rootable",
         "rooted",
         "unrooted",
         "ultrametric",
@@ -54,6 +55,8 @@ def test_shared_tree_fixture_catalog_preserves_durable_fixture_lookup() -> None:
         ("star_unrooted_polytomy", 5),
         ("larger_binary_tree", 8),
         ("quoted_taxon_labels", 3),
+        ("outgroup_rootable_unrooted", 4),
+        ("outgroup_rooted_on_d", 4),
     ],
 )
 def test_shared_tree_fixture_catalog_parseable_cases_load_as_expected(
