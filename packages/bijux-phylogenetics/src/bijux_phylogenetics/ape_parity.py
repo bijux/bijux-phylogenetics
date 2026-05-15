@@ -13,6 +13,7 @@ import tempfile
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,6 +21,7 @@ class ApeParityCase:
     """One governed live `ape` parity case."""
 
     case_id: str
+    tree_fixture_id: str
     function_name: str
     python_function_name: str
     operation: str
@@ -32,6 +34,7 @@ class ApeParityObservation:
     """One live parity comparison between Bijux and `ape`."""
 
     case_id: str
+    tree_fixture_id: str
     function_name: str
     python_function_name: str
     input_fixture: Path
@@ -130,21 +133,39 @@ def _bijux_commit() -> str | None:
 def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCase]:
     """Return the governed live `ape` parity cases."""
     root = _fixtures_root() if fixtures_root is None else fixtures_root
+
+    def fixture_path(fixture_id: str) -> Path:
+        fixture = get_shared_tree_fixture(fixture_id)
+        if fixtures_root is None:
+            return fixture.path
+        return root / fixture.relative_path
+
     return [
         ApeParityCase(
-            case_id="read-tree-example-rooted",
+            case_id="read-tree-balanced-rooted-ultrametric",
+            tree_fixture_id="balanced_rooted_ultrametric",
             function_name="ape::read.tree",
             python_function_name="load_tree+inspect_tree_path",
             operation="read-tree-summary",
-            input_fixture=root / "trees" / "example_tree.nwk",
+            input_fixture=fixture_path("balanced_rooted_ultrametric"),
             tolerance=0.0,
         ),
         ApeParityCase(
-            case_id="read-tree-example-unrooted",
+            case_id="read-tree-unrooted-branch-length",
+            tree_fixture_id="unrooted_branch_length_tree",
             function_name="ape::read.tree",
             python_function_name="load_tree+inspect_tree_path",
             operation="read-tree-summary",
-            input_fixture=root / "trees" / "example_tree_unrooted.nwk",
+            input_fixture=fixture_path("unrooted_branch_length_tree"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="read-tree-quoted-taxon-labels",
+            tree_fixture_id="quoted_taxon_labels",
+            function_name="ape::read.tree",
+            python_function_name="load_tree+inspect_tree_path",
+            operation="read-tree-summary",
+            input_fixture=fixture_path("quoted_taxon_labels"),
             tolerance=0.0,
         ),
     ]
@@ -180,6 +201,7 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
         json.dumps(
             {
                 "case_id": case.case_id,
+                "tree_fixture_id": case.tree_fixture_id,
                 "function_name": case.function_name,
                 "operation": case.operation,
                 "input_fixture": str(case.input_fixture),
@@ -464,6 +486,7 @@ def run_ape_parity_cases(
             observations.append(
                 ApeParityObservation(
                     case_id=case.case_id,
+                    tree_fixture_id=case.tree_fixture_id,
                     function_name=case.function_name,
                     python_function_name=case.python_function_name,
                     input_fixture=case.input_fixture,
@@ -531,6 +554,7 @@ def write_ape_parity_observation_table(path: Path, report: ApeParityReport) -> P
             handle,
             fieldnames=[
                 "case_id",
+                "tree_fixture_id",
                 "function_name",
                 "python_function_name",
                 "input_fixture",
@@ -551,6 +575,7 @@ def write_ape_parity_observation_table(path: Path, report: ApeParityReport) -> P
             writer.writerow(
                 {
                     "case_id": observation.case_id,
+                    "tree_fixture_id": observation.tree_fixture_id,
                     "function_name": observation.function_name,
                     "python_function_name": observation.python_function_name,
                     "input_fixture": str(observation.input_fixture),
