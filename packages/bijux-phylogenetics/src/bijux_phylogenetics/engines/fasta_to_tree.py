@@ -20,6 +20,10 @@ from bijux_phylogenetics.io.fasta import (
     validate_fasta_input,
     write_fasta_alignment,
 )
+from bijux_phylogenetics.provenance.method_tiers import (
+    MethodTierAssessment,
+    fasta_to_tree_method_tier,
+)
 
 from .common import build_file_checksums, write_engine_manifest
 from .validation import (
@@ -136,6 +140,7 @@ class FastaToTreeWorkflowReport:
     support_summary: BootstrapSupportSummaryReport
     model_rows: list[FastaToTreeModelRow]
     support_rows: list[FastaToTreeSupportRow]
+    method_tier: MethodTierAssessment
     warnings: list[str]
     notes: list[str]
 
@@ -765,6 +770,7 @@ def run_fasta_to_tree_workflow(
         support_summary=support_summary,
         model_rows=model_rows,
         support_rows=support_rows,
+        method_tier=fasta_to_tree_method_tier(),
         warnings=warnings,
         notes=notes,
     )

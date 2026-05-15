@@ -41,6 +41,9 @@ def test_summarize_phylogenetic_logistic_fits_binary_response() -> None:
     )
     coefficients = {row.name: row for row in report.coefficients}
     assert report.approximation_method == "phylogenetic-working-correlation-gee"
+    assert report.method_tier.tier == "experimental"
+    assert report.method_tier.approximation == report.approximation_method
+    assert report.method_tier.warning is not None
     assert report.taxon_count == 6
     assert report.success_count == 3
     assert report.failure_count == 3
@@ -74,6 +77,7 @@ def test_summarize_phylogenetic_logistic_reports_separation_risk() -> None:
     )
     warning_codes = {row.code for row in report.warnings}
     assert report.separation_detected is True
+    assert report.method_tier.tier == "experimental"
     assert "large_coefficient_magnitude" in warning_codes or (
         "fitted_probability_boundary" in warning_codes
     )

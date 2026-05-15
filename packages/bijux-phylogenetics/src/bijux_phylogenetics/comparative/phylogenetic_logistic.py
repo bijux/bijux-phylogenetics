@@ -23,6 +23,10 @@ from bijux_phylogenetics.comparative.pgls import (
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.provenance.method_tiers import (
+    MethodTierAssessment,
+    phylogenetic_logistic_method_tier,
+)
 
 _WALD_NORMAL_95_CRITICAL_VALUE = 1.959963984540054
 
@@ -78,6 +82,7 @@ class PhylogeneticLogisticReport:
     iteration_count: int
     binomial_log_likelihood: float
     separation_detected: bool
+    method_tier: MethodTierAssessment
     warnings: list[PhylogeneticLogisticWarning]
     coefficients: list[PhylogeneticLogisticCoefficient]
     fitted_rows: list[PhylogeneticLogisticFittedRow]
@@ -203,6 +208,9 @@ def summarize_phylogenetic_logistic(
             )
         )
     warnings = _deduplicate_warnings(warnings)
+    method_tier = phylogenetic_logistic_method_tier(
+        "phylogenetic-working-correlation-gee"
+    )
     return PhylogeneticLogisticReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -221,6 +229,7 @@ def summarize_phylogenetic_logistic(
             fit.fitted_probabilities,
         ),
         separation_detected=bool(warnings),
+        method_tier=method_tier,
         warnings=warnings,
         coefficients=coefficients,
         fitted_rows=fitted_rows,

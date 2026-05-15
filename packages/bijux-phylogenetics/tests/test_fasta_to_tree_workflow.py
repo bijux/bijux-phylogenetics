@@ -486,6 +486,11 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
 
         assert report.sequence_type == expected_sequence_type
         assert report.selected_model == expected_model
+        assert report.method_tier.tier == "supported"
+        assert any(
+            basis.startswith("real-engine-validation:")
+            for basis in report.method_tier.validation_basis
+        )
         assert report.output_paths["alignment"].suffix == ".aln"
         assert report.output_paths["trimmed_alignment"].name.endswith(".trimmed.aln")
         assert report.output_paths["tree"].suffix == ".tree"

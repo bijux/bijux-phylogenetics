@@ -39,6 +39,7 @@ def _run_schema_fixture_workflow(tmp_path: Path):
 def test_fasta_to_tree_outputs_match_stable_artifact_schemas(tmp_path: Path) -> None:
     report = _run_schema_fixture_workflow(tmp_path)
 
+    assert report.method_tier.tier == "supported"
     assert validate_fasta_to_tree_model_table_schema(
         report.output_paths["model_table"]
     ).valid

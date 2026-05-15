@@ -332,6 +332,7 @@ def validate_fasta_to_tree_manifest_schema(
             "iqtree_threads",
             "manifest_path",
             "maximum_likelihood_workflow",
+            "method_tier",
             "model_rows",
             "model_selection_workflow",
             "model_validation",
