@@ -71,6 +71,11 @@ loaded comparative dataset through
 already holds one `PhyloTree` or `ComparativeDataset`, covariance review and
 independent-contrast analysis no longer need to restart from path-based
 loading wrappers.
+The same comparative runtime now also exposes one direct discrete Mk fit
+surface on a loaded ancestral discrete dataset through
+`fit_discrete_mk_model_from_dataset(...)`, so ER, SYM, and ARD review no
+longer need to restart from tree and trait file paths once one
+`AncestralDiscreteDataset` already exists in memory.
 
 The owned ancestral runtime now also exposes direct dataset-backed
 reconstruction surfaces through

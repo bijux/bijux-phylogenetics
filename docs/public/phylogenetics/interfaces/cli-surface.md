@@ -250,8 +250,9 @@ Its JSON metrics report:
 
 The initial live `phytools` registry is intentionally narrow for this goal. It
 currently covers `phytools::phylosig(method='lambda')`,
-`phytools::phylosig(method='K')`, `phytools::fastAnc`, and
-`phytools::anc.ML` on governed twenty-four-taxon comparative fixtures from the shared
+`phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
+`phytools::fastAnc`, and `phytools::anc.ML` on governed twenty-four-taxon
+comparative fixtures from the shared
 `shared_phytools_comparative_fixture_catalog.json` corpus. The live lambda
 lane now includes one non-ultrametric strong-signal fixture plus one
 ultrametric weak-signal fixture so the harness proves both a near-boundary
@@ -259,13 +260,17 @@ high-signal fit and a near-zero-signal fit against real `phytools`
 likelihood output instead of only one easy interior case. The live K lane now
 includes strong-signal and weak-signal seeded permutation cases and compares
 the observed K scalar, permutation p-value, and null-distribution summary
-under one governed replicate count. The live `fastAnc` lane now includes
-ultrametric strong-signal, ultrametric weak-signal, non-ultrametric
-strong-signal, and missing-value pruning cases, and compares stable
-node-signature rows plus standard errors against real `phytools` output.
-The live `anc.ML` lane now covers the same four fixture shapes and compares
-stable node-signature rows, standard errors, 95% intervals, Brownian
-log-likelihood, and fitted sigma-squared against real `phytools` output.
+under one governed replicate count. The live `fitMk` lane now includes clean
+binary, clean multistate, binary missing-value, and multistate missing-value
+ER cases and compares flat-root log-likelihood, AIC, AICc, excluded taxa, and
+the full directed ER rate matrix against real `phytools` output. The live
+`fastAnc` lane now includes ultrametric strong-signal, ultrametric
+weak-signal, non-ultrametric strong-signal, and missing-value pruning cases,
+and compares stable node-signature rows plus standard errors against real
+`phytools` output. The live `anc.ML` lane now covers the same four fixture
+shapes and compares stable node-signature rows, standard errors, 95%
+intervals, Brownian log-likelihood, and fitted sigma-squared against real
+`phytools` output.
 For this round, `bionj` is explicitly excluded. The distance-tree CLI surfaces
 therefore accept `--method bionj` only so the owned runtime can return one
 structured out-of-scope error naming `ape::bionj`, rather than failing with
@@ -3780,6 +3785,69 @@ scalar. Reviewers can inspect the fitted K and lambda values, the permutation
 null distribution, and the explicit p-value contract without rerunning the
 analysis manually, while still seeing whether the fit depended on pruning or a
 non-ultrametric rooted tree.
+
+`comparative discrete-mk` is the governed standalone discrete Mk fit surface
+for one rooted tree and one categorical tip trait. Its JSON metrics report:
+- `taxon_count`
+- `model`
+- `observed_state_count`
+- `sparse_state_count`
+- `pruned_missing_value_taxon_count`
+- `log_likelihood`
+- `parameter_count`
+- `aic`
+- `aicc`
+- `optimizer_name`
+- `optimizer_converged`
+- `optimizer_iteration_count`
+- `optimizer_function_evaluation_count`
+- `optimizer_hit_lower_parameter_bound`
+- `optimizer_hit_upper_parameter_bound`
+- `transition_rate_count`
+
+The command preserves the full fit report under `data`, including:
+- `input_audit`
+- `transition_rate_rows`
+- `optimizer_diagnostics`
+- `baseline_comparison`
+
+The governed policy is explicit rather than implicit:
+- rooted trees with branch lengths are required
+- overlapping missing trait values are pruned and reported under `input_audit`
+- sparse states are surfaced explicitly instead of hidden
+- optimizer non-convergence or boundary hits remain warnings, not silent success
+- ER fits are the governed live `phytools::fitMk(model='ER')` parity surface
+
+When `--summary-out` is supplied, `comparative discrete-mk` writes one flat
+summary ledger as CSV or TSV. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `state_ordering`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `observed_state_count`
+- `sparse_state_count`
+- `log_likelihood`
+- `parameter_count`
+- `aic`
+- `aicc`
+- `optimizer_name`
+- `optimizer_converged`
+- `optimizer_iteration_count`
+- `optimizer_function_evaluation_count`
+- `optimizer_hit_lower_parameter_bound`
+- `optimizer_hit_upper_parameter_bound`
+- `overparameterized`
+- `warning_count`
+
+When `--rates-out` is supplied, the command also writes one directed
+rate-matrix ledger as CSV or TSV. Each row preserves:
+- `source_state`
+- `target_state`
+- `transition_allowed`
+- `step_distance`
+- `rate`
 
 `comparative brownian` is the governed standalone Brownian trait-evolution
 surface for one numeric trait on a rooted tree with branch lengths. Its JSON

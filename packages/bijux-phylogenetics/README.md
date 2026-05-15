@@ -279,6 +279,7 @@ bijux-phylogenetics taxonomy loss tree.nwk --metadata metadata.csv --traits trai
 bijux-phylogenetics taxonomy stability --run tree=tree.nwk --run alignment=alignment.fasta --run filtered=filtered.fasta --json
 bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json
+bijux-phylogenetics comparative discrete-mk tree.nwk traits.tsv --trait habitat --taxon-column species --model equal-rates --summary-out artifacts/discrete-mk-summary.tsv --rates-out artifacts/discrete-mk-rates.tsv --json
 bijux-phylogenetics comparative brownian tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative compare-models tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative pgls tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --json
@@ -455,6 +456,18 @@ trees are accepted whether or not they are ultrametric, overlapping missing
 trait values are pruned and reported, permutation rows are reproducible from
 the supplied seed, and constant post-pruning trait vectors fail with a typed
 comparative-method error instead of returning misleading scalar summaries.
+
+`comparative discrete-mk` is the governed standalone discrete trait-evolution
+fit surface for one rooted tree and one categorical tip trait when reviewers
+need the fitted ER, SYM, or ARD likelihood surface directly rather than one
+ancestral reconstruction report. For the ER baseline, the owned runtime now
+matches the governed live `phytools::fitMk(model='ER')` lane over binary,
+multistate, and missing-value-pruned fixtures. The command reports
+log-likelihood, parameter count, AIC, AICc, one explicit missing-value pruning
+audit, and one directed transition-rate ledger instead of reducing the fit to
+one scalar alone. The same owned runtime is also reusable directly from Python
+through `fit_discrete_mk_model_from_dataset(...)` once one
+`AncestralDiscreteDataset` has already been loaded.
 
 The BEAST adapter surface now makes its evidence state explicit. `adapter
 beast-prepare` only prepares XML, `adapter beast-log`, `beast-trees`, and
@@ -821,18 +834,22 @@ state, mismatch reason, and reproducible artifact root for every governed case,
 and writes one summary TSV plus one observation TSV just like the other parity
 surfaces. The initial live `phytools` registry is intentionally narrow for this
 goal: it currently covers `phytools::phylosig(method='lambda')`,
-`phytools::phylosig(method='K')`, `phytools::fastAnc`, and
-`phytools::anc.ML` on governed strong-signal, weak-signal, non-ultrametric,
-and missing-value comparative fixtures. The live lambda lane includes one
+`phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
+`phytools::fastAnc`, and `phytools::anc.ML` on governed strong-signal,
+weak-signal, non-ultrametric, discrete-state, and missing-value comparative
+fixtures. The live lambda lane includes one
 non-ultrametric case that tracks the live `phytools` likelihood surface within
 tolerance. The owned signal surface now also exposes fixed-lambda likelihood
 evaluation, likelihood-ratio reporting against the zero-signal boundary, and
 bounded optimizer diagnostics instead of reducing Pagel's lambda to one opaque
 scalar. The owned K-test surface now also keeps seeded permutation p-values
-plus explicit null-distribution summaries, and the live continuous ancestral
-lanes now compare stable node-signature rows, standard errors, and 95%
-intervals against real `phytools` execution instead of only checked-in
-expected JSON.
+plus explicit null-distribution summaries. The owned discrete Mk surface now
+also exposes one flat-root `fitMk`-style likelihood contract with ER rate
+fitting, log-likelihood, AIC, AICc, missing-value pruning audit, and one
+directed rate-matrix ledger for binary and multistate traits. The live
+continuous ancestral lanes now compare stable node-signature rows, standard
+errors, and 95% intervals against real `phytools` execution instead of only
+checked-in expected JSON.
 The `ape::nj` lane now covers one governed analytical three-taxon matrix plus
 four-taxon ultrametric and non-ultrametric matrices. On the owned Bijux side,
 neighbor joining no longer delegates through Biopython for that method: Bijux

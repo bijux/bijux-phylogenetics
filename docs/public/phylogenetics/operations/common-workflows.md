@@ -221,8 +221,8 @@ The same `parity` command now also exposes one governed
 `--reference-source phytools-live` lane for real `phytools` execution through
 the checked-in R runner. That initial registry is intentionally narrow for
 goal 201: it currently covers `phytools::phylosig(method='lambda')`,
-`phytools::phylosig(method='K')`, `phytools::fastAnc`, and
-`phytools::anc.ML` on governed
+`phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
+`phytools::fastAnc`, and `phytools::anc.ML` on governed
 twenty-four-taxon comparative fixtures drawn from the shared `phytools`
 comparative fixture catalog. The live lambda lane now includes one
 non-ultrametric strong-signal case and one ultrametric weak-signal case, so
@@ -230,15 +230,19 @@ reviewers can see both a boundary-adjacent high-signal fit and a near-zero
 lambda fit validated against real `phytools` execution. The live K lane now
 also includes seeded strong-signal and weak-signal permutation cases so
 reviewers can compare K, permutation p-value, and null-distribution summary
-behavior under one governed replicate count. The live `fastAnc` lane now
-includes ultrametric strong-signal, ultrametric weak-signal, non-ultrametric
-strong-signal, and missing-value pruning cases so reviewers can compare
-node-signature estimates and standard errors directly against real
-`phytools`. The live `anc.ML` lane now covers the same four fixture shapes so
-reviewers can compare node-signature estimates, standard errors, 95%
-intervals, Brownian log-likelihood, and fitted sigma-squared directly against
-real `phytools`. It writes the same summary-versus-observation TSV artifacts plus
-reproducible failure bundles as the live `ape` lane.
+behavior under one governed replicate count. The live `fitMk` lane now also
+includes clean binary, clean multistate, and missing-value-pruned ER cases so
+reviewers can compare flat-root log-likelihood, AIC, AICc, excluded taxa, and
+the full directed ER rate matrix directly against real `phytools`. The live
+`fastAnc` lane now includes ultrametric strong-signal, ultrametric
+weak-signal, non-ultrametric strong-signal, and missing-value pruning cases so
+reviewers can compare node-signature estimates and standard errors directly
+against real `phytools`. The live `anc.ML` lane now covers the same four
+fixture shapes so reviewers can compare node-signature estimates, standard
+errors, 95% intervals, Brownian log-likelihood, and fitted sigma-squared
+directly against real `phytools`. It writes the same
+summary-versus-observation TSV artifacts plus reproducible failure bundles as
+the live `ape` lane.
 The same baseline surface now also exposes
 `simulate_random_tree(...)` and `simulate_coalescent_tree(...)` for one-tree
 native simulation review, so callers that need one governed random or
@@ -2103,6 +2107,18 @@ including the bounded grid-search name, function-evaluation count, lower versus
 upper boundary hits, and one explicit fine-grid likelihood profile, so
 reviewers can tell when the fitted lambda is an interior optimum versus one
 boundary-supported solution.
+
+When the goal is to review one categorical tip trait under a direct Mk
+likelihood fit instead of one ancestral-state report, use
+`comparative discrete-mk`. That workflow fits one ER, SYM, or ARD discrete Mk
+surface on one rooted tree plus one categorical trait column, keeps the
+missing-value pruning policy explicit, writes one flat fit summary plus one
+directed rate-matrix ledger when requested, and exposes the same optimizer
+diagnostics that the owned discrete Mk runtime uses internally. The governed
+live `phytools` claim for this surface is explicit and narrow: ER fits track
+`phytools::fitMk(model='ER')` on governed binary, multistate, and
+missing-value-pruned fixtures, while broader model choices remain an owned
+Bijux review surface until separately validated.
 
 When the goal is to fit a standalone continuous-trait evolution model rather
 than a regression, use `comparative brownian`. This workflow keeps the
