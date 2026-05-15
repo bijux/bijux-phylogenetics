@@ -24,6 +24,7 @@ from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
     prune_tree_to_requested_taxa,
 )
+from bijux_phylogenetics.core.branching_times import compute_tree_branching_times
 from bijux_phylogenetics.core.node_depth import compute_tree_node_depths
 from bijux_phylogenetics.core.tree_distance import compute_tree_tip_distance_matrix
 from bijux_phylogenetics.core.topology import (
@@ -912,6 +913,46 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             tolerance=1e-12,
         ),
         ApeParityCase(
+            case_id="branching-times-rooted-ultrametric",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::branching.times",
+            python_function_name="compute_tree_branching_times",
+            operation="tree-branching-times",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="branching-times-internal-node-labels",
+            fixture_kind="tree",
+            fixture_id="internal_node_labels",
+            function_name="ape::branching.times",
+            python_function_name="compute_tree_branching_times",
+            operation="tree-branching-times",
+            input_fixture=fixture_path("tree", "internal_node_labels"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="branching-times-medium-ultrametric",
+            fixture_kind="tree",
+            fixture_id="larger_binary_tree",
+            function_name="ape::branching.times",
+            python_function_name="compute_tree_branching_times",
+            operation="tree-branching-times",
+            input_fixture=fixture_path("tree", "larger_binary_tree"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="branching-times-zero-internal-branch",
+            fixture_kind="tree",
+            fixture_id="ultrametric_zero_internal_branch",
+            function_name="ape::branching.times",
+            python_function_name="compute_tree_branching_times",
+            operation="tree-branching-times",
+            input_fixture=fixture_path("tree", "ultrametric_zero_internal_branch"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
             case_id="dna-base-frequency-lowercase",
             fixture_kind="dna-alignment",
             fixture_id="lowercase_aligned_dna",
@@ -1475,6 +1516,34 @@ def _build_bijux_tree_node_depth_rows(
     ]
 
 
+def _build_bijux_branching_time_rows(
+    input_fixture: Path,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    report = compute_tree_branching_times(input_fixture)
+    return {
+        "internal_node_count": report.internal_node_count,
+        "rooted": report.rooted,
+        "tip_labels": report.tip_labels,
+        "tree_is_ultrametric": report.tree_is_ultrametric,
+        "root_age": report.root_age,
+        "zero_branch_length_count": report.zero_branch_length_count,
+        "minimum_tip_depth": report.minimum_tip_depth,
+        "maximum_tip_depth": report.maximum_tip_depth,
+        "max_tip_depth_deviation": report.max_tip_depth_deviation,
+        "tolerance": report.tolerance,
+    }, [
+        {
+            "node_id": row.node_id,
+            "node_kind": row.node_kind,
+            "node_label": row.node_label or "",
+            "descendant_taxa": "|".join(row.descendant_taxa),
+            "node_depth": row.node_depth,
+            "branching_time": row.branching_time,
+        }
+        for row in report.rows
+    ]
+
+
 def _build_bijux_translation_rows(
     input_fixture: Path,
     *,
@@ -1819,6 +1888,9 @@ def _build_bijux_case_payload(
     if case.operation == "tree-node-depth":
         summary, rows = _build_bijux_tree_node_depth_rows(case.input_fixture)
         return summary, rows, None
+    if case.operation == "tree-branching-times":
+        summary, rows = _build_bijux_branching_time_rows(case.input_fixture)
+        return summary, rows, None
     if case.operation == "dna-base-frequency":
         summary, rows = _build_bijux_base_frequency_summary(case.input_fixture)
         return summary, rows, None
@@ -1893,6 +1965,10 @@ def _load_reference_case_payload(
     if case.operation == "tree-node-depth":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "node-depths.tsv")
+        return summary, rows, None
+    if case.operation == "tree-branching-times":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "branching-times.tsv")
         return summary, rows, None
     if case.operation == "dna-base-frequency":
         summary = _load_json(execution_root / "summary.json")
