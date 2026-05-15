@@ -23,6 +23,7 @@ from bijux_phylogenetics.compare.topology import (
     compare_tree_paths,
 )
 from bijux_phylogenetics.core.alignment import AlignmentRecord
+from bijux_phylogenetics.core.neighbor_joining import build_neighbor_joining_tree
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.errors import InvalidAlignmentError, InvalidDistanceMatrixError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
@@ -1616,6 +1617,21 @@ def _bio_distance_matrix(report: GeneticDistanceMatrix) -> DistanceMatrix:
     return DistanceMatrix(report.identifiers, rows)
 
 
+def _distance_lookup(report: GeneticDistanceMatrix) -> dict[tuple[str, str], float]:
+    lookup: dict[tuple[str, str], float] = {}
+    for identifier in report.identifiers:
+        lookup[(identifier, identifier)] = 0.0
+    for pair in report.pairs:
+        if pair.distance is None:
+            raise InvalidAlignmentError(
+                "distance matrix contains undefined entries for: "
+                f"{pair.left_identifier}/{pair.right_identifier}"
+            )
+        lookup[(pair.left_identifier, pair.right_identifier)] = float(pair.distance)
+        lookup[(pair.right_identifier, pair.left_identifier)] = float(pair.distance)
+    return lookup
+
+
 def _bio_distance_matrix_from_imported(
     report: ImportedDistanceMatrixReport, entries: list[ImportedDistanceEntry]
 ) -> DistanceMatrix:
@@ -1645,6 +1661,30 @@ def _bio_distance_matrix_from_imported(
             row.append(pair_distance)
         rows.append(row)
     return DistanceMatrix(report.identifiers, rows)
+
+
+def _distance_lookup_from_imported(
+    report: ImportedDistanceMatrixReport,
+    entries: list[ImportedDistanceEntry],
+) -> dict[tuple[str, str], float]:
+    if not report.complete:
+        raise InvalidDistanceMatrixError("distance matrix is incomplete")
+    if not report.zero_diagonal:
+        raise InvalidDistanceMatrixError("distance matrix has nonzero diagonal entries")
+    if not report.symmetric:
+        raise InvalidDistanceMatrixError(
+            "distance matrix contains asymmetric directional entries"
+        )
+    if not report.nonnegative:
+        raise InvalidDistanceMatrixError("distance matrix contains negative distances")
+    lookup: dict[tuple[str, str], float] = {
+        (identifier, identifier): 0.0 for identifier in report.identifiers
+    }
+    for pair_key, pair_distance in _symmetric_distances(entries).items():
+        left_identifier, right_identifier = pair_key
+        lookup[(left_identifier, right_identifier)] = pair_distance
+        lookup[(right_identifier, left_identifier)] = pair_distance
+    return lookup
 
 
 def compute_pairwise_genetic_distance_matrix(
@@ -2286,17 +2326,22 @@ def build_distance_tree(
     if len(report.identifiers) < 2:
         raise InvalidAlignmentError("distance tree building requires at least two taxa")
 
-    constructor = DistanceTreeConstructor()
-    distance_matrix = _bio_distance_matrix(report)
     if method == "neighbor-joining":
-        tree = constructor.nj(distance_matrix)
+        tree = build_neighbor_joining_tree(
+            report.identifiers,
+            _distance_lookup(report),
+        )
     elif method == "upgma":
+        constructor = DistanceTreeConstructor()
+        distance_matrix = _bio_distance_matrix(report)
         tree = constructor.upgma(distance_matrix)
     else:
         raise ValueError(f"unsupported tree-building method: {method}")
     assumptions = quality.assumptions
 
-    return tree_from_biophylo(tree, source_format="newick"), DistanceTreeBuildReport(
+    return (
+        tree if method == "neighbor-joining" else tree_from_biophylo(tree, source_format="newick")
+    ), DistanceTreeBuildReport(
         alignment_path=path,
         model=model,
         gap_handling=gap_handling,
@@ -3078,16 +3123,19 @@ def build_tree_from_imported_distance_matrix(
     entries = load_imported_distance_matrix(path)
     validation = validate_imported_distance_matrix(path)
     assumptions = assess_imported_distance_method_assumptions(path)
-    constructor = DistanceTreeConstructor()
-    distance_matrix = _bio_distance_matrix_from_imported(validation, entries)
     if method == "neighbor-joining":
-        tree = constructor.nj(distance_matrix)
+        tree = build_neighbor_joining_tree(
+            validation.identifiers,
+            _distance_lookup_from_imported(validation, entries),
+        )
     elif method == "upgma":
+        constructor = DistanceTreeConstructor()
+        distance_matrix = _bio_distance_matrix_from_imported(validation, entries)
         tree = constructor.upgma(distance_matrix)
     else:
         raise ValueError(f"unsupported tree-building method: {method}")
-    return tree_from_biophylo(
-        tree, source_format="newick"
+    return (
+        tree if method == "neighbor-joining" else tree_from_biophylo(tree, source_format="newick")
     ), ImportedDistanceTreeBuildReport(
         matrix_path=path,
         method=method,
