@@ -35,13 +35,37 @@ def test_independent_contrasts_return_expected_internal_node_values() -> None:
         trait="response",
     )
     assert report.taxon_count == 4
+    assert report.input_audit.missing_value_policy == "prune-overlapping-missing-values"
+    assert report.input_audit.pruned_missing_value_taxa == []
+    assert report.input_audit.tree_is_ultrametric is True
     assert len(report.contrasts) == 3
+    assert report.contrasts[0].node_id == 6
     assert report.contrasts[0].node == "A|B"
     assert math.isclose(report.contrasts[0].contrast, -3.3541019662496847)
+    assert report.contrasts[1].node_id == 7
     assert report.contrasts[1].node == "C|D"
     assert math.isclose(report.contrasts[1].contrast, -2.3717082451262845)
+    assert report.contrasts[2].node_id == 5
     assert report.contrasts[2].node == "A|B|C|D"
     assert math.isclose(report.root_estimate, 2.8055555555555554)
+
+
+def test_independent_contrasts_accept_pectinate_non_ultrametric_tree_by_policy() -> None:
+    report = compute_phylogenetic_independent_contrasts(
+        fixture("example_tree_ladderized.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        trait="response",
+    )
+
+    assert report.input_audit.tree_is_ultrametric is False
+    assert report.input_audit.ultrametric_policy == (
+        "accept-rooted-trees-and-report-ultrametricity"
+    )
+    assert len(report.contrasts) == 3
+    assert [row.node_id for row in report.contrasts] == [7, 6, 5]
+    assert math.isclose(report.contrasts[1].contrast, -0.5)
+    assert math.isclose(report.contrasts[2].expected_variance, 0.26)
+    assert math.isclose(report.root_estimate, 3.3846153846153846)
 
 
 def test_blombergs_k_and_pagels_lambda_return_stable_positive_signal() -> None:
@@ -115,6 +139,34 @@ def test_phylogenetic_signal_reports_pruned_missing_values_explicitly() -> None:
         "one or more overlapping taxa have missing trait values and will be pruned"
         in report.input_audit.warnings
     )
+
+
+def test_independent_contrasts_reports_pruned_missing_values_explicitly() -> None:
+    report = compute_phylogenetic_independent_contrasts(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_brownian_missing.tsv"),
+        trait="response_growth",
+    )
+
+    assert report.taxon_count == 4
+    assert report.input_audit.missing_value_policy == "prune-overlapping-missing-values"
+    assert report.input_audit.pruned_missing_value_taxa == ["B"]
+    assert report.input_audit.warnings == [
+        "trait table contains taxa absent from the tree",
+        "one or more overlapping taxa have missing trait values and will be pruned",
+        "one or more overlapping taxa have non-numeric trait values and will be pruned",
+    ]
+
+
+def test_independent_contrasts_reject_negative_branch_lengths() -> None:
+    with pytest.raises(ComparativeMethodError) as error:
+        compute_phylogenetic_independent_contrasts(
+            fixture("example_tree_negative_length.nwk"),
+            fixture("example_traits_three_taxa.tsv"),
+            trait="response",
+        )
+
+    assert error.value.details["failure_reason"] == "comparative_negative_branch_lengths"
 
 
 def test_phylogenetic_signal_accepts_rooted_non_ultrametric_tree_by_policy() -> None:

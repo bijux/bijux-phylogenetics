@@ -1213,7 +1213,7 @@ def test_comparative_contrasts_cli_writes_review_ledgers(
     assert regression_out.exists()
     contrast_rows = contrasts_out.read_text(encoding="utf-8").splitlines()
     regression_rows = regression_out.read_text(encoding="utf-8").splitlines()
-    assert contrast_rows[0].startswith("trait\tnode\tleft_taxa\tright_taxa")
+    assert contrast_rows[0].startswith("trait\tnode_id\tnode\tleft_taxa\tright_taxa")
     assert regression_rows[0].startswith(
         "response_trait\tpredictor_trait\tnode\tpredictor_contrast"
     )

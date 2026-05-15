@@ -36,6 +36,8 @@ def test_comparative_readiness_reports_numeric_trait_pruning() -> None:
         trait="height_cm",
     )
     assert report.ready is True
+    assert report.negative_branch_lengths is False
+    assert math.isclose(report.minimum_branch_length or 0.0, 0.1)
     assert report.analysis_taxa == ["A", "B", "C", "D"]
     assert report.blockers == []
     assert report.warnings == []
@@ -76,3 +78,33 @@ def test_load_comparative_dataset_requires_binary_tree_for_contrasts() -> None:
             trait="response",
             require_binary=True,
         )
+
+
+def test_comparative_readiness_tracks_negative_branch_length_blocker() -> None:
+    report = summarize_numeric_trait_readiness(
+        fixture("example_tree_negative_length.nwk"),
+        fixture("example_traits_three_taxa.tsv"),
+        trait="response",
+    )
+
+    assert report.ready is False
+    assert report.negative_branch_lengths is True
+    assert math.isclose(report.minimum_branch_length or 0.0, -0.1)
+    assert (
+        "tree contains negative branch lengths that invalidate comparative analysis"
+        in report.blockers
+    )
+
+
+def test_load_comparative_dataset_rejects_negative_branch_lengths() -> None:
+    with pytest.raises(ComparativeMethodError) as error:
+        load_comparative_dataset(
+            fixture("example_tree_negative_length.nwk"),
+            fixture("example_traits_three_taxa.tsv"),
+            trait="response",
+        )
+
+    assert (
+        error.value.details["failure_reason"]
+        == "comparative_negative_branch_lengths"
+    )
