@@ -1,0 +1,24 @@
+{
+  "catalog_name": "shared_tree_set_fixtures",
+  "fixtures": [
+    {
+      "fixture_id": "basic_newick_tree_set",
+      "relative_path": "trees/example_tree_set_left.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 3,
+      "shared_taxa": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "feature_tags": [
+        "multiple-trees",
+        "branch-lengths",
+        "shared-taxon-set"
+      ],
+      "notes": "Minimal rooted Newick tree set with two repeated topologies and one alternative topology for governed read.tree multiPhylo parity."
+    }
+  ]
+}
