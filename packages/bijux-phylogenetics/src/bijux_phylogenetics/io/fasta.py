@@ -68,7 +68,9 @@ from bijux_phylogenetics.core.alignment import (
     SiteMissingness,
     SiteUncertaintyProfile,
     StopCodonObservation,
+    TranslationCodonObservation,
     TranslationReport,
+    TranslationSequenceExclusion,
     TrimmedAlignmentColumn,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table
@@ -2335,6 +2337,55 @@ def _translate_codon(
     return forward_table.get(normalized, "X")
 
 
+def _translation_status_for_codon(
+    codon: str,
+    amino_acid: str,
+    *,
+    codon_index: int,
+    codon_count: int,
+) -> str:
+    normalized = codon.upper().replace("U", "T")
+    if set(normalized) <= _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS:
+        return "missing-or-gap-codon"
+    if _invalid_codon_reason(normalized) is not None:
+        return "ambiguous-or-invalid-codon"
+    if amino_acid == "*":
+        if codon_index == codon_count:
+            return "terminal-stop-codon"
+        return "internal-stop-codon"
+    return "translated"
+
+
+def _build_translation_codon_observations(
+    records: list[AlignmentRecord],
+    *,
+    translated_length: int,
+    genetic_code_id: int,
+) -> list[TranslationCodonObservation]:
+    observations: list[TranslationCodonObservation] = []
+    aligned_nucleotide_length = translated_length * 3
+    for record in records:
+        codons = _iter_codon_windows(record.sequence[:aligned_nucleotide_length])
+        for codon_index, (nucleotide_start, codon) in enumerate(codons, start=1):
+            amino_acid = _translate_codon(codon, genetic_code=genetic_code_id)
+            observations.append(
+                TranslationCodonObservation(
+                    identifier=record.identifier,
+                    codon_index=codon_index,
+                    nucleotide_start=nucleotide_start,
+                    codon=codon.upper(),
+                    amino_acid=amino_acid,
+                    translation_status=_translation_status_for_codon(
+                        codon,
+                        amino_acid,
+                        codon_index=codon_index,
+                        codon_count=translated_length,
+                    ),
+                )
+            )
+    return observations
+
+
 def translate_coding_alignment(
     path: Path,
     *,
@@ -2349,34 +2400,116 @@ def translate_coding_alignment(
         raise InvalidAlignmentError(
             f"coding translation requires a nucleotide alignment, got alphabet '{summary.inferred_alphabet}'"
         )
-    if summary.alignment_length % 3 != 0:
-        raise InvalidAlignmentError(
-            f"alignment length must be divisible by 3 for coding translation, got {summary.alignment_length}"
-        )
 
     records = load_fasta_alignment(path)
+    dropped_trailing_nucleotide_count = summary.alignment_length % 3
+    translated_alignment_length = (
+        summary.alignment_length - dropped_trailing_nucleotide_count
+    ) // 3
+    warnings: list[str] = []
+    if dropped_trailing_nucleotide_count:
+        nucleotide_label = "nucleotide"
+        if dropped_trailing_nucleotide_count != 1:
+            nucleotide_label = "nucleotides"
+        warnings.append(
+            "sequence length not a multiple of 3: "
+            f"{dropped_trailing_nucleotide_count} {nucleotide_label} dropped"
+        )
+
+    aligned_nucleotide_length = translated_alignment_length * 3
     translated_records = [
         AlignmentRecord(
             identifier=record.identifier,
             sequence="".join(
                 _translate_codon(codon, genetic_code=genetic_code_id)
-                for _, codon in _iter_codon_windows(record.sequence)
+                for _, codon in _iter_codon_windows(
+                    record.sequence[:aligned_nucleotide_length]
+                )
             ),
         )
         for record in records
     ]
-    diagnostics = inspect_coding_alignment(path, genetic_code=genetic_code_id)
+    codon_observations = _build_translation_codon_observations(
+        records,
+        translated_length=translated_alignment_length,
+        genetic_code_id=genetic_code_id,
+    )
+    invalid_codon_count = sum(
+        1
+        for row in codon_observations
+        if row.translation_status == "ambiguous-or-invalid-codon"
+    )
+    stop_codon_count = sum(1 for row in codon_observations if row.amino_acid == "*")
+    internal_stop_sequence_count = len(
+        {
+            row.identifier
+            for row in codon_observations
+            if row.translation_status == "internal-stop-codon"
+        }
+    )
+    terminal_stop_sequence_count = len(
+        {
+            row.identifier
+            for row in codon_observations
+            if row.translation_status == "terminal-stop-codon"
+        }
+    )
     return translated_records, TranslationReport(
         source_path=path,
         genetic_code_id=genetic_code_id,
         genetic_code_name=genetic_code_name,
         translated_sequence_count=len(translated_records),
         source_alignment_length=summary.alignment_length,
-        translated_alignment_length=summary.alignment_length // 3,
-        invalid_codon_count=len(diagnostics.invalid_codons),
-        stop_codon_count=len(diagnostics.stop_codons),
-        frameshift_like_sequence_count=len(diagnostics.frameshift_like_sequences),
+        translated_alignment_length=translated_alignment_length,
+        dropped_trailing_nucleotide_count=dropped_trailing_nucleotide_count,
+        invalid_codon_count=invalid_codon_count,
+        stop_codon_count=stop_codon_count,
+        internal_stop_sequence_count=internal_stop_sequence_count,
+        terminal_stop_sequence_count=terminal_stop_sequence_count,
+        trailing_partial_codon_sequence_count=(
+            len(translated_records) if dropped_trailing_nucleotide_count else 0
+        ),
+        warnings=warnings,
+        codon_observations=codon_observations,
+        excluded_sequences=[],
     )
+
+
+def write_translation_codon_validation_table(
+    path: Path, report: TranslationReport
+) -> Path:
+    """Write a deterministic codon-validation ledger for one translation run."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "identifier\tcodon_index\tnucleotide_start\tcodon\tamino_acid\ttranslation_status"
+    ]
+    for row in report.codon_observations:
+        lines.append(
+            "\t".join(
+                [
+                    row.identifier,
+                    str(row.codon_index),
+                    str(row.nucleotide_start),
+                    row.codon,
+                    row.amino_acid,
+                    row.translation_status,
+                ]
+            )
+        )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def write_translation_excluded_sequence_table(
+    path: Path, report: TranslationReport
+) -> Path:
+    """Write a deterministic translation exclusion ledger."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["identifier\treason\tnote"]
+    for row in report.excluded_sequences:
+        lines.append("\t".join([row.identifier, row.reason, row.note]))
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
 
 
 def translate_prepared_coding_sequences(

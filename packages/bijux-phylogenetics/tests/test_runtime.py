@@ -5895,9 +5895,23 @@ def test_translate_coding_alignment_emits_amino_acid_records() -> None:
     assert report.translated_sequence_count == 4
     assert report.source_alignment_length == 9
     assert report.translated_alignment_length == 3
-    assert report.invalid_codon_count == 0
+    assert report.invalid_codon_count == 1
     assert report.stop_codon_count == 2
-    assert report.frameshift_like_sequence_count == 1
+    assert report.internal_stop_sequence_count == 1
+    assert report.terminal_stop_sequence_count == 1
+    assert report.trailing_partial_codon_sequence_count == 0
+    assert report.dropped_trailing_nucleotide_count == 0
+    assert report.warnings == []
+    assert [
+        (row.identifier, row.codon_index, row.codon, row.amino_acid, row.translation_status)
+        for row in report.codon_observations[:5]
+    ] == [
+        ("A", 1, "ATG", "M", "translated"),
+        ("A", 2, "GAA", "E", "translated"),
+        ("A", 3, "TAA", "*", "terminal-stop-codon"),
+        ("B", 1, "ATG", "M", "translated"),
+        ("B", 2, "GAA", "E", "translated"),
+    ]
 
 
 def test_prepare_coding_sequences_for_alignment_excludes_frame_and_stop_failures(
@@ -6066,6 +6080,22 @@ def test_translate_coding_alignment_honors_configurable_genetic_code_and_invalid
     assert standard_report.stop_codon_count == 1
     assert mitochondrial_report.stop_codon_count == 0
     assert mitochondrial_report.invalid_codon_count == 1
+
+
+def test_translate_coding_alignment_truncates_trailing_partial_codon_like_ape() -> None:
+    records, report = translate_coding_alignment(
+        fixture("example_alignment_coding_frame_error.fasta")
+    )
+
+    assert [(record.identifier, record.sequence) for record in records] == [
+        ("frame_error", "ME"),
+    ]
+    assert report.translated_alignment_length == 2
+    assert report.dropped_trailing_nucleotide_count == 2
+    assert report.trailing_partial_codon_sequence_count == 1
+    assert report.warnings == [
+        "sequence length not a multiple of 3: 2 nucleotides dropped"
+    ]
 
 
 def test_cli_alignment_trim_writes_trimmed_fasta_and_report(
@@ -6790,6 +6820,8 @@ def test_cli_alignment_translate_writes_amino_acid_alignment(
     tmp_path: Path, capsys
 ) -> None:
     output_path = tmp_path / "translated.fasta"
+    codon_table_path = tmp_path / "codon-validation.tsv"
+    exclusion_table_path = tmp_path / "excluded-sequences.tsv"
     exit_code = main(
         [
             "alignment",
@@ -6797,6 +6829,10 @@ def test_cli_alignment_translate_writes_amino_acid_alignment(
             str(fixture("example_alignment_coding.fasta")),
             "--out",
             str(output_path),
+            "--codon-validation-out",
+            str(codon_table_path),
+            "--excluded-sequences-out",
+            str(exclusion_table_path),
             "--json",
         ]
     )
@@ -6806,8 +6842,41 @@ def test_cli_alignment_translate_writes_amino_acid_alignment(
     assert output_path.read_text(encoding="utf-8") == (
         ">A\nME*\n>B\nMEW\n>C\nMXW\n>D\nM*W\n"
     )
+    assert codon_table_path.read_text(encoding="utf-8").splitlines()[0] == (
+        "identifier\tcodon_index\tnucleotide_start\tcodon\tamino_acid\ttranslation_status"
+    )
+    assert exclusion_table_path.read_text(encoding="utf-8") == "identifier\treason\tnote\n"
     assert payload["metrics"]["translated_sequence_count"] == 4
+    assert payload["metrics"]["invalid_codon_count"] == 1
     assert payload["metrics"]["stop_codon_count"] == 2
+    assert payload["metrics"]["internal_stop_sequence_count"] == 1
+    assert payload["metrics"]["terminal_stop_sequence_count"] == 1
+
+
+def test_cli_alignment_translate_truncates_trailing_partial_codon(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "translated.fasta"
+    exit_code = main(
+        [
+            "alignment",
+            "translate",
+            str(fixture("example_alignment_coding_frame_error.fasta")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == ">frame_error\nME\n"
+    assert payload["metrics"]["translated_alignment_length"] == 2
+    assert payload["metrics"]["dropped_trailing_nucleotide_count"] == 2
+    assert payload["warnings"] == [
+        "sequence length not a multiple of 3: 2 nucleotides dropped"
+    ]
 
 
 def test_cli_topology_root_outgroup_writes_rooted_tree_and_report(

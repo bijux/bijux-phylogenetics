@@ -387,6 +387,27 @@ class CodingAlignmentDiagnostics:
 
 
 @dataclass(slots=True)
+class TranslationCodonObservation:
+    """One codon-level observation from aligned nucleotide translation."""
+
+    identifier: str
+    codon_index: int
+    nucleotide_start: int
+    codon: str
+    amino_acid: str
+    translation_status: str
+
+
+@dataclass(slots=True)
+class TranslationSequenceExclusion:
+    """One sequence excluded from aligned translation output."""
+
+    identifier: str
+    reason: str
+    note: str
+
+
+@dataclass(slots=True)
 class TranslationReport:
     """Explicit record of a coding-alignment translation run."""
 
@@ -396,9 +417,15 @@ class TranslationReport:
     translated_sequence_count: int
     source_alignment_length: int
     translated_alignment_length: int
+    dropped_trailing_nucleotide_count: int
     invalid_codon_count: int
     stop_codon_count: int
-    frameshift_like_sequence_count: int
+    internal_stop_sequence_count: int
+    terminal_stop_sequence_count: int
+    trailing_partial_codon_sequence_count: int
+    warnings: list[str]
+    codon_observations: list[TranslationCodonObservation]
+    excluded_sequences: list[TranslationSequenceExclusion]
 
 
 @dataclass(slots=True)
