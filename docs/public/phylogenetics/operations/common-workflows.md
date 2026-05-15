@@ -198,6 +198,12 @@ mixed-missing requests, rooted-polytomy behavior, post-rooting behavior, and
 all-missing reroot failures. Bijux also records the matched MRCA node and any
 extra descendant taxa that make a direct clade fail monophyly, so the same
 lane is usable for review instead of only for pass-fail checks.
+The `ape::cophenetic.phylo` portion now covers rooted and unrooted
+branch-length trees, compares one governed long-form tip-distance ledger
+instead of only a printed matrix, and keeps the taxon order explicit in the
+review payload. Bijux also exposes the same owned tip-distance surface
+directly, and it rejects missing branch lengths unless the caller explicitly
+opts into a unit-length fallback policy.
 The
 `ape::write.tree` portion now
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
