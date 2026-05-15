@@ -225,6 +225,14 @@ branching-time table keyed by stable ape-style node ids, and the owned Bijux
 surface `compute_tree_branching_times(...)` rejects non-ultrametric trees
 instead of forwarding the invalid negative or inconsistent node ages that
 `ape::branching.times` can still produce on those inputs.
+The `ape::is.ultrametric` portion now covers exact ultrametric,
+near-ultrametric, tight-tolerance near-ultrametric, and clearly
+non-ultrametric trees. It compares one governed tip-depth diagnostic table,
+and the owned Bijux surface `assess_tree_ultrametricity(...)` reports the
+criterion name, criterion value, tolerance, maximum tip-depth deviation,
+offending taxa, and a deterministic `ultrametric-diagnostics.tsv` ledger.
+That same ape-style surface is now reused before rooted Brownian, OU, and
+diversification workflows claim time-tree compatibility.
 The
 `ape::write.tree` portion now
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,

@@ -731,7 +731,7 @@ string-based, so tree summaries, tip ledgers, normalized Newick outputs,
 DNA-state frequency tables, raw-distance ledgers, and translated amino-acid
 rows are compared as owned artifacts rather than scraped console text. The
 governed live cases now cover `ape::read.tree`, `ape::write.tree`,
-`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
+`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
 fixture ids. The tree and DNA inputs for that lane now come from the governed
 shared fixture catalogs in
 `tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
@@ -811,6 +811,15 @@ branching-time ledger, reports the root age explicitly, and intentionally
 rejects non-ultrametric trees instead of returning the misleading negative or
 inconsistent node ages that `ape::branching.times` will still emit on invalid
 inputs.
+The `ape::is.ultrametric` lane now compares exact ultrametric, governed
+near-ultrametric, tight-tolerance near-ultrametric, and clearly
+non-ultrametric trees against live `ape`. On the owned Bijux side,
+`assess_tree_ultrametricity(...)` reports the ape-style criterion name,
+criterion value, tolerance, maximum tip-depth deviation, offending taxa, and
+one deterministic `ultrametric-diagnostics.tsv` ledger. That same surface is
+now reused before rooted Brownian, OU, and diversification workflows claim
+time-tree compatibility, so those methods no longer rely on separate hidden
+ultrametric checks with mismatched tolerances.
 The
 `ape::write.tree` lane now roundtrips Bijux-written Newick through live `ape`
 for rooted, unrooted, internal-label, support-label, quoted-label, and
