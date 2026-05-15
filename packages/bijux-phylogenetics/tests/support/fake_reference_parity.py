@@ -20,32 +20,7 @@ import json
 import sys
 from pathlib import Path
 
-TREE_SUMMARIES = {{
-    "read-tree-balanced-rooted-ultrametric": {{
-        "tip_count": 4,
-        "internal_node_count": 3,
-        "edge_count": 6,
-        "rooted": True,
-        "tip_labels": ["A", "B", "C", "D"],
-        "branch_length_count": 6,
-    }},
-    "read-tree-unrooted-branch-length": {{
-        "tip_count": 4,
-        "internal_node_count": 1,
-        "edge_count": 4,
-        "rooted": False,
-        "tip_labels": ["A", "B", "C", "D"],
-        "branch_length_count": 4,
-    }},
-    "read-tree-quoted-taxon-labels": {{
-        "tip_count": 3,
-        "internal_node_count": 1,
-        "edge_count": 3,
-        "rooted": False,
-        "tip_labels": ["'Homo sapiens'", "'Mus musculus'", "'A.B-1'"],
-        "branch_length_count": 3,
-    }},
-}}
+from Bio import Phylo
 
 TABULAR_CASES = {{
     "dna-base-frequency-lowercase": {{
@@ -272,6 +247,63 @@ def write_tsv(path, rows):
         writer.writeheader()
         writer.writerows(rows)
 
+def normalize_label(value):
+    return "" if value is None else str(value)
+
+def parse_support_label(value):
+    text = normalize_label(value)
+    if not text:
+        return ""
+    if "/" in text:
+        try:
+            return float(text.split("/")[-1])
+        except ValueError:
+            return ""
+    try:
+        return float(text)
+    except ValueError:
+        return ""
+
+def descendant_taxa(clade):
+    return sorted(terminal.name for terminal in clade.get_terminals() if terminal.name)
+
+def clade_rows(tree, tree_index_value):
+    rows = []
+    for clade in tree.find_clades(order="preorder"):
+        taxa = descendant_taxa(clade)
+        node_kind = "tip" if clade.is_terminal() else "internal"
+        if clade == tree.root:
+            node_kind = "root"
+        if clade.is_terminal():
+            node_label = normalize_label(clade.name)
+        else:
+            node_label = normalize_label(clade.name if clade.name is not None else getattr(clade, "confidence", None))
+        rows.append(
+            {{
+                "tree_index": tree_index_value,
+                "node_kind": node_kind,
+                "clade_id": "|".join(taxa),
+                "node_label": node_label,
+                "taxon_count": len(taxa),
+                "taxa": "|".join(taxa),
+                "support": parse_support_label(node_label),
+                "branch_length": "" if clade.branch_length is None else clade.branch_length,
+            }}
+        )
+    node_order = {{"root": 0, "internal": 1, "tip": 2}}
+    return sorted(
+        rows,
+        key=lambda row: (
+            0 if row["tree_index"] == "" else int(row["tree_index"]),
+            node_order.get(row["node_kind"], 9),
+            row["clade_id"],
+            row["node_label"],
+        ),
+    )
+
+def is_rooted_tree(tree):
+    return len(getattr(tree.root, "clades", [])) == 2
+
 runner_path = Path(sys.argv[1])
 case_path = Path(sys.argv[2])
 output_root = Path(sys.argv[3])
@@ -296,25 +328,85 @@ if not APE_AVAILABLE:
     raise SystemExit(0)
 
 case_id = case_payload["case_id"]
-if case_id in TREE_SUMMARIES:
-    summary = dict(TREE_SUMMARIES[case_id])
-    summary.update(SUMMARY_OVERRIDES)
-    tip_rows = [{{"position": index, "label": label}} for index, label in enumerate(summary["tip_labels"], start=1)]
-    summary_path = output_root / "summary.json"
-    tips_path = output_root / "tips.tsv"
-    newick_path = output_root / "normalized-tree.nwk"
-    write_json(summary_path, summary)
-    write_tsv(tips_path, tip_rows)
-    if case_id == "read-tree-quoted-taxon-labels":
-        newick_path.write_text(
-            "('Homo_sapiens':0.1,'Mus_musculus':0.2,'A.B-1':0.3);\\n",
-            encoding="utf-8",
+if case_payload["operation"] in {{"read-tree-structure", "read-tree-set-structure"}}:
+    try:
+        if case_payload["operation"] == "read-tree-structure":
+            tree = Phylo.read(case_payload["input_fixture"], "newick")
+            summary = {{
+                "tree_count": 1,
+                "tip_count": len(tree.get_terminals()),
+                "internal_node_count": len(tree.get_nonterminals()),
+                "edge_count": len(tree.get_terminals()) + len(tree.get_nonterminals()) - 1,
+                "rooted": is_rooted_tree(tree),
+                "tip_labels": [terminal.name for terminal in tree.get_terminals()],
+                "branch_length_count": sum(
+                    1 for clade in tree.find_clades(order="preorder")
+                    if clade is not tree.root and clade.branch_length is not None
+                ),
+            }}
+            rows = clade_rows(tree, "")
+            summary.update(SUMMARY_OVERRIDES)
+            summary_path = output_root / "summary.json"
+            clades_path = output_root / "clades.tsv"
+            newick_path = output_root / "normalized-tree.nwk"
+            write_json(summary_path, summary)
+            write_tsv(clades_path, rows)
+            if case_id == "read-tree-quoted-taxon-labels":
+                newick_path.write_text(
+                    "('Homo_sapiens':0.1,'Mus_musculus':0.2,'A.B-1':0.3);\\n",
+                    encoding="utf-8",
+                )
+            else:
+                newick_path.write_text(
+                    Path(case_payload["input_fixture"]).read_text(encoding="utf-8"),
+                    encoding="utf-8",
+                )
+            outputs = {{
+                "summary_json": str(summary_path),
+                "clades": str(clades_path),
+                "normalized_tree": str(newick_path),
+            }}
+        else:
+            trees = list(Phylo.parse(case_payload["input_fixture"], "newick"))
+            if not trees:
+                raise ValueError("tree set contains no trees")
+            rows = []
+            for index, tree in enumerate(trees, start=1):
+                rows.extend(clade_rows(tree, index))
+            shared_tip_labels = sorted(set(t.name for t in trees[0].get_terminals()))
+            summary = {{
+                "tree_count": len(trees),
+                "source_format": "newick",
+                "tree_indices": list(range(1, len(trees) + 1)),
+                "shared_tip_labels": shared_tip_labels,
+                "unique_tip_label_count": len(shared_tip_labels),
+            }}
+            summary.update(SUMMARY_OVERRIDES)
+            summary_path = output_root / "summary.json"
+            clades_path = output_root / "clades.tsv"
+            write_json(summary_path, summary)
+            write_tsv(clades_path, rows)
+            outputs = {{
+                "summary_json": str(summary_path),
+                "clades": str(clades_path),
+            }}
+    except Exception as error:
+        write_json(
+            execution_path,
+            {{
+                "status": "failed",
+                "mismatch_reason": "reference_execution_failed",
+                "error_type": "TreeParseError",
+                "message": str(error),
+                "case_id": case_payload["case_id"],
+                "function_name": case_payload["function_name"],
+                "input_fixture": case_payload["input_fixture"],
+                "r_version": "4.6.0",
+                "ape_version": "5.0.0",
+            }},
         )
-    else:
-        newick_path.write_text(
-            Path(case_payload["input_fixture"]).read_text(encoding="utf-8"),
-            encoding="utf-8",
-        )
+        raise SystemExit(0)
+
     write_json(
         execution_path,
         {{
@@ -324,11 +416,7 @@ if case_id in TREE_SUMMARIES:
             "input_fixture": case_payload["input_fixture"],
             "r_version": "4.6.0",
             "ape_version": "5.0.0",
-            "outputs": {{
-                "summary_json": str(summary_path),
-                "tip_table": str(tips_path),
-                "normalized_tree": str(newick_path),
-            }},
+            "outputs": outputs,
         }},
     )
     raise SystemExit(0)

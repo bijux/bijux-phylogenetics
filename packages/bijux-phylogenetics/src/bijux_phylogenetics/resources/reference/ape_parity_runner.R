@@ -33,6 +33,123 @@ execution_path <- file.path(output_root, "reference-execution.json")
 case_payload <- jsonlite::fromJSON(case_path)
 r_version <- as.character(getRversion())
 
+normalize_node_label <- function(label) {
+  if (is.null(label) || is.na(label)) {
+    return("")
+  }
+  as.character(label)
+}
+
+parse_support_label <- function(label) {
+  text <- normalize_node_label(label)
+  if (!nzchar(text)) {
+    return("")
+  }
+  if (grepl("^[0-9.]+/[0-9.]+$", text)) {
+    return(as.numeric(sub(".*/", "", text)))
+  }
+  numeric_value <- suppressWarnings(as.numeric(text))
+  if (!is.na(numeric_value)) {
+    return(numeric_value)
+  }
+  ""
+}
+
+descendant_taxa <- function(tree, node) {
+  if (node <= length(tree$tip.label)) {
+    return(normalize_node_label(tree$tip.label[[node]]))
+  }
+  children <- tree$edge[tree$edge[, 1] == node, 2]
+  sort(unique(unlist(lapply(children, function(child) descendant_taxa(tree, child)))))
+}
+
+root_node <- function(tree) {
+  internal_nodes <- sort(unique(tree$edge[, 1]))
+  root_candidates <- setdiff(internal_nodes, tree$edge[, 2])
+  if (length(root_candidates) == 0) {
+    return(internal_nodes[[1]])
+  }
+  root_candidates[[1]]
+}
+
+node_kind <- function(tree, node, root_id) {
+  if (node == root_id) {
+    return("root")
+  }
+  if (node <= length(tree$tip.label)) {
+    return("tip")
+  }
+  "internal"
+}
+
+node_label <- function(tree, node) {
+  if (node <= length(tree$tip.label)) {
+    return(normalize_node_label(tree$tip.label[[node]]))
+  }
+  node_labels <- tree$node.label
+  index <- node - length(tree$tip.label)
+  if (is.null(node_labels) || index < 1 || index > length(node_labels)) {
+    return("")
+  }
+  normalize_node_label(node_labels[[index]])
+}
+
+node_branch_length <- function(tree, node) {
+  match_index <- match(node, tree$edge[, 2])
+  if (is.na(match_index) || is.null(tree$edge.length)) {
+    return("")
+  }
+  value <- tree$edge.length[[match_index]]
+  if (is.na(value)) {
+    return("")
+  }
+  as.numeric(value)
+}
+
+tree_structure_rows <- function(tree, tree_index_value) {
+  root_id <- root_node(tree)
+  internal_nodes <- sort(unique(tree$edge[, 1]))
+  nodes <- c(
+    root_id,
+    setdiff(internal_nodes, root_id),
+    seq_len(length(tree$tip.label))
+  )
+  rows <- lapply(nodes, function(node) {
+    taxa <- descendant_taxa(tree, node)
+    label <- node_label(tree, node)
+    list(
+      tree_index = tree_index_value,
+      node_kind = node_kind(tree, node, root_id),
+      clade_id = paste(taxa, collapse = "|"),
+      node_label = label,
+      taxon_count = length(taxa),
+      taxa = paste(taxa, collapse = "|"),
+      support = parse_support_label(label),
+      branch_length = node_branch_length(tree, node)
+    )
+  })
+  order_key <- function(row) {
+    node_rank <- switch(
+      row$node_kind,
+      root = 0L,
+      internal = 1L,
+      tip = 2L,
+      9L
+    )
+    list(
+      if (identical(tree_index_value, "")) 0L else as.integer(tree_index_value),
+      node_rank,
+      row$clade_id,
+      row$node_label
+    )
+  }
+  order_matrix <- do.call(
+    rbind,
+    lapply(rows, function(row) unlist(order_key(row), use.names = FALSE))
+  )
+  rows[do.call(order, as.data.frame(order_matrix, stringsAsFactors = FALSE))]
+}
+
 if (!requireNamespace("ape", quietly = TRUE)) {
   write_payload(
     execution_path,
@@ -51,16 +168,14 @@ if (!requireNamespace("ape", quietly = TRUE)) {
 }
 
 tree_case <- function(case_payload, output_root, execution_path, r_version) {
-  tree <- tryCatch(
-    ape::read.tree(case_payload$input_fixture),
-    error = function(error) error
-  )
+  tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
   if (inherits(tree, "error")) {
     write_payload(
       execution_path,
       list(
         status = "failed",
         mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
         message = conditionMessage(tree),
         case_id = case_payload$case_id,
         function_name = case_payload$function_name,
@@ -73,10 +188,12 @@ tree_case <- function(case_payload, output_root, execution_path, r_version) {
   }
 
   summary_path <- file.path(output_root, "summary.json")
-  tips_path <- file.path(output_root, "tips.tsv")
+  clades_path <- file.path(output_root, "clades.tsv")
   newick_path <- file.path(output_root, "normalized-tree.nwk")
+  clade_rows <- tree_structure_rows(tree, "")
 
   summary_payload <- list(
+    tree_count = 1,
     tip_count = length(tree$tip.label),
     internal_node_count = tree$Nnode,
     edge_count = nrow(tree$edge),
@@ -85,13 +202,7 @@ tree_case <- function(case_payload, output_root, execution_path, r_version) {
     branch_length_count = if (is.null(tree$edge.length)) 0 else sum(!is.na(tree$edge.length))
   )
   write_payload(summary_path, summary_payload)
-
-  tip_table <- data.frame(
-    position = seq_along(tree$tip.label),
-    label = unname(tree$tip.label),
-    stringsAsFactors = FALSE
-  )
-  write_table(tips_path, tip_table)
+  write_table(clades_path, do.call(rbind.data.frame, c(clade_rows, stringsAsFactors = FALSE)))
   ape::write.tree(tree, file = newick_path)
 
   write_payload(
@@ -105,8 +216,67 @@ tree_case <- function(case_payload, output_root, execution_path, r_version) {
       ape_version = as.character(utils::packageVersion("ape")),
       outputs = list(
         summary_json = summary_path,
-        tip_table = tips_path,
+        clades = clades_path,
         normalized_tree = newick_path
+      )
+    )
+  )
+}
+
+tree_set_case <- function(case_payload, output_root, execution_path, r_version) {
+  tree_set <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
+  if (inherits(tree_set, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(tree_set),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+  if (!inherits(tree_set, "multiPhylo")) {
+    tree_set <- structure(list(tree_set), class = "multiPhylo")
+  }
+
+  summary_path <- file.path(output_root, "summary.json")
+  clades_path <- file.path(output_root, "clades.tsv")
+  tree_rows <- unlist(
+    lapply(seq_along(tree_set), function(index) tree_structure_rows(tree_set[[index]], index)),
+    recursive = FALSE
+  )
+  shared_tip_labels <- Reduce(
+    intersect,
+    lapply(tree_set, function(tree) sort(unname(tree$tip.label)))
+  )
+  summary_payload <- list(
+    tree_count = length(tree_set),
+    source_format = "newick",
+    tree_indices = as.list(seq_along(tree_set)),
+    shared_tip_labels = shared_tip_labels,
+    unique_tip_label_count = length(shared_tip_labels)
+  )
+  write_payload(summary_path, summary_payload)
+  write_table(clades_path, do.call(rbind.data.frame, c(tree_rows, stringsAsFactors = FALSE)))
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        clades = clades_path
       )
     )
   )
@@ -250,8 +420,13 @@ dna_translation_case <- function(case_payload, output_root, execution_path, r_ve
   )
 }
 
-if (identical(case_payload$operation, "read-tree-summary")) {
+if (identical(case_payload$operation, "read-tree-structure")) {
   tree_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "read-tree-set-structure")) {
+  tree_set_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 
