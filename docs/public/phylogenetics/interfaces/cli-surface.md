@@ -251,6 +251,7 @@ Its JSON metrics report:
 The initial live `phytools` registry is intentionally narrow for this goal. It
 currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
+`phytools::fitMk(model='SYM')`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed twenty-four-taxon
 comparative fixtures from the shared
 `shared_phytools_comparative_fixture_catalog.json` corpus. The live lambda
@@ -262,8 +263,10 @@ includes strong-signal and weak-signal seeded permutation cases and compares
 the observed K scalar, permutation p-value, and null-distribution summary
 under one governed replicate count. The live `fitMk` lane now includes clean
 binary, clean multistate, binary missing-value, and multistate missing-value
-ER cases and compares flat-root log-likelihood, AIC, AICc, excluded taxa, and
-the full directed ER rate matrix against real `phytools` output. The live
+ER cases plus clean multistate and missing-value-pruned multistate SYM cases.
+It compares flat-root log-likelihood, AIC, AICc, excluded taxa, one explicit
+ER-versus-SYM model identity summary, and the full directed rate matrix
+against real `phytools` output. The live
 `fastAnc` lane now includes ultrametric strong-signal, ultrametric
 weak-signal, non-ultrametric strong-signal, and missing-value pruning cases,
 and compares stable node-signature rows plus standard errors against real
@@ -3803,7 +3806,12 @@ for one rooted tree and one categorical tip trait. Its JSON metrics report:
 - `optimizer_function_evaluation_count`
 - `optimizer_hit_lower_parameter_bound`
 - `optimizer_hit_upper_parameter_bound`
+- `overparameterized`
 - `transition_rate_count`
+- `baseline_model`
+- `baseline_aic`
+- `delta_aic`
+- `preferred_model_by_aic`
 
 The command preserves the full fit report under `data`, including:
 - `input_audit`
@@ -3817,6 +3825,7 @@ The governed policy is explicit rather than implicit:
 - sparse states are surfaced explicitly instead of hidden
 - optimizer non-convergence or boundary hits remain warnings, not silent success
 - ER fits are the governed live `phytools::fitMk(model='ER')` parity surface
+- unordered multistate SYM fits are the governed live `phytools::fitMk(model='SYM')` parity surface
 
 When `--summary-out` is supplied, `comparative discrete-mk` writes one flat
 summary ledger as CSV or TSV. The row preserves:

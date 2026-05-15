@@ -462,12 +462,15 @@ fit surface for one rooted tree and one categorical tip trait when reviewers
 need the fitted ER, SYM, or ARD likelihood surface directly rather than one
 ancestral reconstruction report. For the ER baseline, the owned runtime now
 matches the governed live `phytools::fitMk(model='ER')` lane over binary,
-multistate, and missing-value-pruned fixtures. The command reports
-log-likelihood, parameter count, AIC, AICc, one explicit missing-value pruning
-audit, and one directed transition-rate ledger instead of reducing the fit to
-one scalar alone. The same owned runtime is also reusable directly from Python
-through `fit_discrete_mk_model_from_dataset(...)` once one
-`AncestralDiscreteDataset` has already been loaded.
+multistate, and missing-value-pruned fixtures, and the SYM surface now also
+matches the governed live `phytools::fitMk(model='SYM')` lane over multistate
+clean and missing-value-pruned fixtures. The command reports log-likelihood,
+parameter count, AIC, AICc, one explicit missing-value pruning audit, one
+directed transition-rate ledger, overparameterization status, and ER baseline
+comparison metrics instead of reducing the fit to one scalar alone. The same
+owned runtime is also reusable directly from Python through
+`fit_discrete_mk_model_from_dataset(...)` once one `AncestralDiscreteDataset`
+has already been loaded.
 
 The BEAST adapter surface now makes its evidence state explicit. `adapter
 beast-prepare` only prepares XML, `adapter beast-log`, `beast-trees`, and
@@ -835,7 +838,8 @@ and writes one summary TSV plus one observation TSV just like the other parity
 surfaces. The initial live `phytools` registry is intentionally narrow for this
 goal: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
-`phytools::fastAnc`, and `phytools::anc.ML` on governed strong-signal,
+`phytools::fitMk(model='SYM')`, `phytools::fastAnc`, and
+`phytools::anc.ML` on governed strong-signal,
 weak-signal, non-ultrametric, discrete-state, and missing-value comparative
 fixtures. The live lambda lane includes one
 non-ultrametric case that tracks the live `phytools` likelihood surface within
@@ -845,8 +849,11 @@ bounded optimizer diagnostics instead of reducing Pagel's lambda to one opaque
 scalar. The owned K-test surface now also keeps seeded permutation p-values
 plus explicit null-distribution summaries. The owned discrete Mk surface now
 also exposes one flat-root `fitMk`-style likelihood contract with ER rate
-fitting, log-likelihood, AIC, AICc, missing-value pruning audit, and one
-directed rate-matrix ledger for binary and multistate traits. The live
+fitting, SYM pairwise-rate fitting, log-likelihood, AIC, AICc,
+missing-value pruning audit, ER baseline comparison metrics, and one directed
+rate-matrix ledger for binary and multistate traits. The live `fitMk` lane
+now covers governed ER binary and multistate cases plus governed SYM
+multistate cases, including one missing-value-pruned SYM surface. The live
 continuous ancestral lanes now compare stable node-signature rows, standard
 errors, and 95% intervals against real `phytools` execution instead of only
 checked-in expected JSON.

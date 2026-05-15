@@ -75,7 +75,10 @@ The same comparative runtime now also exposes one direct discrete Mk fit
 surface on a loaded ancestral discrete dataset through
 `fit_discrete_mk_model_from_dataset(...)`, so ER, SYM, and ARD review no
 longer need to restart from tree and trait file paths once one
-`AncestralDiscreteDataset` already exists in memory.
+`AncestralDiscreteDataset` already exists in memory. That same owned surface
+now underlies the governed live `phytools::fitMk(model='ER')` and
+`phytools::fitMk(model='SYM')` parity lanes for the validated ER and
+unordered-multistate SYM cases.
 
 The owned ancestral runtime now also exposes direct dataset-backed
 reconstruction surfaces through
