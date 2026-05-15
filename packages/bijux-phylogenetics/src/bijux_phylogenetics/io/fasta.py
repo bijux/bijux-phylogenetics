@@ -2390,20 +2390,31 @@ def inspect_coding_alignment(
     genetic_code: int | str | None = None,
 ) -> CodingAlignmentDiagnostics:
     """Inspect one nucleotide alignment as a coding sequence dataset."""
+    matrix = load_dna_bin_alignment(path, normalize_uracil=True)
+    return inspect_coding_alignment_from_dna_bin_alignment(
+        matrix,
+        genetic_code=genetic_code,
+    )
+
+
+def inspect_coding_alignment_from_dna_bin_alignment(
+    alignment: DnaBinAlignment,
+    *,
+    genetic_code: int | str | None = None,
+) -> CodingAlignmentDiagnostics:
+    """Inspect one DNAbin-compatible nucleotide matrix as a coding sequence dataset."""
+    if alignment.source_alphabet not in {"dna", "rna"}:
+        raise InvalidAlignmentError(
+            f"coding diagnostics require a nucleotide alignment, got alphabet '{alignment.source_alphabet}'"
+        )
+    records = _records_from_dnabin_alignment(alignment, uppercase=True)
     genetic_code_id, genetic_code_name, _forward_table, _stop_codons = (
         _resolve_genetic_code_table(genetic_code)
     )
-    summary = summarise_fasta(path)
-    if summary.inferred_alphabet not in {"dna", "rna"}:
-        raise InvalidAlignmentError(
-            f"coding diagnostics require a nucleotide alignment, got alphabet '{summary.inferred_alphabet}'"
-        )
-    records = load_fasta_alignment(path)
     coding_behaviors = _classify_sequence_coding_behavior_records(
         records,
         genetic_code=genetic_code_id,
     )
-    invalid_codons = _detect_invalid_codons_in_records(records)
     partial_codon_sequences = [
         PartialCodonSequence(
             identifier=row.identifier,
@@ -2413,18 +2424,18 @@ def inspect_coding_alignment(
         for row in _detect_frameshift_like_records(records)
     ]
     return CodingAlignmentDiagnostics(
-        path=path,
+        path=alignment.path,
         genetic_code_id=genetic_code_id,
         genetic_code_name=genetic_code_name,
-        sequence_count=summary.sequence_count,
-        alignment_length=summary.alignment_length,
-        alignment_length_multiple_of_three=summary.alignment_length % 3 == 0,
+        sequence_count=alignment.sequence_count,
+        alignment_length=alignment.alignment_length,
+        alignment_length_multiple_of_three=alignment.alignment_length % 3 == 0,
         frameshift_like_sequences=_detect_frameshift_like_records(records),
         partial_codon_sequences=partial_codon_sequences,
         coding_behaviors=coding_behaviors,
         mixed_coding_signals=any(row.coding_like for row in coding_behaviors)
         and any(not row.coding_like for row in coding_behaviors),
-        invalid_codons=invalid_codons,
+        invalid_codons=_detect_invalid_codons_in_records(records),
         stop_codons=_detect_stop_codons_in_records(
             records,
             genetic_code=genetic_code_id,
