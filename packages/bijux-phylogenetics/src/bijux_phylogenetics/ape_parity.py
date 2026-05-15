@@ -16,6 +16,7 @@ from bijux_phylogenetics.compare.structural_parity import (
     compare_tree_sets_structurally,
     compare_tree_structurally,
 )
+from bijux_phylogenetics.core.pruning import drop_tree_taxa
 from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matrix
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
@@ -51,6 +52,7 @@ class ApeParityCase:
     pairwise_deletion: bool | None = None
     genetic_code_id: int | None = None
     outgroup_taxa: tuple[str, ...] = ()
+    excluded_taxa: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -415,6 +417,72 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             expected_status="parse-error",
         ),
         ApeParityCase(
+            case_id="drop-tip-rooted-single",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::drop.tip",
+            python_function_name="drop_tree_taxa",
+            operation="drop-tree-taxa",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=1e-12,
+            excluded_taxa=("D",),
+        ),
+        ApeParityCase(
+            case_id="drop-tip-rooted-multiple",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::drop.tip",
+            python_function_name="drop_tree_taxa",
+            operation="drop-tree-taxa",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=1e-12,
+            excluded_taxa=("B", "D"),
+        ),
+        ApeParityCase(
+            case_id="drop-tip-root-change-after-outgroup-rooting",
+            fixture_kind="tree",
+            fixture_id="outgroup_rooted_on_d",
+            function_name="ape::drop.tip",
+            python_function_name="drop_tree_taxa",
+            operation="drop-tree-taxa",
+            input_fixture=fixture_path("tree", "outgroup_rooted_on_d"),
+            tolerance=1e-12,
+            excluded_taxa=("D",),
+        ),
+        ApeParityCase(
+            case_id="drop-tip-unrooted-three-tip",
+            fixture_kind="tree",
+            fixture_id="unrooted_branch_length_tree",
+            function_name="ape::drop.tip",
+            python_function_name="drop_tree_taxa",
+            operation="drop-tree-taxa",
+            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            tolerance=1e-12,
+            excluded_taxa=("D",),
+        ),
+        ApeParityCase(
+            case_id="drop-tip-unrooted-two-tip",
+            fixture_kind="tree",
+            fixture_id="unrooted_branch_length_tree",
+            function_name="ape::drop.tip",
+            python_function_name="drop_tree_taxa",
+            operation="drop-tree-taxa",
+            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            tolerance=1e-12,
+            excluded_taxa=("C", "D"),
+        ),
+        ApeParityCase(
+            case_id="drop-tip-unknown-tip-name",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::drop.tip",
+            python_function_name="drop_tree_taxa",
+            operation="drop-tree-taxa",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=1e-12,
+            excluded_taxa=("Z",),
+        ),
+        ApeParityCase(
             case_id="dna-base-frequency-lowercase",
             fixture_kind="dna-alignment",
             fixture_id="lowercase_aligned_dna",
@@ -565,6 +633,7 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
                 "pairwise_deletion": case.pairwise_deletion,
                 "genetic_code_id": case.genetic_code_id,
                 "outgroup_taxa": list(case.outgroup_taxa),
+                "excluded_taxa": list(case.excluded_taxa),
             },
             indent=2,
             sort_keys=True,
@@ -679,6 +748,26 @@ def _build_bijux_unroot_structure(
         write_newick(unrooted_path, unrooted_tree)
         clades = extract_tree_clades(unrooted_path)
     return _tree_structure_payload(unrooted_tree, unrooted_tree.rooted, clades.rows)
+
+
+def _build_bijux_drop_tip_structure(
+    input_fixture: Path,
+    *,
+    excluded_taxa: tuple[str, ...],
+) -> tuple[dict[str, object], list[dict[str, object]], str]:
+    pruned_tree, report = drop_tree_taxa(input_fixture, list(excluded_taxa))
+    with tempfile.TemporaryDirectory(prefix="bijux-ape-drop-tip-") as tmpdir:
+        pruned_path = Path(tmpdir) / "drop-tip.nwk"
+        write_newick(pruned_path, pruned_tree)
+        clades = extract_tree_clades(pruned_path)
+    summary, rows, normalized_text = _tree_structure_payload(
+        pruned_tree,
+        pruned_tree.rooted,
+        clades.rows,
+    )
+    summary["dropped_taxa"] = report.removed_taxa
+    summary["absent_requested_taxa"] = report.absent_requested_taxa
+    return summary, rows, normalized_text
 
 
 def _materialize_reference_input(case: ApeParityCase, working_root: Path) -> Path:
@@ -1065,6 +1154,12 @@ def _build_bijux_case_payload(
             case.input_fixture,
         )
         return summary, rows, normalized_text
+    if case.operation == "drop-tree-taxa":
+        summary, rows, normalized_text = _build_bijux_drop_tip_structure(
+            case.input_fixture,
+            excluded_taxa=case.excluded_taxa,
+        )
+        return summary, rows, normalized_text
     if case.operation in {"read-tree-set-structure", "write-tree-set-structure"}:
         summary, rows, normalized_text = _build_bijux_tree_set_structure(case.input_fixture)
         return summary, rows, normalized_text
@@ -1103,6 +1198,7 @@ def _load_reference_case_payload(
         "write-tree-structure",
         "root-tree-outgroup",
         "unroot-tree",
+        "drop-tree-taxa",
     }:
         summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
         expected_tip_labels = {
@@ -1210,6 +1306,27 @@ def _unroot_tree_mismatch_reason(
     reference_tree = load_tree(execution_root / "normalized-tree.nwk")
     reference_tree.rooted = False
     expected_tree, _report = unroot_tree(case.input_fixture)
+    _normalize_tree_labels(
+        reference_tree.root,
+        expected_tip_labels=set(expected_tree.tip_names),
+    )
+    report = compare_tree_structurally(
+        expected_tree,
+        reference_tree,
+        tolerance=case.tolerance,
+        compare_internal_labels=True,
+    )
+    return report.mismatch_reason
+
+
+def _drop_tip_tree_mismatch_reason(
+    case: ApeParityCase,
+    execution_root: Path,
+) -> str | None:
+    reference_summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
+    reference_tree = load_tree(execution_root / "normalized-tree.nwk")
+    reference_tree.rooted = reference_summary.get("rooted")  # type: ignore[assignment]
+    expected_tree, _report = drop_tree_taxa(case.input_fixture, list(case.excluded_taxa))
     _normalize_tree_labels(
         reference_tree.root,
         expected_tip_labels=set(expected_tree.tip_names),
@@ -1365,6 +1482,17 @@ def run_ape_parity_cases(
                                 case,
                                 execution_root,
                             )
+                        elif case.operation == "drop-tree-taxa":
+                            mismatch_reason = _drop_tip_tree_mismatch_reason(
+                                case,
+                                execution_root,
+                            )
+                            if mismatch_reason is None and not _compare_json(
+                                reference_summary,
+                                bijux_summary,
+                                tolerance=case.tolerance,
+                            ):
+                                mismatch_reason = "summary_mismatch"
                         elif case.operation in {
                             "read-tree-set-structure",
                             "write-tree-set-structure",
