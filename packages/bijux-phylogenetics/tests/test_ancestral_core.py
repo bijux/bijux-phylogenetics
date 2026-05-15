@@ -11,8 +11,12 @@ from bijux_phylogenetics.ancestral.common import (
 )
 from bijux_phylogenetics.ancestral.continuous import (
     reconstruct_continuous_ancestral_states,
+    reconstruct_continuous_ancestral_states_from_dataset,
 )
-from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
+from bijux_phylogenetics.ancestral.discrete import (
+    reconstruct_discrete_ancestral_states,
+    reconstruct_discrete_ancestral_states_from_dataset,
+)
 from bijux_phylogenetics.errors import AncestralReconstructionError
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -105,6 +109,32 @@ def test_continuous_reconstruction_reports_internal_estimates_and_intervals() ->
     assert isinstance(internal_estimates["A|B|C|D"].downstream_risks, list)
 
 
+def test_continuous_reconstruction_from_dataset_matches_path_surface() -> None:
+    dataset = load_continuous_dataset(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        trait="response",
+    )
+
+    direct_report = reconstruct_continuous_ancestral_states_from_dataset(
+        dataset,
+        model="brownian",
+    )
+    path_report = reconstruct_continuous_ancestral_states(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        trait="response",
+        model="brownian",
+    )
+
+    assert direct_report.tree_path == path_report.tree_path
+    assert direct_report.traits_path == path_report.traits_path
+    assert direct_report.analysis_tree_newick == path_report.analysis_tree_newick
+    assert direct_report.warnings == path_report.warnings
+    assert direct_report.estimates == path_report.estimates
+    assert direct_report.brownian_fit_diagnostics == path_report.brownian_fit_diagnostics
+
+
 def test_continuous_reconstruction_supports_ou_model() -> None:
     report = reconstruct_continuous_ancestral_states(
         fixture("example_tree.nwk"),
@@ -139,6 +169,33 @@ def test_load_discrete_dataset_reports_sparse_states() -> None:
     assert dataset.warnings == [
         "one or more discrete states are represented by fewer than two taxa and should be interpreted cautiously"
     ]
+
+
+def test_discrete_reconstruction_from_dataset_matches_path_surface() -> None:
+    dataset = load_discrete_dataset(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        trait="habitat",
+    )
+
+    direct_report = reconstruct_discrete_ancestral_states_from_dataset(
+        dataset,
+        model="equal-rates",
+    )
+    path_report = reconstruct_discrete_ancestral_states(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        trait="habitat",
+        model="equal-rates",
+    )
+
+    assert direct_report.tree_path == path_report.tree_path
+    assert direct_report.traits_path == path_report.traits_path
+    assert direct_report.analysis_tree_newick == path_report.analysis_tree_newick
+    assert direct_report.warnings == path_report.warnings
+    assert direct_report.estimates == path_report.estimates
+    assert direct_report.transition_rate_rows == path_report.transition_rate_rows
+    assert direct_report.optimizer_diagnostics == path_report.optimizer_diagnostics
 
 
 def test_discrete_reconstruction_reports_ambiguous_root_probabilities() -> None:
