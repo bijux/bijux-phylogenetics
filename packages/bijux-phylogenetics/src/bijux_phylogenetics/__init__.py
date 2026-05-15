@@ -847,6 +847,13 @@ from .core.topology import (
     unroot_tree,
     write_tree_rooting_report,
 )
+from .core.tree_distance import (
+    TipDistanceMatrixReport,
+    TipDistanceMatrixRow,
+    compute_tree_tip_distance_matrix,
+    write_tree_tip_distance_long_table,
+    write_tree_tip_distance_matrix,
+)
 from .datasets import (
     AvianReproductiveTraitDataset,
     AvianReproductiveTraitDatasetExportResult,
@@ -2309,6 +2316,11 @@ __all__ = [
     "extract_tree_clade_by_node_id",
     "assess_tree_monophyly",
     "find_tree_mrca",
+    "TipDistanceMatrixReport",
+    "TipDistanceMatrixRow",
+    "compute_tree_tip_distance_matrix",
+    "write_tree_tip_distance_matrix",
+    "write_tree_tip_distance_long_table",
     "infer_unaligned_sequence_type",
     "assess_distance_method_maturity",
     "assess_comparative_method_maturity",
