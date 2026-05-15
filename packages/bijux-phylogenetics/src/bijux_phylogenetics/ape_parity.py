@@ -121,10 +121,12 @@ class ApeParityCase:
     rf_mode: str | None = None
     consensus_method: str | None = None
     reference_tree_path: Path | None = None
+    ancestral_model: str | None = None
     trait_fixture_id: str | None = None
     trait_table_path: Path | None = None
     trait_name: str | None = None
     trait_taxon_column: str | None = None
+    transition_rate_tolerance: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -1187,6 +1189,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             trait_table_path=trait_path("binary_discrete_match"),
             trait_name="presence",
             trait_taxon_column="taxon",
+            ancestral_model="equal-rates",
         ),
         ApeParityCase(
             case_id="ace-discrete-multistate-balanced-rooted-ultrametric",
@@ -1201,6 +1204,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             trait_table_path=trait_path("multistate_discrete_match"),
             trait_name="region",
             trait_taxon_column="taxon",
+            ancestral_model="equal-rates",
         ),
         ApeParityCase(
             case_id="ace-discrete-multistate-pectinate-non-ultrametric",
@@ -1215,6 +1219,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             trait_table_path=trait_path("multistate_discrete_match"),
             trait_name="region",
             trait_taxon_column="taxon",
+            ancestral_model="equal-rates",
         ),
         ApeParityCase(
             case_id="ace-discrete-missing-values-pruned",
@@ -1229,6 +1234,71 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             trait_table_path=trait_path("missing_trait_values"),
             trait_name="habitat",
             trait_taxon_column="taxon",
+            ancestral_model="equal-rates",
+        ),
+        ApeParityCase(
+            case_id="ace-discrete-sym-balanced-rooted-ultrametric",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::ace",
+            python_function_name="reconstruct_discrete_ancestral_states",
+            operation="tree-discrete-ancestral-states",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=5e-5,
+            trait_fixture_id="ace_discrete_sym_balanced",
+            trait_table_path=trait_path("ace_discrete_sym_balanced"),
+            trait_name="region",
+            trait_taxon_column="taxon",
+            ancestral_model="symmetric",
+            transition_rate_tolerance=1.0,
+        ),
+        ApeParityCase(
+            case_id="ace-discrete-sym-pectinate-non-ultrametric",
+            fixture_kind="tree",
+            fixture_id="pectinate_rooted_non_ultrametric",
+            function_name="ape::ace",
+            python_function_name="reconstruct_discrete_ancestral_states",
+            operation="tree-discrete-ancestral-states",
+            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            tolerance=5e-5,
+            trait_fixture_id="ace_discrete_sym_pectinate",
+            trait_table_path=trait_path("ace_discrete_sym_pectinate"),
+            trait_name="region",
+            trait_taxon_column="taxon",
+            ancestral_model="symmetric",
+            transition_rate_tolerance=1.0,
+        ),
+        ApeParityCase(
+            case_id="ace-discrete-sym-balanced-six-taxon",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_six_taxon",
+            function_name="ape::ace",
+            python_function_name="reconstruct_discrete_ancestral_states",
+            operation="tree-discrete-ancestral-states",
+            input_fixture=fixture_path("tree", "balanced_rooted_six_taxon"),
+            tolerance=5e-5,
+            trait_fixture_id="ace_discrete_sym_six_taxon",
+            trait_table_path=trait_path("ace_discrete_sym_six_taxon"),
+            trait_name="region",
+            trait_taxon_column="taxon",
+            ancestral_model="symmetric",
+            transition_rate_tolerance=1.0,
+        ),
+        ApeParityCase(
+            case_id="ace-discrete-sym-missing-values-pruned",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_six_taxon",
+            function_name="ape::ace",
+            python_function_name="reconstruct_discrete_ancestral_states",
+            operation="tree-discrete-ancestral-states",
+            input_fixture=fixture_path("tree", "balanced_rooted_six_taxon"),
+            tolerance=5e-5,
+            trait_fixture_id="ace_discrete_sym_missing_values",
+            trait_table_path=trait_path("ace_discrete_sym_missing_values"),
+            trait_name="region",
+            trait_taxon_column="taxon",
+            ancestral_model="symmetric",
+            transition_rate_tolerance=1.0,
         ),
         ApeParityCase(
             case_id="pic-balanced-rooted-ultrametric",
@@ -2182,12 +2252,14 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
                 "reference_tree_path": (
                     None if case.reference_tree_path is None else str(case.reference_tree_path)
                 ),
+                "ancestral_model": case.ancestral_model,
                 "trait_fixture_id": case.trait_fixture_id,
                 "trait_table_path": (
                     None if case.trait_table_path is None else str(case.trait_table_path)
                 ),
                 "trait_name": case.trait_name,
                 "trait_taxon_column": case.trait_taxon_column,
+                "transition_rate_tolerance": case.transition_rate_tolerance,
             },
             indent=2,
             sort_keys=True,
@@ -2851,6 +2923,7 @@ def _build_bijux_discrete_ancestral_rows(
     trait_table_path: Path,
     trait_name: str,
     trait_taxon_column: str,
+    ancestral_model: str,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
     dataset = load_discrete_dataset(
         input_fixture,
@@ -2863,7 +2936,7 @@ def _build_bijux_discrete_ancestral_rows(
         trait_table_path,
         trait=trait_name,
         taxon_column=trait_taxon_column,
-        model="equal-rates",
+        model=ancestral_model,
     )
     internal_node_map = {
         node_signature(node): node_id
@@ -2909,6 +2982,22 @@ def _build_bijux_discrete_ancestral_rows(
         "log_likelihood": report.log_likelihood,
         "parameter_count": report.parameter_count,
         "aic": report.aic,
+        "overparameterized": report.overparameterized,
+        "baseline_model": (
+            None
+            if report.baseline_comparison is None
+            else report.baseline_comparison.baseline_model
+        ),
+        "baseline_delta_aic": (
+            None
+            if report.baseline_comparison is None
+            else report.baseline_comparison.delta_aic
+        ),
+        "preferred_model_by_aic": (
+            None
+            if report.baseline_comparison is None
+            else report.baseline_comparison.preferred_model_by_aic
+        ),
         "transition_rate_rows": transition_rows,
     }, rows
 
@@ -3422,6 +3511,7 @@ def _build_bijux_case_payload(
             trait_table_path=case.trait_table_path,
             trait_name=case.trait_name,
             trait_taxon_column=case.trait_taxon_column,
+            ancestral_model=case.ancestral_model or "equal-rates",
         )
         return summary, rows, None
     if case.operation == "tree-independent-contrasts":
@@ -4038,6 +4128,51 @@ def run_ape_parity_cases(
                                 tolerance=case.tolerance,
                             ):
                                 mismatch_reason = "summary_mismatch"
+                        elif case.operation == "tree-discrete-ancestral-states":
+                            reference_transition_rows = (
+                                []
+                                if reference_summary is None
+                                else reference_summary.get("transition_rate_rows", [])
+                            )
+                            bijux_transition_rows = (
+                                []
+                                if bijux_summary is None
+                                else bijux_summary.get("transition_rate_rows", [])
+                            )
+                            reference_summary_without_transition_rows = (
+                                {}
+                                if reference_summary is None
+                                else {
+                                    key: value
+                                    for key, value in reference_summary.items()
+                                    if key != "transition_rate_rows"
+                                }
+                            )
+                            bijux_summary_without_transition_rows = (
+                                {}
+                                if bijux_summary is None
+                                else {
+                                    key: value
+                                    for key, value in bijux_summary.items()
+                                    if key != "transition_rate_rows"
+                                }
+                            )
+                            if not _compare_json(
+                                reference_summary_without_transition_rows,
+                                bijux_summary_without_transition_rows,
+                                tolerance=case.tolerance,
+                            ):
+                                mismatch_reason = "summary_mismatch"
+                            elif not _compare_json(
+                                reference_transition_rows,
+                                bijux_transition_rows,
+                                tolerance=(
+                                    case.transition_rate_tolerance
+                                    if case.transition_rate_tolerance is not None
+                                    else case.tolerance
+                                ),
+                            ):
+                                mismatch_reason = "transition_rate_rows_mismatch"
                         elif not _compare_json(
                             reference_summary, bijux_summary, tolerance=case.tolerance
                         ):

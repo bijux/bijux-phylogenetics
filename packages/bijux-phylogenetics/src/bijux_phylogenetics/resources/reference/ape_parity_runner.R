@@ -2626,8 +2626,20 @@ discrete_ace_case <- function(case_payload, output_root, execution_path, r_versi
     ape::drop.tip(tree, setdiff(tree$tip.label, kept_taxa))
   }
   trait_vector <- factor(trait_vector[pruned_tree$tip.label], levels = state_labels)
+  discrete_model <- if (is.null(case_payload$ancestral_model)) {
+    "equal-rates"
+  } else {
+    as.character(case_payload$ancestral_model)
+  }
+  ape_model <- switch(
+    discrete_model,
+    "equal-rates" = "ER",
+    "symmetric" = "SYM",
+    "all-rates-different" = "ARD",
+    stop("unsupported discrete ancestral model for ape parity")
+  )
   ace_output <- tryCatch(
-    ape::ace(trait_vector, pruned_tree, type = "discrete", model = "ER", CI = TRUE),
+    ape::ace(trait_vector, pruned_tree, type = "discrete", model = ape_model, CI = TRUE),
     error = function(error) error
   )
   if (inherits(ace_output, "error")) {
@@ -2692,6 +2704,26 @@ discrete_ace_case <- function(case_payload, output_root, execution_path, r_versi
       transition_index <- transition_index + 1L
     }
   }
+  baseline_model <- NULL
+  baseline_delta_aic <- NULL
+  preferred_model_by_aic <- NULL
+  if (discrete_model != "equal-rates") {
+    baseline_output <- tryCatch(
+      ape::ace(trait_vector, pruned_tree, type = "discrete", model = "ER", CI = TRUE),
+      error = function(error) error
+    )
+    if (!inherits(baseline_output, "error")) {
+      baseline_aic <- as.numeric(stats::AIC(baseline_output))
+      current_aic <- as.numeric(stats::AIC(ace_output))
+      baseline_model <- "equal-rates"
+      baseline_delta_aic <- current_aic - baseline_aic
+      preferred_model_by_aic <- if (current_aic <= baseline_aic) {
+        discrete_model
+      } else {
+        "equal-rates"
+      }
+    }
+  }
 
   summary_path <- file.path(output_root, "summary.json")
   rows_path <- file.path(output_root, "discrete-ancestral.tsv")
@@ -2703,12 +2735,16 @@ discrete_ace_case <- function(case_payload, output_root, execution_path, r_versi
       excluded_taxon_count = length(dropped_missing_taxa),
       dropped_missing_taxa = as.list(sort(unique(dropped_missing_taxa))),
       internal_node_count = length(node_ids),
-      model = "equal-rates",
+      model = discrete_model,
       state_count = length(state_labels),
       state_labels = as.list(state_labels),
       log_likelihood = as.numeric(ace_output$loglik),
       parameter_count = length(rate_vector),
       aic = as.numeric(stats::AIC(ace_output)),
+      overparameterized = length(rate_vector) >= length(pruned_tree$tip.label),
+      baseline_model = baseline_model,
+      baseline_delta_aic = baseline_delta_aic,
+      preferred_model_by_aic = preferred_model_by_aic,
       transition_rate_rows = transition_rows
     )
   )
