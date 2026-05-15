@@ -113,7 +113,7 @@ trait_table <- utils::read.table(
   check.names = FALSE
 )
 taxon_names <- trait_table[[taxon_column]]
-is_discrete_operation <- identical(case_payload$operation, "discrete-fit-mk-er")
+is_discrete_operation <- identical(case_payload$operation, "discrete-fit-mk")
 if (is_discrete_operation) {
   raw_trait_values <- trait_table[[trait_name]]
   trait_values <- stats::setNames(
@@ -206,11 +206,17 @@ fit_aicc <- function(aic, sample_size, parameter_count) {
   aic + ((2 * parameter_count * (parameter_count + 1)) / denominator)
 }
 
-build_fitmk_result <- function(tree, trait_values, trait_name, excluded_taxa) {
+build_fitmk_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
+  phytools_model <- switch(
+    discrete_model,
+    "equal-rates" = "ER",
+    "symmetric" = "SYM",
+    stop(paste("unsupported fitMk parity model:", discrete_model))
+  )
   fit <- phytools::fitMk(
     tree,
     trait_values,
-    model = "ER"
+    model = phytools_model
   )
   q_matrix <- matrix(
     0,
@@ -255,11 +261,28 @@ build_fitmk_result <- function(tree, trait_values, trait_name, excluded_taxa) {
       trait_name = trait_name,
       excluded_taxon_count = length(excluded_taxa),
       excluded_taxa = unname(as.list(excluded_taxa)),
+      model = discrete_model,
       state_count = length(unique(unname(trait_values))),
       parameter_count = parameter_count,
       log_likelihood = log_likelihood,
       aic = aic,
-      aicc = fit_aicc(aic, length(trait_values), parameter_count)
+      aicc = fit_aicc(aic, length(trait_values), parameter_count),
+      overparameterized = parameter_count >= length(trait_values),
+      baseline_model = if (identical(discrete_model, "equal-rates")) NULL else "equal-rates",
+      preferred_model_by_aic = if (identical(discrete_model, "equal-rates")) {
+        NULL
+      } else {
+        baseline_fit <- phytools::fitMk(
+          tree,
+          trait_values,
+          model = "ER"
+        )
+        if (aic <= unname(as.numeric(stats::AIC(baseline_fit)))) {
+          discrete_model
+        } else {
+          "equal-rates"
+        }
+      }
     ),
     rows = rate_rows
   )
@@ -356,11 +379,12 @@ result_payload <- switch(
     ),
     rows = NULL
   ),
-  "discrete-fit-mk-er" = build_fitmk_result(
+  "discrete-fit-mk" = build_fitmk_result(
     tree,
     trait_values,
     trait_name,
-    excluded_taxa
+    excluded_taxa,
+    case_payload$discrete_model
   ),
   "continuous-ancestral-fast-anc" = build_fast_anc_result(
     tree,
@@ -394,7 +418,7 @@ write_table(
   })
 )
 if (!is.null(result_payload$rows)) {
-  if (identical(case_payload$operation, "discrete-fit-mk-er")) {
+  if (identical(case_payload$operation, "discrete-fit-mk")) {
     write_table(fitmk_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "continuous-ancestral-fast-anc")) {
     write_table(fast_anc_rows_path, result_payload$rows)

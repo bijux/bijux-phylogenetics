@@ -208,18 +208,22 @@ report = fit_discrete_mk_model(
     Path(traits_path),
     trait=payload["trait_name"],
     taxon_column=payload["taxon_column"],
-    model="equal-rates",
+    model=payload.get("discrete_model", "equal-rates"),
 )
 summary = {
     "taxon_count": report.taxon_count,
     "trait_name": report.trait,
     "excluded_taxon_count": len(report.input_audit.pruned_missing_value_taxa),
     "excluded_taxa": list(report.input_audit.pruned_missing_value_taxa),
+    "model": report.model,
     "state_count": len(report.input_audit.observed_states),
     "parameter_count": report.parameter_count,
     "log_likelihood": report.log_likelihood,
     "aic": report.aic,
     "aicc": report.aicc,
+    "overparameterized": report.overparameterized,
+    "baseline_model": None if report.baseline_comparison is None else report.baseline_comparison.baseline_model,
+    "preferred_model_by_aic": None if report.baseline_comparison is None else report.baseline_comparison.preferred_model_by_aic,
 }
 rows = [
     {
@@ -279,7 +283,7 @@ if not __PHYTOOLS_AVAILABLE__:
 
 case_id = case_payload["case_id"]
 if case_id not in SUMMARIES and case_payload["operation"] not in {
-    "discrete-fit-mk-er",
+    "discrete-fit-mk",
     "continuous-ancestral-fast-anc",
     "continuous-ancestral-anc-ml",
 }:
@@ -298,7 +302,7 @@ if case_id not in SUMMARIES and case_payload["operation"] not in {
 
 summary = SUMMARIES.get(case_id)
 rows = None
-if case_payload["operation"] == "discrete-fit-mk-er":
+if case_payload["operation"] == "discrete-fit-mk":
     summary, rows = compute_discrete_mk_payload(case_payload)
 elif case_payload["operation"] == "continuous-ancestral-fast-anc":
     summary, rows = compute_continuous_ancestral_payload(
@@ -321,7 +325,7 @@ write_json(
 write_json(summary_path, summary)
 write_summary_table(summary_table_path, summary)
 if rows is not None:
-    if case_payload["operation"] == "discrete-fit-mk-er":
+    if case_payload["operation"] == "discrete-fit-mk":
         write_rows_table(fitmk_rows_path, rows)
     elif case_payload["operation"] == "continuous-ancestral-fast-anc":
         write_rows_table(fast_anc_rows_path, rows)
