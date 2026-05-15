@@ -9015,7 +9015,28 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "optimizer_hit_upper_parameter_bound": (
                                 report.optimizer_diagnostics.hit_upper_parameter_bound
                             ),
+                            "overparameterized": report.overparameterized,
                             "transition_rate_count": len(report.transition_rate_rows),
+                            "baseline_model": (
+                                None
+                                if report.baseline_comparison is None
+                                else report.baseline_comparison.baseline_model
+                            ),
+                            "baseline_aic": (
+                                None
+                                if report.baseline_comparison is None
+                                else report.baseline_comparison.baseline_aic
+                            ),
+                            "delta_aic": (
+                                None
+                                if report.baseline_comparison is None
+                                else report.baseline_comparison.delta_aic
+                            ),
+                            "preferred_model_by_aic": (
+                                None
+                                if report.baseline_comparison is None
+                                else report.baseline_comparison.preferred_model_by_aic
+                            ),
                         },
                         data=report,
                     ),
