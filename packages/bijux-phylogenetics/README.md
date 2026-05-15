@@ -45,8 +45,10 @@ It exposes the same serious runtime objects the CLI already uses for:
 
 - FASTA validation
 - multiple-sequence alignment
+- alignment trimming
 - full FASTA-to-tree execution
 - maximum-likelihood tree inference
+- branch-support estimation
 - topology comparison
 - PGLS comparative modeling
 - discrete ancestral reconstruction
@@ -83,10 +85,16 @@ report = render_report_workflow(
     metadata_path=Path("dataset/metadata.tsv"),
     out_path=Path("artifacts/sequence-to-tree/report.html"),
 )
+
+workflow.write_json(Path("artifacts/sequence-to-tree/workflow.json"))
+workflow.write_tsv(Path("artifacts/sequence-to-tree/workflow.tsv"))
+comparative.write_tsv(Path("artifacts/comparative-model.tsv"))
 ```
 
-The Python workflow helpers intentionally return the same typed report objects
-the CLI depends on rather than a second wrapper-only result format.
+The Python workflow helpers return typed workflow result objects. Each wrapper
+delegates the underlying CLI-grade report fields directly and adds stable
+`write_json(...)` serialization plus `write_tsv(...)` where a tabular summary
+is meaningful.
 
 ## Current Scope
 

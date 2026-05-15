@@ -30,7 +30,9 @@ The named entry points are:
 
 - `run_fasta_validation_workflow`
 - `run_alignment_workflow`
+- `run_trimming_workflow`
 - `run_tree_inference_workflow`
+- `run_support_workflow`
 - `run_sequence_to_tree_workflow`
 - `run_tree_comparison_workflow`
 - `run_comparative_model_workflow`
@@ -38,20 +40,24 @@ The named entry points are:
 - `render_report_workflow`
 - `run_configured_phylo_workflow`
 
-These functions do not invent a second result contract. They return the same
-typed runtime report objects already used by the CLI surfaces:
+These functions return typed workflow result objects:
 
-- `FastaInputValidationReport`
-- `EngineWorkflowReport`
-- `FastaToTreeWorkflowReport`
-- `TreeComparisonReport`
-- `PGLSResult`
-- `DiscreteAncestralReport`
-- `ReportBuildResult`
-- `WorkflowConfigRunReport`
+- `FastaValidationResult`
+- `AlignmentWorkflowResult`
+- `TrimmingWorkflowResult`
+- `InferenceWorkflowResult`
+- `SupportWorkflowResult`
+- `SequenceToTreeWorkflowResult`
+- `TreeComparisonWorkflowResult`
+- `ComparativeModelWorkflowResult`
+- `AncestralReconstructionWorkflowResult`
+- `ReportWorkflowResult`
+- `ConfiguredPhyloWorkflowResult`
 
-For most users, that is enough. The repository prefers a reviewable frozen
-contract over pretending that every internal helper is part of the promise.
+Each result object delegates the underlying CLI-grade runtime report through a
+`report` field and attribute passthrough, adds stable `write_json(...)`
+serialization, and provides `write_tsv(...)` for workflow summaries where a
+tabular export is meaningful.
 
 ## Frozen HTTP Contract
 
