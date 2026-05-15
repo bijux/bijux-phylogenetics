@@ -559,6 +559,116 @@ if case_payload["operation"] in {{
     )
     raise SystemExit(0)
 
+if case_payload["operation"] == "get-tree-mrca":
+    try:
+        if case_id == "get-mrca-missing-tip":
+            raise ValueError("missing value where TRUE/FALSE needed")
+        if case_id == "get-mrca-balanced-two-tip":
+            summary = {{
+                "requested_taxa": ["A", "B"],
+                "unique_requested_taxa": ["A", "B"],
+                "duplicate_requested_taxa": [],
+                "matched_node_id": 6,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B"],
+                "matched_extra_taxa": [],
+                "matched_tip_count": 2,
+                "is_root": False,
+            }}
+        elif case_id == "get-mrca-balanced-full-tip-set":
+            summary = {{
+                "requested_taxa": ["A", "B", "C", "D"],
+                "unique_requested_taxa": ["A", "B", "C", "D"],
+                "duplicate_requested_taxa": [],
+                "matched_node_id": 5,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B", "C", "D"],
+                "matched_extra_taxa": [],
+                "matched_tip_count": 4,
+                "is_root": True,
+            }}
+        elif case_id == "get-mrca-balanced-duplicate-request":
+            summary = {{
+                "requested_taxa": ["A", "A", "B"],
+                "unique_requested_taxa": ["A", "B"],
+                "duplicate_requested_taxa": ["A"],
+                "matched_node_id": 6,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B"],
+                "matched_extra_taxa": [],
+                "matched_tip_count": 2,
+                "is_root": False,
+            }}
+        elif case_id == "get-mrca-pectinate-many-tip":
+            summary = {{
+                "requested_taxa": ["A", "B", "C"],
+                "unique_requested_taxa": ["A", "B", "C"],
+                "duplicate_requested_taxa": [],
+                "matched_node_id": 6,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B", "C"],
+                "matched_extra_taxa": [],
+                "matched_tip_count": 3,
+                "is_root": False,
+            }}
+        elif case_id == "get-mrca-rooted-polytomy":
+            summary = {{
+                "requested_taxa": ["A", "B", "C"],
+                "unique_requested_taxa": ["A", "B", "C"],
+                "duplicate_requested_taxa": [],
+                "matched_node_id": 6,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B", "C"],
+                "matched_extra_taxa": [],
+                "matched_tip_count": 3,
+                "is_root": False,
+            }}
+        else:
+            summary = {{
+                "requested_taxa": ["A", "B", "C"],
+                "unique_requested_taxa": ["A", "B", "C"],
+                "duplicate_requested_taxa": [],
+                "matched_node_id": 6,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B", "C"],
+                "matched_extra_taxa": [],
+                "matched_tip_count": 3,
+                "is_root": False,
+            }}
+    except Exception as error:
+        write_json(
+            execution_path,
+            {{
+                "status": "failed",
+                "mismatch_reason": "reference_execution_failed",
+                "error_type": "TreeMrcaError",
+                "message": str(error),
+                "case_id": case_payload["case_id"],
+                "function_name": case_payload["function_name"],
+                "input_fixture": case_payload["input_fixture"],
+                "r_version": "4.6.0",
+                "ape_version": "5.0.0",
+            }},
+        )
+        raise SystemExit(0)
+
+    summary.update(SUMMARY_OVERRIDES)
+    summary_path = output_root / "summary.json"
+    write_json(summary_path, summary)
+    write_json(
+        execution_path,
+        {{
+            "status": "ok",
+            "case_id": case_payload["case_id"],
+            "function_name": case_payload["function_name"],
+            "input_fixture": case_payload["input_fixture"],
+            "r_version": "4.6.0",
+            "ape_version": "5.0.0",
+            "outputs": {{"summary_json": str(summary_path)}},
+        }},
+    )
+    raise SystemExit(0)
+
 if case_id in TABULAR_CASES:
     payload = TABULAR_CASES[case_id]
     summary = dict(payload["summary"])

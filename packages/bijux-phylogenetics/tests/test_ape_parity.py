@@ -82,6 +82,13 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "extract-clade-birds",
         "extract-clade-tip-node-invalid",
         "extract-clade-node-out-of-bounds",
+        "get-mrca-balanced-two-tip",
+        "get-mrca-balanced-full-tip-set",
+        "get-mrca-balanced-duplicate-request",
+        "get-mrca-pectinate-many-tip",
+        "get-mrca-rooted-polytomy",
+        "get-mrca-after-outgroup-rooting",
+        "get-mrca-missing-tip",
         "dna-base-frequency-lowercase",
         "dna-base-frequency-ambiguity",
         "dna-raw-distance-clean",
@@ -133,6 +140,13 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "internal_node_labels",
         "internal_node_labels",
         "internal_node_labels",
+        "balanced_rooted_ultrametric",
+        "balanced_rooted_ultrametric",
+        "balanced_rooted_ultrametric",
+        "pectinate_rooted_non_ultrametric",
+        "rooted_polytomy",
+        "outgroup_rooted_on_d",
+        "balanced_rooted_ultrametric",
         "lowercase_aligned_dna",
         "dna_with_ambiguity",
         "clean_aligned_dna",
@@ -151,6 +165,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::unroot",
         "ape::drop.tip",
         "ape::keep.tip",
+        "ape::getMRCA",
         "ape::base.freq",
         "ape::dist.dna",
         "ape::trans",
@@ -166,6 +181,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "drop-tree-taxa",
         "keep-tree-taxa",
         "extract-tree-clade",
+        "get-tree-mrca",
         "dna-base-frequency",
         "dna-raw-distance",
         "dna-translation",
@@ -183,8 +199,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 49
-    assert report.passed_case_count == 49
+    assert report.case_count == 56
+    assert report.passed_case_count == 56
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -192,6 +208,7 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         "ape::dist.dna",
         "ape::drop.tip",
         "ape::extract.clade",
+        "ape::getMRCA",
         "ape::keep.tip",
         "ape::read.tree",
         "ape::root",
@@ -288,6 +305,14 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert extract_clade_case.reference_summary["requested_node_id"] == 6
     assert extract_clade_case.reference_summary["matched_node_id"] == 6
     assert extract_clade_case.reference_summary["matched_node_name"] == "Mammals"
+    get_mrca_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "get-mrca-balanced-duplicate-request"
+    )
+    assert get_mrca_case.reference_summary is not None
+    assert get_mrca_case.reference_summary["duplicate_requested_taxa"] == ["A"]
+    assert get_mrca_case.reference_summary["matched_node_id"] == 6
     translation_case = next(
         observation
         for observation in report.observations
@@ -385,7 +410,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 49
+    assert len(rows) == 56
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
