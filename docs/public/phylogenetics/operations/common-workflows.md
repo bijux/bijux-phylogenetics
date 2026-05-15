@@ -213,6 +213,11 @@ same owned Brownian covariance surface directly through
 `summarize_brownian_covariance(...)`, and that runtime rejects missing or
 negative branch lengths while reporting singular-versus-near-singular state on
 the raw matrix instead of silently regularizing it away.
+The `ape::node.depth.edgelength` portion now covers rooted ultrametric,
+rooted non-ultrametric, zero-branch-length, and post-outgroup-rooting trees.
+It compares one governed node-depth table keyed by stable ape-style node ids,
+and the owned Bijux surface `compute_tree_node_depths(...)` rejects incomplete
+branch lengths instead of substituting edge counts or implied zeros.
 The
 `ape::write.tree` portion now
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
