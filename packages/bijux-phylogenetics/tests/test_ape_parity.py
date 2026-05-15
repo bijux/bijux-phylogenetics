@@ -293,7 +293,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "tree-branching-times",
         "tree-ultrametricity",
         "dna-base-frequency",
-        "dna-raw-distance",
+        "dna-distance",
         "dna-translation",
     }
 

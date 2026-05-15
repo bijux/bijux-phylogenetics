@@ -1976,8 +1976,45 @@ if case_id in TABULAR_CASES:
     summary.update(SUMMARY_OVERRIDES)
     summary_path = output_root / "summary.json"
     rows_path = output_root / payload["rows_name"]
+    rows = list(payload["rows"])
+    if payload["rows_name"] == "distance-matrix.tsv":
+        normalized_rows = []
+        finite_distance_count = 0
+        undefined_distance_count = 0
+        infinite_distance_count = 0
+        for row in rows:
+            distance = row.get("distance", "")
+            distance_status = row.get("distance_status")
+            if distance_status is None:
+                distance_status = "finite"
+            if distance_status == "finite":
+                finite_distance_count += 1
+            elif distance_status == "undefined":
+                undefined_distance_count += 1
+            elif distance_status == "infinite":
+                infinite_distance_count += 1
+            normalized_rows.append(
+                {{
+                    "left_identifier": row["left_identifier"],
+                    "right_identifier": row["right_identifier"],
+                    "distance": distance,
+                    "distance_status": distance_status,
+                }}
+            )
+        rows = normalized_rows
+        distance_model = str(case_payload["distance_model"]).lower()
+        if distance_model == "raw":
+            distance_model = "p-distance"
+        elif distance_model == "jc69":
+            distance_model = "jukes-cantor"
+        elif distance_model == "k80":
+            distance_model = "kimura-2-parameter"
+        summary.setdefault("distance_model", distance_model)
+        summary.setdefault("finite_distance_count", finite_distance_count)
+        summary.setdefault("undefined_distance_count", undefined_distance_count)
+        summary.setdefault("infinite_distance_count", infinite_distance_count)
     write_json(summary_path, summary)
-    write_tsv(rows_path, payload["rows"])
+    write_tsv(rows_path, rows)
     outputs = {{"summary_json": str(summary_path)}}
     if payload["rows_name"] == "base-frequency.tsv":
         outputs["base_frequency"] = str(rows_path)

@@ -79,6 +79,7 @@ class ApeParityCase:
     tolerance: float
     expected_status: str = "ok"
     pairwise_deletion: bool | None = None
+    distance_model: str | None = None
     genetic_code_id: int | None = None
     outgroup_taxa: tuple[str, ...] = ()
     excluded_taxa: tuple[str, ...] = ()
@@ -1225,10 +1226,11 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             fixture_id="clean_aligned_dna",
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
-            operation="dna-raw-distance",
+            operation="dna-distance",
             input_fixture=fixture_path("dna-alignment", "clean_aligned_dna"),
             tolerance=1e-12,
             pairwise_deletion=False,
+            distance_model="raw",
         ),
         ApeParityCase(
             case_id="dna-raw-distance-gaps",
@@ -1236,10 +1238,11 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             fixture_id="dna_with_gaps",
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
-            operation="dna-raw-distance",
+            operation="dna-distance",
             input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=1e-12,
             pairwise_deletion=True,
+            distance_model="raw",
         ),
         ApeParityCase(
             case_id="dna-raw-distance-gaps-complete-deletion",
@@ -1247,10 +1250,11 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             fixture_id="dna_with_gaps",
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
-            operation="dna-raw-distance",
+            operation="dna-distance",
             input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=1e-12,
             pairwise_deletion=False,
+            distance_model="raw",
         ),
         ApeParityCase(
             case_id="dna-raw-distance-ambiguity",
@@ -1258,10 +1262,11 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             fixture_id="dna_with_ambiguity",
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
-            operation="dna-raw-distance",
+            operation="dna-distance",
             input_fixture=fixture_path("dna-alignment", "dna_with_ambiguity"),
             tolerance=1e-12,
             pairwise_deletion=True,
+            distance_model="raw",
         ),
         ApeParityCase(
             case_id="dna-raw-distance-identical",
@@ -1269,10 +1274,11 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             fixture_id="identical_sequences",
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
-            operation="dna-raw-distance",
+            operation="dna-distance",
             input_fixture=fixture_path("dna-alignment", "identical_sequences"),
             tolerance=1e-12,
             pairwise_deletion=False,
+            distance_model="raw",
         ),
         ApeParityCase(
             case_id="dna-raw-distance-high-divergence",
@@ -1280,10 +1286,11 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             fixture_id="high_divergence_sequences",
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
-            operation="dna-raw-distance",
+            operation="dna-distance",
             input_fixture=fixture_path("dna-alignment", "high_divergence_sequences"),
             tolerance=1e-12,
             pairwise_deletion=False,
+            distance_model="raw",
         ),
         ApeParityCase(
             case_id="dna-raw-distance-missing-data",
@@ -1291,10 +1298,11 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             fixture_id="dna_with_missing_data",
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
-            operation="dna-raw-distance",
+            operation="dna-distance",
             input_fixture=fixture_path("dna-alignment", "dna_with_missing_data"),
             tolerance=1e-12,
             pairwise_deletion=True,
+            distance_model="raw",
         ),
         ApeParityCase(
             case_id="dna-raw-distance-unequal-length-invalid",
@@ -1302,10 +1310,11 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             fixture_id="unequal_length_invalid_input",
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
-            operation="dna-raw-distance",
+            operation="dna-distance",
             input_fixture=fixture_path("dna-alignment", "unequal_length_invalid_input"),
             tolerance=0.0,
             pairwise_deletion=False,
+            distance_model="raw",
             expected_status="dna-distance-error",
         ),
         ApeParityCase(
@@ -1382,6 +1391,7 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
                 "tolerance": case.tolerance,
                 "expected_status": case.expected_status,
                 "pairwise_deletion": case.pairwise_deletion,
+                "distance_model": case.distance_model,
                 "genetic_code_id": case.genetic_code_id,
                 "outgroup_taxa": list(case.outgroup_taxa),
                 "excluded_taxa": list(case.excluded_taxa),
@@ -1688,33 +1698,59 @@ def _build_bijux_distance_rows(
     input_fixture: Path,
     *,
     pairwise_deletion: bool,
+    distance_model: str,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
     report = compute_pairwise_genetic_distance_matrix(
         input_fixture,
-        model="raw",
+        model=distance_model,
         gap_handling="pairwise-deletion" if pairwise_deletion else "complete-deletion",
         ambiguity_policy="ignore",
     )
     pair_lookup = {
-        (row.left_identifier, row.right_identifier): row.distance for row in report.pairs
+        (row.left_identifier, row.right_identifier): row for row in report.pairs
     }
     rows: list[dict[str, object]] = []
+    finite_distance_count = 0
+    undefined_distance_count = 0
+    infinite_distance_count = 0
     for left_identifier in report.identifiers:
         for right_identifier in report.identifiers:
-            distance = pair_lookup.get((left_identifier, right_identifier))
-            if distance is None:
-                distance = pair_lookup.get((right_identifier, left_identifier))
+            pair = pair_lookup.get((left_identifier, right_identifier))
+            if pair is None:
+                pair = pair_lookup.get((right_identifier, left_identifier))
+            if pair is None:
+                raise ValueError(
+                    "distance parity rows require a complete symmetric pair lookup"
+                )
+            if pair.distance is None:
+                if pair.saturation_reason and "tends to infinity" in pair.saturation_reason:
+                    distance = ""
+                    distance_status = "infinite"
+                    infinite_distance_count += 1
+                else:
+                    distance = ""
+                    distance_status = "undefined"
+                    undefined_distance_count += 1
+            else:
+                distance = pair.distance
+                distance_status = "finite"
+                finite_distance_count += 1
             rows.append(
                 {
                     "left_identifier": left_identifier,
                     "right_identifier": right_identifier,
                     "distance": distance,
+                    "distance_status": distance_status,
                 }
             )
     return {
         "sequence_count": len(report.identifiers),
         "alignment_length": report.alignment_length,
         "pairwise_deletion": pairwise_deletion,
+        "distance_model": report.model,
+        "finite_distance_count": finite_distance_count,
+        "undefined_distance_count": undefined_distance_count,
+        "infinite_distance_count": infinite_distance_count,
     }, rows
 
 
@@ -2414,14 +2450,19 @@ def _build_bijux_case_payload(
     if case.operation == "dna-base-frequency":
         summary, rows = _build_bijux_base_frequency_summary(case.input_fixture)
         return summary, rows, None
-    if case.operation == "dna-raw-distance":
+    if case.operation == "dna-distance":
         if case.pairwise_deletion is None:
             raise ValueError(
                 f"ape parity case '{case.case_id}' is missing pairwise deletion policy"
             )
+        if case.distance_model is None:
+            raise ValueError(
+                f"ape parity case '{case.case_id}' is missing a distance model"
+            )
         summary, rows = _build_bijux_distance_rows(
             case.input_fixture,
             pairwise_deletion=case.pairwise_deletion,
+            distance_model=case.distance_model,
         )
         return summary, rows, None
     if case.operation == "dna-translation":
@@ -2511,7 +2552,7 @@ def _load_reference_case_payload(
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "base-frequency.tsv")
         return summary, rows, None
-    if case.operation == "dna-raw-distance":
+    if case.operation == "dna-distance":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "distance-matrix.tsv")
         return summary, rows, None

@@ -1624,6 +1624,19 @@ dna_base_frequency_case <- function(case_payload, output_root, execution_path, r
 }
 
 dna_distance_case <- function(case_payload, output_root, execution_path, r_version) {
+  canonical_distance_model <- function(model_name) {
+    normalized <- tolower(as.character(model_name))
+    if (identical(normalized, "raw")) {
+      return("p-distance")
+    }
+    if (identical(normalized, "jc69")) {
+      return("jukes-cantor")
+    }
+    if (identical(normalized, "k80")) {
+      return("kimura-2-parameter")
+    }
+    normalized
+  }
   alignment <- tryCatch(
     ape::read.dna(case_payload$input_fixture, format = "fasta"),
     error = function(error) error
@@ -1647,7 +1660,7 @@ dna_distance_case <- function(case_payload, output_root, execution_path, r_versi
   distance_result <- tryCatch(
     ape::dist.dna(
       alignment,
-      model = "RAW",
+      model = case_payload$distance_model,
       pairwise.deletion = isTRUE(case_payload$pairwise_deletion),
       as.matrix = TRUE
     ),
@@ -1677,12 +1690,30 @@ dna_distance_case <- function(case_payload, output_root, execution_path, r_versi
   rows <- data.frame(
     left_identifier = character(),
     right_identifier = character(),
-    distance = numeric(),
+    distance = character(),
+    distance_status = character(),
     stringsAsFactors = FALSE
   )
+  finite_distance_count <- 0L
+  undefined_distance_count <- 0L
+  infinite_distance_count <- 0L
   for (left in rownames(distances)) {
     for (right in colnames(distances)) {
-      rows[nrow(rows) + 1, ] <- list(left, right, as.numeric(distances[left, right]))
+      distance_value <- as.numeric(distances[left, right])
+      if (is.nan(distance_value)) {
+        distance_text <- ""
+        distance_status <- "undefined"
+        undefined_distance_count <- undefined_distance_count + 1L
+      } else if (is.infinite(distance_value)) {
+        distance_text <- ""
+        distance_status <- "infinite"
+        infinite_distance_count <- infinite_distance_count + 1L
+      } else {
+        distance_text <- format(distance_value, digits = 16, scientific = FALSE, trim = TRUE)
+        distance_status <- "finite"
+        finite_distance_count <- finite_distance_count + 1L
+      }
+      rows[nrow(rows) + 1, ] <- list(left, right, distance_text, distance_status)
     }
   }
 
@@ -1691,7 +1722,11 @@ dna_distance_case <- function(case_payload, output_root, execution_path, r_versi
     list(
       sequence_count = nrow(alignment_matrix),
       alignment_length = ncol(alignment_matrix),
-      pairwise_deletion = isTRUE(case_payload$pairwise_deletion)
+      pairwise_deletion = isTRUE(case_payload$pairwise_deletion),
+      distance_model = canonical_distance_model(case_payload$distance_model),
+      finite_distance_count = finite_distance_count,
+      undefined_distance_count = undefined_distance_count,
+      infinite_distance_count = infinite_distance_count
     )
   )
   write_table(table_path, rows)
@@ -2305,7 +2340,7 @@ if (identical(case_payload$operation, "dna-base-frequency")) {
   quit(save = "no", status = 0)
 }
 
-if (identical(case_payload$operation, "dna-raw-distance")) {
+if (identical(case_payload$operation, "dna-distance")) {
   dna_distance_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
