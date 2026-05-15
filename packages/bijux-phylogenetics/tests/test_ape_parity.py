@@ -56,6 +56,11 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "write-tree-support-labels",
         "write-tree-quoted-taxon-labels",
         "write-tree-multiple-trees",
+        "root-tree-single-outgroup-tip",
+        "root-tree-multiple-outgroup-tips",
+        "root-tree-already-rooted",
+        "root-tree-missing-outgroup",
+        "root-tree-non-monophyletic-outgroup",
         "dna-base-frequency-lowercase",
         "dna-base-frequency-ambiguity",
         "dna-raw-distance-clean",
@@ -81,6 +86,11 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "branch_support_labels",
         "quoted_taxon_labels",
         "basic_newick_tree_set",
+        "outgroup_rootable_unrooted",
+        "outgroup_rootable_unrooted",
+        "outgroup_rooted_on_d",
+        "outgroup_rootable_unrooted",
+        "outgroup_rootable_unrooted",
         "lowercase_aligned_dna",
         "dna_with_ambiguity",
         "clean_aligned_dna",
@@ -95,6 +105,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
     assert {case.function_name for case in cases} == {
         "ape::read.tree",
         "ape::write.tree",
+        "ape::root",
         "ape::base.freq",
         "ape::dist.dna",
         "ape::trans",
@@ -104,6 +115,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "read-tree-set-structure",
         "write-tree-structure",
         "write-tree-set-structure",
+        "root-tree-outgroup",
         "dna-base-frequency",
         "dna-raw-distance",
         "dna-translation",
@@ -121,14 +133,15 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 23
-    assert report.passed_case_count == 23
+    assert report.case_count == 28
+    assert report.passed_case_count == 28
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
         "ape::base.freq",
         "ape::dist.dna",
         "ape::read.tree",
+        "ape::root",
         "ape::trans",
         "ape::write.tree",
     ]
@@ -181,6 +194,13 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         "Homo sapiens",
         "Mus musculus",
     ]
+    root_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "root-tree-multiple-outgroup-tips"
+    )
+    assert root_case.reference_summary is not None
+    assert root_case.reference_summary["rooted"] is True
     translation_case = next(
         observation
         for observation in report.observations
@@ -225,6 +245,27 @@ def test_run_ape_parity_cases_records_branch_length_failure_for_tree_structure_m
     assert (artifact_root / "bijux-normalized.txt").exists()
 
 
+def test_run_ape_parity_cases_passes_expected_rooting_errors_against_fake_reference_runner(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_ape_rscript(tmp_path / "fake-ape-rscript")
+
+    report = run_ape_parity_cases(
+        case_ids=[
+            "root-tree-missing-outgroup",
+            "root-tree-non-monophyletic-outgroup",
+        ],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "ape-parity-failures",
+    )
+
+    assert report.all_passed is True
+    assert [observation.status for observation in report.observations] == [
+        "passed",
+        "passed",
+    ]
+
+
 def test_run_ape_parity_cases_marks_missing_rscript_as_skipped(tmp_path: Path) -> None:
     report = run_ape_parity_cases(
         case_ids=["read-tree-balanced-rooted-ultrametric"],
@@ -257,7 +298,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 23
+    assert len(rows) == 28
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]

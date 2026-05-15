@@ -18,7 +18,8 @@ from bijux_phylogenetics.compare.structural_parity import (
 )
 from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matrix
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
-from bijux_phylogenetics.core.tree import TreeNode
+from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.core.topology import root_tree_on_outgroup
 from bijux_phylogenetics.io.fasta import load_fasta_alignment, translate_coding_alignment
 from bijux_phylogenetics.io.newick import (
     dumps_newick,
@@ -49,6 +50,7 @@ class ApeParityCase:
     expected_status: str = "ok"
     pairwise_deletion: bool | None = None
     genetic_code_id: int | None = None
+    outgroup_taxa: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -305,6 +307,63 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             tolerance=0.0,
         ),
         ApeParityCase(
+            case_id="root-tree-single-outgroup-tip",
+            fixture_kind="tree",
+            fixture_id="outgroup_rootable_unrooted",
+            function_name="ape::root",
+            python_function_name="root_tree_on_outgroup",
+            operation="root-tree-outgroup",
+            input_fixture=fixture_path("tree", "outgroup_rootable_unrooted"),
+            tolerance=1e-12,
+            outgroup_taxa=("D",),
+        ),
+        ApeParityCase(
+            case_id="root-tree-multiple-outgroup-tips",
+            fixture_kind="tree",
+            fixture_id="outgroup_rootable_unrooted",
+            function_name="ape::root",
+            python_function_name="root_tree_on_outgroup",
+            operation="root-tree-outgroup",
+            input_fixture=fixture_path("tree", "outgroup_rootable_unrooted"),
+            tolerance=1e-12,
+            outgroup_taxa=("C", "D"),
+        ),
+        ApeParityCase(
+            case_id="root-tree-already-rooted",
+            fixture_kind="tree",
+            fixture_id="outgroup_rooted_on_d",
+            function_name="ape::root",
+            python_function_name="root_tree_on_outgroup",
+            operation="root-tree-outgroup",
+            input_fixture=fixture_path("tree", "outgroup_rooted_on_d"),
+            tolerance=1e-12,
+            outgroup_taxa=("D",),
+        ),
+        ApeParityCase(
+            case_id="root-tree-missing-outgroup",
+            fixture_kind="tree",
+            fixture_id="outgroup_rootable_unrooted",
+            function_name="ape::root",
+            python_function_name="root_tree_on_outgroup",
+            operation="root-tree-outgroup",
+            input_fixture=fixture_path("tree", "outgroup_rootable_unrooted"),
+            tolerance=0.0,
+            expected_status="rooting-error",
+            outgroup_taxa=("Z",),
+        ),
+        ApeParityCase(
+            case_id="root-tree-non-monophyletic-outgroup",
+            fixture_kind="tree",
+            fixture_id="outgroup_rootable_unrooted",
+            function_name="ape::root",
+            python_function_name="root_tree_on_outgroup",
+            operation="root-tree-outgroup",
+            input_fixture=fixture_path("tree", "outgroup_rootable_unrooted"),
+            tolerance=0.0,
+            expected_status="rooting-error",
+            outgroup_taxa=("B", "D"),
+        ),
+        ApeParityCase(
             case_id="dna-base-frequency-lowercase",
             fixture_kind="dna-alignment",
             fixture_id="lowercase_aligned_dna",
@@ -454,6 +513,7 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
                 "expected_status": case.expected_status,
                 "pairwise_deletion": case.pairwise_deletion,
                 "genetic_code_id": case.genetic_code_id,
+                "outgroup_taxa": list(case.outgroup_taxa),
             },
             indent=2,
             sort_keys=True,
@@ -491,18 +551,29 @@ def _build_bijux_tree_structure(
     tree = load_tree(input_fixture)
     inspection = inspect_tree_path(input_fixture)
     clades = extract_tree_clades(input_fixture)
+    return _tree_structure_payload(tree, inspection.rooted, clades.rows)
+
+
+def _tree_structure_payload(
+    tree: TreeNode | PhyloTree,
+    rooted: bool | None,
+    clade_rows,
+) -> tuple[dict[str, object], list[dict[str, object]], str]:
+    phylo_tree = tree if isinstance(tree, PhyloTree) else PhyloTree(root=tree, rooted=rooted)
     summary = {
         "tree_count": 1,
-        "tip_count": inspection.tip_count,
-        "internal_node_count": inspection.internal_node_count,
-        "edge_count": inspection.edge_count,
-        "rooted": inspection.rooted,
-        "tip_labels": tree.tip_names,
+        "tip_count": phylo_tree.tip_count,
+        "internal_node_count": phylo_tree.internal_node_count,
+        "edge_count": phylo_tree.tip_count + phylo_tree.internal_node_count - 1,
+        "rooted": rooted,
+        "tip_labels": phylo_tree.tip_names,
         "branch_length_count": sum(
-            1 for branch_length in tree.branch_lengths() if branch_length is not None
+            1
+            for branch_length in phylo_tree.branch_lengths()
+            if branch_length is not None
         ),
     }
-    return summary, _clade_rows_to_parity_rows(clades.rows), dumps_newick(tree)
+    return summary, _clade_rows_to_parity_rows(clade_rows), dumps_newick(phylo_tree)
 
 
 def _build_bijux_tree_set_structure(
@@ -530,6 +601,22 @@ def _build_bijux_tree_set_structure(
         "unique_tip_label_count": len(first_tree_tip_labels),
     }
     return summary, parity_rows, None
+
+
+def _build_bijux_root_outgroup_structure(
+    input_fixture: Path,
+    *,
+    outgroup_taxa: tuple[str, ...],
+) -> tuple[dict[str, object], list[dict[str, object]], str]:
+    rooted_tree, _report = root_tree_on_outgroup(
+        input_fixture,
+        outgroup_taxa=list(outgroup_taxa),
+    )
+    with tempfile.TemporaryDirectory(prefix="bijux-ape-root-") as tmpdir:
+        rooted_path = Path(tmpdir) / "rooted.nwk"
+        write_newick(rooted_path, rooted_tree)
+        clades = extract_tree_clades(rooted_path)
+    return _tree_structure_payload(rooted_tree, rooted_tree.rooted, clades.rows)
 
 
 def _materialize_reference_input(case: ApeParityCase, working_root: Path) -> Path:
@@ -905,6 +992,12 @@ def _build_bijux_case_payload(
     if case.operation in {"read-tree-structure", "write-tree-structure"}:
         summary, rows, normalized_text = _build_bijux_tree_structure(case.input_fixture)
         return summary, rows, normalized_text
+    if case.operation == "root-tree-outgroup":
+        summary, rows, normalized_text = _build_bijux_root_outgroup_structure(
+            case.input_fixture,
+            outgroup_taxa=case.outgroup_taxa,
+        )
+        return summary, rows, normalized_text
     if case.operation in {"read-tree-set-structure", "write-tree-set-structure"}:
         summary, rows, normalized_text = _build_bijux_tree_set_structure(case.input_fixture)
         return summary, rows, normalized_text
@@ -938,7 +1031,7 @@ def _load_reference_case_payload(
     case: ApeParityCase,
     execution_root: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]] | None, str | None]:
-    if case.operation in {"read-tree-structure", "write-tree-structure"}:
+    if case.operation in {"read-tree-structure", "write-tree-structure", "root-tree-outgroup"}:
         summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
         expected_tip_labels = {
             str(label) for label in summary.get("tip_labels", [])
@@ -1007,6 +1100,31 @@ def _tree_set_structure_mismatch_reason(
     report = compare_tree_sets_structurally(
         expected_tree_set,
         reference_tree_set,
+        tolerance=case.tolerance,
+        compare_internal_labels=True,
+    )
+    return report.mismatch_reason
+
+
+def _root_tree_outgroup_mismatch_reason(
+    case: ApeParityCase,
+    execution_root: Path,
+) -> str | None:
+    reference_tree = load_tree(execution_root / "normalized-tree.nwk")
+    # Canonical Newick does not preserve rootedness metadata, but ape::root
+    # produced this record explicitly as a rooted output for these governed cases.
+    reference_tree.rooted = True
+    expected_tree, _report = root_tree_on_outgroup(
+        case.input_fixture,
+        outgroup_taxa=list(case.outgroup_taxa),
+    )
+    _normalize_tree_labels(
+        reference_tree.root,
+        expected_tip_labels=set(expected_tree.tip_names),
+    )
+    report = compare_tree_structurally(
+        expected_tree,
+        reference_tree,
         tolerance=case.tolerance,
         compare_internal_labels=True,
     )
@@ -1145,6 +1263,11 @@ def run_ape_parity_cases(
                                 case,
                                 execution_root,
                             )
+                        elif case.operation == "root-tree-outgroup":
+                            mismatch_reason = _root_tree_outgroup_mismatch_reason(
+                                case,
+                                execution_root,
+                            )
                         elif case.operation in {
                             "read-tree-set-structure",
                             "write-tree-set-structure",
@@ -1176,6 +1299,16 @@ def run_ape_parity_cases(
                     mismatch_reason = "reference_expected_parse_error_missing"
                 elif not bijux_error.get("message") or not reference_error.get("message"):
                     mismatch_reason = "parse_error_message_missing"
+                else:
+                    status = "passed"
+                    mismatch_reason = None
+            if case.expected_status == "rooting-error":
+                if bijux_error is None:
+                    mismatch_reason = "bijux_expected_rooting_error_missing"
+                elif reference_error is None:
+                    mismatch_reason = "reference_expected_rooting_error_missing"
+                elif not bijux_error.get("message") or not reference_error.get("message"):
+                    mismatch_reason = "rooting_error_message_missing"
                 else:
                     status = "passed"
                     mismatch_reason = None

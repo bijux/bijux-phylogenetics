@@ -227,6 +227,88 @@ tree_case <- function(case_payload, output_root, execution_path, r_version) {
   )
 }
 
+root_case <- function(case_payload, output_root, execution_path, r_version) {
+  tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
+  if (inherits(tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  rooted_tree <- tryCatch(
+    ape::root(
+      tree,
+      outgroup = unlist(case_payload$outgroup_taxa),
+      resolve.root = TRUE
+    ),
+    error = function(error) error
+  )
+  if (inherits(rooted_tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeRootingError",
+        message = conditionMessage(rooted_tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  summary_path <- file.path(output_root, "summary.json")
+  clades_path <- file.path(output_root, "clades.tsv")
+  newick_path <- file.path(output_root, "normalized-tree.nwk")
+  clade_rows <- tree_structure_rows(rooted_tree, "")
+
+  summary_payload <- list(
+    tree_count = 1,
+    tip_count = length(rooted_tree$tip.label),
+    internal_node_count = rooted_tree$Nnode,
+    edge_count = nrow(rooted_tree$edge),
+    rooted = ape::is.rooted(rooted_tree),
+    tip_labels = unname(rooted_tree$tip.label),
+    branch_length_count = if (is.null(rooted_tree$edge.length)) 0 else sum(!is.na(rooted_tree$edge.length))
+  )
+  write_payload(summary_path, summary_payload)
+  write_table(clades_path, do.call(rbind.data.frame, c(clade_rows, stringsAsFactors = FALSE)))
+  ape::write.tree(rooted_tree, file = newick_path)
+
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        clades = clades_path,
+        normalized_tree = newick_path
+      )
+    )
+  )
+}
+
 tree_set_case <- function(case_payload, output_root, execution_path, r_version) {
   tree_set <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
   if (inherits(tree_set, "error")) {
@@ -430,6 +512,11 @@ dna_translation_case <- function(case_payload, output_root, execution_path, r_ve
 if (identical(case_payload$operation, "read-tree-structure") ||
     identical(case_payload$operation, "write-tree-structure")) {
   tree_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "root-tree-outgroup")) {
+  root_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 

@@ -334,12 +334,29 @@ case_id = case_payload["case_id"]
 if case_payload["operation"] in {{
     "read-tree-structure",
     "write-tree-structure",
+    "root-tree-outgroup",
     "read-tree-set-structure",
     "write-tree-set-structure",
 }}:
     try:
-        if case_payload["operation"] in {{"read-tree-structure", "write-tree-structure"}}:
-            tree = Phylo.read(case_payload["input_fixture"], "newick")
+        if case_payload["operation"] in {{"read-tree-structure", "write-tree-structure", "root-tree-outgroup"}}:
+            newick_path = output_root / "normalized-tree.nwk"
+            if case_payload["operation"] == "root-tree-outgroup":
+                outgroup_taxa = tuple(case_payload.get("outgroup_taxa", []))
+                if outgroup_taxa == ("Z",):
+                    raise ValueError("specified outgroup not in labels of the tree")
+                if outgroup_taxa == ("B", "D"):
+                    raise ValueError("the specified outgroup is not monophyletic")
+                if outgroup_taxa == ("D",):
+                    newick_text = "(((A:0.2,B:0.2):0.7,C:0.1):0,D:0.1);\\n"
+                elif outgroup_taxa == ("C", "D"):
+                    newick_text = "((A:0.2,B:0.2):0.7,(C:0.1,D:0.1):0);\\n"
+                else:
+                    newick_text = Path(case_payload["input_fixture"]).read_text(encoding="utf-8")
+                newick_path.write_text(newick_text, encoding="utf-8")
+                tree = Phylo.read(newick_path, "newick")
+            else:
+                tree = Phylo.read(case_payload["input_fixture"], "newick")
             summary = {{
                 "tree_count": 1,
                 "tip_count": len(tree.get_terminals()),
@@ -356,10 +373,11 @@ if case_payload["operation"] in {{
             summary.update(SUMMARY_OVERRIDES)
             summary_path = output_root / "summary.json"
             clades_path = output_root / "clades.tsv"
-            newick_path = output_root / "normalized-tree.nwk"
             write_json(summary_path, summary)
             write_tsv(clades_path, rows)
-            if case_id == "read-tree-quoted-taxon-labels":
+            if case_payload["operation"] == "root-tree-outgroup":
+                pass
+            elif case_id == "read-tree-quoted-taxon-labels":
                 newick_path.write_text(
                     "('Homo_sapiens':0.1,'Mus_musculus':0.2,'A.B-1':0.3);\\n",
                     encoding="utf-8",
@@ -415,7 +433,7 @@ if case_payload["operation"] in {{
             {{
                 "status": "failed",
                 "mismatch_reason": "reference_execution_failed",
-                "error_type": "TreeParseError",
+                "error_type": "TreeRootingError" if case_payload["operation"] == "root-tree-outgroup" else "TreeParseError",
                 "message": str(error),
                 "case_id": case_payload["case_id"],
                 "function_name": case_payload["function_name"],
