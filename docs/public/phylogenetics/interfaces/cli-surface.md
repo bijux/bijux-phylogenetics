@@ -164,6 +164,9 @@ The governed live `ape` cases now span both shared tree and shared DNA
 fixtures. Today that lane covers `ape::read.tree`, `ape::base.freq`,
 `ape::dist.dna`, and `ape::trans`, with durable inputs resolved from
 `shared_tree_fixture_catalog.json` and `shared_dna_alignment_fixture_catalog.json`.
+The `ape::read.tree` portion now compares structured clade rows and covers
+branch lengths, internal labels, support labels, quoted labels, one governed
+multiple-tree Newick input, and one governed malformed-Newick rejection case.
 The DNA cases include lowercase input, ambiguity, missing data, identical
 sequences, high-divergence distances, and valid, internal-stop, or
 terminal-stop coding translation rows. Unequal-length and frame-error DNA

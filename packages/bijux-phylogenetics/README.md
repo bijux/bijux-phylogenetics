@@ -735,7 +735,10 @@ tree and DNA inputs for that lane now come from the governed shared fixture
 catalogs in `tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
 `tests/fixtures/metadata/shared_dna_alignment_fixture_catalog.json`, so Bijux
 and `ape` resolve the same durable fixture identities instead of hand-picked
-path lists.
+path lists. The `ape::read.tree` lane now checks structured clade rows rather
+than only raw parse success, including rooted and unrooted trees, branch
+lengths, internal node labels, support labels, quoted labels, one governed
+multiple-tree input, and one governed malformed-Newick rejection case.
 
 The smaller ancestral review lanes now use the same governed shared trait-table
 fixture catalog in `tests/fixtures/metadata/shared_trait_table_fixture_catalog.json`.

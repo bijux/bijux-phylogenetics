@@ -160,6 +160,10 @@ high-divergence, and coding-translation fixtures across `ape::base.freq`,
 `ape::dist.dna`, and `ape::trans`. Frame-error and unequal-length DNA fixtures
 are still governed shared inputs, but they stay on the diagnostic side of the
 contract because Bijux rejects them more strictly than `ape` does.
+The `ape::read.tree` portion of the same lane now validates structured clade
+rows for rooted and unrooted trees, branch lengths, internal labels, support
+labels, quoted labels, one governed multiple-tree Newick input, and one
+governed malformed-Newick rejection case.
 
 When the goal is to check resource behavior across the repository's largest
 owned workload families, use `benchmark stress-suite`. This workflow does not
