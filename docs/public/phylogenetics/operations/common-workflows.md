@@ -173,6 +173,11 @@ rooted binary trees, post-outgroup-rooting trees, already-unrooted inputs, and
 malformed parse failures, and it follows the same explicit branch-length
 contract as live `ape::unroot`: the removed root-edge length is merged into
 the retained sibling branch rather than folded into the expanded clade. The
+`ape::drop.tip` portion now covers rooted and unrooted taxon exclusion cases,
+unknown excluded taxon names, and rootedness changes after pruning, while
+keeping one explicit workflow safety rule: Bijux stops the run if pruning would
+leave fewer than two retained taxa instead of carrying a one-tip tree forward.
+The
 `ape::write.tree` portion now
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
 internal-label, support-label, quoted-label, and multiple-tree cases. Bijux
