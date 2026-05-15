@@ -18,6 +18,9 @@ from bijux_phylogenetics.ancestral.common import (
 
 _STATE_SELECTION_REL_TOL = 1e-9
 _STATE_SELECTION_ABS_TOL = 1e-12
+_DISCRETE_LOG_PARAMETER_LOWER_BOUND = -10.0
+_DISCRETE_LOG_PARAMETER_UPPER_BOUND = 5.0
+_DISCRETE_PLATEAU_REGULARIZATION_TOLERANCE = 1e-10
 
 
 @dataclass(slots=True)
@@ -50,6 +53,35 @@ class DiscreteTransitionRateRow:
 
 
 @dataclass(slots=True)
+class DiscreteOptimizerDiagnostics:
+    """Optimizer state for one discrete likelihood fit."""
+
+    optimizer_name: str
+    parameter_count: int
+    initial_candidate_count: int
+    best_initial_scale: float
+    converged: bool
+    iteration_count: int
+    function_evaluation_count: int
+    simplex_shrink_count: int
+    hit_lower_parameter_bound: bool
+    hit_upper_parameter_bound: bool
+
+
+@dataclass(slots=True)
+class DiscreteModelBaselineComparison:
+    """Likelihood-model comparison against the equal-rates baseline."""
+
+    baseline_model: str
+    baseline_log_likelihood: float
+    baseline_parameter_count: int
+    baseline_aic: float
+    delta_log_likelihood: float
+    delta_aic: float
+    preferred_model_by_aic: str
+
+
+@dataclass(slots=True)
 class DiscreteLikelihoodFitResult:
     """Internal likelihood fit details for one discrete ancestral reconstruction."""
 
@@ -61,6 +93,9 @@ class DiscreteLikelihoodFitResult:
     aic: float
     transition_rate_rows: list[DiscreteTransitionRateRow]
     allowed_transition_pairs: list[tuple[str, str]]
+    optimizer_diagnostics: DiscreteOptimizerDiagnostics
+    overparameterized: bool
+    baseline_comparison: DiscreteModelBaselineComparison | None
 
 
 @dataclass(slots=True)
@@ -93,6 +128,9 @@ class DiscreteAncestralReport:
     aic: float | None
     transition_rate_rows: list[DiscreteTransitionRateRow]
     allowed_transition_pairs: list[tuple[str, str]]
+    optimizer_diagnostics: DiscreteOptimizerDiagnostics | None
+    overparameterized: bool
+    baseline_comparison: DiscreteModelBaselineComparison | None
 
 
 @dataclass(slots=True)
@@ -121,6 +159,13 @@ class DiscreteAncestralSummary:
     log_likelihood: float | None
     parameter_count: int | None
     aic: float | None
+    optimizer_converged: bool | None
+    optimizer_iteration_count: int | None
+    optimizer_function_evaluation_count: int | None
+    overparameterized: bool
+    baseline_model: str | None
+    baseline_delta_aic: float | None
+    preferred_model_by_aic: str | None
     warning_count: int
 
 
@@ -196,6 +241,18 @@ def reconstruct_discrete_ancestral_states(
             warnings.append(
                 "low-confidence ancestral state assignments should not be overinterpreted as definitive transitions"
             )
+        if fit_result.overparameterized:
+            warnings.append(
+                "the discrete likelihood fit is likely overparameterized relative to the analyzed taxon count"
+            )
+        if (
+            fit_result.baseline_comparison is not None
+            and fit_result.baseline_comparison.preferred_model_by_aic
+            == "equal-rates"
+        ):
+            warnings.append(
+                "the equal-rates baseline remains preferred by AIC over the requested discrete likelihood model"
+            )
         return DiscreteAncestralReport(
             tree_path=tree_path,
             traits_path=traits_path,
@@ -223,6 +280,9 @@ def reconstruct_discrete_ancestral_states(
             aic=fit_result.aic,
             transition_rate_rows=fit_result.transition_rate_rows,
             allowed_transition_pairs=fit_result.allowed_transition_pairs,
+            optimizer_diagnostics=fit_result.optimizer_diagnostics,
+            overparameterized=fit_result.overparameterized,
+            baseline_comparison=fit_result.baseline_comparison,
         )
     estimates: list[DiscreteAncestralEstimate] = []
 
@@ -320,6 +380,9 @@ def reconstruct_discrete_ancestral_states(
         aic=None,
         transition_rate_rows=[],
         allowed_transition_pairs=[],
+        optimizer_diagnostics=None,
+        overparameterized=False,
+        baseline_comparison=None,
     )
 
 
@@ -367,6 +430,37 @@ def summarize_discrete_ancestral_report(
         log_likelihood=report.log_likelihood,
         parameter_count=report.parameter_count,
         aic=report.aic,
+        optimizer_converged=(
+            None
+            if report.optimizer_diagnostics is None
+            else report.optimizer_diagnostics.converged
+        ),
+        optimizer_iteration_count=(
+            None
+            if report.optimizer_diagnostics is None
+            else report.optimizer_diagnostics.iteration_count
+        ),
+        optimizer_function_evaluation_count=(
+            None
+            if report.optimizer_diagnostics is None
+            else report.optimizer_diagnostics.function_evaluation_count
+        ),
+        overparameterized=report.overparameterized,
+        baseline_model=(
+            None
+            if report.baseline_comparison is None
+            else report.baseline_comparison.baseline_model
+        ),
+        baseline_delta_aic=(
+            None
+            if report.baseline_comparison is None
+            else report.baseline_comparison.delta_aic
+        ),
+        preferred_model_by_aic=(
+            None
+            if report.baseline_comparison is None
+            else report.baseline_comparison.preferred_model_by_aic
+        ),
         warning_count=len(report.warnings),
     )
 
@@ -415,6 +509,13 @@ def write_discrete_ancestral_summary_table(
             "log_likelihood",
             "parameter_count",
             "aic",
+            "optimizer_converged",
+            "optimizer_iteration_count",
+            "optimizer_function_evaluation_count",
+            "overparameterized",
+            "baseline_model",
+            "baseline_delta_aic",
+            "preferred_model_by_aic",
             "warning_count",
         ],
         rows=[
@@ -447,6 +548,21 @@ def write_discrete_ancestral_summary_table(
                 "log_likelihood": _format_optional_float(summary.log_likelihood),
                 "parameter_count": _format_optional_int(summary.parameter_count),
                 "aic": _format_optional_float(summary.aic),
+                "optimizer_converged": _format_optional_bool(
+                    summary.optimizer_converged
+                ),
+                "optimizer_iteration_count": _format_optional_int(
+                    summary.optimizer_iteration_count
+                ),
+                "optimizer_function_evaluation_count": _format_optional_int(
+                    summary.optimizer_function_evaluation_count
+                ),
+                "overparameterized": str(summary.overparameterized).lower(),
+                "baseline_model": summary.baseline_model or "",
+                "baseline_delta_aic": _format_optional_float(
+                    summary.baseline_delta_aic
+                ),
+                "preferred_model_by_aic": summary.preferred_model_by_aic or "",
                 "warning_count": str(summary.warning_count),
             }
         ],
@@ -540,6 +656,106 @@ def write_discrete_ancestral_transition_table(
     )
 
 
+def write_discrete_ancestral_fit_table(
+    path: Path,
+    report: DiscreteAncestralReport,
+) -> Path:
+    """Write one optimizer and model-fit ledger for a discrete likelihood reconstruction."""
+    diagnostics = report.optimizer_diagnostics
+    baseline = report.baseline_comparison
+    return write_ancestral_rows(
+        path,
+        columns=[
+            "model",
+            "taxon_count",
+            "state_count",
+            "parameter_count",
+            "log_likelihood",
+            "aic",
+            "overparameterized",
+            "optimizer_name",
+            "optimizer_converged",
+            "optimizer_iteration_count",
+            "optimizer_function_evaluation_count",
+            "simplex_shrink_count",
+            "initial_candidate_count",
+            "best_initial_scale",
+            "hit_lower_parameter_bound",
+            "hit_upper_parameter_bound",
+            "baseline_model",
+            "baseline_parameter_count",
+            "baseline_log_likelihood",
+            "baseline_aic",
+            "delta_log_likelihood",
+            "delta_aic",
+            "preferred_model_by_aic",
+        ],
+        rows=[
+            {
+                "model": report.model,
+                "taxon_count": str(report.taxon_count),
+                "state_count": str(len(report.observed_states)),
+                "parameter_count": _format_optional_int(report.parameter_count),
+                "log_likelihood": _format_optional_float(report.log_likelihood),
+                "aic": _format_optional_float(report.aic),
+                "overparameterized": str(report.overparameterized).lower(),
+                "optimizer_name": "" if diagnostics is None else diagnostics.optimizer_name,
+                "optimizer_converged": _format_optional_bool(
+                    None if diagnostics is None else diagnostics.converged
+                ),
+                "optimizer_iteration_count": _format_optional_int(
+                    None if diagnostics is None else diagnostics.iteration_count
+                ),
+                "optimizer_function_evaluation_count": _format_optional_int(
+                    None
+                    if diagnostics is None
+                    else diagnostics.function_evaluation_count
+                ),
+                "simplex_shrink_count": _format_optional_int(
+                    None if diagnostics is None else diagnostics.simplex_shrink_count
+                ),
+                "initial_candidate_count": _format_optional_int(
+                    None
+                    if diagnostics is None
+                    else diagnostics.initial_candidate_count
+                ),
+                "best_initial_scale": _format_optional_float(
+                    None if diagnostics is None else diagnostics.best_initial_scale
+                ),
+                "hit_lower_parameter_bound": _format_optional_bool(
+                    None
+                    if diagnostics is None
+                    else diagnostics.hit_lower_parameter_bound
+                ),
+                "hit_upper_parameter_bound": _format_optional_bool(
+                    None
+                    if diagnostics is None
+                    else diagnostics.hit_upper_parameter_bound
+                ),
+                "baseline_model": "" if baseline is None else baseline.baseline_model,
+                "baseline_parameter_count": _format_optional_int(
+                    None if baseline is None else baseline.baseline_parameter_count
+                ),
+                "baseline_log_likelihood": _format_optional_float(
+                    None if baseline is None else baseline.baseline_log_likelihood
+                ),
+                "baseline_aic": _format_optional_float(
+                    None if baseline is None else baseline.baseline_aic
+                ),
+                "delta_log_likelihood": _format_optional_float(
+                    None if baseline is None else baseline.delta_log_likelihood
+                ),
+                "delta_aic": _format_optional_float(
+                    None if baseline is None else baseline.delta_aic
+                ),
+                "preferred_model_by_aic": (
+                    "" if baseline is None else baseline.preferred_model_by_aic
+                ),
+            }
+        ],
+    )
+
+
 def _resolve_discrete_model_name(model: str) -> str:
     aliases = {
         "fitch": "fitch",
@@ -565,6 +781,7 @@ def _reconstruct_likelihood_estimates(
     root_prior_mode: str = "equal",
     fixed_root_state: str | None = None,
     allowed_transition_pairs: list[tuple[str, str]] | None = None,
+    include_equal_rates_baseline: bool = True,
 ) -> DiscreteLikelihoodFitResult:
     state_order = _resolve_state_order(
         dataset.observed_states,
@@ -577,7 +794,7 @@ def _reconstruct_likelihood_estimates(
         state_ordering=state_ordering,
         allowed_transition_pairs=allowed_transition_pairs,
     )
-    rate_matrix, default_root_prior = _fit_discrete_mk_model(
+    rate_matrix, default_root_prior, optimizer_diagnostics = _fit_discrete_mk_model(
         dataset.tree,
         dataset.states_by_taxon,
         state_order=state_order,
@@ -643,13 +860,51 @@ def _reconstruct_likelihood_estimates(
         state_ordering=state_ordering,
         allowed_transition_pairs=resolved_allowed_transition_pairs,
     )
+    aic = (2.0 * parameter_count) - (2.0 * reported_log_likelihood)
+    baseline_comparison: DiscreteModelBaselineComparison | None = None
+    if (
+        include_equal_rates_baseline
+        and model != "equal-rates"
+        and allowed_transition_pairs is None
+    ):
+        try:
+            baseline_fit = _reconstruct_likelihood_estimates(
+                dataset,
+                model="equal-rates",
+                state_ordering=state_ordering,
+                ordered_states=state_order,
+                root_prior_mode=root_prior_mode,
+                fixed_root_state=fixed_root_state,
+                allowed_transition_pairs=None,
+                include_equal_rates_baseline=False,
+            )
+        except (RuntimeError, ValueError):
+            baseline_fit = None
+        if baseline_fit is not None:
+            baseline_comparison = DiscreteModelBaselineComparison(
+                baseline_model="equal-rates",
+                baseline_log_likelihood=baseline_fit.log_likelihood,
+                baseline_parameter_count=baseline_fit.parameter_count,
+                baseline_aic=baseline_fit.aic,
+                delta_log_likelihood=(
+                    reported_log_likelihood - baseline_fit.log_likelihood
+                ),
+                delta_aic=aic - baseline_fit.aic,
+                preferred_model_by_aic=(
+                    model if aic <= baseline_fit.aic else "equal-rates"
+                ),
+            )
+    overparameterized = _detect_discrete_overparameterization(
+        taxon_count=len(dataset.taxa),
+        parameter_count=parameter_count,
+    )
     return DiscreteLikelihoodFitResult(
         estimates=estimates,
         ordered_states=(state_order if state_ordering == "ordered" else []),
         state_order=state_order,
         log_likelihood=reported_log_likelihood,
         parameter_count=parameter_count,
-        aic=(2.0 * parameter_count) - (2.0 * reported_log_likelihood),
+        aic=aic,
         transition_rate_rows=_build_transition_rate_rows(
             state_order=state_order,
             state_ordering=state_ordering,
@@ -660,6 +915,9 @@ def _reconstruct_likelihood_estimates(
             (state_order[left_index], state_order[right_index])
             for left_index, right_index in sorted(resolved_allowed_transition_pairs)
         ],
+        optimizer_diagnostics=optimizer_diagnostics,
+        overparameterized=overparameterized,
+        baseline_comparison=baseline_comparison,
     )
 
 
@@ -690,7 +948,7 @@ def _fit_discrete_mk_model(
     model: str,
     state_ordering: str,
     allowed_transition_pairs: set[tuple[int, int]],
-) -> tuple[numpy.ndarray, numpy.ndarray]:
+) -> tuple[numpy.ndarray, numpy.ndarray, DiscreteOptimizerDiagnostics]:
     parameter_count = _parameter_count(
         len(state_order),
         model=model,
@@ -701,14 +959,16 @@ def _fit_discrete_mk_model(
         raise ValueError(
             "discrete ancestral reconstruction requires at least one allowed transition"
         )
+    initial_scales = (0.1, 1.0, 3.0)
     initial_candidates = [
         numpy.full(parameter_count, math.log(scale), dtype=float)
-        for scale in (0.1, 1.0, 3.0)
+        for scale in initial_scales
     ]
     best_log_parameters: numpy.ndarray | None = None
     best_log_likelihood = float("-inf")
-    for initial in initial_candidates:
-        candidate, candidate_score = _optimize_log_parameters(
+    best_run: _DiscreteOptimizationRun | None = None
+    for initial_scale, initial in zip(initial_scales, initial_candidates, strict=True):
+        run = _optimize_log_parameters(
             tree,
             states_by_taxon,
             state_order=state_order,
@@ -716,13 +976,30 @@ def _fit_discrete_mk_model(
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
             initial_log_parameters=initial,
+            initial_scale=initial_scale,
         )
-        if candidate_score > best_log_likelihood:
-            best_log_parameters = candidate
-            best_log_likelihood = candidate_score
-    if best_log_parameters is None:
+        if run.log_likelihood > best_log_likelihood:
+            best_run = run
+            best_log_parameters = run.log_parameters
+            best_log_likelihood = run.log_likelihood
+    if best_log_parameters is None or best_run is None:
         raise RuntimeError(
             "discrete ancestral optimization did not produce rate parameters"
+        )
+    if parameter_count > 1:
+        # Plateau regularization is only intended to tame multi-parameter ridges
+        # where several rate vectors induce effectively identical likelihood.
+        # Applying it to identified one-parameter fits moves the estimate away
+        # from the live `ape` maximum without improving stability.
+        best_log_parameters = _regularize_plateau_log_parameters(
+            tree,
+            states_by_taxon,
+            state_order=state_order,
+            model=model,
+            state_ordering=state_ordering,
+            allowed_transition_pairs=allowed_transition_pairs,
+            log_parameters=best_log_parameters,
+            reference_log_likelihood=best_log_likelihood,
         )
     rate_matrix = _rate_matrix_from_log_parameters(
         best_log_parameters,
@@ -732,7 +1009,39 @@ def _fit_discrete_mk_model(
         allowed_transition_pairs=allowed_transition_pairs,
     )
     root_prior = _uniform_root_prior(len(state_order))
-    return rate_matrix, root_prior
+    return rate_matrix, root_prior, DiscreteOptimizerDiagnostics(
+        optimizer_name="nelder-mead",
+        parameter_count=parameter_count,
+        initial_candidate_count=len(initial_candidates),
+        best_initial_scale=best_run.initial_scale,
+        converged=best_run.converged,
+        iteration_count=best_run.iteration_count,
+        function_evaluation_count=best_run.function_evaluation_count,
+        simplex_shrink_count=best_run.simplex_shrink_count,
+        hit_lower_parameter_bound=bool(
+            numpy.any(
+                best_log_parameters
+                <= (_DISCRETE_LOG_PARAMETER_LOWER_BOUND + 1e-9)
+            )
+        ),
+        hit_upper_parameter_bound=bool(
+            numpy.any(
+                best_log_parameters
+                >= (_DISCRETE_LOG_PARAMETER_UPPER_BOUND - 1e-9)
+            )
+        ),
+    )
+
+
+@dataclass(slots=True)
+class _DiscreteOptimizationRun:
+    log_parameters: numpy.ndarray
+    log_likelihood: float
+    initial_scale: float
+    converged: bool
+    iteration_count: int
+    function_evaluation_count: int
+    simplex_shrink_count: int
 
 
 def _optimize_log_parameters(
@@ -744,12 +1053,25 @@ def _optimize_log_parameters(
     state_ordering: str,
     allowed_transition_pairs: set[tuple[int, int]],
     initial_log_parameters: numpy.ndarray,
-) -> tuple[numpy.ndarray, float]:
-    simplex = [numpy.clip(initial_log_parameters.copy(), -10.0, 5.0)]
+    initial_scale: float,
+) -> _DiscreteOptimizationRun:
+    simplex = [
+        numpy.clip(
+            initial_log_parameters.copy(),
+            _DISCRETE_LOG_PARAMETER_LOWER_BOUND,
+            _DISCRETE_LOG_PARAMETER_UPPER_BOUND,
+        )
+    ]
     for index in range(initial_log_parameters.size):
         vertex = simplex[0].copy()
         vertex[index] += 0.75
-        simplex.append(numpy.clip(vertex, -10.0, 5.0))
+        simplex.append(
+            numpy.clip(
+                vertex,
+                _DISCRETE_LOG_PARAMETER_LOWER_BOUND,
+                _DISCRETE_LOG_PARAMETER_UPPER_BOUND,
+            )
+        )
     scores = [
         _evaluate_log_likelihood(
             tree,
@@ -762,11 +1084,15 @@ def _optimize_log_parameters(
         )
         for vertex in simplex
     ]
+    function_evaluation_count = len(scores)
     alpha = 1.0
     gamma = 2.0
     rho = 0.5
     sigma = 0.5
-    for _ in range(600):
+    converged = False
+    iteration_count = 0
+    simplex_shrink_count = 0
+    for iteration_count in range(1, 601):
         ordering = sorted(
             range(len(simplex)),
             key=lambda index: scores[index],
@@ -778,9 +1104,14 @@ def _optimize_log_parameters(
             max(numpy.linalg.norm(vertex - simplex[0]) for vertex in simplex[1:]) < 1e-6
             and max(abs(score - scores[0]) for score in scores[1:]) < 1e-9
         ):
+            converged = True
             break
         centroid = numpy.mean(simplex[:-1], axis=0)
-        reflected = numpy.clip(centroid + alpha * (centroid - simplex[-1]), -10.0, 5.0)
+        reflected = numpy.clip(
+            centroid + alpha * (centroid - simplex[-1]),
+            _DISCRETE_LOG_PARAMETER_LOWER_BOUND,
+            _DISCRETE_LOG_PARAMETER_UPPER_BOUND,
+        )
         reflected_score = _evaluate_log_likelihood(
             tree,
             states_by_taxon,
@@ -790,6 +1121,7 @@ def _optimize_log_parameters(
             allowed_transition_pairs=allowed_transition_pairs,
             log_parameters=reflected,
         )
+        function_evaluation_count += 1
         if scores[0] >= reflected_score > scores[-2]:
             simplex[-1] = reflected
             scores[-1] = reflected_score
@@ -797,8 +1129,8 @@ def _optimize_log_parameters(
         if reflected_score > scores[0]:
             expanded = numpy.clip(
                 centroid + gamma * (reflected - centroid),
-                -10.0,
-                5.0,
+                _DISCRETE_LOG_PARAMETER_LOWER_BOUND,
+                _DISCRETE_LOG_PARAMETER_UPPER_BOUND,
             )
             expanded_score = _evaluate_log_likelihood(
                 tree,
@@ -809,6 +1141,7 @@ def _optimize_log_parameters(
                 allowed_transition_pairs=allowed_transition_pairs,
                 log_parameters=expanded,
             )
+            function_evaluation_count += 1
             if expanded_score > reflected_score:
                 simplex[-1] = expanded
                 scores[-1] = expanded_score
@@ -819,14 +1152,14 @@ def _optimize_log_parameters(
         if reflected_score > scores[-1]:
             contracted = numpy.clip(
                 centroid + rho * (reflected - centroid),
-                -10.0,
-                5.0,
+                _DISCRETE_LOG_PARAMETER_LOWER_BOUND,
+                _DISCRETE_LOG_PARAMETER_UPPER_BOUND,
             )
         else:
             contracted = numpy.clip(
                 centroid + rho * (simplex[-1] - centroid),
-                -10.0,
-                5.0,
+                _DISCRETE_LOG_PARAMETER_LOWER_BOUND,
+                _DISCRETE_LOG_PARAMETER_UPPER_BOUND,
             )
         contracted_score = _evaluate_log_likelihood(
             tree,
@@ -837,6 +1170,7 @@ def _optimize_log_parameters(
             allowed_transition_pairs=allowed_transition_pairs,
             log_parameters=contracted,
         )
+        function_evaluation_count += 1
         if contracted_score > scores[-1]:
             simplex[-1] = contracted
             scores[-1] = contracted_score
@@ -844,11 +1178,12 @@ def _optimize_log_parameters(
         best_vertex = simplex[0]
         new_simplex = [best_vertex]
         new_scores = [scores[0]]
+        simplex_shrink_count += 1
         for vertex in simplex[1:]:
             shrunk = numpy.clip(
                 best_vertex + sigma * (vertex - best_vertex),
-                -10.0,
-                5.0,
+                _DISCRETE_LOG_PARAMETER_LOWER_BOUND,
+                _DISCRETE_LOG_PARAMETER_UPPER_BOUND,
             )
             new_simplex.append(shrunk)
             new_scores.append(
@@ -862,10 +1197,19 @@ def _optimize_log_parameters(
                     log_parameters=shrunk,
                 )
             )
+            function_evaluation_count += 1
         simplex = new_simplex
         scores = new_scores
     best_index = max(range(len(scores)), key=lambda index: scores[index])
-    return simplex[best_index], scores[best_index]
+    return _DiscreteOptimizationRun(
+        log_parameters=simplex[best_index],
+        log_likelihood=scores[best_index],
+        initial_scale=initial_scale,
+        converged=converged,
+        iteration_count=iteration_count,
+        function_evaluation_count=function_evaluation_count,
+        simplex_shrink_count=simplex_shrink_count,
+    )
 
 
 def _evaluate_log_likelihood(
@@ -892,6 +1236,61 @@ def _evaluate_log_likelihood(
         rate_matrix=rate_matrix,
         root_prior=_uniform_root_prior(len(state_order)),
     )
+
+
+def _regularize_plateau_log_parameters(
+    tree,
+    states_by_taxon: dict[str, str],
+    *,
+    state_order: list[str],
+    model: str,
+    state_ordering: str,
+    allowed_transition_pairs: set[tuple[int, int]],
+    log_parameters: numpy.ndarray,
+    reference_log_likelihood: float,
+) -> numpy.ndarray:
+    regularized = log_parameters.copy()
+    for parameter_index in range(regularized.size):
+        current_value = float(regularized[parameter_index])
+        if current_value <= (_DISCRETE_LOG_PARAMETER_LOWER_BOUND + 1e-9):
+            continue
+        current_reference_log_likelihood = _evaluate_log_likelihood(
+            tree,
+            states_by_taxon,
+            state_order=state_order,
+            model=model,
+            state_ordering=state_ordering,
+            allowed_transition_pairs=allowed_transition_pairs,
+            log_parameters=regularized,
+        )
+        if current_reference_log_likelihood < (
+            reference_log_likelihood - _DISCRETE_PLATEAU_REGULARIZATION_TOLERANCE
+        ):
+            current_reference_log_likelihood = reference_log_likelihood
+        low = _DISCRETE_LOG_PARAMETER_LOWER_BOUND
+        high = current_value
+        for _ in range(80):
+            midpoint = (low + high) / 2.0
+            candidate = regularized.copy()
+            candidate[parameter_index] = midpoint
+            candidate_log_likelihood = _evaluate_log_likelihood(
+                tree,
+                states_by_taxon,
+                state_order=state_order,
+                model=model,
+                state_ordering=state_ordering,
+                allowed_transition_pairs=allowed_transition_pairs,
+                log_parameters=candidate,
+            )
+            if (
+                current_reference_log_likelihood - candidate_log_likelihood
+                <= _DISCRETE_PLATEAU_REGULARIZATION_TOLERANCE
+            ):
+                high = midpoint
+            else:
+                low = midpoint
+        regularized[parameter_index] = high
+    return regularized
 
 
 def _parameter_count(
@@ -1439,6 +1838,14 @@ def _discrete_downstream_risks(unstable: bool) -> list[str]:
     ]
 
 
+def _detect_discrete_overparameterization(
+    *,
+    taxon_count: int,
+    parameter_count: int,
+) -> bool:
+    return parameter_count >= taxon_count
+
+
 def _format_optional_int(value: int | None) -> str:
     if value is None:
         return ""
@@ -1449,3 +1856,9 @@ def _format_optional_float(value: float | None) -> str:
     if value is None:
         return ""
     return str(value)
+
+
+def _format_optional_bool(value: bool | None) -> str:
+    if value is None:
+        return ""
+    return str(value).lower()
