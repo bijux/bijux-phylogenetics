@@ -349,6 +349,266 @@ consensus_clade_frequency_rows <- function(tree_set) {
   do.call(rbind.data.frame, c(rows, stringsAsFactors = FALSE))
 }
 
+clade_support_status <- function(supporting_tree_count, tree_count, node_kind, unscored_reason = NULL) {
+  if (identical(node_kind, "root")) {
+    return(list(
+      support_status = "fixed",
+      explanation = "the root spans the full compatible taxon set and is present in every comparison tree"
+    ))
+  }
+  if (is.na(supporting_tree_count)) {
+    if (identical(unscored_reason, "absent-root-split")) {
+      return(list(
+        support_status = "not-counted",
+        explanation = "ape::prop.clades leaves this root-adjacent split unscored when the comparison tree set never realizes the matching bipartition"
+      ))
+    }
+    return(list(
+      support_status = "not-counted",
+      explanation = "ape::prop.clades leaves this root-adjacent clade unscored because its complement is a singleton tip"
+    ))
+  }
+  if (identical(supporting_tree_count, 0L)) {
+    return(list(
+      support_status = "absent",
+      explanation = "the reference clade is absent from the comparison tree set"
+    ))
+  }
+  if (identical(supporting_tree_count, tree_count)) {
+    return(list(
+      support_status = "fixed",
+      explanation = "the reference clade is present in every comparison tree"
+    ))
+  }
+  list(
+    support_status = "partial-support",
+    explanation = "the reference clade is present in only a subset of comparison trees"
+  )
+}
+
+prop_clades_case <- function(case_payload, output_root, execution_path, r_version) {
+  reference_tree <- tryCatch(
+    ape::read.tree(case_payload$reference_tree_path),
+    error = function(error) error
+  )
+  if (inherits(reference_tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(reference_tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  comparison_tree_set <- tryCatch(
+    ape::read.tree(case_payload$input_fixture),
+    error = function(error) error
+  )
+  if (inherits(comparison_tree_set, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(comparison_tree_set),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+  if (inherits(comparison_tree_set, "phylo")) {
+    comparison_tree_set <- structure(list(comparison_tree_set), class = "multiPhylo")
+  }
+
+  compatible_taxa <- tryCatch(
+    require_identical_tree_set_taxa(
+      comparison_tree_set,
+      "reference tree support mapping requires all comparison trees to share the exact same taxon set"
+    ),
+    error = function(error) error
+  )
+  if (inherits(compatible_taxa, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "PropCladesError",
+        message = conditionMessage(compatible_taxa),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  reference_taxa <- sort(vapply(reference_tree$tip.label, normalize_node_label, character(1)))
+  compatible_taxa <- sort(vapply(compatible_taxa, normalize_node_label, character(1)))
+  if (!identical(reference_taxa, compatible_taxa)) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "PropCladesError",
+        message = "reference tree and comparison tree set must share the exact same taxon set",
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  prop_clades <- tryCatch(
+    ape::prop.clades(reference_tree, comparison_tree_set),
+    error = function(error) error
+  )
+  if (inherits(prop_clades, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "PropCladesError",
+        message = conditionMessage(prop_clades),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  tree_count <- length(comparison_tree_set)
+  root_id <- root_node(reference_tree)
+  root_children <- reference_tree$edge[reference_tree$edge[, 1] == root_id, 2]
+  depths <- as.numeric(ape::node.depth.edgelength(reference_tree))
+  internal_node_ids <- seq.int(
+    length(reference_tree$tip.label) + 1,
+    length(reference_tree$tip.label) + reference_tree$Nnode
+  )
+  rows <- data.frame(
+    node_id = integer(),
+    node_kind = character(),
+    node_label = character(),
+    descendant_taxa = character(),
+    supporting_tree_count = character(),
+    clade_frequency = character(),
+    support_percent = character(),
+    support_status = character(),
+    explanation = character(),
+    reference_branch_length = character(),
+    reference_root_depth = character(),
+    stringsAsFactors = FALSE
+  )
+  supported_clade_count <- 0L
+  absent_clade_count <- 0L
+  unscored_clade_count <- 0L
+
+  for (index in seq_along(internal_node_ids)) {
+    node_id <- internal_node_ids[[index]]
+    taxa <- descendant_taxa(reference_tree, node_id)
+    node_kind_value <- node_kind(reference_tree, node_id, root_id)
+    supporting_tree_count <- prop_clades[[index]]
+    unscored_reason <- NULL
+    if (is.na(supporting_tree_count)) {
+      supporting_tree_count_value <- NA_integer_
+      clade_frequency <- NA_real_
+      support_percent <- NA_real_
+      if (length(taxa) == length(reference_taxa) - 1L) {
+        unscored_reason <- "singleton-complement"
+      } else if (node_id %in% root_children) {
+        unscored_reason <- "absent-root-split"
+      }
+      unscored_clade_count <- unscored_clade_count + 1L
+    } else {
+      supporting_tree_count_value <- as.integer(supporting_tree_count)
+      clade_frequency <- as.numeric(supporting_tree_count_value / tree_count)
+      support_percent <- as.numeric(clade_frequency * 100.0)
+      if (identical(node_kind_value, "root")) {
+        NULL
+      } else if (identical(supporting_tree_count_value, 0L)) {
+        absent_clade_count <- absent_clade_count + 1L
+      } else {
+        supported_clade_count <- supported_clade_count + 1L
+      }
+    }
+    status_payload <- clade_support_status(
+      supporting_tree_count = supporting_tree_count_value,
+      tree_count = tree_count,
+      node_kind = node_kind_value,
+      unscored_reason = unscored_reason
+    )
+    branch_length <- node_branch_length(reference_tree, node_id)
+    rows[nrow(rows) + 1, ] <- list(
+      as.integer(node_id),
+      node_kind_value,
+      node_label(reference_tree, node_id),
+      paste(taxa, collapse = "|"),
+      if (is.na(supporting_tree_count_value)) "" else as.character(supporting_tree_count_value),
+      if (is.na(clade_frequency)) "" else as.character(clade_frequency),
+      if (is.na(support_percent)) "" else as.character(support_percent),
+      status_payload$support_status,
+      status_payload$explanation,
+      if (identical(branch_length, "")) "" else as.character(branch_length),
+      if (is.na(depths[[node_id]])) "" else as.character(depths[[node_id]])
+    )
+  }
+
+  summary_path <- file.path(output_root, "summary.json")
+  rows_path <- file.path(output_root, "support-table.tsv")
+  write_payload(
+    summary_path,
+    list(
+      tree_count = tree_count,
+      shared_taxa = unname(reference_taxa),
+      shared_taxon_count = length(reference_taxa),
+      internal_node_count = length(internal_node_ids),
+      supported_clade_count = supported_clade_count,
+      absent_clade_count = absent_clade_count,
+      unscored_clade_count = unscored_clade_count
+    )
+  )
+  write_table(rows_path, rows)
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        support_table = rows_path
+      )
+    )
+  )
+}
+
 if (!requireNamespace("ape", quietly = TRUE)) {
   write_payload(
     execution_path,
@@ -1995,6 +2255,11 @@ if (identical(case_payload$operation, "read-tree-set-structure") ||
 
 if (identical(case_payload$operation, "tree-consensus")) {
   consensus_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "tree-clade-support")) {
+  prop_clades_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 

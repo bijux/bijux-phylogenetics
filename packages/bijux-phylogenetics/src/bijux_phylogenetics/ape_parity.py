@@ -58,6 +58,7 @@ from bijux_phylogenetics.shared_dna_alignment_fixtures import (
 from bijux_phylogenetics.tree_set import (
     compute_clade_frequency_table,
     compute_consensus_tree,
+    compute_reference_tree_clade_support,
     compute_strict_consensus_tree,
 )
 from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
@@ -88,6 +89,7 @@ class ApeParityCase:
     ultrametric_option: int | None = None
     rf_mode: str | None = None
     consensus_method: str | None = None
+    reference_tree_path: Path | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -387,6 +389,62 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             tolerance=0.0,
             expected_status="consensus-error",
             consensus_method="majority-rule",
+        ),
+        ApeParityCase(
+            case_id="prop-clades-duplicate-conflict-four-taxon",
+            fixture_kind="tree-set",
+            fixture_id="prop_clades_duplicate_conflict_tree_set",
+            function_name="ape::prop.clades",
+            python_function_name="compute_reference_tree_clade_support",
+            operation="tree-clade-support",
+            input_fixture=fixture_path("tree-set", "prop_clades_duplicate_conflict_tree_set"),
+            reference_tree_path=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="prop-clades-absent-cross-pairing-clades",
+            fixture_kind="tree-set",
+            fixture_id="prop_clades_absent_clade_tree_set",
+            function_name="ape::prop.clades",
+            python_function_name="compute_reference_tree_clade_support",
+            operation="tree-clade-support",
+            input_fixture=fixture_path("tree-set", "prop_clades_absent_clade_tree_set"),
+            reference_tree_path=fixture_path("tree", "cross_pairing_rooted_four_taxon"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="prop-clades-child-order-insensitive",
+            fixture_kind="tree-set",
+            fixture_id="prop_clades_child_order_tree_set",
+            function_name="ape::prop.clades",
+            python_function_name="compute_reference_tree_clade_support",
+            operation="tree-clade-support",
+            input_fixture=fixture_path("tree-set", "prop_clades_child_order_tree_set"),
+            reference_tree_path=fixture_path("tree", "branch_support_labels"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="prop-clades-posterior-six-taxon",
+            fixture_kind="tree-set",
+            fixture_id="prop_clades_posterior_six_taxon_tree_set",
+            function_name="ape::prop.clades",
+            python_function_name="compute_reference_tree_clade_support",
+            operation="tree-clade-support",
+            input_fixture=fixture_path("tree-set", "prop_clades_posterior_six_taxon_tree_set"),
+            reference_tree_path=fixture_path("tree", "balanced_rooted_six_taxon"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="prop-clades-mismatched-taxon-set",
+            fixture_kind="tree-set",
+            fixture_id="prop_clades_mismatched_taxon_tree_set",
+            function_name="ape::prop.clades",
+            python_function_name="compute_reference_tree_clade_support",
+            operation="tree-clade-support",
+            input_fixture=fixture_path("tree-set", "prop_clades_mismatched_taxon_tree_set"),
+            reference_tree_path=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=0.0,
+            expected_status="prop-clades-error",
         ),
         ApeParityCase(
             case_id="root-tree-single-outgroup-tip",
@@ -1300,6 +1358,9 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
                 "ultrametric_option": case.ultrametric_option,
                 "rf_mode": case.rf_mode,
                 "consensus_method": case.consensus_method,
+                "reference_tree_path": (
+                    None if case.reference_tree_path is None else str(case.reference_tree_path)
+                ),
             },
             indent=2,
             sort_keys=True,
@@ -1678,6 +1739,46 @@ def _build_bijux_consensus_rows(
         }
         for row in frequency_report.clade_frequencies
     ], dumps_newick(tree)
+
+
+def _build_bijux_prop_clades_rows(
+    reference_tree_path: Path,
+    comparison_tree_set_path: Path,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    report = compute_reference_tree_clade_support(
+        reference_tree_path,
+        comparison_tree_set_path,
+    )
+    return {
+        "tree_count": report.tree_count,
+        "shared_taxa": report.shared_taxa,
+        "shared_taxon_count": len(report.shared_taxa),
+        "internal_node_count": len(report.rows),
+        "supported_clade_count": report.supported_clade_count,
+        "absent_clade_count": report.absent_clade_count,
+        "unscored_clade_count": report.unscored_clade_count,
+    }, [
+        {
+            "node_id": row.node_id,
+            "node_kind": row.node_kind,
+            "node_label": "" if row.node_label is None else row.node_label,
+            "descendant_taxa": "|".join(row.descendant_taxa),
+            "supporting_tree_count": (
+                "" if row.supporting_tree_count is None else row.supporting_tree_count
+            ),
+            "clade_frequency": "" if row.clade_frequency is None else row.clade_frequency,
+            "support_percent": "" if row.support_percent is None else row.support_percent,
+            "support_status": row.support_status,
+            "explanation": row.explanation,
+            "reference_branch_length": (
+                "" if row.reference_branch_length is None else row.reference_branch_length
+            ),
+            "reference_root_depth": (
+                "" if row.reference_root_depth is None else row.reference_root_depth
+            ),
+        }
+        for row in report.rows
+    ]
 
 
 def _inspect_tree_set_rooted_flags(input_fixture: Path) -> tuple[bool, bool]:
@@ -2233,6 +2334,16 @@ def _build_bijux_case_payload(
             consensus_method=case.consensus_method,
         )
         return summary, rows, normalized_text
+    if case.operation == "tree-clade-support":
+        if case.reference_tree_path is None:
+            raise ValueError(
+                f"ape parity case '{case.case_id}' is missing a reference tree path"
+            )
+        summary, rows = _build_bijux_prop_clades_rows(
+            case.reference_tree_path,
+            case.input_fixture,
+        )
+        return summary, rows, None
     if case.operation == "tree-tip-distance":
         summary, rows = _build_bijux_tree_tip_distance_rows(case.input_fixture)
         return summary, rows, None
@@ -2334,6 +2445,10 @@ def _load_reference_case_payload(
         rows = _load_rows_table(execution_root / "clade-frequencies.tsv")
         normalized_text = _canonical_newick(execution_root / "normalized-tree.nwk")
         return summary, rows, normalized_text
+    if case.operation == "tree-clade-support":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "support-table.tsv")
+        return summary, rows, None
     if case.operation == "tree-tip-distance":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "tip-distance-long.tsv")
@@ -2852,6 +2967,16 @@ def run_ape_parity_cases(
                     mismatch_reason = "reference_expected_consensus_error_missing"
                 elif not bijux_error.get("message") or not reference_error.get("message"):
                     mismatch_reason = "consensus_error_message_missing"
+                else:
+                    status = "passed"
+                    mismatch_reason = None
+            if case.expected_status == "prop-clades-error":
+                if bijux_error is None:
+                    mismatch_reason = "bijux_expected_prop_clades_error_missing"
+                elif reference_error is None:
+                    mismatch_reason = "reference_expected_prop_clades_error_missing"
+                elif not bijux_error.get("message") or not reference_error.get("message"):
+                    mismatch_reason = "prop_clades_error_message_missing"
                 else:
                     status = "passed"
                     mismatch_reason = None

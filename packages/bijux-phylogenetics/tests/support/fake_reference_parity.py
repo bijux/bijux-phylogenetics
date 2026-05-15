@@ -475,6 +475,172 @@ def topology_distance_rows(left_tree, right_tree, rf_mode):
     ]
     return rows, len(left_ids), len(right_ids), len(shared_ids), len(left_only_ids), len(right_only_ids)
 
+def informative_clades(tree, shared_taxa):
+    total_tip_count = len(shared_taxa)
+    clades = []
+    for clade in tree.find_clades(order="preorder"):
+        if clade is tree.root or clade.is_terminal():
+            continue
+        taxa = frozenset(descendant_taxa(clade))
+        if 1 < len(taxa) < total_tip_count and taxa <= shared_taxa:
+            clades.append(taxa)
+    return clades
+
+def split_counts(tree_set):
+    counts = {{}}
+    for tree in tree_set:
+        for split_id in unrooted_topology_signatures(tree):
+            counts[split_id] = counts.get(split_id, 0) + 1
+    return counts
+
+def canonical_bipartition(taxa, all_taxa):
+    return "|".join(canonical_unrooted_signature(sorted(taxa), sorted(all_taxa)))
+
+def clade_support_status(supporting_tree_count, tree_count, node_kind, unscored_reason=None):
+    if node_kind == "root":
+        return (
+            "fixed",
+            "the root spans the full compatible taxon set and is present in every comparison tree",
+        )
+    if supporting_tree_count is None:
+        if unscored_reason == "absent-root-split":
+            return (
+                "not-counted",
+                "ape::prop.clades leaves this root-adjacent split unscored when the comparison tree set never realizes the matching bipartition",
+            )
+        return (
+            "not-counted",
+            "ape::prop.clades leaves this root-adjacent clade unscored because its complement is a singleton tip",
+        )
+    if supporting_tree_count == 0:
+        return (
+            "absent",
+            "the reference clade is absent from the comparison tree set",
+        )
+    if supporting_tree_count == tree_count:
+        return (
+            "fixed",
+            "the reference clade is present in every comparison tree",
+        )
+    return (
+        "partial-support",
+        "the reference clade is present in only a subset of comparison trees",
+    )
+
+def prop_clades_rows(reference_tree, comparison_trees):
+    reference_taxa = frozenset(terminal.name for terminal in reference_tree.get_terminals())
+    comparison_taxa = frozenset(terminal.name for terminal in comparison_trees[0].get_terminals())
+    if any(
+        frozenset(terminal.name for terminal in tree.get_terminals()) != comparison_taxa
+        for tree in comparison_trees[1:]
+    ):
+        raise ValueError(
+            "reference tree support mapping requires all comparison trees to share the exact same taxon set"
+        )
+    if reference_taxa != comparison_taxa:
+        raise ValueError(
+            "reference tree and comparison tree set must share the exact same taxon set"
+        )
+
+    tree_count = len(comparison_trees)
+    clade_counts = {{}}
+    for tree in comparison_trees:
+        for clade in informative_clades(tree, comparison_taxa):
+            clade_id = "|".join(sorted(clade))
+            clade_counts[clade_id] = clade_counts.get(clade_id, 0) + 1
+    split_count_lookup = split_counts(comparison_trees)
+    depths = node_depth_lookup(reference_tree)
+    rows = []
+    supported_clade_count = 0
+    absent_clade_count = 0
+    unscored_clade_count = 0
+    root_children = list(getattr(reference_tree.root, "clades", []))
+    tip_count = len(list(reference_tree.get_terminals()))
+    internal_clades = list(iter_internal_clades_preorder(reference_tree.root))
+
+    for offset, clade in enumerate(internal_clades, start=1):
+        node_id = tip_count + offset
+        taxa = descendant_taxa(clade)
+        clade_id = "|".join(taxa)
+        node_kind = "root" if clade is reference_tree.root else "internal"
+        if clade is reference_tree.root:
+            supporting_tree_count = tree_count
+            clade_frequency = 1.0
+            support_percent = 100.0
+            unscored_reason = None
+        elif len(taxa) == len(reference_taxa) - 1:
+            supporting_tree_count = None
+            clade_frequency = ""
+            support_percent = ""
+            unscored_reason = "singleton-complement"
+            unscored_clade_count += 1
+        elif clade in root_children:
+            split_support = split_count_lookup.get(
+                canonical_bipartition(taxa, reference_taxa),
+                0,
+            )
+            if split_support == 0:
+                supporting_tree_count = None
+                clade_frequency = ""
+                support_percent = ""
+                unscored_reason = "absent-root-split"
+                unscored_clade_count += 1
+            else:
+                supporting_tree_count = split_support
+                clade_frequency = supporting_tree_count / tree_count
+                support_percent = clade_frequency * 100.0
+                unscored_reason = None
+                supported_clade_count += 1
+        else:
+            supporting_tree_count = clade_counts.get(clade_id, 0)
+            clade_frequency = supporting_tree_count / tree_count
+            support_percent = clade_frequency * 100.0
+            unscored_reason = None
+            if supporting_tree_count == 0:
+                absent_clade_count += 1
+            else:
+                supported_clade_count += 1
+
+        support_status, explanation = clade_support_status(
+            supporting_tree_count,
+            tree_count,
+            node_kind,
+            unscored_reason,
+        )
+        node_label = normalize_label(
+            clade.name if clade.name is not None else getattr(clade, "confidence", None)
+        )
+        rows.append(
+            {{
+                "node_id": node_id,
+                "node_kind": node_kind,
+                "node_label": node_label,
+                "descendant_taxa": clade_id,
+                "supporting_tree_count": ""
+                if supporting_tree_count is None
+                else supporting_tree_count,
+                "clade_frequency": clade_frequency,
+                "support_percent": support_percent,
+                "support_status": support_status,
+                "explanation": explanation,
+                "reference_branch_length": ""
+                if clade.branch_length is None
+                else clade.branch_length,
+                "reference_root_depth": depths[id(clade)],
+            }}
+        )
+
+    summary = {{
+        "tree_count": tree_count,
+        "shared_taxa": sorted(reference_taxa),
+        "shared_taxon_count": len(reference_taxa),
+        "internal_node_count": len(internal_clades),
+        "supported_clade_count": supported_clade_count,
+        "absent_clade_count": absent_clade_count,
+        "unscored_clade_count": unscored_clade_count,
+    }}
+    return summary, rows
+
 def matrix_rank(matrix, tolerance=1e-12):
     working = [list(map(float, row)) for row in matrix]
     row_count = len(working)
@@ -1326,6 +1492,52 @@ if case_payload["operation"] == "tree-consensus":
                 "summary_json": str(summary_path),
                 "clade_frequencies": str(rows_path),
                 "normalized_tree": str(newick_path),
+            }},
+        }},
+    )
+    raise SystemExit(0)
+
+if case_payload["operation"] == "tree-clade-support":
+    try:
+        reference_tree = Phylo.read(case_payload["reference_tree_path"], "newick")
+        comparison_trees = list(Phylo.parse(case_payload["input_fixture"], "newick"))
+        if not comparison_trees:
+            raise ValueError("tree set contains no trees")
+        summary, rows = prop_clades_rows(reference_tree, comparison_trees)
+    except Exception as error:
+        write_json(
+            execution_path,
+            {{
+                "status": "failed",
+                "mismatch_reason": "reference_execution_failed",
+                "error_type": "PropCladesError",
+                "message": str(error),
+                "case_id": case_payload["case_id"],
+                "function_name": case_payload["function_name"],
+                "input_fixture": case_payload["input_fixture"],
+                "r_version": "4.6.0",
+                "ape_version": "5.0.0",
+            }},
+        )
+        raise SystemExit(0)
+
+    summary.update(SUMMARY_OVERRIDES)
+    summary_path = output_root / "summary.json"
+    rows_path = output_root / "support-table.tsv"
+    write_json(summary_path, summary)
+    write_tsv(rows_path, rows)
+    write_json(
+        execution_path,
+        {{
+            "status": "ok",
+            "case_id": case_payload["case_id"],
+            "function_name": case_payload["function_name"],
+            "input_fixture": case_payload["input_fixture"],
+            "r_version": "4.6.0",
+            "ape_version": "5.0.0",
+            "outputs": {{
+                "summary_json": str(summary_path),
+                "support_table": str(rows_path),
             }},
         }},
     )
