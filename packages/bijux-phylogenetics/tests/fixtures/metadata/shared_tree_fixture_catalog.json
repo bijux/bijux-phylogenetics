@@ -181,9 +181,25 @@
       "feature_tags": [
         "balanced-binary",
         "rooted",
-        "non-ultrametric"
+        "ultrametric"
       ],
-      "notes": "Eight-tip rooted tree used so the shared suite is not limited to four-tip toy examples."
+      "notes": "Eight-tip rooted ultrametric tree used so the shared suite is not limited to four-tip toy examples."
+    },
+    {
+      "fixture_id": "ultrametric_zero_internal_branch",
+      "relative_path": "trees/example_tree_ultrametric_zero_internal.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "ultrametric",
+        "internal-node-labels",
+        "zero-branch"
+      ],
+      "notes": "Rooted ultrametric tree with internal labels and one zero-length internal branch for branching-time parity."
     },
     {
       "fixture_id": "negative_branch_length",
