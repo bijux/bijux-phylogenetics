@@ -4,6 +4,7 @@ import csv
 from dataclasses import asdict, dataclass, replace
 import json
 from importlib import metadata
+import math
 import os
 from pathlib import Path
 import re
@@ -12,6 +13,9 @@ import subprocess
 import tempfile
 
 from bijux_phylogenetics.clades import extract_tree_clades, extract_tree_set_clades
+from bijux_phylogenetics.comparative.brownian_covariance import (
+    summarize_brownian_covariance,
+)
 from bijux_phylogenetics.compare.structural_parity import (
     compare_tree_sets_structurally,
     compare_tree_structurally,
@@ -827,6 +831,46 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             tolerance=1e-12,
         ),
         ApeParityCase(
+            case_id="vcv-rooted-ultrametric",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::vcv.phylo",
+            python_function_name="summarize_brownian_covariance",
+            operation="tree-brownian-covariance",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="vcv-rooted-non-ultrametric",
+            fixture_kind="tree",
+            fixture_id="pectinate_rooted_non_ultrametric",
+            function_name="ape::vcv.phylo",
+            python_function_name="summarize_brownian_covariance",
+            operation="tree-brownian-covariance",
+            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="vcv-unrooted-branch-length",
+            fixture_kind="tree",
+            fixture_id="unrooted_branch_length_tree",
+            function_name="ape::vcv.phylo",
+            python_function_name="summarize_brownian_covariance",
+            operation="tree-brownian-covariance",
+            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="vcv-zero-branch-singular",
+            fixture_kind="tree",
+            fixture_id="zero_branch_lengths",
+            function_name="ape::vcv.phylo",
+            python_function_name="summarize_brownian_covariance",
+            operation="tree-brownian-covariance",
+            input_fixture=fixture_path("tree", "zero_branch_lengths"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
             case_id="dna-base-frequency-lowercase",
             fixture_kind="dna-alignment",
             fixture_id="lowercase_aligned_dna",
@@ -1328,6 +1372,39 @@ def _build_bijux_tree_tip_distance_rows(
     ]
 
 
+def _build_bijux_brownian_covariance_rows(
+    input_fixture: Path,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    report = summarize_brownian_covariance(input_fixture)
+    return {
+        "tip_count": len(report.taxa),
+        "rooted": report.tree_is_rooted,
+        "tip_labels": report.taxa,
+        "pair_count": len(report.rows),
+        "tree_is_ultrametric": report.tree_is_ultrametric,
+        "minimum_root_to_tip_depth": report.minimum_root_to_tip_depth,
+        "maximum_root_to_tip_depth": report.maximum_root_to_tip_depth,
+        "minimum_branch_length": report.minimum_branch_length,
+        "maximum_branch_length": report.maximum_branch_length,
+        "matrix_dimension": report.matrix_dimension,
+        "matrix_rank": report.matrix_rank,
+        "singular": report.singular,
+        "near_singular": report.near_singular,
+        "positive_definite": report.positive_definite,
+        "condition_number": (
+            None if math.isinf(report.condition_number) else report.condition_number
+        ),
+        "raw_log_determinant": report.raw_log_determinant,
+    }, [
+        {
+            "left_taxon": row.left_taxon,
+            "right_taxon": row.right_taxon,
+            "shared_ancestry_covariance": row.shared_ancestry_covariance,
+        }
+        for row in report.rows
+    ]
+
+
 def _build_bijux_translation_rows(
     input_fixture: Path,
     *,
@@ -1574,6 +1651,7 @@ def _persist_failure_bundle(
         _write_json(artifact_root / "reference-summary.observed.json", reference_summary)
     if reference_rows is not None:
         _write_json(artifact_root / "reference-rows.observed.json", reference_rows)
+        _write_rows_table(artifact_root / "reference-rows.observed.tsv", reference_rows)
     if bijux_summary is not None:
         _write_json(artifact_root / "bijux-summary.json", bijux_summary)
     if reference_error is not None:
@@ -1582,6 +1660,7 @@ def _persist_failure_bundle(
         _write_json(artifact_root / "bijux-error.json", bijux_error)
     if bijux_rows is not None:
         _write_json(artifact_root / "bijux-rows.json", bijux_rows)
+        _write_rows_table(artifact_root / "bijux-rows.tsv", bijux_rows)
     if bijux_normalized_text is not None:
         (artifact_root / "bijux-normalized.txt").write_text(
             f"{bijux_normalized_text}\n",
@@ -1664,6 +1743,9 @@ def _build_bijux_case_payload(
     if case.operation == "tree-tip-distance":
         summary, rows = _build_bijux_tree_tip_distance_rows(case.input_fixture)
         return summary, rows, None
+    if case.operation == "tree-brownian-covariance":
+        summary, rows = _build_bijux_brownian_covariance_rows(case.input_fixture)
+        return summary, rows, None
     if case.operation == "dna-base-frequency":
         summary, rows = _build_bijux_base_frequency_summary(case.input_fixture)
         return summary, rows, None
@@ -1730,6 +1812,10 @@ def _load_reference_case_payload(
     if case.operation == "tree-tip-distance":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "tip-distance-long.tsv")
+        return summary, rows, None
+    if case.operation == "tree-brownian-covariance":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "covariance-long.tsv")
         return summary, rows, None
     if case.operation == "dna-base-frequency":
         summary = _load_json(execution_root / "summary.json")
