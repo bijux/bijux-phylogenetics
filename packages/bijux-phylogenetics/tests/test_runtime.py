@@ -3365,8 +3365,8 @@ def test_simulate_coalescent_trees_returns_requested_sample_size() -> None:
     assert report.tip_count == 4
     assert sorted(trees[0].tip_names) == ["Taxon1", "Taxon2", "Taxon3", "Taxon4"]
     assert report.records[0].newick == (
-        "((Taxon1:0.41605101339611,Taxon4:0.41605101339611):0.455215777552457,"
-        "(Taxon2:0.065219140705801,Taxon3:0.065219140705801):0.806047650242766);"
+        "(((Taxon1:0.065219140705801,Taxon4:0.065219140705801):0.054506152335159,"
+        "Taxon2:0.11972529304096):1.05249561807093,Taxon3:1.17222091111189);"
     )
 
 

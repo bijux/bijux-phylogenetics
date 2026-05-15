@@ -626,30 +626,28 @@ def _simulate_coalescent_tree_once(
         raise ValueError(f"population_size must be positive, got {population_size}")
 
     rng = random.Random(seed)  # nosec B311
-    lineages = [
-        _Lineage(
-            node=TreeNode(name=f"{taxon_prefix}{index}"),
-            start_time=0.0,
-            is_root=False,
+    node_heights = []
+    cumulative_height = 0.0
+    for lineage_count in range(tip_count, 1, -1):
+        cumulative_height += rng.expovariate(
+            lineage_count * (lineage_count - 1) / (2.0 * population_size)
         )
-        for index in range(1, tip_count + 1)
+        node_heights.append(cumulative_height)
+    pool: list[tuple[TreeNode, float]] = [
+        (TreeNode(), 0.0) for _ in range(tip_count)
     ]
-    absolute_time = 0.0
-    while len(lineages) > 1:
-        lineage_count = len(lineages)
-        rate = lineage_count * (lineage_count - 1) / (2.0 * population_size)
-        absolute_time += rng.expovariate(rate)
-        left_index, right_index = _choose_two_indices(rng, len(lineages))
-        right = lineages.pop(right_index)
-        left = lineages.pop(left_index)
-        _finalize_branch(left, absolute_time)
-        _finalize_branch(right, absolute_time)
-        parent = TreeNode(children=[left.node, right.node])
-        lineages.append(_Lineage(node=parent, start_time=absolute_time, is_root=False))
-    root = lineages[0].node
+    for node_height in node_heights:
+        left_index, right_index = _choose_two_indices(rng, len(pool))
+        right_node, right_height = pool.pop(right_index)
+        left_node, left_height = pool.pop(left_index)
+        left_node.branch_length = _round_float(node_height - left_height)
+        right_node.branch_length = _round_float(node_height - right_height)
+        pool.append((TreeNode(children=[left_node, right_node]), node_height))
+    root, _root_height = pool[0]
     root.branch_length = None
     tree = PhyloTree(root=root, source_format="newick")
     tree.rooted = True
+    _label_tree_leaves_randomized(tree, taxon_prefix=taxon_prefix, rng=rng)
     return tree
 
 
