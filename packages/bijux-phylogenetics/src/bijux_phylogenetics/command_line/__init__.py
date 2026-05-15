@@ -705,6 +705,10 @@ from bijux_phylogenetics.reports.service import (
     write_annotation_report,
 )
 from bijux_phylogenetics.reports.tree_package import build_tree_report_package
+from bijux_phylogenetics.provenance.method_tiers import (
+    method_tier_metrics,
+    method_tier_warnings,
+)
 from bijux_phylogenetics.results import build_command_result, build_error_result
 from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
@@ -9433,14 +9437,17 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "iteration_count": report.iteration_count,
                             "binomial_log_likelihood": report.binomial_log_likelihood,
                             "separation_detected": report.separation_detected,
-                            "warning_count": len(report.warnings),
+                            "warning_count": len(report.warnings)
+                            + len(method_tier_warnings(report.method_tier)),
                             "coefficient_inference_distribution": (
                                 report.coefficients[0].inference_distribution
                                 if report.coefficients
                                 else None
                             ),
+                            **method_tier_metrics(report.method_tier),
                         },
-                        warnings=[warning.message for warning in report.warnings],
+                        warnings=method_tier_warnings(report.method_tier)
+                        + [warning.message for warning in report.warnings],
                         data=report,
                     ),
                     json_output=args.json,
@@ -16538,6 +16545,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "long_outlier_count": (
                                     result.branch_stats.long_outlier_count
                                 ),
+                                **method_tier_metrics(result.method_tier),
                             },
                             data=result,
                         ),
@@ -17344,6 +17352,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 )
                             ),
                             "timeout_seconds": args.timeout_seconds,
+                            **method_tier_metrics(report.method_tier),
                         },
                         data=report,
                     ),
@@ -17829,9 +17838,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="adapter",
                         inputs=[args.posterior_trees, args.traces],
                         outputs=outputs,
+                        warnings=method_tier_warnings(report.method_tier),
                         metrics={
                             "kept_tree_count": report.kept_tree_count,
-                            "warning_count": report.warning_count,
+                            "warning_count": report.warning_count
+                            + len(method_tier_warnings(report.method_tier)),
+                            **method_tier_metrics(report.method_tier),
                         },
                         data=report,
                     ),
@@ -18368,9 +18380,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="adapter",
                         inputs=inputs,
                         outputs=outputs,
+                        warnings=method_tier_warnings(report.method_tier),
                         metrics={
                             "invalid_calibration_count": report.invalid_calibration_count,
-                            "warning_count": report.warning_count,
+                            "warning_count": report.warning_count
+                            + len(method_tier_warnings(report.method_tier)),
+                            **method_tier_metrics(report.method_tier),
                         },
                         data=report,
                     ),

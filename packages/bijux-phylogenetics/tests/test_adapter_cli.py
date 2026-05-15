@@ -1409,6 +1409,8 @@ def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
     assert exit_code == 0
     assert payload["metrics"]["selected_model"] == "GTR+G"
     assert payload["metrics"]["sequence_type"] == "dna"
+    assert payload["metrics"]["method_tier"] == "supported"
+    assert payload["metrics"]["method_inference_mode"] == "inference"
     assert payload["metrics"]["iqtree_seed"] == 1
     assert payload["metrics"]["iqtree_threads"] == 1
     assert (
@@ -1948,6 +1950,12 @@ def test_adapter_mrbayes_convergence_and_posterior_report_cli_emit_metrics(
     report_payload = json.loads(capsys.readouterr().out)
     assert report_exit == 0
     assert report_payload["metrics"]["kept_tree_count"] == 3
+    assert report_payload["metrics"]["warning_count"] >= 1
+    assert report_payload["metrics"]["method_tier"] == "parser-only"
+    assert report_payload["metrics"]["method_inference_mode"] == "parser-only"
+    assert report_payload["warnings"] == [
+        "parser-only method tier: this report parses or audits external Bayesian outputs and does not itself infer posterior trees."
+    ]
     assert posterior_report_path.exists()
 
 
@@ -2357,6 +2365,11 @@ def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(
     report_payload = json.loads(capsys.readouterr().out)
     assert report_exit == 0
     assert report_payload["metrics"]["invalid_calibration_count"] == 0
+    assert report_payload["metrics"]["warning_count"] >= 1
+    assert report_payload["metrics"]["method_tier"] == "parser-only"
+    assert report_payload["warnings"] == [
+        "parser-only method tier: this report parses or audits external Bayesian outputs and does not itself infer posterior trees."
+    ]
     assert report_path.exists()
 
     diagnostics_path.write_text(

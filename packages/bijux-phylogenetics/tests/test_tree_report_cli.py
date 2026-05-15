@@ -31,6 +31,8 @@ def test_cli_report_tree_package_writes_review_directory(
     assert payload["metrics"]["tip_count"] == 4
     assert payload["metrics"]["supported_branch_count"] == 3
     assert payload["metrics"]["rendered_support_count"] == 2
+    assert payload["metrics"]["method_tier"] == "advisory"
+    assert payload["metrics"]["method_inference_mode"] == "review-only"
     assert len(payload["outputs"]) == 6
     assert (output_dir / "tree-report.html").exists()
     assert (output_dir / "tree-image.svg").exists()
