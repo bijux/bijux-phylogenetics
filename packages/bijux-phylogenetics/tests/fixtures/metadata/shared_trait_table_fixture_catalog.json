@@ -147,6 +147,82 @@
       "notes": "Comparative categorical table with deliberately permuted taxon rows to prove order independence."
     },
     {
+      "fixture_id": "ace_continuous_balanced",
+      "relative_path": "metadata/example_traits_comparative.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "continuous-ace-pic-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-ancestral-states",
+        "balanced-tree"
+      ],
+      "notes": "Canonical balanced four-taxon continuous trait table used for direct Brownian `ape::ace(..., method='pic')` ancestral estimate and interval parity."
+    },
+    {
+      "fixture_id": "ace_continuous_pectinate",
+      "relative_path": "metadata/example_traits_comparative.tsv",
+      "tree_fixture_id": "pectinate_rooted_non_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "continuous-ace-pic-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-ancestral-states",
+        "pectinate-tree",
+        "non-ultrametric-tree"
+      ],
+      "notes": "Shared four-taxon continuous ancestral table paired with the ladderized rooted tree to prove non-ultrametric `ape::ace(..., method='pic')` parity."
+    },
+    {
+      "fixture_id": "ace_continuous_six_taxon",
+      "relative_path": "metadata/example_traits_comparative_multiple.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response_growth"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "continuous-ace-pic-ready",
+      "row_count": 6,
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-ancestral-states",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon continuous response table used to prove that the governed Brownian ancestral lane scales beyond the smallest four-tip examples."
+    },
+    {
+      "fixture_id": "ace_continuous_missing_values",
+      "relative_path": "metadata/example_traits_brownian_missing.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response_growth"
+      ],
+      "validation_expectation": "missing-and-nonnumeric-values-present",
+      "ape_reference_expectation": "continuous-ace-ready-after-pruning",
+      "row_count": 7,
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-ancestral-states",
+        "missing-trait-values",
+        "nonnumeric-trait-values",
+        "extra-taxa-not-in-tree",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon continuous ancestral table with one missing trait value, one nonnumeric value, and one extra taxon used to prove explicit Brownian pruning policy before live `ape::ace` comparison."
+    },
+    {
       "fixture_id": "pic_continuous_balanced",
       "relative_path": "metadata/example_traits_comparative.tsv",
       "tree_fixture_id": "balanced_rooted_ultrametric",

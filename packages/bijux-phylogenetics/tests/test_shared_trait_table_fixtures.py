@@ -38,6 +38,7 @@ def test_shared_trait_table_fixture_catalog_covers_required_goal_cases() -> None
 
     assert {
         "continuous-trait",
+        "continuous-ancestral-states",
         "binary-discrete-trait",
         "multistate-discrete-trait",
         "missing-trait-values",
@@ -218,3 +219,55 @@ def test_shared_trait_table_fixture_catalog_supports_governed_pic_cases() -> Non
     assert missing_report.taxon_count == 4
     assert missing_report.input_audit.pruned_missing_value_taxa == ["B"]
     assert "nonnumeric-trait-values" in missing_fixture.feature_tags
+
+
+def test_shared_trait_table_fixture_catalog_supports_governed_continuous_ace_cases() -> (
+    None
+):
+    balanced_fixture = get_shared_trait_table_fixture("ace_continuous_balanced")
+    pectinate_fixture = get_shared_trait_table_fixture("ace_continuous_pectinate")
+    six_taxon_fixture = get_shared_trait_table_fixture("ace_continuous_six_taxon")
+    missing_fixture = get_shared_trait_table_fixture("ace_continuous_missing_values")
+
+    balanced_tree = get_shared_tree_fixture(balanced_fixture.tree_fixture_id).path
+    pectinate_tree = get_shared_tree_fixture(pectinate_fixture.tree_fixture_id).path
+    six_taxon_tree = get_shared_tree_fixture(six_taxon_fixture.tree_fixture_id).path
+
+    balanced_summary = summarize_continuous_ancestral_report(
+        reconstruct_continuous_ancestral_states(
+            balanced_tree,
+            balanced_fixture.path,
+            trait="response",
+        )
+    )
+    pectinate_summary = summarize_continuous_ancestral_report(
+        reconstruct_continuous_ancestral_states(
+            pectinate_tree,
+            pectinate_fixture.path,
+            trait="response",
+        )
+    )
+    six_taxon_summary = summarize_continuous_ancestral_report(
+        reconstruct_continuous_ancestral_states(
+            six_taxon_tree,
+            six_taxon_fixture.path,
+            trait="response_growth",
+        )
+    )
+    missing_report = reconstruct_continuous_ancestral_states(
+        six_taxon_tree,
+        missing_fixture.path,
+        trait="response_growth",
+    )
+
+    assert balanced_summary.analyzed_taxon_count == 4
+    assert balanced_summary.tree_is_ultrametric is True
+    assert pectinate_summary.analyzed_taxon_count == 4
+    assert pectinate_summary.tree_is_ultrametric is False
+    assert six_taxon_summary.analyzed_taxon_count == 6
+    assert six_taxon_summary.internal_node_count == 5
+    assert missing_report.taxon_count == 4
+    assert missing_report.dropped_missing_taxa == ["B"]
+    assert missing_report.dropped_non_numeric_taxa == ["C"]
+    assert missing_report.brownian_fit_diagnostics is not None
+    assert missing_report.brownian_fit_diagnostics.tree_is_ultrametric is True
