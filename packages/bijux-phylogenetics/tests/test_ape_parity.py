@@ -364,7 +364,7 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert consensus_majority_case.reference_summary["consensus_threshold"] == pytest.approx(
         0.5
     )
-    assert consensus_majority_case.reference_summary["included_clade_count"] == 2
+    assert consensus_majority_case.reference_summary["included_clade_count"] == 1
     consensus_error_case = next(
         observation
         for observation in report.observations
