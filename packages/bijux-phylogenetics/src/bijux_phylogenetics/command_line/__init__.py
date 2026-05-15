@@ -670,6 +670,8 @@ from bijux_phylogenetics.io.fasta import (
     write_alignment_segregating_site_table,
     write_fasta_alignment,
     write_sequence_identity_matrix,
+    write_translation_codon_validation_table,
+    write_translation_excluded_sequence_table,
 )
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
@@ -2347,6 +2349,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_translate.add_argument("alignment", type=Path)
     alignment_translate.add_argument("--out", required=True, type=Path)
+    alignment_translate.add_argument(
+        "--codon-validation-out",
+        type=Path,
+        help="Write a codon-level translation validation ledger as TSV.",
+    )
+    alignment_translate.add_argument(
+        "--excluded-sequences-out",
+        type=Path,
+        help="Write any translation exclusions as TSV.",
+    )
     alignment_translate.add_argument(
         "--genetic-code",
         default="1",
@@ -8590,11 +8602,24 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     genetic_code=args.genetic_code,
                 )
                 output_path = write_fasta_alignment(args.out, records)
+                outputs_to_finalize = [output_path]
+                if args.codon_validation_out is not None:
+                    outputs_to_finalize.append(
+                        write_translation_codon_validation_table(
+                            args.codon_validation_out, report
+                        )
+                    )
+                if args.excluded_sequences_out is not None:
+                    outputs_to_finalize.append(
+                        write_translation_excluded_sequence_table(
+                            args.excluded_sequences_out, report
+                        )
+                    )
                 outputs = _finalize_outputs(
                     args,
                     command="alignment",
                     inputs=[args.alignment],
-                    outputs=[output_path],
+                    outputs=outputs_to_finalize,
                 )
                 _print_result(
                     build_command_result(
@@ -8605,10 +8630,16 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "genetic_code_id": report.genetic_code_id,
                             "translated_sequence_count": report.translated_sequence_count,
                             "translated_alignment_length": report.translated_alignment_length,
+                            "dropped_trailing_nucleotide_count": report.dropped_trailing_nucleotide_count,
                             "invalid_codon_count": report.invalid_codon_count,
                             "stop_codon_count": report.stop_codon_count,
+                            "internal_stop_sequence_count": report.internal_stop_sequence_count,
+                            "terminal_stop_sequence_count": report.terminal_stop_sequence_count,
+                            "trailing_partial_codon_sequence_count": report.trailing_partial_codon_sequence_count,
+                            "excluded_sequence_count": len(report.excluded_sequences),
                         },
                         data=report,
+                        warnings=report.warnings,
                     ),
                     json_output=args.json,
                 )
