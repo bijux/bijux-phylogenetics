@@ -3497,11 +3497,20 @@ independent contrasts. Its JSON metrics report:
 Without `--predictor-trait`, the command returns one contrast report for the
 requested trait. When `--predictor-trait` is supplied, the command also fits a
 through-origin regression on the matched node-level contrasts and preserves
-that under `data.regression`.
+that under `data.regression`. The returned `data.contrast_report.input_audit`
+also preserves the owned input-policy surface for the run:
+- `tree_is_ultrametric`
+- `minimum_root_to_tip_depth`
+- `maximum_root_to_tip_depth`
+- `ultrametric_policy`
+- `missing_value_policy`
+- `pruned_missing_value_taxa`
+- `warnings`
 
 When `--contrasts-out` is supplied, `comparative contrasts` writes one flat
 contrast ledger as CSV or TSV. Each row preserves:
 - `trait`
+- `node_id`
 - `node`
 - `left_taxa`
 - `right_taxa`
@@ -3532,6 +3541,11 @@ or TSV. Each row preserves:
 
 The regression output is explicit rather than inferred. `--regression-out`
 without `--predictor-trait` is rejected instead of silently writing nothing.
+The owned Bijux surface now also has governed live `ape::pic` parity on
+balanced rooted ultrametric, pectinate rooted non-ultrametric, and six-taxon
+clean trait-table fixtures. Missing trait values remain an explicit owned
+pruning policy rather than a literal live-`ape` parity lane, and negative
+branch lengths are rejected as an invalid comparative-analysis boundary.
 
 `comparative signal` is the governed review surface for one-trait phylogenetic
 signal. Its JSON metrics report:

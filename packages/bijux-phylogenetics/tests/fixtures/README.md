@@ -75,6 +75,10 @@ taxon negatives, constant-trait negatives, categorical predictors, and
 misordered taxon rows. The owned discrete-reference validator and the live
 `ape::ace` ancestral review tests now resolve their small governed trait
 tables through those fixture ids instead of hardcoding one-off table paths.
+That same trait-table catalog now also includes governed phylogenetic
+independent-contrast fixtures for balanced, pectinate, six-taxon, and
+missing-value comparative cases, so the owned `comparative contrasts` surface
+and live `ape::pic` parity lane resolve the same durable trait identities.
 The metadata fixture corpus now also has one governed shared catalog at
 `metadata/shared_distance_matrix_fixture_catalog.json`. That catalog assigns
 durable fixture ids to analytical, ultrametric, and non-ultrametric distance

@@ -733,10 +733,11 @@ string-based, so tree summaries, tip ledgers, normalized Newick outputs,
 DNAbin state ledgers, DNA-state frequency tables, DNA-distance ledgers, and
 translated amino-acid rows are compared as owned artifacts rather than scraped
 console text. The governed live cases now cover `ape::read.tree`, `ape::write.tree`,
-`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::nj`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
-fixture ids. The tree and DNA inputs for that lane now come from the governed
-shared fixture catalogs in
-`tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
+`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::nj`, `ape::pic`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans` over shared tree, trait-table, and DNA
+fixture ids. The tree, trait-table, and DNA inputs for that lane now come from
+the governed shared fixture catalogs in
+`tests/fixtures/metadata/shared_tree_fixture_catalog.json`,
+`tests/fixtures/metadata/shared_trait_table_fixture_catalog.json`, and
 `tests/fixtures/metadata/shared_dna_alignment_fixture_catalog.json`, so Bijux
 and `ape` resolve the same durable fixture identities instead of hand-picked
 path lists. The `ape::read.tree` lane now checks structured clade rows rather
@@ -769,6 +770,18 @@ now builds one deterministic NJ tree in-repo, validates zero-diagonal and
 nonnegative matrix assumptions explicitly, produces branch lengths, and
 resolves tied joins by stable taxon ordering so distance-tree recovery stays
 reproducible.
+The `ape::pic` lane now covers balanced rooted ultrametric, pectinate rooted
+non-ultrametric, and six-taxon clean comparative fixtures through one governed
+trait-table catalog. On the owned Bijux side, `comparative contrasts
+--contrasts-out <table.tsv>` writes one `independent-contrasts.tsv` ledger with
+stable ape-style `node_id` values, left-versus-right descendant partitions,
+standardized contrasts, and expected variances. The JSON report now also
+preserves one explicit input audit with rootedness and ultrametric reporting,
+minimum and maximum root-to-tip depths, the owned missing-value pruning policy,
+and the pruned taxon list. Missing trait values therefore remain an explicit
+owned pruning surface, while negative branch lengths are rejected explicitly as
+an invalid comparative-analysis boundary instead of being pushed through to
+live `ape::pic`.
 The `ape::dist.dna` lane now covers raw nucleotide distance, JC69, K80, F81,
 and TN93 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,

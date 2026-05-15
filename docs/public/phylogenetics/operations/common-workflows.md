@@ -181,6 +181,16 @@ trees with one in-repo deterministic NJ algorithm that validates zero-diagonal
 and nonnegative matrix assumptions, produces branch lengths, and resolves tied
 joins by stable taxon ordering rather than delegating the NJ method through
 Biopython.
+The comparative side of the same governed lane now also uses
+`shared_trait_table_fixture_catalog.json` for `ape::pic` over balanced rooted
+ultrametric, pectinate rooted non-ultrametric, and six-taxon clean trait
+fixtures. The owned `comparative contrasts` surface writes one
+`independent-contrasts.tsv` ledger with stable ape-style `node_id` values,
+left-versus-right descendant partitions, standardized contrasts, and expected
+variances, while its JSON report preserves one explicit input audit for
+ultrametric reporting and missing-value pruning. Missing trait values remain an
+owned pruning policy surface, and negative branch lengths remain an owned hard
+stop instead of being pushed through as live `ape::pic` parity cases.
 That same workflow boundary now states explicitly that `bionj` is out of scope
 for this round. Reviewers therefore see one governed supported-method set
 (`neighbor-joining`, `upgma`) and one explicit `ape::bionj` exclusion instead
