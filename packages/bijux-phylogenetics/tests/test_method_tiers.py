@@ -66,6 +66,7 @@ def test_surface_specific_method_tiers_expose_expected_runtime_contracts() -> No
 
     assert experimental.tier == "experimental"
     assert experimental.approximation == "phylogenetic-working-correlation-gee"
+    assert experimental.excluded_reference_surfaces == ("ape::compar.gee",)
     assert method_tier_warnings(experimental)
 
     assert advisory.tier == "advisory"
@@ -90,7 +91,17 @@ def test_method_tier_metrics_emit_cli_ready_fields() -> None:
         "method_inference_mode": "inference",
         "method_validation_basis": [],
         "method_approximation": "gee",
+        "method_excluded_reference_surfaces": ["ape::compar.gee"],
     }
+
+
+def test_phylogenetic_logistic_method_tier_warnings_include_explicit_non_claim() -> None:
+    warnings = method_tier_warnings(
+        phylogenetic_logistic_method_tier("phylogenetic-working-correlation-gee")
+    )
+
+    assert warnings[0].startswith("experimental method tier:")
+    assert any("ape::compar.gee parity" in warning for warning in warnings)
 
 
 def test_release_method_tier_inventory_lists_governed_release_surfaces() -> None:
