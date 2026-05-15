@@ -96,6 +96,30 @@ delegates the underlying CLI-grade report fields directly and adds stable
 `write_json(...)` serialization plus `write_tsv(...)` where a tabular summary
 is meaningful.
 
+## Method Tiers
+
+Serious workflow and report surfaces now expose an explicit runtime method
+tier so the package does not overclaim what it has done.
+
+The governed tiers are:
+
+- `supported`: validated by reference parity or real-engine validation
+- `experimental`: usable for exploratory work, but emitted with an explicit warning
+- `advisory`: review or audit output that should not be mistaken for inference
+- `parser-only`: summaries of external-engine artifacts that do not claim Bijux performed the inference
+
+Current examples include:
+
+- `adapter fasta-to-tree` as `supported`
+- `comparative logistic` as `experimental`, with its approximation method reported
+- `report tree-package` as `advisory`
+- Bayesian report builders such as `adapter mrbayes-report` and `adapter beast-calibration-report` as `parser-only`
+
+JSON CLI payloads expose `method_tier`, `method_inference_mode`,
+`method_validation_basis`, and `method_approximation` when applicable. Python
+workflow result objects expose the same information through `result.report.method_tier`
+or the underlying report object directly.
+
 ## Stable Artifact Schemas
 
 The canonical reviewer-facing TSV and JSON artifacts are schema-governed and

@@ -35,6 +35,33 @@ stable JSON plus TSV export helpers.
 The public rule is simple: commands should produce explicit, reviewable outputs
 and should not hide important assumptions behind silent defaults.
 
+## Runtime Method Tiers
+
+Serious workflow and report commands now publish one explicit method-tier
+contract in JSON output so users can distinguish validated inference from
+approximate, advisory, or parser-only surfaces.
+
+The governed tier values are:
+
+- `supported`
+- `experimental`
+- `advisory`
+- `parser-only`
+
+When present, the JSON metrics expose:
+
+- `method_tier`
+- `method_inference_mode`
+- `method_validation_basis`
+- `method_approximation`
+
+Tier meaning is strict:
+
+- `supported` requires reference parity or real-engine validation
+- `experimental` emits a clear warning and names its approximation when one is used
+- `advisory` is review output and should not be read as new inference
+- `parser-only` means the command parsed external-engine artifacts and does not claim Bijux ran the inference itself
+
 For automation and downstream notebooks, the canonical reviewer-facing TSV and
 JSON outputs now have stable tested schemas. That governed contract covers the
 major `.model.tsv`, `.support.tsv`, clade-table, branch-table,
@@ -148,7 +175,8 @@ summary, support, clade, and branch-stat sections. The TSV ledgers remain the
 durable flat review contract for downstream inspection and automation. Use
 `report tree` when only the lightweight structural and forensic HTML audit is
 needed; use `report tree-package` when the image and tabular review outputs are
-required together.
+required together. Its JSON and HTML surfaces now mark the package as
+`advisory` rather than inference.
 
 `demo primate-comparative` is the governed packaged mammal dataset surface. It
 materializes the shipped primate comparative dataset into one output directory
@@ -5100,6 +5128,11 @@ one review bundle, while leaving the step-specific engine artifacts under
 artifacts semantically rather than byte-for-byte so stable scientific results
 are not rejected because of harmless path or timestamp differences.
 
+Its JSON payload now reports the workflow as `supported`, with explicit
+real-engine validation basis, so downstream reviewers can distinguish this
+validated external-engine lane from advisory, experimental, or parser-only
+surfaces.
+
 Its composite manifest now also records `stage_fingerprints` for raw-input
 validation, alignment, trimming, model selection, inference, support, and the
 final reviewer-facing report. Those fingerprints explain the resolved resume
@@ -5114,6 +5147,14 @@ report, copied inputs when still available, final workflow outputs, and
 declared step-level engine artifacts together. `phylo validate-bundle` then
 checks both checksum integrity and the required workflow entries before the
 bundle is treated as a valid handoff.
+
+`comparative logistic` intentionally reports a different trust state. It is
+`experimental`, emits a warning in JSON output, and repeats the
+`phylogenetic-working-correlation-gee` approximation method in both the direct
+metrics and the method-tier payload. Bayesian report commands such as
+`adapter mrbayes-report` and `adapter beast-calibration-report` report
+`parser-only` because they summarize external posterior artifacts rather than
+claiming that Bijux executed the inference itself.
 
 `phylo run` is the governed one-command workflow-config surface above those
 manifest tools. It takes one YAML or JSON config file, validates it before

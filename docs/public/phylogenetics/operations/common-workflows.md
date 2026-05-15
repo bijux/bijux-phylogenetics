@@ -28,6 +28,16 @@ Typical public workflows include:
 The public workflow contract is that important outputs should be inspectable
 after the command finishes.
 
+Serious workflow JSON outputs now also publish one explicit method tier:
+
+- `supported` for surfaces backed by reference parity or real-engine validation
+- `experimental` for approximate exploratory surfaces that emit a warning
+- `advisory` for review packages that do not perform inference
+- `parser-only` for summaries of external-engine artifacts that do not claim Bijux ran the inference
+
+When present, inspect `method_tier`, `method_inference_mode`,
+`method_validation_basis`, and `method_approximation` in the JSON metrics.
+
 The major reviewer-facing TSV and JSON artifacts are also schema-governed now.
 Downstream scripts can anchor on stable headers and top-level keys for the
 canonical model, support, clade, branch, comparative-traits,
@@ -177,7 +187,9 @@ This workflow is intentionally different from the older `report tree` audit
 surface. `report tree` remains the lightweight structural and forensic HTML
 diagnostic. `report tree-package` is the richer reviewer-facing output used
 when users need the image, support table, clade table, and branch-length
-statistics together in one durable bundle.
+statistics together in one durable bundle. Its JSON and HTML outputs classify
+the package as `advisory`, because it audits one supplied tree rather than
+inferring a new one.
 
 When the goal is to start from a real packaged mammal dataset rather than
 assemble a tree and trait table by hand, use `demo primate-comparative`. This
@@ -3582,6 +3594,13 @@ user-facing outputs:
 
 It also retains step-specific engine artifacts under
 `artifacts/fasta-to-tree/engine-artifacts/mammals/` for auditability.
+
+The JSON payload for this workflow reports a `supported` method tier with its
+real-engine validation basis. That tier is intended to separate this validated
+workflow from approximate exploratory commands such as `comparative logistic`,
+which now report `experimental` and emit a warning naming their approximation,
+and from Bayesian report commands such as `adapter mrbayes-report`, which are
+classified as `parser-only`.
 
 Within that engine-artifact directory, the IQ-TREE stages preserve the native
 `.iqtree`, `.log`, model-selection sidecar, `.model-candidates.tsv`,
