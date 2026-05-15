@@ -198,6 +198,7 @@ from .pgls import (
 from .brownian_covariance import (
     BrownianCovarianceReport,
     summarize_brownian_covariance,
+    summarize_brownian_covariance_from_tree,
     write_brownian_covariance_long_table,
     write_brownian_covariance_matrix_table,
 )
@@ -317,6 +318,7 @@ from .signal import (
     PhylogeneticSignalTestReport,
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
+    compute_phylogenetic_independent_contrasts_from_dataset,
     compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
 )
@@ -533,6 +535,7 @@ __all__ = [
     "run_continuous_mode_recovery",
     "compute_blombergs_k",
     "compute_phylogenetic_independent_contrasts",
+    "compute_phylogenetic_independent_contrasts_from_dataset",
     "compute_phylogenetic_signal_test",
     "estimate_pagels_lambda",
     "fit_continuous_evolutionary_mode",
@@ -550,6 +553,8 @@ __all__ = [
     "run_pgls",
     "run_multivariate_comparative_regression",
     "summarize_correlated_trait_evolution",
+    "summarize_brownian_covariance",
+    "summarize_brownian_covariance_from_tree",
     "summarize_brownian_covariance_pgls",
     "summarize_brownian_regime_rates",
     "summarize_brownian_trait_evolution",
