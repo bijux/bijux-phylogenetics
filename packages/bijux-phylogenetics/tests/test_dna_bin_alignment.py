@@ -14,6 +14,8 @@ from bijux_phylogenetics.io.fasta import (
     compute_alignment_base_frequency_report_from_dna_bin_alignment,
     compute_alignment_segregating_site_report,
     compute_alignment_segregating_site_report_from_dna_bin_alignment,
+    inspect_coding_alignment,
+    inspect_coding_alignment_from_dna_bin_alignment,
     load_dna_bin_alignment,
     write_dna_bin_alignment_fasta,
 )
@@ -116,6 +118,28 @@ def test_dna_bin_alignment_supports_segregating_site_report_without_reloading() 
     assert direct_report.segregating_site_positions == path_report.segregating_site_positions
     assert direct_report.rows == path_report.rows
     assert direct_report.warnings == path_report.warnings
+
+
+def test_dna_bin_alignment_supports_coding_alignment_diagnostics_without_reloading() -> (
+    None
+):
+    alignment = load_dna_bin_alignment(
+        fixture("example_alignment_coding.fasta"),
+        normalize_uracil=True,
+    )
+
+    direct_report = inspect_coding_alignment_from_dna_bin_alignment(alignment)
+    path_report = inspect_coding_alignment(fixture("example_alignment_coding.fasta"))
+
+    assert direct_report.path == alignment.path
+    assert direct_report.sequence_count == alignment.sequence_count
+    assert direct_report.alignment_length == alignment.alignment_length
+    assert direct_report.alignment_length_multiple_of_three is True
+    assert direct_report.frameshift_like_sequences == path_report.frameshift_like_sequences
+    assert direct_report.partial_codon_sequences == path_report.partial_codon_sequences
+    assert direct_report.coding_behaviors == path_report.coding_behaviors
+    assert direct_report.invalid_codons == path_report.invalid_codons
+    assert direct_report.stop_codons == path_report.stop_codons
 
 
 @pytest.mark.parametrize(
