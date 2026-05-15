@@ -162,7 +162,7 @@ reproducible artifact bundle for that case.
 
 The governed live `ape` cases now span both shared tree and shared DNA
 fixtures. Today that lane covers `ape::read.tree`, `ape::write.tree`,
-`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
+`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
 resolved from `shared_tree_fixture_catalog.json` and
 `shared_dna_alignment_fixture_catalog.json`. The `ape::read.tree` portion now
 compares structured clade rows and covers branch lengths, internal labels,
@@ -181,6 +181,11 @@ The `ape::drop.tip` portion now covers rooted and unrooted exclusion cases,
 unknown excluded tip names, and root-state changes after pruning, and it keeps
 one explicit Bijux safety boundary: requests that would leave fewer than two
 retained taxa fail clearly instead of producing one-tip workflow outputs.
+The `ape::keep.tip` portion now covers valid rooted and unrooted keep-set
+cases, selected-tip order differences, and rootedness changes after pruning.
+Bijux keeps the workflow-facing absent-requested-taxon report and minimum-two
+retained-taxa stop as explicit product extensions rather than pretending those
+paths are live `ape::keep.tip` parity.
 The `ape::write.tree` portion
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
 internal-label, support-label, quoted-label, and multiple-tree cases. The DNA

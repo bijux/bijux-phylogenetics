@@ -177,6 +177,11 @@ the retained sibling branch rather than folded into the expanded clade. The
 unknown excluded taxon names, and rootedness changes after pruning, while
 keeping one explicit workflow safety rule: Bijux stops the run if pruning would
 leave fewer than two retained taxa instead of carrying a one-tip tree forward.
+The `ape::keep.tip` portion now covers valid keep-set pruning for rooted and
+unrooted trees, selected-tip order differences, and rootedness changes after
+pruning, while keeping two explicit workflow-side rules outside the live
+parity subset: absent requested taxa are still reported for tree and trait
+matching work, and fewer than two retained taxa still stop the run clearly.
 The
 `ape::write.tree` portion now
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
