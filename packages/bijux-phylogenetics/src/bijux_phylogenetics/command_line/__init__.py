@@ -767,6 +767,7 @@ from bijux_phylogenetics.tree_shape import (
 _PAIRWISE_DISTANCE_MODELS = (
     "raw",
     "p-distance",
+    "jc69",
     "jukes-cantor",
     "kimura-2-parameter",
     "amino-acid-p-distance",

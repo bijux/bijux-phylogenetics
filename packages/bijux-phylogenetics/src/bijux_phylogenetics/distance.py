@@ -76,6 +76,7 @@ _TRANSITIONS = {
 _DISTANCE_MODEL_ALIASES = {
     "raw": "p-distance",
     "p-distance": "p-distance",
+    "jc69": "jukes-cantor",
     "jukes-cantor": "jukes-cantor",
     "kimura-2-parameter": "kimura-2-parameter",
     "amino-acid-p-distance": "amino-acid-p-distance",
@@ -676,8 +677,16 @@ def _jukes_cantor_distance(p_distance: float | None) -> tuple[float | None, str 
         return None, "no comparable sites remain after filtering"
     if p_distance == 0.0:
         return 0.0, None
-    if p_distance >= 0.75:
-        return None, "p-distance is at or above the Jukes-Cantor correction limit"
+    if p_distance == 0.75:
+        return (
+            None,
+            "p-distance is at the Jukes-Cantor correction limit, so the corrected distance tends to infinity",
+        )
+    if p_distance > 0.75:
+        return (
+            None,
+            "p-distance exceeds the Jukes-Cantor correction range, so the corrected distance is undefined",
+        )
     return round((-3.0 / 4.0) * math.log(1.0 - (4.0 * p_distance / 3.0)), 15), None
 
 
