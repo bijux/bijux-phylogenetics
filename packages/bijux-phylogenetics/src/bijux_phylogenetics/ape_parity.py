@@ -44,7 +44,11 @@ from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matri
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.topology import root_tree_on_outgroup, unroot_tree
-from bijux_phylogenetics.io.fasta import load_fasta_alignment, translate_coding_alignment
+from bijux_phylogenetics.io.fasta import (
+    compute_alignment_base_frequency_report,
+    load_fasta_alignment,
+    translate_coding_alignment,
+)
 from bijux_phylogenetics.io.newick import (
     dumps_newick,
     load_newick_tree_set,
@@ -1221,6 +1225,26 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             tolerance=1e-12,
         ),
         ApeParityCase(
+            case_id="dna-base-frequency-missing-data",
+            fixture_kind="dna-alignment",
+            fixture_id="dna_with_missing_data",
+            function_name="ape::base.freq",
+            python_function_name="compute_alignment_base_frequency_report",
+            operation="dna-base-frequency",
+            input_fixture=fixture_path("dna-alignment", "dna_with_missing_data"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="dna-base-frequency-all-gap-missing",
+            fixture_kind="dna-alignment",
+            fixture_id="all_gap_missing_alignment",
+            function_name="ape::base.freq",
+            python_function_name="compute_alignment_base_frequency_report",
+            operation="dna-base-frequency",
+            input_fixture=fixture_path("dna-alignment", "all_gap_missing_alignment"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
             case_id="dna-raw-distance-clean",
             fixture_kind="dna-alignment",
             fixture_id="clean_aligned_dna",
@@ -2033,51 +2057,21 @@ def _materialize_reference_input(case: ApeParityCase, working_root: Path) -> Pat
 
 
 def _ape_base_frequency_rows(input_fixture: Path) -> list[dict[str, object]]:
-    state_order = [
-        "a",
-        "c",
-        "g",
-        "t",
-        "r",
-        "m",
-        "w",
-        "s",
-        "k",
-        "y",
-        "v",
-        "h",
-        "d",
-        "b",
-        "n",
-        "-",
-        "?",
-    ]
-    counts = {state: 0 for state in state_order}
-    records = load_fasta_alignment(input_fixture)
-    total = 0
-    for record in records:
-        for residue in record.sequence:
-            normalized = residue.lower().replace("u", "t")
-            if normalized not in counts:
-                continue
-            counts[normalized] += 1
-            total += 1
-    if total == 0:
-        return [{"state": state, "frequency": 0.0} for state in state_order]
+    report = compute_alignment_base_frequency_report(input_fixture)
     return [
-        {"state": state, "frequency": counts[state] / total}
-        for state in state_order
+        {"state": row.state, "frequency": row.frequency}
+        for row in report.alignment_rows
     ]
 
 
 def _build_bijux_base_frequency_summary(
     input_fixture: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
-    records = load_fasta_alignment(input_fixture)
-    rows = _ape_base_frequency_rows(input_fixture)
+    report = compute_alignment_base_frequency_report(input_fixture)
+    rows = [{"state": row.state, "frequency": row.frequency} for row in report.alignment_rows]
     return {
-        "sequence_count": len(records),
-        "alignment_length": len(records[0].sequence),
+        "sequence_count": report.sequence_count,
+        "alignment_length": report.alignment_length,
         "state_count": len(rows),
     }, rows
 
