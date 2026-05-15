@@ -338,7 +338,12 @@ from bijux_phylogenetics.comparative import (
     compute_phylogenetic_independent_contrasts,
     compute_phylogenetic_independent_contrasts_from_dataset,
     compute_phylogenetic_signal_test,
+    evaluate_pagels_lambda_likelihood,
+    evaluate_pagels_lambda_likelihood_from_dataset,
     estimate_pagels_lambda,
+    PagelLambdaLikelihoodReport,
+    PagelLambdaOptimizerDiagnostics,
+    PagelLambdaProfileRow,
     inspect_pgls_inputs,
     run_multivariate_comparative_regression,
     run_pgls,
@@ -2202,7 +2207,24 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is summarize_phylogenetic_signal
     )
     assert bijux_phylogenetics.compute_blombergs_k is compute_blombergs_k
+    assert (
+        bijux_phylogenetics.evaluate_pagels_lambda_likelihood
+        is evaluate_pagels_lambda_likelihood
+    )
+    assert (
+        bijux_phylogenetics.evaluate_pagels_lambda_likelihood_from_dataset
+        is evaluate_pagels_lambda_likelihood_from_dataset
+    )
     assert bijux_phylogenetics.estimate_pagels_lambda is estimate_pagels_lambda
+    assert (
+        bijux_phylogenetics.PagelLambdaLikelihoodReport
+        is PagelLambdaLikelihoodReport
+    )
+    assert (
+        bijux_phylogenetics.PagelLambdaOptimizerDiagnostics
+        is PagelLambdaOptimizerDiagnostics
+    )
+    assert bijux_phylogenetics.PagelLambdaProfileRow is PagelLambdaProfileRow
     assert (
         bijux_phylogenetics.compute_phylogenetic_signal_test
         is compute_phylogenetic_signal_test
