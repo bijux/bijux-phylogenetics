@@ -64,6 +64,14 @@ from .covariance_audit import (
     write_comparative_covariance_audit_excluded_taxa_table,
     write_comparative_covariance_audit_summary_table,
 )
+from .discrete_mk import (
+    DiscreteMkFitReport,
+    DiscreteMkInputAudit,
+    fit_discrete_mk_model,
+    fit_discrete_mk_model_from_dataset,
+    write_discrete_mk_rate_table,
+    write_discrete_mk_summary_table,
+)
 from .continuous_mode_recovery import (
     ContinuousModeRecoveryCaseReport,
     ContinuousModeRecoveryModelChoiceRow,

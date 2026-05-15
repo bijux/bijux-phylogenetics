@@ -335,12 +335,16 @@ from bijux_phylogenetics.comparative import (
     build_pgls_model_matrix,
     compare_comparative_regression_models,
     compute_blombergs_k,
+    fit_discrete_mk_model,
+    fit_discrete_mk_model_from_dataset,
     compute_phylogenetic_independent_contrasts,
     compute_phylogenetic_independent_contrasts_from_dataset,
     compute_phylogenetic_signal_test,
     evaluate_pagels_lambda_likelihood,
     evaluate_pagels_lambda_likelihood_from_dataset,
     estimate_pagels_lambda,
+    DiscreteMkFitReport,
+    DiscreteMkInputAudit,
     PagelLambdaLikelihoodReport,
     PagelLambdaOptimizerDiagnostics,
     PagelLambdaProfileRow,
@@ -2207,6 +2211,11 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is summarize_phylogenetic_signal
     )
     assert bijux_phylogenetics.compute_blombergs_k is compute_blombergs_k
+    assert bijux_phylogenetics.fit_discrete_mk_model is fit_discrete_mk_model
+    assert (
+        bijux_phylogenetics.fit_discrete_mk_model_from_dataset
+        is fit_discrete_mk_model_from_dataset
+    )
     assert (
         bijux_phylogenetics.evaluate_pagels_lambda_likelihood
         is evaluate_pagels_lambda_likelihood
@@ -2225,6 +2234,8 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is PagelLambdaOptimizerDiagnostics
     )
     assert bijux_phylogenetics.PagelLambdaProfileRow is PagelLambdaProfileRow
+    assert bijux_phylogenetics.DiscreteMkFitReport is DiscreteMkFitReport
+    assert bijux_phylogenetics.DiscreteMkInputAudit is DiscreteMkInputAudit
     assert (
         bijux_phylogenetics.compute_phylogenetic_signal_test
         is compute_phylogenetic_signal_test
