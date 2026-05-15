@@ -819,9 +819,14 @@ state, mismatch reason, and reproducible artifact root for every governed case,
 and writes one summary TSV plus one observation TSV just like the other parity
 surfaces. The initial live `phytools` registry is intentionally narrow for this
 goal: it currently covers `phytools::phylosig(method='lambda')` and
-`phytools::phylosig(method='K')` on the governed comparative example tree so
-the repository now proves behavior against real `phytools` execution instead of
-only checked-in expected JSON.
+`phytools::phylosig(method='K')` on governed strong-signal and weak-signal
+comparative fixtures, including one non-ultrametric lambda case that tracks the
+live `phytools` likelihood surface within tolerance. The owned signal surface
+now also exposes fixed-lambda likelihood evaluation, likelihood-ratio reporting
+against the zero-signal boundary, and bounded optimizer diagnostics instead of
+reducing Pagel's lambda to one opaque scalar, so the repository now proves
+behavior against real `phytools` execution instead of only checked-in expected
+JSON.
 The `ape::nj` lane now covers one governed analytical three-taxon matrix plus
 four-taxon ultrametric and non-ultrametric matrices. On the owned Bijux side,
 neighbor joining no longer delegates through Biopython for that method: Bijux

@@ -250,11 +250,12 @@ Its JSON metrics report:
 
 The initial live `phytools` registry is intentionally narrow for this goal. It
 currently covers `phytools::phylosig(method='lambda')` and
-`phytools::phylosig(method='K')` on one governed twenty-four-taxon
-strong-signal comparative fixture from the shared
-`shared_phytools_comparative_fixture_catalog.json` corpus, so the repository
-now has one real external comparative-method execution harness instead of only
-checked reference JSON.
+`phytools::phylosig(method='K')` on governed twenty-four-taxon comparative
+fixtures from the shared `shared_phytools_comparative_fixture_catalog.json`
+corpus. The live lambda lane now includes one non-ultrametric strong-signal
+fixture plus one ultrametric weak-signal fixture so the harness proves both a
+near-boundary high-signal fit and a near-zero-signal fit against real
+`phytools` likelihood output instead of only one easy interior case.
 For this round, `bionj` is explicitly excluded. The distance-tree CLI surfaces
 therefore accept `--method bionj` only so the owned runtime can return one
 structured out-of-scope error naming `ape::bionj`, rather than failing with
@@ -3661,6 +3662,8 @@ signal. Its JSON metrics report:
 - `taxon_count`
 - `blombergs_k`
 - `pagels_lambda`
+- `lambda_log_likelihood`
+- `lambda_likelihood_ratio_statistic`
 - `signal_p_value`
 - `tree_is_ultrametric`
 - `ultrametric_policy`
@@ -3668,6 +3671,10 @@ signal. Its JSON metrics report:
 - `pruned_missing_value_taxon_count`
 - `signal_seed`
 - `lambda_likelihood_ratio_p_value`
+- `lambda_optimizer_name`
+- `lambda_optimizer_function_evaluation_count`
+- `lambda_optimizer_hit_lower_boundary`
+- `lambda_optimizer_hit_upper_boundary`
 - `permutation_row_count`
 
 The command preserves four distinct surfaces under `data`:
@@ -3675,6 +3682,18 @@ The command preserves four distinct surfaces under `data`:
 - `blombergs_k` for the fitted K summary
 - `pagels_lambda` for the fitted lambda summary
 - `signal_test` for the permutation-based K test
+
+The `pagels_lambda` report now also preserves the fixed-lambda likelihood
+context that the live `phytools::phylosig(method='lambda')` lane compares:
+- `lambda_value`
+- `log_likelihood`
+- `null_log_likelihood`
+- `brownian_log_likelihood`
+- `likelihood_ratio_statistic`
+- `likelihood_ratio_p_value`
+- `p_value_method`
+- `optimizer_diagnostics`
+- `profile_rows`
 
 The governed signal policy is explicit rather than implicit:
 - rooted trees with branch lengths are accepted whether or not they are ultrametric

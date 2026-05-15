@@ -221,10 +221,13 @@ The same `parity` command now also exposes one governed
 `--reference-source phytools-live` lane for real `phytools` execution through
 the checked-in R runner. That initial registry is intentionally narrow for
 goal 201: it currently covers `phytools::phylosig(method='lambda')` and
-`phytools::phylosig(method='K')` on one governed twenty-four-taxon
-strong-signal comparative fixture drawn from the shared `phytools`
-comparative fixture catalog, and writes the same summary-versus-observation
-TSV artifacts plus reproducible failure bundles as the live `ape` lane.
+`phytools::phylosig(method='K')` on governed twenty-four-taxon comparative
+fixtures drawn from the shared `phytools` comparative fixture catalog. The
+live lambda lane now includes one non-ultrametric strong-signal case and one
+ultrametric weak-signal case, so reviewers can see both a boundary-adjacent
+high-signal fit and a near-zero lambda fit validated against real `phytools`
+execution. It writes the same summary-versus-observation TSV artifacts plus
+reproducible failure bundles as the live `ape` lane.
 The same baseline surface now also exposes
 `simulate_random_tree(...)` and `simulate_coalescent_tree(...)` for one-tree
 native simulation review, so callers that need one governed random or
@@ -2075,6 +2078,11 @@ The summary ledger keeps one row with the fitted K, lambda, log-likelihood
 context, both p-values, and the permutation exceedance count. The permutation
 ledger keeps one row per shuffled trait realization so reviewers can see the
 null K distribution directly instead of only one final exceedance count.
+The JSON and summary surfaces now also keep Pagel-lambda optimizer diagnostics,
+including the bounded grid-search name, function-evaluation count, lower versus
+upper boundary hits, and one explicit fine-grid likelihood profile, so
+reviewers can tell when the fitted lambda is an interior optimum versus one
+boundary-supported solution.
 
 When the goal is to fit a standalone continuous-trait evolution model rather
 than a regression, use `comparative brownian`. This workflow keeps the
