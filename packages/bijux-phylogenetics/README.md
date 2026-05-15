@@ -833,7 +833,12 @@ minimum and maximum root-to-tip depths, the owned missing-value pruning policy,
 and the pruned taxon list. Missing trait values therefore remain an explicit
 owned pruning surface, while negative branch lengths are rejected explicitly as
 an invalid comparative-analysis boundary instead of being pushed through to
-live `ape::pic`.
+live `ape::pic`. The same owned Brownian comparative core is now also reusable
+directly from Python through
+`summarize_brownian_covariance_from_tree(...)` on one native `PhyloTree` and
+`compute_phylogenetic_independent_contrasts_from_dataset(...)` on one loaded
+`ComparativeDataset`, so covariance review and PIC no longer need to restart
+from path-based loaders once the in-memory comparative inputs already exist.
 The `ape::ace` continuous lane now covers balanced rooted ultrametric,
 pectinate rooted non-ultrametric, six-taxon Brownian, and pruned missing-value
 fixtures through that same governed trait-table catalog. On the owned Bijux

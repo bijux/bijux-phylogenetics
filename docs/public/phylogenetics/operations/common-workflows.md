@@ -2017,6 +2017,13 @@ matched node with the predictor contrast, response contrast, fitted
 through-origin response contrast, residual, and leverage fraction, while the
 JSON metrics report the fitted slope and p-value explicitly.
 
+For Python-native comparative work, the same Brownian comparative core is also
+available without restarting from file paths: use
+`summarize_brownian_covariance_from_tree(...)` once you already hold one
+`PhyloTree`, and use
+`compute_phylogenetic_independent_contrasts_from_dataset(...)` once you already
+hold one `ComparativeDataset`.
+
 When the goal is to measure whether one numeric trait shows phylogenetic
 structure rather than fit a regression, use `comparative signal`. That
 workflow reports Blomberg's K, Pagel's lambda, a permutation p-value for the

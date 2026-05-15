@@ -55,6 +55,15 @@ also feeds aligned coding diagnostics and aligned translation through
 `translate_coding_alignment_from_dna_bin_alignment(...)` instead of forcing
 those workflows to reparse FASTA independently.
 
+The owned comparative runtime now also exposes one direct Brownian covariance
+surface on an in-memory tree through
+`summarize_brownian_covariance_from_tree(...)` and one direct PIC surface on a
+loaded comparative dataset through
+`compute_phylogenetic_independent_contrasts_from_dataset(...)`. Once a caller
+already holds one `PhyloTree` or `ComparativeDataset`, covariance review and
+independent-contrast analysis no longer need to restart from path-based
+loading wrappers.
+
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the
 raw-FASTA to aligned matrix, trimmed matrix, selected-model table, supported
