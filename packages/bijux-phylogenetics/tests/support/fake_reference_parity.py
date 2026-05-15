@@ -338,11 +338,12 @@ if case_payload["operation"] in {{
     "unroot-tree",
     "drop-tree-taxa",
     "keep-tree-taxa",
+    "extract-tree-clade",
     "read-tree-set-structure",
     "write-tree-set-structure",
 }}:
     try:
-        if case_payload["operation"] in {{"read-tree-structure", "write-tree-structure", "root-tree-outgroup", "unroot-tree", "drop-tree-taxa", "keep-tree-taxa"}}:
+        if case_payload["operation"] in {{"read-tree-structure", "write-tree-structure", "root-tree-outgroup", "unroot-tree", "drop-tree-taxa", "keep-tree-taxa", "extract-tree-clade"}}:
             newick_path = output_root / "normalized-tree.nwk"
             if case_payload["operation"] == "root-tree-outgroup":
                 outgroup_taxa = tuple(case_payload.get("outgroup_taxa", []))
@@ -423,6 +424,28 @@ if case_payload["operation"] in {{
                     dropped_taxa = []
                 newick_path.write_text(newick_text, encoding="utf-8")
                 tree = Phylo.read(newick_path, "newick")
+            elif case_payload["operation"] == "extract-tree-clade":
+                if case_id == "extract-clade-tip-node-invalid":
+                    raise ValueError("node number must be greater than the number of tips")
+                elif case_id == "extract-clade-node-out-of-bounds":
+                    raise IndexError("subscript out of bounds")
+                elif case_id == "extract-clade-root":
+                    newick_text = "((A:0.1,B:0.1)Mammals:0.2,(C:0.2,D:0.2)Birds:0.1)Root;\\n"
+                    requested_node_id = 5
+                    matched_node_id = 5
+                    matched_node_name = "Root"
+                elif case_id == "extract-clade-mammals":
+                    newick_text = "(A:0.1,B:0.1)Mammals;\\n"
+                    requested_node_id = 6
+                    matched_node_id = 6
+                    matched_node_name = "Mammals"
+                else:
+                    newick_text = "(C:0.2,D:0.2)Birds;\\n"
+                    requested_node_id = 7
+                    matched_node_id = 7
+                    matched_node_name = "Birds"
+                newick_path.write_text(newick_text, encoding="utf-8")
+                tree = Phylo.read(newick_path, "newick")
             else:
                 tree = Phylo.read(case_payload["input_fixture"], "newick")
             summary = {{
@@ -443,13 +466,17 @@ if case_payload["operation"] in {{
             if case_payload["operation"] == "keep-tree-taxa":
                 summary["requested_taxa"] = requested_taxa
                 summary["dropped_taxa"] = dropped_taxa
+            if case_payload["operation"] == "extract-tree-clade":
+                summary["requested_node_id"] = requested_node_id
+                summary["matched_node_id"] = matched_node_id
+                summary["matched_node_name"] = matched_node_name
             rows = clade_rows(tree, "")
             summary.update(SUMMARY_OVERRIDES)
             summary_path = output_root / "summary.json"
             clades_path = output_root / "clades.tsv"
             write_json(summary_path, summary)
             write_tsv(clades_path, rows)
-            if case_payload["operation"] in {{"root-tree-outgroup", "unroot-tree", "drop-tree-taxa", "keep-tree-taxa"}}:
+            if case_payload["operation"] in {{"root-tree-outgroup", "unroot-tree", "drop-tree-taxa", "keep-tree-taxa", "extract-tree-clade"}}:
                 pass
             elif case_id == "read-tree-quoted-taxon-labels":
                 newick_path.write_text(
