@@ -669,6 +669,206 @@ if case_payload["operation"] == "get-tree-mrca":
     )
     raise SystemExit(0)
 
+if case_payload["operation"] == "assess-tree-monophyly":
+    try:
+        if case_id == "is-monophyletic-all-missing-rerooted":
+            raise ValueError("specified outgroup not in labels of the tree")
+        if case_id == "is-monophyletic-rooted-two-tip":
+            summary = {{
+                "requested_taxa": ["A", "B"],
+                "unique_requested_taxa": ["A", "B"],
+                "duplicate_requested_taxa": [],
+                "missing_requested_taxa": [],
+                "present_requested_taxa": ["A", "B"],
+                "reroot": False,
+                "rooted": True,
+                "monophyletic": True,
+                "complementary_clade_used": False,
+                "matched_node_id": 6,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B"],
+                "matched_extra_taxa": [],
+                "matched_tip_count": 2,
+                "is_root": False,
+            }}
+        elif case_id == "is-monophyletic-rooted-three-tip-reroot-false":
+            summary = {{
+                "requested_taxa": ["A", "B", "C"],
+                "unique_requested_taxa": ["A", "B", "C"],
+                "duplicate_requested_taxa": [],
+                "missing_requested_taxa": [],
+                "present_requested_taxa": ["A", "B", "C"],
+                "reroot": False,
+                "rooted": True,
+                "monophyletic": False,
+                "complementary_clade_used": False,
+                "matched_node_id": 5,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B", "C", "D"],
+                "matched_extra_taxa": ["D"],
+                "matched_tip_count": 4,
+                "is_root": True,
+            }}
+        elif case_id == "is-monophyletic-rooted-three-tip-reroot-true":
+            summary = {{
+                "requested_taxa": ["A", "B", "C"],
+                "unique_requested_taxa": ["A", "B", "C"],
+                "duplicate_requested_taxa": [],
+                "missing_requested_taxa": [],
+                "present_requested_taxa": ["A", "B", "C"],
+                "reroot": True,
+                "rooted": True,
+                "monophyletic": True,
+                "complementary_clade_used": True,
+                "matched_node_id": 5,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B", "C", "D"],
+                "matched_extra_taxa": ["D"],
+                "matched_tip_count": 4,
+                "is_root": True,
+            }}
+        elif case_id == "is-monophyletic-rooted-full-tip-set":
+            summary = {{
+                "requested_taxa": ["A", "B", "C", "D"],
+                "unique_requested_taxa": ["A", "B", "C", "D"],
+                "duplicate_requested_taxa": [],
+                "missing_requested_taxa": [],
+                "present_requested_taxa": ["A", "B", "C", "D"],
+                "reroot": False,
+                "rooted": True,
+                "monophyletic": True,
+                "complementary_clade_used": False,
+                "matched_node_id": 5,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B", "C", "D"],
+                "matched_extra_taxa": [],
+                "matched_tip_count": 4,
+                "is_root": True,
+            }}
+        elif case_id == "is-monophyletic-rooted-mixed-missing":
+            summary = {{
+                "requested_taxa": ["A", "Z"],
+                "unique_requested_taxa": ["A", "Z"],
+                "duplicate_requested_taxa": [],
+                "missing_requested_taxa": ["Z"],
+                "present_requested_taxa": ["A"],
+                "reroot": False,
+                "rooted": True,
+                "monophyletic": True,
+                "complementary_clade_used": False,
+                "matched_node_id": 1,
+                "matched_node_name": "A",
+                "matched_taxa": ["A"],
+                "matched_extra_taxa": [],
+                "matched_tip_count": 1,
+                "is_root": False,
+            }}
+        elif case_id == "is-monophyletic-unrooted-two-tip":
+            summary = {{
+                "requested_taxa": ["A", "B"],
+                "unique_requested_taxa": ["A", "B"],
+                "duplicate_requested_taxa": [],
+                "missing_requested_taxa": [],
+                "present_requested_taxa": ["A", "B"],
+                "reroot": True,
+                "rooted": False,
+                "monophyletic": False,
+                "complementary_clade_used": False,
+                "matched_node_id": 5,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B", "C", "D"],
+                "matched_extra_taxa": ["C", "D"],
+                "matched_tip_count": 4,
+                "is_root": True,
+            }}
+        elif case_id == "is-monophyletic-unrooted-three-tip":
+            summary = {{
+                "requested_taxa": ["A", "B", "C"],
+                "unique_requested_taxa": ["A", "B", "C"],
+                "duplicate_requested_taxa": [],
+                "missing_requested_taxa": [],
+                "present_requested_taxa": ["A", "B", "C"],
+                "reroot": True,
+                "rooted": False,
+                "monophyletic": True,
+                "complementary_clade_used": True,
+                "matched_node_id": 5,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B", "C", "D"],
+                "matched_extra_taxa": ["D"],
+                "matched_tip_count": 4,
+                "is_root": True,
+            }}
+        elif case_id == "is-monophyletic-after-outgroup-rooting":
+            summary = {{
+                "requested_taxa": ["A", "B", "C"],
+                "unique_requested_taxa": ["A", "B", "C"],
+                "duplicate_requested_taxa": [],
+                "missing_requested_taxa": [],
+                "present_requested_taxa": ["A", "B", "C"],
+                "reroot": False,
+                "rooted": True,
+                "monophyletic": True,
+                "complementary_clade_used": False,
+                "matched_node_id": 6,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B", "C"],
+                "matched_extra_taxa": [],
+                "matched_tip_count": 3,
+                "is_root": False,
+            }}
+        else:
+            summary = {{
+                "requested_taxa": ["A", "B", "C"],
+                "unique_requested_taxa": ["A", "B", "C"],
+                "duplicate_requested_taxa": [],
+                "missing_requested_taxa": [],
+                "present_requested_taxa": ["A", "B", "C"],
+                "reroot": False,
+                "rooted": True,
+                "monophyletic": True,
+                "complementary_clade_used": False,
+                "matched_node_id": 6,
+                "matched_node_name": "",
+                "matched_taxa": ["A", "B", "C"],
+                "matched_extra_taxa": [],
+                "matched_tip_count": 3,
+                "is_root": False,
+            }}
+    except Exception as error:
+        write_json(
+            execution_path,
+            {{
+                "status": "failed",
+                "mismatch_reason": "reference_execution_failed",
+                "error_type": "TreeMonophylyError",
+                "message": str(error),
+                "case_id": case_payload["case_id"],
+                "function_name": case_payload["function_name"],
+                "input_fixture": case_payload["input_fixture"],
+                "r_version": "4.6.0",
+                "ape_version": "5.0.0",
+            }},
+        )
+        raise SystemExit(0)
+
+    summary.update(SUMMARY_OVERRIDES)
+    summary_path = output_root / "summary.json"
+    write_json(summary_path, summary)
+    write_json(
+        execution_path,
+        {{
+            "status": "ok",
+            "case_id": case_payload["case_id"],
+            "function_name": case_payload["function_name"],
+            "input_fixture": case_payload["input_fixture"],
+            "r_version": "4.6.0",
+            "ape_version": "5.0.0",
+            "outputs": {{"summary_json": str(summary_path)}},
+        }},
+    )
+    raise SystemExit(0)
+
 if case_id in TABULAR_CASES:
     payload = TABULAR_CASES[case_id]
     summary = dict(payload["summary"])

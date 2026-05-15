@@ -89,6 +89,16 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "get-mrca-rooted-polytomy",
         "get-mrca-after-outgroup-rooting",
         "get-mrca-missing-tip",
+        "is-monophyletic-rooted-two-tip",
+        "is-monophyletic-rooted-three-tip-reroot-false",
+        "is-monophyletic-rooted-three-tip-reroot-true",
+        "is-monophyletic-rooted-full-tip-set",
+        "is-monophyletic-rooted-mixed-missing",
+        "is-monophyletic-unrooted-two-tip",
+        "is-monophyletic-unrooted-three-tip",
+        "is-monophyletic-after-outgroup-rooting",
+        "is-monophyletic-rooted-polytomy",
+        "is-monophyletic-all-missing-rerooted",
         "dna-base-frequency-lowercase",
         "dna-base-frequency-ambiguity",
         "dna-raw-distance-clean",
@@ -147,6 +157,16 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "rooted_polytomy",
         "outgroup_rooted_on_d",
         "balanced_rooted_ultrametric",
+        "balanced_rooted_ultrametric",
+        "balanced_rooted_ultrametric",
+        "balanced_rooted_ultrametric",
+        "balanced_rooted_ultrametric",
+        "balanced_rooted_ultrametric",
+        "unrooted_branch_length_tree",
+        "unrooted_branch_length_tree",
+        "outgroup_rooted_on_d",
+        "rooted_polytomy",
+        "unrooted_branch_length_tree",
         "lowercase_aligned_dna",
         "dna_with_ambiguity",
         "clean_aligned_dna",
@@ -166,6 +186,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::drop.tip",
         "ape::keep.tip",
         "ape::getMRCA",
+        "ape::is.monophyletic",
         "ape::base.freq",
         "ape::dist.dna",
         "ape::trans",
@@ -182,6 +203,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "keep-tree-taxa",
         "extract-tree-clade",
         "get-tree-mrca",
+        "assess-tree-monophyly",
         "dna-base-frequency",
         "dna-raw-distance",
         "dna-translation",
@@ -199,8 +221,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 56
-    assert report.passed_case_count == 56
+    assert report.case_count == 66
+    assert report.passed_case_count == 66
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -209,6 +231,7 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         "ape::drop.tip",
         "ape::extract.clade",
         "ape::getMRCA",
+        "ape::is.monophyletic",
         "ape::keep.tip",
         "ape::read.tree",
         "ape::root",
@@ -313,6 +336,15 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert get_mrca_case.reference_summary is not None
     assert get_mrca_case.reference_summary["duplicate_requested_taxa"] == ["A"]
     assert get_mrca_case.reference_summary["matched_node_id"] == 6
+    monophyly_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "is-monophyletic-rooted-three-tip-reroot-true"
+    )
+    assert monophyly_case.reference_summary is not None
+    assert monophyly_case.reference_summary["monophyletic"] is True
+    assert monophyly_case.reference_summary["complementary_clade_used"] is True
+    assert monophyly_case.reference_summary["matched_extra_taxa"] == ["D"]
     translation_case = next(
         observation
         for observation in report.observations
@@ -410,7 +442,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 56
+    assert len(rows) == 66
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
