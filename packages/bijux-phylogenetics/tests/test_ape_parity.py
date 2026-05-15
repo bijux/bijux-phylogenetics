@@ -190,12 +190,14 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert translation_case.reference_summary["stop_codon_count"] == 1
 
 
-def test_run_ape_parity_cases_records_failure_bundle_for_summary_mismatch(
+def test_run_ape_parity_cases_records_branch_length_failure_for_tree_structure_mismatch(
     tmp_path: Path,
 ) -> None:
     rscript = fake_ape_rscript(
         tmp_path / "fake-ape-rscript",
-        summary_overrides={"rooted": False},
+        normalized_tree_overrides={
+            "read-tree-balanced-rooted-ultrametric": "(A:0.2,B:0.2,(C:0.1,D:0.1):0.1);\n"
+        },
     )
 
     report = run_ape_parity_cases(
@@ -207,18 +209,19 @@ def test_run_ape_parity_cases_records_failure_bundle_for_summary_mismatch(
     assert report.all_passed is False
     observation = report.observations[0]
     assert observation.status == "failed"
-    assert observation.mismatch_reason == "summary_mismatch"
+    assert observation.mismatch_reason is not None
+    assert "branch lengths differ" in observation.mismatch_reason
     assert observation.reproducible_artifact_root is not None
     artifact_root = observation.reproducible_artifact_root
     assert artifact_root.exists()
     comparison_payload = json.loads(
         (artifact_root / "comparison.json").read_text(encoding="utf-8")
     )
-    assert comparison_payload["mismatch_reason"] == "summary_mismatch"
+    assert "branch lengths differ" in comparison_payload["mismatch_reason"]
     observed_summary = json.loads(
         (artifact_root / "reference-summary.observed.json").read_text(encoding="utf-8")
     )
-    assert observed_summary["rooted"] is False
+    assert observed_summary["rooted"] is True
     assert (artifact_root / "bijux-normalized.txt").exists()
 
 
