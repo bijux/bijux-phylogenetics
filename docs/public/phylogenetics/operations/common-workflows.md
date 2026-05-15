@@ -204,6 +204,15 @@ instead of only a printed matrix, and keeps the taxon order explicit in the
 review payload. Bijux also exposes the same owned tip-distance surface
 directly, and it rejects missing branch lengths unless the caller explicitly
 opts into a unit-length fallback policy.
+The `ape::vcv.phylo` portion now covers rooted ultrametric, rooted
+non-ultrametric, unrooted branch-length, and singular zero-branch trees. It
+compares one governed long-form Brownian shared-ancestry covariance ledger,
+persists the compared covariance tables automatically when parity fails, and
+keeps the taxon order explicit in the review payload. Bijux also exposes the
+same owned Brownian covariance surface directly through
+`summarize_brownian_covariance(...)`, and that runtime rejects missing or
+negative branch lengths while reporting singular-versus-near-singular state on
+the raw matrix instead of silently regularizing it away.
 The
 `ape::write.tree` portion now
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,

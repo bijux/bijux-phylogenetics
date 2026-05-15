@@ -731,7 +731,7 @@ string-based, so tree summaries, tip ledgers, normalized Newick outputs,
 DNA-state frequency tables, raw-distance ledgers, and translated amino-acid
 rows are compared as owned artifacts rather than scraped console text. The
 governed live cases now cover `ape::read.tree`, `ape::write.tree`,
-`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
+`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::vcv.phylo`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
 fixture ids. The tree and DNA inputs for that lane now come from the governed
 shared fixture catalogs in
 `tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
@@ -787,6 +787,14 @@ matches one governed long-form distance ledger instead of only checking a
 printed matrix. On the owned Bijux side, missing branch lengths now fail
 explicitly for tip-distance calculations unless the caller opts into an
 explicit unit-length fallback policy.
+The `ape::vcv.phylo` lane now compares Brownian shared-ancestry covariance on
+rooted ultrametric, rooted non-ultrametric, unrooted branch-length, and
+singular zero-branch trees against live `ape`, and it persists the compared
+covariance tables automatically whenever parity fails. On the owned Bijux
+side, `summarize_brownian_covariance(...)` now exposes the same matrix with
+explicit tip order, rejects missing or negative branch lengths instead of
+silently regularizing them away, and reports singular-versus-near-singular
+state directly from the raw covariance matrix.
 The
 `ape::write.tree` lane now roundtrips Bijux-written Newick through live `ape`
 for rooted, unrooted, internal-label, support-label, quoted-label, and
