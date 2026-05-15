@@ -181,6 +181,11 @@ Bijux does not silently serialize malformed trees in that lane. Unnamed tips,
 empty tree sets, and non-finite branch lengths fail on the Bijux side before
 the live `ape` comparison is attempted.
 
+Tree IO equality in that lane is structural rather than string-based. The
+governed comparison accepts reordered-but-equivalent children and emits
+specific mismatch reasons when rootedness, tip labels, clades or splits,
+branch lengths, or internal labels differ.
+
 The governed PGLS lane is not limited to one intercept-plus-slope example. The
 core suite now includes one fixed-Brownian numeric regression, one
 treatment-coded categorical regression, and one treatment-coded interaction

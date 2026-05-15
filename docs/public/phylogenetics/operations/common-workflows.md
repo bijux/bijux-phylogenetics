@@ -168,6 +168,9 @@ roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
 internal-label, support-label, quoted-label, and multiple-tree cases. Bijux
 rejects unnamed tips, empty tree sets, and non-finite branch lengths before
 that live comparison so malformed internal trees cannot be written silently.
+Those tree checks are structural rather than text-based, so reordered
+equivalent children pass while rootedness, tip-set, clade or split,
+branch-length, and internal-label drift are reported explicitly.
 
 When the goal is to check resource behavior across the repository's largest
 owned workload families, use `benchmark stress-suite`. This workflow does not

@@ -744,7 +744,9 @@ multiple-tree input, and one governed malformed-Newick rejection case. The
 for rooted, unrooted, internal-label, support-label, quoted-label, and
 multiple-tree cases, while the Bijux writer rejects unnamed tips, empty tree
 sets, and non-finite branch lengths instead of writing malformed Newick
-silently.
+silently. Tree IO parity in that lane is structural rather than text-based:
+equivalent child reorderings pass, while rootedness, tip-set, clade or split,
+branch-length, and internal-label drift produce specific mismatch reasons.
 
 The smaller ancestral review lanes now use the same governed shared trait-table
 fixture catalog in `tests/fixtures/metadata/shared_trait_table_fixture_catalog.json`.
