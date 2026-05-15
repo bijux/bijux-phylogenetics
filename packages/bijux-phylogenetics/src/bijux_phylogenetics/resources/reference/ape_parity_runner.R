@@ -208,7 +208,7 @@ dna_translation_case <- function(case_payload, output_root, execution_path, r_ve
   alignment <- ape::read.dna(case_payload$input_fixture, format = "fasta")
   genetic_code_id <- if (is.null(case_payload$genetic_code_id)) 1 else case_payload$genetic_code_id
   translated <- ape::trans(alignment, code = genetic_code_id)
-  translated_matrix <- as.matrix(translated)
+  translated_matrix <- as.character(translated)
   identifiers <- rownames(translated_matrix)
   amino_acid_sequences <- apply(translated_matrix, 1, paste0, collapse = "")
   if (is.null(names(amino_acid_sequences)) && length(identifiers) == length(amino_acid_sequences)) {
