@@ -339,6 +339,7 @@ from bijux_phylogenetics.comparative import (
     run_multivariate_comparative_regression,
     run_pgls,
     run_posterior_tree_pgls,
+    summarize_brownian_covariance,
     summarize_brownian_covariance_pgls,
     summarize_brownian_regime_rates,
     summarize_brownian_trait_evolution,
@@ -365,6 +366,8 @@ from bijux_phylogenetics.comparative import (
     summarize_trait_outliers,
     summarize_trait_rate_through_time,
     summarize_trait_regime_mapping,
+    write_brownian_covariance_long_table,
+    write_brownian_covariance_matrix_table,
     write_brownian_covariance_table,
     write_brownian_regime_branch_table,
     write_brownian_regime_comparison_table,
@@ -2058,6 +2061,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bijux_phylogenetics.inspect_pgls_inputs is inspect_pgls_inputs
     assert bijux_phylogenetics.run_pgls is run_pgls
     assert (
+        bijux_phylogenetics.summarize_brownian_covariance
+        is summarize_brownian_covariance
+    )
+    assert (
         bijux_phylogenetics.summarize_brownian_covariance_pgls
         is summarize_brownian_covariance_pgls
     )
@@ -2433,6 +2440,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_brownian_covariance_table
         is write_brownian_covariance_table
+    )
+    assert (
+        bijux_phylogenetics.write_brownian_covariance_long_table
+        is write_brownian_covariance_long_table
+    )
+    assert (
+        bijux_phylogenetics.write_brownian_covariance_matrix_table
+        is write_brownian_covariance_matrix_table
     )
     assert (
         bijux_phylogenetics.write_brownian_trait_evolution_summary_table
@@ -10156,6 +10171,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_pgls_lambda_fit
     )
     assert (
+        resolved["bijux_phylogenetics.comparative:summarize_brownian_covariance"]
+        is summarize_brownian_covariance
+    )
+    assert (
         resolved["bijux_phylogenetics.comparative:summarize_brownian_covariance_pgls"]
         is summarize_brownian_covariance_pgls
     )
@@ -10363,6 +10382,18 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
     assert (
         resolved["bijux_phylogenetics.comparative:write_brownian_covariance_table"]
         is write_brownian_covariance_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_brownian_covariance_long_table"
+        ]
+        is write_brownian_covariance_long_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_brownian_covariance_matrix_table"
+        ]
+        is write_brownian_covariance_matrix_table
     )
     assert (
         resolved["bijux_phylogenetics.comparative:write_brownian_regime_summary_table"]

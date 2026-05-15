@@ -195,6 +195,12 @@ from .pgls import (
     run_pgls_multiple_testing,
     write_pgls_model_matrix_table,
 )
+from .brownian_covariance import (
+    BrownianCovarianceReport,
+    summarize_brownian_covariance,
+    write_brownian_covariance_long_table,
+    write_brownian_covariance_matrix_table,
+)
 from .pgls_brownian_covariance import (
     BrownianCovariancePGLSReport,
     BrownianCovarianceRow,
