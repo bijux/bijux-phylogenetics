@@ -109,6 +109,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "node-depth-rooted-non-ultrametric",
         "node-depth-zero-branch-lengths",
         "node-depth-after-outgroup-rooting",
+        "branching-times-rooted-ultrametric",
+        "branching-times-internal-node-labels",
+        "branching-times-medium-ultrametric",
+        "branching-times-zero-internal-branch",
         "dna-base-frequency-lowercase",
         "dna-base-frequency-ambiguity",
         "dna-raw-distance-clean",
@@ -187,6 +191,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "pectinate_rooted_non_ultrametric",
         "zero_branch_lengths",
         "outgroup_rooted_on_d",
+        "balanced_rooted_ultrametric",
+        "internal_node_labels",
+        "larger_binary_tree",
+        "ultrametric_zero_internal_branch",
         "lowercase_aligned_dna",
         "dna_with_ambiguity",
         "clean_aligned_dna",
@@ -209,6 +217,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::is.monophyletic",
         "ape::cophenetic.phylo",
         "ape::node.depth.edgelength",
+        "ape::branching.times",
         "ape::vcv.phylo",
         "ape::base.freq",
         "ape::dist.dna",
@@ -230,6 +239,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "tree-tip-distance",
         "tree-brownian-covariance",
         "tree-node-depth",
+        "tree-branching-times",
         "dna-base-frequency",
         "dna-raw-distance",
         "dna-translation",
@@ -247,12 +257,13 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 76
-    assert report.passed_case_count == 76
+    assert report.case_count == 80
+    assert report.passed_case_count == 80
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
         "ape::base.freq",
+        "ape::branching.times",
         "ape::cophenetic.phylo",
         "ape::dist.dna",
         "ape::drop.tip",
@@ -400,6 +411,17 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert node_depth_case.reference_summary["node_count"] == 7
     assert node_depth_case.reference_summary["rooted"] is True
     assert node_depth_case.reference_summary["zero_branch_length_count"] == 1
+    branching_times_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "branching-times-zero-internal-branch"
+    )
+    assert branching_times_case.reference_summary is not None
+    assert branching_times_case.reference_summary["internal_node_count"] == 3
+    assert branching_times_case.reference_summary["root_age"] == pytest.approx(0.3)
+    assert (
+        branching_times_case.reference_summary["zero_branch_length_count"] == 1
+    )
     translation_case = next(
         observation
         for observation in report.observations
@@ -523,7 +545,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 76
+    assert len(rows) == 80
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]

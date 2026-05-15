@@ -362,6 +362,27 @@ def node_depth_rows(tree):
         )
     return rows
 
+def branching_time_rows(tree):
+    node_depth_table = node_depth_rows(tree)
+    tip_depths = [
+        row["branch_length_depth"]
+        for row in node_depth_table
+        if row["node_kind"] == "tip"
+    ]
+    root_age = max(tip_depths)
+    return [
+        {{
+            "node_id": row["node_id"],
+            "node_kind": row["node_kind"],
+            "node_label": row["node_label"],
+            "descendant_taxa": row["descendant_taxa"],
+            "node_depth": row["branch_length_depth"],
+            "branching_time": root_age - row["branch_length_depth"],
+        }}
+        for row in node_depth_table
+        if row["node_kind"] != "tip"
+    ]
+
 def matrix_rank(matrix, tolerance=1e-12):
     working = [list(map(float, row)) for row in matrix]
     row_count = len(working)
@@ -1288,6 +1309,54 @@ if case_payload["operation"] == "tree-node-depth":
             "outputs": {{
                 "summary_json": str(summary_path),
                 "node_depths": str(rows_path),
+            }},
+        }},
+    )
+    raise SystemExit(0)
+
+if case_payload["operation"] == "tree-branching-times":
+    tree = Phylo.read(case_payload["input_fixture"], "newick")
+    depth_lookup = node_depth_lookup(tree)
+    tip_depths = [
+        depth_lookup[id(terminal)]
+        for terminal in tree.get_terminals()
+    ]
+    rows = branching_time_rows(tree)
+    summary = {{
+        "internal_node_count": len(rows),
+        "rooted": is_rooted_tree(tree),
+        "tip_labels": [terminal.name for terminal in tree.get_terminals()],
+        "tree_is_ultrametric": (
+            abs(max(tip_depths) - min(tip_depths)) <= 1e-12 if tip_depths else True
+        ),
+        "root_age": max(tip_depths),
+        "zero_branch_length_count": sum(
+            1
+            for clade in tree.find_clades(order="preorder")
+            if clade is not tree.root and clade.branch_length == 0.0
+        ),
+        "minimum_tip_depth": min(tip_depths),
+        "maximum_tip_depth": max(tip_depths),
+        "max_tip_depth_deviation": max(tip_depths) - min(tip_depths),
+        "tolerance": 1e-12,
+    }}
+    summary.update(SUMMARY_OVERRIDES)
+    summary_path = output_root / "summary.json"
+    rows_path = output_root / "branching-times.tsv"
+    write_json(summary_path, summary)
+    write_tsv(rows_path, rows)
+    write_json(
+        execution_path,
+        {{
+            "status": "ok",
+            "case_id": case_payload["case_id"],
+            "function_name": case_payload["function_name"],
+            "input_fixture": case_payload["input_fixture"],
+            "r_version": "4.6.0",
+            "ape_version": "5.0.0",
+            "outputs": {{
+                "summary_json": str(summary_path),
+                "branching_times": str(rows_path),
             }},
         }},
     )
