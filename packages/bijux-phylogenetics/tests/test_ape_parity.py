@@ -128,6 +128,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ace-discrete-multistate-balanced-rooted-ultrametric",
         "ace-discrete-multistate-pectinate-non-ultrametric",
         "ace-discrete-missing-values-pruned",
+        "ace-discrete-sym-balanced-rooted-ultrametric",
+        "ace-discrete-sym-pectinate-non-ultrametric",
+        "ace-discrete-sym-balanced-six-taxon",
+        "ace-discrete-sym-missing-values-pruned",
         "pic-balanced-rooted-ultrametric",
         "pic-pectinate-non-ultrametric",
         "pic-balanced-six-taxon",
@@ -208,6 +212,15 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "dna-translation-frame-error-truncation",
         "dna-translation-vertebrate-mitochondrial",
     ]
+    case_map = {case.case_id: case for case in cases}
+    assert (
+        case_map["ace-discrete-sym-balanced-rooted-ultrametric"].transition_rate_tolerance
+        == 1.0
+    )
+    assert (
+        case_map["ace-discrete-sym-pectinate-non-ultrametric"].transition_rate_tolerance
+        == 1.0
+    )
     assert [case.fixture_id for case in cases] == [
         "balanced_rooted_ultrametric",
         "unrooted_branch_length_tree",
@@ -294,6 +307,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "balanced_rooted_ultrametric",
         "pectinate_rooted_non_ultrametric",
         "balanced_rooted_ultrametric",
+        "balanced_rooted_ultrametric",
+        "pectinate_rooted_non_ultrametric",
+        "balanced_rooted_six_taxon",
+        "balanced_rooted_six_taxon",
         "balanced_rooted_ultrametric",
         "pectinate_rooted_non_ultrametric",
         "balanced_rooted_six_taxon",
@@ -444,8 +461,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 164
-    assert report.passed_case_count == 164
+    assert report.case_count == 168
+    assert report.passed_case_count == 168
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -494,6 +511,14 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert discrete_missing_case.reference_summary is not None
     assert discrete_missing_case.reference_summary["dropped_missing_taxa"] == ["D"]
     assert discrete_missing_case.reference_summary["transition_rate_rows"]
+    discrete_sym_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "ace-discrete-sym-balanced-six-taxon"
+    )
+    assert discrete_sym_case.reference_summary is not None
+    assert discrete_sym_case.reference_summary["baseline_model"] == "equal-rates"
+    assert discrete_sym_case.reference_summary["preferred_model_by_aic"] == "equal-rates"
     internal_label_case = next(
         observation
         for observation in report.observations
@@ -849,7 +874,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-        assert len(rows) == 164
+        assert len(rows) == 168
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
