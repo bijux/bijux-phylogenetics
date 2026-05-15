@@ -793,6 +793,7 @@ monophyly_case <- function(case_payload, output_root, execution_path, r_version)
   if (length(present_requested_taxa) == 1) {
     matched_node_id <- match(present_requested_taxa[[1]], tree$tip.label)
     matched_taxa <- present_requested_taxa
+    matched_node_name <- node_label(tree, matched_node_id)
   } else if (length(present_requested_taxa) >= 2) {
     matched_node_id <- ape::getMRCA(tree, present_requested_taxa)
     matched_taxa <- descendant_taxa(tree, matched_node_id)
