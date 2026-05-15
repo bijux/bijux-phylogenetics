@@ -192,6 +192,12 @@ two-tip, many-tip, full-tip-set, duplicate-tip, rooted-polytomy, and
 already-rooted-outgroup cases. Bijux keeps one explicit workflow-side
 difference next to that live lane: missing requested taxa fail clearly instead
 of surfacing as a low-level parser-side condition.
+The `ape::is.monophyletic` portion now covers rooted and unrooted monophyly
+calls with explicit reroot policy, full-tip-set behavior, singleton and
+mixed-missing requests, rooted-polytomy behavior, post-rooting behavior, and
+all-missing reroot failures. Bijux also records the matched MRCA node and any
+extra descendant taxa that make a direct clade fail monophyly, so the same
+lane is usable for review instead of only for pass-fail checks.
 The
 `ape::write.tree` portion now
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,

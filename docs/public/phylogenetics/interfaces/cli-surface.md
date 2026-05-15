@@ -162,7 +162,7 @@ reproducible artifact bundle for that case.
 
 The governed live `ape` cases now span both shared tree and shared DNA
 fixtures. Today that lane covers `ape::read.tree`, `ape::write.tree`,
-`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
+`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
 resolved from `shared_tree_fixture_catalog.json` and
 `shared_dna_alignment_fixture_catalog.json`. The `ape::read.tree` portion now
 compares structured clade rows and covers branch lengths, internal labels,
@@ -196,6 +196,12 @@ two-tip, many-tip, full-tip-set, duplicate-tip, rooted-polytomy, and
 already-rooted-outgroup cases. Bijux keeps one adjacent workflow-side rule
 outside the live `ape` call shape too: missing requested taxa fail clearly
 instead of surfacing as a low-level parser-side error.
+The `ape::is.monophyletic` portion now covers rooted and unrooted monophyly
+calls with explicit reroot policy, full-tip-set behavior, singleton and
+mixed-missing requests, rooted-polytomy behavior, post-rooting behavior, and
+all-missing reroot failures. Bijux uses that same lane to expose matched MRCA
+node identity and extra descendant taxa when a direct clade is not cleanly
+monophyletic.
 The `ape::write.tree` portion
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
 internal-label, support-label, quoted-label, and multiple-tree cases. The DNA
