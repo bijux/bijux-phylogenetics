@@ -12,6 +12,10 @@ import subprocess
 import tempfile
 
 from bijux_phylogenetics.clades import extract_tree_clades, extract_tree_set_clades
+from bijux_phylogenetics.compare.structural_parity import (
+    compare_tree_sets_structurally,
+    compare_tree_structurally,
+)
 from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matrix
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.core.tree import TreeNode
@@ -968,6 +972,47 @@ def _load_reference_case_payload(
     raise ValueError(f"unsupported ape parity operation '{case.operation}'")
 
 
+def _tree_structure_mismatch_reason(
+    case: ApeParityCase,
+    execution_root: Path,
+) -> str | None:
+    reference_tree = load_tree(execution_root / "normalized-tree.nwk")
+    expected_tree = load_tree(case.input_fixture)
+    _normalize_tree_labels(
+        reference_tree.root,
+        expected_tip_labels=set(expected_tree.tip_names),
+    )
+    report = compare_tree_structurally(
+        expected_tree,
+        reference_tree,
+        tolerance=case.tolerance,
+        compare_internal_labels=True,
+    )
+    return report.mismatch_reason
+
+
+def _tree_set_structure_mismatch_reason(
+    case: ApeParityCase,
+    execution_root: Path,
+) -> str | None:
+    reference_tree_set = load_newick_tree_set(execution_root / "normalized-tree-set.nwk")
+    expected_tree_set = load_newick_tree_set(case.input_fixture)
+    expected_tip_labels = {
+        tip_name
+        for tree in expected_tree_set
+        for tip_name in tree.tip_names
+    }
+    for tree in reference_tree_set:
+        _normalize_tree_labels(tree.root, expected_tip_labels=expected_tip_labels)
+    report = compare_tree_sets_structurally(
+        expected_tree_set,
+        reference_tree_set,
+        tolerance=case.tolerance,
+        compare_internal_labels=True,
+    )
+    return report.mismatch_reason
+
+
 def _summary_rows(observations: list[ApeParityObservation]) -> list[ApeParitySummaryRow]:
     rows: list[ApeParitySummaryRow] = []
     for function_name in sorted({item.function_name for item in observations}):
@@ -1002,11 +1047,6 @@ def run_ape_parity_cases(
             working_root = Path(tmpdir)
             reference_input_path = _materialize_reference_input(case, working_root)
             reference_case = replace(case, input_fixture=reference_input_path)
-            payload_case = (
-                reference_case
-                if case.operation in {"write-tree-structure", "write-tree-set-structure"}
-                else case
-            )
             case_file = _write_case_file(working_root / "case.json", reference_case)
             execution_root = working_root / "reference"
             execution_root.mkdir(parents=True, exist_ok=True)
@@ -1019,7 +1059,7 @@ def run_ape_parity_cases(
                     bijux_summary,
                     bijux_rows,
                     bijux_normalized_text,
-                ) = _build_bijux_case_payload(payload_case)
+                ) = _build_bijux_case_payload(case)
             except Exception as error:
                 bijux_error = {
                     "error_type": type(error).__name__,
@@ -1100,7 +1140,20 @@ def run_ape_parity_cases(
                             reference_rows,
                             reference_normalized_text,
                         ) = _load_reference_case_payload(case, execution_root)
-                        if not _compare_json(
+                        if case.operation in {"read-tree-structure", "write-tree-structure"}:
+                            mismatch_reason = _tree_structure_mismatch_reason(
+                                case,
+                                execution_root,
+                            )
+                        elif case.operation in {
+                            "read-tree-set-structure",
+                            "write-tree-set-structure",
+                        }:
+                            mismatch_reason = _tree_set_structure_mismatch_reason(
+                                case,
+                                execution_root,
+                            )
+                        elif not _compare_json(
                             reference_summary, bijux_summary, tolerance=case.tolerance
                         ):
                             mismatch_reason = "summary_mismatch"
@@ -1113,6 +1166,8 @@ def run_ape_parity_cases(
                         elif reference_normalized_text != bijux_normalized_text:
                             mismatch_reason = "normalized_text_mismatch"
                         else:
+                            status = "passed"
+                        if mismatch_reason is None:
                             status = "passed"
             if case.expected_status == "parse-error":
                 if bijux_error is None:

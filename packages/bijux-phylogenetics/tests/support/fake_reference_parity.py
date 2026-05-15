@@ -10,8 +10,10 @@ def fake_ape_rscript(
     *,
     ape_available: bool = True,
     summary_overrides: dict[str, object] | None = None,
+    normalized_tree_overrides: dict[str, str] | None = None,
 ) -> Path:
     summary_payload = repr(summary_overrides or {})
+    normalized_tree_payload = repr(normalized_tree_overrides or {})
     return write_executable(
         path,
         f"""#!/usr/bin/env python3
@@ -231,6 +233,7 @@ TABULAR_CASES = {{
 }}
 
 SUMMARY_OVERRIDES = {summary_payload}
+NORMALIZED_TREE_OVERRIDES = {normalized_tree_payload}
 APE_AVAILABLE = {str(ape_available)}
 
 def write_json(path, payload):
@@ -361,6 +364,11 @@ if case_payload["operation"] in {{
                     "('Homo_sapiens':0.1,'Mus_musculus':0.2,'A.B-1':0.3);\\n",
                     encoding="utf-8",
                 )
+            elif case_id in NORMALIZED_TREE_OVERRIDES:
+                newick_path.write_text(
+                    NORMALIZED_TREE_OVERRIDES[case_id],
+                    encoding="utf-8",
+                )
             else:
                 newick_path.write_text(
                     Path(case_payload["input_fixture"]).read_text(encoding="utf-8"),
@@ -389,11 +397,17 @@ if case_payload["operation"] in {{
             summary.update(SUMMARY_OVERRIDES)
             summary_path = output_root / "summary.json"
             clades_path = output_root / "clades.tsv"
+            tree_set_path = output_root / "normalized-tree-set.nwk"
             write_json(summary_path, summary)
             write_tsv(clades_path, rows)
+            tree_set_path.write_text(
+                Path(case_payload["input_fixture"]).read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
             outputs = {{
                 "summary_json": str(summary_path),
                 "clades": str(clades_path),
+                "normalized_tree_set": str(tree_set_path),
             }}
     except Exception as error:
         write_json(

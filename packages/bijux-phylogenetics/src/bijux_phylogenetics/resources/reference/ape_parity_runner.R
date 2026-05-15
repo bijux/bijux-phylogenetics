@@ -252,6 +252,7 @@ tree_set_case <- function(case_payload, output_root, execution_path, r_version) 
 
   summary_path <- file.path(output_root, "summary.json")
   clades_path <- file.path(output_root, "clades.tsv")
+  tree_set_path <- file.path(output_root, "normalized-tree-set.nwk")
   tree_rows <- unlist(
     lapply(seq_along(tree_set), function(index) tree_structure_rows(tree_set[[index]], index)),
     recursive = FALSE
@@ -269,6 +270,7 @@ tree_set_case <- function(case_payload, output_root, execution_path, r_version) 
   )
   write_payload(summary_path, summary_payload)
   write_table(clades_path, do.call(rbind.data.frame, c(tree_rows, stringsAsFactors = FALSE)))
+  ape::write.tree(tree_set, file = tree_set_path)
   write_payload(
     execution_path,
     list(
@@ -280,7 +282,8 @@ tree_set_case <- function(case_payload, output_root, execution_path, r_version) 
       ape_version = as.character(utils::packageVersion("ape")),
       outputs = list(
         summary_json = summary_path,
-        clades = clades_path
+        clades = clades_path,
+        normalized_tree_set = tree_set_path
       )
     )
   )
