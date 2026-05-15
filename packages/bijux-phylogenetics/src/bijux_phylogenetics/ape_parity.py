@@ -6,14 +6,20 @@ import json
 from importlib import metadata
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
 
+from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matrix
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.core.tree import TreeNode
+from bijux_phylogenetics.io.fasta import load_fasta_alignment, translate_coding_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.shared_dna_alignment_fixtures import (
+    get_shared_dna_alignment_fixture,
+)
 from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
 
 
@@ -22,12 +28,15 @@ class ApeParityCase:
     """One governed live `ape` parity case."""
 
     case_id: str
-    tree_fixture_id: str
+    fixture_kind: str
+    fixture_id: str
     function_name: str
     python_function_name: str
     operation: str
     input_fixture: Path
     tolerance: float
+    pairwise_deletion: bool | None = None
+    genetic_code_id: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,7 +44,8 @@ class ApeParityObservation:
     """One live parity comparison between Bijux and `ape`."""
 
     case_id: str
-    tree_fixture_id: str
+    fixture_kind: str
+    fixture_id: str
     function_name: str
     python_function_name: str
     input_fixture: Path
@@ -135,8 +145,13 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
     """Return the governed live `ape` parity cases."""
     root = _fixtures_root() if fixtures_root is None else fixtures_root
 
-    def fixture_path(fixture_id: str) -> Path:
-        fixture = get_shared_tree_fixture(fixture_id)
+    def fixture_path(fixture_kind: str, fixture_id: str) -> Path:
+        if fixture_kind == "tree":
+            fixture = get_shared_tree_fixture(fixture_id)
+        elif fixture_kind == "dna-alignment":
+            fixture = get_shared_dna_alignment_fixture(fixture_id)
+        else:
+            raise ValueError(f"unsupported ape parity fixture kind '{fixture_kind}'")
         if fixtures_root is None:
             return fixture.path
         return root / fixture.relative_path
@@ -144,30 +159,141 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
     return [
         ApeParityCase(
             case_id="read-tree-balanced-rooted-ultrametric",
-            tree_fixture_id="balanced_rooted_ultrametric",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
             function_name="ape::read.tree",
             python_function_name="load_tree+inspect_tree_path",
             operation="read-tree-summary",
-            input_fixture=fixture_path("balanced_rooted_ultrametric"),
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
         ),
         ApeParityCase(
             case_id="read-tree-unrooted-branch-length",
-            tree_fixture_id="unrooted_branch_length_tree",
+            fixture_kind="tree",
+            fixture_id="unrooted_branch_length_tree",
             function_name="ape::read.tree",
             python_function_name="load_tree+inspect_tree_path",
             operation="read-tree-summary",
-            input_fixture=fixture_path("unrooted_branch_length_tree"),
+            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
             tolerance=0.0,
         ),
         ApeParityCase(
             case_id="read-tree-quoted-taxon-labels",
-            tree_fixture_id="quoted_taxon_labels",
+            fixture_kind="tree",
+            fixture_id="quoted_taxon_labels",
             function_name="ape::read.tree",
             python_function_name="load_tree+inspect_tree_path",
             operation="read-tree-summary",
-            input_fixture=fixture_path("quoted_taxon_labels"),
+            input_fixture=fixture_path("tree", "quoted_taxon_labels"),
             tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="dna-base-frequency-lowercase",
+            fixture_kind="dna-alignment",
+            fixture_id="lowercase_aligned_dna",
+            function_name="ape::base.freq",
+            python_function_name="load_fasta_alignment+ape-style-base-frequency",
+            operation="dna-base-frequency",
+            input_fixture=fixture_path("dna-alignment", "lowercase_aligned_dna"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="dna-base-frequency-ambiguity",
+            fixture_kind="dna-alignment",
+            fixture_id="dna_with_ambiguity",
+            function_name="ape::base.freq",
+            python_function_name="load_fasta_alignment+ape-style-base-frequency",
+            operation="dna-base-frequency",
+            input_fixture=fixture_path("dna-alignment", "dna_with_ambiguity"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="dna-raw-distance-clean",
+            fixture_kind="dna-alignment",
+            fixture_id="clean_aligned_dna",
+            function_name="ape::dist.dna",
+            python_function_name="compute_pairwise_genetic_distance_matrix",
+            operation="dna-raw-distance",
+            input_fixture=fixture_path("dna-alignment", "clean_aligned_dna"),
+            tolerance=1e-12,
+            pairwise_deletion=False,
+        ),
+        ApeParityCase(
+            case_id="dna-raw-distance-gaps",
+            fixture_kind="dna-alignment",
+            fixture_id="dna_with_gaps",
+            function_name="ape::dist.dna",
+            python_function_name="compute_pairwise_genetic_distance_matrix",
+            operation="dna-raw-distance",
+            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            tolerance=1e-12,
+            pairwise_deletion=True,
+        ),
+        ApeParityCase(
+            case_id="dna-raw-distance-identical",
+            fixture_kind="dna-alignment",
+            fixture_id="identical_sequences",
+            function_name="ape::dist.dna",
+            python_function_name="compute_pairwise_genetic_distance_matrix",
+            operation="dna-raw-distance",
+            input_fixture=fixture_path("dna-alignment", "identical_sequences"),
+            tolerance=1e-12,
+            pairwise_deletion=False,
+        ),
+        ApeParityCase(
+            case_id="dna-raw-distance-high-divergence",
+            fixture_kind="dna-alignment",
+            fixture_id="high_divergence_sequences",
+            function_name="ape::dist.dna",
+            python_function_name="compute_pairwise_genetic_distance_matrix",
+            operation="dna-raw-distance",
+            input_fixture=fixture_path("dna-alignment", "high_divergence_sequences"),
+            tolerance=1e-12,
+            pairwise_deletion=False,
+        ),
+        ApeParityCase(
+            case_id="dna-raw-distance-missing-data",
+            fixture_kind="dna-alignment",
+            fixture_id="dna_with_missing_data",
+            function_name="ape::dist.dna",
+            python_function_name="compute_pairwise_genetic_distance_matrix",
+            operation="dna-raw-distance",
+            input_fixture=fixture_path("dna-alignment", "dna_with_missing_data"),
+            tolerance=1e-12,
+            pairwise_deletion=True,
+        ),
+        ApeParityCase(
+            case_id="dna-translation-valid-frame",
+            fixture_kind="dna-alignment",
+            fixture_id="coding_valid_reading_frame",
+            function_name="ape::trans",
+            python_function_name="translate_coding_alignment",
+            operation="dna-translation",
+            input_fixture=fixture_path("dna-alignment", "coding_valid_reading_frame"),
+            tolerance=0.0,
+            genetic_code_id=1,
+        ),
+        ApeParityCase(
+            case_id="dna-translation-internal-stop",
+            fixture_kind="dna-alignment",
+            fixture_id="coding_internal_stop",
+            function_name="ape::trans",
+            python_function_name="translate_coding_alignment",
+            operation="dna-translation",
+            input_fixture=fixture_path("dna-alignment", "coding_internal_stop"),
+            tolerance=0.0,
+            genetic_code_id=1,
+        ),
+        ApeParityCase(
+            case_id="dna-translation-terminal-stop",
+            fixture_kind="dna-alignment",
+            fixture_id="coding_terminal_stop",
+            function_name="ape::trans",
+            python_function_name="translate_coding_alignment",
+            operation="dna-translation",
+            input_fixture=fixture_path("dna-alignment", "coding_terminal_stop"),
+            tolerance=0.0,
+            genetic_code_id=1,
         ),
     ]
 
@@ -202,11 +328,14 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
         json.dumps(
             {
                 "case_id": case.case_id,
-                "tree_fixture_id": case.tree_fixture_id,
+                "fixture_kind": case.fixture_kind,
+                "fixture_id": case.fixture_id,
                 "function_name": case.function_name,
                 "operation": case.operation,
                 "input_fixture": str(case.input_fixture),
                 "tolerance": case.tolerance,
+                "pairwise_deletion": case.pairwise_deletion,
+                "genetic_code_id": case.genetic_code_id,
             },
             indent=2,
             sort_keys=True,
@@ -217,7 +346,9 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
     return path
 
 
-def _build_bijux_tree_summary(input_fixture: Path) -> tuple[dict[str, object], list[dict[str, object]], str]:
+def _build_bijux_tree_summary(
+    input_fixture: Path,
+) -> tuple[dict[str, object], list[dict[str, object]], str]:
     tree = load_tree(input_fixture)
     inspection = inspect_tree_path(input_fixture)
     summary = {
@@ -235,6 +366,111 @@ def _build_bijux_tree_summary(input_fixture: Path) -> tuple[dict[str, object], l
         for index, label in enumerate(tree.tip_names, start=1)
     ]
     return summary, tips, dumps_newick(tree)
+
+
+def _ape_base_frequency_rows(input_fixture: Path) -> list[dict[str, object]]:
+    state_order = [
+        "a",
+        "c",
+        "g",
+        "t",
+        "r",
+        "m",
+        "w",
+        "s",
+        "k",
+        "y",
+        "v",
+        "h",
+        "d",
+        "b",
+        "n",
+        "-",
+        "?",
+    ]
+    counts = {state: 0 for state in state_order}
+    records = load_fasta_alignment(input_fixture)
+    total = 0
+    for record in records:
+        for residue in record.sequence:
+            normalized = residue.lower().replace("u", "t")
+            if normalized not in counts:
+                continue
+            counts[normalized] += 1
+            total += 1
+    if total == 0:
+        return [{"state": state, "frequency": 0.0} for state in state_order]
+    return [
+        {"state": state, "frequency": counts[state] / total}
+        for state in state_order
+    ]
+
+
+def _build_bijux_base_frequency_summary(
+    input_fixture: Path,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    records = load_fasta_alignment(input_fixture)
+    rows = _ape_base_frequency_rows(input_fixture)
+    return {
+        "sequence_count": len(records),
+        "alignment_length": len(records[0].sequence),
+        "state_count": len(rows),
+    }, rows
+
+
+def _build_bijux_distance_rows(
+    input_fixture: Path,
+    *,
+    pairwise_deletion: bool,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    report = compute_pairwise_genetic_distance_matrix(
+        input_fixture,
+        model="p-distance",
+        gap_handling="pairwise-deletion" if pairwise_deletion else "complete-deletion",
+        ambiguity_policy="ignore",
+    )
+    pair_lookup = {
+        (row.left_identifier, row.right_identifier): row.distance for row in report.pairs
+    }
+    rows: list[dict[str, object]] = []
+    for left_identifier in report.identifiers:
+        for right_identifier in report.identifiers:
+            distance = pair_lookup.get((left_identifier, right_identifier))
+            if distance is None:
+                distance = pair_lookup.get((right_identifier, left_identifier))
+            rows.append(
+                {
+                    "left_identifier": left_identifier,
+                    "right_identifier": right_identifier,
+                    "distance": distance,
+                }
+            )
+    return {
+        "sequence_count": len(report.identifiers),
+        "alignment_length": report.alignment_length,
+        "pairwise_deletion": pairwise_deletion,
+    }, rows
+
+
+def _build_bijux_translation_rows(
+    input_fixture: Path,
+    *,
+    genetic_code_id: int,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    translated, report = translate_coding_alignment(
+        input_fixture, genetic_code=genetic_code_id
+    )
+    return {
+        "sequence_count": report.translated_sequence_count,
+        "translated_length": report.translated_alignment_length,
+        "stop_codon_count": report.stop_codon_count,
+    }, [
+        {
+            "identifier": row.identifier,
+            "amino_acid_sequence": row.sequence,
+        }
+        for row in translated
+    ]
 
 
 def _load_json(path: Path) -> dict[str, object]:
@@ -257,13 +493,27 @@ def _normalize_reference_summary(summary: dict[str, object]) -> dict[str, object
     return normalized
 
 
-def _load_tip_table(path: Path) -> list[dict[str, object]]:
+def _coerce_table_cell(value: str) -> object:
+    if value == "":
+        return ""
+    if value in {"true", "false"}:
+        return value == "true"
+    if re.fullmatch(r"-?\d+", value):
+        return int(value)
+    if re.fullmatch(r"-?(?:\d+\.\d*|\d*\.\d+)(?:[eE][+-]?\d+)?", value):
+        return float(value)
+    return value
+
+
+def _load_rows_table(path: Path) -> list[dict[str, object]]:
     with path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
     return [
         {
-            "position": int(row["position"]),
-            "label": _normalize_newick_label(row["label"]),
+            key: _normalize_newick_label(value)
+            if key.endswith("label")
+            else _coerce_table_cell(value)
+            for key, value in row.items()
         }
         for row in rows
     ]
@@ -335,10 +585,17 @@ def _write_json(path: Path, payload: object) -> None:
     )
 
 
-def _write_tip_table(path: Path, rows: list[dict[str, object]]) -> None:
+def _write_rows_table(path: Path, rows: list[dict[str, object]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    if not rows:
+        path.write_text("", encoding="utf-8")
+        return
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=["position", "label"], delimiter="\t")
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=list(rows[0]),
+            delimiter="\t",
+        )
         writer.writeheader()
         writer.writerows(rows)
 
@@ -352,39 +609,37 @@ def _persist_failure_bundle(
     execution_payload: dict[str, object] | None,
     reference_summary: dict[str, object] | None,
     bijux_summary: dict[str, object] | None,
-    bijux_tips: list[dict[str, object]],
-    bijux_newick: str,
+    reference_rows: list[dict[str, object]] | None,
+    bijux_rows: list[dict[str, object]] | None,
+    bijux_normalized_text: str | None,
     mismatch_reason: str,
 ) -> Path:
     artifact_root = failure_root / case.case_id
     artifact_root.mkdir(parents=True, exist_ok=True)
     _copy_if_exists(case_file, artifact_root / "case.json")
-    _copy_if_exists(
-        execution_root / "reference-execution.json",
-        artifact_root / "reference-execution.json",
-    )
-    _copy_if_exists(
-        execution_root / "summary.json",
-        artifact_root / "reference-summary.json",
-    )
-    _copy_if_exists(
-        execution_root / "tips.tsv",
-        artifact_root / "reference-tips.tsv",
-    )
-    _copy_if_exists(
-        execution_root / "normalized-tree.nwk",
-        artifact_root / "reference-normalized-tree.nwk",
-    )
+    _copy_if_exists(execution_root / "reference-execution.json", artifact_root / "reference-execution.json")
+    if execution_payload is not None:
+        outputs = execution_payload.get("outputs")
+        if isinstance(outputs, dict):
+            for path_string in outputs.values():
+                if isinstance(path_string, str):
+                    source = Path(path_string)
+                    _copy_if_exists(source, artifact_root / f"reference-{source.name}")
     if execution_payload is not None:
         _write_json(artifact_root / "reference-execution.observed.json", execution_payload)
     if reference_summary is not None:
         _write_json(artifact_root / "reference-summary.observed.json", reference_summary)
+    if reference_rows is not None:
+        _write_json(artifact_root / "reference-rows.observed.json", reference_rows)
     if bijux_summary is not None:
         _write_json(artifact_root / "bijux-summary.json", bijux_summary)
-    _write_tip_table(artifact_root / "bijux-tips.tsv", bijux_tips)
-    (artifact_root / "bijux-normalized-tree.nwk").write_text(
-        f"{bijux_newick}\n", encoding="utf-8"
-    )
+    if bijux_rows is not None:
+        _write_json(artifact_root / "bijux-rows.json", bijux_rows)
+    if bijux_normalized_text is not None:
+        (artifact_root / "bijux-normalized.txt").write_text(
+            f"{bijux_normalized_text}\n",
+            encoding="utf-8",
+        )
     _write_json(
         artifact_root / "comparison.json",
         {
@@ -394,6 +649,65 @@ def _persist_failure_bundle(
         },
     )
     return artifact_root
+
+
+def _build_bijux_case_payload(
+    case: ApeParityCase,
+) -> tuple[dict[str, object], list[dict[str, object]] | None, str | None]:
+    if case.operation == "read-tree-summary":
+        summary, rows, normalized_text = _build_bijux_tree_summary(case.input_fixture)
+        return summary, rows, normalized_text
+    if case.operation == "dna-base-frequency":
+        summary, rows = _build_bijux_base_frequency_summary(case.input_fixture)
+        return summary, rows, None
+    if case.operation == "dna-raw-distance":
+        if case.pairwise_deletion is None:
+            raise ValueError(
+                f"ape parity case '{case.case_id}' is missing pairwise deletion policy"
+            )
+        summary, rows = _build_bijux_distance_rows(
+            case.input_fixture,
+            pairwise_deletion=case.pairwise_deletion,
+        )
+        return summary, rows, None
+    if case.operation == "dna-translation":
+        if case.genetic_code_id is None:
+            raise ValueError(
+                f"ape parity case '{case.case_id}' is missing a genetic code id"
+            )
+        summary, rows = _build_bijux_translation_rows(
+            case.input_fixture,
+            genetic_code_id=case.genetic_code_id,
+        )
+        return summary, rows, None
+    raise ValueError(f"unsupported ape parity operation '{case.operation}'")
+
+
+def _load_reference_case_payload(
+    case: ApeParityCase,
+    execution_root: Path,
+) -> tuple[dict[str, object], list[dict[str, object]] | None, str | None]:
+    if case.operation == "read-tree-summary":
+        summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
+        rows = _load_rows_table(execution_root / "tips.tsv")
+        normalized_text = _canonical_newick(
+            execution_root / "normalized-tree.nwk",
+            expected_tip_labels=set(str(label) for label in summary.get("tip_labels", [])),
+        )
+        return summary, rows, normalized_text
+    if case.operation == "dna-base-frequency":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "base-frequency.tsv")
+        return summary, rows, None
+    if case.operation == "dna-raw-distance":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "distance-matrix.tsv")
+        return summary, rows, None
+    if case.operation == "dna-translation":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "translation.tsv")
+        return summary, rows, None
+    raise ValueError(f"unsupported ape parity operation '{case.operation}'")
 
 
 def _summary_rows(observations: list[ApeParityObservation]) -> list[ApeParitySummaryRow]:
@@ -431,12 +745,13 @@ def run_ape_parity_cases(
             case_file = _write_case_file(working_root / "case.json", case)
             execution_root = working_root / "reference"
             execution_root.mkdir(parents=True, exist_ok=True)
-            bijux_summary, bijux_tips, bijux_newick = _build_bijux_tree_summary(
-                case.input_fixture
+            bijux_summary, bijux_rows, bijux_normalized_text = _build_bijux_case_payload(
+                case
             )
             execution_payload: dict[str, object] | None = None
             reference_summary: dict[str, object] | None = None
-            reference_tips: list[dict[str, object]] | None = None
+            reference_rows: list[dict[str, object]] | None = None
+            reference_normalized_text: str | None = None
             status = "failed"
             mismatch_reason: str | None = None
             artifact_root: Path | None = None
@@ -491,25 +806,23 @@ def run_ape_parity_cases(
                             )
                         )
                     else:
-                        reference_summary = _normalize_reference_summary(
-                            _load_json(execution_root / "summary.json")
-                        )
-                        reference_tips = _load_tip_table(execution_root / "tips.tsv")
-                        reference_newick = _canonical_newick(
-                            execution_root / "normalized-tree.nwk",
-                            expected_tip_labels=set(
-                                str(label)
-                                for label in reference_summary.get("tip_labels", [])
-                            ),
-                        )
+                        (
+                            reference_summary,
+                            reference_rows,
+                            reference_normalized_text,
+                        ) = _load_reference_case_payload(case, execution_root)
                         if not _compare_json(
                             reference_summary, bijux_summary, tolerance=case.tolerance
                         ):
                             mismatch_reason = "summary_mismatch"
-                        elif reference_tips != bijux_tips:
-                            mismatch_reason = "tip_table_mismatch"
-                        elif reference_newick != bijux_newick:
-                            mismatch_reason = "normalized_tree_mismatch"
+                        elif not _compare_json(
+                            reference_rows,
+                            bijux_rows,
+                            tolerance=case.tolerance,
+                        ):
+                            mismatch_reason = "rows_mismatch"
+                        elif reference_normalized_text != bijux_normalized_text:
+                            mismatch_reason = "normalized_text_mismatch"
                         else:
                             status = "passed"
             if status != "passed":
@@ -521,8 +834,9 @@ def run_ape_parity_cases(
                     execution_payload=execution_payload,
                     reference_summary=reference_summary,
                     bijux_summary=bijux_summary,
-                    bijux_tips=bijux_tips,
-                    bijux_newick=bijux_newick,
+                    reference_rows=reference_rows,
+                    bijux_rows=bijux_rows,
+                    bijux_normalized_text=bijux_normalized_text,
                     mismatch_reason=mismatch_reason or "reference_execution_failed",
                 )
                 if process_stdout:
@@ -536,7 +850,8 @@ def run_ape_parity_cases(
             observations.append(
                 ApeParityObservation(
                     case_id=case.case_id,
-                    tree_fixture_id=case.tree_fixture_id,
+                    fixture_kind=case.fixture_kind,
+                    fixture_id=case.fixture_id,
                     function_name=case.function_name,
                     python_function_name=case.python_function_name,
                     input_fixture=case.input_fixture,
@@ -604,7 +919,8 @@ def write_ape_parity_observation_table(path: Path, report: ApeParityReport) -> P
             handle,
             fieldnames=[
                 "case_id",
-                "tree_fixture_id",
+                "fixture_kind",
+                "fixture_id",
                 "function_name",
                 "python_function_name",
                 "input_fixture",
@@ -625,7 +941,8 @@ def write_ape_parity_observation_table(path: Path, report: ApeParityReport) -> P
             writer.writerow(
                 {
                     "case_id": observation.case_id,
-                    "tree_fixture_id": observation.tree_fixture_id,
+                    "fixture_kind": observation.fixture_kind,
+                    "fixture_id": observation.fixture_id,
                     "function_name": observation.function_name,
                     "python_function_name": observation.python_function_name,
                     "input_fixture": str(observation.input_fixture),
