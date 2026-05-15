@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import json
 import math
 from pathlib import Path
+import random
 
 import numpy
 
@@ -1011,15 +1012,14 @@ def _fit_discrete_mk_model(
         raise ValueError(
             "discrete ancestral reconstruction requires at least one allowed transition"
         )
-    initial_scales = (0.1, 1.0, 3.0)
-    initial_candidates = [
-        numpy.full(parameter_count, math.log(scale), dtype=float)
-        for scale in initial_scales
-    ]
+    initial_candidates = _build_discrete_initial_candidates(
+        parameter_count=parameter_count,
+        model=model,
+    )
     best_log_parameters: numpy.ndarray | None = None
     best_log_likelihood = float("-inf")
     best_run: _DiscreteOptimizationRun | None = None
-    for initial_scale, initial in zip(initial_scales, initial_candidates, strict=True):
+    for initial_scale, initial in initial_candidates:
         run = _optimize_log_parameters(
             tree,
             states_by_taxon,
@@ -1083,6 +1083,40 @@ def _fit_discrete_mk_model(
             )
         ),
     )
+
+
+def _build_discrete_initial_candidates(
+    *,
+    parameter_count: int,
+    model: str,
+) -> list[tuple[float, numpy.ndarray]]:
+    uniform_scales = (0.1, 1.0, 3.0)
+    candidates = [
+        (
+            scale,
+            numpy.full(parameter_count, math.log(scale), dtype=float),
+        )
+        for scale in uniform_scales
+    ]
+    if model != "all-rates-different" or parameter_count <= 2:
+        return candidates
+    exploratory_rng = random.Random(17)  # nosec B311
+    # ARD likelihoods can have wide asymmetric ridges. A few deterministic
+    # exploratory starts reduce false convergence to the uniform-rate basin
+    # without making the optimizer nondeterministic.
+    for _ in range(32):
+        log_parameters = numpy.array(
+            [
+                exploratory_rng.uniform(
+                    _DISCRETE_LOG_PARAMETER_LOWER_BOUND + 1.0,
+                    _DISCRETE_LOG_PARAMETER_UPPER_BOUND - 1.0,
+                )
+                for _ in range(parameter_count)
+            ],
+            dtype=float,
+        )
+        candidates.append((float(math.exp(float(numpy.mean(log_parameters)))), log_parameters))
+    return candidates
 
 
 @dataclass(slots=True)
