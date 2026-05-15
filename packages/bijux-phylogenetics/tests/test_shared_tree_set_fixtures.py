@@ -20,6 +20,7 @@ def test_shared_tree_set_fixture_catalog_covers_governed_multiple_tree_case() ->
         "shared-taxon-set",
         "topology-distance",
         "consensus",
+        "prop-clades",
         "large-tip-count",
     } <= feature_tags
     assert max(len(fixture.shared_taxa) for fixture in fixtures) >= 100
@@ -76,6 +77,28 @@ def test_shared_tree_set_fixture_catalog_preserves_consensus_posterior_fixture()
 
 def test_shared_tree_set_fixture_catalog_preserves_consensus_failure_fixture() -> None:
     fixture = get_shared_tree_set_fixture("consensus_mismatched_taxon_tree_set")
+
+    assert fixture.shared_taxa == ()
+    assert fixture.tree_count == 2
+    with pytest.raises(
+        InvalidAlignmentError,
+        match="requires identical taxon sets",
+    ):
+        extract_tree_set_clades(fixture.path)
+
+
+def test_shared_tree_set_fixture_catalog_preserves_prop_clades_posterior_fixture() -> None:
+    fixture = get_shared_tree_set_fixture("prop_clades_posterior_six_taxon_tree_set")
+
+    report = extract_tree_set_clades(fixture.path)
+
+    assert fixture.tree_count == 5
+    assert fixture.shared_taxa == ("A", "B", "C", "D", "E", "F")
+    assert report.tree_count == 5
+
+
+def test_shared_tree_set_fixture_catalog_preserves_prop_clades_failure_fixture() -> None:
+    fixture = get_shared_tree_set_fixture("prop_clades_mismatched_taxon_tree_set")
 
     assert fixture.shared_taxa == ()
     assert fixture.tree_count == 2

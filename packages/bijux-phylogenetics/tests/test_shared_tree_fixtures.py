@@ -52,7 +52,9 @@ def test_shared_tree_fixture_catalog_preserves_durable_fixture_lookup() -> None:
     ("fixture_id", "expected_tip_count"),
     [
         ("balanced_rooted_ultrametric", 4),
+        ("balanced_rooted_six_taxon", 6),
         ("near_ultrametric_branch_jitter", 4),
+        ("cross_pairing_rooted_four_taxon", 4),
         ("pectinate_rooted_non_ultrametric", 4),
         ("star_unrooted_polytomy", 5),
         ("larger_binary_tree", 8),
