@@ -990,6 +990,86 @@ dna_distance_case <- function(case_payload, output_root, execution_path, r_versi
   )
 }
 
+cophenetic_case <- function(case_payload, output_root, execution_path, r_version) {
+  tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
+  if (inherits(tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  distances <- as.matrix(ape::cophenetic.phylo(tree))
+  summary_path <- file.path(output_root, "summary.json")
+  matrix_path <- file.path(output_root, "tip-distance-matrix.tsv")
+  long_path <- file.path(output_root, "tip-distance-long.tsv")
+
+  matrix_rows <- data.frame(
+    taxon = rownames(distances),
+    distances,
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
+  long_rows <- data.frame(
+    left_identifier = character(),
+    right_identifier = character(),
+    distance = numeric(),
+    stringsAsFactors = FALSE
+  )
+  for (left in rownames(distances)) {
+    for (right in colnames(distances)) {
+      long_rows[nrow(long_rows) + 1, ] <- list(
+        left,
+        right,
+        as.numeric(distances[left, right])
+      )
+    }
+  }
+
+  write_payload(
+    summary_path,
+    list(
+      tip_count = length(tree$tip.label),
+      rooted = ape::is.rooted(tree),
+      tip_labels = as.list(unname(tree$tip.label)),
+      pair_count = nrow(long_rows),
+      diagonal_zero = all(diag(distances) == 0),
+      symmetric = isTRUE(all.equal(distances, t(distances))),
+      complete_branch_lengths = !is.null(tree$edge.length) && all(!is.na(tree$edge.length)),
+      missing_branch_length_policy = "error"
+    )
+  )
+  write_table(matrix_path, matrix_rows)
+  write_table(long_path, long_rows)
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        tip_distance_matrix = matrix_path,
+        tip_distance_long = long_path
+      )
+    )
+  )
+}
+
 dna_translation_case <- function(case_payload, output_root, execution_path, r_version) {
   alignment <- ape::read.dna(case_payload$input_fixture, format = "fasta")
   genetic_code_id <- if (is.null(case_payload$genetic_code_id)) 1 else case_payload$genetic_code_id
@@ -1090,6 +1170,11 @@ if (identical(case_payload$operation, "dna-base-frequency")) {
 
 if (identical(case_payload$operation, "dna-raw-distance")) {
   dna_distance_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "tree-tip-distance")) {
+  cophenetic_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 

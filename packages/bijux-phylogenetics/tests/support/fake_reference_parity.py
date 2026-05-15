@@ -869,6 +869,51 @@ if case_payload["operation"] == "assess-tree-monophyly":
     )
     raise SystemExit(0)
 
+if case_payload["operation"] == "tree-tip-distance":
+    tree = Phylo.read(case_payload["input_fixture"], "newick")
+    tip_labels = [terminal.name for terminal in tree.get_terminals()]
+    rows = []
+    for left in tip_labels:
+        for right in tip_labels:
+            rows.append(
+                {{
+                    "left_identifier": left,
+                    "right_identifier": right,
+                    "distance": tree.distance(left, right),
+                }}
+            )
+    summary = {{
+        "tip_count": len(tip_labels),
+        "rooted": is_rooted_tree(tree),
+        "tip_labels": tip_labels,
+        "pair_count": len(rows),
+        "diagonal_zero": True,
+        "symmetric": True,
+        "complete_branch_lengths": True,
+        "missing_branch_length_policy": "error",
+    }}
+    summary.update(SUMMARY_OVERRIDES)
+    summary_path = output_root / "summary.json"
+    rows_path = output_root / "tip-distance-long.tsv"
+    write_json(summary_path, summary)
+    write_tsv(rows_path, rows)
+    write_json(
+        execution_path,
+        {{
+            "status": "ok",
+            "case_id": case_payload["case_id"],
+            "function_name": case_payload["function_name"],
+            "input_fixture": case_payload["input_fixture"],
+            "r_version": "4.6.0",
+            "ape_version": "5.0.0",
+            "outputs": {{
+                "summary_json": str(summary_path),
+                "tip_distance_long": str(rows_path),
+            }},
+        }},
+    )
+    raise SystemExit(0)
+
 if case_id in TABULAR_CASES:
     payload = TABULAR_CASES[case_id]
     summary = dict(payload["summary"])

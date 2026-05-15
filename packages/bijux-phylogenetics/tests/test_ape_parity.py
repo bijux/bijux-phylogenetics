@@ -99,6 +99,8 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "is-monophyletic-after-outgroup-rooting",
         "is-monophyletic-rooted-polytomy",
         "is-monophyletic-all-missing-rerooted",
+        "cophenetic-rooted-ultrametric",
+        "cophenetic-unrooted-branch-length",
         "dna-base-frequency-lowercase",
         "dna-base-frequency-ambiguity",
         "dna-raw-distance-clean",
@@ -167,6 +169,8 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "outgroup_rooted_on_d",
         "rooted_polytomy",
         "unrooted_branch_length_tree",
+        "balanced_rooted_ultrametric",
+        "unrooted_branch_length_tree",
         "lowercase_aligned_dna",
         "dna_with_ambiguity",
         "clean_aligned_dna",
@@ -187,6 +191,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::keep.tip",
         "ape::getMRCA",
         "ape::is.monophyletic",
+        "ape::cophenetic.phylo",
         "ape::base.freq",
         "ape::dist.dna",
         "ape::trans",
@@ -204,6 +209,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "extract-tree-clade",
         "get-tree-mrca",
         "assess-tree-monophyly",
+        "tree-tip-distance",
         "dna-base-frequency",
         "dna-raw-distance",
         "dna-translation",
@@ -221,12 +227,13 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 66
-    assert report.passed_case_count == 66
+    assert report.case_count == 68
+    assert report.passed_case_count == 68
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
         "ape::base.freq",
+        "ape::cophenetic.phylo",
         "ape::dist.dna",
         "ape::drop.tip",
         "ape::extract.clade",
@@ -345,6 +352,14 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert monophyly_case.reference_summary["monophyletic"] is True
     assert monophyly_case.reference_summary["complementary_clade_used"] is True
     assert monophyly_case.reference_summary["matched_extra_taxa"] == ["D"]
+    cophenetic_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "cophenetic-rooted-ultrametric"
+    )
+    assert cophenetic_case.reference_summary is not None
+    assert cophenetic_case.reference_summary["pair_count"] == 16
+    assert cophenetic_case.reference_summary["symmetric"] is True
     translation_case = next(
         observation
         for observation in report.observations
@@ -442,7 +457,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 66
+    assert len(rows) == 68
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
