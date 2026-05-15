@@ -38,7 +38,9 @@ def test_shared_dna_alignment_fixture_catalog_covers_required_goal_cases() -> No
         "valid-reading-frame",
         "frame-error",
         "internal-stop-codon",
+        "ambiguous-codon",
         "terminal-stop-codon",
+        "alternate-genetic-code",
     } <= feature_tags
 
 
@@ -67,8 +69,10 @@ def test_shared_dna_alignment_fixture_lookup_preserves_durable_ids() -> None:
         ("dna_with_missing_data", 3, 6, "dna"),
         ("all_gap_missing_alignment", 3, 6, "unknown"),
         ("coding_valid_reading_frame", 3, 9, "dna"),
+        ("coding_ambiguous_codon", 1, 9, "dna"),
         ("coding_internal_stop", 1, 9, "dna"),
         ("coding_terminal_stop", 1, 9, "dna"),
+        ("coding_mitochondrial_triplet", 1, 9, "dna"),
     ],
 )
 def test_shared_dna_alignment_fixture_catalog_loads_valid_cases(
@@ -126,17 +130,37 @@ def test_shared_dna_alignment_fixture_catalog_translates_valid_reading_frame() -
     assert preparation_report.warnings == []
 
 
-def test_shared_dna_alignment_fixture_catalog_rejects_frame_error_translation() -> None:
+def test_shared_dna_alignment_fixture_catalog_truncates_frame_error_translation() -> None:
     fixture = get_shared_dna_alignment_fixture("coding_frame_error")
 
-    with pytest.raises(InvalidAlignmentError):
-        translate_coding_alignment(fixture.path)
+    translated, report = translate_coding_alignment(fixture.path)
+
+    assert [record.sequence for record in translated] == ["ME"]
+    assert report.translated_alignment_length == 2
+    assert report.dropped_trailing_nucleotide_count == 2
+    assert report.trailing_partial_codon_sequence_count == 1
+    assert report.warnings == [
+        "sequence length not a multiple of 3: 2 nucleotides dropped"
+    ]
     with pytest.raises(InvalidAlignmentError):
         prepare_coding_sequences_for_alignment(fixture.path)
 
     diagnostics = inspect_coding_alignment(fixture.path)
     assert len(diagnostics.frameshift_like_sequences) == 1
     assert diagnostics.coding_behaviors[0].identifier == "frame_error"
+
+
+def test_shared_dna_alignment_fixture_catalog_marks_ambiguous_translation_behavior() -> None:
+    fixture = get_shared_dna_alignment_fixture("coding_ambiguous_codon")
+
+    translated, report = translate_coding_alignment(fixture.path)
+
+    assert [record.sequence for record in translated] == ["MXG"]
+    assert report.invalid_codon_count == 1
+    assert report.stop_codon_count == 0
+    assert report.codon_observations[1].translation_status == "ambiguous-or-invalid-codon"
+    with pytest.raises(InvalidAlignmentError):
+        prepare_coding_sequences_for_alignment(fixture.path)
 
 
 def test_shared_dna_alignment_fixture_catalog_marks_internal_stop_behavior() -> None:
@@ -168,3 +192,18 @@ def test_shared_dna_alignment_fixture_catalog_retains_terminal_stop_behavior() -
         "terminal stop codons were retained in accepted coding sequences"
         in preparation_report.warnings
     )
+
+
+def test_shared_dna_alignment_fixture_catalog_honors_alternate_genetic_code() -> None:
+    fixture = get_shared_dna_alignment_fixture("coding_mitochondrial_triplet")
+
+    standard, standard_report = translate_coding_alignment(fixture.path, genetic_code="1")
+    mitochondrial, mitochondrial_report = translate_coding_alignment(
+        fixture.path,
+        genetic_code="2",
+    )
+
+    assert [record.sequence for record in standard] == ["M*G"]
+    assert [record.sequence for record in mitochondrial] == ["MWG"]
+    assert standard_report.stop_codon_count == 1
+    assert mitochondrial_report.stop_codon_count == 0

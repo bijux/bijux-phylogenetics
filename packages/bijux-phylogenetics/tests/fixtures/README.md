@@ -57,6 +57,10 @@ That same governed DNA catalog now also includes invariant and one-variable-site
 fixtures for `ape::seg.sites` parity and the owned
 `alignment segregating-sites --site-table-out` surface, so segregating-site
 review stays tied to durable fixture ids instead of ad hoc inline alignments.
+The coding portion of the same DNA catalog now also includes ambiguous-codon
+and alternate-genetic-code fixtures for `ape::trans` parity, plus the
+frame-truncation fixture where aligned translation must drop trailing partial
+codons with an explicit warning instead of silently mutating the review path.
 
 The metadata fixture corpus now also has one governed shared catalog at
 `metadata/shared_trait_table_fixture_catalog.json`. That catalog assigns

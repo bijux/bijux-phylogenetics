@@ -210,6 +210,21 @@
       "notes": "Coding DNA with a premature stop codon in the interior of the reading frame."
     },
     {
+      "fixture_id": "coding_ambiguous_codon",
+      "relative_path": "alignments/example_alignment_coding_ambiguous_codon.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "ambiguous-codon",
+      "sequence_count": 1,
+      "alignment_length": 9,
+      "feature_tags": [
+        "coding-dna",
+        "ambiguous-codon",
+        "translation-ready"
+      ],
+      "notes": "Coding DNA with one ambiguous codon that translates to X under ape::trans parity."
+    },
+    {
       "fixture_id": "coding_terminal_stop",
       "relative_path": "alignments/example_alignment_coding_terminal_stop.fasta",
       "load_expectation": "aligned",
@@ -223,6 +238,21 @@
         "translation-ready"
       ],
       "notes": "Coding DNA with one terminal stop codon retained as part of the translated sequence."
+    },
+    {
+      "fixture_id": "coding_mitochondrial_triplet",
+      "relative_path": "alignments/example_alignment_coding_mitochondrial.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "alternate-genetic-code",
+      "sequence_count": 1,
+      "alignment_length": 9,
+      "feature_tags": [
+        "coding-dna",
+        "alternate-genetic-code",
+        "translation-ready"
+      ],
+      "notes": "Coding DNA whose second codon differs between the standard and vertebrate mitochondrial genetic codes."
     }
   ]
 }
