@@ -1103,6 +1103,17 @@ def _add_manifest_argument(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def _add_distance_tree_method_argument(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--method",
+        required=True,
+        help=(
+            "Distance-tree method. Supported: neighbor-joining, upgma. "
+            "Explicitly excluded for this round: bionj."
+        ),
+    )
+
+
 def _add_external_adapter_execution_arguments(
     parser: argparse.ArgumentParser,
     *,
@@ -2040,9 +2051,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Build a neighbor-joining or UPGMA tree from a DNA distance matrix.",
     )
     alignment_build_tree.add_argument("alignment", type=Path)
-    alignment_build_tree.add_argument(
-        "--method", choices=("neighbor-joining", "upgma"), required=True
-    )
+    _add_distance_tree_method_argument(alignment_build_tree)
     alignment_build_tree.add_argument(
         "--model",
         choices=_PAIRWISE_DISTANCE_MODELS,
@@ -2093,9 +2102,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_compare_distance_reference.add_argument("alignment", type=Path)
     alignment_compare_distance_reference.add_argument("reference_tree", type=Path)
-    alignment_compare_distance_reference.add_argument(
-        "--method", choices=("neighbor-joining", "upgma"), required=True
-    )
+    _add_distance_tree_method_argument(alignment_compare_distance_reference)
     alignment_compare_distance_reference.add_argument(
         "--model",
         choices=_PAIRWISE_DISTANCE_MODELS,
@@ -2120,9 +2127,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Bootstrap a distance tree by resampling alignment sites with replacement.",
     )
     alignment_bootstrap_tree.add_argument("alignment", type=Path)
-    alignment_bootstrap_tree.add_argument(
-        "--method", choices=("neighbor-joining", "upgma"), required=True
-    )
+    _add_distance_tree_method_argument(alignment_bootstrap_tree)
     alignment_bootstrap_tree.add_argument(
         "--model",
         choices=_PAIRWISE_DISTANCE_MODELS,
@@ -2155,9 +2160,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Summarize consensus clade support across distance-bootstrap replicates.",
     )
     alignment_bootstrap_summary.add_argument("alignment", type=Path)
-    alignment_bootstrap_summary.add_argument(
-        "--method", choices=("neighbor-joining", "upgma"), required=True
-    )
+    _add_distance_tree_method_argument(alignment_bootstrap_summary)
     alignment_bootstrap_summary.add_argument(
         "--model",
         choices=_PAIRWISE_DISTANCE_MODELS,
@@ -2246,9 +2249,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Build a structured distance-method report with support, model, and gap-sensitivity sections.",
     )
     alignment_distance_method_report.add_argument("alignment", type=Path)
-    alignment_distance_method_report.add_argument(
-        "--method", choices=("neighbor-joining", "upgma"), required=True
-    )
+    _add_distance_tree_method_argument(alignment_distance_method_report)
     alignment_distance_method_report.add_argument(
         "--model",
         choices=_PAIRWISE_DISTANCE_MODELS,
@@ -2275,9 +2276,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run the distance-method maturity gate for one alignment.",
     )
     alignment_distance_maturity.add_argument("alignment", type=Path)
-    alignment_distance_maturity.add_argument(
-        "--method", choices=("neighbor-joining", "upgma"), required=True
-    )
+    _add_distance_tree_method_argument(alignment_distance_maturity)
     alignment_distance_maturity.add_argument(
         "--model",
         choices=_PAIRWISE_DISTANCE_MODELS,
@@ -2304,9 +2303,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write a reproducibility bundle for one distance-analysis workflow.",
     )
     alignment_distance_bundle.add_argument("alignment", type=Path)
-    alignment_distance_bundle.add_argument(
-        "--method", choices=("neighbor-joining", "upgma"), required=True
-    )
+    _add_distance_tree_method_argument(alignment_distance_bundle)
     alignment_distance_bundle.add_argument(
         "--model",
         choices=_PAIRWISE_DISTANCE_MODELS,
@@ -4588,9 +4585,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Build a Neighbor-Joining or UPGMA tree from an imported distance matrix.",
     )
     distance_build_tree.add_argument("matrix", type=Path)
-    distance_build_tree.add_argument(
-        "--method", choices=("neighbor-joining", "upgma"), required=True
-    )
+    _add_distance_tree_method_argument(distance_build_tree)
     distance_build_tree.add_argument("--out", required=True, type=Path)
     distance_build_tree.add_argument(
         "--json", action="store_true", help="Emit the build report as JSON."

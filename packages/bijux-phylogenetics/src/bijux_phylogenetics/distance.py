@@ -634,7 +634,7 @@ def list_distance_tree_method_policies() -> list[DistanceTreeMethodPolicy]:
             supported=False,
             reference_surface="ape::bionj",
             support_scope="explicitly-excluded",
-            summary="BIONJ is explicitly out of scope for this round and does not have an owned Bijux runtime or governed ape parity lane.",
+            summary="BIONJ is explicitly out of scope for this round, and ape::bionj does not have an owned Bijux runtime or governed ape parity lane.",
             limitations=[
                 "request neighbor-joining when a governed ape-parity distance-tree workflow is required in this round",
             ],
