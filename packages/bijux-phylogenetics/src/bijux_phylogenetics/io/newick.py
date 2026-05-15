@@ -67,7 +67,7 @@ def load_newick_tree_set(path: Path) -> list[PhyloTree]:
 
 
 def _sort_key(node: TreeNode) -> tuple[str, int]:
-    tip_names = sorted(name for name in PhyloTree(root=node).tip_names if name)
+    tip_names = sorted(name for name in node.descendant_taxa if name)
     return (tip_names[0] if tip_names else "", len(tip_names))
 
 

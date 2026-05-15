@@ -14,10 +14,17 @@ def _convert_clade(clade: Clade) -> TreeNode:
     label = clade.name
     if label is None and clade.confidence is not None:
         label = format(float(clade.confidence), ".15g")
+    metadata: dict[str, object] = {}
+    if clade.confidence is not None:
+        metadata["confidence"] = float(clade.confidence)
+    comment = getattr(clade, "comment", None)
+    if comment is not None:
+        metadata["comment"] = comment
     return TreeNode(
         name=label,
         branch_length=clade.branch_length,
         children=[_convert_clade(child) for child in clade.clades],
+        metadata=metadata,
     )
 
 
@@ -25,6 +32,11 @@ def _convert_tree_node(node: TreeNode) -> Clade:
     return Clade(
         branch_length=node.branch_length,
         name=node.name,
+        confidence=(
+            float(node.metadata["confidence"])
+            if "confidence" in node.metadata
+            else None
+        ),
         clades=[_convert_tree_node(child) for child in node.children],
     )
 
