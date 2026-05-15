@@ -31,6 +31,10 @@ from bijux_phylogenetics.bayesian.uncertainty import (
     write_bayesian_methods_summary_text,
     write_supplementary_bayesian_diagnostics_table,
 )
+from bijux_phylogenetics.provenance.method_tiers import (
+    MethodTierAssessment,
+    bayesian_report_method_tier,
+)
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.tree_set import compute_clade_frequency_table
 
@@ -44,6 +48,7 @@ class BayesianPosteriorReportBuildResult:
     trace_path: Path
     kept_tree_count: int
     warning_count: int
+    method_tier: MethodTierAssessment
     machine_manifest: dict[str, object]
 
 
@@ -57,6 +62,7 @@ class CalibrationAuditReportBuildResult:
     tip_dates_path: Path | None
     invalid_calibration_count: int
     warning_count: int
+    method_tier: MethodTierAssessment
     machine_manifest: dict[str, object]
 
 
@@ -71,6 +77,7 @@ class BayesianRunComparisonReportBuildResult:
     right_trace_path: Path
     trace_kind: str
     warning_count: int
+    method_tier: MethodTierAssessment
     machine_manifest: dict[str, object]
 
 
@@ -83,6 +90,7 @@ class BayesianDiagnosticsReportBuildResult:
     primary_log_path: Path
     chain_count: int
     warning_count: int
+    method_tier: MethodTierAssessment
     machine_manifest: dict[str, object]
 
 
@@ -94,6 +102,7 @@ class BayesianMlComparisonReportBuildResult:
     ml_tree_path: Path
     posterior_tree_path: Path
     warning_count: int
+    method_tier: MethodTierAssessment
     machine_manifest: dict[str, object]
 
 
@@ -104,7 +113,36 @@ class TimeTreeReadinessReportBuildResult:
     title: str
     tree_path: Path
     warning_count: int
+    method_tier: MethodTierAssessment
     machine_manifest: dict[str, object]
+
+
+def _method_tier_summary_metrics(
+    method_tier: MethodTierAssessment,
+) -> list[tuple[str, str]]:
+    return [
+        ("Method Tier", method_tier.tier),
+        ("Inference Mode", method_tier.inference_mode),
+        (
+            "Approximation",
+            "none" if method_tier.approximation is None else method_tier.approximation,
+        ),
+    ]
+
+
+def _method_tier_section(method_tier: MethodTierAssessment) -> tuple[str, str]:
+    lines = [
+        f"tier: {method_tier.tier}",
+        f"inference_mode: {method_tier.inference_mode}",
+        f"summary: {method_tier.summary}",
+    ]
+    if method_tier.validation_basis:
+        lines.append("validation_basis: " + "; ".join(method_tier.validation_basis))
+    if method_tier.approximation is not None:
+        lines.append(f"approximation: {method_tier.approximation}")
+    if method_tier.warning is not None:
+        lines.append(f"warning: {method_tier.warning}")
+    return ("method-tier", "\n".join(lines))
 
 
 def render_bayesian_posterior_report(
@@ -132,7 +170,9 @@ def render_bayesian_posterior_report(
         posterior_summary.filtered_tree_set_path
     )
     title = "Bijux Bayesian Posterior Report"
+    method_tier = bayesian_report_method_tier("bayesian-posterior")
     sections = [
+        _method_tier_section(method_tier),
         (
             "posterior-summary",
             json.dumps(
@@ -173,6 +213,7 @@ def render_bayesian_posterior_report(
         sections=sections,
         out_path=out_path,
         embedded_json=machine_manifest,
+        summary_metrics=_method_tier_summary_metrics(method_tier),
     )
     return BayesianPosteriorReportBuildResult(
         output_path=out_path,
@@ -182,6 +223,7 @@ def render_bayesian_posterior_report(
         trace_path=trace_path,
         kept_tree_count=posterior_summary.kept_tree_count,
         warning_count=len(convergence.warnings),
+        method_tier=method_tier,
         machine_manifest=machine_manifest,
     )
 
@@ -211,7 +253,9 @@ def render_calibration_audit_report(
         else None
     )
     title = "Bijux Calibration Audit Report"
+    method_tier = bayesian_report_method_tier("calibration-audit")
     sections = [
+        _method_tier_section(method_tier),
         (
             "fossil-calibrations",
             json.dumps(
@@ -248,6 +292,7 @@ def render_calibration_audit_report(
         sections=sections,
         out_path=out_path,
         embedded_json=machine_manifest,
+        summary_metrics=_method_tier_summary_metrics(method_tier),
     )
     return CalibrationAuditReportBuildResult(
         output_path=out_path,
@@ -258,6 +303,7 @@ def render_calibration_audit_report(
         tip_dates_path=tip_dates_path,
         invalid_calibration_count=calibration_report.invalid_calibration_count,
         warning_count=warning_count,
+        method_tier=method_tier,
         machine_manifest=machine_manifest,
     )
 
@@ -286,7 +332,9 @@ def render_bayesian_run_comparison_report(
         mean_shift_threshold=mean_shift_threshold,
     )
     title = "Bijux Bayesian Run Comparison Report"
+    method_tier = bayesian_report_method_tier("bayesian-run-comparison")
     sections = [
+        _method_tier_section(method_tier),
         (
             "run-comparison",
             json.dumps(asdict(comparison), default=str, indent=2, sort_keys=True),
@@ -343,6 +391,7 @@ def render_bayesian_run_comparison_report(
         sections=sections,
         out_path=out_path,
         embedded_json=machine_manifest,
+        summary_metrics=_method_tier_summary_metrics(method_tier),
     )
     return BayesianRunComparisonReportBuildResult(
         output_path=out_path,
@@ -354,6 +403,7 @@ def render_bayesian_run_comparison_report(
         right_trace_path=right_trace_path,
         trace_kind=trace_kind,
         warning_count=len(comparison.warnings),
+        method_tier=method_tier,
         machine_manifest=machine_manifest,
     )
 
@@ -473,7 +523,9 @@ def render_bayesian_diagnostics_report(
         cross_chain_mean_shift_threshold=cross_chain_mean_shift_threshold,
     )
     title = "Bijux Bayesian Diagnostics Report"
+    method_tier = bayesian_report_method_tier("bayesian-diagnostics")
     sections = [
+        _method_tier_section(method_tier),
         *(
             [
                 (
@@ -573,6 +625,7 @@ def render_bayesian_diagnostics_report(
         sections=sections,
         out_path=out_path,
         embedded_json=machine_manifest,
+        summary_metrics=_method_tier_summary_metrics(method_tier),
     )
     supplementary_table_path.unlink(missing_ok=True)
     methods_text_path.unlink(missing_ok=True)
@@ -585,6 +638,7 @@ def render_bayesian_diagnostics_report(
         primary_log_path=primary_log_path,
         chain_count=len(log_paths),
         warning_count=warning_count,
+        method_tier=method_tier,
         machine_manifest=machine_manifest,
     )
 
@@ -635,7 +689,9 @@ def render_ml_vs_bayesian_tree_report(
         burnin_fraction=burnin_fraction,
     )
     title = "Bijux ML Versus Bayesian Tree Report"
+    method_tier = bayesian_report_method_tier("ml-vs-bayesian-tree")
     sections = [
+        _method_tier_section(method_tier),
         (
             "ml-versus-bayesian-summary",
             json.dumps(asdict(comparison), default=str, indent=2, sort_keys=True),
@@ -666,6 +722,7 @@ def render_ml_vs_bayesian_tree_report(
         sections=sections,
         out_path=out_path,
         embedded_json=machine_manifest,
+        summary_metrics=_method_tier_summary_metrics(method_tier),
     )
     return BayesianMlComparisonReportBuildResult(
         output_path=out_path,
@@ -674,6 +731,7 @@ def render_ml_vs_bayesian_tree_report(
         ml_tree_path=ml_tree_path,
         posterior_tree_path=posterior_tree_path,
         warning_count=len(comparison.warnings),
+        method_tier=method_tier,
         machine_manifest=machine_manifest,
     )
 
@@ -708,7 +766,9 @@ def render_time_tree_readiness_report(
             "tip-date metadata requires correction before the dated-tree workflow can be trusted"
         )
     title = "Bijux Time-Tree Readiness Report"
+    method_tier = bayesian_report_method_tier("time-tree-readiness")
     sections = [
+        _method_tier_section(method_tier),
         (
             "readiness",
             json.dumps(asdict(readiness), default=str, indent=2, sort_keys=True),
@@ -767,6 +827,7 @@ def render_time_tree_readiness_report(
         sections=sections,
         out_path=out_path,
         embedded_json=machine_manifest,
+        summary_metrics=_method_tier_summary_metrics(method_tier),
     )
     return TimeTreeReadinessReportBuildResult(
         output_path=out_path,
@@ -774,5 +835,6 @@ def render_time_tree_readiness_report(
         title=title,
         tree_path=tree_path,
         warning_count=warning_count,
+        method_tier=method_tier,
         machine_manifest=machine_manifest,
     )

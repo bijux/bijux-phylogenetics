@@ -214,6 +214,8 @@ def test_render_time_tree_readiness_report_writes_sections(tmp_path: Path) -> No
 
     html = output_path.read_text(encoding="utf-8")
     assert report.output_path == output_path
+    assert report.method_tier.tier == "parser-only"
+    assert "method-tier" in html
     assert "readiness" in html
     assert "calibration-dominance" in html
     assert "limitations" in html
@@ -350,6 +352,8 @@ def test_render_bayesian_run_comparison_report_writes_tree_and_trace_sections(
     html = output_path.read_text(encoding="utf-8")
     assert report.output_path == output_path
     assert report.warning_count >= 1
+    assert report.method_tier.tier == "parser-only"
+    assert "method-tier" in html
     assert "run-comparison" in html
     assert "tree-comparison" in html
     assert "parameter-differences" in html

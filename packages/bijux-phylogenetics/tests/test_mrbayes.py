@@ -787,6 +787,10 @@ def test_render_bayesian_posterior_report_writes_consensus_and_convergence_secti
     assert report.output_path == output_path
     assert report.kept_tree_count == 3
     assert report.warning_count >= 1
+    assert report.method_tier.tier == "parser-only"
+    assert report.method_tier.inference_mode == "parser-only"
+    assert "method-tier" in html
+    assert "parser-only" in html
     assert "posterior-summary" in html
     assert "convergence" in html
     assert "clade-frequencies" in html

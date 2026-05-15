@@ -1399,6 +1399,9 @@ def test_render_calibration_audit_report_includes_calibration_and_tip_date_secti
     html = output_path.read_text(encoding="utf-8")
     assert report.output_path == output_path
     assert report.invalid_calibration_count == 0
+    assert report.method_tier.tier == "parser-only"
+    assert "method-tier" in html
+    assert "parser-only" in html
     assert "fossil-calibrations" in html
     assert "impossible-constraints" in html
     assert "tip-dates" in html
@@ -1484,6 +1487,8 @@ def test_render_bayesian_diagnostics_report_includes_log_burnin_mixing_and_calib
     html = output_path.read_text(encoding="utf-8")
     assert report.output_path == output_path
     assert report.chain_count == 2
+    assert report.method_tier.tier == "parser-only"
+    assert "method-tier" in html
     assert "analysis-assumptions" in html
     assert "posterior-log-validation" in html
     assert "burnin-sensitivity" in html
@@ -1527,6 +1532,8 @@ def test_render_bayesian_diagnostics_report_marks_recorded_beast_runs_honestly(
 
     html = output_path.read_text(encoding="utf-8")
     assert report.output_path == output_path
+    assert report.method_tier.tier == "parser-only"
+    assert "method-tier" in html
     assert "workflow-evidence" in html
     assert "recorded-prior-beast-run" in html
     assert "did not execute BEAST itself" in html
