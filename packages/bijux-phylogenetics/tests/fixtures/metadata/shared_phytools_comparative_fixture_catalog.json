@@ -169,6 +169,7 @@
       "phytools_reference_expectation": "discrete-ready",
       "feature_tags": [
         "multistate-discrete-trait",
+        "symmetric-discrete-model",
         "twenty-plus-taxa-ultrametric-tree",
         "known-truth-simulation"
       ],
@@ -219,6 +220,7 @@
       "phytools_reference_expectation": "discrete-ready-after-pruning",
       "feature_tags": [
         "multistate-discrete-trait",
+        "symmetric-discrete-model",
         "missing-trait-values",
         "twenty-plus-taxa-ultrametric-tree"
       ],

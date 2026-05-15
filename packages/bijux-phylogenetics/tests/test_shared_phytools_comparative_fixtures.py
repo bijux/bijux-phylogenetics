@@ -329,6 +329,37 @@ def test_shared_phytools_comparative_fixture_catalog_supports_fitmk_er_cases() -
     assert len(multistate_report.transition_rate_rows) == 6
 
 
+def test_shared_phytools_comparative_fixture_catalog_supports_fitmk_sym_cases() -> None:
+    multistate_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_multistate_twenty_four_taxa"
+    )
+    multistate_missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_multistate_missing_twenty_four_taxa"
+    )
+
+    multistate_report = fit_discrete_mk_model(
+        multistate_fixture.tree_path,
+        multistate_fixture.traits_path,
+        trait=multistate_fixture.trait_name,
+        taxon_column=multistate_fixture.taxon_column,
+        model="symmetric",
+    )
+    multistate_missing_report = fit_discrete_mk_model(
+        multistate_missing_fixture.tree_path,
+        multistate_missing_fixture.traits_path,
+        trait=multistate_missing_fixture.trait_name,
+        taxon_column=multistate_missing_fixture.taxon_column,
+        model="symmetric",
+    )
+
+    assert "symmetric-discrete-model" in multistate_fixture.feature_tags
+    assert "symmetric-discrete-model" in multistate_missing_fixture.feature_tags
+    assert multistate_report.model == "symmetric"
+    assert multistate_report.parameter_count == 3
+    assert multistate_report.baseline_comparison is not None
+    assert multistate_missing_report.input_audit.pruned_missing_value_taxa == ["Phy14"]
+
+
 def test_shared_phytools_comparative_fixture_catalog_covers_discrete_nonultrametric_and_branch_edge_surfaces() -> (
     None
 ):
