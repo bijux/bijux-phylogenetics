@@ -73,6 +73,8 @@ class DiscreteAncestralReport:
     trait: str
     model: str
     state_ordering: str
+    root_prior_mode: str | None
+    fixed_root_state: str | None
     ordered_states: list[str]
     taxon_count: int
     observed_states: list[str]
@@ -101,6 +103,8 @@ class DiscreteAncestralSummary:
     taxon_column: str
     model: str
     state_ordering: str
+    root_prior_mode: str | None
+    fixed_root_state: str | None
     analyzed_taxon_count: int
     excluded_taxon_count: int
     internal_node_count: int
@@ -114,6 +118,9 @@ class DiscreteAncestralSummary:
     root_node: str
     root_most_likely_state: str
     root_confidence: float
+    log_likelihood: float | None
+    parameter_count: int | None
+    aic: float | None
     warning_count: int
 
 
@@ -196,6 +203,8 @@ def reconstruct_discrete_ancestral_states(
             trait=trait,
             model=resolved_model,
             state_ordering=state_ordering,
+            root_prior_mode=root_prior_mode,
+            fixed_root_state=fixed_root_state,
             ordered_states=fit_result.ordered_states,
             taxon_count=len(dataset.taxa),
             observed_states=dataset.observed_states,
@@ -289,6 +298,8 @@ def reconstruct_discrete_ancestral_states(
         trait=trait,
         model=resolved_model,
         state_ordering=state_ordering,
+        root_prior_mode=None,
+        fixed_root_state=None,
         ordered_states=list(ordered_states or []),
         taxon_count=len(dataset.taxa),
         observed_states=dataset.observed_states,
@@ -338,6 +349,8 @@ def summarize_discrete_ancestral_report(
         taxon_column=report.taxon_column,
         model=report.model,
         state_ordering=report.state_ordering,
+        root_prior_mode=report.root_prior_mode,
+        fixed_root_state=report.fixed_root_state,
         analyzed_taxon_count=report.taxon_count,
         excluded_taxon_count=len(report.dropped_missing_taxa),
         internal_node_count=len(internal_estimates),
@@ -351,6 +364,9 @@ def summarize_discrete_ancestral_report(
         root_node=root_estimate.node,
         root_most_likely_state=root_estimate.most_likely_state,
         root_confidence=root_estimate.confidence,
+        log_likelihood=report.log_likelihood,
+        parameter_count=report.parameter_count,
+        aic=report.aic,
         warning_count=len(report.warnings),
     )
 
@@ -381,6 +397,8 @@ def write_discrete_ancestral_summary_table(
             "taxon_column",
             "model",
             "state_ordering",
+            "root_prior_mode",
+            "fixed_root_state",
             "analyzed_taxon_count",
             "excluded_taxon_count",
             "internal_node_count",
@@ -394,6 +412,9 @@ def write_discrete_ancestral_summary_table(
             "root_node",
             "root_most_likely_state",
             "root_confidence",
+            "log_likelihood",
+            "parameter_count",
+            "aic",
             "warning_count",
         ],
         rows=[
@@ -402,6 +423,8 @@ def write_discrete_ancestral_summary_table(
                 "taxon_column": summary.taxon_column,
                 "model": summary.model,
                 "state_ordering": summary.state_ordering,
+                "root_prior_mode": summary.root_prior_mode or "",
+                "fixed_root_state": summary.fixed_root_state or "",
                 "analyzed_taxon_count": str(summary.analyzed_taxon_count),
                 "excluded_taxon_count": str(summary.excluded_taxon_count),
                 "internal_node_count": str(summary.internal_node_count),
@@ -421,6 +444,9 @@ def write_discrete_ancestral_summary_table(
                 "root_node": summary.root_node,
                 "root_most_likely_state": summary.root_most_likely_state,
                 "root_confidence": str(summary.root_confidence),
+                "log_likelihood": _format_optional_float(summary.log_likelihood),
+                "parameter_count": _format_optional_int(summary.parameter_count),
+                "aic": _format_optional_float(summary.aic),
                 "warning_count": str(summary.warning_count),
             }
         ],
@@ -487,6 +513,33 @@ def write_discrete_ancestral_exclusion_table(
     )
 
 
+def write_discrete_ancestral_transition_table(
+    path: Path,
+    report: DiscreteAncestralReport,
+) -> Path:
+    """Write one fitted transition-rate ledger for a discrete likelihood reconstruction."""
+    return write_ancestral_rows(
+        path,
+        columns=[
+            "source_state",
+            "target_state",
+            "transition_allowed",
+            "step_distance",
+            "rate",
+        ],
+        rows=[
+            {
+                "source_state": row.source_state,
+                "target_state": row.target_state,
+                "transition_allowed": str(row.transition_allowed).lower(),
+                "step_distance": str(row.step_distance),
+                "rate": str(row.rate),
+            }
+            for row in report.transition_rate_rows
+        ],
+    )
+
+
 def _resolve_discrete_model_name(model: str) -> str:
     aliases = {
         "fitch": "fitch",
@@ -546,6 +599,11 @@ def _reconstruct_likelihood_estimates(
         rate_matrix=rate_matrix,
         root_prior=root_prior,
     )
+    reported_log_likelihood = _reported_discrete_log_likelihood(
+        log_likelihood,
+        root_prior_mode=root_prior_mode,
+        state_count=len(state_order),
+    )
     posterior_by_node = _estimate_marginal_state_probabilities(
         dataset.tree,
         dataset.states_by_taxon,
@@ -556,7 +614,11 @@ def _reconstruct_likelihood_estimates(
     estimates: list[DiscreteAncestralEstimate] = []
     for node in dataset.tree.iter_nodes():
         signature = node_signature(node)
-        probabilities = _stable_probability_mapping(posterior_by_node[signature])
+        raw_probabilities = {
+            state: float(probability)
+            for state, probability in posterior_by_node[signature].items()
+        }
+        probabilities = _stable_probability_mapping(raw_probabilities)
         material_states = _material_state_set(
             probabilities,
             preferred_order=state_order,
@@ -569,7 +631,7 @@ def _reconstruct_likelihood_estimates(
                 descendant_taxa=node_descendant_taxa(node),
                 state_set=material_states,
                 most_likely_state=_select_most_likely_state(
-                    probabilities,
+                    raw_probabilities,
                     preferred_order=state_order,
                 ),
                 state_probabilities=probabilities,
@@ -585,9 +647,9 @@ def _reconstruct_likelihood_estimates(
         estimates=estimates,
         ordered_states=(state_order if state_ordering == "ordered" else []),
         state_order=state_order,
-        log_likelihood=log_likelihood,
+        log_likelihood=reported_log_likelihood,
         parameter_count=parameter_count,
-        aic=(2.0 * parameter_count) - (2.0 * log_likelihood),
+        aic=(2.0 * parameter_count) - (2.0 * reported_log_likelihood),
         transition_rate_rows=_build_transition_rate_rows(
             state_order=state_order,
             state_ordering=state_ordering,
@@ -704,7 +766,7 @@ def _optimize_log_parameters(
     gamma = 2.0
     rho = 0.5
     sigma = 0.5
-    for _ in range(240):
+    for _ in range(600):
         ordering = sorted(
             range(len(simplex)),
             key=lambda index: scores[index],
@@ -713,8 +775,8 @@ def _optimize_log_parameters(
         simplex = [simplex[index] for index in ordering]
         scores = [scores[index] for index in ordering]
         if (
-            max(numpy.linalg.norm(vertex - simplex[0]) for vertex in simplex[1:]) < 1e-3
-            and max(abs(score - scores[0]) for score in scores[1:]) < 1e-5
+            max(numpy.linalg.norm(vertex - simplex[0]) for vertex in simplex[1:]) < 1e-6
+            and max(abs(score - scores[0]) for score in scores[1:]) < 1e-9
         ):
             break
         centroid = numpy.mean(simplex[:-1], axis=0)
@@ -1259,6 +1321,17 @@ def _resolve_root_prior(
     raise ValueError(f"unsupported discrete ancestral root prior mode: {mode}")
 
 
+def _reported_discrete_log_likelihood(
+    log_likelihood: float,
+    *,
+    root_prior_mode: str,
+    state_count: int,
+) -> float:
+    if root_prior_mode != "equal" or state_count < 2:
+        return log_likelihood
+    return log_likelihood + math.log(state_count)
+
+
 def _branch_length(node) -> float:
     if node.branch_length is None:
         return 1.0
@@ -1311,11 +1384,11 @@ def _select_most_likely_state(
     ]
     if preferred_order is not None:
         order_lookup = {state: index for index, state in enumerate(preferred_order)}
-        return min(
+        return max(
             tied_states,
             key=lambda state: (order_lookup.get(state, len(order_lookup)), state),
         )
-    return min(tied_states)
+    return max(tied_states)
 
 
 def _build_discrete_estimate(
@@ -1367,6 +1440,12 @@ def _discrete_downstream_risks(unstable: bool) -> list[str]:
 
 
 def _format_optional_int(value: int | None) -> str:
+    if value is None:
+        return ""
+    return str(value)
+
+
+def _format_optional_float(value: float | None) -> str:
     if value is None:
         return ""
     return str(value)
