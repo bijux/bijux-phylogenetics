@@ -730,7 +730,7 @@ string-based, so tree summaries, tip ledgers, normalized Newick outputs,
 DNA-state frequency tables, raw-distance ledgers, and translated amino-acid
 rows are compared as owned artifacts rather than scraped console text. The
 governed live cases now cover `ape::read.tree`, `ape::write.tree`,
-`ape::root`, `ape::unroot`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
+`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
 fixture ids. The tree and DNA inputs for that lane now come from the governed
 shared fixture catalogs in
 `tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
@@ -750,6 +750,11 @@ unrooting, already-unrooted inputs, and malformed tree failures against live
 `ape::unroot`, and it exposes the root-edge redistribution policy explicitly:
 Bijux now merges the removed root-edge length into the retained sibling branch
 to match `ape::unroot` rather than moving that length into the expanded clade.
+The `ape::drop.tip` lane now compares single-tip exclusion, multi-tip
+exclusion, rooted and unrooted root-state changes, and unknown-tip handling
+against live `ape::drop.tip`, while keeping one explicit product-safety rule:
+Bijux rejects pruning requests that would leave fewer than two retained taxa
+instead of emitting one-tip trees into downstream scientific workflows.
 The
 `ape::write.tree` lane now roundtrips Bijux-written Newick through live `ape`
 for rooted, unrooted, internal-label, support-label, quoted-label, and
