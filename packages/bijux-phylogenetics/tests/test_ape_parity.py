@@ -184,8 +184,11 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "dna-tn93-distance-missing-data",
         "dna-tn93-distance-unequal-length-invalid",
         "dna-translation-valid-frame",
+        "dna-translation-ambiguous-codon",
         "dna-translation-internal-stop",
         "dna-translation-terminal-stop",
+        "dna-translation-frame-error-truncation",
+        "dna-translation-vertebrate-mitochondrial",
     ]
     assert [case.fixture_id for case in cases] == [
         "balanced_rooted_ultrametric",
@@ -329,8 +332,11 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "dna_with_missing_data",
         "unequal_length_invalid_input",
         "coding_valid_reading_frame",
+        "coding_ambiguous_codon",
         "coding_internal_stop",
         "coding_terminal_stop",
+        "coding_frame_error",
+        "coding_mitochondrial_triplet",
     ]
     assert {case.function_name for case in cases} == {
         "ape::read.tree",
@@ -393,8 +399,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 143
-    assert report.passed_case_count == 143
+    assert report.case_count == 146
+    assert report.passed_case_count == 146
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -654,6 +660,14 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
     assert translation_case.reference_summary is not None
     assert translation_case.reference_summary["stop_codon_count"] == 1
+    frame_error_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "dna-translation-frame-error-truncation"
+    )
+    assert frame_error_case.reference_summary is not None
+    assert frame_error_case.reference_summary["dropped_trailing_nucleotide_count"] == 2
+    assert frame_error_case.reference_summary["warning_count"] == 1
 
 
 def test_run_ape_parity_cases_records_branch_length_failure_for_tree_structure_mismatch(
@@ -770,7 +784,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 143
+    assert len(rows) == 146
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
