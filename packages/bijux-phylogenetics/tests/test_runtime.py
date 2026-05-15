@@ -334,6 +334,7 @@ from bijux_phylogenetics.comparative import (
     compare_comparative_regression_models,
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
+    compute_phylogenetic_independent_contrasts_from_dataset,
     compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
     inspect_pgls_inputs,
@@ -341,6 +342,7 @@ from bijux_phylogenetics.comparative import (
     run_pgls,
     run_posterior_tree_pgls,
     summarize_brownian_covariance,
+    summarize_brownian_covariance_from_tree,
     summarize_brownian_covariance_pgls,
     summarize_brownian_regime_rates,
     summarize_brownian_trait_evolution,
@@ -2131,6 +2133,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is compute_phylogenetic_independent_contrasts
     )
     assert (
+        bijux_phylogenetics.compute_phylogenetic_independent_contrasts_from_dataset
+        is compute_phylogenetic_independent_contrasts_from_dataset
+    )
+    assert (
         bijux_phylogenetics.summarize_independent_contrast_regression
         is summarize_independent_contrast_regression
     )
@@ -2191,6 +2197,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.summarize_brownian_covariance
         is summarize_brownian_covariance
+    )
+    assert (
+        bijux_phylogenetics.summarize_brownian_covariance_from_tree
+        is summarize_brownian_covariance_from_tree
     )
     assert (
         bijux_phylogenetics.summarize_brownian_covariance_pgls
