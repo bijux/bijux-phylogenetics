@@ -162,7 +162,7 @@ reproducible artifact bundle for that case.
 
 The governed live `ape` cases now span both shared tree and shared DNA
 fixtures. Today that lane covers `ape::read.tree`, `ape::write.tree`,
-`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
+`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
 resolved from `shared_tree_fixture_catalog.json` and
 `shared_dna_alignment_fixture_catalog.json`. The `ape::read.tree` portion now
 compares structured clade rows and covers branch lengths, internal labels,
@@ -220,6 +220,13 @@ rooted non-ultrametric, zero-branch-length, and post-outgroup-rooting trees.
 It compares one governed node-depth table keyed by stable ape-style node ids,
 and the owned Bijux surface `compute_tree_node_depths(...)` rejects incomplete
 branch lengths instead of substituting edge counts or implied zeros.
+The `ape::branching.times` portion now covers rooted ultrametric trees with
+and without internal labels, one medium ultrametric tree, and one zero-length
+internal-branch ultrametric tree. It compares one governed internal-node
+branching-time table keyed by stable ape-style node ids, and the owned Bijux
+surface `compute_tree_branching_times(...)` rejects non-ultrametric trees
+instead of forwarding the invalid negative or inconsistent node ages that
+`ape::branching.times` can still produce on those inputs.
 The `ape::write.tree` portion
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
 internal-label, support-label, quoted-label, and multiple-tree cases. The DNA
