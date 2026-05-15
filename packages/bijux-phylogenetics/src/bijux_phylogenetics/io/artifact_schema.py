@@ -117,20 +117,6 @@ _RUN_MANIFEST_KEYS = (
     "python_version",
     "timestamp_utc",
 )
-_FASTA_TO_TREE_MANIFEST_KEYS = (
-    "alignment_mode",
-    "alignment_workflow",
-    "bootstrap_replicates",
-    "bootstrap_workflow",
-    "commands",
-    "config",
-    "ended_at_utc",
-    "engine_artifact_dir",
-    "engine_versions",
-    "fasta_to_tree_workflow",
-)
-
-
 @dataclass(frozen=True, slots=True)
 class ArtifactSchemaValidationReport:
     """Validation result for one stable reviewer-facing artifact schema."""
@@ -387,6 +373,7 @@ def _validate_exact_tsv_schema(
         artifact_format="tsv",
         expected_fields=expected_fields,
         observed_fields=observed_fields,
+        require_order=True,
     )
 
 
@@ -417,6 +404,7 @@ def _validate_exact_json_schema(
         artifact_format="json",
         expected_fields=expected_fields,
         observed_fields=observed_fields,
+        require_order=False,
     )
 
 
@@ -427,6 +415,7 @@ def _build_exact_report(
     artifact_format: str,
     expected_fields: tuple[str, ...],
     observed_fields: tuple[str, ...],
+    require_order: bool,
 ) -> ArtifactSchemaValidationReport:
     missing_fields = tuple(
         field for field in expected_fields if field not in observed_fields
@@ -434,7 +423,7 @@ def _build_exact_report(
     unexpected_fields = tuple(
         field for field in observed_fields if field not in expected_fields
     )
-    order_matches = observed_fields == expected_fields
+    order_matches = observed_fields == expected_fields if require_order else True
     valid = not missing_fields and not unexpected_fields and order_matches
     return ArtifactSchemaValidationReport(
         schema_name=schema_name,
