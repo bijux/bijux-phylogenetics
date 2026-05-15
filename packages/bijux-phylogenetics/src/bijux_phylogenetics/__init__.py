@@ -1394,6 +1394,15 @@ from .ape_parity import (
     write_ape_parity_observation_table,
     write_ape_parity_summary_table,
 )
+from .phytools_parity import (
+    PhytoolsParityObservation,
+    PhytoolsParityReport,
+    PhytoolsParitySummaryRow,
+    list_phytools_parity_cases,
+    run_phytools_parity_cases,
+    write_phytools_parity_observation_table,
+    write_phytools_parity_summary_table,
+)
 from .reference_validation import (
     CoreWorkflowFailureCase,
     CoreWorkflowValidationReport,
@@ -2825,7 +2834,9 @@ __all__ = [
     "validate_distance_reference_examples",
     "validate_imported_distance_matrix",
     "list_ape_parity_cases",
+    "list_phytools_parity_cases",
     "run_ape_parity_cases",
+    "run_phytools_parity_cases",
     "validate_reference_parity_examples",
     "validate_report_regression_fixtures",
     "validate_simulation_reproducibility",
@@ -2988,6 +2999,8 @@ __all__ = [
     "write_topology_distance_split_table",
     "write_ape_parity_observation_table",
     "write_ape_parity_summary_table",
+    "write_phytools_parity_observation_table",
+    "write_phytools_parity_summary_table",
     "write_reference_parity_observation_table",
     "write_reference_parity_summary_table",
     "write_mrbayes_burnin_sensitivity_slice_table",

@@ -842,6 +842,12 @@ from bijux_phylogenetics.ape_parity import (
     write_ape_parity_observation_table,
     write_ape_parity_summary_table,
 )
+from bijux_phylogenetics.phytools_parity import (
+    list_phytools_parity_cases,
+    run_phytools_parity_cases,
+    write_phytools_parity_observation_table,
+    write_phytools_parity_summary_table,
+)
 from bijux_phylogenetics.reference_validation import (
     build_core_workflow_failure_gallery,
     build_core_workflow_validation_report,
@@ -2011,7 +2017,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is validate_reference_parity_examples
     )
     assert bijux_phylogenetics.list_ape_parity_cases is list_ape_parity_cases
+    assert (
+        bijux_phylogenetics.list_phytools_parity_cases is list_phytools_parity_cases
+    )
     assert bijux_phylogenetics.run_ape_parity_cases is run_ape_parity_cases
+    assert (
+        bijux_phylogenetics.run_phytools_parity_cases
+        is run_phytools_parity_cases
+    )
     assert (
         bijux_phylogenetics.write_reference_parity_summary_table
         is write_reference_parity_summary_table
@@ -2021,12 +2034,20 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is write_ape_parity_summary_table
     )
     assert (
+        bijux_phylogenetics.write_phytools_parity_summary_table
+        is write_phytools_parity_summary_table
+    )
+    assert (
         bijux_phylogenetics.write_reference_parity_observation_table
         is write_reference_parity_observation_table
     )
     assert (
         bijux_phylogenetics.write_ape_parity_observation_table
         is write_ape_parity_observation_table
+    )
+    assert (
+        bijux_phylogenetics.write_phytools_parity_observation_table
+        is write_phytools_parity_observation_table
     )
     assert bijux_phylogenetics.render_tree_report is render_tree_report
     assert (
