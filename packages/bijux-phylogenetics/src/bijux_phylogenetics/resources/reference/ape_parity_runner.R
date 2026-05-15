@@ -682,6 +682,115 @@ tree_case <- function(case_payload, output_root, execution_path, r_version) {
   )
 }
 
+distance_matrix_object <- function(path) {
+  table <- utils::read.delim(
+    path,
+    header = TRUE,
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  identifiers <- sort(unique(c(table$left_identifier, table$right_identifier)))
+  matrix <- matrix(
+    NA_real_,
+    nrow = length(identifiers),
+    ncol = length(identifiers),
+    dimnames = list(identifiers, identifiers)
+  )
+  for (index in seq_len(nrow(table))) {
+    left_identifier <- as.character(table$left_identifier[[index]])
+    right_identifier <- as.character(table$right_identifier[[index]])
+    matrix[left_identifier, right_identifier] <- as.numeric(table$distance[[index]])
+  }
+  if (any(is.na(diag(matrix)))) {
+    stop("distance matrix is missing one or more diagonal entries")
+  }
+  if (any(diag(matrix) != 0.0)) {
+    stop("distance matrix has nonzero diagonal entries")
+  }
+  if (any(is.na(matrix))) {
+    stop("distance matrix is missing one or more required pairs")
+  }
+  if (any(matrix < 0.0)) {
+    stop("distance matrix contains negative distances")
+  }
+  if (!isTRUE(all.equal(matrix, t(matrix), tolerance = 1e-12))) {
+    stop("distance matrix contains asymmetric directional entries")
+  }
+  stats::as.dist(matrix)
+}
+
+neighbor_joining_case <- function(case_payload, output_root, execution_path, r_version) {
+  distance_matrix <- tryCatch(
+    distance_matrix_object(case_payload$input_fixture),
+    error = function(error) error
+  )
+  if (inherits(distance_matrix, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "DistanceMatrixError",
+        message = conditionMessage(distance_matrix),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  tree <- tryCatch(ape::nj(distance_matrix), error = function(error) error)
+  if (inherits(tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "NeighborJoiningError",
+        message = conditionMessage(tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  summary_path <- file.path(output_root, "summary.json")
+  newick_path <- file.path(output_root, "normalized-tree.nwk")
+  summary_payload <- list(
+    tree_count = 1,
+    tip_count = length(tree$tip.label),
+    internal_node_count = tree$Nnode,
+    edge_count = nrow(tree$edge),
+    rooted = FALSE,
+    tip_labels = unname(tree$tip.label),
+    branch_length_count = if (is.null(tree$edge.length)) 0 else sum(!is.na(tree$edge.length))
+  )
+  write_payload(summary_path, summary_payload)
+  ape::write.tree(tree, file = newick_path)
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        normalized_tree = newick_path
+      )
+    )
+  )
+}
+
 root_case <- function(case_payload, output_root, execution_path, r_version) {
   tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
   if (inherits(tree, "error")) {
@@ -2527,6 +2636,11 @@ if (identical(case_payload$operation, "dna-distance")) {
 
 if (identical(case_payload$operation, "tree-tip-distance")) {
   cophenetic_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "distance-matrix-neighbor-joining")) {
+  neighbor_joining_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 

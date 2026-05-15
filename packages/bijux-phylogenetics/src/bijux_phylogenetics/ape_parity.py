@@ -40,7 +40,10 @@ from bijux_phylogenetics.core.topology import (
     extract_tree_clade_by_node_id,
     find_tree_mrca,
 )
-from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matrix
+from bijux_phylogenetics.distance import (
+    build_tree_from_imported_distance_matrix,
+    compute_pairwise_genetic_distance_matrix,
+)
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.topology import root_tree_on_outgroup, unroot_tree
@@ -60,6 +63,9 @@ from bijux_phylogenetics.io.newick import (
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.shared_dna_alignment_fixtures import (
     get_shared_dna_alignment_fixture,
+)
+from bijux_phylogenetics.shared_distance_matrix_fixtures import (
+    get_shared_distance_matrix_fixture,
 )
 from bijux_phylogenetics.tree_set import (
     compute_clade_frequency_table,
@@ -214,6 +220,8 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             fixture = get_shared_tree_set_fixture(fixture_id)
         elif fixture_kind == "dna-alignment":
             fixture = get_shared_dna_alignment_fixture(fixture_id)
+        elif fixture_kind == "distance-matrix":
+            fixture = get_shared_distance_matrix_fixture(fixture_id)
         else:
             raise ValueError(f"unsupported ape parity fixture kind '{fixture_kind}'")
         if fixtures_root is None:
@@ -1205,6 +1213,36 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
             tolerance=APE_ULTRAMETRIC_TOLERANCE,
             ultrametric_option=1,
+        ),
+        ApeParityCase(
+            case_id="neighbor-joining-analytical-three-taxon",
+            fixture_kind="distance-matrix",
+            fixture_id="analytical_three_taxon",
+            function_name="ape::nj",
+            python_function_name="build_tree_from_imported_distance_matrix",
+            operation="distance-matrix-neighbor-joining",
+            input_fixture=fixture_path("distance-matrix", "analytical_three_taxon"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="neighbor-joining-ultrametric-four-taxon",
+            fixture_kind="distance-matrix",
+            fixture_id="ultrametric_four_taxon",
+            function_name="ape::nj",
+            python_function_name="build_tree_from_imported_distance_matrix",
+            operation="distance-matrix-neighbor-joining",
+            input_fixture=fixture_path("distance-matrix", "ultrametric_four_taxon"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="neighbor-joining-nonultrametric-four-taxon",
+            fixture_kind="distance-matrix",
+            fixture_id="nonultrametric_four_taxon",
+            function_name="ape::nj",
+            python_function_name="build_tree_from_imported_distance_matrix",
+            operation="distance-matrix-neighbor-joining",
+            input_fixture=fixture_path("distance-matrix", "nonultrametric_four_taxon"),
+            tolerance=1e-12,
         ),
         ApeParityCase(
             case_id="dna-dnabin-structure-clean",
@@ -2333,6 +2371,17 @@ def _build_bijux_tree_tip_distance_rows(
     ]
 
 
+def _build_bijux_neighbor_joining_structure(
+    input_fixture: Path,
+) -> tuple[dict[str, object], None, str]:
+    tree, _report = build_tree_from_imported_distance_matrix(
+        input_fixture,
+        method="neighbor-joining",
+    )
+    summary, _rows, normalized_text = _tree_structure_payload(tree, False, [])
+    return summary, None, normalized_text
+
+
 def _build_bijux_consensus_rows(
     input_fixture: Path,
     *,
@@ -2976,6 +3025,8 @@ def _build_bijux_case_payload(
     if case.operation == "tree-tip-distance":
         summary, rows = _build_bijux_tree_tip_distance_rows(case.input_fixture)
         return summary, rows, None
+    if case.operation == "distance-matrix-neighbor-joining":
+        return _build_bijux_neighbor_joining_structure(case.input_fixture)
     if case.operation == "tree-topology-distance":
         if case.rf_mode is None:
             raise ValueError(
@@ -3093,6 +3144,10 @@ def _load_reference_case_payload(
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "tip-distance-long.tsv")
         return summary, rows, None
+    if case.operation == "distance-matrix-neighbor-joining":
+        summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
+        normalized_text = _canonical_newick(execution_root / "normalized-tree.nwk")
+        return summary, None, normalized_text
     if case.operation == "tree-topology-distance":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "split-table.tsv")
@@ -3324,6 +3379,29 @@ def _consensus_tree_mismatch_reason(
     return report.mismatch_reason
 
 
+def _neighbor_joining_tree_mismatch_reason(
+    case: ApeParityCase,
+    execution_root: Path,
+) -> str | None:
+    reference_tree = load_tree(execution_root / "normalized-tree.nwk")
+    reference_tree.rooted = False
+    expected_tree, _report = build_tree_from_imported_distance_matrix(
+        case.input_fixture,
+        method="neighbor-joining",
+    )
+    _normalize_tree_labels(
+        reference_tree.root,
+        expected_tip_labels=set(expected_tree.tip_names),
+    )
+    report = compare_tree_structurally(
+        expected_tree,
+        reference_tree,
+        tolerance=case.tolerance,
+        compare_internal_labels=False,
+    )
+    return report.mismatch_reason
+
+
 def _summary_rows(observations: list[ApeParityObservation]) -> list[ApeParitySummaryRow]:
     rows: list[ApeParitySummaryRow] = []
     for function_name in sorted({item.function_name for item in observations}):
@@ -3542,6 +3620,17 @@ def run_ape_parity_cases(
                                 tolerance=case.tolerance,
                             ):
                                 mismatch_reason = "rows_mismatch"
+                        elif case.operation == "distance-matrix-neighbor-joining":
+                            mismatch_reason = _neighbor_joining_tree_mismatch_reason(
+                                case,
+                                execution_root,
+                            )
+                            if mismatch_reason is None and not _compare_json(
+                                reference_summary,
+                                bijux_summary,
+                                tolerance=case.tolerance,
+                            ):
+                                mismatch_reason = "summary_mismatch"
                         elif not _compare_json(
                             reference_summary, bijux_summary, tolerance=case.tolerance
                         ):
