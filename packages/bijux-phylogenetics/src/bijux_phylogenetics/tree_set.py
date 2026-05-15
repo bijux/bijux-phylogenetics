@@ -97,6 +97,9 @@ class ConsensusTreeReport:
     tree_count: int
     processing: TreeSetProcessingSummary
     shared_taxa: list[str]
+    consensus_method: str
+    consensus_threshold: float
+    included_clade_count: int
     consensus_newick: str
 
 
@@ -1101,11 +1104,20 @@ def _build_consensus_tree_with_threshold(
         ),
         source_format=analysis.source_format,
     )
+    if math.isclose(threshold, 1.0):
+        consensus_method = "strict"
+    elif math.isclose(threshold, 0.5):
+        consensus_method = "majority-rule"
+    else:
+        consensus_method = "thresholded"
     return tree, ConsensusTreeReport(
         path=analysis.path,
         tree_count=len(analysis.trees),
         processing=analysis.processing,
         shared_taxa=shared_taxa,
+        consensus_method=consensus_method,
+        consensus_threshold=threshold,
+        included_clade_count=len(majority_clades),
         consensus_newick=dumps_newick(tree),
     )
 
@@ -1293,15 +1305,20 @@ def compute_consensus_tree(path: Path) -> tuple[PhyloTree, ConsensusTreeReport]:
     return compute_consensus_tree_with_threshold(path, threshold=0.5)
 
 
+def compute_strict_consensus_tree(path: Path) -> tuple[PhyloTree, ConsensusTreeReport]:
+    """Compute a strict consensus tree from a tree set."""
+    return compute_consensus_tree_with_threshold(path, threshold=1.0)
+
+
 def compute_consensus_tree_with_threshold(
     path: Path,
     *,
     threshold: float,
 ) -> tuple[PhyloTree, ConsensusTreeReport]:
     """Compute a deterministic consensus tree at a caller-supplied clade frequency threshold."""
-    if not 0.0 < threshold < 1.0:
+    if not 0.0 < threshold <= 1.0:
         raise ValueError(
-            f"consensus threshold must be between 0 and 1, got {threshold}"
+            f"consensus threshold must be greater than 0 and at most 1, got {threshold}"
         )
     return _build_consensus_tree_with_threshold(_analyze_tree_set(path), threshold=threshold)
 
