@@ -863,6 +863,7 @@ from .core.topology import (
     unroot_tree,
     write_tree_rooting_report,
 )
+from .core.tree import PhyloTree, TaxonLabel, TreeNode
 from .core.branching_times import (
     TreeBranchingTimeReport,
     TreeBranchingTimeRow,
@@ -2378,6 +2379,9 @@ __all__ = [
     "extract_tree_clade_by_node_id",
     "assess_tree_monophyly",
     "find_tree_mrca",
+    "PhyloTree",
+    "TaxonLabel",
+    "TreeNode",
     "TreeBranchingTimeReport",
     "TreeBranchingTimeRow",
     "compute_tree_branching_times",

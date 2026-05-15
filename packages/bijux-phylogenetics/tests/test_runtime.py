@@ -793,6 +793,7 @@ from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.roundtrip import validate_tree_roundtrip
 from bijux_phylogenetics.io.trees import detect_tree_format
+from bijux_phylogenetics.core.tree import PhyloTree, TaxonLabel, TreeNode
 from bijux_phylogenetics.phylogeography import (
     CoordinateEstimateRow,
     CoordinateMovementBranchRow,
@@ -1094,6 +1095,9 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.write_tree_branching_time_table
         is write_tree_branching_time_table
     )
+    assert bijux_phylogenetics.PhyloTree is PhyloTree
+    assert bijux_phylogenetics.TaxonLabel is TaxonLabel
+    assert bijux_phylogenetics.TreeNode is TreeNode
     assert bijux_phylogenetics.TreeNodeDepthReport is TreeNodeDepthReport
     assert bijux_phylogenetics.TreeNodeDepthRow is TreeNodeDepthRow
     assert bijux_phylogenetics.compute_tree_node_depths is compute_tree_node_depths
