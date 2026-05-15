@@ -2,15 +2,11 @@ from __future__ import annotations
 
 import csv
 from dataclasses import dataclass
-from io import StringIO
 import math
 from pathlib import Path
 import tempfile
 from time import perf_counter
 import tracemalloc
-
-from Bio import Phylo
-from Bio.Phylo.BaseTree import Tree as BioTree
 
 from bijux_phylogenetics.core.clade_sets import (
     canonical_bipartition,
@@ -21,13 +17,22 @@ from bijux_phylogenetics.core.clade_sets import (
 )
 from bijux_phylogenetics.core._node_identity import build_ape_internal_node_map
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import InvalidAlignmentError, WorkflowBudgetError
-from bijux_phylogenetics.io.biopython import tree_from_biophylo
+from bijux_phylogenetics.errors import (
+    InvalidAlignmentError,
+    UnsupportedTreeFormatError,
+    WorkflowBudgetError,
+)
 from bijux_phylogenetics.io.iqtree_support import (
     parse_iqtree_branch_support_label,
     support_fraction as normalize_support_fraction,
 )
-from bijux_phylogenetics.io.newick import dumps_newick, write_newick
+from bijux_phylogenetics.io.newick import (
+    dumps_newick,
+    iter_newick_tree_records_from_path,
+    load_newick_tree_set,
+    loads_newick,
+    write_newick,
+)
 from bijux_phylogenetics.io.trees import detect_tree_format, load_tree
 from bijux_phylogenetics.simulation import simulate_birth_death_trees, write_tree_set
 
@@ -523,44 +528,21 @@ def _taxa_union(trees: list[PhyloTree]) -> set[str]:
     return taxa
 
 
-def _iter_newick_tree_statements(path: Path):
-    source_index = 0
-    buffer = ""
-    with path.open("r", encoding="utf-8") as handle:
-        for raw_line in handle:
-            line = raw_line.strip()
-            if not line:
-                continue
-            buffer = f"{buffer} {line}".strip() if buffer else line
-            while ";" in buffer:
-                statement, buffer = buffer.split(";", 1)
-                normalized = statement.strip()
-                if not normalized:
-                    continue
-                source_index += 1
-                yield source_index, f"{normalized};"
-        remainder = buffer.strip()
-        if remainder:
-            source_index += 1
-            yield source_index, remainder
-
-
 def _iter_tree_set(path: Path):
     if not path.exists():
         raise FileNotFoundError(f"tree-set file not found: {path}")
     source_format = detect_tree_format(path)
-    if source_format == "newick":
-        for source_index, statement in _iter_newick_tree_statements(path):
-            try:
-                bio_tree = Phylo.read(StringIO(statement), "newick")
-            except Exception as error:  # pragma: no cover - parser exceptions vary
-                yield source_format, source_index, None, str(error)
-                continue
-            yield source_format, source_index, bio_tree, None
-        return
-
-    for source_index, bio_tree in enumerate(Phylo.parse(path, source_format), start=1):
-        yield source_format, source_index, bio_tree, None
+    if source_format != "newick":
+        raise UnsupportedTreeFormatError(
+            f"tree-set workflows require Newick tree-set records, got {source_format} for {path}"
+        )
+    for source_index, statement in iter_newick_tree_records_from_path(path):
+        try:
+            tree = loads_newick(statement)
+        except Exception as error:  # pragma: no cover - parser exceptions vary
+            yield source_format, source_index, None, str(error)
+            continue
+        yield source_format, source_index, tree, None
 
 
 def _exact_taxa_or_none(trees: list[PhyloTree]) -> list[str] | None:
@@ -594,14 +576,14 @@ def _analyze_tree_set(path: Path) -> _TreeSetAnalysis:
     skipped_malformed_tree_count = 0
     trees: list[PhyloTree] = []
     try:
-        for parsed_format, _source_index, bio_tree, error_message in _iter_tree_set(path):
+        for parsed_format, _source_index, tree, error_message in _iter_tree_set(path):
             source_format = parsed_format
             if error_message is not None:
                 skipped_malformed_tree_count += 1
                 continue
-            if bio_tree is None:
+            if tree is None:
                 continue
-            trees.append(tree_from_biophylo(bio_tree, source_format=parsed_format))
+            trees.append(tree)
         if not trees:
             raise InvalidAlignmentError(f"tree set contains no trees: {path}")
         shared_taxa = sorted(_shared_taxa(trees))
@@ -682,17 +664,18 @@ def _require_exact_taxa(analysis: _TreeSetAnalysis) -> list[str]:
     return analysis.exact_taxa
 
 
-def _require_tree_set(path: Path) -> tuple[str, list[BioTree], list[PhyloTree]]:
+def _require_tree_set(path: Path) -> tuple[str, list[PhyloTree]]:
     if not path.exists():
         raise FileNotFoundError(f"tree-set file not found: {path}")
     source_format = detect_tree_format(path)
-    bio_trees = list(Phylo.parse(path, source_format))
-    if not bio_trees:
+    if source_format != "newick":
+        raise UnsupportedTreeFormatError(
+            f"tree-set workflows require Newick tree-set records, got {source_format} for {path}"
+        )
+    trees = load_newick_tree_set(path)
+    if not trees:
         raise InvalidAlignmentError(f"tree set contains no trees: {path}")
-    trees = [
-        tree_from_biophylo(tree, source_format=source_format) for tree in bio_trees
-    ]
-    return source_format, bio_trees, trees
+    return source_format, trees
 
 
 def _format_clade(clade: frozenset[str]) -> str:
@@ -2103,8 +2086,8 @@ def compare_posterior_topological_diversity(
     """Compare topology diversity and dispersion across two posterior tree sets."""
     left_clusters = cluster_trees_by_topology(left_path)
     right_clusters = cluster_trees_by_topology(right_path)
-    _, _, left_trees = _require_tree_set(left_path)
-    _, _, right_trees = _require_tree_set(right_path)
+    _, left_trees = _require_tree_set(left_path)
+    _, right_trees = _require_tree_set(right_path)
     left_taxa = set(_validate_same_taxa(left_trees))
     right_taxa = set(_validate_same_taxa(right_trees))
     if left_taxa != right_taxa:
@@ -2179,7 +2162,7 @@ def detect_posterior_topology_multimodality(
     if min_mode_count < 2:
         raise ValueError(f"min_mode_count must be at least 2, got {min_mode_count}")
     clusters = cluster_trees_by_topology(path)
-    _, _, trees = _require_tree_set(path)
+    _, trees = _require_tree_set(path)
     modes = _topology_modes_from_clusters(
         trees, clusters.clusters, min_mode_frequency=min_mode_frequency
     )
@@ -2215,7 +2198,7 @@ def summarize_clade_credibility_conflicts(
         raise ValueError(
             f"credibility_threshold must be between 0 and 1, got {credibility_threshold}"
         )
-    _, _, trees = _require_tree_set(path)
+    _, trees = _require_tree_set(path)
     shared_taxa = set(_validate_same_taxa(trees))
     counts = _clade_counts(trees, shared_taxa)
     frequencies = {
@@ -2388,8 +2371,8 @@ def compare_posterior_tree_sets(
     left_path: Path, right_path: Path
 ) -> PosteriorTreeSetComparisonReport:
     """Compare two tree sets over shared taxa, clade support, and cross-set topology distance."""
-    _, _, left_trees = _require_tree_set(left_path)
-    _, _, right_trees = _require_tree_set(right_path)
+    _, left_trees = _require_tree_set(left_path)
+    _, right_trees = _require_tree_set(right_path)
     left_taxa = _validate_same_taxa(left_trees)
     right_taxa = _validate_same_taxa(right_trees)
     if left_taxa != right_taxa:
@@ -2622,7 +2605,7 @@ def assess_tree_set_thinning_sensitivity(
     warnings: list[str] = []
     temp_root = Path(tempfile.mkdtemp(prefix="bijux-tree-set-thinning-"))
     try:
-        _, _, trees = _require_tree_set(path)
+        _, trees = _require_tree_set(path)
         for interval in sorted(set(intervals)):
             retained = trees[::interval]
             retained_path = write_tree_set(
@@ -2794,9 +2777,7 @@ def assess_tree_set_maturity(
 def _require_tree(path: Path) -> PhyloTree:
     if not path.exists():
         raise FileNotFoundError(f"tree file not found: {path}")
-    source_format = detect_tree_format(path)
-    bio_tree = Phylo.read(path, source_format)
-    return tree_from_biophylo(bio_tree, source_format=source_format)
+    return load_tree(path)
 
 
 def _parse_support_label(value: str | None) -> float | None:
