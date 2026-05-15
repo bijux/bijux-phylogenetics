@@ -873,10 +873,13 @@ from bijux_phylogenetics.simulation import (
     simulate_dna_alignment,
     simulate_early_burst_traits,
     simulate_ou_traits,
+    simulate_random_trees,
     simulate_protein_alignment,
     write_continuous_trait_table,
     write_discrete_trait_table,
     write_simulated_alignment,
+    write_tree_simulation_envelope_table,
+    write_tree_simulation_record_table,
     write_tree_set,
 )
 from bijux_phylogenetics.tree_set import (
@@ -2014,12 +2017,21 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     )
     assert bijux_phylogenetics.simulate_birth_death_trees is simulate_birth_death_trees
     assert bijux_phylogenetics.simulate_coalescent_trees is simulate_coalescent_trees
+    assert bijux_phylogenetics.simulate_random_trees is simulate_random_trees
     assert bijux_phylogenetics.simulate_brownian_traits is simulate_brownian_traits
     assert bijux_phylogenetics.simulate_early_burst_traits is simulate_early_burst_traits
     assert bijux_phylogenetics.simulate_ou_traits is simulate_ou_traits
     assert bijux_phylogenetics.simulate_discrete_traits is simulate_discrete_traits
     assert bijux_phylogenetics.simulate_dna_alignment is simulate_dna_alignment
     assert bijux_phylogenetics.simulate_protein_alignment is simulate_protein_alignment
+    assert (
+        bijux_phylogenetics.write_tree_simulation_record_table
+        is write_tree_simulation_record_table
+    )
+    assert (
+        bijux_phylogenetics.write_tree_simulation_envelope_table
+        is write_tree_simulation_envelope_table
+    )
 
 
 def test_command_registry_exposes_discrete_evolution_surface() -> None:
@@ -6810,6 +6822,82 @@ def test_cli_simulate_birth_death_writes_tree_set(tmp_path: Path, capsys) -> Non
     assert exit_code == 0
     assert payload["metrics"]["tree_count"] == 2
     assert output_path.read_text(encoding="utf-8").count(";\n") == 2
+
+
+def test_cli_simulate_random_tree_writes_envelope_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "simulated-random.trees"
+    record_path = tmp_path / "simulation-records.tsv"
+    envelope_path = tmp_path / "simulation-envelope.tsv"
+    exit_code = main(
+        [
+            "simulate",
+            "tree-random",
+            "--tree-count",
+            "2",
+            "--tip-count",
+            "4",
+            "--seed",
+            "7",
+            "--out",
+            str(output_path),
+            "--record-table-out",
+            str(record_path),
+            "--envelope-table-out",
+            str(envelope_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_count"] == 2
+    assert payload["metrics"]["branch_length_model"] == "uniform"
+    assert payload["metrics"]["envelope_metric_count"] == 6
+    assert output_path.read_text(encoding="utf-8").count(";\n") == 2
+    assert "normalized_colless_imbalance" in record_path.read_text(encoding="utf-8")
+    assert "branch_length\tedge\t12\t" in envelope_path.read_text(encoding="utf-8")
+
+
+def test_cli_simulate_coalescent_writes_envelope_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "simulated-coalescent.trees"
+    record_path = tmp_path / "simulation-records.tsv"
+    envelope_path = tmp_path / "simulation-envelope.tsv"
+    exit_code = main(
+        [
+            "simulate",
+            "tree-coalescent",
+            "--tree-count",
+            "2",
+            "--tip-count",
+            "4",
+            "--population-size",
+            "2.5",
+            "--seed",
+            "7",
+            "--out",
+            str(output_path),
+            "--record-table-out",
+            str(record_path),
+            "--envelope-table-out",
+            str(envelope_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_count"] == 2
+    assert payload["metrics"]["pooled_branch_count"] == 12
+    assert payload["metrics"]["envelope_metric_count"] == 6
+    assert output_path.read_text(encoding="utf-8").count(";\n") == 2
+    assert "tree_height_branch_length" in record_path.read_text(encoding="utf-8")
+    assert "total_branch_length\ttree\t2\t" in envelope_path.read_text(
+        encoding="utf-8"
+    )
 
 
 def test_cli_simulate_dna_alignment_writes_fasta(tmp_path: Path, capsys) -> None:
