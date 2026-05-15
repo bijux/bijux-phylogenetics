@@ -17,9 +17,10 @@ def fake_phytools_rscript(
         """#!/usr/bin/env python3
 import csv
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
-
 
 SUMMARIES = {
     "phylosig-lambda-non-ultrametric-strong-signal-twenty-four-taxa": {
@@ -87,12 +88,104 @@ def write_summary_table(path: Path, summary: dict[str, object]) -> None:
             writer.writerow({"metric": key, "value": value})
 
 
+def write_rows_table(path: Path, rows: list[dict[str, object]]) -> None:
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=["node", "estimate", "standard_error"],
+            delimiter="\\t",
+        )
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+
+def find_repo_root() -> Path:
+    for candidate in (Path.cwd(), *Path.cwd().parents):
+        package_root = candidate / "packages" / "bijux-phylogenetics"
+        if package_root.is_dir():
+            return package_root
+    raise ValueError("could not locate bijux-phylogenetics package root")
+
+
+def find_repo_python(package_root: Path) -> Path:
+    candidates = (
+        package_root / ".venv" / "bin" / "python",
+        package_root.parent / ".venv" / "bin" / "python",
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise ValueError("could not locate repo python for fake phytools fastAnc payload")
+
+
+def compute_fast_anc_payload(case_payload: dict[str, object]) -> tuple[dict[str, object], list[dict[str, object]]]:
+    package_root = find_repo_root()
+    repo_python = find_repo_python(package_root)
+    tree_path, traits_path = case_payload["input_fixtures"]
+    inline_script = '''
+import json
+from pathlib import Path
+from bijux_phylogenetics.ancestral.continuous import reconstruct_continuous_ancestral_states
+
+payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
+tree_path, traits_path = payload["input_fixtures"]
+report = reconstruct_continuous_ancestral_states(
+    Path(tree_path),
+    Path(traits_path),
+    trait=payload["trait_name"],
+    taxon_column=payload["taxon_column"],
+    model="brownian",
+    estimator="fast-anc",
+)
+summary = {
+    "taxon_count": report.taxon_count,
+    "trait_name": report.trait,
+    "internal_node_count": len([row for row in report.estimates if not row.is_tip]),
+    "excluded_taxon_count": len(report.dropped_missing_taxa) + len(report.dropped_non_numeric_taxa),
+    "excluded_taxa": sorted(report.dropped_missing_taxa + report.dropped_non_numeric_taxa),
+    "tree_is_ultrametric": report.brownian_fit_diagnostics.tree_is_ultrametric,
+}
+rows = [
+    {
+        "node": row.node,
+        "estimate": row.estimate,
+        "standard_error": row.standard_error,
+    }
+    for row in report.estimates
+    if not row.is_tip
+]
+print(json.dumps({"summary": summary, "rows": rows}))
+'''
+    payload_path = package_root / "artifacts" / "fake-phytools-fast-anc-payload.json"
+    payload_path.parent.mkdir(parents=True, exist_ok=True)
+    payload_path.write_text(json.dumps(case_payload), encoding="utf-8")
+    command = [
+        str(repo_python),
+        "-c",
+        inline_script.replace("__PAYLOAD_PATH__", repr(str(payload_path))),
+    ]
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(package_root / "src")
+    result = subprocess.run(
+        command,
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=str(package_root),
+        env=env,
+    )
+    payload = json.loads(result.stdout)
+    return payload["summary"], payload["rows"]
+
+
 case_payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 output_root = Path(sys.argv[3])
 output_root.mkdir(parents=True, exist_ok=True)
 execution_path = output_root / "reference-execution.json"
 summary_path = output_root / "reference-summary.json"
 summary_table_path = output_root / "reference-summary.tsv"
+fast_anc_rows_path = output_root / "fast-anc-node-estimates.tsv"
 
 if not __PHYTOOLS_AVAILABLE__:
     write_json(
@@ -107,7 +200,7 @@ if not __PHYTOOLS_AVAILABLE__:
     raise SystemExit(0)
 
 case_id = case_payload["case_id"]
-if case_id not in SUMMARIES:
+if case_id not in SUMMARIES and case_payload["operation"] != "continuous-ancestral-fast-anc":
     write_json(
         execution_path,
         {
@@ -121,7 +214,10 @@ if case_id not in SUMMARIES:
     )
     raise SystemExit(0)
 
-summary = SUMMARIES[case_id]
+summary = SUMMARIES.get(case_id)
+rows = None
+if case_payload["operation"] == "continuous-ancestral-fast-anc":
+    summary, rows = compute_fast_anc_payload(case_payload)
 write_json(
     execution_path,
     {
@@ -132,6 +228,8 @@ write_json(
 )
 write_json(summary_path, summary)
 write_summary_table(summary_table_path, summary)
+if rows is not None:
+    write_rows_table(fast_anc_rows_path, rows)
 """
         .replace("__SUMMARY_OVERRIDES__", summary_payload)
         .replace("__PHYTOOLS_AVAILABLE__", repr(phytools_available)),

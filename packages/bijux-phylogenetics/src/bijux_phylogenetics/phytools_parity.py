@@ -10,6 +10,9 @@ from pathlib import Path
 import subprocess
 import tempfile
 
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+)
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     compute_phylogenetic_signal_test,
@@ -36,6 +39,7 @@ class PhytoolsParityCase:
     permutation_count: int | None = None
     permutation_seed: int | None = None
     field_tolerances: dict[str, float] | None = None
+    row_field_tolerances: dict[str, float] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,6 +62,8 @@ class PhytoolsParityObservation:
     reproducible_artifact_root: Path | None
     reference_summary: dict[str, object] | None
     bijux_summary: dict[str, object] | None
+    reference_rows: list[dict[str, object]] | None
+    bijux_rows: list[dict[str, object]] | None
     reference_error: dict[str, object] | None
     bijux_error: dict[str, object] | None
 
@@ -148,6 +154,9 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
     weak_signal_fixture = get_shared_phytools_comparative_fixture(
         "phytools_continuous_weak_signal_twenty_four_taxa"
     )
+    missing_signal_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_continuous_missing_values_twenty_four_taxa"
+    )
     return [
         PhytoolsParityCase(
             case_id="phylosig-lambda-non-ultrametric-strong-signal-twenty-four-taxa",
@@ -219,6 +228,78 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
                 "simulated_k_mean": 0.01,
             },
         ),
+        PhytoolsParityCase(
+            case_id="fast-anc-strong-signal-twenty-four-taxa",
+            fixture_id=strong_signal_fixture.fixture_id,
+            function_name="phytools::fastAnc",
+            python_function_name="reconstruct_continuous_ancestral_states",
+            operation="continuous-ancestral-fast-anc",
+            input_fixtures=(
+                strong_signal_fixture.tree_path,
+                strong_signal_fixture.traits_path,
+            ),
+            tolerance=1e-8,
+            trait_name=strong_signal_fixture.trait_name,
+            taxon_column=strong_signal_fixture.taxon_column,
+            row_field_tolerances={
+                "estimate": 1e-8,
+                "standard_error": 1e-8,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="fast-anc-weak-signal-twenty-four-taxa",
+            fixture_id=weak_signal_fixture.fixture_id,
+            function_name="phytools::fastAnc",
+            python_function_name="reconstruct_continuous_ancestral_states",
+            operation="continuous-ancestral-fast-anc",
+            input_fixtures=(
+                weak_signal_fixture.tree_path,
+                weak_signal_fixture.traits_path,
+            ),
+            tolerance=1e-8,
+            trait_name=weak_signal_fixture.trait_name,
+            taxon_column=weak_signal_fixture.taxon_column,
+            row_field_tolerances={
+                "estimate": 1e-8,
+                "standard_error": 1e-8,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="fast-anc-non-ultrametric-strong-signal-twenty-four-taxa",
+            fixture_id=nonultrametric_signal_fixture.fixture_id,
+            function_name="phytools::fastAnc",
+            python_function_name="reconstruct_continuous_ancestral_states",
+            operation="continuous-ancestral-fast-anc",
+            input_fixtures=(
+                nonultrametric_signal_fixture.tree_path,
+                nonultrametric_signal_fixture.traits_path,
+            ),
+            tolerance=1e-8,
+            trait_name=nonultrametric_signal_fixture.trait_name,
+            taxon_column=nonultrametric_signal_fixture.taxon_column,
+            row_field_tolerances={
+                "estimate": 1e-8,
+                "standard_error": 1e-8,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="fast-anc-missing-values-twenty-four-taxa",
+            fixture_id=missing_signal_fixture.fixture_id,
+            function_name="phytools::fastAnc",
+            python_function_name="reconstruct_continuous_ancestral_states",
+            operation="continuous-ancestral-fast-anc",
+            input_fixtures=(
+                missing_signal_fixture.tree_path,
+                missing_signal_fixture.traits_path,
+            ),
+            tolerance=1e-8,
+            trait_name=missing_signal_fixture.trait_name,
+            taxon_column=missing_signal_fixture.taxon_column,
+            row_field_tolerances={
+                "estimate": 1e-8,
+                "standard_error": 1e-8,
+            },
+        ),
     ]
 
 
@@ -250,7 +331,9 @@ def _write_case_file(path: Path, case: PhytoolsParityCase) -> Path:
     return path
 
 
-def _build_bijux_case_payload(case: PhytoolsParityCase) -> dict[str, object]:
+def _build_bijux_case_payload(
+    case: PhytoolsParityCase,
+) -> tuple[dict[str, object], list[dict[str, object]] | None]:
     tree_path, traits_path = case.input_fixtures
     if case.operation == "phylogenetic-signal-lambda":
         report = estimate_pagels_lambda(
@@ -259,19 +342,22 @@ def _build_bijux_case_payload(case: PhytoolsParityCase) -> dict[str, object]:
             trait=case.trait_name,
             taxon_column=case.taxon_column,
         )
-        return {
-            "taxon_count": report.taxon_count,
-            "trait_name": report.trait,
-            "lambda_value": report.lambda_value,
-            "log_likelihood": report.log_likelihood,
-            "null_log_likelihood": report.null_log_likelihood,
-            "brownian_log_likelihood": report.brownian_log_likelihood,
-            "tree_is_ultrametric": report.input_audit.tree_is_ultrametric,
-            "pruned_missing_value_taxa": list(
-                report.input_audit.pruned_missing_value_taxa
-            ),
-            "warning_count": len(report.input_audit.warnings),
-        }
+        return (
+            {
+                "taxon_count": report.taxon_count,
+                "trait_name": report.trait,
+                "lambda_value": report.lambda_value,
+                "log_likelihood": report.log_likelihood,
+                "null_log_likelihood": report.null_log_likelihood,
+                "brownian_log_likelihood": report.brownian_log_likelihood,
+                "tree_is_ultrametric": report.input_audit.tree_is_ultrametric,
+                "pruned_missing_value_taxa": list(
+                    report.input_audit.pruned_missing_value_taxa
+                ),
+                "warning_count": len(report.input_audit.warnings),
+            },
+            None,
+        )
     if case.operation == "phylogenetic-signal-k":
         signal_test = compute_phylogenetic_signal_test(
             tree_path,
@@ -287,32 +373,111 @@ def _build_bijux_case_payload(case: PhytoolsParityCase) -> dict[str, object]:
             trait=case.trait_name,
             taxon_column=case.taxon_column,
         )
-        return {
-            "taxon_count": report.taxon_count,
-            "trait_name": report.trait,
-            "k": report.k,
-            "p_value": signal_test.p_value,
-            "permutation_count": signal_test.permutations,
-            "permutation_seed": signal_test.seed,
-            "null_distribution_count": len(signal_test.permutation_rows),
-            "simulated_k_minimum": signal_test.null_distribution_minimum,
-            "simulated_k_mean": signal_test.null_distribution_mean,
-            "simulated_k_maximum": signal_test.null_distribution_maximum,
-            "generalized_mean": report.generalized_mean,
-            "observed_mean_square": report.observed_mean_square,
-            "phylogenetic_mean_square": report.phylogenetic_mean_square,
-            "expected_mean_square_ratio": report.expected_mean_square_ratio,
-            "tree_is_ultrametric": report.input_audit.tree_is_ultrametric,
-            "pruned_missing_value_taxa": list(
-                report.input_audit.pruned_missing_value_taxa
-            ),
-            "warning_count": len(report.input_audit.warnings),
-        }
+        return (
+            {
+                "taxon_count": report.taxon_count,
+                "trait_name": report.trait,
+                "k": report.k,
+                "p_value": signal_test.p_value,
+                "permutation_count": signal_test.permutations,
+                "permutation_seed": signal_test.seed,
+                "null_distribution_count": len(signal_test.permutation_rows),
+                "simulated_k_minimum": signal_test.null_distribution_minimum,
+                "simulated_k_mean": signal_test.null_distribution_mean,
+                "simulated_k_maximum": signal_test.null_distribution_maximum,
+                "generalized_mean": report.generalized_mean,
+                "observed_mean_square": report.observed_mean_square,
+                "phylogenetic_mean_square": report.phylogenetic_mean_square,
+                "expected_mean_square_ratio": report.expected_mean_square_ratio,
+                "tree_is_ultrametric": report.input_audit.tree_is_ultrametric,
+                "pruned_missing_value_taxa": list(
+                    report.input_audit.pruned_missing_value_taxa
+                ),
+                "warning_count": len(report.input_audit.warnings),
+            },
+            None,
+        )
+    if case.operation == "continuous-ancestral-fast-anc":
+        report = reconstruct_continuous_ancestral_states(
+            tree_path,
+            traits_path,
+            trait=case.trait_name,
+            taxon_column=case.taxon_column,
+            model="brownian",
+            estimator="fast-anc",
+        )
+        rows = sorted(
+            [
+                {
+                    "node": estimate.node,
+                    "estimate": estimate.estimate,
+                    "standard_error": estimate.standard_error,
+                    "lower_95_interval": estimate.lower_95_interval,
+                    "upper_95_interval": estimate.upper_95_interval,
+                }
+                for estimate in report.estimates
+                if not estimate.is_tip
+            ],
+            key=lambda row: str(row["node"]),
+        )
+        return (
+            {
+                "taxon_count": report.taxon_count,
+                "trait_name": report.trait,
+                "internal_node_count": len(rows),
+                "excluded_taxon_count": len(report.dropped_missing_taxa)
+                + len(report.dropped_non_numeric_taxa),
+                "excluded_taxa": sorted(
+                    report.dropped_missing_taxa + report.dropped_non_numeric_taxa
+                ),
+                "tree_is_ultrametric": (
+                    None
+                    if report.brownian_fit_diagnostics is None
+                    else report.brownian_fit_diagnostics.tree_is_ultrametric
+                ),
+                "covariance_condition_number": (
+                    None
+                    if report.brownian_fit_diagnostics is None
+                    else report.brownian_fit_diagnostics.covariance_condition_number
+                ),
+                "log_likelihood": (
+                    None
+                    if report.brownian_fit_diagnostics is None
+                    else report.brownian_fit_diagnostics.log_likelihood
+                ),
+                "warning_count": len(report.warnings),
+            },
+            rows,
+        )
     raise ValueError(f"unsupported phytools parity operation: {case.operation}")
 
 
 def _load_json(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _load_rows_table(path: Path) -> list[dict[str, object]]:
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter="\t")
+        rows: list[dict[str, object]] = []
+        for row in reader:
+            parsed: dict[str, object] = {}
+            for key, value in row.items():
+                if value is None or value == "":
+                    parsed[key] = ""
+                    continue
+                try:
+                    parsed[key] = int(value)
+                    continue
+                except ValueError:
+                    pass
+                try:
+                    parsed[key] = float(value)
+                    continue
+                except ValueError:
+                    parsed[key] = value
+            rows.append(parsed)
+        return rows
 
 
 def _isclose(left: object, right: object, *, tolerance: float) -> bool:
@@ -331,6 +496,12 @@ def _isclose(left: object, right: object, *, tolerance: float) -> bool:
 def _field_tolerance(case: PhytoolsParityCase, key: str) -> float:
     if case.field_tolerances and key in case.field_tolerances:
         return case.field_tolerances[key]
+    return case.tolerance
+
+
+def _row_field_tolerance(case: PhytoolsParityCase, key: str) -> float:
+    if case.row_field_tolerances and key in case.row_field_tolerances:
+        return case.row_field_tolerances[key]
     return case.tolerance
 
 
@@ -355,6 +526,15 @@ def _mismatch_reason(
             "simulated_k_minimum",
             "simulated_k_mean",
         )
+    elif case.operation == "continuous-ancestral-fast-anc":
+        compare_keys = (
+            "taxon_count",
+            "trait_name",
+            "internal_node_count",
+            "excluded_taxon_count",
+            "excluded_taxa",
+            "tree_is_ultrametric",
+        )
     else:
         return "unsupported_operation"
     for key in compare_keys:
@@ -369,6 +549,34 @@ def _mismatch_reason(
     return None
 
 
+def _row_mismatch_reason(
+    case: PhytoolsParityCase,
+    *,
+    reference_rows: list[dict[str, object]] | None,
+    bijux_rows: list[dict[str, object]] | None,
+) -> str | None:
+    if case.operation != "continuous-ancestral-fast-anc":
+        return None
+    if reference_rows is None or bijux_rows is None:
+        return "rows_missing"
+    reference_rows = sorted(reference_rows, key=lambda row: str(row.get("node", "")))
+    bijux_rows = sorted(bijux_rows, key=lambda row: str(row.get("node", "")))
+    if len(reference_rows) != len(bijux_rows):
+        return "row_count_mismatch"
+    compare_keys = ("node", "estimate", "standard_error")
+    for reference_row, bijux_row in zip(reference_rows, bijux_rows, strict=True):
+        for key in compare_keys:
+            if key not in reference_row or key not in bijux_row:
+                return f"row_field_missing:{key}"
+            if not _isclose(
+                reference_row[key],
+                bijux_row[key],
+                tolerance=_row_field_tolerance(case, key),
+            ):
+                return f"row_mismatch:{key}"
+    return None
+
+
 def _persist_failure_bundle(
     *,
     failure_root: Path,
@@ -378,6 +586,8 @@ def _persist_failure_bundle(
     execution_payload: dict[str, object] | None,
     reference_summary: dict[str, object] | None,
     bijux_summary: dict[str, object] | None,
+    reference_rows: list[dict[str, object]] | None,
+    bijux_rows: list[dict[str, object]] | None,
     reference_error: dict[str, object] | None,
     bijux_error: dict[str, object] | None,
     mismatch_reason: str,
@@ -412,6 +622,16 @@ def _persist_failure_bundle(
     if bijux_summary is not None:
         (artifact_root / "bijux-summary.json").write_text(
             json.dumps(bijux_summary, indent=2),
+            encoding="utf-8",
+        )
+    if reference_rows is not None:
+        (artifact_root / "reference-rows.json").write_text(
+            json.dumps(reference_rows, indent=2),
+            encoding="utf-8",
+        )
+    if bijux_rows is not None:
+        (artifact_root / "bijux-rows.json").write_text(
+            json.dumps(bijux_rows, indent=2),
             encoding="utf-8",
         )
     if reference_error is not None:
@@ -481,9 +701,10 @@ def run_phytools_parity_cases(
             execution_root = working_root / "reference"
             execution_root.mkdir(parents=True, exist_ok=True)
             bijux_summary: dict[str, object] | None = None
+            bijux_rows: list[dict[str, object]] | None = None
             bijux_error: dict[str, object] | None = None
             try:
-                bijux_summary = _build_bijux_case_payload(case)
+                bijux_summary, bijux_rows = _build_bijux_case_payload(case)
             except Exception as error:
                 bijux_error = {
                     "error_type": type(error).__name__,
@@ -491,6 +712,7 @@ def run_phytools_parity_cases(
                 }
             execution_payload: dict[str, object] | None = None
             reference_summary: dict[str, object] | None = None
+            reference_rows: list[dict[str, object]] | None = None
             reference_error: dict[str, object] | None = None
             status = "failed"
             mismatch_reason: str | None = None
@@ -565,6 +787,17 @@ def run_phytools_parity_cases(
                             reference_summary=reference_summary,
                             bijux_summary=bijux_summary,
                         )
+                        if mismatch_reason is None and case.operation == "continuous-ancestral-fast-anc":
+                            rows_path = execution_root / "fast-anc-node-estimates.tsv"
+                            if not rows_path.exists():
+                                mismatch_reason = "reference_rows_missing"
+                            else:
+                                reference_rows = _load_rows_table(rows_path)
+                                mismatch_reason = _row_mismatch_reason(
+                                    case,
+                                    reference_rows=reference_rows,
+                                    bijux_rows=bijux_rows,
+                                )
                         if mismatch_reason is None:
                             status = "passed"
             elif process is not None and process.returncode != 0:
@@ -578,6 +811,8 @@ def run_phytools_parity_cases(
                     execution_payload=execution_payload,
                     reference_summary=reference_summary,
                     bijux_summary=bijux_summary,
+                    reference_rows=reference_rows,
+                    bijux_rows=bijux_rows,
                     reference_error=reference_error,
                     bijux_error=bijux_error,
                     mismatch_reason=mismatch_reason or "reference_execution_failed",
@@ -610,6 +845,8 @@ def run_phytools_parity_cases(
                     reproducible_artifact_root=artifact_root,
                     reference_summary=reference_summary,
                     bijux_summary=bijux_summary,
+                    reference_rows=reference_rows,
+                    bijux_rows=bijux_rows,
                     reference_error=reference_error,
                     bijux_error=bijux_error,
                 )
