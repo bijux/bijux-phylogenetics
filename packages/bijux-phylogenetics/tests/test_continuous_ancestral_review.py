@@ -55,6 +55,11 @@ def test_summarize_continuous_ancestral_report_tracks_root_and_exclusions() -> N
     assert summary.root_node == "A|B|C"
     assert summary.root_lower_95_interval < summary.root_estimate
     assert summary.root_upper_95_interval > summary.root_estimate
+    assert summary.tree_is_ultrametric is True
+    assert summary.covariance_near_singular is False
+    assert summary.covariance_condition_number is not None
+    assert summary.log_likelihood is not None
+    assert summary.residual_sigma_squared is not None
 
 
 def test_write_continuous_ancestral_review_tables(tmp_path: Path) -> None:
@@ -76,6 +81,8 @@ def test_write_continuous_ancestral_review_tables(tmp_path: Path) -> None:
     exclusion_rows = exclusion_path.read_text(encoding="utf-8").splitlines()
     assert summary_rows[0].startswith("trait\ttaxon_column\tmodel\talpha")
     assert len(summary_rows) == 2
+    assert "log_likelihood" in summary_rows[0]
+    assert "covariance_condition_number" in summary_rows[0]
     assert uncertainty_rows[0].startswith(
         "node\tnode_name\tdescendant_taxa\testimate\tstandard_error"
     )
@@ -228,6 +235,8 @@ def test_reconstruct_continuous_ancestral_states_tracks_live_ape_ace_when_availa
         for estimate in report.estimates
         if not estimate.is_tip
     }
+    assert report.brownian_fit_diagnostics is not None
+    assert math.isfinite(report.brownian_fit_diagnostics.log_likelihood)
     assert observed_rows.keys() == expected_rows.keys()
     for node, expected_estimate in expected_rows.items():
         assert math.isclose(
@@ -316,6 +325,8 @@ def test_reconstruct_continuous_ancestral_states_tracks_live_ape_ace_on_shared_f
         for estimate in report.estimates
         if not estimate.is_tip
     }
+    assert report.brownian_fit_diagnostics is not None
+    assert report.brownian_fit_diagnostics.tree_is_ultrametric is True
     assert observed_rows.keys() == expected_rows.keys()
     for node, expected_estimate in expected_rows.items():
         assert math.isclose(

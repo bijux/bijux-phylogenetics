@@ -52,6 +52,14 @@ def test_ancestral_continuous_cli_can_export_table(tmp_path: Path, capsys) -> No
     assert payload["metrics"]["internal_node_count"] == 3
     assert payload["metrics"]["excluded_taxon_count"] == 0
     assert payload["metrics"]["unstable_node_count"] >= 0
+    assert payload["metrics"]["tree_is_ultrametric"] is True
+    assert payload["metrics"]["covariance_near_singular"] is False
+    assert payload["metrics"]["covariance_condition_number"] > 0.0
+    assert payload["metrics"]["log_likelihood"] is not None
+    assert payload["metrics"]["residual_sigma_squared"] > 0.0
+    assert payload["data"]["brownian_fit_diagnostics"]["covariance_model"] == (
+        "brownian-shared-path"
+    )
     assert "estimate\tstandard_error" in table_path.read_text(encoding="utf-8")
     assert summary_path.read_text(encoding="utf-8").startswith(
         "trait\ttaxon_column\tmodel\talpha"

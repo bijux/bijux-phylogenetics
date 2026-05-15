@@ -70,6 +70,16 @@ def test_continuous_reconstruction_reports_internal_estimates_and_intervals() ->
         internal_estimates["A|B|C|D"].upper_95_interval
         > internal_estimates["A|B|C|D"].estimate
     )
+    assert report.brownian_fit_diagnostics is not None
+    assert report.brownian_fit_diagnostics.covariance_model == "brownian-shared-path"
+    assert report.brownian_fit_diagnostics.tree_is_ultrametric is True
+    assert report.brownian_fit_diagnostics.covariance_matrix_dimension == 4
+    assert report.brownian_fit_diagnostics.covariance_matrix_rank == 4
+    assert report.brownian_fit_diagnostics.covariance_singular is False
+    assert report.brownian_fit_diagnostics.covariance_positive_definite is True
+    assert report.brownian_fit_diagnostics.covariance_condition_number > 0.0
+    assert math.isfinite(report.brownian_fit_diagnostics.log_likelihood)
+    assert report.brownian_fit_diagnostics.residual_sigma_squared > 0.0
     assert internal_estimates["A|B|C|D"].interpretation in {
         "moderate uncertainty",
         "narrow uncertainty",
@@ -91,6 +101,7 @@ def test_continuous_reconstruction_supports_ou_model() -> None:
     root = next(estimate for estimate in report.estimates if estimate.node == "A|B|C|D")
     assert report.model == "ou"
     assert report.alpha == 1.5
+    assert report.brownian_fit_diagnostics is None
     assert 2.5 < root.estimate < 3.1
 
 
