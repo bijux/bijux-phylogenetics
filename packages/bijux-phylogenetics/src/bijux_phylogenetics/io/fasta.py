@@ -1006,11 +1006,12 @@ def _ape_nucleotide_state_counts(sequence: str) -> dict[str, int]:
     return counts
 
 
-def compute_alignment_base_frequency_report(path: Path) -> AlignmentBaseFrequencyReport:
-    """Compute ape-style nucleotide state frequencies for one DNA or RNA alignment."""
-    matrix = load_dna_bin_alignment(path, normalize_uracil=True)
-    records = _records_from_dnabin_alignment(matrix, uppercase=False)
-    alphabet = matrix.source_alphabet
+def compute_alignment_base_frequency_report_from_dna_bin_alignment(
+    alignment: DnaBinAlignment,
+) -> AlignmentBaseFrequencyReport:
+    """Compute ape-style nucleotide state frequencies from one DNAbin-compatible matrix."""
+    records = _records_from_dnabin_alignment(alignment, uppercase=False)
+    alphabet = alignment.source_alphabet
 
     alignment_counts = {state: 0 for state in _APE_DNA_STATE_ORDER}
     per_sequence_rows: list[NucleotideStateFrequencyRow] = []
@@ -1057,10 +1058,10 @@ def compute_alignment_base_frequency_report(path: Path) -> AlignmentBaseFrequenc
             "alignment contains no canonical A/C/G/T residues, so ape-style base frequencies reflect only ambiguity, gap, and missing states"
         )
     return AlignmentBaseFrequencyReport(
-        path=path,
+        path=alignment.path,
         inferred_alphabet=alphabet,
-        sequence_count=matrix.sequence_count,
-        alignment_length=matrix.alignment_length,
+        sequence_count=alignment.sequence_count,
+        alignment_length=alignment.alignment_length,
         ambiguity_policy="count ambiguity codes as literal states",
         gap_policy="count gap characters as literal states",
         missing_data_policy="count explicit missing characters as literal states",
@@ -1070,6 +1071,12 @@ def compute_alignment_base_frequency_report(path: Path) -> AlignmentBaseFrequenc
         composition_outliers=_detect_composition_outlier_sequences_records(records),
         warnings=warnings,
     )
+
+
+def compute_alignment_base_frequency_report(path: Path) -> AlignmentBaseFrequencyReport:
+    """Compute ape-style nucleotide state frequencies for one DNA or RNA alignment."""
+    matrix = load_dna_bin_alignment(path, normalize_uracil=True)
+    return compute_alignment_base_frequency_report_from_dna_bin_alignment(matrix)
 
 
 def write_alignment_base_frequency_table(
@@ -1172,14 +1179,10 @@ def _is_ape_segregating_column(column: list[str]) -> bool:
     return False
 
 
-def compute_alignment_segregating_site_report(
-    path: Path,
-) -> AlignmentSegregatingSiteReport:
-    """Compute ape-style segregating sites for one DNA or RNA alignment."""
-    matrix = load_dna_bin_alignment(path, normalize_uracil=True)
-    records = _records_from_dnabin_alignment(matrix, uppercase=False)
-    alphabet = matrix.source_alphabet
-
+def _ape_segregating_sequences_from_dna_bin_alignment(
+    alignment: DnaBinAlignment,
+) -> tuple[list[str], list[str]]:
+    records = _records_from_dnabin_alignment(alignment, uppercase=False)
     original_sequences = [
         "".join(
             _normalize_ape_segregating_state(residue) or ""
@@ -1190,6 +1193,17 @@ def compute_alignment_segregating_site_report(
     effective_sequences = [
         _leading_trailing_gaps_to_n(sequence) for sequence in original_sequences
     ]
+    return original_sequences, effective_sequences
+
+
+def compute_alignment_segregating_site_report_from_dna_bin_alignment(
+    alignment: DnaBinAlignment,
+) -> AlignmentSegregatingSiteReport:
+    """Compute ape-style segregating sites from one DNAbin-compatible matrix."""
+    alphabet = alignment.source_alphabet
+    original_sequences, effective_sequences = (
+        _ape_segregating_sequences_from_dna_bin_alignment(alignment)
+    )
 
     segregating_site_positions: list[int] = []
     rows: list[SegregatingSiteRow] = []
@@ -1239,10 +1253,10 @@ def compute_alignment_segregating_site_report(
         )
 
     return AlignmentSegregatingSiteReport(
-        path=path,
+        path=alignment.path,
         inferred_alphabet=alphabet,
-        sequence_count=matrix.sequence_count,
-        alignment_length=matrix.alignment_length,
+        sequence_count=alignment.sequence_count,
+        alignment_length=alignment.alignment_length,
         ambiguity_policy="ambiguity states segregate only when they are surely incompatible with another observed state",
         gap_policy="internal gap characters can create segregating sites against known or incompatible ambiguous states",
         missing_data_policy="explicit missing characters do not create segregating sites",
@@ -1251,6 +1265,14 @@ def compute_alignment_segregating_site_report(
         rows=rows,
         warnings=warnings,
     )
+
+
+def compute_alignment_segregating_site_report(
+    path: Path,
+) -> AlignmentSegregatingSiteReport:
+    """Compute ape-style segregating sites for one DNA or RNA alignment."""
+    matrix = load_dna_bin_alignment(path, normalize_uracil=True)
+    return compute_alignment_segregating_site_report_from_dna_bin_alignment(matrix)
 
 
 def write_alignment_segregating_site_table(
