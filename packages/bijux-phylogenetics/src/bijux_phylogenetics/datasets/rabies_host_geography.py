@@ -9,11 +9,30 @@ from pathlib import Path
 import shutil
 from tempfile import TemporaryDirectory
 
+from Bio import Phylo
+
+from bijux_phylogenetics.ancestral.discrete import (
+    DiscreteAncestralReport,
+    reconstruct_discrete_ancestral_states,
+)
+from bijux_phylogenetics.ancestral.tree_set import (
+    DiscreteAncestralTreeSetReport,
+    summarize_discrete_ancestral_tree_set,
+)
 from bijux_phylogenetics.biogeography import (
     BiogeographyReportPackageResult,
     build_biogeography_report_package,
 )
 from bijux_phylogenetics.clades import CladeTableReport, CladeTableRow, extract_tree_clades, write_clade_table
+from bijux_phylogenetics.comparative.posterior_tree_pgls import (
+    PosteriorTreePGLSReport,
+    run_posterior_tree_pgls,
+)
+from bijux_phylogenetics.comparative.pgls import (
+    PGLSResult,
+    run_pgls,
+    write_pgls_model_matrix_table,
+)
 from bijux_phylogenetics.comparative.pgls_categorical_contrasts import (
     PGLSCategoricalContrastReport,
     summarize_pgls_categorical_contrasts,
@@ -22,7 +41,6 @@ from bijux_phylogenetics.comparative.pgls_categorical_contrasts import (
 from bijux_phylogenetics.comparative.pgls_lambda_fit import (
     write_pgls_lambda_profile_table,
 )
-from bijux_phylogenetics.comparative.pgls import write_pgls_model_matrix_table
 from bijux_phylogenetics.comparative.report_package import (
     ComparativeAnalysisSummaryRow,
     ComparativeAuditTableRow,
@@ -64,7 +82,26 @@ from bijux_phylogenetics.core.topology import (
     root_tree_on_outgroup,
     write_tree_rooting_report,
 )
-from bijux_phylogenetics.core.tree import TreeNode
+from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
+    RabiesMethodSensitivityPanelWorkflowReport,
+    run_rabies_method_sensitivity_panel_workflow,
+)
+from bijux_phylogenetics.diagnostics.conclusion_stability import (
+    ComparativeCoefficientStabilityRow,
+    ConclusionStabilityReport,
+    build_ancestral_state_stability_rows,
+    build_comparative_coefficient_stability_rows,
+    build_conclusion_stability_report,
+    build_key_clade_stability_rows,
+    build_support_value_stability_rows,
+    write_ancestral_state_stability_table,
+    write_comparative_coefficient_stability_table,
+    write_conclusion_stability_report_html,
+    write_conclusion_stability_summary_table,
+    write_key_clade_stability_table,
+    write_support_value_stability_table,
+)
 from bijux_phylogenetics.engines.fasta_to_tree import (
     FastaToTreeWorkflowReport,
     run_fasta_to_tree_workflow,
@@ -86,10 +123,13 @@ from bijux_phylogenetics.io.fasta import (
     load_permissive_fasta_records,
     validate_fasta_input,
 )
+from bijux_phylogenetics.io.biopython import tree_from_biophylo, tree_to_biophylo
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.simulation import write_tree_set
 from bijux_phylogenetics.tree_set import (
     BootstrapTreeSetArtifactReport,
+    compute_clade_frequency_table,
     write_bootstrap_tree_set_artifacts,
 )
 
@@ -274,6 +314,15 @@ class RabiesCrossHostGeographyPanelWorkflowReport:
     comparative_branch_repairs: list[RabiesComparativeBranchRepair]
     comparative_report: ComparativeMethodReport
     comparative_categorical_contrasts: PGLSCategoricalContrastReport
+    method_sensitivity_report: RabiesMethodSensitivityPanelWorkflowReport
+    rooted_bootstrap_tree_set_path: Path
+    comparative_bootstrap_tree_set_path: Path
+    host_ancestral_report: DiscreteAncestralReport
+    host_ancestral_tree_set_report: DiscreteAncestralTreeSetReport
+    geography_ancestral_report: DiscreteAncestralReport
+    geography_ancestral_tree_set_report: DiscreteAncestralTreeSetReport
+    comparative_posterior_tree_report: PosteriorTreePGLSReport
+    conclusion_stability_report: ConclusionStabilityReport
 
 
 @dataclass(slots=True)
@@ -316,6 +365,9 @@ class RabiesCrossHostGeographyPanelWorkflowBundle:
     comparative_pgls_lambda: float
     comparative_pgls_r_squared: float
     comparative_branch_repair_count: int
+    conclusion_stable_count: int
+    conclusion_weak_count: int
+    conclusion_unstable_count: int
     timeout_seconds: float | None
     max_bootstrap_tree_count: int | None
     max_report_table_rows: int | None
@@ -382,6 +434,13 @@ class RabiesCrossHostGeographyPanelWorkflowBundle:
     comparative_categorical_contrasts_path: Path
     comparative_lambda_profile_path: Path
     comparative_manifest_path: Path
+    conclusion_stability_output_root: Path
+    conclusion_stability_summary_path: Path
+    key_clade_stability_path: Path
+    support_value_stability_path: Path
+    ancestral_state_stability_path: Path
+    comparative_coefficient_stability_path: Path
+    conclusion_stability_report_path: Path
     scientific_findings_path: Path
     final_report_path: Path
     final_manifest_path: Path
@@ -552,6 +611,7 @@ def run_rabies_cross_host_geography_panel_workflow(
     mafft_executable: str | Path = "mafft",
     trimal_executable: str | Path = "trimal",
     iqtree_executable: str | Path = "iqtree2",
+    fasttree_executable: str | Path = "FastTree",
     iqtree_seed: int | None = None,
     iqtree_threads: int | None = None,
     bootstrap_replicates: int | None = None,
@@ -646,6 +706,88 @@ def run_rabies_cross_host_geography_panel_workflow(
         taxon_column="taxon",
         lambda_value="estimate",
     )
+    method_sensitivity_report = run_rabies_method_sensitivity_panel_workflow(
+        out_dir / "method-sensitivity-review",
+        mafft_executable=mafft_executable,
+        trimal_executable=trimal_executable,
+        iqtree_executable=iqtree_executable,
+        fasttree_executable=fasttree_executable,
+        iqtree_seed=config.iqtree_seed if iqtree_seed is None else iqtree_seed,
+        iqtree_threads=(
+            config.iqtree_threads if iqtree_threads is None else iqtree_threads
+        ),
+        bootstrap_replicates=(
+            config.bootstrap_replicates
+            if bootstrap_replicates is None
+            else bootstrap_replicates
+        ),
+    )
+    rooted_bootstrap_tree_set_path = _write_rooted_tree_set_on_outgroup(
+        workflow.bootstrap_workflow.output_paths["bootstrap_trees"],
+        out_path=out_dir / f"{dataset.workflow_prefix}.rooted-bootstrap.trees",
+        outgroup_taxa=list(dataset.outgroup_taxa),
+    )
+    comparative_bootstrap_tree_set_path = _write_comparative_tree_set(
+        rooted_bootstrap_tree_set_path,
+        out_path=out_dir / f"{dataset.workflow_prefix}.comparative-bootstrap.trees",
+        reference_tree_path=comparative_tree_path,
+        branch_length_floor=config.comparative_branch_length_floor,
+    )
+    host_ancestral_report = reconstruct_discrete_ancestral_states(
+        rooted_tree_path,
+        dataset.metadata_path,
+        trait=dataset.host_trait,
+        taxon_column="taxon",
+        model=dataset.host_model,
+    )
+    host_ancestral_tree_set_report = summarize_discrete_ancestral_tree_set(
+        rooted_bootstrap_tree_set_path,
+        dataset.metadata_path,
+        trait=dataset.host_trait,
+        taxon_column="taxon",
+        model=_canonicalize_discrete_tree_set_model(dataset.host_model),
+    )
+    geography_ancestral_report = reconstruct_discrete_ancestral_states(
+        rooted_tree_path,
+        dataset.metadata_path,
+        trait=dataset.geography_trait,
+        taxon_column="taxon",
+        model=dataset.geography_model,
+    )
+    geography_ancestral_tree_set_report = summarize_discrete_ancestral_tree_set(
+        rooted_bootstrap_tree_set_path,
+        dataset.metadata_path,
+        trait=dataset.geography_trait,
+        taxon_column="taxon",
+        model=_canonicalize_discrete_tree_set_model(dataset.geography_model),
+    )
+    comparative_posterior_tree_report = run_posterior_tree_pgls(
+        comparative_bootstrap_tree_set_path,
+        comparative_traits_path,
+        formula=config.comparative_formula,
+        taxon_column="taxon",
+        lambda_value="estimate",
+    )
+    conclusion_stability_report = _build_conclusion_stability_report(
+        rooted_tree_path=rooted_tree_path,
+        rooted_bootstrap_tree_set_path=rooted_bootstrap_tree_set_path,
+        comparative_traits_path=comparative_traits_path,
+        comparative_tree_path=comparative_tree_path,
+        comparative_report=comparative_report,
+        comparative_posterior_tree_report=comparative_posterior_tree_report,
+        method_sensitivity_report=method_sensitivity_report,
+        metadata_path=dataset.metadata_path,
+        host_trait=dataset.host_trait,
+        host_model=dataset.host_model,
+        geography_trait=dataset.geography_trait,
+        geography_model=dataset.geography_model,
+        comparative_formula=config.comparative_formula,
+        comparative_branch_length_floor=config.comparative_branch_length_floor,
+        host_ancestral_report=host_ancestral_report,
+        host_ancestral_tree_set_report=host_ancestral_tree_set_report,
+        geography_ancestral_report=geography_ancestral_report,
+        geography_ancestral_tree_set_report=geography_ancestral_tree_set_report,
+    )
     return RabiesCrossHostGeographyPanelWorkflowReport(
         dataset=dataset,
         config=config,
@@ -663,6 +805,15 @@ def run_rabies_cross_host_geography_panel_workflow(
         comparative_branch_repairs=comparative_branch_repairs,
         comparative_report=comparative_report,
         comparative_categorical_contrasts=comparative_categorical_contrasts,
+        method_sensitivity_report=method_sensitivity_report,
+        rooted_bootstrap_tree_set_path=rooted_bootstrap_tree_set_path,
+        comparative_bootstrap_tree_set_path=comparative_bootstrap_tree_set_path,
+        host_ancestral_report=host_ancestral_report,
+        host_ancestral_tree_set_report=host_ancestral_tree_set_report,
+        geography_ancestral_report=geography_ancestral_report,
+        geography_ancestral_tree_set_report=geography_ancestral_tree_set_report,
+        comparative_posterior_tree_report=comparative_posterior_tree_report,
+        conclusion_stability_report=conclusion_stability_report,
     )
 
 
@@ -929,6 +1080,35 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
             "lambda_profile_table": comparative_lambda_profile_path,
         },
     )
+    conclusion_stability_output_root = output_root / "conclusion-stability"
+    conclusion_stability_output_root.mkdir(parents=True, exist_ok=True)
+    conclusion_stability_summary_path = write_conclusion_stability_summary_table(
+        conclusion_stability_output_root / "conclusion-stability-summary.tsv",
+        report.conclusion_stability_report,
+    )
+    key_clade_stability_path = write_key_clade_stability_table(
+        conclusion_stability_output_root / "key-clade-stability.tsv",
+        report.conclusion_stability_report.key_clade_rows,
+    )
+    support_value_stability_path = write_support_value_stability_table(
+        conclusion_stability_output_root / "support-value-stability.tsv",
+        report.conclusion_stability_report.support_value_rows,
+    )
+    ancestral_state_stability_path = write_ancestral_state_stability_table(
+        conclusion_stability_output_root / "ancestral-state-stability.tsv",
+        report.conclusion_stability_report.ancestral_state_rows,
+    )
+    comparative_coefficient_stability_path = (
+        write_comparative_coefficient_stability_table(
+            conclusion_stability_output_root
+            / "comparative-coefficient-stability.tsv",
+            report.conclusion_stability_report.comparative_coefficient_rows,
+        )
+    )
+    conclusion_stability_report_path = write_conclusion_stability_report_html(
+        conclusion_stability_output_root / "conclusion-stability-report.html",
+        report.conclusion_stability_report,
+    )
     scientific_finding_rows = _build_scientific_finding_rows(
         report=report,
         bootstrap_tree_comparison_report=bootstrap_tree_comparison_report,
@@ -1027,6 +1207,14 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
             "comparative_categorical_contrasts": comparative_categorical_contrasts_path,
             "comparative_lambda_profile": comparative_lambda_profile_path,
             "comparative_manifest": comparative_manifest_path,
+            "conclusion_stability_summary": conclusion_stability_summary_path,
+            "key_clade_stability": key_clade_stability_path,
+            "support_value_stability": support_value_stability_path,
+            "ancestral_state_stability": ancestral_state_stability_path,
+            "comparative_coefficient_stability": (
+                comparative_coefficient_stability_path
+            ),
+            "conclusion_stability_report": conclusion_stability_report_path,
             "scientific_findings": scientific_findings_path,
             "final_report": final_report_path,
         },
@@ -1087,6 +1275,11 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         comparative_pgls_lambda=comparative_summary_row.pgls_lambda,
         comparative_pgls_r_squared=comparative_summary_row.pgls_r_squared,
         comparative_branch_repair_count=len(report.comparative_branch_repairs),
+        conclusion_stable_count=report.conclusion_stability_report.summary.stable_count,
+        conclusion_weak_count=report.conclusion_stability_report.summary.weak_count,
+        conclusion_unstable_count=(
+            report.conclusion_stability_report.summary.unstable_count
+        ),
         timeout_seconds=report.config.timeout_seconds,
         max_bootstrap_tree_count=report.config.max_bootstrap_tree_count,
         max_report_table_rows=report.config.max_report_table_rows,
@@ -1161,6 +1354,15 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         comparative_categorical_contrasts_path=comparative_categorical_contrasts_path,
         comparative_lambda_profile_path=comparative_lambda_profile_path,
         comparative_manifest_path=comparative_manifest_path,
+        conclusion_stability_output_root=conclusion_stability_output_root,
+        conclusion_stability_summary_path=conclusion_stability_summary_path,
+        key_clade_stability_path=key_clade_stability_path,
+        support_value_stability_path=support_value_stability_path,
+        ancestral_state_stability_path=ancestral_state_stability_path,
+        comparative_coefficient_stability_path=(
+            comparative_coefficient_stability_path
+        ),
+        conclusion_stability_report_path=conclusion_stability_report_path,
         scientific_findings_path=scientific_findings_path,
         final_report_path=final_report_path,
         final_manifest_path=final_manifest_path,
@@ -1174,6 +1376,7 @@ def run_rabies_cross_host_geography_panel_demo(
     mafft_executable: str | Path = "mafft",
     trimal_executable: str | Path = "trimal",
     iqtree_executable: str | Path = "iqtree2",
+    fasttree_executable: str | Path = "FastTree",
     iqtree_seed: int | None = None,
     iqtree_threads: int | None = None,
     bootstrap_replicates: int | None = None,
@@ -1194,6 +1397,7 @@ def run_rabies_cross_host_geography_panel_demo(
             mafft_executable=mafft_executable,
             trimal_executable=trimal_executable,
             iqtree_executable=iqtree_executable,
+            fasttree_executable=fasttree_executable,
             iqtree_seed=iqtree_seed,
             iqtree_threads=iqtree_threads,
             bootstrap_replicates=bootstrap_replicates,
@@ -1650,6 +1854,234 @@ def _write_comparative_tree(
     repairs = _apply_branch_length_floor(tree.root, floor=branch_length_floor)
     write_newick(out_path, tree)
     return out_path, repairs
+
+
+def _write_comparative_tree_set(
+    rooted_tree_set_path: Path,
+    *,
+    out_path: Path,
+    reference_tree_path: Path,
+    branch_length_floor: float,
+) -> Path:
+    reference_length_lookup = _build_branch_length_lookup(load_tree(reference_tree_path))
+    rooted_trees = _load_tree_set_trees(rooted_tree_set_path)
+    adjusted_trees = []
+    for tree in rooted_trees:
+        _overlay_branch_lengths_from_reference(
+            tree.root,
+            reference_length_lookup=reference_length_lookup,
+            floor=branch_length_floor,
+        )
+        _apply_branch_length_floor(tree.root, floor=branch_length_floor)
+        adjusted_trees.append(tree)
+    return write_tree_set(out_path, adjusted_trees)
+
+
+def _write_rooted_tree_set_on_outgroup(
+    tree_set_path: Path,
+    *,
+    out_path: Path,
+    outgroup_taxa: list[str],
+) -> Path:
+    rooted_trees = [
+        _root_tree_on_outgroup_from_tree(tree, outgroup_taxa=outgroup_taxa)
+        for tree in _load_tree_set_trees(tree_set_path)
+    ]
+    return write_tree_set(out_path, rooted_trees)
+
+
+def _load_tree_set_trees(path: Path) -> list[PhyloTree]:
+    source_format = "newick"
+    return [
+        tree_from_biophylo(tree, source_format=source_format)
+        for tree in Phylo.parse(path, source_format)
+    ]
+
+
+def _root_tree_on_outgroup_from_tree(
+    tree: PhyloTree, *, outgroup_taxa: list[str]
+) -> PhyloTree:
+    biophylo_tree = tree_to_biophylo(tree)
+    matched = [
+        next(biophylo_tree.find_clades(name=taxon), None) for taxon in outgroup_taxa
+    ]
+    if not any(clade is not None for clade in matched):
+        raise ValueError(
+            "none of the requested outgroup taxa were found while rooting a tree set"
+        )
+    biophylo_tree.root_with_outgroup(
+        *[clade for clade in matched if clade is not None]
+    )
+    return tree_from_biophylo(biophylo_tree, source_format="newick")
+
+
+def _build_branch_length_lookup(tree: PhyloTree) -> dict[str, float]:
+    lookup: dict[str, float] = {}
+    for node in tree.iter_nodes():
+        if node is tree.root or node.branch_length is None:
+            continue
+        lookup[_node_signature(node)] = node.branch_length
+    return lookup
+
+
+def _overlay_branch_lengths_from_reference(
+    node: TreeNode,
+    *,
+    reference_length_lookup: dict[str, float],
+    floor: float,
+) -> None:
+    for child in node.children:
+        signature = _node_signature(child)
+        child.branch_length = reference_length_lookup.get(signature, floor)
+        _overlay_branch_lengths_from_reference(
+            child,
+            reference_length_lookup=reference_length_lookup,
+            floor=floor,
+        )
+
+
+def _node_signature(node: TreeNode) -> str:
+    if node.is_leaf():
+        return node.name or "<unnamed>"
+    return "|".join(sorted(_descendant_taxa(node)))
+
+
+def _descendant_taxa(node: TreeNode) -> list[str]:
+    if node.is_leaf():
+        return [node.name] if node.name is not None else []
+    taxa: list[str] = []
+    for child in node.children:
+        taxa.extend(_descendant_taxa(child))
+    return taxa
+
+
+def _build_conclusion_stability_report(
+    *,
+    rooted_tree_path: Path,
+    rooted_bootstrap_tree_set_path: Path,
+    comparative_traits_path: Path,
+    comparative_tree_path: Path,
+    comparative_report: ComparativeMethodReport,
+    comparative_posterior_tree_report: PosteriorTreePGLSReport,
+    method_sensitivity_report: RabiesMethodSensitivityPanelWorkflowReport,
+    metadata_path: Path,
+    host_trait: str,
+    host_model: str,
+    geography_trait: str,
+    geography_model: str,
+    comparative_formula: str,
+    comparative_branch_length_floor: float,
+    host_ancestral_report: DiscreteAncestralReport,
+    host_ancestral_tree_set_report: DiscreteAncestralTreeSetReport,
+    geography_ancestral_report: DiscreteAncestralReport,
+    geography_ancestral_tree_set_report: DiscreteAncestralTreeSetReport,
+) -> ConclusionStabilityReport:
+    baseline_clades = extract_tree_clades(rooted_tree_path)
+    bootstrap_frequencies = compute_clade_frequency_table(rooted_bootstrap_tree_set_path)
+    method_tree_paths = [
+        variant.rooted_iqtree_path for variant in method_sensitivity_report.variant_runs
+    ] + [
+        variant.rooted_fasttree_path for variant in method_sensitivity_report.variant_runs
+    ]
+    method_clade_reports = [extract_tree_clades(path) for path in method_tree_paths]
+    key_clade_rows = build_key_clade_stability_rows(
+        baseline_clades=baseline_clades,
+        bootstrap_frequencies=bootstrap_frequencies,
+        method_clade_reports=method_clade_reports,
+    )
+    support_value_rows = build_support_value_stability_rows(
+        baseline_clades=baseline_clades,
+        bootstrap_frequencies=bootstrap_frequencies,
+        method_clade_reports=method_clade_reports,
+    )
+    host_method_reports = [
+        reconstruct_discrete_ancestral_states(
+            path,
+            metadata_path,
+            trait=host_trait,
+            taxon_column="taxon",
+            model=host_model,
+        )
+        for path in method_tree_paths
+    ]
+    geography_method_reports = [
+        reconstruct_discrete_ancestral_states(
+            path,
+            metadata_path,
+            trait=geography_trait,
+            taxon_column="taxon",
+            model=geography_model,
+        )
+        for path in method_tree_paths
+    ]
+    ancestral_state_rows = (
+        build_ancestral_state_stability_rows(
+            baseline_report=host_ancestral_report,
+            bootstrap_report=host_ancestral_tree_set_report,
+            method_reports=host_method_reports,
+        )
+        + build_ancestral_state_stability_rows(
+            baseline_report=geography_ancestral_report,
+            bootstrap_report=geography_ancestral_tree_set_report,
+            method_reports=geography_method_reports,
+        )
+    )
+    comparative_method_results = [
+        _run_comparative_pgls_on_tree(
+            tree_path=path,
+            comparative_traits_path=comparative_traits_path,
+            formula=comparative_formula,
+            branch_length_floor=comparative_branch_length_floor,
+        )
+        for path in method_tree_paths
+    ]
+    comparative_coefficient_rows = build_comparative_coefficient_stability_rows(
+        baseline_result=comparative_report.snapshot.pgls_model,
+        bootstrap_report=comparative_posterior_tree_report,
+        method_results=comparative_method_results,
+    )
+    return build_conclusion_stability_report(
+        key_clade_rows=key_clade_rows,
+        support_value_rows=support_value_rows,
+        ancestral_state_rows=ancestral_state_rows,
+        comparative_coefficient_rows=comparative_coefficient_rows,
+    )
+
+
+def _canonicalize_discrete_tree_set_model(model: str) -> str:
+    normalized = model.strip().lower()
+    alias_map = {
+        "er": "equal-rates",
+        "equal-rates": "equal-rates",
+        "sym": "symmetric",
+        "symmetric": "symmetric",
+        "ard": "all-rates-different",
+        "all-rates-different": "all-rates-different",
+        "fitch": "fitch",
+    }
+    return alias_map.get(normalized, model)
+
+
+def _run_comparative_pgls_on_tree(
+    *,
+    tree_path: Path,
+    comparative_traits_path: Path,
+    formula: str,
+    branch_length_floor: float,
+) -> PGLSResult:
+    with TemporaryDirectory(prefix="bijux-rabies-comparative-tree-") as temporary_root:
+        adjusted_tree_path, _repairs = _write_comparative_tree(
+            tree_path,
+            out_path=Path(temporary_root) / "comparative-tree.nwk",
+            branch_length_floor=branch_length_floor,
+        )
+        return run_pgls(
+            adjusted_tree_path,
+            comparative_traits_path,
+            formula=formula,
+            taxon_column="taxon",
+            lambda_value="estimate",
+        )
 
 
 def _apply_branch_length_floor(
@@ -2239,6 +2671,15 @@ def _write_workflow_summary_table(
         "comparative_branch_repair_count": str(
             len(report.comparative_branch_repairs)
         ),
+        "conclusion_stable_count": str(
+            report.conclusion_stability_report.summary.stable_count
+        ),
+        "conclusion_weak_count": str(
+            report.conclusion_stability_report.summary.weak_count
+        ),
+        "conclusion_unstable_count": str(
+            report.conclusion_stability_report.summary.unstable_count
+        ),
         "timeout_seconds": _format_number(report.config.timeout_seconds),
         "max_bootstrap_tree_count": (
             ""
@@ -2324,6 +2765,10 @@ def _write_overview(
             f"`bootstrap-review/{workflow_bundle.bootstrap_tree_comparison_summary_path.name}`"
         ),
         f"- comparative report: `comparative/{workflow_bundle.comparative_report_path.name}`",
+        (
+            "- conclusion stability report: "
+            f"`conclusion-stability/{workflow_bundle.conclusion_stability_report_path.name}`"
+        ),
         f"- final report: `{workflow_bundle.final_report_path.name}`",
         "- package overview html: `rabies-cross-host-geography-overview.html`",
         "- package manifest: `rabies-cross-host-geography-package.manifest.json`",
@@ -2410,6 +2855,7 @@ def _write_demo_overview_html(
                     f'<a href="workflow/{workflow_bundle.workflow_summary_path.name}">workflow/{workflow_bundle.workflow_summary_path.name}</a>',
                     f'<a href="workflow/bootstrap-review/{workflow_bundle.bootstrap_tree_comparison_summary_path.name}">workflow/bootstrap-review/{workflow_bundle.bootstrap_tree_comparison_summary_path.name}</a>',
                     f'<a href="workflow/comparative/{workflow_bundle.comparative_report_path.name}">workflow/comparative/{workflow_bundle.comparative_report_path.name}</a>',
+                    f'<a href="workflow/conclusion-stability/{workflow_bundle.conclusion_stability_report_path.name}">workflow/conclusion-stability/{workflow_bundle.conclusion_stability_report_path.name}</a>',
                     f'<a href="workflow/{workflow_bundle.scientific_findings_path.name}">workflow/{workflow_bundle.scientific_findings_path.name}</a>',
                     f'<a href="dataset/{dataset_export.workflow_config_path.name}">dataset/{dataset_export.workflow_config_path.name}</a>',
                 ]
@@ -2512,6 +2958,9 @@ def _write_demo_package_manifest(
             "comparative_selected_model": workflow_bundle.comparative_selected_model,
             "comparative_pgls_lambda": workflow_bundle.comparative_pgls_lambda,
             "comparative_pgls_r_squared": workflow_bundle.comparative_pgls_r_squared,
+            "conclusion_stable_count": workflow_bundle.conclusion_stable_count,
+            "conclusion_weak_count": workflow_bundle.conclusion_weak_count,
+            "conclusion_unstable_count": workflow_bundle.conclusion_unstable_count,
             "scientific_finding_count": workflow_bundle.scientific_finding_count,
         },
     }
@@ -2763,6 +3212,15 @@ def _write_manifest(
             "comparative_selected_model": comparative_summary_row.selected_model,
             "comparative_pgls_lambda": comparative_summary_row.pgls_lambda,
             "comparative_pgls_r_squared": comparative_summary_row.pgls_r_squared,
+            "conclusion_stable_count": (
+                report.conclusion_stability_report.summary.stable_count
+            ),
+            "conclusion_weak_count": (
+                report.conclusion_stability_report.summary.weak_count
+            ),
+            "conclusion_unstable_count": (
+                report.conclusion_stability_report.summary.unstable_count
+            ),
             "config_check_count": len(report.config_audit_rows),
             "scientific_finding_count": scientific_finding_count,
         },
