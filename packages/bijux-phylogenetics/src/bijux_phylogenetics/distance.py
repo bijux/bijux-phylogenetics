@@ -19,7 +19,7 @@ from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
     compare_tree_paths,
 )
-from bijux_phylogenetics.core.alignment import AlignmentRecord
+from bijux_phylogenetics.core.alignment import AlignmentRecord, DnaBinAlignment
 from bijux_phylogenetics.core.clade_sets import (
     informative_rooted_clades,
     informative_unrooted_splits,
@@ -1253,6 +1253,109 @@ def _load_alignment_for_model(
     return records, alphabet
 
 
+def compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(
+    alignment: DnaBinAlignment,
+    *,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+) -> GeneticDistanceMatrix:
+    """Compute a deterministic nucleotide distance matrix from one DNAbin-compatible alignment."""
+    model = _normalize_distance_model(model)
+    if model not in _allowed_models_for_alphabet(alignment.source_alphabet):
+        raise InvalidAlignmentError(
+            f"distance model '{model}' is not supported for inferred alphabet '{alignment.source_alphabet}'"
+        )
+    if model == "amino-acid-p-distance":
+        raise InvalidAlignmentError(
+            "dnabin-compatible nucleotide distance loading does not support amino-acid distances"
+        )
+    if gap_handling not in {"pairwise-deletion", "complete-deletion"}:
+        raise ValueError(f"unsupported gap handling mode: {gap_handling}")
+    if ambiguity_policy not in {
+        "ignore",
+        "partial-match",
+        "strict-mismatch",
+        "report-only",
+    }:
+        raise ValueError(f"unsupported ambiguity policy: {ambiguity_policy}")
+
+    records = [
+        AlignmentRecord(
+            identifier=record.identifier,
+            sequence=record.sequence.upper(),
+        )
+        for record in alignment.records
+    ]
+    alphabet = alignment.source_alphabet
+    model_parameters: GeneticDistanceModelParameters | None = None
+    warnings: list[str] = []
+    if model in {"felsenstein-81", "tamura-nei-93"}:
+        model_parameters, warnings = _estimate_nucleotide_model_parameters(records)
+    retained_positions = (
+        _complete_deletion_positions(
+            records, alphabet=alphabet, ambiguity_policy=ambiguity_policy
+        )
+        if gap_handling == "complete-deletion"
+        else None
+    )
+    pairs: list[PairwiseGeneticDistance] = []
+    for left_index, left in enumerate(records):
+        for right_index, right in enumerate(records):
+            if right_index < left_index:
+                continue
+            summary = _pair_summary(
+                left.sequence,
+                right.sequence,
+                alphabet=alphabet,
+                ambiguity_policy=ambiguity_policy,
+                retained_positions=retained_positions,
+                model=model,
+                model_parameters=model_parameters,
+            )
+            pairs.append(
+                PairwiseGeneticDistance(
+                    left_identifier=left.identifier,
+                    right_identifier=right.identifier,
+                    distance=summary.distance if left_index != right_index else 0.0,
+                    comparable_sites=summary.comparable_sites,
+                    mismatch_sites=summary.mismatch_sites
+                    if left_index != right_index
+                    else 0.0,
+                    transition_sites=summary.transition_sites
+                    if left_index != right_index
+                    else 0.0,
+                    ag_transition_sites=summary.ag_transition_sites
+                    if left_index != right_index
+                    else 0.0,
+                    ct_transition_sites=summary.ct_transition_sites
+                    if left_index != right_index
+                    else 0.0,
+                    transversion_sites=summary.transversion_sites
+                    if left_index != right_index
+                    else 0.0,
+                    ambiguity_sites=summary.ambiguity_sites,
+                    skipped_sites=summary.skipped_sites,
+                    saturated=False if left_index == right_index else summary.saturated,
+                    saturation_reason=None
+                    if left_index == right_index
+                    else summary.saturation_reason,
+                )
+            )
+    return GeneticDistanceMatrix(
+        path=alignment.path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+        inferred_alphabet=alphabet,
+        alignment_length=alignment.alignment_length,
+        identifiers=[record.identifier for record in records],
+        model_parameters=model_parameters,
+        warnings=warnings,
+        pairs=pairs,
+    )
+
+
 def _pair_key(left_identifier: str, right_identifier: str) -> tuple[str, str]:
     return tuple(sorted((left_identifier, right_identifier)))
 
@@ -1793,6 +1896,15 @@ def compute_pairwise_genetic_distance_matrix(
 ) -> GeneticDistanceMatrix:
     """Compute a deterministic pairwise genetic distance matrix for an aligned dataset."""
     model = _normalize_distance_model(model)
+    if model != "amino-acid-p-distance":
+        matrix = load_dna_bin_alignment(path, normalize_uracil=True)
+        return compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(
+            matrix,
+            model=model,
+            gap_handling=gap_handling,
+            ambiguity_policy=ambiguity_policy,
+        )
+
     if gap_handling not in {"pairwise-deletion", "complete-deletion"}:
         raise ValueError(f"unsupported gap handling mode: {gap_handling}")
     if ambiguity_policy not in {
@@ -1804,13 +1916,6 @@ def compute_pairwise_genetic_distance_matrix(
         raise ValueError(f"unsupported ambiguity policy: {ambiguity_policy}")
 
     records, alphabet = _load_alignment_for_model(path, model=model)
-    model_parameters: GeneticDistanceModelParameters | None = None
-    warnings: list[str] = []
-    if alphabet in {"dna", "rna"} and model in {
-        "felsenstein-81",
-        "tamura-nei-93",
-    }:
-        model_parameters, warnings = _estimate_nucleotide_model_parameters(records)
     retained_positions = (
         _complete_deletion_positions(
             records, alphabet=alphabet, ambiguity_policy=ambiguity_policy
@@ -1830,7 +1935,7 @@ def compute_pairwise_genetic_distance_matrix(
                 ambiguity_policy=ambiguity_policy,
                 retained_positions=retained_positions,
                 model=model,
-                model_parameters=model_parameters,
+                model_parameters=None,
             )
             pairs.append(
                 PairwiseGeneticDistance(
@@ -1869,8 +1974,8 @@ def compute_pairwise_genetic_distance_matrix(
         inferred_alphabet=alphabet,
         alignment_length=len(records[0].sequence),
         identifiers=[record.identifier for record in records],
-        model_parameters=model_parameters,
-        warnings=warnings,
+        model_parameters=None,
+        warnings=[],
         pairs=pairs,
     )
 
