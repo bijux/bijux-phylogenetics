@@ -162,12 +162,17 @@ reproducible artifact bundle for that case.
 
 The governed live `ape` cases now span both shared tree and shared DNA
 fixtures. Today that lane covers `ape::read.tree`, `ape::write.tree`,
-`ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
+`ape::root`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
 resolved from `shared_tree_fixture_catalog.json` and
 `shared_dna_alignment_fixture_catalog.json`. The `ape::read.tree` portion now
 compares structured clade rows and covers branch lengths, internal labels,
 support labels, quoted labels, one governed multiple-tree Newick input, and
-one governed malformed-Newick rejection case. The `ape::write.tree` portion
+one governed malformed-Newick rejection case. The `ape::root` portion now
+uses the same shared tree catalog for one-tip outgroups, monophyletic
+multi-tip outgroups, already-rooted trees, missing outgroups, and
+non-monophyletic outgroups, and it compares rooted clades plus branch lengths
+against live `ape::root` instead of only checking that a rooted flag changed.
+The `ape::write.tree` portion
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
 internal-label, support-label, quoted-label, and multiple-tree cases. The DNA
 cases include lowercase input, ambiguity, missing data, identical sequences,

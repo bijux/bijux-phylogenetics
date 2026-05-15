@@ -163,7 +163,12 @@ contract because Bijux rejects them more strictly than `ape` does.
 The `ape::read.tree` portion of the same lane now validates structured clade
 rows for rooted and unrooted trees, branch lengths, internal labels, support
 labels, quoted labels, one governed multiple-tree Newick input, and one
-governed malformed-Newick rejection case. The `ape::write.tree` portion now
+governed malformed-Newick rejection case. The `ape::root` portion now uses the
+same shared tree catalog for single-tip outgroups, monophyletic multi-tip
+outgroups, already-rooted trees, missing outgroups, and non-monophyletic
+outgroups, and compares rooted clades plus branch lengths against live
+`ape::root`. Bijux now rejects ambiguous non-monophyletic outgroups explicitly
+instead of only warning about them. The `ape::write.tree` portion now
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
 internal-label, support-label, quoted-label, and multiple-tree cases. Bijux
 rejects unnamed tips, empty tree sets, and non-finite branch lengths before
