@@ -210,6 +210,68 @@
       "notes": "Binary discrete Mk fixture with one missing overlapping tip state so governed `phytools::fitMk` parity proves explicit pruning before ER likelihood fitting."
     },
     {
+      "fixture_id": "phytools_discrete_ard_binary_twenty_four_taxa",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_discrete_ard_twenty_four_taxa",
+      "trait_name": "binary_state",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "validation_expectation": "discrete-ready",
+      "phytools_reference_expectation": "discrete-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "all-rates-different-model",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation"
+      ],
+      "simulation_metadata": {
+        "model": "all-rates-different-discrete",
+        "directional_transition_rates": {
+          "0->1": 0.5,
+          "1->0": 0.2
+        },
+        "root_state": "0",
+        "seed": 71000
+      },
+      "notes": "Directional binary discrete-state simulation on the twenty-four-taxon ultrametric tree used as the governed ARD binary comparative surface."
+    },
+    {
+      "fixture_id": "phytools_discrete_ard_multistate_twenty_four_taxa",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_discrete_ard_twenty_four_taxa",
+      "trait_name": "region_state",
+      "taxon_column": "taxon",
+      "trait_kind": "multistate-discrete",
+      "validation_expectation": "discrete-ready",
+      "phytools_reference_expectation": "discrete-ready",
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "all-rates-different-model",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation"
+      ],
+      "simulation_metadata": {
+        "model": "all-rates-different-discrete",
+        "directional_transition_rates": {
+          "north->south": 0.9,
+          "north->east": 0.25,
+          "north->west": 0.05,
+          "south->north": 0.12,
+          "south->east": 0.55,
+          "south->west": 0.08,
+          "east->north": 0.75,
+          "east->south": 0.1,
+          "east->west": 0.3,
+          "west->north": 0.04,
+          "west->south": 0.35,
+          "west->east": 0.95
+        },
+        "root_state": "north",
+        "seed": 71000
+      },
+      "notes": "Directional multistate discrete-state simulation on the twenty-four-taxon ultrametric tree used as the governed ARD multistate comparative surface."
+    },
+    {
       "fixture_id": "phytools_discrete_multistate_missing_twenty_four_taxa",
       "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
       "trait_table_fixture_id": "phytools_discrete_missing_twenty_four_taxa",
@@ -231,6 +293,52 @@
         ]
       },
       "notes": "Multistate discrete Mk fixture with one missing overlapping tip state so governed `phytools::fitMk` parity proves explicit pruning before ER likelihood fitting."
+    },
+    {
+      "fixture_id": "phytools_discrete_ard_binary_missing_twenty_four_taxa",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_discrete_ard_missing_twenty_four_taxa",
+      "trait_name": "binary_state",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "validation_expectation": "prune-invalid-overlap",
+      "phytools_reference_expectation": "discrete-ready-after-pruning",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "all-rates-different-model",
+        "missing-trait-values",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "simulation_metadata": {
+        "source_fixture": "phytools_discrete_ard_binary_twenty_four_taxa",
+        "missing_taxa": [
+          "Phy10"
+        ]
+      },
+      "notes": "Directional binary discrete Mk fixture with one missing overlapping tip state so governed `phytools::fitMk(model='ARD')` parity proves explicit pruning before likelihood fitting."
+    },
+    {
+      "fixture_id": "phytools_discrete_ard_multistate_missing_twenty_four_taxa",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_discrete_ard_missing_twenty_four_taxa",
+      "trait_name": "region_state",
+      "taxon_column": "taxon",
+      "trait_kind": "multistate-discrete",
+      "validation_expectation": "prune-invalid-overlap",
+      "phytools_reference_expectation": "discrete-ready-after-pruning",
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "all-rates-different-model",
+        "missing-trait-values",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "simulation_metadata": {
+        "source_fixture": "phytools_discrete_ard_multistate_twenty_four_taxa",
+        "missing_taxa": [
+          "Phy14"
+        ]
+      },
+      "notes": "Directional multistate discrete Mk fixture with one missing overlapping tip state so governed `phytools::fitMk(model='ARD')` parity proves explicit pruning before likelihood fitting."
     },
     {
       "fixture_id": "phytools_continuous_missing_values_twenty_four_taxa",

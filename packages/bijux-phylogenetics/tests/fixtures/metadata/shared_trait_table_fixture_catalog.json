@@ -565,6 +565,50 @@
       "notes": "Twenty-four-taxon discrete comparative table with one missing binary state and one missing multistate observation so governed `phytools` Mk fits prove explicit pruning before likelihood evaluation."
     },
     {
+      "fixture_id": "phytools_discrete_ard_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_discrete_ard_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "binary_state",
+        "region_state"
+      ],
+      "validation_expectation": "discrete-ready",
+      "ape_reference_expectation": "phytools-ready",
+      "row_count": 24,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "all-rates-different-model",
+        "known-truth-simulation",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon discrete comparative table simulated under directional binary and multistate ARD processes so governed `phytools::fitMk(model='ARD')` review has one non-symmetric known-truth surface."
+    },
+    {
+      "fixture_id": "phytools_discrete_ard_missing_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_discrete_ard_missing_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "binary_state",
+        "region_state"
+      ],
+      "validation_expectation": "missing-trait-values-present",
+      "ape_reference_expectation": "phytools-ready-after-pruning",
+      "row_count": 24,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "all-rates-different-model",
+        "missing-trait-values",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon directional discrete comparative table with one missing binary state and one missing multistate observation so governed `phytools::fitMk(model='ARD')` parity proves explicit pruning before likelihood evaluation."
+    },
+    {
       "fixture_id": "phytools_signal_constant_twenty_four_taxa",
       "relative_path": "metadata/example_traits_phytools_signal_constant_twenty_four_taxa.tsv",
       "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
