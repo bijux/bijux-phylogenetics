@@ -625,6 +625,7 @@ other demos, but it keeps the full scientific chain together:
 - host-switch summary, node, branch, count, fit, unsupported-claim, and exclusion ledgers
 - full biogeography package with ancestral-region tree, transition matrix, migration events, and self-contained map
 - comparative trait table, comparative-ready tree, branch-adjustment ledger, and comparative report package
+- conclusion-stability ledgers for key clades, support values, ancestral states, and comparative coefficients
 - integrated HTML report and machine-readable manifest
 
 Its `workflow-config.json` is also the place to govern execution budgets
@@ -645,6 +646,17 @@ one package manifest. Those top-level artifacts state the biological question,
 one short answer, the exact reproduction config path and checksum, and the key
 workflow metrics without forcing a reviewer to open the deeper integrated
 report first.
+
+The conclusion-stability surface combines two uncertainty lanes that already
+exist elsewhere in the repository:
+
+- rooted bootstrap topology review
+- governed rabies method-sensitivity variants across alignment, trimming, and engine choices
+
+Its reviewer-facing HTML report separates `stable`, `weak`, and `unstable`
+conclusions directly and the JSON metrics expose
+`conclusion_stable_count`, `conclusion_weak_count`, and
+`conclusion_unstable_count`.
 
 The packaged metadata carries both raw `host_species` and `country` provenance
 plus the grouped workflow traits `host_group` and `region_group`. Those grouped

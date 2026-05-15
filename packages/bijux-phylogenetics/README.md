@@ -336,6 +336,19 @@ Its JSON metrics also surface the same `biological_question` and
 `short_answer` directly so reviewers do not need to open the nested HTML report
 to understand the intended scientific claim.
 
+The workflow bundle now also writes one `workflow/conclusion-stability/`
+surface that scores:
+
+- key clade stability across rooted bootstrap trees and method variants
+- support-value stability across rooted bootstrap trees and method variants
+- ancestral-state stability across rooted bootstrap trees and method variants
+- comparative coefficient stability across topology bootstrap trees and method variants
+
+The reviewer-facing HTML report separates `stable`, `weak`, and `unstable`
+conclusions directly, and the CLI JSON metrics report
+`conclusion_stable_count`, `conclusion_weak_count`, and
+`conclusion_unstable_count`.
+
 `demo rabies-method-sensitivity-panel` is the repository's governed public
 workflow for method-sensitivity review on the same compact rabies panel. It
 reruns four declared alignment-and-trimming variants, compares IQ-TREE and

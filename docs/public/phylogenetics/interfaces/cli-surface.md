@@ -35,6 +35,24 @@ stable JSON plus TSV export helpers.
 The public rule is simple: commands should produce explicit, reviewable outputs
 and should not hide important assumptions behind silent defaults.
 
+`demo rabies-cross-host-geography-panel` is the flagship public biological
+workflow. In addition to the dataset export, workflow rerun, overview HTML,
+and package manifest, it now writes one
+`workflow/conclusion-stability/` directory with:
+
+- `conclusion-stability-summary.tsv`
+- `key-clade-stability.tsv`
+- `support-value-stability.tsv`
+- `ancestral-state-stability.tsv`
+- `comparative-coefficient-stability.tsv`
+- `conclusion-stability-report.html`
+
+Its JSON metrics also report:
+
+- `conclusion_stable_count`
+- `conclusion_weak_count`
+- `conclusion_unstable_count`
+
 ## Runtime Method Tiers
 
 Serious workflow and report commands now publish one explicit method-tier
