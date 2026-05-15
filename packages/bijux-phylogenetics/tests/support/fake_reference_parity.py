@@ -1145,6 +1145,56 @@ TABULAR_CASES = {{
             {{"left_identifier": "C", "right_identifier": "C", "distance": 0.0}},
         ],
     }},
+    "pic-balanced-rooted-ultrametric": {{
+        "summary": {{
+            "trait": "response",
+            "taxon_count": 4,
+            "contrast_count": 3,
+            "tree_is_ultrametric": True,
+            "minimum_root_to_tip_depth": 0.3,
+            "maximum_root_to_tip_depth": 0.3,
+        }},
+        "rows_name": "independent-contrasts.tsv",
+        "rows": [
+            {{"node_id": 5, "node": "A|B|C|D", "left_taxa": "A|B", "right_taxa": "C|D", "contrast": -1.49071198499986, "expected_variance": 0.45}},
+            {{"node_id": 6, "node": "A|B", "left_taxa": "A", "right_taxa": "B", "contrast": -3.3541019662496847, "expected_variance": 0.2}},
+            {{"node_id": 7, "node": "C|D", "left_taxa": "C", "right_taxa": "D", "contrast": -2.3717082451262845, "expected_variance": 0.4}},
+        ],
+    }},
+    "pic-pectinate-non-ultrametric": {{
+        "summary": {{
+            "trait": "response",
+            "taxon_count": 4,
+            "contrast_count": 3,
+            "tree_is_ultrametric": False,
+            "minimum_root_to_tip_depth": 0.1,
+            "maximum_root_to_tip_depth": 0.3,
+        }},
+        "rows_name": "independent-contrasts.tsv",
+        "rows": [
+            {{"node_id": 5, "node": "A|B|C|D", "left_taxa": "A|B|C", "right_taxa": "D", "contrast": -3.137858162210944, "expected_variance": 0.26}},
+            {{"node_id": 6, "node": "A|B|C", "left_taxa": "A|B", "right_taxa": "C", "contrast": -0.5, "expected_variance": 0.25}},
+            {{"node_id": 7, "node": "A|B", "left_taxa": "A", "right_taxa": "B", "contrast": -3.3541019662496847, "expected_variance": 0.2}},
+        ],
+    }},
+    "pic-balanced-six-taxon": {{
+        "summary": {{
+            "trait": "response_growth",
+            "taxon_count": 6,
+            "contrast_count": 5,
+            "tree_is_ultrametric": True,
+            "minimum_root_to_tip_depth": 3.0,
+            "maximum_root_to_tip_depth": 3.0,
+        }},
+        "rows_name": "independent-contrasts.tsv",
+        "rows": [
+            {{"node_id": 7, "node": "A|B|C|D|E|F", "left_taxa": "A|B|C|D", "right_taxa": "E|F", "contrast": -0.7276068751089989, "expected_variance": 4.25}},
+            {{"node_id": 8, "node": "A|B|C|D", "left_taxa": "A|B", "right_taxa": "C|D", "contrast": -0.5773502691896258, "expected_variance": 3.0}},
+            {{"node_id": 9, "node": "A|B", "left_taxa": "A", "right_taxa": "B", "contrast": -0.35355339059327373, "expected_variance": 2.0}},
+            {{"node_id": 10, "node": "C|D", "left_taxa": "C", "right_taxa": "D", "contrast": -0.35355339059327373, "expected_variance": 2.0}},
+            {{"node_id": 11, "node": "E|F", "left_taxa": "E", "right_taxa": "F", "contrast": -0.35355339059327373, "expected_variance": 2.0}},
+        ],
+    }},
     "dna-translation-valid-frame": {{
         "summary": {{
             "sequence_count": 3,

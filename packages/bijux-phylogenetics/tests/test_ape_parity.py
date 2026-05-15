@@ -120,6 +120,9 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "vcv-rooted-non-ultrametric",
         "vcv-unrooted-branch-length",
         "vcv-zero-branch-singular",
+        "pic-balanced-rooted-ultrametric",
+        "pic-pectinate-non-ultrametric",
+        "pic-balanced-six-taxon",
         "node-depth-rooted-ultrametric",
         "node-depth-rooted-non-ultrametric",
         "node-depth-zero-branch-lengths",
@@ -277,6 +280,9 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "zero_branch_lengths",
         "balanced_rooted_ultrametric",
         "pectinate_rooted_non_ultrametric",
+        "balanced_rooted_six_taxon",
+        "balanced_rooted_ultrametric",
+        "pectinate_rooted_non_ultrametric",
         "zero_branch_lengths",
         "outgroup_rooted_on_d",
         "balanced_rooted_ultrametric",
@@ -370,6 +376,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::branching.times",
         "ape::vcv.phylo",
         "ape::nj",
+        "ape::pic",
         "ape::as.DNAbin",
         "ape::base.freq",
         "ape::seg.sites",
@@ -394,6 +401,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "tree-tip-distance",
         "tree-topology-distance",
         "tree-brownian-covariance",
+        "tree-independent-contrasts",
         "tree-node-depth",
         "tree-branching-times",
         "tree-ultrametricity",
@@ -417,8 +425,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 153
-    assert report.passed_case_count == 153
+    assert report.case_count == 156
+    assert report.passed_case_count == 156
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -437,6 +445,7 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         "ape::keep.tip",
         "ape::nj",
         "ape::node.depth.edgelength",
+        "ape::pic",
         "ape::prop.clades",
         "ape::read.tree",
         "ape::root",
@@ -804,7 +813,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 153
+    assert len(rows) == 156
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
