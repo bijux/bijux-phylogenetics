@@ -24,6 +24,24 @@ class CladeExtractionReport:
 
 
 @dataclass(slots=True)
+class SubtreeExtractionReport:
+    """Explicit record of subtree extraction by node identity or taxa."""
+
+    tree_path: Path
+    selector_kind: str
+    requested_node_id: int | None
+    matched_node_id: int
+    requested_taxa: list[str]
+    matched_node_name: str | None
+    tip_count: int
+    taxa: list[str]
+    retained_all_requested_descendants: bool
+    missing_requested_descendants: list[str]
+    unexpected_retained_taxa: list[str]
+    summary: TreeTransformationSummary
+
+
+@dataclass(slots=True)
 class BranchCollapseReport:
     """Explicit record of internal branches collapsed by a length threshold."""
 
@@ -122,6 +140,59 @@ def _descendant_taxa(node: TreeNode) -> list[str]:
     for child in node.children:
         taxa.extend(_descendant_taxa(child))
     return sorted(taxa)
+
+
+def _iter_internal_nodes_preorder(node: TreeNode):
+    if not node.is_leaf():
+        yield node
+    for child in node.children:
+        yield from _iter_internal_nodes_preorder(child)
+
+
+def _build_ape_internal_node_map(tree: PhyloTree) -> dict[int, TreeNode]:
+    start_node_id = tree.tip_count + 1
+    return {
+        start_node_id + offset: node
+        for offset, node in enumerate(_iter_internal_nodes_preorder(tree.root))
+    }
+
+
+def _build_subtree(node: TreeNode, *, source_format: str, rooted: bool | None) -> PhyloTree:
+    subtree_root = _clone_node(node)
+    subtree_root.branch_length = None
+    return PhyloTree(root=subtree_root, source_format=source_format, rooted=rooted)
+
+
+def _extract_subtree_report(
+    tree: PhyloTree,
+    subtree: PhyloTree,
+    *,
+    tree_path: Path,
+    selector_kind: str,
+    requested_node_id: int | None,
+    matched_node_id: int,
+    requested_taxa: list[str],
+    matched_node_name: str | None,
+    expected_taxa: list[str],
+) -> SubtreeExtractionReport:
+    observed_taxa = sorted(subtree.tip_names)
+    summary = _summarize_transformation(
+        tree, subtree, transformation="extract-tree-clade"
+    )
+    return SubtreeExtractionReport(
+        tree_path=tree_path,
+        selector_kind=selector_kind,
+        requested_node_id=requested_node_id,
+        matched_node_id=matched_node_id,
+        requested_taxa=requested_taxa,
+        matched_node_name=matched_node_name,
+        tip_count=subtree.tip_count,
+        taxa=observed_taxa,
+        retained_all_requested_descendants=observed_taxa == expected_taxa,
+        missing_requested_descendants=sorted(set(expected_taxa) - set(observed_taxa)),
+        unexpected_retained_taxa=sorted(set(observed_taxa) - set(expected_taxa)),
+        summary=summary,
+    )
 
 
 def _node_signature(node: TreeNode) -> str:
@@ -537,10 +608,10 @@ def extract_named_clade(
     if len(matches) > 1:
         raise ValueError(f"clade '{clade_name}' is ambiguous in {tree_path}")
 
-    subtree_root = _clone_node(matches[0])
-    subtree_root.branch_length = None
-    subtree = PhyloTree(
-        root=subtree_root, source_format=tree.source_format, rooted=tree.rooted
+    subtree = _build_subtree(
+        matches[0],
+        source_format=tree.source_format,
+        rooted=tree.rooted,
     )
     expected_taxa = sorted(_descendant_taxa(matches[0]))
     observed_taxa = sorted(subtree.tip_names)
@@ -556,6 +627,85 @@ def extract_named_clade(
         missing_requested_descendants=sorted(set(expected_taxa) - set(observed_taxa)),
         unexpected_retained_taxa=sorted(set(observed_taxa) - set(expected_taxa)),
         summary=summary,
+    )
+
+
+def extract_tree_clade_by_node_id(
+    tree_path: Path,
+    *,
+    node_id: int,
+) -> tuple[PhyloTree, SubtreeExtractionReport]:
+    """Extract a subtree using ape-style internal node numbering."""
+    tree = load_tree(tree_path)
+    if node_id <= tree.tip_count:
+        raise ValueError("node number must be greater than the number of tips")
+    node_map = _build_ape_internal_node_map(tree)
+    if node_id not in node_map:
+        raise IndexError(f"node id {node_id} is out of bounds for {tree_path}")
+
+    source_node = node_map[node_id]
+    subtree = _build_subtree(
+        source_node,
+        source_format=tree.source_format,
+        rooted=True,
+    )
+    expected_taxa = sorted(_descendant_taxa(source_node))
+    return subtree, _extract_subtree_report(
+        tree,
+        subtree,
+        tree_path=tree_path,
+        selector_kind="node-id",
+        requested_node_id=node_id,
+        matched_node_id=node_id,
+        requested_taxa=[],
+        matched_node_name=source_node.name,
+        expected_taxa=expected_taxa,
+    )
+
+
+def extract_tree_clade_by_descendant_taxa(
+    tree_path: Path,
+    *,
+    descendant_taxa: list[str],
+) -> tuple[PhyloTree, SubtreeExtractionReport]:
+    """Extract a subtree whose descendants match the requested taxa exactly."""
+    tree = load_tree(tree_path)
+    requested_taxa = sorted(set(descendant_taxa))
+    if len(requested_taxa) < 2:
+        raise ValueError("descendant taxa must contain at least two distinct taxa")
+    tree_taxa = set(tree.tip_names)
+    missing_taxa = sorted(set(requested_taxa) - tree_taxa)
+    if missing_taxa:
+        raise ValueError(
+            "requested descendant taxa are not present in the tree: "
+            + ", ".join(missing_taxa)
+        )
+
+    matches: list[tuple[int, TreeNode]] = []
+    for matched_node_id, node in _build_ape_internal_node_map(tree).items():
+        if _descendant_taxa(node) == requested_taxa:
+            matches.append((matched_node_id, node))
+    if not matches:
+        raise ValueError("requested descendant taxa do not define an internal clade")
+    if len(matches) > 1:
+        raise ValueError("requested descendant taxa are ambiguous in this tree")
+
+    matched_node_id, source_node = matches[0]
+    subtree = _build_subtree(
+        source_node,
+        source_format=tree.source_format,
+        rooted=True,
+    )
+    return subtree, _extract_subtree_report(
+        tree,
+        subtree,
+        tree_path=tree_path,
+        selector_kind="descendant-taxa",
+        requested_node_id=None,
+        matched_node_id=matched_node_id,
+        requested_taxa=requested_taxa,
+        matched_node_name=source_node.name,
+        expected_taxa=requested_taxa,
     )
 
 
