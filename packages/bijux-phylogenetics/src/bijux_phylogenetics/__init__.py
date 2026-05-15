@@ -1319,6 +1319,15 @@ from .reference_parity import (
     write_reference_parity_observation_table,
     write_reference_parity_summary_table,
 )
+from .ape_parity import (
+    ApeParityObservation,
+    ApeParityReport,
+    ApeParitySummaryRow,
+    list_ape_parity_cases,
+    run_ape_parity_cases,
+    write_ape_parity_observation_table,
+    write_ape_parity_summary_table,
+)
 from .reference_validation import (
     CoreWorkflowFailureCase,
     CoreWorkflowValidationReport,
@@ -2334,6 +2343,9 @@ __all__ = [
     "subsample_mrbayes_posterior_tree_set",
     "subsample_posterior_tree_set",
     "summarize_beast_analysis_xml",
+    "ApeParityObservation",
+    "ApeParityReport",
+    "ApeParitySummaryRow",
     "ReferenceFixtureCheck",
     "ReferenceParityObservation",
     "ReferenceParityReport",
@@ -2674,6 +2686,8 @@ __all__ = [
     "validate_figure_reference_fixtures",
     "validate_distance_reference_examples",
     "validate_imported_distance_matrix",
+    "list_ape_parity_cases",
+    "run_ape_parity_cases",
     "validate_reference_parity_examples",
     "validate_report_regression_fixtures",
     "validate_simulation_reproducibility",
@@ -2830,6 +2844,8 @@ __all__ = [
     "write_shared_taxa_removed_taxa_table",
     "write_support_comparison_table",
     "write_taxon_influence_table",
+    "write_ape_parity_observation_table",
+    "write_ape_parity_summary_table",
     "write_reference_parity_observation_table",
     "write_reference_parity_summary_table",
     "write_mrbayes_burnin_sensitivity_slice_table",

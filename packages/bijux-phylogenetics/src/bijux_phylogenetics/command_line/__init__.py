@@ -679,6 +679,11 @@ from bijux_phylogenetics.phylogeography import (
     write_geographic_map_marker_table,
     write_geographic_map_summary_table,
 )
+from bijux_phylogenetics.ape_parity import (
+    run_ape_parity_cases,
+    write_ape_parity_observation_table,
+    write_ape_parity_summary_table,
+)
 from bijux_phylogenetics.reference_parity import (
     validate_reference_parity_examples,
     write_reference_parity_observation_table,
@@ -5023,9 +5028,31 @@ def build_parser() -> argparse.ArgumentParser:
         get_command_spec("parity").name, help=get_command_spec("parity").summary
     )
     parity.add_argument(
+        "--reference-source",
+        choices=("checked-fixture", "ape-live"),
+        default="checked-fixture",
+        help="Choose the checked fixture parity suite or the live ape execution harness.",
+    )
+    parity.add_argument(
         "--extended",
         action="store_true",
         help="Include the optional larger posterior tree-set parity fixtures.",
+    )
+    parity.add_argument(
+        "--ape-case",
+        action="append",
+        dest="ape_cases",
+        help="Restrict the live ape parity harness to one or more governed case ids.",
+    )
+    parity.add_argument(
+        "--ape-rscript-executable",
+        default="Rscript",
+        help="Executable used to launch the live ape parity runner.",
+    )
+    parity.add_argument(
+        "--ape-failure-root",
+        type=Path,
+        help="Directory for reproducible live ape mismatch and skip artifacts.",
     )
     parity.add_argument("--summary-out", type=Path)
     parity.add_argument("--observations-out", type=Path)
@@ -14054,6 +14081,62 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "parity":
+            if (
+                args.reference_source == "ape-live"
+                and args.extended
+            ):
+                raise ValueError(
+                    "--extended is only supported for the checked fixture parity suite"
+                )
+            if args.reference_source == "ape-live":
+                report = run_ape_parity_cases(
+                    case_ids=args.ape_cases,
+                    rscript_executable=args.ape_rscript_executable,
+                    failure_root=args.ape_failure_root,
+                )
+                output_paths: list[Path | str] = []
+                summary_path = None
+                observation_path = None
+                if args.summary_out is not None:
+                    summary_path = write_ape_parity_summary_table(
+                        args.summary_out,
+                        report,
+                    )
+                    output_paths.append(summary_path)
+                if args.observations_out is not None:
+                    observation_path = write_ape_parity_observation_table(
+                        args.observations_out,
+                        report,
+                    )
+                    output_paths.append(observation_path)
+                outputs = _finalize_outputs(
+                    args,
+                    command="parity",
+                    inputs=[],
+                    outputs=output_paths,
+                )
+                _print_result(
+                    build_command_result(
+                        command="parity",
+                        inputs=[],
+                        outputs=outputs,
+                        metrics={
+                            "all_passed": report.all_passed,
+                            "case_count": report.case_count,
+                            "function_count": len(report.summary_rows),
+                            "failed_case_count": report.failed_case_count,
+                            "skipped_case_count": report.skipped_case_count,
+                            "reference_source": args.reference_source,
+                        },
+                        data={
+                            "report": report,
+                            "summary_table": summary_path,
+                            "observation_table": observation_path,
+                        },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             report = validate_reference_parity_examples(include_extended=args.extended)
             output_paths: list[Path | str] = []
             summary_path = None
@@ -14086,6 +14169,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "case_count": report.case_count,
                         "method_count": len(report.covered_methods),
                         "failed_case_count": report.failed_case_count,
+                        "reference_source": args.reference_source,
                         "extended": args.extended,
                     },
                     data={
