@@ -101,6 +101,12 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "is-monophyletic-all-missing-rerooted",
         "cophenetic-rooted-ultrametric",
         "cophenetic-unrooted-branch-length",
+        "dist-topo-rooted-identical",
+        "dist-topo-rooted-child-order",
+        "dist-topo-rooted-conflict",
+        "dist-topo-rooted-polytomy",
+        "dist-topo-unrooted-conflict",
+        "dist-topo-rooted-large",
         "vcv-rooted-ultrametric",
         "vcv-rooted-non-ultrametric",
         "vcv-unrooted-branch-length",
@@ -187,6 +193,12 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "unrooted_branch_length_tree",
         "balanced_rooted_ultrametric",
         "unrooted_branch_length_tree",
+        "topology_distance_identical_rooted_pair",
+        "topology_distance_rooted_child_order_pair",
+        "topology_distance_rooted_conflict_pair",
+        "topology_distance_rooted_polytomy_pair",
+        "topology_distance_unrooted_conflict_pair",
+        "topology_distance_large_rooted_pair",
         "balanced_rooted_ultrametric",
         "pectinate_rooted_non_ultrametric",
         "unrooted_branch_length_tree",
@@ -220,6 +232,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::root",
         "ape::unroot",
         "ape::drop.tip",
+        "ape::dist.topo",
         "ape::keep.tip",
         "ape::getMRCA",
         "ape::is.ultrametric",
@@ -246,6 +259,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "get-tree-mrca",
         "assess-tree-monophyly",
         "tree-tip-distance",
+        "tree-topology-distance",
         "tree-brownian-covariance",
         "tree-node-depth",
         "tree-branching-times",
@@ -267,8 +281,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 84
-    assert report.passed_case_count == 84
+    assert report.case_count == 90
+    assert report.passed_case_count == 90
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -276,6 +290,7 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         "ape::branching.times",
         "ape::cophenetic.phylo",
         "ape::dist.dna",
+        "ape::dist.topo",
         "ape::drop.tip",
         "ape::extract.clade",
         "ape::getMRCA",
@@ -404,6 +419,23 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert cophenetic_case.reference_summary is not None
     assert cophenetic_case.reference_summary["pair_count"] == 16
     assert cophenetic_case.reference_summary["symmetric"] is True
+    topology_conflict_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "dist-topo-rooted-conflict"
+    )
+    assert topology_conflict_case.reference_summary is not None
+    assert topology_conflict_case.reference_summary["robinson_foulds_distance"] == 2
+    assert topology_conflict_case.reference_summary["shared_split_count"] == 1
+    topology_large_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "dist-topo-rooted-large"
+    )
+    assert topology_large_case.reference_summary is not None
+    assert topology_large_case.reference_summary["tip_count"] == 128
+    assert topology_large_case.reference_summary["left_split_count"] == 126
+    assert topology_large_case.reference_summary["robinson_foulds_distance"] == 24
     vcv_case = next(
         observation
         for observation in report.observations
@@ -587,7 +619,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 84
+    assert len(rows) == 90
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]

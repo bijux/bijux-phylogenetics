@@ -399,6 +399,82 @@ def ultrametric_rows(tree):
         if row["node_kind"] == "tip"
     ]
 
+def signature_id(taxa):
+    return "|".join(sorted(set(taxa)))
+
+def rooted_topology_signatures(tree):
+    total_tip_count = len(list(tree.get_terminals()))
+    signatures = {{}}
+    for clade in tree.find_clades(order="preorder"):
+        if clade is tree.root or clade.is_terminal():
+            continue
+        taxa = descendant_taxa(clade)
+        if len(taxa) <= 1 or len(taxa) >= total_tip_count:
+            continue
+        signatures[signature_id(taxa)] = taxa
+    return signatures
+
+def canonical_unrooted_signature(taxa, all_taxa):
+    selected = sorted(set(taxa))
+    complement = sorted(taxon for taxon in all_taxa if taxon not in selected)
+    if len(selected) < len(complement):
+        return selected
+    if len(complement) < len(selected):
+        return complement
+    if "|".join(selected) <= "|".join(complement):
+        return selected
+    return complement
+
+def unrooted_topology_signatures(tree):
+    all_taxa = descendant_taxa(tree.root)
+    signatures = {{}}
+    for clade in tree.find_clades(order="preorder"):
+        if clade is tree.root or clade.is_terminal():
+            continue
+        selected = canonical_unrooted_signature(descendant_taxa(clade), all_taxa)
+        if len(selected) <= 1 or len(selected) >= len(all_taxa):
+            continue
+        signatures[signature_id(selected)] = selected
+    return signatures
+
+def topology_distance_rows(left_tree, right_tree, rf_mode):
+    if rf_mode == "rooted":
+        left_signatures = rooted_topology_signatures(left_tree)
+        right_signatures = rooted_topology_signatures(right_tree)
+        split_kind = "clade"
+    else:
+        left_signatures = unrooted_topology_signatures(left_tree)
+        right_signatures = unrooted_topology_signatures(right_tree)
+        split_kind = "split"
+    left_ids = set(left_signatures)
+    right_ids = set(right_signatures)
+    shared_ids = left_ids & right_ids
+    left_only_ids = left_ids - right_ids
+    right_only_ids = right_ids - left_ids
+    all_ids = sorted(
+        left_ids | right_ids,
+        key=lambda split_id: (len(split_id.split("|")), split_id),
+    )
+    rows = [
+        {{
+            "split_id": split_id,
+            "split_kind": split_kind,
+            "comparison_status": (
+                "shared"
+                if split_id in shared_ids
+                else "left_only"
+                if split_id in left_only_ids
+                else "right_only"
+            ),
+            "taxon_count": len((left_signatures.get(split_id) or right_signatures[split_id])),
+            "descendant_taxa": "|".join(left_signatures.get(split_id) or right_signatures[split_id]),
+            "left_present": split_id in left_ids,
+            "right_present": split_id in right_ids,
+        }}
+        for split_id in all_ids
+    ]
+    return rows, len(left_ids), len(right_ids), len(shared_ids), len(left_only_ids), len(right_only_ids)
+
 def matrix_rank(matrix, tolerance=1e-12):
     working = [list(map(float, row)) for row in matrix]
     row_count = len(working)
@@ -1183,6 +1259,67 @@ if case_payload["operation"] == "tree-tip-distance":
             "outputs": {{
                 "summary_json": str(summary_path),
                 "tip_distance_long": str(rows_path),
+            }},
+        }},
+    )
+    raise SystemExit(0)
+
+if case_payload["operation"] == "tree-topology-distance":
+    trees = list(Phylo.parse(case_payload["input_fixture"], "newick"))
+    if len(trees) != 2:
+        raise ValueError("ape topology-distance parity fixtures must contain exactly two trees")
+    left_tree, right_tree = trees
+    rf_mode = case_payload.get("rf_mode", "rooted")
+    (
+        rows,
+        left_split_count,
+        right_split_count,
+        shared_split_count,
+        left_only_split_count,
+        right_only_split_count,
+    ) = topology_distance_rows(left_tree, right_tree, rf_mode)
+    summary = {{
+        "tip_count": len(descendant_taxa(left_tree.root)),
+        "shared_taxa": descendant_taxa(left_tree.root),
+        "left_only_taxa": [],
+        "right_only_taxa": [],
+        "taxon_overlap_policy": "require-identical",
+        "rf_mode": rf_mode,
+        "rooted_left": is_rooted_tree(left_tree),
+        "rooted_right": is_rooted_tree(right_tree),
+        "polytomy_present_left": any(len(clade.clades) > 2 for clade in left_tree.find_clades()),
+        "polytomy_present_right": any(len(clade.clades) > 2 for clade in right_tree.find_clades()),
+        "left_split_count": left_split_count,
+        "right_split_count": right_split_count,
+        "shared_split_count": shared_split_count,
+        "left_only_split_count": left_only_split_count,
+        "right_only_split_count": right_only_split_count,
+        "robinson_foulds_distance": left_only_split_count + right_only_split_count,
+        "normalized_robinson_foulds": (
+            0.0
+            if (left_split_count + right_split_count) == 0
+            else (left_only_split_count + right_only_split_count)
+            / (left_split_count + right_split_count)
+        ),
+        "topology_equal": (left_only_split_count + right_only_split_count) == 0,
+    }}
+    summary.update(SUMMARY_OVERRIDES)
+    summary_path = output_root / "summary.json"
+    rows_path = output_root / "split-table.tsv"
+    write_json(summary_path, summary)
+    write_tsv(rows_path, rows)
+    write_json(
+        execution_path,
+        {{
+            "status": "ok",
+            "case_id": case_payload["case_id"],
+            "function_name": case_payload["function_name"],
+            "input_fixture": case_payload["input_fixture"],
+            "r_version": "4.6.0",
+            "ape_version": "5.0.0",
+            "outputs": {{
+                "summary_json": str(summary_path),
+                "split_table": str(rows_path),
             }},
         }},
     )
