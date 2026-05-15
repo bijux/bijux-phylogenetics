@@ -1337,11 +1337,21 @@ probabilities. Its JSON metrics report:
 - `comparison_node_count`
 - `comparison_differing_node_count`
 - `model`
+- `root_prior_mode`
+- `fixed_root_state`
+- `log_likelihood`
+- `parameter_count`
+- `aic`
+- `transition_rate_count`
 
-For the likelihood models, the owned runtime fits an explicit Mk rate matrix
-and reports node-level marginal probabilities. The governed parity surface is
-checked against `ape::ace` on ER, SYM, and ARD reference cases with explicit
-bounded tolerances instead of a vague compatibility claim.
+For the likelihood models, the owned runtime fits an explicit Mk rate matrix,
+reports node-level marginal probabilities, and can export one fitted directed
+transition-rate ledger. The governed parity surface is checked against
+`ape::ace` on ER, SYM, and ARD reference cases with explicit bounded
+tolerances instead of a vague compatibility claim. Within that lane, the live
+`ape::ace` discrete surface is governed explicitly for ER, while root-prior
+controls remain an owned Bijux policy surface because `ape::ace` does not
+expose the same runtime root-prior interface.
 
 For Fitch, the owned runtime now also reports the exact minimum parsimony
 change count for the analyzed tree and the number of parsimonious root states.
@@ -1355,6 +1365,8 @@ supplied, it also writes one summary ledger. The summary row preserves:
 - `taxon_column`
 - `model`
 - `state_ordering`
+- `root_prior_mode`
+- `fixed_root_state`
 - `analyzed_taxon_count`
 - `excluded_taxon_count`
 - `internal_node_count`
@@ -1368,6 +1380,9 @@ supplied, it also writes one summary ledger. The summary row preserves:
 - `root_node`
 - `root_most_likely_state`
 - `root_confidence`
+- `log_likelihood`
+- `parameter_count`
+- `aic`
 - `warning_count`
 
 When `--probabilities-out` is supplied, the command writes one internal-node
@@ -1382,6 +1397,14 @@ marginal-probability ledger. Each row preserves:
 - `ambiguous`
 - `unstable`
 - `interpretation`
+
+When `--transitions-out` is supplied, the command writes one directed fitted
+transition-rate ledger for likelihood models. Each row preserves:
+- `source_state`
+- `target_state`
+- `transition_allowed`
+- `step_distance`
+- `rate`
 
 When `--comparison-out` is supplied, the command writes one direct node-wise
 comparison ledger between the requested `--model` and `--compare-model`. Each

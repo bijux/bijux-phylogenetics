@@ -159,7 +159,7 @@ differences.
 - fit phylogenetic generalized least-squares models with numeric, categorical, and interaction predictors through explicit formula auditing
 - adjust repeated comparative hypothesis tests with Benjamini-Hochberg correction and emit integrated comparative audit, influence, tree-comparison, pruning-comparison, and reviewer-facing report outputs
 - reconstruct continuous ancestral states under Brownian or OU-style trait models
-- reconstruct discrete ancestral states under Fitch parsimony or likelihood-style ER, SYM, and ARD models with explicit ambiguity and low-confidence reporting
+- reconstruct discrete ancestral states under Fitch parsimony or likelihood-style ER, SYM, and ARD models with explicit ambiguity and low-confidence reporting, root-prior controls, and fitted transition-rate ledgers
 - validate discrete ancestral likelihood surfaces against governed `ape::ace` references plus root-prior, ordered, irreversible, and ambiguity policy checks
 - compare continuous ancestral reconstructions across two supported models, summarize ancestral sensitivity across model, tree, pruning, or coding choices, and package publication-ready ancestral figures
 - validate discrete geographic state coding, detect incomplete ordered vocabularies, estimate ancestral node states under ordered or unordered assumptions, compare equal-rates, symmetric, and all-rates-different models, export node and transition tables, highlight model-sensitive ancestral regions, simulate approximate stochastic maps, and render discrete-state HTML reports
@@ -260,7 +260,7 @@ bijux-phylogenetics comparative multiple-testing tree.nwk traits.tsv --responses
 bijux-phylogenetics comparative report tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --out artifacts/comparative-report.html --json
 bijux-phylogenetics comparative compare-trees tree-a.nwk tree-b.nwk traits.tsv --response height_cm --predictors body_mass log_range --json
 bijux-phylogenetics ancestral continuous tree.nwk traits.tsv --trait height_cm --model brownian --json
-bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --model symmetric --state-ordering ordered --ordered-states low,medium,high --json
+bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --model equal-rates --root-prior-mode empirical --summary-out artifacts/ancestral-discrete-summary.tsv --probabilities-out artifacts/ancestral-discrete-probabilities.tsv --transitions-out artifacts/ancestral-discrete-transitions.tsv --json
 bijux-phylogenetics ancestral sensitivity tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --compare-tree tree-alt.nwk --json
 bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --compare-tree tree-alt.nwk --out artifacts/ancestral-report.html
 bijux-phylogenetics ancestral package tree.nwk traits.tsv --trait habitat --kind discrete --model symmetric --state-ordering ordered --ordered-states low,medium,high --out-dir artifacts/ancestral-package --json
@@ -791,6 +791,15 @@ conditioning, solver regularization status, and one GLS likelihood summary,
 while the live parity lane remains scoped honestly to
 `ape::ace(type='continuous', method='pic', CI=TRUE)` because that is the
 governed shared closed-form Brownian reference surface.
+The `ape::ace` discrete ER lane now covers balanced binary, balanced
+multistate, pectinate multistate, and pruned missing-value fixtures through
+that same governed trait-table catalog. On the owned Bijux side, `ancestral
+discrete` now emits the fitted ER transition-rate table, log-likelihood,
+parameter count, and AIC alongside node probabilities, and it supports owned
+`equal`, `empirical`, and `fixed` root-prior policies. The live parity lane is
+scoped honestly to `ape::ace(type='discrete', model='ER')`, so root-prior
+controls remain an explicit Bijux-owned review surface rather than a false live
+`ape` parity claim.
 The `ape::dist.dna` lane now covers raw nucleotide distance, JC69, K80, F81,
 and TN93 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,

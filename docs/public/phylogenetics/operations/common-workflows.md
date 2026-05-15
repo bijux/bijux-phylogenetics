@@ -1086,7 +1086,10 @@ review and supports likelihood reconstructions under `equal-rates`,
 node probabilities instead of only one state label. When the baseline model is
 Fitch, the workflow also reports the minimum parsimony change count, the number
 of ambiguous internal nodes, and an optional direct node-by-node comparison
-against one likelihood model.
+against one likelihood model. For likelihood models, the same surface also
+reports the fitted log-likelihood, AIC, one directed transition-rate ledger,
+and an owned root-prior policy through `--root-prior-mode equal|empirical|fixed`
+plus `--fixed-root-state`.
 
 ```bash
 bijux-phylogenetics ancestral discrete \
@@ -1094,12 +1097,12 @@ bijux-phylogenetics ancestral discrete \
   artifacts/primates.csv \
   --trait habitat \
   --taxon-column species \
-  --model fitch \
-  --compare-model equal-rates \
+  --model equal-rates \
+  --root-prior-mode empirical \
   --table-out artifacts/primates.ancestral-discrete-nodes.tsv \
   --summary-out artifacts/primates.ancestral-discrete-summary.tsv \
   --probabilities-out artifacts/primates.ancestral-discrete-probabilities.tsv \
-  --comparison-out artifacts/primates.ancestral-discrete-comparison.tsv \
+  --transitions-out artifacts/primates.ancestral-discrete-transitions.tsv \
   --exclusions-out artifacts/primates.ancestral-discrete-excluded.tsv \
   --json
 ```
@@ -1108,16 +1111,19 @@ The node ledger keeps one row per analyzed tip or internal node with the
 reported state label and state set. The summary ledger keeps one row with the
 analyzed taxon count, excluded taxon count, internal node count, ambiguous
 internal node count, unstable node count, observed state count, sparse state
-count, and the root state with its confidence. Under Fitch, the same summary
-ledger also preserves the minimum parsimony change count and the number of
-parsimonious root states so the fast path still exposes its evidence burden
-explicitly. The probabilities ledger keeps one row per internal node with the
-full marginal probability vector so reviewers can distinguish a narrow state
-assignment from a weakly resolved one. When `--comparison-out` is supplied,
-the command also writes one direct node-wise comparison ledger between the
-baseline model and the requested comparison model. The excluded-taxa ledger
-keeps one row per dropped tip with an explicit reason such as
-`missing_discrete_trait_state`.
+count, the root state with its confidence, the root-prior mode, and the fitted
+likelihood summary. Under Fitch, the same summary ledger also preserves the
+minimum parsimony change count and the number of parsimonious root states so
+the fast path still exposes its evidence burden explicitly. The probabilities
+ledger keeps one row per internal node with the full marginal probability
+vector so reviewers can distinguish a narrow state assignment from a weakly
+resolved one. For likelihood models, the transition ledger keeps one directed
+row per fitted state-to-state rate so reviewers can inspect the ER, SYM, or
+ARD fit directly instead of inferring it from node calls alone. When
+`--comparison-out` is supplied, the command also writes one direct node-wise
+comparison ledger between the baseline model and the requested comparison
+model. The excluded-taxa ledger keeps one row per dropped tip with an explicit
+reason such as `missing_discrete_trait_state`.
 
 When the goal is to verify that the owned discrete ancestral likelihood
 surface still matches governed external references and known policy examples,
@@ -1136,6 +1142,12 @@ The JSON report keeps the trust contract compact and explicit:
 - one governed case count across the whole suite
 - one external-case count for the `ape::ace` parity subset
 - one all-passed flag for the full discrete ancestral reference lane
+
+The governed live `ape::ace` discrete lane is intentionally explicit rather
+than broad. ER parity now covers balanced binary, balanced multistate,
+pectinate multistate, and pruned missing-value cases. Root-prior controls are
+still validated as owned Bijux policy because `ape::ace` does not expose the
+same runtime root-prior interface.
 
 When the goal is to decide whether a discrete trait should be reconstructed as
 ordered rather than unordered, use `ancestral ordered-discrete`. This workflow
