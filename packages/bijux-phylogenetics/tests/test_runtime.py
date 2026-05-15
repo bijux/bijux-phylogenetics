@@ -530,6 +530,8 @@ from bijux_phylogenetics.core.topology import (
     TreeRootingReport,
     collapse_branches_below_length,
     extract_named_clade,
+    extract_tree_clade_by_descendant_taxa,
+    extract_tree_clade_by_node_id,
     ladderize_tree,
     reroot_tree_by_midpoint,
     root_tree_on_outgroup,
@@ -1017,6 +1019,11 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.extract_tree_set_clades is extract_tree_set_clades
     assert bijux_phylogenetics.summarize_tree_shape is summarize_tree_shape
     assert bijux_phylogenetics.summarize_tree_set_shapes is summarize_tree_set_shapes
+    assert bijux_phylogenetics.extract_tree_clade_by_node_id is extract_tree_clade_by_node_id
+    assert (
+        bijux_phylogenetics.extract_tree_clade_by_descendant_taxa
+        is extract_tree_clade_by_descendant_taxa
+    )
     assert bijux_phylogenetics.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
     assert bijux_phylogenetics.compare_support_values is compare_support_values
     assert bijux_phylogenetics.write_branch_length_table is write_branch_length_table
@@ -4287,6 +4294,85 @@ def test_extract_named_clade_returns_exact_descendant_subtree() -> None:
     assert report.missing_requested_descendants == []
     assert report.unexpected_retained_taxa == []
     assert report.summary.removed_taxa == ["C", "D"]
+
+
+def test_extract_tree_clade_by_node_id_returns_internal_subtree() -> None:
+    tree, report = extract_tree_clade_by_node_id(
+        fixture("example_tree_named_clades.nwk"),
+        node_id=6,
+    )
+
+    assert tree.tip_names == ["A", "B"]
+    assert dumps_newick(tree) == "(A:0.1,B:0.1)Mammals;"
+    assert report.selector_kind == "node-id"
+    assert report.requested_node_id == 6
+    assert report.matched_node_id == 6
+    assert report.matched_node_name == "Mammals"
+    assert report.taxa == ["A", "B"]
+    assert report.summary.removed_taxa == ["C", "D"]
+
+
+def test_extract_tree_clade_by_node_id_returns_root_clade() -> None:
+    tree, report = extract_tree_clade_by_node_id(
+        fixture("example_tree_named_clades.nwk"),
+        node_id=5,
+    )
+
+    assert tree.tip_names == ["A", "B", "C", "D"]
+    assert dumps_newick(tree) == (
+        "((A:0.1,B:0.1)Mammals:0.2,(C:0.2,D:0.2)Birds:0.1)Root;"
+    )
+    assert report.matched_node_name == "Root"
+    assert report.summary.removed_taxa == []
+
+
+def test_extract_tree_clade_by_descendant_taxa_returns_matching_subtree() -> None:
+    tree, report = extract_tree_clade_by_descendant_taxa(
+        fixture("example_tree_named_clades.nwk"),
+        descendant_taxa=["B", "A"],
+    )
+
+    assert tree.tip_names == ["A", "B"]
+    assert dumps_newick(tree) == "(A:0.1,B:0.1)Mammals;"
+    assert report.selector_kind == "descendant-taxa"
+    assert report.requested_taxa == ["A", "B"]
+    assert report.matched_node_id == 6
+    assert report.matched_node_name == "Mammals"
+
+
+def test_extract_tree_clade_by_descendant_taxa_returns_root_clade() -> None:
+    tree, report = extract_tree_clade_by_descendant_taxa(
+        fixture("example_tree_named_clades.nwk"),
+        descendant_taxa=["A", "B", "C", "D"],
+    )
+
+    assert tree.tip_names == ["A", "B", "C", "D"]
+    assert report.matched_node_id == 5
+    assert report.matched_node_name == "Root"
+
+
+def test_extract_tree_clade_by_node_id_rejects_tip_nodes() -> None:
+    with pytest.raises(ValueError, match="greater than the number of tips"):
+        extract_tree_clade_by_node_id(
+            fixture("example_tree_named_clades.nwk"),
+            node_id=1,
+        )
+
+
+def test_extract_tree_clade_by_node_id_rejects_out_of_bounds_nodes() -> None:
+    with pytest.raises(IndexError, match="out of bounds"):
+        extract_tree_clade_by_node_id(
+            fixture("example_tree_named_clades.nwk"),
+            node_id=8,
+        )
+
+
+def test_extract_tree_clade_by_descendant_taxa_rejects_non_monophyletic_sets() -> None:
+    with pytest.raises(ValueError, match="do not define an internal clade"):
+        extract_tree_clade_by_descendant_taxa(
+            fixture("example_tree_named_clades.nwk"),
+            descendant_taxa=["A", "C"],
+        )
 
 
 def test_rotate_named_node_reverses_child_order_without_changing_topology() -> None:
