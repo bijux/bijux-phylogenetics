@@ -45,7 +45,11 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
     assert [case.case_id for case in cases] == [
         "read-tree-balanced-rooted-ultrametric",
         "read-tree-unrooted-branch-length",
+        "read-tree-internal-node-labels",
+        "read-tree-support-labels",
         "read-tree-quoted-taxon-labels",
+        "read-tree-multiple-trees",
+        "read-tree-malformed-newick",
         "dna-base-frequency-lowercase",
         "dna-base-frequency-ambiguity",
         "dna-raw-distance-clean",
@@ -60,7 +64,11 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
     assert [case.fixture_id for case in cases] == [
         "balanced_rooted_ultrametric",
         "unrooted_branch_length_tree",
+        "internal_node_labels",
+        "branch_support_labels",
         "quoted_taxon_labels",
+        "basic_newick_tree_set",
+        "malformed_unbalanced_parentheses",
         "lowercase_aligned_dna",
         "dna_with_ambiguity",
         "clean_aligned_dna",
@@ -79,7 +87,8 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::trans",
     }
     assert {case.operation for case in cases} == {
-        "read-tree-summary",
+        "read-tree-structure",
+        "read-tree-set-structure",
         "dna-base-frequency",
         "dna-raw-distance",
         "dna-translation",
@@ -97,8 +106,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 13
-    assert report.passed_case_count == 13
+    assert report.case_count == 17
+    assert report.passed_case_count == 17
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -110,6 +119,34 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert all(observation.r_version == "4.6.0" for observation in report.observations)
     assert all(observation.ape_version == "5.0.0" for observation in report.observations)
     assert all(observation.reproducible_artifact_root is None for observation in report.observations)
+    internal_label_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "read-tree-internal-node-labels"
+    )
+    assert internal_label_case.reference_summary is not None
+    assert internal_label_case.reference_summary["tree_count"] == 1
+    support_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "read-tree-support-labels"
+    )
+    assert support_case.reference_summary is not None
+    multiple_tree_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "read-tree-multiple-trees"
+    )
+    assert multiple_tree_case.reference_summary is not None
+    assert multiple_tree_case.reference_summary["tree_count"] == 3
+    malformed_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "read-tree-malformed-newick"
+    )
+    assert malformed_case.status == "passed"
+    assert malformed_case.reference_error is not None
+    assert malformed_case.bijux_error is not None
     quoted_case = next(
         observation
         for observation in report.observations
@@ -194,7 +231,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 13
+    assert len(rows) == 17
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
