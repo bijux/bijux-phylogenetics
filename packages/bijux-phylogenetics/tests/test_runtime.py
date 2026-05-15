@@ -4120,6 +4120,7 @@ def test_prune_tree_to_requested_taxa_reports_absent_requests() -> None:
     )
     assert tree.tip_names == ["A", "C"]
     assert dumps_newick(tree) == "(A:0.3,C:0.3);"
+    assert tree.rooted is True
     assert report.requested_taxa == ["A", "C", "Z"]
     assert report.kept_taxa == ["A", "C"]
     assert report.removed_taxa == ["B", "D"]
@@ -4139,6 +4140,7 @@ def test_drop_tree_taxa_excludes_exact_requested_tips() -> None:
     )
     assert tree.tip_names == ["A", "C"]
     assert dumps_newick(tree) == "(A:0.3,C:0.3);"
+    assert tree.rooted is True
     assert report.requested_taxa == ["B", "D", "Z"]
     assert report.kept_taxa == ["A", "C"]
     assert report.removed_taxa == ["B", "D"]
@@ -4147,6 +4149,38 @@ def test_drop_tree_taxa_excludes_exact_requested_tips() -> None:
         ("B", "excluded_explicitly"),
         ("D", "excluded_explicitly"),
     ]
+
+
+def test_drop_tree_taxa_keeps_unrooted_three_tip_outputs_unrooted() -> None:
+    tree, report = drop_tree_taxa(
+        fixture("example_tree_unrooted.nwk"),
+        ["D"],
+    )
+
+    assert dumps_newick(tree) == "(A:0.1,B:0.2,C:0.3);"
+    assert tree.rooted is False
+    assert report.kept_taxa == ["A", "B", "C"]
+    assert report.removed_taxa == ["D"]
+
+
+def test_drop_tree_taxa_marks_two_tip_outputs_rooted_like_ape() -> None:
+    tree, report = drop_tree_taxa(
+        fixture("example_tree_unrooted.nwk"),
+        ["C", "D"],
+    )
+
+    assert dumps_newick(tree) == "(A:0.1,B:0.2);"
+    assert tree.rooted is True
+    assert report.kept_taxa == ["A", "B"]
+    assert report.removed_taxa == ["C", "D"]
+
+
+def test_drop_tree_taxa_fails_when_fewer_than_two_taxa_remain() -> None:
+    with pytest.raises(ValueError, match="at least two retained taxa"):
+        drop_tree_taxa(
+            fixture("example_tree.nwk"),
+            ["B", "C", "D"],
+        )
 
 
 def test_prune_cli_accepts_explicit_taxon_keep_lists(tmp_path: Path, capsys) -> None:
