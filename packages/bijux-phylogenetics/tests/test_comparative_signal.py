@@ -5,10 +5,13 @@ from pathlib import Path
 
 import pytest
 
+from bijux_phylogenetics.comparative.common import load_comparative_dataset
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
     compute_phylogenetic_signal_test,
+    evaluate_pagels_lambda_likelihood,
+    evaluate_pagels_lambda_likelihood_from_dataset,
     estimate_pagels_lambda,
 )
 from bijux_phylogenetics.errors import ComparativeMethodError
@@ -181,6 +184,85 @@ def test_phylogenetic_signal_accepts_rooted_non_ultrametric_tree_by_policy() -> 
     )
     assert report.input_audit.minimum_root_to_tip_depth == 0.2
     assert report.input_audit.maximum_root_to_tip_depth == 1.1
+
+
+def test_pagels_lambda_fixed_likelihood_surface_matches_boundary_reports() -> None:
+    tree = fixture("example_tree_phytools_non_ultrametric_twenty_four_taxa.nwk")
+    traits = fixture("example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv")
+
+    estimate = estimate_pagels_lambda(tree, traits, trait="signal_strong")
+    null_report = evaluate_pagels_lambda_likelihood(
+        tree,
+        traits,
+        trait="signal_strong",
+        lambda_value=0.0,
+    )
+    brownian_report = evaluate_pagels_lambda_likelihood(
+        tree,
+        traits,
+        trait="signal_strong",
+        lambda_value=1.0,
+    )
+
+    assert math.isclose(null_report.log_likelihood, estimate.null_log_likelihood)
+    assert math.isclose(brownian_report.log_likelihood, estimate.brownian_log_likelihood)
+    assert math.isclose(
+        estimate.likelihood_ratio_statistic,
+        2.0 * (estimate.log_likelihood - estimate.null_log_likelihood),
+    )
+    assert 0.0 <= estimate.likelihood_ratio_p_value <= 1.0
+
+
+def test_pagels_lambda_fixed_likelihood_from_dataset_matches_path_surface() -> None:
+    tree = fixture("example_tree_phytools_non_ultrametric_twenty_four_taxa.nwk")
+    traits = fixture("example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv")
+    dataset = load_comparative_dataset(tree, traits, trait="signal_strong")
+
+    path_report = evaluate_pagels_lambda_likelihood(
+        tree,
+        traits,
+        trait="signal_strong",
+        lambda_value=0.35,
+    )
+    dataset_report = evaluate_pagels_lambda_likelihood_from_dataset(
+        dataset,
+        lambda_value=0.35,
+    )
+
+    assert math.isclose(dataset_report.log_likelihood, path_report.log_likelihood)
+    assert dataset_report.lambda_value == path_report.lambda_value
+    assert dataset_report.taxon_count == path_report.taxon_count
+    assert dataset_report.trait == path_report.trait
+
+
+def test_pagels_lambda_reports_optimizer_diagnostics_for_strong_and_weak_signal() -> None:
+    strong_report = estimate_pagels_lambda(
+        fixture("example_tree_phytools_non_ultrametric_twenty_four_taxa.nwk"),
+        fixture("example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv"),
+        trait="signal_strong",
+    )
+    weak_report = estimate_pagels_lambda(
+        fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),
+        fixture("example_traits_phytools_signal_twenty_four_taxa.tsv"),
+        trait="signal_weak",
+    )
+
+    strong_diagnostics = strong_report.optimizer_diagnostics
+    weak_diagnostics = weak_report.optimizer_diagnostics
+
+    assert strong_diagnostics.optimizer_name == "two-stage-grid-search"
+    assert strong_diagnostics.coarse_grid_point_count == 21
+    assert strong_diagnostics.fine_grid_point_count == 11
+    assert (
+        strong_diagnostics.function_evaluation_count
+        == strong_diagnostics.coarse_grid_point_count
+        + strong_diagnostics.fine_grid_point_count
+    )
+    assert strong_diagnostics.hit_upper_boundary is True
+    assert weak_diagnostics.hit_lower_boundary is True
+    assert len(strong_report.profile_rows) == strong_diagnostics.fine_grid_point_count
+    assert any(row.within_95_confidence_interval for row in weak_report.profile_rows)
+    assert all(row.delta_log_likelihood >= 0.0 for row in strong_report.profile_rows)
 
 
 def test_phylogenetic_signal_rejects_constant_trait_values(tmp_path: Path) -> None:

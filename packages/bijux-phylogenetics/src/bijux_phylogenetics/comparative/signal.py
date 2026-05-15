@@ -112,6 +112,53 @@ class PagelLambdaReport:
     log_likelihood: float
     null_log_likelihood: float
     brownian_log_likelihood: float
+    likelihood_ratio_statistic: float
+    likelihood_ratio_p_value: float
+    p_value_method: str
+    optimizer_diagnostics: PagelLambdaOptimizerDiagnostics
+    profile_rows: list[PagelLambdaProfileRow]
+
+
+@dataclass(slots=True)
+class PagelLambdaLikelihoodReport:
+    """Fixed-lambda likelihood evaluation for one numeric trait."""
+
+    tree_path: Path
+    traits_path: Path
+    trait: str
+    taxon_count: int
+    input_audit: PhylogeneticSignalInputAudit
+    lambda_value: float
+    log_likelihood: float
+
+
+@dataclass(slots=True)
+class PagelLambdaOptimizerDiagnostics:
+    """Optimizer diagnostics for one Pagel's-lambda likelihood search."""
+
+    optimizer_name: str
+    coarse_step: float
+    fine_step: float
+    coarse_grid_point_count: int
+    fine_grid_point_count: int
+    function_evaluation_count: int
+    coarse_best_lambda: float
+    coarse_best_log_likelihood: float
+    fine_search_start: float
+    fine_search_stop: float
+    converged: bool
+    hit_lower_boundary: bool
+    hit_upper_boundary: bool
+
+
+@dataclass(slots=True)
+class PagelLambdaProfileRow:
+    """One evaluated lambda profile point from the governed grid search."""
+
+    lambda_value: float
+    log_likelihood: float
+    delta_log_likelihood: float
+    within_95_confidence_interval: bool
 
 
 @dataclass(slots=True)
@@ -247,10 +294,16 @@ def estimate_pagels_lambda(
         taxon_column=taxon_column,
     )
     input_audit = _build_signal_input_audit(dataset)
-    lambda_value, log_likelihood = _estimate_pagels_lambda_from_dataset(
+    fit_result = _estimate_pagels_lambda_from_dataset(
         dataset,
         coarse_step=coarse_step,
         fine_step=fine_step,
+    )
+    null_log_likelihood = _lambda_log_likelihood(dataset, 0.0)
+    brownian_log_likelihood = _lambda_log_likelihood(dataset, 1.0)
+    likelihood_ratio_statistic = max(
+        0.0,
+        2.0 * (fit_result.log_likelihood - null_log_likelihood),
     )
     return PagelLambdaReport(
         tree_path=tree_path,
@@ -258,10 +311,59 @@ def estimate_pagels_lambda(
         trait=trait,
         taxon_count=len(dataset.taxa),
         input_audit=input_audit,
+        lambda_value=fit_result.lambda_value,
+        log_likelihood=fit_result.log_likelihood,
+        null_log_likelihood=null_log_likelihood,
+        brownian_log_likelihood=brownian_log_likelihood,
+        likelihood_ratio_statistic=likelihood_ratio_statistic,
+        likelihood_ratio_p_value=_likelihood_ratio_p_value(likelihood_ratio_statistic),
+        p_value_method="chi-square-approximation",
+        optimizer_diagnostics=fit_result.optimizer_diagnostics,
+        profile_rows=fit_result.profile_rows,
+    )
+
+
+def evaluate_pagels_lambda_likelihood(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    trait: str,
+    lambda_value: float,
+    taxon_column: str | None = None,
+) -> PagelLambdaLikelihoodReport:
+    """Evaluate the Gaussian log-likelihood at one fixed Pagel's lambda value."""
+    dataset = _load_signal_dataset(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+    )
+    input_audit = _build_signal_input_audit(dataset)
+    return evaluate_pagels_lambda_likelihood_from_dataset(
+        dataset,
         lambda_value=lambda_value,
-        log_likelihood=log_likelihood,
-        null_log_likelihood=_lambda_log_likelihood(dataset, 0.0),
-        brownian_log_likelihood=_lambda_log_likelihood(dataset, 1.0),
+        input_audit=input_audit,
+    )
+
+
+def evaluate_pagels_lambda_likelihood_from_dataset(
+    dataset: ComparativeDataset,
+    *,
+    lambda_value: float,
+    input_audit: PhylogeneticSignalInputAudit | None = None,
+) -> PagelLambdaLikelihoodReport:
+    """Evaluate the Gaussian log-likelihood at one fixed Pagel's lambda value."""
+    if not 0.0 <= lambda_value <= 1.0:
+        raise ValueError(f"lambda_value must be within [0, 1], got {lambda_value}")
+    audit = input_audit or _build_signal_input_audit(dataset)
+    return PagelLambdaLikelihoodReport(
+        tree_path=dataset.tree_path,
+        traits_path=dataset.traits_path,
+        trait=dataset.trait,
+        taxon_count=len(dataset.taxa),
+        input_audit=audit,
+        lambda_value=lambda_value,
+        log_likelihood=_lambda_log_likelihood(dataset, lambda_value),
     )
 
 
@@ -283,7 +385,7 @@ def compute_phylogenetic_signal_test(
     )
     input_audit = _build_signal_input_audit(dataset)
     observed_k = _compute_blombergs_k_from_dataset(dataset)
-    estimated_lambda, _ = _estimate_pagels_lambda_from_dataset(dataset)
+    estimated_lambda = _estimate_pagels_lambda_from_dataset(dataset).lambda_value
     randomizer = random.Random(seed)  # nosec B311
     exceed_count = 0
     permuted_values = list(dataset.trait_values)
@@ -510,24 +612,57 @@ def _estimate_pagels_lambda_from_dataset(
     *,
     coarse_step: float = 0.05,
     fine_step: float = 0.005,
-) -> tuple[float, float]:
+) -> _PagelLambdaFitResult:
     coarse_values = _grid_values(0.0, 1.0, coarse_step)
-    coarse_best_lambda, _ = max(
-        (
-            (_lambda, _lambda_log_likelihood(dataset, _lambda))
-            for _lambda in coarse_values
-        ),
+    coarse_rows = [
+        (_lambda, _lambda_log_likelihood(dataset, _lambda)) for _lambda in coarse_values
+    ]
+    coarse_best_lambda, coarse_best_log_likelihood = max(
+        coarse_rows,
         key=lambda item: item[1],
     )
     fine_start = max(0.0, coarse_best_lambda - coarse_step)
     fine_stop = min(1.0, coarse_best_lambda + coarse_step)
     fine_values = _grid_values(fine_start, fine_stop, fine_step)
-    return max(
-        (
-            (_lambda, _lambda_log_likelihood(dataset, _lambda))
-            for _lambda in fine_values
-        ),
+    fine_rows = [
+        (_lambda, _lambda_log_likelihood(dataset, _lambda)) for _lambda in fine_values
+    ]
+    lambda_value, log_likelihood = max(
+        fine_rows,
         key=lambda item: item[1],
+    )
+    profile_threshold = 0.5 * 3.841458820694124
+    profile_rows = [
+        PagelLambdaProfileRow(
+            lambda_value=row_lambda,
+            log_likelihood=row_log_likelihood,
+            delta_log_likelihood=max(0.0, log_likelihood - row_log_likelihood),
+            within_95_confidence_interval=(
+                (log_likelihood - row_log_likelihood) <= profile_threshold
+            ),
+        )
+        for row_lambda, row_log_likelihood in fine_rows
+    ]
+    diagnostics = PagelLambdaOptimizerDiagnostics(
+        optimizer_name="two-stage-grid-search",
+        coarse_step=coarse_step,
+        fine_step=fine_step,
+        coarse_grid_point_count=len(coarse_rows),
+        fine_grid_point_count=len(fine_rows),
+        function_evaluation_count=len(coarse_rows) + len(fine_rows),
+        coarse_best_lambda=coarse_best_lambda,
+        coarse_best_log_likelihood=coarse_best_log_likelihood,
+        fine_search_start=fine_start,
+        fine_search_stop=fine_stop,
+        converged=True,
+        hit_lower_boundary=math.isclose(lambda_value, 0.0, abs_tol=fine_step / 2.0),
+        hit_upper_boundary=math.isclose(lambda_value, 1.0, abs_tol=fine_step / 2.0),
+    )
+    return _PagelLambdaFitResult(
+        lambda_value=lambda_value,
+        log_likelihood=log_likelihood,
+        optimizer_diagnostics=diagnostics,
+        profile_rows=profile_rows,
     )
 
 
@@ -553,3 +688,15 @@ def _grid_values(start: float, stop: float, step: float) -> list[float]:
         values.append(round(current, 6))
         current += step
     return values
+
+
+@dataclass(slots=True)
+class _PagelLambdaFitResult:
+    lambda_value: float
+    log_likelihood: float
+    optimizer_diagnostics: PagelLambdaOptimizerDiagnostics
+    profile_rows: list[PagelLambdaProfileRow]
+
+
+def _likelihood_ratio_p_value(likelihood_ratio_statistic: float) -> float:
+    return math.erfc(math.sqrt(likelihood_ratio_statistic / 2.0))

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 from pathlib import Path
 
 from bijux_phylogenetics.comparative.signal import (
@@ -63,11 +62,6 @@ def summarize_phylogenetic_signal(
         permutations=permutations,
         seed=seed,
     )
-    likelihood_ratio_statistic = max(
-        0.0,
-        2.0 * (lambda_report.log_likelihood - lambda_report.null_log_likelihood),
-    )
-    likelihood_ratio_p_value = math.erfc(math.sqrt(likelihood_ratio_statistic / 2.0))
     return PhylogeneticSignalSummaryReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -77,9 +71,9 @@ def summarize_phylogenetic_signal(
         blombergs_k=blomberg,
         pagels_lambda=lambda_report,
         signal_test=signal_test,
-        lambda_likelihood_ratio_statistic=likelihood_ratio_statistic,
-        lambda_likelihood_ratio_p_value=likelihood_ratio_p_value,
-        lambda_p_value_method="chi-square-approximation",
+        lambda_likelihood_ratio_statistic=lambda_report.likelihood_ratio_statistic,
+        lambda_likelihood_ratio_p_value=lambda_report.likelihood_ratio_p_value,
+        lambda_p_value_method=lambda_report.p_value_method,
     )
 
 
