@@ -7,6 +7,8 @@ from pathlib import Path
 from bijux_phylogenetics.comparative._math import (
     invert_matrix,
     log_determinant,
+    matrix_condition_number,
+    matrix_rank,
     stable_covariance,
 )
 from bijux_phylogenetics.comparative.common import (
@@ -597,12 +599,12 @@ def _assess_covariance_candidate(
     fit_strategy_details: str,
 ) -> CovarianceAuditCandidateRow:
     matrix_dimension = len(covariance_matrix)
-    matrix_rank = _matrix_rank(covariance_matrix, tolerance=1e-12)
-    singular = matrix_rank < matrix_dimension
+    covariance_rank = matrix_rank(covariance_matrix, tolerance=1e-12)
+    singular = covariance_rank < matrix_dimension
     positive_definite_before_fit = _is_positive_definite(covariance_matrix)
     condition_number = math.inf
     if positive_definite_before_fit and not singular:
-        condition_number = _matrix_condition_number(covariance_matrix)
+        condition_number = matrix_condition_number(covariance_matrix)
     near_singular = (
         singular or condition_number >= COVARIANCE_AUDIT_CONDITION_THRESHOLD
     )
@@ -614,7 +616,7 @@ def _assess_covariance_candidate(
             epsilon=COVARIANCE_AUDIT_REGULARIZATION_EPSILON,
         )
         if _is_positive_definite(stabilized):
-            fit_condition_number = _matrix_condition_number(stabilized)
+            fit_condition_number = matrix_condition_number(stabilized)
         else:
             actual_fit_strategy = "failure"
             fit_strategy_details = (
@@ -626,7 +628,7 @@ def _assess_covariance_candidate(
         parameter_name=parameter_name,
         parameter_value=parameter_value,
         matrix_dimension=matrix_dimension,
-        matrix_rank=matrix_rank,
+        matrix_rank=covariance_rank,
         condition_number=condition_number,
         fit_condition_number=fit_condition_number,
         positive_definite_before_fit=positive_definite_before_fit,
@@ -773,58 +775,6 @@ def _is_positive_definite(matrix: list[list[float]]) -> bool:
     except ValueError:
         return False
     return True
-
-
-def _matrix_condition_number(matrix: list[list[float]]) -> float:
-    inverse = invert_matrix(matrix)
-    return _matrix_infinity_norm(matrix) * _matrix_infinity_norm(inverse)
-
-
-def _matrix_infinity_norm(matrix: list[list[float]]) -> float:
-    if not matrix:
-        return 0.0
-    return max(sum(abs(value) for value in row) for row in matrix)
-
-
-def _matrix_rank(matrix: list[list[float]], *, tolerance: float) -> int:
-    if not matrix:
-        return 0
-    working = [list(map(float, row)) for row in matrix]
-    row_count = len(working)
-    column_count = len(working[0])
-    rank = 0
-    pivot_row = 0
-    for pivot_column in range(column_count):
-        candidate_row = max(
-            range(pivot_row, row_count),
-            key=lambda index: abs(working[index][pivot_column]),
-        )
-        pivot_value = working[candidate_row][pivot_column]
-        if math.isclose(pivot_value, 0.0, abs_tol=tolerance):
-            continue
-        working[pivot_row], working[candidate_row] = (
-            working[candidate_row],
-            working[pivot_row],
-        )
-        pivot = working[pivot_row][pivot_column]
-        working[pivot_row] = [value / pivot for value in working[pivot_row]]
-        for row_index in range(row_count):
-            if row_index == pivot_row:
-                continue
-            factor = working[row_index][pivot_column]
-            if math.isclose(factor, 0.0, abs_tol=tolerance):
-                continue
-            working[row_index] = [
-                row_value - factor * pivot_value
-                for row_value, pivot_value in zip(
-                    working[row_index], working[pivot_row], strict=True
-                )
-            ]
-        rank += 1
-        pivot_row += 1
-        if pivot_row == row_count:
-            break
-    return rank
 
 
 def _deduplicate(values: list[str]) -> list[str]:

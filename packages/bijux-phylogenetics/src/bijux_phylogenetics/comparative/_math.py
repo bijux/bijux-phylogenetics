@@ -146,6 +146,61 @@ def stable_covariance(
     return stabilized
 
 
+def matrix_infinity_norm(matrix: list[list[float]]) -> float:
+    """Return the infinity norm of a rectangular matrix."""
+    if not matrix:
+        return 0.0
+    return max(sum(abs(value) for value in row) for row in matrix)
+
+
+def matrix_condition_number(matrix: list[list[float]]) -> float:
+    """Return the infinity-norm condition number of an invertible square matrix."""
+    inverse = invert_matrix(matrix)
+    return matrix_infinity_norm(matrix) * matrix_infinity_norm(inverse)
+
+
+def matrix_rank(matrix: list[list[float]], *, tolerance: float) -> int:
+    """Return the numeric rank of a matrix under one absolute pivot tolerance."""
+    if not matrix:
+        return 0
+    working = [list(map(float, row)) for row in matrix]
+    row_count = len(working)
+    column_count = len(working[0])
+    rank = 0
+    pivot_row = 0
+    for pivot_column in range(column_count):
+        candidate_row = max(
+            range(pivot_row, row_count),
+            key=lambda index: abs(working[index][pivot_column]),
+        )
+        pivot_value = working[candidate_row][pivot_column]
+        if math.isclose(pivot_value, 0.0, abs_tol=tolerance):
+            continue
+        working[pivot_row], working[candidate_row] = (
+            working[candidate_row],
+            working[pivot_row],
+        )
+        pivot = working[pivot_row][pivot_column]
+        working[pivot_row] = [value / pivot for value in working[pivot_row]]
+        for row_index in range(row_count):
+            if row_index == pivot_row:
+                continue
+            factor = working[row_index][pivot_column]
+            if math.isclose(factor, 0.0, abs_tol=tolerance):
+                continue
+            working[row_index] = [
+                row_value - factor * pivot_value
+                for row_value, pivot_value in zip(
+                    working[row_index], working[pivot_row], strict=True
+                )
+            ]
+        rank += 1
+        pivot_row += 1
+        if pivot_row == row_count:
+            break
+    return rank
+
+
 def _beta_continued_fraction(
     a: float,
     b: float,
