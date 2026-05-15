@@ -47,6 +47,20 @@ def test_load_tree_set_skips_malformed_newick_records_and_reports_processing(
     assert report.rooted_topology_count == 2
 
 
+def test_load_tree_set_reads_newick_records_from_trees_suffix(tmp_path: Path) -> None:
+    tree_set_path = _write_large_tree_set(
+        tmp_path / "posterior.trees",
+        tree_count=3,
+    )
+
+    report = load_tree_set(tree_set_path)
+
+    assert report.tree_count == 3
+    assert report.shared_taxa == ["A", "B", "C", "D"]
+    assert report.processing.skipped_malformed_tree_count == 0
+    assert report.rooted_topology_count == 2
+
+
 def test_summarize_bootstrap_tree_set_handles_thousand_tree_inputs(
     tmp_path: Path,
 ) -> None:

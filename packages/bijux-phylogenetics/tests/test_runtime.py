@@ -3649,6 +3649,22 @@ def test_compute_consensus_tree_returns_majority_rule_consensus() -> None:
     assert report.included_clade_count == 2
 
 
+def test_compute_consensus_tree_stays_native_without_biopython_bridge() -> None:
+    import bijux_phylogenetics.tree_set as tree_set_module
+
+    assert not hasattr(tree_set_module, "Phylo")
+    assert not hasattr(tree_set_module, "tree_from_biophylo")
+
+    tree, report = tree_set_module.compute_consensus_tree(
+        fixture("example_tree_set_left.nwk")
+    )
+
+    assert dumps_newick(tree) == (
+        "((A:0.1,B:0.1)66.6666666666667:0.2,(C:0.1,D:0.1)66.6666666666667:0.2);"
+    )
+    assert report.tree_count == 3
+
+
 def test_compute_strict_consensus_tree_returns_star_when_no_clade_is_unanimous() -> None:
     tree, report = compute_strict_consensus_tree(fixture("example_tree_set_left.nwk"))
 
