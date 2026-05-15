@@ -162,7 +162,7 @@ reproducible artifact bundle for that case.
 
 The governed live `ape` cases now span both shared tree and shared DNA
 fixtures. Today that lane covers `ape::read.tree`, `ape::write.tree`,
-`ape::consensus`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
+`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
 resolved from `shared_tree_fixture_catalog.json` and
 `shared_dna_alignment_fixture_catalog.json`. The `ape::read.tree` portion now
 compares structured clade rows and covers branch lengths, internal labels,
@@ -185,6 +185,12 @@ The `ape::consensus` portion now covers majority-rule and strict consensus
 over governed conflicting and posterior-style tree sets, compares one
 normalized consensus topology plus one clade-frequency ledger per case, and
 fails explicitly when the input tree set does not share one exact taxon set.
+The `ape::prop.clades` portion now covers reference-tree clade support mapping
+over duplicate, reordered, posterior-style, and mismatched shared tree sets.
+It compares one `reference-tree-support.tsv` ledger keyed by descendant tip
+set instead of transient node number, and the owned `tree-set support-map`
+surface keeps one real `ape` edge case explicit: unsupported root-adjacent
+splits are left unscored instead of being mislabeled as zero support.
 The `ape::keep.tip` portion now covers valid rooted and unrooted keep-set
 cases, selected-tip order differences, and rootedness changes after pruning.
 Bijux keeps the workflow-facing absent-requested-taxon report and minimum-two

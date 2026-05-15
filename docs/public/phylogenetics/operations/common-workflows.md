@@ -177,6 +177,12 @@ the retained sibling branch rather than folded into the expanded clade. The
 governed conflicting and posterior-style tree sets, writes one normalized
 consensus Newick plus one clade-frequency TSV ledger per case, and fails
 explicitly when the tree set does not share one exact taxon set. The
+`ape::prop.clades` portion now covers reference-tree clade support mapping
+over duplicate, reordered, posterior-style, and mismatched shared tree sets.
+Use `tree-set support-map` when one review tree needs one governed
+`reference-tree-support.tsv` ledger keyed by descendant tip set. That surface
+also preserves the real `ape` edge case explicitly: unsupported root-adjacent
+splits stay unscored instead of being forced into zero-support rows. The
 `ape::drop.tip` portion now covers rooted and unrooted taxon exclusion cases,
 unknown excluded taxon names, and rootedness changes after pruning, while
 keeping one explicit workflow safety rule: Bijux stops the run if pruning would

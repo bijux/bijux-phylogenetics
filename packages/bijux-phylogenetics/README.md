@@ -299,6 +299,7 @@ bijux-phylogenetics adapter report artifacts/mrbayes/analysis.manifest.json --ou
 bijux-phylogenetics tree-set inspect posterior.trees --json
 bijux-phylogenetics tree-set diversity posterior.trees --out artifacts/posterior.rf-distribution.tsv --json
 bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk --method majority-rule --clade-frequencies-out artifacts/posterior.clade-frequencies.tsv
+bijux-phylogenetics tree-set support-map reference-tree.nwk posterior.trees --out artifacts/reference-tree-support.tsv --json
 bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html --max-tree-count 5000 --max-report-table-rows 50 --memory-warning-threshold-bytes 134217728
 bijux-phylogenetics demo gnathostome-ortholog-protein-benchmark --out artifacts/gnathostome-ortholog-protein-benchmark --json
 bijux-phylogenetics demo rabies-method-sensitivity-panel --out artifacts/rabies-method-sensitivity-panel --json
@@ -731,7 +732,7 @@ string-based, so tree summaries, tip ledgers, normalized Newick outputs,
 DNA-state frequency tables, raw-distance ledgers, and translated amino-acid
 rows are compared as owned artifacts rather than scraped console text. The
 governed live cases now cover `ape::read.tree`, `ape::write.tree`,
-`ape::consensus`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
+`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
 fixture ids. The tree and DNA inputs for that lane now come from the governed
 shared fixture catalogs in
 `tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
@@ -745,6 +746,14 @@ multiple-tree input, and one governed malformed-Newick rejection case. The
 governed conflicting and posterior-style tree sets, writes one normalized
 consensus Newick plus one clade-frequency TSV ledger per case, and fails
 explicitly when the tree set does not share one exact taxon set. The
+`ape::prop.clades` lane now covers reference-tree clade support mapping over
+duplicate, reordered, posterior-style, and mismatched shared tree sets, and
+the owned `tree-set support-map` surface writes one `reference-tree-support.tsv`
+ledger keyed by descendant tip set rather than transient node index. The
+runtime keeps the real `ape` edge case explicit too: unsupported
+root-adjacent splits are left unscored instead of being mislabeled as zero
+support.
+The
 `ape::root` lane now uses the same shared tree catalog for single-tip
 outgroups, monophyletic multi-tip outgroups, already-rooted trees, missing
 outgroups, and non-monophyletic outgroups, with rooted clades and branch
