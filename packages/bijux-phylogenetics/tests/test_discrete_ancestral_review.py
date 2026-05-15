@@ -190,6 +190,38 @@ def test_reconstruct_discrete_ancestral_states_flags_overparameterized_sym_case(
     )
 
 
+def test_write_discrete_ancestral_ard_fit_table_tracks_directional_rates_and_weak_fit_warnings(
+    tmp_path: Path,
+) -> None:
+    tree_fixture = get_shared_tree_fixture("pectinate_rooted_non_ultrametric")
+    trait_fixture = get_shared_trait_table_fixture("ace_discrete_ard_pectinate")
+    report = reconstruct_discrete_ancestral_states(
+        tree_fixture.path,
+        trait_fixture.path,
+        trait="region",
+        model="all-rates-different",
+    )
+    fit_path = tmp_path / "discrete-ancestral-fit.tsv"
+    write_discrete_ancestral_fit_table(fit_path, report)
+    fit_rows = fit_path.read_text(encoding="utf-8").splitlines()
+    assert "\tall-rates-different\t4\t3\t6\t" in f"\t{fit_rows[1]}\t"
+    assert "\ttrue\t" in f"\t{fit_rows[1].lower()}\t"
+    assert report.overparameterized is True
+    assert report.optimizer_diagnostics is not None
+    assert report.optimizer_diagnostics.hit_lower_parameter_bound is True
+    assert report.baseline_comparison is not None
+    assert report.baseline_comparison.preferred_model_by_aic == "equal-rates"
+    transition_pairs = {
+        (row.source_state, row.target_state): row.rate
+        for row in report.transition_rate_rows
+    }
+    assert transition_pairs[("island", "south")] != transition_pairs[("south", "island")]
+    assert (
+        "one or more discrete rate parameters hit an optimizer bound and should be interpreted as weakly identified"
+        in report.warnings
+    )
+
+
 def test_fitch_summary_table_includes_parsimony_counts(tmp_path: Path) -> None:
     report = reconstruct_discrete_ancestral_states(
         fixture("example_tree.nwk"),

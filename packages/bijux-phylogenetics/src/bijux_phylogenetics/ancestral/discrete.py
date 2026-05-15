@@ -246,6 +246,20 @@ def reconstruct_discrete_ancestral_states(
                 "the discrete likelihood fit is likely overparameterized relative to the analyzed taxon count"
             )
         if (
+            fit_result.optimizer_diagnostics is not None
+            and not fit_result.optimizer_diagnostics.converged
+        ):
+            warnings.append(
+                "the discrete likelihood optimizer did not converge and should be interpreted cautiously"
+            )
+        if fit_result.optimizer_diagnostics is not None and (
+            fit_result.optimizer_diagnostics.hit_lower_parameter_bound
+            or fit_result.optimizer_diagnostics.hit_upper_parameter_bound
+        ):
+            warnings.append(
+                "one or more discrete rate parameters hit an optimizer bound and should be interpreted as weakly identified"
+            )
+        if (
             fit_result.baseline_comparison is not None
             and fit_result.baseline_comparison.preferred_model_by_aic
             == "equal-rates"

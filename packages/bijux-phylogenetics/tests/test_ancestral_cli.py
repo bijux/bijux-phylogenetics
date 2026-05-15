@@ -240,6 +240,53 @@ def test_ancestral_discrete_cli_reports_sym_fit_diagnostics_and_er_comparison(
     )
 
 
+def test_ancestral_discrete_cli_reports_ard_fit_diagnostics_and_weak_fit_warning(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-discrete-summary.tsv"
+    fit_path = tmp_path / "ancestral-discrete-fit.tsv"
+    comparison_path = tmp_path / "ancestral-discrete-comparison.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "discrete",
+            str(fixture("example_tree_ladderized.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "all-rates-different",
+            "--compare-model",
+            "equal-rates",
+            "--summary-out",
+            str(summary_path),
+            "--fit-out",
+            str(fit_path),
+            "--comparison-out",
+            str(comparison_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "all-rates-different"
+    assert payload["metrics"]["optimizer_iteration_count"] > 0
+    assert payload["metrics"]["overparameterized"] is True
+    assert payload["metrics"]["baseline_model"] == "equal-rates"
+    assert payload["metrics"]["preferred_model_by_aic"] == "equal-rates"
+    assert (
+        "one or more discrete rate parameters hit an optimizer bound and should be interpreted as weakly identified"
+        in payload["warnings"]
+    )
+    assert fit_path.read_text(encoding="utf-8").startswith(
+        "model\ttaxon_count\tstate_count\tparameter_count\tlog_likelihood"
+    )
+    assert comparison_path.read_text(encoding="utf-8").startswith(
+        "node\tdescendant_taxa\tleft_model\tright_model"
+    )
+
+
 def test_ancestral_discrete_cli_can_export_parsimony_comparison(
     tmp_path: Path, capsys
 ) -> None:
