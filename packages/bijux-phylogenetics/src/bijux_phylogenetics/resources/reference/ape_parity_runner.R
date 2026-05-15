@@ -2936,6 +2936,78 @@ branching_times_case <- function(case_payload, output_root, execution_path, r_ve
   )
 }
 
+gamma_stat_case <- function(case_payload, output_root, execution_path, r_version) {
+  tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
+  if (inherits(tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  tip_count <- length(tree$tip.label)
+  branching_times <- sort(as.numeric(ape::branching.times(tree)))
+  gamma_statistic <- as.numeric(ape::gammaStat(tree))
+  intervals <- rev(c(branching_times[[1]], diff(branching_times)))
+  bifurcating <- identical(tree$Nnode, tip_count - 1L)
+  summary <- list(
+    tip_count = tip_count,
+    rooted = ape::is.rooted(tree),
+    ultrametric = diff(range(as.numeric(ape::node.depth.edgelength(tree))[seq_len(tip_count)])) <= 1e-12,
+    bifurcating = bifurcating,
+    root_age = as.numeric(max(branching_times)),
+    branching_time_count = length(branching_times),
+    interval_count = length(intervals),
+    minimum_branching_time = as.numeric(min(branching_times)),
+    maximum_branching_time = as.numeric(max(branching_times)),
+    gamma_statistic = gamma_statistic
+  )
+  row <- data.frame(
+    tip_count = as.integer(summary$tip_count),
+    rooted = as.logical(summary$rooted),
+    ultrametric = as.logical(summary$ultrametric),
+    bifurcating = as.logical(summary$bifurcating),
+    root_age = as.numeric(summary$root_age),
+    branching_time_count = as.integer(summary$branching_time_count),
+    interval_count = as.integer(summary$interval_count),
+    minimum_branching_time = as.numeric(summary$minimum_branching_time),
+    maximum_branching_time = as.numeric(summary$maximum_branching_time),
+    gamma_statistic = as.numeric(summary$gamma_statistic),
+    stringsAsFactors = FALSE
+  )
+
+  summary_path <- file.path(output_root, "summary.json")
+  rows_path <- file.path(output_root, "gamma-statistic.tsv")
+  write_payload(summary_path, summary)
+  write_table(rows_path, row)
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        gamma_statistic = rows_path
+      )
+    )
+  )
+}
+
 ultrametric_case <- function(case_payload, output_root, execution_path, r_version) {
   tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
   if (inherits(tree, "error")) {
@@ -3248,6 +3320,11 @@ if (identical(case_payload$operation, "tree-node-depth")) {
 
 if (identical(case_payload$operation, "tree-branching-times")) {
   branching_times_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "tree-diversification-gamma-statistic")) {
+  gamma_stat_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 

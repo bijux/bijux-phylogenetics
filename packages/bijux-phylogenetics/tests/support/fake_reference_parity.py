@@ -3496,6 +3496,68 @@ if case_payload["operation"] == "tree-branching-times":
     )
     raise SystemExit(0)
 
+if case_payload["operation"] == "tree-diversification-gamma-statistic":
+    tree = Phylo.read(case_payload["input_fixture"], "newick")
+    branching_times = sorted(
+        row["branching_time"]
+        for row in branching_time_rows(tree)
+        if row["node_kind"] != "tip"
+    )
+    intervals = [branching_times[0]]
+    intervals.extend(
+        branching_times[index] - branching_times[index - 1]
+        for index in range(1, len(branching_times))
+    )
+    waiting_times = list(reversed(intervals))
+    tip_count = len(list(tree.get_terminals()))
+    total_span = sum(
+        multiplier * interval
+        for multiplier, interval in zip(range(2, tip_count + 1), waiting_times, strict=True)
+    )
+    running = 0.0
+    cumulative_total = 0.0
+    for multiplier, interval in zip(range(2, tip_count), waiting_times[:-1], strict=True):
+        running += multiplier * interval
+        cumulative_total += running
+    gamma_statistic = (
+        ((cumulative_total / (tip_count - 2)) - (total_span / 2.0))
+        / (total_span * math.sqrt(1.0 / (12.0 * (tip_count - 2))))
+    )
+    summary = {{
+        "tip_count": tip_count,
+        "rooted": is_rooted_tree(tree),
+        "ultrametric": True,
+        "bifurcating": True,
+        "root_age": max(branching_times),
+        "branching_time_count": len(branching_times),
+        "interval_count": len(waiting_times),
+        "minimum_branching_time": min(branching_times),
+        "maximum_branching_time": max(branching_times),
+        "gamma_statistic": gamma_statistic,
+    }}
+    summary.update(SUMMARY_OVERRIDES)
+    rows_path = output_root / "gamma-statistic.tsv"
+    summary_path = output_root / "summary.json"
+    rows = [summary]
+    write_json(summary_path, summary)
+    write_tsv(rows_path, rows)
+    write_json(
+        execution_path,
+        {{
+            "status": "ok",
+            "case_id": case_payload["case_id"],
+            "function_name": case_payload["function_name"],
+            "input_fixture": case_payload["input_fixture"],
+            "r_version": "4.6.0",
+            "ape_version": "5.0.0",
+            "outputs": {{
+                "summary_json": str(summary_path),
+                "gamma_statistic": str(rows_path),
+            }},
+        }},
+    )
+    raise SystemExit(0)
+
 if case_payload["operation"] == "tree-ultrametricity":
     tree = Phylo.read(case_payload["input_fixture"], "newick")
     rows = ultrametric_rows(tree)

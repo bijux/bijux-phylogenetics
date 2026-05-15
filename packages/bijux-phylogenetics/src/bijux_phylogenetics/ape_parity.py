@@ -59,6 +59,9 @@ from bijux_phylogenetics.distance import (
     build_tree_from_imported_distance_matrix,
     compute_pairwise_genetic_distance_matrix,
 )
+from bijux_phylogenetics.diversification import (
+    compute_diversification_gamma_statistic,
+)
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.topology import root_tree_on_outgroup, unroot_tree
@@ -1483,6 +1486,46 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::branching.times",
             python_function_name="compute_tree_branching_times",
             operation="tree-branching-times",
+            input_fixture=fixture_path("tree", "ultrametric_zero_internal_branch"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="gamma-stat-rooted-ultrametric",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::gammaStat",
+            python_function_name="compute_diversification_gamma_statistic",
+            operation="tree-diversification-gamma-statistic",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="gamma-stat-internal-node-labels",
+            fixture_kind="tree",
+            fixture_id="internal_node_labels",
+            function_name="ape::gammaStat",
+            python_function_name="compute_diversification_gamma_statistic",
+            operation="tree-diversification-gamma-statistic",
+            input_fixture=fixture_path("tree", "internal_node_labels"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="gamma-stat-medium-ultrametric",
+            fixture_kind="tree",
+            fixture_id="larger_binary_tree",
+            function_name="ape::gammaStat",
+            python_function_name="compute_diversification_gamma_statistic",
+            operation="tree-diversification-gamma-statistic",
+            input_fixture=fixture_path("tree", "larger_binary_tree"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="gamma-stat-zero-internal-branch",
+            fixture_kind="tree",
+            fixture_id="ultrametric_zero_internal_branch",
+            function_name="ape::gammaStat",
+            python_function_name="compute_diversification_gamma_statistic",
+            operation="tree-diversification-gamma-statistic",
             input_fixture=fixture_path("tree", "ultrametric_zero_internal_branch"),
             tolerance=1e-12,
         ),
@@ -3123,6 +3166,37 @@ def _build_bijux_branching_time_rows(
     ]
 
 
+def _build_bijux_diversification_gamma_rows(
+    input_fixture: Path,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    report = compute_diversification_gamma_statistic(input_fixture)
+    return {
+        "tip_count": report.tip_count,
+        "rooted": report.rooted,
+        "ultrametric": report.ultrametric,
+        "bifurcating": report.bifurcating,
+        "root_age": report.root_age,
+        "branching_time_count": report.branching_time_count,
+        "interval_count": report.interval_count,
+        "minimum_branching_time": report.minimum_branching_time,
+        "maximum_branching_time": report.maximum_branching_time,
+        "gamma_statistic": report.gamma_statistic,
+    }, [
+        {
+            "tip_count": report.tip_count,
+            "rooted": report.rooted,
+            "ultrametric": report.ultrametric,
+            "bifurcating": report.bifurcating,
+            "root_age": report.root_age,
+            "branching_time_count": report.branching_time_count,
+            "interval_count": report.interval_count,
+            "minimum_branching_time": report.minimum_branching_time,
+            "maximum_branching_time": report.maximum_branching_time,
+            "gamma_statistic": report.gamma_statistic,
+        }
+    ]
+
+
 def _build_bijux_tree_ultrametric_rows(
     input_fixture: Path,
     *,
@@ -3595,6 +3669,9 @@ def _build_bijux_case_payload(
     if case.operation == "tree-branching-times":
         summary, rows = _build_bijux_branching_time_rows(case.input_fixture)
         return summary, rows, None
+    if case.operation == "tree-diversification-gamma-statistic":
+        summary, rows = _build_bijux_diversification_gamma_rows(case.input_fixture)
+        return summary, rows, None
     if case.operation == "tree-ultrametricity":
         if case.ultrametric_option is None:
             raise ValueError(
@@ -3724,6 +3801,10 @@ def _load_reference_case_payload(
     if case.operation == "tree-branching-times":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "branching-times.tsv")
+        return summary, rows, None
+    if case.operation == "tree-diversification-gamma-statistic":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "gamma-statistic.tsv")
         return summary, rows, None
     if case.operation == "tree-ultrametricity":
         summary = _load_json(execution_root / "summary.json")
