@@ -318,6 +318,38 @@ def test_comparative_discrete_mk_cli_reports_er_metrics(capsys) -> None:
     assert payload["metrics"]["optimizer_name"] == "nelder-mead"
     assert payload["metrics"]["optimizer_converged"] is True
     assert payload["metrics"]["transition_rate_count"] == 2
+    assert payload["metrics"]["baseline_model"] is None
+
+
+def test_comparative_discrete_mk_cli_reports_symmetric_baseline_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(fixture("example_traits_phytools_signal_twenty_four_taxa.tsv")),
+            "--trait",
+            "region_state",
+            "--taxon-column",
+            "taxon",
+            "--model",
+            "symmetric",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "symmetric"
+    assert payload["metrics"]["parameter_count"] == 3
+    assert payload["metrics"]["transition_rate_count"] == 6
+    assert payload["metrics"]["optimizer_converged"] is True
+    assert payload["metrics"]["overparameterized"] is False
+    assert payload["metrics"]["baseline_model"] == "equal-rates"
+    assert payload["metrics"]["preferred_model_by_aic"] == "equal-rates"
+    assert payload["metrics"]["delta_aic"] > 0.0
 
 
 def test_comparative_discrete_mk_cli_writes_summary_and_rate_ledgers(
