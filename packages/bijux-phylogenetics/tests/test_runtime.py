@@ -558,6 +558,13 @@ from bijux_phylogenetics.core.node_depth import (
     compute_tree_node_depths,
     write_tree_node_depth_table,
 )
+from bijux_phylogenetics.core.ultrametric import (
+    APE_ULTRAMETRIC_TOLERANCE,
+    TreeUltrametricReport,
+    TreeUltrametricTipRow,
+    assess_tree_ultrametricity,
+    write_tree_ultrametric_table,
+)
 from bijux_phylogenetics.core.tree_distance import (
     TipDistanceMatrixReport,
     TipDistanceMatrixRow,
@@ -1066,6 +1073,20 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.write_tree_node_depth_table
         is write_tree_node_depth_table
+    )
+    assert (
+        bijux_phylogenetics.APE_ULTRAMETRIC_TOLERANCE
+        == APE_ULTRAMETRIC_TOLERANCE
+    )
+    assert bijux_phylogenetics.TreeUltrametricReport is TreeUltrametricReport
+    assert bijux_phylogenetics.TreeUltrametricTipRow is TreeUltrametricTipRow
+    assert (
+        bijux_phylogenetics.assess_tree_ultrametricity
+        is assess_tree_ultrametricity
+    )
+    assert (
+        bijux_phylogenetics.write_tree_ultrametric_table
+        is write_tree_ultrametric_table
     )
     assert bijux_phylogenetics.TipDistanceMatrixReport is TipDistanceMatrixReport
     assert bijux_phylogenetics.TipDistanceMatrixRow is TipDistanceMatrixRow
