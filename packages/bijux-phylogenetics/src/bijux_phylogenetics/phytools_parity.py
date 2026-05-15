@@ -12,6 +12,7 @@ import tempfile
 
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
+    compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
 )
 from bijux_phylogenetics.shared_phytools_comparative_fixtures import (
@@ -32,6 +33,9 @@ class PhytoolsParityCase:
     tolerance: float
     trait_name: str
     taxon_column: str | None = None
+    permutation_count: int | None = None
+    permutation_seed: int | None = None
+    field_tolerances: dict[str, float] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -177,7 +181,7 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
             case_id="phylosig-k-strong-signal-twenty-four-taxa",
             fixture_id=strong_signal_fixture.fixture_id,
             function_name="phytools::phylosig(method='K')",
-            python_function_name="compute_blombergs_k",
+            python_function_name="compute_phylogenetic_signal_test",
             operation="phylogenetic-signal-k",
             input_fixtures=(
                 strong_signal_fixture.tree_path,
@@ -186,6 +190,34 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
             tolerance=1e-6,
             trait_name=strong_signal_fixture.trait_name,
             taxon_column=strong_signal_fixture.taxon_column,
+            permutation_count=199,
+            permutation_seed=17,
+            field_tolerances={
+                "p_value": 0.03,
+                "simulated_k_minimum": 0.01,
+                "simulated_k_mean": 0.01,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="phylosig-k-weak-signal-twenty-four-taxa",
+            fixture_id=weak_signal_fixture.fixture_id,
+            function_name="phytools::phylosig(method='K')",
+            python_function_name="compute_phylogenetic_signal_test",
+            operation="phylogenetic-signal-k",
+            input_fixtures=(
+                weak_signal_fixture.tree_path,
+                weak_signal_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=weak_signal_fixture.trait_name,
+            taxon_column=weak_signal_fixture.taxon_column,
+            permutation_count=199,
+            permutation_seed=17,
+            field_tolerances={
+                "p_value": 0.03,
+                "simulated_k_minimum": 0.01,
+                "simulated_k_mean": 0.01,
+            },
         ),
     ]
 
@@ -211,6 +243,8 @@ def _write_case_file(path: Path, case: PhytoolsParityCase) -> Path:
         "trait_name": case.trait_name,
         "taxon_column": case.taxon_column,
         "tolerance": case.tolerance,
+        "permutation_count": case.permutation_count,
+        "permutation_seed": case.permutation_seed,
     }
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return path
@@ -239,6 +273,14 @@ def _build_bijux_case_payload(case: PhytoolsParityCase) -> dict[str, object]:
             "warning_count": len(report.input_audit.warnings),
         }
     if case.operation == "phylogenetic-signal-k":
+        signal_test = compute_phylogenetic_signal_test(
+            tree_path,
+            traits_path,
+            trait=case.trait_name,
+            taxon_column=case.taxon_column,
+            permutations=case.permutation_count or 199,
+            seed=case.permutation_seed or 1,
+        )
         report = compute_blombergs_k(
             tree_path,
             traits_path,
@@ -249,6 +291,13 @@ def _build_bijux_case_payload(case: PhytoolsParityCase) -> dict[str, object]:
             "taxon_count": report.taxon_count,
             "trait_name": report.trait,
             "k": report.k,
+            "p_value": signal_test.p_value,
+            "permutation_count": signal_test.permutations,
+            "permutation_seed": signal_test.seed,
+            "null_distribution_count": len(signal_test.permutation_rows),
+            "simulated_k_minimum": signal_test.null_distribution_minimum,
+            "simulated_k_mean": signal_test.null_distribution_mean,
+            "simulated_k_maximum": signal_test.null_distribution_maximum,
             "generalized_mean": report.generalized_mean,
             "observed_mean_square": report.observed_mean_square,
             "phylogenetic_mean_square": report.phylogenetic_mean_square,
@@ -279,6 +328,12 @@ def _isclose(left: object, right: object, *, tolerance: float) -> bool:
     return left == right
 
 
+def _field_tolerance(case: PhytoolsParityCase, key: str) -> float:
+    if case.field_tolerances and key in case.field_tolerances:
+        return case.field_tolerances[key]
+    return case.tolerance
+
+
 def _mismatch_reason(
     case: PhytoolsParityCase,
     *,
@@ -290,7 +345,16 @@ def _mismatch_reason(
     if case.operation == "phylogenetic-signal-lambda":
         compare_keys = ("taxon_count", "trait_name", "lambda_value", "log_likelihood")
     elif case.operation == "phylogenetic-signal-k":
-        compare_keys = ("taxon_count", "trait_name", "k")
+        compare_keys = (
+            "taxon_count",
+            "trait_name",
+            "k",
+            "p_value",
+            "permutation_count",
+            "permutation_seed",
+            "simulated_k_minimum",
+            "simulated_k_mean",
+        )
     else:
         return "unsupported_operation"
     for key in compare_keys:
@@ -299,7 +363,7 @@ def _mismatch_reason(
         if not _isclose(
             reference_summary[key],
             bijux_summary[key],
-            tolerance=case.tolerance,
+            tolerance=_field_tolerance(case, key),
         ):
             return f"summary_mismatch:{key}"
     return None

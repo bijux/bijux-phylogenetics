@@ -92,19 +92,32 @@ build_lambda_summary <- function(tree, trait_values, trait_name) {
 }
 
 build_k_summary <- function(tree, trait_values, trait_name) {
+  requested_permutation_count <- case_payload$permutation_count
+  permutation_seed <- case_payload$permutation_seed
+  if (!is.null(permutation_seed)) {
+    set.seed(as.integer(permutation_seed))
+  }
   fit <- phytools::phylosig(
     tree,
     trait_values,
     method = "K",
-    test = TRUE
+    test = TRUE,
+    nsim = as.integer(requested_permutation_count)
   )
   simulated_values <- as.numeric(fit$sim.K)
+  observed_k <- as.numeric(fit$K)
+  matching_index <- which(abs(simulated_values - observed_k) < 1e-12)[1]
+  if (!is.na(matching_index)) {
+    simulated_values <- simulated_values[-matching_index]
+  }
   list(
     taxon_count = length(trait_values),
     trait_name = trait_name,
-    k = as.numeric(fit$K),
+    k = observed_k,
     p_value = as.numeric(fit$P),
-    permutation_count = length(simulated_values),
+    permutation_count = as.integer(requested_permutation_count),
+    permutation_seed = as.integer(permutation_seed),
+    null_distribution_count = length(simulated_values),
     simulated_k_minimum = as.numeric(min(simulated_values)),
     simulated_k_mean = as.numeric(mean(simulated_values)),
     simulated_k_maximum = as.numeric(max(simulated_values))
