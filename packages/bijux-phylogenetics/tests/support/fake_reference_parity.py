@@ -1233,6 +1233,45 @@ TABULAR_CASES = {{
     }},
 }}
 
+TREE_CASES = {{
+    "neighbor-joining-analytical-three-taxon": {{
+        "summary": {{
+            "tree_count": 1,
+            "tip_count": 3,
+            "internal_node_count": 1,
+            "edge_count": 3,
+            "rooted": False,
+            "tip_labels": ["A", "B", "C"],
+            "branch_length_count": 3,
+        }},
+        "newick": "(A:0,B:0.125,C:0.5);",
+    }},
+    "neighbor-joining-ultrametric-four-taxon": {{
+        "summary": {{
+            "tree_count": 1,
+            "tip_count": 4,
+            "internal_node_count": 2,
+            "edge_count": 5,
+            "rooted": False,
+            "tip_labels": ["A", "B", "C", "D"],
+            "branch_length_count": 5,
+        }},
+        "newick": "((A:1,B:1):4,C:1,D:1);",
+    }},
+    "neighbor-joining-nonultrametric-four-taxon": {{
+        "summary": {{
+            "tree_count": 1,
+            "tip_count": 4,
+            "internal_node_count": 2,
+            "edge_count": 5,
+            "rooted": False,
+            "tip_labels": ["A", "B", "C", "D"],
+            "branch_length_count": 5,
+        }},
+        "newick": "((A:1,B:1):4.5,C:0.5,D:1.5);",
+    }},
+}}
+
 ERROR_CASES = {{
     "dna-raw-distance-unequal-length-invalid": {{
         "error_type": "DnaDistanceError",
@@ -3007,6 +3046,34 @@ if case_id in TABULAR_CASES:
             "r_version": "4.6.0",
             "ape_version": "5.0.0",
             "outputs": outputs,
+        }},
+    )
+    raise SystemExit(0)
+
+if case_id in TREE_CASES:
+    payload = TREE_CASES[case_id]
+    summary = dict(payload["summary"])
+    summary.update(SUMMARY_OVERRIDES)
+    summary_path = output_root / "summary.json"
+    newick_path = output_root / "normalized-tree.nwk"
+    write_json(summary_path, summary)
+    newick_path.write_text(
+        NORMALIZED_TREE_OVERRIDES.get(case_id, payload["newick"]) + "\\n",
+        encoding="utf-8",
+    )
+    write_json(
+        execution_path,
+        {{
+            "status": "ok",
+            "case_id": case_payload["case_id"],
+            "function_name": case_payload["function_name"],
+            "input_fixture": case_payload["input_fixture"],
+            "r_version": "4.6.0",
+            "ape_version": "5.0.0",
+            "outputs": {{
+                "summary_json": str(summary_path),
+                "normalized_tree": str(newick_path),
+            }},
         }},
     )
     raise SystemExit(0)
