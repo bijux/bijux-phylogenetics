@@ -42,6 +42,19 @@ def test_phylogenetic_signal_test_preserves_permutation_rows() -> None:
         sum(1 for row in report.permutation_rows if row.at_or_above_observed)
         == report.permuted_k_at_or_above_observed
     )
+    assert math.isclose(
+        report.null_distribution_minimum,
+        min(row.permuted_k for row in report.permutation_rows),
+    )
+    assert math.isclose(
+        report.null_distribution_mean,
+        sum(row.permuted_k for row in report.permutation_rows)
+        / len(report.permutation_rows),
+    )
+    assert math.isclose(
+        report.null_distribution_maximum,
+        max(row.permuted_k for row in report.permutation_rows),
+    )
 
 
 def test_summarize_phylogenetic_signal_matches_reference_fixture_cases() -> None:

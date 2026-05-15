@@ -98,6 +98,11 @@ def test_phylogenetic_signal_test_returns_permutation_p_value() -> None:
     assert report.permutations == 19
     assert 0.0 < report.p_value <= 1.0
     assert 0.0 <= report.estimated_lambda <= 1.0
+    assert (
+        report.null_distribution_minimum
+        <= report.null_distribution_mean
+        <= report.null_distribution_maximum
+    )
 
 
 def test_phylogenetic_signal_test_reuses_seeded_permutation_path() -> None:
@@ -126,7 +131,29 @@ def test_phylogenetic_signal_test_reuses_seeded_permutation_path() -> None:
     assert right.seed == 17
     assert left.permutation_rows == right.permutation_rows
     assert left.p_value == right.p_value
+    assert left.null_distribution_mean == right.null_distribution_mean
     assert left.permutation_rows != different_seed.permutation_rows
+
+
+def test_phylogenetic_signal_test_distinguishes_strong_and_weak_signal_permutation_summaries() -> None:
+    strong = compute_phylogenetic_signal_test(
+        fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),
+        fixture("example_traits_phytools_signal_twenty_four_taxa.tsv"),
+        trait="signal_strong",
+        permutations=199,
+        seed=17,
+    )
+    weak = compute_phylogenetic_signal_test(
+        fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),
+        fixture("example_traits_phytools_signal_twenty_four_taxa.tsv"),
+        trait="signal_weak",
+        permutations=199,
+        seed=17,
+    )
+
+    assert strong.observed_k > weak.observed_k
+    assert strong.p_value < weak.p_value
+    assert strong.null_distribution_mean > weak.null_distribution_mean
 
 
 def test_phylogenetic_signal_reports_pruned_missing_values_explicitly() -> None:

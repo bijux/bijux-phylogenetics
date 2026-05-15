@@ -101,6 +101,9 @@ def write_phylogenetic_signal_summary_table(
             "lambda_p_value_method",
             "permutations",
             "permuted_k_at_or_above_observed",
+            "signal_null_k_minimum",
+            "signal_null_k_mean",
+            "signal_null_k_maximum",
         ],
         rows=[
             {
@@ -142,6 +145,15 @@ def write_phylogenetic_signal_summary_table(
                 "permutations": report.signal_test.permutations,
                 "permuted_k_at_or_above_observed": (
                     report.signal_test.permuted_k_at_or_above_observed
+                ),
+                "signal_null_k_minimum": format(
+                    report.signal_test.null_distribution_minimum, ".15g"
+                ),
+                "signal_null_k_mean": format(
+                    report.signal_test.null_distribution_mean, ".15g"
+                ),
+                "signal_null_k_maximum": format(
+                    report.signal_test.null_distribution_maximum, ".15g"
                 ),
             }
         ],

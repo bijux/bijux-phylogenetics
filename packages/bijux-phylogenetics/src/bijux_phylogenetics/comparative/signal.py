@@ -176,6 +176,9 @@ class PhylogeneticSignalTestReport:
     permutations: int
     seed: int
     permuted_k_at_or_above_observed: int
+    null_distribution_minimum: float
+    null_distribution_mean: float
+    null_distribution_maximum: float
     permutation_rows: list[PhylogeneticSignalPermutation]
 
 
@@ -414,6 +417,7 @@ def compute_phylogenetic_signal_test(
                 at_or_above_observed=at_or_above_observed,
             )
         )
+    permuted_k_values = [row.permuted_k for row in permutation_rows]
     p_value = (exceed_count + 1) / (permutations + 1)
     return PhylogeneticSignalTestReport(
         tree_path=tree_path,
@@ -427,6 +431,9 @@ def compute_phylogenetic_signal_test(
         permutations=permutations,
         seed=seed,
         permuted_k_at_or_above_observed=exceed_count,
+        null_distribution_minimum=min(permuted_k_values),
+        null_distribution_mean=sum(permuted_k_values) / len(permuted_k_values),
+        null_distribution_maximum=max(permuted_k_values),
         permutation_rows=permutation_rows,
     )
 
