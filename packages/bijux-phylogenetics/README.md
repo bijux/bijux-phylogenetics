@@ -753,15 +753,18 @@ ledger keyed by descendant tip set rather than transient node index. The
 runtime keeps the real `ape` edge case explicit too: unsupported
 root-adjacent splits are left unscored instead of being mislabeled as zero
 support.
-The `ape::dist.dna` lane now covers both raw nucleotide distance and JC69
+The `ape::dist.dna` lane now covers raw nucleotide distance, JC69, and K80
 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,
 missing-data, and unequal-length-invalid fixtures. Bijux accepts the
-ape-compatible `raw` and `jc69` model aliases on the owned distance surface,
-keeps `p-distance` and `jukes-cantor` as the canonical internal labels, and
-reports saturated JC69 pairs explicitly as either undefined or infinite
-instead of hiding them. Unequal-length alignments still fail explicitly
-instead of deferring that failure until later matrix handling.
+ape-compatible `raw`, `jc69`, and `k80` model aliases on the owned distance
+surface, keeps `p-distance`, `jukes-cantor`, and `kimura-2-parameter` as the
+canonical internal labels, and reports saturated corrected-distance pairs
+explicitly as either undefined or infinite instead of hiding them. `alignment
+distance-matrix` can also write one `--components-out` TSV ledger with
+pairwise mismatch, transition, transversion, ambiguity, and saturation fields
+alongside the distance matrix. Unequal-length alignments still fail
+explicitly instead of deferring that failure until later matrix handling.
 The
 `ape::root` lane now uses the same shared tree catalog for single-tip
 outgroups, monophyletic multi-tip outgroups, already-rooted trees, missing

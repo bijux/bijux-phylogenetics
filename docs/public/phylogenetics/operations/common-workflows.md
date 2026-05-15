@@ -161,10 +161,13 @@ high-divergence, and coding-translation fixtures across `ape::base.freq`,
 diagnostic side of the contract, but the unequal-length DNA fixture is now a
 governed live `ape::dist.dna` failure case so Bijux and `ape` both prove the
 same DNA-distance stop condition explicitly. The owned distance surface now
-accepts the ape-compatible `raw` and `jc69` aliases, keeps `p-distance` and
-`jukes-cantor` as the canonical internal labels, and reports saturated JC69
-pairs explicitly as undefined or infinite instead of flattening them into one
-generic missing value.
+accepts the ape-compatible `raw`, `jc69`, and `k80` aliases, keeps
+`p-distance`, `jukes-cantor`, and `kimura-2-parameter` as the canonical
+internal labels, reports saturated JC69 and K80 pairs explicitly as undefined
+or infinite instead of flattening them into one generic missing value, and
+can write one `--components-out` TSV ledger with pairwise mismatch,
+transition, transversion, ambiguity, and saturation fields alongside the
+distance matrix.
 The `ape::read.tree` portion of the same lane now validates structured clade
 rows for rooted and unrooted trees, branch lengths, internal labels, support
 labels, quoted labels, one governed multiple-tree Newick input, and one

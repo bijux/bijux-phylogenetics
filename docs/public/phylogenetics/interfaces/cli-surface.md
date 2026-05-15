@@ -191,15 +191,16 @@ It compares one `reference-tree-support.tsv` ledger keyed by descendant tip
 set instead of transient node number, and the owned `tree-set support-map`
 surface keeps one real `ape` edge case explicit: unsupported root-adjacent
 splits are left unscored instead of being mislabeled as zero support.
-The `ape::dist.dna` portion now covers both raw nucleotide distance and JC69
+The `ape::dist.dna` portion now covers raw nucleotide distance, JC69, and K80
 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,
 missing-data, and unequal-length-invalid fixtures. On the owned Bijux side,
-`alignment distance-matrix --model raw` and `--model jc69` accept the
-ape-compatible aliases while keeping `p-distance` and `jukes-cantor` as the
-canonical internal labels. Saturated JC69 pairs are reported explicitly as
-either undefined or infinite, and unequal-length alignments fail explicitly
-before any matrix is written.
+`alignment distance-matrix --model raw`, `--model jc69`, and `--model k80`
+accept the ape-compatible aliases while keeping `p-distance`,
+`jukes-cantor`, and `kimura-2-parameter` as the canonical internal labels.
+Saturated JC69 and K80 pairs are reported explicitly as either undefined or
+infinite, `--components-out` writes one pairwise component ledger for review,
+and unequal-length alignments fail explicitly before any matrix is written.
 The `ape::keep.tip` portion now covers valid rooted and unrooted keep-set
 cases, selected-tip order differences, and rootedness changes after pruning.
 Bijux keeps the workflow-facing absent-requested-taxon report and minimum-two
