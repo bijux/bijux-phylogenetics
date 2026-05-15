@@ -627,7 +627,9 @@ from bijux_phylogenetics.distance import (
     compare_distance_tree_to_reference_tree,
     compare_distance_tree_topologies,
     compute_pairwise_genetic_distance_matrix,
+    list_distance_tree_method_policies,
     load_imported_distance_matrix,
+    resolve_distance_tree_method_policy,
     summarize_distance_bootstrap_support,
     validate_imported_distance_matrix,
 )
@@ -1011,6 +1013,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.compare_distance_tree_topologies
         is compare_distance_tree_topologies
+    )
+    assert (
+        bijux_phylogenetics.list_distance_tree_method_policies
+        is list_distance_tree_method_policies
+    )
+    assert (
+        bijux_phylogenetics.resolve_distance_tree_method_policy
+        is resolve_distance_tree_method_policy
     )
     assert (
         bijux_phylogenetics.BranchScoreComparisonReport is BranchScoreComparisonReport
