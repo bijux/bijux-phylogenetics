@@ -168,7 +168,10 @@ resolved from `shared_tree_fixture_catalog.json`,
 `shared_tree_simulation_fixture_catalog.json`. The `ape::read.tree` portion now
 compares structured clade rows and covers branch lengths, internal labels,
 support labels, quoted labels, one governed multiple-tree Newick input, and
-one governed malformed-Newick rejection case. The `ape::root` portion now
+one governed malformed-Newick rejection case. Those cases now exercise one
+owned native Newick parser and writer on top of `PhyloTree`, including
+location-aware parse failures, rather than routing tree reads through an
+external parser. The `ape::root` portion now
 uses the same shared tree catalog for one-tip outgroups, monophyletic
 multi-tip outgroups, already-rooted trees, missing outgroups, and
 non-monophyletic outgroups, and it compares rooted clades plus branch lengths

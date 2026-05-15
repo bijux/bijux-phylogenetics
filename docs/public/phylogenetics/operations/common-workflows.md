@@ -226,7 +226,10 @@ premature stop codons before codon-aware alignment.
 The `ape::read.tree` portion of the same lane now validates structured clade
 rows for rooted and unrooted trees, branch lengths, internal labels, support
 labels, quoted labels, one governed multiple-tree Newick input, and one
-governed malformed-Newick rejection case. The `ape::root` portion now uses the
+governed malformed-Newick rejection case. Those cases now run through one
+owned native Newick parser and writer on top of `PhyloTree`, including
+location-aware parse failures, instead of depending on an external tree reader.
+The `ape::root` portion now uses the
 same shared tree catalog for single-tip outgroups, monophyletic multi-tip
 outgroups, already-rooted trees, missing outgroups, and non-monophyletic
 outgroups, and compares rooted clades plus branch lengths against live
