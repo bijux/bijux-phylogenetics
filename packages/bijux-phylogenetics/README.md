@@ -185,7 +185,7 @@ differences.
 - generate taxon crosswalk tables, completeness matrices, exclusion tables, ordering-drift audits, pruning-step retention summaries, and named readiness levels for reviewer-facing dataset inspection
 - trim all-gap or all-missing columns and remove high-missingness sequences
 - translate coding nucleotide alignments to amino-acid alignments and export pairwise identity matrices
-- compute p-distance, Jukes-Cantor, Kimura 2-parameter, or amino-acid p-distance matrices with explicit gap-handling and ambiguity policies
+- compute raw or p-distance, Jukes-Cantor, Kimura 2-parameter, or amino-acid p-distance matrices with explicit gap-handling and ambiguity policies
 - compute rooted or unrooted pairwise tip-distance matrices from branch-length trees with explicit taxon order and owned wide or long-form exports
 - audit saturated pairs, unusually divergent pairs, and low-information pairs before distance-based tree building
 - build Neighbor-Joining or UPGMA trees from computed distance matrices, bootstrap site-resampled trees, summarize clade support, and write reproducibility bundles
@@ -221,7 +221,7 @@ bijux-phylogenetics alignment forensic alignment.fasta --json
 bijux-phylogenetics alignment filter alignment.fasta --profile moderate --out cleaned.fasta --json
 bijux-phylogenetics alignment compare alignment.fasta cleaned.fasta --json
 bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4
-bijux-phylogenetics alignment distance-matrix alignment.fasta --model kimura-2-parameter --ambiguity-policy partial-match --out distances.tsv
+bijux-phylogenetics alignment distance-matrix alignment.fasta --model raw --gap-handling complete-deletion --out distances.tsv
 bijux-phylogenetics alignment distance-quality alignment.fasta --model jukes-cantor --json
 bijux-phylogenetics alignment distance-suitability alignment.fasta --model jukes-cantor --json
 bijux-phylogenetics alignment distance-assumptions alignment.fasta --model p-distance --json
@@ -753,6 +753,13 @@ ledger keyed by descendant tip set rather than transient node index. The
 runtime keeps the real `ape` edge case explicit too: unsupported
 root-adjacent splits are left unscored instead of being mislabeled as zero
 support.
+The `ape::dist.dna` lane now covers raw nucleotide distance over governed
+clean, gapped pairwise-deletion, gapped complete-deletion, ambiguity-bearing,
+identical-sequence, high-divergence, missing-data, and unequal-length-invalid
+fixtures. Bijux accepts the ape-compatible `raw` model alias on the owned
+distance surface, keeps `p-distance` as the canonical internal label, and
+rejects unequal-length alignments explicitly instead of deferring that failure
+until later matrix handling.
 The
 `ape::root` lane now uses the same shared tree catalog for single-tip
 outgroups, monophyletic multi-tip outgroups, already-rooted trees, missing

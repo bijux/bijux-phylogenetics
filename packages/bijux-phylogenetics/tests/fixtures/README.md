@@ -40,7 +40,9 @@ high-divergence, unequal-length, valid-coding, frame-error, internal-stop, and
 terminal-stop cases that matter for cross-tool DNA parity. The live `ape`
 parity harness resolves its DNA inputs through those fixture ids for
 `base.freq`, `dist.dna`, and `trans` instead of relying on loose path lists or
-one-off inline sequences.
+one-off inline sequences. The unequal-length fixture now also serves as a
+governed `ape::dist.dna` failure case, so ragged DNA input is checked as an
+explicit parity boundary rather than only as local validation diagnostics.
 
 The metadata fixture corpus now also has one governed shared catalog at
 `metadata/shared_trait_table_fixture_catalog.json`. That catalog assigns

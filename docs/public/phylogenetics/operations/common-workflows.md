@@ -157,9 +157,10 @@ parity cases resolve durable fixture ids from
 `shared_dna_alignment_fixture_catalog.json`. The DNA portion of the lane covers
 shared lowercase, ambiguity, gap, missing-data, identical-sequence,
 high-divergence, and coding-translation fixtures across `ape::base.freq`,
-`ape::dist.dna`, and `ape::trans`. Frame-error and unequal-length DNA fixtures
-are still governed shared inputs, but they stay on the diagnostic side of the
-contract because Bijux rejects them more strictly than `ape` does.
+`ape::dist.dna`, and `ape::trans`. Frame-error fixtures still stay on the
+diagnostic side of the contract, but the unequal-length DNA fixture is now a
+governed live `ape::dist.dna` failure case so Bijux and `ape` both prove the
+same raw-distance stop condition explicitly.
 The `ape::read.tree` portion of the same lane now validates structured clade
 rows for rooted and unrooted trees, branch lengths, internal labels, support
 labels, quoted labels, one governed multiple-tree Newick input, and one
