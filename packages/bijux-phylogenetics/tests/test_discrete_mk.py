@@ -2,11 +2,16 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
+import random
 
 from bijux_phylogenetics.ancestral.common import load_discrete_dataset
 from bijux_phylogenetics.comparative.discrete_mk import (
     fit_discrete_mk_model,
     fit_discrete_mk_model_from_dataset,
+)
+from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.shared_phytools_comparative_fixtures import (
+    get_shared_phytools_comparative_fixture,
 )
 from bijux_phylogenetics.simulation import (
     simulate_discrete_traits,
@@ -42,6 +47,61 @@ def _allowed_rate_lookup(report) -> dict[tuple[str, str], float]:
         for row in report.transition_rate_rows
         if row.transition_allowed
     }
+
+
+def _simulate_directional_tip_states(
+    tree_path: Path,
+    *,
+    rates_by_state: dict[str, dict[str, float]],
+    root_state: str,
+    seed: int,
+) -> dict[str, str]:
+    tree = load_tree(tree_path)
+    rng = random.Random(seed)  # nosec B311
+    node_states: dict[int, str] = {}
+
+    def visit(node, state: str) -> None:
+        node_states[id(node)] = state
+        for child in node.children:
+            current_state = state
+            branch_length = max(child.branch_length or 0.0, 0.0)
+            elapsed = 0.0
+            while True:
+                outgoing_rates = rates_by_state.get(current_state, {})
+                total_rate = sum(outgoing_rates.values())
+                if total_rate <= 0.0:
+                    break
+                wait_time = rng.expovariate(total_rate)
+                if elapsed + wait_time >= branch_length:
+                    break
+                elapsed += wait_time
+                threshold = rng.random() * total_rate
+                running_total = 0.0
+                for target_state, rate in outgoing_rates.items():
+                    running_total += rate
+                    if threshold <= running_total:
+                        current_state = target_state
+                        break
+            visit(child, current_state)
+
+    visit(tree.root, root_state)
+    return {
+        node.name: node_states[id(node)] for node in tree.iter_nodes() if node.is_leaf()
+    }
+
+
+def _write_simulated_state_table(
+    path: Path,
+    *,
+    tip_states: dict[str, str],
+    trait: str = "state",
+) -> Path:
+    path.write_text(
+        "taxon\t" + trait + "\n"
+        + "".join(f"{taxon}\t{state}\n" for taxon, state in sorted(tip_states.items())),
+        encoding="utf-8",
+    )
+    return path
 
 
 def test_fit_discrete_mk_model_reports_binary_equal_rates_surface() -> None:
@@ -125,6 +185,71 @@ def test_fit_discrete_mk_model_reports_multistate_symmetric_surface() -> None:
     )
 
 
+def test_fit_discrete_mk_model_reports_binary_ard_surface() -> None:
+    fixture_entry = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_binary_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="all-rates-different",
+    )
+
+    rate_lookup = _allowed_rate_lookup(report)
+
+    assert report.model == "all-rates-different"
+    assert report.parameter_count == 2
+    assert report.baseline_comparison is not None
+    assert report.optimizer_diagnostics.converged is True
+    assert report.optimizer_diagnostics.hit_lower_parameter_bound is False
+    assert report.optimizer_diagnostics.hit_upper_parameter_bound is False
+    assert rate_lookup[("0", "1")] > 0.0
+    assert rate_lookup[("1", "0")] > 0.0
+    assert not math.isclose(
+        rate_lookup[("0", "1")],
+        rate_lookup[("1", "0")],
+        rel_tol=0.0,
+        abs_tol=1e-9,
+    )
+
+
+def test_fit_discrete_mk_model_reports_multistate_ard_surface() -> None:
+    fixture_entry = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_multistate_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="all-rates-different",
+    )
+
+    rate_lookup = _allowed_rate_lookup(report)
+
+    assert report.model == "all-rates-different"
+    assert report.parameter_count == 12
+    assert report.baseline_comparison is not None
+    assert report.optimizer_diagnostics.converged is False
+    assert report.optimizer_diagnostics.hit_lower_parameter_bound is True
+    assert report.optimizer_diagnostics.hit_upper_parameter_bound is False
+    assert any(
+        "weakly identified" in warning for warning in report.input_audit.warnings
+    )
+    assert rate_lookup[("north", "south")] > rate_lookup[("north", "west")]
+    assert rate_lookup[("west", "south")] > rate_lookup[("west", "east")]
+    assert not math.isclose(
+        rate_lookup[("east", "west")],
+        rate_lookup[("west", "east")],
+        rel_tol=0.0,
+        abs_tol=1e-9,
+    )
+
+
 def test_fit_discrete_mk_model_from_dataset_matches_path_surface() -> None:
     tree = fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")
     traits = fixture("example_traits_phytools_signal_twenty_four_taxa.tsv")
@@ -187,6 +312,38 @@ def test_fit_discrete_mk_model_reports_symmetric_pruned_missing_values() -> None
     assert report.baseline_comparison is not None
 
 
+def test_fit_discrete_mk_model_reports_ard_pruned_missing_values() -> None:
+    binary_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_binary_missing_twenty_four_taxa"
+    )
+    multistate_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_multistate_missing_twenty_four_taxa"
+    )
+
+    binary_report = fit_discrete_mk_model(
+        binary_fixture.tree_path,
+        binary_fixture.traits_path,
+        trait=binary_fixture.trait_name,
+        taxon_column=binary_fixture.taxon_column,
+        model="all-rates-different",
+    )
+    multistate_report = fit_discrete_mk_model(
+        multistate_fixture.tree_path,
+        multistate_fixture.traits_path,
+        trait=multistate_fixture.trait_name,
+        taxon_column=multistate_fixture.taxon_column,
+        model="all-rates-different",
+    )
+
+    assert binary_report.taxon_count == 23
+    assert binary_report.input_audit.pruned_missing_value_taxa == ["Phy10"]
+    assert binary_report.parameter_count == 2
+    assert multistate_report.taxon_count == 23
+    assert multistate_report.input_audit.pruned_missing_value_taxa == ["Phy14"]
+    assert multistate_report.parameter_count == 12
+    assert multistate_report.optimizer_diagnostics.hit_lower_parameter_bound is True
+
+
 def test_fit_discrete_mk_model_recovers_binary_er_known_truth(tmp_path: Path) -> None:
     simulation = simulate_discrete_traits(
         fixture("example_tree_phytools_ultrametric_one_hundred_twenty_eight_taxa.nwk"),
@@ -205,6 +362,40 @@ def test_fit_discrete_mk_model_recovers_binary_er_known_truth(tmp_path: Path) ->
     )
 
     assert math.isclose(_single_allowed_rate(report), 0.35, rel_tol=0.0, abs_tol=0.18)
+
+
+def test_fit_discrete_mk_model_recovers_binary_ard_known_truth(
+    tmp_path: Path,
+) -> None:
+    tree_path = fixture("example_tree_phytools_ultrametric_one_hundred_twenty_eight_taxa.nwk")
+    traits_path = _write_simulated_state_table(
+        tmp_path / "binary-ard.tsv",
+        tip_states=_simulate_directional_tip_states(
+            tree_path,
+            rates_by_state={
+                "0": {"1": 0.8},
+                "1": {"0": 0.2},
+            },
+            root_state="0",
+            seed=71000,
+        ),
+    )
+
+    report = fit_discrete_mk_model(
+        tree_path,
+        traits_path,
+        trait="state",
+        model="all-rates-different",
+    )
+
+    rate_lookup = _allowed_rate_lookup(report)
+
+    assert report.parameter_count == 2
+    assert report.optimizer_diagnostics.converged is True
+    assert report.optimizer_diagnostics.hit_lower_parameter_bound is False
+    assert rate_lookup[("0", "1")] > rate_lookup[("1", "0")]
+    assert math.isclose(rate_lookup[("0", "1")], 0.8, rel_tol=0.0, abs_tol=0.5)
+    assert math.isclose(rate_lookup[("1", "0")], 0.2, rel_tol=0.0, abs_tol=0.5)
 
 
 def test_fit_discrete_mk_model_recovers_multistate_er_known_truth() -> None:
@@ -281,6 +472,43 @@ def test_fit_discrete_mk_model_marks_overparameterized_symmetric_surface(
 
     assert report.taxon_count == 4
     assert report.parameter_count == 6
+    assert report.overparameterized is True
+    assert any(
+        warning.startswith(
+            "the discrete Mk likelihood fit is likely overparameterized"
+        )
+        for warning in report.input_audit.warnings
+    )
+
+
+def test_fit_discrete_mk_model_marks_overparameterized_ard_surface(
+    tmp_path: Path,
+) -> None:
+    traits_path = tmp_path / "overparameterized-ard.tsv"
+    traits_path.write_text(
+        "\n".join(
+            [
+                "taxon\tstate",
+                "A\talpha",
+                "B\tbeta",
+                "C\tgamma",
+                "D\tdelta",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    report = fit_discrete_mk_model(
+        fixture("example_tree.nwk"),
+        traits_path,
+        trait="state",
+        taxon_column="taxon",
+        model="all-rates-different",
+    )
+
+    assert report.taxon_count == 4
+    assert report.parameter_count == 12
     assert report.overparameterized is True
     assert any(
         warning.startswith(

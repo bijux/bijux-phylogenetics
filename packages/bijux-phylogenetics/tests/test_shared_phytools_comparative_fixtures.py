@@ -360,6 +360,69 @@ def test_shared_phytools_comparative_fixture_catalog_supports_fitmk_sym_cases() 
     assert multistate_missing_report.input_audit.pruned_missing_value_taxa == ["Phy14"]
 
 
+def test_shared_phytools_comparative_fixture_catalog_supports_fitmk_ard_cases() -> None:
+    binary_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_binary_twenty_four_taxa"
+    )
+    multistate_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_multistate_twenty_four_taxa"
+    )
+    binary_missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_binary_missing_twenty_four_taxa"
+    )
+    multistate_missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_multistate_missing_twenty_four_taxa"
+    )
+
+    binary_report = fit_discrete_mk_model(
+        binary_fixture.tree_path,
+        binary_fixture.traits_path,
+        trait=binary_fixture.trait_name,
+        taxon_column=binary_fixture.taxon_column,
+        model="all-rates-different",
+    )
+    multistate_report = fit_discrete_mk_model(
+        multistate_fixture.tree_path,
+        multistate_fixture.traits_path,
+        trait=multistate_fixture.trait_name,
+        taxon_column=multistate_fixture.taxon_column,
+        model="all-rates-different",
+    )
+    binary_missing_report = fit_discrete_mk_model(
+        binary_missing_fixture.tree_path,
+        binary_missing_fixture.traits_path,
+        trait=binary_missing_fixture.trait_name,
+        taxon_column=binary_missing_fixture.taxon_column,
+        model="all-rates-different",
+    )
+    multistate_missing_report = fit_discrete_mk_model(
+        multistate_missing_fixture.tree_path,
+        multistate_missing_fixture.traits_path,
+        trait=multistate_missing_fixture.trait_name,
+        taxon_column=multistate_missing_fixture.taxon_column,
+        model="all-rates-different",
+    )
+
+    binary_rate_lookup = {
+        (row.source_state, row.target_state): row.rate
+        for row in binary_report.transition_rate_rows
+        if row.transition_allowed
+    }
+
+    assert "all-rates-different-model" in binary_fixture.feature_tags
+    assert "all-rates-different-model" in multistate_fixture.feature_tags
+    assert "all-rates-different-model" in binary_missing_fixture.feature_tags
+    assert "all-rates-different-model" in multistate_missing_fixture.feature_tags
+    assert binary_report.model == "all-rates-different"
+    assert binary_report.parameter_count == 2
+    assert multistate_report.parameter_count == 12
+    assert binary_rate_lookup[("0", "1")] > 0.0
+    assert binary_rate_lookup[("1", "0")] > 0.0
+    assert multistate_report.optimizer_diagnostics.hit_lower_parameter_bound is True
+    assert binary_missing_report.input_audit.pruned_missing_value_taxa == ["Phy10"]
+    assert multistate_missing_report.input_audit.pruned_missing_value_taxa == ["Phy14"]
+
+
 def test_shared_phytools_comparative_fixture_catalog_covers_discrete_nonultrametric_and_branch_edge_surfaces() -> (
     None
 ):
