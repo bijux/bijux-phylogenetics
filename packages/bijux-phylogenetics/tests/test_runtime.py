@@ -668,6 +668,7 @@ from bijux_phylogenetics.errors import (
     InvalidDistanceMatrixError,
     MetadataJoinError,
     NonUltrametricTreeError,
+    TreeParseError,
     TreeRootingError,
     UnnamedTipError,
     UnrootedTreeError,
@@ -4420,8 +4421,27 @@ def test_unroot_tree_converts_rooted_binary_tree_into_trifurcation() -> None:
     assert sorted(tree.tip_names) == ["A", "B", "C", "D"]
     assert len(tree.root.children) == 3
     assert report.strategy == "unroot"
-    assert dumps_newick(tree) == "(A:0.5,B:0.5,(C:0.1,D:0.1):0.4);"
+    assert dumps_newick(tree) == "(A:0.2,B:0.2,(C:0.1,D:0.1):0.7);"
+    assert report.warnings == [
+        "unrooting merged the removed root-edge length into the retained sibling branch to match ape::unroot"
+    ]
     assert report.summary.nodes_changed != []
+
+
+def test_unroot_tree_returns_already_unrooted_tree_unchanged() -> None:
+    tree, report = unroot_tree(fixture("example_tree_unrooted.nwk"))
+
+    assert dumps_newick(tree) == "(A:0.1,B:0.2,C:0.3,D:0.4);"
+    assert tree.rooted is False
+    assert report.warnings == [
+        "input tree already behaves as an unrooted representation; returned unchanged"
+    ]
+    assert report.summary.nodes_changed == []
+
+
+def test_unroot_tree_fails_clearly_on_invalid_tree() -> None:
+    with pytest.raises(TreeParseError):
+        unroot_tree(fixture("example_tree_malformed_unbalanced_parentheses.nwk"))
 
 
 def test_prune_alignment_to_tree_keeps_exact_tree_taxa() -> None:
@@ -6329,10 +6349,36 @@ def test_cli_topology_unroot_writes_trifurcating_tree(tmp_path: Path, capsys) ->
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert (
-        output_path.read_text(encoding="utf-8") == "(A:0.5,B:0.5,(C:0.1,D:0.1):0.4);\n"
+        output_path.read_text(encoding="utf-8") == "(A:0.2,B:0.2,(C:0.1,D:0.1):0.7);\n"
     )
     assert payload["data"]["strategy"] == "unroot"
     assert payload["metrics"]["tip_count"] == 4
+    assert payload["data"]["warnings"] == [
+        "unrooting merged the removed root-edge length into the retained sibling branch to match ape::unroot"
+    ]
+
+
+def test_cli_topology_unroot_returns_already_unrooted_tree_unchanged(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "already-unrooted.nwk"
+    exit_code = main(
+        [
+            "topology",
+            "unroot",
+            str(fixture("example_tree_unrooted.nwk")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == "(A:0.1,B:0.2,C:0.3,D:0.4);\n"
+    assert payload["data"]["warnings"] == [
+        "input tree already behaves as an unrooted representation; returned unchanged"
+    ]
 
 
 def test_build_run_manifest_captures_checksums_and_environment(tmp_path: Path) -> None:
