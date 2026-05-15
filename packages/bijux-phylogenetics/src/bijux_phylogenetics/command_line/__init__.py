@@ -698,6 +698,7 @@ from bijux_phylogenetics.reports.service import (
     render_distance_report,
     render_level_one_release_gate_report,
     render_phylo_inputs_report,
+    render_release_truth_report,
     render_taxon_report,
     render_tree_report,
     render_tree_uncertainty_report,
@@ -5551,6 +5552,41 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the report build result as JSON."
     )
     _add_manifest_argument(report_release_gate)
+    report_release_truth = report_subparsers.add_parser(
+        "release-truth",
+        help="Render one machine-produced release truth report from pytest and workflow evidence.",
+    )
+    report_release_truth.add_argument(
+        "--test-report",
+        type=Path,
+        action="append",
+        required=True,
+        help="Path to one pytest JUnit XML report for the full test surface. Repeat to aggregate multiple sessions.",
+    )
+    report_release_truth.add_argument(
+        "--real-engine-test-report",
+        type=Path,
+        action="append",
+        required=True,
+        help="Path to one pytest JUnit XML report for real-engine tests. Repeat to aggregate multiple sessions.",
+    )
+    report_release_truth.add_argument("--fixtures-root", type=Path)
+    report_release_truth.add_argument(
+        "--stress-tier",
+        choices=("small", "heavy"),
+        default="small",
+        help="Governed stress tier to benchmark during release truth generation.",
+    )
+    report_release_truth.add_argument(
+        "--parity-extended",
+        action="store_true",
+        help="Include the governed extended reference-parity suite in the release truth report.",
+    )
+    report_release_truth.add_argument("--out", required=True, type=Path)
+    report_release_truth.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
+    _add_manifest_argument(report_release_truth)
 
     demo = subparsers.add_parser(
         get_command_spec("demo").name, help=get_command_spec("demo").summary
@@ -16822,6 +16858,67 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 ),
                                 "blocked_analysis_count": len(
                                     result.release_gate.gate.blocked_analyses
+                                ),
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_path)
+                return 0
+            if args.report_command == "release-truth":
+                result = render_release_truth_report(
+                    out_path=args.out,
+                    test_report_paths=args.test_report,
+                    real_engine_test_report_paths=args.real_engine_test_report,
+                    fixtures_root=args.fixtures_root,
+                    include_extended_parity=args.parity_extended,
+                    stress_tier=args.stress_tier,
+                )
+                inputs = [
+                    *args.test_report,
+                    *args.real_engine_test_report,
+                    *(
+                        [args.fixtures_root]
+                        if args.fixtures_root is not None
+                        else []
+                    ),
+                ]
+                outputs = _finalize_outputs(
+                    args,
+                    command="report",
+                    inputs=inputs,
+                    outputs=[result.output_path, result.machine_manifest_path],
+                )
+                if args.json:
+                    _print_result(
+                        build_command_result(
+                            command="report",
+                            inputs=inputs,
+                            outputs=outputs,
+                            warnings=result.release_truth.known_limitations,
+                            metrics={
+                                "total_tests": result.release_truth.total_tests.total_tests,
+                                "total_tests_passed": result.release_truth.total_tests.passed_tests,
+                                "total_tests_failed": result.release_truth.total_tests.failed_tests,
+                                "total_tests_skipped": result.release_truth.total_tests.skipped_tests,
+                                "real_engine_tests": result.release_truth.real_engine_tests.total_tests,
+                                "real_engine_tests_passed": result.release_truth.real_engine_tests.passed_tests,
+                                "real_engine_tests_failed": result.release_truth.real_engine_tests.failed_tests,
+                                "real_engine_tests_skipped": result.release_truth.real_engine_tests.skipped_tests,
+                                "supported_workflow_count": len(
+                                    result.release_truth.supported_workflows
+                                ),
+                                "experimental_workflow_count": len(
+                                    result.release_truth.experimental_workflows
+                                ),
+                                "flagship_dataset_count": len(
+                                    result.release_truth.flagship_datasets
+                                ),
+                                "reference_parity_case_count": result.release_truth.reference_parity.case_count,
+                                "stress_workload_count": len(
+                                    result.release_truth.stress_suite.observations
                                 ),
                             },
                             data=result,
