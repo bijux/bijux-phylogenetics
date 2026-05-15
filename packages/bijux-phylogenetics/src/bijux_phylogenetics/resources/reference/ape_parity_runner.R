@@ -568,6 +568,98 @@ keep_tip_case <- function(case_payload, output_root, execution_path, r_version) 
   )
 }
 
+extract_clade_case <- function(case_payload, output_root, execution_path, r_version) {
+  tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
+  if (inherits(tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  node_id <- as.integer(case_payload$node_id)
+  subtree <- tryCatch(ape::extract.clade(tree, node_id), error = function(error) error)
+  if (inherits(subtree, "error") || is.null(subtree)) {
+    message <- if (inherits(subtree, "error")) {
+      conditionMessage(subtree)
+    } else {
+      "extract.clade did not return a valid tree"
+    }
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeCladeExtractionError",
+        message = message,
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  summary_path <- file.path(output_root, "summary.json")
+  clades_path <- file.path(output_root, "clades.tsv")
+  newick_path <- file.path(output_root, "normalized-tree.nwk")
+  clade_rows <- tree_structure_rows(subtree, "")
+  retained_tip_labels <- unname(subtree$tip.label)
+  source_node_label <- ""
+  if (!is.null(tree$node.label)) {
+    internal_node_offset <- node_id - ape::Ntip(tree)
+    if (internal_node_offset >= 1 && internal_node_offset <= length(tree$node.label)) {
+      source_node_label <- tree$node.label[[internal_node_offset]]
+    }
+  }
+
+  summary_payload <- list(
+    tree_count = 1,
+    tip_count = length(retained_tip_labels),
+    internal_node_count = subtree$Nnode,
+    edge_count = nrow(subtree$edge),
+    rooted = ape::is.rooted(subtree),
+    tip_labels = as.list(retained_tip_labels),
+    branch_length_count = if (is.null(subtree$edge.length)) 0 else sum(!is.na(subtree$edge.length)),
+    requested_node_id = node_id,
+    matched_node_id = node_id,
+    matched_node_name = source_node_label
+  )
+  write_payload(summary_path, summary_payload)
+  write_table(clades_path, do.call(rbind.data.frame, c(clade_rows, stringsAsFactors = FALSE)))
+  ape::write.tree(subtree, file = newick_path)
+
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        clades = clades_path,
+        normalized_tree = newick_path
+      )
+    )
+  )
+}
+
 tree_set_case <- function(case_payload, output_root, execution_path, r_version) {
   tree_set <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
   if (inherits(tree_set, "error")) {
@@ -791,6 +883,11 @@ if (identical(case_payload$operation, "drop-tree-taxa")) {
 
 if (identical(case_payload$operation, "keep-tree-taxa")) {
   keep_tip_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "extract-tree-clade")) {
+  extract_clade_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 
