@@ -22,6 +22,12 @@ zero-branch, long-branch, internal-label, branch-support, quoted-label, and
 malformed-Newick cases. The live `ape` parity harness resolves its tree inputs
 through those fixture ids instead of hardcoding ad hoc file paths.
 
+The tree fixture corpus now also has one governed shared tree-set catalog at
+`metadata/shared_tree_set_fixture_catalog.json`. That catalog assigns durable
+fixture ids for multiple-tree Newick inputs, records expected tree counts and
+shared taxon sets, and gives the live `ape::read.tree` parity lane one owned
+surface for multiple-tree structure checks instead of one-off fixture paths.
+
 The DNA alignment fixture corpus now also has one governed shared catalog at
 `metadata/shared_dna_alignment_fixture_catalog.json`. That catalog assigns
 durable fixture ids, records load and translation expectations, and marks the
