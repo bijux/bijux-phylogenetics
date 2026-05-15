@@ -742,14 +742,14 @@ def _tip_root_depths(tree: PhyloTree, taxa: list[str]) -> dict[str, float]:
     return {taxon: max(leaf_paths[taxon].values()) for taxon in taxa}
 
 
-def _leaf_ancestor_depths(tree: PhyloTree) -> dict[str, dict[int, float]]:
-    depths_by_leaf: dict[str, dict[int, float]] = {}
+def _leaf_ancestor_depths(tree: PhyloTree) -> dict[str, dict[str, float]]:
+    depths_by_leaf: dict[str, dict[str, float]] = {}
 
-    def visit(node: TreeNode, depth: float, path: dict[int, float]) -> None:
+    def visit(node: TreeNode, depth: float, path: dict[str, float]) -> None:
         branch_length = 0.0 if node is tree.root else float(node.branch_length or 0.0)
         current_depth = depth + branch_length
         current_path = dict(path)
-        current_path[id(node)] = current_depth
+        current_path[node.node_id or ""] = current_depth
         if node.is_leaf():
             if node.name is None:
                 raise ValueError("leaf taxon name is required for ancestral reconstruction")

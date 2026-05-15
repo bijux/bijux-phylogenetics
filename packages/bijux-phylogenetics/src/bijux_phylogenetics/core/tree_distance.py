@@ -88,13 +88,13 @@ def _root_distance_lookup(
     tree: PhyloTree,
     *,
     policy: MissingBranchLengthPolicy,
-) -> dict[int, float]:
-    distances: dict[int, float] = {id(tree.root): 0.0}
+) -> dict[str, float]:
+    distances: dict[str, float] = {tree.root.node_id or "": 0.0}
 
     def visit(node: TreeNode) -> None:
-        base_distance = distances[id(node)]
+        base_distance = distances[node.node_id or ""]
         for child in node.children:
-            distances[id(child)] = base_distance + _effective_branch_length(
+            distances[child.node_id or ""] = base_distance + _effective_branch_length(
                 child,
                 policy=policy,
             )
@@ -145,16 +145,18 @@ def compute_tree_tip_distance_matrix(
     pairs: list[TipDistanceMatrixRow] = []
     for left_identifier in identifiers:
         left_path = paths[left_identifier]
-        left_root_distance = root_distances[id(left_path[-1])]
+        left_root_distance = root_distances[left_path[-1].node_id or ""]
         row: list[float] = []
         for right_identifier in identifiers:
             if left_identifier == right_identifier:
                 distance = 0.0
             else:
                 right_path = paths[right_identifier]
-                right_root_distance = root_distances[id(right_path[-1])]
+                right_root_distance = root_distances[right_path[-1].node_id or ""]
                 prefix_length = _common_prefix_length(left_path, right_path)
-                mrca_distance = root_distances[id(left_path[prefix_length - 1])]
+                mrca_distance = root_distances[
+                    left_path[prefix_length - 1].node_id or ""
+                ]
                 distance = (
                     left_root_distance
                     + right_root_distance

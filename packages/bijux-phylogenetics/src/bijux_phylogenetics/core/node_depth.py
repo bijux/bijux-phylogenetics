@@ -143,7 +143,7 @@ def _summarize_tree_node_depths(
 
 
 def _build_node_depth_rows(
-    tree: PhyloTree, depth_lookup: dict[int, float]
+    tree: PhyloTree, depth_lookup: dict[str, float]
 ) -> list[TreeNodeDepthRow]:
     rows: list[TreeNodeDepthRow] = []
     root_node_id = tree.tip_count + 1
@@ -154,7 +154,7 @@ def _build_node_depth_rows(
                 node_kind="tip",
                 node_label=node.name,
                 descendant_taxa=[node.name] if node.name is not None else [],
-                branch_length_depth=depth_lookup[id(node)],
+                branch_length_depth=depth_lookup[node.node_id or ""],
                 branch_length=node.branch_length,
             )
         )
@@ -165,20 +165,22 @@ def _build_node_depth_rows(
                 node_kind="root" if node_id == root_node_id else "internal",
                 node_label=node.name,
                 descendant_taxa=_descendant_taxa(node),
-                branch_length_depth=depth_lookup[id(node)],
+                branch_length_depth=depth_lookup[node.node_id or ""],
                 branch_length=node.branch_length,
             )
         )
     return rows
 
 
-def _node_depth_lookup(tree: PhyloTree) -> dict[int, float]:
-    depths: dict[int, float] = {id(tree.root): 0.0}
+def _node_depth_lookup(tree: PhyloTree) -> dict[str, float]:
+    root_id = tree.root.node_id or ""
+    depths: dict[str, float] = {root_id: 0.0}
 
     def visit(node: TreeNode) -> None:
-        base_depth = depths[id(node)]
+        node_id = node.node_id or ""
+        base_depth = depths[node_id]
         for child in node.children:
-            depths[id(child)] = base_depth + float(child.branch_length or 0.0)
+            depths[child.node_id or ""] = base_depth + float(child.branch_length or 0.0)
             visit(child)
 
     visit(tree.root)

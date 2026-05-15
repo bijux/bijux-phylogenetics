@@ -502,19 +502,11 @@ def _build_context_by_taxon(
     tree: PhyloTree,
     values_by_taxon: dict[str, float],
 ) -> dict[str, _TaxonContext]:
-    parent_by_node_id: dict[int, TreeNode | None] = {}
-
-    def visit(node: TreeNode, parent: TreeNode | None) -> None:
-        parent_by_node_id[id(node)] = parent
-        for child in node.children:
-            visit(child, node)
-
-    visit(tree.root, None)
     contexts: dict[str, _TaxonContext] = {}
     for leaf in tree.iter_leaves():
         if leaf.name is None or leaf.name not in values_by_taxon:
             continue
-        parent = parent_by_node_id[id(leaf)]
+        parent = leaf.parent
         if parent is None:
             contexts[leaf.name] = _TaxonContext(
                 context_clade_id=leaf.name,

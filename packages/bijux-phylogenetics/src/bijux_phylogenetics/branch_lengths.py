@@ -78,11 +78,11 @@ def _descendant_tip_count(node: TreeNode) -> int:
     return sum(1 for _ in node.iter_leaves())
 
 
-def _branch_root_depths(tree: PhyloTree) -> dict[int, float | None]:
-    depths: dict[int, float | None] = {id(tree.root): 0.0}
+def _branch_root_depths(tree: PhyloTree) -> dict[str, float | None]:
+    depths: dict[str, float | None] = {tree.root.node_id or "": 0.0}
 
     def visit(node: TreeNode, depth: float | None) -> None:
-        depths[id(node)] = None if depth is None else _round_float(depth)
+        depths[node.node_id or ""] = None if depth is None else _round_float(depth)
         for child in node.children:
             if depth is None or child.branch_length is None:
                 child_depth = None
@@ -161,7 +161,7 @@ def _rows_from_tree(
                 tip_taxon=node.name if node.is_leaf() else None,
                 descendant_tip_count=_descendant_tip_count(node),
                 branch_length=branch_length,
-                root_depth=root_depths.get(id(node)),
+                root_depth=root_depths.get(node.node_id or ""),
                 tree_positive_branch_median=positive_branch_median,
                 zero_length=branch_length == 0 if branch_length is not None else False,
                 negative_length=branch_length < 0

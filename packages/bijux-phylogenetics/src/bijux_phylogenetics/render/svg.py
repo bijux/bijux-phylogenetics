@@ -521,7 +521,7 @@ def render_tree_svg(
         center_x = width / 2
         center_y = height / 2
         radius = min(width, height) / 2 - 80
-        angle_cache: dict[int, float] = {}
+        angle_cache: dict[str, float] = {}
 
         def radial_distance(depth: int, distance: float) -> float:
             if max_distance > 0:
@@ -535,12 +535,14 @@ def render_tree_svg(
                     2 * math.pi * next_leaf_index / max(leaf_count, 1)
                 ) - math.pi / 2
                 next_leaf_index += 1
-                angle_cache[id(node)] = angle
+                angle_cache[node.node_id or _node_signature(node)] = angle
                 return angle, angle
             ranges = [assign_angles(child) for child in node.children]
             start_angle = min(start for start, _ in ranges)
             end_angle = max(end for _, end in ranges)
-            angle_cache[id(node)] = (start_angle + end_angle) / 2
+            angle_cache[node.node_id or _node_signature(node)] = (
+                start_angle + end_angle
+            ) / 2
             return start_angle, end_angle
 
         def draw(node: TreeNode, depth: int, distance: float) -> tuple[float, float]:
@@ -556,7 +558,7 @@ def render_tree_svg(
                 depth, branch_distance if node is not tree.root else distance
             )
             if node.is_leaf() or _is_collapsed_node(node, collapsed_clade_names):
-                angle = angle_cache[id(node)]
+                angle = angle_cache[node.node_id or _node_signature(node)]
                 label = labels.get(node.name or "", node.name or "")
                 if _is_collapsed_node(node, collapsed_clade_names):
                     label = f"{node.name or 'collapsed clade'} ({_count_subtree_leaves(node)} tips)"
@@ -608,7 +610,7 @@ def render_tree_svg(
                     f'<path d="M {arc_start.x:.1f} {arc_start.y:.1f} A {radial:.1f} {radial:.1f} 0 {large_arc} 1 {arc_end.x:.1f} {arc_end.y:.1f}" class="branch"/>'
                 )
             for child in node.children:
-                child_angle = angle_cache[id(child)]
+                child_angle = angle_cache[child.node_id or _node_signature(child)]
                 child_branch_distance = branch_distance + float(
                     child.branch_length or 0.0
                 )
@@ -633,7 +635,7 @@ def render_tree_svg(
                 if support_label is None:
                     support_label = _coerce_support_label(node.name)
             if support_label is not None and node is not tree.root:
-                node_angle = angle_cache[id(node)]
+                node_angle = angle_cache[node.node_id or _node_signature(node)]
                 support_point = _polar_point(
                     center_x, center_y, radial + 14, node_angle
                 )
@@ -645,7 +647,10 @@ def render_tree_svg(
             pie_segments = internal_pies.get(_node_signature(node))
             if pie_segments and not node.is_leaf():
                 node_point = _polar_point(
-                    center_x, center_y, radial, angle_cache[id(node)]
+                    center_x,
+                    center_y,
+                    radial,
+                    angle_cache[node.node_id or _node_signature(node)],
                 )
                 overlays.extend(
                     _svg_pie_slices(
@@ -658,7 +663,7 @@ def render_tree_svg(
                 )
                 rendered_internal_pie_count += 1
             if annotation and not node.is_leaf():
-                node_angle = angle_cache[id(node)]
+                node_angle = angle_cache[node.node_id or _node_signature(node)]
                 annotation_point = _polar_point(
                     center_x, center_y, radial + 12, node_angle
                 )
@@ -672,7 +677,7 @@ def render_tree_svg(
                     f'<text x="{annotation_point.x + 10:.1f}" y="{annotation_point.y + 4:.1f}" class="internal-annotation-label">{escape(annotation)}</text>'
                 )
                 rendered_internal_annotation_count += 1
-            return angle_cache[id(node)], radial
+            return angle_cache[node.node_id or _node_signature(node)], radial
 
         next_leaf_index = 0
         assign_angles(tree.root)

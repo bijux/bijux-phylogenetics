@@ -1033,16 +1033,18 @@ def _descendant_taxa(node: TreeNode) -> list[str]:
     return sorted(taxa)
 
 
-def _reference_tree_root_depths(tree: PhyloTree) -> dict[int, float | None]:
-    depths: dict[int, float | None] = {id(tree.root): 0.0}
+def _reference_tree_root_depths(tree: PhyloTree) -> dict[str, float | None]:
+    depths: dict[str, float | None] = {tree.root.node_id or "": 0.0}
 
     def visit(node: TreeNode) -> None:
-        base_depth = depths[id(node)]
+        base_depth = depths[node.node_id or ""]
         for child in node.children:
             if base_depth is None or child.branch_length is None:
-                depths[id(child)] = None
+                depths[child.node_id or ""] = None
             else:
-                depths[id(child)] = round(base_depth + float(child.branch_length), 15)
+                depths[child.node_id or ""] = round(
+                    base_depth + float(child.branch_length), 15
+                )
             visit(child)
 
     visit(tree.root)
@@ -1170,7 +1172,7 @@ def _build_reference_tree_clade_support_report(
                 support_status=support_status,
                 explanation=explanation,
                 reference_branch_length=node.branch_length,
-                reference_root_depth=root_depths[id(node)],
+                reference_root_depth=root_depths[node.node_id or ""],
             )
         )
     return TreeSetCladeSupportReport(

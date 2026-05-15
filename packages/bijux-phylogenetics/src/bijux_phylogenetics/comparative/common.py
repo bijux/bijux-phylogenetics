@@ -487,10 +487,10 @@ def _minimum_branch_length(tree: PhyloTree) -> float | None:
     return min(branch_lengths)
 
 
-def _leaf_ancestor_depths(tree: PhyloTree) -> dict[str, dict[int, float]]:
-    depths_by_leaf: dict[str, dict[int, float]] = {}
+def _leaf_ancestor_depths(tree: PhyloTree) -> dict[str, dict[str, float]]:
+    depths_by_leaf: dict[str, dict[str, float]] = {}
 
-    def visit(node: TreeNode, ancestors: dict[int, float], depth: float) -> None:
+    def visit(node: TreeNode, ancestors: dict[str, float], depth: float) -> None:
         if node is not tree.root:
             if node.branch_length is None:
                 raise ComparativeMethodError(
@@ -498,7 +498,7 @@ def _leaf_ancestor_depths(tree: PhyloTree) -> dict[str, dict[int, float]]:
                 )
             depth += node.branch_length
         current_ancestors = dict(ancestors)
-        current_ancestors[id(node)] = depth
+        current_ancestors[node.node_id or node_signature(node)] = depth
         if node.is_leaf():
             if node.name is None:
                 raise ComparativeMethodError("tree contains an unnamed terminal taxon")
