@@ -1623,6 +1623,98 @@ dna_base_frequency_case <- function(case_payload, output_root, execution_path, r
   )
 }
 
+read_fasta_character_list <- function(path) {
+  lines <- readLines(path, warn = FALSE)
+  records <- list()
+  current_identifier <- NULL
+  current_sequence <- character()
+
+  for (raw_line in lines) {
+    line <- trimws(raw_line)
+    if (!nzchar(line)) {
+      next
+    }
+    if (startsWith(line, ">")) {
+      if (!is.null(current_identifier)) {
+        records[[current_identifier]] <- strsplit(paste(current_sequence, collapse = ""), "", fixed = TRUE)[[1]]
+      }
+      current_identifier <- trimws(substring(line, 2L))
+      current_sequence <- character()
+      next
+    }
+    if (is.null(current_identifier)) {
+      stop("alignment sequence appears before any FASTA header")
+    }
+    current_sequence <- c(current_sequence, line)
+  }
+
+  if (!is.null(current_identifier)) {
+    records[[current_identifier]] <- strsplit(paste(current_sequence, collapse = ""), "", fixed = TRUE)[[1]]
+  }
+  if (!length(records)) {
+    stop("alignment contains no FASTA records")
+  }
+  records
+}
+
+dna_dnabin_structure_case <- function(case_payload, output_root, execution_path, r_version) {
+  dnabin_result <- tryCatch(
+    ape::as.DNAbin(read_fasta_character_list(case_payload$input_fixture)),
+    error = function(error) error
+  )
+  if (inherits(dnabin_result, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        error_type = "DnaBinStructureError",
+        message = conditionMessage(dnabin_result),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  alignment_matrix <- as.matrix(dnabin_result)
+  table_path <- file.path(output_root, "dnabin.tsv")
+  summary_path <- file.path(output_root, "summary.json")
+  rows <- data.frame(
+    identifier = rep(rownames(alignment_matrix), each = ncol(alignment_matrix)),
+    position = rep(seq_len(ncol(alignment_matrix)), times = nrow(alignment_matrix)),
+    state = as.vector(t(as.character(alignment_matrix))),
+    stringsAsFactors = FALSE
+  )
+
+  write_payload(
+    summary_path,
+    list(
+      sequence_count = nrow(alignment_matrix),
+      alignment_length = ncol(alignment_matrix),
+      state_count = nrow(rows)
+    )
+  )
+  write_table(table_path, rows)
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        dnabin = table_path
+      )
+    )
+  )
+}
+
 dna_segregating_sites_case <- function(case_payload, output_root, execution_path, r_version) {
   alignment <- ape::read.dna(case_payload$input_fixture, format = "fasta")
   alignment_matrix <- as.matrix(alignment)
@@ -2410,6 +2502,11 @@ if (identical(case_payload$operation, "tree-consensus")) {
 
 if (identical(case_payload$operation, "tree-clade-support")) {
   prop_clades_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "dna-dnabin-structure")) {
+  dna_dnabin_structure_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 

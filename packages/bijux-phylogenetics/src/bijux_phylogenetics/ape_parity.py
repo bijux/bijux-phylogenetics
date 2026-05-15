@@ -47,6 +47,7 @@ from bijux_phylogenetics.core.topology import root_tree_on_outgroup, unroot_tree
 from bijux_phylogenetics.io.fasta import (
     compute_alignment_base_frequency_report,
     compute_alignment_segregating_site_report,
+    load_dna_bin_alignment,
     load_fasta_alignment,
     translate_coding_alignment,
 )
@@ -1206,6 +1207,46 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             ultrametric_option=1,
         ),
         ApeParityCase(
+            case_id="dna-dnabin-structure-clean",
+            fixture_kind="dna-alignment",
+            fixture_id="clean_aligned_dna",
+            function_name="ape::as.DNAbin",
+            python_function_name="load_dna_bin_alignment",
+            operation="dna-dnabin-structure",
+            input_fixture=fixture_path("dna-alignment", "clean_aligned_dna"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="dna-dnabin-structure-lowercase",
+            fixture_kind="dna-alignment",
+            fixture_id="lowercase_aligned_dna",
+            function_name="ape::as.DNAbin",
+            python_function_name="load_dna_bin_alignment",
+            operation="dna-dnabin-structure",
+            input_fixture=fixture_path("dna-alignment", "lowercase_aligned_dna"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="dna-dnabin-structure-gaps",
+            fixture_kind="dna-alignment",
+            fixture_id="dna_with_gaps",
+            function_name="ape::as.DNAbin",
+            python_function_name="load_dna_bin_alignment",
+            operation="dna-dnabin-structure",
+            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="dna-dnabin-structure-ambiguity",
+            fixture_kind="dna-alignment",
+            fixture_id="dna_with_ambiguity",
+            function_name="ape::as.DNAbin",
+            python_function_name="load_dna_bin_alignment",
+            operation="dna-dnabin-structure",
+            input_fixture=fixture_path("dna-alignment", "dna_with_ambiguity"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
             case_id="dna-base-frequency-lowercase",
             fixture_kind="dna-alignment",
             fixture_id="lowercase_aligned_dna",
@@ -2160,6 +2201,24 @@ def _materialize_reference_input(case: ApeParityCase, working_root: Path) -> Pat
     return case.input_fixture
 
 
+def _build_bijux_dnabin_rows(
+    input_fixture: Path,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    matrix = load_dna_bin_alignment(input_fixture)
+    return {
+        "sequence_count": matrix.sequence_count,
+        "alignment_length": matrix.alignment_length,
+        "state_count": len(matrix.rows),
+    }, [
+        {
+            "identifier": row.identifier,
+            "position": row.position,
+            "state": row.state,
+        }
+        for row in matrix.rows
+    ]
+
+
 def _ape_base_frequency_rows(input_fixture: Path) -> list[dict[str, object]]:
     report = compute_alignment_base_frequency_report(input_fixture)
     return [
@@ -2947,6 +3006,9 @@ def _build_bijux_case_payload(
             option=case.ultrametric_option,
         )
         return summary, rows, None
+    if case.operation == "dna-dnabin-structure":
+        summary, rows = _build_bijux_dnabin_rows(case.input_fixture)
+        return summary, rows, None
     if case.operation == "dna-base-frequency":
         summary, rows = _build_bijux_base_frequency_summary(case.input_fixture)
         return summary, rows, None
@@ -3050,6 +3112,10 @@ def _load_reference_case_payload(
     if case.operation == "tree-ultrametricity":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "ultrametric-diagnostics.tsv")
+        return summary, rows, None
+    if case.operation == "dna-dnabin-structure":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "dnabin.tsv")
         return summary, rows, None
     if case.operation == "dna-base-frequency":
         summary = _load_json(execution_root / "summary.json")
