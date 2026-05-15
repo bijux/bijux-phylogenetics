@@ -16,6 +16,9 @@ from bijux_phylogenetics.clades import extract_tree_clades, extract_tree_set_cla
 from bijux_phylogenetics.comparative.brownian_covariance import (
     summarize_brownian_covariance,
 )
+from bijux_phylogenetics.compare.topology_distance import (
+    compare_topology_distance_trees,
+)
 from bijux_phylogenetics.compare.structural_parity import (
     compare_tree_sets_structurally,
     compare_tree_structurally,
@@ -77,6 +80,7 @@ class ApeParityCase:
     mrca_taxa: tuple[str, ...] = ()
     monophyly_reroot: bool | None = None
     ultrametric_option: int | None = None
+    rf_mode: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -838,6 +842,90 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             tolerance=1e-12,
         ),
         ApeParityCase(
+            case_id="dist-topo-rooted-identical",
+            fixture_kind="tree-set",
+            fixture_id="topology_distance_identical_rooted_pair",
+            function_name="ape::dist.topo",
+            python_function_name="compare_topology_distance",
+            operation="tree-topology-distance",
+            input_fixture=fixture_path(
+                "tree-set",
+                "topology_distance_identical_rooted_pair",
+            ),
+            tolerance=1e-12,
+            rf_mode="rooted",
+        ),
+        ApeParityCase(
+            case_id="dist-topo-rooted-child-order",
+            fixture_kind="tree-set",
+            fixture_id="topology_distance_rooted_child_order_pair",
+            function_name="ape::dist.topo",
+            python_function_name="compare_topology_distance",
+            operation="tree-topology-distance",
+            input_fixture=fixture_path(
+                "tree-set",
+                "topology_distance_rooted_child_order_pair",
+            ),
+            tolerance=1e-12,
+            rf_mode="rooted",
+        ),
+        ApeParityCase(
+            case_id="dist-topo-rooted-conflict",
+            fixture_kind="tree-set",
+            fixture_id="topology_distance_rooted_conflict_pair",
+            function_name="ape::dist.topo",
+            python_function_name="compare_topology_distance",
+            operation="tree-topology-distance",
+            input_fixture=fixture_path(
+                "tree-set",
+                "topology_distance_rooted_conflict_pair",
+            ),
+            tolerance=1e-12,
+            rf_mode="rooted",
+        ),
+        ApeParityCase(
+            case_id="dist-topo-rooted-polytomy",
+            fixture_kind="tree-set",
+            fixture_id="topology_distance_rooted_polytomy_pair",
+            function_name="ape::dist.topo",
+            python_function_name="compare_topology_distance",
+            operation="tree-topology-distance",
+            input_fixture=fixture_path(
+                "tree-set",
+                "topology_distance_rooted_polytomy_pair",
+            ),
+            tolerance=1e-12,
+            rf_mode="rooted",
+        ),
+        ApeParityCase(
+            case_id="dist-topo-unrooted-conflict",
+            fixture_kind="tree-set",
+            fixture_id="topology_distance_unrooted_conflict_pair",
+            function_name="ape::dist.topo",
+            python_function_name="compare_topology_distance",
+            operation="tree-topology-distance",
+            input_fixture=fixture_path(
+                "tree-set",
+                "topology_distance_unrooted_conflict_pair",
+            ),
+            tolerance=1e-12,
+            rf_mode="unrooted",
+        ),
+        ApeParityCase(
+            case_id="dist-topo-rooted-large",
+            fixture_kind="tree-set",
+            fixture_id="topology_distance_large_rooted_pair",
+            function_name="ape::dist.topo",
+            python_function_name="compare_topology_distance",
+            operation="tree-topology-distance",
+            input_fixture=fixture_path(
+                "tree-set",
+                "topology_distance_large_rooted_pair",
+            ),
+            tolerance=1e-12,
+            rf_mode="rooted",
+        ),
+        ApeParityCase(
             case_id="vcv-rooted-ultrametric",
             fixture_kind="tree",
             fixture_id="balanced_rooted_ultrametric",
@@ -1158,6 +1246,7 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
                 "mrca_taxa": list(case.mrca_taxa),
                 "monophyly_reroot": case.monophyly_reroot,
                 "ultrametric_option": case.ultrametric_option,
+                "rf_mode": case.rf_mode,
             },
             indent=2,
             sort_keys=True,
@@ -1504,6 +1593,78 @@ def _build_bijux_tree_tip_distance_rows(
     ]
 
 
+def _inspect_tree_set_rooted_flags(input_fixture: Path) -> tuple[bool, bool]:
+    lines = [
+        line.strip()
+        for line in input_fixture.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    if len(lines) != 2:
+        raise ValueError(
+            "ape topology-distance parity fixtures must contain exactly two trees"
+        )
+    rooted_flags: list[bool] = []
+    with tempfile.TemporaryDirectory(prefix="bijux-topology-distance-rootedness-") as tmpdir:
+        temporary_root = Path(tmpdir)
+        for index, line in enumerate(lines, start=1):
+            temporary_path = temporary_root / f"tree-{index}.nwk"
+            temporary_path.write_text(f"{line}\n", encoding="utf-8")
+            rooted_flags.append(inspect_tree_path(temporary_path).rooted)
+    return rooted_flags[0], rooted_flags[1]
+
+
+def _build_bijux_topology_distance_rows(
+    input_fixture: Path,
+    *,
+    rf_mode: str,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    tree_set = load_newick_tree_set(input_fixture)
+    if len(tree_set) != 2:
+        raise ValueError(
+            "ape topology-distance parity fixtures must contain exactly two trees"
+        )
+    report = compare_topology_distance_trees(
+        tree_set[0],
+        tree_set[1],
+        left_path=input_fixture,
+        right_path=input_fixture,
+        rf_mode=rf_mode,
+        taxon_overlap_policy="require-identical",
+    )
+    rooted_left, rooted_right = _inspect_tree_set_rooted_flags(input_fixture)
+    return {
+        "tip_count": len(report.shared_taxa),
+        "shared_taxa": report.shared_taxa,
+        "left_only_taxa": report.left_only_taxa,
+        "right_only_taxa": report.right_only_taxa,
+        "taxon_overlap_policy": report.taxon_overlap_policy,
+        "rf_mode": report.rf_mode,
+        "rooted_left": rooted_left,
+        "rooted_right": rooted_right,
+        "polytomy_present_left": report.polytomy_present_left,
+        "polytomy_present_right": report.polytomy_present_right,
+        "left_split_count": report.left_split_count,
+        "right_split_count": report.right_split_count,
+        "shared_split_count": report.shared_split_count,
+        "left_only_split_count": report.left_only_split_count,
+        "right_only_split_count": report.right_only_split_count,
+        "robinson_foulds_distance": report.robinson_foulds_distance,
+        "normalized_robinson_foulds": report.normalized_robinson_foulds,
+        "topology_equal": report.topology_equal,
+    }, [
+        {
+            "split_id": row.split_id,
+            "split_kind": row.split_kind,
+            "comparison_status": row.comparison_status,
+            "taxon_count": row.taxon_count,
+            "descendant_taxa": "|".join(row.descendant_taxa),
+            "left_present": row.left_present,
+            "right_present": row.right_present,
+        }
+        for row in report.split_rows
+    ]
+
+
 def _build_bijux_brownian_covariance_rows(
     input_fixture: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
@@ -1751,7 +1912,7 @@ def _load_rows_table(
                 value,
                 expected_tip_labels=expected_tip_labels,
             )
-            if key in {"clade_id", "taxa"}
+            if key in {"clade_id", "taxa", "descendant_taxa", "shared_taxa"}
             else _coerce_table_cell(value)
             for key, value in row.items()
         }
@@ -1972,6 +2133,16 @@ def _build_bijux_case_payload(
     if case.operation == "tree-tip-distance":
         summary, rows = _build_bijux_tree_tip_distance_rows(case.input_fixture)
         return summary, rows, None
+    if case.operation == "tree-topology-distance":
+        if case.rf_mode is None:
+            raise ValueError(
+                f"ape parity case '{case.case_id}' is missing a topology rf mode"
+            )
+        summary, rows = _build_bijux_topology_distance_rows(
+            case.input_fixture,
+            rf_mode=case.rf_mode,
+        )
+        return summary, rows, None
     if case.operation == "tree-brownian-covariance":
         summary, rows = _build_bijux_brownian_covariance_rows(case.input_fixture)
         return summary, rows, None
@@ -2058,6 +2229,10 @@ def _load_reference_case_payload(
     if case.operation == "tree-tip-distance":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "tip-distance-long.tsv")
+        return summary, rows, None
+    if case.operation == "tree-topology-distance":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "split-table.tsv")
         return summary, rows, None
     if case.operation == "tree-brownian-covariance":
         summary = _load_json(execution_root / "summary.json")

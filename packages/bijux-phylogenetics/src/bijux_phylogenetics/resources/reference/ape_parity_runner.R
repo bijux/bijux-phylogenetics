@@ -186,6 +186,119 @@ branch_length_range <- function(tree) {
   )
 }
 
+tree_has_polytomy <- function(tree) {
+  any(as.integer(table(tree$edge[, 1])) > 2L)
+}
+
+signature_id <- function(taxa) {
+  paste(sort(unique(as.character(taxa))), collapse = "|")
+}
+
+rooted_topology_signatures <- function(tree) {
+  root_id <- root_node(tree)
+  total_tip_count <- length(tree$tip.label)
+  signatures <- list()
+  for (node in sort(unique(tree$edge[, 1]))) {
+    if (identical(node, root_id)) {
+      next
+    }
+    taxa <- descendant_taxa(tree, node)
+    if (length(taxa) <= 1L || length(taxa) >= total_tip_count) {
+      next
+    }
+    signatures[[signature_id(taxa)]] <- sort(taxa)
+  }
+  signatures
+}
+
+canonical_unrooted_signature <- function(taxa, all_taxa) {
+  selected <- sort(unique(as.character(taxa)))
+  complement <- sort(setdiff(all_taxa, selected))
+  if (length(selected) < length(complement)) {
+    return(selected)
+  }
+  if (length(complement) < length(selected)) {
+    return(complement)
+  }
+  if (length(selected) == 0L) {
+    return(selected)
+  }
+  if (paste(selected, collapse = "|") <= paste(complement, collapse = "|")) {
+    return(selected)
+  }
+  complement
+}
+
+unrooted_topology_signatures <- function(tree) {
+  all_taxa <- sort(unname(tree$tip.label))
+  signatures <- list()
+  if (length(all_taxa) < 4L) {
+    return(signatures)
+  }
+  partitions <- ape::prop.part(tree)
+  for (partition in partitions) {
+    taxa <- sort(unname(tree$tip.label[as.integer(partition)]))
+    selected <- canonical_unrooted_signature(taxa, all_taxa)
+    if (length(selected) <= 1L || length(selected) >= length(all_taxa)) {
+      next
+    }
+    signatures[[signature_id(selected)]] <- selected
+  }
+  signatures
+}
+
+topology_distance_rows <- function(left_tree, right_tree, rf_mode) {
+  left_signatures <- if (identical(rf_mode, "rooted")) {
+    rooted_topology_signatures(left_tree)
+  } else {
+    unrooted_topology_signatures(left_tree)
+  }
+  right_signatures <- if (identical(rf_mode, "rooted")) {
+    rooted_topology_signatures(right_tree)
+  } else {
+    unrooted_topology_signatures(right_tree)
+  }
+  left_ids <- names(left_signatures)
+  right_ids <- names(right_signatures)
+  shared_ids <- intersect(left_ids, right_ids)
+  left_only_ids <- setdiff(left_ids, right_ids)
+  right_only_ids <- setdiff(right_ids, left_ids)
+  all_ids <- union(left_ids, right_ids)
+  signature_lookup <- c(left_signatures, right_signatures[setdiff(right_ids, left_ids)])
+  split_kind <- if (identical(rf_mode, "rooted")) "clade" else "split"
+  rows <- lapply(all_ids, function(split_id) {
+    taxa <- signature_lookup[[split_id]]
+    list(
+      split_id = split_id,
+      split_kind = split_kind,
+      comparison_status = if (split_id %in% shared_ids) {
+        "shared"
+      } else if (split_id %in% left_only_ids) {
+        "left_only"
+      } else {
+        "right_only"
+      },
+      taxon_count = length(taxa),
+      descendant_taxa = paste(taxa, collapse = "|"),
+      left_present = split_id %in% left_ids,
+      right_present = split_id %in% right_ids
+    )
+  })
+  order_frame <- do.call(
+    rbind.data.frame,
+    c(rows, stringsAsFactors = FALSE)
+  )
+  order_frame <- order_frame[order(order_frame$taxon_count, order_frame$descendant_taxa), ]
+  list(
+    rows = order_frame,
+    left_count = length(left_ids),
+    right_count = length(right_ids),
+    shared_count = length(shared_ids),
+    left_only_count = length(left_only_ids),
+    right_only_count = length(right_only_ids)
+  )
+}
+
 if (!requireNamespace("ape", quietly = TRUE)) {
   write_payload(
     execution_path,
@@ -930,6 +1043,98 @@ tree_set_case <- function(case_payload, output_root, execution_path, r_version) 
   )
 }
 
+topology_distance_case <- function(case_payload, output_root, execution_path, r_version) {
+  tree_set <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
+  if (inherits(tree_set, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(tree_set),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+  if (!inherits(tree_set, "multiPhylo")) {
+    tree_set <- structure(list(tree_set), class = "multiPhylo")
+  }
+  if (length(tree_set) != 2L) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TopologyDistanceError",
+        message = "ape topology-distance parity fixtures must contain exactly two trees",
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  rf_mode <- if (is.null(case_payload$rf_mode)) "rooted" else as.character(case_payload$rf_mode)
+  left_tree <- tree_set[[1]]
+  right_tree <- tree_set[[2]]
+  split_report <- topology_distance_rows(left_tree, right_tree, rf_mode)
+  shared_taxa <- sort(intersect(unname(left_tree$tip.label), unname(right_tree$tip.label)))
+  distance <- as.numeric(ape::dist.topo(left_tree, right_tree))
+  denominator <- split_report$left_count + split_report$right_count
+  normalized_distance <- if (identical(denominator, 0L)) 0.0 else distance / denominator
+
+  summary_path <- file.path(output_root, "summary.json")
+  split_path <- file.path(output_root, "split-table.tsv")
+  write_payload(
+    summary_path,
+    list(
+      tip_count = length(shared_taxa),
+      shared_taxa = as.list(shared_taxa),
+      left_only_taxa = as.list(sort(setdiff(unname(left_tree$tip.label), unname(right_tree$tip.label)))),
+      right_only_taxa = as.list(sort(setdiff(unname(right_tree$tip.label), unname(left_tree$tip.label)))),
+      taxon_overlap_policy = "require-identical",
+      rf_mode = rf_mode,
+      rooted_left = ape::is.rooted(left_tree),
+      rooted_right = ape::is.rooted(right_tree),
+      polytomy_present_left = tree_has_polytomy(left_tree),
+      polytomy_present_right = tree_has_polytomy(right_tree),
+      left_split_count = split_report$left_count,
+      right_split_count = split_report$right_count,
+      shared_split_count = split_report$shared_count,
+      left_only_split_count = split_report$left_only_count,
+      right_only_split_count = split_report$right_only_count,
+      robinson_foulds_distance = distance,
+      normalized_robinson_foulds = normalized_distance,
+      topology_equal = identical(distance, 0)
+    )
+  )
+  write_table(split_path, split_report$rows)
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        split_table = split_path
+      )
+    )
+  )
+}
+
 dna_base_frequency_case <- function(case_payload, output_root, execution_path, r_version) {
   alignment <- ape::read.dna(case_payload$input_fixture, format = "fasta")
   alignment_matrix <- as.matrix(alignment)
@@ -1612,6 +1817,11 @@ if (identical(case_payload$operation, "dna-raw-distance")) {
 
 if (identical(case_payload$operation, "tree-tip-distance")) {
   cophenetic_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "tree-topology-distance")) {
+  topology_distance_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 
