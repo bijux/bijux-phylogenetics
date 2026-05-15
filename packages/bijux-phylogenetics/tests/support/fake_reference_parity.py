@@ -335,11 +335,12 @@ if case_payload["operation"] in {{
     "read-tree-structure",
     "write-tree-structure",
     "root-tree-outgroup",
+    "unroot-tree",
     "read-tree-set-structure",
     "write-tree-set-structure",
 }}:
     try:
-        if case_payload["operation"] in {{"read-tree-structure", "write-tree-structure", "root-tree-outgroup"}}:
+        if case_payload["operation"] in {{"read-tree-structure", "write-tree-structure", "root-tree-outgroup", "unroot-tree"}}:
             newick_path = output_root / "normalized-tree.nwk"
             if case_payload["operation"] == "root-tree-outgroup":
                 outgroup_taxa = tuple(case_payload.get("outgroup_taxa", []))
@@ -351,6 +352,17 @@ if case_payload["operation"] in {{
                     newick_text = "(((A:0.2,B:0.2):0.7,C:0.1):0,D:0.1);\\n"
                 elif outgroup_taxa == ("C", "D"):
                     newick_text = "((A:0.2,B:0.2):0.7,(C:0.1,D:0.1):0);\\n"
+                else:
+                    newick_text = Path(case_payload["input_fixture"]).read_text(encoding="utf-8")
+                newick_path.write_text(newick_text, encoding="utf-8")
+                tree = Phylo.read(newick_path, "newick")
+            elif case_payload["operation"] == "unroot-tree":
+                if case_id == "unroot-tree-balanced-rooted":
+                    newick_text = "(A:0.1,B:0.1,(C:0.2,D:0.2):0.3);\\n"
+                elif case_id == "unroot-tree-rootable":
+                    newick_text = "(A:0.2,B:0.2,(C:0.1,D:0.1):0.7);\\n"
+                elif case_id == "unroot-tree-after-outgroup-rooting":
+                    newick_text = "((A:0.2,B:0.2):0.7,C:0.1,D:0.1);\\n"
                 else:
                     newick_text = Path(case_payload["input_fixture"]).read_text(encoding="utf-8")
                 newick_path.write_text(newick_text, encoding="utf-8")
@@ -375,7 +387,7 @@ if case_payload["operation"] in {{
             clades_path = output_root / "clades.tsv"
             write_json(summary_path, summary)
             write_tsv(clades_path, rows)
-            if case_payload["operation"] == "root-tree-outgroup":
+            if case_payload["operation"] in {{"root-tree-outgroup", "unroot-tree"}}:
                 pass
             elif case_id == "read-tree-quoted-taxon-labels":
                 newick_path.write_text(

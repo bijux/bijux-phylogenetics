@@ -61,6 +61,11 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "root-tree-already-rooted",
         "root-tree-missing-outgroup",
         "root-tree-non-monophyletic-outgroup",
+        "unroot-tree-balanced-rooted",
+        "unroot-tree-rootable",
+        "unroot-tree-after-outgroup-rooting",
+        "unroot-tree-already-unrooted",
+        "unroot-tree-invalid-newick",
         "dna-base-frequency-lowercase",
         "dna-base-frequency-ambiguity",
         "dna-raw-distance-clean",
@@ -91,6 +96,11 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "outgroup_rooted_on_d",
         "outgroup_rootable_unrooted",
         "outgroup_rootable_unrooted",
+        "balanced_rooted_ultrametric",
+        "outgroup_rootable_unrooted",
+        "outgroup_rooted_on_d",
+        "unrooted_branch_length_tree",
+        "malformed_unbalanced_parentheses",
         "lowercase_aligned_dna",
         "dna_with_ambiguity",
         "clean_aligned_dna",
@@ -106,6 +116,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::read.tree",
         "ape::write.tree",
         "ape::root",
+        "ape::unroot",
         "ape::base.freq",
         "ape::dist.dna",
         "ape::trans",
@@ -116,6 +127,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "write-tree-structure",
         "write-tree-set-structure",
         "root-tree-outgroup",
+        "unroot-tree",
         "dna-base-frequency",
         "dna-raw-distance",
         "dna-translation",
@@ -133,8 +145,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 28
-    assert report.passed_case_count == 28
+    assert report.case_count == 33
+    assert report.passed_case_count == 33
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -143,6 +155,7 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         "ape::read.tree",
         "ape::root",
         "ape::trans",
+        "ape::unroot",
         "ape::write.tree",
     ]
     assert all(observation.r_version == "4.6.0" for observation in report.observations)
@@ -201,6 +214,13 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
     assert root_case.reference_summary is not None
     assert root_case.reference_summary["rooted"] is True
+    unroot_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "unroot-tree-already-unrooted"
+    )
+    assert unroot_case.reference_summary is not None
+    assert unroot_case.reference_summary["rooted"] is False
     translation_case = next(
         observation
         for observation in report.observations
@@ -298,7 +318,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 28
+    assert len(rows) == 33
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
