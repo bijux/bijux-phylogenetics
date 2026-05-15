@@ -733,7 +733,7 @@ string-based, so tree summaries, tip ledgers, normalized Newick outputs,
 DNA-state frequency tables, DNA-distance ledgers, and translated amino-acid
 rows are compared as owned artifacts rather than scraped console text. The
 governed live cases now cover `ape::read.tree`, `ape::write.tree`,
-`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
+`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
 fixture ids. The tree and DNA inputs for that lane now come from the governed
 shared fixture catalogs in
 `tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
@@ -780,6 +780,15 @@ in JSON output, and reports composition outlier sequences beside those base
 frequency rows. Ambiguity codes, gaps, and explicit missing states are counted
 as literal states to match `ape::base.freq`, and all-gap or missing inputs
 warn explicitly instead of fabricating canonical A/C/G/T content.
+The `ape::seg.sites` lane now covers lowercase, invariant,
+one-variable-site, gap-bearing, ambiguity-bearing, missing-data, and
+all-gap-or-missing DNA alignments. On the owned Bijux side,
+`alignment segregating-sites --site-table-out <table.tsv>` writes one
+reviewer-facing `segregating-sites.tsv` ledger with site positions plus
+literal and ape-normalized state summaries. Leading and trailing gaps are
+normalized to `N` to match live `ape::seg.sites`, explicit missing states do
+not create segregating sites by themselves, and incompatible ambiguity states
+or internal gaps remain visible as real segregating-site evidence.
 The
 `ape::root` lane now uses the same shared tree catalog for single-tip
 outgroups, monophyletic multi-tip outgroups, already-rooted trees, missing

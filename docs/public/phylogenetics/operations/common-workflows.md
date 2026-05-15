@@ -156,8 +156,9 @@ resolve durable fixture ids from `shared_tree_fixture_catalog.json`, while DNA
 parity cases resolve durable fixture ids from
 `shared_dna_alignment_fixture_catalog.json`. The DNA portion of the lane covers
 shared lowercase, ambiguity, gap, missing-data, identical-sequence,
-high-divergence, and coding-translation fixtures across `ape::base.freq`,
-`ape::dist.dna`, and `ape::trans`. Frame-error fixtures still stay on the
+high-divergence, invariant, one-variable-site, and coding-translation
+fixtures across `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and
+`ape::trans`. Frame-error fixtures still stay on the
 diagnostic side of the contract, but the unequal-length DNA fixture is now a
 governed live `ape::dist.dna` failure case so Bijux and `ape` both prove the
 same DNA-distance stop condition explicitly. The owned distance surface now
@@ -178,6 +179,13 @@ frequency ledger that mirrors `ape::base.freq`. Lowercase, ambiguity-bearing,
 missing-data, and all-gap-or-missing alignments all stay on the governed live
 parity path, and the all-gap or missing edge case now warns explicitly instead
 of fabricating canonical nucleotide content.
+The owned `alignment segregating-sites` surface now also exposes
+`--site-table-out` for one reviewer-facing segregating-site ledger with site
+positions plus literal and ape-normalized state summaries. That same surface
+follows live `ape::seg.sites` by normalizing leading and trailing gaps to `N`,
+keeping explicit missing states from creating segregating sites by themselves,
+and still treating incompatible ambiguity states or internal gaps as real
+segregating-site evidence.
 The `ape::read.tree` portion of the same lane now validates structured clade
 rows for rooted and unrooted trees, branch lengths, internal labels, support
 labels, quoted labels, one governed multiple-tree Newick input, and one

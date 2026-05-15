@@ -162,7 +162,7 @@ reproducible artifact bundle for that case.
 
 The governed live `ape` cases now span both shared tree and shared DNA
 fixtures. Today that lane covers `ape::read.tree`, `ape::write.tree`,
-`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
+`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans`, with durable inputs
 resolved from `shared_tree_fixture_catalog.json` and
 `shared_dna_alignment_fixture_catalog.json`. The `ape::read.tree` portion now
 compares structured clade rows and covers branch lengths, internal labels,
@@ -215,6 +215,16 @@ in JSON output, and reports composition outlier sequences beside those base
 frequency rows. Ambiguity codes, gaps, and explicit missing states are counted
 as literal states to match `ape::base.freq`, and all-gap or missing inputs
 warn explicitly instead of fabricating canonical A/C/G/T content.
+The `ape::seg.sites` portion now covers lowercase, invariant,
+one-variable-site, gap-bearing, ambiguity-bearing, missing-data, and
+all-gap-or-missing alignments. On the owned Bijux side,
+`alignment segregating-sites --site-table-out <table.tsv>` writes one
+`segregating-sites.tsv` ledger with site positions plus literal and
+ape-normalized state summaries. Leading and trailing gaps are normalized to
+`N` to match live `ape::seg.sites`, explicit missing states do not create
+segregating sites by themselves, and incompatible ambiguity states or internal
+gaps remain governed live parity cases instead of being flattened into a total
+count only.
 The `ape::keep.tip` portion now covers valid rooted and unrooted keep-set
 cases, selected-tip order differences, and rootedness changes after pruning.
 Bijux keeps the workflow-facing absent-requested-taxon report and minimum-two
