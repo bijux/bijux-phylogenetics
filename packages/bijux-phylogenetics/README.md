@@ -96,6 +96,27 @@ delegates the underlying CLI-grade report fields directly and adds stable
 `write_json(...)` serialization plus `write_tsv(...)` where a tabular summary
 is meaningful.
 
+## Stable Artifact Schemas
+
+The canonical reviewer-facing TSV and JSON artifacts are schema-governed and
+tested so downstream scripts do not have to infer headers or top-level keys
+from incidental examples.
+
+The governed stable families now include:
+
+- FASTA-to-tree `prefix.model.tsv`
+- FASTA-to-tree `prefix.support.tsv`
+- clade review tables such as `clade-table.tsv`
+- branch review tables such as `host-switch-branches.tsv`
+- derived comparative trait tables such as `comparative-traits.tsv`
+- comparative model-output tables such as `comparative-summary.tsv`
+- event ledgers such as `biogeography/event-table.tsv`
+- workflow and report manifests such as `prefix.manifest.json` and `comparative-report.manifest.json`
+
+When one of those schemas changes, the repository test suite now fails on the
+exact header or key drift instead of only failing later through broader fixture
+differences.
+
 ## Current Scope
 
 - parse Newick trees and FASTA alignments

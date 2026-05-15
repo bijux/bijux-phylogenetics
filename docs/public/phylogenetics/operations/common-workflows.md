@@ -28,6 +28,12 @@ Typical public workflows include:
 The public workflow contract is that important outputs should be inspectable
 after the command finishes.
 
+The major reviewer-facing TSV and JSON artifacts are also schema-governed now.
+Downstream scripts can anchor on stable headers and top-level keys for the
+canonical model, support, clade, branch, comparative-traits,
+comparative-summary, event, and manifest outputs instead of scraping ad hoc
+examples.
+
 When the same governed workflow needs to run inside a notebook, script, or
 pipeline instead of a shell command, use the stable Python surface under
 `bijux_phylogenetics.api`. The workflow entry points intentionally mirror the

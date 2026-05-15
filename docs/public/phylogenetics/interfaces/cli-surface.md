@@ -35,6 +35,12 @@ stable JSON plus TSV export helpers.
 The public rule is simple: commands should produce explicit, reviewable outputs
 and should not hide important assumptions behind silent defaults.
 
+For automation and downstream notebooks, the canonical reviewer-facing TSV and
+JSON outputs now have stable tested schemas. That governed contract covers the
+major `.model.tsv`, `.support.tsv`, clade-table, branch-table,
+comparative-traits, comparative-summary, event-table, and manifest artifacts
+written by the public workflow surfaces.
+
 `parity` is the governed reference-parity validation surface. It checks the
 repository's core numerical methods against checked-in outputs from
 established external tools on small fixtures by default, with one optional
