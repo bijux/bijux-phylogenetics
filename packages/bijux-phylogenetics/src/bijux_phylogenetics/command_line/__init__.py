@@ -10474,6 +10474,17 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "excluded_taxon_count": len(exclusions),
                             "unstable_node_count": summary.unstable_node_count,
                             "model": report.model,
+                            "tree_is_ultrametric": summary.tree_is_ultrametric,
+                            "covariance_near_singular": (
+                                summary.covariance_near_singular
+                            ),
+                            "covariance_condition_number": (
+                                summary.covariance_condition_number
+                            ),
+                            "log_likelihood": summary.log_likelihood,
+                            "residual_sigma_squared": (
+                                summary.residual_sigma_squared
+                            ),
                         },
                         data=report,
                     ),

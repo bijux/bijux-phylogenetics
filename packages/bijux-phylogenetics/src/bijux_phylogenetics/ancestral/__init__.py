@@ -21,6 +21,7 @@ from .confidence import (
     write_discrete_ancestral_tree_set_confidence_table,
 )
 from .continuous import (
+    ContinuousAncestralBrownianFitDiagnostics,
     ContinuousAncestralEstimate,
     ContinuousAncestralExclusion,
     ContinuousAncestralReport,
@@ -195,6 +196,7 @@ __all__ = [
     "AncestralTreeSetTreeRow",
     "ContinuousAncestralComparisonReport",
     "ContinuousAncestralComparisonRow",
+    "ContinuousAncestralBrownianFitDiagnostics",
     "ContinuousAncestralConfidenceRow",
     "ContinuousEvolutionaryModeAncestralReport",
     "ContinuousAncestralEstimate",
