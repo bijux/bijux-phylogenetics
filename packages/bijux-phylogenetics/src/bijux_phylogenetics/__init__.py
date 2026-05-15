@@ -828,9 +828,11 @@ from .core.taxonomy import (
     write_taxon_mapping,
 )
 from .core.topology import (
+    TreeMonophylyReport,
     TreeMrcaReport,
     TreeRootingReport,
     TreeTransformationSummary,
+    assess_tree_monophyly,
     collapse_branches_below_length,
     extract_named_clade,
     extract_tree_clade_by_descendant_taxa,
@@ -2305,6 +2307,7 @@ __all__ = [
     "extract_named_clade",
     "extract_tree_clade_by_descendant_taxa",
     "extract_tree_clade_by_node_id",
+    "assess_tree_monophyly",
     "find_tree_mrca",
     "infer_unaligned_sequence_type",
     "assess_distance_method_maturity",
@@ -2467,6 +2470,7 @@ __all__ = [
     "rotate_all_internal_nodes",
     "rotate_named_node",
     "root_tree_on_outgroup",
+    "TreeMonophylyReport",
     "TreeMrcaReport",
     "TreeRootingReport",
     "build_distance_method_report",

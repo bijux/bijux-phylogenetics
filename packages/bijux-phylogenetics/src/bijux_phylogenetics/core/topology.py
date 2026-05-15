@@ -60,6 +60,28 @@ class TreeMrcaReport:
 
 
 @dataclass(slots=True)
+class TreeMonophylyReport:
+    """Explicit record of one tree monophyly assessment."""
+
+    tree_path: Path
+    requested_taxa: list[str]
+    unique_requested_taxa: list[str]
+    duplicate_requested_taxa: list[str]
+    missing_requested_taxa: list[str]
+    present_requested_taxa: list[str]
+    reroot: bool
+    rooted: bool | None
+    monophyletic: bool
+    complementary_clade_used: bool
+    matched_node_id: int | None
+    matched_node_name: str | None
+    matched_taxa: list[str]
+    matched_extra_taxa: list[str]
+    matched_tip_count: int
+    is_root: bool | None
+
+
+@dataclass(slots=True)
 class BranchCollapseReport:
     """Explicit record of internal branches collapsed by a length threshold."""
 
@@ -175,6 +197,23 @@ def _build_ape_internal_node_map(tree: PhyloTree) -> dict[int, TreeNode]:
     }
 
 
+def _build_ape_tip_node_map(tree: PhyloTree) -> dict[int, TreeNode]:
+    return {
+        node_id: node
+        for node_id, node in enumerate(tree.iter_leaves(), start=1)
+    }
+
+
+def _ape_node_id_for_node(tree: PhyloTree, node: TreeNode) -> int:
+    for node_id, candidate in _build_ape_tip_node_map(tree).items():
+        if candidate is node:
+            return node_id
+    for node_id, candidate in _build_ape_internal_node_map(tree).items():
+        if candidate is node:
+            return node_id
+    raise ValueError("node is not part of the supplied tree")
+
+
 def _build_subtree(node: TreeNode, *, source_format: str, rooted: bool | None) -> PhyloTree:
     subtree_root = _clone_node(node)
     subtree_root.branch_length = None
@@ -191,6 +230,49 @@ def _mrca_node_from_taxa(tree: PhyloTree, taxa: list[str]) -> TreeNode:
             _common_prefix_length(reference_path, paths[taxon]),
         )
     return reference_path[prefix_length - 1]
+
+
+def _monophyly_report_from_node(
+    tree: PhyloTree,
+    *,
+    tree_path: Path,
+    requested_taxa: list[str],
+    unique_requested_taxa: list[str],
+    duplicate_requested_taxa: list[str],
+    missing_requested_taxa: list[str],
+    present_requested_taxa: list[str],
+    reroot: bool,
+    monophyletic: bool,
+    complementary_clade_used: bool,
+    matched_node: TreeNode | None,
+) -> TreeMonophylyReport:
+    matched_taxa = [] if matched_node is None else _descendant_taxa(matched_node)
+    matched_extra_taxa = sorted(set(matched_taxa) - set(present_requested_taxa))
+    matched_node_id = None
+    matched_node_name = None
+    is_root = None
+    if matched_node is not None:
+        matched_node_id = _ape_node_id_for_node(tree, matched_node)
+        matched_node_name = matched_node.name
+        is_root = matched_node is tree.root
+    return TreeMonophylyReport(
+        tree_path=tree_path,
+        requested_taxa=requested_taxa,
+        unique_requested_taxa=unique_requested_taxa,
+        duplicate_requested_taxa=duplicate_requested_taxa,
+        missing_requested_taxa=missing_requested_taxa,
+        present_requested_taxa=present_requested_taxa,
+        reroot=reroot,
+        rooted=tree.rooted,
+        monophyletic=monophyletic,
+        complementary_clade_used=complementary_clade_used,
+        matched_node_id=matched_node_id,
+        matched_node_name=matched_node_name,
+        matched_taxa=matched_taxa,
+        matched_extra_taxa=matched_extra_taxa,
+        matched_tip_count=len(matched_taxa),
+        is_root=is_root,
+    )
 
 
 def _extract_subtree_report(
@@ -782,6 +864,98 @@ def find_tree_mrca(
         matched_tip_count=len(matched_taxa),
         is_root=matched_node is tree.root,
         rooted=tree.rooted,
+    )
+
+
+def assess_tree_monophyly(
+    tree_path: Path,
+    *,
+    taxa: list[str],
+    reroot: bool = False,
+) -> TreeMonophylyReport:
+    """Assess whether requested taxa form a monophyletic group."""
+    tree = load_tree(tree_path)
+    requested_taxa = sorted(taxa)
+    unique_requested_taxa = sorted(set(requested_taxa))
+    duplicate_requested_taxa = sorted(
+        taxon
+        for taxon, count in Counter(requested_taxa).items()
+        if count > 1
+    )
+    if not unique_requested_taxa:
+        raise ValueError("monophyly assessment requires at least one requested taxon")
+
+    tree_taxa = set(tree.tip_names)
+    missing_requested_taxa = sorted(set(unique_requested_taxa) - tree_taxa)
+    present_requested_taxa = sorted(set(unique_requested_taxa) & tree_taxa)
+    if not present_requested_taxa:
+        if reroot:
+            raise ValueError("specified outgroup not in labels of the tree")
+        return _monophyly_report_from_node(
+            tree,
+            tree_path=tree_path,
+            requested_taxa=requested_taxa,
+            unique_requested_taxa=unique_requested_taxa,
+            duplicate_requested_taxa=duplicate_requested_taxa,
+            missing_requested_taxa=missing_requested_taxa,
+            present_requested_taxa=present_requested_taxa,
+            reroot=reroot,
+            monophyletic=False,
+            complementary_clade_used=False,
+            matched_node=None,
+        )
+
+    if len(present_requested_taxa) == 1:
+        matched_node = next(
+            node
+            for node in tree.iter_leaves()
+            if node.name == present_requested_taxa[0]
+        )
+        return _monophyly_report_from_node(
+            tree,
+            tree_path=tree_path,
+            requested_taxa=requested_taxa,
+            unique_requested_taxa=unique_requested_taxa,
+            duplicate_requested_taxa=duplicate_requested_taxa,
+            missing_requested_taxa=missing_requested_taxa,
+            present_requested_taxa=present_requested_taxa,
+            reroot=reroot,
+            monophyletic=True,
+            complementary_clade_used=False,
+            matched_node=matched_node,
+        )
+
+    matched_node = _mrca_node_from_taxa(tree, present_requested_taxa)
+    matched_taxa = _descendant_taxa(matched_node)
+    if matched_taxa == present_requested_taxa:
+        return _monophyly_report_from_node(
+            tree,
+            tree_path=tree_path,
+            requested_taxa=requested_taxa,
+            unique_requested_taxa=unique_requested_taxa,
+            duplicate_requested_taxa=duplicate_requested_taxa,
+            missing_requested_taxa=missing_requested_taxa,
+            present_requested_taxa=present_requested_taxa,
+            reroot=reroot,
+            monophyletic=True,
+            complementary_clade_used=False,
+            matched_node=matched_node,
+        )
+
+    complementary_taxa = sorted(tree_taxa - set(present_requested_taxa))
+    complementary_clade_used = reroot and len(complementary_taxa) == 1
+    return _monophyly_report_from_node(
+        tree,
+        tree_path=tree_path,
+        requested_taxa=requested_taxa,
+        unique_requested_taxa=unique_requested_taxa,
+        duplicate_requested_taxa=duplicate_requested_taxa,
+        missing_requested_taxa=missing_requested_taxa,
+        present_requested_taxa=present_requested_taxa,
+        reroot=reroot,
+        monophyletic=complementary_clade_used,
+        complementary_clade_used=complementary_clade_used,
+        matched_node=matched_node,
     )
 
 
