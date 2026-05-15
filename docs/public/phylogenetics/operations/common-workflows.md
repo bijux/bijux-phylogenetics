@@ -217,6 +217,13 @@ same matrix now also feeds
 nucleotide review workflow can carry one loaded matrix through composition,
 segregating-site, nucleotide-distance, aligned coding diagnostics, and
 aligned translation inspection.
+The same `parity` command now also exposes one governed
+`--reference-source phytools-live` lane for real `phytools` execution through
+the checked-in R runner. That initial registry is intentionally narrow for
+goal 201: it currently covers `phytools::phylosig(method='lambda')` and
+`phytools::phylosig(method='K')` on the governed comparative example tree and
+writes the same summary-versus-observation TSV artifacts plus reproducible
+failure bundles as the live `ape` lane.
 The same baseline surface now also exposes
 `simulate_random_tree(...)` and `simulate_coalescent_tree(...)` for one-tree
 native simulation review, so callers that need one governed random or

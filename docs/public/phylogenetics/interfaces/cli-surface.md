@@ -222,6 +222,37 @@ build-tree --method neighbor-joining` now use one in-repo deterministic NJ
 builder that validates zero-diagonal and nonnegative matrix assumptions and
 breaks tied joins by stable taxon ordering instead of delegating the NJ method
 through Biopython.
+
+`parity --reference-source phytools-live` switches to the governed live
+`phytools` execution harness. It runs one checked-in R parity runner through
+`Rscript`, writes structured JSON and TSV outputs, and records for each
+governed case:
+
+- `r_version`
+- `phytools_version`
+- `bijux_version`
+- `bijux_commit`
+- `function_name`
+- `input_fixtures`
+- `tolerance`
+- `passed`
+- `mismatch_reason`
+- `reproducible_artifact_root`
+
+Its JSON metrics report:
+
+- `all_passed`
+- `case_count`
+- `function_count`
+- `failed_case_count`
+- `skipped_case_count`
+- `reference_source`
+
+The initial live `phytools` registry is intentionally narrow for this goal. It
+currently covers `phytools::phylosig(method='lambda')` and
+`phytools::phylosig(method='K')` on the governed comparative example tree, so
+the repository now has one real external comparative-method execution harness
+instead of only checked reference JSON.
 For this round, `bionj` is explicitly excluded. The distance-tree CLI surfaces
 therefore accept `--method bionj` only so the owned runtime can return one
 structured out-of-scope error naming `ape::bionj`, rather than failing with

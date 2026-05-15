@@ -810,6 +810,18 @@ same owned matrix now also feeds
 do not have to reparse one FASTA file separately for composition,
 segregating-site, nucleotide-distance, aligned coding diagnostics, and
 aligned translation inspection.
+
+`parity --reference-source phytools-live` is the governed live `phytools`
+execution harness. It uses the same checked-in `Rscript` orchestration model
+as the live `ape` lane, records the R version, `phytools` version, Bijux
+version, Bijux commit, function name, input fixtures, tolerance, pass or fail
+state, mismatch reason, and reproducible artifact root for every governed case,
+and writes one summary TSV plus one observation TSV just like the other parity
+surfaces. The initial live `phytools` registry is intentionally narrow for this
+goal: it currently covers `phytools::phylosig(method='lambda')` and
+`phytools::phylosig(method='K')` on the governed comparative example tree so
+the repository now proves behavior against real `phytools` execution instead of
+only checked-in expected JSON.
 The `ape::nj` lane now covers one governed analytical three-taxon matrix plus
 four-taxon ultrametric and non-ultrametric matrices. On the owned Bijux side,
 neighbor joining no longer delegates through Biopython for that method: Bijux
