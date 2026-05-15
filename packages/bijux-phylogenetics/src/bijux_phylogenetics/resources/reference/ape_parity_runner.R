@@ -299,6 +299,56 @@ topology_distance_rows <- function(left_tree, right_tree, rf_mode) {
   )
 }
 
+require_identical_tree_set_taxa <- function(tree_set, message_text) {
+  reference_taxa <- sort(unname(tree_set[[1]]$tip.label))
+  for (tree in tree_set[-1]) {
+    if (!identical(sort(unname(tree$tip.label)), reference_taxa)) {
+      stop(message_text)
+    }
+  }
+  reference_taxa
+}
+
+consensus_clade_frequency_rows <- function(tree_set) {
+  counts <- list()
+  tree_count <- length(tree_set)
+  for (tree in tree_set) {
+    root_id <- root_node(tree)
+    total_tip_count <- length(tree$tip.label)
+    for (node in sort(unique(tree$edge[, 1]))) {
+      if (identical(node, root_id)) {
+        next
+      }
+      taxa <- descendant_taxa(tree, node)
+      if (length(taxa) <= 1L || length(taxa) >= total_tip_count) {
+        next
+      }
+      clade_id <- paste(taxa, collapse = "|")
+      if (is.null(counts[[clade_id]])) {
+        counts[[clade_id]] <- list(clade = clade_id, tree_count = 0L)
+      }
+      counts[[clade_id]]$tree_count <- counts[[clade_id]]$tree_count + 1L
+    }
+  }
+  if (length(counts) == 0L) {
+    return(data.frame(
+      clade = character(),
+      tree_count = integer(),
+      frequency = numeric(),
+      stringsAsFactors = FALSE
+    ))
+  }
+  rows <- lapply(sort(names(counts)), function(clade_id) {
+    count <- counts[[clade_id]]$tree_count
+    list(
+      clade = clade_id,
+      tree_count = count,
+      frequency = count / tree_count
+    )
+  })
+  do.call(rbind.data.frame, c(rows, stringsAsFactors = FALSE))
+}
+
 if (!requireNamespace("ape", quietly = TRUE)) {
   write_payload(
     execution_path,
@@ -1038,6 +1088,144 @@ tree_set_case <- function(case_payload, output_root, execution_path, r_version) 
         summary_json = summary_path,
         clades = clades_path,
         normalized_tree_set = tree_set_path
+      )
+    )
+  )
+}
+
+consensus_case <- function(case_payload, output_root, execution_path, r_version) {
+  tree_set <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
+  if (inherits(tree_set, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(tree_set),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+  if (!inherits(tree_set, "multiPhylo")) {
+    tree_set <- structure(list(tree_set), class = "multiPhylo")
+  }
+
+  shared_taxa <- tryCatch(
+    require_identical_tree_set_taxa(
+      tree_set,
+      "consensus requires all trees to share the exact same taxon set"
+    ),
+    error = function(error) error
+  )
+  if (inherits(shared_taxa, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "ConsensusTreeError",
+        message = conditionMessage(shared_taxa),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  consensus_method <- if (is.null(case_payload$consensus_method)) {
+    "majority-rule"
+  } else {
+    as.character(case_payload$consensus_method)
+  }
+  consensus_threshold <- if (identical(consensus_method, "strict")) {
+    1.0
+  } else if (identical(consensus_method, "majority-rule")) {
+    0.5
+  } else {
+    NA_real_
+  }
+  if (is.na(consensus_threshold)) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "ConsensusTreeError",
+        message = paste("unsupported consensus method:", consensus_method),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  consensus_tree <- tryCatch(
+    ape::consensus(tree_set, p = consensus_threshold),
+    error = function(error) error
+  )
+  if (inherits(consensus_tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "ConsensusTreeError",
+        message = conditionMessage(consensus_tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  frequency_rows <- consensus_clade_frequency_rows(tree_set)
+  summary_path <- file.path(output_root, "summary.json")
+  frequency_path <- file.path(output_root, "clade-frequencies.tsv")
+  newick_path <- file.path(output_root, "normalized-tree.nwk")
+  write_payload(
+    summary_path,
+    list(
+      tree_count = length(tree_set),
+      shared_taxa = as.list(shared_taxa),
+      shared_taxon_count = length(shared_taxa),
+      tip_count = length(consensus_tree$tip.label),
+      rooted = ape::is.rooted(consensus_tree),
+      consensus_method = consensus_method,
+      consensus_threshold = consensus_threshold,
+      included_clade_count = length(rooted_topology_signatures(consensus_tree)),
+      clade_frequency_count = nrow(frequency_rows)
+    )
+  )
+  write_table(frequency_path, frequency_rows)
+  ape::write.tree(consensus_tree, file = newick_path)
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        clade_frequencies = frequency_path,
+        normalized_tree = newick_path
       )
     )
   )
@@ -1802,6 +1990,11 @@ if (identical(case_payload$operation, "assess-tree-monophyly")) {
 if (identical(case_payload$operation, "read-tree-set-structure") ||
     identical(case_payload$operation, "write-tree-set-structure")) {
   tree_set_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "tree-consensus")) {
+  consensus_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 

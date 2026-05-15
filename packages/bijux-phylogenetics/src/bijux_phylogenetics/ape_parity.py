@@ -54,6 +54,11 @@ from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.shared_dna_alignment_fixtures import (
     get_shared_dna_alignment_fixture,
 )
+from bijux_phylogenetics.tree_set import (
+    compute_clade_frequency_table,
+    compute_consensus_tree,
+    compute_strict_consensus_tree,
+)
 from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
 from bijux_phylogenetics.shared_tree_set_fixtures import get_shared_tree_set_fixture
 
@@ -81,6 +86,7 @@ class ApeParityCase:
     monophyly_reroot: bool | None = None
     ultrametric_option: int | None = None
     rf_mode: str | None = None
+    consensus_method: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -335,6 +341,51 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             operation="write-tree-set-structure",
             input_fixture=fixture_path("tree-set", "basic_newick_tree_set"),
             tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="consensus-majority-conflicting-four-taxon",
+            fixture_kind="tree-set",
+            fixture_id="consensus_conflicting_four_taxon_tree_set",
+            function_name="ape::consensus",
+            python_function_name="compute_consensus_tree+compute_clade_frequency_table",
+            operation="tree-consensus",
+            input_fixture=fixture_path("tree-set", "consensus_conflicting_four_taxon_tree_set"),
+            tolerance=1e-12,
+            consensus_method="majority-rule",
+        ),
+        ApeParityCase(
+            case_id="consensus-strict-conflicting-four-taxon",
+            fixture_kind="tree-set",
+            fixture_id="consensus_conflicting_four_taxon_tree_set",
+            function_name="ape::consensus",
+            python_function_name="compute_strict_consensus_tree+compute_clade_frequency_table",
+            operation="tree-consensus",
+            input_fixture=fixture_path("tree-set", "consensus_conflicting_four_taxon_tree_set"),
+            tolerance=1e-12,
+            consensus_method="strict",
+        ),
+        ApeParityCase(
+            case_id="consensus-majority-posterior-six-taxon",
+            fixture_kind="tree-set",
+            fixture_id="consensus_posterior_six_taxon_tree_set",
+            function_name="ape::consensus",
+            python_function_name="compute_consensus_tree+compute_clade_frequency_table",
+            operation="tree-consensus",
+            input_fixture=fixture_path("tree-set", "consensus_posterior_six_taxon_tree_set"),
+            tolerance=1e-12,
+            consensus_method="majority-rule",
+        ),
+        ApeParityCase(
+            case_id="consensus-mismatched-taxon-set",
+            fixture_kind="tree-set",
+            fixture_id="consensus_mismatched_taxon_tree_set",
+            function_name="ape::consensus",
+            python_function_name="compute_consensus_tree",
+            operation="tree-consensus",
+            input_fixture=fixture_path("tree-set", "consensus_mismatched_taxon_tree_set"),
+            tolerance=0.0,
+            expected_status="consensus-error",
+            consensus_method="majority-rule",
         ),
         ApeParityCase(
             case_id="root-tree-single-outgroup-tip",
@@ -1593,6 +1644,38 @@ def _build_bijux_tree_tip_distance_rows(
     ]
 
 
+def _build_bijux_consensus_rows(
+    input_fixture: Path,
+    *,
+    consensus_method: str,
+) -> tuple[dict[str, object], list[dict[str, object]], str]:
+    if consensus_method == "strict":
+        tree, report = compute_strict_consensus_tree(input_fixture)
+    elif consensus_method == "majority-rule":
+        tree, report = compute_consensus_tree(input_fixture)
+    else:
+        raise ValueError(f"unsupported consensus method '{consensus_method}'")
+    frequency_report = compute_clade_frequency_table(input_fixture)
+    return {
+        "tree_count": report.tree_count,
+        "shared_taxa": report.shared_taxa,
+        "shared_taxon_count": len(report.shared_taxa),
+        "tip_count": len(tree.tip_names),
+        "rooted": tree.rooted,
+        "consensus_method": report.consensus_method,
+        "consensus_threshold": report.consensus_threshold,
+        "included_clade_count": report.included_clade_count,
+        "clade_frequency_count": len(frequency_report.clade_frequencies),
+    }, [
+        {
+            "clade": row.clade,
+            "tree_count": row.tree_count,
+            "frequency": row.frequency,
+        }
+        for row in frequency_report.clade_frequencies
+    ], dumps_newick(tree)
+
+
 def _inspect_tree_set_rooted_flags(input_fixture: Path) -> tuple[bool, bool]:
     lines = [
         line.strip()
@@ -2130,6 +2213,16 @@ def _build_bijux_case_payload(
     if case.operation in {"read-tree-set-structure", "write-tree-set-structure"}:
         summary, rows, normalized_text = _build_bijux_tree_set_structure(case.input_fixture)
         return summary, rows, normalized_text
+    if case.operation == "tree-consensus":
+        if case.consensus_method is None:
+            raise ValueError(
+                f"ape parity case '{case.case_id}' is missing a consensus method"
+            )
+        summary, rows, normalized_text = _build_bijux_consensus_rows(
+            case.input_fixture,
+            consensus_method=case.consensus_method,
+        )
+        return summary, rows, normalized_text
     if case.operation == "tree-tip-distance":
         summary, rows = _build_bijux_tree_tip_distance_rows(case.input_fixture)
         return summary, rows, None
@@ -2226,6 +2319,11 @@ def _load_reference_case_payload(
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "clades.tsv", sort_rows=True)
         return summary, rows, None
+    if case.operation == "tree-consensus":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "clade-frequencies.tsv")
+        normalized_text = _canonical_newick(execution_root / "normalized-tree.nwk")
+        return summary, rows, normalized_text
     if case.operation == "tree-tip-distance":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "tip-distance-long.tsv")
@@ -2418,6 +2516,35 @@ def _extract_clade_tree_mismatch_reason(
         reference_tree,
         tolerance=case.tolerance,
         compare_internal_labels=True,
+    )
+    return report.mismatch_reason
+
+
+def _consensus_tree_mismatch_reason(
+    case: ApeParityCase,
+    execution_root: Path,
+) -> str | None:
+    if case.consensus_method == "strict":
+        expected_tree, _report = compute_strict_consensus_tree(case.input_fixture)
+    elif case.consensus_method == "majority-rule":
+        expected_tree, _report = compute_consensus_tree(case.input_fixture)
+    else:
+        raise ValueError(
+            f"ape parity case '{case.case_id}' has unsupported consensus method "
+            f"{case.consensus_method!r}"
+        )
+    reference_summary = _load_json(execution_root / "summary.json")
+    reference_tree = load_tree(execution_root / "normalized-tree.nwk")
+    reference_tree.rooted = bool(reference_summary.get("rooted", True))
+    _normalize_tree_labels(
+        reference_tree.root,
+        expected_tip_labels=set(expected_tree.tip_names),
+    )
+    report = compare_tree_structurally(
+        expected_tree,
+        reference_tree,
+        tolerance=case.tolerance,
+        compare_internal_labels=False,
     )
     return report.mismatch_reason
 
@@ -2623,6 +2750,23 @@ def run_ape_parity_cases(
                                 case,
                                 execution_root,
                             )
+                        elif case.operation == "tree-consensus":
+                            mismatch_reason = _consensus_tree_mismatch_reason(
+                                case,
+                                execution_root,
+                            )
+                            if mismatch_reason is None and not _compare_json(
+                                reference_summary,
+                                bijux_summary,
+                                tolerance=case.tolerance,
+                            ):
+                                mismatch_reason = "summary_mismatch"
+                            elif mismatch_reason is None and not _compare_json(
+                                reference_rows,
+                                bijux_rows,
+                                tolerance=case.tolerance,
+                            ):
+                                mismatch_reason = "rows_mismatch"
                         elif not _compare_json(
                             reference_summary, bijux_summary, tolerance=case.tolerance
                         ):
@@ -2686,6 +2830,16 @@ def run_ape_parity_cases(
                     mismatch_reason = "reference_expected_monophyly_error_missing"
                 elif not bijux_error.get("message") or not reference_error.get("message"):
                     mismatch_reason = "monophyly_error_message_missing"
+                else:
+                    status = "passed"
+                    mismatch_reason = None
+            if case.expected_status == "consensus-error":
+                if bijux_error is None:
+                    mismatch_reason = "bijux_expected_consensus_error_missing"
+                elif reference_error is None:
+                    mismatch_reason = "reference_expected_consensus_error_missing"
+                elif not bijux_error.get("message") or not reference_error.get("message"):
+                    mismatch_reason = "consensus_error_message_missing"
                 else:
                     status = "passed"
                     mismatch_reason = None

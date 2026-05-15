@@ -1103,6 +1103,7 @@ def _build_consensus_tree_with_threshold(
             is_root=True,
         ),
         source_format=analysis.source_format,
+        rooted=True,
     )
     if math.isclose(threshold, 1.0):
         consensus_method = "strict"

@@ -1219,6 +1219,118 @@ if case_payload["operation"] == "assess-tree-monophyly":
     )
     raise SystemExit(0)
 
+if case_payload["operation"] == "tree-consensus":
+    if case_id == "consensus-mismatched-taxon-set":
+        write_json(
+            execution_path,
+            {{
+                "status": "failed",
+                "mismatch_reason": "reference_execution_failed",
+                "error_type": "ConsensusTreeError",
+                "message": "consensus requires all trees to share the exact same taxon set",
+                "case_id": case_payload["case_id"],
+                "function_name": case_payload["function_name"],
+                "input_fixture": case_payload["input_fixture"],
+                "r_version": "4.6.0",
+                "ape_version": "5.0.0",
+            }},
+        )
+        raise SystemExit(0)
+
+    if case_id == "consensus-majority-conflicting-four-taxon":
+        newick_text = "((A:0.1,B:0.1)66.6666666666667:0.2,(C:0.1,D:0.1)66.6666666666667:0.2);\\n"
+        rows = [
+            {{"clade": "A|B", "tree_count": 2, "frequency": 2 / 3}},
+            {{"clade": "A|C", "tree_count": 1, "frequency": 1 / 3}},
+            {{"clade": "B|D", "tree_count": 1, "frequency": 1 / 3}},
+            {{"clade": "C|D", "tree_count": 2, "frequency": 2 / 3}},
+        ]
+        summary = {{
+            "tree_count": 3,
+            "shared_taxa": ["A", "B", "C", "D"],
+            "shared_taxon_count": 4,
+            "tip_count": 4,
+            "rooted": True,
+            "consensus_method": "majority-rule",
+            "consensus_threshold": 0.5,
+            "included_clade_count": 2,
+            "clade_frequency_count": 4,
+        }}
+    elif case_id == "consensus-strict-conflicting-four-taxon":
+        newick_text = "(A:0.1,B:0.1,C:0.1,D:0.1);\\n"
+        rows = [
+            {{"clade": "A|B", "tree_count": 2, "frequency": 2 / 3}},
+            {{"clade": "A|C", "tree_count": 1, "frequency": 1 / 3}},
+            {{"clade": "B|D", "tree_count": 1, "frequency": 1 / 3}},
+            {{"clade": "C|D", "tree_count": 2, "frequency": 2 / 3}},
+        ]
+        summary = {{
+            "tree_count": 3,
+            "shared_taxa": ["A", "B", "C", "D"],
+            "shared_taxon_count": 4,
+            "tip_count": 4,
+            "rooted": True,
+            "consensus_method": "strict",
+            "consensus_threshold": 1.0,
+            "included_clade_count": 0,
+            "clade_frequency_count": 4,
+        }}
+    elif case_id == "consensus-majority-posterior-six-taxon":
+        newick_text = "(A:1,B:1,(C:1,D:1)60:1.66666666666667,(E:1,F:1)60:1.66666666666667);\\n"
+        rows = [
+            {{"clade": "A|B", "tree_count": 2, "frequency": 0.4}},
+            {{"clade": "A|B|C|D", "tree_count": 2, "frequency": 0.4}},
+            {{"clade": "A|B|D|E", "tree_count": 1, "frequency": 0.2}},
+            {{"clade": "A|B|E|F", "tree_count": 2, "frequency": 0.4}},
+            {{"clade": "A|C", "tree_count": 1, "frequency": 0.2}},
+            {{"clade": "A|D", "tree_count": 1, "frequency": 0.2}},
+            {{"clade": "A|E", "tree_count": 1, "frequency": 0.2}},
+            {{"clade": "B|D", "tree_count": 1, "frequency": 0.2}},
+            {{"clade": "B|E", "tree_count": 1, "frequency": 0.2}},
+            {{"clade": "B|F", "tree_count": 1, "frequency": 0.2}},
+            {{"clade": "C|D", "tree_count": 3, "frequency": 0.6}},
+            {{"clade": "C|F", "tree_count": 1, "frequency": 0.2}},
+            {{"clade": "E|F", "tree_count": 3, "frequency": 0.6}},
+        ]
+        summary = {{
+            "tree_count": 5,
+            "shared_taxa": ["A", "B", "C", "D", "E", "F"],
+            "shared_taxon_count": 6,
+            "tip_count": 6,
+            "rooted": True,
+            "consensus_method": "majority-rule",
+            "consensus_threshold": 0.5,
+            "included_clade_count": 2,
+            "clade_frequency_count": 13,
+        }}
+    else:
+        raise ValueError(f"unsupported fake consensus case: {{case_id}}")
+
+    summary.update(SUMMARY_OVERRIDES)
+    summary_path = output_root / "summary.json"
+    rows_path = output_root / "clade-frequencies.tsv"
+    newick_path = output_root / "normalized-tree.nwk"
+    write_json(summary_path, summary)
+    write_tsv(rows_path, rows)
+    newick_path.write_text(newick_text, encoding="utf-8")
+    write_json(
+        execution_path,
+        {{
+            "status": "ok",
+            "case_id": case_payload["case_id"],
+            "function_name": case_payload["function_name"],
+            "input_fixture": case_payload["input_fixture"],
+            "r_version": "4.6.0",
+            "ape_version": "5.0.0",
+            "outputs": {{
+                "summary_json": str(summary_path),
+                "clade_frequencies": str(rows_path),
+                "normalized_tree": str(newick_path),
+            }},
+        }},
+    )
+    raise SystemExit(0)
+
 if case_payload["operation"] == "tree-tip-distance":
     tree = Phylo.read(case_payload["input_fixture"], "newick")
     tip_labels = [terminal.name for terminal in tree.get_terminals()]
