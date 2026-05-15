@@ -580,6 +580,7 @@ from bijux_phylogenetics.engines import (
     run_maximum_likelihood_tree_inference,
     run_model_selection,
     run_multiple_sequence_alignment,
+    run_phylo_workflow_config,
     run_sh_alrt_support_estimation,
     run_tree_inference_comparison,
     validate_workflow_result_bundle,
@@ -1355,6 +1356,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return [args.input_path, args.out_dir]
         return [args.input_path]
     if args.command == "phylo":
+        if getattr(args, "phylo_command", None) == "run":
+            return [args.config_path]
         if getattr(args, "phylo_command", None) == "replay":
             inputs: list[Path | str] = [args.manifest_path]
             if getattr(args, "out_dir", None) is not None:
@@ -1412,6 +1415,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the preflight report as JSON."
     )
     _add_manifest_argument(phylo_preflight)
+    phylo_run = phylo_subparsers.add_parser(
+        "run",
+        help="Run one governed workflow from one YAML or JSON config file and export a validated result bundle.",
+    )
+    phylo_run.add_argument("config_path", type=Path)
+    phylo_run.add_argument(
+        "--json", action="store_true", help="Emit the config-run report as JSON."
+    )
+    _add_manifest_argument(phylo_run)
     phylo_replay = phylo_subparsers.add_parser(
         "replay",
         help="Rerun one governed phylogenetics workflow from its manifest and compare the replayed outputs.",
@@ -6677,6 +6689,54 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 "mrbayes": getattr(args, "mrbayes_executable", None),
                 "beast": getattr(args, "beast_executable", None),
             }
+            if args.phylo_command == "run":
+                report = run_phylo_workflow_config(args.config_path)
+                outputs = _finalize_outputs(
+                    args,
+                    command="phylo",
+                    inputs=[args.config_path],
+                    outputs=[
+                        report.fasta_to_tree_report.manifest_path,
+                        report.bundle_report.bundle_root,
+                        report.bundle_report.bundle_manifest_path,
+                        report.bundle_report.report_path,
+                    ],
+                )
+                _print_result(
+                    build_command_result(
+                        command="phylo",
+                        inputs=[args.config_path],
+                        outputs=outputs,
+                        warnings=report.warnings + report.notes,
+                        metrics={
+                            "workflow": report.workflow,
+                            "selected_workflow_status": (
+                                report.selected_workflow_status.readiness_status
+                            ),
+                            "metadata_present": (
+                                report.workflow_config.metadata_path is not None
+                            ),
+                            "traits_present": (
+                                report.workflow_config.traits_path is not None
+                            ),
+                            "alignment_mode": report.workflow_config.alignment_mode,
+                            "trimming_mode": report.workflow_config.trimming_mode,
+                            "bootstrap_replicates": (
+                                report.workflow_config.bootstrap_replicates
+                            ),
+                            "iqtree_seed": report.workflow_config.iqtree_seed,
+                            "iqtree_threads": report.workflow_config.iqtree_threads,
+                            "timeout_seconds": report.workflow_config.timeout_seconds,
+                            "bundle_file_count": report.bundle_report.file_count,
+                            "bundle_validation_passed": (
+                                report.bundle_validation.valid
+                            ),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.phylo_command == "preflight":
                 report = inspect_external_engine_preflight(
                     executables=executables,
