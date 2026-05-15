@@ -5104,6 +5104,41 @@ declared step-level engine artifacts together. `phylo validate-bundle` then
 checks both checksum integrity and the required workflow entries before the
 bundle is treated as a valid handoff.
 
+`phylo run` is the governed one-command workflow-config surface above those
+manifest tools. It takes one YAML or JSON config file, validates it before
+engine preflight begins, executes the canonical `fasta-to-tree` workflow, and
+then exports one validated result bundle automatically. Its config contract
+currently supports:
+
+- one input FASTA
+- optional metadata and traits tables
+- external engine executable choices
+- alignment and trimming settings
+- inference seed, threads, and bootstrap replicates
+- output directory and optional bundle directory
+- timeout and incomplete-run policy controls
+
+Its JSON metrics report:
+
+- `workflow`
+- `selected_workflow_status`
+- `metadata_present`
+- `traits_present`
+- `alignment_mode`
+- `trimming_mode`
+- `bootstrap_replicates`
+- `iqtree_seed`
+- `iqtree_threads`
+- `timeout_seconds`
+- `bundle_file_count`
+- `bundle_validation_passed`
+
+The exported bundle now includes the resolved workflow config plus copied
+config-source, metadata, and traits files when they were supplied. Those
+auxiliary files are recorded honestly as reviewer context and downstream
+comparative inputs; the current `fasta-to-tree` execution path does not use
+metadata or traits during tree building itself.
+
 `adapter infer-fast` is the governed FastTree surface for aligned matrices when
 speed matters more than fully optimized ML search. It keeps the inferred tree
 plus `.support.tsv`, `.low-support.tsv`, and `.support-histogram.tsv` sidecars,

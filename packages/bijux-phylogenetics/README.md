@@ -207,6 +207,7 @@ bijux-phylogenetics alignment translate coding.fasta --out translated.fasta
 bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
 bijux-phylogenetics phylo preflight --workflow fasta-to-tree --json
+bijux-phylogenetics phylo run workflow-config.yaml --json
 ```
 
 `demo rabies-cross-host-geography-panel` is the repository's flagship public
@@ -356,6 +357,24 @@ captures the workflow identifier, input checksums, structured config, resolved
 engine commands, detected engine versions, seeds, runtime, and output
 checksums. Use that manifest as the review anchor for provenance, reruns, and
 downstream evidence bundles instead of reconstructing those details from logs.
+
+Use `phylo run` when you want one serious workflow to start from a single YAML
+or JSON config instead of stitching together CLI flags manually.
+
+```bash
+bijux-phylogenetics phylo run workflow-config.yaml --json
+```
+
+The current config-driven surface targets the governed `fasta-to-tree`
+workflow. One config file can declare the input FASTA, optional metadata and
+traits tables, engine executables, alignment and trimming settings, inference
+seed and threads, output directory, optional result-bundle directory, and
+timeout or incomplete-run controls. Invalid config files fail before engine
+preflight or alignment starts. A valid run executes the same governed
+tree-building workflow as `adapter fasta-to-tree`, then exports and validates
+one complete result bundle carrying the resolved workflow config plus copied
+config source, metadata, and traits files alongside the inference outputs and
+engine artifacts.
 
 Use `phylo replay` when you need to rerun one governed manifest and verify that
 the new outputs are still scientifically equivalent.

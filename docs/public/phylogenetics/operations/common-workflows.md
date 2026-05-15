@@ -16,6 +16,7 @@ Typical public workflows include:
 - build a full reviewer-facing tree report package from one supplied tree
 - trim and inspect an alignment before reporting
 - run one command from raw FASTA to a supported inference bundle
+- run one supported inference workflow from one YAML or JSON config file
 - assemble aligned loci into a concatenated supermatrix
 - audit a concatenated multi-locus matrix before inference
 - run a comparative model and capture JSON plus report artifacts
@@ -3311,6 +3312,30 @@ Every governed external-engine workflow in this section writes a
 resolved engine commands, detected engine versions, seed values, runtime, and
 output checksums. Treat that manifest as the durable provenance record for
 review, reruns, and governed downstream reports.
+
+Use `phylo run` when you want one governed workflow to start from a single
+config file instead of a long command line.
+
+```bash
+bijux-phylogenetics phylo run workflow-config.yaml --json
+```
+
+The current one-config surface targets the canonical `fasta-to-tree` workflow.
+One config file can declare:
+
+- the input FASTA
+- optional metadata and traits tables
+- engine executable choices
+- alignment and trimming settings
+- inference seed, threads, and bootstrap replicates
+- output directory and optional bundle directory
+- timeout and incomplete-run controls
+
+Invalid config files fail before engine preflight or alignment starts. A valid
+run executes the same governed workflow as `adapter fasta-to-tree`, then
+exports and validates one complete result bundle automatically. That bundle now
+includes the resolved workflow config plus copied config-source, metadata, and
+traits files when they were supplied.
 
 Use `phylo replay` when you need to rerun one of those manifests and verify the
 result against the original workflow output.
