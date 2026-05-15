@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 CASE_SUMMARIES = {{
-    "read-tree-example-rooted": {{
+    "read-tree-balanced-rooted-ultrametric": {{
         "tip_count": 4,
         "internal_node_count": 3,
         "edge_count": 6,
@@ -28,13 +28,21 @@ CASE_SUMMARIES = {{
         "tip_labels": ["A", "B", "C", "D"],
         "branch_length_count": 6,
     }},
-    "read-tree-example-unrooted": {{
+    "read-tree-unrooted-branch-length": {{
         "tip_count": 4,
         "internal_node_count": 1,
         "edge_count": 4,
         "rooted": False,
         "tip_labels": ["A", "B", "C", "D"],
         "branch_length_count": 4,
+    }},
+    "read-tree-quoted-taxon-labels": {{
+        "tip_count": 3,
+        "internal_node_count": 1,
+        "edge_count": 3,
+        "rooted": False,
+        "tip_labels": ["Homo sapiens", "Mus musculus", "A.B-1"],
+        "branch_length_count": 3,
     }},
 }}
 

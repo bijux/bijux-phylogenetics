@@ -43,8 +43,14 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
     cases = list_ape_parity_cases()
 
     assert [case.case_id for case in cases] == [
-        "read-tree-example-rooted",
-        "read-tree-example-unrooted",
+        "read-tree-balanced-rooted-ultrametric",
+        "read-tree-unrooted-branch-length",
+        "read-tree-quoted-taxon-labels",
+    ]
+    assert [case.tree_fixture_id for case in cases] == [
+        "balanced_rooted_ultrametric",
+        "unrooted_branch_length_tree",
+        "quoted_taxon_labels",
     ]
     assert {case.function_name for case in cases} == {"ape::read.tree"}
     assert {case.operation for case in cases} == {"read-tree-summary"}
@@ -61,8 +67,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 2
-    assert report.passed_case_count == 2
+    assert report.case_count == 3
+    assert report.passed_case_count == 3
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == ["ape::read.tree"]
@@ -80,7 +86,7 @@ def test_run_ape_parity_cases_records_failure_bundle_for_summary_mismatch(
     )
 
     report = run_ape_parity_cases(
-        case_ids=["read-tree-example-rooted"],
+        case_ids=["read-tree-balanced-rooted-ultrametric"],
         rscript_executable=str(rscript),
         failure_root=tmp_path / "ape-parity-failures",
     )
@@ -105,7 +111,7 @@ def test_run_ape_parity_cases_records_failure_bundle_for_summary_mismatch(
 
 def test_run_ape_parity_cases_marks_missing_rscript_as_skipped(tmp_path: Path) -> None:
     report = run_ape_parity_cases(
-        case_ids=["read-tree-example-rooted"],
+        case_ids=["read-tree-balanced-rooted-ultrametric"],
         rscript_executable=str(tmp_path / "missing-rscript"),
         failure_root=tmp_path / "ape-parity-failures",
     )
@@ -135,8 +141,9 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 2
+    assert len(rows) == 3
     assert rows[0]["function_name"] == "ape::read.tree"
+    assert rows[0]["tree_fixture_id"]
     assert rows[0]["status"] == "passed"
     assert rows[0]["bijux_version"]
 
@@ -149,7 +156,7 @@ def test_run_ape_parity_cases_records_live_environment_status(tmp_path: Path) ->
         pytest.skip("jsonlite is required for live ape parity validation")
 
     report = run_ape_parity_cases(
-        case_ids=["read-tree-example-rooted"],
+        case_ids=["read-tree-balanced-rooted-ultrametric"],
         rscript_executable=rscript,
         failure_root=tmp_path / "ape-parity-failures",
     )
