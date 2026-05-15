@@ -13,10 +13,10 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
 from bijux_phylogenetics.comparative.pgls import build_pgls_model_matrix, run_pgls
 from bijux_phylogenetics.comparative.signal import estimate_pagels_lambda
 from bijux_phylogenetics.compare.topology import (
-    _unrooted_splits,
     compare_branch_score_distance,
     compare_robinson_foulds,
 )
+from bijux_phylogenetics.core.clade_sets import informative_unrooted_splits
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.tree_set import (
@@ -226,7 +226,7 @@ def _consensus_splits(path: Path) -> list[str]:
     shared_taxa = set(tree.tip_names)
     return sorted(
         _format_unrooted_split(split, shared_taxa)
-        for split in _unrooted_splits(tree, shared_taxa)
+        for split in informative_unrooted_splits(tree, shared_taxa)
     )
 
 

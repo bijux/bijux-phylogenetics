@@ -33,7 +33,7 @@ from bijux_phylogenetics.comparative.signal import (
 from bijux_phylogenetics.compare.topology_distance import (
     compare_topology_distance_trees,
 )
-from bijux_phylogenetics.compare.topology import _unrooted_splits
+from bijux_phylogenetics.core.clade_sets import informative_unrooted_splits
 from bijux_phylogenetics.compare.structural_parity import (
     compare_tree_sets_structurally,
     compare_tree_structurally,
@@ -2815,7 +2815,7 @@ def _build_bijux_consensus_rows(
         raise ValueError(f"unsupported consensus method '{consensus_method}'")
     tree.rooted = False
     frequency_report = compute_clade_frequency_table(input_fixture)
-    included_split_count = len(_unrooted_splits(tree, set(tree.tip_names)))
+    included_split_count = len(informative_unrooted_splits(tree, set(tree.tip_names)))
     return {
         "tree_count": report.tree_count,
         "shared_taxa": report.shared_taxa,
