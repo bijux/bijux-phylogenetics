@@ -32,6 +32,15 @@ parity harness resolves its DNA inputs through those fixture ids for
 `base.freq`, `dist.dna`, and `trans` instead of relying on loose path lists or
 one-off inline sequences.
 
+The metadata fixture corpus now also has one governed shared catalog at
+`metadata/shared_trait_table_fixture_catalog.json`. That catalog assigns
+durable fixture ids for continuous traits, binary and multistate discrete
+traits, missing-value cases, extra-versus-missing taxon mismatches, duplicate
+taxon negatives, constant-trait negatives, categorical predictors, and
+misordered taxon rows. The owned discrete-reference validator and the live
+`ape::ace` ancestral review tests now resolve their small governed trait
+tables through those fixture ids instead of hardcoding one-off table paths.
+
 The `expected/` directory now also carries benchmark-corpus regression
 snapshots used to pin stable dataset summaries across releases.
 
