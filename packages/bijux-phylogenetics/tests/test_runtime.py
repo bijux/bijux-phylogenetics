@@ -791,6 +791,7 @@ from bijux_phylogenetics.reference_validation import (
     validate_taxon_naming_reference_fixtures,
     validate_tree_reference_fixtures,
 )
+from bijux_phylogenetics.release_truth import build_release_truth_report
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
@@ -803,6 +804,7 @@ from bijux_phylogenetics.reports.service import (
     render_level_one_release_gate_report,
     render_phylo_inputs_report,
     render_phylogenetics_report,
+    render_release_truth_report,
     render_taxon_report,
     render_tree_report,
     render_tree_set_comparison_report,
@@ -871,6 +873,26 @@ def fixture(name: str) -> Path:
         if candidate.exists():
             return candidate
     raise FileNotFoundError(name)
+
+
+def _write_junit_report(
+    path: Path,
+    *,
+    suite_name: str,
+    tests: int,
+    failures: int,
+    skipped: int,
+    errors: int = 0,
+) -> Path:
+    path.write_text(
+        (
+            "<testsuites name=\"pytest\">"
+            f"<testsuite name=\"{suite_name}\" tests=\"{tests}\" failures=\"{failures}\" errors=\"{errors}\" skipped=\"{skipped}\" />"
+            "</testsuites>\n"
+        ),
+        encoding="utf-8",
+    )
+    return path
 
 
 def _load_robinson_foulds_reference_rows() -> list[dict[str, str]]:
@@ -9234,6 +9256,98 @@ def test_render_level_one_release_gate_report_writes_traceability_sections(
     assert "Bijux Level 1 Release Gate Report" in text
 
 
+def test_build_release_truth_report_aggregates_test_counts_and_release_surfaces(
+    tmp_path: Path,
+) -> None:
+    total_report = _write_junit_report(
+        tmp_path / "full.xml",
+        suite_name="full",
+        tests=14,
+        failures=1,
+        skipped=2,
+    )
+    real_engine_report = _write_junit_report(
+        tmp_path / "real-engine.xml",
+        suite_name="real-engine",
+        tests=6,
+        failures=0,
+        skipped=1,
+    )
+
+    report = build_release_truth_report(
+        test_report_paths=[total_report],
+        real_engine_test_report_paths=[real_engine_report],
+        include_extended_parity=False,
+        stress_tier="small",
+    )
+
+    assert report.total_tests.total_tests == 14
+    assert report.total_tests.passed_tests == 11
+    assert report.real_engine_tests.total_tests == 6
+    assert report.real_engine_tests.passed_tests == 5
+    assert any(
+        workflow.surface == "fasta-to-tree"
+        for workflow in report.supported_workflows
+    )
+    assert any(
+        dataset.demo_command == "rabies-cross-host-geography-panel"
+        for dataset in report.flagship_datasets
+    )
+    assert report.reference_parity.case_count > 0
+    assert len(report.stress_suite.observations) == 5
+
+
+def test_render_release_truth_report_writes_release_sections(
+    tmp_path: Path,
+) -> None:
+    total_report = _write_junit_report(
+        tmp_path / "full.xml",
+        suite_name="full",
+        tests=12,
+        failures=1,
+        skipped=1,
+    )
+    real_engine_report = _write_junit_report(
+        tmp_path / "real-engine.xml",
+        suite_name="real-engine",
+        tests=5,
+        failures=0,
+        skipped=2,
+    )
+    output = tmp_path / "release-truth.html"
+
+    result = render_release_truth_report(
+        out_path=output,
+        test_report_paths=[total_report],
+        real_engine_test_report_paths=[real_engine_report],
+        include_extended_parity=False,
+        stress_tier="small",
+    )
+
+    text = output.read_text(encoding="utf-8")
+    assert result.report_kind == "release-truth"
+    assert result.machine_manifest["sections"] == [
+        "reviewer-summary",
+        "total-tests",
+        "real-engine-tests",
+        "supported-workflows",
+        "experimental-workflows",
+        "advisory-workflows",
+        "parser-only-workflows",
+        "flagship-datasets",
+        "workflow-validation",
+        "release-gate",
+        "reference-parity",
+        "stress-suite",
+        "known-limitations",
+    ]
+    assert result.machine_manifest["metrics"]["total_tests"] == 12
+    assert result.machine_manifest["metrics"]["real_engine_tests"] == 5
+    assert result.machine_manifest["metrics"]["flagship_dataset_count"] >= 1
+    assert result.machine_manifest_path.exists()
+    assert "Bijux Release Truth Report" in text
+
+
 def test_bundle_directory_copies_files_and_manifest(tmp_path: Path) -> None:
     inputs_root = tmp_path / "inputs"
     outputs_root = tmp_path / "outputs"
@@ -10285,6 +10399,48 @@ def test_cli_report_release_gate_json_output_uses_gate_contract(
     assert payload["data"]["report_kind"] == "release-gate"
     assert payload["metrics"]["decision"] == "blocked"
     assert payload["metrics"]["excluded_taxa"] == 3
+
+
+def test_cli_report_release_truth_json_output_uses_release_contract(
+    tmp_path: Path, capsys
+) -> None:
+    total_report = _write_junit_report(
+        tmp_path / "full.xml",
+        suite_name="full",
+        tests=10,
+        failures=1,
+        skipped=2,
+    )
+    real_engine_report = _write_junit_report(
+        tmp_path / "real-engine.xml",
+        suite_name="real-engine",
+        tests=4,
+        failures=0,
+        skipped=1,
+    )
+    output = tmp_path / "release-truth.html"
+    exit_code = main(
+        [
+            "report",
+            "release-truth",
+            "--test-report",
+            str(total_report),
+            "--real-engine-test-report",
+            str(real_engine_report),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["command"] == "report"
+    assert payload["outputs"] == [str(output), str(output.with_suffix(".json"))]
+    assert payload["data"]["report_kind"] == "release-truth"
+    assert payload["metrics"]["total_tests"] == 10
+    assert payload["metrics"]["real_engine_tests"] == 4
+    assert payload["metrics"]["supported_workflow_count"] >= 1
 
 
 def test_cli_adapter_returns_typed_engine_error(capsys) -> None:

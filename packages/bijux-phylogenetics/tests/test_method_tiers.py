@@ -10,6 +10,7 @@ from bijux_phylogenetics.provenance.method_tiers import (
     method_tier_metrics,
     method_tier_warnings,
     phylogenetic_logistic_method_tier,
+    release_method_tier_inventory,
     tree_report_method_tier,
 )
 
@@ -91,3 +92,10 @@ def test_method_tier_metrics_emit_cli_ready_fields() -> None:
         "method_approximation": "gee",
     }
 
+
+def test_release_method_tier_inventory_lists_governed_release_surfaces() -> None:
+    inventory = release_method_tier_inventory()
+
+    assert any(item.surface == "fasta-to-tree" for item in inventory)
+    assert any(item.surface == "phylogenetic-logistic" for item in inventory)
+    assert any(item.surface == "bayesian-posterior-report" for item in inventory)
