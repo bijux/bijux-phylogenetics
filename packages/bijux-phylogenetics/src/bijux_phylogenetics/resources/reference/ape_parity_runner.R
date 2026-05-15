@@ -2402,7 +2402,7 @@ continuous_ace_case <- function(case_payload, output_root, execution_path, r_ver
   kept_taxa <- character()
   dropped_missing_taxa <- character()
   dropped_non_numeric_taxa <- character()
-  trait_vector <- c()
+  trait_vector <- character()
   for (taxon in tree$tip.label) {
     row_index <- rows_by_taxon[[taxon]]
     if (is.null(row_index)) {
@@ -2515,6 +2515,216 @@ continuous_ace_case <- function(case_payload, output_root, execution_path, r_ver
       outputs = list(
         summary_json = summary_path,
         continuous_ancestral = rows_path
+      )
+    )
+  )
+}
+
+discrete_ace_case <- function(case_payload, output_root, execution_path, r_version) {
+  tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
+  if (inherits(tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  trait_table <- tryCatch(
+    utils::read.delim(case_payload$trait_table_path, sep = "\t", stringsAsFactors = FALSE),
+    error = function(error) error
+  )
+  if (inherits(trait_table, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TraitTableError",
+        message = conditionMessage(trait_table),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  taxon_column <- as.character(case_payload$trait_taxon_column)
+  trait_name <- as.character(case_payload$trait_name)
+  if (!(taxon_column %in% names(trait_table)) || !(trait_name %in% names(trait_table))) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TraitTableError",
+        message = "trait table is missing the requested taxon or trait column",
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  rows_by_taxon <- setNames(seq_len(nrow(trait_table)), as.character(trait_table[[taxon_column]]))
+  kept_taxa <- character()
+  dropped_missing_taxa <- character()
+  trait_vector <- c()
+  for (taxon in tree$tip.label) {
+    row_index <- rows_by_taxon[[taxon]]
+    if (is.null(row_index)) {
+      dropped_missing_taxa <- c(dropped_missing_taxa, taxon)
+      next
+    }
+    raw_value <- trait_table[[trait_name]][[row_index]]
+    if (identical(raw_value, "") || is.na(raw_value)) {
+      dropped_missing_taxa <- c(dropped_missing_taxa, taxon)
+      next
+    }
+    kept_taxa <- c(kept_taxa, taxon)
+    trait_vector[taxon] <- as.character(raw_value)
+  }
+
+  state_labels <- sort(unique(unname(trait_vector)))
+  if (length(kept_taxa) < 2L || length(state_labels) < 2L) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "AncestralReconstructionError",
+        message = "discrete ancestral reconstruction requires at least two taxa and two observed states after pruning missing values",
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  pruned_tree <- if (length(kept_taxa) == length(tree$tip.label)) {
+    tree
+  } else {
+    ape::drop.tip(tree, setdiff(tree$tip.label, kept_taxa))
+  }
+  trait_vector <- factor(trait_vector[pruned_tree$tip.label], levels = state_labels)
+  ace_output <- tryCatch(
+    ape::ace(trait_vector, pruned_tree, type = "discrete", model = "ER", CI = TRUE),
+    error = function(error) error
+  )
+  if (inherits(ace_output, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "AncestralReconstructionError",
+        message = conditionMessage(ace_output),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  likelihood_matrix <- as.matrix(ace_output$lik.anc)
+  node_ids <- as.integer(rownames(likelihood_matrix))
+  rows <- list()
+  row_index <- 1L
+  for (index in seq_along(node_ids)) {
+    node_id <- node_ids[[index]]
+    node_likelihoods <- as.numeric(likelihood_matrix[index, ])
+    names(node_likelihoods) <- colnames(likelihood_matrix)
+    max_index <- which.max(node_likelihoods)
+    max_probability <- as.numeric(node_likelihoods[[max_index]])
+    most_likely_state <- names(node_likelihoods)[[max_index]]
+    for (state in names(node_likelihoods)) {
+      rows[[row_index]] <- list(
+        node_id = node_id,
+        node = paste(descendant_taxa(pruned_tree, node_id), collapse = "|"),
+        state = state,
+        posterior_probability = as.numeric(node_likelihoods[[state]]),
+        most_likely_state = most_likely_state,
+        max_posterior_probability = max_probability
+      )
+      row_index <- row_index + 1L
+    }
+  }
+
+  transition_rows <- list()
+  transition_index <- 1L
+  index_matrix <- ace_output$index.matrix
+  rate_vector <- as.numeric(ace_output$rates)
+  for (left_index in seq_along(state_labels)) {
+    for (right_index in seq_along(state_labels)) {
+      if (left_index == right_index) {
+        next
+      }
+      parameter_index <- index_matrix[left_index, right_index]
+      transition_rows[[transition_index]] <- list(
+        source_state = state_labels[[left_index]],
+        target_state = state_labels[[right_index]],
+        transition_allowed = parameter_index > 0,
+        step_distance = abs(left_index - right_index),
+        rate = if (parameter_index > 0) as.numeric(rate_vector[[parameter_index]]) else 0.0
+      )
+      transition_index <- transition_index + 1L
+    }
+  }
+
+  summary_path <- file.path(output_root, "summary.json")
+  rows_path <- file.path(output_root, "discrete-ancestral.tsv")
+  write_payload(
+    summary_path,
+    list(
+      trait = trait_name,
+      taxon_count = length(pruned_tree$tip.label),
+      excluded_taxon_count = length(dropped_missing_taxa),
+      dropped_missing_taxa = as.list(sort(unique(dropped_missing_taxa))),
+      internal_node_count = length(node_ids),
+      model = "equal-rates",
+      state_count = length(state_labels),
+      state_labels = as.list(state_labels),
+      log_likelihood = as.numeric(ace_output$loglik),
+      parameter_count = length(rate_vector),
+      aic = as.numeric(stats::AIC(ace_output)),
+      transition_rate_rows = transition_rows
+    )
+  )
+  write_table(rows_path, do.call(rbind.data.frame, c(rows, stringsAsFactors = FALSE)))
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        discrete_ancestral = rows_path
       )
     )
   )
@@ -2982,6 +3192,11 @@ if (identical(case_payload$operation, "tree-brownian-covariance")) {
 
 if (identical(case_payload$operation, "tree-continuous-ancestral-states")) {
   continuous_ace_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "tree-discrete-ancestral-states")) {
+  discrete_ace_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 

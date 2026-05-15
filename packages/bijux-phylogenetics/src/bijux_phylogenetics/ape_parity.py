@@ -14,10 +14,14 @@ import tempfile
 
 from bijux_phylogenetics.ancestral.common import (
     load_continuous_dataset,
+    load_discrete_dataset,
     node_signature,
 )
 from bijux_phylogenetics.ancestral.continuous import (
     reconstruct_continuous_ancestral_states,
+)
+from bijux_phylogenetics.ancestral.discrete import (
+    reconstruct_discrete_ancestral_states,
 )
 from bijux_phylogenetics.clades import extract_tree_clades, extract_tree_set_clades
 from bijux_phylogenetics.comparative.brownian_covariance import (
@@ -1168,6 +1172,62 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             trait_fixture_id="ace_continuous_missing_values",
             trait_table_path=trait_path("ace_continuous_missing_values"),
             trait_name="response_growth",
+            trait_taxon_column="taxon",
+        ),
+        ApeParityCase(
+            case_id="ace-discrete-binary-balanced-rooted-ultrametric",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::ace",
+            python_function_name="reconstruct_discrete_ancestral_states",
+            operation="tree-discrete-ancestral-states",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=5e-5,
+            trait_fixture_id="binary_discrete_match",
+            trait_table_path=trait_path("binary_discrete_match"),
+            trait_name="presence",
+            trait_taxon_column="taxon",
+        ),
+        ApeParityCase(
+            case_id="ace-discrete-multistate-balanced-rooted-ultrametric",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::ace",
+            python_function_name="reconstruct_discrete_ancestral_states",
+            operation="tree-discrete-ancestral-states",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=5e-5,
+            trait_fixture_id="multistate_discrete_match",
+            trait_table_path=trait_path("multistate_discrete_match"),
+            trait_name="region",
+            trait_taxon_column="taxon",
+        ),
+        ApeParityCase(
+            case_id="ace-discrete-multistate-pectinate-non-ultrametric",
+            fixture_kind="tree",
+            fixture_id="pectinate_rooted_non_ultrametric",
+            function_name="ape::ace",
+            python_function_name="reconstruct_discrete_ancestral_states",
+            operation="tree-discrete-ancestral-states",
+            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            tolerance=5e-5,
+            trait_fixture_id="multistate_discrete_match",
+            trait_table_path=trait_path("multistate_discrete_match"),
+            trait_name="region",
+            trait_taxon_column="taxon",
+        ),
+        ApeParityCase(
+            case_id="ace-discrete-missing-values-pruned",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::ace",
+            python_function_name="reconstruct_discrete_ancestral_states",
+            operation="tree-discrete-ancestral-states",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=5e-5,
+            trait_fixture_id="missing_trait_values",
+            trait_table_path=trait_path("missing_trait_values"),
+            trait_name="habitat",
             trait_taxon_column="taxon",
         ),
         ApeParityCase(
@@ -2785,6 +2845,74 @@ def _build_bijux_continuous_ancestral_rows(
     }, rows
 
 
+def _build_bijux_discrete_ancestral_rows(
+    input_fixture: Path,
+    *,
+    trait_table_path: Path,
+    trait_name: str,
+    trait_taxon_column: str,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    dataset = load_discrete_dataset(
+        input_fixture,
+        trait_table_path,
+        trait=trait_name,
+        taxon_column=trait_taxon_column,
+    )
+    report = reconstruct_discrete_ancestral_states(
+        input_fixture,
+        trait_table_path,
+        trait=trait_name,
+        taxon_column=trait_taxon_column,
+        model="equal-rates",
+    )
+    internal_node_map = {
+        node_signature(node): node_id
+        for node_id, node in build_ape_internal_node_map(dataset.tree).items()
+    }
+    rows = sorted(
+        [
+            {
+                "node_id": internal_node_map[estimate.node],
+                "node": estimate.node,
+                "state": _coerce_table_cell(state),
+                "posterior_probability": probability,
+                "most_likely_state": _coerce_table_cell(estimate.most_likely_state),
+                "max_posterior_probability": estimate.confidence,
+            }
+            for estimate in report.estimates
+            if not estimate.is_tip
+            for state, probability in sorted(estimate.state_probabilities.items())
+        ],
+        key=lambda row: (int(row["node_id"]), str(row["state"])),
+    )
+    transition_rows = [
+        {
+            "source_state": row.source_state,
+            "target_state": row.target_state,
+            "transition_allowed": row.transition_allowed,
+            "step_distance": row.step_distance,
+            "rate": row.rate,
+        }
+        for row in report.transition_rate_rows
+    ]
+    return {
+        "trait": report.trait,
+        "taxon_count": report.taxon_count,
+        "excluded_taxon_count": len(report.dropped_missing_taxa),
+        "dropped_missing_taxa": report.dropped_missing_taxa,
+        "internal_node_count": len(
+            [estimate for estimate in report.estimates if not estimate.is_tip]
+        ),
+        "model": report.model,
+        "state_count": len(report.observed_states),
+        "state_labels": report.observed_states,
+        "log_likelihood": report.log_likelihood,
+        "parameter_count": report.parameter_count,
+        "aic": report.aic,
+        "transition_rate_rows": transition_rows,
+    }, rows
+
+
 def _build_bijux_tree_node_depth_rows(
     input_fixture: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
@@ -3280,6 +3408,22 @@ def _build_bijux_case_payload(
             trait_taxon_column=case.trait_taxon_column,
         )
         return summary, rows, None
+    if case.operation == "tree-discrete-ancestral-states":
+        if (
+            case.trait_table_path is None
+            or case.trait_name is None
+            or case.trait_taxon_column is None
+        ):
+            raise ValueError(
+                f"ape parity case '{case.case_id}' is missing a trait table path, trait name, or taxon column"
+            )
+        summary, rows = _build_bijux_discrete_ancestral_rows(
+            case.input_fixture,
+            trait_table_path=case.trait_table_path,
+            trait_name=case.trait_name,
+            trait_taxon_column=case.trait_taxon_column,
+        )
+        return summary, rows, None
     if case.operation == "tree-independent-contrasts":
         if case.trait_table_path is None or case.trait_name is None:
             raise ValueError(
@@ -3410,6 +3554,10 @@ def _load_reference_case_payload(
     if case.operation == "tree-continuous-ancestral-states":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "continuous-ancestral.tsv")
+        return summary, rows, None
+    if case.operation == "tree-discrete-ancestral-states":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "discrete-ancestral.tsv")
         return summary, rows, None
     if case.operation == "tree-independent-contrasts":
         summary = _load_json(execution_root / "summary.json")
