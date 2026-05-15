@@ -183,7 +183,10 @@ non-ultrametric matrices. The owned Bijux side now builds neighbor-joining
 trees with one in-repo deterministic NJ algorithm that validates zero-diagonal
 and nonnegative matrix assumptions, produces branch lengths, and resolves tied
 joins by stable taxon ordering rather than delegating the NJ method through
-Biopython.
+Biopython. When one review workflow already holds one loaded
+`GeneticDistanceMatrix`, the same owned core is also reusable directly through
+`build_distance_tree_from_genetic_distance_matrix(...)` instead of requiring a
+restart from one path-based alignment or matrix file.
 The comparative side of the same governed lane now also uses
 `shared_trait_table_fixture_catalog.json` for `ape::pic` over balanced rooted
 ultrametric, pectinate rooted non-ultrametric, and six-taxon clean trait
@@ -214,6 +217,11 @@ same matrix now also feeds
 nucleotide review workflow can carry one loaded matrix through composition,
 segregating-site, nucleotide-distance, aligned coding diagnostics, and
 aligned translation inspection.
+The same baseline surface now also exposes
+`simulate_random_tree(...)` and `simulate_coalescent_tree(...)` for one-tree
+native simulation review, so callers that need one governed random or
+coalescent draw plus its summary record do not have to route through one
+batch-only simulation wrapper.
 The owned `alignment composition` surface now also exposes
 `--base-frequency-out` for one combined alignment-plus-sequence literal-state
 frequency ledger that mirrors `ape::base.freq`. Lowercase, ambiguity-bearing,

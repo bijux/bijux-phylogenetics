@@ -816,12 +816,19 @@ neighbor joining no longer delegates through Biopython for that method: Bijux
 now builds one deterministic NJ tree in-repo, validates zero-diagonal and
 nonnegative matrix assumptions explicitly, produces branch lengths, and
 resolves tied joins by stable taxon ordering so distance-tree recovery stays
-reproducible.
+reproducible. The same owned distance-tree core is now also reusable directly
+from Python through `build_distance_tree_from_genetic_distance_matrix(...)`,
+so one loaded `GeneticDistanceMatrix` no longer has to restart from a
+path-based alignment or table wrapper before recovering one NJ or UPGMA tree.
 The owned tree-manipulation core now also lives directly on `PhyloTree`.
 Outgroup rooting, unrooting, keep-tip pruning, drop-tip pruning, clade
 extraction, MRCA lookup, and monophyly review all run through one native
 topology surface with explicit rootedness and branch-length policy instead of
 splitting those transforms across separate tree backends.
+The owned simulation baseline now also exposes direct single-tree surfaces
+through `simulate_random_tree(...)` and `simulate_coalescent_tree(...)`, so a
+caller that needs one governed baseline tree with its summary record no longer
+has to go through one batch-only wrapper.
 The `ape::pic` lane now covers balanced rooted ultrametric, pectinate rooted
 non-ultrametric, and six-taxon clean comparative fixtures through one governed
 trait-table catalog. On the owned Bijux side, `comparative contrasts

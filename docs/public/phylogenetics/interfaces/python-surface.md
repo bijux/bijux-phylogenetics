@@ -38,6 +38,10 @@ reference-tree support mapping, topology clustering, and posterior tree-set
 comparison. Strict consensus and support surfaces validate one exact taxon set
 across the whole tree set, while tolerant inspection surfaces keep one
 explicit malformed-record counter instead of failing silently.
+The same native tree runtime now also owns direct baseline simulation entry
+points through `simulate_random_tree(...)` and `simulate_coalescent_tree(...)`
+when one caller needs one governed random or coalescent tree plus its summary
+record without going through one batch simulation wrapper.
 
 The owned native DNA-alignment API now also lives on one
 `bijux_phylogenetics.DnaBinAlignment` runtime loaded through
@@ -54,6 +58,10 @@ also feeds aligned coding diagnostics and aligned translation through
 `inspect_coding_alignment_from_dna_bin_alignment(...)` and
 `translate_coding_alignment_from_dna_bin_alignment(...)` instead of forcing
 those workflows to reparse FASTA independently.
+The same owned distance runtime now also exposes
+`build_distance_tree_from_genetic_distance_matrix(...)`, so one loaded
+`GeneticDistanceMatrix` can recover one governed NJ or UPGMA tree directly
+without restarting from path-based input loaders.
 
 The owned comparative runtime now also exposes one direct Brownian covariance
 surface on an in-memory tree through
