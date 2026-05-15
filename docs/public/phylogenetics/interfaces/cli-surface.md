@@ -249,16 +249,20 @@ Its JSON metrics report:
 - `reference_source`
 
 The initial live `phytools` registry is intentionally narrow for this goal. It
-currently covers `phytools::phylosig(method='lambda')` and
-`phytools::phylosig(method='K')` on governed twenty-four-taxon comparative
-fixtures from the shared `shared_phytools_comparative_fixture_catalog.json`
-corpus. The live lambda lane now includes one non-ultrametric strong-signal
-fixture plus one ultrametric weak-signal fixture so the harness proves both a
-near-boundary high-signal fit and a near-zero-signal fit against real
-`phytools` likelihood output instead of only one easy interior case. The live
-K lane now includes strong-signal and weak-signal seeded permutation cases and
-compares the observed K scalar, permutation p-value, and null-distribution
-summary under one governed replicate count.
+currently covers `phytools::phylosig(method='lambda')`,
+`phytools::phylosig(method='K')`, and `phytools::fastAnc` on governed
+twenty-four-taxon comparative fixtures from the shared
+`shared_phytools_comparative_fixture_catalog.json` corpus. The live lambda
+lane now includes one non-ultrametric strong-signal fixture plus one
+ultrametric weak-signal fixture so the harness proves both a near-boundary
+high-signal fit and a near-zero-signal fit against real `phytools`
+likelihood output instead of only one easy interior case. The live K lane now
+includes strong-signal and weak-signal seeded permutation cases and compares
+the observed K scalar, permutation p-value, and null-distribution summary
+under one governed replicate count. The live `fastAnc` lane now includes
+ultrametric strong-signal, ultrametric weak-signal, non-ultrametric
+strong-signal, and missing-value pruning cases, and compares stable
+node-signature rows plus standard errors against real `phytools` output.
 For this round, `bionj` is explicitly excluded. The distance-tree CLI surfaces
 therefore accept `--method bionj` only so the owned runtime can return one
 structured out-of-scope error naming `ape::bionj`, rather than failing with
@@ -1339,6 +1343,7 @@ metrics report:
 - `excluded_taxon_count`
 - `unstable_node_count`
 - `model`
+- `estimator`
 - `tree_is_ultrametric`
 - `covariance_near_singular`
 - `covariance_condition_number`
@@ -1347,7 +1352,11 @@ metrics report:
 
 The command supports `brownian` and `ou` reconstruction modes. The Brownian
 path is aligned to the governed `ape::ace(method='pic')` reference surface with
-explicit bounded tolerance rather than an undocumented local convention.
+explicit bounded tolerance rather than an undocumented local convention. The
+optional `--estimator` flag makes the estimator surface explicit: `ace-pic`
+preserves the governed `ape::ace(type='continuous', method='pic')` lane,
+`fast-anc` switches to the governed live `phytools::fastAnc` lane, and
+`generalized-least-squares` is reserved for the `ou` model.
 
 When `--table-out` is supplied, `ancestral continuous` writes one flat node
 ledger as CSV or TSV with both tips and internal nodes. When `--summary-out` is
@@ -1355,6 +1364,7 @@ supplied, it also writes one summary ledger. The summary row preserves:
 - `trait`
 - `taxon_column`
 - `model`
+- `estimator`
 - `alpha`
 - `analyzed_taxon_count`
 - `excluded_taxon_count`

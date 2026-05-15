@@ -220,17 +220,21 @@ aligned translation inspection.
 The same `parity` command now also exposes one governed
 `--reference-source phytools-live` lane for real `phytools` execution through
 the checked-in R runner. That initial registry is intentionally narrow for
-goal 201: it currently covers `phytools::phylosig(method='lambda')` and
-`phytools::phylosig(method='K')` on governed twenty-four-taxon comparative
-fixtures drawn from the shared `phytools` comparative fixture catalog. The
-live lambda lane now includes one non-ultrametric strong-signal case and one
-ultrametric weak-signal case, so reviewers can see both a boundary-adjacent
-high-signal fit and a near-zero lambda fit validated against real `phytools`
-execution. The live K lane now also includes seeded strong-signal and
-weak-signal permutation cases so reviewers can compare K, permutation p-value,
-and null-distribution summary behavior under one governed replicate count. It
-writes the same summary-versus-observation TSV artifacts plus reproducible
-failure bundles as the live `ape` lane.
+goal 201: it currently covers `phytools::phylosig(method='lambda')`,
+`phytools::phylosig(method='K')`, and `phytools::fastAnc` on governed
+twenty-four-taxon comparative fixtures drawn from the shared `phytools`
+comparative fixture catalog. The live lambda lane now includes one
+non-ultrametric strong-signal case and one ultrametric weak-signal case, so
+reviewers can see both a boundary-adjacent high-signal fit and a near-zero
+lambda fit validated against real `phytools` execution. The live K lane now
+also includes seeded strong-signal and weak-signal permutation cases so
+reviewers can compare K, permutation p-value, and null-distribution summary
+behavior under one governed replicate count. The live `fastAnc` lane now
+includes ultrametric strong-signal, ultrametric weak-signal, non-ultrametric
+strong-signal, and missing-value pruning cases so reviewers can compare
+node-signature estimates and standard errors directly against real
+`phytools`. It writes the same summary-versus-observation TSV artifacts plus
+reproducible failure bundles as the live `ape` lane.
 The same baseline surface now also exposes
 `simulate_random_tree(...)` and `simulate_coalescent_tree(...)` for one-tree
 native simulation review, so callers that need one governed random or
@@ -1119,6 +1123,7 @@ bijux-phylogenetics ancestral continuous \
   --trait longevity \
   --taxon-column species \
   --model brownian \
+  --estimator fast-anc \
   --table-out artifacts/primates.ancestral-nodes.tsv \
   --summary-out artifacts/primates.ancestral-summary.tsv \
   --uncertainty-out artifacts/primates.ancestral-uncertainty.tsv \
@@ -1141,7 +1146,10 @@ The governed live `ape` lane for this surface is `ape::ace(type='continuous',
 method='pic', CI=TRUE)` over balanced, pectinate, six-taxon, and pruned
 missing-value fixtures. Bijux therefore uses one explicit closed-form
 Brownian parity target while still surfacing extra owned diagnostics that live
-`ape::ace(..., method='pic')` does not emit.
+`ape::ace(..., method='pic')` does not emit. When `--estimator fast-anc` is
+selected instead, the Brownian runtime switches to the governed live
+`phytools::fastAnc` lane and keeps stable node-signature rows plus standard
+errors for parity review on the shared comparative fixture corpus.
 
 For Python-native work, the same continuous ancestral runtime is also
 available directly through

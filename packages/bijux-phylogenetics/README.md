@@ -288,6 +288,7 @@ bijux-phylogenetics comparative multiple-testing tree.nwk traits.tsv --responses
 bijux-phylogenetics comparative report tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --out artifacts/comparative-report.html --json
 bijux-phylogenetics comparative compare-trees tree-a.nwk tree-b.nwk traits.tsv --response height_cm --predictors body_mass log_range --json
 bijux-phylogenetics ancestral continuous tree.nwk traits.tsv --trait height_cm --model brownian --json
+bijux-phylogenetics ancestral continuous tree.nwk traits.tsv --trait height_cm --model brownian --estimator fast-anc --json
 bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --model equal-rates --root-prior-mode empirical --summary-out artifacts/ancestral-discrete-summary.tsv --probabilities-out artifacts/ancestral-discrete-probabilities.tsv --transitions-out artifacts/ancestral-discrete-transitions.tsv --json
 bijux-phylogenetics ancestral sensitivity tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --compare-tree tree-alt.nwk --json
 bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --compare-tree tree-alt.nwk --out artifacts/ancestral-report.html
@@ -818,17 +819,18 @@ version, Bijux commit, function name, input fixtures, tolerance, pass or fail
 state, mismatch reason, and reproducible artifact root for every governed case,
 and writes one summary TSV plus one observation TSV just like the other parity
 surfaces. The initial live `phytools` registry is intentionally narrow for this
-goal: it currently covers `phytools::phylosig(method='lambda')` and
-`phytools::phylosig(method='K')` on governed strong-signal and weak-signal
-comparative fixtures, including one non-ultrametric lambda case that tracks the
-live `phytools` likelihood surface within tolerance. The owned signal surface
-now also exposes fixed-lambda likelihood evaluation, likelihood-ratio reporting
-against the zero-signal boundary, and bounded optimizer diagnostics instead of
-reducing Pagel's lambda to one opaque scalar. The owned K-test surface now also
-keeps seeded permutation p-values plus explicit null-distribution summaries, so
-the repository now proves behavior against real `phytools` execution instead of
-only checked-in expected
-JSON.
+goal: it currently covers `phytools::phylosig(method='lambda')`,
+`phytools::phylosig(method='K')`, and `phytools::fastAnc` on governed
+strong-signal, weak-signal, non-ultrametric, and missing-value comparative
+fixtures. The live lambda lane includes one non-ultrametric case that tracks
+the live `phytools` likelihood surface within tolerance. The owned signal
+surface now also exposes fixed-lambda likelihood evaluation, likelihood-ratio
+reporting against the zero-signal boundary, and bounded optimizer diagnostics
+instead of reducing Pagel's lambda to one opaque scalar. The owned K-test
+surface now also keeps seeded permutation p-values plus explicit
+null-distribution summaries, and the live `fastAnc` lane now compares stable
+node-signature rows plus standard errors against real `phytools` execution
+instead of only checked-in expected JSON.
 The `ape::nj` lane now covers one governed analytical three-taxon matrix plus
 four-taxon ultrametric and non-ultrametric matrices. On the owned Bijux side,
 neighbor joining no longer delegates through Biopython for that method: Bijux
@@ -870,13 +872,15 @@ pectinate rooted non-ultrametric, six-taxon Brownian, and pruned missing-value
 fixtures through that same governed trait-table catalog. On the owned Bijux
 side, `ancestral continuous` now carries one explicit Brownian fit diagnostic
 surface with ultrametric state, root-to-tip depth bounds, covariance rank and
-conditioning, solver regularization status, and one GLS likelihood summary,
-while the live parity lane remains scoped honestly to
-`ape::ace(type='continuous', method='pic', CI=TRUE)` because that is the
-governed shared closed-form Brownian reference surface. The same owned
-continuous ancestral runtime is now also reusable directly from Python through
-`reconstruct_continuous_ancestral_states_from_dataset(...)` once one
-`AncestralContinuousDataset` has already been loaded.
+conditioning, solver regularization status, and one GLS likelihood summary.
+Its Brownian estimator surface is now explicit: the default `ace-pic`
+estimator preserves the governed `ape::ace(type='continuous', method='pic',
+CI=TRUE)` parity lane, while `--estimator fast-anc` exposes the governed live
+`phytools::fastAnc` lane with stable node-signature tables, standard errors,
+95% intervals, solver diagnostics, and explicit missing-value pruning. The
+same owned continuous ancestral runtime is now also reusable directly from
+Python through `reconstruct_continuous_ancestral_states_from_dataset(...)`
+once one `AncestralContinuousDataset` has already been loaded.
 The `ape::ace` discrete lane now covers governed ER, SYM, and ARD fixtures,
 including balanced, pectinate, six-taxon, and pruned missing-value cases
 through that same shared trait-table catalog. On the owned Bijux side,
