@@ -769,6 +769,7 @@ from bijux_phylogenetics.io.fasta import (
     get_alignment_filter_profile,
     infer_alignment_alphabet,
     inspect_coding_alignment,
+    inspect_coding_alignment_from_dna_bin_alignment,
     link_alignment_to_tree,
     list_alignment_filter_profiles,
     load_dna_bin_alignment,
@@ -783,6 +784,7 @@ from bijux_phylogenetics.io.fasta import (
     summarize_alignment_windows,
     summarize_fasta_input,
     translate_coding_alignment,
+    translate_coding_alignment_from_dna_bin_alignment,
     trim_alignment,
     trim_columns_above_missingness_threshold,
     validate_fasta_input,
@@ -1789,6 +1791,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     )
     assert bijux_phylogenetics.assess_tree_assumptions is assess_tree_assumptions
     assert bijux_phylogenetics.inspect_coding_alignment is inspect_coding_alignment
+    assert (
+        bijux_phylogenetics.inspect_coding_alignment_from_dna_bin_alignment
+        is inspect_coding_alignment_from_dna_bin_alignment
+    )
     assert (
         bijux_phylogenetics.compute_pairwise_sequence_identity_matrix
         is compute_pairwise_sequence_identity_matrix
@@ -3689,6 +3695,10 @@ def test_compute_consensus_tree_requires_identical_taxon_sets() -> None:
     )
     assert bijux_phylogenetics.trim_alignment is trim_alignment
     assert bijux_phylogenetics.translate_coding_alignment is translate_coding_alignment
+    assert (
+        bijux_phylogenetics.translate_coding_alignment_from_dna_bin_alignment
+        is translate_coding_alignment_from_dna_bin_alignment
+    )
     assert bijux_phylogenetics.load_dna_bin_alignment is load_dna_bin_alignment
     assert (
         bijux_phylogenetics.write_dna_bin_alignment_fasta

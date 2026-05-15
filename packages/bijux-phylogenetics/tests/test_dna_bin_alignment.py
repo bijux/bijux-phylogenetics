@@ -17,6 +17,8 @@ from bijux_phylogenetics.io.fasta import (
     inspect_coding_alignment,
     inspect_coding_alignment_from_dna_bin_alignment,
     load_dna_bin_alignment,
+    translate_coding_alignment,
+    translate_coding_alignment_from_dna_bin_alignment,
     write_dna_bin_alignment_fasta,
 )
 
@@ -140,6 +142,46 @@ def test_dna_bin_alignment_supports_coding_alignment_diagnostics_without_reloadi
     assert direct_report.coding_behaviors == path_report.coding_behaviors
     assert direct_report.invalid_codons == path_report.invalid_codons
     assert direct_report.stop_codons == path_report.stop_codons
+
+
+@pytest.mark.parametrize(
+    ("fixture_name", "genetic_code"),
+    [
+        ("example_alignment_coding.fasta", None),
+        ("example_alignment_coding_mitochondrial.fasta", "2"),
+    ],
+)
+def test_dna_bin_alignment_supports_aligned_translation_without_reloading(
+    fixture_name: str,
+    genetic_code: str | None,
+) -> None:
+    alignment = load_dna_bin_alignment(
+        fixture(fixture_name),
+        normalize_uracil=True,
+    )
+
+    direct_records, direct_report = translate_coding_alignment_from_dna_bin_alignment(
+        alignment,
+        genetic_code=genetic_code,
+    )
+    path_records, path_report = translate_coding_alignment(
+        fixture(fixture_name),
+        genetic_code=genetic_code,
+    )
+
+    assert direct_report.source_path == alignment.path
+    assert direct_report.translated_sequence_count == alignment.sequence_count
+    assert direct_report.source_alignment_length == alignment.alignment_length
+    assert direct_report.genetic_code_id == path_report.genetic_code_id
+    assert direct_report.genetic_code_name == path_report.genetic_code_name
+    assert direct_report.translated_alignment_length == path_report.translated_alignment_length
+    assert direct_report.invalid_codon_count == path_report.invalid_codon_count
+    assert direct_report.stop_codon_count == path_report.stop_codon_count
+    assert direct_report.warnings == path_report.warnings
+    assert direct_report.codon_observations == path_report.codon_observations
+    assert [(row.identifier, row.sequence) for row in direct_records] == [
+        (row.identifier, row.sequence) for row in path_records
+    ]
 
 
 @pytest.mark.parametrize(
