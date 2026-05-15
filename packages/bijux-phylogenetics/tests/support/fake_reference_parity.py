@@ -19,6 +19,7 @@ def fake_ape_rscript(
         f"""#!/usr/bin/env python3
 import csv
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -306,6 +307,129 @@ def clade_rows(tree, tree_index_value):
 
 def is_rooted_tree(tree):
     return len(getattr(tree.root, "clades", [])) == 2
+
+def matrix_rank(matrix, tolerance=1e-12):
+    working = [list(map(float, row)) for row in matrix]
+    row_count = len(working)
+    column_count = len(working[0]) if working else 0
+    rank = 0
+    pivot_row = 0
+    for pivot_column in range(column_count):
+        candidate_row = max(
+            range(pivot_row, row_count),
+            key=lambda index: abs(working[index][pivot_column]),
+            default=None,
+        )
+        if candidate_row is None:
+            break
+        pivot_value = working[candidate_row][pivot_column]
+        if abs(pivot_value) <= tolerance:
+            continue
+        working[pivot_row], working[candidate_row] = (
+            working[candidate_row],
+            working[pivot_row],
+        )
+        pivot = working[pivot_row][pivot_column]
+        working[pivot_row] = [value / pivot for value in working[pivot_row]]
+        for row_index in range(row_count):
+            if row_index == pivot_row:
+                continue
+            factor = working[row_index][pivot_column]
+            if abs(factor) <= tolerance:
+                continue
+            working[row_index] = [
+                row_value - factor * pivot_value
+                for row_value, pivot_value in zip(
+                    working[row_index], working[pivot_row], strict=True
+                )
+            ]
+        rank += 1
+        pivot_row += 1
+        if pivot_row == row_count:
+            break
+    return rank
+
+def invert_matrix(matrix):
+    size = len(matrix)
+    augmented = [
+        [float(value) for value in row] + [1.0 if row_index == column_index else 0.0 for column_index in range(size)]
+        for row_index, row in enumerate(matrix)
+    ]
+    for pivot_index in range(size):
+        pivot_row = max(
+            range(pivot_index, size),
+            key=lambda row_index: abs(augmented[row_index][pivot_index]),
+        )
+        pivot_value = augmented[pivot_row][pivot_index]
+        if abs(pivot_value) <= 1e-12:
+            raise ValueError("matrix is singular")
+        if pivot_row != pivot_index:
+            augmented[pivot_index], augmented[pivot_row] = augmented[pivot_row], augmented[pivot_index]
+        pivot_value = augmented[pivot_index][pivot_index]
+        augmented[pivot_index] = [value / pivot_value for value in augmented[pivot_index]]
+        for row_index in range(size):
+            if row_index == pivot_index:
+                continue
+            factor = augmented[row_index][pivot_index]
+            if abs(factor) <= 1e-15:
+                continue
+            augmented[row_index] = [
+                row_value - factor * pivot_value
+                for row_value, pivot_value in zip(
+                    augmented[row_index], augmented[pivot_index], strict=True
+                )
+            ]
+    return [row[size:] for row in augmented]
+
+def matrix_infinity_norm(matrix):
+    return max((sum(abs(value) for value in row) for row in matrix), default=0.0)
+
+def matrix_condition_number(matrix):
+    inverse = invert_matrix(matrix)
+    return matrix_infinity_norm(matrix) * matrix_infinity_norm(inverse)
+
+def matrix_log_determinant(matrix):
+    size = len(matrix)
+    working = [list(map(float, row)) for row in matrix]
+    sign = 1.0
+    log_abs_det = 0.0
+    for pivot_index in range(size):
+        pivot_row = max(
+            range(pivot_index, size),
+            key=lambda row_index: abs(working[row_index][pivot_index]),
+        )
+        pivot_value = working[pivot_row][pivot_index]
+        if abs(pivot_value) <= 1e-12:
+            raise ValueError("matrix determinant is zero")
+        if pivot_row != pivot_index:
+            working[pivot_index], working[pivot_row] = working[pivot_row], working[pivot_index]
+            sign *= -1.0
+        pivot_value = working[pivot_index][pivot_index]
+        if pivot_value < 0:
+            sign *= -1.0
+        log_abs_det += math.log(abs(pivot_value))
+        for row_index in range(pivot_index + 1, size):
+            factor = working[row_index][pivot_index] / pivot_value
+            if abs(factor) <= 1e-15:
+                continue
+            for column_index in range(pivot_index, size):
+                working[row_index][column_index] -= factor * working[pivot_index][column_index]
+    if sign <= 0:
+        raise ValueError("matrix determinant is not positive")
+    return log_abs_det
+
+def ancestor_depths(tree):
+    lookup = {{}}
+    def walk(clade, depth, path):
+        current = dict(path)
+        current[id(clade)] = depth
+        if clade.is_terminal():
+            lookup[clade.name] = current
+            return
+        for child in clade.clades:
+            walk(child, depth + (child.branch_length or 0.0), current)
+    walk(tree.root, 0.0, {{}})
+    return lookup
 
 runner_path = Path(sys.argv[1])
 case_path = Path(sys.argv[2])
@@ -909,6 +1033,98 @@ if case_payload["operation"] == "tree-tip-distance":
             "outputs": {{
                 "summary_json": str(summary_path),
                 "tip_distance_long": str(rows_path),
+            }},
+        }},
+    )
+    raise SystemExit(0)
+
+if case_payload["operation"] == "tree-brownian-covariance":
+    tree = Phylo.read(case_payload["input_fixture"], "newick")
+    tip_labels = [terminal.name for terminal in tree.get_terminals()]
+    depth_lookup = ancestor_depths(tree)
+    covariance = []
+    for left in tip_labels:
+        row = []
+        left_path = depth_lookup[left]
+        for right in tip_labels:
+            right_path = depth_lookup[right]
+            shared_depth = max(
+                left_path[node_id]
+                for node_id in set(left_path) & set(right_path)
+            )
+            row.append(shared_depth)
+        covariance.append(row)
+    root_depths = [covariance[index][index] for index in range(len(tip_labels))]
+    branch_lengths = [
+        clade.branch_length
+        for clade in tree.find_clades(order="preorder")
+        if clade is not tree.root and clade.branch_length is not None
+    ]
+    covariance_rank = matrix_rank(covariance)
+    singular = covariance_rank < len(covariance)
+    try:
+        raw_log_determinant = matrix_log_determinant(covariance)
+        positive_definite = True
+    except ValueError:
+        raw_log_determinant = None
+        positive_definite = False
+    condition_number = None if singular else matrix_condition_number(covariance)
+    near_singular = singular or (
+        condition_number is not None and condition_number >= 1e12
+    )
+    matrix_rows = []
+    long_rows = []
+    for row_index, left in enumerate(tip_labels):
+        matrix_row = {{"taxon": left}}
+        for column_index, right in enumerate(tip_labels):
+            value = covariance[row_index][column_index]
+            matrix_row[right] = value
+            long_rows.append(
+                {{
+                    "left_taxon": left,
+                    "right_taxon": right,
+                    "shared_ancestry_covariance": value,
+                }}
+            )
+        matrix_rows.append(matrix_row)
+    summary = {{
+        "tip_count": len(tip_labels),
+        "rooted": is_rooted_tree(tree),
+        "tip_labels": tip_labels,
+        "pair_count": len(long_rows),
+        "tree_is_ultrametric": max(root_depths) - min(root_depths) <= 1e-12,
+        "minimum_root_to_tip_depth": min(root_depths),
+        "maximum_root_to_tip_depth": max(root_depths),
+        "minimum_branch_length": min(branch_lengths),
+        "maximum_branch_length": max(branch_lengths),
+        "matrix_dimension": len(covariance),
+        "matrix_rank": covariance_rank,
+        "singular": singular,
+        "near_singular": near_singular,
+        "positive_definite": positive_definite,
+        "condition_number": condition_number,
+        "raw_log_determinant": raw_log_determinant,
+    }}
+    summary.update(SUMMARY_OVERRIDES)
+    summary_path = output_root / "summary.json"
+    matrix_path = output_root / "covariance-matrix.tsv"
+    rows_path = output_root / "covariance-long.tsv"
+    write_json(summary_path, summary)
+    write_tsv(matrix_path, matrix_rows)
+    write_tsv(rows_path, long_rows)
+    write_json(
+        execution_path,
+        {{
+            "status": "ok",
+            "case_id": case_payload["case_id"],
+            "function_name": case_payload["function_name"],
+            "input_fixture": case_payload["input_fixture"],
+            "r_version": "4.6.0",
+            "ape_version": "5.0.0",
+            "outputs": {{
+                "summary_json": str(summary_path),
+                "covariance_matrix": str(matrix_path),
+                "covariance_long": str(rows_path),
             }},
         }},
     )

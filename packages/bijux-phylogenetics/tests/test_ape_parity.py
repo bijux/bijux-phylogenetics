@@ -101,6 +101,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "is-monophyletic-all-missing-rerooted",
         "cophenetic-rooted-ultrametric",
         "cophenetic-unrooted-branch-length",
+        "vcv-rooted-ultrametric",
+        "vcv-rooted-non-ultrametric",
+        "vcv-unrooted-branch-length",
+        "vcv-zero-branch-singular",
         "dna-base-frequency-lowercase",
         "dna-base-frequency-ambiguity",
         "dna-raw-distance-clean",
@@ -171,6 +175,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "unrooted_branch_length_tree",
         "balanced_rooted_ultrametric",
         "unrooted_branch_length_tree",
+        "balanced_rooted_ultrametric",
+        "pectinate_rooted_non_ultrametric",
+        "unrooted_branch_length_tree",
+        "zero_branch_lengths",
         "lowercase_aligned_dna",
         "dna_with_ambiguity",
         "clean_aligned_dna",
@@ -192,6 +200,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::getMRCA",
         "ape::is.monophyletic",
         "ape::cophenetic.phylo",
+        "ape::vcv.phylo",
         "ape::base.freq",
         "ape::dist.dna",
         "ape::trans",
@@ -210,6 +219,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "get-tree-mrca",
         "assess-tree-monophyly",
         "tree-tip-distance",
+        "tree-brownian-covariance",
         "dna-base-frequency",
         "dna-raw-distance",
         "dna-translation",
@@ -227,8 +237,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 68
-    assert report.passed_case_count == 68
+    assert report.case_count == 72
+    assert report.passed_case_count == 72
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -244,6 +254,7 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         "ape::root",
         "ape::trans",
         "ape::unroot",
+        "ape::vcv.phylo",
         "ape::write.tree",
     ]
     assert all(observation.r_version == "4.6.0" for observation in report.observations)
@@ -360,6 +371,15 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert cophenetic_case.reference_summary is not None
     assert cophenetic_case.reference_summary["pair_count"] == 16
     assert cophenetic_case.reference_summary["symmetric"] is True
+    vcv_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "vcv-zero-branch-singular"
+    )
+    assert vcv_case.reference_summary is not None
+    assert vcv_case.reference_summary["singular"] is True
+    assert vcv_case.reference_summary["near_singular"] is True
+    assert vcv_case.reference_summary["matrix_dimension"] == 4
     translation_case = next(
         observation
         for observation in report.observations
@@ -402,6 +422,32 @@ def test_run_ape_parity_cases_records_branch_length_failure_for_tree_structure_m
     )
     assert observed_summary["rooted"] is True
     assert (artifact_root / "bijux-normalized.txt").exists()
+
+
+def test_run_ape_parity_cases_records_covariance_tables_for_vcv_summary_mismatch(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_ape_rscript(
+        tmp_path / "fake-ape-rscript",
+        summary_overrides={"matrix_rank": 99},
+    )
+
+    report = run_ape_parity_cases(
+        case_ids=["vcv-rooted-ultrametric"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "ape-parity-failures",
+    )
+
+    assert report.all_passed is False
+    observation = report.observations[0]
+    assert observation.status == "failed"
+    assert observation.mismatch_reason == "summary_mismatch"
+    assert observation.reproducible_artifact_root is not None
+    artifact_root = observation.reproducible_artifact_root
+    assert (artifact_root / "reference-covariance-matrix.tsv").exists()
+    assert (artifact_root / "reference-covariance-long.tsv").exists()
+    assert (artifact_root / "reference-rows.observed.tsv").exists()
+    assert (artifact_root / "bijux-rows.tsv").exists()
 
 
 def test_run_ape_parity_cases_passes_expected_rooting_errors_against_fake_reference_runner(
@@ -457,7 +503,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 68
+    assert len(rows) == 72
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
