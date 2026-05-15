@@ -935,6 +935,11 @@ pair against live `ape`. It matches one explicit RF-style split ledger rather
 than only a scalar distance and keeps rooted-versus-unrooted policy explicit
 per case. On the owned Bijux side, `adapter compare --split-table-out` now
 writes the same split ledger directly for review and downstream automation.
+Those distance and support workflows now share one native clade-set core for
+canonical rooted clades, canonical unrooted splits, RF metrics, partial-taxon
+scope handling, and polytomy reporting, so parity, topology comparison,
+tree-set support mapping, and posterior clade summaries all use the same
+split identity contract.
 The `ape::vcv.phylo` lane now compares Brownian shared-ancestry covariance on
 rooted ultrametric, rooted non-ultrametric, unrooted branch-length, and
 singular zero-branch trees against live `ape`, and it persists the compared

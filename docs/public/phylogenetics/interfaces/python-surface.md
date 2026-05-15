@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-11
+last_reviewed: 2026-05-15
 ---
 
 # Python Surface
@@ -27,6 +27,11 @@ Outgroup rooting, unrooting, keep-tip pruning, drop-tip pruning, clade
 extraction, MRCA lookup, and monophyly review are also part of that same
 owned tree-manipulation core, so those surfaces no longer depend on an
 external tree object model for normal runtime behavior.
+The same native ownership boundary now covers canonical rooted-clade
+extraction, canonical unrooted-split extraction, Robinson-Foulds metrics, and
+clade-support matching, so tree distance, topology comparison, tree-set
+support, posterior clade frequencies, and live `ape::dist.topo` parity all
+read one shared split identity contract.
 
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the

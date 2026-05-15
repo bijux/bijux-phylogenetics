@@ -290,7 +290,10 @@ pairs, one governed unrooted split conflict, and one governed 128-tip rooted
 pair. It compares one explicit RF-style split ledger rather than only a
 scalar distance, keeps rooted-versus-unrooted policy explicit per case, and
 aligns directly with the owned `adapter compare --split-table-out` review
-surface.
+surface. The owned tree-distance, support-comparison, tree-set support, and
+posterior clade-summary workflows now all consume one native clade-set core
+for canonical split identities instead of keeping separate rooted-clade and
+unrooted-split helper paths.
 The `ape::vcv.phylo` portion now covers rooted ultrametric, rooted
 non-ultrametric, unrooted branch-length, and singular zero-branch trees. It
 compares one governed long-form Brownian shared-ancestry covariance ledger,
