@@ -313,7 +313,7 @@ bijux-phylogenetics demo continuous-mode-recovery-panel --out artifacts/continuo
 bijux-phylogenetics simulate alignment-dna tree.nwk --sequence-length 500 --out simulated-alignment.fasta
 bijux-phylogenetics benchmark tree-comparison --replicates 3 --json
 bijux-phylogenetics diagnose assumptions tree.nwk --metadata metadata.tsv --json
-bijux-phylogenetics alignment translate coding.fasta --out translated.fasta
+bijux-phylogenetics alignment translate coding.fasta --out translated.fasta --codon-validation-out artifacts/codon-validation.tsv --excluded-sequences-out artifacts/translation-exclusions.tsv
 bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
 bijux-phylogenetics phylo preflight --workflow fasta-to-tree --json
@@ -789,6 +789,16 @@ literal and ape-normalized state summaries. Leading and trailing gaps are
 normalized to `N` to match live `ape::seg.sites`, explicit missing states do
 not create segregating sites by themselves, and incompatible ambiguity states
 or internal gaps remain visible as real segregating-site evidence.
+The `ape::trans` lane now covers valid-reading-frame, ambiguous-codon,
+internal-stop, terminal-stop, frame-truncation, and vertebrate-mitochondrial
+genetic-code fixtures. On the owned Bijux side, `alignment translate
+--codon-validation-out <table.tsv> --excluded-sequences-out <table.tsv>`
+writes one amino-acid FASTA plus a codon-level validation ledger. The aligned
+translation surface now matches live `ape::trans` by truncating trailing
+partial codons with an explicit warning instead of hard-failing, while the
+stricter `prepare_coding_sequences_for_alignment` surface still owns the
+pre-alignment exclusion policy for frame errors, ambiguous codons, and
+premature stop codons in serious codon-aware workflows.
 The
 `ape::root` lane now uses the same shared tree catalog for single-tip
 outgroups, monophyletic multi-tip outgroups, already-rooted trees, missing

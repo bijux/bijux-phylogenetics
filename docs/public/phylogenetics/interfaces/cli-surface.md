@@ -225,6 +225,15 @@ ape-normalized state summaries. Leading and trailing gaps are normalized to
 segregating sites by themselves, and incompatible ambiguity states or internal
 gaps remain governed live parity cases instead of being flattened into a total
 count only.
+The `ape::trans` portion now covers valid-reading-frame, ambiguous-codon,
+internal-stop, terminal-stop, frame-truncation, and vertebrate-mitochondrial
+genetic-code fixtures. On the owned Bijux side, `alignment translate
+--codon-validation-out <table.tsv> --excluded-sequences-out <table.tsv>`
+writes one amino-acid FASTA plus codon-level validation rows. The aligned
+translation surface truncates trailing partial codons with the same explicit
+warning as live `ape::trans`, while the stricter codon-preparation surface
+still owns pre-alignment sequence exclusion for frame errors, ambiguous
+codons, and premature stop codons.
 The `ape::keep.tip` portion now covers valid rooted and unrooted keep-set
 cases, selected-tip order differences, and rootedness changes after pruning.
 Bijux keeps the workflow-facing absent-requested-taxon report and minimum-two
@@ -290,11 +299,13 @@ The `ape::write.tree` portion
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
 internal-label, support-label, quoted-label, and multiple-tree cases. The DNA
 cases include lowercase input, ambiguity, missing data, identical sequences,
-high-divergence distances, and valid, internal-stop, or terminal-stop coding
-translation rows. Unequal-length and frame-error DNA fixtures remain governed
-shared inputs too, but they stay on the diagnostics surface rather than the
-parity-pass registry because `ape::trans` truncates partial codons while
-Bijux rejects them for workflow safety.
+high-divergence distances, and valid, ambiguous-codon, internal-stop,
+terminal-stop, frame-truncation, or alternate-genetic-code coding translation
+rows. Unequal-length DNA fixtures still stay on the diagnostic side of the
+contract for distance workflows, but frame-error coding fixtures now stay in
+the governed `ape::trans` parity-pass registry because the owned aligned
+translation surface truncates trailing partial codons with the same explicit
+warning that live `ape::trans` emits.
 
 Bijux does not silently serialize malformed trees in that lane. Unnamed tips,
 empty tree sets, and non-finite branch lengths fail on the Bijux side before

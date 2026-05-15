@@ -158,8 +158,8 @@ parity cases resolve durable fixture ids from
 shared lowercase, ambiguity, gap, missing-data, identical-sequence,
 high-divergence, invariant, one-variable-site, and coding-translation
 fixtures across `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and
-`ape::trans`. Frame-error fixtures still stay on the
-diagnostic side of the contract, but the unequal-length DNA fixture is now a
+`ape::trans`. The coding-translation portion now also covers ambiguous-codon,
+frame-truncation, and alternate-genetic-code fixtures. The unequal-length DNA fixture is now a
 governed live `ape::dist.dna` failure case so Bijux and `ape` both prove the
 same DNA-distance stop condition explicitly. The owned distance surface now
 accepts the ape-compatible `raw`, `jc69`, `k80`, `f81`, and `tn93` aliases,
@@ -186,6 +186,13 @@ follows live `ape::seg.sites` by normalizing leading and trailing gaps to `N`,
 keeping explicit missing states from creating segregating sites by themselves,
 and still treating incompatible ambiguity states or internal gaps as real
 segregating-site evidence.
+The owned `alignment translate` surface now also exposes
+`--codon-validation-out` and `--excluded-sequences-out` for one amino-acid
+translation review bundle. That aligned-translation surface now follows live
+`ape::trans` by truncating trailing partial codons with an explicit warning,
+while the stricter `prepare_coding_sequences_for_alignment` gate still owns
+the serious workflow exclusion policy for frame errors, ambiguous codons, and
+premature stop codons before codon-aware alignment.
 The `ape::read.tree` portion of the same lane now validates structured clade
 rows for rooted and unrooted trees, branch lengths, internal labels, support
 labels, quoted labels, one governed multiple-tree Newick input, and one
@@ -3733,8 +3740,9 @@ three and codon boundaries are retained. The workflow also writes:
 
 Use `alignment coding --genetic-code ...` to inspect one nucleotide dataset
 under the same codon table before alignment, and use
-`alignment translate --genetic-code ...` when you need the amino-acid
-translation itself as a reviewable artifact.
+`alignment translate --genetic-code ... --codon-validation-out <table.tsv>
+--excluded-sequences-out <table.tsv>` when you need the amino-acid translation
+itself as a reviewable artifact.
 
 ## Raw FASTA To Tree
 
