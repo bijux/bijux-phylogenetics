@@ -1,0 +1,150 @@
+{
+  "catalog_name": "shared_trait_table_fixtures",
+  "fixtures": [
+    {
+      "fixture_id": "continuous_tree_mismatch",
+      "relative_path": "metadata/example_traits.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "value"
+      ],
+      "validation_expectation": "tip-intersection-required",
+      "ape_reference_expectation": "continuous-ace-ready-after-tip-intersection",
+      "row_count": 4,
+      "feature_tags": [
+        "continuous-trait",
+        "extra-taxa-not-in-tree",
+        "tree-taxa-missing-from-trait-table"
+      ],
+      "notes": "Canonical continuous ancestral fixture with one extra taxon and one tree tip absent from the table."
+    },
+    {
+      "fixture_id": "binary_discrete_match",
+      "relative_path": "metadata/example_traits_binary.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "presence"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "discrete-ace-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "binary-discrete-trait"
+      ],
+      "notes": "Minimal four-taxon binary discrete trait table used for direct Bijux-versus-ape marginal-state parity."
+    },
+    {
+      "fixture_id": "multistate_discrete_match",
+      "relative_path": "metadata/example_traits_geography.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "region"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "discrete-ace-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "multistate-discrete-trait"
+      ],
+      "notes": "Canonical multistate discrete trait table used across ancestral geography and ordered-state checks."
+    },
+    {
+      "fixture_id": "missing_trait_values",
+      "relative_path": "metadata/example_traits_comparative_missing_habitat.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response",
+        "predictor_one",
+        "predictor_two",
+        "habitat"
+      ],
+      "validation_expectation": "missing-values-present",
+      "ape_reference_expectation": "not-applicable",
+      "row_count": 4,
+      "feature_tags": [
+        "missing-trait-values",
+        "categorical-predictor-case"
+      ],
+      "notes": "Comparative table with one missing categorical predictor cell that must be pruned or blocked honestly."
+    },
+    {
+      "fixture_id": "duplicate_taxon_negative",
+      "relative_path": "metadata/example_traits_comparative_duplicate.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response",
+        "predictor_one",
+        "predictor_two",
+        "habitat"
+      ],
+      "validation_expectation": "duplicate-taxon-error",
+      "ape_reference_expectation": "not-applicable",
+      "row_count": 5,
+      "feature_tags": [
+        "duplicated-taxon-row-negative-case",
+        "categorical-predictor-case"
+      ],
+      "notes": "Comparative table with a duplicated taxon row that must fail before model fitting."
+    },
+    {
+      "fixture_id": "constant_trait_negative",
+      "relative_path": "metadata/example_traits_ancestral_single_state.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "habitat"
+      ],
+      "validation_expectation": "constant-trait-surface",
+      "ape_reference_expectation": "not-applicable",
+      "row_count": 4,
+      "feature_tags": [
+        "constant-trait-negative-case"
+      ],
+      "notes": "Single-state discrete trait table used to verify constant-trait blockers and degenerate ancestral behavior."
+    },
+    {
+      "fixture_id": "categorical_predictor_match",
+      "relative_path": "metadata/example_traits_comparative.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response",
+        "predictor_one",
+        "predictor_two",
+        "habitat"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "continuous-ace-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "categorical-predictor-case"
+      ],
+      "notes": "Canonical comparative fixture with one categorical predictor and one numeric response that also serves as a clean continuous ace baseline."
+    },
+    {
+      "fixture_id": "categorical_predictor_misordered",
+      "relative_path": "metadata/example_traits_comparative_reordered.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response",
+        "predictor_one",
+        "predictor_two",
+        "habitat"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "not-applicable",
+      "row_count": 4,
+      "feature_tags": [
+        "categorical-predictor-case",
+        "misordered-taxon-rows"
+      ],
+      "notes": "Comparative categorical table with deliberately permuted taxon rows to prove order independence."
+    }
+  ]
+}
