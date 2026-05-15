@@ -20,13 +20,17 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "phylosig-lambda-non-ultrametric-strong-signal-twenty-four-taxa",
         "phylosig-lambda-weak-signal-twenty-four-taxa",
         "phylosig-k-strong-signal-twenty-four-taxa",
+        "phylosig-k-weak-signal-twenty-four-taxa",
     ]
     assert cases[0].function_name == "phytools::phylosig(method='lambda')"
     assert cases[1].function_name == "phytools::phylosig(method='lambda')"
     assert cases[2].function_name == "phytools::phylosig(method='K')"
+    assert cases[3].function_name == "phytools::phylosig(method='K')"
     assert (
         cases[0].fixture_id == "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
     )
+    assert cases[2].permutation_count == 199
+    assert cases[3].permutation_seed == 17
 
 
 def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
@@ -37,7 +41,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     report = run_phytools_parity_cases(rscript_executable=str(rscript))
 
     assert report.all_passed is True
-    assert report.case_count == 3
+    assert report.case_count == 4
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -60,6 +64,11 @@ def test_run_phytools_parity_cases_records_failure_artifacts(
                 "taxon_count": 24,
                 "trait_name": "signal_strong",
                 "k": 0.5,
+                "p_value": 0.005025125628140704,
+                "permutation_count": 199,
+                "permutation_seed": 17,
+                "simulated_k_minimum": 0.004227447597570447,
+                "simulated_k_mean": 0.029614826253456215,
             }
         },
     )

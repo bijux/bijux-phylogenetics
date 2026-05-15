@@ -7,6 +7,7 @@ import pytest
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
+    compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
 )
 from bijux_phylogenetics.errors import ComparativeMethodError
@@ -101,6 +102,20 @@ def test_shared_phytools_comparative_fixture_catalog_strong_and_weak_signal_case
         weak_small.traits_path,
         trait=weak_small.trait_name,
     )
+    strong_small_signal_test = compute_phylogenetic_signal_test(
+        strong_small.tree_path,
+        strong_small.traits_path,
+        trait=strong_small.trait_name,
+        permutations=199,
+        seed=17,
+    )
+    weak_small_signal_test = compute_phylogenetic_signal_test(
+        weak_small.tree_path,
+        weak_small.traits_path,
+        trait=weak_small.trait_name,
+        permutations=199,
+        seed=17,
+    )
     strong_large_lambda = estimate_pagels_lambda(
         strong_large.tree_path,
         strong_large.traits_path,
@@ -114,6 +129,7 @@ def test_shared_phytools_comparative_fixture_catalog_strong_and_weak_signal_case
 
     assert strong_small_k.k > 0.5
     assert weak_small_k.k < 0.1
+    assert strong_small_signal_test.p_value < weak_small_signal_test.p_value
     assert strong_large_lambda.lambda_value >= 0.95
     assert weak_large_lambda.lambda_value <= 0.1
 
