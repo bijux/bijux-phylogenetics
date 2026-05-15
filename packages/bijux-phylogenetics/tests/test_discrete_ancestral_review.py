@@ -16,6 +16,7 @@ from bijux_phylogenetics.ancestral.discrete import (
     write_discrete_ancestral_exclusion_table,
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
+    write_discrete_ancestral_transition_table,
 )
 from bijux_phylogenetics.shared_trait_table_fixtures import (
     get_shared_trait_table_fixture,
@@ -114,6 +115,33 @@ def test_write_discrete_ancestral_review_tables(tmp_path: Path) -> None:
     assert exclusion_rows == ["taxon\treason"]
 
 
+def test_write_discrete_ancestral_er_fit_tables(tmp_path: Path) -> None:
+    tree_fixture = get_shared_tree_fixture("balanced_rooted_ultrametric")
+    trait_fixture = get_shared_trait_table_fixture("multistate_discrete_match")
+    report = reconstruct_discrete_ancestral_states(
+        tree_fixture.path,
+        trait_fixture.path,
+        trait="region",
+        model="equal-rates",
+        root_prior_mode="empirical",
+    )
+    summary_path = tmp_path / "discrete-ancestral-summary.tsv"
+    transition_path = tmp_path / "discrete-ancestral-transitions.tsv"
+    write_discrete_ancestral_summary_table(summary_path, report)
+    write_discrete_ancestral_transition_table(transition_path, report)
+    summary_rows = summary_path.read_text(encoding="utf-8").splitlines()
+    transition_rows = transition_path.read_text(encoding="utf-8").splitlines()
+    assert "root_prior_mode" in summary_rows[0]
+    assert "log_likelihood" in summary_rows[0]
+    assert "parameter_count" in summary_rows[0]
+    assert "aic" in summary_rows[0]
+    assert "\tempirical\t" in summary_rows[1]
+    assert transition_rows[0] == (
+        "source_state\ttarget_state\ttransition_allowed\tstep_distance\trate"
+    )
+    assert len(transition_rows) == 7
+
+
 def test_fitch_summary_table_includes_parsimony_counts(tmp_path: Path) -> None:
     report = reconstruct_discrete_ancestral_states(
         fixture("example_tree.nwk"),
@@ -125,7 +153,7 @@ def test_fitch_summary_table_includes_parsimony_counts(tmp_path: Path) -> None:
     write_discrete_ancestral_summary_table(summary_path, report)
     rows = summary_path.read_text(encoding="utf-8").splitlines()
     assert rows[0].startswith(
-        "trait\ttaxon_column\tmodel\tstate_ordering\tanalyzed_taxon_count"
+        "trait\ttaxon_column\tmodel\tstate_ordering\troot_prior_mode\tfixed_root_state\tanalyzed_taxon_count"
     )
     assert "ambiguous_internal_node_count" in rows[0]
     assert "minimal_change_count" in rows[0]

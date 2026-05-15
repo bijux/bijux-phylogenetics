@@ -101,6 +101,7 @@ def test_ancestral_discrete_cli_can_export_probability_review(
     table_path = tmp_path / "ancestral-discrete.tsv"
     summary_path = tmp_path / "ancestral-discrete-summary.tsv"
     probabilities_path = tmp_path / "ancestral-discrete-probabilities.tsv"
+    transitions_path = tmp_path / "ancestral-discrete-transitions.tsv"
     exclusions_path = tmp_path / "ancestral-discrete-excluded.tsv"
     exit_code = main(
         [
@@ -118,6 +119,8 @@ def test_ancestral_discrete_cli_can_export_probability_review(
             str(summary_path),
             "--probabilities-out",
             str(probabilities_path),
+            "--transitions-out",
+            str(transitions_path),
             "--exclusions-out",
             str(exclusions_path),
             "--json",
@@ -130,14 +133,61 @@ def test_ancestral_discrete_cli_can_export_probability_review(
     assert payload["metrics"]["internal_node_count"] == 3
     assert payload["metrics"]["excluded_taxon_count"] == 0
     assert payload["metrics"]["unstable_node_count"] >= 0
+    assert payload["metrics"]["log_likelihood"] is not None
+    assert payload["metrics"]["parameter_count"] == 1
+    assert payload["metrics"]["aic"] is not None
+    assert payload["metrics"]["root_prior_mode"] == "equal"
+    assert payload["metrics"]["transition_rate_count"] == 6
     assert summary_path.read_text(encoding="utf-8").startswith(
         "trait\ttaxon_column\tmodel\tstate_ordering"
     )
     assert probabilities_path.read_text(encoding="utf-8").startswith(
         "node\tnode_name\tdescendant_taxa\tmost_likely_state\tstate_set"
     )
+    assert transitions_path.read_text(encoding="utf-8").startswith(
+        "source_state\ttarget_state\ttransition_allowed\tstep_distance\trate"
+    )
     assert exclusions_path.read_text(encoding="utf-8") == "taxon\treason\n"
     assert "most_likely_state\tstate_set" in table_path.read_text(encoding="utf-8")
+
+
+def test_ancestral_discrete_cli_supports_fixed_root_prior_policy(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-discrete-summary.tsv"
+    transitions_path = tmp_path / "ancestral-discrete-transitions.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "discrete",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "equal-rates",
+            "--root-prior-mode",
+            "fixed",
+            "--fixed-root-state",
+            "north",
+            "--summary-out",
+            str(summary_path),
+            "--transitions-out",
+            str(transitions_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["root_prior_mode"] == "fixed"
+    assert payload["metrics"]["fixed_root_state"] == "north"
+    assert payload["metrics"]["transition_rate_count"] == 6
+    assert "\tfixed\tnorth\t" in summary_path.read_text(encoding="utf-8")
+    assert transitions_path.read_text(encoding="utf-8").startswith(
+        "source_state\ttarget_state\ttransition_allowed\tstep_distance\trate"
+    )
 
 
 def test_ancestral_discrete_cli_can_export_parsimony_comparison(

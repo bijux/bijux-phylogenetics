@@ -271,3 +271,50 @@ def test_shared_trait_table_fixture_catalog_supports_governed_continuous_ace_cas
     assert missing_report.dropped_non_numeric_taxa == ["C"]
     assert missing_report.brownian_fit_diagnostics is not None
     assert missing_report.brownian_fit_diagnostics.tree_is_ultrametric is True
+
+
+def test_shared_trait_table_fixture_catalog_supports_governed_discrete_ace_cases() -> (
+    None
+):
+    binary_fixture = get_shared_trait_table_fixture("binary_discrete_match")
+    multistate_fixture = get_shared_trait_table_fixture("multistate_discrete_match")
+    missing_fixture = get_shared_trait_table_fixture("missing_trait_values")
+
+    balanced_tree = get_shared_tree_fixture(binary_fixture.tree_fixture_id).path
+    pectinate_tree = get_shared_tree_fixture("pectinate_rooted_non_ultrametric").path
+
+    binary_report = reconstruct_discrete_ancestral_states(
+        balanced_tree,
+        binary_fixture.path,
+        trait="presence",
+        model="equal-rates",
+    )
+    multistate_report = reconstruct_discrete_ancestral_states(
+        balanced_tree,
+        multistate_fixture.path,
+        trait="region",
+        model="equal-rates",
+    )
+    pectinate_report = reconstruct_discrete_ancestral_states(
+        pectinate_tree,
+        multistate_fixture.path,
+        trait="region",
+        model="equal-rates",
+    )
+    missing_report = reconstruct_discrete_ancestral_states(
+        balanced_tree,
+        missing_fixture.path,
+        trait="habitat",
+        model="equal-rates",
+    )
+
+    assert binary_report.log_likelihood is not None
+    assert binary_report.parameter_count == 1
+    assert len(binary_report.transition_rate_rows) == 2
+    assert multistate_report.log_likelihood is not None
+    assert multistate_report.parameter_count == 1
+    assert len(multistate_report.transition_rate_rows) == 6
+    assert pectinate_report.log_likelihood is not None
+    assert pectinate_report.parameter_count == 1
+    assert missing_report.taxon_count == 3
+    assert missing_report.dropped_missing_taxa == ["D"]

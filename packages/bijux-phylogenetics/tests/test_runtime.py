@@ -77,6 +77,7 @@ from bijux_phylogenetics.ancestral import (
     write_discrete_ancestral_exclusion_table,
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
+    write_discrete_ancestral_transition_table,
     write_discrete_ancestral_tree_set_clade_table,
     write_discrete_ancestral_tree_set_confidence_table,
     write_discrete_ancestral_tree_set_node_table,
@@ -2781,6 +2782,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_discrete_ancestral_probability_table
         is write_discrete_ancestral_probability_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_transition_table
+        is write_discrete_ancestral_transition_table
     )
     assert (
         bijux_phylogenetics.write_discrete_ancestral_comparison_table
