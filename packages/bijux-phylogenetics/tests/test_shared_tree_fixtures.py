@@ -30,6 +30,7 @@ def test_shared_tree_fixture_catalog_covers_required_tree_shapes() -> None:
         "internal-node-labels",
         "branch-support-labels",
         "quoted-taxon-labels",
+        "near-ultrametric",
         "malformed-newick",
     } <= feature_tags
     assert max(
@@ -51,6 +52,7 @@ def test_shared_tree_fixture_catalog_preserves_durable_fixture_lookup() -> None:
     ("fixture_id", "expected_tip_count"),
     [
         ("balanced_rooted_ultrametric", 4),
+        ("near_ultrametric_branch_jitter", 4),
         ("pectinate_rooted_non_ultrametric", 4),
         ("star_unrooted_polytomy", 5),
         ("larger_binary_tree", 8),

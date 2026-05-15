@@ -143,6 +143,20 @@
       "notes": "Rooted binary tree with durable internal clade labels."
     },
     {
+      "fixture_id": "near_ultrametric_branch_jitter",
+      "relative_path": "trees/example_tree_near_ultrametric.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "near-ultrametric"
+      ],
+      "notes": "Rooted binary tree with one tiny tip-length perturbation that stays ultrametric under ape's default tolerance but fails tighter checks."
+    },
+    {
       "fixture_id": "branch_support_labels",
       "relative_path": "trees/example_tree_support_iqtree_composite.nwk",
       "parse_expectation": "parseable",
