@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.cli import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -151,6 +153,45 @@ def test_cli_alignment_distance_maturity_json_output(capsys) -> None:
         "production_candidate",
         "validated_with_limits",
     }
+
+
+def test_cli_alignment_build_tree_reports_explicit_bionj_exclusion_json(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "build-tree",
+            str(fixture("example_alignment_distance.fasta")),
+            "--method",
+            "bionj",
+            "--out",
+            "artifacts/distance-tree.nwk",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["errors"][0]["code"] == "unsupported_distance_tree_method_error"
+    assert payload["errors"][0]["message"].startswith("BIONJ is explicitly out of scope")
+    assert payload["errors"][0]["details"]["reference_surface"] == "ape::bionj"
+
+
+def test_cli_distance_build_tree_reports_explicit_bionj_exclusion(capsys) -> None:
+    with pytest.raises(SystemExit) as error:
+        main(
+            [
+                "distance",
+                "build-tree",
+                str(fixture("example_distance_matrix.tsv")),
+                "--method",
+                "bionj",
+                "--out",
+                "artifacts/imported-distance-tree.nwk",
+            ]
+        )
+    error_text = capsys.readouterr().err
+    assert error.value.code == 2
+    assert "unsupported_distance_tree_method_error" in error_text
+    assert "ape::bionj" in error_text
 
 
 def test_cli_distance_reference_json_output(capsys) -> None:
