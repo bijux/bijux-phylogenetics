@@ -338,6 +338,11 @@ from bijux_phylogenetics.comparative.phylogenetic_signal import (
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,
 )
+from bijux_phylogenetics.comparative.discrete_mk import (
+    fit_discrete_mk_model,
+    write_discrete_mk_rate_table,
+    write_discrete_mk_summary_table,
+)
 from bijux_phylogenetics.comparative.posterior_tree_pgls import (
     run_posterior_tree_pgls,
     write_posterior_tree_pgls_coefficient_table,
@@ -2469,6 +2474,34 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the signal report as JSON."
     )
     _add_manifest_argument(comparative_signal)
+    comparative_discrete_mk = comparative_subparsers.add_parser(
+        "discrete-mk",
+        help="Fit one discrete Mk likelihood model for a tip-state trait.",
+    )
+    comparative_discrete_mk.add_argument("tree", type=Path)
+    comparative_discrete_mk.add_argument("table", type=Path)
+    comparative_discrete_mk.add_argument("--trait", required=True)
+    comparative_discrete_mk.add_argument("--taxon-column")
+    comparative_discrete_mk.add_argument(
+        "--model",
+        choices=("equal-rates", "symmetric", "all-rates-different"),
+        default="equal-rates",
+        help="Choose the discrete Mk rate-constraint surface to fit.",
+    )
+    comparative_discrete_mk.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one discrete Mk fit summary ledger as TSV or CSV.",
+    )
+    comparative_discrete_mk.add_argument(
+        "--rates-out",
+        type=Path,
+        help="Write one fitted directed rate-matrix ledger as TSV or CSV.",
+    )
+    comparative_discrete_mk.add_argument(
+        "--json", action="store_true", help="Emit the discrete Mk report as JSON."
+    )
+    _add_manifest_argument(comparative_discrete_mk)
     comparative_correlated_traits = comparative_subparsers.add_parser(
         "correlated-traits",
         help="Review correlated evolution between two traits on one tree.",
@@ -8926,6 +8959,63 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "permutation_row_count": len(
                                 report.signal_test.permutation_rows
                             ),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "discrete-mk":
+                report = fit_discrete_mk_model(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                )
+                outputs: list[Path | str] = []
+                if args.summary_out:
+                    outputs.append(
+                        write_discrete_mk_summary_table(args.summary_out, report)
+                    )
+                if args.rates_out:
+                    outputs.append(write_discrete_mk_rate_table(args.rates_out, report))
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table], outputs=outputs
+                )
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.input_audit.warnings,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "model": report.model,
+                            "observed_state_count": len(report.input_audit.observed_states),
+                            "sparse_state_count": len(report.input_audit.sparse_states),
+                            "pruned_missing_value_taxon_count": len(
+                                report.input_audit.pruned_missing_value_taxa
+                            ),
+                            "log_likelihood": report.log_likelihood,
+                            "parameter_count": report.parameter_count,
+                            "aic": report.aic,
+                            "aicc": report.aicc,
+                            "optimizer_name": report.optimizer_diagnostics.optimizer_name,
+                            "optimizer_converged": report.optimizer_diagnostics.converged,
+                            "optimizer_iteration_count": (
+                                report.optimizer_diagnostics.iteration_count
+                            ),
+                            "optimizer_function_evaluation_count": (
+                                report.optimizer_diagnostics.function_evaluation_count
+                            ),
+                            "optimizer_hit_lower_parameter_bound": (
+                                report.optimizer_diagnostics.hit_lower_parameter_bound
+                            ),
+                            "optimizer_hit_upper_parameter_bound": (
+                                report.optimizer_diagnostics.hit_upper_parameter_bound
+                            ),
+                            "transition_rate_count": len(report.transition_rate_rows),
                         },
                         data=report,
                     ),

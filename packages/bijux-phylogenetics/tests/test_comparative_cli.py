@@ -293,6 +293,73 @@ def test_comparative_signal_cli_writes_summary_and_permutation_ledgers(
     assert len(permutation_rows) == 8
 
 
+def test_comparative_discrete_mk_cli_reports_er_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(fixture("example_traits_phytools_signal_twenty_four_taxa.tsv")),
+            "--trait",
+            "binary_state",
+            "--taxon-column",
+            "taxon",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["taxon_count"] == 24
+    assert payload["metrics"]["observed_state_count"] == 2
+    assert payload["metrics"]["parameter_count"] == 1
+    assert payload["metrics"]["aic"] < payload["metrics"]["aicc"]
+    assert payload["metrics"]["optimizer_name"] == "nelder-mead"
+    assert payload["metrics"]["optimizer_converged"] is True
+    assert payload["metrics"]["transition_rate_count"] == 2
+
+
+def test_comparative_discrete_mk_cli_writes_summary_and_rate_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "discrete-mk-summary.tsv"
+    rates_out = tmp_path / "discrete-mk-rates.tsv"
+
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(fixture("example_traits_phytools_discrete_missing_twenty_four_taxa.tsv")),
+            "--trait",
+            "region_state",
+            "--taxon-column",
+            "taxon",
+            "--summary-out",
+            str(summary_out),
+            "--rates-out",
+            str(rates_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["pruned_missing_value_taxon_count"] == 1
+    assert summary_out.exists()
+    assert rates_out.exists()
+    summary_rows = summary_out.read_text(encoding="utf-8").splitlines()
+    rate_rows = rates_out.read_text(encoding="utf-8").splitlines()
+    assert summary_rows[0].startswith("trait\ttaxon_column\tmodel")
+    assert "aicc" in summary_rows[0]
+    assert rate_rows[0].startswith(
+        "source_state\ttarget_state\ttransition_allowed\tstep_distance\trate"
+    )
+    assert len(summary_rows) == 2
+    assert len(rate_rows) == 7
+
+
 def test_comparative_correlated_traits_cli_reports_coupling_metrics(capsys) -> None:
     exit_code = main(
         [
