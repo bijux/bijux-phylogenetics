@@ -393,6 +393,9 @@ from bijux_phylogenetics.compare.taxon_influence import (
     analyze_taxon_influence,
     write_taxon_influence_table,
 )
+from bijux_phylogenetics.compare.topology_distance import (
+    write_topology_distance_split_table,
+)
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
     compare_clade_overlap,
@@ -5340,6 +5343,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Add another tree path for compare clades.",
     )
     compare.add_argument("--out", type=Path)
+    compare.add_argument(
+        "--split-table-out",
+        type=Path,
+        help="Write the clades or splits used by the topology-distance comparison as TSV.",
+    )
     compare.add_argument(
         "--rf-mode",
         choices=("rooted", "unrooted"),
@@ -15143,8 +15151,22 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 rf_mode=args.rf_mode,
                 taxon_overlap_policy=args.taxon_overlap_policy,
             )
+            outputs: list[Path | str] = []
+            if args.split_table_out is not None:
+                outputs.append(
+                    write_topology_distance_split_table(
+                        args.split_table_out,
+                        left_path,
+                        right_path,
+                        rf_mode=args.rf_mode,
+                        taxon_overlap_policy=args.taxon_overlap_policy,
+                    )
+                )
             outputs = _finalize_outputs(
-                args, command="compare", inputs=[left_path, right_path]
+                args,
+                command="compare",
+                inputs=[left_path, right_path],
+                outputs=outputs,
             )
             _print_result(
                 build_command_result(

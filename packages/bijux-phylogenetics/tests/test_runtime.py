@@ -9253,6 +9253,34 @@ def test_cli_compare_json_output_supports_unrooted_rf_mode(capsys) -> None:
     assert payload["data"]["same_unrooted_topology"] is True
 
 
+def test_cli_compare_writes_topology_distance_split_table(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "topology-distance.tsv"
+
+    exit_code = main(
+        [
+            "compare",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_alt.nwk")),
+            "--split-table-out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert output_path.exists()
+    assert payload["outputs"] == [str(output_path)]
+    assert output_path.read_text(encoding="utf-8").splitlines() == [
+        "split_id\tsplit_kind\tcomparison_status\ttaxon_count\tdescendant_taxa\tleft_present\tright_present",
+        "A|B\tclade\tshared\t2\tA|B\ttrue\ttrue",
+        "C|D\tclade\tleft_only\t2\tC|D\ttrue\tfalse",
+        "A|B|C\tclade\tright_only\t3\tA|B|C\tfalse\ttrue",
+    ]
+
+
 def test_cli_compare_requires_identical_taxa_when_policy_requests_it() -> None:
     try:
         main(
