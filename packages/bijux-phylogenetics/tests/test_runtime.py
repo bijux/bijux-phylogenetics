@@ -543,6 +543,13 @@ from bijux_phylogenetics.core.topology import (
     unroot_tree,
     write_tree_rooting_report,
 )
+from bijux_phylogenetics.core.tree_distance import (
+    TipDistanceMatrixReport,
+    TipDistanceMatrixRow,
+    compute_tree_tip_distance_matrix,
+    write_tree_tip_distance_long_table,
+    write_tree_tip_distance_matrix,
+)
 from bijux_phylogenetics.core.traits import (
     detect_missing_trait_values,
     detect_unusable_trait_columns,
@@ -1028,6 +1035,20 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     )
     assert bijux_phylogenetics.assess_tree_monophyly is assess_tree_monophyly
     assert bijux_phylogenetics.find_tree_mrca is find_tree_mrca
+    assert bijux_phylogenetics.TipDistanceMatrixReport is TipDistanceMatrixReport
+    assert bijux_phylogenetics.TipDistanceMatrixRow is TipDistanceMatrixRow
+    assert (
+        bijux_phylogenetics.compute_tree_tip_distance_matrix
+        is compute_tree_tip_distance_matrix
+    )
+    assert (
+        bijux_phylogenetics.write_tree_tip_distance_matrix
+        is write_tree_tip_distance_matrix
+    )
+    assert (
+        bijux_phylogenetics.write_tree_tip_distance_long_table
+        is write_tree_tip_distance_long_table
+    )
     assert bijux_phylogenetics.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
     assert bijux_phylogenetics.compare_support_values is compare_support_values
     assert bijux_phylogenetics.write_branch_length_table is write_branch_length_table
