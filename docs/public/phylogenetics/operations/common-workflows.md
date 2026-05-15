@@ -1121,6 +1121,11 @@ missing-value fixtures. Bijux therefore uses one explicit closed-form
 Brownian parity target while still surfacing extra owned diagnostics that live
 `ape::ace(..., method='pic')` does not emit.
 
+For Python-native work, the same continuous ancestral runtime is also
+available directly through
+`reconstruct_continuous_ancestral_states_from_dataset(...)` once one
+`AncestralContinuousDataset` has already been loaded.
+
 When the goal is to reconstruct one categorical ancestral trait directly, use
 `ancestral discrete`. This workflow supports a fast Fitch path for parsimony
 review and supports likelihood reconstructions under `equal-rates`,
@@ -1166,6 +1171,10 @@ ARD fit directly instead of inferring it from node calls alone. When
 comparison ledger between the baseline model and the requested comparison
 model. The excluded-taxa ledger keeps one row per dropped tip with an explicit
 reason such as `missing_discrete_trait_state`.
+
+For Python-native work, the same discrete ancestral runtime is also available
+directly through `reconstruct_discrete_ancestral_states_from_dataset(...)`
+once one `AncestralDiscreteDataset` has already been loaded.
 
 When the goal is to verify that the owned discrete ancestral likelihood
 surface still matches governed external references and known policy examples,

@@ -64,6 +64,14 @@ already holds one `PhyloTree` or `ComparativeDataset`, covariance review and
 independent-contrast analysis no longer need to restart from path-based
 loading wrappers.
 
+The owned ancestral runtime now also exposes direct dataset-backed
+reconstruction surfaces through
+`reconstruct_continuous_ancestral_states_from_dataset(...)` and
+`reconstruct_discrete_ancestral_states_from_dataset(...)`. Once a caller
+already holds one `AncestralContinuousDataset` or `AncestralDiscreteDataset`,
+continuous and discrete ancestral reconstruction no longer need to restart
+from path-based loading wrappers.
+
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the
 raw-FASTA to aligned matrix, trimmed matrix, selected-model table, supported

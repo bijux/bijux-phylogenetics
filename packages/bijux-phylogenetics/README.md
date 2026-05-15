@@ -847,7 +847,10 @@ surface with ultrametric state, root-to-tip depth bounds, covariance rank and
 conditioning, solver regularization status, and one GLS likelihood summary,
 while the live parity lane remains scoped honestly to
 `ape::ace(type='continuous', method='pic', CI=TRUE)` because that is the
-governed shared closed-form Brownian reference surface.
+governed shared closed-form Brownian reference surface. The same owned
+continuous ancestral runtime is now also reusable directly from Python through
+`reconstruct_continuous_ancestral_states_from_dataset(...)` once one
+`AncestralContinuousDataset` has already been loaded.
 The `ape::ace` discrete lane now covers governed ER, SYM, and ARD fixtures,
 including balanced, pectinate, six-taxon, and pruned missing-value cases
 through that same shared trait-table catalog. On the owned Bijux side,
@@ -857,7 +860,10 @@ alongside node probabilities, and it supports owned `equal`, `empirical`, and
 `fixed` root-prior policies. The live parity lane is scoped honestly to
 `ape::ace(type='discrete', model='ER'|'SYM'|'ARD')`, so root-prior controls
 remain an explicit Bijux-owned review surface rather than a false live `ape`
-parity claim.
+parity claim. The same owned discrete ancestral runtime is now also reusable
+directly from Python through
+`reconstruct_discrete_ancestral_states_from_dataset(...)` once one
+`AncestralDiscreteDataset` has already been loaded.
 The `ape::dist.dna` lane now covers raw nucleotide distance, JC69, K80, F81,
 and TN93 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,
