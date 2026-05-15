@@ -170,6 +170,26 @@ optional `1,000+` sequence and `1,000+` tree pressure check. The surface is
 explicit about scope: it measures the repository's owned workflows, not a
 synthetic micro-benchmark disconnected from user-facing outputs.
 
+`report release-truth` is the governed pre-release summary surface. It
+consumes actual pytest JUnit XML reports for the full test lane and the
+real-engine lane, reruns the owned workflow-validation, release-gate, parity,
+and stress-suite checks, and writes one HTML report plus one machine manifest.
+Its JSON metrics report:
+
+- `total_tests`
+- `total_tests_passed`
+- `total_tests_failed`
+- `total_tests_skipped`
+- `real_engine_tests`
+- `real_engine_tests_passed`
+- `real_engine_tests_failed`
+- `real_engine_tests_skipped`
+- `supported_workflow_count`
+- `experimental_workflow_count`
+- `flagship_dataset_count`
+- `reference_parity_case_count`
+- `stress_workload_count`
+
 `report tree-package` is the governed full tree review surface. It takes one
 tree and materializes a richer review directory than the older `report tree`
 diagnostic. Its JSON metrics report:

@@ -162,6 +162,21 @@ This benchmark surface is intentionally reviewer-facing rather than a hidden CI
 only lane. Users can run it directly and inspect the same governed workload
 classes that back the repository stress tiers.
 
+When the goal is to produce one honest pre-release artifact from actual test
+and workflow outputs, use `report release-truth`. This workflow consumes pytest
+JUnit XML reports for the full test lane and the real-engine lane, reruns the
+owned workflow-validation, release-gate, parity, and stress-suite checks, and
+summarizes supported workflows, experimental workflows, flagship datasets, and
+known limitations in one HTML report plus one machine manifest.
+
+```bash
+bijux-phylogenetics report release-truth \
+  --test-report artifacts/pytest/full-suite.xml \
+  --real-engine-test-report artifacts/pytest/real-engine.xml \
+  --out artifacts/release-truth-report.html \
+  --json
+```
+
 When the goal is to turn one supplied or inferred tree into a review-ready
 artifact bundle instead of only a diagnostic HTML page, use
 `report tree-package`. This workflow keeps the tree itself as the single input
