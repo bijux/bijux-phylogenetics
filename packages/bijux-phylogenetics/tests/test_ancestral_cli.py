@@ -105,6 +105,44 @@ def test_ancestral_continuous_cli_supports_fast_anc_estimator(
     assert "A|B\t" in uncertainty_path.read_text(encoding="utf-8")
 
 
+def test_ancestral_continuous_cli_supports_anc_ml_estimator(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-summary.tsv"
+    uncertainty_path = tmp_path / "ancestral-uncertainty.tsv"
+
+    exit_code = main(
+        [
+            "ancestral",
+            "continuous",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--model",
+            "brownian",
+            "--estimator",
+            "anc-ml",
+            "--summary-out",
+            str(summary_path),
+            "--uncertainty-out",
+            str(uncertainty_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "brownian"
+    assert payload["metrics"]["estimator"] == "anc-ml"
+    assert payload["metrics"]["optimizer_name"] == "closed-form-profile-solution"
+    assert payload["metrics"]["optimizer_converged"] is True
+    assert payload["metrics"]["optimizer_iteration_count"] == 0
+    assert payload["metrics"]["optimizer_function_evaluation_count"] == 1
+    assert "\tanc-ml\t" in summary_path.read_text(encoding="utf-8")
+    assert "A|B|C|D\t" in uncertainty_path.read_text(encoding="utf-8")
+
+
 def test_ancestral_discrete_cli_reports_sparse_state_warning(capsys) -> None:
     exit_code = main(
         [

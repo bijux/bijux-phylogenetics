@@ -83,6 +83,8 @@ def test_write_continuous_ancestral_review_tables(tmp_path: Path) -> None:
     assert len(summary_rows) == 2
     assert "log_likelihood" in summary_rows[0]
     assert "covariance_condition_number" in summary_rows[0]
+    assert "optimizer_name" in summary_rows[0]
+    assert "optimizer_converged" in summary_rows[0]
     assert uncertainty_rows[0].startswith(
         "node\tnode_name\tdescendant_taxa\testimate\tstandard_error"
     )
@@ -108,6 +110,24 @@ def test_summarize_continuous_ancestral_report_tracks_fast_anc_estimator() -> No
     assert summary.estimator == "fast-anc"
     assert summary.tree_is_ultrametric is True
     assert summary.root_standard_error > 0.0
+
+
+def test_summarize_continuous_ancestral_report_tracks_anc_ml_optimizer() -> None:
+    report = reconstruct_continuous_ancestral_states(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        trait="response",
+        estimator="anc-ml",
+    )
+    summary = summarize_continuous_ancestral_report(report)
+
+    assert report.estimator == "anc-ml"
+    assert summary.estimator == "anc-ml"
+    assert summary.optimizer_name == "closed-form-profile-solution"
+    assert summary.optimizer_converged is True
+    assert summary.optimizer_iteration_count == 0
+    assert summary.optimizer_function_evaluation_count == 1
+    assert summary.optimizer_convergence_status == "profile-solved"
 
 
 def test_reconstruct_continuous_ancestral_states_matches_primate_reference_fixture() -> (

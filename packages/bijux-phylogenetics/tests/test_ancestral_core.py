@@ -204,6 +204,97 @@ def test_continuous_fast_anc_reconstruction_from_dataset_matches_path_surface() 
     assert direct_report.brownian_fit_diagnostics == path_report.brownian_fit_diagnostics
 
 
+def test_continuous_reconstruction_supports_anc_ml_estimator() -> None:
+    report = reconstruct_continuous_ancestral_states(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        trait="response",
+        model="brownian",
+        estimator="anc-ml",
+    )
+    internal_estimates = {
+        estimate.node: estimate for estimate in report.estimates if not estimate.is_tip
+    }
+
+    assert report.estimator == "anc-ml"
+    assert report.optimizer_diagnostics is not None
+    assert report.optimizer_diagnostics.optimizer_name == "closed-form-profile-solution"
+    assert report.optimizer_diagnostics.converged is True
+    assert report.optimizer_diagnostics.iteration_count == 0
+    assert math.isclose(internal_estimates["A|B|C|D"].estimate, 2.8055555555555554)
+    assert math.isclose(internal_estimates["A|B"].estimate, 2.3611111111111112)
+    assert math.isclose(internal_estimates["C|D"].estimate, 3.0277777777777781)
+    assert math.isclose(
+        internal_estimates["A|B|C|D"].standard_error,
+        0.5946866992509994,
+        rel_tol=0.0,
+        abs_tol=1e-8,
+    )
+    assert math.isclose(
+        internal_estimates["A|B"].standard_error,
+        0.37611289276824167,
+        rel_tol=0.0,
+        abs_tol=1e-8,
+    )
+    assert math.isclose(
+        internal_estimates["C|D"].standard_error,
+        0.49755058957489323,
+        rel_tol=0.0,
+        abs_tol=1e-8,
+    )
+    assert math.isclose(
+        internal_estimates["A|B|C|D"].lower_95_interval,
+        1.6399696250235967,
+        rel_tol=0.0,
+        abs_tol=5e-8,
+    )
+    assert math.isclose(
+        internal_estimates["A|B|C|D"].upper_95_interval,
+        3.971141486087514,
+        rel_tol=0.0,
+        abs_tol=5e-8,
+    )
+    assert report.brownian_fit_diagnostics is not None
+    assert math.isclose(
+        report.brownian_fit_diagnostics.log_likelihood,
+        -6.1189469566554999,
+    )
+    assert math.isclose(
+        report.brownian_fit_diagnostics.residual_sigma_squared,
+        3.1828704323963097,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+
+
+def test_continuous_anc_ml_reconstruction_from_dataset_matches_path_surface() -> None:
+    dataset = load_continuous_dataset(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        trait="response",
+    )
+
+    direct_report = reconstruct_continuous_ancestral_states_from_dataset(
+        dataset,
+        model="brownian",
+        estimator="anc-ml",
+    )
+    path_report = reconstruct_continuous_ancestral_states(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        trait="response",
+        model="brownian",
+        estimator="anc-ml",
+    )
+
+    assert direct_report.estimator == "anc-ml"
+    assert direct_report.analysis_tree_newick == path_report.analysis_tree_newick
+    assert direct_report.warnings == path_report.warnings
+    assert direct_report.estimates == path_report.estimates
+    assert direct_report.brownian_fit_diagnostics == path_report.brownian_fit_diagnostics
+    assert direct_report.optimizer_diagnostics == path_report.optimizer_diagnostics
+
+
 def test_continuous_reconstruction_rejects_incompatible_fast_anc_estimator() -> None:
     with pytest.raises(ValueError):
         reconstruct_continuous_ancestral_states(
@@ -212,6 +303,31 @@ def test_continuous_reconstruction_rejects_incompatible_fast_anc_estimator() -> 
             trait="response",
             model="ou",
             estimator="fast-anc",
+        )
+
+
+def test_continuous_reconstruction_rejects_incompatible_anc_ml_estimator() -> None:
+    with pytest.raises(ValueError):
+        reconstruct_continuous_ancestral_states(
+            fixture("example_tree.nwk"),
+            fixture("example_traits_comparative.tsv"),
+            trait="response",
+            model="ou",
+            estimator="anc-ml",
+        )
+
+
+def test_continuous_reconstruction_reports_singular_anc_ml_covariance() -> None:
+    with pytest.raises(
+        ValueError,
+        match="requires a nonsingular full Brownian covariance matrix",
+    ):
+        reconstruct_continuous_ancestral_states(
+            fixture("example_tree_ultrametric_zero_internal.nwk"),
+            fixture("example_traits_comparative.tsv"),
+            trait="response",
+            model="brownian",
+            estimator="anc-ml",
         )
 
 
