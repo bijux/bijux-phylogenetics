@@ -730,7 +730,7 @@ string-based, so tree summaries, tip ledgers, normalized Newick outputs,
 DNA-state frequency tables, raw-distance ledgers, and translated amino-acid
 rows are compared as owned artifacts rather than scraped console text. The
 governed live cases now cover `ape::read.tree`, `ape::write.tree`,
-`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
+`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
 fixture ids. The tree and DNA inputs for that lane now come from the governed
 shared fixture catalogs in
 `tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
@@ -761,6 +761,13 @@ changes after pruning. Bijux keeps two workflow-facing extensions outside that
 live parity subset: tree and trait matching paths still report absent
 requested taxa instead of failing immediately, and they stop clearly when
 fewer than two retained taxa would remain.
+The `ape::extract.clade` lane now compares rooted subtree extraction against
+live `ape::extract.clade` for root and internal-node cases on the governed
+internal-label fixture, keeps internal labels where the extracted source node
+had them, and treats tip-node or out-of-bounds requests as explicit extraction
+errors. Alongside that live parity lane, Bijux now exposes one owned
+descendant-taxa extractor so callers can resolve the same subtree by stable
+taxon identity instead of only by ape-style node number.
 The
 `ape::write.tree` lane now roundtrips Bijux-written Newick through live `ape`
 for rooted, unrooted, internal-label, support-label, quoted-label, and
