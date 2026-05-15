@@ -1,0 +1,174 @@
+from __future__ import annotations
+
+import csv
+import pytest
+
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+    summarize_continuous_ancestral_report,
+)
+from bijux_phylogenetics.ancestral.discrete import (
+    reconstruct_discrete_ancestral_states,
+)
+from bijux_phylogenetics.comparative.covariance_audit import (
+    summarize_comparative_covariance_audit,
+)
+from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs
+from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.shared_trait_table_fixtures import (
+    get_shared_trait_table_fixture,
+    list_shared_trait_table_fixtures,
+)
+from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
+from bijux_phylogenetics.errors import AncestralReconstructionError
+
+
+def _read_taxa(fixture_id: str) -> list[str]:
+    fixture = get_shared_trait_table_fixture(fixture_id)
+    with fixture.path.open(encoding="utf-8", newline="") as handle:
+        return [row[fixture.taxon_column] for row in csv.DictReader(handle, delimiter="\t")]
+
+
+def test_shared_trait_table_fixture_catalog_covers_required_goal_cases() -> None:
+    fixtures = list_shared_trait_table_fixtures()
+    feature_tags = {tag for fixture in fixtures for tag in fixture.feature_tags}
+
+    assert {
+        "continuous-trait",
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "missing-trait-values",
+        "extra-taxa-not-in-tree",
+        "tree-taxa-missing-from-trait-table",
+        "duplicated-taxon-row-negative-case",
+        "constant-trait-negative-case",
+        "categorical-predictor-case",
+        "misordered-taxon-rows",
+    } <= feature_tags
+
+
+def test_shared_trait_table_fixture_lookup_preserves_durable_ids() -> None:
+    fixture = get_shared_trait_table_fixture("binary_discrete_match")
+
+    assert fixture.relative_path == "metadata/example_traits_binary.tsv"
+    assert fixture.tree_fixture_id == "balanced_rooted_ultrametric"
+    assert fixture.primary_trait_columns == ("presence",)
+    assert "binary-discrete-trait" in fixture.feature_tags
+    assert fixture.path.is_file()
+
+
+def test_shared_trait_table_fixture_catalog_tracks_tree_trait_mismatch_surface() -> None:
+    fixture = get_shared_trait_table_fixture("continuous_tree_mismatch")
+    tree_fixture = get_shared_tree_fixture(fixture.tree_fixture_id)
+
+    table_taxa = set(_read_taxa("continuous_tree_mismatch"))
+    tree_taxa = set(load_tree(tree_fixture.path).tip_names)
+
+    report = summarize_continuous_ancestral_report(
+        reconstruct_continuous_ancestral_states(
+            tree_fixture.path,
+            fixture.path,
+            trait="value",
+        )
+    )
+
+    assert table_taxa - tree_taxa == {"E"}
+    assert tree_taxa - table_taxa == {"D"}
+    assert report.analyzed_taxon_count == 3
+    assert report.missing_tip_taxon_count == 1
+
+
+def test_shared_trait_table_fixture_catalog_supports_binary_and_multistate_ancestral_cases() -> (
+    None
+):
+    tree = get_shared_tree_fixture("balanced_rooted_ultrametric").path
+    binary_fixture = get_shared_trait_table_fixture("binary_discrete_match")
+    multistate_fixture = get_shared_trait_table_fixture("multistate_discrete_match")
+    constant_fixture = get_shared_trait_table_fixture("constant_trait_negative")
+
+    binary_report = reconstruct_discrete_ancestral_states(
+        tree,
+        binary_fixture.path,
+        trait="presence",
+        model="equal-rates",
+    )
+    multistate_report = reconstruct_discrete_ancestral_states(
+        tree,
+        multistate_fixture.path,
+        trait="region",
+        model="equal-rates",
+    )
+    binary_root = next(
+        estimate for estimate in binary_report.estimates if estimate.node == "A|B|C|D"
+    )
+    multistate_root = next(
+        estimate
+        for estimate in multistate_report.estimates
+        if estimate.node == "A|B|C|D"
+    )
+    assert set(binary_root.state_probabilities) == {"0", "1"}
+    assert set(multistate_root.state_probabilities) == {"north", "south", "island"}
+    with pytest.raises(AncestralReconstructionError):
+        reconstruct_discrete_ancestral_states(
+            tree,
+            constant_fixture.path,
+            trait="habitat",
+            model="equal-rates",
+        )
+
+
+def test_shared_trait_table_fixture_catalog_supports_comparative_mismatch_and_duplicate_cases() -> (
+    None
+):
+    tree = get_shared_tree_fixture("balanced_rooted_ultrametric").path
+    duplicate_fixture = get_shared_trait_table_fixture("duplicate_taxon_negative")
+    missing_fixture = get_shared_trait_table_fixture("missing_trait_values")
+
+    duplicate_report = summarize_comparative_covariance_audit(
+        tree,
+        duplicate_fixture.path,
+        analysis="pgls",
+        response="response",
+        predictors=["predictor_one"],
+        lambda_value=1.0,
+    )
+    missing_report = inspect_pgls_inputs(
+        tree,
+        missing_fixture.path,
+        response="response",
+        predictors=["predictor_one", "habitat"],
+    )
+
+    assert duplicate_report.duplicate_trait_taxa == ["A"]
+    assert "trait table contains duplicate taxon keys" in duplicate_report.blockers
+    assert missing_report.ready is False
+    assert [row.taxon for row in missing_report.formula_audit.excluded_taxa] == ["D"]
+    assert (
+        "PGLS overfit guard requires at least one residual degree of freedom after predictor encoding"
+        in missing_report.blockers
+    )
+
+
+def test_shared_trait_table_fixture_catalog_preserves_categorical_order_independence() -> None:
+    tree = get_shared_tree_fixture("balanced_rooted_ultrametric").path
+    ordered_fixture = get_shared_trait_table_fixture("categorical_predictor_match")
+    reordered_fixture = get_shared_trait_table_fixture("categorical_predictor_misordered")
+
+    ordered_report = inspect_pgls_inputs(
+        tree,
+        ordered_fixture.path,
+        response="response",
+        predictors=["predictor_one", "habitat"],
+    )
+    reordered_report = inspect_pgls_inputs(
+        tree,
+        reordered_fixture.path,
+        response="response",
+        predictors=["predictor_one", "habitat"],
+    )
+
+    assert ordered_report.ready is True
+    assert reordered_report.ready is True
+    assert ordered_report.encoded_columns == reordered_report.encoded_columns
+    assert ordered_report.analysis_taxa == ["A", "B", "C", "D"]
+    assert reordered_report.analysis_taxa == ["A", "B", "C", "D"]
