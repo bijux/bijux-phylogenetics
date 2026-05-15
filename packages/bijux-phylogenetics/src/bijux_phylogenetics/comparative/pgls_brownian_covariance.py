@@ -190,7 +190,22 @@ def _branch_length_range(tree_path: Path) -> tuple[float, float]:
     ]
     if not branch_lengths:
         raise ComparativeMethodError(
-            "Brownian covariance requires complete branch lengths"
+            "Brownian covariance requires complete branch lengths",
+            details={
+                "failure_reason": "brownian_covariance_branch_lengths_incomplete",
+                "scientific_explanation": (
+                    "Brownian covariance needs complete numeric branch lengths because shared evolutionary path length defines the covariance."
+                ),
+                "likely_causes": [
+                    "the tree was exported without complete branch lengths",
+                    "one or more branches have blank or missing lengths",
+                ],
+                "actionable_fixes": [
+                    "rerun tree inference or export with branch lengths preserved",
+                    "inspect the tree file for missing branch-length fields",
+                ],
+                "evidence": {"tree_path": str(tree_path)},
+            },
         )
     return min(branch_lengths), max(branch_lengths)
 
@@ -204,7 +219,24 @@ def _validate_raw_brownian_covariance(
 ) -> float:
     if minimum_branch_length < 0.0:
         raise ComparativeMethodError(
-            "Brownian covariance is invalid: tree contains negative branch lengths"
+            "Brownian covariance is invalid: tree contains negative branch lengths",
+            details={
+                "failure_reason": "brownian_covariance_negative_branch_lengths",
+                "scientific_explanation": (
+                    "Brownian shared-path covariance is invalid on a tree with negative branch lengths because shared evolutionary distance cannot be negative."
+                ),
+                "likely_causes": [
+                    "the tree file contains one or more negative branch lengths",
+                ],
+                "actionable_fixes": [
+                    "repair or re-estimate the tree so every non-root branch length is non-negative",
+                    "inspect the tree for scaling or export errors that introduced negative lengths",
+                ],
+                "evidence": {
+                    "tree_path": str(tree_path),
+                    "minimum_branch_length": minimum_branch_length,
+                },
+            },
         )
     diagonal = [covariance_matrix[index][index] for index in range(len(taxa))]
     non_positive_taxa = [

@@ -158,6 +158,62 @@ def test_comparative_signal_cli_rejects_constant_trait_values(
     ]
 
 
+def test_comparative_brownian_pgls_cli_reports_negative_branch_length_failure(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "brownian-pgls",
+            str(fixture("example_tree_negative_length.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["errors"][0]["code"] == "comparative_method_error"
+    assert (
+        payload["errors"][0]["details"]["failure_reason"]
+        == "brownian_covariance_negative_branch_lengths"
+    )
+    assert payload["errors"][0]["details"]["evidence"]["minimum_branch_length"] < 0.0
+
+
+def test_comparative_ou_pgls_cli_reports_negative_branch_length_failure(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "ou-pgls",
+            str(fixture("example_tree_negative_length.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--alpha",
+            "1.0",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["errors"][0]["code"] == "comparative_method_error"
+    assert (
+        payload["errors"][0]["details"]["failure_reason"]
+        == "ou_covariance_negative_branch_lengths"
+    )
+    assert payload["errors"][0]["details"]["evidence"]["minimum_branch_length"] < 0.0
+
+
 def test_comparative_signal_cli_writes_summary_and_permutation_ledgers(
     tmp_path: Path, capsys
 ) -> None:

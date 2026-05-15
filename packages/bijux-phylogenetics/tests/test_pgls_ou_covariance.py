@@ -104,6 +104,22 @@ def test_summarize_ou_covariance_pgls_detects_invalid_covariance() -> None:
     assert "OU covariance is invalid" in str(error.value)
 
 
+def test_summarize_ou_covariance_pgls_reports_negative_branch_length_details() -> None:
+    with pytest.raises(ComparativeMethodError) as error:
+        summarize_ou_covariance_pgls(
+            fixture("example_tree_negative_length.nwk"),
+            fixture("example_traits_comparative.tsv"),
+            response="response",
+            predictors=["predictor_one"],
+            alpha=1.0,
+        )
+
+    assert error.value.details["failure_reason"] == "ou_covariance_negative_branch_lengths"
+    assert error.value.details["evidence"]["tree_path"].endswith(
+        "example_tree_negative_length.nwk"
+    )
+
+
 def test_write_ou_covariance_tables_write_rows(tmp_path: Path) -> None:
     covariance_out = tmp_path / "ou-covariance.tsv"
     profile_out = tmp_path / "ou-alpha-profile.tsv"

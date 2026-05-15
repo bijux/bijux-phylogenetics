@@ -170,7 +170,33 @@ def link_tree_to_traits(
         raise MetadataJoinError(
             "trait linkage mismatch: "
             f"{len(missing_from_traits)} tree taxa missing from traits and "
-            f"{len(extra_trait_taxa)} trait taxa absent from tree"
+            f"{len(extra_trait_taxa)} trait taxa absent from tree",
+            details={
+                "tree_path": str(tree_path),
+                "traits_path": str(traits_path),
+                "taxon_column": table.taxon_column,
+                "missing_from_traits": missing_from_traits,
+                "extra_trait_taxa": extra_trait_taxa,
+                "failure_reason": "tree_trait_taxon_mismatch",
+                "scientific_explanation": (
+                    "The tree and trait table do not describe the same biological taxon set, "
+                    "so comparative interpretation would silently drop or misalign taxa."
+                ),
+                "likely_causes": [
+                    "one or more tree tips are missing from the trait table",
+                    "the trait table contains taxa that are absent from the tree",
+                ],
+                "actionable_fixes": [
+                    "add the missing tree taxa to the trait table or prune the tree intentionally",
+                    "remove extra trait-table taxa that are not represented in the tree",
+                ],
+                "evidence": {
+                    "tree_taxa": sorted(tree_taxa),
+                    "trait_taxa": sorted(trait_taxa),
+                    "missing_from_traits": missing_from_traits,
+                    "extra_trait_taxa": extra_trait_taxa,
+                },
+            },
         )
 
     usable_taxa = sorted(tree_taxa & trait_taxa)

@@ -3974,6 +3974,9 @@ def test_traits_link_strict_mode_rejects_mismatch() -> None:
         )
     except MetadataJoinError as error:
         assert error.code == "metadata_join_error"
+        assert error.details["failure_reason"] == "tree_trait_taxon_mismatch"
+        assert error.details["missing_from_traits"] == ["D"]
+        assert error.details["extra_trait_taxa"] == ["E"]
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected MetadataJoinError")
 
@@ -7759,6 +7762,9 @@ def test_cli_traits_link_strict_mode_returns_typed_error(capsys) -> None:
     assert exit_code == 2
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == MetadataJoinError.code
+    assert payload["errors"][0]["details"]["failure_reason"] == "tree_trait_taxon_mismatch"
+    assert payload["errors"][0]["details"]["evidence"]["missing_from_traits"] == ["D"]
+    assert payload["errors"][0]["details"]["evidence"]["extra_trait_taxa"] == ["E"]
 
 
 def test_cli_prune_writes_tree_and_pruned_taxa_report(tmp_path: Path, capsys) -> None:
