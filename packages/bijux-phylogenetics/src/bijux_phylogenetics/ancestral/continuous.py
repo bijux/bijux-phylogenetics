@@ -143,6 +143,26 @@ def reconstruct_continuous_ancestral_states(
         trait=trait,
         taxon_column=taxon_column,
     )
+    return reconstruct_continuous_ancestral_states_from_dataset(
+        dataset,
+        model=model,
+        alpha=alpha,
+    )
+
+
+def reconstruct_continuous_ancestral_states_from_dataset(
+    dataset: AncestralContinuousDataset,
+    *,
+    model: str = "brownian",
+    alpha: float = 1.0,
+) -> ContinuousAncestralReport:
+    """Reconstruct continuous ancestral states from one native ancestral dataset."""
+    if model not in {"brownian", "ou"}:
+        raise ValueError(f"unsupported continuous ancestral model: {model}")
+    if alpha <= 0:
+        raise ValueError(
+            f"alpha must be positive for continuous ancestral reconstruction, got {alpha}"
+        )
     brownian_fit_diagnostics = (
         _summarize_brownian_fit_diagnostics(dataset)
         if model == "brownian"
