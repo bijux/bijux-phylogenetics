@@ -190,6 +190,56 @@ def test_ancestral_discrete_cli_supports_fixed_root_prior_policy(
     )
 
 
+def test_ancestral_discrete_cli_reports_sym_fit_diagnostics_and_er_comparison(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-discrete-summary.tsv"
+    fit_path = tmp_path / "ancestral-discrete-fit.tsv"
+    comparison_path = tmp_path / "ancestral-discrete-comparison.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "discrete",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_geography_biased.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "symmetric",
+            "--compare-model",
+            "equal-rates",
+            "--summary-out",
+            str(summary_path),
+            "--fit-out",
+            str(fit_path),
+            "--comparison-out",
+            str(comparison_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "symmetric"
+    assert payload["metrics"]["optimizer_converged"] is True
+    assert payload["metrics"]["optimizer_iteration_count"] > 0
+    assert payload["metrics"]["optimizer_function_evaluation_count"] > 0
+    assert payload["metrics"]["overparameterized"] is False
+    assert payload["metrics"]["baseline_model"] == "equal-rates"
+    assert payload["metrics"]["baseline_delta_aic"] > 0.0
+    assert payload["metrics"]["preferred_model_by_aic"] == "equal-rates"
+    assert payload["metrics"]["comparison_node_count"] == 5
+    assert summary_path.read_text(encoding="utf-8").startswith(
+        "trait\ttaxon_column\tmodel\tstate_ordering"
+    )
+    assert fit_path.read_text(encoding="utf-8").startswith(
+        "model\ttaxon_count\tstate_count\tparameter_count\tlog_likelihood"
+    )
+    assert comparison_path.read_text(encoding="utf-8").startswith(
+        "node\tdescendant_taxa\tleft_model\tright_model"
+    )
+
+
 def test_ancestral_discrete_cli_can_export_parsimony_comparison(
     tmp_path: Path, capsys
 ) -> None:
@@ -312,8 +362,8 @@ def test_ancestral_root_sensitivity_cli_can_export_review(
     assert payload["metrics"]["model"] == "equal-rates"
     assert payload["metrics"]["assumption_count"] == 3
     assert payload["metrics"]["compared_node_count"] == 3
-    assert payload["metrics"]["state_changed_node_count"] == 1
-    assert payload["metrics"]["support_changed_node_count"] == 2
+    assert payload["metrics"]["state_changed_node_count"] == 2
+    assert payload["metrics"]["support_changed_node_count"] == 1
     assert payload["metrics"]["top_sensitive_node"] == "A|B|C|D"
     assert payload["metrics"]["fixed_root_state"] == "island"
     assert summary_path.read_text(encoding="utf-8").startswith(

@@ -36,6 +36,7 @@ from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
     summarize_discrete_ancestral_report,
     write_discrete_ancestral_exclusion_table,
+    write_discrete_ancestral_fit_table,
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
     write_discrete_ancestral_transition_table,
@@ -3450,6 +3451,7 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_discrete.add_argument("--summary-out", type=Path)
     ancestral_discrete.add_argument("--probabilities-out", type=Path)
     ancestral_discrete.add_argument("--transitions-out", type=Path)
+    ancestral_discrete.add_argument("--fit-out", type=Path)
     ancestral_discrete.add_argument("--comparison-out", type=Path)
     ancestral_discrete.add_argument("--exclusions-out", type=Path)
     ancestral_discrete.add_argument(
@@ -10565,6 +10567,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             report,
                         )
                     )
+                if args.fit_out is not None:
+                    outputs.append(
+                        write_discrete_ancestral_fit_table(
+                            args.fit_out,
+                            report,
+                        )
+                    )
                 if args.comparison_out is not None and comparison is not None:
                     outputs.append(
                         write_discrete_ancestral_comparison_table(
@@ -10610,7 +10619,38 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "aic": report.aic,
                             "root_prior_mode": report.root_prior_mode,
                             "fixed_root_state": report.fixed_root_state,
+                            "optimizer_converged": (
+                                None
+                                if report.optimizer_diagnostics is None
+                                else report.optimizer_diagnostics.converged
+                            ),
+                            "optimizer_iteration_count": (
+                                None
+                                if report.optimizer_diagnostics is None
+                                else report.optimizer_diagnostics.iteration_count
+                            ),
+                            "optimizer_function_evaluation_count": (
+                                None
+                                if report.optimizer_diagnostics is None
+                                else report.optimizer_diagnostics.function_evaluation_count
+                            ),
+                            "overparameterized": report.overparameterized,
                             "transition_rate_count": len(report.transition_rate_rows),
+                            "baseline_model": (
+                                None
+                                if report.baseline_comparison is None
+                                else report.baseline_comparison.baseline_model
+                            ),
+                            "baseline_delta_aic": (
+                                None
+                                if report.baseline_comparison is None
+                                else report.baseline_comparison.delta_aic
+                            ),
+                            "preferred_model_by_aic": (
+                                None
+                                if report.baseline_comparison is None
+                                else report.baseline_comparison.preferred_model_by_aic
+                            ),
                             "comparison_node_count": (
                                 len(comparison.rows) if comparison is not None else 0
                             ),
