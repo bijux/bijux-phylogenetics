@@ -79,6 +79,7 @@ What exists today:
 - alignment diagnostics, filtering, trimming, and translation workflows
 - partition parsing, validation, summary tables, and partitioned adapter entrypoints for multi-locus inference
 - comparative trait analysis, ancestral-state workflows, and distance-based analysis
+- explicit supported-versus-excluded distance-tree method policy, including a governed `bionj` exclusion for this round
 - governed adapter surfaces for external tools such as alignment and inference engines
 - package handbooks and release automation
 

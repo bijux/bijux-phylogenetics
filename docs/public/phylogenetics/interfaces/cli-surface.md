@@ -206,6 +206,10 @@ build-tree --method neighbor-joining` now use one in-repo deterministic NJ
 builder that validates zero-diagonal and nonnegative matrix assumptions and
 breaks tied joins by stable taxon ordering instead of delegating the NJ method
 through Biopython.
+For this round, `bionj` is explicitly excluded. The distance-tree CLI surfaces
+therefore accept `--method bionj` only so the owned runtime can return one
+structured out-of-scope error naming `ape::bionj`, rather than failing with
+one generic parser-choice message.
 The `ape::dist.dna` portion now covers raw nucleotide distance, JC69, K80,
 F81, and TN93 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,

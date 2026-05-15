@@ -181,6 +181,10 @@ trees with one in-repo deterministic NJ algorithm that validates zero-diagonal
 and nonnegative matrix assumptions, produces branch lengths, and resolves tied
 joins by stable taxon ordering rather than delegating the NJ method through
 Biopython.
+That same workflow boundary now states explicitly that `bionj` is out of scope
+for this round. Reviewers therefore see one governed supported-method set
+(`neighbor-joining`, `upgma`) and one explicit `ape::bionj` exclusion instead
+of an ambiguous missing feature.
 The same owned DNA surfaces now also share one DNAbin-compatible nucleotide
 matrix instead of reparsing FASTA differently in each workflow. That matrix
 preserves taxon order and alignment length, normalizes case, keeps gaps,
