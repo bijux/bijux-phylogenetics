@@ -3414,6 +3414,11 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_continuous.add_argument(
         "--model", choices=("brownian", "ou"), default="brownian"
     )
+    ancestral_continuous.add_argument(
+        "--estimator",
+        choices=("ace-pic", "fast-anc", "generalized-least-squares"),
+        help="Override the continuous ancestral estimator; default follows the selected model.",
+    )
     ancestral_continuous.add_argument("--alpha", type=float, default=1.0)
     ancestral_continuous.add_argument("--table-out", type=Path)
     ancestral_continuous.add_argument("--summary-out", type=Path)
@@ -10521,12 +10526,24 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "ancestral":
             if args.ancestral_command == "continuous":
+                if (
+                    args.model == "brownian"
+                    and args.estimator == "generalized-least-squares"
+                ):
+                    parser.error(
+                        "continuous ancestral estimator generalized-least-squares requires model ou"
+                    )
+                if args.model == "ou" and args.estimator in {"ace-pic", "fast-anc"}:
+                    parser.error(
+                        "continuous ancestral estimators ace-pic and fast-anc require model brownian"
+                    )
                 report = reconstruct_continuous_ancestral_states(
                     args.tree,
                     args.table,
                     trait=args.trait,
                     taxon_column=args.taxon_column,
                     model=args.model,
+                    estimator=args.estimator,
                     alpha=args.alpha,
                 )
                 summary = summarize_continuous_ancestral_report(report)
@@ -10574,6 +10591,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "excluded_taxon_count": len(exclusions),
                             "unstable_node_count": summary.unstable_node_count,
                             "model": report.model,
+                            "estimator": report.estimator,
                             "tree_is_ultrametric": summary.tree_is_ultrametric,
                             "covariance_near_singular": (
                                 summary.covariance_near_singular

@@ -49,6 +49,7 @@ def test_ancestral_continuous_cli_can_export_table(tmp_path: Path, capsys) -> No
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["model"] == "brownian"
+    assert payload["metrics"]["estimator"] == "ace-pic"
     assert payload["metrics"]["internal_node_count"] == 3
     assert payload["metrics"]["excluded_taxon_count"] == 0
     assert payload["metrics"]["unstable_node_count"] >= 0
@@ -62,12 +63,46 @@ def test_ancestral_continuous_cli_can_export_table(tmp_path: Path, capsys) -> No
     )
     assert "estimate\tstandard_error" in table_path.read_text(encoding="utf-8")
     assert summary_path.read_text(encoding="utf-8").startswith(
-        "trait\ttaxon_column\tmodel\talpha"
+        "trait\ttaxon_column\tmodel\testimator\talpha"
     )
     assert uncertainty_path.read_text(encoding="utf-8").startswith(
         "node\tnode_name\tdescendant_taxa\testimate\tstandard_error"
     )
     assert exclusions_path.read_text(encoding="utf-8") == "taxon\treason\n"
+
+
+def test_ancestral_continuous_cli_supports_fast_anc_estimator(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-summary.tsv"
+    uncertainty_path = tmp_path / "ancestral-uncertainty.tsv"
+
+    exit_code = main(
+        [
+            "ancestral",
+            "continuous",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--model",
+            "brownian",
+            "--estimator",
+            "fast-anc",
+            "--summary-out",
+            str(summary_path),
+            "--uncertainty-out",
+            str(uncertainty_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "brownian"
+    assert payload["metrics"]["estimator"] == "fast-anc"
+    assert "\tfast-anc\t" in summary_path.read_text(encoding="utf-8")
+    assert "A|B\t" in uncertainty_path.read_text(encoding="utf-8")
 
 
 def test_ancestral_discrete_cli_reports_sparse_state_warning(capsys) -> None:
