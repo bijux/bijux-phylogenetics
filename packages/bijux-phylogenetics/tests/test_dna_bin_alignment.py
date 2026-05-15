@@ -4,7 +4,10 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matrix
+from bijux_phylogenetics.distance import (
+    compute_pairwise_genetic_distance_matrix,
+    compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment,
+)
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
     compute_alignment_base_frequency_report,
@@ -113,6 +116,33 @@ def test_dna_bin_alignment_supports_segregating_site_report_without_reloading() 
     assert direct_report.segregating_site_positions == path_report.segregating_site_positions
     assert direct_report.rows == path_report.rows
     assert direct_report.warnings == path_report.warnings
+
+
+@pytest.mark.parametrize(
+    "model",
+    ["raw", "jc69", "k80", "f81", "tn93"],
+)
+def test_dna_bin_alignment_supports_nucleotide_distance_models_without_reloading(
+    model: str,
+) -> None:
+    alignment = load_dna_bin_alignment(fixture("example_alignment_distance_gaps.fasta"))
+
+    direct_report = compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(
+        alignment,
+        model=model,
+    )
+    path_report = compute_pairwise_genetic_distance_matrix(
+        fixture("example_alignment_distance_gaps.fasta"),
+        model=model,
+    )
+
+    assert direct_report.path == alignment.path
+    assert direct_report.identifiers == [record.identifier for record in alignment.records]
+    assert direct_report.alignment_length == alignment.alignment_length
+    assert direct_report.model == path_report.model
+    assert direct_report.model_parameters == path_report.model_parameters
+    assert direct_report.warnings == path_report.warnings
+    assert direct_report.pairs == path_report.pairs
 
 
 @pytest.mark.parametrize(

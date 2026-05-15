@@ -627,6 +627,7 @@ from bijux_phylogenetics.distance import (
     compare_distance_models,
     compare_distance_tree_to_reference_tree,
     compare_distance_tree_topologies,
+    compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment,
     compute_pairwise_genetic_distance_matrix,
     list_distance_tree_method_policies,
     load_imported_distance_matrix,
@@ -3692,6 +3693,10 @@ def test_compute_consensus_tree_requires_identical_taxon_sets() -> None:
     assert (
         bijux_phylogenetics.write_dna_bin_alignment_fasta
         is write_dna_bin_alignment_fasta
+    )
+    assert (
+        bijux_phylogenetics.compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment
+        is compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment
     )
     assert bijux_phylogenetics.TreeRootingReport is TreeRootingReport
     assert bijux_phylogenetics.root_tree_on_outgroup is root_tree_on_outgroup
