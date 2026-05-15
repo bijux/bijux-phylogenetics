@@ -3416,7 +3416,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ancestral_continuous.add_argument(
         "--estimator",
-        choices=("ace-pic", "fast-anc", "generalized-least-squares"),
+        choices=("ace-pic", "anc-ml", "fast-anc", "generalized-least-squares"),
         help="Override the continuous ancestral estimator; default follows the selected model.",
     )
     ancestral_continuous.add_argument("--alpha", type=float, default=1.0)
@@ -10533,9 +10533,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     parser.error(
                         "continuous ancestral estimator generalized-least-squares requires model ou"
                     )
-                if args.model == "ou" and args.estimator in {"ace-pic", "fast-anc"}:
+                if args.model == "ou" and args.estimator in {
+                    "ace-pic",
+                    "anc-ml",
+                    "fast-anc",
+                }:
                     parser.error(
-                        "continuous ancestral estimators ace-pic and fast-anc require model brownian"
+                        "continuous ancestral estimators ace-pic, anc-ml, and fast-anc require model brownian"
                     )
                 report = reconstruct_continuous_ancestral_states(
                     args.tree,
@@ -10602,6 +10606,14 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "log_likelihood": summary.log_likelihood,
                             "residual_sigma_squared": (
                                 summary.residual_sigma_squared
+                            ),
+                            "optimizer_name": summary.optimizer_name,
+                            "optimizer_converged": summary.optimizer_converged,
+                            "optimizer_iteration_count": (
+                                summary.optimizer_iteration_count
+                            ),
+                            "optimizer_function_evaluation_count": (
+                                summary.optimizer_function_evaluation_count
                             ),
                         },
                         data=report,
