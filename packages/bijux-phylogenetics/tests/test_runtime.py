@@ -10307,6 +10307,17 @@ def test_cli_adapter_returns_typed_engine_error(capsys) -> None:
 
 def test_public_package_exports_python_workflow_api_surface() -> None:
     from bijux_phylogenetics.api import (
+        AlignmentWorkflowResult,
+        AncestralReconstructionWorkflowResult,
+        ComparativeModelWorkflowResult,
+        ConfiguredPhyloWorkflowResult,
+        FastaValidationResult,
+        InferenceWorkflowResult,
+        ReportWorkflowResult,
+        SequenceToTreeWorkflowResult,
+        SupportWorkflowResult,
+        TreeComparisonWorkflowResult,
+        TrimmingWorkflowResult,
         render_report_workflow,
         run_alignment_workflow,
         run_ancestral_reconstruction_workflow,
@@ -10314,10 +10325,38 @@ def test_public_package_exports_python_workflow_api_surface() -> None:
         run_configured_phylo_workflow,
         run_fasta_validation_workflow,
         run_sequence_to_tree_workflow,
+        run_support_workflow,
         run_tree_comparison_workflow,
         run_tree_inference_workflow,
+        run_trimming_workflow,
     )
 
+    assert bijux_phylogenetics.AlignmentWorkflowResult is AlignmentWorkflowResult
+    assert (
+        bijux_phylogenetics.AncestralReconstructionWorkflowResult
+        is AncestralReconstructionWorkflowResult
+    )
+    assert (
+        bijux_phylogenetics.ComparativeModelWorkflowResult
+        is ComparativeModelWorkflowResult
+    )
+    assert (
+        bijux_phylogenetics.ConfiguredPhyloWorkflowResult
+        is ConfiguredPhyloWorkflowResult
+    )
+    assert bijux_phylogenetics.FastaValidationResult is FastaValidationResult
+    assert bijux_phylogenetics.InferenceWorkflowResult is InferenceWorkflowResult
+    assert bijux_phylogenetics.ReportWorkflowResult is ReportWorkflowResult
+    assert (
+        bijux_phylogenetics.SequenceToTreeWorkflowResult
+        is SequenceToTreeWorkflowResult
+    )
+    assert bijux_phylogenetics.SupportWorkflowResult is SupportWorkflowResult
+    assert (
+        bijux_phylogenetics.TreeComparisonWorkflowResult
+        is TreeComparisonWorkflowResult
+    )
+    assert bijux_phylogenetics.TrimmingWorkflowResult is TrimmingWorkflowResult
     assert bijux_phylogenetics.run_alignment_workflow is run_alignment_workflow
     assert (
         bijux_phylogenetics.run_ancestral_reconstruction_workflow
@@ -10339,6 +10378,7 @@ def test_public_package_exports_python_workflow_api_surface() -> None:
         bijux_phylogenetics.run_sequence_to_tree_workflow
         is run_sequence_to_tree_workflow
     )
+    assert bijux_phylogenetics.run_support_workflow is run_support_workflow
     assert (
         bijux_phylogenetics.run_tree_comparison_workflow
         is run_tree_comparison_workflow
@@ -10347,4 +10387,5 @@ def test_public_package_exports_python_workflow_api_surface() -> None:
         bijux_phylogenetics.run_tree_inference_workflow
         is run_tree_inference_workflow
     )
+    assert bijux_phylogenetics.run_trimming_workflow is run_trimming_workflow
     assert bijux_phylogenetics.render_report_workflow is render_report_workflow
