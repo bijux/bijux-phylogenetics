@@ -158,6 +158,13 @@ def compute_phylogenetic_independent_contrasts(
         require_rooted=True,
         require_binary=True,
     )
+    return compute_phylogenetic_independent_contrasts_from_dataset(dataset)
+
+
+def compute_phylogenetic_independent_contrasts_from_dataset(
+    dataset: ComparativeDataset,
+) -> IndependentContrastReport:
+    """Compute Felsenstein independent contrasts from one native comparative dataset."""
     lookup = dict(zip(dataset.taxa, dataset.trait_values, strict=True))
     input_audit = _build_independent_contrast_input_audit(dataset)
     contrasts, root_estimate, _ = _compute_node_contrasts(
@@ -166,9 +173,9 @@ def compute_phylogenetic_independent_contrasts(
         lookup,
     )
     return IndependentContrastReport(
-        tree_path=tree_path,
-        traits_path=traits_path,
-        trait=trait,
+        tree_path=dataset.tree_path,
+        traits_path=dataset.traits_path,
+        trait=dataset.trait,
         taxon_count=len(dataset.taxa),
         input_audit=input_audit,
         root_estimate=root_estimate,
