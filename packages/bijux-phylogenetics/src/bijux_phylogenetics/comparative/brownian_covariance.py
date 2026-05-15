@@ -65,8 +65,27 @@ def summarize_brownian_covariance(
 ) -> BrownianCovarianceReport:
     """Summarize one Brownian shared-ancestry covariance matrix for an explicit tip order."""
     tree = load_tree(tree_path)
+    return summarize_brownian_covariance_from_tree(
+        tree,
+        tree_path=tree_path,
+        taxa=taxa,
+    )
+
+
+def summarize_brownian_covariance_from_tree(
+    tree: PhyloTree,
+    *,
+    tree_path: Path | None = None,
+    taxa: list[str] | None = None,
+) -> BrownianCovarianceReport:
+    """Summarize one Brownian shared-ancestry covariance matrix from a native tree."""
     ordered_taxa = _resolve_taxa(tree, taxa)
-    minimum_branch_length, maximum_branch_length = _branch_length_range(tree, tree_path)
+    effective_tree_path = (
+        Path("<in-memory-tree>") if tree_path is None else tree_path
+    )
+    minimum_branch_length, maximum_branch_length = _branch_length_range(
+        tree, effective_tree_path
+    )
     root_depths = tip_root_depths(tree, ordered_taxa)
     ultrametric_summary = summarize_ultrametric_tip_depths(
         root_depths,
@@ -83,7 +102,7 @@ def summarize_brownian_covariance(
         condition_number = symmetric_matrix_condition_number(covariance_matrix)
     near_singular = singular or condition_number >= BROWNIAN_COVARIANCE_CONDITION_THRESHOLD
     return BrownianCovarianceReport(
-        tree_path=tree_path,
+        tree_path=effective_tree_path,
         taxa=ordered_taxa,
         tree_is_rooted=_tree_is_rooted(tree),
         tree_is_ultrametric=ultrametric_summary.ultrametric,
