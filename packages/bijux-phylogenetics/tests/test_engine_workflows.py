@@ -1837,6 +1837,30 @@ def test_compare_fast_and_ml_trees_builds_html_report(tmp_path: Path) -> None:
     assert comparison.comparison_report.topology.shared_taxa == ["A", "B", "C", "D"]
 
 
+def test_render_inference_workflow_report_embeds_scientific_failure_explanation(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_trimal(tmp_path / "trimal-fixture")
+    output_path = tmp_path / "trimmed.fasta"
+    report = run_alignment_trimming(
+        fixture("alignments/example_alignment_trim.fasta"),
+        output_path,
+        executable=executable,
+    )
+    output_path.write_text("", encoding="utf-8")
+
+    rendered = render_inference_workflow_report(
+        manifest_path=report.manifest_path,
+        out_path=tmp_path / "trimmed-report.html",
+    )
+    html = rendered.output_path.read_text(encoding="utf-8")
+
+    assert rendered.output_path.exists()
+    assert "failure_reason" in html
+    assert "trimmed_alignment_empty" in html
+    assert "removed all usable alignment signal" in html
+
+
 def test_run_tree_inference_comparison_exports_tables_and_conflicts(
     tmp_path: Path,
 ) -> None:
