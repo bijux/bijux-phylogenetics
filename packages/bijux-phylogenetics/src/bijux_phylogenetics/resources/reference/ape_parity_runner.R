@@ -1624,16 +1624,53 @@ dna_base_frequency_case <- function(case_payload, output_root, execution_path, r
 }
 
 dna_distance_case <- function(case_payload, output_root, execution_path, r_version) {
-  alignment <- ape::read.dna(case_payload$input_fixture, format = "fasta")
-  alignment_matrix <- as.matrix(alignment)
-  distances <- as.matrix(
+  alignment <- tryCatch(
+    ape::read.dna(case_payload$input_fixture, format = "fasta"),
+    error = function(error) error
+  )
+  if (inherits(alignment, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        error_type = "AlignmentParseError",
+        message = conditionMessage(alignment),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+  distance_result <- tryCatch(
     ape::dist.dna(
       alignment,
       model = "RAW",
       pairwise.deletion = isTRUE(case_payload$pairwise_deletion),
       as.matrix = TRUE
-    )
+    ),
+    error = function(error) error
   )
+  if (inherits(distance_result, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        error_type = "DnaDistanceError",
+        message = conditionMessage(distance_result),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+  alignment_matrix <- as.matrix(alignment)
+  distances <- as.matrix(distance_result)
   summary_path <- file.path(output_root, "summary.json")
   table_path <- file.path(output_root, "distance-matrix.tsv")
 

@@ -132,6 +132,51 @@ TABULAR_CASES = {{
             {{"left_identifier": "D", "right_identifier": "D", "distance": 0.0}},
         ],
     }},
+    "dna-raw-distance-gaps-complete-deletion": {{
+        "summary": {{
+            "sequence_count": 4,
+            "alignment_length": 6,
+            "pairwise_deletion": False,
+        }},
+        "rows_name": "distance-matrix.tsv",
+        "rows": [
+            {{"left_identifier": "A", "right_identifier": "A", "distance": 0.0}},
+            {{"left_identifier": "A", "right_identifier": "B", "distance": 0.0}},
+            {{"left_identifier": "A", "right_identifier": "C", "distance": 1 / 4}},
+            {{"left_identifier": "A", "right_identifier": "D", "distance": 0.0}},
+            {{"left_identifier": "B", "right_identifier": "A", "distance": 0.0}},
+            {{"left_identifier": "B", "right_identifier": "B", "distance": 0.0}},
+            {{"left_identifier": "B", "right_identifier": "C", "distance": 1 / 4}},
+            {{"left_identifier": "B", "right_identifier": "D", "distance": 0.0}},
+            {{"left_identifier": "C", "right_identifier": "A", "distance": 1 / 4}},
+            {{"left_identifier": "C", "right_identifier": "B", "distance": 1 / 4}},
+            {{"left_identifier": "C", "right_identifier": "C", "distance": 0.0}},
+            {{"left_identifier": "C", "right_identifier": "D", "distance": 1 / 4}},
+            {{"left_identifier": "D", "right_identifier": "A", "distance": 0.0}},
+            {{"left_identifier": "D", "right_identifier": "B", "distance": 0.0}},
+            {{"left_identifier": "D", "right_identifier": "C", "distance": 1 / 4}},
+            {{"left_identifier": "D", "right_identifier": "D", "distance": 0.0}},
+        ],
+    }},
+    "dna-raw-distance-ambiguity": {{
+        "summary": {{
+            "sequence_count": 3,
+            "alignment_length": 6,
+            "pairwise_deletion": True,
+        }},
+        "rows_name": "distance-matrix.tsv",
+        "rows": [
+            {{"left_identifier": "A", "right_identifier": "A", "distance": 0.0}},
+            {{"left_identifier": "A", "right_identifier": "B", "distance": 0.0}},
+            {{"left_identifier": "A", "right_identifier": "C", "distance": 0.0}},
+            {{"left_identifier": "B", "right_identifier": "A", "distance": 0.0}},
+            {{"left_identifier": "B", "right_identifier": "B", "distance": 0.0}},
+            {{"left_identifier": "B", "right_identifier": "C", "distance": 0.0}},
+            {{"left_identifier": "C", "right_identifier": "A", "distance": 0.0}},
+            {{"left_identifier": "C", "right_identifier": "B", "distance": 0.0}},
+            {{"left_identifier": "C", "right_identifier": "C", "distance": 0.0}},
+        ],
+    }},
     "dna-raw-distance-identical": {{
         "summary": {{
             "sequence_count": 4,
@@ -230,6 +275,13 @@ TABULAR_CASES = {{
         "rows": [
             {{"identifier": "terminal_stop", "amino_acid_sequence": "ME*"}},
         ],
+    }},
+}}
+
+ERROR_CASES = {{
+    "dna-raw-distance-unequal-length-invalid": {{
+        "error_type": "DnaDistanceError",
+        "message": "DNA sequences in list not of the same length.",
     }},
 }}
 
@@ -1943,6 +1995,24 @@ if case_id in TABULAR_CASES:
             "r_version": "4.6.0",
             "ape_version": "5.0.0",
             "outputs": outputs,
+        }},
+    )
+    raise SystemExit(0)
+
+if case_id in ERROR_CASES:
+    payload = ERROR_CASES[case_id]
+    write_json(
+        execution_path,
+        {{
+            "status": "failed",
+            "mismatch_reason": "reference_execution_failed",
+            "error_type": payload["error_type"],
+            "message": payload["message"],
+            "case_id": case_payload["case_id"],
+            "function_name": case_payload["function_name"],
+            "input_fixture": case_payload["input_fixture"],
+            "r_version": "4.6.0",
+            "ape_version": "5.0.0",
         }},
     )
     raise SystemExit(0)

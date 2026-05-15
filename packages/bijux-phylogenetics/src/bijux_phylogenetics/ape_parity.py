@@ -1242,6 +1242,28 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             pairwise_deletion=True,
         ),
         ApeParityCase(
+            case_id="dna-raw-distance-gaps-complete-deletion",
+            fixture_kind="dna-alignment",
+            fixture_id="dna_with_gaps",
+            function_name="ape::dist.dna",
+            python_function_name="compute_pairwise_genetic_distance_matrix",
+            operation="dna-raw-distance",
+            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            tolerance=1e-12,
+            pairwise_deletion=False,
+        ),
+        ApeParityCase(
+            case_id="dna-raw-distance-ambiguity",
+            fixture_kind="dna-alignment",
+            fixture_id="dna_with_ambiguity",
+            function_name="ape::dist.dna",
+            python_function_name="compute_pairwise_genetic_distance_matrix",
+            operation="dna-raw-distance",
+            input_fixture=fixture_path("dna-alignment", "dna_with_ambiguity"),
+            tolerance=1e-12,
+            pairwise_deletion=True,
+        ),
+        ApeParityCase(
             case_id="dna-raw-distance-identical",
             fixture_kind="dna-alignment",
             fixture_id="identical_sequences",
@@ -1273,6 +1295,18 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             input_fixture=fixture_path("dna-alignment", "dna_with_missing_data"),
             tolerance=1e-12,
             pairwise_deletion=True,
+        ),
+        ApeParityCase(
+            case_id="dna-raw-distance-unequal-length-invalid",
+            fixture_kind="dna-alignment",
+            fixture_id="unequal_length_invalid_input",
+            function_name="ape::dist.dna",
+            python_function_name="compute_pairwise_genetic_distance_matrix",
+            operation="dna-raw-distance",
+            input_fixture=fixture_path("dna-alignment", "unequal_length_invalid_input"),
+            tolerance=0.0,
+            pairwise_deletion=False,
+            expected_status="dna-distance-error",
         ),
         ApeParityCase(
             case_id="dna-translation-valid-frame",
@@ -1657,7 +1691,7 @@ def _build_bijux_distance_rows(
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
     report = compute_pairwise_genetic_distance_matrix(
         input_fixture,
-        model="p-distance",
+        model="raw",
         gap_handling="pairwise-deletion" if pairwise_deletion else "complete-deletion",
         ambiguity_policy="ignore",
     )
@@ -2977,6 +3011,16 @@ def run_ape_parity_cases(
                     mismatch_reason = "reference_expected_prop_clades_error_missing"
                 elif not bijux_error.get("message") or not reference_error.get("message"):
                     mismatch_reason = "prop_clades_error_message_missing"
+                else:
+                    status = "passed"
+                    mismatch_reason = None
+            if case.expected_status == "dna-distance-error":
+                if bijux_error is None:
+                    mismatch_reason = "bijux_expected_dna_distance_error_missing"
+                elif reference_error is None:
+                    mismatch_reason = "reference_expected_dna_distance_error_missing"
+                elif not bijux_error.get("message") or not reference_error.get("message"):
+                    mismatch_reason = "dna_distance_error_message_missing"
                 else:
                     status = "passed"
                     mismatch_reason = None
