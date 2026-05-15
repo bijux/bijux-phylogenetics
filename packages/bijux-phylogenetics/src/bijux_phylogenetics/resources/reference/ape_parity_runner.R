@@ -1372,6 +1372,138 @@ branching_times_case <- function(case_payload, output_root, execution_path, r_ve
   )
 }
 
+ultrametric_case <- function(case_payload, output_root, execution_path, r_version) {
+  tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
+  if (inherits(tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  tip_count <- length(tree$tip.label)
+  tip_depths <- as.numeric(ape::node.depth.edgelength(tree))[seq_len(tip_count)]
+  tolerance <- if (is.null(case_payload$tolerance)) .Machine$double.eps^0.5 else as.numeric(case_payload$tolerance)
+  option <- if (is.null(case_payload$ultrametric_option)) 1L else as.integer(case_payload$ultrametric_option)
+  ultrametric <- tryCatch(
+    ape::is.ultrametric(tree, tol = tolerance, option = option),
+    error = function(error) error
+  )
+  if (inherits(ultrametric, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeUltrametricError",
+        message = conditionMessage(ultrametric),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  minimum_tip_depth <- min(tip_depths)
+  maximum_tip_depth <- max(tip_depths)
+  mean_tip_depth <- mean(tip_depths)
+  max_tip_depth_deviation <- maximum_tip_depth - minimum_tip_depth
+  criterion_name <- if (identical(option, 1L)) "scaled-range" else "variance"
+  criterion_value <- if (identical(option, 1L)) {
+    if (isTRUE(all.equal(maximum_tip_depth, 0.0, tolerance = 1e-15))) {
+      if (isTRUE(all.equal(max_tip_depth_deviation, 0.0, tolerance = 1e-15))) {
+        0.0
+      } else {
+        Inf
+      }
+    } else {
+      max_tip_depth_deviation / maximum_tip_depth
+    }
+  } else if (length(tip_depths) <= 1) {
+    0.0
+  } else {
+    stats::var(tip_depths)
+  }
+  offending_taxa <- if (isTRUE(all.equal(max_tip_depth_deviation, 0.0, tolerance = 1e-12))) {
+    character()
+  } else {
+    sort(
+      unique(
+        normalize_node_label(
+          tree$tip.label[
+            abs(tip_depths - minimum_tip_depth) <= 1e-12
+            | abs(tip_depths - maximum_tip_depth) <= 1e-12
+          ]
+        )
+      )
+    )
+  }
+
+  summary_path <- file.path(output_root, "summary.json")
+  rows_path <- file.path(output_root, "ultrametric-diagnostics.tsv")
+  write_payload(
+    summary_path,
+    list(
+      tip_count = tip_count,
+      rooted = ape::is.rooted(tree),
+      tip_labels = as.list(normalize_node_label(tree$tip.label)),
+      ultrametric = isTRUE(ultrametric),
+      criterion_name = criterion_name,
+      criterion_value = as.numeric(criterion_value),
+      tolerance = tolerance,
+      option = as.integer(option),
+      minimum_tip_depth = minimum_tip_depth,
+      maximum_tip_depth = maximum_tip_depth,
+      mean_tip_depth = mean_tip_depth,
+      max_tip_depth_deviation = max_tip_depth_deviation,
+      root_age = maximum_tip_depth,
+      offending_taxa = as.list(offending_taxa)
+    )
+  )
+  write_table(
+    rows_path,
+    data.frame(
+      node_id = seq_len(tip_count),
+      tip_label = normalize_node_label(tree$tip.label),
+      root_to_tip_depth = tip_depths,
+      deviation_from_mean_depth = abs(tip_depths - mean_tip_depth),
+      deviation_from_min_depth = tip_depths - minimum_tip_depth,
+      deviation_from_max_depth = maximum_tip_depth - tip_depths,
+      is_offending_taxon = normalize_node_label(tree$tip.label) %in% offending_taxa,
+      stringsAsFactors = FALSE
+    )
+  )
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        ultrametric_diagnostics = rows_path
+      )
+    )
+  )
+}
+
 dna_translation_case <- function(case_payload, output_root, execution_path, r_version) {
   alignment <- ape::read.dna(case_payload$input_fixture, format = "fasta")
   genetic_code_id <- if (is.null(case_payload$genetic_code_id)) 1 else case_payload$genetic_code_id
@@ -1492,6 +1624,11 @@ if (identical(case_payload$operation, "tree-node-depth")) {
 
 if (identical(case_payload$operation, "tree-branching-times")) {
   branching_times_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "tree-ultrametricity")) {
+  ultrametric_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 

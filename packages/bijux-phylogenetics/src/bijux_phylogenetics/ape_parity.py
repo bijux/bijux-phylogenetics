@@ -27,6 +27,10 @@ from bijux_phylogenetics.core.pruning import (
 from bijux_phylogenetics.core.branching_times import compute_tree_branching_times
 from bijux_phylogenetics.core.node_depth import compute_tree_node_depths
 from bijux_phylogenetics.core.tree_distance import compute_tree_tip_distance_matrix
+from bijux_phylogenetics.core.ultrametric import (
+    APE_ULTRAMETRIC_TOLERANCE,
+    assess_tree_ultrametricity,
+)
 from bijux_phylogenetics.core.topology import (
     assess_tree_monophyly,
     extract_tree_clade_by_node_id,
@@ -72,6 +76,7 @@ class ApeParityCase:
     node_id: int | None = None
     mrca_taxa: tuple[str, ...] = ()
     monophyly_reroot: bool | None = None
+    ultrametric_option: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -953,6 +958,50 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             tolerance=1e-12,
         ),
         ApeParityCase(
+            case_id="is-ultrametric-rooted-ultrametric",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::is.ultrametric",
+            python_function_name="assess_tree_ultrametricity",
+            operation="tree-ultrametricity",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=APE_ULTRAMETRIC_TOLERANCE,
+            ultrametric_option=1,
+        ),
+        ApeParityCase(
+            case_id="is-ultrametric-near-ultrametric-default",
+            fixture_kind="tree",
+            fixture_id="near_ultrametric_branch_jitter",
+            function_name="ape::is.ultrametric",
+            python_function_name="assess_tree_ultrametricity",
+            operation="tree-ultrametricity",
+            input_fixture=fixture_path("tree", "near_ultrametric_branch_jitter"),
+            tolerance=APE_ULTRAMETRIC_TOLERANCE,
+            ultrametric_option=1,
+        ),
+        ApeParityCase(
+            case_id="is-ultrametric-near-ultrametric-tight",
+            fixture_kind="tree",
+            fixture_id="near_ultrametric_branch_jitter",
+            function_name="ape::is.ultrametric",
+            python_function_name="assess_tree_ultrametricity",
+            operation="tree-ultrametricity",
+            input_fixture=fixture_path("tree", "near_ultrametric_branch_jitter"),
+            tolerance=1e-12,
+            ultrametric_option=1,
+        ),
+        ApeParityCase(
+            case_id="is-ultrametric-non-ultrametric",
+            fixture_kind="tree",
+            fixture_id="pectinate_rooted_non_ultrametric",
+            function_name="ape::is.ultrametric",
+            python_function_name="assess_tree_ultrametricity",
+            operation="tree-ultrametricity",
+            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            tolerance=APE_ULTRAMETRIC_TOLERANCE,
+            ultrametric_option=1,
+        ),
+        ApeParityCase(
             case_id="dna-base-frequency-lowercase",
             fixture_kind="dna-alignment",
             fixture_id="lowercase_aligned_dna",
@@ -1108,6 +1157,7 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
                 "node_id": case.node_id,
                 "mrca_taxa": list(case.mrca_taxa),
                 "monophyly_reroot": case.monophyly_reroot,
+                "ultrametric_option": case.ultrametric_option,
             },
             indent=2,
             sort_keys=True,
@@ -1544,6 +1594,46 @@ def _build_bijux_branching_time_rows(
     ]
 
 
+def _build_bijux_tree_ultrametric_rows(
+    input_fixture: Path,
+    *,
+    tolerance: float,
+    option: int,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    report = assess_tree_ultrametricity(
+        input_fixture,
+        tolerance=tolerance,
+        option=option,
+    )
+    return {
+        "tip_count": len(report.tip_labels),
+        "rooted": report.rooted,
+        "tip_labels": report.tip_labels,
+        "ultrametric": report.ultrametric,
+        "criterion_name": report.criterion_name,
+        "criterion_value": report.criterion_value,
+        "tolerance": report.tolerance,
+        "option": report.option,
+        "minimum_tip_depth": report.minimum_tip_depth,
+        "maximum_tip_depth": report.maximum_tip_depth,
+        "mean_tip_depth": report.mean_tip_depth,
+        "max_tip_depth_deviation": report.max_tip_depth_deviation,
+        "root_age": report.root_age,
+        "offending_taxa": report.offending_taxa,
+    }, [
+        {
+            "node_id": row.node_id,
+            "tip_label": row.tip_label,
+            "root_to_tip_depth": row.root_to_tip_depth,
+            "deviation_from_mean_depth": row.deviation_from_mean_depth,
+            "deviation_from_min_depth": row.deviation_from_min_depth,
+            "deviation_from_max_depth": row.deviation_from_max_depth,
+            "is_offending_taxon": row.is_offending_taxon,
+        }
+        for row in report.rows
+    ]
+
+
 def _build_bijux_translation_rows(
     input_fixture: Path,
     *,
@@ -1624,8 +1714,8 @@ def _normalize_reference_summary(summary: dict[str, object]) -> dict[str, object
 def _coerce_table_cell(value: str) -> object:
     if value == "":
         return ""
-    if value in {"true", "false"}:
-        return value == "true"
+    if value.lower() in {"true", "false"}:
+        return value.lower() == "true"
     if re.fullmatch(r"-?\d+", value):
         return int(value)
     if re.fullmatch(r"-?(?:\d+\.\d*|\d*\.\d+)(?:[eE][+-]?\d+)?", value):
@@ -1891,6 +1981,17 @@ def _build_bijux_case_payload(
     if case.operation == "tree-branching-times":
         summary, rows = _build_bijux_branching_time_rows(case.input_fixture)
         return summary, rows, None
+    if case.operation == "tree-ultrametricity":
+        if case.ultrametric_option is None:
+            raise ValueError(
+                f"ape parity case '{case.case_id}' is missing an ultrametric option"
+            )
+        summary, rows = _build_bijux_tree_ultrametric_rows(
+            case.input_fixture,
+            tolerance=case.tolerance,
+            option=case.ultrametric_option,
+        )
+        return summary, rows, None
     if case.operation == "dna-base-frequency":
         summary, rows = _build_bijux_base_frequency_summary(case.input_fixture)
         return summary, rows, None
@@ -1969,6 +2070,10 @@ def _load_reference_case_payload(
     if case.operation == "tree-branching-times":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "branching-times.tsv")
+        return summary, rows, None
+    if case.operation == "tree-ultrametricity":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "ultrametric-diagnostics.tsv")
         return summary, rows, None
     if case.operation == "dna-base-frequency":
         summary = _load_json(execution_root / "summary.json")
