@@ -111,7 +111,7 @@ That native model carries:
 - node and edge metadata
 - deterministic preorder and postorder traversal
 - deep-copy support without shared mutation
-- canonical Newick conversion through `PhyloTree.to_newick()` and `PhyloTree.from_newick(...)`
+- native canonical Newick parsing and writing through `PhyloTree.to_newick()` and `PhyloTree.from_newick(...)`, including branch lengths, internal labels, quoted labels, multi-tree loading, and location-aware parse errors
 
 Tree import, tree transformation, native distance review, comparative
 covariance, ancestral reconstruction, and simulation surfaces now operate on
@@ -770,7 +770,9 @@ and `ape` resolve the same durable fixture identities instead of hand-picked
 path lists. The `ape::read.tree` lane now checks structured clade rows rather
 than only raw parse success, including rooted and unrooted trees, branch
 lengths, internal node labels, support labels, quoted labels, one governed
-multiple-tree input, and one governed malformed-Newick rejection case. The
+multiple-tree input, and one governed malformed-Newick rejection case. Those
+cases now flow through one owned native Newick parser and writer on top of
+`PhyloTree` rather than an external tree reader. The
 `ape::consensus` lane now covers majority-rule and strict consensus over
 governed conflicting and posterior-style tree sets, writes one normalized
 consensus Newick plus one clade-frequency TSV ledger per case, and fails

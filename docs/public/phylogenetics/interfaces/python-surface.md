@@ -20,8 +20,9 @@ The owned native tree API now lives on `bijux_phylogenetics.PhyloTree`,
 surface is the single in-memory tree contract for native traversal, topology
 transforms, branch-length review, comparative covariance, ancestral
 reconstruction, simulation, and canonical Newick conversion. Stable node IDs,
-parent-child links, node metadata, edge metadata, validation, and deep-copy
-behavior are part of that runtime promise.
+parent-child links, node metadata, edge metadata, validation, deep-copy
+behavior, native Newick parsing and writing, multi-tree Newick loading, and
+location-aware Newick parse failures are part of that runtime promise.
 
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the
