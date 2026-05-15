@@ -636,6 +636,7 @@ from bijux_phylogenetics.distance import (
 )
 from bijux_phylogenetics.diversification import (
     compare_diversification_models,
+    compute_diversification_gamma_statistic,
     compute_lineage_through_time_curve,
     detect_diversification_outlier_clades,
     detect_incomplete_taxon_sampling_metadata,
@@ -645,6 +646,7 @@ from bijux_phylogenetics.diversification import (
     run_trait_dependent_diversification_analysis,
     validate_time_tree_for_diversification,
     write_clade_diversification_table,
+    write_diversification_gamma_statistic_table,
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
@@ -1734,6 +1736,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is estimate_diversification_rate
     )
     assert (
+        bijux_phylogenetics.compute_diversification_gamma_statistic
+        is compute_diversification_gamma_statistic
+    )
+    assert (
         bijux_phylogenetics.compare_diversification_models
         is compare_diversification_models
     )
@@ -1756,6 +1762,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.write_clade_diversification_table
         is write_clade_diversification_table
+    )
+    assert (
+        bijux_phylogenetics.write_diversification_gamma_statistic_table
+        is write_diversification_gamma_statistic_table
     )
     assert (
         bijux_phylogenetics.write_trait_dependent_diversification_table

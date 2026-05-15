@@ -6,6 +6,7 @@ import pytest
 
 from bijux_phylogenetics.diversification import (
     compare_diversification_models,
+    compute_diversification_gamma_statistic,
     compute_lineage_through_time_curve,
     detect_diversification_outlier_clades,
     detect_incomplete_taxon_sampling_metadata,
@@ -15,6 +16,7 @@ from bijux_phylogenetics.diversification import (
     run_trait_dependent_diversification_analysis,
     validate_time_tree_for_diversification,
     write_clade_diversification_table,
+    write_diversification_gamma_statistic_table,
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
@@ -66,6 +68,61 @@ def test_compute_lineage_through_time_curve_tracks_lineage_increases() -> None:
         (0.1, 4),
         (0.0, 4),
     ]
+
+
+def test_compute_diversification_gamma_statistic_matches_governed_ultrametric_examples() -> (
+    None
+):
+    balanced = compute_diversification_gamma_statistic(fixture("example_tree.nwk"))
+    larger = compute_diversification_gamma_statistic(fixture("example_tree_eight_taxa.nwk"))
+    zero_internal = compute_diversification_gamma_statistic(
+        fixture("example_tree_ultrametric_zero_internal.nwk")
+    )
+
+    assert balanced.tip_count == 4
+    assert balanced.bifurcating is True
+    assert balanced.gamma_statistic == pytest.approx(-0.544331053951818, abs=1e-15)
+    assert larger.gamma_statistic == pytest.approx(-1.414213562373095, abs=1e-14)
+    assert zero_internal.gamma_statistic == pytest.approx(
+        -0.979795897113271,
+        abs=1e-15,
+    )
+
+
+def test_compute_diversification_gamma_statistic_warns_on_incomplete_sampling() -> None:
+    report = compute_diversification_gamma_statistic(
+        fixture("example_tree.nwk"),
+        metadata_path=fixture("example_sampling_fractions.tsv"),
+    )
+
+    assert report.sampling_fraction == 0.75
+    assert any("assumes complete taxon sampling" in warning for warning in report.warnings)
+
+
+def test_compute_diversification_gamma_statistic_rejects_small_or_non_bifurcating_trees(
+    tmp_path: Path,
+) -> None:
+    small_tree_path = tmp_path / "two-tip-ultrametric.nwk"
+    small_tree_path.write_text("(A:0.3,B:0.3);", encoding="utf-8")
+    singleton_tree_path = tmp_path / "singleton-root-ultrametric.nwk"
+    singleton_tree_path.write_text(
+        "(((A:0.1,B:0.1):0.2):0.0,C:0.3);",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(DiversificationAnalysisError) as small_error:
+        compute_diversification_gamma_statistic(small_tree_path)
+    assert (
+        small_error.value.code
+        == "diversification_gamma_statistic_requires_three_or_more_tips"
+    )
+
+    with pytest.raises(DiversificationAnalysisError) as bifurcating_error:
+        compute_diversification_gamma_statistic(singleton_tree_path)
+    assert (
+        bifurcating_error.value.code
+        == "diversification_gamma_statistic_requires_bifurcating_tree"
+    )
 
 
 def test_write_lineage_through_time_table_exports_curve(tmp_path: Path) -> None:
@@ -172,10 +229,15 @@ def test_run_trait_dependent_diversification_analysis_reports_monophyly_and_poly
 
 def test_write_diversification_tables_and_report_outputs_files(tmp_path: Path) -> None:
     clade_path = tmp_path / "clades.tsv"
+    gamma_path = tmp_path / "gamma-statistic.tsv"
     trait_path = tmp_path / "trait-dependent.tsv"
     html_path = tmp_path / "diversification-report.html"
 
     clades = detect_diversification_outlier_clades(fixture("example_tree.nwk"))
+    gamma = compute_diversification_gamma_statistic(
+        fixture("example_tree.nwk"),
+        metadata_path=fixture("example_sampling_fractions.tsv"),
+    )
     trait_report = run_trait_dependent_diversification_analysis(
         fixture("example_tree.nwk"),
         fixture("example_traits_diversification.tsv"),
@@ -190,9 +252,12 @@ def test_write_diversification_tables_and_report_outputs_files(tmp_path: Path) -
     )
 
     write_clade_diversification_table(clade_path, clades)
+    write_diversification_gamma_statistic_table(gamma_path, gamma)
     write_trait_dependent_diversification_table(trait_path, trait_report)
 
     assert "classification" in clade_path.read_text(encoding="utf-8")
+    assert "gamma_statistic" in gamma_path.read_text(encoding="utf-8")
     assert "monophyletic" in trait_path.read_text(encoding="utf-8")
     assert "diversification-model-comparison" in html_path.read_text(encoding="utf-8")
+    assert "diversification-gamma-statistic" in html_path.read_text(encoding="utf-8")
     assert report.report_kind == "diversification"

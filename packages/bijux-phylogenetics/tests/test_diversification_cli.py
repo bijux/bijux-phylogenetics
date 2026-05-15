@@ -24,6 +24,7 @@ def test_diversification_ltt_sampling_and_estimate_cli_outputs_json_and_tables(
     tmp_path: Path, capsys
 ) -> None:
     ltt_path = tmp_path / "ltt.tsv"
+    gamma_path = tmp_path / "gamma-statistic.tsv"
 
     ltt_exit = main(
         [
@@ -70,6 +71,29 @@ def test_diversification_ltt_sampling_and_estimate_cli_outputs_json_and_tables(
     assert estimate_exit == 0
     assert estimate_payload["metrics"]["model"] == "birth-death"
     assert estimate_payload["metrics"]["sampling_fraction"] == 0.75
+
+    gamma_exit = main(
+        [
+            "diversification",
+            "gamma-stat",
+            str(fixture("example_tree.nwk")),
+            "--metadata",
+            str(fixture("example_sampling_fractions.tsv")),
+            "--out",
+            str(gamma_path),
+            "--json",
+        ]
+    )
+    gamma_payload = json.loads(capsys.readouterr().out)
+    assert gamma_exit == 0
+    assert gamma_payload["metrics"]["tip_count"] == 4
+    assert gamma_payload["metrics"]["sampling_fraction"] == 0.75
+    assert gamma_payload["metrics"]["gamma_statistic"] < 0.0
+    assert any(
+        "assumes complete taxon sampling" in warning
+        for warning in gamma_payload["warnings"]
+    )
+    assert "gamma_statistic" in gamma_path.read_text(encoding="utf-8")
 
 
 def test_diversification_compare_clades_trait_and_report_cli_write_outputs(

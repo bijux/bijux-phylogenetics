@@ -547,6 +547,7 @@ from bijux_phylogenetics.distance import (
 )
 from bijux_phylogenetics.diversification import (
     compare_diversification_models,
+    compute_diversification_gamma_statistic,
     compute_lineage_through_time_curve,
     detect_diversification_outlier_clades,
     detect_incomplete_taxon_sampling_metadata,
@@ -554,6 +555,7 @@ from bijux_phylogenetics.diversification import (
     render_diversification_report,
     run_trait_dependent_diversification_analysis,
     write_clade_diversification_table,
+    write_diversification_gamma_statistic_table,
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
@@ -4501,6 +4503,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the diversification estimate as JSON."
     )
     _add_manifest_argument(diversification_estimate)
+    diversification_gamma = diversification_subparsers.add_parser(
+        "gamma-stat",
+        help="Compute the Pybus-Harvey diversification gamma statistic.",
+    )
+    diversification_gamma.add_argument("tree", type=Path)
+    diversification_gamma.add_argument("--metadata", type=Path)
+    diversification_gamma.add_argument("--taxon-column")
+    diversification_gamma.add_argument("--sampling-column")
+    diversification_gamma.add_argument(
+        "--out", type=Path, help="Write the diversification gamma-statistic table as TSV."
+    )
+    diversification_gamma.add_argument(
+        "--json", action="store_true", help="Emit the diversification gamma-statistic report as JSON."
+    )
+    _add_manifest_argument(diversification_gamma)
     diversification_compare = diversification_subparsers.add_parser(
         "compare-models",
         help="Compare Yule and birth-death diversification fits.",
@@ -13241,6 +13258,41 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "sampling_fraction": report.sampling_fraction,
                             "net_diversification_rate": report.net_diversification_rate,
                             "aic": report.aic,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.diversification_command == "gamma-stat":
+                inputs = [args.tree]
+                if args.metadata is not None:
+                    inputs.append(args.metadata)
+                report = compute_diversification_gamma_statistic(
+                    args.tree,
+                    metadata_path=args.metadata,
+                    taxon_column=args.taxon_column,
+                    sampling_column=args.sampling_column,
+                )
+                outputs: list[Path | str] = []
+                if args.out is not None:
+                    outputs.append(
+                        write_diversification_gamma_statistic_table(args.out, report)
+                    )
+                outputs = _finalize_outputs(
+                    args, command="diversification", inputs=inputs, outputs=outputs
+                )
+                _print_result(
+                    build_command_result(
+                        command="diversification",
+                        inputs=inputs,
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "tip_count": report.tip_count,
+                            "branching_time_count": report.branching_time_count,
+                            "gamma_statistic": report.gamma_statistic,
+                            "sampling_fraction": report.sampling_fraction,
                         },
                         data=report,
                     ),

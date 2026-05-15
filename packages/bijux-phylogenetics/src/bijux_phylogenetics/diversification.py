@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import node_signature
+from bijux_phylogenetics.core.branching_times import compute_tree_branching_times
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.ultrametric import assess_tree_ultrametricity
@@ -94,6 +95,24 @@ class DiversificationRateReport:
     likelihood_kind: str
     log_likelihood: float
     aic: float
+    assumptions: list[str]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class DiversificationGammaStatisticReport:
+    tree_path: Path
+    tip_count: int
+    rooted: bool
+    ultrametric: bool
+    bifurcating: bool
+    root_age: float
+    branching_time_count: int
+    interval_count: int
+    minimum_branching_time: float
+    maximum_branching_time: float
+    gamma_statistic: float
+    sampling_fraction: float | None
     assumptions: list[str]
     warnings: list[str]
 
@@ -207,6 +226,10 @@ def _descendant_taxa(node: TreeNode) -> list[str]:
 
 def _sampling_fraction_from_rows(rows: list[float]) -> float:
     return float(format(sum(rows) / max(len(rows), 1), ".15g"))
+
+
+def _is_strictly_bifurcating(tree: PhyloTree) -> bool:
+    return all(len(node.children) == 2 for node in tree.iter_nodes() if not node.is_leaf())
 
 
 def _resolve_sampling_column(columns: list[str], requested: str | None) -> str | None:
@@ -507,6 +530,127 @@ def detect_incomplete_taxon_sampling_metadata(
         else None,
         heterogeneous_values=heterogeneous_values,
         warnings=warnings,
+    )
+
+
+def compute_diversification_gamma_statistic(
+    tree_path: Path,
+    *,
+    metadata_path: Path | None = None,
+    taxon_column: str | None = None,
+    sampling_column: str | None = None,
+) -> DiversificationGammaStatisticReport:
+    """Compute the Pybus-Harvey diversification gamma statistic on one time tree."""
+    validation = validate_time_tree_for_diversification(tree_path)
+    tree = load_tree(tree_path)
+    if tree.tip_count < 3:
+        raise DiversificationAnalysisError(
+            "diversification gamma statistic requires at least three tips",
+            code="diversification_gamma_statistic_requires_three_or_more_tips",
+            details={"tip_count": tree.tip_count},
+        )
+    if not _is_strictly_bifurcating(tree):
+        raise DiversificationAnalysisError(
+            "diversification gamma statistic requires a fully bifurcating tree",
+            code="diversification_gamma_statistic_requires_bifurcating_tree",
+            details={
+                "tip_count": tree.tip_count,
+                "internal_child_counts": [
+                    len(node.children)
+                    for node in tree.iter_nodes()
+                    if not node.is_leaf()
+                ],
+            },
+        )
+    branching_time_report = compute_tree_branching_times(tree_path)
+    branching_times = sorted(row.branching_time for row in branching_time_report.rows)
+    if len(branching_times) != tree.tip_count - 1:
+        raise DiversificationAnalysisError(
+            "diversification gamma statistic requires one branching time per internal node on a fully bifurcating tree",
+            code="diversification_gamma_statistic_requires_complete_branching_times",
+            details={
+                "tip_count": tree.tip_count,
+                "branching_time_count": len(branching_times),
+            },
+        )
+    intervals = [branching_times[0]]
+    intervals.extend(
+        branching_times[index] - branching_times[index - 1]
+        for index in range(1, len(branching_times))
+    )
+    waiting_times = list(reversed(intervals))
+    total_span = sum(
+        multiplier * interval
+        for multiplier, interval in zip(
+            range(2, tree.tip_count + 1), waiting_times, strict=True
+        )
+    )
+    if total_span <= 0.0:
+        raise DiversificationAnalysisError(
+            "diversification gamma statistic requires positive branching-time span",
+            code="diversification_gamma_statistic_requires_positive_branching_time_span",
+            details={"total_span": total_span},
+        )
+    running = 0.0
+    cumulative_total = 0.0
+    for multiplier, interval in zip(
+        range(2, tree.tip_count), waiting_times[:-1], strict=True
+    ):
+        running += multiplier * interval
+        cumulative_total += running
+    statistic_mean = total_span / 2.0
+    statistic_standard_deviation = total_span * math.sqrt(
+        1.0 / (12.0 * (tree.tip_count - 2))
+    )
+    gamma_statistic = float(
+        format(
+            (
+                (cumulative_total / (tree.tip_count - 2)) - statistic_mean
+            )
+            / statistic_standard_deviation,
+            ".15g",
+        )
+    )
+
+    sampling_fraction: float | None = None
+    warnings = list(validation.warnings)
+    if metadata_path is not None:
+        sampling_report = detect_incomplete_taxon_sampling_metadata(
+            tree_path,
+            metadata_path,
+            taxon_column=taxon_column,
+            sampling_column=sampling_column,
+        )
+        sampling_fraction = sampling_report.sampling_fraction
+        warnings.extend(sampling_report.warnings)
+        if sampling_fraction is None:
+            warnings.append(
+                "gamma statistic assumes complete taxon sampling and the supplied metadata did not provide one valid complete-sampling estimate"
+            )
+        elif sampling_fraction < 1.0:
+            warnings.append(
+                "gamma statistic assumes complete taxon sampling and may be biased when the supplied sampling fractions indicate incomplete sampling"
+            )
+
+    assumptions = [
+        "gamma statistic is interpreted on a rooted ultrametric crown tree",
+        "gamma statistic is only computed for fully bifurcating trees with three or more tips",
+    ]
+    return DiversificationGammaStatisticReport(
+        tree_path=tree_path,
+        tip_count=tree.tip_count,
+        rooted=True,
+        ultrametric=True,
+        bifurcating=True,
+        root_age=validation.root_age,
+        branching_time_count=len(branching_times),
+        interval_count=len(waiting_times),
+        minimum_branching_time=float(format(min(branching_times), ".15g")),
+        maximum_branching_time=float(format(max(branching_times), ".15g")),
+        gamma_statistic=gamma_statistic,
+        sampling_fraction=sampling_fraction,
+        assumptions=assumptions,
+        warnings=sorted(set(warnings)),
     )
 
 
@@ -841,6 +985,50 @@ def write_clade_diversification_table(
     )
 
 
+def write_diversification_gamma_statistic_table(
+    path: Path, report: DiversificationGammaStatisticReport
+) -> Path:
+    """Export one deterministic diversification gamma-statistic ledger."""
+    rows = [
+        {
+            "tip_count": str(report.tip_count),
+            "rooted": str(report.rooted).lower(),
+            "ultrametric": str(report.ultrametric).lower(),
+            "bifurcating": str(report.bifurcating).lower(),
+            "root_age": format(report.root_age, ".15g"),
+            "branching_time_count": str(report.branching_time_count),
+            "interval_count": str(report.interval_count),
+            "minimum_branching_time": format(report.minimum_branching_time, ".15g"),
+            "maximum_branching_time": format(report.maximum_branching_time, ".15g"),
+            "gamma_statistic": format(report.gamma_statistic, ".15g"),
+            "sampling_fraction": ""
+            if report.sampling_fraction is None
+            else format(report.sampling_fraction, ".15g"),
+            "assumptions": "; ".join(report.assumptions),
+            "warnings": "; ".join(report.warnings),
+        }
+    ]
+    return write_taxon_rows(
+        path,
+        columns=[
+            "tip_count",
+            "rooted",
+            "ultrametric",
+            "bifurcating",
+            "root_age",
+            "branching_time_count",
+            "interval_count",
+            "minimum_branching_time",
+            "maximum_branching_time",
+            "gamma_statistic",
+            "sampling_fraction",
+            "assumptions",
+            "warnings",
+        ],
+        rows=rows,
+    )
+
+
 def write_trait_dependent_diversification_table(
     path: Path, report: TraitDependentDiversificationReport
 ) -> Path:
@@ -886,6 +1074,12 @@ def render_diversification_report(
 ) -> DiversificationReportBuildResult:
     """Render a deterministic HTML report for diversification and macroevolution summaries."""
     ltt = compute_lineage_through_time_curve(tree_path)
+    gamma_statistic = compute_diversification_gamma_statistic(
+        tree_path,
+        metadata_path=metadata_path,
+        taxon_column=taxon_column,
+        sampling_column=sampling_column,
+    )
     estimate = estimate_diversification_rate(
         tree_path,
         metadata_path=metadata_path,
@@ -912,6 +1106,10 @@ def render_diversification_report(
     )
     sections = [
         ("lineage-through-time", json.dumps(ltt, default=str, indent=2)),
+        (
+            "diversification-gamma-statistic",
+            json.dumps(gamma_statistic, default=str, indent=2),
+        ),
         ("diversification-estimate", json.dumps(estimate, default=str, indent=2)),
         (
             "diversification-model-comparison",

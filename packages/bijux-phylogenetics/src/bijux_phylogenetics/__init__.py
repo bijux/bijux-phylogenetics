@@ -1150,6 +1150,7 @@ from .distance import (
 from .diversification import (
     CladeDiversificationObservation,
     CladeDiversificationScanReport,
+    DiversificationGammaStatisticReport,
     DiversificationModelComparisonReport,
     DiversificationModelComparisonRow,
     DiversificationRateReport,
@@ -1162,6 +1163,7 @@ from .diversification import (
     TraitDependentDiversificationReport,
     TraitDependentDiversificationState,
     compare_diversification_models,
+    compute_diversification_gamma_statistic,
     compute_lineage_through_time_curve,
     detect_diversification_outlier_clades,
     detect_incomplete_taxon_sampling_metadata,
@@ -1171,6 +1173,7 @@ from .diversification import (
     run_trait_dependent_diversification_analysis,
     validate_time_tree_for_diversification,
     write_clade_diversification_table,
+    write_diversification_gamma_statistic_table,
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
