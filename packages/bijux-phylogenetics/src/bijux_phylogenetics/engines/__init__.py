@@ -72,12 +72,19 @@ from .reports import (
     render_model_selection_limitations_report,
 )
 from .result_bundle import (
+    WorkflowResultBundleExtraInput,
     WorkflowResultBundleFile,
     WorkflowResultBundleIssue,
     WorkflowResultBundleReport,
     WorkflowResultBundleValidationReport,
     export_workflow_result_bundle,
     validate_workflow_result_bundle,
+)
+from .workflow_config import (
+    PhyloWorkflowConfig,
+    WorkflowConfigRunReport,
+    load_phylo_workflow_config,
+    run_phylo_workflow_config,
 )
 from .replay import (
     ManifestReplayComparison,
@@ -176,10 +183,13 @@ __all__ = [
     "ManifestReplayReport",
     "ModelSelectionLimitationsReport",
     "ModelSelectionLimitationsReportBuildResult",
+    "PhyloWorkflowConfig",
     "WorkflowResultBundleFile",
+    "WorkflowResultBundleExtraInput",
     "WorkflowResultBundleIssue",
     "WorkflowResultBundleReport",
     "WorkflowResultBundleValidationReport",
+    "WorkflowConfigRunReport",
     "WorkflowPreflightStatus",
     "audit_alignment_inference_readiness",
     "BootstrapTreeSetValidationReport",
@@ -219,6 +229,7 @@ __all__ = [
     "resolve_engine_executable",
     "resolve_mafft_alignment_mode",
     "resolve_trimal_trimming_mode",
+    "load_phylo_workflow_config",
     "run_alignment_trimming",
     "run_bootstrap_consensus_tree",
     "run_bootstrap_support_estimation",
@@ -230,6 +241,7 @@ __all__ = [
     "run_model_selection",
     "run_multiple_sequence_alignment",
     "run_sh_alrt_support_estimation",
+    "run_phylo_workflow_config",
     "run_inference_reproducibility_check",
     "run_tree_inference_comparison",
     "write_fasta_to_tree_log",
