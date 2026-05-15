@@ -66,6 +66,12 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "unroot-tree-after-outgroup-rooting",
         "unroot-tree-already-unrooted",
         "unroot-tree-invalid-newick",
+        "drop-tip-rooted-single",
+        "drop-tip-rooted-multiple",
+        "drop-tip-root-change-after-outgroup-rooting",
+        "drop-tip-unrooted-three-tip",
+        "drop-tip-unrooted-two-tip",
+        "drop-tip-unknown-tip-name",
         "dna-base-frequency-lowercase",
         "dna-base-frequency-ambiguity",
         "dna-raw-distance-clean",
@@ -101,6 +107,12 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "outgroup_rooted_on_d",
         "unrooted_branch_length_tree",
         "malformed_unbalanced_parentheses",
+        "balanced_rooted_ultrametric",
+        "balanced_rooted_ultrametric",
+        "outgroup_rooted_on_d",
+        "unrooted_branch_length_tree",
+        "unrooted_branch_length_tree",
+        "balanced_rooted_ultrametric",
         "lowercase_aligned_dna",
         "dna_with_ambiguity",
         "clean_aligned_dna",
@@ -117,6 +129,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::write.tree",
         "ape::root",
         "ape::unroot",
+        "ape::drop.tip",
         "ape::base.freq",
         "ape::dist.dna",
         "ape::trans",
@@ -128,6 +141,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "write-tree-set-structure",
         "root-tree-outgroup",
         "unroot-tree",
+        "drop-tree-taxa",
         "dna-base-frequency",
         "dna-raw-distance",
         "dna-translation",
@@ -145,13 +159,14 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 33
-    assert report.passed_case_count == 33
+    assert report.case_count == 39
+    assert report.passed_case_count == 39
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
         "ape::base.freq",
         "ape::dist.dna",
+        "ape::drop.tip",
         "ape::read.tree",
         "ape::root",
         "ape::trans",
@@ -221,6 +236,15 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
     assert unroot_case.reference_summary is not None
     assert unroot_case.reference_summary["rooted"] is False
+    drop_tip_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "drop-tip-unrooted-two-tip"
+    )
+    assert drop_tip_case.reference_summary is not None
+    assert drop_tip_case.reference_summary["rooted"] is True
+    assert drop_tip_case.reference_summary["dropped_taxa"] == ["C", "D"]
+    assert drop_tip_case.reference_summary["absent_requested_taxa"] == []
     translation_case = next(
         observation
         for observation in report.observations
@@ -318,7 +342,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 33
+    assert len(rows) == 39
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
