@@ -190,6 +190,38 @@ class SequenceGCContent:
 
 
 @dataclass(frozen=True, slots=True)
+class DnaBinStateRow:
+    """One normalized DNAbin-compatible nucleotide state in an aligned matrix."""
+
+    identifier: str
+    position: int
+    state: str
+
+
+@dataclass(frozen=True, slots=True)
+class DnaBinSequence:
+    """One DNAbin-compatible aligned nucleotide sequence."""
+
+    identifier: str
+    sequence: str
+    states: tuple[str, ...]
+
+
+@dataclass(slots=True)
+class DnaBinAlignment:
+    """One stable DNAbin-compatible nucleotide alignment matrix."""
+
+    path: Path
+    source_alphabet: AlignmentAlphabet
+    sequence_count: int
+    alignment_length: int
+    state_order: list[str]
+    uracil_normalized: bool
+    records: list[DnaBinSequence]
+    rows: list[DnaBinStateRow]
+
+
+@dataclass(frozen=True, slots=True)
 class NucleotideStateFrequencyRow:
     """One reviewer-facing nucleotide state frequency row."""
 

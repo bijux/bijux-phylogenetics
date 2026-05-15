@@ -26,7 +26,11 @@ from bijux_phylogenetics.core.alignment import AlignmentRecord
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.errors import InvalidAlignmentError, InvalidDistanceMatrixError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
-from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
+from bijux_phylogenetics.io.fasta import (
+    infer_alignment_alphabet,
+    load_dna_bin_alignment,
+    load_fasta_alignment,
+)
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.simulation import write_tree_set
 from bijux_phylogenetics.tree_set import (
@@ -1126,11 +1130,27 @@ def _complete_deletion_positions(
 def _load_alignment_for_model(
     path: Path, *, model: DistanceModel
 ) -> tuple[list[AlignmentRecord], str]:
+    normalized_model = _normalize_distance_model(model)
+    if normalized_model != "amino-acid-p-distance":
+        matrix = load_dna_bin_alignment(path, normalize_uracil=True)
+        if normalized_model not in _allowed_models_for_alphabet(matrix.source_alphabet):
+            raise InvalidAlignmentError(
+                f"distance model '{normalized_model}' is not supported for inferred alphabet '{matrix.source_alphabet}'"
+            )
+        records = [
+            AlignmentRecord(
+                identifier=record.identifier,
+                sequence=record.sequence.upper(),
+            )
+            for record in matrix.records
+        ]
+        return records, matrix.source_alphabet
+
     records = load_fasta_alignment(path)
     alphabet = infer_alignment_alphabet(records)
-    if model not in _allowed_models_for_alphabet(alphabet):
+    if normalized_model not in _allowed_models_for_alphabet(alphabet):
         raise InvalidAlignmentError(
-            f"distance model '{model}' is not supported for inferred alphabet '{alphabet}'"
+            f"distance model '{normalized_model}' is not supported for inferred alphabet '{alphabet}'"
         )
     return records, alphabet
 

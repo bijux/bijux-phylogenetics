@@ -153,6 +153,20 @@
       "notes": "Aligned DNA fixture with only gap and explicit missing states for ape-style base-frequency edge-case parity."
     },
     {
+      "fixture_id": "invalid_symbol_alignment",
+      "relative_path": "alignments/example_alignment_invalid_dna.fasta",
+      "load_expectation": "invalid-symbol",
+      "ape_read_dna_expectation": "matrix-with-missing",
+      "translation_expectation": "not-coding",
+      "sequence_count": 2,
+      "alignment_length": 8,
+      "feature_tags": [
+        "invalid-symbol",
+        "dnabin-rejection"
+      ],
+      "notes": "Aligned DNA fixture with one unsupported symbol that Bijux rejects instead of silently degrading to missing data."
+    },
+    {
       "fixture_id": "unequal_length_invalid_input",
       "relative_path": "alignments/example_alignment_invalid_lengths.fasta",
       "load_expectation": "unequal-length-invalid",

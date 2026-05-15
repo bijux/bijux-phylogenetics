@@ -1311,6 +1311,7 @@ from .io.fasta import (
     detect_under_aligned_regions,
     get_alignment_filter_profile,
     inspect_coding_alignment,
+    load_dna_bin_alignment,
     list_alignment_filter_profiles,
     prepare_coding_sequences_for_alignment,
     repair_fasta_input,
@@ -1322,6 +1323,7 @@ from .io.fasta import (
     trim_alignment,
     trim_columns_above_missingness_threshold,
     validate_fasta_input,
+    write_dna_bin_alignment_fasta,
 )
 from .io.roundtrip import TreeRoundtripValidationReport, validate_tree_roundtrip
 from .phylogeography import (
@@ -2745,6 +2747,7 @@ __all__ = [
     "compare_distance_tree_to_reference_tree",
     "normalize_tree_taxa",
     "detect_fasta_sequence_type",
+    "load_dna_bin_alignment",
     "prepare_coding_sequences_for_alignment",
     "validate_discrete_state_coding",
     "validate_beast_posterior_log",
@@ -2757,6 +2760,7 @@ __all__ = [
     "repair_fasta_input",
     "trim_columns_above_missingness_threshold",
     "translate_coding_alignment",
+    "write_dna_bin_alignment_fasta",
     "trim_alignment",
     "unroot_tree",
     "validate_comparative_reference_examples",

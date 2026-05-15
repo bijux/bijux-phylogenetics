@@ -34,6 +34,9 @@ from bijux_phylogenetics.core.alignment import (
     CodingAlignmentDiagnostics,
     CodingSequenceExclusion,
     CodingSequencePreparationReport,
+    DnaBinAlignment,
+    DnaBinSequence,
+    DnaBinStateRow,
     DuplicateSequenceGroup,
     DuplicateSequencePolicyAction,
     DuplicateSequencePolicyReport,
@@ -121,6 +124,7 @@ _APE_DNA_STATE_ORDER = (
     "-",
     "?",
 )
+_APE_DNA_STATE_SET = set(_APE_DNA_STATE_ORDER)
 _APE_SEGREGATING_STATE_SETS: dict[str, frozenset[str]] = {
     "A": frozenset({"A"}),
     "C": frozenset({"C"}),
@@ -887,6 +891,111 @@ def _normalize_ape_nucleotide_state(residue: str) -> str | None:
     return None
 
 
+def _normalize_dnabin_state(
+    residue: str,
+    *,
+    normalize_uracil: bool,
+) -> str | None:
+    normalized = residue.lower()
+    if normalized == "u" and normalize_uracil:
+        normalized = "t"
+    if normalized in _APE_DNA_STATE_SET:
+        return normalized
+    return None
+
+
+def _records_from_dnabin_alignment(
+    alignment: DnaBinAlignment,
+    *,
+    uppercase: bool,
+) -> list[AlignmentRecord]:
+    return [
+        AlignmentRecord(
+            identifier=record.identifier,
+            sequence=record.sequence.upper() if uppercase else record.sequence,
+        )
+        for record in alignment.records
+    ]
+
+
+def load_dna_bin_alignment(
+    path: Path,
+    *,
+    normalize_uracil: bool = False,
+) -> DnaBinAlignment:
+    """Load one equal-length nucleotide FASTA input as a DNAbin-compatible matrix."""
+    records = load_fasta_alignment(path)
+    source_alphabet = infer_alignment_alphabet(records)
+    if source_alphabet == "unknown":
+        source_alphabet = "dna"
+
+    invalid_rows: list[tuple[str, int, str]] = []
+    dnabin_records: list[DnaBinSequence] = []
+    rows: list[DnaBinStateRow] = []
+    for record in records:
+        normalized_states: list[str] = []
+        for position, residue in enumerate(record.sequence, start=1):
+            normalized = _normalize_dnabin_state(
+                residue,
+                normalize_uracil=normalize_uracil,
+            )
+            if normalized is None:
+                invalid_rows.append((record.identifier, position, residue))
+                continue
+            normalized_states.append(normalized)
+            rows.append(
+                DnaBinStateRow(
+                    identifier=record.identifier,
+                    position=position,
+                    state=normalized,
+                )
+            )
+        if len(normalized_states) != len(record.sequence):
+            continue
+        dnabin_records.append(
+            DnaBinSequence(
+                identifier=record.identifier,
+                sequence="".join(normalized_states),
+                states=tuple(normalized_states),
+            )
+        )
+
+    if invalid_rows:
+        details = ", ".join(
+            f"{identifier}:{position}={character}"
+            for identifier, position, character in invalid_rows[:5]
+        )
+        if len(invalid_rows) > 5:
+            details = f"{details}, ..."
+        raise InvalidAlignmentError(
+            "alignment contains states incompatible with dnabin-compatible nucleotide loading: "
+            + details
+        )
+    if source_alphabet not in {"dna", "rna"}:
+        raise InvalidAlignmentError(
+            f"dnabin-compatible loading requires a dna or rna alignment, got alphabet '{source_alphabet}'"
+        )
+
+    return DnaBinAlignment(
+        path=path,
+        source_alphabet=source_alphabet,
+        sequence_count=len(dnabin_records),
+        alignment_length=0 if not dnabin_records else len(dnabin_records[0].sequence),
+        state_order=list(_APE_DNA_STATE_ORDER),
+        uracil_normalized=normalize_uracil and source_alphabet == "rna",
+        records=dnabin_records,
+        rows=rows,
+    )
+
+
+def write_dna_bin_alignment_fasta(path: Path, alignment: DnaBinAlignment) -> Path:
+    """Write one DNAbin-compatible nucleotide matrix back to FASTA without state loss."""
+    return write_fasta_alignment(
+        path,
+        _records_from_dnabin_alignment(alignment, uppercase=False),
+    )
+
+
 def _ape_nucleotide_state_counts(sequence: str) -> dict[str, int]:
     counts = {state: 0 for state in _APE_DNA_STATE_ORDER}
     for residue in sequence:
@@ -899,18 +1008,9 @@ def _ape_nucleotide_state_counts(sequence: str) -> dict[str, int]:
 
 def compute_alignment_base_frequency_report(path: Path) -> AlignmentBaseFrequencyReport:
     """Compute ape-style nucleotide state frequencies for one DNA or RNA alignment."""
-    records = load_fasta_alignment(path)
-    alphabet = infer_alignment_alphabet(records)
-    if alphabet not in {"dna", "rna"}:
-        if any(
-            _normalize_ape_nucleotide_state(residue) is None
-            for record in records
-            for residue in record.sequence
-        ):
-            raise InvalidAlignmentError(
-                "ape-style nucleotide base frequencies require a dna or rna alignment"
-            )
-        alphabet = "dna"
+    matrix = load_dna_bin_alignment(path, normalize_uracil=True)
+    records = _records_from_dnabin_alignment(matrix, uppercase=False)
+    alphabet = matrix.source_alphabet
 
     alignment_counts = {state: 0 for state in _APE_DNA_STATE_ORDER}
     per_sequence_rows: list[NucleotideStateFrequencyRow] = []
@@ -959,8 +1059,8 @@ def compute_alignment_base_frequency_report(path: Path) -> AlignmentBaseFrequenc
     return AlignmentBaseFrequencyReport(
         path=path,
         inferred_alphabet=alphabet,
-        sequence_count=len(records),
-        alignment_length=0 if not records else len(records[0].sequence),
+        sequence_count=matrix.sequence_count,
+        alignment_length=matrix.alignment_length,
         ambiguity_policy="count ambiguity codes as literal states",
         gap_policy="count gap characters as literal states",
         missing_data_policy="count explicit missing characters as literal states",
@@ -1076,18 +1176,9 @@ def compute_alignment_segregating_site_report(
     path: Path,
 ) -> AlignmentSegregatingSiteReport:
     """Compute ape-style segregating sites for one DNA or RNA alignment."""
-    records = load_fasta_alignment(path)
-    alphabet = infer_alignment_alphabet(records)
-    if alphabet not in {"dna", "rna"}:
-        if any(
-            _normalize_ape_segregating_state(residue) is None
-            for record in records
-            for residue in record.sequence
-        ):
-            raise InvalidAlignmentError(
-                "ape-style segregating-site detection requires a dna or rna alignment"
-            )
-        alphabet = "dna"
+    matrix = load_dna_bin_alignment(path, normalize_uracil=True)
+    records = _records_from_dnabin_alignment(matrix, uppercase=False)
+    alphabet = matrix.source_alphabet
 
     original_sequences = [
         "".join(
@@ -1150,8 +1241,8 @@ def compute_alignment_segregating_site_report(
     return AlignmentSegregatingSiteReport(
         path=path,
         inferred_alphabet=alphabet,
-        sequence_count=len(records),
-        alignment_length=0 if not records else len(records[0].sequence),
+        sequence_count=matrix.sequence_count,
+        alignment_length=matrix.alignment_length,
         ambiguity_policy="ambiguity states segregate only when they are surely incompatible with another observed state",
         gap_policy="internal gap characters can create segregating sites against known or incompatible ambiguous states",
         missing_data_policy="explicit missing characters do not create segregating sites",
@@ -2401,7 +2492,8 @@ def translate_coding_alignment(
             f"coding translation requires a nucleotide alignment, got alphabet '{summary.inferred_alphabet}'"
         )
 
-    records = load_fasta_alignment(path)
+    matrix = load_dna_bin_alignment(path, normalize_uracil=True)
+    records = _records_from_dnabin_alignment(matrix, uppercase=True)
     dropped_trailing_nucleotide_count = summary.alignment_length % 3
     translated_alignment_length = (
         summary.alignment_length - dropped_trailing_nucleotide_count
