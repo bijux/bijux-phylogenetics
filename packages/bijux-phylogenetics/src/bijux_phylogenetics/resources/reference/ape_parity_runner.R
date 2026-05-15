@@ -1623,6 +1623,47 @@ dna_base_frequency_case <- function(case_payload, output_root, execution_path, r
   )
 }
 
+dna_segregating_sites_case <- function(case_payload, output_root, execution_path, r_version) {
+  alignment <- ape::read.dna(case_payload$input_fixture, format = "fasta")
+  alignment_matrix <- as.matrix(alignment)
+  segregating_positions <- as.integer(ape::seg.sites(alignment))
+  summary_path <- file.path(output_root, "summary.json")
+  table_path <- file.path(output_root, "segregating-sites.tsv")
+
+  write_payload(
+    summary_path,
+    list(
+      sequence_count = nrow(alignment_matrix),
+      alignment_length = ncol(alignment_matrix),
+      segregating_site_count = length(segregating_positions)
+    )
+  )
+  if (length(segregating_positions) == 0L) {
+    rows <- data.frame(position = integer(), stringsAsFactors = FALSE)
+  } else {
+    rows <- data.frame(
+      position = segregating_positions,
+      stringsAsFactors = FALSE
+    )
+  }
+  write_table(table_path, rows)
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        segregating_sites = table_path
+      )
+    )
+  )
+}
+
 dna_distance_case <- function(case_payload, output_root, execution_path, r_version) {
   ape_distance_model <- function(model_name) {
     normalized <- tolower(as.character(model_name))
@@ -2362,6 +2403,11 @@ if (identical(case_payload$operation, "tree-clade-support")) {
 
 if (identical(case_payload$operation, "dna-base-frequency")) {
   dna_base_frequency_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "dna-segregating-sites")) {
+  dna_segregating_sites_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 

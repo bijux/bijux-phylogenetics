@@ -134,6 +134,80 @@ TABULAR_CASES = {{
             {{"state": "?", "frequency": 10 / 18}},
         ],
     }},
+    "dna-segregating-sites-lowercase": {{
+        "summary": {{
+            "sequence_count": 3,
+            "alignment_length": 6,
+            "segregating_site_count": 2,
+        }},
+        "rows_name": "segregating-sites.tsv",
+        "rows": [
+            {{"position": 2}},
+            {{"position": 5}},
+        ],
+    }},
+    "dna-segregating-sites-invariant": {{
+        "summary": {{
+            "sequence_count": 3,
+            "alignment_length": 6,
+            "segregating_site_count": 0,
+        }},
+        "rows_name": "segregating-sites.tsv",
+        "rows": [],
+    }},
+    "dna-segregating-sites-one-variable": {{
+        "summary": {{
+            "sequence_count": 3,
+            "alignment_length": 6,
+            "segregating_site_count": 1,
+        }},
+        "rows_name": "segregating-sites.tsv",
+        "rows": [
+            {{"position": 4}},
+        ],
+    }},
+    "dna-segregating-sites-gaps": {{
+        "summary": {{
+            "sequence_count": 4,
+            "alignment_length": 6,
+            "segregating_site_count": 3,
+        }},
+        "rows_name": "segregating-sites.tsv",
+        "rows": [
+            {{"position": 2}},
+            {{"position": 5}},
+            {{"position": 6}},
+        ],
+    }},
+    "dna-segregating-sites-ambiguity": {{
+        "summary": {{
+            "sequence_count": 3,
+            "alignment_length": 6,
+            "segregating_site_count": 1,
+        }},
+        "rows_name": "segregating-sites.tsv",
+        "rows": [
+            {{"position": 5}},
+        ],
+    }},
+    "dna-segregating-sites-missing-data": {{
+        "summary": {{
+            "sequence_count": 3,
+            "alignment_length": 6,
+            "segregating_site_count": 0,
+        }},
+        "rows_name": "segregating-sites.tsv",
+        "rows": [],
+    }},
+    "dna-segregating-sites-all-gap-missing": {{
+        "summary": {{
+            "sequence_count": 3,
+            "alignment_length": 6,
+            "segregating_site_count": 0,
+        }},
+        "rows_name": "segregating-sites.tsv",
+        "rows": [],
+    }},
     "dna-raw-distance-clean": {{
         "summary": {{
             "sequence_count": 4,

@@ -46,6 +46,7 @@ from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.topology import root_tree_on_outgroup, unroot_tree
 from bijux_phylogenetics.io.fasta import (
     compute_alignment_base_frequency_report,
+    compute_alignment_segregating_site_report,
     load_fasta_alignment,
     translate_coding_alignment,
 )
@@ -1245,6 +1246,76 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             tolerance=1e-12,
         ),
         ApeParityCase(
+            case_id="dna-segregating-sites-lowercase",
+            fixture_kind="dna-alignment",
+            fixture_id="lowercase_aligned_dna",
+            function_name="ape::seg.sites",
+            python_function_name="compute_alignment_segregating_site_report",
+            operation="dna-segregating-sites",
+            input_fixture=fixture_path("dna-alignment", "lowercase_aligned_dna"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="dna-segregating-sites-invariant",
+            fixture_kind="dna-alignment",
+            fixture_id="invariant_aligned_dna",
+            function_name="ape::seg.sites",
+            python_function_name="compute_alignment_segregating_site_report",
+            operation="dna-segregating-sites",
+            input_fixture=fixture_path("dna-alignment", "invariant_aligned_dna"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="dna-segregating-sites-one-variable",
+            fixture_kind="dna-alignment",
+            fixture_id="one_variable_site_alignment",
+            function_name="ape::seg.sites",
+            python_function_name="compute_alignment_segregating_site_report",
+            operation="dna-segregating-sites",
+            input_fixture=fixture_path("dna-alignment", "one_variable_site_alignment"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="dna-segregating-sites-gaps",
+            fixture_kind="dna-alignment",
+            fixture_id="dna_with_gaps",
+            function_name="ape::seg.sites",
+            python_function_name="compute_alignment_segregating_site_report",
+            operation="dna-segregating-sites",
+            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="dna-segregating-sites-ambiguity",
+            fixture_kind="dna-alignment",
+            fixture_id="dna_with_ambiguity",
+            function_name="ape::seg.sites",
+            python_function_name="compute_alignment_segregating_site_report",
+            operation="dna-segregating-sites",
+            input_fixture=fixture_path("dna-alignment", "dna_with_ambiguity"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="dna-segregating-sites-missing-data",
+            fixture_kind="dna-alignment",
+            fixture_id="dna_with_missing_data",
+            function_name="ape::seg.sites",
+            python_function_name="compute_alignment_segregating_site_report",
+            operation="dna-segregating-sites",
+            input_fixture=fixture_path("dna-alignment", "dna_with_missing_data"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="dna-segregating-sites-all-gap-missing",
+            fixture_kind="dna-alignment",
+            fixture_id="all_gap_missing_alignment",
+            function_name="ape::seg.sites",
+            python_function_name="compute_alignment_segregating_site_report",
+            operation="dna-segregating-sites",
+            input_fixture=fixture_path("dna-alignment", "all_gap_missing_alignment"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
             case_id="dna-raw-distance-clean",
             fixture_kind="dna-alignment",
             fixture_id="clean_aligned_dna",
@@ -2076,6 +2147,17 @@ def _build_bijux_base_frequency_summary(
     }, rows
 
 
+def _build_bijux_segregating_site_rows(
+    input_fixture: Path,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    report = compute_alignment_segregating_site_report(input_fixture)
+    return {
+        "sequence_count": report.sequence_count,
+        "alignment_length": report.alignment_length,
+        "segregating_site_count": len(report.segregating_site_positions),
+    }, [{"position": row.position} for row in report.rows]
+
+
 def _build_bijux_distance_rows(
     input_fixture: Path,
     *,
@@ -2832,6 +2914,9 @@ def _build_bijux_case_payload(
     if case.operation == "dna-base-frequency":
         summary, rows = _build_bijux_base_frequency_summary(case.input_fixture)
         return summary, rows, None
+    if case.operation == "dna-segregating-sites":
+        summary, rows = _build_bijux_segregating_site_rows(case.input_fixture)
+        return summary, rows, None
     if case.operation == "dna-distance":
         if case.pairwise_deletion is None:
             raise ValueError(
@@ -2933,6 +3018,10 @@ def _load_reference_case_payload(
     if case.operation == "dna-base-frequency":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "base-frequency.tsv")
+        return summary, rows, None
+    if case.operation == "dna-segregating-sites":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "segregating-sites.tsv")
         return summary, rows, None
     if case.operation == "dna-distance":
         summary = _load_json(execution_root / "summary.json")
