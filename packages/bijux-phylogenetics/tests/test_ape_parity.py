@@ -124,6 +124,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ace-continuous-pectinate-non-ultrametric",
         "ace-continuous-balanced-six-taxon",
         "ace-continuous-missing-values-pruned",
+        "ace-discrete-binary-balanced-rooted-ultrametric",
+        "ace-discrete-multistate-balanced-rooted-ultrametric",
+        "ace-discrete-multistate-pectinate-non-ultrametric",
+        "ace-discrete-missing-values-pruned",
         "pic-balanced-rooted-ultrametric",
         "pic-pectinate-non-ultrametric",
         "pic-balanced-six-taxon",
@@ -287,6 +291,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "balanced_rooted_six_taxon",
         "balanced_rooted_six_taxon",
         "balanced_rooted_ultrametric",
+        "balanced_rooted_ultrametric",
+        "pectinate_rooted_non_ultrametric",
+        "balanced_rooted_ultrametric",
+        "balanced_rooted_ultrametric",
         "pectinate_rooted_non_ultrametric",
         "balanced_rooted_six_taxon",
         "balanced_rooted_ultrametric",
@@ -411,6 +419,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "tree-topology-distance",
         "tree-brownian-covariance",
         "tree-continuous-ancestral-states",
+        "tree-discrete-ancestral-states",
         "tree-independent-contrasts",
         "tree-node-depth",
         "tree-branching-times",
@@ -435,8 +444,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 160
-    assert report.passed_case_count == 160
+    assert report.case_count == 164
+    assert report.passed_case_count == 164
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -477,6 +486,14 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert continuous_missing_case.reference_summary is not None
     assert continuous_missing_case.reference_summary["dropped_missing_taxa"] == ["B"]
     assert continuous_missing_case.reference_summary["dropped_non_numeric_taxa"] == ["C"]
+    discrete_missing_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "ace-discrete-missing-values-pruned"
+    )
+    assert discrete_missing_case.reference_summary is not None
+    assert discrete_missing_case.reference_summary["dropped_missing_taxa"] == ["D"]
+    assert discrete_missing_case.reference_summary["transition_rate_rows"]
     internal_label_case = next(
         observation
         for observation in report.observations
@@ -832,7 +849,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 160
+        assert len(rows) == 164
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
