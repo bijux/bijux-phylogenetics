@@ -60,6 +60,11 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "consensus-strict-conflicting-four-taxon",
         "consensus-majority-posterior-six-taxon",
         "consensus-mismatched-taxon-set",
+        "prop-clades-duplicate-conflict-four-taxon",
+        "prop-clades-absent-cross-pairing-clades",
+        "prop-clades-child-order-insensitive",
+        "prop-clades-posterior-six-taxon",
+        "prop-clades-mismatched-taxon-set",
         "root-tree-single-outgroup-tip",
         "root-tree-multiple-outgroup-tips",
         "root-tree-already-rooted",
@@ -156,6 +161,11 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "consensus_conflicting_four_taxon_tree_set",
         "consensus_posterior_six_taxon_tree_set",
         "consensus_mismatched_taxon_tree_set",
+        "prop_clades_duplicate_conflict_tree_set",
+        "prop_clades_absent_clade_tree_set",
+        "prop_clades_child_order_tree_set",
+        "prop_clades_posterior_six_taxon_tree_set",
+        "prop_clades_mismatched_taxon_tree_set",
         "outgroup_rootable_unrooted",
         "outgroup_rootable_unrooted",
         "outgroup_rooted_on_d",
@@ -241,6 +251,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::unroot",
         "ape::drop.tip",
         "ape::consensus",
+        "ape::prop.clades",
         "ape::dist.topo",
         "ape::keep.tip",
         "ape::getMRCA",
@@ -261,6 +272,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "write-tree-structure",
         "write-tree-set-structure",
         "tree-consensus",
+        "tree-clade-support",
         "root-tree-outgroup",
         "unroot-tree",
         "drop-tree-taxa",
@@ -291,8 +303,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 94
-    assert report.passed_case_count == 94
+    assert report.case_count == 99
+    assert report.passed_case_count == 99
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -309,6 +321,7 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         "ape::is.ultrametric",
         "ape::keep.tip",
         "ape::node.depth.edgelength",
+        "ape::prop.clades",
         "ape::read.tree",
         "ape::root",
         "ape::trans",
@@ -373,6 +386,23 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert consensus_error_case.status == "passed"
     assert consensus_error_case.reference_error is not None
     assert consensus_error_case.bijux_error is not None
+    prop_clades_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "prop-clades-posterior-six-taxon"
+    )
+    assert prop_clades_case.reference_summary is not None
+    assert prop_clades_case.reference_summary["supported_clade_count"] == 4
+    assert prop_clades_case.reference_summary["absent_clade_count"] == 0
+    assert prop_clades_case.reference_summary["unscored_clade_count"] == 0
+    prop_clades_error_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "prop-clades-mismatched-taxon-set"
+    )
+    assert prop_clades_error_case.status == "passed"
+    assert prop_clades_error_case.reference_error is not None
+    assert prop_clades_error_case.bijux_error is not None
     quoted_case = next(
         observation
         for observation in report.observations
@@ -649,7 +679,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 94
+    assert len(rows) == 99
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
