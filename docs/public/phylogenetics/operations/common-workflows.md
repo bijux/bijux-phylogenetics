@@ -174,6 +174,13 @@ transition, transversion, AG-transition, CT-transition, ambiguity, and
 saturation fields alongside the distance matrix. TN93 warns explicitly when
 the resolved alignment composition omits a nucleotide instead of silently
 falling back to a simpler model.
+The distance side of the same governed lane now also covers `ape::nj` over one
+shared analytical three-taxon matrix plus four-taxon ultrametric and
+non-ultrametric matrices. The owned Bijux side now builds neighbor-joining
+trees with one in-repo deterministic NJ algorithm that validates zero-diagonal
+and nonnegative matrix assumptions, produces branch lengths, and resolves tied
+joins by stable taxon ordering rather than delegating the NJ method through
+Biopython.
 The same owned DNA surfaces now also share one DNAbin-compatible nucleotide
 matrix instead of reparsing FASTA differently in each workflow. That matrix
 preserves taxon order and alignment length, normalizes case, keeps gaps,

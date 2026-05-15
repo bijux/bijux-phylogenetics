@@ -733,7 +733,7 @@ string-based, so tree summaries, tip ledgers, normalized Newick outputs,
 DNAbin state ledgers, DNA-state frequency tables, DNA-distance ledgers, and
 translated amino-acid rows are compared as owned artifacts rather than scraped
 console text. The governed live cases now cover `ape::read.tree`, `ape::write.tree`,
-`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
+`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::nj`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
 fixture ids. The tree and DNA inputs for that lane now come from the governed
 shared fixture catalogs in
 `tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
@@ -762,6 +762,13 @@ nucleotide matrix that preserves taxon order and alignment length, normalizes
 case, keeps gaps, ambiguity codes, and explicit missing states literal, writes
 FASTA back without nucleotide-state loss, and rejects unsupported symbols
 instead of silently degrading them to missing data.
+The `ape::nj` lane now covers one governed analytical three-taxon matrix plus
+four-taxon ultrametric and non-ultrametric matrices. On the owned Bijux side,
+neighbor joining no longer delegates through Biopython for that method: Bijux
+now builds one deterministic NJ tree in-repo, validates zero-diagonal and
+nonnegative matrix assumptions explicitly, produces branch lengths, and
+resolves tied joins by stable taxon ordering so distance-tree recovery stays
+reproducible.
 The `ape::dist.dna` lane now covers raw nucleotide distance, JC69, K80, F81,
 and TN93 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,

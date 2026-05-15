@@ -162,7 +162,7 @@ reproducible artifact bundle for that case.
 
 The governed live `ape` cases now span both shared tree and shared DNA
 fixtures. Today that lane covers `ape::read.tree`, `ape::write.tree`,
-`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans`, with durable inputs
+`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::nj`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans`, with durable inputs
 resolved from `shared_tree_fixture_catalog.json` and
 `shared_dna_alignment_fixture_catalog.json`. The `ape::read.tree` portion now
 compares structured clade rows and covers branch lengths, internal labels,
@@ -199,6 +199,13 @@ ape-style segregating-site review, and aligned coding translation. It
 preserves taxon order and alignment length, normalizes case, keeps gaps,
 ambiguity codes, and explicit missing states literal, writes FASTA back
 without nucleotide-state loss, and rejects unsupported symbols explicitly.
+The `ape::nj` portion now covers one governed analytical three-taxon matrix
+plus four-taxon ultrametric and non-ultrametric matrices. On the owned Bijux
+side, `alignment build-tree --method neighbor-joining` and `distance-matrix
+build-tree --method neighbor-joining` now use one in-repo deterministic NJ
+builder that validates zero-diagonal and nonnegative matrix assumptions and
+breaks tied joins by stable taxon ordering instead of delegating the NJ method
+through Biopython.
 The `ape::dist.dna` portion now covers raw nucleotide distance, JC69, K80,
 F81, and TN93 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,

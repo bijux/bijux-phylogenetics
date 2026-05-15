@@ -75,6 +75,12 @@ taxon negatives, constant-trait negatives, categorical predictors, and
 misordered taxon rows. The owned discrete-reference validator and the live
 `ape::ace` ancestral review tests now resolve their small governed trait
 tables through those fixture ids instead of hardcoding one-off table paths.
+The metadata fixture corpus now also has one governed shared catalog at
+`metadata/shared_distance_matrix_fixture_catalog.json`. That catalog assigns
+durable fixture ids to analytical, ultrametric, and non-ultrametric distance
+matrices for owned neighbor-joining validation plus live `ape::nj` parity, so
+distance-tree trust does not depend on loose file names or incidental matrix
+paths.
 
 The `expected/` directory now also carries benchmark-corpus regression
 snapshots used to pin stable dataset summaries across releases.
