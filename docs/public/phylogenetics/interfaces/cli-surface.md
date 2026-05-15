@@ -1265,6 +1265,11 @@ metrics report:
 - `excluded_taxon_count`
 - `unstable_node_count`
 - `model`
+- `tree_is_ultrametric`
+- `covariance_near_singular`
+- `covariance_condition_number`
+- `log_likelihood`
+- `residual_sigma_squared`
 
 The command supports `brownian` and `ou` reconstruction modes. The Brownian
 path is aligned to the governed `ape::ace(method='pic')` reference surface with
@@ -1283,6 +1288,11 @@ supplied, it also writes one summary ledger. The summary row preserves:
 - `non_numeric_tip_taxon_count`
 - `internal_node_count`
 - `unstable_node_count`
+- `tree_is_ultrametric`
+- `covariance_near_singular`
+- `covariance_condition_number`
+- `log_likelihood`
+- `residual_sigma_squared`
 - `weak_support_node_count`
 - `root_node`
 - `root_estimate`

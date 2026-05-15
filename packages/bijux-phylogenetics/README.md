@@ -733,7 +733,7 @@ string-based, so tree summaries, tip ledgers, normalized Newick outputs,
 DNAbin state ledgers, DNA-state frequency tables, DNA-distance ledgers, and
 translated amino-acid rows are compared as owned artifacts rather than scraped
 console text. The governed live cases now cover `ape::read.tree`, `ape::write.tree`,
-`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::nj`, `ape::pic`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans` over shared tree, trait-table, and DNA
+`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::ace`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::nj`, `ape::pic`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans` over shared tree, trait-table, and DNA
 fixture ids. The tree, trait-table, and DNA inputs for that lane now come from
 the governed shared fixture catalogs in
 `tests/fixtures/metadata/shared_tree_fixture_catalog.json`,
@@ -782,6 +782,15 @@ and the pruned taxon list. Missing trait values therefore remain an explicit
 owned pruning surface, while negative branch lengths are rejected explicitly as
 an invalid comparative-analysis boundary instead of being pushed through to
 live `ape::pic`.
+The `ape::ace` continuous lane now covers balanced rooted ultrametric,
+pectinate rooted non-ultrametric, six-taxon Brownian, and pruned missing-value
+fixtures through that same governed trait-table catalog. On the owned Bijux
+side, `ancestral continuous` now carries one explicit Brownian fit diagnostic
+surface with ultrametric state, root-to-tip depth bounds, covariance rank and
+conditioning, solver regularization status, and one GLS likelihood summary,
+while the live parity lane remains scoped honestly to
+`ape::ace(type='continuous', method='pic', CI=TRUE)` because that is the
+governed shared closed-form Brownian reference surface.
 The `ape::dist.dna` lane now covers raw nucleotide distance, JC69, K80, F81,
 and TN93 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,

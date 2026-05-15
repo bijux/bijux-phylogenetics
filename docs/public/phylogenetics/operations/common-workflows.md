@@ -1065,12 +1065,19 @@ bijux-phylogenetics ancestral continuous \
 The node ledger keeps one row per analyzed tip or internal node so reviewers
 can inspect the reconstructed value surface directly. The summary ledger keeps
 one row with the analyzed taxon count, excluded taxon count, internal node
-count, unstable node count, and the root estimate with its 95% interval. The
-uncertainty ledger keeps one row per internal node with the standard error,
-interval width, confidence score, and interpretation label so broad intervals
-cannot be hidden behind only point estimates. The excluded-taxa ledger keeps
-one row per dropped tip with an explicit reason such as
-`missing_trait_value` or `non_numeric_trait_value`.
+count, unstable node count, the Brownian ultrametric verdict, covariance
+conditioning fields, one GLS likelihood summary, and the root estimate with
+its 95% interval. The uncertainty ledger keeps one row per internal node with
+the standard error, interval width, confidence score, and interpretation label
+so broad intervals cannot be hidden behind only point estimates. The
+excluded-taxa ledger keeps one row per dropped tip with an explicit reason
+such as `missing_trait_value` or `non_numeric_trait_value`.
+
+The governed live `ape` lane for this surface is `ape::ace(type='continuous',
+method='pic', CI=TRUE)` over balanced, pectinate, six-taxon, and pruned
+missing-value fixtures. Bijux therefore uses one explicit closed-form
+Brownian parity target while still surfacing extra owned diagnostics that live
+`ape::ace(..., method='pic')` does not emit.
 
 When the goal is to reconstruct one categorical ancestral trait directly, use
 `ancestral discrete`. This workflow supports a fast Fitch path for parsimony
