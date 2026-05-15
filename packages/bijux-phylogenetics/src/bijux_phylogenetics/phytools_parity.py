@@ -300,6 +300,98 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
                 "standard_error": 1e-8,
             },
         ),
+        PhytoolsParityCase(
+            case_id="anc-ml-strong-signal-twenty-four-taxa",
+            fixture_id=strong_signal_fixture.fixture_id,
+            function_name="phytools::anc.ML",
+            python_function_name="reconstruct_continuous_ancestral_states",
+            operation="continuous-ancestral-anc-ml",
+            input_fixtures=(
+                strong_signal_fixture.tree_path,
+                strong_signal_fixture.traits_path,
+            ),
+            tolerance=1e-8,
+            trait_name=strong_signal_fixture.trait_name,
+            taxon_column=strong_signal_fixture.taxon_column,
+            field_tolerances={
+                "sigma_squared": 5e-8,
+            },
+            row_field_tolerances={
+                "estimate": 1e-8,
+                "standard_error": 5e-8,
+                "lower_95_interval": 5e-8,
+                "upper_95_interval": 5e-8,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="anc-ml-weak-signal-twenty-four-taxa",
+            fixture_id=weak_signal_fixture.fixture_id,
+            function_name="phytools::anc.ML",
+            python_function_name="reconstruct_continuous_ancestral_states",
+            operation="continuous-ancestral-anc-ml",
+            input_fixtures=(
+                weak_signal_fixture.tree_path,
+                weak_signal_fixture.traits_path,
+            ),
+            tolerance=1e-8,
+            trait_name=weak_signal_fixture.trait_name,
+            taxon_column=weak_signal_fixture.taxon_column,
+            field_tolerances={
+                "sigma_squared": 5e-8,
+            },
+            row_field_tolerances={
+                "estimate": 1e-8,
+                "standard_error": 5e-8,
+                "lower_95_interval": 5e-8,
+                "upper_95_interval": 5e-8,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="anc-ml-non-ultrametric-strong-signal-twenty-four-taxa",
+            fixture_id=nonultrametric_signal_fixture.fixture_id,
+            function_name="phytools::anc.ML",
+            python_function_name="reconstruct_continuous_ancestral_states",
+            operation="continuous-ancestral-anc-ml",
+            input_fixtures=(
+                nonultrametric_signal_fixture.tree_path,
+                nonultrametric_signal_fixture.traits_path,
+            ),
+            tolerance=1e-8,
+            trait_name=nonultrametric_signal_fixture.trait_name,
+            taxon_column=nonultrametric_signal_fixture.taxon_column,
+            field_tolerances={
+                "sigma_squared": 5e-8,
+            },
+            row_field_tolerances={
+                "estimate": 1e-8,
+                "standard_error": 5e-8,
+                "lower_95_interval": 5e-8,
+                "upper_95_interval": 5e-8,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="anc-ml-missing-values-twenty-four-taxa",
+            fixture_id=missing_signal_fixture.fixture_id,
+            function_name="phytools::anc.ML",
+            python_function_name="reconstruct_continuous_ancestral_states",
+            operation="continuous-ancestral-anc-ml",
+            input_fixtures=(
+                missing_signal_fixture.tree_path,
+                missing_signal_fixture.traits_path,
+            ),
+            tolerance=1e-8,
+            trait_name=missing_signal_fixture.trait_name,
+            taxon_column=missing_signal_fixture.taxon_column,
+            field_tolerances={
+                "sigma_squared": 5e-8,
+            },
+            row_field_tolerances={
+                "estimate": 1e-8,
+                "standard_error": 5e-8,
+                "lower_95_interval": 5e-8,
+                "upper_95_interval": 5e-8,
+            },
+        ),
     ]
 
 
@@ -449,6 +541,58 @@ def _build_bijux_case_payload(
             },
             rows,
         )
+    if case.operation == "continuous-ancestral-anc-ml":
+        report = reconstruct_continuous_ancestral_states(
+            tree_path,
+            traits_path,
+            trait=case.trait_name,
+            taxon_column=case.taxon_column,
+            model="brownian",
+            estimator="anc-ml",
+        )
+        rows = sorted(
+            [
+                {
+                    "node": estimate.node,
+                    "estimate": estimate.estimate,
+                    "standard_error": estimate.standard_error,
+                    "lower_95_interval": estimate.lower_95_interval,
+                    "upper_95_interval": estimate.upper_95_interval,
+                }
+                for estimate in report.estimates
+                if not estimate.is_tip
+            ],
+            key=lambda row: str(row["node"]),
+        )
+        return (
+            {
+                "taxon_count": report.taxon_count,
+                "trait_name": report.trait,
+                "internal_node_count": len(rows),
+                "excluded_taxon_count": len(report.dropped_missing_taxa)
+                + len(report.dropped_non_numeric_taxa),
+                "excluded_taxa": sorted(
+                    report.dropped_missing_taxa + report.dropped_non_numeric_taxa
+                ),
+                "tree_is_ultrametric": (
+                    None
+                    if report.brownian_fit_diagnostics is None
+                    else report.brownian_fit_diagnostics.tree_is_ultrametric
+                ),
+                "sigma_squared": (
+                    None
+                    if report.brownian_fit_diagnostics is None
+                    else report.brownian_fit_diagnostics.residual_sigma_squared
+                ),
+                "log_likelihood": (
+                    None
+                    if report.brownian_fit_diagnostics is None
+                    else report.brownian_fit_diagnostics.log_likelihood
+                ),
+                "warning_count": len(report.warnings),
+            },
+            rows,
+        )
     raise ValueError(f"unsupported phytools parity operation: {case.operation}")
 
 
@@ -535,6 +679,17 @@ def _mismatch_reason(
             "excluded_taxa",
             "tree_is_ultrametric",
         )
+    elif case.operation == "continuous-ancestral-anc-ml":
+        compare_keys = (
+            "taxon_count",
+            "trait_name",
+            "internal_node_count",
+            "excluded_taxon_count",
+            "excluded_taxa",
+            "tree_is_ultrametric",
+            "sigma_squared",
+            "log_likelihood",
+        )
     else:
         return "unsupported_operation"
     for key in compare_keys:
@@ -555,7 +710,10 @@ def _row_mismatch_reason(
     reference_rows: list[dict[str, object]] | None,
     bijux_rows: list[dict[str, object]] | None,
 ) -> str | None:
-    if case.operation != "continuous-ancestral-fast-anc":
+    if case.operation not in {
+        "continuous-ancestral-fast-anc",
+        "continuous-ancestral-anc-ml",
+    }:
         return None
     if reference_rows is None or bijux_rows is None:
         return "rows_missing"
@@ -563,7 +721,17 @@ def _row_mismatch_reason(
     bijux_rows = sorted(bijux_rows, key=lambda row: str(row.get("node", "")))
     if len(reference_rows) != len(bijux_rows):
         return "row_count_mismatch"
-    compare_keys = ("node", "estimate", "standard_error")
+    compare_keys = (
+        ("node", "estimate", "standard_error")
+        if case.operation == "continuous-ancestral-fast-anc"
+        else (
+            "node",
+            "estimate",
+            "standard_error",
+            "lower_95_interval",
+            "upper_95_interval",
+        )
+    )
     for reference_row, bijux_row in zip(reference_rows, bijux_rows, strict=True):
         for key in compare_keys:
             if key not in reference_row or key not in bijux_row:
@@ -787,8 +955,15 @@ def run_phytools_parity_cases(
                             reference_summary=reference_summary,
                             bijux_summary=bijux_summary,
                         )
-                        if mismatch_reason is None and case.operation == "continuous-ancestral-fast-anc":
-                            rows_path = execution_root / "fast-anc-node-estimates.tsv"
+                        if mismatch_reason is None and case.operation in {
+                            "continuous-ancestral-fast-anc",
+                            "continuous-ancestral-anc-ml",
+                        }:
+                            rows_path = execution_root / (
+                                "fast-anc-node-estimates.tsv"
+                                if case.operation == "continuous-ancestral-fast-anc"
+                                else "anc-ml-node-estimates.tsv"
+                            )
                             if not rows_path.exists():
                                 mismatch_reason = "reference_rows_missing"
                             else:
