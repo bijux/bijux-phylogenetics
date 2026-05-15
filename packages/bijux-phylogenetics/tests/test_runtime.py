@@ -4948,6 +4948,26 @@ def test_root_tree_on_outgroup_preserves_already_rooted_outgroup_tree() -> None:
     assert report.warnings == []
 
 
+def test_root_tree_on_outgroup_stays_native_without_biopython_bridge(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import bijux_phylogenetics.core.topology as topology
+
+    def _bridge_unavailable(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("biopython bridge should not be used for outgroup rooting")
+
+    monkeypatch.setattr(topology, "tree_to_biophylo", _bridge_unavailable)
+    monkeypatch.setattr(topology, "tree_from_biophylo", _bridge_unavailable)
+
+    tree, report = topology.root_tree_on_outgroup(
+        fixture("example_tree_rootable.nwk"),
+        outgroup_taxa=["D"],
+    )
+
+    assert dumps_newick(tree) == "(((A:0.2,B:0.2):0.7,C:0.1):0,D:0.1);"
+    assert report.rooted_outgroup_taxa == ["D"]
+
+
 def test_write_tree_rooting_report_writes_monophyly_and_root_partition_fields(
     tmp_path: Path,
 ) -> None:
