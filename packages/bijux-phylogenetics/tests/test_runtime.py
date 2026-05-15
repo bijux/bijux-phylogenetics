@@ -10303,3 +10303,48 @@ def test_cli_adapter_returns_typed_engine_error(capsys) -> None:
     assert exit_code == 2
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == EngineUnavailableError.code
+
+
+def test_public_package_exports_python_workflow_api_surface() -> None:
+    from bijux_phylogenetics.api import (
+        render_report_workflow,
+        run_alignment_workflow,
+        run_ancestral_reconstruction_workflow,
+        run_comparative_model_workflow,
+        run_configured_phylo_workflow,
+        run_fasta_validation_workflow,
+        run_sequence_to_tree_workflow,
+        run_tree_comparison_workflow,
+        run_tree_inference_workflow,
+    )
+
+    assert bijux_phylogenetics.run_alignment_workflow is run_alignment_workflow
+    assert (
+        bijux_phylogenetics.run_ancestral_reconstruction_workflow
+        is run_ancestral_reconstruction_workflow
+    )
+    assert (
+        bijux_phylogenetics.run_comparative_model_workflow
+        is run_comparative_model_workflow
+    )
+    assert (
+        bijux_phylogenetics.run_configured_phylo_workflow
+        is run_configured_phylo_workflow
+    )
+    assert (
+        bijux_phylogenetics.run_fasta_validation_workflow
+        is run_fasta_validation_workflow
+    )
+    assert (
+        bijux_phylogenetics.run_sequence_to_tree_workflow
+        is run_sequence_to_tree_workflow
+    )
+    assert (
+        bijux_phylogenetics.run_tree_comparison_workflow
+        is run_tree_comparison_workflow
+    )
+    assert (
+        bijux_phylogenetics.run_tree_inference_workflow
+        is run_tree_inference_workflow
+    )
+    assert bijux_phylogenetics.render_report_workflow is render_report_workflow
