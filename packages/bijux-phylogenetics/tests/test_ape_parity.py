@@ -132,6 +132,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "is-ultrametric-near-ultrametric-default",
         "is-ultrametric-near-ultrametric-tight",
         "is-ultrametric-non-ultrametric",
+        "dna-dnabin-structure-clean",
+        "dna-dnabin-structure-lowercase",
+        "dna-dnabin-structure-gaps",
+        "dna-dnabin-structure-ambiguity",
         "dna-base-frequency-lowercase",
         "dna-base-frequency-ambiguity",
         "dna-base-frequency-missing-data",
@@ -280,6 +284,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "near_ultrametric_branch_jitter",
         "near_ultrametric_branch_jitter",
         "pectinate_rooted_non_ultrametric",
+        "clean_aligned_dna",
+        "lowercase_aligned_dna",
+        "dna_with_gaps",
+        "dna_with_ambiguity",
         "lowercase_aligned_dna",
         "dna_with_ambiguity",
         "dna_with_missing_data",
@@ -355,6 +363,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::node.depth.edgelength",
         "ape::branching.times",
         "ape::vcv.phylo",
+        "ape::as.DNAbin",
         "ape::base.freq",
         "ape::seg.sites",
         "ape::dist.dna",
@@ -381,6 +390,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "tree-node-depth",
         "tree-branching-times",
         "tree-ultrametricity",
+        "dna-dnabin-structure",
         "dna-base-frequency",
         "dna-segregating-sites",
         "dna-distance",
@@ -399,11 +409,12 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 146
-    assert report.passed_case_count == 146
+    assert report.case_count == 150
+    assert report.passed_case_count == 150
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
+        "ape::as.DNAbin",
         "ape::base.freq",
         "ape::branching.times",
         "ape::consensus",
@@ -784,7 +795,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 146
+    assert len(rows) == 150
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
