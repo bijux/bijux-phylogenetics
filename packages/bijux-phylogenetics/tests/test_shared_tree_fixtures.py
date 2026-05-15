@@ -51,6 +51,7 @@ def test_shared_tree_fixture_catalog_preserves_durable_fixture_lookup() -> None:
 @pytest.mark.parametrize(
     ("fixture_id", "expected_tip_count"),
     [
+        ("two_tip_rooted_ultrametric", 2),
         ("balanced_rooted_ultrametric", 4),
         ("balanced_rooted_six_taxon", 6),
         ("near_ultrametric_branch_jitter", 4),

@@ -16,6 +16,21 @@
       "notes": "Balanced four-tip rooted tree used as the canonical ultrametric binary baseline."
     },
     {
+      "fixture_id": "two_tip_rooted_ultrametric",
+      "relative_path": "trees/example_tree_two_tip_ultrametric.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 2,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "ultrametric",
+        "two-tip"
+      ],
+      "notes": "Two-tip rooted ultrametric tree used for small-crown-tree diversification boundaries."
+    },
+    {
       "fixture_id": "pectinate_rooted_non_ultrametric",
       "relative_path": "trees/example_tree_ladderized.nwk",
       "parse_expectation": "parseable",

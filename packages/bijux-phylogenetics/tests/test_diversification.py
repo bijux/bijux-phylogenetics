@@ -102,8 +102,6 @@ def test_compute_diversification_gamma_statistic_warns_on_incomplete_sampling() 
 def test_compute_diversification_gamma_statistic_rejects_small_or_non_bifurcating_trees(
     tmp_path: Path,
 ) -> None:
-    small_tree_path = tmp_path / "two-tip-ultrametric.nwk"
-    small_tree_path.write_text("(A:0.3,B:0.3);", encoding="utf-8")
     singleton_tree_path = tmp_path / "singleton-root-ultrametric.nwk"
     singleton_tree_path.write_text(
         "(((A:0.1,B:0.1):0.2):0.0,C:0.3);",
@@ -111,7 +109,9 @@ def test_compute_diversification_gamma_statistic_rejects_small_or_non_bifurcatin
     )
 
     with pytest.raises(DiversificationAnalysisError) as small_error:
-        compute_diversification_gamma_statistic(small_tree_path)
+        compute_diversification_gamma_statistic(
+            fixture("example_tree_two_tip_ultrametric.nwk")
+        )
     assert (
         small_error.value.code
         == "diversification_gamma_statistic_requires_three_or_more_tips"
