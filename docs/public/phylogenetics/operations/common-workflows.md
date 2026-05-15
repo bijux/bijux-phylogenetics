@@ -239,6 +239,10 @@ rooted binary trees, post-outgroup-rooting trees, already-unrooted inputs, and
 malformed parse failures, and it follows the same explicit branch-length
 contract as live `ape::unroot`: the removed root-edge length is merged into
 the retained sibling branch rather than folded into the expanded clade. The
+owned tree-manipulation surface for rooting, unrooting, keep-tip pruning,
+drop-tip pruning, clade extraction, MRCA lookup, and monophyly review now
+runs directly on `PhyloTree` instead of splitting those operations across
+native and Biopython-backed tree objects. The
 `ape::consensus` portion now covers majority-rule and strict consensus over
 governed conflicting and posterior-style tree sets, writes one normalized
 consensus Newick plus one clade-frequency TSV ledger per case, and fails
