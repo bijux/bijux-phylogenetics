@@ -308,6 +308,60 @@ def clade_rows(tree, tree_index_value):
 def is_rooted_tree(tree):
     return len(getattr(tree.root, "clades", [])) == 2
 
+def iter_internal_clades_preorder(clade):
+    yield clade
+    for child in getattr(clade, "clades", []):
+        if child.is_terminal():
+            continue
+        yield from iter_internal_clades_preorder(child)
+
+def node_depth_lookup(tree):
+    lookup = {{id(tree.root): 0.0}}
+    def walk(clade):
+        base_depth = lookup[id(clade)]
+        for child in getattr(clade, "clades", []):
+            lookup[id(child)] = base_depth + float(child.branch_length or 0.0)
+            walk(child)
+    walk(tree.root)
+    return lookup
+
+def node_depth_rows(tree):
+    depths = node_depth_lookup(tree)
+    rows = []
+    tip_clades = list(tree.get_terminals())
+    internal_clades = list(iter_internal_clades_preorder(tree.root))
+    for node_id, clade in enumerate(tip_clades, start=1):
+        rows.append(
+            {{
+                "node_id": node_id,
+                "node_kind": "tip",
+                "node_label": normalize_label(clade.name),
+                "descendant_taxa": "|".join(descendant_taxa(clade)),
+                "branch_length_depth": depths[id(clade)],
+                "branch_length": ""
+                if clade.branch_length is None
+                else clade.branch_length,
+            }}
+        )
+    for offset, clade in enumerate(internal_clades, start=1):
+        node_id = len(tip_clades) + offset
+        node_label = normalize_label(
+            clade.name if clade.name is not None else getattr(clade, "confidence", None)
+        )
+        rows.append(
+            {{
+                "node_id": node_id,
+                "node_kind": "root" if clade is tree.root else "internal",
+                "node_label": node_label,
+                "descendant_taxa": "|".join(descendant_taxa(clade)),
+                "branch_length_depth": depths[id(clade)],
+                "branch_length": ""
+                if clade.branch_length is None
+                else clade.branch_length,
+            }}
+        )
+    return rows
+
 def matrix_rank(matrix, tolerance=1e-12):
     working = [list(map(float, row)) for row in matrix]
     row_count = len(working)
@@ -1184,6 +1238,56 @@ if case_payload["operation"] == "tree-brownian-covariance":
                 "summary_json": str(summary_path),
                 "covariance_matrix": str(matrix_path),
                 "covariance_long": str(rows_path),
+            }},
+        }},
+    )
+    raise SystemExit(0)
+
+if case_payload["operation"] == "tree-node-depth":
+    tree = Phylo.read(case_payload["input_fixture"], "newick")
+    rows = node_depth_rows(tree)
+    tip_depths = [
+        row["branch_length_depth"] for row in rows if row["node_kind"] == "tip"
+    ]
+    internal_depths = [
+        row["branch_length_depth"] for row in rows if row["node_kind"] != "tip"
+    ]
+    summary = {{
+        "node_count": len(rows),
+        "tip_count": len(tip_depths),
+        "internal_node_count": len(internal_depths),
+        "rooted": is_rooted_tree(tree),
+        "tip_labels": [terminal.name for terminal in tree.get_terminals()],
+        "tree_is_ultrametric": (
+            abs(max(tip_depths) - min(tip_depths)) <= 1e-12 if tip_depths else True
+        ),
+        "zero_branch_length_count": sum(
+            1
+            for clade in tree.find_clades(order="preorder")
+            if clade is not tree.root and clade.branch_length == 0.0
+        ),
+        "minimum_tip_depth": min(tip_depths),
+        "maximum_tip_depth": max(tip_depths),
+        "minimum_internal_depth": min(internal_depths),
+        "maximum_internal_depth": max(internal_depths),
+    }}
+    summary.update(SUMMARY_OVERRIDES)
+    summary_path = output_root / "summary.json"
+    rows_path = output_root / "node-depths.tsv"
+    write_json(summary_path, summary)
+    write_tsv(rows_path, rows)
+    write_json(
+        execution_path,
+        {{
+            "status": "ok",
+            "case_id": case_payload["case_id"],
+            "function_name": case_payload["function_name"],
+            "input_fixture": case_payload["input_fixture"],
+            "r_version": "4.6.0",
+            "ape_version": "5.0.0",
+            "outputs": {{
+                "summary_json": str(summary_path),
+                "node_depths": str(rows_path),
             }},
         }},
     )
