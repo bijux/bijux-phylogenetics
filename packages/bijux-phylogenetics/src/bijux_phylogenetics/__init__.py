@@ -851,6 +851,12 @@ from .core.topology import (
     unroot_tree,
     write_tree_rooting_report,
 )
+from .core.node_depth import (
+    TreeNodeDepthReport,
+    TreeNodeDepthRow,
+    compute_tree_node_depths,
+    write_tree_node_depth_table,
+)
 from .core.tree_distance import (
     TipDistanceMatrixReport,
     TipDistanceMatrixRow,
@@ -2320,6 +2326,10 @@ __all__ = [
     "extract_tree_clade_by_node_id",
     "assess_tree_monophyly",
     "find_tree_mrca",
+    "TreeNodeDepthReport",
+    "TreeNodeDepthRow",
+    "compute_tree_node_depths",
+    "write_tree_node_depth_table",
     "TipDistanceMatrixReport",
     "TipDistanceMatrixRow",
     "compute_tree_tip_distance_matrix",

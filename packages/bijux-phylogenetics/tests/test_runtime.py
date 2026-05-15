@@ -546,6 +546,12 @@ from bijux_phylogenetics.core.topology import (
     unroot_tree,
     write_tree_rooting_report,
 )
+from bijux_phylogenetics.core.node_depth import (
+    TreeNodeDepthReport,
+    TreeNodeDepthRow,
+    compute_tree_node_depths,
+    write_tree_node_depth_table,
+)
 from bijux_phylogenetics.core.tree_distance import (
     TipDistanceMatrixReport,
     TipDistanceMatrixRow,
@@ -1038,6 +1044,13 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     )
     assert bijux_phylogenetics.assess_tree_monophyly is assess_tree_monophyly
     assert bijux_phylogenetics.find_tree_mrca is find_tree_mrca
+    assert bijux_phylogenetics.TreeNodeDepthReport is TreeNodeDepthReport
+    assert bijux_phylogenetics.TreeNodeDepthRow is TreeNodeDepthRow
+    assert bijux_phylogenetics.compute_tree_node_depths is compute_tree_node_depths
+    assert (
+        bijux_phylogenetics.write_tree_node_depth_table
+        is write_tree_node_depth_table
+    )
     assert bijux_phylogenetics.TipDistanceMatrixReport is TipDistanceMatrixReport
     assert bijux_phylogenetics.TipDistanceMatrixRow is TipDistanceMatrixRow
     assert (
