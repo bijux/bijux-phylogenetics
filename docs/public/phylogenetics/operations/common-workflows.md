@@ -59,11 +59,16 @@ comparative = run_comparative_model_workflow(
     predictors=["predictor_one"],
     lambda_value=1.0,
 )
+
+alignment.write_tsv(Path("artifacts/alignment-workflow.tsv"))
+comparison.write_json(Path("artifacts/tree-comparison.json"))
+comparative.write_tsv(Path("artifacts/comparative-model.tsv"))
 ```
 
-Those Python functions return the same typed report objects the CLI already
-uses, so downstream code can inspect one stable runtime contract instead of
-parsing command output.
+Those Python functions return typed workflow result objects that delegate the
+underlying CLI-grade reports and add stable JSON plus TSV serialization where
+appropriate, so downstream code can inspect one stable runtime contract instead
+of parsing command output.
 
 When the goal is to prove that the repository's core numerical methods still
 match established external tools on small governed fixtures, use `parity`.

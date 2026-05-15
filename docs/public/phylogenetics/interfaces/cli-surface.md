@@ -12,8 +12,9 @@ last_reviewed: 2026-05-15
 The CLI is the primary operational surface for most users.
 
 For notebook and pipeline users, the workflow-level Python counterparts now
-live under `bijux_phylogenetics.api`. They return the same typed runtime
-objects that these CLI commands already use internally.
+live under `bijux_phylogenetics.api`. They return typed workflow result
+objects that wrap the same CLI-grade runtime reports used internally and add
+stable JSON plus TSV export helpers.
 
 ## Major Command Families
 
