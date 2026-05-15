@@ -1,0 +1,238 @@
+{
+  "catalog_name": "shared_phytools_comparative_fixtures",
+  "fixtures": [
+    {
+      "fixture_id": "phytools_continuous_strong_signal_twenty_four_taxa",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_panel_twenty_four_taxa",
+      "trait_name": "signal_strong",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "phylosig-ready",
+      "phytools_reference_expectation": "phylosig-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "strong-phylogenetic-signal",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation"
+      ],
+      "simulation_metadata": {
+        "model": "brownian-motion",
+        "root_state": 0.5,
+        "sigma": 0.8,
+        "seed": 32024
+      },
+      "notes": "BM-simulated twenty-four-taxon continuous trait used as the governed strong-signal baseline for live `phytools::phylosig` parity."
+    },
+    {
+      "fixture_id": "phytools_continuous_weak_signal_twenty_four_taxa",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_panel_twenty_four_taxa",
+      "trait_name": "signal_weak",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "phylosig-ready",
+      "phytools_reference_expectation": "phylosig-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "weak-phylogenetic-signal",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "simulation_metadata": {
+        "model": "iid-gaussian",
+        "mean": 0.0,
+        "sigma": 1.0,
+        "seed": 41024
+      },
+      "notes": "Twenty-four-taxon iid Gaussian continuous trait used as the governed weak-signal comparator for `phytools` signal methods."
+    },
+    {
+      "fixture_id": "phytools_continuous_strong_signal_one_hundred_twenty_eight_taxa",
+      "tree_fixture_id": "phytools_ultrametric_one_hundred_twenty_eight_taxa",
+      "trait_table_fixture_id": "phytools_signal_panel_one_hundred_twenty_eight_taxa",
+      "trait_name": "signal_strong",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "phylosig-ready",
+      "phytools_reference_expectation": "phylosig-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "strong-phylogenetic-signal",
+        "one-hundred-plus-taxa-ultrametric-tree",
+        "known-truth-simulation"
+      ],
+      "simulation_metadata": {
+        "model": "brownian-motion",
+        "root_state": 0.0,
+        "sigma": 0.6,
+        "seed": 32128
+      },
+      "notes": "BM-simulated one-hundred-twenty-eight-taxon continuous trait used so the governed `phytools` corpus includes a truly large ultrametric signal surface."
+    },
+    {
+      "fixture_id": "phytools_continuous_weak_signal_one_hundred_twenty_eight_taxa",
+      "tree_fixture_id": "phytools_ultrametric_one_hundred_twenty_eight_taxa",
+      "trait_table_fixture_id": "phytools_signal_panel_one_hundred_twenty_eight_taxa",
+      "trait_name": "signal_weak",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "phylosig-ready",
+      "phytools_reference_expectation": "phylosig-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "weak-phylogenetic-signal",
+        "one-hundred-plus-taxa-ultrametric-tree"
+      ],
+      "simulation_metadata": {
+        "model": "iid-gaussian",
+        "mean": 0.0,
+        "sigma": 1.0,
+        "seed": 41128
+      },
+      "notes": "One-hundred-twenty-eight-taxon iid Gaussian continuous trait used as the governed weak-signal large-tree comparator."
+    },
+    {
+      "fixture_id": "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa",
+      "tree_fixture_id": "phytools_non_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_non_ultrametric_twenty_four_taxa",
+      "trait_name": "signal_strong",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "phylosig-ready-where-supported",
+      "phytools_reference_expectation": "phylosig-ready-where-supported",
+      "feature_tags": [
+        "continuous-trait",
+        "strong-phylogenetic-signal",
+        "non-ultrametric-tree",
+        "known-truth-simulation"
+      ],
+      "simulation_metadata": {
+        "model": "brownian-motion",
+        "root_state": 1.0,
+        "sigma": 0.7,
+        "seed": 33024
+      },
+      "notes": "BM-simulated twenty-four-taxon continuous trait paired with a rooted non-ultrametric tree where the governed `phytools` method surface allows that branch-length structure."
+    },
+    {
+      "fixture_id": "phytools_continuous_strong_signal_branch_edge_twenty_four_taxa",
+      "tree_fixture_id": "phytools_branch_edge_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_non_ultrametric_twenty_four_taxa",
+      "trait_name": "signal_strong",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "phylosig-ready-with-branch-length-warnings",
+      "phytools_reference_expectation": "phylosig-ready-with-branch-length-warnings",
+      "feature_tags": [
+        "continuous-trait",
+        "strong-phylogenetic-signal",
+        "branch-length-edge-case",
+        "zero-branch",
+        "long-branch-outlier"
+      ],
+      "simulation_metadata": {
+        "model": "brownian-motion",
+        "root_state": 1.0,
+        "sigma": 0.7,
+        "seed": 33024
+      },
+      "notes": "Strong-signal continuous fixture paired with a zero-branch-plus-long-branch tree so branch-length edge behavior is governed explicitly."
+    },
+    {
+      "fixture_id": "phytools_discrete_binary_twenty_four_taxa",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_panel_twenty_four_taxa",
+      "trait_name": "binary_state",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "validation_expectation": "discrete-ready",
+      "phytools_reference_expectation": "discrete-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "simulation_metadata": {
+        "model": "thresholded-bm",
+        "source_trait": "signal_strong",
+        "threshold_policy": "median-split"
+      },
+      "notes": "Balanced binary trait derived from the BM strong-signal panel so future governed `phytools` discrete methods have a non-toy binary surface."
+    },
+    {
+      "fixture_id": "phytools_discrete_multistate_twenty_four_taxa",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_panel_twenty_four_taxa",
+      "trait_name": "region_state",
+      "taxon_column": "taxon",
+      "trait_kind": "multistate-discrete",
+      "validation_expectation": "discrete-ready",
+      "phytools_reference_expectation": "discrete-ready",
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation"
+      ],
+      "simulation_metadata": {
+        "model": "symmetric-discrete",
+        "states": [
+          "north",
+          "south",
+          "east",
+          "west"
+        ],
+        "transition_rate": 0.45,
+        "root_state": "north",
+        "seed": 51024
+      },
+      "notes": "Symmetric discrete-state simulation on the twenty-four-taxon ultrametric tree used as the governed multistate comparative surface."
+    },
+    {
+      "fixture_id": "phytools_continuous_missing_values_twenty_four_taxa",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_missing_twenty_four_taxa",
+      "trait_name": "signal_strong",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "prune-invalid-overlap",
+      "phytools_reference_expectation": "continuous-ready-after-pruning",
+      "feature_tags": [
+        "continuous-trait",
+        "missing-trait-values"
+      ],
+      "simulation_metadata": null,
+      "notes": "Twenty-four-taxon continuous trait with one missing and one nonnumeric overlapping value for explicit pruning before governed comparative review."
+    },
+    {
+      "fixture_id": "phytools_continuous_constant_negative_twenty_four_taxa",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_constant_twenty_four_taxa",
+      "trait_name": "signal_constant",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "constant-trait-negative-case",
+      "phytools_reference_expectation": "constant-trait-negative-case",
+      "feature_tags": [
+        "continuous-trait",
+        "constant-trait-negative-case"
+      ],
+      "simulation_metadata": null,
+      "notes": "Twenty-four-taxon constant continuous trait used to prove that phylogenetic signal methods reject zero-variance input honestly."
+    },
+    {
+      "fixture_id": "phytools_continuous_mismatch_twenty_four_taxa",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_mismatch_twenty_four_taxa",
+      "trait_name": "signal_strong",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "tip-intersection-required",
+      "phytools_reference_expectation": "continuous-ready-after-tip-intersection",
+      "feature_tags": [
+        "continuous-trait",
+        "tree-trait-taxon-mismatch"
+      ],
+      "simulation_metadata": null,
+      "notes": "Twenty-four-taxon continuous trait with one absent tree tip and one extra trait taxon so tree-versus-table mismatch stays governed."
+    }
+  ]
+}
