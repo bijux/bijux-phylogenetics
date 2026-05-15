@@ -161,18 +161,25 @@ observation ledger records the skip reason and the harness writes one small
 reproducible artifact bundle for that case.
 
 The governed live `ape` cases now span both shared tree and shared DNA
-fixtures. Today that lane covers `ape::read.tree`, `ape::base.freq`,
-`ape::dist.dna`, and `ape::trans`, with durable inputs resolved from
-`shared_tree_fixture_catalog.json` and `shared_dna_alignment_fixture_catalog.json`.
-The `ape::read.tree` portion now compares structured clade rows and covers
-branch lengths, internal labels, support labels, quoted labels, one governed
-multiple-tree Newick input, and one governed malformed-Newick rejection case.
-The DNA cases include lowercase input, ambiguity, missing data, identical
-sequences, high-divergence distances, and valid, internal-stop, or
-terminal-stop coding translation rows. Unequal-length and frame-error DNA
-fixtures remain governed shared inputs too, but they stay on the diagnostics
-surface rather than the parity-pass registry because `ape::trans` truncates
-partial codons while Bijux rejects them for workflow safety.
+fixtures. Today that lane covers `ape::read.tree`, `ape::write.tree`,
+`ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
+resolved from `shared_tree_fixture_catalog.json` and
+`shared_dna_alignment_fixture_catalog.json`. The `ape::read.tree` portion now
+compares structured clade rows and covers branch lengths, internal labels,
+support labels, quoted labels, one governed multiple-tree Newick input, and
+one governed malformed-Newick rejection case. The `ape::write.tree` portion
+roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
+internal-label, support-label, quoted-label, and multiple-tree cases. The DNA
+cases include lowercase input, ambiguity, missing data, identical sequences,
+high-divergence distances, and valid, internal-stop, or terminal-stop coding
+translation rows. Unequal-length and frame-error DNA fixtures remain governed
+shared inputs too, but they stay on the diagnostics surface rather than the
+parity-pass registry because `ape::trans` truncates partial codons while
+Bijux rejects them for workflow safety.
+
+Bijux does not silently serialize malformed trees in that lane. Unnamed tips,
+empty tree sets, and non-finite branch lengths fail on the Bijux side before
+the live `ape` comparison is attempted.
 
 The governed PGLS lane is not limited to one intercept-plus-slope example. The
 core suite now includes one fixed-Brownian numeric regression, one

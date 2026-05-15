@@ -729,16 +729,22 @@ or `ape` is unavailable. The live observation table is structured rather than
 string-based, so tree summaries, tip ledgers, normalized Newick outputs,
 DNA-state frequency tables, raw-distance ledgers, and translated amino-acid
 rows are compared as owned artifacts rather than scraped console text. The
-governed live cases now cover `ape::read.tree`, `ape::base.freq`,
-`ape::dist.dna`, and `ape::trans` over shared tree and DNA fixture ids. The
-tree and DNA inputs for that lane now come from the governed shared fixture
-catalogs in `tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
+governed live cases now cover `ape::read.tree`, `ape::write.tree`,
+`ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
+fixture ids. The tree and DNA inputs for that lane now come from the governed
+shared fixture catalogs in
+`tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
 `tests/fixtures/metadata/shared_dna_alignment_fixture_catalog.json`, so Bijux
 and `ape` resolve the same durable fixture identities instead of hand-picked
 path lists. The `ape::read.tree` lane now checks structured clade rows rather
 than only raw parse success, including rooted and unrooted trees, branch
 lengths, internal node labels, support labels, quoted labels, one governed
-multiple-tree input, and one governed malformed-Newick rejection case.
+multiple-tree input, and one governed malformed-Newick rejection case. The
+`ape::write.tree` lane now roundtrips Bijux-written Newick through live `ape`
+for rooted, unrooted, internal-label, support-label, quoted-label, and
+multiple-tree cases, while the Bijux writer rejects unnamed tips, empty tree
+sets, and non-finite branch lengths instead of writing malformed Newick
+silently.
 
 The smaller ancestral review lanes now use the same governed shared trait-table
 fixture catalog in `tests/fixtures/metadata/shared_trait_table_fixture_catalog.json`.

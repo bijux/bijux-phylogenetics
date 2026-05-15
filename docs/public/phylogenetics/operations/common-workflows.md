@@ -163,7 +163,11 @@ contract because Bijux rejects them more strictly than `ape` does.
 The `ape::read.tree` portion of the same lane now validates structured clade
 rows for rooted and unrooted trees, branch lengths, internal labels, support
 labels, quoted labels, one governed multiple-tree Newick input, and one
-governed malformed-Newick rejection case.
+governed malformed-Newick rejection case. The `ape::write.tree` portion now
+roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
+internal-label, support-label, quoted-label, and multiple-tree cases. Bijux
+rejects unnamed tips, empty tree sets, and non-finite branch lengths before
+that live comparison so malformed internal trees cannot be written silently.
 
 When the goal is to check resource behavior across the repository's largest
 owned workload families, use `benchmark stress-suite`. This workflow does not
