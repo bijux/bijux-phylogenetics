@@ -204,6 +204,13 @@ instead of only a printed matrix, and keeps the taxon order explicit in the
 review payload. Bijux also exposes the same owned tip-distance surface
 directly, and it rejects missing branch lengths unless the caller explicitly
 opts into a unit-length fallback policy.
+The `ape::dist.topo` portion now covers identical rooted trees, rooted
+child-order rotations, one-conflict rooted pairs, rooted tree-versus-polytomy
+pairs, one governed unrooted split conflict, and one governed 128-tip rooted
+pair. It compares one explicit RF-style split ledger rather than only a
+scalar distance, keeps rooted-versus-unrooted policy explicit per case, and
+aligns directly with the owned `adapter compare --split-table-out` review
+surface.
 The `ape::vcv.phylo` portion now covers rooted ultrametric, rooted
 non-ultrametric, unrooted branch-length, and singular zero-branch trees. It
 compares one governed long-form Brownian shared-ancestry covariance ledger,

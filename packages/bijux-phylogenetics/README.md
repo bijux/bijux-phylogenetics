@@ -281,7 +281,7 @@ bijux-phylogenetics adapter infer-ml alignment.fasta --out-dir artifacts/ml --mo
 bijux-phylogenetics adapter bootstrap alignment.fasta --out-dir artifacts/bootstrap --model GTR+G --replicates 1000 --prefix mammals --json
 bijux-phylogenetics adapter consensus artifacts/bootstrap/mammals.ufboot --out-dir artifacts/consensus --prefix mammals --json
 bijux-phylogenetics adapter infer-fast alignment.fasta --out artifacts/fasttree.nwk --json
-bijux-phylogenetics adapter compare --fast-tree artifacts/fasttree.nwk --ml-tree artifacts/ml/mammals.treefile --out artifacts/engine-comparison.html --json
+bijux-phylogenetics adapter compare --fast-tree artifacts/fasttree.nwk --ml-tree artifacts/ml/mammals.treefile --out artifacts/engine-comparison.html --split-table-out artifacts/engine-comparison-splits.tsv --json
 bijux-phylogenetics adapter beast-prepare alignment.fasta --out artifacts/beast/analysis.xml --tree tree.nwk --calibrations calibrations.tsv --tip-dates tip-dates.tsv --clock-model strict --tree-prior yule --json
 bijux-phylogenetics adapter beast-xml artifacts/beast/analysis.xml --json
 bijux-phylogenetics adapter beast-run artifacts/beast/analysis.xml --resume --json
@@ -731,7 +731,7 @@ string-based, so tree summaries, tip ledgers, normalized Newick outputs,
 DNA-state frequency tables, raw-distance ledgers, and translated amino-acid
 rows are compared as owned artifacts rather than scraped console text. The
 governed live cases now cover `ape::read.tree`, `ape::write.tree`,
-`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
+`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
 fixture ids. The tree and DNA inputs for that lane now come from the governed
 shared fixture catalogs in
 `tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
@@ -787,6 +787,13 @@ matches one governed long-form distance ledger instead of only checking a
 printed matrix. On the owned Bijux side, missing branch lengths now fail
 explicitly for tip-distance calculations unless the caller opts into an
 explicit unit-length fallback policy.
+The `ape::dist.topo` lane now compares identical rooted trees, rooted
+child-order rotations, one-conflict rooted pairs, rooted tree-versus-polytomy
+pairs, one governed unrooted split conflict, and one governed 128-tip rooted
+pair against live `ape`. It matches one explicit RF-style split ledger rather
+than only a scalar distance and keeps rooted-versus-unrooted policy explicit
+per case. On the owned Bijux side, `adapter compare --split-table-out` now
+writes the same split ledger directly for review and downstream automation.
 The `ape::vcv.phylo` lane now compares Brownian shared-ancestry covariance on
 rooted ultrametric, rooted non-ultrametric, unrooted branch-length, and
 singular zero-branch trees against live `ape`, and it persists the compared

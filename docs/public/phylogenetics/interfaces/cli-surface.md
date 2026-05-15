@@ -162,7 +162,7 @@ reproducible artifact bundle for that case.
 
 The governed live `ape` cases now span both shared tree and shared DNA
 fixtures. Today that lane covers `ape::read.tree`, `ape::write.tree`,
-`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
+`ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::dist.dna`, and `ape::trans`, with durable inputs
 resolved from `shared_tree_fixture_catalog.json` and
 `shared_dna_alignment_fixture_catalog.json`. The `ape::read.tree` portion now
 compares structured clade rows and covers branch lengths, internal labels,
@@ -207,6 +207,13 @@ trees, compares one governed long-form tip-distance ledger rather than only a
 printed matrix, and keeps the taxon order explicit in the summary payload. On
 the owned Bijux side, tip-distance calculations now reject missing branch
 lengths unless the caller opts into one explicit unit-length fallback policy.
+The `ape::dist.topo` portion now covers identical rooted trees, rooted
+child-order rotations, one-conflict rooted pairs, rooted tree-versus-polytomy
+pairs, one governed unrooted split conflict, and one governed 128-tip rooted
+pair. It compares one explicit RF-style split ledger rather than only a
+scalar distance, keeps rooted-versus-unrooted policy explicit per case, and
+aligns directly with the owned `adapter compare --split-table-out` review
+surface.
 The `ape::vcv.phylo` portion now covers rooted ultrametric, rooted
 non-ultrametric, unrooted branch-length, and singular zero-branch trees. It
 compares one governed long-form Brownian shared-ancestry covariance ledger,
