@@ -28,6 +28,43 @@ Typical public workflows include:
 The public workflow contract is that important outputs should be inspectable
 after the command finishes.
 
+When the same governed workflow needs to run inside a notebook, script, or
+pipeline instead of a shell command, use the stable Python surface under
+`bijux_phylogenetics.api`. The workflow entry points intentionally mirror the
+serious CLI categories rather than exposing only low-level helpers.
+
+```python
+from pathlib import Path
+
+from bijux_phylogenetics.api import (
+    run_alignment_workflow,
+    run_comparative_model_workflow,
+    run_tree_comparison_workflow,
+)
+
+alignment = run_alignment_workflow(
+    Path("dataset/sequences.fasta"),
+    Path("artifacts/alignment.fasta"),
+)
+
+comparison = run_tree_comparison_workflow(
+    Path("dataset/tree-a.nwk"),
+    Path("dataset/tree-b.nwk"),
+)
+
+comparative = run_comparative_model_workflow(
+    Path("dataset/tree.nwk"),
+    Path("dataset/traits.tsv"),
+    response="response",
+    predictors=["predictor_one"],
+    lambda_value=1.0,
+)
+```
+
+Those Python functions return the same typed report objects the CLI already
+uses, so downstream code can inspect one stable runtime contract instead of
+parsing command output.
+
 When the goal is to prove that the repository's core numerical methods still
 match established external tools on small governed fixtures, use `parity`.
 This workflow keeps the fixtures CI-sized by default and writes reviewer-facing
