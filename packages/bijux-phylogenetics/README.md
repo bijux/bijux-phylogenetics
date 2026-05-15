@@ -185,7 +185,7 @@ differences.
 - generate taxon crosswalk tables, completeness matrices, exclusion tables, ordering-drift audits, pruning-step retention summaries, and named readiness levels for reviewer-facing dataset inspection
 - trim all-gap or all-missing columns and remove high-missingness sequences
 - translate coding nucleotide alignments to amino-acid alignments and export pairwise identity matrices
-- compute raw or p-distance, Jukes-Cantor, Kimura 2-parameter, or amino-acid p-distance matrices with explicit gap-handling and ambiguity policies
+- compute raw or p-distance, Jukes-Cantor, Kimura 2-parameter, Felsenstein 81, Tamura-Nei 93, or amino-acid p-distance matrices with explicit gap-handling, ambiguity policies, and model-parameter reporting
 - compute rooted or unrooted pairwise tip-distance matrices from branch-length trees with explicit taxon order and owned wide or long-form exports
 - audit saturated pairs, unusually divergent pairs, and low-information pairs before distance-based tree building
 - build Neighbor-Joining or UPGMA trees from computed distance matrices, bootstrap site-resampled trees, summarize clade support, and write reproducibility bundles
@@ -222,6 +222,7 @@ bijux-phylogenetics alignment filter alignment.fasta --profile moderate --out cl
 bijux-phylogenetics alignment compare alignment.fasta cleaned.fasta --json
 bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4
 bijux-phylogenetics alignment distance-matrix alignment.fasta --model raw --gap-handling complete-deletion --out distances.tsv
+bijux-phylogenetics alignment distance-matrix alignment.fasta --model f81 --components-out distance-components.tsv --parameters-out distance-parameters.tsv --out distances.tsv
 bijux-phylogenetics alignment distance-quality alignment.fasta --model jukes-cantor --json
 bijux-phylogenetics alignment distance-suitability alignment.fasta --model jukes-cantor --json
 bijux-phylogenetics alignment distance-assumptions alignment.fasta --model p-distance --json
@@ -753,16 +754,21 @@ ledger keyed by descendant tip set rather than transient node index. The
 runtime keeps the real `ape` edge case explicit too: unsupported
 root-adjacent splits are left unscored instead of being mislabeled as zero
 support.
-The `ape::dist.dna` lane now covers raw nucleotide distance, JC69, and K80
-distance over governed clean, gapped pairwise-deletion, gapped
+The `ape::dist.dna` lane now covers raw nucleotide distance, JC69, K80, F81,
+and TN93 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,
 missing-data, and unequal-length-invalid fixtures. Bijux accepts the
-ape-compatible `raw`, `jc69`, and `k80` model aliases on the owned distance
-surface, keeps `p-distance`, `jukes-cantor`, and `kimura-2-parameter` as the
-canonical internal labels, and reports saturated corrected-distance pairs
-explicitly as either undefined or infinite instead of hiding them. `alignment
-distance-matrix` can also write one `--components-out` TSV ledger with
-pairwise mismatch, transition, transversion, ambiguity, and saturation fields
+ape-compatible `raw`, `jc69`, `k80`, `f81`, and `tn93` model aliases on the
+owned distance surface, keeps `p-distance`, `jukes-cantor`,
+`kimura-2-parameter`, `felsenstein-81`, and `tamura-nei-93` as the canonical
+internal labels, and reports saturated corrected-distance pairs explicitly as
+either undefined or infinite instead of hiding them. F81 and TN93 estimate
+alignment-wide resolved nucleotide frequencies, write one `--parameters-out`
+ledger for reviewer-facing model coefficients, and warn explicitly when the
+resolved composition breaks TN93 assumptions instead of silently falling back
+to a simpler model. `alignment distance-matrix` can also write one
+`--components-out` TSV ledger with pairwise mismatch, transition,
+transversion, AG-transition, CT-transition, ambiguity, and saturation fields
 alongside the distance matrix. Unequal-length alignments still fail
 explicitly instead of deferring that failure until later matrix handling.
 The

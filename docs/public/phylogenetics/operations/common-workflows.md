@@ -161,13 +161,17 @@ high-divergence, and coding-translation fixtures across `ape::base.freq`,
 diagnostic side of the contract, but the unequal-length DNA fixture is now a
 governed live `ape::dist.dna` failure case so Bijux and `ape` both prove the
 same DNA-distance stop condition explicitly. The owned distance surface now
-accepts the ape-compatible `raw`, `jc69`, and `k80` aliases, keeps
-`p-distance`, `jukes-cantor`, and `kimura-2-parameter` as the canonical
-internal labels, reports saturated JC69 and K80 pairs explicitly as undefined
-or infinite instead of flattening them into one generic missing value, and
-can write one `--components-out` TSV ledger with pairwise mismatch,
-transition, transversion, ambiguity, and saturation fields alongside the
-distance matrix.
+accepts the ape-compatible `raw`, `jc69`, `k80`, `f81`, and `tn93` aliases,
+keeps `p-distance`, `jukes-cantor`, `kimura-2-parameter`,
+`felsenstein-81`, and `tamura-nei-93` as the canonical internal labels,
+reports saturated JC69, K80, F81, and TN93 pairs explicitly as undefined or
+infinite instead of flattening them into one generic missing value, writes
+one `--parameters-out` TSV ledger for model base frequencies and coefficients,
+and can write one `--components-out` TSV ledger with pairwise mismatch,
+transition, transversion, AG-transition, CT-transition, ambiguity, and
+saturation fields alongside the distance matrix. TN93 warns explicitly when
+the resolved alignment composition omits a nucleotide instead of silently
+falling back to a simpler model.
 The `ape::read.tree` portion of the same lane now validates structured clade
 rows for rooted and unrooted trees, branch lengths, internal labels, support
 labels, quoted labels, one governed multiple-tree Newick input, and one

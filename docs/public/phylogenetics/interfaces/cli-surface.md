@@ -191,16 +191,21 @@ It compares one `reference-tree-support.tsv` ledger keyed by descendant tip
 set instead of transient node number, and the owned `tree-set support-map`
 surface keeps one real `ape` edge case explicit: unsupported root-adjacent
 splits are left unscored instead of being mislabeled as zero support.
-The `ape::dist.dna` portion now covers raw nucleotide distance, JC69, and K80
-distance over governed clean, gapped pairwise-deletion, gapped
+The `ape::dist.dna` portion now covers raw nucleotide distance, JC69, K80,
+F81, and TN93 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,
 missing-data, and unequal-length-invalid fixtures. On the owned Bijux side,
-`alignment distance-matrix --model raw`, `--model jc69`, and `--model k80`
-accept the ape-compatible aliases while keeping `p-distance`,
-`jukes-cantor`, and `kimura-2-parameter` as the canonical internal labels.
-Saturated JC69 and K80 pairs are reported explicitly as either undefined or
-infinite, `--components-out` writes one pairwise component ledger for review,
-and unequal-length alignments fail explicitly before any matrix is written.
+`alignment distance-matrix --model raw`, `--model jc69`, `--model k80`,
+`--model f81`, and `--model tn93` accept the ape-compatible aliases while
+keeping `p-distance`, `jukes-cantor`, `kimura-2-parameter`,
+`felsenstein-81`, and `tamura-nei-93` as the canonical internal labels.
+Saturated JC69, K80, F81, and TN93 pairs are reported explicitly as either
+undefined or infinite, `--components-out` writes one pairwise component
+ledger for review, `--parameters-out` writes one model-parameter ledger for
+reviewer-facing base-frequency and coefficient inspection, and unequal-length
+alignments fail explicitly before any matrix is written. TN93 also warns
+explicitly when the resolved alignment composition omits a nucleotide instead
+of silently degrading to JC69 or K80.
 The `ape::keep.tip` portion now covers valid rooted and unrooted keep-set
 cases, selected-tip order differences, and rootedness changes after pruning.
 Bijux keeps the workflow-facing absent-requested-taxon report and minimum-two
