@@ -80,8 +80,29 @@ _DISTANCE_MODEL_ALIASES = {
     "jukes-cantor": "jukes-cantor",
     "k80": "kimura-2-parameter",
     "kimura-2-parameter": "kimura-2-parameter",
+    "f81": "felsenstein-81",
+    "felsenstein-81": "felsenstein-81",
+    "tn93": "tamura-nei-93",
+    "tamura-nei-93": "tamura-nei-93",
     "amino-acid-p-distance": "amino-acid-p-distance",
 }
+
+
+@dataclass(frozen=True, slots=True)
+class GeneticDistanceModelParameters:
+    """Alignment-wide parameters used by composition-aware DNA distance models."""
+
+    informative_base_count: int
+    base_frequency_a: float
+    base_frequency_c: float
+    base_frequency_g: float
+    base_frequency_t: float
+    purine_frequency: float
+    pyrimidine_frequency: float
+    f81_limit: float
+    tn93_ag_coefficient: float | None
+    tn93_ct_coefficient: float | None
+    tn93_transversion_coefficient: float | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,6 +115,8 @@ class PairwiseGeneticDistance:
     comparable_sites: int
     mismatch_sites: float
     transition_sites: float
+    ag_transition_sites: float
+    ct_transition_sites: float
     transversion_sites: float
     ambiguity_sites: int
     skipped_sites: int
@@ -112,6 +135,8 @@ class GeneticDistanceMatrix:
     inferred_alphabet: str
     alignment_length: int
     identifiers: list[str]
+    model_parameters: GeneticDistanceModelParameters | None
+    warnings: list[str]
     pairs: list[PairwiseGeneticDistance]
 
 
@@ -521,6 +546,8 @@ class _SiteContribution:
     comparable: bool
     mismatch_weight: float
     transition_weight: float
+    ag_transition_weight: float
+    ct_transition_weight: float
     transversion_weight: float
     ambiguous: bool
 
@@ -531,6 +558,8 @@ class _PairSummary:
     comparable_sites: int
     mismatch_sites: float
     transition_sites: float
+    ag_transition_sites: float
+    ct_transition_sites: float
     transversion_sites: float
     ambiguity_sites: int
     skipped_sites: int
@@ -554,7 +583,13 @@ def _normalize_distance_model(model: DistanceModel) -> DistanceModel:
 
 def _allowed_models_for_alphabet(alphabet: str) -> set[str]:
     if alphabet in {"dna", "rna"}:
-        return {"p-distance", "jukes-cantor", "kimura-2-parameter"}
+        return {
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "felsenstein-81",
+            "tamura-nei-93",
+        }
     if alphabet == "protein":
         return {"amino-acid-p-distance"}
     return set()
@@ -571,6 +606,16 @@ def _states_for_symbol(symbol: str, *, alphabet: str) -> set[str] | None:
 
 def _is_transition(left: str, right: str) -> bool:
     return (left, right) in _TRANSITIONS
+
+
+def _transition_class_weights(left: str, right: str) -> tuple[float, float, float]:
+    if left == right:
+        return 0.0, 0.0, 0.0
+    if (left, right) in {("A", "G"), ("G", "A")}:
+        return 1.0, 1.0, 0.0
+    if (left, right) in {("C", "T"), ("T", "C")}:
+        return 1.0, 0.0, 1.0
+    return 0.0, 0.0, 0.0
 
 
 def _site_contribution(
@@ -594,14 +639,23 @@ def _site_contribution(
         left = next(iter(left_states))
         right = next(iter(right_states))
         mismatch_weight = 0.0 if left == right else 1.0
-        transition_weight = (
-            1.0 if alphabet != "protein" and _is_transition(left, right) else 0.0
-        )
+        if alphabet == "protein":
+            transition_weight = 0.0
+            ag_transition_weight = 0.0
+            ct_transition_weight = 0.0
+        else:
+            (
+                transition_weight,
+                ag_transition_weight,
+                ct_transition_weight,
+            ) = _transition_class_weights(left, right)
         transversion_weight = mismatch_weight - transition_weight
         return _SiteContribution(
             comparable=True,
             mismatch_weight=mismatch_weight,
             transition_weight=transition_weight,
+            ag_transition_weight=ag_transition_weight,
+            ct_transition_weight=ct_transition_weight,
             transversion_weight=transversion_weight,
             ambiguous=False,
         )
@@ -610,19 +664,30 @@ def _site_contribution(
         total_pairs = len(left_states) * len(right_states)
         equal_pairs = 0
         transition_pairs = 0
+        ag_transition_pairs = 0
+        ct_transition_pairs = 0
         transversion_pairs = 0
         for left in left_states:
             for right in right_states:
                 if left == right:
                     equal_pairs += 1
-                elif alphabet != "protein" and _is_transition(left, right):
-                    transition_pairs += 1
                 else:
-                    transversion_pairs += 1
+                    if alphabet == "protein":
+                        transversion_pairs += 1
+                    else:
+                        transition_weight, ag_weight, ct_weight = (
+                            _transition_class_weights(left, right)
+                        )
+                        transition_pairs += transition_weight
+                        ag_transition_pairs += ag_weight
+                        ct_transition_pairs += ct_weight
+                        transversion_pairs += 1.0 - transition_weight
         return _SiteContribution(
             comparable=True,
             mismatch_weight=(total_pairs - equal_pairs) / total_pairs,
             transition_weight=transition_pairs / total_pairs,
+            ag_transition_weight=ag_transition_pairs / total_pairs,
+            ct_transition_weight=ct_transition_pairs / total_pairs,
             transversion_weight=transversion_pairs / total_pairs,
             ambiguous=True,
         )
@@ -633,6 +698,8 @@ def _site_contribution(
                 comparable=True,
                 mismatch_weight=0.0,
                 transition_weight=0.0,
+                ag_transition_weight=0.0,
+                ct_transition_weight=0.0,
                 transversion_weight=0.0,
                 ambiguous=True,
             )
@@ -647,19 +714,32 @@ def _site_contribution(
                 comparable=True,
                 mismatch_weight=0.0,
                 transition_weight=0.0,
+                ag_transition_weight=0.0,
+                ct_transition_weight=0.0,
                 transversion_weight=0.0,
                 ambiguous=True,
             )
-        transition_pairs = sum(
-            1
-            for left, right in mismatch_pairs
-            if alphabet != "protein" and _is_transition(left, right)
-        )
-        transversion_pairs = len(mismatch_pairs) - transition_pairs
+        transition_pairs = 0.0
+        ag_transition_pairs = 0.0
+        ct_transition_pairs = 0.0
+        transversion_pairs = 0.0
+        for left, right in mismatch_pairs:
+            if alphabet == "protein":
+                transversion_pairs += 1.0
+            else:
+                transition_weight, ag_weight, ct_weight = _transition_class_weights(
+                    left, right
+                )
+                transition_pairs += transition_weight
+                ag_transition_pairs += ag_weight
+                ct_transition_pairs += ct_weight
+                transversion_pairs += 1.0 - transition_weight
         return _SiteContribution(
             comparable=True,
             mismatch_weight=1.0,
             transition_weight=transition_pairs / len(mismatch_pairs),
+            ag_transition_weight=ag_transition_pairs / len(mismatch_pairs),
+            ct_transition_weight=ct_transition_pairs / len(mismatch_pairs),
             transversion_weight=transversion_pairs / len(mismatch_pairs),
             ambiguous=True,
         )
@@ -671,6 +751,93 @@ def _p_distance(summary: _PairSummary) -> float | None:
     if summary.comparable_sites == 0:
         return None
     return round(summary.mismatch_sites / summary.comparable_sites, 15)
+
+
+def _estimate_nucleotide_model_parameters(
+    records: list[AlignmentRecord],
+) -> tuple[GeneticDistanceModelParameters, list[str]]:
+    counts = {base: 0 for base in "ACGT"}
+    informative_base_count = 0
+    for record in records:
+        for symbol in record.sequence:
+            states = _states_for_symbol(symbol, alphabet="dna")
+            if states is None or len(states) != 1:
+                continue
+            base = next(iter(states))
+            counts[base] += 1
+            informative_base_count += 1
+
+    if informative_base_count == 0:
+        parameters = GeneticDistanceModelParameters(
+            informative_base_count=0,
+            base_frequency_a=0.0,
+            base_frequency_c=0.0,
+            base_frequency_g=0.0,
+            base_frequency_t=0.0,
+            purine_frequency=0.0,
+            pyrimidine_frequency=0.0,
+            f81_limit=0.0,
+            tn93_ag_coefficient=None,
+            tn93_ct_coefficient=None,
+            tn93_transversion_coefficient=None,
+        )
+        return parameters, [
+            "no resolved A/C/G/T nucleotides remain to estimate composition-aware DNA distance parameters"
+        ]
+
+    pi_a = counts["A"] / informative_base_count
+    pi_c = counts["C"] / informative_base_count
+    pi_g = counts["G"] / informative_base_count
+    pi_t = counts["T"] / informative_base_count
+    pi_r = pi_a + pi_g
+    pi_y = pi_c + pi_t
+    f81_limit = 1.0 - ((pi_a * pi_a) + (pi_c * pi_c) + (pi_g * pi_g) + (pi_t * pi_t))
+
+    tn93_ag_coefficient = None
+    if pi_r > 0.0:
+        tn93_ag_coefficient = (2.0 * pi_a * pi_g) / pi_r
+    tn93_ct_coefficient = None
+    if pi_y > 0.0:
+        tn93_ct_coefficient = (2.0 * pi_c * pi_t) / pi_y
+    tn93_transversion_coefficient = None
+    if pi_r > 0.0 and pi_y > 0.0:
+        tn93_transversion_coefficient = 2.0 * (
+            (pi_r * pi_y)
+            - ((pi_a * pi_g * pi_y) / pi_r)
+            - ((pi_c * pi_t * pi_r) / pi_y)
+        )
+
+    warnings: list[str] = []
+    if f81_limit <= 0.0:
+        warnings.append(
+            "alignment-wide resolved base composition leaves no variability for F81 correction"
+        )
+    if min(pi_a, pi_c, pi_g, pi_t) == 0.0:
+        warnings.append(
+            "alignment-wide resolved base composition omits at least one nucleotide, so TN93 assumptions break"
+        )
+    return (
+        GeneticDistanceModelParameters(
+            informative_base_count=informative_base_count,
+            base_frequency_a=round(pi_a, 15),
+            base_frequency_c=round(pi_c, 15),
+            base_frequency_g=round(pi_g, 15),
+            base_frequency_t=round(pi_t, 15),
+            purine_frequency=round(pi_r, 15),
+            pyrimidine_frequency=round(pi_y, 15),
+            f81_limit=round(f81_limit, 15),
+            tn93_ag_coefficient=None
+            if tn93_ag_coefficient is None
+            else round(tn93_ag_coefficient, 15),
+            tn93_ct_coefficient=None
+            if tn93_ct_coefficient is None
+            else round(tn93_ct_coefficient, 15),
+            tn93_transversion_coefficient=None
+            if tn93_transversion_coefficient is None
+            else round(tn93_transversion_coefficient, 15),
+        ),
+        warnings,
+    )
 
 
 def _jukes_cantor_distance(p_distance: float | None) -> tuple[float | None, str | None]:
@@ -714,6 +881,94 @@ def _kimura_two_parameter_distance(
     return round(value, 15), None
 
 
+def _felsenstein_81_distance(
+    summary: _PairSummary, parameters: GeneticDistanceModelParameters | None
+) -> tuple[float | None, str | None]:
+    if summary.comparable_sites == 0:
+        return None, "no comparable sites remain after filtering"
+    if summary.mismatch_sites == 0.0:
+        return 0.0, None
+    if parameters is None or parameters.informative_base_count == 0:
+        return (
+            None,
+            "alignment-wide resolved base composition is unavailable, so the F81 correction is undefined",
+        )
+    limit = parameters.f81_limit
+    if limit <= 0.0:
+        return (
+            None,
+            "alignment-wide resolved base composition leaves no variability for F81 correction, so the corrected distance is undefined",
+        )
+    p_distance = summary.mismatch_sites / summary.comparable_sites
+    if p_distance > limit:
+        return (
+            None,
+            "observed mismatch proportion exceeds the F81 correction range for the estimated base composition, so the corrected distance is undefined",
+        )
+    if p_distance == limit:
+        return (
+            None,
+            "observed mismatch proportion is at the F81 correction limit for the estimated base composition, so the corrected distance tends to infinity",
+        )
+    value = -limit * math.log(1.0 - (p_distance / limit))
+    return round(value, 15), None
+
+
+def _tamura_nei_93_distance(
+    summary: _PairSummary, parameters: GeneticDistanceModelParameters | None
+) -> tuple[float | None, str | None]:
+    if summary.comparable_sites == 0:
+        return None, "no comparable sites remain after filtering"
+    if summary.mismatch_sites == 0.0:
+        return 0.0, None
+    if parameters is None or parameters.informative_base_count == 0:
+        return (
+            None,
+            "alignment-wide resolved base composition is unavailable, so the TN93 correction is undefined",
+        )
+    pi_a = parameters.base_frequency_a
+    pi_c = parameters.base_frequency_c
+    pi_g = parameters.base_frequency_g
+    pi_t = parameters.base_frequency_t
+    pi_r = parameters.purine_frequency
+    pi_y = parameters.pyrimidine_frequency
+    if min(pi_a, pi_c, pi_g, pi_t) <= 0.0 or pi_r <= 0.0 or pi_y <= 0.0:
+        return (
+            None,
+            "alignment-wide resolved base composition omits at least one nucleotide class, so the TN93 correction is undefined",
+        )
+
+    p1 = summary.ag_transition_sites / summary.comparable_sites
+    p2 = summary.ct_transition_sites / summary.comparable_sites
+    q = summary.transversion_sites / summary.comparable_sites
+    first = 1.0 - ((pi_r * p1) / (2.0 * pi_a * pi_g)) - (q / (2.0 * pi_r))
+    second = 1.0 - ((pi_y * p2) / (2.0 * pi_c * pi_t)) - (q / (2.0 * pi_y))
+    third = 1.0 - (q / (2.0 * pi_r * pi_y))
+    if first < 0.0 or second < 0.0 or third < 0.0:
+        return (
+            None,
+            "transition and transversion proportions exceed the TN93 correction range for the estimated base composition, so the corrected distance is undefined",
+        )
+    if first == 0.0 or second == 0.0 or third == 0.0:
+        return (
+            None,
+            "transition and transversion proportions are at the TN93 correction limit for the estimated base composition, so the corrected distance tends to infinity",
+        )
+    coefficient_ag = (2.0 * pi_a * pi_g) / pi_r
+    coefficient_ct = (2.0 * pi_c * pi_t) / pi_y
+    coefficient_tv = 2.0 * (
+        (pi_r * pi_y)
+        - ((pi_a * pi_g * pi_y) / pi_r)
+        - ((pi_c * pi_t * pi_r) / pi_y)
+    )
+    value = (
+        (-coefficient_ag * math.log(first))
+        + (-coefficient_ct * math.log(second))
+        + (-coefficient_tv * math.log(third))
+    )
+    return round(value, 15), None
+
+
 def _protein_p_distance(summary: _PairSummary) -> tuple[float | None, str | None]:
     return (
         _p_distance(summary),
@@ -724,7 +979,10 @@ def _protein_p_distance(summary: _PairSummary) -> tuple[float | None, str | None
 
 
 def _distance_from_summary(
-    summary: _PairSummary, *, model: DistanceModel
+    summary: _PairSummary,
+    *,
+    model: DistanceModel,
+    model_parameters: GeneticDistanceModelParameters | None,
 ) -> tuple[float | None, str | None]:
     if model == "p-distance":
         return (
@@ -737,6 +995,10 @@ def _distance_from_summary(
         return _jukes_cantor_distance(_p_distance(summary))
     if model == "kimura-2-parameter":
         return _kimura_two_parameter_distance(summary)
+    if model == "felsenstein-81":
+        return _felsenstein_81_distance(summary, model_parameters)
+    if model == "tamura-nei-93":
+        return _tamura_nei_93_distance(summary, model_parameters)
     if model == "amino-acid-p-distance":
         return _protein_p_distance(summary)
     raise ValueError(f"unsupported distance model: {model}")
@@ -750,10 +1012,13 @@ def _pair_summary(
     ambiguity_policy: AmbiguityPolicy,
     retained_positions: list[int] | None = None,
     model: DistanceModel,
+    model_parameters: GeneticDistanceModelParameters | None = None,
 ) -> _PairSummary:
     comparable_sites = 0
     mismatch_sites = 0.0
     transition_sites = 0.0
+    ag_transition_sites = 0.0
+    ct_transition_sites = 0.0
     transversion_sites = 0.0
     ambiguity_sites = 0
     skipped_sites = 0
@@ -784,6 +1049,8 @@ def _pair_summary(
         comparable_sites += 1
         mismatch_sites += contribution.mismatch_weight
         transition_sites += contribution.transition_weight
+        ag_transition_sites += contribution.ag_transition_weight
+        ct_transition_sites += contribution.ct_transition_weight
         transversion_sites += contribution.transversion_weight
         if contribution.ambiguous:
             ambiguity_sites += 1
@@ -792,13 +1059,19 @@ def _pair_summary(
         comparable_sites=comparable_sites,
         mismatch_sites=round(mismatch_sites, 15),
         transition_sites=round(transition_sites, 15),
+        ag_transition_sites=round(ag_transition_sites, 15),
+        ct_transition_sites=round(ct_transition_sites, 15),
         transversion_sites=round(transversion_sites, 15),
         ambiguity_sites=ambiguity_sites,
         skipped_sites=skipped_sites,
         saturated=False,
         saturation_reason=None,
     )
-    distance, saturation_reason = _distance_from_summary(preliminary, model=model)
+    distance, saturation_reason = _distance_from_summary(
+        preliminary,
+        model=model,
+        model_parameters=model_parameters,
+    )
     saturated = saturation_reason is not None and (
         "correction limit" in saturation_reason
         or "correction range" in saturation_reason
@@ -818,6 +1091,8 @@ def _pair_summary(
         comparable_sites=comparable_sites,
         mismatch_sites=round(mismatch_sites, 15),
         transition_sites=round(transition_sites, 15),
+        ag_transition_sites=round(ag_transition_sites, 15),
+        ct_transition_sites=round(ct_transition_sites, 15),
         transversion_sites=round(transversion_sites, 15),
         ambiguity_sites=ambiguity_sites,
         skipped_sites=skipped_sites,
@@ -1372,6 +1647,13 @@ def compute_pairwise_genetic_distance_matrix(
         raise ValueError(f"unsupported ambiguity policy: {ambiguity_policy}")
 
     records, alphabet = _load_alignment_for_model(path, model=model)
+    model_parameters: GeneticDistanceModelParameters | None = None
+    warnings: list[str] = []
+    if alphabet in {"dna", "rna"} and model in {
+        "felsenstein-81",
+        "tamura-nei-93",
+    }:
+        model_parameters, warnings = _estimate_nucleotide_model_parameters(records)
     retained_positions = (
         _complete_deletion_positions(
             records, alphabet=alphabet, ambiguity_policy=ambiguity_policy
@@ -1391,6 +1673,7 @@ def compute_pairwise_genetic_distance_matrix(
                 ambiguity_policy=ambiguity_policy,
                 retained_positions=retained_positions,
                 model=model,
+                model_parameters=model_parameters,
             )
             pairs.append(
                 PairwiseGeneticDistance(
@@ -1402,6 +1685,12 @@ def compute_pairwise_genetic_distance_matrix(
                     if left_index != right_index
                     else 0.0,
                     transition_sites=summary.transition_sites
+                    if left_index != right_index
+                    else 0.0,
+                    ag_transition_sites=summary.ag_transition_sites
+                    if left_index != right_index
+                    else 0.0,
+                    ct_transition_sites=summary.ct_transition_sites
                     if left_index != right_index
                     else 0.0,
                     transversion_sites=summary.transversion_sites
@@ -1423,6 +1712,8 @@ def compute_pairwise_genetic_distance_matrix(
         inferred_alphabet=alphabet,
         alignment_length=len(records[0].sequence),
         identifiers=[record.identifier for record in records],
+        model_parameters=model_parameters,
+        warnings=warnings,
         pairs=pairs,
     )
 
@@ -1464,6 +1755,30 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "left": "A",
             "right": "B",
             "expected": 0.14384103622589,
+            "expected_ambiguity_sites": 0,
+        },
+        {
+            "path": Path(__file__).resolve().parents[2]
+            / "tests/fixtures/alignments/example_alignment_distance_gaps.fasta",
+            "case": "dna-felsenstein-81",
+            "model": "felsenstein-81",
+            "gap_handling": "pairwise-deletion",
+            "ambiguity_policy": "ignore",
+            "left": "A",
+            "right": "B",
+            "expected": 0.189450794670797,
+            "expected_ambiguity_sites": 0,
+        },
+        {
+            "path": Path(__file__).resolve().parents[2]
+            / "tests/fixtures/alignments/example_alignment_duplicates.fasta",
+            "case": "dna-tamura-nei-93",
+            "model": "tamura-nei-93",
+            "gap_handling": "pairwise-deletion",
+            "ambiguity_policy": "ignore",
+            "left": "A",
+            "right": "C",
+            "expected": 0.182459298648674,
             "expected_ambiguity_sites": 0,
         },
         {
@@ -1865,6 +2180,8 @@ def write_genetic_distance_component_table(
                 "comparable_sites",
                 "mismatch_sites",
                 "transition_sites",
+                "ag_transition_sites",
+                "ct_transition_sites",
                 "transversion_sites",
                 "ambiguity_sites",
                 "skipped_sites",
@@ -1890,6 +2207,8 @@ def write_genetic_distance_component_table(
                     str(pair.comparable_sites),
                     format(pair.mismatch_sites, ".15g"),
                     format(pair.transition_sites, ".15g"),
+                    format(pair.ag_transition_sites, ".15g"),
+                    format(pair.ct_transition_sites, ".15g"),
                     format(pair.transversion_sites, ".15g"),
                     str(pair.ambiguity_sites),
                     str(pair.skipped_sites),
@@ -1898,6 +2217,22 @@ def write_genetic_distance_component_table(
                 ]
             )
         )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def write_genetic_distance_parameter_table(
+    path: Path, report: GeneticDistanceMatrix
+) -> Path:
+    """Write one deterministic alignment-wide parameter table for DNA distances."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["parameter\tvalue"]
+    if report.model_parameters is None:
+        lines.append(f"model\t{report.model}")
+    else:
+        for parameter, value in asdict(report.model_parameters).items():
+            rendered = "" if value is None else format(value, ".15g")
+            lines.append(f"{parameter}\t{rendered}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
 
