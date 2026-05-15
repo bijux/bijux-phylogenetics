@@ -48,6 +48,23 @@ class TreeUltrametricReport:
     rows: list[TreeUltrametricTipRow]
 
 
+@dataclass(slots=True)
+class TipDepthUltrametricSummary:
+    """Shared ultrametricity summary derived from labeled tip depths."""
+
+    tolerance: float
+    option: int
+    criterion_name: str
+    criterion_value: float
+    ultrametric: bool
+    minimum_tip_depth: float
+    maximum_tip_depth: float
+    mean_tip_depth: float
+    max_tip_depth_deviation: float
+    root_age: float
+    offending_taxa: list[str]
+
+
 def assess_tree_ultrametricity(
     path: Path,
     *,
@@ -61,6 +78,47 @@ def assess_tree_ultrametricity(
         tree_path=path,
         tolerance=tolerance,
         option=option,
+    )
+
+
+def summarize_ultrametric_tip_depths(
+    tip_depth_by_label: dict[str, float],
+    *,
+    tolerance: float = APE_ULTRAMETRIC_TOLERANCE,
+    option: int = 1,
+) -> TipDepthUltrametricSummary:
+    """Summarize ultrametricity from one explicit tip-depth mapping."""
+    if option not in {1, 2}:
+        raise ValueError("ultrametric option must be 1 or 2")
+    tip_depths = list(tip_depth_by_label.values())
+    minimum_tip_depth = min(tip_depths)
+    maximum_tip_depth = max(tip_depths)
+    mean_tip_depth = sum(tip_depths) / len(tip_depths)
+    max_tip_depth_deviation = maximum_tip_depth - minimum_tip_depth
+    criterion_name = "scaled-range" if option == 1 else "variance"
+    criterion_value = _criterion_value(
+        tip_depths,
+        maximum_tip_depth=maximum_tip_depth,
+        max_tip_depth_deviation=max_tip_depth_deviation,
+        option=option,
+    )
+    offending_taxa = _offending_taxa_by_depth(
+        tip_depth_by_label,
+        minimum_tip_depth=minimum_tip_depth,
+        maximum_tip_depth=maximum_tip_depth,
+    )
+    return TipDepthUltrametricSummary(
+        tolerance=tolerance,
+        option=option,
+        criterion_name=criterion_name,
+        criterion_value=criterion_value,
+        ultrametric=criterion_value <= tolerance,
+        minimum_tip_depth=minimum_tip_depth,
+        maximum_tip_depth=maximum_tip_depth,
+        mean_tip_depth=mean_tip_depth,
+        max_tip_depth_deviation=max_tip_depth_deviation,
+        root_age=maximum_tip_depth,
+        offending_taxa=offending_taxa,
     )
 
 
@@ -117,51 +175,41 @@ def _summarize_tree_ultrametricity(
     tip_rows = [
         row for row in node_depth_report.rows if row.node_kind == "tip"
     ]
-    if option not in {1, 2}:
-        raise ValueError("ultrametric option must be 1 or 2")
-    tip_depths = [row.branch_length_depth for row in tip_rows]
-    minimum_tip_depth = min(tip_depths)
-    maximum_tip_depth = max(tip_depths)
-    mean_tip_depth = sum(tip_depths) / len(tip_depths)
-    max_tip_depth_deviation = maximum_tip_depth - minimum_tip_depth
-    criterion_name = "scaled-range" if option == 1 else "variance"
-    criterion_value = _criterion_value(
-        tip_depths,
-        maximum_tip_depth=maximum_tip_depth,
-        max_tip_depth_deviation=max_tip_depth_deviation,
+    summary = summarize_ultrametric_tip_depths(
+        {row.node_label or "": row.branch_length_depth for row in tip_rows},
+        tolerance=tolerance,
         option=option,
-    )
-    offending_taxa = _offending_taxa(
-        tip_rows,
-        minimum_tip_depth=minimum_tip_depth,
-        maximum_tip_depth=maximum_tip_depth,
     )
     return TreeUltrametricReport(
         tree_path=tree_path,
         tip_labels=node_depth_report.tip_labels,
         rooted=node_depth_report.rooted,
-        tolerance=tolerance,
-        option=option,
-        criterion_name=criterion_name,
-        criterion_value=criterion_value,
-        ultrametric=criterion_value <= tolerance,
-        minimum_tip_depth=minimum_tip_depth,
-        maximum_tip_depth=maximum_tip_depth,
-        mean_tip_depth=mean_tip_depth,
-        max_tip_depth_deviation=max_tip_depth_deviation,
-        root_age=maximum_tip_depth,
-        offending_taxa=offending_taxa,
+        tolerance=summary.tolerance,
+        option=summary.option,
+        criterion_name=summary.criterion_name,
+        criterion_value=summary.criterion_value,
+        ultrametric=summary.ultrametric,
+        minimum_tip_depth=summary.minimum_tip_depth,
+        maximum_tip_depth=summary.maximum_tip_depth,
+        mean_tip_depth=summary.mean_tip_depth,
+        max_tip_depth_deviation=summary.max_tip_depth_deviation,
+        root_age=summary.root_age,
+        offending_taxa=summary.offending_taxa,
         rows=[
             TreeUltrametricTipRow(
                 node_id=row.node_id,
                 tip_label=row.node_label or "",
                 root_to_tip_depth=row.branch_length_depth,
                 deviation_from_mean_depth=abs(
-                    row.branch_length_depth - mean_tip_depth
+                    row.branch_length_depth - summary.mean_tip_depth
                 ),
-                deviation_from_min_depth=row.branch_length_depth - minimum_tip_depth,
-                deviation_from_max_depth=maximum_tip_depth - row.branch_length_depth,
-                is_offending_taxon=(row.node_label or "") in set(offending_taxa),
+                deviation_from_min_depth=(
+                    row.branch_length_depth - summary.minimum_tip_depth
+                ),
+                deviation_from_max_depth=(
+                    summary.maximum_tip_depth - row.branch_length_depth
+                ),
+                is_offending_taxon=(row.node_label or "") in set(summary.offending_taxa),
             )
             for row in tip_rows
         ],
@@ -188,8 +236,8 @@ def _criterion_value(
     return squared_error / (len(tip_depths) - 1)
 
 
-def _offending_taxa(
-    tip_rows: list[TreeNodeDepthRow],
+def _offending_taxa_by_depth(
+    tip_depth_by_label: dict[str, float],
     *,
     minimum_tip_depth: float,
     maximum_tip_depth: float,
@@ -197,13 +245,12 @@ def _offending_taxa(
     if math.isclose(minimum_tip_depth, maximum_tip_depth, abs_tol=1e-12):
         return []
     offending: list[str] = []
-    for row in tip_rows:
-        label = row.node_label or ""
+    for label, depth in tip_depth_by_label.items():
         if label == "":
             continue
-        if math.isclose(row.branch_length_depth, minimum_tip_depth, abs_tol=1e-12):
+        if math.isclose(depth, minimum_tip_depth, abs_tol=1e-12):
             offending.append(label)
             continue
-        if math.isclose(row.branch_length_depth, maximum_tip_depth, abs_tol=1e-12):
+        if math.isclose(depth, maximum_tip_depth, abs_tol=1e-12):
             offending.append(label)
     return sorted(set(offending))

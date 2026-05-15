@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 
 
@@ -65,10 +66,7 @@ def diagnose_ultrametricity(
 ) -> UltrametricReport:
     """Assess whether a tree is ultrametric within the given tolerance."""
     report = compute_root_to_tip_distances(path, source_format=source_format)
-    numeric_distances = [
-        row.distance for row in report.distances if row.distance is not None
-    ]
-    if not numeric_distances or len(numeric_distances) != len(report.distances):
+    if any(row.distance is None for row in report.distances):
         return UltrametricReport(
             path=path,
             source_format=report.source_format,
@@ -77,15 +75,19 @@ def diagnose_ultrametricity(
             max_deviation=None,
             tip_count=len(report.distances),
         )
-
-    max_distance = max(float(distance) for distance in numeric_distances)
-    min_distance = min(float(distance) for distance in numeric_distances)
-    max_deviation = round(max_distance - min_distance, 15)
+    summary = summarize_ultrametric_tip_depths(
+        {
+            row.tip: float(row.distance)
+            for row in report.distances
+            if row.distance is not None
+        },
+        tolerance=tolerance,
+    )
     return UltrametricReport(
         path=path,
         source_format=report.source_format,
         tolerance=tolerance,
-        ultrametric=max_deviation <= tolerance,
-        max_deviation=max_deviation,
+        ultrametric=summary.ultrametric,
+        max_deviation=round(summary.max_tip_depth_deviation, 15),
         tip_count=len(report.distances),
     )

@@ -11,6 +11,10 @@ from bijux_phylogenetics.core.taxonomy import (
     inspect_tree_taxa_safety,
     inspect_tree_taxon_identity,
 )
+from bijux_phylogenetics.core.ultrametric import (
+    APE_ULTRAMETRIC_TOLERANCE,
+    summarize_ultrametric_tip_depths,
+)
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.errors import (
     DuplicateTaxonError,
@@ -634,12 +638,25 @@ def _duplicate_taxa(tree: PhyloTree) -> tuple[int, list[str]]:
     return missing, duplicates
 
 
-def _ultrametric(tree: PhyloTree, *, tolerance: float = 1e-9) -> bool | None:
+def _ultrametric(
+    tree: PhyloTree,
+    *,
+    tolerance: float = APE_ULTRAMETRIC_TOLERANCE,
+) -> bool | None:
     lengths = tree.root_to_tip_lengths()
     if not lengths or any(length is None for length in lengths):
         return None
-    numeric_lengths = [float(length) for length in lengths if length is not None]
-    return max(numeric_lengths) - min(numeric_lengths) <= tolerance
+    return summarize_ultrametric_tip_depths(
+        {
+            tip_name or f"unnamed-tip-{index}": float(length)
+            for index, (tip_name, length) in enumerate(
+                tree.root_to_tip_pairs(),
+                start=1,
+            )
+            if length is not None
+        },
+        tolerance=tolerance,
+    ).ultrametric
 
 
 def _max_depth(tree: PhyloTree) -> int:

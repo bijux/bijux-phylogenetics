@@ -17,6 +17,7 @@ from bijux_phylogenetics.comparative.common import (
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
 from bijux_phylogenetics.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
 
@@ -67,9 +68,11 @@ def summarize_brownian_covariance(
     ordered_taxa = _resolve_taxa(tree, taxa)
     minimum_branch_length, maximum_branch_length = _branch_length_range(tree, tree_path)
     root_depths = tip_root_depths(tree, ordered_taxa)
+    ultrametric_summary = summarize_ultrametric_tip_depths(
+        root_depths,
+        tolerance=1e-12,
+    )
     covariance_matrix = build_brownian_covariance_matrix(tree, ordered_taxa)
-    minimum_root_depth = min(root_depths.values())
-    maximum_root_depth = max(root_depths.values())
     covariance_rank = matrix_rank(covariance_matrix, tolerance=1e-12)
     singular = covariance_rank < len(ordered_taxa)
     positive_definite, raw_log_determinant = _matrix_positive_definite_diagnostics(
@@ -83,13 +86,9 @@ def summarize_brownian_covariance(
         tree_path=tree_path,
         taxa=ordered_taxa,
         tree_is_rooted=_tree_is_rooted(tree),
-        tree_is_ultrametric=math.isclose(
-            minimum_root_depth,
-            maximum_root_depth,
-            abs_tol=1e-12,
-        ),
-        minimum_root_to_tip_depth=minimum_root_depth,
-        maximum_root_to_tip_depth=maximum_root_depth,
+        tree_is_ultrametric=ultrametric_summary.ultrametric,
+        minimum_root_to_tip_depth=ultrametric_summary.minimum_tip_depth,
+        maximum_root_to_tip_depth=ultrametric_summary.maximum_tip_depth,
         minimum_branch_length=minimum_branch_length,
         maximum_branch_length=maximum_branch_length,
         matrix_dimension=len(ordered_taxa),

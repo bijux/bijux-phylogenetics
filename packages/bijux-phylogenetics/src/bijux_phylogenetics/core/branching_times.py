@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 from pathlib import Path
 
 from bijux_phylogenetics.core.node_depth import (
-    TreeNodeDepthReport,
     compute_tree_node_depths,
 )
+from bijux_phylogenetics.core.ultrametric import assess_tree_ultrametricity
 from bijux_phylogenetics.errors import NonUltrametricTreeError, UnrootedTreeError
 
 
@@ -48,28 +47,26 @@ def compute_tree_branching_times(
 ) -> TreeBranchingTimeReport:
     """Compute ape-style branching times for one rooted ultrametric tree."""
     node_depth_report = compute_tree_node_depths(path)
-    if node_depth_report.rooted is not True:
+    ultrametric_report = assess_tree_ultrametricity(path, tolerance=tolerance)
+    if ultrametric_report.rooted is not True:
         raise UnrootedTreeError(
             "branching-time calculations require a rooted tree",
             code="tree_branching_times_require_rooted_tree",
-            details={"rooted": node_depth_report.rooted},
+            details={"rooted": ultrametric_report.rooted},
         )
-    max_tip_depth_deviation = (
-        node_depth_report.maximum_tip_depth - node_depth_report.minimum_tip_depth
-    )
-    if max_tip_depth_deviation > tolerance:
+    if not ultrametric_report.ultrametric:
         raise NonUltrametricTreeError(
             "branching-time calculations require an ultrametric tree",
             code="tree_branching_times_require_ultrametric_tree",
             details={
-                "minimum_tip_depth": node_depth_report.minimum_tip_depth,
-                "maximum_tip_depth": node_depth_report.maximum_tip_depth,
-                "max_tip_depth_deviation": max_tip_depth_deviation,
-                "offending_taxa": _offending_taxa(node_depth_report),
-                "tolerance": tolerance,
+                "minimum_tip_depth": ultrametric_report.minimum_tip_depth,
+                "maximum_tip_depth": ultrametric_report.maximum_tip_depth,
+                "max_tip_depth_deviation": ultrametric_report.max_tip_depth_deviation,
+                "offending_taxa": list(ultrametric_report.offending_taxa),
+                "tolerance": ultrametric_report.tolerance,
             },
         )
-    root_age = node_depth_report.maximum_tip_depth
+    root_age = ultrametric_report.root_age
     rows = [
         TreeBranchingTimeRow(
             node_id=row.node_id,
@@ -85,15 +82,15 @@ def compute_tree_branching_times(
     return TreeBranchingTimeReport(
         tree_path=path,
         tip_labels=node_depth_report.tip_labels,
-        rooted=node_depth_report.rooted,
+        rooted=ultrametric_report.rooted,
         tolerance=tolerance,
         tree_is_ultrametric=True,
         root_age=root_age,
         internal_node_count=node_depth_report.internal_node_count,
         zero_branch_length_count=node_depth_report.zero_branch_length_count,
-        minimum_tip_depth=node_depth_report.minimum_tip_depth,
-        maximum_tip_depth=node_depth_report.maximum_tip_depth,
-        max_tip_depth_deviation=max_tip_depth_deviation,
+        minimum_tip_depth=ultrametric_report.minimum_tip_depth,
+        maximum_tip_depth=ultrametric_report.maximum_tip_depth,
+        max_tip_depth_deviation=ultrametric_report.max_tip_depth_deviation,
         rows=rows,
     )
 
@@ -136,25 +133,3 @@ def write_tree_branching_time_table(
         )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
-
-
-def _offending_taxa(node_depth_report: TreeNodeDepthReport) -> list[str]:
-    tip_rows = [
-        row
-        for row in node_depth_report.rows
-        if row.node_kind == "tip"
-    ]
-    return sorted(
-        row.node_label or ""
-        for row in tip_rows
-        if math.isclose(
-            row.branch_length_depth,
-            node_depth_report.minimum_tip_depth,
-            abs_tol=1e-12,
-        )
-        or math.isclose(
-            row.branch_length_depth,
-            node_depth_report.maximum_tip_depth,
-            abs_tol=1e-12,
-        )
-    )

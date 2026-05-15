@@ -8,11 +8,16 @@ from pathlib import Path
 from bijux_phylogenetics.ancestral.common import node_signature
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.core.ultrametric import assess_tree_ultrametricity
 from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
 )
-from bijux_phylogenetics.errors import DiversificationAnalysisError
+from bijux_phylogenetics.errors import (
+    DiversificationAnalysisError,
+    NonUltrametricTreeError,
+    UnrootedTreeError,
+)
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.html import write_html_report
 
@@ -274,24 +279,32 @@ def _find_smallest_covering_node(
 
 def validate_time_tree_for_diversification(tree_path: Path) -> TimeTreeValidationReport:
     """Validate the rooted ultrametric time-tree contract required for diversification analysis."""
-    validation = validate_tree_path(
-        tree_path,
-        require_rooted=True,
-        require_ultrametric=True,
-    )
+    validation = validate_tree_path(tree_path, require_rooted=True)
     if validation.branch_length_status != "complete":
         raise DiversificationAnalysisError(
             "diversification analysis requires complete branch lengths"
         )
-    tree = load_tree(tree_path)
-    root_age = _root_age(tree)
+    ultrametric_report = assess_tree_ultrametricity(tree_path)
+    if ultrametric_report.rooted is not True:
+        raise UnrootedTreeError(f"tree is not rooted: {tree_path}")
+    if not ultrametric_report.ultrametric:
+        raise NonUltrametricTreeError(
+            f"tree is not ultrametric within ape-style diversification tolerance: {tree_path}",
+            details={
+                "tolerance": ultrametric_report.tolerance,
+                "criterion_name": ultrametric_report.criterion_name,
+                "criterion_value": ultrametric_report.criterion_value,
+                "max_tip_depth_deviation": ultrametric_report.max_tip_depth_deviation,
+                "offending_taxa": list(ultrametric_report.offending_taxa),
+            },
+        )
     return TimeTreeValidationReport(
         tree_path=tree_path,
         rooted=validation.rooted,
-        ultrametric=validation.ultrametric is True,
+        ultrametric=True,
         branch_length_status=validation.branch_length_status,
         tip_count=validation.tip_count,
-        root_age=root_age,
+        root_age=float(format(ultrametric_report.root_age, ".15g")),
         warnings=list(validation.warnings),
     )
 
@@ -380,18 +393,18 @@ def inspect_diversification_time_tree(tree_path: Path) -> TimeTreeValidationRepo
         raise DiversificationAnalysisError(
             "diversification analysis requires a rooted tree"
         )
-    if inspection.is_ultrametric is not True:
+    ultrametric_report = assess_tree_ultrametricity(tree_path)
+    if not ultrametric_report.ultrametric:
         raise DiversificationAnalysisError(
             "diversification analysis requires an ultrametric time tree"
         )
-    tree = load_tree(tree_path)
     return TimeTreeValidationReport(
         tree_path=tree_path,
         rooted=inspection.rooted,
-        ultrametric=inspection.is_ultrametric is True,
+        ultrametric=True,
         branch_length_status=inspection.branch_length_status,
         tip_count=inspection.tip_count,
-        root_age=_root_age(tree),
+        root_age=float(format(ultrametric_report.root_age, ".15g")),
         warnings=list(inspection.warnings),
     )
 

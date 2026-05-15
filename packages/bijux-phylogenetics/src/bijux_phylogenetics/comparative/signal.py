@@ -16,6 +16,7 @@ from bijux_phylogenetics.comparative.common import (
     load_comparative_dataset,
     tip_root_depths,
 )
+from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
 from bijux_phylogenetics.errors import ComparativeMethodError
 
 
@@ -316,20 +317,19 @@ def _load_signal_dataset(
 def _build_signal_input_audit(
     dataset: ComparativeDataset,
 ) -> PhylogeneticSignalInputAudit:
-    root_depths = tip_root_depths(dataset.tree, dataset.taxa)
-    minimum_root_depth = min(root_depths.values())
-    maximum_root_depth = max(root_depths.values())
+    ultrametric_summary = summarize_ultrametric_tip_depths(
+        tip_root_depths(dataset.tree, dataset.taxa),
+        tolerance=1e-12,
+    )
     return PhylogeneticSignalInputAudit(
         tree_path=dataset.tree_path,
         traits_path=dataset.traits_path,
         trait=dataset.trait,
         taxon_count=len(dataset.taxa),
         taxa=list(dataset.taxa),
-        tree_is_ultrametric=math.isclose(
-            minimum_root_depth, maximum_root_depth, abs_tol=1e-12
-        ),
-        minimum_root_to_tip_depth=minimum_root_depth,
-        maximum_root_to_tip_depth=maximum_root_depth,
+        tree_is_ultrametric=ultrametric_summary.ultrametric,
+        minimum_root_to_tip_depth=ultrametric_summary.minimum_tip_depth,
+        maximum_root_to_tip_depth=ultrametric_summary.maximum_tip_depth,
         ultrametric_policy="accept-rooted-trees-and-report-ultrametricity",
         missing_value_policy="prune-overlapping-missing-values",
         pruned_missing_value_taxa=list(dataset.readiness.pruned_missing_value_taxa),
