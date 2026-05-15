@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -223,6 +224,8 @@ def _collapse_unary(node: TreeNode) -> TreeNode:
             node.branch_length, only_child.branch_length
         ),
         children=only_child.children,
+        metadata=deepcopy(only_child.metadata),
+        edge_metadata=deepcopy(only_child.edge_metadata),
     )
 
 
@@ -230,7 +233,13 @@ def _prune_node(node: TreeNode, keep_taxa: set[str]) -> TreeNode | None:
     if node.is_leaf():
         if node.name is None or node.name not in keep_taxa:
             return None
-        return TreeNode(name=node.name, branch_length=node.branch_length, children=[])
+        return TreeNode(
+            name=node.name,
+            branch_length=node.branch_length,
+            children=[],
+            metadata=deepcopy(node.metadata),
+            edge_metadata=deepcopy(node.edge_metadata),
+        )
 
     children = [
         child
@@ -240,7 +249,11 @@ def _prune_node(node: TreeNode, keep_taxa: set[str]) -> TreeNode | None:
     if not children:
         return None
     pruned_node = TreeNode(
-        name=node.name, branch_length=node.branch_length, children=children
+        name=node.name,
+        branch_length=node.branch_length,
+        children=children,
+        metadata=deepcopy(node.metadata),
+        edge_metadata=deepcopy(node.edge_metadata),
     )
     if len(children) == 1:
         return _collapse_unary(pruned_node)

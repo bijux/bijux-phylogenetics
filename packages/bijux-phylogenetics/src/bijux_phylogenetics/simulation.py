@@ -210,7 +210,7 @@ def _prune_extinct_subtree(node: TreeNode, *, is_root: bool = False) -> TreeNode
                 (promoted.branch_length or 0.0) + node.branch_length, 15
             )
         return promoted
-    node.children = kept_children
+    node.replace_children(kept_children)
     return node
 
 
@@ -394,7 +394,7 @@ def _simulate_birth_death_tree_once(
             if event_is_birth:
                 left = TreeNode()
                 right = TreeNode()
-                lineage.node.children = [left, right]
+                lineage.node.replace_children([left, right])
                 extant.extend(
                     [
                         _Lineage(node=left, start_time=absolute_time, is_root=False),
@@ -413,6 +413,7 @@ def _simulate_birth_death_tree_once(
         tree = PhyloTree(root=pruned_root, source_format="newick")
         tree.rooted = True
         _label_tree_leaves(tree, taxon_prefix=taxon_prefix)
+        tree.refresh()
         return tree
     raise ValueError(
         "birth-death simulation failed to retain the requested number of extant tips after 128 attempts"
@@ -423,13 +424,13 @@ def _simulate_random_tree_topology(node: TreeNode, tip_count: int, rng: random.R
     if tip_count == 1:
         return
     if tip_count == 2:
-        node.children = [TreeNode(), TreeNode()]
+        node.replace_children([TreeNode(), TreeNode()])
         return
     left_tip_count = rng.randrange(1, tip_count)
     right_tip_count = tip_count - left_tip_count
     left = TreeNode()
     right = TreeNode()
-    node.children = [left, right]
+    node.replace_children([left, right])
     _simulate_random_tree_topology(left, left_tip_count, rng)
     _simulate_random_tree_topology(right, right_tip_count, rng)
 
@@ -451,6 +452,7 @@ def _simulate_random_tree_once(
     tree = PhyloTree(root=root, source_format="newick")
     tree.rooted = True
     _label_tree_leaves_randomized(tree, taxon_prefix=taxon_prefix, rng=rng)
+    tree.refresh()
     for node in _iter_non_root_nodes_preorder(tree.root):
         node.branch_length = _round_float(rng.random())
     return tree

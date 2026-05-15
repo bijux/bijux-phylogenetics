@@ -261,11 +261,11 @@ def _build_caterpillar_tree(
         new_internal = TreeNode(
             branch_length=branch_length,
             children=[
-                current.children.pop(),
+                current.pop_child(),
                 TreeNode(name=f"{prefix}{index}", branch_length=branch_length),
             ],
         )
-        current.children.append(new_internal)
+        current.append_child(new_internal)
         current = new_internal
     root.branch_length = None
     return PhyloTree(root=root, source_format="newick")

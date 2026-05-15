@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -161,10 +162,16 @@ class _TopologyComparison:
 
 
 def _clone_node(node: TreeNode) -> TreeNode:
+    return node.copy()
+
+
+def _copy_node_without_children(node: TreeNode) -> TreeNode:
     return TreeNode(
         name=node.name,
         branch_length=node.branch_length,
-        children=[_clone_node(child) for child in node.children],
+        children=[],
+        metadata=deepcopy(node.metadata),
+        edge_metadata=deepcopy(node.edge_metadata),
     )
 
 
@@ -430,10 +437,12 @@ def _normalize_outgroup_rooting_to_ape(
         return rooted_tree
 
     if len(outgroup_children) > 1:
-        rooted_tree.root.children = [
-            *ingroup_children,
-            TreeNode(branch_length=0.0, children=outgroup_children),
-        ]
+        rooted_tree.root.replace_children(
+            [
+                *ingroup_children,
+                TreeNode(branch_length=0.0, children=outgroup_children),
+            ]
+        )
     return rooted_tree
 
 
@@ -649,7 +658,7 @@ def _collapse_short_internal_branches(
     collapsed_clades: list[str],
 ) -> TreeNode:
     if node.is_leaf():
-        return TreeNode(name=node.name, branch_length=node.branch_length, children=[])
+        return _copy_node_without_children(node)
 
     rewritten_children: list[TreeNode] = []
     for child in node.children:
@@ -672,6 +681,8 @@ def _collapse_short_internal_branches(
                     children=[
                         _clone_node(child_node) for child_node in grandchild.children
                     ],
+                    metadata=deepcopy(grandchild.metadata),
+                    edge_metadata=deepcopy(grandchild.edge_metadata),
                 )
                 for grandchild in rewritten_child.children
             )
@@ -682,6 +693,8 @@ def _collapse_short_internal_branches(
         name=node.name,
         branch_length=node.branch_length,
         children=rewritten_children,
+        metadata=deepcopy(node.metadata),
+        edge_metadata=deepcopy(node.edge_metadata),
     )
 
 
@@ -975,7 +988,7 @@ def collapse_branches_below_length(
 
 def _order_tree(node: TreeNode, *, strategy: str) -> TreeNode:
     if node.is_leaf():
-        return TreeNode(name=node.name, branch_length=node.branch_length, children=[])
+        return _copy_node_without_children(node)
 
     ordered_children = [
         _order_tree(child, strategy=strategy) for child in node.children
@@ -993,6 +1006,8 @@ def _order_tree(node: TreeNode, *, strategy: str) -> TreeNode:
         name=node.name,
         branch_length=node.branch_length,
         children=ordered_children,
+        metadata=deepcopy(node.metadata),
+        edge_metadata=deepcopy(node.edge_metadata),
     )
 
 
@@ -1014,6 +1029,8 @@ def _rotate_named_node(
             name=node.name,
             branch_length=node.branch_length,
             children=rotated_children,
+            metadata=deepcopy(node.metadata),
+            edge_metadata=deepcopy(node.edge_metadata),
         ),
         match_count,
     )
@@ -1025,6 +1042,8 @@ def _rotate_all_nodes(node: TreeNode) -> TreeNode:
         name=node.name,
         branch_length=node.branch_length,
         children=list(reversed(rotated_children)),
+        metadata=deepcopy(node.metadata),
+        edge_metadata=deepcopy(node.edge_metadata),
     )
 
 
