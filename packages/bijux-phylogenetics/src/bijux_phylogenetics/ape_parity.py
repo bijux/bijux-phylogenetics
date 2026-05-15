@@ -19,6 +19,7 @@ from bijux_phylogenetics.comparative.brownian_covariance import (
 from bijux_phylogenetics.compare.topology_distance import (
     compare_topology_distance_trees,
 )
+from bijux_phylogenetics.compare.topology import _unrooted_splits
 from bijux_phylogenetics.compare.structural_parity import (
     compare_tree_sets_structurally,
     compare_tree_structurally,
@@ -1298,6 +1299,7 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
                 "monophyly_reroot": case.monophyly_reroot,
                 "ultrametric_option": case.ultrametric_option,
                 "rf_mode": case.rf_mode,
+                "consensus_method": case.consensus_method,
             },
             indent=2,
             sort_keys=True,
@@ -1655,16 +1657,18 @@ def _build_bijux_consensus_rows(
         tree, report = compute_consensus_tree(input_fixture)
     else:
         raise ValueError(f"unsupported consensus method '{consensus_method}'")
+    tree.rooted = False
     frequency_report = compute_clade_frequency_table(input_fixture)
+    included_split_count = len(_unrooted_splits(tree, set(tree.tip_names)))
     return {
         "tree_count": report.tree_count,
         "shared_taxa": report.shared_taxa,
         "shared_taxon_count": len(report.shared_taxa),
         "tip_count": len(tree.tip_names),
-        "rooted": tree.rooted,
+        "rooted": False,
         "consensus_method": report.consensus_method,
         "consensus_threshold": report.consensus_threshold,
-        "included_clade_count": report.included_clade_count,
+        "included_clade_count": included_split_count,
         "clade_frequency_count": len(frequency_report.clade_frequencies),
     }, [
         {
@@ -2046,6 +2050,12 @@ def _normalize_tree_labels(
         node.name = normalized
     for child in node.children:
         _normalize_tree_labels(child, expected_tip_labels=expected_tip_labels)
+
+
+def _clear_branch_lengths(node: TreeNode) -> None:
+    node.branch_length = None
+    for child in node.children:
+        _clear_branch_lengths(child)
 
 
 def _canonical_newick(
@@ -2533,9 +2543,11 @@ def _consensus_tree_mismatch_reason(
             f"ape parity case '{case.case_id}' has unsupported consensus method "
             f"{case.consensus_method!r}"
         )
-    reference_summary = _load_json(execution_root / "summary.json")
+    expected_tree.rooted = False
+    _clear_branch_lengths(expected_tree.root)
     reference_tree = load_tree(execution_root / "normalized-tree.nwk")
-    reference_tree.rooted = bool(reference_summary.get("rooted", True))
+    reference_tree.rooted = False
+    _clear_branch_lengths(reference_tree.root)
     _normalize_tree_labels(
         reference_tree.root,
         expected_tip_labels=set(expected_tree.tip_names),
