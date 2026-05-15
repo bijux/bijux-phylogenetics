@@ -79,7 +79,7 @@ def test_write_continuous_ancestral_review_tables(tmp_path: Path) -> None:
     summary_rows = summary_path.read_text(encoding="utf-8").splitlines()
     uncertainty_rows = uncertainty_path.read_text(encoding="utf-8").splitlines()
     exclusion_rows = exclusion_path.read_text(encoding="utf-8").splitlines()
-    assert summary_rows[0].startswith("trait\ttaxon_column\tmodel\talpha")
+    assert summary_rows[0].startswith("trait\ttaxon_column\tmodel\testimator\talpha")
     assert len(summary_rows) == 2
     assert "log_likelihood" in summary_rows[0]
     assert "covariance_condition_number" in summary_rows[0]
@@ -91,6 +91,23 @@ def test_write_continuous_ancestral_review_tables(tmp_path: Path) -> None:
         "taxon\treason",
         "D\tmissing_trait_value",
     ]
+
+
+def test_summarize_continuous_ancestral_report_tracks_fast_anc_estimator() -> None:
+    tree_fixture = get_shared_tree_fixture("balanced_rooted_ultrametric")
+    trait_fixture = get_shared_trait_table_fixture("continuous_tree_mismatch")
+    report = reconstruct_continuous_ancestral_states(
+        tree_fixture.path,
+        trait_fixture.path,
+        trait="value",
+        estimator="fast-anc",
+    )
+    summary = summarize_continuous_ancestral_report(report)
+
+    assert report.estimator == "fast-anc"
+    assert summary.estimator == "fast-anc"
+    assert summary.tree_is_ultrametric is True
+    assert summary.root_standard_error > 0.0
 
 
 def test_reconstruct_continuous_ancestral_states_matches_primate_reference_fixture() -> (

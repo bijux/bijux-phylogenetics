@@ -10,6 +10,9 @@ from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
 )
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+)
 from bijux_phylogenetics.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.shared_phytools_comparative_fixtures import (
@@ -174,6 +177,54 @@ def test_shared_phytools_comparative_fixture_catalog_handles_missing_constant_an
             constant_fixture.traits_path,
             trait=constant_fixture.trait_name,
         )
+
+
+def test_shared_phytools_comparative_fixture_catalog_supports_fast_anc_signal_cases() -> (
+    None
+):
+    strong_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_continuous_strong_signal_twenty_four_taxa"
+    )
+    weak_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_continuous_weak_signal_twenty_four_taxa"
+    )
+    missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_continuous_missing_values_twenty_four_taxa"
+    )
+
+    strong_report = reconstruct_continuous_ancestral_states(
+        strong_fixture.tree_path,
+        strong_fixture.traits_path,
+        trait=strong_fixture.trait_name,
+        taxon_column=strong_fixture.taxon_column,
+        model="brownian",
+        estimator="fast-anc",
+    )
+    weak_report = reconstruct_continuous_ancestral_states(
+        weak_fixture.tree_path,
+        weak_fixture.traits_path,
+        trait=weak_fixture.trait_name,
+        taxon_column=weak_fixture.taxon_column,
+        model="brownian",
+        estimator="fast-anc",
+    )
+    missing_report = reconstruct_continuous_ancestral_states(
+        missing_fixture.tree_path,
+        missing_fixture.traits_path,
+        trait=missing_fixture.trait_name,
+        taxon_column=missing_fixture.taxon_column,
+        model="brownian",
+        estimator="fast-anc",
+    )
+
+    assert strong_report.estimator == "fast-anc"
+    assert weak_report.estimator == "fast-anc"
+    assert len([row for row in strong_report.estimates if not row.is_tip]) == 23
+    assert len([row for row in weak_report.estimates if not row.is_tip]) == 23
+    assert missing_report.taxon_count == 22
+    assert sorted(
+        missing_report.dropped_missing_taxa + missing_report.dropped_non_numeric_taxa
+    ) == ["Phy10", "Phy14"]
 
 
 def test_shared_phytools_comparative_fixture_catalog_covers_discrete_nonultrametric_and_branch_edge_surfaces() -> (
