@@ -190,6 +190,131 @@ tree_has_polytomy <- function(tree) {
   any(as.integer(table(tree$edge[, 1])) > 2L)
 }
 
+load_simulation_fixture <- function(case_payload) {
+  catalog <- jsonlite::fromJSON(
+    case_payload$input_fixture,
+    simplifyVector = FALSE
+  )
+  for (entry in catalog$fixtures) {
+    if (identical(entry$fixture_id, case_payload$fixture_id)) {
+      return(entry)
+    }
+  }
+  stop(
+    paste(
+      "unsupported governed simulation fixture:",
+      case_payload$fixture_id
+    )
+  )
+}
+
+tip_depth_counts <- function(tree) {
+  root_id <- root_node(tree)
+  depths <- setNames(
+    rep(0L, length(tree$tip.label)),
+    as.character(seq_len(length(tree$tip.label)))
+  )
+  walk <- function(node_id, depth_value) {
+    children <- tree$edge[tree$edge[, 1] == node_id, 2]
+    for (child_id in children) {
+      if (child_id <= length(tree$tip.label)) {
+        depths[[as.character(child_id)]] <<- depth_value + 1L
+      } else {
+        walk(child_id, depth_value + 1L)
+      }
+    }
+  }
+  walk(root_id, 0L)
+  unname(as.integer(depths))
+}
+
+cherry_count_tree <- function(tree) {
+  internal_nodes <- sort(unique(tree$edge[, 1]))
+  cherry_count <- 0L
+  for (node_id in internal_nodes) {
+    children <- tree$edge[tree$edge[, 1] == node_id, 2]
+    if (length(children) == 2L && all(children <= length(tree$tip.label))) {
+      cherry_count <- cherry_count + 1L
+    }
+  }
+  cherry_count
+}
+
+colless_score_tree <- function(tree) {
+  root_id <- root_node(tree)
+  count_descendants <- function(node_id) {
+    if (node_id <= length(tree$tip.label)) {
+      return(1L)
+    }
+    children <- tree$edge[tree$edge[, 1] == node_id, 2]
+    child_counts <- vapply(children, count_descendants, integer(1))
+    sum(child_counts)
+  }
+  score <- 0.0
+  walk <- function(node_id) {
+    if (node_id <= length(tree$tip.label)) {
+      return(1L)
+    }
+    children <- tree$edge[tree$edge[, 1] == node_id, 2]
+    if (length(children) != 2L) {
+      stop("simulation envelope expects binary rooted trees")
+    }
+    left_count <- walk(children[[1]])
+    right_count <- walk(children[[2]])
+    score <<- score + abs(left_count - right_count)
+    left_count + right_count
+  }
+  walk(root_id)
+  score
+}
+
+normalized_colless_score_tree <- function(tree) {
+  tip_count <- length(tree$tip.label)
+  if (tip_count <= 2L) {
+    return(0.0)
+  }
+  score <- colless_score_tree(tree)
+  maximum <- ((tip_count - 1L) * (tip_count - 2L)) / 2.0
+  score / maximum
+}
+
+tree_height_branch_length_tree <- function(tree) {
+  tip_depths <- as.numeric(ape::node.depth.edgelength(tree))[seq_len(length(tree$tip.label))]
+  max(tip_depths)
+}
+
+simulation_metric_row <- function(metric, sample_scope, values) {
+  data.frame(
+    metric = metric,
+    sample_scope = sample_scope,
+    observation_count = length(values),
+    mean = as.numeric(mean(values)),
+    standard_deviation = if (length(values) < 2L) 0.0 else as.numeric(stats::sd(values) * sqrt((length(values) - 1L) / length(values))),
+    minimum = as.numeric(min(values)),
+    median = as.numeric(stats::median(values)),
+    maximum = as.numeric(max(values)),
+    stringsAsFactors = FALSE
+  )
+}
+
+simulation_envelope_rows <- function(tree_set) {
+  tree_heights <- vapply(tree_set, tree_height_branch_length_tree, numeric(1))
+  total_branch_lengths <- vapply(tree_set, function(tree) sum(as.numeric(tree$edge.length)), numeric(1))
+  pooled_branch_lengths <- unlist(lapply(tree_set, function(tree) as.numeric(tree$edge.length)), use.names = FALSE)
+  cherry_counts <- vapply(tree_set, cherry_count_tree, integer(1))
+  sackin_values <- vapply(tree_set, function(tree) sum(tip_depth_counts(tree)), integer(1))
+  normalized_colless_values <- vapply(tree_set, normalized_colless_score_tree, numeric(1))
+  rows <- rbind(
+    simulation_metric_row("tree_height_branch_length", "tree", tree_heights),
+    simulation_metric_row("total_branch_length", "tree", total_branch_lengths),
+    simulation_metric_row("branch_length", "edge", pooled_branch_lengths),
+    simulation_metric_row("cherry_count", "tree", as.numeric(cherry_counts)),
+    simulation_metric_row("sackin_imbalance_index", "tree", as.numeric(sackin_values)),
+    simulation_metric_row("normalized_colless_imbalance", "tree", normalized_colless_values)
+  )
+  rows
+}
+
 signature_id <- function(taxa) {
   paste(sort(unique(as.character(taxa))), collapse = "|")
 }
@@ -3008,6 +3133,104 @@ gamma_stat_case <- function(case_payload, output_root, execution_path, r_version
   )
 }
 
+simulation_case <- function(case_payload, output_root, execution_path, r_version) {
+  fixture <- tryCatch(
+    load_simulation_fixture(case_payload),
+    error = function(error) error
+  )
+  if (inherits(fixture, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeSimulationError",
+        message = conditionMessage(fixture),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  set.seed(as.integer(fixture$seed))
+  tree_set <- tryCatch(
+    if (identical(fixture$simulation_model, "random-tree")) {
+      replicate(
+        as.integer(fixture$replicate_count),
+        ape::rtree(as.integer(fixture$tip_count)),
+        simplify = FALSE
+      )
+    } else if (identical(fixture$simulation_model, "coalescent")) {
+      replicate(
+        as.integer(fixture$replicate_count),
+        ape::rcoal(as.integer(fixture$tip_count)),
+        simplify = FALSE
+      )
+    } else {
+      stop(paste("unsupported governed simulation model:", fixture$simulation_model))
+    },
+    error = function(error) error
+  )
+  if (inherits(tree_set, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeSimulationError",
+        message = conditionMessage(tree_set),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  rows <- simulation_envelope_rows(tree_set)
+  pooled_branch_count <- sum(vapply(tree_set, function(tree) nrow(tree$edge), integer(1)))
+  summary_path <- file.path(output_root, "summary.json")
+  rows_path <- file.path(output_root, "simulation-envelope.tsv")
+  write_payload(
+    summary_path,
+    list(
+      simulation_model = fixture$simulation_model,
+      reference_function = fixture$reference_function,
+      tree_count = as.integer(fixture$replicate_count),
+      tip_count = as.integer(fixture$tip_count),
+      seed = as.integer(fixture$seed),
+      branch_length_model = fixture$branch_length_model,
+      population_size = fixture$population_size,
+      rooted = TRUE,
+      binary = TRUE,
+      pooled_branch_count = pooled_branch_count,
+      envelope_metric_count = nrow(rows)
+    )
+  )
+  write_table(rows_path, rows)
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        simulation_envelope = rows_path
+      )
+    )
+  )
+}
+
 ultrametric_case <- function(case_payload, output_root, execution_path, r_version) {
   tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
   if (inherits(tree, "error")) {
@@ -3325,6 +3548,11 @@ if (identical(case_payload$operation, "tree-branching-times")) {
 
 if (identical(case_payload$operation, "tree-diversification-gamma-statistic")) {
   gamma_stat_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "tree-simulation-envelope")) {
+  simulation_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 

@@ -85,8 +85,15 @@ from bijux_phylogenetics.shared_dna_alignment_fixtures import (
 from bijux_phylogenetics.shared_distance_matrix_fixtures import (
     get_shared_distance_matrix_fixture,
 )
+from bijux_phylogenetics.shared_tree_simulation_fixtures import (
+    get_shared_tree_simulation_fixture,
+)
 from bijux_phylogenetics.shared_trait_table_fixtures import (
     get_shared_trait_table_fixture,
+)
+from bijux_phylogenetics.simulation import (
+    simulate_coalescent_trees,
+    simulate_random_trees,
 )
 from bijux_phylogenetics.tree_set import (
     compute_clade_frequency_table,
@@ -249,10 +256,14 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             fixture = get_shared_dna_alignment_fixture(fixture_id)
         elif fixture_kind == "distance-matrix":
             fixture = get_shared_distance_matrix_fixture(fixture_id)
+        elif fixture_kind == "simulation":
+            fixture = get_shared_tree_simulation_fixture(fixture_id)
         else:
             raise ValueError(f"unsupported ape parity fixture kind '{fixture_kind}'")
         if fixtures_root is None:
             return fixture.path
+        if fixture_kind == "simulation":
+            return root / "metadata" / "shared_tree_simulation_fixture_catalog.json"
         return root / fixture.relative_path
 
     def trait_path(fixture_id: str) -> Path:
@@ -1528,6 +1539,48 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             operation="tree-diversification-gamma-statistic",
             input_fixture=fixture_path("tree", "ultrametric_zero_internal_branch"),
             tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="rtree-rooted-six-taxon-uniform",
+            fixture_kind="simulation",
+            fixture_id="rtree_rooted_six_taxon_uniform_64",
+            function_name="ape::rtree",
+            python_function_name="simulate_random_trees",
+            operation="tree-simulation-envelope",
+            input_fixture=fixture_path("simulation", "rtree_rooted_six_taxon_uniform_64"),
+            tolerance=1.5,
+        ),
+        ApeParityCase(
+            case_id="rtree-rooted-twelve-taxon-uniform",
+            fixture_kind="simulation",
+            fixture_id="rtree_rooted_twelve_taxon_uniform_128",
+            function_name="ape::rtree",
+            python_function_name="simulate_random_trees",
+            operation="tree-simulation-envelope",
+            input_fixture=fixture_path(
+                "simulation", "rtree_rooted_twelve_taxon_uniform_128"
+            ),
+            tolerance=2.0,
+        ),
+        ApeParityCase(
+            case_id="rcoal-rooted-six-taxon",
+            fixture_kind="simulation",
+            fixture_id="rcoal_rooted_six_taxon_64",
+            function_name="ape::rcoal",
+            python_function_name="simulate_coalescent_trees",
+            operation="tree-simulation-envelope",
+            input_fixture=fixture_path("simulation", "rcoal_rooted_six_taxon_64"),
+            tolerance=2.2,
+        ),
+        ApeParityCase(
+            case_id="rcoal-rooted-twelve-taxon",
+            fixture_kind="simulation",
+            fixture_id="rcoal_rooted_twelve_taxon_128",
+            function_name="ape::rcoal",
+            python_function_name="simulate_coalescent_trees",
+            operation="tree-simulation-envelope",
+            input_fixture=fixture_path("simulation", "rcoal_rooted_twelve_taxon_128"),
+            tolerance=3.0,
         ),
         ApeParityCase(
             case_id="is-ultrametric-rooted-ultrametric",
@@ -3197,6 +3250,55 @@ def _build_bijux_diversification_gamma_rows(
     ]
 
 
+def _build_bijux_tree_simulation_envelope_rows(
+    fixture_id: str,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    fixture = get_shared_tree_simulation_fixture(fixture_id)
+    if fixture.simulation_model == "random-tree":
+        _trees, report = simulate_random_trees(
+            tree_count=fixture.replicate_count,
+            tip_count=fixture.tip_count,
+            seed=fixture.seed,
+            branch_length_model=fixture.branch_length_model or "uniform",
+        )
+    elif fixture.simulation_model == "coalescent":
+        _trees, report = simulate_coalescent_trees(
+            tree_count=fixture.replicate_count,
+            tip_count=fixture.tip_count,
+            population_size=fixture.population_size or 1.0,
+            seed=fixture.seed,
+        )
+    else:
+        raise ValueError(
+            f"unsupported governed simulation model {fixture.simulation_model!r}"
+        )
+    return {
+        "simulation_model": report.model,
+        "reference_function": fixture.reference_function,
+        "tree_count": report.tree_count,
+        "tip_count": report.tip_count,
+        "seed": report.seed,
+        "branch_length_model": report.branch_length_model,
+        "population_size": report.population_size,
+        "rooted": report.rooted,
+        "binary": report.binary,
+        "pooled_branch_count": report.pooled_branch_count,
+        "envelope_metric_count": len(report.envelope_metrics),
+    }, [
+        {
+            "metric": row.metric,
+            "sample_scope": row.sample_scope,
+            "observation_count": row.observation_count,
+            "mean": row.mean,
+            "standard_deviation": row.standard_deviation,
+            "minimum": row.minimum,
+            "median": row.median,
+            "maximum": row.maximum,
+        }
+        for row in report.envelope_metrics
+    ]
+
+
 def _build_bijux_tree_ultrametric_rows(
     input_fixture: Path,
     *,
@@ -3672,6 +3774,9 @@ def _build_bijux_case_payload(
     if case.operation == "tree-diversification-gamma-statistic":
         summary, rows = _build_bijux_diversification_gamma_rows(case.input_fixture)
         return summary, rows, None
+    if case.operation == "tree-simulation-envelope":
+        summary, rows = _build_bijux_tree_simulation_envelope_rows(case.fixture_id)
+        return summary, rows, None
     if case.operation == "tree-ultrametricity":
         if case.ultrametric_option is None:
             raise ValueError(
@@ -3805,6 +3910,10 @@ def _load_reference_case_payload(
     if case.operation == "tree-diversification-gamma-statistic":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "gamma-statistic.tsv")
+        return summary, rows, None
+    if case.operation == "tree-simulation-envelope":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "simulation-envelope.tsv")
         return summary, rows, None
     if case.operation == "tree-ultrametricity":
         summary = _load_json(execution_root / "summary.json")
