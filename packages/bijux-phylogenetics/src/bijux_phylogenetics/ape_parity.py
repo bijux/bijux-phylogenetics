@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
+from bijux_phylogenetics.core.tree import TreeNode
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
@@ -240,11 +241,30 @@ def _load_json(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _normalize_newick_label(label: str) -> str:
+    if len(label) >= 2 and label.startswith("'") and label.endswith("'"):
+        return label[1:-1].replace("''", "'")
+    return label
+
+
+def _normalize_reference_summary(summary: dict[str, object]) -> dict[str, object]:
+    normalized = dict(summary)
+    tip_labels = normalized.get("tip_labels")
+    if isinstance(tip_labels, list):
+        normalized["tip_labels"] = [
+            _normalize_newick_label(str(label)) for label in tip_labels
+        ]
+    return normalized
+
+
 def _load_tip_table(path: Path) -> list[dict[str, object]]:
     with path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
     return [
-        {"position": int(row["position"]), "label": row["label"]}
+        {
+            "position": int(row["position"]),
+            "label": _normalize_newick_label(row["label"]),
+        }
         for row in rows
     ]
 
@@ -273,8 +293,32 @@ def _compare_json(expected: object, observed: object, *, tolerance: float) -> bo
     return _compare_scalar(expected, observed, tolerance=tolerance)
 
 
-def _canonical_newick(path: Path) -> str:
-    return dumps_newick(load_tree(path))
+def _normalize_tree_labels(
+    node: TreeNode,
+    *,
+    expected_tip_labels: set[str] | None,
+) -> None:
+    if node.name is not None:
+        normalized = _normalize_newick_label(node.name)
+        if (
+            expected_tip_labels
+            and normalized not in expected_tip_labels
+            and normalized.replace("_", " ") in expected_tip_labels
+        ):
+            normalized = normalized.replace("_", " ")
+        node.name = normalized
+    for child in node.children:
+        _normalize_tree_labels(child, expected_tip_labels=expected_tip_labels)
+
+
+def _canonical_newick(
+    path: Path,
+    *,
+    expected_tip_labels: set[str] | None = None,
+) -> str:
+    tree = load_tree(path)
+    _normalize_tree_labels(tree.root, expected_tip_labels=expected_tip_labels)
+    return dumps_newick(tree)
 
 
 def _copy_if_exists(source: Path, destination: Path) -> None:
@@ -447,10 +491,16 @@ def run_ape_parity_cases(
                             )
                         )
                     else:
-                        reference_summary = _load_json(execution_root / "summary.json")
+                        reference_summary = _normalize_reference_summary(
+                            _load_json(execution_root / "summary.json")
+                        )
                         reference_tips = _load_tip_table(execution_root / "tips.tsv")
                         reference_newick = _canonical_newick(
-                            execution_root / "normalized-tree.nwk"
+                            execution_root / "normalized-tree.nwk",
+                            expected_tip_labels=set(
+                                str(label)
+                                for label in reference_summary.get("tip_labels", [])
+                            ),
                         )
                         if not _compare_json(
                             reference_summary, bijux_summary, tolerance=case.tolerance

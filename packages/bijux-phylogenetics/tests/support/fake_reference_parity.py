@@ -41,7 +41,7 @@ CASE_SUMMARIES = {{
         "internal_node_count": 1,
         "edge_count": 3,
         "rooted": False,
-        "tip_labels": ["Homo sapiens", "Mus musculus", "A.B-1"],
+        "tip_labels": ["'Homo sapiens'", "'Mus musculus'", "'A.B-1'"],
         "branch_length_count": 3,
     }},
 }}
@@ -88,7 +88,16 @@ tips_path.write_text(
     + "".join(f"{{row['position']}}\\t{{row['label']}}\\n" for row in tip_rows),
     encoding="utf-8",
 )
-newick_path.write_text(Path(case_payload["input_fixture"]).read_text(encoding="utf-8"), encoding="utf-8")
+if case_payload["case_id"] == "read-tree-quoted-taxon-labels":
+    newick_path.write_text(
+        "('Homo_sapiens':0.1,'Mus_musculus':0.2,'A.B-1':0.3);\\n",
+        encoding="utf-8",
+    )
+else:
+    newick_path.write_text(
+        Path(case_payload["input_fixture"]).read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
 write_json(
     execution_path,
     {{

@@ -75,6 +75,17 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert all(observation.r_version == "4.6.0" for observation in report.observations)
     assert all(observation.ape_version == "5.0.0" for observation in report.observations)
     assert all(observation.reproducible_artifact_root is None for observation in report.observations)
+    quoted_case = next(
+        observation
+        for observation in report.observations
+        if observation.tree_fixture_id == "quoted_taxon_labels"
+    )
+    assert quoted_case.reference_summary is not None
+    assert quoted_case.reference_summary["tip_labels"] == [
+        "Homo sapiens",
+        "Mus musculus",
+        "A.B-1",
+    ]
 
 
 def test_run_ape_parity_cases_records_failure_bundle_for_summary_mismatch(
