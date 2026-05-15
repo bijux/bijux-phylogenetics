@@ -738,6 +738,103 @@ mrca_case <- function(case_payload, output_root, execution_path, r_version) {
   )
 }
 
+monophyly_case <- function(case_payload, output_root, execution_path, r_version) {
+  tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
+  if (inherits(tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  requested_taxa <- as.character(unlist(case_payload$requested_taxa))
+  duplicate_requested_taxa <- sort(unique(requested_taxa[duplicated(requested_taxa)]))
+  unique_requested_taxa <- sort(unique(requested_taxa))
+  present_requested_taxa <- sort(intersect(unique_requested_taxa, tree$tip.label))
+  missing_requested_taxa <- sort(setdiff(unique_requested_taxa, tree$tip.label))
+  reroot <- isTRUE(case_payload$monophyly_reroot)
+  monophyletic <- tryCatch(
+    ape::is.monophyletic(tree, requested_taxa, reroot = reroot),
+    error = function(error) error
+  )
+  if (inherits(monophyletic, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeMonophylyError",
+        message = conditionMessage(monophyletic),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  matched_node_id <- NULL
+  matched_taxa <- character()
+  matched_extra_taxa <- character()
+  matched_node_name <- ""
+  if (length(present_requested_taxa) == 1) {
+    matched_node_id <- match(present_requested_taxa[[1]], tree$tip.label)
+    matched_taxa <- present_requested_taxa
+  } else if (length(present_requested_taxa) >= 2) {
+    matched_node_id <- ape::getMRCA(tree, present_requested_taxa)
+    matched_taxa <- descendant_taxa(tree, matched_node_id)
+    matched_extra_taxa <- sort(setdiff(matched_taxa, present_requested_taxa))
+    matched_node_name <- node_label(tree, matched_node_id)
+  }
+
+  summary_path <- file.path(output_root, "summary.json")
+  write_payload(
+    summary_path,
+    list(
+      requested_taxa = as.list(sort(requested_taxa)),
+      unique_requested_taxa = as.list(unique_requested_taxa),
+      duplicate_requested_taxa = as.list(duplicate_requested_taxa),
+      missing_requested_taxa = as.list(missing_requested_taxa),
+      present_requested_taxa = as.list(present_requested_taxa),
+      reroot = reroot,
+      rooted = ape::is.rooted(tree),
+      monophyletic = isTRUE(monophyletic),
+      complementary_clade_used = isTRUE(monophyletic) && length(matched_extra_taxa) > 0,
+      matched_node_id = matched_node_id,
+      matched_node_name = matched_node_name,
+      matched_taxa = as.list(matched_taxa),
+      matched_extra_taxa = as.list(matched_extra_taxa),
+      matched_tip_count = length(matched_taxa),
+      is_root = if (is.null(matched_node_id)) NULL else identical(matched_node_id, root_node(tree))
+    )
+  )
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(summary_json = summary_path)
+    )
+  )
+}
+
 tree_set_case <- function(case_payload, output_root, execution_path, r_version) {
   tree_set <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
   if (inherits(tree_set, "error")) {
@@ -971,6 +1068,11 @@ if (identical(case_payload$operation, "extract-tree-clade")) {
 
 if (identical(case_payload$operation, "get-tree-mrca")) {
   mrca_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "assess-tree-monophyly")) {
+  monophyly_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 

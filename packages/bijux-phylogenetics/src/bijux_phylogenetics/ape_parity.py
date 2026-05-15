@@ -21,6 +21,7 @@ from bijux_phylogenetics.core.pruning import (
     prune_tree_to_requested_taxa,
 )
 from bijux_phylogenetics.core.topology import (
+    assess_tree_monophyly,
     extract_tree_clade_by_node_id,
     find_tree_mrca,
 )
@@ -63,6 +64,7 @@ class ApeParityCase:
     requested_taxa: tuple[str, ...] = ()
     node_id: int | None = None
     mrca_taxa: tuple[str, ...] = ()
+    monophyly_reroot: bool | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -683,6 +685,127 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             expected_status="mrca-error",
         ),
         ApeParityCase(
+            case_id="is-monophyletic-rooted-two-tip",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::is.monophyletic",
+            python_function_name="assess_tree_monophyly",
+            operation="assess-tree-monophyly",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=0.0,
+            requested_taxa=("A", "B"),
+            monophyly_reroot=False,
+        ),
+        ApeParityCase(
+            case_id="is-monophyletic-rooted-three-tip-reroot-false",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::is.monophyletic",
+            python_function_name="assess_tree_monophyly",
+            operation="assess-tree-monophyly",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=0.0,
+            requested_taxa=("A", "B", "C"),
+            monophyly_reroot=False,
+        ),
+        ApeParityCase(
+            case_id="is-monophyletic-rooted-three-tip-reroot-true",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::is.monophyletic",
+            python_function_name="assess_tree_monophyly",
+            operation="assess-tree-monophyly",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=0.0,
+            requested_taxa=("A", "B", "C"),
+            monophyly_reroot=True,
+        ),
+        ApeParityCase(
+            case_id="is-monophyletic-rooted-full-tip-set",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::is.monophyletic",
+            python_function_name="assess_tree_monophyly",
+            operation="assess-tree-monophyly",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=0.0,
+            requested_taxa=("A", "B", "C", "D"),
+            monophyly_reroot=False,
+        ),
+        ApeParityCase(
+            case_id="is-monophyletic-rooted-mixed-missing",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::is.monophyletic",
+            python_function_name="assess_tree_monophyly",
+            operation="assess-tree-monophyly",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=0.0,
+            requested_taxa=("A", "Z"),
+            monophyly_reroot=False,
+        ),
+        ApeParityCase(
+            case_id="is-monophyletic-unrooted-two-tip",
+            fixture_kind="tree",
+            fixture_id="unrooted_branch_length_tree",
+            function_name="ape::is.monophyletic",
+            python_function_name="assess_tree_monophyly",
+            operation="assess-tree-monophyly",
+            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            tolerance=0.0,
+            requested_taxa=("A", "B"),
+            monophyly_reroot=True,
+        ),
+        ApeParityCase(
+            case_id="is-monophyletic-unrooted-three-tip",
+            fixture_kind="tree",
+            fixture_id="unrooted_branch_length_tree",
+            function_name="ape::is.monophyletic",
+            python_function_name="assess_tree_monophyly",
+            operation="assess-tree-monophyly",
+            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            tolerance=0.0,
+            requested_taxa=("A", "B", "C"),
+            monophyly_reroot=True,
+        ),
+        ApeParityCase(
+            case_id="is-monophyletic-after-outgroup-rooting",
+            fixture_kind="tree",
+            fixture_id="outgroup_rooted_on_d",
+            function_name="ape::is.monophyletic",
+            python_function_name="assess_tree_monophyly",
+            operation="assess-tree-monophyly",
+            input_fixture=fixture_path("tree", "outgroup_rooted_on_d"),
+            tolerance=0.0,
+            requested_taxa=("A", "B", "C"),
+            monophyly_reroot=False,
+        ),
+        ApeParityCase(
+            case_id="is-monophyletic-rooted-polytomy",
+            fixture_kind="tree",
+            fixture_id="rooted_polytomy",
+            function_name="ape::is.monophyletic",
+            python_function_name="assess_tree_monophyly",
+            operation="assess-tree-monophyly",
+            input_fixture=fixture_path("tree", "rooted_polytomy"),
+            tolerance=0.0,
+            requested_taxa=("A", "B", "C"),
+            monophyly_reroot=False,
+        ),
+        ApeParityCase(
+            case_id="is-monophyletic-all-missing-rerooted",
+            fixture_kind="tree",
+            fixture_id="unrooted_branch_length_tree",
+            function_name="ape::is.monophyletic",
+            python_function_name="assess_tree_monophyly",
+            operation="assess-tree-monophyly",
+            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            tolerance=0.0,
+            requested_taxa=("Z",),
+            monophyly_reroot=True,
+            expected_status="monophyly-error",
+        ),
+        ApeParityCase(
             case_id="dna-base-frequency-lowercase",
             fixture_kind="dna-alignment",
             fixture_id="lowercase_aligned_dna",
@@ -837,6 +960,7 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
                 "requested_taxa": list(case.requested_taxa),
                 "node_id": case.node_id,
                 "mrca_taxa": list(case.mrca_taxa),
+                "monophyly_reroot": case.monophyly_reroot,
             },
             indent=2,
             sort_keys=True,
@@ -1024,6 +1148,36 @@ def _build_bijux_mrca_summary(
         "requested_taxa": report.requested_taxa,
         "unique_requested_taxa": report.unique_requested_taxa,
         "duplicate_requested_taxa": report.duplicate_requested_taxa,
+        "matched_node_id": report.matched_node_id,
+        "matched_node_name": report.matched_node_name or "",
+        "matched_taxa": report.matched_taxa,
+        "matched_extra_taxa": report.matched_extra_taxa,
+        "matched_tip_count": report.matched_tip_count,
+        "is_root": report.is_root,
+    }
+
+
+def _build_bijux_monophyly_summary(
+    input_fixture: Path,
+    *,
+    requested_taxa: tuple[str, ...],
+    reroot: bool,
+) -> dict[str, object]:
+    report = assess_tree_monophyly(
+        input_fixture,
+        taxa=list(requested_taxa),
+        reroot=reroot,
+    )
+    return {
+        "requested_taxa": report.requested_taxa,
+        "unique_requested_taxa": report.unique_requested_taxa,
+        "duplicate_requested_taxa": report.duplicate_requested_taxa,
+        "missing_requested_taxa": report.missing_requested_taxa,
+        "present_requested_taxa": report.present_requested_taxa,
+        "reroot": report.reroot,
+        "rooted": report.rooted,
+        "monophyletic": report.monophyletic,
+        "complementary_clade_used": report.complementary_clade_used,
         "matched_node_id": report.matched_node_id,
         "matched_node_name": report.matched_node_name or "",
         "matched_taxa": report.matched_taxa,
@@ -1449,6 +1603,17 @@ def _build_bijux_case_payload(
             mrca_taxa=case.mrca_taxa,
         )
         return summary, None, None
+    if case.operation == "assess-tree-monophyly":
+        if case.monophyly_reroot is None:
+            raise ValueError(
+                f"ape parity case '{case.case_id}' is missing a monophyly reroot policy"
+            )
+        summary = _build_bijux_monophyly_summary(
+            case.input_fixture,
+            requested_taxa=case.requested_taxa,
+            reroot=case.monophyly_reroot,
+        )
+        return summary, None, None
     if case.operation in {"read-tree-set-structure", "write-tree-set-structure"}:
         summary, rows, normalized_text = _build_bijux_tree_set_structure(case.input_fixture)
         return summary, rows, normalized_text
@@ -1506,6 +1671,9 @@ def _load_reference_case_payload(
         )
         return summary, rows, normalized_text
     if case.operation == "get-tree-mrca":
+        summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
+        return summary, None, None
+    if case.operation == "assess-tree-monophyly":
         summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
         return summary, None, None
     if case.operation in {"read-tree-set-structure", "write-tree-set-structure"}:
@@ -1868,6 +2036,15 @@ def run_ape_parity_cases(
                                 mismatch_reason = "summary_mismatch"
                             else:
                                 status = "passed"
+                        elif case.operation == "assess-tree-monophyly":
+                            if not _compare_json(
+                                reference_summary,
+                                bijux_summary,
+                                tolerance=case.tolerance,
+                            ):
+                                mismatch_reason = "summary_mismatch"
+                            else:
+                                status = "passed"
                         elif case.operation in {
                             "read-tree-set-structure",
                             "write-tree-set-structure",
@@ -1929,6 +2106,16 @@ def run_ape_parity_cases(
                     mismatch_reason = "reference_expected_mrca_error_missing"
                 elif not bijux_error.get("message") or not reference_error.get("message"):
                     mismatch_reason = "mrca_error_message_missing"
+                else:
+                    status = "passed"
+                    mismatch_reason = None
+            if case.expected_status == "monophyly-error":
+                if bijux_error is None:
+                    mismatch_reason = "bijux_expected_monophyly_error_missing"
+                elif reference_error is None:
+                    mismatch_reason = "reference_expected_monophyly_error_missing"
+                elif not bijux_error.get("message") or not reference_error.get("message"):
+                    mismatch_reason = "monophyly_error_message_missing"
                 else:
                     status = "passed"
                     mismatch_reason = None
