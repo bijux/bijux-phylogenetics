@@ -73,6 +73,13 @@ _TRANSITIONS = {
     ("C", "T"),
     ("T", "C"),
 }
+_DISTANCE_MODEL_ALIASES = {
+    "raw": "p-distance",
+    "p-distance": "p-distance",
+    "jukes-cantor": "jukes-cantor",
+    "kimura-2-parameter": "kimura-2-parameter",
+    "amino-acid-p-distance": "amino-acid-p-distance",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -534,6 +541,13 @@ def _normalize_residue(residue: str) -> str:
     if upper == "U":
         return "T"
     return upper
+
+
+def _normalize_distance_model(model: DistanceModel) -> DistanceModel:
+    normalized = _DISTANCE_MODEL_ALIASES.get(model)
+    if normalized is None:
+        raise ValueError(f"unsupported distance model: {model}")
+    return normalized
 
 
 def _allowed_models_for_alphabet(alphabet: str) -> set[str]:
@@ -1331,13 +1345,7 @@ def compute_pairwise_genetic_distance_matrix(
     ambiguity_policy: AmbiguityPolicy = "ignore",
 ) -> GeneticDistanceMatrix:
     """Compute a deterministic pairwise genetic distance matrix for an aligned dataset."""
-    if model not in {
-        "p-distance",
-        "jukes-cantor",
-        "kimura-2-parameter",
-        "amino-acid-p-distance",
-    }:
-        raise ValueError(f"unsupported distance model: {model}")
+    model = _normalize_distance_model(model)
     if gap_handling not in {"pairwise-deletion", "complete-deletion"}:
         raise ValueError(f"unsupported gap handling mode: {gap_handling}")
     if ambiguity_policy not in {

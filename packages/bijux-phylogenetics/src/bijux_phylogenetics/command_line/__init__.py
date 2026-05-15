@@ -764,6 +764,14 @@ from bijux_phylogenetics.tree_shape import (
     write_tree_shape_table,
 )
 
+_PAIRWISE_DISTANCE_MODELS = (
+    "raw",
+    "p-distance",
+    "jukes-cantor",
+    "kimura-2-parameter",
+    "amino-acid-p-distance",
+)
+
 
 def _json_ready(value: Any) -> Any:
     if is_dataclass(value):
@@ -1917,12 +1925,7 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_distance.add_argument("alignment", type=Path)
     alignment_distance.add_argument(
         "--model",
-        choices=(
-            "p-distance",
-            "jukes-cantor",
-            "kimura-2-parameter",
-            "amino-acid-p-distance",
-        ),
+        choices=_PAIRWISE_DISTANCE_MODELS,
         default="p-distance",
     )
     alignment_distance.add_argument(
@@ -1947,12 +1950,7 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_distance_quality.add_argument("alignment", type=Path)
     alignment_distance_quality.add_argument(
         "--model",
-        choices=(
-            "p-distance",
-            "jukes-cantor",
-            "kimura-2-parameter",
-            "amino-acid-p-distance",
-        ),
+        choices=_PAIRWISE_DISTANCE_MODELS,
         default="p-distance",
     )
     alignment_distance_quality.add_argument(
@@ -1976,12 +1974,7 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_distance_assumptions.add_argument("alignment", type=Path)
     alignment_distance_assumptions.add_argument(
         "--model",
-        choices=(
-            "p-distance",
-            "jukes-cantor",
-            "kimura-2-parameter",
-            "amino-acid-p-distance",
-        ),
+        choices=_PAIRWISE_DISTANCE_MODELS,
         default="p-distance",
     )
     alignment_distance_assumptions.add_argument(
@@ -2008,12 +2001,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_build_tree.add_argument(
         "--model",
-        choices=(
-            "p-distance",
-            "jukes-cantor",
-            "kimura-2-parameter",
-            "amino-acid-p-distance",
-        ),
+        choices=_PAIRWISE_DISTANCE_MODELS,
         default="p-distance",
     )
     alignment_build_tree.add_argument(
@@ -2038,12 +2026,7 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_compare_distance_trees.add_argument("alignment", type=Path)
     alignment_compare_distance_trees.add_argument(
         "--model",
-        choices=(
-            "p-distance",
-            "jukes-cantor",
-            "kimura-2-parameter",
-            "amino-acid-p-distance",
-        ),
+        choices=_PAIRWISE_DISTANCE_MODELS,
         default="p-distance",
     )
     alignment_compare_distance_trees.add_argument(
@@ -2071,12 +2054,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_compare_distance_reference.add_argument(
         "--model",
-        choices=(
-            "p-distance",
-            "jukes-cantor",
-            "kimura-2-parameter",
-            "amino-acid-p-distance",
-        ),
+        choices=_PAIRWISE_DISTANCE_MODELS,
         default="p-distance",
     )
     alignment_compare_distance_reference.add_argument(
@@ -2103,12 +2081,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_bootstrap_tree.add_argument(
         "--model",
-        choices=(
-            "p-distance",
-            "jukes-cantor",
-            "kimura-2-parameter",
-            "amino-acid-p-distance",
-        ),
+        choices=_PAIRWISE_DISTANCE_MODELS,
         default="p-distance",
     )
     alignment_bootstrap_tree.add_argument(
@@ -2143,12 +2116,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_bootstrap_summary.add_argument(
         "--model",
-        choices=(
-            "p-distance",
-            "jukes-cantor",
-            "kimura-2-parameter",
-            "amino-acid-p-distance",
-        ),
+        choices=_PAIRWISE_DISTANCE_MODELS,
         default="p-distance",
     )
     alignment_bootstrap_summary.add_argument(
@@ -2193,12 +2161,7 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_distance_gap.add_argument("alignment", type=Path)
     alignment_distance_gap.add_argument(
         "--model",
-        choices=(
-            "p-distance",
-            "jukes-cantor",
-            "kimura-2-parameter",
-            "amino-acid-p-distance",
-        ),
+        choices=_PAIRWISE_DISTANCE_MODELS,
         default="p-distance",
     )
     alignment_distance_gap.add_argument(
@@ -2217,12 +2180,7 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_distance_suitability.add_argument("alignment", type=Path)
     alignment_distance_suitability.add_argument(
         "--model",
-        choices=(
-            "p-distance",
-            "jukes-cantor",
-            "kimura-2-parameter",
-            "amino-acid-p-distance",
-        ),
+        choices=_PAIRWISE_DISTANCE_MODELS,
         default="p-distance",
     )
     alignment_distance_suitability.add_argument(
@@ -2249,12 +2207,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_distance_method_report.add_argument(
         "--model",
-        choices=(
-            "p-distance",
-            "jukes-cantor",
-            "kimura-2-parameter",
-            "amino-acid-p-distance",
-        ),
+        choices=_PAIRWISE_DISTANCE_MODELS,
         default="p-distance",
     )
     alignment_distance_method_report.add_argument(
@@ -2283,12 +2236,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_distance_maturity.add_argument(
         "--model",
-        choices=(
-            "p-distance",
-            "jukes-cantor",
-            "kimura-2-parameter",
-            "amino-acid-p-distance",
-        ),
+        choices=_PAIRWISE_DISTANCE_MODELS,
         default="p-distance",
     )
     alignment_distance_maturity.add_argument(
@@ -2317,12 +2265,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_distance_bundle.add_argument(
         "--model",
-        choices=(
-            "p-distance",
-            "jukes-cantor",
-            "kimura-2-parameter",
-            "amino-acid-p-distance",
-        ),
+        choices=_PAIRWISE_DISTANCE_MODELS,
         default="p-distance",
     )
     alignment_distance_bundle.add_argument(
