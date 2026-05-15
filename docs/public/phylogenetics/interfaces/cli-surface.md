@@ -3290,7 +3290,9 @@ stabilization was required.
 preserves the same formula and predictor-encoding contract as `comparative
 pgls`, but the fitted model is an explicit
 `phylogenetic-working-correlation-gee` approximation rather than continuous
-generalized least squares. Its JSON metrics report:
+generalized least squares. It does not currently claim `ape::compar.gee`
+parity and should not be treated as a drop-in `ape::compar.gee`
+implementation. Its JSON metrics report:
 - `taxon_count`
 - `success_count`
 - `failure_count`
@@ -3304,6 +3306,7 @@ generalized least squares. Its JSON metrics report:
 - `separation_detected`
 - `warning_count`
 - `coefficient_inference_distribution`
+- `method_excluded_reference_surfaces`
 
 The command requires the response to be encoded as `0` and `1`. One-class
 responses are rejected instead of silently producing degenerate output.
@@ -5444,7 +5447,8 @@ bundle is treated as a valid handoff.
 `comparative logistic` intentionally reports a different trust state. It is
 `experimental`, emits a warning in JSON output, and repeats the
 `phylogenetic-working-correlation-gee` approximation method in both the direct
-metrics and the method-tier payload. Bayesian report commands such as
+metrics and the method-tier payload, together with an explicit
+`ape::compar.gee` non-claim. Bayesian report commands such as
 `adapter mrbayes-report` and `adapter beast-calibration-report` report
 `parser-only` because they summarize external posterior artifacts rather than
 claiming that Bijux executed the inference itself.

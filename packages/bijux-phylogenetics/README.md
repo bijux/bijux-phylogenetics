@@ -111,7 +111,7 @@ The governed tiers are:
 Current examples include:
 
 - `adapter fasta-to-tree` as `supported`
-- `comparative logistic` as `experimental`, with its approximation method reported
+- `comparative logistic` as `experimental`, with its approximation method and explicit `ape::compar.gee` non-claim reported
 - `report tree-package` as `advisory`
 - Bayesian report builders such as `adapter mrbayes-report` and `adapter beast-calibration-report` as `parser-only`
 

@@ -949,6 +949,9 @@ working-correlation approximation instead of reusing continuous-trait PGLS
 output. It requires the response to be encoded explicitly as `0` and `1`,
 supports the same predictor encoding rules as `comparative pgls`, and reports
 Wald-normal coefficient uncertainty plus explicit separation-risk warnings.
+It does not currently claim `ape::compar.gee` parity, so it should be used as
+an exploratory approximate surface rather than a drop-in `ape::compar.gee`
+replacement.
 
 ```bash
 bijux-phylogenetics comparative logistic \
