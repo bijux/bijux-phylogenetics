@@ -182,6 +182,11 @@ unrooted trees, selected-tip order differences, and rootedness changes after
 pruning, while keeping two explicit workflow-side rules outside the live
 parity subset: absent requested taxa are still reported for tree and trait
 matching work, and fewer than two retained taxa still stop the run clearly.
+The `ape::extract.clade` portion now covers rooted root-clade and internal-node
+subtree extraction plus clear tip-node and out-of-bounds failures. Bijux also
+keeps one owned selector next to that live parity lane: the same subtree can
+be resolved by exact descendant taxa when a workflow has stable taxon identity
+but not a durable ape-style node number.
 The
 `ape::write.tree` portion now
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
