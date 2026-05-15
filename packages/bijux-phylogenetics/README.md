@@ -703,6 +703,7 @@ leave-one-taxon-out sensitivity:
 ```bash
 uv run bijux-phylogenetics parity --json
 uv run bijux-phylogenetics parity --extended --json
+uv run bijux-phylogenetics parity --reference-source ape-live --json
 uv run bijux-phylogenetics comparative validate-reference --json
 uv run bijux-phylogenetics comparative maturity tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --lambda-value 1.0 --json
 uv run bijux-phylogenetics comparative pgls tree.nwk traits.tsv --formula "height_cm ~ log(body_mass) + habitat" --json
@@ -718,6 +719,15 @@ covers fixed-Brownian regression, treatment-coded categorical predictors,
 treatment-coded interaction terms, and one governed estimated-lambda primate
 regression against checked R `ape` plus `nlme` outputs for coefficients,
 standard errors, p-values, likelihood, and AIC.
+
+`parity --reference-source ape-live` is the live external parity harness. It
+launches the checked-in R runner through `Rscript`, records the R version,
+`ape` version, Bijux version, Bijux commit, function name, input fixture,
+tolerance, pass or fail state, and mismatch reason for each governed case, and
+writes reproducible failure or skip artifacts whenever the live lane disagrees
+or `ape` is unavailable. The live observation table is structured rather than
+string-based, so tree summaries, tip ledgers, and normalized Newick outputs
+are compared as owned artifacts rather than scraped console text.
 
 `report release-truth` is the governed pre-release summary surface. It consumes
 actual pytest JUnit XML reports for the full test lane and the real-engine test

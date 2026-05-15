@@ -86,16 +86,17 @@ major `.model.tsv`, `.support.tsv`, clade-table, branch-table,
 comparative-traits, comparative-summary, event-table, and manifest artifacts
 written by the public workflow surfaces.
 
-`parity` is the governed reference-parity validation surface. It checks the
-repository's core numerical methods against checked-in outputs from
-established external tools on small fixtures by default, with one optional
-extended suite for governed primate comparative fits and larger posterior-tree
-validation. Its JSON metrics report:
+`parity` is the governed reference-parity validation surface. By default it
+checks the repository's core numerical methods against checked-in outputs from
+established external tools on small fixtures, with one optional extended suite
+for governed primate comparative fits and larger posterior-tree validation.
+Its JSON metrics report:
 
 - `all_passed`
 - `case_count`
 - `method_count`
 - `failed_case_count`
+- `reference_source`
 - `extended`
 
 The command can write:
@@ -129,6 +130,35 @@ frequencies, and consensus tree generation. `mismatch_kind` is intentionally a
 scientific review surface, not a generic failure flag. It distinguishes
 topology, branch length, missing-taxa policy, numerical tolerance, and
 model-assumption mismatches.
+
+`parity --reference-source ape-live` switches to the live `ape` execution
+harness. That lane runs the checked-in R parity runner through `Rscript`,
+compares structured JSON, TSV, and normalized Newick outputs against the Bijux
+runtime, and records for each governed case:
+
+- `r_version`
+- `ape_version`
+- `bijux_version`
+- `bijux_commit`
+- `function_name`
+- `input_fixture`
+- `tolerance`
+- `passed`
+- `mismatch_reason`
+- `reproducible_artifact_root`
+
+Its JSON metrics report:
+
+- `all_passed`
+- `case_count`
+- `function_count`
+- `failed_case_count`
+- `skipped_case_count`
+- `reference_source`
+
+Skipped live cases are not hidden. When `ape` or `Rscript` is unavailable, the
+observation ledger records the skip reason and the harness writes one small
+reproducible artifact bundle for that case.
 
 The governed PGLS lane is not limited to one intercept-plus-slope example. The
 core suite now includes one fixed-Brownian numeric regression, one

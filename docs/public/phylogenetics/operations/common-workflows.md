@@ -130,6 +130,27 @@ Each observation records the input fixtures, reference tool and version,
 expected output, tolerance, tolerance rationale, observed output, and the
 governed mismatch class.
 
+When the goal is to run the same governed fixtures against a live local R
+installation instead of only checked-in reference outputs, use the live `ape`
+harness on the same command surface:
+
+```bash
+bijux-phylogenetics parity \
+  --reference-source ape-live \
+  --ape-rscript-executable Rscript \
+  --summary-out artifacts/ape-parity-summary.tsv \
+  --observations-out artifacts/ape-parity-observations.tsv \
+  --json
+```
+
+This lane runs the checked-in R parity runner, loads `ape`, writes
+machine-readable JSON, TSV, and normalized Newick outputs, compares them
+against the Bijux runtime, and records the R version, `ape` version, Bijux
+version, Bijux commit, function name, input fixture, tolerance, pass or fail
+state, and mismatch reason for every governed case. If `Rscript` or `ape` is
+unavailable, the case is recorded explicitly as skipped and one small
+reproducible artifact bundle is written for review.
+
 When the goal is to check resource behavior across the repository's largest
 owned workload families, use `benchmark stress-suite`. This workflow does not
 invent a separate benchmark harness. It drives the owned large-alignment,
