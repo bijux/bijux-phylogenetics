@@ -15,6 +15,14 @@ Use the canonical package name when you need the durable runtime API. The
 `phylogenetic` package exists as a compatibility alias, not as a second
 independent runtime.
 
+The owned native tree API now lives on `bijux_phylogenetics.PhyloTree`,
+`bijux_phylogenetics.TreeNode`, and `bijux_phylogenetics.TaxonLabel`. That
+surface is the single in-memory tree contract for native traversal, topology
+transforms, branch-length review, comparative covariance, ancestral
+reconstruction, simulation, and canonical Newick conversion. Stable node IDs,
+parent-child links, node metadata, edge metadata, validation, and deep-copy
+behavior are part of that runtime promise.
+
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the
 raw-FASTA to aligned matrix, trimmed matrix, selected-model table, supported

@@ -96,6 +96,27 @@ delegates the underlying CLI-grade report fields directly and adds stable
 `write_json(...)` serialization plus `write_tsv(...)` where a tabular summary
 is meaningful.
 
+## Native Tree Model
+
+The owned in-memory tree surface now lives on `bijux_phylogenetics.PhyloTree`
+and `bijux_phylogenetics.TreeNode`.
+
+That native model carries:
+
+- stable node IDs
+- parent-child edges
+- branch lengths
+- rooted or unrooted state
+- internal and terminal labels
+- node and edge metadata
+- deterministic preorder and postorder traversal
+- deep-copy support without shared mutation
+- canonical Newick conversion through `PhyloTree.to_newick()` and `PhyloTree.from_newick(...)`
+
+Tree import, tree transformation, native distance review, comparative
+covariance, ancestral reconstruction, and simulation surfaces now operate on
+that same owned structure instead of inventing per-method node identity rules.
+
 ## Method Tiers
 
 Serious workflow and report surfaces now expose an explicit runtime method
