@@ -211,6 +211,7 @@ build_fitmk_result <- function(tree, trait_values, trait_name, excluded_taxa, di
     discrete_model,
     "equal-rates" = "ER",
     "symmetric" = "SYM",
+    "all-rates-different" = "ARD",
     stop(paste("unsupported fitMk parity model:", discrete_model))
   )
   fit <- phytools::fitMk(

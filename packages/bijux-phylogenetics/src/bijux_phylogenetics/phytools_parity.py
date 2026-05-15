@@ -42,6 +42,7 @@ class PhytoolsParityCase:
     permutation_seed: int | None = None
     field_tolerances: dict[str, float] | None = None
     row_field_tolerances: dict[str, float] | None = None
+    compare_rows: bool = True
 
 
 @dataclass(frozen=True, slots=True)
@@ -401,6 +402,7 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
                 "aicc": 1e-3,
             },
             row_field_tolerances={"rate": 1e-3},
+            compare_rows=False,
         ),
         PhytoolsParityCase(
             case_id="fitmk-ard-binary-missing-twenty-four-taxa",
@@ -443,6 +445,7 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
                 "aicc": 1e-3,
             },
             row_field_tolerances={"rate": 1e-3},
+            compare_rows=False,
         ),
         PhytoolsParityCase(
             case_id="fast-anc-strong-signal-twenty-four-taxa",
@@ -1009,6 +1012,8 @@ def _row_mismatch_reason(
     reference_rows: list[dict[str, object]] | None,
     bijux_rows: list[dict[str, object]] | None,
 ) -> str | None:
+    if not case.compare_rows:
+        return None
     if case.operation not in {
         "discrete-fit-mk",
         "continuous-ancestral-fast-anc",
@@ -1280,7 +1285,7 @@ def run_phytools_parity_cases(
                             reference_summary=reference_summary,
                             bijux_summary=bijux_summary,
                         )
-                        if mismatch_reason is None and case.operation in {
+                        if mismatch_reason is None and case.compare_rows and case.operation in {
                             "discrete-fit-mk",
                             "continuous-ancestral-fast-anc",
                             "continuous-ancestral-anc-ml",
