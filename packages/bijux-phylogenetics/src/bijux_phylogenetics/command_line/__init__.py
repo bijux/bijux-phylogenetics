@@ -38,6 +38,7 @@ from bijux_phylogenetics.ancestral.discrete import (
     write_discrete_ancestral_exclusion_table,
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
+    write_discrete_ancestral_transition_table,
 )
 from bijux_phylogenetics.ancestral.discrete_reference import (
     validate_discrete_ancestral_reference_examples,
@@ -3435,9 +3436,20 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("fitch", "equal-rates", "symmetric", "all-rates-different"),
         help="Optionally compare this reconstruction directly against another discrete model.",
     )
+    ancestral_discrete.add_argument(
+        "--root-prior-mode",
+        choices=("equal", "empirical", "fixed"),
+        default="equal",
+        help="Likelihood-only root prior policy for discrete ancestral reconstruction.",
+    )
+    ancestral_discrete.add_argument(
+        "--fixed-root-state",
+        help="Required when --root-prior-mode fixed; names the forced root state.",
+    )
     ancestral_discrete.add_argument("--table-out", type=Path)
     ancestral_discrete.add_argument("--summary-out", type=Path)
     ancestral_discrete.add_argument("--probabilities-out", type=Path)
+    ancestral_discrete.add_argument("--transitions-out", type=Path)
     ancestral_discrete.add_argument("--comparison-out", type=Path)
     ancestral_discrete.add_argument("--exclusions-out", type=Path)
     ancestral_discrete.add_argument(
@@ -10508,6 +10520,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     model=args.model,
                     state_ordering=args.state_ordering,
                     ordered_states=_split_csv_values(args.ordered_states) or None,
+                    root_prior_mode=args.root_prior_mode,
+                    fixed_root_state=args.fixed_root_state,
                 )
                 summary = summarize_discrete_ancestral_report(report)
                 exclusions = discrete_ancestral_exclusions(report)
@@ -10521,6 +10535,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         right_model=args.compare_model,
                         state_ordering=args.state_ordering,
                         ordered_states=_split_csv_values(args.ordered_states) or None,
+                        root_prior_mode=args.root_prior_mode,
+                        fixed_root_state=args.fixed_root_state,
                     )
                     if args.compare_model is not None
                     else None
@@ -10539,6 +10555,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     outputs.append(
                         write_discrete_ancestral_probability_table(
                             args.probabilities_out,
+                            report,
+                        )
+                    )
+                if args.transitions_out is not None:
+                    outputs.append(
+                        write_discrete_ancestral_transition_table(
+                            args.transitions_out,
                             report,
                         )
                     )
@@ -10582,6 +10605,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 report.parsimonious_root_state_count
                             ),
                             "unstable_node_count": summary.unstable_node_count,
+                            "log_likelihood": report.log_likelihood,
+                            "parameter_count": report.parameter_count,
+                            "aic": report.aic,
+                            "root_prior_mode": report.root_prior_mode,
+                            "fixed_root_state": report.fixed_root_state,
+                            "transition_rate_count": len(report.transition_rate_rows),
                             "comparison_node_count": (
                                 len(comparison.rows) if comparison is not None else 0
                             ),

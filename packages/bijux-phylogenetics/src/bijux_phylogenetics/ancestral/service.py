@@ -416,6 +416,8 @@ def compare_discrete_ancestral_reconstructions(
     right_model: str = "equal-rates",
     state_ordering: str = "unordered",
     ordered_states: list[str] | None = None,
+    root_prior_mode: str = "equal",
+    fixed_root_state: str | None = None,
 ) -> DiscreteAncestralPairComparisonReport:
     """Compare two discrete ancestral reconstructions node by node."""
     if left_model == right_model:
@@ -428,6 +430,8 @@ def compare_discrete_ancestral_reconstructions(
         model=left_model,
         state_ordering=state_ordering,
         ordered_states=ordered_states,
+        root_prior_mode=root_prior_mode,
+        fixed_root_state=fixed_root_state,
     )
     right = reconstruct_discrete_ancestral_states(
         tree_path,
@@ -437,6 +441,8 @@ def compare_discrete_ancestral_reconstructions(
         model=right_model,
         state_ordering=state_ordering,
         ordered_states=ordered_states,
+        root_prior_mode=root_prior_mode,
+        fixed_root_state=fixed_root_state,
     )
     right_by_node = {
         estimate.node: estimate for estimate in right.estimates if not estimate.is_tip
