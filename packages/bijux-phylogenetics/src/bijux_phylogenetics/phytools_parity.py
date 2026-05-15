@@ -13,6 +13,7 @@ import tempfile
 from bijux_phylogenetics.ancestral.continuous import (
     reconstruct_continuous_ancestral_states,
 )
+from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     compute_phylogenetic_signal_test,
@@ -157,6 +158,18 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
     missing_signal_fixture = get_shared_phytools_comparative_fixture(
         "phytools_continuous_missing_values_twenty_four_taxa"
     )
+    binary_discrete_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_binary_twenty_four_taxa"
+    )
+    multistate_discrete_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_multistate_twenty_four_taxa"
+    )
+    binary_discrete_missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_binary_missing_twenty_four_taxa"
+    )
+    multistate_discrete_missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_multistate_missing_twenty_four_taxa"
+    )
     return [
         PhytoolsParityCase(
             case_id="phylosig-lambda-non-ultrametric-strong-signal-twenty-four-taxa",
@@ -227,6 +240,66 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
                 "simulated_k_minimum": 0.01,
                 "simulated_k_mean": 0.01,
             },
+        ),
+        PhytoolsParityCase(
+            case_id="fitmk-er-binary-twenty-four-taxa",
+            fixture_id=binary_discrete_fixture.fixture_id,
+            function_name="phytools::fitMk(model='ER')",
+            python_function_name="fit_discrete_mk_model",
+            operation="discrete-fit-mk-er",
+            input_fixtures=(
+                binary_discrete_fixture.tree_path,
+                binary_discrete_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=binary_discrete_fixture.trait_name,
+            taxon_column=binary_discrete_fixture.taxon_column,
+            row_field_tolerances={"rate": 1e-5},
+        ),
+        PhytoolsParityCase(
+            case_id="fitmk-er-multistate-twenty-four-taxa",
+            fixture_id=multistate_discrete_fixture.fixture_id,
+            function_name="phytools::fitMk(model='ER')",
+            python_function_name="fit_discrete_mk_model",
+            operation="discrete-fit-mk-er",
+            input_fixtures=(
+                multistate_discrete_fixture.tree_path,
+                multistate_discrete_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=multistate_discrete_fixture.trait_name,
+            taxon_column=multistate_discrete_fixture.taxon_column,
+            row_field_tolerances={"rate": 1e-5},
+        ),
+        PhytoolsParityCase(
+            case_id="fitmk-er-binary-missing-twenty-four-taxa",
+            fixture_id=binary_discrete_missing_fixture.fixture_id,
+            function_name="phytools::fitMk(model='ER')",
+            python_function_name="fit_discrete_mk_model",
+            operation="discrete-fit-mk-er",
+            input_fixtures=(
+                binary_discrete_missing_fixture.tree_path,
+                binary_discrete_missing_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=binary_discrete_missing_fixture.trait_name,
+            taxon_column=binary_discrete_missing_fixture.taxon_column,
+            row_field_tolerances={"rate": 1e-5},
+        ),
+        PhytoolsParityCase(
+            case_id="fitmk-er-multistate-missing-twenty-four-taxa",
+            fixture_id=multistate_discrete_missing_fixture.fixture_id,
+            function_name="phytools::fitMk(model='ER')",
+            python_function_name="fit_discrete_mk_model",
+            operation="discrete-fit-mk-er",
+            input_fixtures=(
+                multistate_discrete_missing_fixture.tree_path,
+                multistate_discrete_missing_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=multistate_discrete_missing_fixture.trait_name,
+            taxon_column=multistate_discrete_missing_fixture.taxon_column,
+            row_field_tolerances={"rate": 1e-5},
         ),
         PhytoolsParityCase(
             case_id="fast-anc-strong-signal-twenty-four-taxa",
@@ -489,6 +562,41 @@ def _build_bijux_case_payload(
             },
             None,
         )
+    if case.operation == "discrete-fit-mk-er":
+        report = fit_discrete_mk_model(
+            tree_path,
+            traits_path,
+            trait=case.trait_name,
+            taxon_column=case.taxon_column,
+            model="equal-rates",
+        )
+        rows = sorted(
+            [
+                {
+                    "source_state": row.source_state,
+                    "target_state": row.target_state,
+                    "transition_allowed": row.transition_allowed,
+                    "step_distance": row.step_distance,
+                    "rate": row.rate,
+                }
+                for row in report.transition_rate_rows
+            ],
+            key=lambda row: (str(row["source_state"]), str(row["target_state"])),
+        )
+        return (
+            {
+                "taxon_count": report.taxon_count,
+                "trait_name": report.trait,
+                "excluded_taxon_count": len(report.input_audit.pruned_missing_value_taxa),
+                "excluded_taxa": list(report.input_audit.pruned_missing_value_taxa),
+                "state_count": len(report.input_audit.observed_states),
+                "parameter_count": report.parameter_count,
+                "log_likelihood": report.log_likelihood,
+                "aic": report.aic,
+                "aicc": report.aicc,
+            },
+            rows,
+        )
     if case.operation == "continuous-ancestral-fast-anc":
         report = reconstruct_continuous_ancestral_states(
             tree_path,
@@ -601,6 +709,14 @@ def _load_json(path: Path) -> dict[str, object]:
 
 
 def _load_rows_table(path: Path) -> list[dict[str, object]]:
+    string_identity_fields = {
+        "source_state",
+        "target_state",
+        "node",
+    }
+    boolean_fields = {
+        "transition_allowed",
+    }
     with path.open(encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle, delimiter="\t")
         rows: list[dict[str, object]] = []
@@ -610,6 +726,17 @@ def _load_rows_table(path: Path) -> list[dict[str, object]]:
                 if value is None or value == "":
                     parsed[key] = ""
                     continue
+                if key in string_identity_fields:
+                    parsed[key] = value
+                    continue
+                if key in boolean_fields:
+                    lowered = value.lower()
+                    if lowered == "true":
+                        parsed[key] = True
+                        continue
+                    if lowered == "false":
+                        parsed[key] = False
+                        continue
                 try:
                     parsed[key] = int(value)
                     continue
@@ -670,6 +797,18 @@ def _mismatch_reason(
             "simulated_k_minimum",
             "simulated_k_mean",
         )
+    elif case.operation == "discrete-fit-mk-er":
+        compare_keys = (
+            "taxon_count",
+            "trait_name",
+            "excluded_taxon_count",
+            "excluded_taxa",
+            "state_count",
+            "parameter_count",
+            "log_likelihood",
+            "aic",
+            "aicc",
+        )
     elif case.operation == "continuous-ancestral-fast-anc":
         compare_keys = (
             "taxon_count",
@@ -711,27 +850,53 @@ def _row_mismatch_reason(
     bijux_rows: list[dict[str, object]] | None,
 ) -> str | None:
     if case.operation not in {
+        "discrete-fit-mk-er",
         "continuous-ancestral-fast-anc",
         "continuous-ancestral-anc-ml",
     }:
         return None
     if reference_rows is None or bijux_rows is None:
         return "rows_missing"
-    reference_rows = sorted(reference_rows, key=lambda row: str(row.get("node", "")))
-    bijux_rows = sorted(bijux_rows, key=lambda row: str(row.get("node", "")))
+    if case.operation == "discrete-fit-mk-er":
+        reference_rows = sorted(
+            reference_rows,
+            key=lambda row: (
+                str(row.get("source_state", "")),
+                str(row.get("target_state", "")),
+            ),
+        )
+        bijux_rows = sorted(
+            bijux_rows,
+            key=lambda row: (
+                str(row.get("source_state", "")),
+                str(row.get("target_state", "")),
+            ),
+        )
+    else:
+        reference_rows = sorted(reference_rows, key=lambda row: str(row.get("node", "")))
+        bijux_rows = sorted(bijux_rows, key=lambda row: str(row.get("node", "")))
     if len(reference_rows) != len(bijux_rows):
         return "row_count_mismatch"
-    compare_keys = (
-        ("node", "estimate", "standard_error")
-        if case.operation == "continuous-ancestral-fast-anc"
-        else (
-            "node",
-            "estimate",
-            "standard_error",
-            "lower_95_interval",
-            "upper_95_interval",
+    if case.operation == "discrete-fit-mk-er":
+        compare_keys = (
+            "source_state",
+            "target_state",
+            "transition_allowed",
+            "step_distance",
+            "rate",
         )
-    )
+    else:
+        compare_keys = (
+            ("node", "estimate", "standard_error")
+            if case.operation == "continuous-ancestral-fast-anc"
+            else (
+                "node",
+                "estimate",
+                "standard_error",
+                "lower_95_interval",
+                "upper_95_interval",
+            )
+        )
     for reference_row, bijux_row in zip(reference_rows, bijux_rows, strict=True):
         for key in compare_keys:
             if key not in reference_row or key not in bijux_row:
@@ -956,13 +1121,18 @@ def run_phytools_parity_cases(
                             bijux_summary=bijux_summary,
                         )
                         if mismatch_reason is None and case.operation in {
+                            "discrete-fit-mk-er",
                             "continuous-ancestral-fast-anc",
                             "continuous-ancestral-anc-ml",
                         }:
                             rows_path = execution_root / (
-                                "fast-anc-node-estimates.tsv"
-                                if case.operation == "continuous-ancestral-fast-anc"
-                                else "anc-ml-node-estimates.tsv"
+                                "fitmk-rate-matrix.tsv"
+                                if case.operation == "discrete-fit-mk-er"
+                                else (
+                                    "fast-anc-node-estimates.tsv"
+                                    if case.operation == "continuous-ancestral-fast-anc"
+                                    else "anc-ml-node-estimates.tsv"
+                                )
                             )
                             if not rows_path.exists():
                                 mismatch_reason = "reference_rows_missing"

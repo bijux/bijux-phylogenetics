@@ -90,15 +90,10 @@ def write_summary_table(path: Path, summary: dict[str, object]) -> None:
 
 def write_rows_table(path: Path, rows: list[dict[str, object]]) -> None:
     with path.open("w", encoding="utf-8", newline="") as handle:
+        fieldnames = list(rows[0].keys()) if rows else []
         writer = csv.DictWriter(
             handle,
-            fieldnames=[
-                "node",
-                "estimate",
-                "standard_error",
-                "lower_95_interval",
-                "upper_95_interval",
-            ],
+            fieldnames=fieldnames,
             delimiter="\\t",
         )
         writer.writeheader()
@@ -196,12 +191,77 @@ print(json.dumps({"summary": summary, "rows": rows}))
     return payload["summary"], payload["rows"]
 
 
+def compute_discrete_mk_payload(
+    case_payload: dict[str, object],
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    package_root = find_repo_root()
+    repo_python = find_repo_python(package_root)
+    inline_script = '''
+import json
+from pathlib import Path
+from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
+
+payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
+tree_path, traits_path = payload["input_fixtures"]
+report = fit_discrete_mk_model(
+    Path(tree_path),
+    Path(traits_path),
+    trait=payload["trait_name"],
+    taxon_column=payload["taxon_column"],
+    model="equal-rates",
+)
+summary = {
+    "taxon_count": report.taxon_count,
+    "trait_name": report.trait,
+    "excluded_taxon_count": len(report.input_audit.pruned_missing_value_taxa),
+    "excluded_taxa": list(report.input_audit.pruned_missing_value_taxa),
+    "state_count": len(report.input_audit.observed_states),
+    "parameter_count": report.parameter_count,
+    "log_likelihood": report.log_likelihood,
+    "aic": report.aic,
+    "aicc": report.aicc,
+}
+rows = [
+    {
+        "source_state": row.source_state,
+        "target_state": row.target_state,
+        "transition_allowed": row.transition_allowed,
+        "step_distance": row.step_distance,
+        "rate": row.rate,
+    }
+    for row in report.transition_rate_rows
+]
+print(json.dumps({"summary": summary, "rows": rows}))
+'''
+    payload_path = package_root / "artifacts" / "fake-phytools-discrete-payload.json"
+    payload_path.parent.mkdir(parents=True, exist_ok=True)
+    payload_path.write_text(json.dumps(case_payload), encoding="utf-8")
+    command = [
+        str(repo_python),
+        "-c",
+        inline_script.replace("__PAYLOAD_PATH__", repr(str(payload_path))),
+    ]
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(package_root / "src")
+    result = subprocess.run(
+        command,
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=str(package_root),
+        env=env,
+    )
+    payload = json.loads(result.stdout)
+    return payload["summary"], payload["rows"]
+
+
 case_payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 output_root = Path(sys.argv[3])
 output_root.mkdir(parents=True, exist_ok=True)
 execution_path = output_root / "reference-execution.json"
 summary_path = output_root / "reference-summary.json"
 summary_table_path = output_root / "reference-summary.tsv"
+fitmk_rows_path = output_root / "fitmk-rate-matrix.tsv"
 fast_anc_rows_path = output_root / "fast-anc-node-estimates.tsv"
 anc_ml_rows_path = output_root / "anc-ml-node-estimates.tsv"
 
@@ -219,6 +279,7 @@ if not __PHYTOOLS_AVAILABLE__:
 
 case_id = case_payload["case_id"]
 if case_id not in SUMMARIES and case_payload["operation"] not in {
+    "discrete-fit-mk-er",
     "continuous-ancestral-fast-anc",
     "continuous-ancestral-anc-ml",
 }:
@@ -237,7 +298,9 @@ if case_id not in SUMMARIES and case_payload["operation"] not in {
 
 summary = SUMMARIES.get(case_id)
 rows = None
-if case_payload["operation"] == "continuous-ancestral-fast-anc":
+if case_payload["operation"] == "discrete-fit-mk-er":
+    summary, rows = compute_discrete_mk_payload(case_payload)
+elif case_payload["operation"] == "continuous-ancestral-fast-anc":
     summary, rows = compute_continuous_ancestral_payload(
         case_payload,
         estimator="fast-anc",
@@ -258,7 +321,9 @@ write_json(
 write_json(summary_path, summary)
 write_summary_table(summary_table_path, summary)
 if rows is not None:
-    if case_payload["operation"] == "continuous-ancestral-fast-anc":
+    if case_payload["operation"] == "discrete-fit-mk-er":
+        write_rows_table(fitmk_rows_path, rows)
+    elif case_payload["operation"] == "continuous-ancestral-fast-anc":
         write_rows_table(fast_anc_rows_path, rows)
     elif case_payload["operation"] == "continuous-ancestral-anc-ml":
         write_rows_table(anc_ml_rows_path, rows)
