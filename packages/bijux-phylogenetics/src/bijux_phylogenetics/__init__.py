@@ -851,6 +851,12 @@ from .core.topology import (
     unroot_tree,
     write_tree_rooting_report,
 )
+from .core.branching_times import (
+    TreeBranchingTimeReport,
+    TreeBranchingTimeRow,
+    compute_tree_branching_times,
+    write_tree_branching_time_table,
+)
 from .core.node_depth import (
     TreeNodeDepthReport,
     TreeNodeDepthRow,
@@ -2326,6 +2332,10 @@ __all__ = [
     "extract_tree_clade_by_node_id",
     "assess_tree_monophyly",
     "find_tree_mrca",
+    "TreeBranchingTimeReport",
+    "TreeBranchingTimeRow",
+    "compute_tree_branching_times",
+    "write_tree_branching_time_table",
     "TreeNodeDepthReport",
     "TreeNodeDepthRow",
     "compute_tree_node_depths",

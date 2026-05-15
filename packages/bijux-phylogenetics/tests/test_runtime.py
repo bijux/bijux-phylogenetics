@@ -546,6 +546,12 @@ from bijux_phylogenetics.core.topology import (
     unroot_tree,
     write_tree_rooting_report,
 )
+from bijux_phylogenetics.core.branching_times import (
+    TreeBranchingTimeReport,
+    TreeBranchingTimeRow,
+    compute_tree_branching_times,
+    write_tree_branching_time_table,
+)
 from bijux_phylogenetics.core.node_depth import (
     TreeNodeDepthReport,
     TreeNodeDepthRow,
@@ -1044,6 +1050,16 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     )
     assert bijux_phylogenetics.assess_tree_monophyly is assess_tree_monophyly
     assert bijux_phylogenetics.find_tree_mrca is find_tree_mrca
+    assert bijux_phylogenetics.TreeBranchingTimeReport is TreeBranchingTimeReport
+    assert bijux_phylogenetics.TreeBranchingTimeRow is TreeBranchingTimeRow
+    assert (
+        bijux_phylogenetics.compute_tree_branching_times
+        is compute_tree_branching_times
+    )
+    assert (
+        bijux_phylogenetics.write_tree_branching_time_table
+        is write_tree_branching_time_table
+    )
     assert bijux_phylogenetics.TreeNodeDepthReport is TreeNodeDepthReport
     assert bijux_phylogenetics.TreeNodeDepthRow is TreeNodeDepthRow
     assert bijux_phylogenetics.compute_tree_node_depths is compute_tree_node_depths
