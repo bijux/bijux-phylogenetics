@@ -25,7 +25,11 @@ from bijux_phylogenetics.compare.topology import (
 from bijux_phylogenetics.core.alignment import AlignmentRecord
 from bijux_phylogenetics.core.neighbor_joining import build_neighbor_joining_tree
 from bijux_phylogenetics.core.tree import PhyloTree
-from bijux_phylogenetics.errors import InvalidAlignmentError, InvalidDistanceMatrixError
+from bijux_phylogenetics.errors import (
+    InvalidAlignmentError,
+    InvalidDistanceMatrixError,
+    UnsupportedDistanceTreeMethodError,
+)
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.fasta import (
     infer_alignment_alphabet,
@@ -154,6 +158,7 @@ class DistanceTreeBuildReport:
     gap_handling: GapHandlingMode
     ambiguity_policy: AmbiguityPolicy
     method: str
+    method_policy: DistanceTreeMethodPolicy
     taxon_count: int
     pair_count: int
     assumptions: DistanceMethodAssumptionReport
@@ -262,6 +267,7 @@ class ImportedDistanceTreeBuildReport:
 
     matrix_path: Path
     method: str
+    method_policy: DistanceTreeMethodPolicy
     taxon_count: int
     pair_count: int
     assumptions: DistanceMethodAssumptionReport
@@ -355,6 +361,18 @@ class DistanceMethodAssessment:
 
     decision: str
     reasons: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class DistanceTreeMethodPolicy:
+    """Stable support policy for one distance-tree method surface."""
+
+    method: str
+    supported: bool
+    reference_surface: str | None
+    support_scope: str
+    summary: str
+    limitations: list[str]
 
 
 @dataclass(slots=True)
@@ -502,6 +520,7 @@ class DistanceMethodMaturityGateReport:
 
     alignment_path: Path
     method: str
+    method_policy: DistanceTreeMethodPolicy
     model: DistanceModel
     gap_handling: GapHandlingMode
     ambiguity_policy: AmbiguityPolicy
@@ -516,6 +535,7 @@ class DistanceMethodReport:
 
     alignment_path: Path
     method: str
+    method_policy: DistanceTreeMethodPolicy
     model: DistanceModel
     gap_handling: GapHandlingMode
     ambiguity_policy: AmbiguityPolicy
@@ -584,6 +604,81 @@ def _normalize_distance_model(model: DistanceModel) -> DistanceModel:
     if normalized is None:
         raise ValueError(f"unsupported distance model: {model}")
     return normalized
+
+
+def list_distance_tree_method_policies() -> list[DistanceTreeMethodPolicy]:
+    """Return the governed distance-tree method support policy surface."""
+    return [
+        DistanceTreeMethodPolicy(
+            method="neighbor-joining",
+            supported=True,
+            reference_surface="ape::nj",
+            support_scope="owned-runtime-and-live-ape-parity",
+            summary="Neighbor-Joining is fully supported and covered by the governed live ape parity lane.",
+            limitations=[
+                "neighbor-joining remains a distance-summary method rather than a full likelihood inference",
+            ],
+        ),
+        DistanceTreeMethodPolicy(
+            method="upgma",
+            supported=True,
+            reference_surface=None,
+            support_scope="owned-runtime",
+            summary="UPGMA is supported as an owned runtime method for ultrametric reviewer workflows.",
+            limitations=[
+                "upgma assumes an ultrametric clock-like process and can misplace taxa when rates vary among lineages",
+            ],
+        ),
+        DistanceTreeMethodPolicy(
+            method="bionj",
+            supported=False,
+            reference_surface="ape::bionj",
+            support_scope="explicitly-excluded",
+            summary="BIONJ is explicitly out of scope for this round and does not have an owned Bijux runtime or governed ape parity lane.",
+            limitations=[
+                "request neighbor-joining when a governed ape-parity distance-tree workflow is required in this round",
+            ],
+        ),
+    ]
+
+
+def resolve_distance_tree_method_policy(method: str) -> DistanceTreeMethodPolicy:
+    """Resolve one distance-tree method name to its owned support policy."""
+    normalized = method.strip().lower()
+    for policy in list_distance_tree_method_policies():
+        if policy.method == normalized:
+            return policy
+    supported = [
+        policy.method
+        for policy in list_distance_tree_method_policies()
+        if policy.supported
+    ]
+    raise UnsupportedDistanceTreeMethodError(
+        f"unsupported tree-building method '{method}'; supported methods are {', '.join(supported)}",
+        details={
+            "requested_method": method,
+            "supported_methods": supported,
+        },
+    )
+
+
+def _require_supported_distance_tree_method(method: str) -> DistanceTreeMethodPolicy:
+    """Resolve one distance-tree method and reject explicitly excluded methods."""
+    policy = resolve_distance_tree_method_policy(method)
+    if policy.supported:
+        return policy
+    supported = [
+        row.method for row in list_distance_tree_method_policies() if row.supported
+    ]
+    raise UnsupportedDistanceTreeMethodError(
+        policy.summary,
+        details={
+            "requested_method": policy.method,
+            "supported_methods": supported,
+            "excluded_method": policy.method,
+            "reference_surface": policy.reference_surface,
+        },
+    )
 
 
 def _allowed_models_for_alphabet(alphabet: str) -> set[str]:
@@ -2306,6 +2401,7 @@ def build_distance_tree(
     ambiguity_policy: AmbiguityPolicy = "ignore",
 ) -> tuple[PhyloTree, DistanceTreeBuildReport]:
     """Build a distance-based tree from an aligned dataset."""
+    method_policy = _require_supported_distance_tree_method(method)
     quality = inspect_distance_matrix_quality(
         path,
         model=model,
@@ -2326,27 +2422,28 @@ def build_distance_tree(
     if len(report.identifiers) < 2:
         raise InvalidAlignmentError("distance tree building requires at least two taxa")
 
-    if method == "neighbor-joining":
+    if method_policy.method == "neighbor-joining":
         tree = build_neighbor_joining_tree(
             report.identifiers,
             _distance_lookup(report),
         )
-    elif method == "upgma":
+    elif method_policy.method == "upgma":
         constructor = DistanceTreeConstructor()
         distance_matrix = _bio_distance_matrix(report)
         tree = constructor.upgma(distance_matrix)
-    else:
-        raise ValueError(f"unsupported tree-building method: {method}")
     assumptions = quality.assumptions
 
     return (
-        tree if method == "neighbor-joining" else tree_from_biophylo(tree, source_format="newick")
+        tree
+        if method_policy.method == "neighbor-joining"
+        else tree_from_biophylo(tree, source_format="newick")
     ), DistanceTreeBuildReport(
         alignment_path=path,
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
-        method=method,
+        method=method_policy.method,
+        method_policy=method_policy,
         taxon_count=len(report.identifiers),
         pair_count=len(report.pairs),
         assumptions=assumptions,
@@ -2443,6 +2540,7 @@ def bootstrap_distance_trees(
     seed: int = 1,
 ) -> tuple[list[PhyloTree], DistanceBootstrapReport]:
     """Bootstrap a distance tree by resampling alignment sites with replacement."""
+    method_policy = _require_supported_distance_tree_method(method)
     if replicates < 1:
         raise ValueError(f"replicates must be at least 1, got {replicates}")
     quality = inspect_distance_matrix_quality(
@@ -2467,7 +2565,7 @@ def bootstrap_distance_trees(
         _write_bootstrap_alignment(replicate_path, replicate_records)
         tree, _ = build_distance_tree(
             replicate_path,
-            method=method,
+            method=method_policy.method,
             model=model,
             gap_handling=gap_handling,
             ambiguity_policy=ambiguity_policy,
@@ -2482,7 +2580,7 @@ def bootstrap_distance_trees(
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
-        method=method,
+        method=method_policy.method,
         replicates=replicates,
         seed=seed,
         tree_count=len(trees),
@@ -2742,6 +2840,7 @@ def assess_distance_method_maturity(
     validate_bundle: bool = False,
 ) -> DistanceMethodMaturityGateReport:
     """Evaluate whether distance-analysis surfaces are available and validated for one alignment."""
+    method_policy = _require_supported_distance_tree_method(method)
     reference_validation = validate_distance_reference_examples()
     quality = inspect_distance_matrix_quality(
         path,
@@ -2758,7 +2857,7 @@ def assess_distance_method_maturity(
     bootstrap_summary = summarize_distance_bootstrap_support(
         bootstrap_distance_trees(
             path,
-            method=method,
+            method=method_policy.method,
             model=model,
             gap_handling=gap_handling,
             ambiguity_policy=ambiguity_policy,
@@ -2786,7 +2885,7 @@ def assess_distance_method_maturity(
         bundle = write_distance_reproducibility_bundle(
             bundle_dir,
             alignment_path=path,
-            method=method,
+            method=method_policy.method,
             model=model,
             gap_handling=gap_handling,
             ambiguity_policy=ambiguity_policy,
@@ -2856,7 +2955,8 @@ def assess_distance_method_maturity(
         decision = "validated_with_limits"
     return DistanceMethodMaturityGateReport(
         alignment_path=path,
-        method=method,
+        method=method_policy.method,
+        method_policy=method_policy,
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
@@ -2880,6 +2980,7 @@ def build_distance_method_report(
     bootstrap_seed: int = 1,
 ) -> DistanceMethodReport:
     """Build a structured distance-method report that can back JSON or HTML renderers."""
+    method_policy = _require_supported_distance_tree_method(method)
     matrix = compute_pairwise_genetic_distance_matrix(
         path,
         model=model,
@@ -2901,12 +3002,14 @@ def build_distance_method_report(
     reference_validation = validate_distance_reference_examples()
     tree, _ = build_distance_tree(
         path,
-        method=method,
+        method=method_policy.method,
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
     )
-    alternative_method = "upgma" if method == "neighbor-joining" else "neighbor-joining"
+    alternative_method = (
+        "upgma" if method_policy.method == "neighbor-joining" else "neighbor-joining"
+    )
     alternative_tree, _ = build_distance_tree(
         path,
         method=alternative_method,
@@ -2923,7 +3026,7 @@ def build_distance_method_report(
     bootstrap_summary = summarize_distance_bootstrap_support(
         bootstrap_distance_trees(
             path,
-            method=method,
+            method=method_policy.method,
             model=model,
             gap_handling=gap_handling,
             ambiguity_policy=ambiguity_policy,
@@ -2943,7 +3046,7 @@ def build_distance_method_report(
     )
     maturity_gate = assess_distance_method_maturity(
         path,
-        method=method,
+        method=method_policy.method,
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
@@ -2953,7 +3056,8 @@ def build_distance_method_report(
     )
     return DistanceMethodReport(
         alignment_path=path,
-        method=method,
+        method=method_policy.method,
+        method_policy=method_policy,
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
@@ -2983,6 +3087,7 @@ def write_distance_reproducibility_bundle(
     seed: int = 1,
 ) -> DistanceReproducibilityBundleReport:
     """Write a reproducibility bundle for one distance analysis."""
+    method_policy = _require_supported_distance_tree_method(method)
     out_dir.mkdir(parents=True, exist_ok=True)
     bundled_alignment_path = out_dir / "input-alignment.fasta"
     shutil.copy2(alignment_path, bundled_alignment_path)
@@ -3000,14 +3105,14 @@ def write_distance_reproducibility_bundle(
     )
     tree, _ = build_distance_tree(
         alignment_path,
-        method=method,
+        method=method_policy.method,
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
     )
     bootstrap_trees, bootstrap = bootstrap_distance_trees(
         alignment_path,
-        method=method,
+        method=method_policy.method,
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
@@ -3030,7 +3135,7 @@ def write_distance_reproducibility_bundle(
     )
     summary = build_distance_method_report(
         alignment_path,
-        method=method,
+        method=method_policy.method,
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
@@ -3047,7 +3152,7 @@ def write_distance_reproducibility_bundle(
         json.dumps(
             {
                 "alignment_path": str(alignment_path),
-                "method": method,
+                "method": method_policy.method,
                 "model": model,
                 "gap_handling": gap_handling,
                 "ambiguity_policy": ambiguity_policy,
@@ -3105,7 +3210,7 @@ def write_distance_reproducibility_bundle(
     return DistanceReproducibilityBundleReport(
         out_dir=out_dir,
         alignment_path=alignment_path,
-        method=method,
+        method=method_policy.method,
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
@@ -3120,25 +3225,27 @@ def build_tree_from_imported_distance_matrix(
     method: str,
 ) -> tuple[PhyloTree, ImportedDistanceTreeBuildReport]:
     """Build a distance-based tree from an imported long-form distance matrix."""
+    method_policy = _require_supported_distance_tree_method(method)
     entries = load_imported_distance_matrix(path)
     validation = validate_imported_distance_matrix(path)
     assumptions = assess_imported_distance_method_assumptions(path)
-    if method == "neighbor-joining":
+    if method_policy.method == "neighbor-joining":
         tree = build_neighbor_joining_tree(
             validation.identifiers,
             _distance_lookup_from_imported(validation, entries),
         )
-    elif method == "upgma":
+    elif method_policy.method == "upgma":
         constructor = DistanceTreeConstructor()
         distance_matrix = _bio_distance_matrix_from_imported(validation, entries)
         tree = constructor.upgma(distance_matrix)
-    else:
-        raise ValueError(f"unsupported tree-building method: {method}")
     return (
-        tree if method == "neighbor-joining" else tree_from_biophylo(tree, source_format="newick")
+        tree
+        if method_policy.method == "neighbor-joining"
+        else tree_from_biophylo(tree, source_format="newick")
     ), ImportedDistanceTreeBuildReport(
         matrix_path=path,
-        method=method,
+        method=method_policy.method,
+        method_policy=method_policy,
         taxon_count=len(validation.identifiers),
         pair_count=validation.pair_count,
         assumptions=assumptions,

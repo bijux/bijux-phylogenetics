@@ -56,6 +56,10 @@ class InvalidDistanceMatrixError(PhylogeneticsError):
     code = "invalid_distance_matrix_error"
 
 
+class UnsupportedDistanceTreeMethodError(PhylogeneticsError):
+    code = "unsupported_distance_tree_method_error"
+
+
 class AlignmentTaxonMismatchError(PhylogeneticsError):
     code = "alignment_taxon_mismatch_error"
 
