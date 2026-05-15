@@ -5669,6 +5669,7 @@ def build_parser() -> argparse.ArgumentParser:
     demo_rabies_host_geography.add_argument("--mafft-executable", type=str)
     demo_rabies_host_geography.add_argument("--trimal-executable", type=str)
     demo_rabies_host_geography.add_argument("--iqtree-executable", type=str)
+    demo_rabies_host_geography.add_argument("--fasttree-executable", type=str)
     demo_rabies_host_geography.add_argument("--iqtree-seed", type=int, default=1)
     demo_rabies_host_geography.add_argument("--iqtree-threads", type=int, default=1)
     demo_rabies_host_geography.add_argument(
@@ -15903,6 +15904,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     mafft_executable=args.mafft_executable or "mafft",
                     trimal_executable=args.trimal_executable or "trimal",
                     iqtree_executable=args.iqtree_executable or "iqtree2",
+                    fasttree_executable=args.fasttree_executable or "FastTree",
                     iqtree_seed=args.iqtree_seed,
                     iqtree_threads=args.iqtree_threads,
                     bootstrap_replicates=args.bootstrap_replicates,
@@ -15941,6 +15943,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.workflow_bundle.biogeography_map_path,
                         result.workflow_bundle.comparative_report_path,
                         result.workflow_bundle.comparative_summary_path,
+                        result.workflow_bundle.conclusion_stability_summary_path,
+                        result.workflow_bundle.key_clade_stability_path,
+                        result.workflow_bundle.support_value_stability_path,
+                        result.workflow_bundle.ancestral_state_stability_path,
+                        result.workflow_bundle.comparative_coefficient_stability_path,
+                        result.workflow_bundle.conclusion_stability_report_path,
                         result.workflow_bundle.scientific_findings_path,
                         result.workflow_bundle.final_report_path,
                         result.workflow_bundle.final_manifest_path,
@@ -16023,6 +16031,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 ),
                                 "comparative_selected_model": (
                                     result.workflow_bundle.comparative_selected_model
+                                ),
+                                "conclusion_stable_count": (
+                                    result.workflow_bundle.conclusion_stable_count
+                                ),
+                                "conclusion_weak_count": (
+                                    result.workflow_bundle.conclusion_weak_count
+                                ),
+                                "conclusion_unstable_count": (
+                                    result.workflow_bundle.conclusion_unstable_count
                                 ),
                                 "config_check_count": (
                                     result.workflow_bundle.config_check_count
