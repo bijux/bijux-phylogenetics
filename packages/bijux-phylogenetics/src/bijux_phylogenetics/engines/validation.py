@@ -10,6 +10,9 @@ from bijux_phylogenetics.compare.topology import (
     compare_tree_paths,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.error_explanations import (
+    explain_inference_workflow_failure,
+)
 from bijux_phylogenetics.engines.common import (
     build_file_checksums,
     load_engine_manifest,
@@ -24,6 +27,7 @@ from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
     load_fasta_alignment,
     summarize_alignment_readiness,
+    validate_fasta_input,
 )
 from bijux_phylogenetics.io.fasttree_support import (
     FastTreeBranchSupportLabel,
@@ -110,6 +114,11 @@ class MetadataClusteringReport:
 class InferenceFailureTaxonomyReport:
     workflow: str
     failure_category: str
+    failure_reason: str
+    scientific_explanation: str
+    likely_causes: list[str]
+    actionable_fixes: list[str]
+    evidence: dict[str, object]
     valid: bool
     issues: list[str]
 
@@ -566,34 +575,41 @@ def classify_inference_workflow_failure(
     """Classify one workflow state into a stable inference-failure taxonomy."""
     issues: list[str] = []
     failure_category = "no_failure"
-    if any(not path.exists() for path in input_paths):
+    missing_inputs = [path for path in input_paths if not path.exists()]
+    invalid_fasta_paths: list[Path] = []
+    if missing_inputs:
         failure_category = "input_failure"
         issues.append("one or more declared input files are missing")
     else:
         for input_path in input_paths:
             if input_path.suffix.lower() in {".fasta", ".fa", ".fas", ".faa", ".fna"}:
                 try:
+                    validate_fasta_input(input_path)
                     load_fasta_alignment(input_path)
                 except InvalidAlignmentError:
                     failure_category = "input_failure"
                     issues.append("one or more alignment inputs are invalid")
+                    invalid_fasta_paths.append(input_path)
                     break
     if run_exit_code is not None and run_exit_code != 0:
         failure_category = "timeout" if run_exit_code == 124 else "engine_failure"
         issues.append(f"engine exited with code {run_exit_code}")
-    missing_outputs = sorted(
-        str(path) for path in output_paths.values() if not path.exists()
-    )
+    missing_output_map = {
+        output_name: path
+        for output_name, path in output_paths.items()
+        if not path.exists()
+    }
+    missing_outputs = sorted(str(path) for path in missing_output_map.values())
     if missing_outputs:
         failure_category = "missing_output"
         issues.append("one or more expected outputs are missing")
-    parse_failures: list[str] = []
-    invalid_outputs: list[str] = []
+    parse_failures: dict[str, Path] = {}
+    invalid_outputs: dict[str, Path] = {}
     for key, path in output_paths.items():
         if not path.exists():
             continue
         if path.is_file() and not path.read_text(encoding="utf-8").strip():
-            invalid_outputs.append(key)
+            invalid_outputs[key] = path
             continue
         if path.suffix.lower() in {
             ".treefile",
@@ -611,16 +627,32 @@ def classify_inference_workflow_failure(
                 else:
                     load_tree(path)
             except Exception:
-                parse_failures.append(key)
+                parse_failures[key] = path
     if invalid_outputs:
         failure_category = "invalid_output"
         issues.append("one or more outputs exist but are blank or unusable")
     if parse_failures:
         failure_category = "parse_failure"
         issues.append("one or more tree-like outputs could not be parsed")
+    explanation = explain_inference_workflow_failure(
+        workflow=workflow,
+        input_paths=input_paths,
+        output_paths=output_paths,
+        run_exit_code=run_exit_code,
+        missing_inputs=missing_inputs,
+        invalid_fasta_paths=invalid_fasta_paths,
+        missing_outputs=missing_output_map,
+        invalid_outputs=invalid_outputs,
+        parse_failures=parse_failures,
+    )
     return InferenceFailureTaxonomyReport(
         workflow=workflow,
         failure_category=failure_category,
+        failure_reason=explanation.failure_reason,
+        scientific_explanation=explanation.scientific_explanation,
+        likely_causes=explanation.likely_causes,
+        actionable_fixes=explanation.actionable_fixes,
+        evidence=explanation.evidence,
         valid=failure_category == "no_failure",
         issues=issues,
     )

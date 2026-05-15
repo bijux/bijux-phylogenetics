@@ -358,6 +358,66 @@ def test_classify_inference_workflow_failure_detects_input_failures(
     assert report.failure_category == "input_failure"
 
 
+def test_classify_inference_workflow_failure_explains_invalid_fasta_records() -> None:
+    report = classify_inference_workflow_failure(
+        workflow="multiple-sequence-alignment",
+        input_paths=[fixture("example_sequences_invalid_input.fasta")],
+        output_paths={},
+    )
+
+    assert report.failure_category == "input_failure"
+    assert report.failure_reason == "invalid_fasta_input"
+    assert "record-level biological data problems" in report.scientific_explanation
+    assert report.evidence["duplicate_identifier_count"] == 1
+    assert report.evidence["empty_sequence_count"] == 1
+    assert report.evidence["illegal_character_count"] == 1
+
+
+def test_classify_inference_workflow_failure_explains_missing_tree_outputs(
+    tmp_path: Path,
+) -> None:
+    report = classify_inference_workflow_failure(
+        workflow="maximum-likelihood-tree",
+        input_paths=[fixture("example_alignment.fasta")],
+        output_paths={"tree": tmp_path / "missing.treefile"},
+        run_exit_code=0,
+    )
+
+    assert report.failure_category == "missing_output"
+    assert report.failure_reason == "tree_output_missing"
+    assert "without writing a tree artifact" in report.scientific_explanation
+    assert report.evidence["missing_outputs"] == [
+        {
+            "output_name": "tree",
+            "path": str(tmp_path / "missing.treefile"),
+        }
+    ]
+
+
+def test_classify_inference_workflow_failure_explains_empty_trimmed_alignment(
+    tmp_path: Path,
+) -> None:
+    trimmed_path = tmp_path / "trimmed.fasta"
+    trimmed_path.write_text("", encoding="utf-8")
+
+    report = classify_inference_workflow_failure(
+        workflow="alignment-trimming",
+        input_paths=[fixture("example_alignment_trim.fasta")],
+        output_paths={"trimmed_alignment": trimmed_path},
+        run_exit_code=0,
+    )
+
+    assert report.failure_category == "invalid_output"
+    assert report.failure_reason == "trimmed_alignment_empty"
+    assert "removed all usable alignment signal" in report.scientific_explanation
+    assert report.evidence["invalid_outputs"] == [
+        {
+            "output_name": "trimmed_alignment",
+            "path": str(trimmed_path),
+        }
+    ]
+
+
 def test_validate_bootstrap_tree_set_requires_consistent_taxa(tmp_path: Path) -> None:
     valid_path = tmp_path / "valid.ufboot"
     valid_path.write_text(

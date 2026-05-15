@@ -649,6 +649,33 @@ def test_adapter_align_cli_reports_codon_aware_failures(tmp_path: Path, capsys) 
     assert "excluded every sequence" in payload["errors"][0]["message"]
 
 
+def test_adapter_align_cli_explains_invalid_fasta_records(tmp_path: Path, capsys) -> None:
+    executable = _fake_mafft(tmp_path / "mafft-fixture")
+    output_path = tmp_path / "aligned.fasta"
+
+    exit_code = main(
+        [
+            "adapter",
+            "align",
+            str(fixture("alignments/example_sequences_invalid_input.fasta")),
+            "--out",
+            str(output_path),
+            "--executable",
+            str(executable),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == "invalid_alignment_error"
+    assert payload["errors"][0]["details"]["failure_reason"] == "invalid_fasta_input"
+    assert payload["errors"][0]["details"]["evidence"]["duplicate_identifier_count"] == 1
+    assert payload["errors"][0]["details"]["evidence"]["illegal_character_count"] == 1
+    assert payload["errors"][0]["details"]["evidence"]["empty_sequence_count"] == 1
+
+
 def test_adapter_align_cli_honors_configurable_genetic_code(
     tmp_path: Path, capsys
 ) -> None:
@@ -1965,6 +1992,7 @@ def test_adapter_mrbayes_run_cli_rejects_or_cleans_incomplete_outputs(
     assert malformed_payload["status"] == "error"
     assert malformed_payload["errors"][0]["code"] == "mrbayes_trace_invalid_parameter_value"
     assert malformed_payload["errors"][0]["details"]["artifact_kind"] == "mrbayes-trace"
+    assert malformed_payload["errors"][0]["details"]["failure_reason"] == "mrbayes_artifact_malformed"
     assert marker_path.exists()
 
     rejected_exit = main(
@@ -2047,6 +2075,7 @@ def test_adapter_mrbayes_run_cli_surfaces_structured_missing_output_error(
     assert exit_code == 2
     assert payload["errors"][0]["code"] == "engine_required_output_missing"
     assert payload["errors"][0]["details"]["engine_name"] == "MrBayes"
+    assert payload["errors"][0]["details"]["failure_reason"] == "posterior_artifact_missing"
     assert payload["errors"][0]["details"]["missing_outputs"] == [
         {
             "output_name": "consensus_tree",
@@ -2483,6 +2512,7 @@ def test_adapter_beast_run_cli_rejects_or_cleans_incomplete_outputs(
     assert malformed_payload["status"] == "error"
     assert malformed_payload["errors"][0]["code"] == "beast_log_invalid_parameter_value"
     assert malformed_payload["errors"][0]["details"]["artifact_kind"] == "beast-log"
+    assert malformed_payload["errors"][0]["details"]["failure_reason"] == "beast_artifact_malformed"
     assert marker_path.exists()
 
     rejected_exit = main(
@@ -2557,6 +2587,7 @@ def test_adapter_beast_run_cli_surfaces_structured_missing_output_error(
     assert exit_code == 2
     assert payload["errors"][0]["code"] == "engine_required_output_missing"
     assert payload["errors"][0]["details"]["engine_name"] == "BEAST"
+    assert payload["errors"][0]["details"]["failure_reason"] == "posterior_artifact_missing"
     assert payload["errors"][0]["details"]["missing_outputs"] == [
         {
             "output_name": "posterior_trees",

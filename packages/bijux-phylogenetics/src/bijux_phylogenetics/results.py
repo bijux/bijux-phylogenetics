@@ -5,6 +5,10 @@ from pathlib import Path
 from typing import Any
 
 from bijux_phylogenetics import __version__
+from bijux_phylogenetics.error_explanations import (
+    explain_phylogenetics_error,
+    explanation_payload,
+)
 from bijux_phylogenetics.errors import PhylogeneticsError
 from bijux_phylogenetics.identity import CLI_NAME, IMPORT_NAME, PACKAGE_NAME
 
@@ -58,6 +62,18 @@ def build_error_result(
     error: PhylogeneticsError,
 ) -> CommandResult:
     """Build a failed CLI result envelope."""
+    explanation = explain_phylogenetics_error(
+        error,
+        inputs=[Path(item) if not isinstance(item, Path) else item for item in inputs],
+    )
+    details = dict(error.details)
+    details.update(
+        {
+            key: value
+            for key, value in explanation_payload(explanation).items()
+            if key not in details
+        }
+    )
     return CommandResult(
         status="error",
         command=command,
@@ -68,7 +84,7 @@ def build_error_result(
             {
                 "code": error.code,
                 "message": error.message,
-                **({"details": error.details} if error.details else {}),
+                **({"details": details} if details else {}),
             }
         ],
         metrics={},
