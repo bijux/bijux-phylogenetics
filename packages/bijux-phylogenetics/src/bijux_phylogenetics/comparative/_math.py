@@ -159,6 +159,83 @@ def matrix_condition_number(matrix: list[list[float]]) -> float:
     return matrix_infinity_norm(matrix) * matrix_infinity_norm(inverse)
 
 
+def symmetric_matrix_eigenvalues(
+    matrix: list[list[float]],
+    *,
+    tolerance: float = 1e-15,
+    max_iterations: int = 10_000,
+) -> list[float]:
+    """Return the eigenvalues of a real symmetric matrix via Jacobi rotations."""
+    size = len(matrix)
+    if size == 0:
+        return []
+    if size == 1:
+        return [float(matrix[0][0])]
+    working = matrix_copy(matrix)
+    for _ in range(max_iterations):
+        pivot_row = 0
+        pivot_column = 1
+        pivot_value = 0.0
+        for row_index in range(size):
+            for column_index in range(row_index + 1, size):
+                candidate = abs(working[row_index][column_index])
+                if candidate > pivot_value:
+                    pivot_row = row_index
+                    pivot_column = column_index
+                    pivot_value = candidate
+        if pivot_value <= tolerance:
+            return [working[index][index] for index in range(size)]
+        app = working[pivot_row][pivot_row]
+        aqq = working[pivot_column][pivot_column]
+        apq = working[pivot_row][pivot_column]
+        tau = (aqq - app) / (2.0 * apq)
+        tangent = (
+            math.copysign(1.0, tau) / (abs(tau) + math.sqrt(1.0 + tau * tau))
+            if not math.isclose(tau, 0.0, abs_tol=tolerance)
+            else 1.0
+        )
+        cosine = 1.0 / math.sqrt(1.0 + tangent * tangent)
+        sine = tangent * cosine
+        for index in range(size):
+            if index in (pivot_row, pivot_column):
+                continue
+            left = working[index][pivot_row]
+            right = working[index][pivot_column]
+            working[index][pivot_row] = working[pivot_row][index] = (
+                cosine * left - sine * right
+            )
+            working[index][pivot_column] = working[pivot_column][index] = (
+                sine * left + cosine * right
+            )
+        working[pivot_row][pivot_row] = (
+            cosine * cosine * app
+            - 2.0 * sine * cosine * apq
+            + sine * sine * aqq
+        )
+        working[pivot_column][pivot_column] = (
+            sine * sine * app
+            + 2.0 * sine * cosine * apq
+            + cosine * cosine * aqq
+        )
+        working[pivot_row][pivot_column] = 0.0
+        working[pivot_column][pivot_row] = 0.0
+    raise ValueError("symmetric eigenvalue iteration did not converge")
+
+
+def symmetric_matrix_condition_number(
+    matrix: list[list[float]], *, tolerance: float = 1e-12
+) -> float:
+    """Return the exact singular-value condition number of a symmetric matrix."""
+    singular_values = sorted(
+        abs(value) for value in symmetric_matrix_eigenvalues(matrix, tolerance=tolerance)
+    )
+    if not singular_values:
+        return 0.0
+    if math.isclose(singular_values[0], 0.0, abs_tol=tolerance):
+        return math.inf
+    return singular_values[-1] / singular_values[0]
+
+
 def matrix_rank(matrix: list[list[float]], *, tolerance: float) -> int:
     """Return the numeric rank of a matrix under one absolute pivot tolerance."""
     if not matrix:

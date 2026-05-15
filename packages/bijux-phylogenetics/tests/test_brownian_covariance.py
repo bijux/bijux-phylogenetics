@@ -65,6 +65,7 @@ def test_summarize_brownian_covariance_handles_non_ultrametric_tip_order() -> No
     assert math.isclose(matrix[("D", "D")], 0.1, abs_tol=1e-12)
     assert math.isclose(matrix[("C", "B")], 0.1, abs_tol=1e-12)
     assert math.isclose(matrix[("A", "D")], 0.0, abs_tol=1e-12)
+    assert math.isclose(report.condition_number, 5.56155281280883, abs_tol=1e-12)
 
 
 def test_summarize_brownian_covariance_handles_unrooted_branch_length_tree() -> None:

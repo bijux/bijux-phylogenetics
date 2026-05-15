@@ -8,8 +8,8 @@ from pathlib import Path
 from bijux_phylogenetics.comparative._math import (
     invert_matrix,
     log_determinant,
-    matrix_condition_number,
     matrix_rank,
+    symmetric_matrix_condition_number,
 )
 from bijux_phylogenetics.comparative.common import (
     build_brownian_covariance_matrix,
@@ -77,7 +77,7 @@ def summarize_brownian_covariance(
     )
     condition_number = math.inf
     if not singular:
-        condition_number = matrix_condition_number(covariance_matrix)
+        condition_number = symmetric_matrix_condition_number(covariance_matrix)
     near_singular = singular or condition_number >= BROWNIAN_COVARIANCE_CONDITION_THRESHOLD
     return BrownianCovarianceReport(
         tree_path=tree_path,
