@@ -46,14 +46,44 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "read-tree-balanced-rooted-ultrametric",
         "read-tree-unrooted-branch-length",
         "read-tree-quoted-taxon-labels",
+        "dna-base-frequency-lowercase",
+        "dna-base-frequency-ambiguity",
+        "dna-raw-distance-clean",
+        "dna-raw-distance-gaps",
+        "dna-raw-distance-identical",
+        "dna-raw-distance-high-divergence",
+        "dna-raw-distance-missing-data",
+        "dna-translation-valid-frame",
+        "dna-translation-internal-stop",
+        "dna-translation-terminal-stop",
     ]
-    assert [case.tree_fixture_id for case in cases] == [
+    assert [case.fixture_id for case in cases] == [
         "balanced_rooted_ultrametric",
         "unrooted_branch_length_tree",
         "quoted_taxon_labels",
+        "lowercase_aligned_dna",
+        "dna_with_ambiguity",
+        "clean_aligned_dna",
+        "dna_with_gaps",
+        "identical_sequences",
+        "high_divergence_sequences",
+        "dna_with_missing_data",
+        "coding_valid_reading_frame",
+        "coding_internal_stop",
+        "coding_terminal_stop",
     ]
-    assert {case.function_name for case in cases} == {"ape::read.tree"}
-    assert {case.operation for case in cases} == {"read-tree-summary"}
+    assert {case.function_name for case in cases} == {
+        "ape::read.tree",
+        "ape::base.freq",
+        "ape::dist.dna",
+        "ape::trans",
+    }
+    assert {case.operation for case in cases} == {
+        "read-tree-summary",
+        "dna-base-frequency",
+        "dna-raw-distance",
+        "dna-translation",
+    }
 
 
 def test_run_ape_parity_cases_passes_against_fake_reference_runner(
@@ -67,18 +97,23 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 3
-    assert report.passed_case_count == 3
+    assert report.case_count == 13
+    assert report.passed_case_count == 13
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
-    assert [row.function_name for row in report.summary_rows] == ["ape::read.tree"]
+    assert [row.function_name for row in report.summary_rows] == [
+        "ape::base.freq",
+        "ape::dist.dna",
+        "ape::read.tree",
+        "ape::trans",
+    ]
     assert all(observation.r_version == "4.6.0" for observation in report.observations)
     assert all(observation.ape_version == "5.0.0" for observation in report.observations)
     assert all(observation.reproducible_artifact_root is None for observation in report.observations)
     quoted_case = next(
         observation
         for observation in report.observations
-        if observation.tree_fixture_id == "quoted_taxon_labels"
+        if observation.fixture_id == "quoted_taxon_labels"
     )
     assert quoted_case.reference_summary is not None
     assert quoted_case.reference_summary["tip_labels"] == [
@@ -86,6 +121,13 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         "Mus musculus",
         "A.B-1",
     ]
+    translation_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "dna-translation-terminal-stop"
+    )
+    assert translation_case.reference_summary is not None
+    assert translation_case.reference_summary["stop_codon_count"] == 1
 
 
 def test_run_ape_parity_cases_records_failure_bundle_for_summary_mismatch(
@@ -117,7 +159,7 @@ def test_run_ape_parity_cases_records_failure_bundle_for_summary_mismatch(
         (artifact_root / "reference-summary.observed.json").read_text(encoding="utf-8")
     )
     assert observed_summary["rooted"] is False
-    assert (artifact_root / "bijux-normalized-tree.nwk").exists()
+    assert (artifact_root / "bijux-normalized.txt").exists()
 
 
 def test_run_ape_parity_cases_marks_missing_rscript_as_skipped(tmp_path: Path) -> None:
@@ -152,9 +194,10 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 3
+    assert len(rows) == 13
     assert rows[0]["function_name"] == "ape::read.tree"
-    assert rows[0]["tree_fixture_id"]
+    assert rows[0]["fixture_kind"] == "tree"
+    assert rows[0]["fixture_id"]
     assert rows[0]["status"] == "passed"
     assert rows[0]["bijux_version"]
 

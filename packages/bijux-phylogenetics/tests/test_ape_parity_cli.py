@@ -33,8 +33,8 @@ def test_parity_cli_runs_live_ape_harness_and_writes_tables(
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["metrics"]["reference_source"] == "ape-live"
-    assert payload["metrics"]["case_count"] == 3
-    assert payload["metrics"]["function_count"] == 1
+    assert payload["metrics"]["case_count"] == 13
+    assert payload["metrics"]["function_count"] == 4
     assert payload["metrics"]["skipped_case_count"] == 0
     assert summary_path.exists()
     assert observation_path.exists()
@@ -51,7 +51,7 @@ def test_parity_cli_restricts_live_ape_cases(tmp_path: Path, capsys) -> None:
             "--ape-rscript-executable",
             str(rscript),
             "--ape-case",
-            "read-tree-unrooted-branch-length",
+            "dna-translation-terminal-stop",
             "--json",
         ]
     )
@@ -61,4 +61,4 @@ def test_parity_cli_restricts_live_ape_cases(tmp_path: Path, capsys) -> None:
     assert payload["status"] == "ok"
     assert payload["metrics"]["case_count"] == 1
     report = payload["data"]["report"]
-    assert report["observations"][0]["case_id"] == "read-tree-unrooted-branch-length"
+    assert report["observations"][0]["case_id"] == "dna-translation-terminal-stop"
