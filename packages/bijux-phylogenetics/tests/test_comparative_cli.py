@@ -1720,12 +1720,16 @@ def test_comparative_logistic_cli_reports_binary_metrics(capsys) -> None:
         "phylogenetic-working-correlation-gee"
     )
     assert payload["metrics"]["converged"] is True
-    assert payload["metrics"]["warning_count"] == 1
+    assert payload["metrics"]["warning_count"] == 2
     assert payload["metrics"]["method_tier"] == "experimental"
     assert payload["metrics"]["method_approximation"] == (
         "phylogenetic-working-correlation-gee"
     )
+    assert payload["metrics"]["method_excluded_reference_surfaces"] == [
+        "ape::compar.gee"
+    ]
     assert payload["warnings"][0].startswith("experimental method tier:")
+    assert any("ape::compar.gee parity" in warning for warning in payload["warnings"])
     assert payload["metrics"]["coefficient_inference_distribution"] == "wald-normal"
     assert coefficients["body_size"] > 0.0
 
@@ -1760,6 +1764,7 @@ def test_comparative_logistic_cli_writes_review_ledgers(tmp_path: Path, capsys) 
         warning.startswith("experimental method tier:")
         for warning in payload["warnings"]
     )
+    assert any("ape::compar.gee parity" in warning for warning in payload["warnings"])
     assert coefficients_out.exists()
     assert fitted_out.exists()
     assert excluded_out.exists()

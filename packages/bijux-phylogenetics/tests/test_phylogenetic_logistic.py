@@ -43,6 +43,7 @@ def test_summarize_phylogenetic_logistic_fits_binary_response() -> None:
     assert report.approximation_method == "phylogenetic-working-correlation-gee"
     assert report.method_tier.tier == "experimental"
     assert report.method_tier.approximation == report.approximation_method
+    assert report.method_tier.excluded_reference_surfaces == ("ape::compar.gee",)
     assert report.method_tier.warning is not None
     assert report.taxon_count == 6
     assert report.success_count == 3
