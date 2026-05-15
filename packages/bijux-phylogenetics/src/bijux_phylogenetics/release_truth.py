@@ -14,6 +14,7 @@ from bijux_phylogenetics.datasets.catalog import (
 )
 from bijux_phylogenetics.provenance.method_tiers import (
     MethodTierAssessment,
+    method_tier_warnings,
     release_method_tier_inventory,
 )
 from bijux_phylogenetics.reference_parity import (
@@ -175,8 +176,9 @@ def _release_limitations(
         if item not in limitations:
             limitations.append(item)
     for assessment in method_inventory:
-        if assessment.warning is not None and assessment.warning not in limitations:
-            limitations.append(assessment.warning)
+        for warning in method_tier_warnings(assessment):
+            if warning not in limitations:
+                limitations.append(warning)
     return limitations
 
 
