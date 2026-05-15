@@ -13,6 +13,9 @@ from bijux_phylogenetics.ancestral.discrete import (
 from bijux_phylogenetics.comparative.covariance_audit import (
     summarize_comparative_covariance_audit,
 )
+from bijux_phylogenetics.comparative.signal import (
+    compute_phylogenetic_independent_contrasts,
+)
 from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.shared_trait_table_fixtures import (
@@ -44,6 +47,7 @@ def test_shared_trait_table_fixture_catalog_covers_required_goal_cases() -> None
         "constant-trait-negative-case",
         "categorical-predictor-case",
         "misordered-taxon-rows",
+        "phylogenetic-independent-contrasts",
     } <= feature_tags
 
 
@@ -172,3 +176,45 @@ def test_shared_trait_table_fixture_catalog_preserves_categorical_order_independ
     assert ordered_report.encoded_columns == reordered_report.encoded_columns
     assert ordered_report.analysis_taxa == ["A", "B", "C", "D"]
     assert reordered_report.analysis_taxa == ["A", "B", "C", "D"]
+
+
+def test_shared_trait_table_fixture_catalog_supports_governed_pic_cases() -> None:
+    balanced_fixture = get_shared_trait_table_fixture("pic_continuous_balanced")
+    pectinate_fixture = get_shared_trait_table_fixture("pic_continuous_pectinate")
+    six_taxon_fixture = get_shared_trait_table_fixture("pic_continuous_six_taxon")
+    missing_fixture = get_shared_trait_table_fixture("pic_continuous_missing_values")
+
+    balanced_tree = get_shared_tree_fixture(balanced_fixture.tree_fixture_id).path
+    pectinate_tree = get_shared_tree_fixture(pectinate_fixture.tree_fixture_id).path
+    six_taxon_tree = get_shared_tree_fixture(six_taxon_fixture.tree_fixture_id).path
+
+    balanced_report = compute_phylogenetic_independent_contrasts(
+        balanced_tree,
+        balanced_fixture.path,
+        trait="response",
+    )
+    pectinate_report = compute_phylogenetic_independent_contrasts(
+        pectinate_tree,
+        pectinate_fixture.path,
+        trait="response",
+    )
+    six_taxon_report = compute_phylogenetic_independent_contrasts(
+        six_taxon_tree,
+        six_taxon_fixture.path,
+        trait="response_growth",
+    )
+    missing_report = compute_phylogenetic_independent_contrasts(
+        six_taxon_tree,
+        missing_fixture.path,
+        trait="response_growth",
+    )
+
+    assert balanced_report.taxon_count == 4
+    assert [row.node_id for row in balanced_report.contrasts] == [6, 7, 5]
+    assert pectinate_report.input_audit.tree_is_ultrametric is False
+    assert [row.node_id for row in pectinate_report.contrasts] == [7, 6, 5]
+    assert six_taxon_report.taxon_count == 6
+    assert len(six_taxon_report.contrasts) == 5
+    assert missing_report.taxon_count == 4
+    assert missing_report.input_audit.pruned_missing_value_taxa == ["B"]
+    assert "nonnumeric-trait-values" in missing_fixture.feature_tags
