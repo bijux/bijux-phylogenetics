@@ -19,7 +19,7 @@ from bijux_phylogenetics.compare.structural_parity import (
 from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matrix
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.core.topology import root_tree_on_outgroup
+from bijux_phylogenetics.core.topology import root_tree_on_outgroup, unroot_tree
 from bijux_phylogenetics.io.fasta import load_fasta_alignment, translate_coding_alignment
 from bijux_phylogenetics.io.newick import (
     dumps_newick,
@@ -364,6 +364,57 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             outgroup_taxa=("B", "D"),
         ),
         ApeParityCase(
+            case_id="unroot-tree-balanced-rooted",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::unroot",
+            python_function_name="unroot_tree",
+            operation="unroot-tree",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="unroot-tree-rootable",
+            fixture_kind="tree",
+            fixture_id="outgroup_rootable_unrooted",
+            function_name="ape::unroot",
+            python_function_name="unroot_tree",
+            operation="unroot-tree",
+            input_fixture=fixture_path("tree", "outgroup_rootable_unrooted"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="unroot-tree-after-outgroup-rooting",
+            fixture_kind="tree",
+            fixture_id="outgroup_rooted_on_d",
+            function_name="ape::unroot",
+            python_function_name="unroot_tree",
+            operation="unroot-tree",
+            input_fixture=fixture_path("tree", "outgroup_rooted_on_d"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="unroot-tree-already-unrooted",
+            fixture_kind="tree",
+            fixture_id="unrooted_branch_length_tree",
+            function_name="ape::unroot",
+            python_function_name="unroot_tree",
+            operation="unroot-tree",
+            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="unroot-tree-invalid-newick",
+            fixture_kind="tree",
+            fixture_id="malformed_unbalanced_parentheses",
+            function_name="ape::unroot",
+            python_function_name="unroot_tree",
+            operation="unroot-tree",
+            input_fixture=fixture_path("tree", "malformed_unbalanced_parentheses"),
+            tolerance=0.0,
+            expected_status="parse-error",
+        ),
+        ApeParityCase(
             case_id="dna-base-frequency-lowercase",
             fixture_kind="dna-alignment",
             fixture_id="lowercase_aligned_dna",
@@ -617,6 +668,17 @@ def _build_bijux_root_outgroup_structure(
         write_newick(rooted_path, rooted_tree)
         clades = extract_tree_clades(rooted_path)
     return _tree_structure_payload(rooted_tree, rooted_tree.rooted, clades.rows)
+
+
+def _build_bijux_unroot_structure(
+    input_fixture: Path,
+) -> tuple[dict[str, object], list[dict[str, object]], str]:
+    unrooted_tree, _report = unroot_tree(input_fixture)
+    with tempfile.TemporaryDirectory(prefix="bijux-ape-unroot-") as tmpdir:
+        unrooted_path = Path(tmpdir) / "unrooted.nwk"
+        write_newick(unrooted_path, unrooted_tree)
+        clades = extract_tree_clades(unrooted_path)
+    return _tree_structure_payload(unrooted_tree, unrooted_tree.rooted, clades.rows)
 
 
 def _materialize_reference_input(case: ApeParityCase, working_root: Path) -> Path:
@@ -998,6 +1060,11 @@ def _build_bijux_case_payload(
             outgroup_taxa=case.outgroup_taxa,
         )
         return summary, rows, normalized_text
+    if case.operation == "unroot-tree":
+        summary, rows, normalized_text = _build_bijux_unroot_structure(
+            case.input_fixture,
+        )
+        return summary, rows, normalized_text
     if case.operation in {"read-tree-set-structure", "write-tree-set-structure"}:
         summary, rows, normalized_text = _build_bijux_tree_set_structure(case.input_fixture)
         return summary, rows, normalized_text
@@ -1031,7 +1098,12 @@ def _load_reference_case_payload(
     case: ApeParityCase,
     execution_root: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]] | None, str | None]:
-    if case.operation in {"read-tree-structure", "write-tree-structure", "root-tree-outgroup"}:
+    if case.operation in {
+        "read-tree-structure",
+        "write-tree-structure",
+        "root-tree-outgroup",
+        "unroot-tree",
+    }:
         summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
         expected_tip_labels = {
             str(label) for label in summary.get("tip_labels", [])
@@ -1118,6 +1190,26 @@ def _root_tree_outgroup_mismatch_reason(
         case.input_fixture,
         outgroup_taxa=list(case.outgroup_taxa),
     )
+    _normalize_tree_labels(
+        reference_tree.root,
+        expected_tip_labels=set(expected_tree.tip_names),
+    )
+    report = compare_tree_structurally(
+        expected_tree,
+        reference_tree,
+        tolerance=case.tolerance,
+        compare_internal_labels=True,
+    )
+    return report.mismatch_reason
+
+
+def _unroot_tree_mismatch_reason(
+    case: ApeParityCase,
+    execution_root: Path,
+) -> str | None:
+    reference_tree = load_tree(execution_root / "normalized-tree.nwk")
+    reference_tree.rooted = False
+    expected_tree, _report = unroot_tree(case.input_fixture)
     _normalize_tree_labels(
         reference_tree.root,
         expected_tip_labels=set(expected_tree.tip_names),
@@ -1265,6 +1357,11 @@ def run_ape_parity_cases(
                             )
                         elif case.operation == "root-tree-outgroup":
                             mismatch_reason = _root_tree_outgroup_mismatch_reason(
+                                case,
+                                execution_root,
+                            )
+                        elif case.operation == "unroot-tree":
+                            mismatch_reason = _unroot_tree_mismatch_reason(
                                 case,
                                 execution_root,
                             )
