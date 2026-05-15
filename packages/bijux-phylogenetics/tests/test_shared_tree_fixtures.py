@@ -37,7 +37,7 @@ def test_shared_tree_fixture_catalog_covers_required_tree_shapes() -> None:
         fixture.tip_count or 0
         for fixture in fixtures
         if fixture.parse_expectation == "parseable"
-    ) > 4
+    ) > 100
 
 
 def test_shared_tree_fixture_catalog_preserves_durable_fixture_lookup() -> None:
@@ -59,6 +59,10 @@ def test_shared_tree_fixture_catalog_preserves_durable_fixture_lookup() -> None:
         ("pectinate_rooted_non_ultrametric", 4),
         ("star_unrooted_polytomy", 5),
         ("larger_binary_tree", 8),
+        ("phytools_ultrametric_twenty_four_taxa", 24),
+        ("phytools_ultrametric_one_hundred_twenty_eight_taxa", 128),
+        ("phytools_non_ultrametric_twenty_four_taxa", 24),
+        ("phytools_branch_edge_twenty_four_taxa", 24),
         ("quoted_taxon_labels", 3),
         ("outgroup_rootable_unrooted", 4),
         ("outgroup_rooted_on_d", 4),

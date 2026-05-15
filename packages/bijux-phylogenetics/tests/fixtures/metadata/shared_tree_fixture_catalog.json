@@ -261,6 +261,72 @@
       "notes": "Rooted ultrametric tree with internal labels and one zero-length internal branch for branching-time parity."
     },
     {
+      "fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "relative_path": "trees/example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 24,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "ultrametric",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-tip rooted ultrametric comparative tree used for governed `phytools` signal fixtures beyond the small toy corpus."
+    },
+    {
+      "fixture_id": "phytools_ultrametric_one_hundred_twenty_eight_taxa",
+      "relative_path": "trees/example_tree_phytools_ultrametric_one_hundred_twenty_eight_taxa.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 128,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "ultrametric",
+        "one-hundred-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "One-hundred-twenty-eight-tip rooted ultrametric comparative tree used so governed `phytools` fixtures include a genuinely large signal surface."
+    },
+    {
+      "fixture_id": "phytools_non_ultrametric_twenty_four_taxa",
+      "relative_path": "trees/example_tree_phytools_non_ultrametric_twenty_four_taxa.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 24,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "non-ultrametric",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-tip rooted non-ultrametric comparative tree used where the governed `phytools` method surface permits non-ultrametric branch lengths."
+    },
+    {
+      "fixture_id": "phytools_branch_edge_twenty_four_taxa",
+      "relative_path": "trees/example_tree_phytools_branch_edge_twenty_four_taxa.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid_with_warnings",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 24,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "non-ultrametric",
+        "twenty-plus-taxa",
+        "zero-branch",
+        "long-branch-outlier",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-tip rooted comparative tree with one zero-length internal edge and one long terminal outlier for branch-length edge-case review."
+    },
+    {
       "fixture_id": "negative_branch_length",
       "relative_path": "trees/example_tree_negative_length.nwk",
       "parse_expectation": "parseable",
