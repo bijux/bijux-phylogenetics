@@ -2301,7 +2301,14 @@ ultrametric_case <- function(case_payload, output_root, execution_path, r_versio
 dna_translation_case <- function(case_payload, output_root, execution_path, r_version) {
   alignment <- ape::read.dna(case_payload$input_fixture, format = "fasta")
   genetic_code_id <- if (is.null(case_payload$genetic_code_id)) 1 else case_payload$genetic_code_id
-  translated <- ape::trans(alignment, code = genetic_code_id)
+  warning_messages <- character()
+  translated <- withCallingHandlers(
+    ape::trans(alignment, code = genetic_code_id),
+    warning = function(warning) {
+      warning_messages <<- c(warning_messages, conditionMessage(warning))
+      invokeRestart("muffleWarning")
+    }
+  )
   translated_matrix <- as.character(translated)
   identifiers <- rownames(translated_matrix)
   amino_acid_sequences <- apply(translated_matrix, 1, paste0, collapse = "")
@@ -2310,13 +2317,18 @@ dna_translation_case <- function(case_payload, output_root, execution_path, r_ve
   }
   summary_path <- file.path(output_root, "summary.json")
   table_path <- file.path(output_root, "translation.tsv")
+  alignment_length <- ncol(alignment)
+  dropped_trailing_nucleotide_count <- alignment_length %% 3
 
   write_payload(
     summary_path,
     list(
       sequence_count = length(amino_acid_sequences),
       translated_length = if (length(amino_acid_sequences) == 0) 0 else ncol(translated_matrix),
-      stop_codon_count = sum(grepl("\\*", amino_acid_sequences))
+      stop_codon_count = sum(grepl("\\*", amino_acid_sequences)),
+      dropped_trailing_nucleotide_count = dropped_trailing_nucleotide_count,
+      warning_count = length(warning_messages),
+      warnings = as.list(warning_messages)
     )
   )
   write_table(

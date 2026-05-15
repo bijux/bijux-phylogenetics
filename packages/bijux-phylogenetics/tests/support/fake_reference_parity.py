@@ -1018,6 +1018,9 @@ TABULAR_CASES = {{
             "sequence_count": 3,
             "translated_length": 3,
             "stop_codon_count": 0,
+            "dropped_trailing_nucleotide_count": 0,
+            "warning_count": 0,
+            "warnings": [],
         }},
         "rows_name": "translation.tsv",
         "rows": [
@@ -1026,11 +1029,28 @@ TABULAR_CASES = {{
             {{"identifier": "valid_c", "amino_acid_sequence": "MTW"}},
         ],
     }},
+    "dna-translation-ambiguous-codon": {{
+        "summary": {{
+            "sequence_count": 1,
+            "translated_length": 3,
+            "stop_codon_count": 0,
+            "dropped_trailing_nucleotide_count": 0,
+            "warning_count": 0,
+            "warnings": [],
+        }},
+        "rows_name": "translation.tsv",
+        "rows": [
+            {{"identifier": "ambiguous_codon", "amino_acid_sequence": "MXG"}},
+        ],
+    }},
     "dna-translation-internal-stop": {{
         "summary": {{
             "sequence_count": 1,
             "translated_length": 3,
             "stop_codon_count": 1,
+            "dropped_trailing_nucleotide_count": 0,
+            "warning_count": 0,
+            "warnings": [],
         }},
         "rows_name": "translation.tsv",
         "rows": [
@@ -1042,10 +1062,41 @@ TABULAR_CASES = {{
             "sequence_count": 1,
             "translated_length": 3,
             "stop_codon_count": 1,
+            "dropped_trailing_nucleotide_count": 0,
+            "warning_count": 0,
+            "warnings": [],
         }},
         "rows_name": "translation.tsv",
         "rows": [
             {{"identifier": "terminal_stop", "amino_acid_sequence": "ME*"}},
+        ],
+    }},
+    "dna-translation-frame-error-truncation": {{
+        "summary": {{
+            "sequence_count": 1,
+            "translated_length": 2,
+            "stop_codon_count": 0,
+            "dropped_trailing_nucleotide_count": 2,
+            "warning_count": 1,
+            "warnings": ["sequence length not a multiple of 3: 2 nucleotides dropped"],
+        }},
+        "rows_name": "translation.tsv",
+        "rows": [
+            {{"identifier": "frame_error", "amino_acid_sequence": "ME"}},
+        ],
+    }},
+    "dna-translation-vertebrate-mitochondrial": {{
+        "summary": {{
+            "sequence_count": 1,
+            "translated_length": 3,
+            "stop_codon_count": 0,
+            "dropped_trailing_nucleotide_count": 0,
+            "warning_count": 0,
+            "warnings": [],
+        }},
+        "rows_name": "translation.tsv",
+        "rows": [
+            {{"identifier": "mitochondrial_triplet", "amino_acid_sequence": "MWG"}},
         ],
     }},
 }}

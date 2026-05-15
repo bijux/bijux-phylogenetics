@@ -1812,6 +1812,17 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             genetic_code_id=1,
         ),
         ApeParityCase(
+            case_id="dna-translation-ambiguous-codon",
+            fixture_kind="dna-alignment",
+            fixture_id="coding_ambiguous_codon",
+            function_name="ape::trans",
+            python_function_name="translate_coding_alignment",
+            operation="dna-translation",
+            input_fixture=fixture_path("dna-alignment", "coding_ambiguous_codon"),
+            tolerance=0.0,
+            genetic_code_id=1,
+        ),
+        ApeParityCase(
             case_id="dna-translation-internal-stop",
             fixture_kind="dna-alignment",
             fixture_id="coding_internal_stop",
@@ -1832,6 +1843,28 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             input_fixture=fixture_path("dna-alignment", "coding_terminal_stop"),
             tolerance=0.0,
             genetic_code_id=1,
+        ),
+        ApeParityCase(
+            case_id="dna-translation-frame-error-truncation",
+            fixture_kind="dna-alignment",
+            fixture_id="coding_frame_error",
+            function_name="ape::trans",
+            python_function_name="translate_coding_alignment",
+            operation="dna-translation",
+            input_fixture=fixture_path("dna-alignment", "coding_frame_error"),
+            tolerance=0.0,
+            genetic_code_id=1,
+        ),
+        ApeParityCase(
+            case_id="dna-translation-vertebrate-mitochondrial",
+            fixture_kind="dna-alignment",
+            fixture_id="coding_mitochondrial_triplet",
+            function_name="ape::trans",
+            python_function_name="translate_coding_alignment",
+            operation="dna-translation",
+            input_fixture=fixture_path("dna-alignment", "coding_mitochondrial_triplet"),
+            tolerance=0.0,
+            genetic_code_id=2,
         ),
     ]
 
@@ -2529,6 +2562,9 @@ def _build_bijux_translation_rows(
         "sequence_count": report.translated_sequence_count,
         "translated_length": report.translated_alignment_length,
         "stop_codon_count": report.stop_codon_count,
+        "dropped_trailing_nucleotide_count": report.dropped_trailing_nucleotide_count,
+        "warning_count": len(report.warnings),
+        "warnings": report.warnings,
     }, [
         {
             "identifier": row.identifier,
