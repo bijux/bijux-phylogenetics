@@ -147,6 +147,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "branching-times-internal-node-labels",
         "branching-times-medium-ultrametric",
         "branching-times-zero-internal-branch",
+        "gamma-stat-rooted-ultrametric",
+        "gamma-stat-internal-node-labels",
+        "gamma-stat-medium-ultrametric",
+        "gamma-stat-zero-internal-branch",
         "is-ultrametric-rooted-ultrametric",
         "is-ultrametric-near-ultrametric-default",
         "is-ultrametric-near-ultrametric-tight",
@@ -337,6 +341,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "larger_binary_tree",
         "ultrametric_zero_internal_branch",
         "balanced_rooted_ultrametric",
+        "internal_node_labels",
+        "larger_binary_tree",
+        "ultrametric_zero_internal_branch",
+        "balanced_rooted_ultrametric",
         "near_ultrametric_branch_jitter",
         "near_ultrametric_branch_jitter",
         "pectinate_rooted_non_ultrametric",
@@ -421,6 +429,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::cophenetic.phylo",
         "ape::node.depth.edgelength",
         "ape::branching.times",
+        "ape::gammaStat",
         "ape::vcv.phylo",
         "ape::nj",
         "ape::pic",
@@ -454,6 +463,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "tree-independent-contrasts",
         "tree-node-depth",
         "tree-branching-times",
+        "tree-diversification-gamma-statistic",
         "tree-ultrametricity",
         "distance-matrix-neighbor-joining",
         "dna-dnabin-structure",
@@ -475,8 +485,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 172
-    assert report.passed_case_count == 172
+    assert report.case_count == 176
+    assert report.passed_case_count == 176
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -490,6 +500,7 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         "ape::dist.topo",
         "ape::drop.tip",
         "ape::extract.clade",
+        "ape::gammaStat",
         "ape::getMRCA",
         "ape::is.monophyletic",
         "ape::is.ultrametric",
@@ -735,6 +746,18 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert (
         branching_times_case.reference_summary["zero_branch_length_count"] == 1
     )
+    gamma_stat_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "gamma-stat-zero-internal-branch"
+    )
+    assert gamma_stat_case.reference_summary is not None
+    assert gamma_stat_case.reference_summary["tip_count"] == 4
+    assert gamma_stat_case.reference_summary["bifurcating"] is True
+    assert gamma_stat_case.reference_summary["gamma_statistic"] == pytest.approx(
+        -0.979795897113271,
+        abs=1e-12,
+    )
     ultrametric_default_case = next(
         observation
         for observation in report.observations
@@ -897,7 +920,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 172
+    assert len(rows) == 176
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
