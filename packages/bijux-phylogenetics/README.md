@@ -36,6 +36,58 @@ python3.11 -m pip install bijux-phylogenetics
 bijux-phylogenetics --help
 ```
 
+## Python Workflow Surface
+
+The stable notebook-and-pipeline surface now lives under
+`bijux_phylogenetics.api`.
+
+It exposes the same serious runtime objects the CLI already uses for:
+
+- FASTA validation
+- multiple-sequence alignment
+- full FASTA-to-tree execution
+- maximum-likelihood tree inference
+- topology comparison
+- PGLS comparative modeling
+- discrete ancestral reconstruction
+- reviewer-facing report generation
+- one-command config-driven workflow execution
+
+```python
+from pathlib import Path
+
+from bijux_phylogenetics.api import (
+    render_report_workflow,
+    run_comparative_model_workflow,
+    run_sequence_to_tree_workflow,
+)
+
+workflow = run_sequence_to_tree_workflow(
+    Path("dataset/sequences.fasta"),
+    out_dir=Path("artifacts/sequence-to-tree"),
+    sequence_type="dna",
+)
+
+comparative = run_comparative_model_workflow(
+    Path("dataset/tree.nwk"),
+    Path("dataset/traits.tsv"),
+    response="response",
+    predictors=["predictor_one"],
+    lambda_value=1.0,
+)
+
+report = render_report_workflow(
+    tree_path=workflow.output_paths["tree"],
+    alignment_path=workflow.output_paths["trimmed_alignment"],
+    traits_path=Path("dataset/traits.tsv"),
+    metadata_path=Path("dataset/metadata.tsv"),
+    out_path=Path("artifacts/sequence-to-tree/report.html"),
+)
+```
+
+The Python workflow helpers intentionally return the same typed report objects
+the CLI depends on rather than a second wrapper-only result format.
+
 ## Current Scope
 
 - parse Newick trees and FASTA alignments
