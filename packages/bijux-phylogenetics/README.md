@@ -464,9 +464,14 @@ ancestral reconstruction report. For the ER baseline, the owned runtime now
 matches the governed live `phytools::fitMk(model='ER')` lane over binary,
 multistate, and missing-value-pruned fixtures, and the SYM surface now also
 matches the governed live `phytools::fitMk(model='SYM')` lane over multistate
-clean and missing-value-pruned fixtures. The command reports log-likelihood,
-parameter count, AIC, AICc, one explicit missing-value pruning audit, one
-directed transition-rate ledger, overparameterization status, and ER baseline
+clean and missing-value-pruned fixtures. The ARD surface now also matches the
+governed live `phytools::fitMk(model='ARD')` lane over binary and
+missing-value-pruned binary fixtures at full rate-row parity, and over clean
+and missing-value-pruned multistate fixtures at summary parity when the
+optimizer flags weakly identified boundary rates. The command reports
+log-likelihood, parameter count, AIC, AICc, one explicit missing-value
+pruning audit, one directed transition-rate ledger, overparameterization
+status, weak-identifiability warnings, optimizer diagnostics, and ER baseline
 comparison metrics instead of reducing the fit to one scalar alone. The same
 owned runtime is also reusable directly from Python through
 `fit_discrete_mk_model_from_dataset(...)` once one `AncestralDiscreteDataset`
@@ -838,7 +843,8 @@ and writes one summary TSV plus one observation TSV just like the other parity
 surfaces. The initial live `phytools` registry is intentionally narrow for this
 goal: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
-`phytools::fitMk(model='SYM')`, `phytools::fastAnc`, and
+`phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
+`phytools::fastAnc`, and
 `phytools::anc.ML` on governed strong-signal,
 weak-signal, non-ultrametric, discrete-state, and missing-value comparative
 fixtures. The live lambda lane includes one
@@ -852,8 +858,9 @@ also exposes one flat-root `fitMk`-style likelihood contract with ER rate
 fitting, SYM pairwise-rate fitting, log-likelihood, AIC, AICc,
 missing-value pruning audit, ER baseline comparison metrics, and one directed
 rate-matrix ledger for binary and multistate traits. The live `fitMk` lane
-now covers governed ER binary and multistate cases plus governed SYM
-multistate cases, including one missing-value-pruned SYM surface. The live
+now covers governed ER binary and multistate cases, governed SYM
+multistate cases, and governed ARD binary plus weakly identified multistate
+cases, including missing-value-pruned surfaces. The live
 continuous ancestral lanes now compare stable node-signature rows, standard
 errors, and 95% intervals against real `phytools` execution instead of only
 checked-in expected JSON.

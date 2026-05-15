@@ -222,7 +222,8 @@ The same `parity` command now also exposes one governed
 the checked-in R runner. That initial registry is intentionally narrow for
 goal 201: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
-`phytools::fitMk(model='SYM')`, `phytools::fastAnc`, and
+`phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
+`phytools::fastAnc`, and
 `phytools::anc.ML` on governed
 twenty-four-taxon comparative fixtures drawn from the shared `phytools`
 comparative fixture catalog. The live lambda lane now includes one
@@ -233,10 +234,13 @@ also includes seeded strong-signal and weak-signal permutation cases so
 reviewers can compare K, permutation p-value, and null-distribution summary
 behavior under one governed replicate count. The live `fitMk` lane now also
 includes clean binary, clean multistate, and missing-value-pruned ER cases
-plus clean multistate and missing-value-pruned multistate SYM cases so
-reviewers can compare flat-root log-likelihood, AIC, AICc, excluded taxa,
-ER-versus-SYM model identity, and the full directed rate matrix directly
-against real `phytools`. The live
+plus clean multistate and missing-value-pruned multistate SYM cases. It now
+also includes clean and missing-value-pruned binary ARD cases at full
+rate-row parity plus clean and missing-value-pruned multistate ARD cases at
+summary parity when the owned optimizer reports weakly identified boundary
+rates, so reviewers can compare flat-root log-likelihood, AIC, AICc,
+excluded taxa, ER-versus-SYM-versus-ARD model identity, and directed-rate
+evidence honestly against real `phytools`. The live
 `fastAnc` lane now includes ultrametric strong-signal, ultrametric
 weak-signal, non-ultrametric strong-signal, and missing-value pruning cases so
 reviewers can compare node-signature estimates and standard errors directly
@@ -2124,7 +2128,11 @@ TSV summary. The governed live `phytools` claim for this surface is explicit
 and narrow: ER fits track `phytools::fitMk(model='ER')` on governed binary,
 multistate, and missing-value-pruned fixtures, and unordered multistate SYM
 fits track `phytools::fitMk(model='SYM')` on governed clean and
-missing-value-pruned multistate fixtures.
+missing-value-pruned multistate fixtures. ARD fits now track
+`phytools::fitMk(model='ARD')` on governed binary and missing-value-pruned
+binary fixtures at full rate-row parity, while the governed multistate ARD
+claim stays at summary parity when the optimizer reports weakly identified
+boundary rates.
 
 When the goal is to fit a standalone continuous-trait evolution model rather
 than a regression, use `comparative brownian`. This workflow keeps the

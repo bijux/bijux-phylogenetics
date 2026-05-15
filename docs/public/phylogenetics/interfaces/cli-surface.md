@@ -251,7 +251,7 @@ Its JSON metrics report:
 The initial live `phytools` registry is intentionally narrow for this goal. It
 currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
-`phytools::fitMk(model='SYM')`,
+`phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed twenty-four-taxon
 comparative fixtures from the shared
 `shared_phytools_comparative_fixture_catalog.json` corpus. The live lambda
@@ -264,9 +264,12 @@ the observed K scalar, permutation p-value, and null-distribution summary
 under one governed replicate count. The live `fitMk` lane now includes clean
 binary, clean multistate, binary missing-value, and multistate missing-value
 ER cases plus clean multistate and missing-value-pruned multistate SYM cases.
-It compares flat-root log-likelihood, AIC, AICc, excluded taxa, one explicit
-ER-versus-SYM model identity summary, and the full directed rate matrix
-against real `phytools` output. The live
+It now also includes clean and missing-value-pruned binary ARD cases at full
+rate-row parity plus clean and missing-value-pruned multistate ARD cases at
+summary parity when the optimizer reports weakly identified boundary rates. It
+compares flat-root log-likelihood, AIC, AICc, excluded taxa, one explicit
+ER-versus-SYM-versus-ARD model identity summary, and the directed rate matrix
+when the governed case is identifiable against real `phytools` output. The live
 `fastAnc` lane now includes ultrametric strong-signal, ultrametric
 weak-signal, non-ultrametric strong-signal, and missing-value pruning cases,
 and compares stable node-signature rows plus standard errors against real

@@ -78,7 +78,10 @@ longer need to restart from tree and trait file paths once one
 `AncestralDiscreteDataset` already exists in memory. That same owned surface
 now underlies the governed live `phytools::fitMk(model='ER')` and
 `phytools::fitMk(model='SYM')` parity lanes for the validated ER and
-unordered-multistate SYM cases.
+unordered-multistate SYM cases, and it now also underlies the governed live
+`phytools::fitMk(model='ARD')` lane for one rate-row-parity binary surface
+plus one summary-parity multistate surface when the optimizer flags weakly
+identified boundary rates.
 
 The owned ancestral runtime now also exposes direct dataset-backed
 reconstruction surfaces through
