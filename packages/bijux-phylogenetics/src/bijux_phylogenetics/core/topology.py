@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.errors import TreeRootingError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo, tree_to_biophylo
 from bijux_phylogenetics.io.trees import load_tree
 
@@ -233,6 +234,46 @@ def _biophylo_clade_taxa(clade: object) -> list[str]:
         for terminal in get_terminals()
         if getattr(terminal, "name", None) is not None
     )
+
+
+def _normalize_outgroup_rooting_to_ape(
+    rooted_tree: PhyloTree,
+    *,
+    requested_taxa_set: set[str],
+) -> PhyloTree:
+    root_children = list(rooted_tree.root.children)
+    outgroup_children = [
+        child
+        for child in root_children
+        if set(_descendant_taxa(child)).issubset(requested_taxa_set)
+    ]
+    ingroup_children = [
+        child for child in root_children if child not in outgroup_children
+    ]
+    if not outgroup_children:
+        raise TreeRootingError(
+            "rooted tree does not isolate the requested outgroup after rerooting",
+            code="outgroup_root_not_isolated",
+            details={"requested_taxa": sorted(requested_taxa_set)},
+        )
+
+    if len(outgroup_children) == 1 and outgroup_children[0].is_leaf() and len(root_children) == 2:
+        outgroup_child = outgroup_children[0]
+        ingroup_child = ingroup_children[0]
+        if (
+            (outgroup_child.branch_length or 0.0) == 0.0
+            and ingroup_child.branch_length is not None
+        ):
+            outgroup_child.branch_length = ingroup_child.branch_length
+            ingroup_child.branch_length = 0.0
+        return rooted_tree
+
+    if len(outgroup_children) > 1:
+        rooted_tree.root.children = [
+            *ingroup_children,
+            TreeNode(branch_length=0.0, children=outgroup_children),
+        ]
+    return rooted_tree
 
 
 def write_tree_rooting_report(path: Path, report: TreeRootingReport) -> Path:
@@ -718,7 +759,7 @@ def root_tree_on_outgroup(
 ) -> tuple[PhyloTree, TreeRootingReport]:
     """Root a tree on one or more named outgroup taxa."""
     if not outgroup_taxa:
-        raise ValueError("at least one outgroup taxon is required")
+        raise TreeRootingError("at least one outgroup taxon is required")
 
     tree = load_tree(tree_path)
     biophylo_tree = tree_to_biophylo(tree)
@@ -736,8 +777,13 @@ def root_tree_on_outgroup(
         if clade is None
     )
     if not matched_taxa:
-        raise ValueError(
-            f"none of the requested outgroup taxa were found in {tree_path}"
+        raise TreeRootingError(
+            f"none of the requested outgroup taxa were found in {tree_path}",
+            code="outgroup_taxa_missing",
+            details={
+                "tree_path": str(tree_path),
+                "requested_taxa": sorted(outgroup_taxa),
+            },
         )
 
     requested_taxa_set = set(matched_taxa)
@@ -754,8 +800,14 @@ def root_tree_on_outgroup(
         outgroup_mrca_extra_taxa = sorted(set(outgroup_mrca_taxa) - requested_taxa_set)
         outgroup_monophyletic = outgroup_mrca_extra_taxa == []
         if not outgroup_monophyletic:
-            warnings.append(
-                "requested outgroup taxa are not monophyletic in the input tree"
+            raise TreeRootingError(
+                "requested outgroup taxa are not monophyletic in the input tree",
+                code="outgroup_not_monophyletic",
+                details={
+                    "matched_taxa": sorted(matched_taxa),
+                    "outgroup_mrca_taxa": outgroup_mrca_taxa,
+                    "outgroup_mrca_extra_taxa": outgroup_mrca_extra_taxa,
+                },
             )
         if absent_taxa:
             warnings.append(
@@ -763,20 +815,28 @@ def root_tree_on_outgroup(
             )
 
     biophylo_tree.root_with_outgroup(
-        *[clade for clade in matched_clades if clade is not None]
+        biophylo_tree.common_ancestor(
+            *[clade for clade in matched_clades if clade is not None]
+        )
     )
     rooted_tree = tree_from_biophylo(biophylo_tree, source_format=tree.source_format)
+    rooted_tree = _normalize_outgroup_rooting_to_ape(
+        rooted_tree,
+        requested_taxa_set=requested_taxa_set,
+    )
     rooted_outgroup_taxa_set: set[str] = set()
-    for child in biophylo_tree.root.clades:
-        child_taxa = _biophylo_clade_taxa(child)
+    for child in rooted_tree.root.children:
+        child_taxa = _descendant_taxa(child)
         child_taxa_set = set(child_taxa)
         if child_taxa_set and child_taxa_set.issubset(requested_taxa_set):
             rooted_outgroup_taxa_set.update(child_taxa_set)
     rooted_outgroup_taxa = sorted(rooted_outgroup_taxa_set)
     rooted_ingroup_taxa = sorted(set(rooted_tree.tip_names) - rooted_outgroup_taxa_set)
     if matched_taxa and not rooted_outgroup_taxa:
-        warnings.append(
-            "rooted tree does not isolate every matched outgroup taxon on one root child"
+        raise TreeRootingError(
+            "rooted tree does not isolate every matched outgroup taxon on one root child",
+            code="outgroup_root_not_isolated",
+            details={"matched_taxa": sorted(matched_taxa)},
         )
     summary = _summarize_transformation(
         tree, rooted_tree, transformation="root-outgroup"

@@ -68,6 +68,10 @@ class UnrootedTreeError(PhylogeneticsError):
     code = "unrooted_tree_error"
 
 
+class TreeRootingError(PhylogeneticsError):
+    code = "tree_rooting_error"
+
+
 class EngineUnavailableError(PhylogeneticsError):
     code = "engine_unavailable_error"
 
