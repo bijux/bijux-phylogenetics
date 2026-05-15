@@ -103,6 +103,11 @@ def _merge_branch_lengths(left: float | None, right: float | None) -> float | No
     return left + right
 
 
+def _ape_style_rooted_state(root: TreeNode) -> bool:
+    """Infer the rooted state ape exposes after valid tip pruning."""
+    return root.is_leaf() or len(root.children) <= 2
+
+
 def _node_signature(node: TreeNode) -> str:
     if node.is_leaf():
         return node.name or "<unnamed>"
@@ -254,11 +259,15 @@ def _prune_tree_against_taxa(
     pruned_root = _prune_node(tree.root, keep_taxa)
     if pruned_root is None or not retained_tips:
         raise MetadataJoinError("no overlapping taxa remain after pruning request")
+    if len(retained_tips) < 2:
+        raise ValueError("tree pruning requires at least two retained taxa")
 
-    if clear_root_branch_length:
+    if clear_root_branch_length and not pruned_root.is_leaf():
         pruned_root.branch_length = None
     pruned_tree = PhyloTree(
-        root=pruned_root, source_format=tree.source_format, rooted=tree.rooted
+        root=pruned_root,
+        source_format=tree.source_format,
+        rooted=_ape_style_rooted_state(pruned_root),
     )
     return pruned_tree, retained_tips, removed_tips
 
