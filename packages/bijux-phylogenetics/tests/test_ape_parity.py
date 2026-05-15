@@ -151,6 +151,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "gamma-stat-internal-node-labels",
         "gamma-stat-medium-ultrametric",
         "gamma-stat-zero-internal-branch",
+        "rtree-rooted-six-taxon-uniform",
+        "rtree-rooted-twelve-taxon-uniform",
+        "rcoal-rooted-six-taxon",
+        "rcoal-rooted-twelve-taxon",
         "is-ultrametric-rooted-ultrametric",
         "is-ultrametric-near-ultrametric-default",
         "is-ultrametric-near-ultrametric-tight",
@@ -344,6 +348,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "internal_node_labels",
         "larger_binary_tree",
         "ultrametric_zero_internal_branch",
+        "rtree_rooted_six_taxon_uniform_64",
+        "rtree_rooted_twelve_taxon_uniform_128",
+        "rcoal_rooted_six_taxon_64",
+        "rcoal_rooted_twelve_taxon_128",
         "balanced_rooted_ultrametric",
         "near_ultrametric_branch_jitter",
         "near_ultrametric_branch_jitter",
@@ -430,6 +438,8 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::node.depth.edgelength",
         "ape::branching.times",
         "ape::gammaStat",
+        "ape::rcoal",
+        "ape::rtree",
         "ape::vcv.phylo",
         "ape::nj",
         "ape::pic",
@@ -464,6 +474,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "tree-node-depth",
         "tree-branching-times",
         "tree-diversification-gamma-statistic",
+        "tree-simulation-envelope",
         "tree-ultrametricity",
         "distance-matrix-neighbor-joining",
         "dna-dnabin-structure",
@@ -485,8 +496,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 176
-    assert report.passed_case_count == 176
+    assert report.case_count == 180
+    assert report.passed_case_count == 180
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -509,8 +520,10 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         "ape::node.depth.edgelength",
         "ape::pic",
         "ape::prop.clades",
+        "ape::rcoal",
         "ape::read.tree",
         "ape::root",
+        "ape::rtree",
         "ape::seg.sites",
         "ape::trans",
         "ape::unroot",
@@ -758,6 +771,25 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         -0.979795897113271,
         abs=1e-12,
     )
+    rtree_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "rtree-rooted-six-taxon-uniform"
+    )
+    assert rtree_case.reference_summary is not None
+    assert rtree_case.reference_summary["branch_length_model"] == "uniform"
+    assert rtree_case.reference_summary["pooled_branch_count"] == 640
+    rcoal_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "rcoal-rooted-twelve-taxon"
+    )
+    assert rcoal_case.reference_summary is not None
+    assert (
+        rcoal_case.reference_summary["branch_length_model"]
+        == "coalescent-waiting-times"
+    )
+    assert rcoal_case.reference_summary["pooled_branch_count"] == 2816
     ultrametric_default_case = next(
         observation
         for observation in report.observations
@@ -920,7 +952,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 176
+    assert len(rows) == 180
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
