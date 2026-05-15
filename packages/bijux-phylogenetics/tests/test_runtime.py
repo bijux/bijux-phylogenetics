@@ -20,7 +20,9 @@ from bijux_phylogenetics.ancestral import (
     continuous_ancestral_exclusions,
     discrete_ancestral_exclusions,
     reconstruct_continuous_ancestral_states,
+    reconstruct_continuous_ancestral_states_from_dataset,
     reconstruct_discrete_ancestral_states,
+    reconstruct_discrete_ancestral_states_from_dataset,
     render_ancestral_state_report,
     render_ancestral_state_tree,
     render_ancestral_state_visualization,
@@ -2724,6 +2726,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is reconstruct_continuous_ancestral_states
     )
     assert (
+        bijux_phylogenetics.reconstruct_continuous_ancestral_states_from_dataset
+        is reconstruct_continuous_ancestral_states_from_dataset
+    )
+    assert (
         bijux_phylogenetics.summarize_continuous_ancestral_report
         is summarize_continuous_ancestral_report
     )
@@ -2750,6 +2756,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.reconstruct_discrete_ancestral_states
         is reconstruct_discrete_ancestral_states
+    )
+    assert (
+        bijux_phylogenetics.reconstruct_discrete_ancestral_states_from_dataset
+        is reconstruct_discrete_ancestral_states_from_dataset
     )
     assert (
         bijux_phylogenetics.summarize_discrete_ancestral_report
