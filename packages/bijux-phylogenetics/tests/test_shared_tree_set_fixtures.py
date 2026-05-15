@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
 from bijux_phylogenetics.clades import extract_tree_set_clades
+from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.shared_tree_set_fixtures import (
     get_shared_tree_set_fixture,
     list_shared_tree_set_fixtures,
@@ -16,6 +19,7 @@ def test_shared_tree_set_fixture_catalog_covers_governed_multiple_tree_case() ->
         "branch-lengths",
         "shared-taxon-set",
         "topology-distance",
+        "consensus",
         "large-tip-count",
     } <= feature_tags
     assert max(len(fixture.shared_taxa) for fixture in fixtures) >= 100
@@ -58,3 +62,25 @@ def test_shared_tree_set_fixture_catalog_preserves_large_topology_distance_pair(
     assert sorted(
         {row.tree_index for row in report.rows if row.tree_index is not None}
     ) == [1, 2]
+
+
+def test_shared_tree_set_fixture_catalog_preserves_consensus_posterior_fixture() -> None:
+    fixture = get_shared_tree_set_fixture("consensus_posterior_six_taxon_tree_set")
+
+    report = extract_tree_set_clades(fixture.path)
+
+    assert fixture.tree_count == 5
+    assert fixture.shared_taxa == ("A", "B", "C", "D", "E", "F")
+    assert report.tree_count == 5
+
+
+def test_shared_tree_set_fixture_catalog_preserves_consensus_failure_fixture() -> None:
+    fixture = get_shared_tree_set_fixture("consensus_mismatched_taxon_tree_set")
+
+    assert fixture.shared_taxa == ()
+    assert fixture.tree_count == 2
+    with pytest.raises(
+        InvalidAlignmentError,
+        match="requires identical taxon sets",
+    ):
+        extract_tree_set_clades(fixture.path)

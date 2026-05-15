@@ -21,6 +21,36 @@
       "notes": "Minimal rooted Newick tree set with two repeated topologies and one alternative topology for governed read.tree multiPhylo parity."
     },
     {
+      "fixture_id": "consensus_conflicting_four_taxon_tree_set",
+      "relative_path": "trees/example_tree_set_left.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 3,
+      "shared_taxa": ["A", "B", "C", "D"],
+      "feature_tags": ["multiple-trees", "branch-lengths", "shared-taxon-set", "consensus", "duplicate-topology", "conflicting-clades"],
+      "notes": "Three rooted trees with one duplicated topology and one conflicting topology for majority-rule and strict `ape::consensus` parity."
+    },
+    {
+      "fixture_id": "consensus_posterior_six_taxon_tree_set",
+      "relative_path": "trees/example_posterior_tree_set_six_taxa.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 5,
+      "shared_taxa": ["A", "B", "C", "D", "E", "F"],
+      "feature_tags": ["multiple-trees", "branch-lengths", "shared-taxon-set", "consensus", "posterior-like", "majority-rule"],
+      "notes": "Five rooted six-taxon trees with repeated and conflicting clades for governed majority-rule `ape::consensus` parity and clade-frequency export."
+    },
+    {
+      "fixture_id": "consensus_mismatched_taxon_tree_set",
+      "relative_path": "trees/example_tree_set_mismatched.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 2,
+      "shared_taxa": [],
+      "feature_tags": ["multiple-trees", "branch-lengths", "consensus", "mismatched-taxa", "expected-failure"],
+      "notes": "Two rooted trees with incompatible tip sets for explicit consensus taxon-compatibility failure coverage."
+    },
+    {
       "fixture_id": "topology_distance_identical_rooted_pair",
       "relative_path": "trees/example_tree_set_topology_distance_identical_rooted.nwk",
       "source_format": "newick",
