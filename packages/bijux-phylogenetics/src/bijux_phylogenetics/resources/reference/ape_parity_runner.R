@@ -660,6 +660,84 @@ extract_clade_case <- function(case_payload, output_root, execution_path, r_vers
   )
 }
 
+mrca_case <- function(case_payload, output_root, execution_path, r_version) {
+  tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
+  if (inherits(tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  requested_taxa <- as.character(unlist(case_payload$mrca_taxa))
+  duplicate_requested_taxa <- sort(unique(requested_taxa[duplicated(requested_taxa)]))
+  unique_requested_taxa <- sort(unique(requested_taxa))
+  matched_node_id <- tryCatch(ape::getMRCA(tree, requested_taxa), error = function(error) error)
+  if (inherits(matched_node_id, "error") || is.null(matched_node_id)) {
+    message <- if (inherits(matched_node_id, "error")) {
+      conditionMessage(matched_node_id)
+    } else {
+      "getMRCA did not return an internal node"
+    }
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeMrcaError",
+        message = message,
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  matched_node_id <- as.integer(matched_node_id)
+  matched_taxa <- descendant_taxa(tree, matched_node_id)
+  summary_path <- file.path(output_root, "summary.json")
+  write_payload(
+    summary_path,
+    list(
+      requested_taxa = as.list(sort(requested_taxa)),
+      unique_requested_taxa = as.list(unique_requested_taxa),
+      duplicate_requested_taxa = as.list(duplicate_requested_taxa),
+      matched_node_id = matched_node_id,
+      matched_node_name = node_label(tree, matched_node_id),
+      matched_taxa = as.list(matched_taxa),
+      matched_extra_taxa = as.list(sort(setdiff(matched_taxa, unique_requested_taxa))),
+      matched_tip_count = length(matched_taxa),
+      is_root = identical(matched_node_id, root_node(tree))
+    )
+  )
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(summary_json = summary_path)
+    )
+  )
+}
+
 tree_set_case <- function(case_payload, output_root, execution_path, r_version) {
   tree_set <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
   if (inherits(tree_set, "error")) {
@@ -888,6 +966,11 @@ if (identical(case_payload$operation, "keep-tree-taxa")) {
 
 if (identical(case_payload$operation, "extract-tree-clade")) {
   extract_clade_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "get-tree-mrca")) {
+  mrca_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 
