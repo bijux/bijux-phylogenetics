@@ -23,6 +23,10 @@ reconstruction, simulation, and canonical Newick conversion. Stable node IDs,
 parent-child links, node metadata, edge metadata, validation, deep-copy
 behavior, native Newick parsing and writing, multi-tree Newick loading, and
 location-aware Newick parse failures are part of that runtime promise.
+Outgroup rooting, unrooting, keep-tip pruning, drop-tip pruning, clade
+extraction, MRCA lookup, and monophyly review are also part of that same
+owned tree-manipulation core, so those surfaces no longer depend on an
+external tree object model for normal runtime behavior.
 
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the

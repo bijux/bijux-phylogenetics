@@ -799,6 +799,11 @@ now builds one deterministic NJ tree in-repo, validates zero-diagonal and
 nonnegative matrix assumptions explicitly, produces branch lengths, and
 resolves tied joins by stable taxon ordering so distance-tree recovery stays
 reproducible.
+The owned tree-manipulation core now also lives directly on `PhyloTree`.
+Outgroup rooting, unrooting, keep-tip pruning, drop-tip pruning, clade
+extraction, MRCA lookup, and monophyly review all run through one native
+topology surface with explicit rootedness and branch-length policy instead of
+splitting those transforms across separate tree backends.
 The `ape::pic` lane now covers balanced rooted ultrametric, pectinate rooted
 non-ultrametric, and six-taxon clean comparative fixtures through one governed
 trait-table catalog. On the owned Bijux side, `comparative contrasts
@@ -880,7 +885,8 @@ The
 outgroups, monophyletic multi-tip outgroups, already-rooted trees, missing
 outgroups, and non-monophyletic outgroups, with rooted clades and branch
 lengths compared against live `ape::root` and ambiguous rooting rejected
-explicitly on the Bijux side. The
+explicitly on the Bijux side. That surface now reroots trees natively on
+`PhyloTree` rather than delegating outgroup rooting through Biopython. The
 `ape::unroot` lane now compares rooted-tree unrooting, post-outgroup-rooting
 unrooting, already-unrooted inputs, and malformed tree failures against live
 `ape::unroot`, and it exposes the root-edge redistribution policy explicitly:
