@@ -12,6 +12,13 @@ import shutil
 import subprocess
 import tempfile
 
+from bijux_phylogenetics.ancestral.common import (
+    load_continuous_dataset,
+    node_signature,
+)
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+)
 from bijux_phylogenetics.clades import extract_tree_clades, extract_tree_set_clades
 from bijux_phylogenetics.comparative.brownian_covariance import (
     summarize_brownian_covariance,
@@ -32,6 +39,7 @@ from bijux_phylogenetics.core.pruning import (
     prune_tree_to_requested_taxa,
 )
 from bijux_phylogenetics.core.branching_times import compute_tree_branching_times
+from bijux_phylogenetics.core._node_identity import build_ape_internal_node_map
 from bijux_phylogenetics.core.node_depth import compute_tree_node_depths
 from bijux_phylogenetics.core.tree_distance import compute_tree_tip_distance_matrix
 from bijux_phylogenetics.core.ultrametric import (
@@ -1105,6 +1113,62 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             operation="tree-brownian-covariance",
             input_fixture=fixture_path("tree", "zero_branch_lengths"),
             tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="ace-continuous-balanced-rooted-ultrametric",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::ace",
+            python_function_name="reconstruct_continuous_ancestral_states",
+            operation="tree-continuous-ancestral-states",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=1e-12,
+            trait_fixture_id="ace_continuous_balanced",
+            trait_table_path=trait_path("ace_continuous_balanced"),
+            trait_name="response",
+            trait_taxon_column="taxon",
+        ),
+        ApeParityCase(
+            case_id="ace-continuous-pectinate-non-ultrametric",
+            fixture_kind="tree",
+            fixture_id="pectinate_rooted_non_ultrametric",
+            function_name="ape::ace",
+            python_function_name="reconstruct_continuous_ancestral_states",
+            operation="tree-continuous-ancestral-states",
+            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            tolerance=1e-12,
+            trait_fixture_id="ace_continuous_pectinate",
+            trait_table_path=trait_path("ace_continuous_pectinate"),
+            trait_name="response",
+            trait_taxon_column="taxon",
+        ),
+        ApeParityCase(
+            case_id="ace-continuous-balanced-six-taxon",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_six_taxon",
+            function_name="ape::ace",
+            python_function_name="reconstruct_continuous_ancestral_states",
+            operation="tree-continuous-ancestral-states",
+            input_fixture=fixture_path("tree", "balanced_rooted_six_taxon"),
+            tolerance=1e-12,
+            trait_fixture_id="ace_continuous_six_taxon",
+            trait_table_path=trait_path("ace_continuous_six_taxon"),
+            trait_name="response_growth",
+            trait_taxon_column="taxon",
+        ),
+        ApeParityCase(
+            case_id="ace-continuous-missing-values-pruned",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_six_taxon",
+            function_name="ape::ace",
+            python_function_name="reconstruct_continuous_ancestral_states",
+            operation="tree-continuous-ancestral-states",
+            input_fixture=fixture_path("tree", "balanced_rooted_six_taxon"),
+            tolerance=1e-12,
+            trait_fixture_id="ace_continuous_missing_values",
+            trait_table_path=trait_path("ace_continuous_missing_values"),
+            trait_name="response_growth",
+            trait_taxon_column="taxon",
         ),
         ApeParityCase(
             case_id="pic-balanced-rooted-ultrametric",
@@ -2660,6 +2724,67 @@ def _build_bijux_independent_contrast_rows(
     }, rows
 
 
+def _build_bijux_continuous_ancestral_rows(
+    input_fixture: Path,
+    *,
+    trait_table_path: Path,
+    trait_name: str,
+    trait_taxon_column: str,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    dataset = load_continuous_dataset(
+        input_fixture,
+        trait_table_path,
+        trait=trait_name,
+        taxon_column=trait_taxon_column,
+    )
+    report = reconstruct_continuous_ancestral_states(
+        input_fixture,
+        trait_table_path,
+        trait=trait_name,
+        taxon_column=trait_taxon_column,
+        model="brownian",
+    )
+    internal_node_map = {
+        node_signature(node): node_id
+        for node_id, node in build_ape_internal_node_map(dataset.tree).items()
+    }
+    rows = sorted(
+        [
+            {
+                "node_id": internal_node_map[estimate.node],
+                "node": estimate.node,
+                "estimate": estimate.estimate,
+                "standard_error": estimate.standard_error,
+                "lower_95_interval": estimate.lower_95_interval,
+                "upper_95_interval": estimate.upper_95_interval,
+            }
+            for estimate in report.estimates
+            if not estimate.is_tip
+        ],
+        key=lambda row: int(row["node_id"]),
+    )
+    diagnostics = report.brownian_fit_diagnostics
+    return {
+        "trait": report.trait,
+        "taxon_count": report.taxon_count,
+        "excluded_taxon_count": len(report.dropped_missing_taxa)
+        + len(report.dropped_non_numeric_taxa),
+        "dropped_missing_taxa": report.dropped_missing_taxa,
+        "dropped_non_numeric_taxa": report.dropped_non_numeric_taxa,
+        "internal_node_count": len(rows),
+        "method": "pic",
+        "tree_is_ultrametric": (
+            None if diagnostics is None else diagnostics.tree_is_ultrametric
+        ),
+        "minimum_root_to_tip_depth": (
+            None if diagnostics is None else diagnostics.minimum_root_to_tip_depth
+        ),
+        "maximum_root_to_tip_depth": (
+            None if diagnostics is None else diagnostics.maximum_root_to_tip_depth
+        ),
+    }, rows
+
+
 def _build_bijux_tree_node_depth_rows(
     input_fixture: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
@@ -3139,6 +3264,22 @@ def _build_bijux_case_payload(
     if case.operation == "tree-brownian-covariance":
         summary, rows = _build_bijux_brownian_covariance_rows(case.input_fixture)
         return summary, rows, None
+    if case.operation == "tree-continuous-ancestral-states":
+        if (
+            case.trait_table_path is None
+            or case.trait_name is None
+            or case.trait_taxon_column is None
+        ):
+            raise ValueError(
+                f"ape parity case '{case.case_id}' is missing a trait table path, trait name, or taxon column"
+            )
+        summary, rows = _build_bijux_continuous_ancestral_rows(
+            case.input_fixture,
+            trait_table_path=case.trait_table_path,
+            trait_name=case.trait_name,
+            trait_taxon_column=case.trait_taxon_column,
+        )
+        return summary, rows, None
     if case.operation == "tree-independent-contrasts":
         if case.trait_table_path is None or case.trait_name is None:
             raise ValueError(
@@ -3265,6 +3406,10 @@ def _load_reference_case_payload(
     if case.operation == "tree-brownian-covariance":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "covariance-long.tsv")
+        return summary, rows, None
+    if case.operation == "tree-continuous-ancestral-states":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "continuous-ancestral.tsv")
         return summary, rows, None
     if case.operation == "tree-independent-contrasts":
         summary = _load_json(execution_root / "summary.json")
