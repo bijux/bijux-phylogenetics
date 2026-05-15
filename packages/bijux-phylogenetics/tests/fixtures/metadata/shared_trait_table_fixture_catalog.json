@@ -453,6 +453,140 @@
         "extra-taxa-not-in-tree"
       ],
       "notes": "Six-taxon PIC table with missing, non-numeric, and extra-taxon rows used to prove Bijux prunes overlapping invalid values explicitly before contrast calculation."
+    },
+    {
+      "fixture_id": "phytools_signal_panel_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_signal_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "signal_strong",
+        "signal_weak",
+        "binary_state",
+        "region_state"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "phytools-comparative-ready",
+      "row_count": 24,
+      "feature_tags": [
+        "continuous-trait",
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "strong-phylogenetic-signal",
+        "weak-phylogenetic-signal",
+        "known-truth-simulation",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon governed comparative panel with BM-simulated strong signal, iid weak signal, and simulated binary and multistate discrete traits for live `phytools` method coverage."
+    },
+    {
+      "fixture_id": "phytools_signal_panel_one_hundred_twenty_eight_taxa",
+      "relative_path": "metadata/example_traits_phytools_signal_one_hundred_twenty_eight_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_one_hundred_twenty_eight_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "signal_strong",
+        "signal_weak"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "phytools-comparative-ready",
+      "row_count": 128,
+      "feature_tags": [
+        "continuous-trait",
+        "strong-phylogenetic-signal",
+        "weak-phylogenetic-signal",
+        "known-truth-simulation",
+        "one-hundred-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "One-hundred-twenty-eight-taxon governed comparative panel with BM-simulated strong signal and iid weak signal so the shared `phytools` corpus includes a genuinely large ultrametric case."
+    },
+    {
+      "fixture_id": "phytools_signal_non_ultrametric_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_non_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "signal_strong"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "phytools-comparative-ready-where-supported",
+      "row_count": 24,
+      "feature_tags": [
+        "continuous-trait",
+        "strong-phylogenetic-signal",
+        "known-truth-simulation",
+        "non-ultrametric-tree",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon non-ultrametric continuous comparative panel used where the governed `phytools` method surface accepts rooted non-ultrametric trees."
+    },
+    {
+      "fixture_id": "phytools_signal_missing_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_signal_missing_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "signal_strong"
+      ],
+      "validation_expectation": "missing-and-nonnumeric-values-present",
+      "ape_reference_expectation": "phytools-ready-after-pruning",
+      "row_count": 24,
+      "feature_tags": [
+        "continuous-trait",
+        "missing-trait-values",
+        "nonnumeric-trait-values",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon comparative signal table with one missing and one nonnumeric overlapping trait value for explicit pruning before live `phytools` review."
+    },
+    {
+      "fixture_id": "phytools_signal_constant_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_signal_constant_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "signal_constant"
+      ],
+      "validation_expectation": "constant-trait-surface",
+      "ape_reference_expectation": "constant-trait-negative-case",
+      "row_count": 24,
+      "feature_tags": [
+        "continuous-trait",
+        "constant-trait-negative-case",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon constant continuous trait table used to prove that governed phylogenetic-signal methods fail honestly instead of manufacturing variance."
+    },
+    {
+      "fixture_id": "phytools_signal_mismatch_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_signal_mismatch_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "signal_strong",
+        "signal_weak",
+        "binary_state",
+        "region_state"
+      ],
+      "validation_expectation": "tip-intersection-required",
+      "ape_reference_expectation": "phytools-ready-after-tip-intersection",
+      "row_count": 24,
+      "feature_tags": [
+        "continuous-trait",
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "extra-taxa-not-in-tree",
+        "tree-taxa-missing-from-trait-table",
+        "tree-trait-taxon-mismatch",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon comparative panel with one missing tree tip and one extra trait taxon so tree-versus-table mismatch stays governed instead of ad hoc."
     }
   ]
 }

@@ -62,6 +62,30 @@ def test_shared_trait_table_fixture_lookup_preserves_durable_ids() -> None:
     assert fixture.path.is_file()
 
 
+def test_shared_trait_table_fixture_catalog_supports_governed_phytools_panels() -> None:
+    small_fixture = get_shared_trait_table_fixture("phytools_signal_panel_twenty_four_taxa")
+    large_fixture = get_shared_trait_table_fixture(
+        "phytools_signal_panel_one_hundred_twenty_eight_taxa"
+    )
+    missing_fixture = get_shared_trait_table_fixture("phytools_signal_missing_twenty_four_taxa")
+    mismatch_fixture = get_shared_trait_table_fixture(
+        "phytools_signal_mismatch_twenty_four_taxa"
+    )
+
+    assert small_fixture.tree_fixture_id == "phytools_ultrametric_twenty_four_taxa"
+    assert large_fixture.tree_fixture_id == "phytools_ultrametric_one_hundred_twenty_eight_taxa"
+    assert small_fixture.row_count == 24
+    assert large_fixture.row_count == 128
+    assert {
+        "signal_strong",
+        "signal_weak",
+        "binary_state",
+        "region_state",
+    } <= set(small_fixture.primary_trait_columns)
+    assert "missing-trait-values" in missing_fixture.feature_tags
+    assert "tree-trait-taxon-mismatch" in mismatch_fixture.feature_tags
+
+
 def test_shared_trait_table_fixture_catalog_tracks_tree_trait_mismatch_surface() -> None:
     fixture = get_shared_trait_table_fixture("continuous_tree_mismatch")
     tree_fixture = get_shared_tree_fixture(fixture.tree_fixture_id)
