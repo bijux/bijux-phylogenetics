@@ -4,6 +4,10 @@ from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.core._node_identity import (
+    ape_node_id_for_node,
+    build_ape_internal_node_map,
+)
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import TreeRootingError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo, tree_to_biophylo
@@ -182,38 +186,6 @@ def _descendant_taxa(node: TreeNode) -> list[str]:
     return sorted(taxa)
 
 
-def _iter_internal_nodes_preorder(node: TreeNode):
-    if not node.is_leaf():
-        yield node
-    for child in node.children:
-        yield from _iter_internal_nodes_preorder(child)
-
-
-def _build_ape_internal_node_map(tree: PhyloTree) -> dict[int, TreeNode]:
-    start_node_id = tree.tip_count + 1
-    return {
-        start_node_id + offset: node
-        for offset, node in enumerate(_iter_internal_nodes_preorder(tree.root))
-    }
-
-
-def _build_ape_tip_node_map(tree: PhyloTree) -> dict[int, TreeNode]:
-    return {
-        node_id: node
-        for node_id, node in enumerate(tree.iter_leaves(), start=1)
-    }
-
-
-def _ape_node_id_for_node(tree: PhyloTree, node: TreeNode) -> int:
-    for node_id, candidate in _build_ape_tip_node_map(tree).items():
-        if candidate is node:
-            return node_id
-    for node_id, candidate in _build_ape_internal_node_map(tree).items():
-        if candidate is node:
-            return node_id
-    raise ValueError("node is not part of the supplied tree")
-
-
 def _interpreted_rooted_state(tree: PhyloTree) -> bool:
     if tree.rooted is True:
         return True
@@ -258,7 +230,7 @@ def _monophyly_report_from_node(
     matched_node_name = None
     is_root = None
     if matched_node is not None:
-        matched_node_id = _ape_node_id_for_node(tree, matched_node)
+        matched_node_id = ape_node_id_for_node(tree, matched_node)
         matched_node_name = matched_node.name
         is_root = matched_node is tree.root
     return TreeMonophylyReport(
@@ -757,7 +729,7 @@ def extract_tree_clade_by_node_id(
     tree = load_tree(tree_path)
     if node_id <= tree.tip_count:
         raise ValueError("node number must be greater than the number of tips")
-    node_map = _build_ape_internal_node_map(tree)
+    node_map = build_ape_internal_node_map(tree)
     if node_id not in node_map:
         raise IndexError(f"node id {node_id} is out of bounds for {tree_path}")
 
@@ -800,7 +772,7 @@ def extract_tree_clade_by_descendant_taxa(
         )
 
     matches: list[tuple[int, TreeNode]] = []
-    for matched_node_id, node in _build_ape_internal_node_map(tree).items():
+    for matched_node_id, node in build_ape_internal_node_map(tree).items():
         if _descendant_taxa(node) == requested_taxa:
             matches.append((matched_node_id, node))
     if not matches:
@@ -855,7 +827,7 @@ def find_tree_mrca(
     matched_extra_taxa = sorted(set(matched_taxa) - set(unique_requested_taxa))
     matched_node_id = next(
         node_id
-        for node_id, node in _build_ape_internal_node_map(tree).items()
+        for node_id, node in build_ape_internal_node_map(tree).items()
         if node is matched_node
     )
     return TreeMrcaReport(
