@@ -173,6 +173,10 @@ rooted binary trees, post-outgroup-rooting trees, already-unrooted inputs, and
 malformed parse failures, and it follows the same explicit branch-length
 contract as live `ape::unroot`: the removed root-edge length is merged into
 the retained sibling branch rather than folded into the expanded clade. The
+`ape::consensus` portion now covers majority-rule and strict consensus over
+governed conflicting and posterior-style tree sets, writes one normalized
+consensus Newick plus one clade-frequency TSV ledger per case, and fails
+explicitly when the tree set does not share one exact taxon set. The
 `ape::drop.tip` portion now covers rooted and unrooted taxon exclusion cases,
 unknown excluded taxon names, and rootedness changes after pruning, while
 keeping one explicit workflow safety rule: Bijux stops the run if pruning would
