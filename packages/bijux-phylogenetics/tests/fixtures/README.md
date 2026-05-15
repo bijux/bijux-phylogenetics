@@ -43,6 +43,9 @@ parity harness resolves its DNA inputs through those fixture ids for
 one-off inline sequences. The unequal-length fixture now also serves as a
 governed `ape::dist.dna` failure case, so ragged DNA input is checked as an
 explicit parity boundary rather than only as local validation diagnostics.
+The same governed DNA catalog now also anchors both raw and JC69
+`ape::dist.dna` parity, including the high-divergence fixture where JC69 must
+distinguish undefined pairs from pairs that diverge toward infinity.
 
 The metadata fixture corpus now also has one governed shared catalog at
 `metadata/shared_trait_table_fixture_catalog.json`. That catalog assigns

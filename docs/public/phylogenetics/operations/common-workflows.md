@@ -160,7 +160,11 @@ high-divergence, and coding-translation fixtures across `ape::base.freq`,
 `ape::dist.dna`, and `ape::trans`. Frame-error fixtures still stay on the
 diagnostic side of the contract, but the unequal-length DNA fixture is now a
 governed live `ape::dist.dna` failure case so Bijux and `ape` both prove the
-same raw-distance stop condition explicitly.
+same DNA-distance stop condition explicitly. The owned distance surface now
+accepts the ape-compatible `raw` and `jc69` aliases, keeps `p-distance` and
+`jukes-cantor` as the canonical internal labels, and reports saturated JC69
+pairs explicitly as undefined or infinite instead of flattening them into one
+generic missing value.
 The `ape::read.tree` portion of the same lane now validates structured clade
 rows for rooted and unrooted trees, branch lengths, internal labels, support
 labels, quoted labels, one governed multiple-tree Newick input, and one

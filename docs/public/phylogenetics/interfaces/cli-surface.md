@@ -191,12 +191,14 @@ It compares one `reference-tree-support.tsv` ledger keyed by descendant tip
 set instead of transient node number, and the owned `tree-set support-map`
 surface keeps one real `ape` edge case explicit: unsupported root-adjacent
 splits are left unscored instead of being mislabeled as zero support.
-The `ape::dist.dna` portion now covers raw nucleotide distance over governed
-clean, gapped pairwise-deletion, gapped complete-deletion, ambiguity-bearing,
-identical-sequence, high-divergence, missing-data, and unequal-length-invalid
-fixtures. On the owned Bijux side, `alignment distance-matrix --model raw`
-accepts the ape-compatible raw-distance alias while keeping `p-distance` as
-the canonical internal label, and unequal-length alignments fail explicitly
+The `ape::dist.dna` portion now covers both raw nucleotide distance and JC69
+distance over governed clean, gapped pairwise-deletion, gapped
+complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,
+missing-data, and unequal-length-invalid fixtures. On the owned Bijux side,
+`alignment distance-matrix --model raw` and `--model jc69` accept the
+ape-compatible aliases while keeping `p-distance` and `jukes-cantor` as the
+canonical internal labels. Saturated JC69 pairs are reported explicitly as
+either undefined or infinite, and unequal-length alignments fail explicitly
 before any matrix is written.
 The `ape::keep.tip` portion now covers valid rooted and unrooted keep-set
 cases, selected-tip order differences, and rootedness changes after pruning.
