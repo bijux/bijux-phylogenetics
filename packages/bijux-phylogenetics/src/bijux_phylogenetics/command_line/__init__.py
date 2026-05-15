@@ -541,6 +541,7 @@ from bijux_phylogenetics.distance import (
     write_distance_reproducibility_bundle,
     write_genetic_distance_component_table,
     write_genetic_distance_matrix,
+    write_genetic_distance_parameter_table,
 )
 from bijux_phylogenetics.diversification import (
     compare_diversification_models,
@@ -772,6 +773,10 @@ _PAIRWISE_DISTANCE_MODELS = (
     "jukes-cantor",
     "k80",
     "kimura-2-parameter",
+    "f81",
+    "felsenstein-81",
+    "tn93",
+    "tamura-nei-93",
     "amino-acid-p-distance",
 )
 
@@ -1946,6 +1951,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--components-out",
         type=Path,
         help="Write pairwise mismatch, transition, and transversion components as TSV.",
+    )
+    alignment_distance.add_argument(
+        "--parameters-out",
+        type=Path,
+        help="Write alignment-wide distance-model parameters as TSV.",
     )
     alignment_distance.add_argument(
         "--json", action="store_true", help="Emit the report as JSON."
@@ -8017,7 +8027,14 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             report,
                         )
                     )
-                warnings: list[str] = []
+                if args.parameters_out is not None:
+                    outputs.append(
+                        write_genetic_distance_parameter_table(
+                            args.parameters_out,
+                            report,
+                        )
+                    )
+                warnings = list(report.warnings)
                 if any(
                     pair.saturated
                     for pair in report.pairs
