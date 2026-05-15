@@ -117,6 +117,23 @@ def bayesian_report_method_tier(report_kind: str) -> MethodTierAssessment:
     )
 
 
+def release_method_tier_inventory() -> list[MethodTierAssessment]:
+    """Return the governed user-facing method inventory for release reporting."""
+    return [
+        fasta_to_tree_method_tier(),
+        comparative_report_method_tier(),
+        phylogenetic_logistic_method_tier(
+            "phylogenetic-working-correlation-gee"
+        ),
+        tree_report_method_tier(),
+        bayesian_report_method_tier("bayesian-posterior-report"),
+        bayesian_report_method_tier("bayesian-diagnostics-report"),
+        bayesian_report_method_tier("beast-calibration-report"),
+        bayesian_report_method_tier("time-tree-readiness-report"),
+        bayesian_report_method_tier("bayesian-run-comparison-report"),
+    ]
+
+
 def method_tier_metrics(assessment: MethodTierAssessment) -> dict[str, object]:
     return {
         "method_tier": assessment.tier,
@@ -131,4 +148,3 @@ def method_tier_warnings(assessment: MethodTierAssessment) -> list[str]:
     if assessment.warning is None:
         return []
     return [assessment.warning]
-
