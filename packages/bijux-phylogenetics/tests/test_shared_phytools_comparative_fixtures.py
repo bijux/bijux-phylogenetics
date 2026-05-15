@@ -227,6 +227,56 @@ def test_shared_phytools_comparative_fixture_catalog_supports_fast_anc_signal_ca
     ) == ["Phy10", "Phy14"]
 
 
+def test_shared_phytools_comparative_fixture_catalog_supports_anc_ml_signal_cases() -> (
+    None
+):
+    strong_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_continuous_strong_signal_twenty_four_taxa"
+    )
+    nonultrametric_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
+    )
+    missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_continuous_missing_values_twenty_four_taxa"
+    )
+
+    strong_report = reconstruct_continuous_ancestral_states(
+        strong_fixture.tree_path,
+        strong_fixture.traits_path,
+        trait=strong_fixture.trait_name,
+        taxon_column=strong_fixture.taxon_column,
+        model="brownian",
+        estimator="anc-ml",
+    )
+    nonultrametric_report = reconstruct_continuous_ancestral_states(
+        nonultrametric_fixture.tree_path,
+        nonultrametric_fixture.traits_path,
+        trait=nonultrametric_fixture.trait_name,
+        taxon_column=nonultrametric_fixture.taxon_column,
+        model="brownian",
+        estimator="anc-ml",
+    )
+    missing_report = reconstruct_continuous_ancestral_states(
+        missing_fixture.tree_path,
+        missing_fixture.traits_path,
+        trait=missing_fixture.trait_name,
+        taxon_column=missing_fixture.taxon_column,
+        model="brownian",
+        estimator="anc-ml",
+    )
+
+    assert strong_report.estimator == "anc-ml"
+    assert nonultrametric_report.estimator == "anc-ml"
+    assert strong_report.optimizer_diagnostics is not None
+    assert strong_report.optimizer_diagnostics.converged is True
+    assert len([row for row in strong_report.estimates if not row.is_tip]) == 23
+    assert len([row for row in nonultrametric_report.estimates if not row.is_tip]) == 23
+    assert missing_report.taxon_count == 22
+    assert sorted(
+        missing_report.dropped_missing_taxa + missing_report.dropped_non_numeric_taxa
+    ) == ["Phy10", "Phy14"]
+
+
 def test_shared_phytools_comparative_fixture_catalog_covers_discrete_nonultrametric_and_branch_edge_surfaces() -> (
     None
 ):
