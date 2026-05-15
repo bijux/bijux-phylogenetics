@@ -159,6 +159,7 @@ def write_independent_contrast_table(
         path,
         columns=[
             "trait",
+            "node_id",
             "node",
             "left_taxa",
             "right_taxa",
@@ -170,6 +171,7 @@ def write_independent_contrast_table(
         rows=[
             {
                 "trait": report.trait,
+                "node_id": row.node_id,
                 "node": row.node,
                 "left_taxa": ",".join(row.left_taxa),
                 "right_taxa": ",".join(row.right_taxa),

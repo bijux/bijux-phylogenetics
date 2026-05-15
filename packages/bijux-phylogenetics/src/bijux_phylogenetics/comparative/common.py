@@ -5,6 +5,7 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.comparative._math import stable_covariance
+from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.core.traits import validate_traits_table
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
@@ -36,6 +37,8 @@ class ComparativeReadinessReport:
     rooted: bool
     binary: bool
     complete_branch_lengths: bool
+    negative_branch_lengths: bool
+    minimum_branch_length: float | None
     tree_taxa: int
     analysis_taxa: list[str]
     missing_from_traits: list[str]
@@ -117,6 +120,10 @@ def summarize_numeric_trait_readiness(
         node.is_leaf() or len(node.children) == 2 for node in tree.iter_nodes()
     )
     complete_branch_lengths = _has_complete_branch_lengths(tree)
+    minimum_branch_length = _minimum_branch_length(tree)
+    negative_branch_lengths = (
+        minimum_branch_length is not None and minimum_branch_length < 0.0
+    )
     if trait_column.kind != "numeric":
         blockers.append(
             f"trait column '{trait}' must be numeric for comparative analysis"
@@ -126,6 +133,10 @@ def summarize_numeric_trait_readiness(
     if not complete_branch_lengths:
         blockers.append(
             "tree requires complete branch lengths for comparative analysis"
+        )
+    if negative_branch_lengths:
+        blockers.append(
+            "tree contains negative branch lengths that invalidate comparative analysis"
         )
     if len(analysis_taxa) < 3:
         blockers.append(
@@ -154,6 +165,8 @@ def summarize_numeric_trait_readiness(
         rooted=rooted,
         binary=binary,
         complete_branch_lengths=complete_branch_lengths,
+        negative_branch_lengths=negative_branch_lengths,
+        minimum_branch_length=minimum_branch_length,
         tree_taxa=len(tree_taxa),
         analysis_taxa=analysis_taxa,
         missing_from_traits=missing_from_traits,
@@ -271,6 +284,31 @@ def load_comparative_dataset(
                 },
             },
         )
+    if readiness.negative_branch_lengths:
+        raise ComparativeMethodError(
+            "tree contains negative branch lengths that invalidate this comparative method",
+            details={
+                "tree_path": str(tree_path),
+                "traits_path": str(traits_path),
+                "trait": trait,
+                "failure_reason": "comparative_negative_branch_lengths",
+                "scientific_explanation": (
+                    "This comparative method treats branch length as evolutionary variance or shared path length, so negative values make the analysis scientifically invalid."
+                ),
+                "likely_causes": [
+                    "the tree file contains one or more negative branch lengths",
+                    "branch scaling or export introduced a negative value on a non-root edge",
+                ],
+                "actionable_fixes": [
+                    "repair or re-estimate the tree so every non-root branch length is non-negative",
+                    "inspect the tree for scaling or export errors before rerunning the comparative method",
+                ],
+                "evidence": {
+                    "analysis_taxa": readiness.analysis_taxa,
+                    "minimum_branch_length": readiness.minimum_branch_length,
+                },
+            },
+        )
     if require_binary and not readiness.binary:
         raise ComparativeMethodError(
             "tree must be strictly binary for this comparative method"
@@ -305,7 +343,10 @@ def load_comparative_dataset(
             },
         )
 
-    tree = load_tree(tree_path)
+    tree, _pruning_report = prune_tree_to_requested_taxa(
+        tree_path,
+        readiness.analysis_taxa,
+    )
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     values_by_taxon = {
         row[table.taxon_column]: float(row[trait])
@@ -433,6 +474,17 @@ def _has_complete_branch_lengths(tree: PhyloTree) -> bool:
         for node in tree.iter_nodes()
         if node is not tree.root
     )
+
+
+def _minimum_branch_length(tree: PhyloTree) -> float | None:
+    branch_lengths = [
+        node.branch_length
+        for node in tree.iter_nodes()
+        if node is not tree.root and node.branch_length is not None
+    ]
+    if not branch_lengths:
+        return None
+    return min(branch_lengths)
 
 
 def _leaf_ancestor_depths(tree: PhyloTree) -> dict[str, dict[int, float]]:

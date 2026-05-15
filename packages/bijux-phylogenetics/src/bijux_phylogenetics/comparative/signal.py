@@ -16,6 +16,7 @@ from bijux_phylogenetics.comparative.common import (
     load_comparative_dataset,
     tip_root_depths,
 )
+from bijux_phylogenetics.core._node_identity import ape_node_id_for_node
 from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
 from bijux_phylogenetics.errors import ComparativeMethodError
 
@@ -24,12 +25,31 @@ from bijux_phylogenetics.errors import ComparativeMethodError
 class IndependentContrast:
     """One phylogenetic independent contrast at an internal node."""
 
+    node_id: int
     node: str
     left_taxa: list[str]
     right_taxa: list[str]
     contrast: float
     expected_variance: float
     ancestral_value: float
+
+
+@dataclass(slots=True)
+class IndependentContrastInputAudit:
+    """Owned input-policy audit for one phylogenetic independent-contrast analysis."""
+
+    tree_path: Path
+    traits_path: Path
+    trait: str
+    taxon_count: int
+    taxa: list[str]
+    tree_is_ultrametric: bool
+    minimum_root_to_tip_depth: float
+    maximum_root_to_tip_depth: float
+    ultrametric_policy: str
+    missing_value_policy: str
+    pruned_missing_value_taxa: list[str]
+    warnings: list[str]
 
 
 @dataclass(slots=True)
@@ -40,6 +60,7 @@ class IndependentContrastReport:
     traits_path: Path
     trait: str
     taxon_count: int
+    input_audit: IndependentContrastInputAudit
     root_estimate: float
     contrasts: list[IndependentContrast]
 
@@ -138,12 +159,18 @@ def compute_phylogenetic_independent_contrasts(
         require_binary=True,
     )
     lookup = dict(zip(dataset.taxa, dataset.trait_values, strict=True))
-    contrasts, root_estimate, _ = _compute_node_contrasts(dataset.tree.root, lookup)
+    input_audit = _build_independent_contrast_input_audit(dataset)
+    contrasts, root_estimate, _ = _compute_node_contrasts(
+        dataset.tree,
+        dataset.tree.root,
+        lookup,
+    )
     return IndependentContrastReport(
         tree_path=tree_path,
         traits_path=traits_path,
         trait=trait,
         taxon_count=len(dataset.taxa),
+        input_audit=input_audit,
         root_estimate=root_estimate,
         contrasts=contrasts,
     )
@@ -337,6 +364,29 @@ def _build_signal_input_audit(
     )
 
 
+def _build_independent_contrast_input_audit(
+    dataset: ComparativeDataset,
+) -> IndependentContrastInputAudit:
+    ultrametric_summary = summarize_ultrametric_tip_depths(
+        tip_root_depths(dataset.tree, dataset.taxa),
+        tolerance=1e-12,
+    )
+    return IndependentContrastInputAudit(
+        tree_path=dataset.tree_path,
+        traits_path=dataset.traits_path,
+        trait=dataset.trait,
+        taxon_count=len(dataset.taxa),
+        taxa=list(dataset.taxa),
+        tree_is_ultrametric=ultrametric_summary.ultrametric,
+        minimum_root_to_tip_depth=ultrametric_summary.minimum_tip_depth,
+        maximum_root_to_tip_depth=ultrametric_summary.maximum_tip_depth,
+        ultrametric_policy="accept-rooted-trees-and-report-ultrametricity",
+        missing_value_policy="prune-overlapping-missing-values",
+        pruned_missing_value_taxa=list(dataset.readiness.pruned_missing_value_taxa),
+        warnings=list(dataset.readiness.warnings),
+    )
+
+
 def _require_signal_variation(dataset: ComparativeDataset) -> None:
     minimum_value = min(dataset.trait_values)
     maximum_value = max(dataset.trait_values)
@@ -347,7 +397,9 @@ def _require_signal_variation(dataset: ComparativeDataset) -> None:
 
 
 def _compute_node_contrasts(
-    node, values_by_taxon: dict[str, float]
+    tree,
+    node,
+    values_by_taxon: dict[str, float],
 ) -> tuple[list[IndependentContrast], float, float]:
     if node.is_leaf():
         if node.name is None:
@@ -359,10 +411,14 @@ def _compute_node_contrasts(
         raise ValueError("independent contrasts require a strictly binary tree")
 
     left_contrasts, left_value, left_variance = _compute_node_contrasts(
-        node.children[0], values_by_taxon
+        tree,
+        node.children[0],
+        values_by_taxon,
     )
     right_contrasts, right_value, right_variance = _compute_node_contrasts(
-        node.children[1], values_by_taxon
+        tree,
+        node.children[1],
+        values_by_taxon,
     )
     expected_variance = left_variance + right_variance
     contrast = (left_value - right_value) / math.sqrt(expected_variance)
@@ -376,6 +432,7 @@ def _compute_node_contrasts(
         propagated_variance += node.branch_length
 
     report = IndependentContrast(
+        node_id=ape_node_id_for_node(tree, node),
         node="|".join(
             sorted(
                 set(_leaf_names(node.children[0])) | set(_leaf_names(node.children[1]))
