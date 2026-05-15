@@ -30,6 +30,14 @@ SUMMARIES = {
         "null_log_likelihood": -38.15175747253939,
         "p_value": 1.0,
     },
+    "phylosig-lambda-weak-signal-twenty-four-taxa": {
+        "taxon_count": 24,
+        "trait_name": "signal_weak",
+        "lambda_value": 7.33736799610782e-05,
+        "log_likelihood": -35.82077682773808,
+        "null_log_likelihood": -35.82025224132399,
+        "p_value": 1.0,
+    },
     "phylosig-k-strong-signal-twenty-four-taxa": {
         "taxon_count": 24,
         "trait_name": "signal_strong",

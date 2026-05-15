@@ -18,10 +18,12 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
 
     assert [case.case_id for case in cases] == [
         "phylosig-lambda-non-ultrametric-strong-signal-twenty-four-taxa",
+        "phylosig-lambda-weak-signal-twenty-four-taxa",
         "phylosig-k-strong-signal-twenty-four-taxa",
     ]
     assert cases[0].function_name == "phytools::phylosig(method='lambda')"
-    assert cases[1].function_name == "phytools::phylosig(method='K')"
+    assert cases[1].function_name == "phytools::phylosig(method='lambda')"
+    assert cases[2].function_name == "phytools::phylosig(method='K')"
     assert (
         cases[0].fixture_id == "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
     )
@@ -35,7 +37,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     report = run_phytools_parity_cases(rscript_executable=str(rscript))
 
     assert report.all_passed is True
-    assert report.case_count == 2
+    assert report.case_count == 3
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [

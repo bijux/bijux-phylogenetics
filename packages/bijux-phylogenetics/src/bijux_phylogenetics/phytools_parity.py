@@ -141,6 +141,9 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
     nonultrametric_signal_fixture = get_shared_phytools_comparative_fixture(
         "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
     )
+    weak_signal_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_continuous_weak_signal_twenty_four_taxa"
+    )
     return [
         PhytoolsParityCase(
             case_id="phylosig-lambda-non-ultrametric-strong-signal-twenty-four-taxa",
@@ -155,6 +158,20 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
             tolerance=5e-4,
             trait_name=nonultrametric_signal_fixture.trait_name,
             taxon_column=nonultrametric_signal_fixture.taxon_column,
+        ),
+        PhytoolsParityCase(
+            case_id="phylosig-lambda-weak-signal-twenty-four-taxa",
+            fixture_id=weak_signal_fixture.fixture_id,
+            function_name="phytools::phylosig(method='lambda')",
+            python_function_name="estimate_pagels_lambda",
+            operation="phylogenetic-signal-lambda",
+            input_fixtures=(
+                weak_signal_fixture.tree_path,
+                weak_signal_fixture.traits_path,
+            ),
+            tolerance=1e-3,
+            trait_name=weak_signal_fixture.trait_name,
+            taxon_column=weak_signal_fixture.taxon_column,
         ),
         PhytoolsParityCase(
             case_id="phylosig-k-strong-signal-twenty-four-taxa",
