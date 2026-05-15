@@ -520,6 +520,24 @@ def simulate_random_trees(
     )
 
 
+def simulate_random_tree(
+    *,
+    tip_count: int,
+    seed: int = 1,
+    taxon_prefix: str = "Taxon",
+    branch_length_model: str = "uniform",
+) -> tuple[PhyloTree, TreeSimulationReport]:
+    """Simulate one rooted binary random tree with a structured report."""
+    trees, report = simulate_random_trees(
+        tree_count=1,
+        tip_count=tip_count,
+        seed=seed,
+        taxon_prefix=taxon_prefix,
+        branch_length_model=branch_length_model,
+    )
+    return trees[0], report
+
+
 def _choose_two_indices(rng: random.Random, count: int) -> tuple[int, int]:
     left = rng.randrange(count)
     right = rng.randrange(count - 1)
@@ -681,6 +699,24 @@ def simulate_coalescent_trees(
         branch_length_model="coalescent-waiting-times",
         population_size=population_size,
     )
+
+
+def simulate_coalescent_tree(
+    *,
+    tip_count: int,
+    population_size: float = 1.0,
+    seed: int = 1,
+    taxon_prefix: str = "Taxon",
+) -> tuple[PhyloTree, TreeSimulationReport]:
+    """Simulate one rooted coalescent tree with a structured report."""
+    trees, report = simulate_coalescent_trees(
+        tree_count=1,
+        tip_count=tip_count,
+        population_size=population_size,
+        seed=seed,
+        taxon_prefix=taxon_prefix,
+    )
+    return trees[0], report
 
 
 def simulate_brownian_traits(
