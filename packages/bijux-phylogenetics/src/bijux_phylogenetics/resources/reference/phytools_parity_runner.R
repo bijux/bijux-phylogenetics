@@ -66,6 +66,9 @@ format_table_value <- function(value) {
   if (is.null(value) || length(value) == 0) {
     return("")
   }
+  if (is.list(value)) {
+    return(jsonlite::toJSON(unname(value), auto_unbox = TRUE))
+  }
   if (length(value) > 1) {
     return(jsonlite::toJSON(unname(value), auto_unbox = TRUE))
   }
@@ -75,6 +78,7 @@ format_table_value <- function(value) {
 execution_path <- file.path(output_root, "reference-execution.json")
 summary_path <- file.path(output_root, "reference-summary.json")
 summary_table_path <- file.path(output_root, "reference-summary.tsv")
+fitmk_rows_path <- file.path(output_root, "fitmk-rate-matrix.tsv")
 fast_anc_rows_path <- file.path(output_root, "fast-anc-node-estimates.tsv")
 anc_ml_rows_path <- file.path(output_root, "anc-ml-node-estimates.tsv")
 case_payload <- jsonlite::fromJSON(case_path)
@@ -108,16 +112,28 @@ trait_table <- utils::read.table(
   stringsAsFactors = FALSE,
   check.names = FALSE
 )
-trait_values <- trait_table[[trait_name]]
 taxon_names <- trait_table[[taxon_column]]
-names(trait_values) <- taxon_names
-trait_values <- stats::setNames(as.numeric(trait_values), taxon_names)
-kept_taxa <- names(trait_values)[
-  !is.na(trait_values) &
-    names(trait_values) %in% tree$tip.label
-]
+is_discrete_operation <- identical(case_payload$operation, "discrete-fit-mk-er")
+if (is_discrete_operation) {
+  raw_trait_values <- trait_table[[trait_name]]
+  trait_values <- stats::setNames(
+    ifelse(is.na(raw_trait_values), "", trimws(as.character(raw_trait_values))),
+    taxon_names
+  )
+  kept_taxa <- names(trait_values)[
+    nzchar(trait_values) &
+      names(trait_values) %in% tree$tip.label
+  ]
+  trait_values <- trait_values[kept_taxa]
+} else {
+  trait_values <- stats::setNames(as.numeric(trait_table[[trait_name]]), taxon_names)
+  kept_taxa <- names(trait_values)[
+    !is.na(trait_values) &
+      names(trait_values) %in% tree$tip.label
+  ]
+  trait_values <- trait_values[kept_taxa]
+}
 excluded_taxa <- sort(setdiff(tree$tip.label, kept_taxa))
-trait_values <- trait_values[kept_taxa]
 tree <- ape::drop.tip(tree, excluded_taxa)
 
 leaf_descendants <- function(phy, node) {
@@ -182,6 +198,73 @@ build_k_summary <- function(tree, trait_values, trait_name) {
   )
 }
 
+fit_aicc <- function(aic, sample_size, parameter_count) {
+  denominator <- sample_size - parameter_count - 1
+  if (denominator <= 0) {
+    return(Inf)
+  }
+  aic + ((2 * parameter_count * (parameter_count + 1)) / denominator)
+}
+
+build_fitmk_result <- function(tree, trait_values, trait_name, excluded_taxa) {
+  fit <- phytools::fitMk(
+    tree,
+    trait_values,
+    model = "ER"
+  )
+  q_matrix <- matrix(
+    0,
+    nrow = nrow(fit$index.matrix),
+    ncol = ncol(fit$index.matrix),
+    dimnames = list(fit$states, fit$states)
+  )
+  for (row_index in seq_len(nrow(fit$index.matrix))) {
+    for (column_index in seq_len(ncol(fit$index.matrix))) {
+      rate_index <- fit$index.matrix[row_index, column_index]
+      if (!is.na(rate_index)) {
+        q_matrix[row_index, column_index] <- fit$rates[[rate_index]]
+      }
+    }
+  }
+  diag(q_matrix) <- -rowSums(q_matrix)
+  rate_rows <- list()
+  for (source_state in rownames(q_matrix)) {
+    for (target_state in colnames(q_matrix)) {
+      if (identical(source_state, target_state)) {
+        next
+      }
+      rate_rows[[length(rate_rows) + 1]] <- list(
+        source_state = source_state,
+        target_state = target_state,
+        transition_allowed = TRUE,
+        step_distance = 1,
+        rate = unname(as.numeric(q_matrix[source_state, target_state]))
+      )
+    }
+  }
+  rate_rows <- rate_rows[order(
+    vapply(rate_rows, function(row) row$source_state, character(1)),
+    vapply(rate_rows, function(row) row$target_state, character(1))
+  )]
+  parameter_count <- length(unname(fit$rates))
+  log_likelihood <- unname(as.numeric(stats::logLik(fit)))
+  aic <- unname(as.numeric(stats::AIC(fit)))
+  list(
+    summary = list(
+      taxon_count = length(trait_values),
+      trait_name = trait_name,
+      excluded_taxon_count = length(excluded_taxa),
+      excluded_taxa = unname(as.list(excluded_taxa)),
+      state_count = length(unique(unname(trait_values))),
+      parameter_count = parameter_count,
+      log_likelihood = log_likelihood,
+      aic = aic,
+      aicc = fit_aicc(aic, length(trait_values), parameter_count)
+    ),
+    rows = rate_rows
+  )
+}
+
 build_fast_anc_result <- function(tree, trait_values, trait_name, excluded_taxa) {
   fit <- phytools::fastAnc(
     tree,
@@ -210,7 +293,7 @@ build_fast_anc_result <- function(tree, trait_values, trait_name, excluded_taxa)
       trait_name = trait_name,
       internal_node_count = length(node_rows),
       excluded_taxon_count = length(excluded_taxa),
-      excluded_taxa = excluded_taxa,
+      excluded_taxa = unname(as.list(excluded_taxa)),
       tree_is_ultrametric = isTRUE(ape::is.ultrametric(tree))
     ),
     rows = node_rows
@@ -246,7 +329,7 @@ build_anc_ml_result <- function(tree, trait_values, trait_name, excluded_taxa) {
       trait_name = trait_name,
       internal_node_count = length(node_rows),
       excluded_taxon_count = length(excluded_taxa),
-      excluded_taxa = excluded_taxa,
+      excluded_taxa = unname(as.list(excluded_taxa)),
       tree_is_ultrametric = isTRUE(ape::is.ultrametric(tree)),
       sigma_squared = as.numeric(fit$sig2),
       log_likelihood = as.numeric(fit$logLik)
@@ -272,6 +355,12 @@ result_payload <- switch(
       trait_name
     ),
     rows = NULL
+  ),
+  "discrete-fit-mk-er" = build_fitmk_result(
+    tree,
+    trait_values,
+    trait_name,
+    excluded_taxa
   ),
   "continuous-ancestral-fast-anc" = build_fast_anc_result(
     tree,
@@ -305,7 +394,9 @@ write_table(
   })
 )
 if (!is.null(result_payload$rows)) {
-  if (identical(case_payload$operation, "continuous-ancestral-fast-anc")) {
+  if (identical(case_payload$operation, "discrete-fit-mk-er")) {
+    write_table(fitmk_rows_path, result_payload$rows)
+  } else if (identical(case_payload$operation, "continuous-ancestral-fast-anc")) {
     write_table(fast_anc_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "continuous-ancestral-anc-ml")) {
     write_table(anc_ml_rows_path, result_payload$rows)
