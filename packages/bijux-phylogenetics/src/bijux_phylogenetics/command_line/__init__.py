@@ -8888,8 +8888,26 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 report.input_audit.pruned_missing_value_taxa
                             ),
                             "signal_seed": report.signal_test.seed,
+                            "lambda_log_likelihood": (
+                                report.pagels_lambda.log_likelihood
+                            ),
+                            "lambda_likelihood_ratio_statistic": (
+                                report.lambda_likelihood_ratio_statistic
+                            ),
                             "lambda_likelihood_ratio_p_value": (
                                 report.lambda_likelihood_ratio_p_value
+                            ),
+                            "lambda_optimizer_name": (
+                                report.pagels_lambda.optimizer_diagnostics.optimizer_name
+                            ),
+                            "lambda_optimizer_function_evaluation_count": (
+                                report.pagels_lambda.optimizer_diagnostics.function_evaluation_count
+                            ),
+                            "lambda_optimizer_hit_lower_boundary": (
+                                report.pagels_lambda.optimizer_diagnostics.hit_lower_boundary
+                            ),
+                            "lambda_optimizer_hit_upper_boundary": (
+                                report.pagels_lambda.optimizer_diagnostics.hit_upper_boundary
                             ),
                             "permutation_row_count": len(
                                 report.signal_test.permutation_rows

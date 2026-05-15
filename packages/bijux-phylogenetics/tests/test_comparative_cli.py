@@ -126,6 +126,35 @@ def test_comparative_signal_cli_reports_non_ultrametric_acceptance(capsys) -> No
     )
 
 
+def test_comparative_signal_cli_reports_lambda_optimizer_diagnostics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "signal",
+            str(fixture("example_tree_phytools_non_ultrametric_twenty_four_taxa.nwk")),
+            str(fixture("example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv")),
+            "--trait",
+            "signal_strong",
+            "--permutations",
+            "11",
+            "--seed",
+            "19",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["lambda_optimizer_name"] == "two-stage-grid-search"
+    assert payload["metrics"]["lambda_optimizer_function_evaluation_count"] > 0
+    assert payload["metrics"]["lambda_optimizer_function_evaluation_count"] == payload[
+        "data"
+    ]["pagels_lambda"]["optimizer_diagnostics"]["function_evaluation_count"]
+    assert payload["metrics"]["lambda_optimizer_hit_upper_boundary"] is True
+    assert payload["metrics"]["lambda_likelihood_ratio_statistic"] > 0.0
+    assert payload["metrics"]["lambda_log_likelihood"] >= payload["data"]["pagels_lambda"]["null_log_likelihood"]
+
+
 def test_comparative_signal_cli_rejects_constant_trait_values(
     tmp_path: Path, capsys
 ) -> None:
