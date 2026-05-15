@@ -626,6 +626,7 @@ from bijux_phylogenetics.distance import (
     assess_distance_method_maturity,
     build_distance_method_report,
     build_distance_tree,
+    build_distance_tree_from_genetic_distance_matrix,
     build_tree_from_imported_distance_matrix,
     compare_distance_gap_policies,
     compare_distance_models,
@@ -876,11 +877,13 @@ from bijux_phylogenetics.reports.service import (
 from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
     simulate_brownian_traits,
+    simulate_coalescent_tree,
     simulate_coalescent_trees,
     simulate_discrete_traits,
     simulate_dna_alignment,
     simulate_early_burst_traits,
     simulate_ou_traits,
+    simulate_random_tree,
     simulate_random_trees,
     simulate_protein_alignment,
     write_continuous_trait_table,
@@ -1011,6 +1014,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.build_distance_method_report is build_distance_method_report
     )
     assert bijux_phylogenetics.build_distance_tree is build_distance_tree
+    assert (
+        bijux_phylogenetics.build_distance_tree_from_genetic_distance_matrix
+        is build_distance_tree_from_genetic_distance_matrix
+    )
     assert (
         bijux_phylogenetics.build_tree_from_imported_distance_matrix
         is build_tree_from_imported_distance_matrix
@@ -2031,7 +2038,9 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is render_level_one_release_gate_report
     )
     assert bijux_phylogenetics.simulate_birth_death_trees is simulate_birth_death_trees
+    assert bijux_phylogenetics.simulate_random_tree is simulate_random_tree
     assert bijux_phylogenetics.simulate_coalescent_trees is simulate_coalescent_trees
+    assert bijux_phylogenetics.simulate_coalescent_tree is simulate_coalescent_tree
     assert bijux_phylogenetics.simulate_random_trees is simulate_random_trees
     assert bijux_phylogenetics.simulate_brownian_traits is simulate_brownian_traits
     assert bijux_phylogenetics.simulate_early_burst_traits is simulate_early_burst_traits
@@ -6592,6 +6601,26 @@ def test_build_distance_tree_constructs_neighbor_joining_tree() -> None:
     )
     assert report.method == "neighbor-joining"
     assert report.taxon_count == 4
+
+
+def test_build_distance_tree_from_genetic_distance_matrix_matches_path_surface() -> None:
+    matrix = compute_pairwise_genetic_distance_matrix(
+        fixture("example_alignment_distance.fasta")
+    )
+    direct_tree, direct_report = build_distance_tree_from_genetic_distance_matrix(
+        matrix,
+        method="neighbor-joining",
+    )
+    path_tree, path_report = build_distance_tree(
+        fixture("example_alignment_distance.fasta"),
+        method="neighbor-joining",
+    )
+
+    assert dumps_newick(direct_tree) == dumps_newick(path_tree)
+    assert direct_report.alignment_path == path_report.alignment_path
+    assert direct_report.method == path_report.method
+    assert direct_report.method_policy == path_report.method_policy
+    assert direct_report.assumptions == path_report.assumptions
 
 
 def test_build_distance_tree_constructs_upgma_tree() -> None:
