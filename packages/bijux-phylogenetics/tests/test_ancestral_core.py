@@ -47,6 +47,21 @@ def test_load_continuous_dataset_prunes_missing_taxa_and_warns_on_small_sample()
     ]
 
 
+def test_load_continuous_dataset_prunes_nonnumeric_taxa_explicitly() -> None:
+    dataset = load_continuous_dataset(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_brownian_missing.tsv"),
+        trait="response_growth",
+    )
+    assert dataset.taxa == ["A", "D", "E", "F"]
+    assert dataset.dropped_missing_taxa == ["B"]
+    assert dataset.dropped_non_numeric_taxa == ["C"]
+    assert dataset.warnings == [
+        "one or more taxa were excluded because the continuous trait value was missing",
+        "one or more taxa were excluded because the continuous trait value was not numeric",
+    ]
+
+
 def test_continuous_reconstruction_reports_internal_estimates_and_intervals() -> None:
     report = reconstruct_continuous_ancestral_states(
         fixture("example_tree.nwk"),

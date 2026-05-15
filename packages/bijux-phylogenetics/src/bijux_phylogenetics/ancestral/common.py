@@ -5,7 +5,6 @@ from pathlib import Path
 
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.core.traits import validate_traits_table
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.newick import dumps_newick
@@ -97,16 +96,6 @@ def load_continuous_dataset(
         raise AncestralReconstructionError(
             f"trait table does not contain column '{trait}'"
         )
-    trait_report = validate_traits_table(traits_path, taxon_column=taxon_column)
-    column_kind = next(
-        (column.kind for column in trait_report.trait_columns if column.name == trait),
-        None,
-    )
-    if column_kind != "numeric":
-        raise AncestralReconstructionError(
-            f"trait column '{trait}' must be numeric for continuous ancestral reconstruction"
-        )
-
     rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
     kept_taxa: list[str] = []
     dropped_missing_taxa: list[str] = []
@@ -123,6 +112,10 @@ def load_continuous_dataset(
             dropped_non_numeric_taxa.append(taxon)
             continue
         kept_taxa.append(taxon)
+    if not kept_taxa and dropped_non_numeric_taxa:
+        raise AncestralReconstructionError(
+            f"trait column '{trait}' must contain numeric values for continuous ancestral reconstruction"
+        )
     if len(kept_taxa) < 2:
         raise AncestralReconstructionError(
             "continuous ancestral reconstruction requires at least two taxa with usable numeric trait values"
