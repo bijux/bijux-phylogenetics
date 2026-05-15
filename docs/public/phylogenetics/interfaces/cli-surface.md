@@ -176,6 +176,10 @@ uses the same shared tree catalog for one-tip outgroups, monophyletic
 multi-tip outgroups, already-rooted trees, missing outgroups, and
 non-monophyletic outgroups, and it compares rooted clades plus branch lengths
 against live `ape::root` instead of only checking that a rooted flag changed.
+On the owned Bijux side, outgroup rooting now runs through the same native
+`PhyloTree` manipulation core as unrooting, pruning, clade extraction, MRCA
+lookup, and monophyly review rather than delegating that reroot step through
+Biopython.
 The `ape::unroot` portion now covers rooted binary trees, post-outgroup-rooting
 trees, already-unrooted inputs, and malformed input failures, and it makes the
 root-edge policy explicit by matching `ape::unroot` branch-length
