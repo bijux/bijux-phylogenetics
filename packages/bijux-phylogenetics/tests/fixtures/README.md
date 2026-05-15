@@ -53,6 +53,10 @@ The catalog also includes one all-gap-or-missing alignment fixture so
 `ape::base.freq` parity and the owned `alignment composition --base-frequency-out`
 surface can prove their explicit edge-case policy without fabricating A/C/G/T
 content from a biologically empty alignment.
+That same governed DNA catalog now also includes invariant and one-variable-site
+fixtures for `ape::seg.sites` parity and the owned
+`alignment segregating-sites --site-table-out` surface, so segregating-site
+review stays tied to durable fixture ids instead of ad hoc inline alignments.
 
 The metadata fixture corpus now also has one governed shared catalog at
 `metadata/shared_trait_table_fixture_catalog.json`. That catalog assigns

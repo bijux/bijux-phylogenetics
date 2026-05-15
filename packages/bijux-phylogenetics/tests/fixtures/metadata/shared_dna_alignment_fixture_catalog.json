@@ -64,6 +64,34 @@
       "notes": "Lowercase DNA alignment used to prove case normalization across Bijux and ape."
     },
     {
+      "fixture_id": "invariant_aligned_dna",
+      "relative_path": "alignments/example_alignment_invariant.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "not-coding",
+      "sequence_count": 3,
+      "alignment_length": 6,
+      "feature_tags": [
+        "invariant-alignment",
+        "composition-ready"
+      ],
+      "notes": "Aligned DNA fixture with no segregating sites for invariant ape-style site detection."
+    },
+    {
+      "fixture_id": "one_variable_site_alignment",
+      "relative_path": "alignments/example_alignment_one_variable_site.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "not-coding",
+      "sequence_count": 3,
+      "alignment_length": 6,
+      "feature_tags": [
+        "one-variable-site",
+        "composition-ready"
+      ],
+      "notes": "Aligned DNA fixture with exactly one segregating site for ape-style site-index parity."
+    },
+    {
       "fixture_id": "identical_sequences",
       "relative_path": "alignments/example_alignment_duplicates.fasta",
       "load_expectation": "aligned",
