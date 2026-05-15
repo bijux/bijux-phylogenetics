@@ -2194,6 +2194,148 @@ vcv_case <- function(case_payload, output_root, execution_path, r_version) {
   )
 }
 
+pic_case <- function(case_payload, output_root, execution_path, r_version) {
+  tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
+  if (inherits(tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  trait_table <- tryCatch(
+    utils::read.delim(case_payload$trait_table_path, sep = "\t", stringsAsFactors = FALSE),
+    error = function(error) error
+  )
+  if (inherits(trait_table, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TraitTableError",
+        message = conditionMessage(trait_table),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  taxon_column <- as.character(case_payload$trait_taxon_column)
+  trait_name <- as.character(case_payload$trait_name)
+  if (!(taxon_column %in% names(trait_table)) || !(trait_name %in% names(trait_table))) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TraitTableError",
+        message = "trait table is missing the requested taxon or trait column",
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  trait_vector <- suppressWarnings(as.numeric(trait_table[[trait_name]]))
+  names(trait_vector) <- as.character(trait_table[[taxon_column]])
+  pic_output <- tryCatch(
+    ape::pic(trait_vector, tree, var.contrasts = TRUE),
+    error = function(error) error
+  )
+  if (inherits(pic_output, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "IndependentContrastError",
+        message = conditionMessage(pic_output),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  pic_matrix <- as.matrix(pic_output)
+  node_ids <- as.integer(rownames(pic_matrix))
+  rows <- lapply(seq_along(node_ids), function(index) {
+    node_id <- node_ids[[index]]
+    child_nodes <- tree$edge[tree$edge[, 1] == node_id, 2]
+    left_taxa <- if (length(child_nodes) >= 1L) {
+      paste(descendant_taxa(tree, child_nodes[[1]]), collapse = "|")
+    } else {
+      ""
+    }
+    right_taxa <- if (length(child_nodes) >= 2L) {
+      paste(descendant_taxa(tree, child_nodes[[2]]), collapse = "|")
+    } else {
+      ""
+    }
+    list(
+      node_id = node_id,
+      node = paste(descendant_taxa(tree, node_id), collapse = "|"),
+      left_taxa = left_taxa,
+      right_taxa = right_taxa,
+      contrast = as.numeric(pic_matrix[index, "contrasts"]),
+      expected_variance = as.numeric(pic_matrix[index, "variance"])
+    )
+  })
+  tip_depths <- as.numeric(ape::node.depth.edgelength(tree)[seq_along(tree$tip.label)])
+  summary_path <- file.path(output_root, "summary.json")
+  rows_path <- file.path(output_root, "independent-contrasts.tsv")
+  write_payload(
+    summary_path,
+    list(
+      trait = trait_name,
+      taxon_count = length(tree$tip.label),
+      contrast_count = nrow(pic_matrix),
+      tree_is_ultrametric = isTRUE(ape::is.ultrametric(tree)),
+      minimum_root_to_tip_depth = min(tip_depths),
+      maximum_root_to_tip_depth = max(tip_depths)
+    )
+  )
+  write_table(rows_path, do.call(rbind.data.frame, c(rows, stringsAsFactors = FALSE)))
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        independent_contrasts = rows_path
+      )
+    )
+  )
+}
+
 node_depth_case <- function(case_payload, output_root, execution_path, r_version) {
   tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
   if (inherits(tree, "error")) {
@@ -2651,6 +2793,11 @@ if (identical(case_payload$operation, "tree-topology-distance")) {
 
 if (identical(case_payload$operation, "tree-brownian-covariance")) {
   vcv_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "tree-independent-contrasts")) {
+  pic_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 

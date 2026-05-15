@@ -16,6 +16,9 @@ from bijux_phylogenetics.clades import extract_tree_clades, extract_tree_set_cla
 from bijux_phylogenetics.comparative.brownian_covariance import (
     summarize_brownian_covariance,
 )
+from bijux_phylogenetics.comparative.signal import (
+    compute_phylogenetic_independent_contrasts,
+)
 from bijux_phylogenetics.compare.topology_distance import (
     compare_topology_distance_trees,
 )
@@ -67,6 +70,9 @@ from bijux_phylogenetics.shared_dna_alignment_fixtures import (
 from bijux_phylogenetics.shared_distance_matrix_fixtures import (
     get_shared_distance_matrix_fixture,
 )
+from bijux_phylogenetics.shared_trait_table_fixtures import (
+    get_shared_trait_table_fixture,
+)
 from bijux_phylogenetics.tree_set import (
     compute_clade_frequency_table,
     compute_consensus_tree,
@@ -103,6 +109,10 @@ class ApeParityCase:
     rf_mode: str | None = None
     consensus_method: str | None = None
     reference_tree_path: Path | None = None
+    trait_fixture_id: str | None = None
+    trait_table_path: Path | None = None
+    trait_name: str | None = None
+    trait_taxon_column: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -224,6 +234,12 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             fixture = get_shared_distance_matrix_fixture(fixture_id)
         else:
             raise ValueError(f"unsupported ape parity fixture kind '{fixture_kind}'")
+        if fixtures_root is None:
+            return fixture.path
+        return root / fixture.relative_path
+
+    def trait_path(fixture_id: str) -> Path:
+        fixture = get_shared_trait_table_fixture(fixture_id)
         if fixtures_root is None:
             return fixture.path
         return root / fixture.relative_path
@@ -1089,6 +1105,48 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             operation="tree-brownian-covariance",
             input_fixture=fixture_path("tree", "zero_branch_lengths"),
             tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="pic-balanced-rooted-ultrametric",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::pic",
+            python_function_name="compute_phylogenetic_independent_contrasts",
+            operation="tree-independent-contrasts",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=1e-12,
+            trait_fixture_id="pic_continuous_balanced",
+            trait_table_path=trait_path("pic_continuous_balanced"),
+            trait_name="response",
+            trait_taxon_column="taxon",
+        ),
+        ApeParityCase(
+            case_id="pic-pectinate-non-ultrametric",
+            fixture_kind="tree",
+            fixture_id="pectinate_rooted_non_ultrametric",
+            function_name="ape::pic",
+            python_function_name="compute_phylogenetic_independent_contrasts",
+            operation="tree-independent-contrasts",
+            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            tolerance=1e-12,
+            trait_fixture_id="pic_continuous_pectinate",
+            trait_table_path=trait_path("pic_continuous_pectinate"),
+            trait_name="response",
+            trait_taxon_column="taxon",
+        ),
+        ApeParityCase(
+            case_id="pic-balanced-six-taxon",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_six_taxon",
+            function_name="ape::pic",
+            python_function_name="compute_phylogenetic_independent_contrasts",
+            operation="tree-independent-contrasts",
+            input_fixture=fixture_path("tree", "balanced_rooted_six_taxon"),
+            tolerance=1e-12,
+            trait_fixture_id="pic_continuous_six_taxon",
+            trait_table_path=trait_path("pic_continuous_six_taxon"),
+            trait_name="response_growth",
+            trait_taxon_column="taxon",
         ),
         ApeParityCase(
             case_id="node-depth-rooted-ultrametric",
@@ -2000,6 +2058,12 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
                 "reference_tree_path": (
                     None if case.reference_tree_path is None else str(case.reference_tree_path)
                 ),
+                "trait_fixture_id": case.trait_fixture_id,
+                "trait_table_path": (
+                    None if case.trait_table_path is None else str(case.trait_table_path)
+                ),
+                "trait_name": case.trait_name,
+                "trait_taxon_column": case.trait_taxon_column,
             },
             indent=2,
             sort_keys=True,
@@ -2561,6 +2625,41 @@ def _build_bijux_brownian_covariance_rows(
     ]
 
 
+def _build_bijux_independent_contrast_rows(
+    input_fixture: Path,
+    *,
+    trait_table_path: Path,
+    trait_name: str,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    report = compute_phylogenetic_independent_contrasts(
+        input_fixture,
+        trait_table_path,
+        trait=trait_name,
+    )
+    rows = sorted(
+        [
+            {
+                "node_id": row.node_id,
+                "node": row.node,
+                "left_taxa": "|".join(row.left_taxa),
+                "right_taxa": "|".join(row.right_taxa),
+                "contrast": row.contrast,
+                "expected_variance": row.expected_variance,
+            }
+            for row in report.contrasts
+        ],
+        key=lambda row: int(row["node_id"]),
+    )
+    return {
+        "trait": report.trait,
+        "taxon_count": report.taxon_count,
+        "contrast_count": len(report.contrasts),
+        "tree_is_ultrametric": report.input_audit.tree_is_ultrametric,
+        "minimum_root_to_tip_depth": report.input_audit.minimum_root_to_tip_depth,
+        "maximum_root_to_tip_depth": report.input_audit.maximum_root_to_tip_depth,
+    }, rows
+
+
 def _build_bijux_tree_node_depth_rows(
     input_fixture: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
@@ -3040,6 +3139,17 @@ def _build_bijux_case_payload(
     if case.operation == "tree-brownian-covariance":
         summary, rows = _build_bijux_brownian_covariance_rows(case.input_fixture)
         return summary, rows, None
+    if case.operation == "tree-independent-contrasts":
+        if case.trait_table_path is None or case.trait_name is None:
+            raise ValueError(
+                f"ape parity case '{case.case_id}' is missing a trait table path or trait name"
+            )
+        summary, rows = _build_bijux_independent_contrast_rows(
+            case.input_fixture,
+            trait_table_path=case.trait_table_path,
+            trait_name=case.trait_name,
+        )
+        return summary, rows, None
     if case.operation == "tree-node-depth":
         summary, rows = _build_bijux_tree_node_depth_rows(case.input_fixture)
         return summary, rows, None
@@ -3155,6 +3265,10 @@ def _load_reference_case_payload(
     if case.operation == "tree-brownian-covariance":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "covariance-long.tsv")
+        return summary, rows, None
+    if case.operation == "tree-independent-contrasts":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "independent-contrasts.tsv")
         return summary, rows, None
     if case.operation == "tree-node-depth":
         summary = _load_json(execution_root / "summary.json")
