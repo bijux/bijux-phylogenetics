@@ -8888,6 +8888,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 report.input_audit.pruned_missing_value_taxa
                             ),
                             "signal_seed": report.signal_test.seed,
+                            "signal_null_k_minimum": (
+                                report.signal_test.null_distribution_minimum
+                            ),
+                            "signal_null_k_mean": (
+                                report.signal_test.null_distribution_mean
+                            ),
+                            "signal_null_k_maximum": (
+                                report.signal_test.null_distribution_maximum
+                            ),
                             "lambda_log_likelihood": (
                                 report.pagels_lambda.log_likelihood
                             ),

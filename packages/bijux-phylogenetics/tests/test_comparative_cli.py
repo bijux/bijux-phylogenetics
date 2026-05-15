@@ -153,6 +153,11 @@ def test_comparative_signal_cli_reports_lambda_optimizer_diagnostics(capsys) -> 
     assert payload["metrics"]["lambda_optimizer_hit_upper_boundary"] is True
     assert payload["metrics"]["lambda_likelihood_ratio_statistic"] > 0.0
     assert payload["metrics"]["lambda_log_likelihood"] >= payload["data"]["pagels_lambda"]["null_log_likelihood"]
+    assert (
+        payload["metrics"]["signal_null_k_minimum"]
+        <= payload["metrics"]["signal_null_k_mean"]
+        <= payload["metrics"]["signal_null_k_maximum"]
+    )
 
 
 def test_comparative_signal_cli_rejects_constant_trait_values(
@@ -270,11 +275,17 @@ def test_comparative_signal_cli_writes_summary_and_permutation_ledgers(
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["permutation_row_count"] == 7
+    assert (
+        payload["metrics"]["signal_null_k_minimum"]
+        <= payload["metrics"]["signal_null_k_mean"]
+        <= payload["metrics"]["signal_null_k_maximum"]
+    )
     assert summary_out.exists()
     assert permutations_out.exists()
     summary_rows = summary_out.read_text(encoding="utf-8").splitlines()
     permutation_rows = permutations_out.read_text(encoding="utf-8").splitlines()
     assert summary_rows[0].startswith("trait\ttaxon_count\tblombergs_k")
+    assert "signal_null_k_mean" in summary_rows[0]
     assert permutation_rows[0].startswith(
         "trait\tobserved_k\testimated_lambda\tpermutations"
     )
