@@ -226,8 +226,11 @@ fixtures drawn from the shared `phytools` comparative fixture catalog. The
 live lambda lane now includes one non-ultrametric strong-signal case and one
 ultrametric weak-signal case, so reviewers can see both a boundary-adjacent
 high-signal fit and a near-zero lambda fit validated against real `phytools`
-execution. It writes the same summary-versus-observation TSV artifacts plus
-reproducible failure bundles as the live `ape` lane.
+execution. The live K lane now also includes seeded strong-signal and
+weak-signal permutation cases so reviewers can compare K, permutation p-value,
+and null-distribution summary behavior under one governed replicate count. It
+writes the same summary-versus-observation TSV artifacts plus reproducible
+failure bundles as the live `ape` lane.
 The same baseline surface now also exposes
 `simulate_random_tree(...)` and `simulate_coalescent_tree(...)` for one-tree
 native simulation review, so callers that need one governed random or

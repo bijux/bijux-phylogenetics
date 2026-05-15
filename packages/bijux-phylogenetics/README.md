@@ -824,8 +824,10 @@ comparative fixtures, including one non-ultrametric lambda case that tracks the
 live `phytools` likelihood surface within tolerance. The owned signal surface
 now also exposes fixed-lambda likelihood evaluation, likelihood-ratio reporting
 against the zero-signal boundary, and bounded optimizer diagnostics instead of
-reducing Pagel's lambda to one opaque scalar, so the repository now proves
-behavior against real `phytools` execution instead of only checked-in expected
+reducing Pagel's lambda to one opaque scalar. The owned K-test surface now also
+keeps seeded permutation p-values plus explicit null-distribution summaries, so
+the repository now proves behavior against real `phytools` execution instead of
+only checked-in expected
 JSON.
 The `ape::nj` lane now covers one governed analytical three-taxon matrix plus
 four-taxon ultrametric and non-ultrametric matrices. On the owned Bijux side,

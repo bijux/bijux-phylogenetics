@@ -255,7 +255,10 @@ fixtures from the shared `shared_phytools_comparative_fixture_catalog.json`
 corpus. The live lambda lane now includes one non-ultrametric strong-signal
 fixture plus one ultrametric weak-signal fixture so the harness proves both a
 near-boundary high-signal fit and a near-zero-signal fit against real
-`phytools` likelihood output instead of only one easy interior case.
+`phytools` likelihood output instead of only one easy interior case. The live
+K lane now includes strong-signal and weak-signal seeded permutation cases and
+compares the observed K scalar, permutation p-value, and null-distribution
+summary under one governed replicate count.
 For this round, `bionj` is explicitly excluded. The distance-tree CLI surfaces
 therefore accept `--method bionj` only so the owned runtime can return one
 structured out-of-scope error naming `ape::bionj`, rather than failing with
@@ -3670,6 +3673,9 @@ signal. Its JSON metrics report:
 - `missing_value_policy`
 - `pruned_missing_value_taxon_count`
 - `signal_seed`
+- `signal_null_k_minimum`
+- `signal_null_k_mean`
+- `signal_null_k_maximum`
 - `lambda_likelihood_ratio_p_value`
 - `lambda_optimizer_name`
 - `lambda_optimizer_function_evaluation_count`
@@ -3682,6 +3688,17 @@ The command preserves four distinct surfaces under `data`:
 - `blombergs_k` for the fitted K summary
 - `pagels_lambda` for the fitted lambda summary
 - `signal_test` for the permutation-based K test
+
+The `signal_test` report now also preserves the seeded null-distribution
+summary that the live `phytools::phylosig(method='K')` lane compares:
+- `observed_k`
+- `p_value`
+- `permutations`
+- `seed`
+- `permuted_k_at_or_above_observed`
+- `null_distribution_minimum`
+- `null_distribution_mean`
+- `null_distribution_maximum`
 
 The `pagels_lambda` report now also preserves the fixed-lambda likelihood
 context that the live `phytools::phylosig(method='lambda')` lane compares:
