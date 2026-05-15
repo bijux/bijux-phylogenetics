@@ -17,6 +17,7 @@ class MethodTierAssessment:
     validation_basis: tuple[str, ...]
     inference_mode: InferenceMode
     approximation: str | None = None
+    excluded_reference_surfaces: tuple[str, ...] = ()
     warning: str | None = None
 
     def __post_init__(self) -> None:
@@ -73,11 +74,12 @@ def phylogenetic_logistic_method_tier(
         tier="experimental",
         surface="phylogenetic-logistic",
         summary=(
-            "This workflow fits an approximate phylogenetic logistic surface and should be treated as exploratory rather than publication-grade inference."
+            "This workflow fits an approximate phylogenetic logistic surface, should be treated as exploratory rather than publication-grade inference, and does not claim ape::compar.gee parity."
         ),
         validation_basis=(),
         inference_mode="inference",
         approximation=approximation_method,
+        excluded_reference_surfaces=("ape::compar.gee",),
         warning=(
             "experimental method tier: phylogenetic logistic results use an approximate working-correlation fit and need cautious review before biological interpretation."
         ),
@@ -141,10 +143,18 @@ def method_tier_metrics(assessment: MethodTierAssessment) -> dict[str, object]:
         "method_inference_mode": assessment.inference_mode,
         "method_validation_basis": list(assessment.validation_basis),
         "method_approximation": assessment.approximation,
+        "method_excluded_reference_surfaces": list(
+            assessment.excluded_reference_surfaces
+        ),
     }
 
 
 def method_tier_warnings(assessment: MethodTierAssessment) -> list[str]:
-    if assessment.warning is None:
-        return []
-    return [assessment.warning]
+    warnings: list[str] = []
+    if assessment.warning is not None:
+        warnings.append(assessment.warning)
+    for reference_surface in assessment.excluded_reference_surfaces:
+        warnings.append(
+            f"explicit non-claim: {assessment.surface} does not currently claim {reference_surface} parity and should not be interpreted as a drop-in {reference_surface} implementation."
+        )
+    return warnings
