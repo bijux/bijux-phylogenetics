@@ -5,6 +5,12 @@ from .support_reference import (
     SupportReferenceValidationReport,
     validate_support_reference_examples,
 )
+from .structural_parity import (
+    StructuralTreeParityReport,
+    StructuralTreeSetParityReport,
+    compare_tree_sets_structurally,
+    compare_tree_structurally,
+)
 from .tree_distance_reference import (
     TreeDistanceReferenceObservation,
     TreeDistanceReferenceValidationReport,
@@ -41,6 +47,8 @@ __all__ = [
     "CladeOverlapComparisonReport",
     "RobinsonFouldsComparisonReport",
     "SharedTaxaPruningReport",
+    "StructuralTreeParityReport",
+    "StructuralTreeSetParityReport",
     "SupportComparisonReport",
     "SupportConflictRow",
     "SupportReferenceObservation",
@@ -55,6 +63,8 @@ __all__ = [
     "compare_clade_overlap",
     "compare_robinson_foulds",
     "compare_support_values",
+    "compare_tree_sets_structurally",
+    "compare_tree_structurally",
     "compare_tree_paths",
     "prune_trees_to_shared_taxa",
     "validate_support_reference_examples",
