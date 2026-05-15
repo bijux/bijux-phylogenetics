@@ -171,6 +171,18 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
     multistate_discrete_missing_fixture = get_shared_phytools_comparative_fixture(
         "phytools_discrete_multistate_missing_twenty_four_taxa"
     )
+    ard_binary_discrete_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_binary_twenty_four_taxa"
+    )
+    ard_multistate_discrete_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_multistate_twenty_four_taxa"
+    )
+    ard_binary_discrete_missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_binary_missing_twenty_four_taxa"
+    )
+    ard_multistate_discrete_missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_multistate_missing_twenty_four_taxa"
+    )
     return [
         PhytoolsParityCase(
             case_id="phylosig-lambda-non-ultrametric-strong-signal-twenty-four-taxa",
@@ -347,6 +359,90 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
                 "aicc": 2e-4,
             },
             row_field_tolerances={"rate": 1e-4},
+        ),
+        PhytoolsParityCase(
+            case_id="fitmk-ard-binary-twenty-four-taxa",
+            fixture_id=ard_binary_discrete_fixture.fixture_id,
+            function_name="phytools::fitMk(model='ARD')",
+            python_function_name="fit_discrete_mk_model",
+            operation="discrete-fit-mk",
+            input_fixtures=(
+                ard_binary_discrete_fixture.tree_path,
+                ard_binary_discrete_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=ard_binary_discrete_fixture.trait_name,
+            taxon_column=ard_binary_discrete_fixture.taxon_column,
+            discrete_model="all-rates-different",
+            field_tolerances={
+                "log_likelihood": 1e-3,
+                "aic": 1e-3,
+                "aicc": 1e-3,
+            },
+            row_field_tolerances={"rate": 1e-3},
+        ),
+        PhytoolsParityCase(
+            case_id="fitmk-ard-multistate-twenty-four-taxa",
+            fixture_id=ard_multistate_discrete_fixture.fixture_id,
+            function_name="phytools::fitMk(model='ARD')",
+            python_function_name="fit_discrete_mk_model",
+            operation="discrete-fit-mk",
+            input_fixtures=(
+                ard_multistate_discrete_fixture.tree_path,
+                ard_multistate_discrete_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=ard_multistate_discrete_fixture.trait_name,
+            taxon_column=ard_multistate_discrete_fixture.taxon_column,
+            discrete_model="all-rates-different",
+            field_tolerances={
+                "log_likelihood": 1e-3,
+                "aic": 1e-3,
+                "aicc": 1e-3,
+            },
+            row_field_tolerances={"rate": 1e-3},
+        ),
+        PhytoolsParityCase(
+            case_id="fitmk-ard-binary-missing-twenty-four-taxa",
+            fixture_id=ard_binary_discrete_missing_fixture.fixture_id,
+            function_name="phytools::fitMk(model='ARD')",
+            python_function_name="fit_discrete_mk_model",
+            operation="discrete-fit-mk",
+            input_fixtures=(
+                ard_binary_discrete_missing_fixture.tree_path,
+                ard_binary_discrete_missing_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=ard_binary_discrete_missing_fixture.trait_name,
+            taxon_column=ard_binary_discrete_missing_fixture.taxon_column,
+            discrete_model="all-rates-different",
+            field_tolerances={
+                "log_likelihood": 1e-3,
+                "aic": 1e-3,
+                "aicc": 1e-3,
+            },
+            row_field_tolerances={"rate": 1e-3},
+        ),
+        PhytoolsParityCase(
+            case_id="fitmk-ard-multistate-missing-twenty-four-taxa",
+            fixture_id=ard_multistate_discrete_missing_fixture.fixture_id,
+            function_name="phytools::fitMk(model='ARD')",
+            python_function_name="fit_discrete_mk_model",
+            operation="discrete-fit-mk",
+            input_fixtures=(
+                ard_multistate_discrete_missing_fixture.tree_path,
+                ard_multistate_discrete_missing_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=ard_multistate_discrete_missing_fixture.trait_name,
+            taxon_column=ard_multistate_discrete_missing_fixture.taxon_column,
+            discrete_model="all-rates-different",
+            field_tolerances={
+                "log_likelihood": 1e-3,
+                "aic": 1e-3,
+                "aicc": 1e-3,
+            },
+            row_field_tolerances={"rate": 1e-3},
         ),
         PhytoolsParityCase(
             case_id="fast-anc-strong-signal-twenty-four-taxa",

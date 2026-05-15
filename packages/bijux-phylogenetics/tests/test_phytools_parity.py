@@ -28,6 +28,10 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "fitmk-er-multistate-missing-twenty-four-taxa",
         "fitmk-sym-multistate-twenty-four-taxa",
         "fitmk-sym-multistate-missing-twenty-four-taxa",
+        "fitmk-ard-binary-twenty-four-taxa",
+        "fitmk-ard-multistate-twenty-four-taxa",
+        "fitmk-ard-binary-missing-twenty-four-taxa",
+        "fitmk-ard-multistate-missing-twenty-four-taxa",
         "fast-anc-strong-signal-twenty-four-taxa",
         "fast-anc-weak-signal-twenty-four-taxa",
         "fast-anc-non-ultrametric-strong-signal-twenty-four-taxa",
@@ -45,10 +49,12 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[7].function_name == "phytools::fitMk(model='ER')"
     assert cases[8].function_name == "phytools::fitMk(model='SYM')"
     assert cases[9].function_name == "phytools::fitMk(model='SYM')"
-    assert cases[10].function_name == "phytools::fastAnc"
-    assert cases[13].function_name == "phytools::fastAnc"
-    assert cases[14].function_name == "phytools::anc.ML"
-    assert cases[17].function_name == "phytools::anc.ML"
+    assert cases[10].function_name == "phytools::fitMk(model='ARD')"
+    assert cases[13].function_name == "phytools::fitMk(model='ARD')"
+    assert cases[14].function_name == "phytools::fastAnc"
+    assert cases[17].function_name == "phytools::fastAnc"
+    assert cases[18].function_name == "phytools::anc.ML"
+    assert cases[21].function_name == "phytools::anc.ML"
     assert (
         cases[0].fixture_id == "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
     )
@@ -56,13 +62,14 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[3].permutation_seed == 17
     assert cases[7].row_field_tolerances == {"rate": 1e-5}
     assert cases[8].row_field_tolerances == {"rate": 1e-4}
-    assert cases[17].row_field_tolerances == {
+    assert cases[10].row_field_tolerances == {"rate": 1e-3}
+    assert cases[21].row_field_tolerances == {
         "estimate": 1e-8,
         "standard_error": 5e-8,
         "lower_95_interval": 5e-8,
         "upper_95_interval": 5e-8,
     }
-    assert cases[13].row_field_tolerances == {
+    assert cases[17].row_field_tolerances == {
         "estimate": 1e-8,
         "standard_error": 1e-8,
     }
@@ -76,12 +83,13 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     report = run_phytools_parity_cases(rscript_executable=str(rscript))
 
     assert report.all_passed is True
-    assert report.case_count == 18
+    assert report.case_count == 22
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
         "phytools::anc.ML",
         "phytools::fastAnc",
+        "phytools::fitMk(model='ARD')",
         "phytools::fitMk(model='ER')",
         "phytools::fitMk(model='SYM')",
         "phytools::phylosig(method='K')",
