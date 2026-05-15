@@ -13,6 +13,15 @@ The runtime now also uses these fixtures as a Level 1 reference-validation
 corpus for tree, taxonomy, alignment, dataset, figure, and report regression
 checks.
 
+The tree fixture corpus now also has one governed shared catalog at
+`metadata/shared_tree_fixture_catalog.json`. That catalog assigns durable
+fixture ids, records parse and validation expectations, and marks the
+structural features that matter for cross-tool parity, including balanced,
+pectinate, star, polytomy, rooted, unrooted, ultrametric, non-ultrametric,
+zero-branch, long-branch, internal-label, branch-support, quoted-label, and
+malformed-Newick cases. The live `ape` parity harness resolves its tree inputs
+through those fixture ids instead of hardcoding ad hoc file paths.
+
 The `expected/` directory now also carries benchmark-corpus regression
 snapshots used to pin stable dataset summaries across releases.
 

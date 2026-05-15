@@ -727,7 +727,10 @@ tolerance, pass or fail state, and mismatch reason for each governed case, and
 writes reproducible failure or skip artifacts whenever the live lane disagrees
 or `ape` is unavailable. The live observation table is structured rather than
 string-based, so tree summaries, tip ledgers, and normalized Newick outputs
-are compared as owned artifacts rather than scraped console text.
+are compared as owned artifacts rather than scraped console text. The tree
+inputs for that lane now come from the governed shared tree fixture catalog in
+`tests/fixtures/metadata/shared_tree_fixture_catalog.json`, so Bijux and `ape`
+resolve the same durable tree identities instead of hand-picked path lists.
 
 `report release-truth` is the governed pre-release summary surface. It consumes
 actual pytest JUnit XML reports for the full test lane and the real-engine test
