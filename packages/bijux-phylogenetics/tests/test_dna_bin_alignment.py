@@ -7,6 +7,10 @@ import pytest
 from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matrix
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
+    compute_alignment_base_frequency_report,
+    compute_alignment_base_frequency_report_from_dna_bin_alignment,
+    compute_alignment_segregating_site_report,
+    compute_alignment_segregating_site_report_from_dna_bin_alignment,
     load_dna_bin_alignment,
     write_dna_bin_alignment_fasta,
 )
@@ -73,6 +77,42 @@ def test_write_dna_bin_alignment_fasta_roundtrips_without_state_loss(
 
     assert reloaded.records == alignment.records
     assert reloaded.rows == alignment.rows
+
+
+def test_dna_bin_alignment_supports_base_frequency_report_without_reloading() -> None:
+    alignment = load_dna_bin_alignment(fixture("example_alignment_lowercase.fasta"))
+
+    direct_report = compute_alignment_base_frequency_report_from_dna_bin_alignment(
+        alignment
+    )
+    path_report = compute_alignment_base_frequency_report(
+        fixture("example_alignment_lowercase.fasta")
+    )
+
+    assert direct_report.path == alignment.path
+    assert direct_report.sequence_count == alignment.sequence_count
+    assert direct_report.alignment_length == alignment.alignment_length
+    assert direct_report.alignment_rows == path_report.alignment_rows
+    assert direct_report.per_sequence_rows == path_report.per_sequence_rows
+    assert direct_report.composition_outliers == path_report.composition_outliers
+
+
+def test_dna_bin_alignment_supports_segregating_site_report_without_reloading() -> None:
+    alignment = load_dna_bin_alignment(fixture("example_alignment_ambiguity.fasta"))
+
+    direct_report = compute_alignment_segregating_site_report_from_dna_bin_alignment(
+        alignment
+    )
+    path_report = compute_alignment_segregating_site_report(
+        fixture("example_alignment_ambiguity.fasta")
+    )
+
+    assert direct_report.path == alignment.path
+    assert direct_report.sequence_count == alignment.sequence_count
+    assert direct_report.alignment_length == alignment.alignment_length
+    assert direct_report.segregating_site_positions == path_report.segregating_site_positions
+    assert direct_report.rows == path_report.rows
+    assert direct_report.warnings == path_report.warnings
 
 
 @pytest.mark.parametrize(
