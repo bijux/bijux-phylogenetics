@@ -39,6 +39,19 @@ comparison. Strict consensus and support surfaces validate one exact taxon set
 across the whole tree set, while tolerant inspection surfaces keep one
 explicit malformed-record counter instead of failing silently.
 
+The owned native DNA-alignment API now also lives on one
+`bijux_phylogenetics.DnaBinAlignment` runtime loaded through
+`bijux_phylogenetics.load_dna_bin_alignment(...)`. That matrix preserves taxon
+order and alignment length, normalizes case, keeps gaps, ambiguity codes, and
+explicit missing states literal, and rejects unsupported symbols explicitly.
+The same runtime object now feeds direct Python nucleotide review surfaces for
+literal-state composition, ape-style segregating-site detection, and
+nucleotide distances through
+`compute_alignment_base_frequency_report_from_dna_bin_alignment(...)`,
+`compute_alignment_segregating_site_report_from_dna_bin_alignment(...)`, and
+`compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(...)` instead
+of forcing those workflows to reparse FASTA independently.
+
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the
 raw-FASTA to aligned matrix, trimmed matrix, selected-model table, supported

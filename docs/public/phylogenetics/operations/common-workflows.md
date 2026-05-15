@@ -202,7 +202,14 @@ The same owned DNA surfaces now also share one DNAbin-compatible nucleotide
 matrix instead of reparsing FASTA differently in each workflow. That matrix
 preserves taxon order and alignment length, normalizes case, keeps gaps,
 ambiguity codes, and explicit missing states literal, writes FASTA back
-without nucleotide-state loss, and rejects unsupported symbols explicitly.
+without nucleotide-state loss, and rejects unsupported symbols explicitly. The
+same matrix is also reusable directly from Python through
+`load_dna_bin_alignment(...)`,
+`compute_alignment_base_frequency_report_from_dna_bin_alignment(...)`,
+`compute_alignment_segregating_site_report_from_dna_bin_alignment(...)`, and
+`compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(...)`, so one
+serious nucleotide review workflow can carry one loaded matrix through
+composition, segregating-site, and nucleotide-distance inspection.
 The owned `alignment composition` surface now also exposes
 `--base-frequency-out` for one combined alignment-plus-sequence literal-state
 frequency ledger that mirrors `ape::base.freq`. Lowercase, ambiguity-bearing,

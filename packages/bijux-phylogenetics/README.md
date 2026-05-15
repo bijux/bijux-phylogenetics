@@ -798,7 +798,14 @@ aligned coding translation now all load through one DNAbin-compatible
 nucleotide matrix that preserves taxon order and alignment length, normalizes
 case, keeps gaps, ambiguity codes, and explicit missing states literal, writes
 FASTA back without nucleotide-state loss, and rejects unsupported symbols
-instead of silently degrading them to missing data.
+instead of silently degrading them to missing data. The same matrix is now
+also reusable directly from Python through
+`load_dna_bin_alignment(...)`,
+`compute_alignment_base_frequency_report_from_dna_bin_alignment(...)`,
+`compute_alignment_segregating_site_report_from_dna_bin_alignment(...)`, and
+`compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(...)`, so
+review workflows do not have to reparse one FASTA file separately for
+composition, segregating-site, and nucleotide-distance inspection.
 The `ape::nj` lane now covers one governed analytical three-taxon matrix plus
 four-taxon ultrametric and non-ultrametric matrices. On the owned Bijux side,
 neighbor joining no longer delegates through Biopython for that method: Bijux
