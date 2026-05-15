@@ -25,9 +25,36 @@ write_payload <- function(path, payload) {
   )
 }
 
+normalize_table_cell <- function(value) {
+  if (is.null(value) || length(value) == 0) {
+    return("")
+  }
+  if (length(value) > 1) {
+    return(jsonlite::toJSON(unname(value), auto_unbox = TRUE))
+  }
+  value
+}
+
+rows_to_data_frame <- function(rows) {
+  if (is.data.frame(rows)) {
+    return(rows)
+  }
+  if (length(rows) == 0) {
+    return(data.frame())
+  }
+  if (is.list(rows) && all(vapply(rows, is.list, logical(1)))) {
+    normalized_rows <- lapply(rows, function(row) {
+      normalized_row <- lapply(row, normalize_table_cell)
+      as.data.frame(normalized_row, stringsAsFactors = FALSE)
+    })
+    return(do.call(rbind.data.frame, c(normalized_rows, list(stringsAsFactors = FALSE))))
+  }
+  as.data.frame(rows, stringsAsFactors = FALSE)
+}
+
 write_table <- function(path, rows) {
   utils::write.table(
-    as.data.frame(rows, stringsAsFactors = FALSE),
+    rows_to_data_frame(rows),
     file = path,
     sep = "\t",
     quote = FALSE,
@@ -35,9 +62,20 @@ write_table <- function(path, rows) {
   )
 }
 
+format_table_value <- function(value) {
+  if (is.null(value) || length(value) == 0) {
+    return("")
+  }
+  if (length(value) > 1) {
+    return(jsonlite::toJSON(unname(value), auto_unbox = TRUE))
+  }
+  value
+}
+
 execution_path <- file.path(output_root, "reference-execution.json")
 summary_path <- file.path(output_root, "reference-summary.json")
 summary_table_path <- file.path(output_root, "reference-summary.tsv")
+fast_anc_rows_path <- file.path(output_root, "fast-anc-node-estimates.tsv")
 case_payload <- jsonlite::fromJSON(case_path)
 r_version <- as.character(getRversion())
 
@@ -73,6 +111,25 @@ trait_values <- trait_table[[trait_name]]
 taxon_names <- trait_table[[taxon_column]]
 names(trait_values) <- taxon_names
 trait_values <- stats::setNames(as.numeric(trait_values), taxon_names)
+kept_taxa <- names(trait_values)[
+  !is.na(trait_values) &
+    names(trait_values) %in% tree$tip.label
+]
+excluded_taxa <- sort(setdiff(tree$tip.label, kept_taxa))
+trait_values <- trait_values[kept_taxa]
+tree <- ape::drop.tip(tree, excluded_taxa)
+
+leaf_descendants <- function(phy, node) {
+  if (node <= length(phy$tip.label)) {
+    return(phy$tip.label[[node]])
+  }
+  children <- phy$edge[phy$edge[, 1] == node, 2]
+  sort(unique(unlist(lapply(children, function(child) leaf_descendants(phy, child)))))
+}
+
+node_signature <- function(phy, node) {
+  paste(leaf_descendants(phy, node), collapse = "|")
+}
 
 build_lambda_summary <- function(tree, trait_values, trait_name) {
   fit <- phytools::phylosig(
@@ -124,20 +181,68 @@ build_k_summary <- function(tree, trait_values, trait_name) {
   )
 }
 
-summary_payload <- switch(
+build_fast_anc_result <- function(tree, trait_values, trait_name, excluded_taxa) {
+  fit <- phytools::fastAnc(
+    tree,
+    trait_values,
+    vars = TRUE,
+    CI = TRUE
+  )
+  internal_nodes <- seq(
+    length(tree$tip.label) + 1,
+    length(tree$tip.label) + tree$Nnode
+  )
+  node_rows <- lapply(seq_along(internal_nodes), function(index) {
+    node <- internal_nodes[[index]]
+    list(
+      node = node_signature(tree, node),
+      estimate = unname(as.numeric(fit$ace[[index]])),
+      standard_error = sqrt(unname(as.numeric(fit$var[[index]]))),
+      lower_95_interval = unname(as.numeric(fit$CI95[[index, 1]])),
+      upper_95_interval = unname(as.numeric(fit$CI95[[index, 2]]))
+    )
+  })
+  node_rows <- node_rows[order(vapply(node_rows, function(row) row$node, character(1)))]
+  list(
+    summary = list(
+      taxon_count = length(trait_values),
+      trait_name = trait_name,
+      internal_node_count = length(node_rows),
+      excluded_taxon_count = length(excluded_taxa),
+      excluded_taxa = excluded_taxa,
+      tree_is_ultrametric = isTRUE(ape::is.ultrametric(tree))
+    ),
+    rows = node_rows
+  )
+}
+
+result_payload <- switch(
   case_payload$operation,
-  "phylogenetic-signal-lambda" = build_lambda_summary(
-    tree,
-    trait_values,
-    trait_name
+  "phylogenetic-signal-lambda" = list(
+    summary = build_lambda_summary(
+      tree,
+      trait_values,
+      trait_name
+    ),
+    rows = NULL
   ),
-  "phylogenetic-signal-k" = build_k_summary(
+  "phylogenetic-signal-k" = list(
+    summary = build_k_summary(
+      tree,
+      trait_values,
+      trait_name
+    ),
+    rows = NULL
+  ),
+  "continuous-ancestral-fast-anc" = build_fast_anc_result(
     tree,
     trait_values,
-    trait_name
+    trait_name,
+    excluded_taxa
   ),
   stop(paste("unsupported phytools parity operation:", case_payload$operation))
 )
+summary_payload <- result_payload$summary
 
 write_payload(
   execution_path,
@@ -151,6 +256,9 @@ write_payload(summary_path, summary_payload)
 write_table(
   summary_table_path,
   lapply(names(summary_payload), function(key) {
-    list(metric = key, value = summary_payload[[key]])
+    list(metric = key, value = format_table_value(summary_payload[[key]]))
   })
 )
+if (!is.null(result_payload$rows)) {
+  write_table(fast_anc_rows_path, result_payload$rows)
+}
