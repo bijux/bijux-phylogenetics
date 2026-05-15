@@ -14,7 +14,13 @@ if (!requireNamespace("jsonlite", quietly = TRUE)) {
 
 write_payload <- function(path, payload) {
   writeLines(
-    jsonlite::toJSON(payload, auto_unbox = TRUE, pretty = TRUE),
+    jsonlite::toJSON(
+      payload,
+      auto_unbox = TRUE,
+      digits = 16,
+      null = "null",
+      pretty = TRUE
+    ),
     con = path
   )
 }
