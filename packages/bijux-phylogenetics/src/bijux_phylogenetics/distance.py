@@ -1606,6 +1606,48 @@ def assess_distance_method_assumptions(
     )
 
 
+def assess_distance_method_assumptions_from_genetic_distance_matrix(
+    report: GeneticDistanceMatrix,
+    *,
+    ultrametric_tolerance: float = 1e-6,
+) -> DistanceMethodAssumptionReport:
+    """Audit core distance-tree assumptions from one in-memory distance matrix."""
+    distances = _build_alignment_distance_lookup(report)
+    expected_pairs = (len(report.identifiers) * (len(report.identifiers) - 1)) // 2
+    violations = _iter_ultrametric_violations(
+        report.identifiers,
+        distances,
+        tolerance=ultrametric_tolerance,
+    )
+    warnings = list(report.warnings)
+    if len(distances) < expected_pairs:
+        warnings.append(
+            "UPGMA clock-assumption auditing is incomplete because one or more pairwise distances are undefined under the selected model"
+        )
+    if violations:
+        warnings.append(
+            "pairwise distances are not ultrametric, so UPGMA's strict clock-like assumption is violated"
+        )
+    return DistanceMethodAssumptionReport(
+        source_path=report.path,
+        source_kind="alignment",
+        taxon_count=len(report.identifiers),
+        pair_count=len(distances),
+        nj_assumptions=[
+            "neighbor-joining treats the matrix as an additive approximation and does not require a strict molecular clock",
+            "neighbor-joining still becomes unreliable when pairwise distances are heavily saturated or estimated from too few comparable sites",
+        ],
+        upgma_assumptions=[
+            "UPGMA assumes the pairwise distances are ultrametric and therefore consistent with a clock-like process",
+            "UPGMA can mis-cluster taxa when rates vary among lineages even if the matrix remains symmetric and complete",
+        ],
+        ultrametric_compatible=not violations,
+        ultrametric_tolerance=ultrametric_tolerance,
+        upgma_ultrametric_violations=violations,
+        warnings=warnings,
+    )
+
+
 def assess_imported_distance_method_assumptions(
     path: Path,
     *,
@@ -2526,9 +2568,21 @@ def build_distance_tree(
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
     )
+    return _build_distance_tree_from_genetic_distance_matrix(
+        report,
+        method_policy=method_policy,
+        assumptions=quality.assumptions,
+    )
+
+
+def _build_distance_tree_from_genetic_distance_matrix(
+    report: GeneticDistanceMatrix,
+    *,
+    method_policy: DistanceTreeMethodPolicy,
+    assumptions: DistanceMethodAssumptionReport,
+) -> tuple[PhyloTree, DistanceTreeBuildReport]:
     if len(report.identifiers) < 2:
         raise InvalidAlignmentError("distance tree building requires at least two taxa")
-
     if method_policy.method == "neighbor-joining":
         tree = build_neighbor_joining_tree(
             report.identifiers,
@@ -2538,21 +2592,36 @@ def build_distance_tree(
         constructor = DistanceTreeConstructor()
         distance_matrix = _bio_distance_matrix(report)
         tree = constructor.upgma(distance_matrix)
-    assumptions = quality.assumptions
-
     return (
         tree
         if method_policy.method == "neighbor-joining"
         else tree_from_biophylo(tree, source_format="newick")
     ), DistanceTreeBuildReport(
-        alignment_path=path,
-        model=model,
-        gap_handling=gap_handling,
-        ambiguity_policy=ambiguity_policy,
+        alignment_path=report.path,
+        model=report.model,
+        gap_handling=report.gap_handling,
+        ambiguity_policy=report.ambiguity_policy,
         method=method_policy.method,
         method_policy=method_policy,
         taxon_count=len(report.identifiers),
         pair_count=len(report.pairs),
+        assumptions=assumptions,
+    )
+
+
+def build_distance_tree_from_genetic_distance_matrix(
+    report: GeneticDistanceMatrix,
+    *,
+    method: str,
+) -> tuple[PhyloTree, DistanceTreeBuildReport]:
+    """Build a distance tree directly from one in-memory genetic distance matrix."""
+    method_policy = _require_supported_distance_tree_method(method)
+    assumptions = assess_distance_method_assumptions_from_genetic_distance_matrix(
+        report
+    )
+    return _build_distance_tree_from_genetic_distance_matrix(
+        report,
+        method_policy=method_policy,
         assumptions=assumptions,
     )
 
