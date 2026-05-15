@@ -935,9 +935,42 @@ def reroot_tree_by_midpoint(tree_path: Path) -> tuple[PhyloTree, TreeRootingRepo
 def unroot_tree(tree_path: Path) -> tuple[PhyloTree, TreeRootingReport]:
     """Convert a rooted binary tree into an explicit unrooted trifurcation."""
     tree = load_tree(tree_path)
-    if len(tree.root.children) != 2:
-        raise ValueError(
-            f"tree is not rooted under the repository convention: {tree_path}"
+    root_child_count = len(tree.root.children)
+    if root_child_count < 2:
+        raise ValueError(f"tree is invalid and cannot be unrooted: {tree_path}")
+    if root_child_count != 2:
+        unchanged_tree = PhyloTree(
+            root=_clone_node(tree.root),
+            source_format=tree.source_format,
+            rooted=False,
+        )
+        summary = _summarize_transformation(
+            tree, unchanged_tree, transformation="unroot-tree"
+        )
+        return unchanged_tree, TreeRootingReport(
+            tree_path=tree_path,
+            strategy="unroot",
+            requested_taxa=[],
+            matched_taxa=[],
+            absent_taxa=[],
+            ingroup_taxa=sorted(unchanged_tree.tip_names),
+            outgroup_monophyletic=None,
+            outgroup_mrca_taxa=[],
+            outgroup_mrca_extra_taxa=[],
+            rooted_outgroup_taxa=[],
+            rooted_ingroup_taxa=sorted(unchanged_tree.tip_names),
+            tip_order=unchanged_tree.tip_names,
+            warnings=[
+                "input tree already behaves as an unrooted representation; returned unchanged"
+            ],
+            midpoint_anchor_taxa=[],
+            midpoint_path_length=None,
+            midpoint_distance_from_anchor=None,
+            midpoint_position_kind=None,
+            midpoint_anchor_side_taxa=[],
+            midpoint_opposite_side_taxa=[],
+            midpoint_suitable=None,
+            summary=summary,
         )
 
     left, right = tree.root.children
@@ -950,21 +983,24 @@ def unroot_tree(tree_path: Path) -> tuple[PhyloTree, TreeRootingReport]:
     expanded = sorted(expandable_children, key=_descendant_taxa)[0]
     retained = right if expanded is left else left
     new_children = [
-        TreeNode(
-            name=child.name,
-            branch_length=_combine_branch_lengths(
-                child.branch_length, expanded.branch_length
-            ),
-            children=[_clone_node(grandchild) for grandchild in child.children],
-        )
-        for child in expanded.children
+        _clone_node(child) for child in expanded.children
     ]
-    new_children.append(_clone_node(retained))
+    retained_child = _clone_node(retained)
+    retained_child.branch_length = _combine_branch_lengths(
+        retained.branch_length,
+        expanded.branch_length,
+    )
+    new_children.append(retained_child)
     unrooted_tree = PhyloTree(
         root=TreeNode(name=tree.root.name, branch_length=None, children=new_children),
         source_format=tree.source_format,
         rooted=False,
     )
+    warnings: list[str] = []
+    if expanded.branch_length not in {None, 0.0}:
+        warnings.append(
+            "unrooting merged the removed root-edge length into the retained sibling branch to match ape::unroot"
+        )
     summary = _summarize_transformation(
         tree, unrooted_tree, transformation="unroot-tree"
     )
@@ -981,7 +1017,7 @@ def unroot_tree(tree_path: Path) -> tuple[PhyloTree, TreeRootingReport]:
         rooted_outgroup_taxa=[],
         rooted_ingroup_taxa=sorted(unrooted_tree.tip_names),
         tip_order=unrooted_tree.tip_names,
-        warnings=[],
+        warnings=warnings,
         midpoint_anchor_taxa=[],
         midpoint_path_length=None,
         midpoint_distance_from_anchor=None,
