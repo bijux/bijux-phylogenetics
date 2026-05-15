@@ -5,6 +5,7 @@ import pytest
 from bijux_phylogenetics.errors import InvalidBranchLengthError, TreeParseError
 from bijux_phylogenetics.io.newick import (
     dumps_newick,
+    iter_newick_tree_records,
     loads_newick,
     loads_newick_tree_set,
 )
@@ -39,6 +40,19 @@ def test_loads_newick_tree_set_reads_multiple_records_from_text() -> None:
     assert len(trees) == 2
     assert dumps_newick(trees[0]) == "((A:0.1,B:0.1):0.2,C:0.3);"
     assert dumps_newick(trees[1]) == "(A:0.1,B:0.2,C:0.3);"
+
+
+def test_iter_newick_tree_records_normalizes_multiline_and_trailing_records() -> None:
+    records = list(
+        iter_newick_tree_records(
+            "((A:0.1,B:0.1):0.2,\nC:0.3);\n\n(A:0.1,B:0.2,C:0.3)\n"
+        )
+    )
+
+    assert records == [
+        (1, "((A:0.1,B:0.1):0.2, C:0.3);"),
+        (2, "(A:0.1,B:0.2,C:0.3)"),
+    ]
 
 
 def test_loads_newick_reports_location_for_malformed_structure() -> None:
