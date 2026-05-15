@@ -737,6 +737,14 @@ catalogs in `tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
 and `ape` resolve the same durable fixture identities instead of hand-picked
 path lists.
 
+The smaller ancestral review lanes now use the same governed shared trait-table
+fixture catalog in `tests/fixtures/metadata/shared_trait_table_fixture_catalog.json`.
+That corpus covers continuous, binary discrete, multistate discrete,
+missing-value, mismatch, duplicate-row, constant-trait, categorical-predictor,
+and misordered-row cases, and the owned discrete-reference checks plus the
+live `ape::ace` spot checks resolve those trait tables by durable fixture id
+instead of keeping separate ad hoc path lists for Bijux and `ape`.
+
 `report release-truth` is the governed pre-release summary surface. It consumes
 actual pytest JUnit XML reports for the full test lane and the real-engine test
 lane, reruns the owned workflow-validation, release-gate, parity, and
