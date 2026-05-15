@@ -214,6 +214,12 @@ def _ape_node_id_for_node(tree: PhyloTree, node: TreeNode) -> int:
     raise ValueError("node is not part of the supplied tree")
 
 
+def _interpreted_rooted_state(tree: PhyloTree) -> bool:
+    if tree.rooted is True:
+        return True
+    return len(tree.root.children) == 2
+
+
 def _build_subtree(node: TreeNode, *, source_format: str, rooted: bool | None) -> PhyloTree:
     subtree_root = _clone_node(node)
     subtree_root.branch_length = None
@@ -263,7 +269,7 @@ def _monophyly_report_from_node(
         missing_requested_taxa=missing_requested_taxa,
         present_requested_taxa=present_requested_taxa,
         reroot=reroot,
-        rooted=tree.rooted,
+        rooted=_interpreted_rooted_state(tree),
         monophyletic=monophyletic,
         complementary_clade_used=complementary_clade_used,
         matched_node_id=matched_node_id,
