@@ -6938,6 +6938,14 @@ def test_validate_tree_path_can_require_ultrametric_tree() -> None:
         raise AssertionError("expected NonUltrametricTreeError")
 
 
+def test_validate_tree_path_accepts_near_ultrametric_tree_when_required() -> None:
+    report = validate_tree_path(
+        fixture("example_tree_near_ultrametric.nwk"), require_ultrametric=True
+    )
+
+    assert report.ultrametric is True
+
+
 def test_validate_tree_path_warns_for_zero_length_branches() -> None:
     report = validate_tree_path(fixture("example_tree_zero_lengths.nwk"))
     assert report.zero_length_branches == 3
@@ -8220,6 +8228,18 @@ def test_diagnose_ultrametricity_reports_max_deviation() -> None:
     assert ultrametric.max_deviation == 0.0
     assert non_ultrametric.ultrametric is False
     assert non_ultrametric.max_deviation == 0.2
+
+
+def test_diagnose_ultrametricity_uses_shared_default_tolerance() -> None:
+    near_default = diagnose_ultrametricity(fixture("example_tree_near_ultrametric.nwk"))
+    near_tight = diagnose_ultrametricity(
+        fixture("example_tree_near_ultrametric.nwk"),
+        tolerance=1e-12,
+    )
+
+    assert near_default.ultrametric is True
+    assert near_default.max_deviation == pytest.approx(1e-9, abs=1e-15)
+    assert near_tight.ultrametric is False
 
 
 def test_annotate_tree_against_table_finds_missing_and_extra_taxa() -> None:

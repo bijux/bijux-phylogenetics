@@ -45,6 +45,16 @@ def test_validate_time_tree_for_diversification_reports_root_age() -> None:
     assert report.root_age == 0.3
 
 
+def test_validate_time_tree_for_diversification_accepts_near_ultrametric_tree() -> None:
+    report = validate_time_tree_for_diversification(
+        fixture("example_tree_near_ultrametric.nwk")
+    )
+
+    assert report.rooted is True
+    assert report.ultrametric is True
+    assert report.root_age == pytest.approx(0.300000001, abs=1e-12)
+
+
 def test_compute_lineage_through_time_curve_tracks_lineage_increases() -> None:
     report = compute_lineage_through_time_curve(fixture("example_tree.nwk"))
 
