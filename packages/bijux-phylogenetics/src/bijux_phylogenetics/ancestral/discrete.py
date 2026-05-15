@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy
 
 from bijux_phylogenetics.ancestral.common import (
+    AncestralDiscreteDataset,
     dump_pruned_tree,
     load_discrete_dataset,
     node_descendant_taxa,
@@ -212,6 +213,43 @@ def reconstruct_discrete_ancestral_states(
         trait=trait,
         taxon_column=taxon_column,
     )
+    return reconstruct_discrete_ancestral_states_from_dataset(
+        dataset,
+        model=resolved_model,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
+        root_prior_mode=root_prior_mode,
+        fixed_root_state=fixed_root_state,
+        allowed_transition_pairs=allowed_transition_pairs,
+    )
+
+
+def reconstruct_discrete_ancestral_states_from_dataset(
+    dataset: AncestralDiscreteDataset,
+    *,
+    model: str = "fitch",
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
+    root_prior_mode: str = "equal",
+    fixed_root_state: str | None = None,
+    allowed_transition_pairs: list[tuple[str, str]] | None = None,
+) -> DiscreteAncestralReport:
+    """Reconstruct discrete ancestral states from one native ancestral dataset."""
+    resolved_model = _resolve_discrete_model_name(model)
+    if resolved_model == "fitch" and state_ordering != "unordered":
+        raise ValueError(
+            "ordered discrete ancestral reconstruction requires a likelihood model"
+        )
+    if resolved_model == "fitch" and (
+        root_prior_mode != "equal" or fixed_root_state is not None
+    ):
+        raise ValueError(
+            "fitch discrete ancestral reconstruction does not support root-prior assumptions"
+        )
+    if resolved_model == "fitch" and allowed_transition_pairs is not None:
+        raise ValueError(
+            "fitch discrete ancestral reconstruction does not support allowed-transition constraints"
+        )
     if resolved_model != "fitch":
         fit_result = _reconstruct_likelihood_estimates(
             dataset,
@@ -268,10 +306,10 @@ def reconstruct_discrete_ancestral_states(
                 "the equal-rates baseline remains preferred by AIC over the requested discrete likelihood model"
             )
         return DiscreteAncestralReport(
-            tree_path=tree_path,
-            traits_path=traits_path,
+            tree_path=dataset.tree_path,
+            traits_path=dataset.traits_path,
             taxon_column=dataset.taxon_column,
-            trait=trait,
+            trait=dataset.trait,
             model=resolved_model,
             state_ordering=state_ordering,
             root_prior_mode=root_prior_mode,
@@ -366,10 +404,10 @@ def reconstruct_discrete_ancestral_states(
         )
 
     return DiscreteAncestralReport(
-        tree_path=tree_path,
-        traits_path=traits_path,
+        tree_path=dataset.tree_path,
+        traits_path=dataset.traits_path,
         taxon_column=dataset.taxon_column,
-        trait=trait,
+        trait=dataset.trait,
         model=resolved_model,
         state_ordering=state_ordering,
         root_prior_mode=None,
