@@ -17,6 +17,10 @@ from bijux_phylogenetics.ancestral.discrete import (
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
 )
+from bijux_phylogenetics.shared_trait_table_fixtures import (
+    get_shared_trait_table_fixture,
+)
+from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -84,9 +88,11 @@ def test_fitch_parsimony_reports_minimal_changes_and_ambiguous_nodes(
 
 
 def test_write_discrete_ancestral_review_tables(tmp_path: Path) -> None:
+    tree_fixture = get_shared_tree_fixture("balanced_rooted_ultrametric")
+    trait_fixture = get_shared_trait_table_fixture("multistate_discrete_match")
     report = reconstruct_discrete_ancestral_states(
-        fixture("example_tree.nwk"),
-        fixture("example_traits_geography.tsv"),
+        tree_fixture.path,
+        trait_fixture.path,
         trait="region",
         model="equal-rates",
     )
@@ -251,3 +257,94 @@ def test_reconstruct_discrete_ancestral_states_tracks_live_ape_ace_when_availabl
                         if entry["case_id"] == case["case_id"]
                     ),
                 )
+
+
+def test_reconstruct_discrete_ancestral_states_tracks_live_ape_ace_on_shared_binary_fixture_when_available() -> (
+    None
+):
+    rscript = shutil.which("Rscript")
+    if rscript is None:
+        pytest.skip("Rscript is not available")
+    repository_root = Path(__file__).resolve().parents[3]
+    r_library = repository_root / "artifacts" / "r-lib"
+    environment = dict(os.environ)
+    if r_library.is_dir():
+        environment["R_LIBS_USER"] = str(r_library)
+    package_check = subprocess.run(
+        [
+            rscript,
+            "-e",
+            (
+                "cat(requireNamespace('ape', quietly=TRUE), '\\n');"
+                "cat(requireNamespace('jsonlite', quietly=TRUE), '\\n')"
+            ),
+        ],
+        capture_output=True,
+        check=False,
+        cwd=repository_root,
+        env=environment,
+        text=True,
+    )
+    if package_check.returncode != 0:
+        pytest.skip("R package availability could not be checked")
+    package_flags = [
+        line.strip() for line in package_check.stdout.splitlines() if line.strip()
+    ]
+    if package_flags != ["TRUE", "TRUE"]:
+        pytest.skip("ape and jsonlite are required for live ace validation")
+    tree_fixture = get_shared_tree_fixture("balanced_rooted_ultrametric")
+    trait_fixture = get_shared_trait_table_fixture("binary_discrete_match")
+    live_fit = subprocess.run(
+        [
+            rscript,
+            "-e",
+            (
+                "library(ape);"
+                "library(jsonlite);"
+                f"tree <- read.tree('{tree_fixture.path}');"
+                f"dat <- read.delim('{trait_fixture.path}', stringsAsFactors=FALSE);"
+                "values <- setNames(dat$presence, dat$taxon);"
+                "ace_result <- ace(values[tree$tip.label], tree, type='discrete', model='ER', CI=TRUE);"
+                "leaf_descendants <- function(phy, node) {"
+                "  if (node <= length(phy$tip.label)) return(phy$tip.label[[node]]);"
+                "  children <- phy$edge[phy$edge[, 1] == node, 2];"
+                "  sort(unique(unlist(lapply(children, function(child) leaf_descendants(phy, child)))))"
+                "};"
+                "node_signature <- function(phy, node) paste(leaf_descendants(phy, node), collapse='|');"
+                "internal_nodes <- seq(length(tree$tip.label) + 1, length(tree$tip.label) + tree$Nnode);"
+                "state_names <- colnames(ace_result$lik.anc);"
+                "rows <- lapply(seq_along(internal_nodes), function(index) list(node=node_signature(tree, internal_nodes[[index]]), probabilities=as.list(setNames(as.numeric(ace_result$lik.anc[index, ]), state_names))));"
+                "cat(toJSON(rows, auto_unbox=TRUE))"
+            ),
+        ],
+        capture_output=True,
+        check=False,
+        cwd=repository_root,
+        env=environment,
+        text=True,
+    )
+    if live_fit.returncode != 0:
+        pytest.skip("live ape::ace execution failed in this environment")
+    expected_rows = {
+        row["node"]: row["probabilities"] for row in json.loads(live_fit.stdout)
+    }
+    report = reconstruct_discrete_ancestral_states(
+        tree_fixture.path,
+        trait_fixture.path,
+        trait="presence",
+        model="equal-rates",
+    )
+    observed_rows = {
+        estimate.node: estimate.state_probabilities
+        for estimate in report.estimates
+        if not estimate.is_tip
+    }
+    assert observed_rows.keys() == expected_rows.keys()
+    for node, expected_probabilities in expected_rows.items():
+        for state, expected_probability in expected_probabilities.items():
+            assert math.isclose(
+                observed_rows[node][state],
+                expected_probability,
+                rel_tol=0.0,
+                abs_tol=5e-5,
+            )

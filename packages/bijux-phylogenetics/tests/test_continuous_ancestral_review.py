@@ -16,6 +16,10 @@ from bijux_phylogenetics.ancestral.continuous import (
     write_continuous_ancestral_summary_table,
     write_continuous_ancestral_uncertainty_table,
 )
+from bijux_phylogenetics.shared_trait_table_fixtures import (
+    get_shared_trait_table_fixture,
+)
+from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -33,9 +37,11 @@ def fixture(name: str) -> Path:
 
 
 def test_summarize_continuous_ancestral_report_tracks_root_and_exclusions() -> None:
+    tree_fixture = get_shared_tree_fixture("balanced_rooted_ultrametric")
+    trait_fixture = get_shared_trait_table_fixture("continuous_tree_mismatch")
     report = reconstruct_continuous_ancestral_states(
-        fixture("example_tree.nwk"),
-        fixture("example_traits.tsv"),
+        tree_fixture.path,
+        trait_fixture.path,
         trait="value",
     )
     summary = summarize_continuous_ancestral_report(report)
@@ -52,9 +58,11 @@ def test_summarize_continuous_ancestral_report_tracks_root_and_exclusions() -> N
 
 
 def test_write_continuous_ancestral_review_tables(tmp_path: Path) -> None:
+    tree_fixture = get_shared_tree_fixture("balanced_rooted_ultrametric")
+    trait_fixture = get_shared_trait_table_fixture("continuous_tree_mismatch")
     report = reconstruct_continuous_ancestral_states(
-        fixture("example_tree.nwk"),
-        fixture("example_traits.tsv"),
+        tree_fixture.path,
+        trait_fixture.path,
         trait="value",
     )
     summary_path = tmp_path / "continuous-ancestral-summary.tsv"
@@ -214,6 +222,94 @@ def test_reconstruct_continuous_ancestral_states_tracks_live_ape_ace_when_availa
         trait="longevity",
         taxon_column="species",
         model="brownian",
+    )
+    observed_rows = {
+        estimate.node: estimate.estimate
+        for estimate in report.estimates
+        if not estimate.is_tip
+    }
+    assert observed_rows.keys() == expected_rows.keys()
+    for node, expected_estimate in expected_rows.items():
+        assert math.isclose(
+            observed_rows[node],
+            expected_estimate,
+            rel_tol=0.0,
+            abs_tol=5e-5,
+        )
+
+
+def test_reconstruct_continuous_ancestral_states_tracks_live_ape_ace_on_shared_fixture_when_available() -> (
+    None
+):
+    rscript = shutil.which("Rscript")
+    if rscript is None:
+        pytest.skip("Rscript is not available")
+    repository_root = Path(__file__).resolve().parents[3]
+    r_library = repository_root / "artifacts" / "r-lib"
+    environment = dict(os.environ)
+    if r_library.is_dir():
+        environment["R_LIBS_USER"] = str(r_library)
+    package_check = subprocess.run(
+        [
+            rscript,
+            "-e",
+            (
+                "cat(requireNamespace('ape', quietly=TRUE), '\\n');"
+                "cat(requireNamespace('jsonlite', quietly=TRUE), '\\n')"
+            ),
+        ],
+        capture_output=True,
+        check=False,
+        cwd=repository_root,
+        env=environment,
+        text=True,
+    )
+    if package_check.returncode != 0:
+        pytest.skip("R package availability could not be checked")
+    package_flags = [
+        line.strip() for line in package_check.stdout.splitlines() if line.strip()
+    ]
+    if package_flags != ["TRUE", "TRUE"]:
+        pytest.skip("ape and jsonlite are required for live ace validation")
+    tree_fixture = get_shared_tree_fixture("balanced_rooted_ultrametric")
+    trait_fixture = get_shared_trait_table_fixture("categorical_predictor_match")
+    live_fit = subprocess.run(
+        [
+            rscript,
+            "-e",
+            (
+                "library(ape);"
+                "library(jsonlite);"
+                f"tree <- read.tree('{tree_fixture.path}');"
+                f"dat <- read.delim('{trait_fixture.path}', stringsAsFactors=FALSE);"
+                "values <- dat$response[match(tree$tip.label, dat$taxon)];"
+                "ace_result <- ace(values, tree, type='continuous', method='pic');"
+                "leaf_descendants <- function(phy, node) {"
+                "  if (node <= length(phy$tip.label)) return(phy$tip.label[[node]]);"
+                "  children <- phy$edge[phy$edge[, 1] == node, 2];"
+                "  sort(unique(unlist(lapply(children, function(child) leaf_descendants(phy, child)))))"
+                "};"
+                "node_signature <- function(phy, node) paste(leaf_descendants(phy, node), collapse='|');"
+                "internal_nodes <- seq(length(tree$tip.label) + 1, length(tree$tip.label) + tree$Nnode);"
+                "rows <- lapply(seq_along(internal_nodes), function(index) list(node=node_signature(tree, internal_nodes[[index]]), estimate=unname(signif(as.numeric(ace_result$ace[[index]]), 15))));"
+                "cat(toJSON(rows, auto_unbox=TRUE))"
+            ),
+        ],
+        capture_output=True,
+        check=False,
+        cwd=repository_root,
+        env=environment,
+        text=True,
+    )
+    if live_fit.returncode != 0:
+        pytest.skip("live ape::ace execution failed in this environment")
+    expected_rows = {
+        row["node"]: row["estimate"] for row in json.loads(live_fit.stdout)
+    }
+    report = reconstruct_continuous_ancestral_states(
+        tree_fixture.path,
+        trait_fixture.path,
+        trait="response",
     )
     observed_rows = {
         estimate.node: estimate.estimate
