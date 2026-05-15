@@ -739,6 +739,7 @@ from bijux_phylogenetics.tree_set import (
     compare_posterior_tree_sets,
     compute_clade_frequency_table,
     compute_consensus_tree,
+    compute_strict_consensus_tree,
     compute_tree_distance_matrix,
     detect_posterior_topology_multimodality,
     detect_unstable_clades,
@@ -4641,10 +4642,21 @@ def build_parser() -> argparse.ArgumentParser:
     _add_manifest_argument(tree_set_inspect)
     tree_set_consensus = tree_set_subparsers.add_parser(
         "consensus",
-        help="Build a majority-rule consensus tree from a tree set.",
+        help="Build a strict or majority-rule consensus tree from a tree set.",
     )
     tree_set_consensus.add_argument("tree_set", type=Path)
     tree_set_consensus.add_argument("--out", required=True, type=Path)
+    tree_set_consensus.add_argument(
+        "--method",
+        choices=["majority-rule", "strict"],
+        default="majority-rule",
+        help="Consensus contract to apply across the governed shared taxon set.",
+    )
+    tree_set_consensus.add_argument(
+        "--clade-frequencies-out",
+        type=Path,
+        help="Write the clade-frequency ledger as TSV.",
+    )
     tree_set_consensus.add_argument(
         "--json", action="store_true", help="Emit the consensus report as JSON."
     )
@@ -13340,13 +13352,24 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.tree_set_command == "consensus":
-                tree, report = compute_consensus_tree(args.tree_set)
-                output_path = write_consensus_tree(args.out, tree)
+                if args.method == "strict":
+                    tree, report = compute_strict_consensus_tree(args.tree_set)
+                else:
+                    tree, report = compute_consensus_tree(args.tree_set)
+                output_paths = [write_consensus_tree(args.out, tree)]
+                if args.clade_frequencies_out is not None:
+                    frequency_report = compute_clade_frequency_table(args.tree_set)
+                    output_paths.append(
+                        write_clade_frequency_table(
+                            args.clade_frequencies_out,
+                            frequency_report,
+                        )
+                    )
                 outputs = _finalize_outputs(
                     args,
                     command="tree-set",
                     inputs=[args.tree_set],
-                    outputs=[output_path],
+                    outputs=output_paths,
                 )
                 _print_result(
                     build_command_result(
@@ -13361,6 +13384,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 report.processing.skipped_malformed_tree_count
                             ),
                             "shared_taxon_count": len(report.shared_taxa),
+                            "consensus_method": report.consensus_method,
+                            "consensus_threshold": report.consensus_threshold,
+                            "included_clade_count": report.included_clade_count,
                         },
                         data=report,
                     ),
