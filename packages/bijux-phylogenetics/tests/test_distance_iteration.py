@@ -41,7 +41,7 @@ def fixture(name: str) -> Path:
 def test_validate_distance_reference_examples_passes() -> None:
     report = validate_distance_reference_examples()
     assert report.all_passed is True
-    assert len(report.observations) == 9
+    assert len(report.observations) == 11
     assert len(report.tree_observations) == 2
 
 
@@ -208,9 +208,11 @@ def test_compare_distance_tree_to_reference_tree_reports_matching_topology(
 def test_compare_distance_models_reports_supported_dna_models() -> None:
     report = compare_distance_models(fixture("example_alignment_distance.fasta"))
     assert [row.model for row in report.rows] == [
+        "felsenstein-81",
         "jukes-cantor",
         "kimura-2-parameter",
         "p-distance",
+        "tamura-nei-93",
     ]
 
 

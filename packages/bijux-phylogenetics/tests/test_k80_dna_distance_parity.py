@@ -156,8 +156,8 @@ def test_cli_alignment_distance_matrix_accepts_k80_model_alias_and_components_ou
         "A\tC\t\t8",
     ]
     assert components_path.read_text(encoding="utf-8").splitlines()[:4] == [
-        "left_identifier\tright_identifier\tdistance\tcomparable_sites\tmismatch_sites\ttransition_sites\ttransversion_sites\tambiguity_sites\tskipped_sites\tsaturated\tsaturation_reason",
-        "A\tA\t0\t8\t0\t0\t0\t0\t0\tfalse\t",
-        "A\tB\t0.14384103622589\t8\t1\t1\t0\t0\t0\tfalse\t",
-        "A\tC\t\t8\t4\t0\t4\t0\t0\ttrue\ttransition and transversion proportions are at the Kimura 2-parameter correction limit, so the corrected distance tends to infinity",
+        "left_identifier\tright_identifier\tdistance\tcomparable_sites\tmismatch_sites\ttransition_sites\tag_transition_sites\tct_transition_sites\ttransversion_sites\tambiguity_sites\tskipped_sites\tsaturated\tsaturation_reason",
+        "A\tA\t0\t8\t0\t0\t0\t0\t0\t0\t0\tfalse\t",
+        "A\tB\t0.14384103622589\t8\t1\t1\t0\t1\t0\t0\t0\tfalse\t",
+        "A\tC\t\t8\t4\t0\t0\t0\t4\t0\t0\ttrue\ttransition and transversion proportions are at the Kimura 2-parameter correction limit, so the corrected distance tends to infinity",
     ]
