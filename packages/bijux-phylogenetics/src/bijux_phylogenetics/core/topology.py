@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -39,6 +40,23 @@ class SubtreeExtractionReport:
     missing_requested_descendants: list[str]
     unexpected_retained_taxa: list[str]
     summary: TreeTransformationSummary
+
+
+@dataclass(slots=True)
+class TreeMrcaReport:
+    """Explicit record of a tree MRCA resolution request."""
+
+    tree_path: Path
+    requested_taxa: list[str]
+    unique_requested_taxa: list[str]
+    duplicate_requested_taxa: list[str]
+    matched_node_id: int
+    matched_node_name: str | None
+    matched_taxa: list[str]
+    matched_extra_taxa: list[str]
+    matched_tip_count: int
+    is_root: bool
+    rooted: bool | None
 
 
 @dataclass(slots=True)
@@ -161,6 +179,18 @@ def _build_subtree(node: TreeNode, *, source_format: str, rooted: bool | None) -
     subtree_root = _clone_node(node)
     subtree_root.branch_length = None
     return PhyloTree(root=subtree_root, source_format=source_format, rooted=rooted)
+
+
+def _mrca_node_from_taxa(tree: PhyloTree, taxa: list[str]) -> TreeNode:
+    paths = _root_to_tip_paths(tree)
+    reference_path = paths[taxa[0]]
+    prefix_length = len(reference_path)
+    for taxon in taxa[1:]:
+        prefix_length = min(
+            prefix_length,
+            _common_prefix_length(reference_path, paths[taxon]),
+        )
+    return reference_path[prefix_length - 1]
 
 
 def _extract_subtree_report(
@@ -706,6 +736,52 @@ def extract_tree_clade_by_descendant_taxa(
         requested_taxa=requested_taxa,
         matched_node_name=source_node.name,
         expected_taxa=requested_taxa,
+    )
+
+
+def find_tree_mrca(
+    tree_path: Path,
+    *,
+    taxa: list[str],
+) -> TreeMrcaReport:
+    """Resolve the MRCA of two or more taxa using ape-style internal node ids."""
+    tree = load_tree(tree_path)
+    requested_taxa = sorted(taxa)
+    unique_requested_taxa = sorted(set(requested_taxa))
+    duplicate_requested_taxa = sorted(
+        taxon
+        for taxon, count in Counter(requested_taxa).items()
+        if count > 1
+    )
+    missing_requested_taxa = sorted(set(unique_requested_taxa) - set(tree.tip_names))
+    if missing_requested_taxa:
+        raise ValueError(
+            "requested taxa are not present in the tree: "
+            + ", ".join(missing_requested_taxa)
+        )
+    if len(unique_requested_taxa) < 2:
+        raise ValueError("mrca requires at least two distinct taxa")
+
+    matched_node = _mrca_node_from_taxa(tree, unique_requested_taxa)
+    matched_taxa = _descendant_taxa(matched_node)
+    matched_extra_taxa = sorted(set(matched_taxa) - set(unique_requested_taxa))
+    matched_node_id = next(
+        node_id
+        for node_id, node in _build_ape_internal_node_map(tree).items()
+        if node is matched_node
+    )
+    return TreeMrcaReport(
+        tree_path=tree_path,
+        requested_taxa=requested_taxa,
+        unique_requested_taxa=unique_requested_taxa,
+        duplicate_requested_taxa=duplicate_requested_taxa,
+        matched_node_id=matched_node_id,
+        matched_node_name=matched_node.name,
+        matched_taxa=matched_taxa,
+        matched_extra_taxa=matched_extra_taxa,
+        matched_tip_count=len(matched_taxa),
+        is_root=matched_node is tree.root,
+        rooted=tree.rooted,
     )
 
 
