@@ -600,6 +600,7 @@ from bijux_phylogenetics.errors import (
     EngineWorkflowError,
     EngineUnavailableError,
     EvidenceContractError,
+    InvalidAlignmentError,
     MetadataJoinError,
     PhylogeneticsError,
 )
@@ -642,6 +643,7 @@ from bijux_phylogenetics.io.fasta import (
     classify_alignment_sequences,
     clean_alignment_with_profile,
     compare_alignment_versions,
+    compute_alignment_base_frequency_report,
     compute_pairwise_sequence_identity_matrix,
     detect_composition_outlier_sequences,
     detect_fasta_sequence_type,
@@ -663,6 +665,7 @@ from bijux_phylogenetics.io.fasta import (
     translate_coding_alignment,
     trim_alignment,
     validate_fasta_input,
+    write_alignment_base_frequency_table,
     write_fasta_alignment,
     write_sequence_identity_matrix,
 )
@@ -1695,6 +1698,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Inspect inferred alphabet, composition, and GC content.",
     )
     alignment_composition.add_argument("alignment", type=Path)
+    alignment_composition.add_argument(
+        "--base-frequency-out",
+        type=Path,
+        help="Write ape-style alignment and per-sequence nucleotide state frequencies as TSV.",
+    )
     alignment_composition.add_argument(
         "--json", action="store_true", help="Emit the report as JSON."
     )
@@ -7485,18 +7493,48 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.alignment_command == "composition":
                 report = summarise_fasta(args.alignment)
+                base_frequency_report = None
+                warnings: list[str] = []
+                try:
+                    base_frequency_report = compute_alignment_base_frequency_report(
+                        args.alignment
+                    )
+                except InvalidAlignmentError:
+                    base_frequency_report = None
+                else:
+                    warnings.extend(base_frequency_report.warnings)
                 outputs = _finalize_outputs(
                     args, command="alignment", inputs=[args.alignment]
                 )
+                if args.base_frequency_out is not None:
+                    if base_frequency_report is None:
+                        raise InvalidAlignmentError(
+                            "ape-style nucleotide base frequencies require a dna or rna alignment"
+                        )
+                    outputs.append(
+                        write_alignment_base_frequency_table(
+                            args.base_frequency_out,
+                            base_frequency_report,
+                        )
+                    )
                 _print_result(
                     build_command_result(
                         command="alignment",
                         inputs=[args.alignment],
                         outputs=outputs,
+                        warnings=warnings,
                         metrics={
                             "alphabet": report.inferred_alphabet,
                             "sequence_count": report.sequence_count,
                             "gc_sequence_count": len(report.per_sequence_gc_content),
+                            "composition_outlier_count": len(
+                                report.composition_outliers
+                            ),
+                            "base_frequency_state_count": (
+                                0
+                                if base_frequency_report is None
+                                else len(base_frequency_report.alignment_rows)
+                            ),
                         },
                         data={
                             "path": report.path,
@@ -7505,6 +7543,17 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "amino_acid_composition": report.amino_acid_composition,
                             "per_sequence_gc_content": report.per_sequence_gc_content,
                             "whole_alignment_gc_content": report.whole_alignment_gc_content,
+                            "composition_outliers": report.composition_outliers,
+                            "alignment_state_frequencies": (
+                                []
+                                if base_frequency_report is None
+                                else base_frequency_report.alignment_rows
+                            ),
+                            "per_sequence_state_frequencies": (
+                                []
+                                if base_frequency_report is None
+                                else base_frequency_report.per_sequence_rows
+                            ),
                         },
                     ),
                     json_output=args.json,

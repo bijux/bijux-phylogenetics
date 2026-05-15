@@ -190,6 +190,17 @@ class SequenceGCContent:
 
 
 @dataclass(frozen=True, slots=True)
+class NucleotideStateFrequencyRow:
+    """One reviewer-facing nucleotide state frequency row."""
+
+    scope: str
+    identifier: str | None
+    state: str
+    count: int
+    frequency: float
+
+
+@dataclass(frozen=True, slots=True)
 class SequenceCompositionOutlier:
     """One sequence whose composition deviates strongly from the alignment baseline."""
 
@@ -700,6 +711,24 @@ class AlignmentSummary:
     duplicate_sequence_groups: list[DuplicateSequenceGroup]
     near_duplicate_pairs: list[NearDuplicateSequencePair]
     near_duplicate_scan_performed: bool = True
+
+
+@dataclass(slots=True)
+class AlignmentBaseFrequencyReport:
+    """ape-style nucleotide state frequencies for one alignment and its sequences."""
+
+    path: Path
+    inferred_alphabet: AlignmentAlphabet
+    sequence_count: int
+    alignment_length: int
+    ambiguity_policy: str
+    gap_policy: str
+    missing_data_policy: str
+    state_order: list[str]
+    alignment_rows: list[NucleotideStateFrequencyRow]
+    per_sequence_rows: list[NucleotideStateFrequencyRow]
+    composition_outliers: list[SequenceCompositionOutlier]
+    warnings: list[str]
 
 
 @dataclass(slots=True)

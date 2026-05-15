@@ -8,6 +8,7 @@ from statistics import median
 from Bio.Data import CodonTable
 
 from bijux_phylogenetics.core.alignment import (
+    AlignmentBaseFrequencyReport,
     AlignmentAlphabet,
     AlignmentAmbiguousColumnReport,
     AlignmentCleaningReport,
@@ -49,6 +50,7 @@ from bijux_phylogenetics.core.alignment import (
     InvalidAlignmentCharacter,
     InvalidCodonObservation,
     NearDuplicateSequencePair,
+    NucleotideStateFrequencyRow,
     PairwiseSequenceIdentity,
     PartialCodonSequence,
     RemovedAlignmentSequence,
@@ -96,6 +98,25 @@ _DNA_BASES = {"A", "C", "G", "T"}
 _DNA_AMBIGUITY_UPPER = {"N", "R", "Y", "S", "W", "K", "M", "B", "D", "H", "V"}
 _RNA_AMBIGUITY_UPPER = {"N", "R", "Y", "S", "W", "K", "M", "B", "D", "H", "V"}
 _PROTEIN_AMBIGUITY_UPPER = {"B", "J", "X", "Z"}
+_APE_DNA_STATE_ORDER = (
+    "a",
+    "c",
+    "g",
+    "t",
+    "r",
+    "m",
+    "w",
+    "s",
+    "k",
+    "y",
+    "v",
+    "h",
+    "d",
+    "b",
+    "n",
+    "-",
+    "?",
+)
 _DEFAULT_GENETIC_CODE_ID = 1
 _LOW_INFORMATION_SITE_THRESHOLD = 1
 _LOW_INFORMATION_FRACTION_THRESHOLD = 0.0
@@ -836,6 +857,121 @@ def compute_whole_alignment_gc_content(
         / len(comparable),
         15,
     )
+
+
+def _normalize_ape_nucleotide_state(residue: str) -> str | None:
+    normalized = residue.lower().replace("u", "t")
+    if normalized in _APE_DNA_STATE_ORDER:
+        return normalized
+    return None
+
+
+def _ape_nucleotide_state_counts(sequence: str) -> dict[str, int]:
+    counts = {state: 0 for state in _APE_DNA_STATE_ORDER}
+    for residue in sequence:
+        normalized = _normalize_ape_nucleotide_state(residue)
+        if normalized is None:
+            continue
+        counts[normalized] += 1
+    return counts
+
+
+def compute_alignment_base_frequency_report(path: Path) -> AlignmentBaseFrequencyReport:
+    """Compute ape-style nucleotide state frequencies for one DNA or RNA alignment."""
+    records = load_fasta_alignment(path)
+    alphabet = infer_alignment_alphabet(records)
+    if alphabet not in {"dna", "rna"}:
+        if any(
+            _normalize_ape_nucleotide_state(residue) is None
+            for record in records
+            for residue in record.sequence
+        ):
+            raise InvalidAlignmentError(
+                "ape-style nucleotide base frequencies require a dna or rna alignment"
+            )
+        alphabet = "dna"
+
+    alignment_counts = {state: 0 for state in _APE_DNA_STATE_ORDER}
+    per_sequence_rows: list[NucleotideStateFrequencyRow] = []
+    for record in records:
+        sequence_counts = _ape_nucleotide_state_counts(record.sequence)
+        sequence_total = sum(sequence_counts.values())
+        for state in _APE_DNA_STATE_ORDER:
+            alignment_counts[state] += sequence_counts[state]
+            per_sequence_rows.append(
+                NucleotideStateFrequencyRow(
+                    scope="sequence",
+                    identifier=record.identifier,
+                    state=state,
+                    count=sequence_counts[state],
+                    frequency=(
+                        0.0
+                        if sequence_total == 0
+                        else round(sequence_counts[state] / sequence_total, 15)
+                    ),
+                )
+            )
+
+    alignment_total = sum(alignment_counts.values())
+    alignment_rows = [
+        NucleotideStateFrequencyRow(
+            scope="alignment",
+            identifier=None,
+            state=state,
+            count=alignment_counts[state],
+            frequency=(
+                0.0
+                if alignment_total == 0
+                else round(alignment_counts[state] / alignment_total, 15)
+            ),
+        )
+        for state in _APE_DNA_STATE_ORDER
+    ]
+    warnings: list[str] = []
+    canonical_total = sum(
+        alignment_counts[state] for state in _APE_DNA_STATE_ORDER[:4]
+    )
+    if canonical_total == 0:
+        warnings.append(
+            "alignment contains no canonical A/C/G/T residues, so ape-style base frequencies reflect only ambiguity, gap, and missing states"
+        )
+    return AlignmentBaseFrequencyReport(
+        path=path,
+        inferred_alphabet=alphabet,
+        sequence_count=len(records),
+        alignment_length=0 if not records else len(records[0].sequence),
+        ambiguity_policy="count ambiguity codes as literal states",
+        gap_policy="count gap characters as literal states",
+        missing_data_policy="count explicit missing characters as literal states",
+        state_order=list(_APE_DNA_STATE_ORDER),
+        alignment_rows=alignment_rows,
+        per_sequence_rows=per_sequence_rows,
+        composition_outliers=_detect_composition_outlier_sequences_records(records),
+        warnings=warnings,
+    )
+
+
+def write_alignment_base_frequency_table(
+    path: Path,
+    report: AlignmentBaseFrequencyReport,
+) -> Path:
+    """Write ape-style alignment and per-sequence nucleotide state frequencies as TSV."""
+    rows = report.alignment_rows + report.per_sequence_rows
+    lines = ["scope\tidentifier\tstate\tcount\tfrequency"]
+    lines.extend(
+        "\t".join(
+            [
+                row.scope,
+                "" if row.identifier is None else row.identifier,
+                row.state,
+                str(row.count),
+                format(row.frequency, ".15g"),
+            ]
+        )
+        for row in rows
+    )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
 
 
 def detect_composition_outlier_sequences(
