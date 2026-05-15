@@ -528,6 +528,7 @@ from bijux_phylogenetics.core.taxonomy import (
 )
 from bijux_phylogenetics.core.topology import (
     TreeRootingReport,
+    assess_tree_monophyly,
     collapse_branches_below_length,
     extract_named_clade,
     extract_tree_clade_by_descendant_taxa,
@@ -1025,6 +1026,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.extract_tree_clade_by_descendant_taxa
         is extract_tree_clade_by_descendant_taxa
     )
+    assert bijux_phylogenetics.assess_tree_monophyly is assess_tree_monophyly
     assert bijux_phylogenetics.find_tree_mrca is find_tree_mrca
     assert bijux_phylogenetics.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
     assert bijux_phylogenetics.compare_support_values is compare_support_values
@@ -4476,6 +4478,153 @@ def test_find_tree_mrca_works_after_rooting(tmp_path: Path) -> None:
     report = find_tree_mrca(rooted_path, taxa=["A", "B", "C"])
 
     assert report.matched_node_id == 6
+    assert report.matched_taxa == ["A", "B", "C"]
+
+
+def test_assess_tree_monophyly_matches_rooted_two_tip_clade() -> None:
+    report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A", "B"],
+    )
+
+    assert report.monophyletic is True
+    assert report.complementary_clade_used is False
+    assert report.matched_node_id == 6
+    assert report.matched_taxa == ["A", "B"]
+    assert report.matched_extra_taxa == []
+    assert report.matched_tip_count == 2
+    assert report.is_root is False
+
+
+def test_assess_tree_monophyly_reports_root_extra_taxa_for_non_monophyletic_group() -> None:
+    report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A", "C"],
+    )
+
+    assert report.monophyletic is False
+    assert report.complementary_clade_used is False
+    assert report.matched_node_id == 5
+    assert report.matched_taxa == ["A", "B", "C", "D"]
+    assert report.matched_extra_taxa == ["B", "D"]
+    assert report.is_root is True
+
+
+def test_assess_tree_monophyly_treats_full_tip_set_as_monophyletic() -> None:
+    report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A", "B", "C", "D"],
+    )
+
+    assert report.monophyletic is True
+    assert report.matched_node_id == 5
+    assert report.is_root is True
+
+
+def test_assess_tree_monophyly_treats_singletons_as_monophyletic() -> None:
+    report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A"],
+    )
+
+    assert report.monophyletic is True
+    assert report.matched_node_id == 1
+    assert report.matched_taxa == ["A"]
+    assert report.matched_extra_taxa == []
+    assert report.matched_tip_count == 1
+    assert report.is_root is False
+
+
+def test_assess_tree_monophyly_reports_missing_taxa_explicitly() -> None:
+    report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A", "Z"],
+    )
+
+    assert report.monophyletic is True
+    assert report.present_requested_taxa == ["A"]
+    assert report.missing_requested_taxa == ["Z"]
+    assert report.matched_node_id == 1
+
+
+def test_assess_tree_monophyly_explicitly_controls_reroot_policy() -> None:
+    default_report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A", "B", "C"],
+    )
+    rerooted_report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A", "B", "C"],
+        reroot=True,
+    )
+
+    assert default_report.monophyletic is False
+    assert default_report.complementary_clade_used is False
+    assert rerooted_report.monophyletic is True
+    assert rerooted_report.complementary_clade_used is True
+    assert rerooted_report.matched_extra_taxa == ["D"]
+
+
+def test_assess_tree_monophyly_matches_unrooted_default_reroot_false_policy() -> None:
+    report = assess_tree_monophyly(
+        fixture("example_tree_unrooted.nwk"),
+        taxa=["A", "B"],
+    )
+
+    assert report.monophyletic is False
+    assert report.rooted is False
+    assert report.matched_extra_taxa == ["C", "D"]
+
+
+def test_assess_tree_monophyly_matches_unrooted_reroot_true_policy() -> None:
+    report = assess_tree_monophyly(
+        fixture("example_tree_unrooted.nwk"),
+        taxa=["A", "B", "C"],
+        reroot=True,
+    )
+
+    assert report.monophyletic is True
+    assert report.complementary_clade_used is True
+    assert report.matched_extra_taxa == ["D"]
+
+
+def test_assess_tree_monophyly_rejects_all_missing_taxa_when_rerooting() -> None:
+    with pytest.raises(ValueError, match="specified outgroup not in labels of the tree"):
+        assess_tree_monophyly(
+            fixture("example_tree_unrooted.nwk"),
+            taxa=["Z"],
+            reroot=True,
+        )
+
+
+def test_assess_tree_monophyly_works_after_pruning(tmp_path: Path) -> None:
+    pruned_tree, _report = prune_tree_to_requested_taxa(
+        fixture("example_tree_rooted_on_d.nwk"),
+        ["A", "B", "C"],
+    )
+    pruned_path = tmp_path / "pruned-tree.nwk"
+    write_newick(pruned_path, pruned_tree)
+
+    report = assess_tree_monophyly(pruned_path, taxa=["A", "B"])
+
+    assert report.monophyletic is True
+    assert report.matched_taxa == ["A", "B"]
+
+
+def test_assess_tree_monophyly_works_after_rooting(tmp_path: Path) -> None:
+    rooted_tree, _report = root_tree_on_outgroup(
+        fixture("example_tree_rootable.nwk"),
+        outgroup_taxa=["D"],
+    )
+    rooted_path = tmp_path / "rooted-tree.nwk"
+    write_newick(rooted_path, rooted_tree)
+
+    report = assess_tree_monophyly(
+        rooted_path,
+        taxa=["A", "B", "C"],
+    )
+
+    assert report.monophyletic is True
     assert report.matched_taxa == ["A", "B", "C"]
 
 
