@@ -7737,8 +7737,31 @@ def test_newick_loader_raises_invalid_branch_length_error() -> None:
         loads_newick("((A:abc,B:0.2):0.3,C:0.4);")
     except InvalidBranchLengthError as error:
         assert error.code == "invalid_branch_length_error"
+        assert error.details == {"position": 4, "line": 1, "column": 5}
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected InvalidBranchLengthError")
+
+
+def test_newick_loader_preserves_numeric_support_metadata() -> None:
+    tree = loads_newick("((A:0.1,B:0.1)95:0.2,C:0.3)Root;")
+
+    support_node = next(
+        node
+        for node in tree.iter_internal_nodes()
+        if node is not tree.root and set(node.descendant_taxa) == {"A", "B"}
+    )
+
+    assert support_node.name == "95"
+    assert support_node.metadata["confidence"] == 95.0
+
+
+def test_newick_loader_reports_location_for_malformed_structure() -> None:
+    try:
+        loads_newick("((A:0.1,B:0.2):0.3,C:0.4")
+    except TreeParseError as error:
+        assert error.details == {"position": 24, "line": 1, "column": 25}
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected TreeParseError")
 
 
 def test_nexus_loader_reads_translation_block_fixture() -> None:
