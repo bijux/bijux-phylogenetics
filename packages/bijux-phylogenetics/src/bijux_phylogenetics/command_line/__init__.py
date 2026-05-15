@@ -739,6 +739,7 @@ from bijux_phylogenetics.tree_set import (
     compare_posterior_tree_sets,
     compute_clade_frequency_table,
     compute_consensus_tree,
+    compute_reference_tree_clade_support,
     compute_strict_consensus_tree,
     compute_tree_distance_matrix,
     detect_posterior_topology_multimodality,
@@ -751,6 +752,7 @@ from bijux_phylogenetics.tree_set import (
     write_bootstrap_tree_set_artifacts,
     write_clade_frequency_table,
     write_consensus_tree,
+    write_reference_tree_clade_support_table,
     write_tree_distance_distribution_table,
     write_topology_cluster_table,
     write_tree_distance_matrix,
@@ -4673,6 +4675,19 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the clade-frequency report as JSON."
     )
     _add_manifest_argument(tree_set_clades)
+    tree_set_support_map = tree_set_subparsers.add_parser(
+        "support-map",
+        help="Map tree-set clade support onto a reference tree by descendant tip set.",
+    )
+    tree_set_support_map.add_argument("reference_tree", type=Path)
+    tree_set_support_map.add_argument("tree_set", type=Path)
+    tree_set_support_map.add_argument(
+        "--out", type=Path, help="Write the reference-tree support table as TSV."
+    )
+    tree_set_support_map.add_argument(
+        "--json", action="store_true", help="Emit the support-mapping report as JSON."
+    )
+    _add_manifest_argument(tree_set_support_map)
     tree_set_clade_rows = tree_set_subparsers.add_parser(
         "clades",
         help="Extract one row per clade from each tree in a tree set.",
@@ -13417,6 +13432,45 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 report.processing.skipped_malformed_tree_count
                             ),
                             "clade_count": len(report.clade_frequencies),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "support-map":
+                report = compute_reference_tree_clade_support(
+                    args.reference_tree,
+                    args.tree_set,
+                )
+                outputs = []
+                if args.out is not None:
+                    outputs.append(
+                        write_reference_tree_clade_support_table(args.out, report)
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="tree-set",
+                    inputs=[args.reference_tree, args.tree_set],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.reference_tree, args.tree_set],
+                        outputs=outputs,
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "runtime_seconds": report.processing.runtime_seconds,
+                            "peak_memory_bytes": report.processing.peak_memory_bytes,
+                            "skipped_malformed_tree_count": (
+                                report.processing.skipped_malformed_tree_count
+                            ),
+                            "shared_taxon_count": len(report.shared_taxa),
+                            "supported_clade_count": report.supported_clade_count,
+                            "absent_clade_count": report.absent_clade_count,
+                            "unscored_clade_count": report.unscored_clade_count,
+                            "reference_internal_node_count": len(report.rows),
                         },
                         data=report,
                     ),

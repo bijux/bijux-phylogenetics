@@ -882,6 +882,7 @@ from bijux_phylogenetics.tree_set import (
     compare_posterior_tree_sets,
     compute_clade_frequency_table,
     compute_consensus_tree,
+    compute_reference_tree_clade_support,
     compute_strict_consensus_tree,
     compute_tree_distance_matrix,
     detect_posterior_topology_multimodality,
@@ -895,6 +896,7 @@ from bijux_phylogenetics.tree_set import (
     write_bootstrap_tree_set_summary_table,
     write_bootstrap_unstable_branch_table,
     write_clade_credibility_conflict_table,
+    write_reference_tree_clade_support_table,
     write_topology_cluster_table,
     write_uncertainty_conclusion_table,
 )
@@ -1865,6 +1867,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is compute_clade_frequency_table
     )
     assert (
+        bijux_phylogenetics.compute_reference_tree_clade_support
+        is compute_reference_tree_clade_support
+    )
+    assert (
         bijux_phylogenetics.compute_tree_distance_matrix is compute_tree_distance_matrix
     )
     assert bijux_phylogenetics.cluster_trees_by_topology is cluster_trees_by_topology
@@ -1900,6 +1906,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.write_bootstrap_tree_set_artifacts
         is write_bootstrap_tree_set_artifacts
+    )
+    assert (
+        bijux_phylogenetics.write_reference_tree_clade_support_table
+        is write_reference_tree_clade_support_table
     )
     assert (
         bijux_phylogenetics.compare_posterior_tree_sets is compare_posterior_tree_sets
@@ -6629,6 +6639,37 @@ def test_cli_tree_set_consensus_supports_strict_mode_and_frequency_ledger(
     assert payload["metrics"]["consensus_method"] == "strict"
     assert payload["metrics"]["consensus_threshold"] == 1.0
     assert payload["metrics"]["included_clade_count"] == 0
+
+
+def test_cli_tree_set_support_map_writes_reference_support_table(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "reference-support.tsv"
+
+    exit_code = main(
+        [
+            "tree-set",
+            "support-map",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_set_left.nwk")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert output_path.exists()
+    assert "node_id\tnode_kind\tnode_label\tdescendant_taxa" in output_path.read_text(
+        encoding="utf-8"
+    )
+    assert payload["metrics"]["tree_count"] == 3
+    assert payload["metrics"]["supported_clade_count"] == 2
+    assert payload["metrics"]["absent_clade_count"] == 0
+    assert payload["metrics"]["unscored_clade_count"] == 0
 
 
 def test_cli_tree_set_compare_reports_shared_topologies(capsys) -> None:
