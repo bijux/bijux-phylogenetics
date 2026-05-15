@@ -11,7 +11,14 @@ def test_shared_tree_set_fixture_catalog_covers_governed_multiple_tree_case() ->
     fixtures = list_shared_tree_set_fixtures()
     feature_tags = {tag for fixture in fixtures for tag in fixture.feature_tags}
 
-    assert {"multiple-trees", "branch-lengths", "shared-taxon-set"} <= feature_tags
+    assert {
+        "multiple-trees",
+        "branch-lengths",
+        "shared-taxon-set",
+        "topology-distance",
+        "large-tip-count",
+    } <= feature_tags
+    assert max(len(fixture.shared_taxa) for fixture in fixtures) >= 100
 
 
 def test_shared_tree_set_fixture_lookup_preserves_durable_ids() -> None:
@@ -38,3 +45,16 @@ def test_shared_tree_set_fixture_catalog_loads_tree_set_clades() -> None:
     assert sorted(
         {row.node_label for row in report.rows if row.tree_index == 1 and row.node_kind == "tip"}
     ) == ["A", "B", "C", "D"]
+
+
+def test_shared_tree_set_fixture_catalog_preserves_large_topology_distance_pair() -> None:
+    fixture = get_shared_tree_set_fixture("topology_distance_large_rooted_pair")
+
+    report = extract_tree_set_clades(fixture.path)
+
+    assert fixture.tree_count == 2
+    assert len(fixture.shared_taxa) == 128
+    assert report.tree_count == 2
+    assert sorted(
+        {row.tree_index for row in report.rows if row.tree_index is not None}
+    ) == [1, 2]
