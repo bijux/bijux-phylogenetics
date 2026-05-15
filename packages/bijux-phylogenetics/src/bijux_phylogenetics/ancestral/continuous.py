@@ -66,6 +66,18 @@ class ContinuousAncestralBrownianFitDiagnostics:
 
 
 @dataclass(slots=True)
+class ContinuousAncestralOptimizerDiagnostics:
+    """Explicit optimizer or closed-form solver diagnostics for one continuous fit."""
+
+    optimizer_name: str
+    converged: bool
+    iteration_count: int
+    function_evaluation_count: int
+    convergence_status: str
+    message: str | None
+
+
+@dataclass(slots=True)
 class ContinuousAncestralReport:
     """Continuous ancestral-state reconstruction report."""
 
@@ -84,6 +96,7 @@ class ContinuousAncestralReport:
     unstable_nodes: list[str]
     weak_support_nodes: list[str]
     brownian_fit_diagnostics: ContinuousAncestralBrownianFitDiagnostics | None
+    optimizer_diagnostics: ContinuousAncestralOptimizerDiagnostics | None
     estimates: list[ContinuousAncestralEstimate]
 
 
@@ -113,6 +126,11 @@ class ContinuousAncestralSummary:
     covariance_condition_number: float | None
     log_likelihood: float | None
     residual_sigma_squared: float | None
+    optimizer_name: str | None
+    optimizer_converged: bool | None
+    optimizer_iteration_count: int | None
+    optimizer_function_evaluation_count: int | None
+    optimizer_convergence_status: str | None
     warning_count: int
 
 
@@ -175,6 +193,15 @@ def reconstruct_continuous_ancestral_states_from_dataset(
         if model == "brownian"
         else None
     )
+    optimizer_diagnostics: ContinuousAncestralOptimizerDiagnostics | None = None
+    anc_ml_profile_fit: _ContinuousAncMlProfileFit | None = None
+    if model == "brownian" and resolved_estimator == "anc-ml":
+        anc_ml_profile_fit = _fit_continuous_anc_ml_profile(dataset)
+        brownian_fit_diagnostics = _apply_anc_ml_profile_to_brownian_diagnostics(
+            brownian_fit_diagnostics,
+            anc_ml_profile_fit,
+        )
+        optimizer_diagnostics = anc_ml_profile_fit.optimizer_diagnostics
     return _reconstruct_continuous_from_dataset(
         dataset,
         working_tree=dataset.tree,
@@ -182,6 +209,8 @@ def reconstruct_continuous_ancestral_states_from_dataset(
         estimator=resolved_estimator,
         alpha=alpha,
         brownian_fit_diagnostics=brownian_fit_diagnostics,
+        optimizer_diagnostics=optimizer_diagnostics,
+        anc_ml_profile_fit=anc_ml_profile_fit,
     )
 
 
@@ -193,6 +222,8 @@ def _reconstruct_continuous_from_dataset(
     estimator: str,
     alpha: float,
     brownian_fit_diagnostics: ContinuousAncestralBrownianFitDiagnostics | None,
+    optimizer_diagnostics: ContinuousAncestralOptimizerDiagnostics | None,
+    anc_ml_profile_fit: _ContinuousAncMlProfileFit | None,
 ) -> ContinuousAncestralReport:
     global_mean = sum(dataset.values_by_taxon[taxon] for taxon in dataset.taxa) / len(
         dataset.taxa
@@ -209,6 +240,16 @@ def _reconstruct_continuous_from_dataset(
         estimates = _build_fast_anc_estimates(
             dataset,
             trait_range=trait_range,
+        )
+    elif estimator == "anc-ml":
+        if anc_ml_profile_fit is None:
+            raise ValueError(
+                "anc-ml continuous ancestral reconstruction requires one anc-ml profile fit"
+            )
+        estimates = _build_anc_ml_estimates(
+            dataset,
+            trait_range=trait_range,
+            profile_fit=anc_ml_profile_fit,
         )
     else:
         estimates = _build_local_continuous_estimates(
@@ -270,6 +311,7 @@ def _reconstruct_continuous_from_dataset(
         unstable_nodes=unstable_nodes,
         weak_support_nodes=weak_support_nodes,
         brownian_fit_diagnostics=brownian_fit_diagnostics,
+        optimizer_diagnostics=optimizer_diagnostics,
         estimates=ordered_estimates,
     )
 
@@ -336,6 +378,31 @@ def summarize_continuous_ancestral_report(
             if report.brownian_fit_diagnostics is None
             else report.brownian_fit_diagnostics.residual_sigma_squared
         ),
+        optimizer_name=(
+            None
+            if report.optimizer_diagnostics is None
+            else report.optimizer_diagnostics.optimizer_name
+        ),
+        optimizer_converged=(
+            None
+            if report.optimizer_diagnostics is None
+            else report.optimizer_diagnostics.converged
+        ),
+        optimizer_iteration_count=(
+            None
+            if report.optimizer_diagnostics is None
+            else report.optimizer_diagnostics.iteration_count
+        ),
+        optimizer_function_evaluation_count=(
+            None
+            if report.optimizer_diagnostics is None
+            else report.optimizer_diagnostics.function_evaluation_count
+        ),
+        optimizer_convergence_status=(
+            None
+            if report.optimizer_diagnostics is None
+            else report.optimizer_diagnostics.convergence_status
+        ),
         warning_count=len(report.warnings),
     )
 
@@ -391,6 +458,11 @@ def write_continuous_ancestral_summary_table(
             "covariance_condition_number",
             "log_likelihood",
             "residual_sigma_squared",
+            "optimizer_name",
+            "optimizer_converged",
+            "optimizer_iteration_count",
+            "optimizer_function_evaluation_count",
+            "optimizer_convergence_status",
             "warning_count",
         ],
         rows=[
@@ -434,6 +506,27 @@ def write_continuous_ancestral_summary_table(
                     ""
                     if summary.residual_sigma_squared is None
                     else str(summary.residual_sigma_squared)
+                ),
+                "optimizer_name": "" if summary.optimizer_name is None else summary.optimizer_name,
+                "optimizer_converged": (
+                    ""
+                    if summary.optimizer_converged is None
+                    else str(summary.optimizer_converged).lower()
+                ),
+                "optimizer_iteration_count": (
+                    ""
+                    if summary.optimizer_iteration_count is None
+                    else str(summary.optimizer_iteration_count)
+                ),
+                "optimizer_function_evaluation_count": (
+                    ""
+                    if summary.optimizer_function_evaluation_count is None
+                    else str(summary.optimizer_function_evaluation_count)
+                ),
+                "optimizer_convergence_status": (
+                    ""
+                    if summary.optimizer_convergence_status is None
+                    else summary.optimizer_convergence_status
                 ),
                 "warning_count": str(summary.warning_count),
             }
@@ -523,7 +616,7 @@ def _resolve_continuous_estimator(model: str, estimator: str | None) -> str:
         "ou": "generalized-least-squares",
     }
     allowed_estimators = {
-        "brownian": {"ace-pic", "fast-anc"},
+        "brownian": {"ace-pic", "anc-ml", "fast-anc"},
         "ou": {"generalized-least-squares"},
     }
     resolved = default_estimators[model] if estimator is None else estimator
@@ -740,6 +833,239 @@ def _build_fast_anc_estimates(
     return estimates
 
 
+@dataclass(slots=True)
+class _ContinuousAncMlProfileFit:
+    root_state: float
+    internal_states_by_node: dict[str, float]
+    state_variances_by_node: dict[str, float]
+    log_likelihood: float
+    sigma_squared: float
+    optimizer_diagnostics: ContinuousAncestralOptimizerDiagnostics
+
+
+def _build_anc_ml_estimates(
+    dataset: AncestralContinuousDataset,
+    *,
+    trait_range: float,
+    profile_fit: _ContinuousAncMlProfileFit,
+) -> list[ContinuousAncestralEstimate]:
+    anc_ml_interval_critical = 1.96
+    estimates: list[ContinuousAncestralEstimate] = []
+    for node in dataset.tree.iter_leaves():
+        estimate = dataset.values_by_taxon[node.name]
+        estimates.append(
+            ContinuousAncestralEstimate(
+                node=node_signature(node),
+                node_name=node.name,
+                is_tip=True,
+                descendant_taxa=node_descendant_taxa(node),
+                estimate=stable_value(estimate),
+                standard_error=0.0,
+                lower_95_interval=stable_value(estimate),
+                upper_95_interval=stable_value(estimate),
+                uncertainty_width=0.0,
+                confidence=1.0,
+                interpretation="observed tip value",
+                unstable=False,
+                downstream_risks=[],
+            )
+        )
+    for node in dataset.tree.iter_internal_nodes(order="preorder"):
+        node_key = node_signature(node)
+        estimate = (
+            profile_fit.root_state
+            if node is dataset.tree.root
+            else profile_fit.internal_states_by_node[node_key]
+        )
+        variance = profile_fit.state_variances_by_node[node_key]
+        standard_error = math.sqrt(max(variance, 0.0))
+        lower = estimate - anc_ml_interval_critical * standard_error
+        upper = estimate + anc_ml_interval_critical * standard_error
+        uncertainty_width = max(0.0, upper - lower)
+        confidence, unstable = _continuous_confidence(uncertainty_width, trait_range)
+        interpretation = _continuous_interpretation(
+            uncertainty_width,
+            trait_range,
+            unstable=unstable,
+        )
+        estimates.append(
+            ContinuousAncestralEstimate(
+                node=node_key,
+                node_name=node.name,
+                is_tip=False,
+                descendant_taxa=node_descendant_taxa(node),
+                estimate=stable_value(estimate),
+                standard_error=stable_value(standard_error),
+                lower_95_interval=stable_value(lower),
+                upper_95_interval=stable_value(upper),
+                uncertainty_width=stable_value(uncertainty_width),
+                confidence=stable_value(confidence),
+                interpretation=interpretation,
+                unstable=unstable,
+                downstream_risks=_continuous_downstream_risks(unstable),
+            )
+        )
+    return estimates
+
+
+def _fit_continuous_anc_ml_profile(
+    dataset: AncestralContinuousDataset,
+) -> _ContinuousAncMlProfileFit:
+    ordered_nodes, covariance_matrix = _build_anc_ml_covariance_matrix(
+        dataset.tree,
+        dataset.taxa,
+    )
+    try:
+        inverse_covariance = _invert_matrix(covariance_matrix)
+    except ValueError as error:
+        raise ValueError(
+            "continuous ancestral anc-ml reconstruction requires a nonsingular full Brownian covariance matrix"
+        ) from error
+    tip_count = len(dataset.taxa)
+    internal_nodes = ordered_nodes[tip_count:]
+    internal_count = len(internal_nodes)
+    precision_tips = [row[:tip_count] for row in inverse_covariance[:tip_count]]
+    precision_tip_internal = [
+        row[tip_count:] for row in inverse_covariance[:tip_count]
+    ]
+    precision_internal_tip = [
+        row[:tip_count] for row in inverse_covariance[tip_count:]
+    ]
+    precision_internal = [row[tip_count:] for row in inverse_covariance[tip_count:]]
+    inverse_internal_precision = (
+        _invert_matrix(precision_internal) if internal_count > 0 else []
+    )
+    schur_projection = [
+        [
+            sum(
+                precision_tip_internal[row_index][shared_index]
+                * inverse_internal_precision[shared_index][column_index]
+                for shared_index in range(internal_count)
+            )
+            for column_index in range(internal_count)
+        ]
+        for row_index in range(tip_count)
+    ]
+    schur_precision = [
+        [
+            precision_tips[row_index][column_index]
+            - sum(
+                schur_projection[row_index][shared_index]
+                * precision_internal_tip[shared_index][column_index]
+                for shared_index in range(internal_count)
+            )
+            for column_index in range(tip_count)
+        ]
+        for row_index in range(tip_count)
+    ]
+    tip_values = [dataset.values_by_taxon[taxon] for taxon in dataset.taxa]
+    unit_vector = [1.0] * tip_count
+    denominator = _quadratic_form(unit_vector, schur_precision)
+    root_state = sum(
+        unit_vector[row_index]
+        * sum(
+            schur_precision[row_index][column_index] * tip_values[column_index]
+            for column_index in range(tip_count)
+        )
+        for row_index in range(tip_count)
+    ) / denominator
+    tip_residuals = [value - root_state for value in tip_values]
+    internal_states_by_node: dict[str, float] = {}
+    centered_internal_states: list[float] = []
+    if internal_count > 0:
+        internal_rhs = [
+            sum(
+                precision_internal_tip[row_index][column_index]
+                * tip_residuals[column_index]
+                for column_index in range(tip_count)
+            )
+            for row_index in range(internal_count)
+        ]
+        centered_internal_states = [
+            -sum(
+                inverse_internal_precision[row_index][shared_index]
+                * internal_rhs[shared_index]
+                for shared_index in range(internal_count)
+            )
+            for row_index in range(internal_count)
+        ]
+        internal_states_by_node = {
+            node_signature(node): stable_value(root_state + centered_internal_states[index])
+            for index, node in enumerate(internal_nodes)
+        }
+    completed_residuals = tip_residuals + centered_internal_states
+    sigma_squared = max(
+        _quadratic_form(completed_residuals, inverse_covariance) / len(covariance_matrix),
+        1e-12,
+    )
+    log_likelihood = -0.5 * (
+        len(covariance_matrix) * math.log(2.0 * math.pi * sigma_squared)
+        + _log_determinant(covariance_matrix)
+        + len(covariance_matrix)
+    )
+    parameter_design = _build_anc_ml_parameter_design(tip_count, internal_count)
+    design_precision = _design_quadratic_form(parameter_design, inverse_covariance)
+    try:
+        state_covariance = [
+            [sigma_squared * value for value in row]
+            for row in _invert_matrix(design_precision)
+        ]
+    except ValueError as error:
+        raise ValueError(
+            "continuous ancestral anc-ml state uncertainty requires an invertible parameter-information matrix"
+        ) from error
+    state_variances_by_node = {
+        node_signature(dataset.tree.root): stable_value(state_covariance[0][0])
+    }
+    for index, node in enumerate(internal_nodes):
+        state_variances_by_node[node_signature(node)] = stable_value(
+            state_covariance[index + 1][index + 1]
+        )
+    return _ContinuousAncMlProfileFit(
+        root_state=stable_value(root_state),
+        internal_states_by_node=internal_states_by_node,
+        state_variances_by_node=state_variances_by_node,
+        log_likelihood=stable_value(log_likelihood),
+        sigma_squared=stable_value(sigma_squared),
+        optimizer_diagnostics=ContinuousAncestralOptimizerDiagnostics(
+            optimizer_name="closed-form-profile-solution",
+            converged=True,
+            iteration_count=0,
+            function_evaluation_count=1,
+            convergence_status="profile-solved",
+            message="closed-form Brownian maximum-likelihood profile solved without iterative optimization",
+        ),
+    )
+
+
+def _apply_anc_ml_profile_to_brownian_diagnostics(
+    diagnostics: ContinuousAncestralBrownianFitDiagnostics | None,
+    profile_fit: _ContinuousAncMlProfileFit,
+) -> ContinuousAncestralBrownianFitDiagnostics | None:
+    if diagnostics is None:
+        return None
+    return ContinuousAncestralBrownianFitDiagnostics(
+        covariance_model=diagnostics.covariance_model,
+        tree_is_ultrametric=diagnostics.tree_is_ultrametric,
+        minimum_root_to_tip_depth=diagnostics.minimum_root_to_tip_depth,
+        maximum_root_to_tip_depth=diagnostics.maximum_root_to_tip_depth,
+        minimum_branch_length=diagnostics.minimum_branch_length,
+        maximum_branch_length=diagnostics.maximum_branch_length,
+        covariance_matrix_dimension=diagnostics.covariance_matrix_dimension,
+        covariance_matrix_rank=diagnostics.covariance_matrix_rank,
+        covariance_singular=diagnostics.covariance_singular,
+        covariance_near_singular=diagnostics.covariance_near_singular,
+        covariance_positive_definite=diagnostics.covariance_positive_definite,
+        covariance_condition_number=diagnostics.covariance_condition_number,
+        covariance_log_determinant=diagnostics.covariance_log_determinant,
+        solver_name=diagnostics.solver_name,
+        solver_regularized=diagnostics.solver_regularized,
+        solver_regularization_epsilon=diagnostics.solver_regularization_epsilon,
+        log_likelihood=profile_fit.log_likelihood,
+        residual_sigma_squared=profile_fit.sigma_squared,
+    )
+
+
 def _compute_fast_anc_pic_payload(
     node: TreeNode,
     values_by_taxon: dict[str, float],
@@ -938,6 +1264,30 @@ def _build_brownian_covariance_matrix(
     return matrix
 
 
+def _build_anc_ml_covariance_matrix(
+    tree: PhyloTree,
+    taxa: list[str],
+) -> tuple[list[TreeNode], list[list[float]]]:
+    ancestor_depths = _node_ancestor_depths(tree)
+    leaves = {node.name: node for node in tree.iter_leaves()}
+    ordered_tip_nodes = [leaves[taxon] for taxon in taxa]
+    ordered_internal_nodes = [
+        node for node in tree.iter_internal_nodes(order="preorder") if node is not tree.root
+    ]
+    ordered_nodes = ordered_tip_nodes + ordered_internal_nodes
+    covariance_matrix: list[list[float]] = []
+    for left_node in ordered_nodes:
+        left_path = ancestor_depths[left_node.node_id or ""]
+        row: list[float] = []
+        for right_node in ordered_nodes:
+            right_path = ancestor_depths[right_node.node_id or ""]
+            shared_ancestor_ids = set(left_path) & set(right_path)
+            shared_depth = max(left_path[node_id] for node_id in shared_ancestor_ids)
+            row.append(shared_depth)
+        covariance_matrix.append(row)
+    return ordered_nodes, covariance_matrix
+
+
 def _tip_root_depths(tree: PhyloTree, taxa: list[str]) -> dict[str, float]:
     leaf_paths = _leaf_ancestor_depths(tree)
     return {taxon: max(leaf_paths[taxon].values()) for taxon in taxa}
@@ -961,6 +1311,59 @@ def _leaf_ancestor_depths(tree: PhyloTree) -> dict[str, dict[str, float]]:
 
     visit(tree.root, 0.0, {})
     return depths_by_leaf
+
+
+def _node_ancestor_depths(tree: PhyloTree) -> dict[str, dict[str, float]]:
+    depths_by_node: dict[str, dict[str, float]] = {}
+
+    def visit(node: TreeNode, depth: float, path: dict[str, float]) -> None:
+        branch_length = 0.0 if node is tree.root else float(node.branch_length or 0.0)
+        current_depth = depth + branch_length
+        current_path = dict(path)
+        current_path[node.node_id or ""] = current_depth
+        depths_by_node[node.node_id or ""] = current_path
+        for child in node.children:
+            visit(child, current_depth, current_path)
+
+    visit(tree.root, 0.0, {})
+    return depths_by_node
+
+
+def _build_anc_ml_parameter_design(
+    tip_count: int,
+    internal_count: int,
+) -> list[list[float]]:
+    design_matrix: list[list[float]] = []
+    for _ in range(tip_count):
+        design_matrix.append([-1.0] + [0.0] * internal_count)
+    for internal_index in range(internal_count):
+        row = [-1.0] + [0.0] * internal_count
+        row[internal_index + 1] = 1.0
+        design_matrix.append(row)
+    return design_matrix
+
+
+def _design_quadratic_form(
+    design_matrix: list[list[float]],
+    precision_matrix: list[list[float]],
+) -> list[list[float]]:
+    row_count = len(design_matrix)
+    parameter_count = len(design_matrix[0]) if design_matrix else 0
+    return [
+        [
+            sum(
+                design_matrix[row_index][left_parameter]
+                * sum(
+                    precision_matrix[row_index][column_index]
+                    * design_matrix[column_index][right_parameter]
+                    for column_index in range(row_count)
+                )
+                for row_index in range(row_count)
+            )
+            for right_parameter in range(parameter_count)
+        ]
+        for left_parameter in range(parameter_count)
+    ]
 
 
 def _quadratic_form(vector: list[float], matrix: list[list[float]]) -> float:
