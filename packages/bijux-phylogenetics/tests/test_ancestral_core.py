@@ -150,6 +150,71 @@ def test_continuous_reconstruction_supports_ou_model() -> None:
     assert 2.5 < root.estimate < 3.1
 
 
+def test_continuous_reconstruction_supports_fast_anc_estimator() -> None:
+    report = reconstruct_continuous_ancestral_states(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        trait="response",
+        model="brownian",
+        estimator="fast-anc",
+    )
+    internal_estimates = {
+        estimate.node: estimate for estimate in report.estimates if not estimate.is_tip
+    }
+
+    assert report.estimator == "fast-anc"
+    assert math.isclose(internal_estimates["A|B"].estimate, 2.361111111111111)
+    assert math.isclose(internal_estimates["C|D"].estimate, 3.027777777777778)
+    assert math.isclose(internal_estimates["A|B|C|D"].estimate, 2.8055555555555554)
+    assert math.isclose(
+        internal_estimates["A|B"].standard_error,
+        0.5319039487535212,
+    )
+    assert math.isclose(
+        internal_estimates["A|B|C|D"].standard_error,
+        0.8410139872493032,
+    )
+    assert report.brownian_fit_diagnostics is not None
+
+
+def test_continuous_fast_anc_reconstruction_from_dataset_matches_path_surface() -> None:
+    dataset = load_continuous_dataset(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        trait="response",
+    )
+
+    direct_report = reconstruct_continuous_ancestral_states_from_dataset(
+        dataset,
+        model="brownian",
+        estimator="fast-anc",
+    )
+    path_report = reconstruct_continuous_ancestral_states(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        trait="response",
+        model="brownian",
+        estimator="fast-anc",
+    )
+
+    assert direct_report.estimator == "fast-anc"
+    assert direct_report.analysis_tree_newick == path_report.analysis_tree_newick
+    assert direct_report.warnings == path_report.warnings
+    assert direct_report.estimates == path_report.estimates
+    assert direct_report.brownian_fit_diagnostics == path_report.brownian_fit_diagnostics
+
+
+def test_continuous_reconstruction_rejects_incompatible_fast_anc_estimator() -> None:
+    with pytest.raises(ValueError):
+        reconstruct_continuous_ancestral_states(
+            fixture("example_tree.nwk"),
+            fixture("example_traits_comparative.tsv"),
+            trait="response",
+            model="ou",
+            estimator="fast-anc",
+        )
+
+
 def test_continuous_reconstruction_rejects_missing_branch_lengths() -> None:
     with pytest.raises(AncestralReconstructionError):
         reconstruct_continuous_ancestral_states(

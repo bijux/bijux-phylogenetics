@@ -14,6 +14,7 @@ from bijux_phylogenetics.ancestral.common import (
     write_ancestral_rows,
 )
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.core.topology import _root_tree_by_outgroup_node
 from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
 
 _NORMAL_95_CRITICAL = 1.959963984540054
@@ -73,6 +74,7 @@ class ContinuousAncestralReport:
     taxon_column: str
     trait: str
     model: str
+    estimator: str
     alpha: float
     taxon_count: int
     analysis_tree_newick: str
@@ -92,6 +94,7 @@ class ContinuousAncestralSummary:
     trait: str
     taxon_column: str
     model: str
+    estimator: str
     alpha: float
     analyzed_taxon_count: int
     excluded_taxon_count: int
@@ -128,6 +131,7 @@ def reconstruct_continuous_ancestral_states(
     trait: str,
     taxon_column: str | None = None,
     model: str = "brownian",
+    estimator: str | None = None,
     alpha: float = 1.0,
 ) -> ContinuousAncestralReport:
     """Reconstruct continuous ancestral states under a Brownian or OU-style model."""
@@ -146,6 +150,7 @@ def reconstruct_continuous_ancestral_states(
     return reconstruct_continuous_ancestral_states_from_dataset(
         dataset,
         model=model,
+        estimator=estimator,
         alpha=alpha,
     )
 
@@ -154,6 +159,7 @@ def reconstruct_continuous_ancestral_states_from_dataset(
     dataset: AncestralContinuousDataset,
     *,
     model: str = "brownian",
+    estimator: str | None = None,
     alpha: float = 1.0,
 ) -> ContinuousAncestralReport:
     """Reconstruct continuous ancestral states from one native ancestral dataset."""
@@ -163,6 +169,7 @@ def reconstruct_continuous_ancestral_states_from_dataset(
         raise ValueError(
             f"alpha must be positive for continuous ancestral reconstruction, got {alpha}"
         )
+    resolved_estimator = _resolve_continuous_estimator(model, estimator)
     brownian_fit_diagnostics = (
         _summarize_brownian_fit_diagnostics(dataset)
         if model == "brownian"
@@ -172,6 +179,7 @@ def reconstruct_continuous_ancestral_states_from_dataset(
         dataset,
         working_tree=dataset.tree,
         model=model,
+        estimator=resolved_estimator,
         alpha=alpha,
         brownian_fit_diagnostics=brownian_fit_diagnostics,
     )
@@ -182,6 +190,7 @@ def _reconstruct_continuous_from_dataset(
     *,
     working_tree: PhyloTree,
     model: str,
+    estimator: str,
     alpha: float,
     brownian_fit_diagnostics: ContinuousAncestralBrownianFitDiagnostics | None,
 ) -> ContinuousAncestralReport:
@@ -196,113 +205,21 @@ def _reconstruct_continuous_from_dataset(
         if dataset.values_by_taxon
         else 0.0
     )
-    estimates: list[ContinuousAncestralEstimate] = []
-
-    def visit(node) -> tuple[float, float]:
-        if node.is_leaf():
-            estimate = dataset.values_by_taxon[node.name]
-            estimates.append(
-                ContinuousAncestralEstimate(
-                    node=node_signature(node),
-                    node_name=node.name,
-                    is_tip=True,
-                    descendant_taxa=node_descendant_taxa(node),
-                    estimate=stable_value(estimate),
-                    standard_error=0.0,
-                    lower_95_interval=stable_value(estimate),
-                    upper_95_interval=stable_value(estimate),
-                    uncertainty_width=0.0,
-                    confidence=1.0,
-                    interpretation="observed tip value",
-                    unstable=False,
-                    downstream_risks=[],
-                )
-            )
-            return estimate, float(node.branch_length or 0.0)
-
-        if len(node.children) != 2:
-            raise ValueError(
-                "continuous ancestral reconstruction requires a fully dichotomous rooted tree"
-            )
-
-        left_child, right_child = node.children
-        left_estimate, left_working_length = visit(left_child)
-        right_estimate, right_working_length = visit(right_child)
-
-        if model == "brownian":
-            sum_working_lengths = max(
-                left_working_length + right_working_length,
-                1e-12,
-            )
-            estimate = (
-                left_estimate * right_working_length
-                + right_estimate * left_working_length
-            ) / sum_working_lengths
-            variance = sum_working_lengths
-            returned_length = (
-                float(node.branch_length or 0.0)
-                + (left_working_length * right_working_length) / sum_working_lengths
-            )
-        else:
-            child_payloads: list[tuple[float, float]] = []
-            for child, child_estimate, child_variance in (
-                (left_child, left_estimate, left_working_length),
-                (right_child, right_estimate, right_working_length),
-            ):
-                branch_length = float(child.branch_length or 0.0)
-                shrink = math.exp(-alpha * branch_length)
-                transformed_estimate = (
-                    shrink * child_estimate + (1.0 - shrink) * global_mean
-                )
-                stationary_variance = ((sigma**2) / (2.0 * alpha)) * (
-                    1.0 - math.exp(-2.0 * alpha * branch_length)
-                )
-                propagated_variance = (
-                    child_variance * math.exp(-2.0 * alpha * branch_length)
-                ) + stationary_variance
-                child_payloads.append(
-                    (transformed_estimate, max(propagated_variance, 1e-12))
-                )
-            weight_sum = sum(
-                1.0 / child_variance for _, child_variance in child_payloads
-            )
-            estimate = (
-                sum(
-                    (value / child_variance) for value, child_variance in child_payloads
-                )
-                / weight_sum
-            )
-            variance = 1.0 / weight_sum
-            returned_length = variance
-
-        standard_error = math.sqrt(max(variance, 0.0))
-        lower = estimate - _NORMAL_95_CRITICAL * standard_error
-        upper = estimate + _NORMAL_95_CRITICAL * standard_error
-        uncertainty_width = max(0.0, upper - lower)
-        confidence, unstable = _continuous_confidence(uncertainty_width, trait_range)
-        interpretation = _continuous_interpretation(
-            uncertainty_width, trait_range, unstable=unstable
+    if estimator == "fast-anc":
+        estimates = _build_fast_anc_estimates(
+            dataset,
+            trait_range=trait_range,
         )
-        estimates.append(
-            ContinuousAncestralEstimate(
-                node=node_signature(node),
-                node_name=node.name,
-                is_tip=False,
-                descendant_taxa=node_descendant_taxa(node),
-                estimate=stable_value(estimate),
-                standard_error=stable_value(standard_error),
-                lower_95_interval=stable_value(lower),
-                upper_95_interval=stable_value(upper),
-                uncertainty_width=stable_value(uncertainty_width),
-                confidence=stable_value(confidence),
-                interpretation=interpretation,
-                unstable=unstable,
-                downstream_risks=_continuous_downstream_risks(unstable),
-            )
+    else:
+        estimates = _build_local_continuous_estimates(
+            dataset,
+            working_tree=working_tree,
+            model=model,
+            alpha=alpha,
+            global_mean=global_mean,
+            sigma=sigma,
+            trait_range=trait_range,
         )
-        return estimate, returned_length
-
-    visit(working_tree.root)
     ordered_estimates = _ordered_estimates(dataset, estimates)
     unstable_nodes = [
         estimate.node
@@ -343,6 +260,7 @@ def _reconstruct_continuous_from_dataset(
         taxon_column=dataset.taxon_column,
         trait=dataset.trait,
         model=model,
+        estimator=estimator,
         alpha=stable_value(alpha),
         taxon_count=len(dataset.taxa),
         analysis_tree_newick=dump_pruned_tree(working_tree),
@@ -378,6 +296,7 @@ def summarize_continuous_ancestral_report(
         trait=report.trait,
         taxon_column=report.taxon_column,
         model=report.model,
+        estimator=report.estimator,
         alpha=report.alpha,
         analyzed_taxon_count=report.taxon_count,
         excluded_taxon_count=len(report.dropped_missing_taxa)
@@ -453,6 +372,7 @@ def write_continuous_ancestral_summary_table(
             "trait",
             "taxon_column",
             "model",
+            "estimator",
             "alpha",
             "analyzed_taxon_count",
             "excluded_taxon_count",
@@ -478,6 +398,7 @@ def write_continuous_ancestral_summary_table(
                 "trait": summary.trait,
                 "taxon_column": summary.taxon_column,
                 "model": summary.model,
+                "estimator": summary.estimator,
                 "alpha": str(summary.alpha),
                 "analyzed_taxon_count": str(summary.analyzed_taxon_count),
                 "excluded_taxon_count": str(summary.excluded_taxon_count),
@@ -594,6 +515,266 @@ def _ordered_estimates(
         for index, node in enumerate(dataset.tree.iter_nodes())
     }
     return sorted(estimates, key=lambda estimate: node_order[estimate.node])
+
+
+def _resolve_continuous_estimator(model: str, estimator: str | None) -> str:
+    default_estimators = {
+        "brownian": "ace-pic",
+        "ou": "generalized-least-squares",
+    }
+    allowed_estimators = {
+        "brownian": {"ace-pic", "fast-anc"},
+        "ou": {"generalized-least-squares"},
+    }
+    resolved = default_estimators[model] if estimator is None else estimator
+    if resolved not in allowed_estimators[model]:
+        supported = ", ".join(sorted(allowed_estimators[model]))
+        raise ValueError(
+            f"unsupported continuous ancestral estimator '{resolved}' for model '{model}'; expected one of: {supported}"
+        )
+    return resolved
+
+
+def _build_local_continuous_estimates(
+    dataset: AncestralContinuousDataset,
+    *,
+    working_tree: PhyloTree,
+    model: str,
+    alpha: float,
+    global_mean: float,
+    sigma: float,
+    trait_range: float,
+) -> list[ContinuousAncestralEstimate]:
+    estimates: list[ContinuousAncestralEstimate] = []
+
+    def visit(node: TreeNode) -> tuple[float, float]:
+        if node.is_leaf():
+            estimate = dataset.values_by_taxon[node.name]
+            estimates.append(
+                ContinuousAncestralEstimate(
+                    node=node_signature(node),
+                    node_name=node.name,
+                    is_tip=True,
+                    descendant_taxa=node_descendant_taxa(node),
+                    estimate=stable_value(estimate),
+                    standard_error=0.0,
+                    lower_95_interval=stable_value(estimate),
+                    upper_95_interval=stable_value(estimate),
+                    uncertainty_width=0.0,
+                    confidence=1.0,
+                    interpretation="observed tip value",
+                    unstable=False,
+                    downstream_risks=[],
+                )
+            )
+            return estimate, float(node.branch_length or 0.0)
+
+        if len(node.children) != 2:
+            raise ValueError(
+                "continuous ancestral reconstruction requires a fully dichotomous rooted tree"
+            )
+
+        left_child, right_child = node.children
+        left_estimate, left_working_length = visit(left_child)
+        right_estimate, right_working_length = visit(right_child)
+
+        if model == "brownian":
+            sum_working_lengths = max(
+                left_working_length + right_working_length,
+                1e-12,
+            )
+            estimate = (
+                left_estimate * right_working_length
+                + right_estimate * left_working_length
+            ) / sum_working_lengths
+            variance = sum_working_lengths
+            returned_length = (
+                float(node.branch_length or 0.0)
+                + (left_working_length * right_working_length) / sum_working_lengths
+            )
+        else:
+            child_payloads: list[tuple[float, float]] = []
+            for child, child_estimate, child_variance in (
+                (left_child, left_estimate, left_working_length),
+                (right_child, right_estimate, right_working_length),
+            ):
+                branch_length = float(child.branch_length or 0.0)
+                shrink = math.exp(-alpha * branch_length)
+                transformed_estimate = (
+                    shrink * child_estimate + (1.0 - shrink) * global_mean
+                )
+                stationary_variance = ((sigma**2) / (2.0 * alpha)) * (
+                    1.0 - math.exp(-2.0 * alpha * branch_length)
+                )
+                propagated_variance = (
+                    child_variance * math.exp(-2.0 * alpha * branch_length)
+                ) + stationary_variance
+                child_payloads.append(
+                    (transformed_estimate, max(propagated_variance, 1e-12))
+                )
+            weight_sum = sum(
+                1.0 / child_variance for _, child_variance in child_payloads
+            )
+            estimate = (
+                sum(
+                    (value / child_variance) for value, child_variance in child_payloads
+                )
+                / weight_sum
+            )
+            variance = 1.0 / weight_sum
+            returned_length = variance
+
+        standard_error = math.sqrt(max(variance, 0.0))
+        lower = estimate - _NORMAL_95_CRITICAL * standard_error
+        upper = estimate + _NORMAL_95_CRITICAL * standard_error
+        uncertainty_width = max(0.0, upper - lower)
+        confidence, unstable = _continuous_confidence(uncertainty_width, trait_range)
+        interpretation = _continuous_interpretation(
+            uncertainty_width,
+            trait_range,
+            unstable=unstable,
+        )
+        estimates.append(
+            ContinuousAncestralEstimate(
+                node=node_signature(node),
+                node_name=node.name,
+                is_tip=False,
+                descendant_taxa=node_descendant_taxa(node),
+                estimate=stable_value(estimate),
+                standard_error=stable_value(standard_error),
+                lower_95_interval=stable_value(lower),
+                upper_95_interval=stable_value(upper),
+                uncertainty_width=stable_value(uncertainty_width),
+                confidence=stable_value(confidence),
+                interpretation=interpretation,
+                unstable=unstable,
+                downstream_risks=_continuous_downstream_risks(unstable),
+            )
+        )
+        return estimate, returned_length
+
+    visit(working_tree.root)
+    return estimates
+
+
+def _build_fast_anc_estimates(
+    dataset: AncestralContinuousDataset,
+    *,
+    trait_range: float,
+) -> list[ContinuousAncestralEstimate]:
+    estimates: list[ContinuousAncestralEstimate] = []
+    for node in dataset.tree.iter_leaves():
+        estimate = dataset.values_by_taxon[node.name]
+        estimates.append(
+            ContinuousAncestralEstimate(
+                node=node_signature(node),
+                node_name=node.name,
+                is_tip=True,
+                descendant_taxa=node_descendant_taxa(node),
+                estimate=stable_value(estimate),
+                standard_error=0.0,
+                lower_95_interval=stable_value(estimate),
+                upper_95_interval=stable_value(estimate),
+                uncertainty_width=0.0,
+                confidence=1.0,
+                interpretation="observed tip value",
+                unstable=False,
+                downstream_risks=[],
+            )
+        )
+    for node in dataset.tree.iter_internal_nodes(order="preorder"):
+        rerooted_tree = _root_tree_by_outgroup_node(dataset.tree, outgroup_node=node)
+        if len(rerooted_tree.root.children) != 2:
+            raise ValueError(
+                "fast ancestral reconstruction requires a fully dichotomous rerooted tree"
+            )
+        left_child, right_child = rerooted_tree.root.children
+        left_contrasts, left_value, left_variance = _compute_fast_anc_pic_payload(
+            left_child,
+            dataset.values_by_taxon,
+        )
+        right_contrasts, right_value, right_variance = _compute_fast_anc_pic_payload(
+            right_child,
+            dataset.values_by_taxon,
+        )
+        root_expected_variance = max(left_variance + right_variance, 1e-12)
+        estimate = ((left_value / left_variance) + (right_value / right_variance)) / (
+            (1.0 / left_variance) + (1.0 / right_variance)
+        )
+        root_contrast = (left_value - right_value) / math.sqrt(root_expected_variance)
+        contrast_sum = sum(
+            contrast * contrast for contrast in left_contrasts + right_contrasts
+        ) + (root_contrast * root_contrast)
+        contrast_count = len(left_contrasts) + len(right_contrasts) + 1
+        contrast_mean_square = contrast_sum / contrast_count
+        variance = (
+            ((1.0 / left_variance) + (1.0 / right_variance)) ** -1
+        ) * contrast_mean_square
+        standard_error = math.sqrt(max(variance, 0.0))
+        lower = estimate - _NORMAL_95_CRITICAL * standard_error
+        upper = estimate + _NORMAL_95_CRITICAL * standard_error
+        uncertainty_width = max(0.0, upper - lower)
+        confidence, unstable = _continuous_confidence(uncertainty_width, trait_range)
+        interpretation = _continuous_interpretation(
+            uncertainty_width,
+            trait_range,
+            unstable=unstable,
+        )
+        estimates.append(
+            ContinuousAncestralEstimate(
+                node=node_signature(node),
+                node_name=node.name,
+                is_tip=False,
+                descendant_taxa=node_descendant_taxa(node),
+                estimate=stable_value(estimate),
+                standard_error=stable_value(standard_error),
+                lower_95_interval=stable_value(lower),
+                upper_95_interval=stable_value(upper),
+                uncertainty_width=stable_value(uncertainty_width),
+                confidence=stable_value(confidence),
+                interpretation=interpretation,
+                unstable=unstable,
+                downstream_risks=_continuous_downstream_risks(unstable),
+            )
+        )
+    return estimates
+
+
+def _compute_fast_anc_pic_payload(
+    node: TreeNode,
+    values_by_taxon: dict[str, float],
+) -> tuple[list[float], float, float]:
+    if node.is_leaf():
+        if node.name is None:
+            raise ValueError("leaf taxon name is required for fast ancestral reconstruction")
+        if node.branch_length is None:
+            raise ValueError(
+                "branch lengths are required for fast ancestral reconstruction"
+            )
+        return [], values_by_taxon[node.name], node.branch_length
+    if len(node.children) != 2:
+        raise ValueError("fast ancestral reconstruction requires a strictly binary tree")
+    left_contrasts, left_value, left_variance = _compute_fast_anc_pic_payload(
+        node.children[0], values_by_taxon
+    )
+    right_contrasts, right_value, right_variance = _compute_fast_anc_pic_payload(
+        node.children[1], values_by_taxon
+    )
+    expected_variance = left_variance + right_variance
+    contrast = (left_value - right_value) / math.sqrt(expected_variance)
+    ancestral_value = (
+        (left_value / left_variance) + (right_value / right_variance)
+    ) / ((1.0 / left_variance) + (1.0 / right_variance))
+    propagated_variance = (left_variance * right_variance) / (
+        left_variance + right_variance
+    )
+    if node.branch_length is not None:
+        propagated_variance += node.branch_length
+    return (
+        left_contrasts + right_contrasts + [contrast],
+        ancestral_value,
+        propagated_variance,
+    )
 
 
 def _continuous_confidence(
