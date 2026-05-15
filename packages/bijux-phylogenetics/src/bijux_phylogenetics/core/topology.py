@@ -193,6 +193,142 @@ def _descendant_taxa(node: TreeNode) -> list[str]:
     return sorted(taxa)
 
 
+def _adjacent_nodes(node: TreeNode) -> list[TreeNode]:
+    neighbors = list(node.children)
+    if node.parent is not None:
+        neighbors.append(node.parent)
+    return neighbors
+
+
+def _edge_length_between(left: TreeNode, right: TreeNode) -> float | None:
+    if right.parent is left:
+        return right.branch_length
+    if left.parent is right:
+        return left.branch_length
+    raise ValueError("requested nodes do not share one edge")
+
+
+def _copy_node_payload(node: TreeNode, *, branch_length: float | None) -> TreeNode:
+    return TreeNode(
+        name=node.name,
+        branch_length=branch_length,
+        children=[],
+        metadata=deepcopy(node.metadata),
+        edge_metadata=deepcopy(node.edge_metadata),
+    )
+
+
+def _clone_subtree_away_from(node: TreeNode, *, from_neighbor: TreeNode | None) -> TreeNode:
+    clone = _copy_node_payload(node, branch_length=node.branch_length)
+    for neighbor in _adjacent_nodes(node):
+        if neighbor is from_neighbor:
+            continue
+        child = _clone_subtree_component(
+            neighbor,
+            from_neighbor=node,
+            incoming_length=_edge_length_between(node, neighbor),
+        )
+        clone.append_child(child)
+    return clone
+
+
+def _clone_subtree_component(
+    node: TreeNode,
+    *,
+    from_neighbor: TreeNode,
+    incoming_length: float | None,
+) -> TreeNode:
+    neighbors = [neighbor for neighbor in _adjacent_nodes(node) if neighbor is not from_neighbor]
+    if neighbors and len(neighbors) == 1 and not node.is_leaf():
+        next_neighbor = neighbors[0]
+        return _clone_subtree_component(
+            next_neighbor,
+            from_neighbor=node,
+            incoming_length=_combine_branch_lengths(
+                incoming_length,
+                _edge_length_between(node, next_neighbor),
+            ),
+        )
+    if node.parent is not None and node.parent in neighbors:
+        neighbors = [node.parent, *[neighbor for neighbor in neighbors if neighbor is not node.parent]]
+    clone = _copy_node_payload(node, branch_length=incoming_length)
+    for neighbor in neighbors:
+        child = _clone_subtree_component(
+            neighbor,
+            from_neighbor=node,
+            incoming_length=_edge_length_between(node, neighbor),
+        )
+        clone.append_child(child)
+    return clone
+
+
+def _find_monophyletic_outgroup_node(
+    tree: PhyloTree,
+    *,
+    requested_taxa: list[str],
+) -> tuple[TreeNode, list[str], list[str]]:
+    matched_node = _mrca_node_from_taxa(tree, requested_taxa)
+    matched_taxa = _descendant_taxa(matched_node)
+    extra_taxa = sorted(set(matched_taxa) - set(requested_taxa))
+    if extra_taxa:
+        raise TreeRootingError(
+            "requested outgroup taxa are not monophyletic in the input tree",
+            code="outgroup_not_monophyletic",
+            details={
+                "matched_taxa": sorted(requested_taxa),
+                "outgroup_mrca_taxa": matched_taxa,
+                "outgroup_mrca_extra_taxa": extra_taxa,
+            },
+        )
+    return matched_node, matched_taxa, extra_taxa
+
+
+def _root_tree_by_outgroup_node(
+    tree: PhyloTree,
+    *,
+    outgroup_node: TreeNode,
+) -> PhyloTree:
+    if outgroup_node is tree.root:
+        rooted_tree = tree.copy()
+        rooted_tree.rooted = True
+        if rooted_tree.root.branch_length is not None:
+            rooted_tree.root.branch_length = None
+        return rooted_tree
+
+    parent = outgroup_node.parent
+    if parent is None:
+        raise TreeRootingError("requested outgroup cannot be resolved for rooting")
+
+    if outgroup_node.is_leaf():
+        outgroup_branch_length = outgroup_node.branch_length
+        ingroup_initial_length = 0.0
+    else:
+        outgroup_branch_length = 0.0
+        ingroup_initial_length = outgroup_node.branch_length
+
+    rooted_tree = PhyloTree(
+        root=TreeNode(
+            children=[
+                _clone_subtree_component(
+                    parent,
+                    from_neighbor=outgroup_node,
+                    incoming_length=ingroup_initial_length,
+                ),
+                _copy_node_payload(outgroup_node, branch_length=outgroup_branch_length),
+            ]
+        ),
+        source_format=tree.source_format,
+        rooted=True,
+    )
+    rooted_tree.root.children[1].replace_children(
+        _clone_subtree_away_from(outgroup_node, from_neighbor=parent).children
+    )
+    return _normalize_outgroup_rooting_to_ape(
+        rooted_tree,
+        requested_taxa_set=set(_descendant_taxa(outgroup_node)),
+    )
+
+
 def _interpreted_rooted_state(tree: PhyloTree) -> bool:
     if tree.rooted is True:
         return True
@@ -1159,19 +1295,9 @@ def root_tree_on_outgroup(
         raise TreeRootingError("at least one outgroup taxon is required")
 
     tree = load_tree(tree_path)
-    biophylo_tree = tree_to_biophylo(tree)
-    matched_clades = [
-        next(biophylo_tree.find_clades(name=taxon), None) for taxon in outgroup_taxa
-    ]
-    matched_taxa = [
-        taxon
-        for taxon, clade in zip(outgroup_taxa, matched_clades, strict=True)
-        if clade is not None
-    ]
+    matched_taxa = sorted(taxon for taxon in outgroup_taxa if taxon in set(tree.tip_names))
     absent_taxa = sorted(
-        taxon
-        for taxon, clade in zip(outgroup_taxa, matched_clades, strict=True)
-        if clade is None
+        taxon for taxon in outgroup_taxa if taxon not in set(tree.tip_names)
     )
     if not matched_taxa:
         raise TreeRootingError(
@@ -1189,38 +1315,19 @@ def root_tree_on_outgroup(
     outgroup_mrca_extra_taxa: list[str] = []
     outgroup_monophyletic: bool | None = None
     warnings: list[str] = []
-    if matched_taxa:
-        outgroup_mrca = biophylo_tree.common_ancestor(
-            *[clade for clade in matched_clades if clade is not None]
+    outgroup_node, outgroup_mrca_taxa, outgroup_mrca_extra_taxa = (
+        _find_monophyletic_outgroup_node(
+            tree,
+            requested_taxa=matched_taxa,
         )
-        outgroup_mrca_taxa = _biophylo_clade_taxa(outgroup_mrca)
-        outgroup_mrca_extra_taxa = sorted(set(outgroup_mrca_taxa) - requested_taxa_set)
-        outgroup_monophyletic = outgroup_mrca_extra_taxa == []
-        if not outgroup_monophyletic:
-            raise TreeRootingError(
-                "requested outgroup taxa are not monophyletic in the input tree",
-                code="outgroup_not_monophyletic",
-                details={
-                    "matched_taxa": sorted(matched_taxa),
-                    "outgroup_mrca_taxa": outgroup_mrca_taxa,
-                    "outgroup_mrca_extra_taxa": outgroup_mrca_extra_taxa,
-                },
-            )
-        if absent_taxa:
-            warnings.append(
-                "one or more requested outgroup taxa were absent from the input tree"
-            )
+    )
+    outgroup_monophyletic = True
+    if absent_taxa:
+        warnings.append(
+            "one or more requested outgroup taxa were absent from the input tree"
+        )
 
-    biophylo_tree.root_with_outgroup(
-        biophylo_tree.common_ancestor(
-            *[clade for clade in matched_clades if clade is not None]
-        )
-    )
-    rooted_tree = tree_from_biophylo(biophylo_tree, source_format=tree.source_format)
-    rooted_tree = _normalize_outgroup_rooting_to_ape(
-        rooted_tree,
-        requested_taxa_set=requested_taxa_set,
-    )
+    rooted_tree = _root_tree_by_outgroup_node(tree, outgroup_node=outgroup_node)
     rooted_outgroup_taxa_set: set[str] = set()
     for child in rooted_tree.root.children:
         child_taxa = _descendant_taxa(child)
