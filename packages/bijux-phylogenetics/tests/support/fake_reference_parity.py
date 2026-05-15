@@ -384,9 +384,68 @@ def invert_matrix(matrix):
 def matrix_infinity_norm(matrix):
     return max((sum(abs(value) for value in row) for row in matrix), default=0.0)
 
-def matrix_condition_number(matrix):
-    inverse = invert_matrix(matrix)
-    return matrix_infinity_norm(matrix) * matrix_infinity_norm(inverse)
+def symmetric_matrix_eigenvalues(matrix, tolerance=1e-15, max_iterations=10000):
+    size = len(matrix)
+    if size == 0:
+        return []
+    if size == 1:
+        return [float(matrix[0][0])]
+    working = [list(map(float, row)) for row in matrix]
+    for _ in range(max_iterations):
+        pivot_row = 0
+        pivot_column = 1
+        pivot_value = 0.0
+        for row_index in range(size):
+            for column_index in range(row_index + 1, size):
+                candidate = abs(working[row_index][column_index])
+                if candidate > pivot_value:
+                    pivot_row = row_index
+                    pivot_column = column_index
+                    pivot_value = candidate
+        if pivot_value <= tolerance:
+            return [working[index][index] for index in range(size)]
+        app = working[pivot_row][pivot_row]
+        aqq = working[pivot_column][pivot_column]
+        apq = working[pivot_row][pivot_column]
+        tau = (aqq - app) / (2.0 * apq)
+        tangent = (
+            math.copysign(1.0, tau) / (abs(tau) + math.sqrt(1.0 + tau * tau))
+            if abs(tau) > tolerance
+            else 1.0
+        )
+        cosine = 1.0 / math.sqrt(1.0 + tangent * tangent)
+        sine = tangent * cosine
+        for index in range(size):
+            if index in (pivot_row, pivot_column):
+                continue
+            left = working[index][pivot_row]
+            right = working[index][pivot_column]
+            working[index][pivot_row] = working[pivot_row][index] = cosine * left - sine * right
+            working[index][pivot_column] = working[pivot_column][index] = sine * left + cosine * right
+        working[pivot_row][pivot_row] = (
+            cosine * cosine * app
+            - 2.0 * sine * cosine * apq
+            + sine * sine * aqq
+        )
+        working[pivot_column][pivot_column] = (
+            sine * sine * app
+            + 2.0 * sine * cosine * apq
+            + cosine * cosine * aqq
+        )
+        working[pivot_row][pivot_column] = 0.0
+        working[pivot_column][pivot_row] = 0.0
+    raise ValueError("symmetric eigenvalue iteration did not converge")
+
+def symmetric_matrix_condition_number(matrix, tolerance=1e-12):
+    singular_values = sorted(
+        abs(value)
+        for value in symmetric_matrix_eigenvalues(matrix, tolerance=tolerance)
+    )
+    if not singular_values:
+        return 0.0
+    if singular_values[0] <= tolerance:
+        return math.inf
+    return singular_values[-1] / singular_values[0]
 
 def matrix_log_determinant(matrix):
     size = len(matrix)
@@ -1068,7 +1127,7 @@ if case_payload["operation"] == "tree-brownian-covariance":
     except ValueError:
         raw_log_determinant = None
         positive_definite = False
-    condition_number = None if singular else matrix_condition_number(covariance)
+    condition_number = None if singular else symmetric_matrix_condition_number(covariance)
     near_singular = singular or (
         condition_number is not None and condition_number >= 1e12
     )
