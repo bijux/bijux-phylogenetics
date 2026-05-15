@@ -229,6 +229,14 @@ labels, quoted labels, one governed multiple-tree Newick input, and one
 governed malformed-Newick rejection case. Those cases now run through one
 owned native Newick parser and writer on top of `PhyloTree`, including
 location-aware parse failures, instead of depending on an external tree reader.
+The owned tree-set side of the same workflow now also reads one native
+`PhyloTree` per Newick record for `tree-set inspect`, `tree-set consensus`,
+`tree-set support-map`, posterior diversity review, topology clustering, and
+posterior tree-set comparison. Plain `.nwk` and plain `.trees` inputs are both
+accepted when the content is one Newick record per tree. Strict consensus and
+support workflows fail explicitly when the tree set does not share one exact
+taxon set, while tolerant inspection workflows keep one reviewer-visible
+malformed-record counter instead of silently dropping parse failures.
 The `ape::root` portion now uses the
 same shared tree catalog for single-tip outgroups, monophyletic multi-tip
 outgroups, already-rooted trees, missing outgroups, and non-monophyletic

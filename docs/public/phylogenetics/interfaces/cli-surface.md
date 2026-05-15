@@ -199,6 +199,14 @@ It compares one `reference-tree-support.tsv` ledger keyed by descendant tip
 set instead of transient node number, and the owned `tree-set support-map`
 surface keeps one real `ape` edge case explicit: unsupported root-adjacent
 splits are left unscored instead of being mislabeled as zero support.
+On the owned Bijux side, `tree-set inspect`, `tree-set consensus`,
+`tree-set support-map`, `tree-set compare`, and the posterior tree-set review
+commands now read one native `PhyloTree` per Newick record instead of routing
+tree-set loading through an external tree object model. Plain `.nwk` and
+plain `.trees` inputs both work when the file content is one Newick record per
+tree. Strict consensus and support commands keep exact-taxon-set validation as
+an explicit hard stop, while tolerant review commands surface malformed-record
+skips in their processing metrics instead of failing silently.
 The `ape::as.DNAbin` portion now covers clean, lowercase, gap-bearing, and
 ambiguity-bearing DNA fixtures. On the owned Bijux side there is no separate
 CLI command for that matrix, but the same DNAbin-compatible nucleotide surface

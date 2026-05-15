@@ -32,6 +32,12 @@ extraction, canonical unrooted-split extraction, Robinson-Foulds metrics, and
 clade-support matching, so tree distance, topology comparison, tree-set
 support, posterior clade frequencies, and live `ape::dist.topo` parity all
 read one shared split identity contract.
+The same owned runtime now also loads Newick tree sets directly into
+`PhyloTree` records for consensus building, clade-frequency summaries,
+reference-tree support mapping, topology clustering, and posterior tree-set
+comparison. Strict consensus and support surfaces validate one exact taxon set
+across the whole tree set, while tolerant inspection surfaces keep one
+explicit malformed-record counter instead of failing silently.
 
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the

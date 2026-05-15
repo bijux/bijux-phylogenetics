@@ -116,6 +116,13 @@ That native model carries:
 Tree import, tree transformation, native distance review, comparative
 covariance, ancestral reconstruction, and simulation surfaces now operate on
 that same owned structure instead of inventing per-method node identity rules.
+Posterior and bootstrap tree-set summaries now do the same for Newick tree
+sets: consensus building, clade-frequency mapping, clade-support mapping,
+topology clustering, and posterior tree-set comparison all read one
+`PhyloTree` record per Newick statement, including `.trees` files that contain
+plain Newick records. Strict consensus and support workflows fail explicitly
+when a tree set does not share one exact taxon set, while tolerant inspection
+surfaces still skip malformed records and report the skipped-record count.
 
 ## Method Tiers
 
