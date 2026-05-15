@@ -791,15 +791,16 @@ conditioning, solver regularization status, and one GLS likelihood summary,
 while the live parity lane remains scoped honestly to
 `ape::ace(type='continuous', method='pic', CI=TRUE)` because that is the
 governed shared closed-form Brownian reference surface.
-The `ape::ace` discrete ER lane now covers balanced binary, balanced
-multistate, pectinate multistate, and pruned missing-value fixtures through
-that same governed trait-table catalog. On the owned Bijux side, `ancestral
-discrete` now emits the fitted ER transition-rate table, log-likelihood,
-parameter count, and AIC alongside node probabilities, and it supports owned
-`equal`, `empirical`, and `fixed` root-prior policies. The live parity lane is
-scoped honestly to `ape::ace(type='discrete', model='ER')`, so root-prior
-controls remain an explicit Bijux-owned review surface rather than a false live
-`ape` parity claim.
+The `ape::ace` discrete lane now covers governed ER, SYM, and ARD fixtures,
+including balanced, pectinate, six-taxon, and pruned missing-value cases
+through that same shared trait-table catalog. On the owned Bijux side,
+`ancestral discrete` now emits fitted transition-rate tables, log-likelihood,
+parameter count, AIC, weak-fit warnings, and ER baseline-comparison data
+alongside node probabilities, and it supports owned `equal`, `empirical`, and
+`fixed` root-prior policies. The live parity lane is scoped honestly to
+`ape::ace(type='discrete', model='ER'|'SYM'|'ARD')`, so root-prior controls
+remain an explicit Bijux-owned review surface rather than a false live `ape`
+parity claim.
 The `ape::dist.dna` lane now covers raw nucleotide distance, JC69, K80, F81,
 and TN93 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,

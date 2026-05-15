@@ -1144,10 +1144,11 @@ The JSON report keeps the trust contract compact and explicit:
 - one all-passed flag for the full discrete ancestral reference lane
 
 The governed live `ape::ace` discrete lane is intentionally explicit rather
-than broad. ER parity now covers balanced binary, balanced multistate,
-pectinate multistate, and pruned missing-value cases. Root-prior controls are
-still validated as owned Bijux policy because `ape::ace` does not expose the
-same runtime root-prior interface.
+than broad. ER, SYM, and ARD parity now cover governed balanced, pectinate,
+six-taxon, and pruned missing-value cases, and the owned fit review warns when
+multi-parameter likelihood surfaces hit optimizer bounds. Root-prior controls
+are still validated as owned Bijux policy because `ape::ace` does not expose
+the same runtime root-prior interface.
 
 When the goal is to decide whether a discrete trait should be reconstructed as
 ordered rather than unordered, use `ancestral ordered-discrete`. This workflow

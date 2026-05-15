@@ -1349,9 +1349,12 @@ reports node-level marginal probabilities, and can export one fitted directed
 transition-rate ledger. The governed parity surface is checked against
 `ape::ace` on ER, SYM, and ARD reference cases with explicit bounded
 tolerances instead of a vague compatibility claim. Within that lane, the live
-`ape::ace` discrete surface is governed explicitly for ER, while root-prior
-controls remain an owned Bijux policy surface because `ape::ace` does not
-expose the same runtime root-prior interface.
+`ape::ace` discrete surface is governed explicitly for ER, SYM, and ARD,
+while root-prior controls remain an owned Bijux policy surface because
+`ape::ace` does not expose the same runtime root-prior interface. The owned
+fit surface also warns when multi-parameter likelihood fits hit optimizer
+bounds so weakly identified ARD and SYM reconstructions are reviewable instead
+of looking falsely settled.
 
 For Fitch, the owned runtime now also reports the exact minimum parsimony
 change count for the analyzed tree and the number of parsimonious root states.

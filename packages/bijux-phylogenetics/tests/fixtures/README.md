@@ -83,11 +83,11 @@ The same catalog now also carries governed continuous ancestral Brownian cases
 for balanced, pectinate, six-taxon, and pruned missing-value `ape::ace`
 review, so `ancestral continuous` and the live continuous-`ace` parity lane
 resolve the same durable trait identities instead of one-off table paths.
-That same shared trait-table catalog now also carries governed discrete ER
-`ape::ace` cases for balanced binary, balanced multistate, pectinate
-multistate, and pruned missing-value review, so `ancestral discrete` and the
-live discrete-`ace` parity lane resolve the same durable trait identities
-instead of one-off table paths.
+That same shared trait-table catalog now also carries governed discrete ER,
+SYM, and ARD `ape::ace` cases for balanced binary, balanced multistate,
+pectinate multistate, six-taxon, and pruned missing-value review, so
+`ancestral discrete` and the live discrete-`ace` parity lane resolve the same
+durable trait identities instead of one-off table paths.
 The metadata fixture corpus now also has one governed shared catalog at
 `metadata/shared_distance_matrix_fixture_catalog.json`. That catalog assigns
 durable fixture ids to analytical, ultrametric, and non-ultrametric distance
