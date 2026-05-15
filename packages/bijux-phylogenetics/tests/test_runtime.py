@@ -6439,8 +6439,9 @@ def test_build_tree_from_imported_distance_matrix_rejects_asymmetric_input() -> 
 
 def test_distance_method_limitations_explain_approximate_methods() -> None:
     limitations = distance_method_limitations()
-    assert len(limitations) == 4
+    assert len(limitations) == 5
     assert limitations[0].startswith("distance methods collapse")
+    assert "BIONJ is explicitly excluded" in limitations[-1]
 
 
 def test_render_distance_report_embeds_limitations_and_validation(

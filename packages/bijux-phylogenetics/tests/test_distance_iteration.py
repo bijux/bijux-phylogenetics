@@ -264,6 +264,8 @@ def test_build_distance_method_report_combines_support_models_and_gap_sensitivit
         bootstrap_replicates=5,
         bootstrap_seed=3,
     )
+    assert report.method_policy.method == "neighbor-joining"
+    assert report.method_policy.reference_surface == "ape::nj"
     assert report.bootstrap_summary.clade_count > 0
     assert report.model_comparison.rows
     assert report.gap_policy_sensitivity.pair_count > 0
@@ -277,6 +279,7 @@ def test_assess_distance_method_maturity_validates_bundle_provenance() -> None:
         bootstrap_seed=3,
         validate_bundle=True,
     )
+    assert report.method_policy.supported is True
     assert report.decision in {"production_candidate", "validated_with_limits"}
     assert any(
         check.name == "bundle_provenance" and check.satisfied for check in report.checks
