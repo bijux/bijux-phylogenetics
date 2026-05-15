@@ -233,6 +233,12 @@ def test_run_rabies_cross_host_geography_panel_demo_materializes_dataset_and_wor
     assert result.workflow_bundle.host_switch_summary_path.is_file()
     assert result.workflow_bundle.biogeography_report_path.is_file()
     assert result.workflow_bundle.comparative_report_path.is_file()
+    assert result.workflow_bundle.conclusion_stability_summary_path.is_file()
+    assert result.workflow_bundle.key_clade_stability_path.is_file()
+    assert result.workflow_bundle.support_value_stability_path.is_file()
+    assert result.workflow_bundle.ancestral_state_stability_path.is_file()
+    assert result.workflow_bundle.comparative_coefficient_stability_path.is_file()
+    assert result.workflow_bundle.conclusion_stability_report_path.is_file()
     assert result.workflow_bundle.scientific_findings_path.is_file()
     assert result.workflow_bundle.final_report_path.is_file()
     assert result.overview_path.is_file()
@@ -287,6 +293,12 @@ def test_export_rabies_cross_host_geography_panel_dataset_copies_expected_output
         "bootstrap-review/rooted-tree-vs-bootstrap-consensus.summary.tsv"
         in expected_files
     )
+    assert (
+        "conclusion-stability/conclusion-stability-report.html" in expected_files
+    )
+    assert (
+        "conclusion-stability/conclusion-stability-summary.tsv" in expected_files
+    )
     assert "workflow-config-audit.tsv" in expected_files
     assert "scientific-findings.tsv" in expected_files
 
@@ -307,6 +319,9 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
     scientific_findings_path = workflow_root / "scientific-findings.tsv"
     bootstrap_summary_path = workflow_root / "bootstrap-review.summary.tsv"
     comparative_report_path = workflow_root / "comparative-report.html"
+    conclusion_stability_report_path = (
+        workflow_root / "conclusion-stability-report.html"
+    )
     for path, contents in (
         (final_report_path, "<html></html>\n"),
         (workflow_summary_path, "metric\tvalue\nsequence_count\t9\n"),
@@ -318,6 +333,7 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
         ),
         (bootstrap_summary_path, "metric\tvalue\n"),
         (comparative_report_path, "<html></html>\n"),
+        (conclusion_stability_report_path, "<html></html>\n"),
     ):
         path.write_text(contents, encoding="utf-8")
 
@@ -348,6 +364,7 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
         bootstrap_tree_comparison_summary_path=workflow_root
         / "rooted-tree-vs-bootstrap-consensus.summary.tsv",
         comparative_report_path=comparative_report_path,
+        conclusion_stability_report_path=conclusion_stability_report_path,
         final_report_path=final_report_path,
         final_manifest_path=final_manifest_path,
         scientific_findings_path=scientific_findings_path,
@@ -358,6 +375,9 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
         budget_warning_count=0,
         host_switch_count=2,
         migration_event_count=4,
+        conclusion_stable_count=6,
+        conclusion_weak_count=3,
+        conclusion_unstable_count=1,
     )
 
     for path in (
@@ -449,6 +469,9 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
         comparative_pgls_lambda=0.0,
         comparative_pgls_r_squared=0.61,
         comparative_branch_repair_count=0,
+        conclusion_stable_count=6,
+        conclusion_weak_count=3,
+        conclusion_unstable_count=1,
         timeout_seconds=300.0,
         max_bootstrap_tree_count=1500,
         max_report_table_rows=25,
@@ -515,6 +538,13 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
         comparative_categorical_contrasts_path=output / "workflow" / "comparative" / "comparative-categorical-contrasts.tsv",
         comparative_lambda_profile_path=output / "workflow" / "comparative" / "comparative-lambda-profile.tsv",
         comparative_manifest_path=output / "workflow" / "comparative" / "comparative.manifest.json",
+        conclusion_stability_output_root=output / "workflow" / "conclusion-stability",
+        conclusion_stability_summary_path=output / "workflow" / "conclusion-stability" / "conclusion-stability-summary.tsv",
+        key_clade_stability_path=output / "workflow" / "conclusion-stability" / "key-clade-stability.tsv",
+        support_value_stability_path=output / "workflow" / "conclusion-stability" / "support-value-stability.tsv",
+        ancestral_state_stability_path=output / "workflow" / "conclusion-stability" / "ancestral-state-stability.tsv",
+        comparative_coefficient_stability_path=output / "workflow" / "conclusion-stability" / "comparative-coefficient-stability.tsv",
+        conclusion_stability_report_path=output / "workflow" / "conclusion-stability" / "conclusion-stability-report.html",
         scientific_findings_path=output / "workflow" / "scientific-findings.tsv",
         final_report_path=output / "workflow" / "rabies-cross-host-geography-report.html",
         final_manifest_path=output / "workflow" / "rabies-cross-host-geography.manifest.json",
@@ -559,6 +589,12 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
         workflow_bundle.biogeography_map_path,
         workflow_bundle.comparative_report_path,
         workflow_bundle.comparative_summary_path,
+        workflow_bundle.conclusion_stability_summary_path,
+        workflow_bundle.key_clade_stability_path,
+        workflow_bundle.support_value_stability_path,
+        workflow_bundle.ancestral_state_stability_path,
+        workflow_bundle.comparative_coefficient_stability_path,
+        workflow_bundle.conclusion_stability_report_path,
         workflow_bundle.scientific_findings_path,
         workflow_bundle.final_report_path,
         workflow_bundle.final_manifest_path,
@@ -586,7 +622,7 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
     payload = json.loads(capsys.readouterr().out)
 
     assert exit_code == 0
-    assert payload["metrics"]["artifact_count"] == 35
+    assert payload["metrics"]["artifact_count"] == 41
     assert payload["metrics"]["reference_output_count"] == 3
     assert payload["metrics"]["biological_question"].startswith(
         "Do the host-associated rabies lineages"
@@ -603,6 +639,9 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
     assert payload["data"]["package_manifest_path"] == str(
         output / "rabies-cross-host-geography-package.manifest.json"
     )
+    assert payload["metrics"]["conclusion_stable_count"] == 6
+    assert payload["metrics"]["conclusion_weak_count"] == 3
+    assert payload["metrics"]["conclusion_unstable_count"] == 1
 
 
 def test_public_runtime_exports_include_rabies_cross_host_geography_panel_surface() -> (
@@ -656,7 +695,7 @@ def test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrat
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 35
+    assert payload["metrics"]["artifact_count"] == 41
     assert payload["metrics"]["sequence_count"] == 9
     assert payload["metrics"]["config_path"] == str(output / "dataset" / "workflow-config.json")
     assert payload["metrics"]["biological_question"].startswith(
@@ -683,7 +722,10 @@ def test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrat
     assert payload["metrics"]["comparative_selected_model"] == "brownian"
     assert payload["metrics"]["config_check_count"] == 12
     assert payload["metrics"]["scientific_finding_count"] == 6
-    assert payload["metrics"]["reference_output_count"] == 60
+    assert payload["metrics"]["reference_output_count"] == 66
+    assert payload["metrics"]["conclusion_stable_count"] == 30
+    assert payload["metrics"]["conclusion_weak_count"] == 0
+    assert payload["metrics"]["conclusion_unstable_count"] == 2
     assert payload["data"]["dataset"]["dataset_id"] == (
         "rabies_cross_host_geography_panel"
     )
