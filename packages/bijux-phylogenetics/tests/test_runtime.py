@@ -668,6 +668,7 @@ from bijux_phylogenetics.errors import (
     InvalidDistanceMatrixError,
     MetadataJoinError,
     NonUltrametricTreeError,
+    TreeRootingError,
     UnnamedTipError,
     UnrootedTreeError,
     UnsupportedTreeFormatError,
@@ -4301,17 +4302,18 @@ def test_root_tree_on_outgroup_reports_absent_taxa_and_roots_tree() -> None:
     assert report.warnings == [
         "one or more requested outgroup taxa were absent from the input tree"
     ]
-    assert dumps_newick(tree) == "(((A:0.2,B:0.2):0.7,C:0.1):0.1,D:0);"
+    assert dumps_newick(tree) == "(((A:0.2,B:0.2):0.7,C:0.1):0,D:0.1);"
     assert report.summary.retained_taxa == ["A", "B", "C", "D"]
     assert report.summary.removed_taxa == []
 
 
 def test_root_tree_on_outgroup_reports_monophyletic_outgroup_clade() -> None:
-    _tree, report = root_tree_on_outgroup(
+    tree, report = root_tree_on_outgroup(
         fixture("example_tree_rootable.nwk"),
         outgroup_taxa=["C", "D"],
     )
 
+    assert dumps_newick(tree) == "((A:0.2,B:0.2):0.7,(C:0.1,D:0.1):0);"
     assert report.matched_taxa == ["C", "D"]
     assert report.absent_taxa == []
     assert report.ingroup_taxa == ["A", "B"]
@@ -4323,23 +4325,31 @@ def test_root_tree_on_outgroup_reports_monophyletic_outgroup_clade() -> None:
     assert report.warnings == []
 
 
-def test_root_tree_on_outgroup_reports_non_monophyletic_outgroup_clade() -> None:
-    _tree, report = root_tree_on_outgroup(
-        fixture("example_tree_rootable.nwk"),
-        outgroup_taxa=["B", "D"],
+def test_root_tree_on_outgroup_rejects_non_monophyletic_outgroup_clade() -> None:
+    with pytest.raises(TreeRootingError) as error:
+        root_tree_on_outgroup(
+            fixture("example_tree_rootable.nwk"),
+            outgroup_taxa=["B", "D"],
+        )
+
+    assert error.value.code == "outgroup_not_monophyletic"
+    assert str(error.value) == "requested outgroup taxa are not monophyletic in the input tree"
+    assert error.value.details["matched_taxa"] == ["B", "D"]
+    assert error.value.details["outgroup_mrca_taxa"] == ["A", "B", "C", "D"]
+    assert error.value.details["outgroup_mrca_extra_taxa"] == ["A", "C"]
+
+
+def test_root_tree_on_outgroup_preserves_already_rooted_outgroup_tree() -> None:
+    tree, report = root_tree_on_outgroup(
+        fixture("example_tree_rooted_on_d.nwk"),
+        outgroup_taxa=["D"],
     )
 
-    assert report.matched_taxa == ["B", "D"]
-    assert report.absent_taxa == []
-    assert report.outgroup_monophyletic is False
-    assert report.outgroup_mrca_taxa == ["A", "B", "C", "D"]
-    assert report.outgroup_mrca_extra_taxa == ["A", "C"]
-    assert report.rooted_outgroup_taxa == []
-    assert report.rooted_ingroup_taxa == ["A", "B", "C", "D"]
-    assert report.warnings == [
-        "requested outgroup taxa are not monophyletic in the input tree",
-        "rooted tree does not isolate every matched outgroup taxon on one root child",
-    ]
+    assert dumps_newick(tree) == "(((A:0.2,B:0.2):0.7,C:0.1):0,D:0.1);"
+    assert report.matched_taxa == ["D"]
+    assert report.rooted_outgroup_taxa == ["D"]
+    assert report.rooted_ingroup_taxa == ["A", "B", "C"]
+    assert report.warnings == []
 
 
 def test_write_tree_rooting_report_writes_monophyly_and_root_partition_fields(
@@ -6186,7 +6196,7 @@ def test_cli_topology_root_outgroup_writes_rooted_tree_and_report(
     assert exit_code == 0
     assert (
         output_path.read_text(encoding="utf-8")
-        == "(((A:0.2,B:0.2):0.7,C:0.1):0.1,D:0);\n"
+        == "(((A:0.2,B:0.2):0.7,C:0.1):0,D:0.1);\n"
     )
     report_text = report_path.read_text(encoding="utf-8")
     assert "outgroup_monophyletic" in report_text
@@ -6201,6 +6211,39 @@ def test_cli_topology_root_outgroup_writes_rooted_tree_and_report(
     assert payload["metrics"]["warning_count"] == 1
     assert payload["data"]["warnings"] == [
         "one or more requested outgroup taxa were absent from the input tree"
+    ]
+
+
+def test_cli_topology_root_outgroup_reports_non_monophyletic_error(
+    tmp_path: Path, capsys
+) -> None:
+    exit_code = main(
+        [
+            "topology",
+            "root-outgroup",
+            str(fixture("example_tree_rootable.nwk")),
+            "--taxa",
+            "B",
+            "D",
+            "--out",
+            str(tmp_path / "rooted.nwk"),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"] == [
+        {
+            "code": "outgroup_not_monophyletic",
+            "details": {
+                "matched_taxa": ["B", "D"],
+                "outgroup_mrca_extra_taxa": ["A", "C"],
+                "outgroup_mrca_taxa": ["A", "B", "C", "D"],
+            },
+            "message": "requested outgroup taxa are not monophyletic in the input tree",
+        }
     ]
 
 
