@@ -49,6 +49,8 @@ def test_build_comparative_report_package_writes_html_and_ledgers(
 
     html = result.report_path.read_text(encoding="utf-8")
     assert "Bijux Comparative Analysis Report" in html
+    assert "Method Tier" in html
+    assert "supported" in html
     assert "Coefficient Table" in html
     assert "Residual Summary" in html
     assert "Phylogenetic Signal" in html
@@ -81,6 +83,7 @@ def test_build_comparative_report_package_writes_html_and_ledgers(
     assert manifest["report_kind"] == "comparative_package"
     assert manifest["metrics"]["analysis_taxa"] == 4
     assert manifest["metrics"]["selected_model"] in {"brownian", "ou"}
+    assert result.method_tier.tier == "supported"
 
 
 def test_summarize_comparative_interpretation_includes_signal_model_and_coefficients() -> (

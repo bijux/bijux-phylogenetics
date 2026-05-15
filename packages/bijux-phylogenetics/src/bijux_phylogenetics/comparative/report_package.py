@@ -11,6 +11,10 @@ from bijux_phylogenetics.comparative.reporting import (
     ComparativeMethodReport,
     build_comparative_method_report,
 )
+from bijux_phylogenetics.provenance.method_tiers import (
+    MethodTierAssessment,
+    comparative_report_method_tier,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -107,6 +111,7 @@ class ComparativeReportPackageResult:
     signal_row: ComparativeSignalTableRow
     interpretation_rows: list[ComparativeInterpretationRow]
     audit_rows: list[ComparativeAuditTableRow]
+    method_tier: MethodTierAssessment
     machine_manifest: dict[str, object]
 
 
@@ -432,6 +437,35 @@ def _table(headers: list[str], rows: list[list[str]]) -> str:
     )
 
 
+def _method_tier_note(method_tier: MethodTierAssessment) -> str:
+    basis = (
+        "<p><strong>validation basis:</strong> "
+        + escape("; ".join(method_tier.validation_basis))
+        + "</p>"
+        if method_tier.validation_basis
+        else ""
+    )
+    warning = (
+        f"<p><strong>warning:</strong> {escape(method_tier.warning)}</p>"
+        if method_tier.warning is not None
+        else ""
+    )
+    approximation = (
+        "<p><strong>approximation:</strong> "
+        + escape(method_tier.approximation)
+        + "</p>"
+        if method_tier.approximation is not None
+        else ""
+    )
+    return (
+        '<div class="note">'
+        f"<p><strong>{escape(method_tier.tier)}</strong> ({escape(method_tier.inference_mode)})</p>"
+        f"<p>{escape(method_tier.summary)}</p>"
+        f"{basis}{approximation}{warning}"
+        "</div>"
+    )
+
+
 def _write_comparative_report_html(
     *,
     path: Path,
@@ -441,6 +475,7 @@ def _write_comparative_report_html(
     residual_rows: list[ComparativeResidualTableRow],
     signal_row: ComparativeSignalTableRow,
     interpretation_rows: list[ComparativeInterpretationRow],
+    method_tier: MethodTierAssessment,
     manifest: dict[str, object],
 ) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -585,9 +620,14 @@ def _write_comparative_report_html(
         <div class="card"><div class="label">Selected Model</div><div class="value">{
         escape(summary_row.selected_model)
     }</div></div>
+        <div class="card"><div class="label">Method Tier</div><div class="value">{escape(method_tier.tier)}</div></div>
         <div class="card"><div class="label">PGLS R²</div><div class="value">{
         summary_row.pgls_r_squared:.3f}</div></div>
       </div>
+      <section>
+        <h2>Method Tier</h2>
+        {_method_tier_note(method_tier)}
+      </section>
       <section>
         <h2>Reviewer Summary</h2>
         {_list(report.snapshot.limitations[:4])}
@@ -778,6 +818,7 @@ def build_comparative_report_package(
     signal_row = summarize_comparative_signal(report)
     interpretation_rows = summarize_comparative_interpretation(report)
     audit_rows = summarize_comparative_audit(report)
+    method_tier = comparative_report_method_tier()
 
     report_path = out_dir / "comparative-report.html"
     summary_table_path = out_dir / "comparative-summary.tsv"
@@ -841,6 +882,7 @@ def build_comparative_report_package(
         residual_rows=residual_rows,
         signal_row=signal_row,
         interpretation_rows=interpretation_rows,
+        method_tier=method_tier,
         manifest=machine_manifest,
     )
     return ComparativeReportPackageResult(
@@ -862,5 +904,6 @@ def build_comparative_report_package(
         signal_row=signal_row,
         interpretation_rows=interpretation_rows,
         audit_rows=audit_rows,
+        method_tier=method_tier,
         machine_manifest=machine_manifest,
     )

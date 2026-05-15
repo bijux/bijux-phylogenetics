@@ -25,6 +25,10 @@ from bijux_phylogenetics.diagnostics.validation import (
     validate_tree_path,
 )
 from bijux_phylogenetics.io.iqtree_support import support_fraction
+from bijux_phylogenetics.provenance.method_tiers import (
+    MethodTierAssessment,
+    tree_report_method_tier,
+)
 from bijux_phylogenetics.render.svg import (
     SupportLabelRenderAudit,
     TreeRenderResult,
@@ -81,6 +85,7 @@ class TreeReportPackageResult:
     branch_lengths: BranchLengthDistributionReport
     support_rows: list[TreeSupportRow]
     branch_stats: TreeBranchStatisticsRow
+    method_tier: MethodTierAssessment
     reviewer_summary: list[str]
     limitations: list[str]
     machine_manifest: dict[str, object]
@@ -311,6 +316,35 @@ def _render_list(items: list[str]) -> str:
     return "<ul>" + "".join(f"<li>{escape(item)}</li>" for item in items) + "</ul>"
 
 
+def _render_method_tier(method_tier: MethodTierAssessment) -> str:
+    basis = (
+        "<p><strong>validation basis:</strong> "
+        + escape("; ".join(method_tier.validation_basis))
+        + "</p>"
+        if method_tier.validation_basis
+        else ""
+    )
+    warning = (
+        f'<p class="warn"><strong>warning:</strong> {escape(method_tier.warning)}</p>'
+        if method_tier.warning is not None
+        else ""
+    )
+    approximation = (
+        "<p><strong>approximation:</strong> "
+        + escape(method_tier.approximation)
+        + "</p>"
+        if method_tier.approximation is not None
+        else ""
+    )
+    return (
+        '<div class="note">'
+        f"<p><strong>{escape(method_tier.tier)}</strong> ({escape(method_tier.inference_mode)})</p>"
+        f"<p>{escape(method_tier.summary)}</p>"
+        f"{basis}{approximation}{warning}"
+        "</div>"
+    )
+
+
 def _write_tree_report_html(
     *,
     path: Path,
@@ -321,6 +355,7 @@ def _write_tree_report_html(
     support_rows: list[TreeSupportRow],
     clade_rows: list[CladeTableRow],
     branch_stats: TreeBranchStatisticsRow,
+    method_tier: MethodTierAssessment,
     validation: TreeValidationReport,
     inspection: TreeInspectionReport,
     forensic: TreeForensicReport,
@@ -475,8 +510,13 @@ def _write_tree_report_html(
         <div class="card"><div class="label">Tip Count</div><div class="value">{inspection.tip_count}</div></div>
         <div class="card"><div class="label">Tree Quality</div><div class="value">{inspection.tree_quality_score}</div></div>
         <div class="card"><div class="label">Supported Branches</div><div class="value">{sum(1 for row in support_rows if row.support is not None)}</div></div>
+        <div class="card"><div class="label">Method Tier</div><div class="value">{escape(method_tier.tier)}</div></div>
         <div class="card"><div class="label">Long Outliers</div><div class="value">{branch_stats.long_outlier_count}</div></div>
       </div>
+      <section>
+        <h2>Method Tier</h2>
+        {_render_method_tier(method_tier)}
+      </section>
       <section>
         <h2>Reviewer Summary</h2>
         {_render_list(reviewer_summary)}
@@ -561,6 +601,7 @@ def build_tree_report_package(
     support_rows = summarize_tree_support(clades)
     branch_lengths = analyze_branch_length_distribution(tree_path)
     branch_stats = summarize_tree_branch_statistics(branch_lengths)
+    method_tier = tree_report_method_tier()
     reviewer_summary, limitations = _reviewer_summary(
         inspection=inspection,
         support_rows=support_rows,
@@ -617,6 +658,7 @@ def build_tree_report_package(
         support_rows=support_rows,
         clade_rows=clades.rows,
         branch_stats=branch_stats,
+        method_tier=method_tier,
         validation=validation,
         inspection=inspection,
         forensic=forensic,
@@ -639,6 +681,7 @@ def build_tree_report_package(
         branch_lengths=branch_lengths,
         support_rows=support_rows,
         branch_stats=branch_stats,
+        method_tier=method_tier,
         reviewer_summary=reviewer_summary,
         limitations=limitations,
         machine_manifest=machine_manifest,
