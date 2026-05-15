@@ -539,6 +539,7 @@ from bijux_phylogenetics.distance import (
     validate_imported_distance_matrix,
     write_distance_bootstrap_support,
     write_distance_reproducibility_bundle,
+    write_genetic_distance_component_table,
     write_genetic_distance_matrix,
 )
 from bijux_phylogenetics.diversification import (
@@ -769,6 +770,7 @@ _PAIRWISE_DISTANCE_MODELS = (
     "p-distance",
     "jc69",
     "jukes-cantor",
+    "k80",
     "kimura-2-parameter",
     "amino-acid-p-distance",
 )
@@ -1940,6 +1942,11 @@ def build_parser() -> argparse.ArgumentParser:
         default="ignore",
     )
     alignment_distance.add_argument("--out", type=Path, help="Write the matrix as TSV.")
+    alignment_distance.add_argument(
+        "--components-out",
+        type=Path,
+        help="Write pairwise mismatch, transition, and transversion components as TSV.",
+    )
     alignment_distance.add_argument(
         "--json", action="store_true", help="Emit the report as JSON."
     )
@@ -8003,6 +8010,22 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 outputs: list[Path | str] = []
                 if args.out is not None:
                     outputs.append(write_genetic_distance_matrix(args.out, report))
+                if args.components_out is not None:
+                    outputs.append(
+                        write_genetic_distance_component_table(
+                            args.components_out,
+                            report,
+                        )
+                    )
+                warnings: list[str] = []
+                if any(
+                    pair.saturated
+                    for pair in report.pairs
+                    if pair.left_identifier != pair.right_identifier
+                ):
+                    warnings.append(
+                        "one or more pairwise distances are saturated or non-finite under the selected model"
+                    )
                 outputs = _finalize_outputs(
                     args,
                     command="alignment",
@@ -8014,6 +8037,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="alignment",
                         inputs=[args.alignment],
                         outputs=outputs,
+                        warnings=warnings,
                         metrics={
                             "sequence_count": len(report.identifiers),
                             "pair_count": len(report.pairs),
