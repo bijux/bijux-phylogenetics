@@ -250,8 +250,8 @@ Its JSON metrics report:
 
 The initial live `phytools` registry is intentionally narrow for this goal. It
 currently covers `phytools::phylosig(method='lambda')`,
-`phytools::phylosig(method='K')`, and `phytools::fastAnc` on governed
-twenty-four-taxon comparative fixtures from the shared
+`phytools::phylosig(method='K')`, `phytools::fastAnc`, and
+`phytools::anc.ML` on governed twenty-four-taxon comparative fixtures from the shared
 `shared_phytools_comparative_fixture_catalog.json` corpus. The live lambda
 lane now includes one non-ultrametric strong-signal fixture plus one
 ultrametric weak-signal fixture so the harness proves both a near-boundary
@@ -263,6 +263,9 @@ under one governed replicate count. The live `fastAnc` lane now includes
 ultrametric strong-signal, ultrametric weak-signal, non-ultrametric
 strong-signal, and missing-value pruning cases, and compares stable
 node-signature rows plus standard errors against real `phytools` output.
+The live `anc.ML` lane now covers the same four fixture shapes and compares
+stable node-signature rows, standard errors, 95% intervals, Brownian
+log-likelihood, and fitted sigma-squared against real `phytools` output.
 For this round, `bionj` is explicitly excluded. The distance-tree CLI surfaces
 therefore accept `--method bionj` only so the owned runtime can return one
 structured out-of-scope error naming `ape::bionj`, rather than failing with
@@ -1349,12 +1352,18 @@ metrics report:
 - `covariance_condition_number`
 - `log_likelihood`
 - `residual_sigma_squared`
+- `optimizer_name`
+- `optimizer_converged`
+- `optimizer_iteration_count`
+- `optimizer_function_evaluation_count`
 
 The command supports `brownian` and `ou` reconstruction modes. The Brownian
 path is aligned to the governed `ape::ace(method='pic')` reference surface with
 explicit bounded tolerance rather than an undocumented local convention. The
 optional `--estimator` flag makes the estimator surface explicit: `ace-pic`
 preserves the governed `ape::ace(type='continuous', method='pic')` lane,
+`anc-ml` switches to the governed live `phytools::anc.ML` lane with
+Brownian log-likelihood, fitted sigma-squared, and optimizer diagnostics,
 `fast-anc` switches to the governed live `phytools::fastAnc` lane, and
 `generalized-least-squares` is reserved for the `ou` model.
 
@@ -1375,6 +1384,12 @@ supplied, it also writes one summary ledger. The summary row preserves:
 - `tree_is_ultrametric`
 - `covariance_near_singular`
 - `covariance_condition_number`
+- `log_likelihood`
+- `residual_sigma_squared`
+- `optimizer_name`
+- `optimizer_converged`
+- `optimizer_iteration_count`
+- `optimizer_function_evaluation_count`
 - `log_likelihood`
 - `residual_sigma_squared`
 - `weak_support_node_count`

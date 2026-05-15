@@ -221,7 +221,8 @@ The same `parity` command now also exposes one governed
 `--reference-source phytools-live` lane for real `phytools` execution through
 the checked-in R runner. That initial registry is intentionally narrow for
 goal 201: it currently covers `phytools::phylosig(method='lambda')`,
-`phytools::phylosig(method='K')`, and `phytools::fastAnc` on governed
+`phytools::phylosig(method='K')`, `phytools::fastAnc`, and
+`phytools::anc.ML` on governed
 twenty-four-taxon comparative fixtures drawn from the shared `phytools`
 comparative fixture catalog. The live lambda lane now includes one
 non-ultrametric strong-signal case and one ultrametric weak-signal case, so
@@ -233,7 +234,10 @@ behavior under one governed replicate count. The live `fastAnc` lane now
 includes ultrametric strong-signal, ultrametric weak-signal, non-ultrametric
 strong-signal, and missing-value pruning cases so reviewers can compare
 node-signature estimates and standard errors directly against real
-`phytools`. It writes the same summary-versus-observation TSV artifacts plus
+`phytools`. The live `anc.ML` lane now covers the same four fixture shapes so
+reviewers can compare node-signature estimates, standard errors, 95%
+intervals, Brownian log-likelihood, and fitted sigma-squared directly against
+real `phytools`. It writes the same summary-versus-observation TSV artifacts plus
 reproducible failure bundles as the live `ape` lane.
 The same baseline surface now also exposes
 `simulate_random_tree(...)` and `simulate_coalescent_tree(...)` for one-tree
@@ -1149,7 +1153,12 @@ Brownian parity target while still surfacing extra owned diagnostics that live
 `ape::ace(..., method='pic')` does not emit. When `--estimator fast-anc` is
 selected instead, the Brownian runtime switches to the governed live
 `phytools::fastAnc` lane and keeps stable node-signature rows plus standard
-errors for parity review on the shared comparative fixture corpus.
+errors for parity review on the shared comparative fixture corpus. When
+`--estimator anc-ml` is selected instead, the Brownian runtime switches to
+the governed live `phytools::anc.ML` lane and adds fitted sigma-squared,
+Brownian log-likelihood, explicit optimizer diagnostics, stable
+node-signature rows, standard errors, and 95% intervals under the same
+missing-value pruning policy.
 
 For Python-native work, the same continuous ancestral runtime is also
 available directly through
