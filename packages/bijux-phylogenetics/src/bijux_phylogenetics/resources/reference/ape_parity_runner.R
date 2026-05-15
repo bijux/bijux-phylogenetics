@@ -1393,6 +1393,7 @@ ultrametric_case <- function(case_payload, output_root, execution_path, r_versio
   }
 
   tip_count <- length(tree$tip.label)
+  tip_labels <- vapply(tree$tip.label, normalize_node_label, character(1))
   tip_depths <- as.numeric(ape::node.depth.edgelength(tree))[seq_len(tip_count)]
   tolerance <- if (is.null(case_payload$tolerance)) .Machine$double.eps^0.5 else as.numeric(case_payload$tolerance)
   option <- if (is.null(case_payload$ultrametric_option)) 1L else as.integer(case_payload$ultrametric_option)
@@ -1443,11 +1444,13 @@ ultrametric_case <- function(case_payload, output_root, execution_path, r_versio
   } else {
     sort(
       unique(
-        normalize_node_label(
+        vapply(
           tree$tip.label[
             abs(tip_depths - minimum_tip_depth) <= 1e-12
             | abs(tip_depths - maximum_tip_depth) <= 1e-12
-          ]
+          ],
+          normalize_node_label,
+          character(1)
         )
       )
     )
@@ -1460,7 +1463,7 @@ ultrametric_case <- function(case_payload, output_root, execution_path, r_versio
     list(
       tip_count = tip_count,
       rooted = ape::is.rooted(tree),
-      tip_labels = as.list(normalize_node_label(tree$tip.label)),
+      tip_labels = as.list(unname(tip_labels)),
       ultrametric = isTRUE(ultrametric),
       criterion_name = criterion_name,
       criterion_value = as.numeric(criterion_value),
@@ -1478,12 +1481,12 @@ ultrametric_case <- function(case_payload, output_root, execution_path, r_versio
     rows_path,
     data.frame(
       node_id = seq_len(tip_count),
-      tip_label = normalize_node_label(tree$tip.label),
+      tip_label = tip_labels,
       root_to_tip_depth = tip_depths,
       deviation_from_mean_depth = abs(tip_depths - mean_tip_depth),
       deviation_from_min_depth = tip_depths - minimum_tip_depth,
       deviation_from_max_depth = maximum_tip_depth - tip_depths,
-      is_offending_taxon = normalize_node_label(tree$tip.label) %in% offending_taxa,
+      is_offending_taxon = tip_labels %in% offending_taxa,
       stringsAsFactors = FALSE
     )
   )
