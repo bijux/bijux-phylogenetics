@@ -2516,20 +2516,30 @@ def translate_coding_alignment(
     genetic_code: int | str | None = None,
 ) -> tuple[list[AlignmentRecord], TranslationReport]:
     """Translate an aligned nucleotide coding sequence dataset to amino acids."""
+    matrix = load_dna_bin_alignment(path, normalize_uracil=True)
+    return translate_coding_alignment_from_dna_bin_alignment(
+        matrix,
+        genetic_code=genetic_code,
+    )
+
+
+def translate_coding_alignment_from_dna_bin_alignment(
+    alignment: DnaBinAlignment,
+    *,
+    genetic_code: int | str | None = None,
+) -> tuple[list[AlignmentRecord], TranslationReport]:
+    """Translate one DNAbin-compatible coding matrix to amino acids."""
+    if alignment.source_alphabet not in {"dna", "rna"}:
+        raise InvalidAlignmentError(
+            f"coding translation requires a nucleotide alignment, got alphabet '{alignment.source_alphabet}'"
+        )
     genetic_code_id, genetic_code_name, _forward_table, _stop_codons = (
         _resolve_genetic_code_table(genetic_code)
     )
-    summary = summarise_fasta(path)
-    if summary.inferred_alphabet not in {"dna", "rna"}:
-        raise InvalidAlignmentError(
-            f"coding translation requires a nucleotide alignment, got alphabet '{summary.inferred_alphabet}'"
-        )
-
-    matrix = load_dna_bin_alignment(path, normalize_uracil=True)
-    records = _records_from_dnabin_alignment(matrix, uppercase=True)
-    dropped_trailing_nucleotide_count = summary.alignment_length % 3
+    records = _records_from_dnabin_alignment(alignment, uppercase=True)
+    dropped_trailing_nucleotide_count = alignment.alignment_length % 3
     translated_alignment_length = (
-        summary.alignment_length - dropped_trailing_nucleotide_count
+        alignment.alignment_length - dropped_trailing_nucleotide_count
     ) // 3
     warnings: list[str] = []
     if dropped_trailing_nucleotide_count:
@@ -2580,11 +2590,11 @@ def translate_coding_alignment(
         }
     )
     return translated_records, TranslationReport(
-        source_path=path,
+        source_path=alignment.path,
         genetic_code_id=genetic_code_id,
         genetic_code_name=genetic_code_name,
         translated_sequence_count=len(translated_records),
-        source_alignment_length=summary.alignment_length,
+        source_alignment_length=alignment.alignment_length,
         translated_alignment_length=translated_alignment_length,
         dropped_trailing_nucleotide_count=dropped_trailing_nucleotide_count,
         invalid_codon_count=invalid_codon_count,
