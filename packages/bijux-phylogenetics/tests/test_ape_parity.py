@@ -113,6 +113,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "branching-times-internal-node-labels",
         "branching-times-medium-ultrametric",
         "branching-times-zero-internal-branch",
+        "is-ultrametric-rooted-ultrametric",
+        "is-ultrametric-near-ultrametric-default",
+        "is-ultrametric-near-ultrametric-tight",
+        "is-ultrametric-non-ultrametric",
         "dna-base-frequency-lowercase",
         "dna-base-frequency-ambiguity",
         "dna-raw-distance-clean",
@@ -195,6 +199,10 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "internal_node_labels",
         "larger_binary_tree",
         "ultrametric_zero_internal_branch",
+        "balanced_rooted_ultrametric",
+        "near_ultrametric_branch_jitter",
+        "near_ultrametric_branch_jitter",
+        "pectinate_rooted_non_ultrametric",
         "lowercase_aligned_dna",
         "dna_with_ambiguity",
         "clean_aligned_dna",
@@ -214,6 +222,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "ape::drop.tip",
         "ape::keep.tip",
         "ape::getMRCA",
+        "ape::is.ultrametric",
         "ape::is.monophyletic",
         "ape::cophenetic.phylo",
         "ape::node.depth.edgelength",
@@ -240,6 +249,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "tree-brownian-covariance",
         "tree-node-depth",
         "tree-branching-times",
+        "tree-ultrametricity",
         "dna-base-frequency",
         "dna-raw-distance",
         "dna-translation",
@@ -257,8 +267,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 80
-    assert report.passed_case_count == 80
+    assert report.case_count == 84
+    assert report.passed_case_count == 84
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -270,6 +280,7 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         "ape::extract.clade",
         "ape::getMRCA",
         "ape::is.monophyletic",
+        "ape::is.ultrametric",
         "ape::keep.tip",
         "ape::node.depth.edgelength",
         "ape::read.tree",
@@ -422,6 +433,37 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert (
         branching_times_case.reference_summary["zero_branch_length_count"] == 1
     )
+    ultrametric_default_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "is-ultrametric-near-ultrametric-default"
+    )
+    assert ultrametric_default_case.reference_summary is not None
+    assert ultrametric_default_case.reference_summary["ultrametric"] is True
+    assert ultrametric_default_case.reference_summary["offending_taxa"] == [
+        "A",
+        "B",
+        "C",
+        "D",
+    ]
+    ultrametric_tight_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "is-ultrametric-near-ultrametric-tight"
+    )
+    assert ultrametric_tight_case.reference_summary is not None
+    assert ultrametric_tight_case.reference_summary["ultrametric"] is False
+    assert ultrametric_tight_case.reference_summary["max_tip_depth_deviation"] == pytest.approx(
+        1e-9,
+        abs=1e-15,
+    )
+    ultrametric_non_case = next(
+        observation
+        for observation in report.observations
+        if observation.case_id == "is-ultrametric-non-ultrametric"
+    )
+    assert ultrametric_non_case.reference_summary is not None
+    assert ultrametric_non_case.reference_summary["offending_taxa"] == ["A", "B", "D"]
     translation_case = next(
         observation
         for observation in report.observations
@@ -545,7 +587,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 80
+    assert len(rows) == 84
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]

@@ -383,6 +383,22 @@ def branching_time_rows(tree):
         if row["node_kind"] != "tip"
     ]
 
+def ultrametric_rows(tree):
+    node_depth_table = node_depth_rows(tree)
+    return [
+        {{
+            "node_id": row["node_id"],
+            "tip_label": row["node_label"],
+            "root_to_tip_depth": row["branch_length_depth"],
+            "deviation_from_mean_depth": None,
+            "deviation_from_min_depth": None,
+            "deviation_from_max_depth": None,
+            "is_offending_taxon": False,
+        }}
+        for row in node_depth_table
+        if row["node_kind"] == "tip"
+    ]
+
 def matrix_rank(matrix, tolerance=1e-12):
     working = [list(map(float, row)) for row in matrix]
     row_count = len(working)
@@ -1357,6 +1373,85 @@ if case_payload["operation"] == "tree-branching-times":
             "outputs": {{
                 "summary_json": str(summary_path),
                 "branching_times": str(rows_path),
+            }},
+        }},
+    )
+    raise SystemExit(0)
+
+if case_payload["operation"] == "tree-ultrametricity":
+    tree = Phylo.read(case_payload["input_fixture"], "newick")
+    rows = ultrametric_rows(tree)
+    tip_depths = [row["root_to_tip_depth"] for row in rows]
+    minimum_tip_depth = min(tip_depths)
+    maximum_tip_depth = max(tip_depths)
+    mean_tip_depth = sum(tip_depths) / len(tip_depths)
+    max_tip_depth_deviation = maximum_tip_depth - minimum_tip_depth
+    option = int(case_payload.get("ultrametric_option", 1))
+    if option == 1:
+        if math.isclose(maximum_tip_depth, 0.0, abs_tol=1e-15):
+            criterion_value = 0.0 if math.isclose(max_tip_depth_deviation, 0.0, abs_tol=1e-15) else math.inf
+        else:
+            criterion_value = max_tip_depth_deviation / maximum_tip_depth
+        criterion_name = "scaled-range"
+    else:
+        criterion_name = "variance"
+        if len(tip_depths) <= 1:
+            criterion_value = 0.0
+        else:
+            criterion_value = sum((depth - mean_tip_depth) ** 2 for depth in tip_depths) / (len(tip_depths) - 1)
+    offending_taxa = sorted(
+        {{
+            row["tip_label"]
+            for row in rows
+            if math.isclose(row["root_to_tip_depth"], minimum_tip_depth, abs_tol=1e-12)
+            or math.isclose(row["root_to_tip_depth"], maximum_tip_depth, abs_tol=1e-12)
+        }}
+    )
+    if math.isclose(max_tip_depth_deviation, 0.0, abs_tol=1e-12):
+        offending_taxa = []
+    rows = [
+        {{
+            **row,
+            "deviation_from_mean_depth": abs(row["root_to_tip_depth"] - mean_tip_depth),
+            "deviation_from_min_depth": row["root_to_tip_depth"] - minimum_tip_depth,
+            "deviation_from_max_depth": maximum_tip_depth - row["root_to_tip_depth"],
+            "is_offending_taxon": row["tip_label"] in offending_taxa,
+        }}
+        for row in rows
+    ]
+    summary = {{
+        "tip_count": len(rows),
+        "rooted": is_rooted_tree(tree),
+        "tip_labels": [terminal.name for terminal in tree.get_terminals()],
+        "ultrametric": criterion_value <= case_payload["tolerance"],
+        "criterion_name": criterion_name,
+        "criterion_value": criterion_value,
+        "tolerance": case_payload["tolerance"],
+        "option": option,
+        "minimum_tip_depth": minimum_tip_depth,
+        "maximum_tip_depth": maximum_tip_depth,
+        "mean_tip_depth": mean_tip_depth,
+        "max_tip_depth_deviation": max_tip_depth_deviation,
+        "root_age": maximum_tip_depth,
+        "offending_taxa": offending_taxa,
+    }}
+    summary.update(SUMMARY_OVERRIDES)
+    summary_path = output_root / "summary.json"
+    rows_path = output_root / "ultrametric-diagnostics.tsv"
+    write_json(summary_path, summary)
+    write_tsv(rows_path, rows)
+    write_json(
+        execution_path,
+        {{
+            "status": "ok",
+            "case_id": case_payload["case_id"],
+            "function_name": case_payload["function_name"],
+            "input_fixture": case_payload["input_fixture"],
+            "r_version": "4.6.0",
+            "ape_version": "5.0.0",
+            "outputs": {{
+                "summary_json": str(summary_path),
+                "ultrametric_diagnostics": str(rows_path),
             }},
         }},
     )
