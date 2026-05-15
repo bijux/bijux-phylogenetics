@@ -150,6 +150,14 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "dna-jc69-distance-high-divergence",
         "dna-jc69-distance-missing-data",
         "dna-jc69-distance-unequal-length-invalid",
+        "dna-k80-distance-clean",
+        "dna-k80-distance-gaps",
+        "dna-k80-distance-gaps-complete-deletion",
+        "dna-k80-distance-ambiguity",
+        "dna-k80-distance-identical",
+        "dna-k80-distance-high-divergence",
+        "dna-k80-distance-missing-data",
+        "dna-k80-distance-unequal-length-invalid",
         "dna-translation-valid-frame",
         "dna-translation-internal-stop",
         "dna-translation-terminal-stop",
@@ -262,6 +270,14 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
         "high_divergence_sequences",
         "dna_with_missing_data",
         "unequal_length_invalid_input",
+        "clean_aligned_dna",
+        "dna_with_gaps",
+        "dna_with_gaps",
+        "dna_with_ambiguity",
+        "identical_sequences",
+        "high_divergence_sequences",
+        "dna_with_missing_data",
+        "unequal_length_invalid_input",
         "coding_valid_reading_frame",
         "coding_internal_stop",
         "coding_terminal_stop",
@@ -325,8 +341,8 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
 
     assert report.all_passed is True
-    assert report.case_count == 110
-    assert report.passed_case_count == 110
+    assert report.case_count == 118
+    assert report.passed_case_count == 118
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -701,7 +717,7 @@ def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path)
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 110
+    assert len(rows) == 118
     assert rows[0]["function_name"] == "ape::read.tree"
     assert rows[0]["fixture_kind"] == "tree"
     assert rows[0]["fixture_id"]
