@@ -5,8 +5,6 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
-from Bio.Phylo.BaseTree import Tree
-
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 
 from .topology import (
@@ -14,7 +12,6 @@ from .topology import (
     TreeComparisonReport,
     _build_support_comparison_report,
     _build_tree_comparison_report,
-    _load_biophylo_tree,
 )
 
 
@@ -75,22 +72,6 @@ def _count_high_support_conflicts(report: SupportComparisonReport) -> int:
         for row in report.conflicting_clades
         if row.conflict_classification == "high_support_conflict"
     )
-
-
-def _prune_biophylo_tree_to_taxa(tree: Tree, keep_taxa: set[str]) -> Tree:
-    pruned = deepcopy(tree)
-    while True:
-        removable = next(
-            (
-                terminal
-                for terminal in pruned.get_terminals()
-                if terminal.name not in keep_taxa
-            ),
-            None,
-        )
-        if removable is None:
-            return pruned
-        pruned.prune(removable)
 
 
 def _build_taxon_influence_row(
@@ -261,8 +242,8 @@ def analyze_taxon_influence(
     baseline_support = _build_support_comparison_report(
         left_path,
         right_path,
-        _load_biophylo_tree(left_path),
-        _load_biophylo_tree(right_path),
+        _load_tree(left_path),
+        _load_tree(right_path),
         strong_support_threshold=0.9,
         weak_support_threshold=0.7,
         support_disagreement_threshold=0.15,
@@ -270,8 +251,6 @@ def analyze_taxon_influence(
     shared_taxa = set(baseline_topology.shared_taxa)
     left_tree = _load_tree(left_path)
     right_tree = _load_tree(right_path)
-    left_support_tree = _load_biophylo_tree(left_path)
-    right_support_tree = _load_biophylo_tree(right_path)
 
     rows: list[TaxonInfluenceRow] = []
     for taxon in baseline_topology.shared_taxa:
@@ -290,8 +269,8 @@ def analyze_taxon_influence(
         leave_one_out_support = _build_support_comparison_report(
             left_path,
             right_path,
-            _prune_biophylo_tree_to_taxa(left_support_tree, retained_set),
-            _prune_biophylo_tree_to_taxa(right_support_tree, retained_set),
+            deepcopy(left_pruned),
+            deepcopy(right_pruned),
             strong_support_threshold=0.9,
             weak_support_threshold=0.7,
             support_disagreement_threshold=0.15,

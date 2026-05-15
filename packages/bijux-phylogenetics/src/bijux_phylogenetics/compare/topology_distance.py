@@ -7,13 +7,17 @@ from pathlib import Path
 from bijux_phylogenetics.compare.topology import (
     RobinsonFouldsMode,
     TaxonOverlapPolicy,
-    _informative_clades,
     _resolve_shared_taxa,
-    _robinson_foulds_metrics,
-    _split_id,
-    _unrooted_splits,
     _validate_rf_mode,
     _validate_taxon_overlap_policy,
+)
+from bijux_phylogenetics.core.clade_sets import (
+    canonical_clade_id,
+    informative_rooted_clades,
+    informative_unrooted_splits,
+    robinson_foulds_metrics,
+    split_sort_key,
+    tree_has_polytomy,
 )
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.diagnostics.validation import _load_tree
@@ -57,11 +61,6 @@ class TopologyDistanceReport:
     topology_equal: bool
     split_rows: list[TopologyDistanceSplitRow]
 
-
-def _tree_has_polytomy(tree: PhyloTree) -> bool:
-    return any(len(node.children) > 2 for node in tree.iter_nodes())
-
-
 def _topology_signatures(
     tree: PhyloTree,
     shared_taxa: set[str],
@@ -69,8 +68,8 @@ def _topology_signatures(
     rf_mode: RobinsonFouldsMode,
 ) -> set[frozenset[str]]:
     if rf_mode == "rooted":
-        return _informative_clades(tree, shared_taxa)
-    return _unrooted_splits(tree, shared_taxa)
+        return informative_rooted_clades(tree, shared_taxa)
+    return informative_unrooted_splits(tree, shared_taxa)
 
 
 def compare_topology_distance_trees(
@@ -94,7 +93,7 @@ def compare_topology_distance_trees(
     )
     left_signatures = _topology_signatures(left, shared_taxa, rf_mode=rf_mode)
     right_signatures = _topology_signatures(right, shared_taxa, rf_mode=rf_mode)
-    left_split_count, right_split_count, distance, normalized = _robinson_foulds_metrics(
+    metrics = robinson_foulds_metrics(
         left,
         right,
         shared_taxa,
@@ -107,11 +106,11 @@ def compare_topology_distance_trees(
     split_kind = "clade" if rf_mode == "rooted" else "split"
     all_signatures = sorted(
         left_signatures | right_signatures,
-        key=lambda signature: (len(signature), tuple(sorted(signature))),
+        key=split_sort_key,
     )
     split_rows = [
         TopologyDistanceSplitRow(
-            split_id=_split_id(signature),
+            split_id=canonical_clade_id(signature),
             split_kind=split_kind,
             comparison_status=(
                 "shared"
@@ -137,16 +136,16 @@ def compare_topology_distance_trees(
         rf_mode=rf_mode,
         rooted_left=left.rooted,
         rooted_right=right.rooted,
-        polytomy_present_left=_tree_has_polytomy(left),
-        polytomy_present_right=_tree_has_polytomy(right),
-        left_split_count=left_split_count,
-        right_split_count=right_split_count,
+        polytomy_present_left=tree_has_polytomy(left),
+        polytomy_present_right=tree_has_polytomy(right),
+        left_split_count=metrics.left_count,
+        right_split_count=metrics.right_count,
         shared_split_count=len(shared_signatures),
         left_only_split_count=len(left_only_signatures),
         right_only_split_count=len(right_only_signatures),
-        robinson_foulds_distance=distance,
-        normalized_robinson_foulds=normalized,
-        topology_equal=distance == 0,
+        robinson_foulds_distance=metrics.distance,
+        normalized_robinson_foulds=metrics.normalized_distance,
+        topology_equal=metrics.distance == 0,
         split_rows=split_rows,
     )
 

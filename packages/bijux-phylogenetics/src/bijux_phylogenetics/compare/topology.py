@@ -4,21 +4,24 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
-from Bio import Phylo
-from Bio.Phylo.BaseTree import Clade, Tree
-
 from bijux_phylogenetics.core.pruning import (
     RequestedTaxaPruningReport,
     _prune_tree_against_taxa,
     prune_tree_to_requested_taxa,
 )
+from bijux_phylogenetics.core.clade_sets import (
+    canonical_bipartition,
+    canonical_clade_id,
+    informative_rooted_clade_nodes,
+    informative_rooted_clades,
+    informative_unrooted_splits,
+    node_support_value,
+    robinson_foulds_metrics,
+    split_sort_key,
+)
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.diagnostics.validation import _load_tree
-from bijux_phylogenetics.io.iqtree_support import (
-    parse_iqtree_branch_support_label,
-    support_fraction,
-)
-from bijux_phylogenetics.io.trees import detect_tree_format
+from bijux_phylogenetics.io.iqtree_support import support_fraction
 
 RobinsonFouldsMode = str
 TaxonOverlapPolicy = str
@@ -257,101 +260,12 @@ class InMemoryBranchLengthComparison:
     branch_score_splits: list[BranchScoreSplit]
     missing_length_split_count: int
 
-
-def _informative_clades(tree: PhyloTree, shared_taxa: set[str]) -> set[frozenset[str]]:
-    clades: set[frozenset[str]] = set()
-
-    def visit(node: TreeNode) -> set[str]:
-        if node.is_leaf():
-            return {node.name} if node.name in shared_taxa else set()
-
-        taxa: set[str] = set()
-        for child in node.children:
-            taxa.update(visit(child))
-
-        if 1 < len(taxa) < len(shared_taxa):
-            clades.add(frozenset(taxa))
-        return taxa
-
-    visit(tree.root)
-    return clades
-
-
 def _format_clade_set(clades: set[frozenset[str]]) -> list[str]:
-    return sorted("|".join(sorted(clade)) for clade in clades)
-
-
-def _canonical_bipartition(taxa: set[str], universe: set[str]) -> frozenset[str]:
-    complement = universe - taxa
-    left = sorted(taxa)
-    right = sorted(complement)
-    if (len(left), left) <= (len(right), right):
-        return frozenset(taxa)
-    return frozenset(complement)
-
-
-def _unrooted_splits(tree: PhyloTree, shared_taxa: set[str]) -> set[frozenset[str]]:
-    splits: set[frozenset[str]] = set()
-
-    def visit(node: TreeNode) -> set[str]:
-        if node.is_leaf():
-            return {node.name} if node.name in shared_taxa else set()
-
-        taxa: set[str] = set()
-        for child in node.children:
-            taxa.update(visit(child))
-        if node is not tree.root and 1 < len(taxa) < len(shared_taxa) - 1:
-            splits.add(_canonical_bipartition(taxa, shared_taxa))
-        return taxa
-
-    visit(tree.root)
-    return splits
-
-
-def _informative_clade_nodes(
-    tree: PhyloTree, shared_taxa: set[str]
-) -> dict[frozenset[str], TreeNode]:
-    clades: dict[frozenset[str], TreeNode] = {}
-
-    def visit(node: TreeNode) -> set[str]:
-        if node.is_leaf():
-            return {node.name} if node.name in shared_taxa else set()
-
-        taxa: set[str] = set()
-        for child in node.children:
-            taxa.update(visit(child))
-
-        if 1 < len(taxa) < len(shared_taxa):
-            clades[frozenset(taxa)] = node
-        return taxa
-
-    visit(tree.root)
-    return clades
-
-
-def _parse_support(value: object) -> float | None:
-    if value is None:
-        return None
-    if isinstance(value, str):
-        parsed = parse_iqtree_branch_support_label(value)
-        if parsed is not None:
-            return (
-                parsed.ufboot_support
-                if parsed.ufboot_support is not None
-                else parsed.sh_alrt_support
-            )
-    try:
-        return float(value)
-    except ValueError:
-        return None
-
-
-def _load_biophylo_tree(path: Path) -> Tree:
-    return Phylo.read(path, detect_tree_format(path))
+    return sorted(canonical_clade_id(clade) for clade in clades)
 
 
 def _split_id(signature: frozenset[str]) -> str:
-    return "|".join(sorted(signature))
+    return canonical_clade_id(signature)
 
 
 def _support_strength(
@@ -416,20 +330,17 @@ def _robinson_foulds_metrics(
     rf_mode: RobinsonFouldsMode,
 ) -> tuple[int, int, int, float]:
     _validate_rf_mode(rf_mode)
-    if rf_mode == "rooted":
-        left_signatures = _informative_clades(left, shared_taxa)
-        right_signatures = _informative_clades(right, shared_taxa)
-    else:
-        left_signatures = _unrooted_splits(left, shared_taxa)
-        right_signatures = _unrooted_splits(right, shared_taxa)
-    symmetric_difference = left_signatures.symmetric_difference(right_signatures)
-    denominator = len(left_signatures) + len(right_signatures)
-    normalized = 0.0 if denominator == 0 else len(symmetric_difference) / denominator
+    metrics = robinson_foulds_metrics(
+        left,
+        right,
+        shared_taxa,
+        rf_mode=rf_mode,
+    )
     return (
-        len(left_signatures),
-        len(right_signatures),
-        len(symmetric_difference),
-        normalized,
+        metrics.left_count,
+        metrics.right_count,
+        metrics.distance,
+        metrics.normalized_distance,
     )
 
 
@@ -524,7 +435,7 @@ def _unrooted_branch_score_lengths(
         if node is tree.root:
             return descendant_taxa
         if not parent_is_root:
-            split_lengths[_canonical_bipartition(descendant_taxa, taxa)] = (
+            split_lengths[canonical_bipartition(descendant_taxa, taxa)] = (
                 node.branch_length
             )
         return descendant_taxa
@@ -546,7 +457,7 @@ def _unrooted_branch_score_lengths(
     if not left_taxa or not right_taxa:
         return split_lengths
 
-    merged_split = _canonical_bipartition(left_taxa, taxa)
+    merged_split = canonical_bipartition(left_taxa, taxa)
     split_lengths[merged_split] = _sum_branch_lengths(
         left_child.branch_length,
         right_child.branch_length,
@@ -589,7 +500,7 @@ def _build_branch_score_report(
     right_lengths = _unrooted_branch_score_lengths(right_pruned)
     split_ids = sorted(
         set(left_lengths) | set(right_lengths),
-        key=lambda signature: (len(signature), tuple(sorted(signature))),
+        key=split_sort_key,
     )
     rows: list[BranchScoreSplit] = []
     sum_of_squares = 0.0
@@ -670,8 +581,8 @@ def _compare_branch_lengths_for_trees(
         taxon_overlap_policy=taxon_overlap_policy,
     )
 
-    left_clades = _informative_clade_nodes(left, shared_taxa)
-    right_clades = _informative_clade_nodes(right, shared_taxa)
+    left_clades = informative_rooted_clade_nodes(left, shared_taxa)
+    right_clades = informative_rooted_clade_nodes(right, shared_taxa)
     shared_clade_ids = sorted(
         left_clades.keys() & right_clades.keys(), key=lambda item: sorted(item)
     )
@@ -713,28 +624,6 @@ def _compare_branch_lengths_for_trees(
         branch_score_splits=branch_score.splits,
         missing_length_split_count=branch_score.missing_length_split_count,
     )
-
-
-def _informative_biophylo_clades(
-    tree: Tree, shared_taxa: set[str]
-) -> dict[frozenset[str], Clade]:
-    clades: dict[frozenset[str], Clade] = {}
-
-    def visit(clade: Clade) -> set[str]:
-        if not clade.clades:
-            return {clade.name} if clade.name in shared_taxa else set()
-
-        taxa: set[str] = set()
-        for child in clade.clades:
-            taxa.update(visit(child))
-
-        if 1 < len(taxa) < len(shared_taxa):
-            clades[frozenset(taxa)] = clade
-        return taxa
-
-    visit(tree.root)
-    return clades
-
 
 def _resolve_shared_taxa_for_many_trees(
     tree_paths: list[Path],
@@ -806,10 +695,9 @@ def compare_clade_sets(left_path: Path, right_path: Path) -> CladeSetComparisonR
 def compare_clade_overlap(tree_paths: list[Path]) -> CladeOverlapComparisonReport:
     """Compare rooted clade overlap across two or more trees."""
     trees, shared_taxa, excluded_taxa = _resolve_shared_taxa_for_many_trees(tree_paths)
-    clade_maps = [_informative_clades(tree, shared_taxa) for tree in trees]
-    biophylo_clade_maps = [
-        _informative_biophylo_clades(_load_biophylo_tree(path), shared_taxa)
-        for path in tree_paths
+    clade_maps = [informative_rooted_clades(tree, shared_taxa) for tree in trees]
+    clade_node_maps = [
+        informative_rooted_clade_nodes(tree, shared_taxa) for tree in trees
     ]
     all_clades = sorted(
         set().union(*clade_maps),
@@ -826,10 +714,10 @@ def compare_clade_overlap(tree_paths: list[Path]) -> CladeOverlapComparisonRepor
         if not all(clade in clade_map for clade_map in clade_maps)
     ]
     tree_summaries: list[TreeCladeOverlapSummary] = []
-    for path, clade_map, biophylo_map, tree_excluded_taxa in zip(
+    for path, clade_map, clade_node_map, tree_excluded_taxa in zip(
         tree_paths,
         clade_maps,
-        biophylo_clade_maps,
+        clade_node_maps,
         excluded_taxa,
         strict=True,
     ):
@@ -847,10 +735,7 @@ def compare_clade_overlap(tree_paths: list[Path]) -> CladeOverlapComparisonRepor
         support_clade_count = sum(
             1
             for clade in clade_map
-            if _parse_support(
-                biophylo_map[clade].confidence or biophylo_map[clade].name
-            )
-            is not None
+            if node_support_value(clade_node_map[clade]) is not None
         )
         tree_summaries.append(
             TreeCladeOverlapSummary(
@@ -865,17 +750,15 @@ def compare_clade_overlap(tree_paths: list[Path]) -> CladeOverlapComparisonRepor
     for clade in all_clades:
         observations: list[CladeOverlapObservation] = []
         present_tree_count = 0
-        for path, clade_map, biophylo_map in zip(
-            tree_paths, clade_maps, biophylo_clade_maps, strict=True
+        for path, clade_map, clade_node_map in zip(
+            tree_paths, clade_maps, clade_node_maps, strict=True
         ):
             present = clade in clade_map
             if present:
                 present_tree_count += 1
             support = None
             if present:
-                support = _parse_support(
-                    biophylo_map[clade].confidence or biophylo_map[clade].name
-                )
+                support = node_support_value(clade_node_map[clade])
             observations.append(
                 CladeOverlapObservation(
                     tree_path=path,
@@ -1167,8 +1050,8 @@ def compare_support_values(
     support_disagreement_threshold: float = _SUPPORT_DISAGREEMENT_THRESHOLD,
 ) -> SupportComparisonReport:
     """Compare clade support values and support-aware conflicts across two trees."""
-    left = _load_biophylo_tree(left_path)
-    right = _load_biophylo_tree(right_path)
+    left = _load_tree(left_path)
+    right = _load_tree(right_path)
     return _build_support_comparison_report(
         left_path,
         right_path,
@@ -1183,37 +1066,31 @@ def compare_support_values(
 def _build_support_comparison_report(
     left_path: Path,
     right_path: Path,
-    left: Tree,
-    right: Tree,
+    left: PhyloTree,
+    right: PhyloTree,
     *,
     strong_support_threshold: float,
     weak_support_threshold: float,
     support_disagreement_threshold: float,
 ) -> SupportComparisonReport:
-    left_taxa = {clade.name for clade in left.get_terminals() if clade.name}
-    right_taxa = {clade.name for clade in right.get_terminals() if clade.name}
+    left_taxa = set(left.tip_names)
+    right_taxa = set(right.tip_names)
     shared_taxa = left_taxa & right_taxa
     if len(shared_taxa) < 2:
         raise ValueError("support comparison requires at least two shared taxa")
 
-    left_clades = _informative_biophylo_clades(left, shared_taxa)
-    right_clades = _informative_biophylo_clades(right, shared_taxa)
-    shared_clade_ids = sorted(
-        left_clades.keys() & right_clades.keys(), key=lambda item: sorted(item)
-    )
+    left_clades = informative_rooted_clade_nodes(left, shared_taxa)
+    right_clades = informative_rooted_clade_nodes(right, shared_taxa)
+    shared_clade_ids = sorted(left_clades.keys() & right_clades.keys(), key=split_sort_key)
     all_clade_ids = sorted(
         left_clades.keys() | right_clades.keys(),
-        key=lambda item: (len(item), tuple(sorted(item))),
+        key=split_sort_key,
     )
     shared_clades: list[CladeSupportPair] = []
     conflicting_clades: list[SupportConflictRow] = []
     for clade_id in shared_clade_ids:
-        left_support = _parse_support(
-            left_clades[clade_id].confidence or left_clades[clade_id].name
-        )
-        right_support = _parse_support(
-            right_clades[clade_id].confidence or right_clades[clade_id].name
-        )
+        left_support = node_support_value(left_clades[clade_id])
+        right_support = node_support_value(right_clades[clade_id])
         left_fraction = support_fraction(left_support)
         right_fraction = support_fraction(right_support)
         shared_clades.append(
@@ -1242,16 +1119,12 @@ def _build_support_comparison_report(
         if left_present and right_present:
             continue
         left_support = (
-            _parse_support(
-                left_clades[clade_id].confidence or left_clades[clade_id].name
-            )
+            node_support_value(left_clades[clade_id])
             if left_present
             else None
         )
         right_support = (
-            _parse_support(
-                right_clades[clade_id].confidence or right_clades[clade_id].name
-            )
+            node_support_value(right_clades[clade_id])
             if right_present
             else None
         )
