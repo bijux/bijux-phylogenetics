@@ -110,6 +110,21 @@
       "notes": "Aligned DNA fixture with explicit missing residues and ambiguous nucleotide content."
     },
     {
+      "fixture_id": "all_gap_missing_alignment",
+      "relative_path": "alignments/example_alignment_all_gap_missing.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "not-coding",
+      "sequence_count": 3,
+      "alignment_length": 6,
+      "feature_tags": [
+        "all-gap-missing",
+        "missing-data",
+        "composition-ready"
+      ],
+      "notes": "Aligned DNA fixture with only gap and explicit missing states for ape-style base-frequency edge-case parity."
+    },
+    {
       "fixture_id": "unequal_length_invalid_input",
       "relative_path": "alignments/example_alignment_invalid_lengths.fasta",
       "load_expectation": "unequal-length-invalid",

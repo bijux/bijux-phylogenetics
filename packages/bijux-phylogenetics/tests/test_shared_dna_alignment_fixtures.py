@@ -31,6 +31,7 @@ def test_shared_dna_alignment_fixture_catalog_covers_required_goal_cases() -> No
         "identical-sequences",
         "high-divergence-sequences",
         "missing-data",
+        "all-gap-missing",
         "unequal-length-invalid-input",
         "valid-reading-frame",
         "frame-error",
@@ -51,24 +52,26 @@ def test_shared_dna_alignment_fixture_lookup_preserves_durable_ids() -> None:
 
 
 @pytest.mark.parametrize(
-    ("fixture_id", "expected_sequence_count", "expected_alignment_length"),
+    ("fixture_id", "expected_sequence_count", "expected_alignment_length", "expected_alphabet"),
     [
-        ("clean_aligned_dna", 4, 8),
-        ("dna_with_gaps", 4, 6),
-        ("dna_with_ambiguity", 3, 6),
-        ("lowercase_aligned_dna", 3, 6),
-        ("identical_sequences", 4, 8),
-        ("high_divergence_sequences", 3, 4),
-        ("dna_with_missing_data", 3, 6),
-        ("coding_valid_reading_frame", 3, 9),
-        ("coding_internal_stop", 1, 9),
-        ("coding_terminal_stop", 1, 9),
+        ("clean_aligned_dna", 4, 8, "dna"),
+        ("dna_with_gaps", 4, 6, "dna"),
+        ("dna_with_ambiguity", 3, 6, "dna"),
+        ("lowercase_aligned_dna", 3, 6, "dna"),
+        ("identical_sequences", 4, 8, "dna"),
+        ("high_divergence_sequences", 3, 4, "dna"),
+        ("dna_with_missing_data", 3, 6, "dna"),
+        ("all_gap_missing_alignment", 3, 6, "unknown"),
+        ("coding_valid_reading_frame", 3, 9, "dna"),
+        ("coding_internal_stop", 1, 9, "dna"),
+        ("coding_terminal_stop", 1, 9, "dna"),
     ],
 )
 def test_shared_dna_alignment_fixture_catalog_loads_valid_cases(
     fixture_id: str,
     expected_sequence_count: int,
     expected_alignment_length: int,
+    expected_alphabet: str,
 ) -> None:
     fixture = get_shared_dna_alignment_fixture(fixture_id)
 
@@ -78,7 +81,7 @@ def test_shared_dna_alignment_fixture_catalog_loads_valid_cases(
     assert len(records) == expected_sequence_count
     assert summary.sequence_count == expected_sequence_count
     assert summary.alignment_length == expected_alignment_length
-    assert summary.inferred_alphabet == "dna"
+    assert summary.inferred_alphabet == expected_alphabet
 
 
 def test_shared_dna_alignment_fixture_catalog_preserves_lowercase_records() -> None:
