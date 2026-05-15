@@ -76,6 +76,7 @@ execution_path <- file.path(output_root, "reference-execution.json")
 summary_path <- file.path(output_root, "reference-summary.json")
 summary_table_path <- file.path(output_root, "reference-summary.tsv")
 fast_anc_rows_path <- file.path(output_root, "fast-anc-node-estimates.tsv")
+anc_ml_rows_path <- file.path(output_root, "anc-ml-node-estimates.tsv")
 case_payload <- jsonlite::fromJSON(case_path)
 r_version <- as.character(getRversion())
 
@@ -216,6 +217,44 @@ build_fast_anc_result <- function(tree, trait_values, trait_name, excluded_taxa)
   )
 }
 
+build_anc_ml_result <- function(tree, trait_values, trait_name, excluded_taxa) {
+  fit <- phytools::anc.ML(
+    tree,
+    trait_values,
+    model = "BM",
+    CI = TRUE,
+    vars = TRUE
+  )
+  internal_nodes <- seq(
+    length(tree$tip.label) + 1,
+    length(tree$tip.label) + tree$Nnode
+  )
+  node_rows <- lapply(seq_along(internal_nodes), function(index) {
+    node <- internal_nodes[[index]]
+    list(
+      node = node_signature(tree, node),
+      estimate = unname(as.numeric(fit$ace[[index]])),
+      standard_error = sqrt(unname(as.numeric(fit$var[[index]]))),
+      lower_95_interval = unname(as.numeric(fit$CI95[[index, 1]])),
+      upper_95_interval = unname(as.numeric(fit$CI95[[index, 2]]))
+    )
+  })
+  node_rows <- node_rows[order(vapply(node_rows, function(row) row$node, character(1)))]
+  list(
+    summary = list(
+      taxon_count = length(trait_values),
+      trait_name = trait_name,
+      internal_node_count = length(node_rows),
+      excluded_taxon_count = length(excluded_taxa),
+      excluded_taxa = excluded_taxa,
+      tree_is_ultrametric = isTRUE(ape::is.ultrametric(tree)),
+      sigma_squared = as.numeric(fit$sig2),
+      log_likelihood = as.numeric(fit$logLik)
+    ),
+    rows = node_rows
+  )
+}
+
 result_payload <- switch(
   case_payload$operation,
   "phylogenetic-signal-lambda" = list(
@@ -235,6 +274,12 @@ result_payload <- switch(
     rows = NULL
   ),
   "continuous-ancestral-fast-anc" = build_fast_anc_result(
+    tree,
+    trait_values,
+    trait_name,
+    excluded_taxa
+  ),
+  "continuous-ancestral-anc-ml" = build_anc_ml_result(
     tree,
     trait_values,
     trait_name,
@@ -260,5 +305,9 @@ write_table(
   })
 )
 if (!is.null(result_payload$rows)) {
-  write_table(fast_anc_rows_path, result_payload$rows)
+  if (identical(case_payload$operation, "continuous-ancestral-fast-anc")) {
+    write_table(fast_anc_rows_path, result_payload$rows)
+  } else if (identical(case_payload$operation, "continuous-ancestral-anc-ml")) {
+    write_table(anc_ml_rows_path, result_payload$rows)
+  }
 }
