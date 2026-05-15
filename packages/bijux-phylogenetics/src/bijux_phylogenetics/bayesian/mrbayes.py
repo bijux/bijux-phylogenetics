@@ -672,6 +672,7 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
             code="mrbayes_trace_missing_file",
             path=path,
             artifact_kind="mrbayes-trace",
+            details={"expected_section": "parameter trace file"},
         )
     rows: list[MrBayesTraceRow] = []
     logical_lines = _read_mrbayes_tabular_lines(path)
@@ -696,6 +697,7 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
                 code="mrbayes_trace_missing_generation_column",
                 path=path,
                 artifact_kind="mrbayes-trace",
+                details={"expected_section": "Gen column"},
             )
         try:
             generation = int(float(generation_text))
@@ -705,7 +707,7 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
                 code="mrbayes_trace_invalid_generation_value",
                 path=path,
                 artifact_kind="mrbayes-trace",
-                details={"row_number": row_number},
+                details={"row_number": row_number, "expected_section": "Gen column"},
             ) from error
         values: dict[str, float] = {}
         for column in columns:
@@ -716,7 +718,11 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
                     code="mrbayes_trace_missing_parameter_value",
                     path=path,
                     artifact_kind="mrbayes-trace",
-                    details={"row_number": row_number, "column": column},
+                    details={
+                        "row_number": row_number,
+                        "column": column,
+                        "expected_section": "sampled parameter row",
+                    },
                 )
             try:
                 values[column] = float(raw_value)
@@ -726,7 +732,11 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
                     code="mrbayes_trace_invalid_parameter_value",
                     path=path,
                     artifact_kind="mrbayes-trace",
-                    details={"row_number": row_number, "column": column},
+                    details={
+                        "row_number": row_number,
+                        "column": column,
+                        "expected_section": "sampled parameter row",
+                    },
                 ) from error
         rows.append(
             MrBayesTraceRow(generation=generation, values=values)
@@ -737,6 +747,7 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
             code="mrbayes_trace_missing_rows",
             path=path,
             artifact_kind="mrbayes-trace",
+            details={"expected_section": "sampled parameter rows"},
         )
     return MrBayesTraceReport(
         path=path, row_count=len(rows), columns=columns, rows=rows
@@ -751,6 +762,7 @@ def parse_mrbayes_mcmc_diagnostics(path: Path) -> MrBayesMcmcReport:
             code="mrbayes_mcmc_missing_file",
             path=path,
             artifact_kind="mrbayes-mcmc",
+            details={"expected_section": "MCMC diagnostics file"},
         )
     comment_lines: list[str] = []
     logical_lines = _read_mrbayes_tabular_lines(path, comment_lines=comment_lines)
@@ -776,6 +788,7 @@ def parse_mrbayes_mcmc_diagnostics(path: Path) -> MrBayesMcmcReport:
                 code="mrbayes_mcmc_missing_generation_column",
                 path=path,
                 artifact_kind="mrbayes-mcmc",
+                details={"expected_section": "Gen column"},
             )
         try:
             generation = int(float(generation_text))
@@ -785,7 +798,7 @@ def parse_mrbayes_mcmc_diagnostics(path: Path) -> MrBayesMcmcReport:
                 code="mrbayes_mcmc_invalid_generation_value",
                 path=path,
                 artifact_kind="mrbayes-mcmc",
-                details={"row_number": row_number},
+                details={"row_number": row_number, "expected_section": "Gen column"},
             ) from error
         values: dict[str, float | None] = {}
         for column in columns:
@@ -796,7 +809,11 @@ def parse_mrbayes_mcmc_diagnostics(path: Path) -> MrBayesMcmcReport:
                     code="mrbayes_mcmc_missing_parameter_value",
                     path=path,
                     artifact_kind="mrbayes-mcmc",
-                    details={"row_number": row_number, "column": column},
+                    details={
+                        "row_number": row_number,
+                        "column": column,
+                        "expected_section": "sampled diagnostics row",
+                    },
                 )
             normalized = raw_value.strip()
             if normalized.lower() in {"na", "nan"}:
@@ -810,7 +827,11 @@ def parse_mrbayes_mcmc_diagnostics(path: Path) -> MrBayesMcmcReport:
                         code="mrbayes_mcmc_invalid_parameter_value",
                         path=path,
                         artifact_kind="mrbayes-mcmc",
-                        details={"row_number": row_number, "column": column},
+                        details={
+                            "row_number": row_number,
+                            "column": column,
+                            "expected_section": "sampled diagnostics row",
+                        },
                     ) from error
         rows.append(
             MrBayesMcmcRow(generation=generation, values=values)
@@ -821,6 +842,7 @@ def parse_mrbayes_mcmc_diagnostics(path: Path) -> MrBayesMcmcReport:
             code="mrbayes_mcmc_missing_rows",
             path=path,
             artifact_kind="mrbayes-mcmc",
+            details={"expected_section": "sampled diagnostics rows"},
         )
     return MrBayesMcmcReport(
         path=path,
@@ -911,6 +933,7 @@ def _split_mrbayes_tabular_table(
             code=missing_header_code,
             path=path,
             artifact_kind=artifact_kind,
+            details={"expected_section": "tabular header"},
         )
     header_fields: list[str] | None = None
     header_index = -1
@@ -928,7 +951,7 @@ def _split_mrbayes_tabular_table(
                 code=missing_generation_code,
                 path=path,
                 artifact_kind=artifact_kind,
-                details={"columns": fields},
+                details={"columns": fields, "expected_section": "Gen column"},
             )
     if header_fields is None:
         raise _mrbayes_artifact_error(
@@ -936,6 +959,7 @@ def _split_mrbayes_tabular_table(
             code=missing_header_code,
             path=path,
             artifact_kind=artifact_kind,
+            details={"expected_section": "tabular header"},
         )
     data_lines: list[list[str]] = []
     for line in logical_lines[header_index + 1 :]:
@@ -954,6 +978,7 @@ def _split_mrbayes_tabular_table(
                 details={
                     "expected_field_count": len(header_fields),
                     "observed_field_count": len(fields),
+                    "expected_section": "sampled row",
                 },
             )
         data_lines.append(fields)

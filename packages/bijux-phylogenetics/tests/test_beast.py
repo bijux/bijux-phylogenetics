@@ -677,6 +677,7 @@ def test_parse_beast_log_reports_structured_missing_and_malformed_errors(
         parse_beast_log(missing_path)
     assert missing.value.code == "beast_log_missing_file"
     assert missing.value.details["artifact_kind"] == "beast-log"
+    assert missing.value.details["expected_section"] == "posterior log file"
 
     with pytest.raises(EngineWorkflowError) as malformed:
         parse_beast_log(invalid_path)
@@ -684,6 +685,7 @@ def test_parse_beast_log_reports_structured_missing_and_malformed_errors(
     assert malformed.value.details["artifact_kind"] == "beast-log"
     assert malformed.value.details["column"] == "posterior"
     assert malformed.value.details["row_number"] == 3
+    assert malformed.value.details["expected_section"] == "sampled parameter row"
 
 
 def test_summarize_beast_log_classifies_parameters_and_writes_summary_table(
@@ -779,6 +781,7 @@ def test_parse_beast_log_reports_truncated_fixture_with_structured_error() -> No
     assert error.value.details["artifact_kind"] == "beast-log"
     assert error.value.details["column"] == "likelihood"
     assert error.value.details["row_number"] == 3
+    assert error.value.details["expected_section"] == "sampled parameter row"
 
 
 def test_summarize_beast_log_reads_real_beast_fixture() -> None:

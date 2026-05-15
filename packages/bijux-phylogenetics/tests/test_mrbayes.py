@@ -494,6 +494,7 @@ def test_parse_mrbayes_parameter_traces_reports_truncated_fixture() -> None:
     assert error.value.details["artifact_kind"] == "mrbayes-trace"
     assert error.value.details["column"] == "alpha"
     assert error.value.details["row_number"] == 3
+    assert error.value.details["expected_section"] == "sampled parameter row"
 
 
 def test_parse_mrbayes_parameter_traces_reports_malformed_fixture() -> None:
@@ -506,6 +507,7 @@ def test_parse_mrbayes_parameter_traces_reports_malformed_fixture() -> None:
     assert error.value.details["artifact_kind"] == "mrbayes-trace"
     assert error.value.details["column"] == "LnL"
     assert error.value.details["row_number"] == 3
+    assert error.value.details["expected_section"] == "sampled parameter row"
 
 
 def test_parse_mrbayes_posterior_tree_samples_and_consensus_tree(
@@ -581,6 +583,7 @@ def test_parse_mrbayes_mcmc_diagnostics_reports_truncated_fixture() -> None:
     assert error.value.details["artifact_kind"] == "mrbayes-mcmc"
     assert error.value.details["column"] == "AvgStdDev(s)"
     assert error.value.details["row_number"] == 3
+    assert error.value.details["expected_section"] == "sampled diagnostics row"
 
 
 def test_parse_real_mrbayes_output_fixture() -> None:

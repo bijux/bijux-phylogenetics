@@ -2379,6 +2379,7 @@ def parse_beast_log(path: Path) -> BeastLogReport:
             code="beast_log_missing_file",
             path=path,
             artifact_kind="beast-log",
+            details={"expected_section": "posterior log file"},
         )
     logical_lines = _read_tabular_artifact_lines(path)
     header_fields, data_lines = _split_beast_log_table(logical_lines, path=path)
@@ -2402,7 +2403,7 @@ def parse_beast_log(path: Path) -> BeastLogReport:
                 code="beast_log_missing_state_value",
                 path=path,
                 artifact_kind="beast-log",
-                details={"row_number": row_number},
+                details={"row_number": row_number, "expected_section": "state column"},
             )
         try:
             state = int(float(raw_state))
@@ -2412,7 +2413,11 @@ def parse_beast_log(path: Path) -> BeastLogReport:
                 code="beast_log_invalid_state_value",
                 path=path,
                 artifact_kind="beast-log",
-                details={"row_number": row_number, "value": raw_state},
+                details={
+                    "row_number": row_number,
+                    "value": raw_state,
+                    "expected_section": "state column",
+                },
             ) from error
         values: dict[str, float] = {}
         for column in columns:
@@ -2423,7 +2428,11 @@ def parse_beast_log(path: Path) -> BeastLogReport:
                     code="beast_log_missing_parameter_value",
                     path=path,
                     artifact_kind="beast-log",
-                    details={"row_number": row_number, "column": column},
+                    details={
+                        "row_number": row_number,
+                        "column": column,
+                        "expected_section": "sampled parameter row",
+                    },
                 )
             try:
                 values[column] = float(raw_value)
@@ -2437,6 +2446,7 @@ def parse_beast_log(path: Path) -> BeastLogReport:
                         "row_number": row_number,
                         "column": column,
                         "value": raw_value,
+                        "expected_section": "sampled parameter row",
                     },
                 ) from error
         rows.append(BeastLogRow(state=state, values=values))
@@ -2446,6 +2456,7 @@ def parse_beast_log(path: Path) -> BeastLogReport:
             code="beast_log_missing_rows",
             path=path,
             artifact_kind="beast-log",
+            details={"expected_section": "sampled parameter rows"},
         )
     return BeastLogReport(path=path, row_count=len(rows), columns=columns, rows=rows)
 
@@ -2509,6 +2520,7 @@ def _split_beast_log_table(
             code="beast_log_missing_header",
             path=path,
             artifact_kind="beast-log",
+            details={"expected_section": "tabular header"},
         )
     header_fields: list[str] | None = None
     header_index = -1
@@ -2526,7 +2538,10 @@ def _split_beast_log_table(
                 code="beast_log_missing_state_column",
                 path=path,
                 artifact_kind="beast-log",
-                details={"columns": fields},
+                details={
+                    "columns": fields,
+                    "expected_section": "state column",
+                },
             )
     if header_fields is None:
         raise _beast_artifact_error(
@@ -2534,6 +2549,7 @@ def _split_beast_log_table(
             code="beast_log_missing_header",
             path=path,
             artifact_kind="beast-log",
+            details={"expected_section": "tabular header"},
         )
     data_lines: list[list[str]] = []
     for line in logical_lines[header_index + 1 :]:
@@ -2552,6 +2568,7 @@ def _split_beast_log_table(
                 details={
                     "expected_field_count": len(header_fields),
                     "observed_field_count": len(fields),
+                    "expected_section": "sampled parameter row",
                 },
             )
         data_lines.append(fields)
@@ -2635,6 +2652,7 @@ def parse_beast_posterior_tree_samples(
             code="beast_tree_missing_file",
             path=path,
             artifact_kind="beast-posterior-trees",
+            details={"expected_section": "trees block"},
         )
     text = path.read_text(encoding="utf-8")
     entries = _extract_beast_tree_entries(text)
@@ -2644,6 +2662,7 @@ def parse_beast_posterior_tree_samples(
             code="beast_tree_missing_entries",
             path=path,
             artifact_kind="beast-posterior-trees",
+            details={"expected_section": "trees block"},
         )
     burnin_tree_count, kept_entries = _split_beast_tree_entries(
         entries, burnin_fraction=burnin_fraction, path=path
@@ -2667,7 +2686,11 @@ def parse_beast_posterior_tree_samples(
                 code="beast_tree_parse_error",
                 path=path,
                 artifact_kind="beast-posterior-trees",
-                details={"tree_name": tree_name, "cause": error.message},
+                details={
+                    "tree_name": tree_name,
+                    "cause": error.message,
+                    "expected_section": "trees block entry",
+                },
             ) from error
         samples.append(
             BeastPosteriorTreeSample(
