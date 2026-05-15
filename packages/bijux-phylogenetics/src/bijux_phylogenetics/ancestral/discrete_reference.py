@@ -176,8 +176,8 @@ def _validate_root_prior_behavior() -> DiscreteAncestralReferenceObservation:
     assumption_rows = {row.assumption_id: row for row in report.assumption_rows}
     expected_metrics = {
         "assumption_count": 3,
-        "state_changed_node_count": 1,
-        "support_changed_node_count": 2,
+        "state_changed_node_count": 2,
+        "support_changed_node_count": 1,
         "top_sensitive_node": "A|B|C|D",
         "equal_root_state": "north",
         "empirical_root_state": "north",

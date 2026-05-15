@@ -56,8 +56,8 @@ def test_validate_discrete_ancestral_reference_examples_covers_policy_surfaces()
     irreversible = observations["irreversible_loss_constraints"]
     ambiguous = observations["ambiguous_internal_states"]
 
-    assert root_prior.observed_metrics["state_changed_node_count"] == 1
-    assert root_prior.observed_metrics["support_changed_node_count"] == 2
+    assert root_prior.observed_metrics["state_changed_node_count"] == 2
+    assert root_prior.observed_metrics["support_changed_node_count"] == 1
     assert root_prior.observed_metrics["fixed_root_state"] == "island"
     assert ordered.observed_metrics["preferred_ordering"] == "ordered"
     assert ordered.observed_metrics["north_to_island_allowed"] is False

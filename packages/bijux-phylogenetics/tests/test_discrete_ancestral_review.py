@@ -14,6 +14,7 @@ from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
     summarize_discrete_ancestral_report,
     write_discrete_ancestral_exclusion_table,
+    write_discrete_ancestral_fit_table,
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
     write_discrete_ancestral_transition_table,
@@ -140,6 +141,53 @@ def test_write_discrete_ancestral_er_fit_tables(tmp_path: Path) -> None:
         "source_state\ttarget_state\ttransition_allowed\tstep_distance\trate"
     )
     assert len(transition_rows) == 7
+
+
+def test_write_discrete_ancestral_sym_fit_table_tracks_optimizer_and_baseline(
+    tmp_path: Path,
+) -> None:
+    tree_fixture = get_shared_tree_fixture("balanced_rooted_six_taxon")
+    trait_fixture = get_shared_trait_table_fixture("ace_discrete_sym_six_taxon")
+    report = reconstruct_discrete_ancestral_states(
+        tree_fixture.path,
+        trait_fixture.path,
+        trait="region",
+        model="symmetric",
+    )
+    fit_path = tmp_path / "discrete-ancestral-fit.tsv"
+    write_discrete_ancestral_fit_table(fit_path, report)
+    fit_rows = fit_path.read_text(encoding="utf-8").splitlines()
+    assert fit_rows[0].startswith(
+        "model\ttaxon_count\tstate_count\tparameter_count\tlog_likelihood"
+    )
+    assert "\tsymmetric\t6\t3\t3\t" in f"\t{fit_rows[1]}\t"
+    assert "\tnelder-mead\t" in f"\t{fit_rows[1]}\t"
+    assert report.optimizer_diagnostics is not None
+    assert report.optimizer_diagnostics.optimizer_name == "nelder-mead"
+    assert report.baseline_comparison is not None
+    assert report.baseline_comparison.baseline_model == "equal-rates"
+    assert report.baseline_comparison.delta_aic > 0.0
+    assert report.baseline_comparison.preferred_model_by_aic == "equal-rates"
+    assert max(row.rate for row in report.transition_rate_rows) < 10.0
+
+
+def test_reconstruct_discrete_ancestral_states_flags_overparameterized_sym_case() -> (
+    None
+):
+    report = reconstruct_discrete_ancestral_states(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography_four_state.tsv"),
+        trait="region",
+        model="symmetric",
+    )
+    summary = summarize_discrete_ancestral_report(report)
+    assert report.overparameterized is True
+    assert summary.overparameterized is True
+    assert report.optimizer_diagnostics is not None
+    assert (
+        "the discrete likelihood fit is likely overparameterized relative to the analyzed taxon count"
+        in report.warnings
+    )
 
 
 def test_fitch_summary_table_includes_parsimony_counts(tmp_path: Path) -> None:
