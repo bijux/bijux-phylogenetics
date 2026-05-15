@@ -7,10 +7,12 @@ import pytest
 
 from bijux_phylogenetics.comparative.brownian_covariance import (
     summarize_brownian_covariance,
+    summarize_brownian_covariance_from_tree,
     write_brownian_covariance_long_table,
     write_brownian_covariance_matrix_table,
 )
 from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.io.trees import load_tree
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -45,6 +47,24 @@ def test_summarize_brownian_covariance_matches_rooted_ultrametric_matrix() -> No
     assert math.isclose(matrix[("A", "B")], 0.2, abs_tol=1e-12)
     assert math.isclose(matrix[("C", "D")], 0.1, abs_tol=1e-12)
     assert math.isclose(matrix[("B", "D")], 0.0, abs_tol=1e-12)
+
+
+def test_summarize_brownian_covariance_from_tree_matches_path_surface() -> None:
+    tree = load_tree(fixture("example_tree.nwk"))
+
+    direct_report = summarize_brownian_covariance_from_tree(
+        tree,
+        tree_path=fixture("example_tree.nwk"),
+    )
+    path_report = summarize_brownian_covariance(fixture("example_tree.nwk"))
+
+    assert direct_report.tree_path == fixture("example_tree.nwk")
+    assert direct_report.taxa == path_report.taxa
+    assert direct_report.tree_is_rooted == path_report.tree_is_rooted
+    assert direct_report.tree_is_ultrametric == path_report.tree_is_ultrametric
+    assert direct_report.matrix_rank == path_report.matrix_rank
+    assert direct_report.condition_number == path_report.condition_number
+    assert direct_report.rows == path_report.rows
 
 
 def test_summarize_brownian_covariance_handles_non_ultrametric_tip_order() -> None:
