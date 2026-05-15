@@ -1624,6 +1624,19 @@ dna_base_frequency_case <- function(case_payload, output_root, execution_path, r
 }
 
 dna_distance_case <- function(case_payload, output_root, execution_path, r_version) {
+  ape_distance_model <- function(model_name) {
+    normalized <- tolower(as.character(model_name))
+    if (identical(normalized, "raw")) {
+      return("RAW")
+    }
+    if (identical(normalized, "jc69")) {
+      return("JC69")
+    }
+    if (identical(normalized, "k80")) {
+      return("K80")
+    }
+    as.character(model_name)
+  }
   canonical_distance_model <- function(model_name) {
     normalized <- tolower(as.character(model_name))
     if (identical(normalized, "raw")) {
@@ -1660,7 +1673,7 @@ dna_distance_case <- function(case_payload, output_root, execution_path, r_versi
   distance_result <- tryCatch(
     ape::dist.dna(
       alignment,
-      model = case_payload$distance_model,
+      model = ape_distance_model(case_payload$distance_model),
       pairwise.deletion = isTRUE(case_payload$pairwise_deletion),
       as.matrix = TRUE
     ),
