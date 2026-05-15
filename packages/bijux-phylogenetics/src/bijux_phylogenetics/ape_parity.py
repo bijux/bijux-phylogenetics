@@ -20,6 +20,7 @@ from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
     prune_tree_to_requested_taxa,
 )
+from bijux_phylogenetics.core.topology import extract_tree_clade_by_node_id
 from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matrix
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
@@ -57,6 +58,7 @@ class ApeParityCase:
     outgroup_taxa: tuple[str, ...] = ()
     excluded_taxa: tuple[str, ...] = ()
     requested_taxa: tuple[str, ...] = ()
+    node_id: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -542,6 +544,63 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             requested_taxa=("A", "B"),
         ),
         ApeParityCase(
+            case_id="extract-clade-root",
+            fixture_kind="tree",
+            fixture_id="internal_node_labels",
+            function_name="ape::extract.clade",
+            python_function_name="extract_tree_clade_by_node_id",
+            operation="extract-tree-clade",
+            input_fixture=fixture_path("tree", "internal_node_labels"),
+            tolerance=1e-12,
+            node_id=5,
+        ),
+        ApeParityCase(
+            case_id="extract-clade-mammals",
+            fixture_kind="tree",
+            fixture_id="internal_node_labels",
+            function_name="ape::extract.clade",
+            python_function_name="extract_tree_clade_by_node_id",
+            operation="extract-tree-clade",
+            input_fixture=fixture_path("tree", "internal_node_labels"),
+            tolerance=1e-12,
+            node_id=6,
+        ),
+        ApeParityCase(
+            case_id="extract-clade-birds",
+            fixture_kind="tree",
+            fixture_id="internal_node_labels",
+            function_name="ape::extract.clade",
+            python_function_name="extract_tree_clade_by_node_id",
+            operation="extract-tree-clade",
+            input_fixture=fixture_path("tree", "internal_node_labels"),
+            tolerance=1e-12,
+            node_id=7,
+        ),
+        ApeParityCase(
+            case_id="extract-clade-tip-node-invalid",
+            fixture_kind="tree",
+            fixture_id="internal_node_labels",
+            function_name="ape::extract.clade",
+            python_function_name="extract_tree_clade_by_node_id",
+            operation="extract-tree-clade",
+            input_fixture=fixture_path("tree", "internal_node_labels"),
+            tolerance=0.0,
+            node_id=1,
+            expected_status="clade-extraction-error",
+        ),
+        ApeParityCase(
+            case_id="extract-clade-node-out-of-bounds",
+            fixture_kind="tree",
+            fixture_id="internal_node_labels",
+            function_name="ape::extract.clade",
+            python_function_name="extract_tree_clade_by_node_id",
+            operation="extract-tree-clade",
+            input_fixture=fixture_path("tree", "internal_node_labels"),
+            tolerance=0.0,
+            node_id=8,
+            expected_status="clade-extraction-error",
+        ),
+        ApeParityCase(
             case_id="dna-base-frequency-lowercase",
             fixture_kind="dna-alignment",
             fixture_id="lowercase_aligned_dna",
@@ -694,6 +753,7 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
                 "outgroup_taxa": list(case.outgroup_taxa),
                 "excluded_taxa": list(case.excluded_taxa),
                 "requested_taxa": list(case.requested_taxa),
+                "node_id": case.node_id,
             },
             indent=2,
             sort_keys=True,
@@ -847,6 +907,27 @@ def _build_bijux_keep_tip_structure(
     )
     summary["requested_taxa"] = report.requested_taxa
     summary["dropped_taxa"] = report.removed_taxa
+    return summary, rows, normalized_text
+
+
+def _build_bijux_extract_clade_structure(
+    input_fixture: Path,
+    *,
+    node_id: int,
+) -> tuple[dict[str, object], list[dict[str, object]], str]:
+    subtree, report = extract_tree_clade_by_node_id(input_fixture, node_id=node_id)
+    with tempfile.TemporaryDirectory(prefix="bijux-ape-extract-clade-") as tmpdir:
+        subtree_path = Path(tmpdir) / "extract-clade.nwk"
+        write_newick(subtree_path, subtree)
+        clades = extract_tree_clades(subtree_path)
+    summary, rows, normalized_text = _tree_structure_payload(
+        subtree,
+        subtree.rooted,
+        clades.rows,
+    )
+    summary["requested_node_id"] = report.requested_node_id
+    summary["matched_node_id"] = report.matched_node_id
+    summary["matched_node_name"] = report.matched_node_name
     return summary, rows, normalized_text
 
 
@@ -1246,6 +1327,16 @@ def _build_bijux_case_payload(
             requested_taxa=case.requested_taxa,
         )
         return summary, rows, normalized_text
+    if case.operation == "extract-tree-clade":
+        if case.node_id is None:
+            raise ValueError(
+                f"ape parity case '{case.case_id}' is missing an extraction node id"
+            )
+        summary, rows, normalized_text = _build_bijux_extract_clade_structure(
+            case.input_fixture,
+            node_id=case.node_id,
+        )
+        return summary, rows, normalized_text
     if case.operation in {"read-tree-set-structure", "write-tree-set-structure"}:
         summary, rows, normalized_text = _build_bijux_tree_set_structure(case.input_fixture)
         return summary, rows, normalized_text
@@ -1286,6 +1377,7 @@ def _load_reference_case_payload(
         "unroot-tree",
         "drop-tree-taxa",
         "keep-tree-taxa",
+        "extract-tree-clade",
     }:
         summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
         expected_tip_labels = {
@@ -1437,6 +1529,32 @@ def _keep_tip_tree_mismatch_reason(
     expected_tree, _report = prune_tree_to_requested_taxa(
         case.input_fixture,
         list(case.requested_taxa),
+    )
+    _normalize_tree_labels(
+        reference_tree.root,
+        expected_tip_labels=set(expected_tree.tip_names),
+    )
+    report = compare_tree_structurally(
+        expected_tree,
+        reference_tree,
+        tolerance=case.tolerance,
+        compare_internal_labels=True,
+    )
+    return report.mismatch_reason
+
+
+def _extract_clade_tree_mismatch_reason(
+    case: ApeParityCase,
+    execution_root: Path,
+) -> str | None:
+    reference_summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
+    reference_tree = load_tree(execution_root / "normalized-tree.nwk")
+    reference_tree.rooted = reference_summary.get("rooted")  # type: ignore[assignment]
+    if case.node_id is None:
+        raise ValueError(f"ape parity case '{case.case_id}' is missing an extraction node id")
+    expected_tree, _report = extract_tree_clade_by_node_id(
+        case.input_fixture,
+        node_id=case.node_id,
     )
     _normalize_tree_labels(
         reference_tree.root,
@@ -1615,6 +1733,17 @@ def run_ape_parity_cases(
                                 tolerance=case.tolerance,
                             ):
                                 mismatch_reason = "summary_mismatch"
+                        elif case.operation == "extract-tree-clade":
+                            mismatch_reason = _extract_clade_tree_mismatch_reason(
+                                case,
+                                execution_root,
+                            )
+                            if mismatch_reason is None and not _compare_json(
+                                reference_summary,
+                                bijux_summary,
+                                tolerance=case.tolerance,
+                            ):
+                                mismatch_reason = "summary_mismatch"
                         elif case.operation in {
                             "read-tree-set-structure",
                             "write-tree-set-structure",
@@ -1656,6 +1785,16 @@ def run_ape_parity_cases(
                     mismatch_reason = "reference_expected_rooting_error_missing"
                 elif not bijux_error.get("message") or not reference_error.get("message"):
                     mismatch_reason = "rooting_error_message_missing"
+                else:
+                    status = "passed"
+                    mismatch_reason = None
+            if case.expected_status == "clade-extraction-error":
+                if bijux_error is None:
+                    mismatch_reason = "bijux_expected_clade_extraction_error_missing"
+                elif reference_error is None:
+                    mismatch_reason = "reference_expected_clade_extraction_error_missing"
+                elif not bijux_error.get("message") or not reference_error.get("message"):
+                    mismatch_reason = "clade_extraction_error_message_missing"
                 else:
                     status = "passed"
                     mismatch_reason = None
