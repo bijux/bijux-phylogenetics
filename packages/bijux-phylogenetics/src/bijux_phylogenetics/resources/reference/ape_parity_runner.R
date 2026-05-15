@@ -1635,6 +1635,12 @@ dna_distance_case <- function(case_payload, output_root, execution_path, r_versi
     if (identical(normalized, "k80")) {
       return("K80")
     }
+    if (identical(normalized, "f81")) {
+      return("F81")
+    }
+    if (identical(normalized, "tn93")) {
+      return("TN93")
+    }
     as.character(model_name)
   }
   canonical_distance_model <- function(model_name) {
@@ -1647,6 +1653,12 @@ dna_distance_case <- function(case_payload, output_root, execution_path, r_versi
     }
     if (identical(normalized, "k80")) {
       return("kimura-2-parameter")
+    }
+    if (identical(normalized, "f81")) {
+      return("felsenstein-81")
+    }
+    if (identical(normalized, "tn93")) {
+      return("tamura-nei-93")
     }
     normalized
   }
