@@ -544,6 +544,27 @@
       "notes": "Twenty-four-taxon comparative signal table with one missing and one nonnumeric overlapping trait value for explicit pruning before live `phytools` review."
     },
     {
+      "fixture_id": "phytools_discrete_missing_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_discrete_missing_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "binary_state",
+        "region_state"
+      ],
+      "validation_expectation": "missing-trait-values-present",
+      "ape_reference_expectation": "phytools-ready-after-pruning",
+      "row_count": 24,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "missing-trait-values",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon discrete comparative table with one missing binary state and one missing multistate observation so governed `phytools` Mk fits prove explicit pruning before likelihood evaluation."
+    },
+    {
       "fixture_id": "phytools_signal_constant_twenty_four_taxa",
       "relative_path": "metadata/example_traits_phytools_signal_constant_twenty_four_taxa.tsv",
       "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",

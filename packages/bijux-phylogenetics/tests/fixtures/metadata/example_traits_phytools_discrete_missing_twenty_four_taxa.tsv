@@ -1,0 +1,25 @@
+taxon	binary_state	region_state
+Phy1	0	south
+Phy10		north
+Phy11	0	north
+Phy12	1	north
+Phy13	0	south
+Phy14	0	
+Phy15	0	north
+Phy16	0	north
+Phy17	0	west
+Phy18	1	south
+Phy19	0	south
+Phy2	1	north
+Phy20	1	north
+Phy21	0	west
+Phy22	1	north
+Phy23	0	south
+Phy24	1	north
+Phy3	1	north
+Phy4	1	north
+Phy5	0	north
+Phy6	1	north
+Phy7	1	north
+Phy8	1	south
+Phy9	0	west

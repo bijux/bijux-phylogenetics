@@ -5,6 +5,7 @@ import csv
 import pytest
 
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
+from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     compute_phylogenetic_signal_test,
@@ -275,6 +276,57 @@ def test_shared_phytools_comparative_fixture_catalog_supports_anc_ml_signal_case
     assert sorted(
         missing_report.dropped_missing_taxa + missing_report.dropped_non_numeric_taxa
     ) == ["Phy10", "Phy14"]
+
+
+def test_shared_phytools_comparative_fixture_catalog_supports_fitmk_er_cases() -> None:
+    binary_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_binary_twenty_four_taxa"
+    )
+    multistate_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_multistate_twenty_four_taxa"
+    )
+    binary_missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_binary_missing_twenty_four_taxa"
+    )
+    multistate_missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_multistate_missing_twenty_four_taxa"
+    )
+
+    binary_report = fit_discrete_mk_model(
+        binary_fixture.tree_path,
+        binary_fixture.traits_path,
+        trait=binary_fixture.trait_name,
+        taxon_column=binary_fixture.taxon_column,
+        model="equal-rates",
+    )
+    multistate_report = fit_discrete_mk_model(
+        multistate_fixture.tree_path,
+        multistate_fixture.traits_path,
+        trait=multistate_fixture.trait_name,
+        taxon_column=multistate_fixture.taxon_column,
+        model="equal-rates",
+    )
+    binary_missing_report = fit_discrete_mk_model(
+        binary_missing_fixture.tree_path,
+        binary_missing_fixture.traits_path,
+        trait=binary_missing_fixture.trait_name,
+        taxon_column=binary_missing_fixture.taxon_column,
+        model="equal-rates",
+    )
+    multistate_missing_report = fit_discrete_mk_model(
+        multistate_missing_fixture.tree_path,
+        multistate_missing_fixture.traits_path,
+        trait=multistate_missing_fixture.trait_name,
+        taxon_column=multistate_missing_fixture.taxon_column,
+        model="equal-rates",
+    )
+
+    assert binary_report.parameter_count == 1
+    assert multistate_report.parameter_count == 1
+    assert binary_missing_report.input_audit.pruned_missing_value_taxa == ["Phy10"]
+    assert multistate_missing_report.input_audit.pruned_missing_value_taxa == ["Phy14"]
+    assert len(binary_report.transition_rate_rows) == 2
+    assert len(multistate_report.transition_rate_rows) == 6
 
 
 def test_shared_phytools_comparative_fixture_catalog_covers_discrete_nonultrametric_and_branch_edge_surfaces() -> (

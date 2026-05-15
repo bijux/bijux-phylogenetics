@@ -187,6 +187,50 @@
       "notes": "Symmetric discrete-state simulation on the twenty-four-taxon ultrametric tree used as the governed multistate comparative surface."
     },
     {
+      "fixture_id": "phytools_discrete_binary_missing_twenty_four_taxa",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_discrete_missing_twenty_four_taxa",
+      "trait_name": "binary_state",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "validation_expectation": "prune-invalid-overlap",
+      "phytools_reference_expectation": "discrete-ready-after-pruning",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "missing-trait-values",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "simulation_metadata": {
+        "source_fixture": "phytools_discrete_binary_twenty_four_taxa",
+        "missing_taxa": [
+          "Phy10"
+        ]
+      },
+      "notes": "Binary discrete Mk fixture with one missing overlapping tip state so governed `phytools::fitMk` parity proves explicit pruning before ER likelihood fitting."
+    },
+    {
+      "fixture_id": "phytools_discrete_multistate_missing_twenty_four_taxa",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_discrete_missing_twenty_four_taxa",
+      "trait_name": "region_state",
+      "taxon_column": "taxon",
+      "trait_kind": "multistate-discrete",
+      "validation_expectation": "prune-invalid-overlap",
+      "phytools_reference_expectation": "discrete-ready-after-pruning",
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "missing-trait-values",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "simulation_metadata": {
+        "source_fixture": "phytools_discrete_multistate_twenty_four_taxa",
+        "missing_taxa": [
+          "Phy14"
+        ]
+      },
+      "notes": "Multistate discrete Mk fixture with one missing overlapping tip state so governed `phytools::fitMk` parity proves explicit pruning before ER likelihood fitting."
+    },
+    {
       "fixture_id": "phytools_continuous_missing_values_twenty_four_taxa",
       "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
       "trait_table_fixture_id": "phytools_signal_missing_twenty_four_taxa",
