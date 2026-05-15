@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from math import exp, sqrt
 from pathlib import Path
 import random
+from statistics import median
 
 from bijux_phylogenetics.ancestral.common import node_descendant_taxa, node_signature
 from bijux_phylogenetics.core.alignment import AlignmentRecord
@@ -12,12 +13,34 @@ from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.fasta import write_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick, write_newick_tree_set
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.tree_shape import summarize_tree_shape_from_tree
 
 
 @dataclass(frozen=True, slots=True)
 class SimulatedTreeRecord:
     index: int
     newick: str
+    tree_height_branch_length: float
+    total_branch_length: float
+    mean_branch_length: float
+    median_branch_length: float
+    minimum_branch_length: float
+    maximum_branch_length: float
+    cherry_count: int
+    sackin_imbalance_index: int
+    normalized_colless_imbalance: float
+
+
+@dataclass(frozen=True, slots=True)
+class TreeSimulationEnvelopeMetric:
+    metric: str
+    sample_scope: str
+    observation_count: int
+    mean: float
+    standard_deviation: float
+    minimum: float
+    median: float
+    maximum: float
 
 
 @dataclass(slots=True)
@@ -27,6 +50,14 @@ class TreeSimulationReport:
     tip_count: int
     seed: int
     records: list[SimulatedTreeRecord]
+    branch_length_model: str | None = None
+    birth_rate: float | None = None
+    death_rate: float | None = None
+    population_size: float | None = None
+    rooted: bool = True
+    binary: bool = True
+    pooled_branch_count: int = 0
+    envelope_metrics: list[TreeSimulationEnvelopeMetric] = field(default_factory=list)
 
 
 @dataclass(frozen=True, slots=True)
@@ -129,6 +160,26 @@ class _Lineage:
     extant: bool = True
 
 
+def _round_float(value: float) -> float:
+    return round(float(value), 15)
+
+
+def _mean(values: list[float]) -> float:
+    return _round_float(sum(values) / len(values))
+
+
+def _median(values: list[float]) -> float:
+    return _round_float(float(median(values)))
+
+
+def _population_standard_deviation(values: list[float]) -> float:
+    if len(values) < 2:
+        return 0.0
+    mean_value = sum(values) / len(values)
+    variance = sum((value - mean_value) ** 2 for value in values) / len(values)
+    return _round_float(variance**0.5)
+
+
 def _validate_tree_count(tree_count: int, tip_count: int) -> None:
     if tree_count < 1:
         raise ValueError(f"tree_count must be at least 1, got {tree_count}")
@@ -172,6 +223,145 @@ def _finalize_extant_leaves(lineages: list[_Lineage], *, final_time: float) -> N
 def _label_tree_leaves(tree: PhyloTree, *, taxon_prefix: str) -> None:
     for index, leaf in enumerate(tree.iter_leaves(), start=1):
         leaf.name = f"{taxon_prefix}{index}"
+
+
+def _label_tree_leaves_randomized(
+    tree: PhyloTree,
+    *,
+    taxon_prefix: str,
+    rng: random.Random,
+) -> None:
+    labels = [f"{taxon_prefix}{index}" for index in range(1, tree.tip_count + 1)]
+    rng.shuffle(labels)
+    for leaf, label in zip(tree.iter_leaves(), labels, strict=True):
+        leaf.name = label
+
+
+def _iter_non_root_nodes_preorder(node: TreeNode):
+    for child in node.children:
+        yield child
+        yield from _iter_non_root_nodes_preorder(child)
+
+
+def _branch_lengths(tree: PhyloTree) -> list[float]:
+    return [float(node.branch_length or 0.0) for node in _iter_non_root_nodes_preorder(tree.root)]
+
+
+def _simulation_envelope_metric(
+    metric: str,
+    sample_scope: str,
+    values: list[float],
+) -> TreeSimulationEnvelopeMetric:
+    return TreeSimulationEnvelopeMetric(
+        metric=metric,
+        sample_scope=sample_scope,
+        observation_count=len(values),
+        mean=_mean(values),
+        standard_deviation=_population_standard_deviation(values),
+        minimum=_round_float(min(values)),
+        median=_median(values),
+        maximum=_round_float(max(values)),
+    )
+
+
+def _build_simulated_tree_record(
+    tree: PhyloTree,
+    *,
+    index: int,
+) -> tuple[SimulatedTreeRecord, list[float]]:
+    branch_lengths = _branch_lengths(tree)
+    shape = summarize_tree_shape_from_tree(
+        tree,
+        source_path=Path("simulated-tree.nwk"),
+        tree_index=index,
+    )
+    total_branch_length = _round_float(sum(branch_lengths))
+    normalized_colless = (
+        0.0
+        if shape.normalized_colless_imbalance is None
+        else _round_float(shape.normalized_colless_imbalance)
+    )
+    record = SimulatedTreeRecord(
+        index=index,
+        newick=dumps_newick(tree),
+        tree_height_branch_length=_round_float(shape.tree_height_branch_length or 0.0),
+        total_branch_length=total_branch_length,
+        mean_branch_length=_mean(branch_lengths),
+        median_branch_length=_median(branch_lengths),
+        minimum_branch_length=_round_float(min(branch_lengths)),
+        maximum_branch_length=_round_float(max(branch_lengths)),
+        cherry_count=shape.cherry_count,
+        sackin_imbalance_index=shape.sackin_imbalance_index,
+        normalized_colless_imbalance=normalized_colless,
+    )
+    return record, branch_lengths
+
+
+def _build_tree_simulation_report(
+    *,
+    model: str,
+    tree_count: int,
+    tip_count: int,
+    seed: int,
+    trees: list[PhyloTree],
+    branch_length_model: str | None,
+    birth_rate: float | None = None,
+    death_rate: float | None = None,
+    population_size: float | None = None,
+) -> TreeSimulationReport:
+    records: list[SimulatedTreeRecord] = []
+    pooled_branch_lengths: list[float] = []
+    for index, tree in enumerate(trees, start=1):
+        record, branch_lengths = _build_simulated_tree_record(tree, index=index)
+        records.append(record)
+        pooled_branch_lengths.extend(branch_lengths)
+    envelope_metrics = [
+        _simulation_envelope_metric(
+            "tree_height_branch_length",
+            "tree",
+            [record.tree_height_branch_length for record in records],
+        ),
+        _simulation_envelope_metric(
+            "total_branch_length",
+            "tree",
+            [record.total_branch_length for record in records],
+        ),
+        _simulation_envelope_metric(
+            "branch_length",
+            "edge",
+            pooled_branch_lengths,
+        ),
+        _simulation_envelope_metric(
+            "cherry_count",
+            "tree",
+            [float(record.cherry_count) for record in records],
+        ),
+        _simulation_envelope_metric(
+            "sackin_imbalance_index",
+            "tree",
+            [float(record.sackin_imbalance_index) for record in records],
+        ),
+        _simulation_envelope_metric(
+            "normalized_colless_imbalance",
+            "tree",
+            [record.normalized_colless_imbalance for record in records],
+        ),
+    ]
+    return TreeSimulationReport(
+        model=model,
+        tree_count=tree_count,
+        tip_count=tip_count,
+        seed=seed,
+        records=records,
+        branch_length_model=branch_length_model,
+        birth_rate=birth_rate,
+        death_rate=death_rate,
+        population_size=population_size,
+        rooted=all(tree.rooted for tree in trees),
+        binary=all(tree.internal_node_count == tree.tip_count - 1 for tree in trees),
+        pooled_branch_count=len(pooled_branch_lengths),
+        envelope_metrics=envelope_metrics,
+    )
 
 
 def _simulate_birth_death_tree_once(
@@ -221,11 +411,49 @@ def _simulate_birth_death_tree_once(
             continue
         pruned_root.branch_length = None
         tree = PhyloTree(root=pruned_root, source_format="newick")
+        tree.rooted = True
         _label_tree_leaves(tree, taxon_prefix=taxon_prefix)
         return tree
     raise ValueError(
         "birth-death simulation failed to retain the requested number of extant tips after 128 attempts"
     )
+
+
+def _simulate_random_tree_topology(node: TreeNode, tip_count: int, rng: random.Random) -> None:
+    if tip_count == 1:
+        return
+    if tip_count == 2:
+        node.children = [TreeNode(), TreeNode()]
+        return
+    left_tip_count = rng.randrange(1, tip_count)
+    right_tip_count = tip_count - left_tip_count
+    left = TreeNode()
+    right = TreeNode()
+    node.children = [left, right]
+    _simulate_random_tree_topology(left, left_tip_count, rng)
+    _simulate_random_tree_topology(right, right_tip_count, rng)
+
+
+def _simulate_random_tree_once(
+    *,
+    tip_count: int,
+    seed: int,
+    taxon_prefix: str,
+    branch_length_model: str,
+) -> PhyloTree:
+    if branch_length_model != "uniform":
+        raise ValueError(
+            "random-tree simulation currently supports only the 'uniform' branch-length model"
+        )
+    rng = random.Random(seed)  # nosec B311
+    root = TreeNode()
+    _simulate_random_tree_topology(root, tip_count, rng)
+    tree = PhyloTree(root=root, source_format="newick")
+    tree.rooted = True
+    _label_tree_leaves_randomized(tree, taxon_prefix=taxon_prefix, rng=rng)
+    for node in _iter_non_root_nodes_preorder(tree.root):
+        node.branch_length = _round_float(rng.random())
+    return tree
 
 
 def simulate_birth_death_trees(
@@ -249,15 +477,44 @@ def simulate_birth_death_trees(
         )
         for index in range(1, tree_count + 1)
     ]
-    return trees, TreeSimulationReport(
+    return trees, _build_tree_simulation_report(
         model="birth-death",
         tree_count=tree_count,
         tip_count=tip_count,
         seed=seed,
-        records=[
-            SimulatedTreeRecord(index=index, newick=dumps_newick(tree))
-            for index, tree in enumerate(trees, start=1)
-        ],
+        trees=trees,
+        branch_length_model="birth-death",
+        birth_rate=birth_rate,
+        death_rate=death_rate,
+    )
+
+
+def simulate_random_trees(
+    *,
+    tree_count: int,
+    tip_count: int,
+    seed: int = 1,
+    taxon_prefix: str = "Taxon",
+    branch_length_model: str = "uniform",
+) -> tuple[list[PhyloTree], TreeSimulationReport]:
+    """Simulate rooted binary random trees with ape-style default branch lengths."""
+    _validate_tree_count(tree_count, tip_count)
+    trees = [
+        _simulate_random_tree_once(
+            tip_count=tip_count,
+            seed=seed + index - 1,
+            taxon_prefix=taxon_prefix,
+            branch_length_model=branch_length_model,
+        )
+        for index in range(1, tree_count + 1)
+    ]
+    return trees, _build_tree_simulation_report(
+        model="random-tree",
+        tree_count=tree_count,
+        tip_count=tip_count,
+        seed=seed,
+        trees=trees,
+        branch_length_model=branch_length_model,
     )
 
 
@@ -391,7 +648,9 @@ def _simulate_coalescent_tree_once(
         lineages.append(_Lineage(node=parent, start_time=absolute_time, is_root=False))
     root = lineages[0].node
     root.branch_length = None
-    return PhyloTree(root=root, source_format="newick")
+    tree = PhyloTree(root=root, source_format="newick")
+    tree.rooted = True
+    return tree
 
 
 def simulate_coalescent_trees(
@@ -413,15 +672,14 @@ def simulate_coalescent_trees(
         )
         for index in range(1, tree_count + 1)
     ]
-    return trees, TreeSimulationReport(
+    return trees, _build_tree_simulation_report(
         model="coalescent",
         tree_count=tree_count,
         tip_count=tip_count,
         seed=seed,
-        records=[
-            SimulatedTreeRecord(index=index, newick=dumps_newick(tree))
-            for index, tree in enumerate(trees, start=1)
-        ],
+        trees=trees,
+        branch_length_model="coalescent-waiting-times",
+        population_size=population_size,
     )
 
 
@@ -774,6 +1032,79 @@ def write_tree_set(path: Path, trees: list[PhyloTree]) -> Path:
 def write_simulated_tree(path: Path, tree: PhyloTree) -> Path:
     """Write one simulated tree as canonical Newick."""
     return write_newick(path, tree)
+
+
+def write_tree_simulation_record_table(path: Path, report: TreeSimulationReport) -> Path:
+    """Write one per-tree simulation metrics row for a governed tree simulation report."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "index",
+            "tree_height_branch_length",
+            "total_branch_length",
+            "mean_branch_length",
+            "median_branch_length",
+            "minimum_branch_length",
+            "maximum_branch_length",
+            "cherry_count",
+            "sackin_imbalance_index",
+            "normalized_colless_imbalance",
+            "newick",
+        ],
+        rows=[
+            {
+                "index": str(record.index),
+                "tree_height_branch_length": format(
+                    record.tree_height_branch_length, ".15g"
+                ),
+                "total_branch_length": format(record.total_branch_length, ".15g"),
+                "mean_branch_length": format(record.mean_branch_length, ".15g"),
+                "median_branch_length": format(record.median_branch_length, ".15g"),
+                "minimum_branch_length": format(record.minimum_branch_length, ".15g"),
+                "maximum_branch_length": format(record.maximum_branch_length, ".15g"),
+                "cherry_count": str(record.cherry_count),
+                "sackin_imbalance_index": str(record.sackin_imbalance_index),
+                "normalized_colless_imbalance": format(
+                    record.normalized_colless_imbalance, ".15g"
+                ),
+                "newick": record.newick,
+            }
+            for record in report.records
+        ],
+    )
+
+
+def write_tree_simulation_envelope_table(
+    path: Path,
+    report: TreeSimulationReport,
+) -> Path:
+    """Write the aggregate simulation-envelope metrics for a governed tree simulation report."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "metric",
+            "sample_scope",
+            "observation_count",
+            "mean",
+            "standard_deviation",
+            "minimum",
+            "median",
+            "maximum",
+        ],
+        rows=[
+            {
+                "metric": row.metric,
+                "sample_scope": row.sample_scope,
+                "observation_count": str(row.observation_count),
+                "mean": format(row.mean, ".15g"),
+                "standard_deviation": format(row.standard_deviation, ".15g"),
+                "minimum": format(row.minimum, ".15g"),
+                "median": format(row.median, ".15g"),
+                "maximum": format(row.maximum, ".15g"),
+            }
+            for row in report.envelope_metrics
+        ],
+    )
 
 
 def write_continuous_trait_table(
