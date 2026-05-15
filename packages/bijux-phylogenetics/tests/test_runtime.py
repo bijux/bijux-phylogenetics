@@ -532,6 +532,7 @@ from bijux_phylogenetics.core.topology import (
     extract_named_clade,
     extract_tree_clade_by_descendant_taxa,
     extract_tree_clade_by_node_id,
+    find_tree_mrca,
     ladderize_tree,
     reroot_tree_by_midpoint,
     root_tree_on_outgroup,
@@ -744,7 +745,7 @@ from bijux_phylogenetics.io.fasta import (
     validate_fasta_input,
     write_fasta_alignment,
 )
-from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
+from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
 from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.roundtrip import validate_tree_roundtrip
@@ -1024,6 +1025,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.extract_tree_clade_by_descendant_taxa
         is extract_tree_clade_by_descendant_taxa
     )
+    assert bijux_phylogenetics.find_tree_mrca is find_tree_mrca
     assert bijux_phylogenetics.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
     assert bijux_phylogenetics.compare_support_values is compare_support_values
     assert bijux_phylogenetics.write_branch_length_table is write_branch_length_table
@@ -4373,6 +4375,108 @@ def test_extract_tree_clade_by_descendant_taxa_rejects_non_monophyletic_sets() -
             fixture("example_tree_named_clades.nwk"),
             descendant_taxa=["A", "C"],
         )
+
+
+def test_find_tree_mrca_returns_internal_node_for_two_tips() -> None:
+    report = find_tree_mrca(
+        fixture("example_tree.nwk"),
+        taxa=["A", "B"],
+    )
+
+    assert report.matched_node_id == 6
+    assert report.matched_node_name is None
+    assert report.matched_taxa == ["A", "B"]
+    assert report.matched_extra_taxa == []
+    assert report.is_root is False
+
+
+def test_find_tree_mrca_returns_root_for_full_tip_set() -> None:
+    report = find_tree_mrca(
+        fixture("example_tree.nwk"),
+        taxa=["A", "B", "C", "D"],
+    )
+
+    assert report.matched_node_id == 5
+    assert report.matched_taxa == ["A", "B", "C", "D"]
+    assert report.is_root is True
+
+
+def test_find_tree_mrca_handles_duplicate_requested_tips_explicitly() -> None:
+    report = find_tree_mrca(
+        fixture("example_tree.nwk"),
+        taxa=["A", "A", "B"],
+    )
+
+    assert report.requested_taxa == ["A", "A", "B"]
+    assert report.unique_requested_taxa == ["A", "B"]
+    assert report.duplicate_requested_taxa == ["A"]
+    assert report.matched_node_id == 6
+
+
+def test_find_tree_mrca_matches_many_tip_request_on_pectinate_tree() -> None:
+    report = find_tree_mrca(
+        fixture("example_tree_ladderized.nwk"),
+        taxa=["A", "B", "C"],
+    )
+
+    assert report.matched_node_id == 6
+    assert report.matched_taxa == ["A", "B", "C"]
+    assert report.matched_extra_taxa == []
+
+
+def test_find_tree_mrca_matches_polytomy_case() -> None:
+    report = find_tree_mrca(
+        fixture("example_tree_polytomy.nwk"),
+        taxa=["A", "B", "C"],
+    )
+
+    assert report.matched_node_id == 6
+    assert report.matched_taxa == ["A", "B", "C"]
+    assert report.is_root is False
+
+
+def test_find_tree_mrca_rejects_missing_tips() -> None:
+    with pytest.raises(ValueError, match="requested taxa are not present in the tree: Z"):
+        find_tree_mrca(
+            fixture("example_tree.nwk"),
+            taxa=["A", "Z"],
+        )
+
+
+def test_find_tree_mrca_requires_two_distinct_tips() -> None:
+    with pytest.raises(ValueError, match="mrca requires at least two distinct taxa"):
+        find_tree_mrca(
+            fixture("example_tree.nwk"),
+            taxa=["A", "A"],
+        )
+
+
+def test_find_tree_mrca_works_after_pruning(tmp_path: Path) -> None:
+    pruned_tree, _report = prune_tree_to_requested_taxa(
+        fixture("example_tree_rooted_on_d.nwk"),
+        ["A", "B", "C"],
+    )
+    pruned_path = tmp_path / "pruned-tree.nwk"
+    write_newick(pruned_path, pruned_tree)
+
+    report = find_tree_mrca(pruned_path, taxa=["A", "B"])
+
+    assert report.matched_node_id == 5
+    assert report.matched_taxa == ["A", "B"]
+
+
+def test_find_tree_mrca_works_after_rooting(tmp_path: Path) -> None:
+    rooted_tree, _report = root_tree_on_outgroup(
+        fixture("example_tree_rootable.nwk"),
+        outgroup_taxa=["D"],
+    )
+    rooted_path = tmp_path / "rooted-tree.nwk"
+    write_newick(rooted_path, rooted_tree)
+
+    report = find_tree_mrca(rooted_path, taxa=["A", "B", "C"])
+
+    assert report.matched_node_id == 6
+    assert report.matched_taxa == ["A", "B", "C"]
 
 
 def test_rotate_named_node_reverses_child_order_without_changing_topology() -> None:
