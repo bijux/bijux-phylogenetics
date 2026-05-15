@@ -8,7 +8,8 @@ import tempfile
 
 from Bio import Phylo
 
-from bijux_phylogenetics.compare.topology import _informative_clades, compare_tree_paths
+from bijux_phylogenetics.compare.topology import compare_tree_paths
+from bijux_phylogenetics.core.clade_sets import informative_rooted_clades
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
@@ -601,7 +602,7 @@ def _clade_frequency_map(trees: list[PhyloTree]) -> dict[frozenset[str], float]:
     shared_taxa = set(next(iter(taxa_sets)))
     counts: dict[frozenset[str], int] = {}
     for tree in trees:
-        for clade in _informative_clades(tree, shared_taxa):
+        for clade in informative_rooted_clades(tree, shared_taxa):
             counts[clade] = counts.get(clade, 0) + 1
     return {clade: count / len(trees) for clade, count in counts.items()}
 
@@ -614,7 +615,7 @@ def _select_mcc_tree(
     scored = []
     for index, tree in enumerate(trees, start=1):
         score = 0.0
-        for clade in _informative_clades(tree, shared_taxa):
+        for clade in informative_rooted_clades(tree, shared_taxa):
             frequency = clade_frequencies.get(clade, 1e-12)
             score += math.log(max(frequency, 1e-12))
         scored.append((score, index, tree))

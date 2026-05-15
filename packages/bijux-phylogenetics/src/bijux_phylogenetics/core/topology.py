@@ -9,6 +9,10 @@ from bijux_phylogenetics.core._node_identity import (
     ape_node_id_for_node,
     build_ape_internal_node_map,
 )
+from bijux_phylogenetics.core.clade_sets import (
+    informative_rooted_clades,
+    informative_unrooted_splits,
+)
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import TreeRootingError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo, tree_to_biophylo
@@ -725,50 +729,6 @@ def _summarize_transformation(
         branch_lengths_affected=branch_lengths_affected,
     )
 
-
-def _informative_clades(tree: PhyloTree, shared_taxa: set[str]) -> set[frozenset[str]]:
-    clades: set[frozenset[str]] = set()
-
-    def visit(node: TreeNode) -> set[str]:
-        if node.is_leaf():
-            return {node.name} if node.name in shared_taxa else set()
-        taxa: set[str] = set()
-        for child in node.children:
-            taxa.update(visit(child))
-        if 1 < len(taxa) < len(shared_taxa):
-            clades.add(frozenset(taxa))
-        return taxa
-
-    visit(tree.root)
-    return clades
-
-
-def _canonical_bipartition(taxa: set[str], universe: set[str]) -> frozenset[str]:
-    complement = universe - taxa
-    left = sorted(taxa)
-    right = sorted(complement)
-    if (len(left), left) <= (len(right), right):
-        return frozenset(taxa)
-    return frozenset(complement)
-
-
-def _unrooted_splits(tree: PhyloTree, shared_taxa: set[str]) -> set[frozenset[str]]:
-    splits: set[frozenset[str]] = set()
-
-    def visit(node: TreeNode) -> set[str]:
-        if node.is_leaf():
-            return {node.name} if node.name in shared_taxa else set()
-        taxa: set[str] = set()
-        for child in node.children:
-            taxa.update(visit(child))
-        if node is not tree.root and 1 < len(taxa) < len(shared_taxa) - 1:
-            splits.add(_canonical_bipartition(taxa, shared_taxa))
-        return taxa
-
-    visit(tree.root)
-    return splits
-
-
 def _compare_tree_topology(
     original: PhyloTree, transformed: PhyloTree
 ) -> _TopologyComparison:
@@ -778,12 +738,12 @@ def _compare_tree_topology(
             topology_equal=original.tip_names == transformed.tip_names,
             same_unrooted_topology=True,
         )
-    left_clades = _informative_clades(original, shared_taxa)
-    right_clades = _informative_clades(transformed, shared_taxa)
+    left_clades = informative_rooted_clades(original, shared_taxa)
+    right_clades = informative_rooted_clades(transformed, shared_taxa)
     return _TopologyComparison(
         topology_equal=left_clades == right_clades,
-        same_unrooted_topology=_unrooted_splits(original, shared_taxa)
-        == _unrooted_splits(transformed, shared_taxa),
+        same_unrooted_topology=informative_unrooted_splits(original, shared_taxa)
+        == informative_unrooted_splits(transformed, shared_taxa),
     )
 
 

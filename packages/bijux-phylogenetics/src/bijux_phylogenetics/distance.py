@@ -16,13 +16,15 @@ from Bio.Phylo.TreeConstruction import DistanceMatrix, DistanceTreeConstructor
 from bijux_phylogenetics.compare.topology import (
     BranchLengthComparisonReport,
     TreeComparisonReport,
-    _informative_clades,
-    _robinson_foulds_metrics,
-    _unrooted_splits,
     compare_branch_lengths,
     compare_tree_paths,
 )
 from bijux_phylogenetics.core.alignment import AlignmentRecord
+from bijux_phylogenetics.core.clade_sets import (
+    informative_rooted_clades,
+    informative_unrooted_splits,
+    robinson_foulds_metrics,
+)
 from bijux_phylogenetics.core.neighbor_joining import build_neighbor_joining_tree
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.errors import (
@@ -2056,7 +2058,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
     nj_expected_clades = ["A|B"]
     nj_observed_clades = sorted(
         "|".join(sorted(clade))
-        for clade in _informative_clades(nj_tree, set(nj_tree.tip_names))
+        for clade in informative_rooted_clades(nj_tree, set(nj_tree.tip_names))
     )
     tree_observations.append(
         DistanceTreeReferenceObservation(
@@ -2078,7 +2080,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
     expected_clades = ["A|B", "C|D"]
     observed_clades = sorted(
         "|".join(sorted(clade))
-        for clade in _informative_clades(upgma_tree, set(upgma_tree.tip_names))
+        for clade in informative_rooted_clades(upgma_tree, set(upgma_tree.tip_names))
     )
     tree_observations.append(
         DistanceTreeReferenceObservation(
@@ -2473,20 +2475,19 @@ def compare_distance_tree_topologies(
         ambiguity_policy=ambiguity_policy,
     )
     shared_taxa = set(nj_tree.tip_names) & set(upgma_tree.tip_names)
-    (
-        nj_clade_count,
-        upgma_clade_count,
-        rooted_distance,
-        rooted_normalized,
-    ) = _robinson_foulds_metrics(
+    rooted_metrics = robinson_foulds_metrics(
         nj_tree,
         upgma_tree,
         shared_taxa,
         rf_mode="rooted",
     )
-    topology_equal = rooted_distance == 0
-    same_unrooted_topology = _unrooted_splits(nj_tree, shared_taxa) == _unrooted_splits(
-        upgma_tree, shared_taxa
+    topology_equal = rooted_metrics.distance == 0
+    same_unrooted_topology = informative_unrooted_splits(
+        nj_tree,
+        shared_taxa,
+    ) == informative_unrooted_splits(
+        upgma_tree,
+        shared_taxa,
     )
     return DistanceTreeTopologyComparison(
         alignment_path=path,
@@ -2494,10 +2495,10 @@ def compare_distance_tree_topologies(
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
         shared_taxa=sorted(shared_taxa),
-        nj_informative_clades=nj_clade_count,
-        upgma_informative_clades=upgma_clade_count,
-        robinson_foulds_distance=rooted_distance,
-        normalized_robinson_foulds=rooted_normalized,
+        nj_informative_clades=rooted_metrics.left_count,
+        upgma_informative_clades=rooted_metrics.right_count,
+        robinson_foulds_distance=rooted_metrics.distance,
+        normalized_robinson_foulds=rooted_metrics.normalized_distance,
         topology_equal=topology_equal,
         same_unrooted_topology=same_unrooted_topology,
         same_taxa_different_rooting=topology_equal is False and same_unrooted_topology,

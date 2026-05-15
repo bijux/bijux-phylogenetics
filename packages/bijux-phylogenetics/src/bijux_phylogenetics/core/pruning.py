@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.alignment import AlignmentRecord
+from bijux_phylogenetics.core.clade_sets import informative_rooted_clades
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.core.topology import (
     TreeTransformationSummary,
@@ -129,24 +130,6 @@ def _singleton_internal_nodes(tree: PhyloTree) -> list[str]:
         if not node.is_leaf() and len(node.children) == 1
     )
 
-
-def _informative_clades(tree: PhyloTree) -> set[frozenset[str]]:
-    clades: set[frozenset[str]] = set()
-
-    def visit(node: TreeNode) -> set[str]:
-        if node.is_leaf():
-            return {node.name} if node.name is not None else set()
-        taxa: set[str] = set()
-        for child in node.children:
-            taxa.update(visit(child))
-        if node is not tree.root and len(taxa) > 1:
-            clades.add(frozenset(taxa))
-        return taxa
-
-    visit(tree.root)
-    return clades
-
-
 def _pruning_artifact_audit(
     original: PhyloTree, pruned: PhyloTree
 ) -> PruningArtifactAudit:
@@ -175,8 +158,8 @@ def _pruning_information_loss(
     *,
     metadata_taxa: set[str] | None = None,
 ) -> PruningInformationLoss:
-    original_clades = _informative_clades(original)
-    pruned_clades = _informative_clades(pruned)
+    original_clades = informative_rooted_clades(original)
+    pruned_clades = informative_rooted_clades(pruned)
     lost_taxa_count = max(0, original.tip_count - pruned.tip_count)
     lost_taxa_fraction = (
         0.0 if original.tip_count == 0 else lost_taxa_count / original.tip_count

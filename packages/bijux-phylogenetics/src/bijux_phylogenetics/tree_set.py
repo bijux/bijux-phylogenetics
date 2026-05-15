@@ -12,12 +12,12 @@ import tracemalloc
 from Bio import Phylo
 from Bio.Phylo.BaseTree import Tree as BioTree
 
-from bijux_phylogenetics.compare.topology import (
-    _canonical_bipartition,
-    _informative_clade_nodes,
-    _informative_clades,
-    _robinson_foulds_metrics,
-    _unrooted_splits,
+from bijux_phylogenetics.core.clade_sets import (
+    canonical_bipartition,
+    informative_rooted_clade_nodes,
+    informative_rooted_clades,
+    informative_unrooted_splits,
+    robinson_foulds_metrics,
 )
 from bijux_phylogenetics.core._node_identity import build_ape_internal_node_map
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
@@ -641,7 +641,7 @@ def _analyze_tree_set(path: Path) -> _TreeSetAnalysis:
             exact_taxa_set = set(exact_taxa)
             clade_counts = {}
             for tree in trees:
-                for clade in _informative_clades(tree, exact_taxa_set):
+                for clade in informative_rooted_clades(tree, exact_taxa_set):
                     clade_counts[clade] = clade_counts.get(clade, 0) + 1
                 for clade, length in _clade_branch_lengths(tree, exact_taxa_set).items():
                     if length is not None:
@@ -701,13 +701,19 @@ def _format_clade(clade: frozenset[str]) -> str:
 
 def _rooted_topology_id(tree: PhyloTree, shared_taxa: set[str]) -> str:
     return "||".join(
-        sorted(_format_clade(clade) for clade in _informative_clades(tree, shared_taxa))
+        sorted(
+            _format_clade(clade)
+            for clade in informative_rooted_clades(tree, shared_taxa)
+        )
     )
 
 
 def _unrooted_topology_id(tree: PhyloTree, shared_taxa: set[str]) -> str:
     return "||".join(
-        sorted(_format_clade(clade) for clade in _unrooted_splits(tree, shared_taxa))
+        sorted(
+            _format_clade(clade)
+            for clade in informative_unrooted_splits(tree, shared_taxa)
+        )
     )
 
 
@@ -724,7 +730,7 @@ def _validate_same_taxa(trees: list[PhyloTree]) -> list[str]:
 def _clade_signature(tree: PhyloTree, shared_taxa: set[str], taxon: str) -> str:
     containing_clades = sorted(
         _format_clade(clade)
-        for clade in _informative_clades(tree, shared_taxa)
+        for clade in informative_rooted_clades(tree, shared_taxa)
         if taxon in clade
     )
     if not containing_clades:
@@ -737,7 +743,7 @@ def _clade_counts(
 ) -> dict[frozenset[str], int]:
     counts: dict[frozenset[str], int] = {}
     for tree in trees:
-        for clade in _informative_clades(tree, shared_taxa):
+        for clade in informative_rooted_clades(tree, shared_taxa):
             counts[clade] = counts.get(clade, 0) + 1
     return counts
 
@@ -995,13 +1001,13 @@ def _build_consensus_node(
 def _tree_distance(
     left: PhyloTree, right: PhyloTree, shared_taxa: set[str]
 ) -> tuple[int, float]:
-    _left_count, _right_count, distance, normalized = _robinson_foulds_metrics(
+    metrics = robinson_foulds_metrics(
         left,
         right,
         shared_taxa,
         rf_mode="rooted",
     )
-    return distance, normalized
+    return metrics.distance, metrics.normalized_distance
 
 
 def _build_clade_frequency_report(analysis: _TreeSetAnalysis) -> CladeFrequencyReport:
@@ -1057,7 +1063,7 @@ def _split_counts(
 ) -> dict[frozenset[str], int]:
     counts: dict[frozenset[str], int] = {}
     for tree in trees:
-        for split in _unrooted_splits(tree, shared_taxa):
+        for split in informative_unrooted_splits(tree, shared_taxa):
             counts[split] = counts.get(split, 0) + 1
     return counts
 
@@ -1133,7 +1139,7 @@ def _build_reference_tree_clade_support_report(
             unscored_reason = "singleton-complement"
             unscored_clade_count += 1
         elif node in reference_tree.root.children:
-            split = _canonical_bipartition(set(descendant_taxa), reference_taxa)
+            split = canonical_bipartition(set(descendant_taxa), reference_taxa)
             split_support = split_counts.get(split, 0)
             if split_support == 0:
                 supporting_tree_count = None
@@ -1812,7 +1818,7 @@ def _build_bootstrap_tree_set_summary_report(
     diversity = _build_posterior_topology_diversity_report(analysis)
     unstable_clades = _build_unstable_clade_report(analysis)
     shared_taxa = set(summary.shared_taxa)
-    consensus_clades = _informative_clade_nodes(consensus_tree, shared_taxa)
+    consensus_clades = informative_rooted_clade_nodes(consensus_tree, shared_taxa)
     frequencies_by_clade = {
         row.clade: row for row in clade_frequencies.clade_frequencies
     }
@@ -2448,7 +2454,7 @@ def compare_bootstrap_and_posterior_uncertainty(
         raise InvalidAlignmentError(
             "bootstrap versus posterior comparison requires identical taxon sets"
         )
-    bootstrap_nodes = _informative_clade_nodes(bootstrap_tree, shared_taxa)
+    bootstrap_nodes = informative_rooted_clade_nodes(bootstrap_tree, shared_taxa)
     bootstrap_support_by_clade = {
         _format_clade(clade): _parse_support_label(node.name)
         for clade, node in bootstrap_nodes.items()
@@ -2687,7 +2693,7 @@ def compare_consensus_thresholds(
         tree, report = compute_consensus_tree_with_threshold(path, threshold=threshold)
         topology_id = _rooted_topology_id(tree, set(summary.shared_taxa))
         informative_clade_count = len(
-            _informative_clades(tree, set(summary.shared_taxa))
+            informative_rooted_clades(tree, set(summary.shared_taxa))
         )
         row_warnings: list[str] = []
         if informative_clade_count == 0:
