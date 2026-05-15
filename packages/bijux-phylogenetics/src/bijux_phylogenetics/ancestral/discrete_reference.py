@@ -18,6 +18,10 @@ from bijux_phylogenetics.ancestral.root_sensitivity import (
     summarize_ancestral_root_sensitivity,
     summarize_ancestral_root_sensitivity_report,
 )
+from bijux_phylogenetics.shared_trait_table_fixtures import (
+    get_shared_trait_table_fixture,
+)
+from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
 
 
 @dataclass(slots=True)
@@ -159,10 +163,11 @@ def _validate_external_probability_cases(
 
 
 def _validate_root_prior_behavior() -> DiscreteAncestralReferenceObservation:
-    fixtures_root = _fixtures_root()
+    tree_fixture = get_shared_tree_fixture("balanced_rooted_ultrametric")
+    trait_fixture = get_shared_trait_table_fixture("multistate_discrete_match")
     report = summarize_ancestral_root_sensitivity(
-        fixtures_root / "trees/example_tree.nwk",
-        fixtures_root / "metadata/example_traits_geography.tsv",
+        tree_fixture.path,
+        trait_fixture.path,
         trait="region",
         model="equal-rates",
         fixed_root_state="island",
@@ -225,10 +230,11 @@ def _validate_root_prior_behavior() -> DiscreteAncestralReferenceObservation:
 
 
 def _validate_ambiguous_state_behavior() -> DiscreteAncestralReferenceObservation:
-    fixtures_root = _fixtures_root()
+    tree_fixture = get_shared_tree_fixture("balanced_rooted_ultrametric")
+    trait_fixture = get_shared_trait_table_fixture("categorical_predictor_match")
     report = reconstruct_discrete_ancestral_states(
-        fixtures_root / "trees/example_tree.nwk",
-        fixtures_root / "metadata/example_traits_comparative.tsv",
+        tree_fixture.path,
+        trait_fixture.path,
         trait="habitat",
         model="fitch",
     )
@@ -285,10 +291,11 @@ def _validate_ambiguous_state_behavior() -> DiscreteAncestralReferenceObservatio
 
 
 def _validate_ordered_constraint_behavior() -> DiscreteAncestralReferenceObservation:
-    fixtures_root = _fixtures_root()
+    tree_fixture = get_shared_tree_fixture("balanced_rooted_ultrametric")
+    trait_fixture = get_shared_trait_table_fixture("multistate_discrete_match")
     report = summarize_ordered_discrete_reconstruction(
-        fixtures_root / "trees/example_tree.nwk",
-        fixtures_root / "metadata/example_traits_geography.tsv",
+        tree_fixture.path,
+        trait_fixture.path,
         trait="region",
         model="equal-rates",
         ordered_states=["north", "south", "island"],
