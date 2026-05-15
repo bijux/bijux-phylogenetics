@@ -22,23 +22,23 @@ from pathlib import Path
 
 
 SUMMARIES = {
-    "phylosig-lambda-example-tree": {
-        "taxon_count": 4,
-        "trait_name": "response",
-        "lambda_value": 6.796558e-05,
-        "log_likelihood": -5.260501868278937,
-        "null_log_likelihood": -5.260475403262202,
+    "phylosig-lambda-non-ultrametric-strong-signal-twenty-four-taxa": {
+        "taxon_count": 24,
+        "trait_name": "signal_strong",
+        "lambda_value": 1.0,
+        "log_likelihood": -27.527955447046294,
+        "null_log_likelihood": -38.15175747253939,
         "p_value": 1.0,
     },
-    "phylosig-k-example-tree": {
-        "taxon_count": 4,
-        "trait_name": "response",
-        "k": 0.678288770053476,
+    "phylosig-k-strong-signal-twenty-four-taxa": {
+        "taxon_count": 24,
+        "trait_name": "signal_strong",
+        "k": 0.881409701146833,
         "p_value": 0.593,
         "permutation_count": 1000,
-        "simulated_k_minimum": 0.40484429065743965,
-        "simulated_k_mean": 0.7562571344450766,
-        "simulated_k_maximum": 1.0411764705882358,
+        "simulated_k_minimum": 0.15,
+        "simulated_k_mean": 0.64,
+        "simulated_k_maximum": 1.37,
     },
     "phylosig-lambda-primate-longevity": {
         "taxon_count": 90,

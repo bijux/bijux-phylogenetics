@@ -51,7 +51,7 @@ def test_parity_cli_restricts_live_phytools_cases(tmp_path: Path, capsys) -> Non
             "--phytools-rscript-executable",
             str(rscript),
             "--phytools-case",
-            "phylosig-k-example-tree",
+            "phylosig-k-strong-signal-twenty-four-taxa",
             "--json",
         ]
     )
@@ -61,4 +61,4 @@ def test_parity_cli_restricts_live_phytools_cases(tmp_path: Path, capsys) -> Non
     assert payload["status"] == "ok"
     assert payload["metrics"]["case_count"] == 1
     report = payload["data"]["report"]
-    assert report["observations"][0]["case_id"] == "phylosig-k-example-tree"
+    assert report["observations"][0]["case_id"] == "phylosig-k-strong-signal-twenty-four-taxa"

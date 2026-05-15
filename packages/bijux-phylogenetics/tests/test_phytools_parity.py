@@ -17,11 +17,14 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     cases = list_phytools_parity_cases()
 
     assert [case.case_id for case in cases] == [
-        "phylosig-lambda-example-tree",
-        "phylosig-k-example-tree",
+        "phylosig-lambda-non-ultrametric-strong-signal-twenty-four-taxa",
+        "phylosig-k-strong-signal-twenty-four-taxa",
     ]
     assert cases[0].function_name == "phytools::phylosig(method='lambda')"
     assert cases[1].function_name == "phytools::phylosig(method='K')"
+    assert (
+        cases[0].fixture_id == "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
+    )
 
 
 def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
@@ -51,16 +54,16 @@ def test_run_phytools_parity_cases_records_failure_artifacts(
     rscript = fake_phytools_rscript(
         tmp_path / "fake-phytools-rscript",
         summary_overrides={
-            "phylosig-k-example-tree": {
-                "taxon_count": 4,
-                "trait_name": "response",
+            "phylosig-k-strong-signal-twenty-four-taxa": {
+                "taxon_count": 24,
+                "trait_name": "signal_strong",
                 "k": 0.5,
             }
         },
     )
 
     report = run_phytools_parity_cases(
-        case_ids=["phylosig-k-example-tree"],
+        case_ids=["phylosig-k-strong-signal-twenty-four-taxa"],
         rscript_executable=str(rscript),
         failure_root=tmp_path / "failures",
     )
@@ -79,7 +82,7 @@ def test_run_phytools_parity_cases_marks_missing_rscript_as_skipped(
     tmp_path: Path,
 ) -> None:
     report = run_phytools_parity_cases(
-        case_ids=["phylosig-lambda-example-tree"],
+        case_ids=["phylosig-lambda-non-ultrametric-strong-signal-twenty-four-taxa"],
         rscript_executable=str(tmp_path / "missing-rscript"),
         failure_root=tmp_path / "failures",
     )
