@@ -24,6 +24,7 @@ from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
     prune_tree_to_requested_taxa,
 )
+from bijux_phylogenetics.core.node_depth import compute_tree_node_depths
 from bijux_phylogenetics.core.tree_distance import compute_tree_tip_distance_matrix
 from bijux_phylogenetics.core.topology import (
     assess_tree_monophyly,
@@ -871,6 +872,46 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             tolerance=1e-12,
         ),
         ApeParityCase(
+            case_id="node-depth-rooted-ultrametric",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::node.depth.edgelength",
+            python_function_name="compute_tree_node_depths",
+            operation="tree-node-depth",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="node-depth-rooted-non-ultrametric",
+            fixture_kind="tree",
+            fixture_id="pectinate_rooted_non_ultrametric",
+            function_name="ape::node.depth.edgelength",
+            python_function_name="compute_tree_node_depths",
+            operation="tree-node-depth",
+            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="node-depth-zero-branch-lengths",
+            fixture_kind="tree",
+            fixture_id="zero_branch_lengths",
+            function_name="ape::node.depth.edgelength",
+            python_function_name="compute_tree_node_depths",
+            operation="tree-node-depth",
+            input_fixture=fixture_path("tree", "zero_branch_lengths"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="node-depth-after-outgroup-rooting",
+            fixture_kind="tree",
+            fixture_id="outgroup_rooted_on_d",
+            function_name="ape::node.depth.edgelength",
+            python_function_name="compute_tree_node_depths",
+            operation="tree-node-depth",
+            input_fixture=fixture_path("tree", "outgroup_rooted_on_d"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
             case_id="dna-base-frequency-lowercase",
             fixture_kind="dna-alignment",
             fixture_id="lowercase_aligned_dna",
@@ -1405,6 +1446,35 @@ def _build_bijux_brownian_covariance_rows(
     ]
 
 
+def _build_bijux_tree_node_depth_rows(
+    input_fixture: Path,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    report = compute_tree_node_depths(input_fixture)
+    return {
+        "node_count": report.node_count,
+        "tip_count": report.tip_count,
+        "internal_node_count": report.internal_node_count,
+        "rooted": report.rooted,
+        "tip_labels": report.tip_labels,
+        "tree_is_ultrametric": report.tree_is_ultrametric,
+        "zero_branch_length_count": report.zero_branch_length_count,
+        "minimum_tip_depth": report.minimum_tip_depth,
+        "maximum_tip_depth": report.maximum_tip_depth,
+        "minimum_internal_depth": report.minimum_internal_depth,
+        "maximum_internal_depth": report.maximum_internal_depth,
+    }, [
+        {
+            "node_id": row.node_id,
+            "node_kind": row.node_kind,
+            "node_label": row.node_label or "",
+            "descendant_taxa": "|".join(row.descendant_taxa),
+            "branch_length_depth": row.branch_length_depth,
+            "branch_length": "" if row.branch_length is None else row.branch_length,
+        }
+        for row in report.rows
+    ]
+
+
 def _build_bijux_translation_rows(
     input_fixture: Path,
     *,
@@ -1746,6 +1816,9 @@ def _build_bijux_case_payload(
     if case.operation == "tree-brownian-covariance":
         summary, rows = _build_bijux_brownian_covariance_rows(case.input_fixture)
         return summary, rows, None
+    if case.operation == "tree-node-depth":
+        summary, rows = _build_bijux_tree_node_depth_rows(case.input_fixture)
+        return summary, rows, None
     if case.operation == "dna-base-frequency":
         summary, rows = _build_bijux_base_frequency_summary(case.input_fixture)
         return summary, rows, None
@@ -1816,6 +1889,10 @@ def _load_reference_case_payload(
     if case.operation == "tree-brownian-covariance":
         summary = _load_json(execution_root / "summary.json")
         rows = _load_rows_table(execution_root / "covariance-long.tsv")
+        return summary, rows, None
+    if case.operation == "tree-node-depth":
+        summary = _load_json(execution_root / "summary.json")
+        rows = _load_rows_table(execution_root / "node-depths.tsv")
         return summary, rows, None
     if case.operation == "dna-base-frequency":
         summary = _load_json(execution_root / "summary.json")

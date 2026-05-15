@@ -1202,6 +1202,92 @@ vcv_case <- function(case_payload, output_root, execution_path, r_version) {
   )
 }
 
+node_depth_case <- function(case_payload, output_root, execution_path, r_version) {
+  tree <- tryCatch(ape::read.tree(case_payload$input_fixture), error = function(error) error)
+  if (inherits(tree, "error")) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = "TreeParseError",
+        message = conditionMessage(tree),
+        case_id = case_payload$case_id,
+        function_name = case_payload$function_name,
+        input_fixture = case_payload$input_fixture,
+        r_version = r_version,
+        ape_version = as.character(utils::packageVersion("ape"))
+      )
+    )
+    quit(save = "no", status = 0)
+  }
+
+  tip_count <- length(tree$tip.label)
+  internal_count <- tree$Nnode
+  root_id <- root_node(tree)
+  depths <- as.numeric(ape::node.depth.edgelength(tree))
+  tip_depths <- depths[seq_len(tip_count)]
+  internal_node_ids <- seq.int(tip_count + 1, tip_count + internal_count)
+  internal_depths <- depths[internal_node_ids]
+  zero_branch_length_count <- if (is.null(tree$edge.length)) 0L else sum(tree$edge.length == 0)
+
+  rows <- data.frame(
+    node_id = integer(),
+    node_kind = character(),
+    node_label = character(),
+    descendant_taxa = character(),
+    branch_length_depth = numeric(),
+    branch_length = character(),
+    stringsAsFactors = FALSE
+  )
+  for (node_id in c(seq_len(tip_count), internal_node_ids)) {
+    branch_length <- node_branch_length(tree, node_id)
+    rows[nrow(rows) + 1, ] <- list(
+      as.integer(node_id),
+      node_kind(tree, node_id, root_id),
+      node_label(tree, node_id),
+      paste(descendant_taxa(tree, node_id), collapse = "|"),
+      as.numeric(depths[[node_id]]),
+      if (identical(branch_length, "")) "" else as.character(branch_length)
+    )
+  }
+
+  summary_path <- file.path(output_root, "summary.json")
+  rows_path <- file.path(output_root, "node-depths.tsv")
+  write_payload(
+    summary_path,
+    list(
+      node_count = nrow(rows),
+      tip_count = tip_count,
+      internal_node_count = internal_count,
+      rooted = ape::is.rooted(tree),
+      tip_labels = as.list(unname(tree$tip.label)),
+      tree_is_ultrametric = diff(range(tip_depths)) <= 1e-12,
+      zero_branch_length_count = as.integer(zero_branch_length_count),
+      minimum_tip_depth = as.numeric(min(tip_depths)),
+      maximum_tip_depth = as.numeric(max(tip_depths)),
+      minimum_internal_depth = as.numeric(min(internal_depths)),
+      maximum_internal_depth = as.numeric(max(internal_depths))
+    )
+  )
+  write_table(rows_path, rows)
+  write_payload(
+    execution_path,
+    list(
+      status = "ok",
+      case_id = case_payload$case_id,
+      function_name = case_payload$function_name,
+      input_fixture = case_payload$input_fixture,
+      r_version = r_version,
+      ape_version = as.character(utils::packageVersion("ape")),
+      outputs = list(
+        summary_json = summary_path,
+        node_depths = rows_path
+      )
+    )
+  )
+}
+
 dna_translation_case <- function(case_payload, output_root, execution_path, r_version) {
   alignment <- ape::read.dna(case_payload$input_fixture, format = "fasta")
   genetic_code_id <- if (is.null(case_payload$genetic_code_id)) 1 else case_payload$genetic_code_id
@@ -1312,6 +1398,11 @@ if (identical(case_payload$operation, "tree-tip-distance")) {
 
 if (identical(case_payload$operation, "tree-brownian-covariance")) {
   vcv_case(case_payload, output_root, execution_path, r_version)
+  quit(save = "no", status = 0)
+}
+
+if (identical(case_payload$operation, "tree-node-depth")) {
+  node_depth_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 
