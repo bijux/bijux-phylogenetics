@@ -42,6 +42,10 @@ normalize_node_label <- function(label) {
 
 parse_support_label <- function(label) {
   text <- normalize_node_label(label)
+  if (grepl("^'.*'$", text)) {
+    text <- gsub("^'|'$", "", text)
+    text <- gsub("''", "'", text, fixed = TRUE)
+  }
   if (!nzchar(text)) {
     return("")
   }
@@ -420,12 +424,14 @@ dna_translation_case <- function(case_payload, output_root, execution_path, r_ve
   )
 }
 
-if (identical(case_payload$operation, "read-tree-structure")) {
+if (identical(case_payload$operation, "read-tree-structure") ||
+    identical(case_payload$operation, "write-tree-structure")) {
   tree_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }
 
-if (identical(case_payload$operation, "read-tree-set-structure")) {
+if (identical(case_payload$operation, "read-tree-set-structure") ||
+    identical(case_payload$operation, "write-tree-set-structure")) {
   tree_set_case(case_payload, output_root, execution_path, r_version)
   quit(save = "no", status = 0)
 }

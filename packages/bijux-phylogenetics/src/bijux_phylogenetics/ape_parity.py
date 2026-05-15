@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import csv
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 import json
 from importlib import metadata
 import os
@@ -16,7 +16,12 @@ from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matri
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.core.tree import TreeNode
 from bijux_phylogenetics.io.fasta import load_fasta_alignment, translate_coding_alignment
-from bijux_phylogenetics.io.newick import dumps_newick
+from bijux_phylogenetics.io.newick import (
+    dumps_newick,
+    load_newick_tree_set,
+    write_newick,
+    write_newick_tree_set,
+)
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.shared_dna_alignment_fixtures import (
     get_shared_dna_alignment_fixture,
@@ -236,6 +241,66 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             expected_status="parse-error",
         ),
         ApeParityCase(
+            case_id="write-tree-balanced-rooted-ultrametric",
+            fixture_kind="tree",
+            fixture_id="balanced_rooted_ultrametric",
+            function_name="ape::write.tree",
+            python_function_name="write_newick+ape::read.tree",
+            operation="write-tree-structure",
+            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="write-tree-unrooted-branch-length",
+            fixture_kind="tree",
+            fixture_id="unrooted_branch_length_tree",
+            function_name="ape::write.tree",
+            python_function_name="write_newick+ape::read.tree",
+            operation="write-tree-structure",
+            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="write-tree-internal-node-labels",
+            fixture_kind="tree",
+            fixture_id="internal_node_labels",
+            function_name="ape::write.tree",
+            python_function_name="write_newick+ape::read.tree",
+            operation="write-tree-structure",
+            input_fixture=fixture_path("tree", "internal_node_labels"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="write-tree-support-labels",
+            fixture_kind="tree",
+            fixture_id="branch_support_labels",
+            function_name="ape::write.tree",
+            python_function_name="write_newick+ape::read.tree",
+            operation="write-tree-structure",
+            input_fixture=fixture_path("tree", "branch_support_labels"),
+            tolerance=1e-12,
+        ),
+        ApeParityCase(
+            case_id="write-tree-quoted-taxon-labels",
+            fixture_kind="tree",
+            fixture_id="quoted_taxon_labels",
+            function_name="ape::write.tree",
+            python_function_name="write_newick+ape::read.tree",
+            operation="write-tree-structure",
+            input_fixture=fixture_path("tree", "quoted_taxon_labels"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
+            case_id="write-tree-multiple-trees",
+            fixture_kind="tree-set",
+            fixture_id="basic_newick_tree_set",
+            function_name="ape::write.tree",
+            python_function_name="write_newick_tree_set+ape::read.tree",
+            operation="write-tree-set-structure",
+            input_fixture=fixture_path("tree-set", "basic_newick_tree_set"),
+            tolerance=0.0,
+        ),
+        ApeParityCase(
             case_id="dna-base-frequency-lowercase",
             fixture_kind="dna-alignment",
             fixture_id="lowercase_aligned_dna",
@@ -413,15 +478,7 @@ def _clade_rows_to_parity_rows(rows) -> list[dict[str, object]]:
         }
         for row in rows
     ]
-    return sorted(
-        parity_rows,
-        key=lambda row: (
-            0 if row["tree_index"] == "" else int(row["tree_index"]),
-            _node_kind_order(str(row["node_kind"])),
-            str(row["clade_id"]),
-            str(row["node_label"]),
-        ),
-    )
+    return _sort_parity_rows(parity_rows)
 
 
 def _build_bijux_tree_structure(
@@ -469,6 +526,19 @@ def _build_bijux_tree_set_structure(
         "unique_tip_label_count": len(first_tree_tip_labels),
     }
     return summary, parity_rows, None
+
+
+def _materialize_reference_input(case: ApeParityCase, working_root: Path) -> Path:
+    reference_input_path = working_root / "bijux-reference-input.nwk"
+    if case.operation == "write-tree-structure":
+        tree = load_tree(case.input_fixture)
+        write_newick(reference_input_path, tree)
+        return reference_input_path
+    if case.operation == "write-tree-set-structure":
+        trees = load_newick_tree_set(case.input_fixture)
+        write_newick_tree_set(reference_input_path, trees)
+        return reference_input_path
+    return case.input_fixture
 
 
 def _ape_base_frequency_rows(input_fixture: Path) -> list[dict[str, object]]:
@@ -586,18 +656,48 @@ def _normalize_newick_label(label: str) -> str:
     return label
 
 
-def _normalize_joined_labels(value: str) -> str:
+def _normalize_expected_label(
+    label: str,
+    *,
+    expected_tip_labels: set[str] | None,
+) -> str:
+    normalized = _normalize_newick_label(label)
+    if (
+        expected_tip_labels
+        and normalized not in expected_tip_labels
+        and normalized.replace("_", " ") in expected_tip_labels
+    ):
+        return normalized.replace("_", " ")
+    return normalized
+
+
+def _normalize_joined_labels(
+    value: str,
+    *,
+    expected_tip_labels: set[str] | None,
+) -> str:
     if value == "":
         return value
-    return "|".join(_normalize_newick_label(label) for label in value.split("|"))
+    labels = [
+        _normalize_expected_label(label, expected_tip_labels=expected_tip_labels)
+        for label in value.split("|")
+    ]
+    return "|".join(sorted(labels))
 
 
 def _normalize_reference_summary(summary: dict[str, object]) -> dict[str, object]:
     normalized = dict(summary)
     tip_labels = normalized.get("tip_labels")
     if isinstance(tip_labels, list):
-        normalized["tip_labels"] = [
+        expected_tip_labels = {
             _normalize_newick_label(str(label)) for label in tip_labels
+        }
+        normalized["tip_labels"] = [
+            _normalize_expected_label(
+                str(label),
+                expected_tip_labels=expected_tip_labels,
+            )
+            for label in tip_labels
         ]
     return normalized
 
@@ -614,20 +714,43 @@ def _coerce_table_cell(value: str) -> object:
     return value
 
 
-def _load_rows_table(path: Path) -> list[dict[str, object]]:
+def _sort_parity_rows(rows: list[dict[str, object]]) -> list[dict[str, object]]:
+    return sorted(
+        rows,
+        key=lambda row: (
+            0 if row["tree_index"] == "" else int(row["tree_index"]),
+            _node_kind_order(str(row["node_kind"])),
+            str(row["clade_id"]),
+            str(row["node_label"]),
+        ),
+    )
+
+
+def _load_rows_table(
+    path: Path,
+    *,
+    expected_tip_labels: set[str] | None = None,
+    sort_rows: bool = False,
+) -> list[dict[str, object]]:
     with path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    return [
+    normalized_rows = [
         {
-            key: _normalize_newick_label(value)
+            key: _normalize_expected_label(value, expected_tip_labels=expected_tip_labels)
             if key.endswith("label")
-            else _normalize_joined_labels(value)
+            else _normalize_joined_labels(
+                value,
+                expected_tip_labels=expected_tip_labels,
+            )
             if key in {"clade_id", "taxa"}
             else _coerce_table_cell(value)
             for key, value in row.items()
         }
         for row in rows
     ]
+    if sort_rows:
+        return _sort_parity_rows(normalized_rows)
+    return normalized_rows
 
 
 def _compare_scalar(expected: object, observed: object, *, tolerance: float) -> bool:
@@ -730,6 +853,10 @@ def _persist_failure_bundle(
     artifact_root = failure_root / case.case_id
     artifact_root.mkdir(parents=True, exist_ok=True)
     _copy_if_exists(case_file, artifact_root / "case.json")
+    _copy_if_exists(
+        execution_root.parent / "bijux-reference-input.nwk",
+        artifact_root / "bijux-reference-input.nwk",
+    )
     _copy_if_exists(execution_root / "reference-execution.json", artifact_root / "reference-execution.json")
     if execution_payload is not None:
         outputs = execution_payload.get("outputs")
@@ -771,10 +898,10 @@ def _persist_failure_bundle(
 def _build_bijux_case_payload(
     case: ApeParityCase,
 ) -> tuple[dict[str, object], list[dict[str, object]] | None, str | None]:
-    if case.operation == "read-tree-structure":
+    if case.operation in {"read-tree-structure", "write-tree-structure"}:
         summary, rows, normalized_text = _build_bijux_tree_structure(case.input_fixture)
         return summary, rows, normalized_text
-    if case.operation == "read-tree-set-structure":
+    if case.operation in {"read-tree-set-structure", "write-tree-set-structure"}:
         summary, rows, normalized_text = _build_bijux_tree_set_structure(case.input_fixture)
         return summary, rows, normalized_text
     if case.operation == "dna-base-frequency":
@@ -807,17 +934,24 @@ def _load_reference_case_payload(
     case: ApeParityCase,
     execution_root: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]] | None, str | None]:
-    if case.operation == "read-tree-structure":
+    if case.operation in {"read-tree-structure", "write-tree-structure"}:
         summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
-        rows = _load_rows_table(execution_root / "clades.tsv")
+        expected_tip_labels = {
+            str(label) for label in summary.get("tip_labels", [])
+        }
+        rows = _load_rows_table(
+            execution_root / "clades.tsv",
+            expected_tip_labels=expected_tip_labels,
+            sort_rows=True,
+        )
         normalized_text = _canonical_newick(
             execution_root / "normalized-tree.nwk",
-            expected_tip_labels=set(str(label) for label in summary.get("tip_labels", [])),
+            expected_tip_labels=expected_tip_labels,
         )
         return summary, rows, normalized_text
-    if case.operation == "read-tree-set-structure":
+    if case.operation in {"read-tree-set-structure", "write-tree-set-structure"}:
         summary = _load_json(execution_root / "summary.json")
-        rows = _load_rows_table(execution_root / "clades.tsv")
+        rows = _load_rows_table(execution_root / "clades.tsv", sort_rows=True)
         return summary, rows, None
     if case.operation == "dna-base-frequency":
         summary = _load_json(execution_root / "summary.json")
@@ -866,7 +1000,14 @@ def run_ape_parity_cases(
     for case in selected:
         with tempfile.TemporaryDirectory(prefix=f"bijux-ape-parity-{case.case_id}-") as tmpdir:
             working_root = Path(tmpdir)
-            case_file = _write_case_file(working_root / "case.json", case)
+            reference_input_path = _materialize_reference_input(case, working_root)
+            reference_case = replace(case, input_fixture=reference_input_path)
+            payload_case = (
+                reference_case
+                if case.operation in {"write-tree-structure", "write-tree-set-structure"}
+                else case
+            )
+            case_file = _write_case_file(working_root / "case.json", reference_case)
             execution_root = working_root / "reference"
             execution_root.mkdir(parents=True, exist_ok=True)
             bijux_summary: dict[str, object] | None = None
@@ -878,7 +1019,7 @@ def run_ape_parity_cases(
                     bijux_summary,
                     bijux_rows,
                     bijux_normalized_text,
-                ) = _build_bijux_case_payload(case)
+                ) = _build_bijux_case_payload(payload_case)
             except Exception as error:
                 bijux_error = {
                     "error_type": type(error).__name__,

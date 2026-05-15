@@ -328,9 +328,14 @@ if not APE_AVAILABLE:
     raise SystemExit(0)
 
 case_id = case_payload["case_id"]
-if case_payload["operation"] in {{"read-tree-structure", "read-tree-set-structure"}}:
+if case_payload["operation"] in {{
+    "read-tree-structure",
+    "write-tree-structure",
+    "read-tree-set-structure",
+    "write-tree-set-structure",
+}}:
     try:
-        if case_payload["operation"] == "read-tree-structure":
+        if case_payload["operation"] in {{"read-tree-structure", "write-tree-structure"}}:
             tree = Phylo.read(case_payload["input_fixture"], "newick")
             summary = {{
                 "tree_count": 1,
