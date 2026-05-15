@@ -803,9 +803,13 @@ also reusable directly from Python through
 `load_dna_bin_alignment(...)`,
 `compute_alignment_base_frequency_report_from_dna_bin_alignment(...)`,
 `compute_alignment_segregating_site_report_from_dna_bin_alignment(...)`, and
-`compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(...)`, so
-review workflows do not have to reparse one FASTA file separately for
-composition, segregating-site, and nucleotide-distance inspection.
+`compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(...)`. The
+same owned matrix now also feeds
+`inspect_coding_alignment_from_dna_bin_alignment(...)` and
+`translate_coding_alignment_from_dna_bin_alignment(...)`, so review workflows
+do not have to reparse one FASTA file separately for composition,
+segregating-site, nucleotide-distance, aligned coding diagnostics, and
+aligned translation inspection.
 The `ape::nj` lane now covers one governed analytical three-taxon matrix plus
 four-taxon ultrametric and non-ultrametric matrices. On the owned Bijux side,
 neighbor joining no longer delegates through Biopython for that method: Bijux

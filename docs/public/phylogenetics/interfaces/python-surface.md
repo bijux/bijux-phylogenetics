@@ -49,8 +49,11 @@ literal-state composition, ape-style segregating-site detection, and
 nucleotide distances through
 `compute_alignment_base_frequency_report_from_dna_bin_alignment(...)`,
 `compute_alignment_segregating_site_report_from_dna_bin_alignment(...)`, and
-`compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(...)` instead
-of forcing those workflows to reparse FASTA independently.
+`compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(...)`. It now
+also feeds aligned coding diagnostics and aligned translation through
+`inspect_coding_alignment_from_dna_bin_alignment(...)` and
+`translate_coding_alignment_from_dna_bin_alignment(...)` instead of forcing
+those workflows to reparse FASTA independently.
 
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the

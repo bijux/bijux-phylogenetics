@@ -207,9 +207,13 @@ same matrix is also reusable directly from Python through
 `load_dna_bin_alignment(...)`,
 `compute_alignment_base_frequency_report_from_dna_bin_alignment(...)`,
 `compute_alignment_segregating_site_report_from_dna_bin_alignment(...)`, and
-`compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(...)`, so one
-serious nucleotide review workflow can carry one loaded matrix through
-composition, segregating-site, and nucleotide-distance inspection.
+`compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(...)`. The
+same matrix now also feeds
+`inspect_coding_alignment_from_dna_bin_alignment(...)` and
+`translate_coding_alignment_from_dna_bin_alignment(...)`, so one serious
+nucleotide review workflow can carry one loaded matrix through composition,
+segregating-site, nucleotide-distance, aligned coding diagnostics, and
+aligned translation inspection.
 The owned `alignment composition` surface now also exposes
 `--base-frequency-out` for one combined alignment-plus-sequence literal-state
 frequency ledger that mirrors `ape::base.freq`. Lowercase, ambiguity-bearing,
