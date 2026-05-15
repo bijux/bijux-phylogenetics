@@ -863,6 +863,13 @@ from .core.node_depth import (
     compute_tree_node_depths,
     write_tree_node_depth_table,
 )
+from .core.ultrametric import (
+    APE_ULTRAMETRIC_TOLERANCE,
+    TreeUltrametricReport,
+    TreeUltrametricTipRow,
+    assess_tree_ultrametricity,
+    write_tree_ultrametric_table,
+)
 from .core.tree_distance import (
     TipDistanceMatrixReport,
     TipDistanceMatrixRow,
@@ -2340,6 +2347,11 @@ __all__ = [
     "TreeNodeDepthRow",
     "compute_tree_node_depths",
     "write_tree_node_depth_table",
+    "APE_ULTRAMETRIC_TOLERANCE",
+    "TreeUltrametricReport",
+    "TreeUltrametricTipRow",
+    "assess_tree_ultrametricity",
+    "write_tree_ultrametric_table",
     "TipDistanceMatrixReport",
     "TipDistanceMatrixRow",
     "compute_tree_tip_distance_matrix",
