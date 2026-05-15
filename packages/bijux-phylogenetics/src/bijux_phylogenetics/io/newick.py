@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+import math
 from pathlib import Path
 import re
 
+from Bio import Phylo
+
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import InvalidBranchLengthError
-from bijux_phylogenetics.io.biopython import load_biophylo, loads_biophylo
+from bijux_phylogenetics.errors import InvalidBranchLengthError, TreeParseError, UnnamedTipError
+from bijux_phylogenetics.io.biopython import (
+    load_biophylo,
+    loads_biophylo,
+    tree_from_biophylo,
+)
 
 _BRANCH_LENGTH_PATTERN = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$")
 _UNQUOTED_LABEL_PATTERN = re.compile(r"^[0-9A-Za-z._-]+$")
@@ -46,6 +53,19 @@ def load_newick(path: Path):
     return load_biophylo(path, source_format="newick")
 
 
+def load_newick_tree_set(path: Path) -> list[PhyloTree]:
+    """Load one Newick tree per record from disk."""
+    if not path.exists():
+        raise FileNotFoundError(f"tree-set file not found: {path}")
+    try:
+        trees = list(Phylo.parse(path, "newick"))
+    except Exception as error:  # pragma: no cover - biopython exception surface varies
+        raise TreeParseError(str(error)) from error
+    if not trees:
+        raise TreeParseError(f"tree set contains no trees: {path}")
+    return [tree_from_biophylo(tree, source_format="newick") for tree in trees]
+
+
 def _sort_key(node: TreeNode) -> tuple[str, int]:
     tip_names = sorted(name for name in PhyloTree(root=node).tip_names if name)
     return (tip_names[0] if tip_names else "", len(tip_names))
@@ -66,6 +86,17 @@ def _format_label(label: str | None) -> str:
     return f"'{escaped}'"
 
 
+def _validate_tree_for_newick(node: TreeNode) -> None:
+    if node.is_leaf() and node.name is None:
+        raise UnnamedTipError("tree contains unnamed tips and cannot be written as Newick")
+    if node.branch_length is not None and not math.isfinite(node.branch_length):
+        raise InvalidBranchLengthError(
+            f"invalid branch length {node.branch_length!r} in tree node"
+        )
+    for child in node.children:
+        _validate_tree_for_newick(child)
+
+
 def _serialize_node(node: TreeNode) -> str:
     if node.children:
         ordered_children = ",".join(
@@ -78,6 +109,7 @@ def _serialize_node(node: TreeNode) -> str:
 
 def dumps_newick(tree: PhyloTree) -> str:
     """Serialize a local tree model into canonical Newick."""
+    _validate_tree_for_newick(tree.root)
     if tree.root.children:
         ordered_children = ",".join(
             _serialize_node(child)
@@ -92,4 +124,18 @@ def write_newick(path: Path, tree: PhyloTree) -> Path:
     """Write a canonical Newick tree to disk."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(f"{dumps_newick(tree)}\n", encoding="utf-8")
+    return path
+
+
+def dumps_newick_tree_set(trees: list[PhyloTree]) -> str:
+    """Serialize a list of trees as one canonical Newick record per line."""
+    if not trees:
+        raise TreeParseError("tree set contains no trees and cannot be written as Newick")
+    return "".join(f"{dumps_newick(tree)}\n" for tree in trees)
+
+
+def write_newick_tree_set(path: Path, trees: list[PhyloTree]) -> Path:
+    """Write one canonical Newick tree per line."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(dumps_newick_tree_set(trees), encoding="utf-8")
     return path

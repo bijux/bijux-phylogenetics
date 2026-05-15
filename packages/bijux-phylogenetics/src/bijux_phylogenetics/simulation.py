@@ -10,7 +10,7 @@ from bijux_phylogenetics.core.alignment import AlignmentRecord
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.fasta import write_fasta_alignment
-from bijux_phylogenetics.io.newick import dumps_newick, write_newick
+from bijux_phylogenetics.io.newick import dumps_newick, write_newick, write_newick_tree_set
 from bijux_phylogenetics.io.trees import load_tree
 
 
@@ -768,11 +768,7 @@ def simulate_protein_alignment(
 
 def write_tree_set(path: Path, trees: list[PhyloTree]) -> Path:
     """Write a list of simulated trees as one canonical Newick tree per line."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        "".join(f"{dumps_newick(tree)}\n" for tree in trees), encoding="utf-8"
-    )
-    return path
+    return write_newick_tree_set(path, trees)
 
 
 def write_simulated_tree(path: Path, tree: PhyloTree) -> Path:
