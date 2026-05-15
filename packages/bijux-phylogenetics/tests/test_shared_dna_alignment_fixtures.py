@@ -7,6 +7,7 @@ import pytest
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
     inspect_coding_alignment,
+    load_dna_bin_alignment,
     load_fasta_alignment,
     load_permissive_fasta_records,
     prepare_coding_sequences_for_alignment,
@@ -34,6 +35,7 @@ def test_shared_dna_alignment_fixture_catalog_covers_required_goal_cases() -> No
         "high-divergence-sequences",
         "missing-data",
         "all-gap-missing",
+        "invalid-symbol",
         "unequal-length-invalid-input",
         "valid-reading-frame",
         "frame-error",
@@ -96,9 +98,23 @@ def test_shared_dna_alignment_fixture_catalog_preserves_lowercase_records() -> N
     fixture = get_shared_dna_alignment_fixture("lowercase_aligned_dna")
 
     records = load_fasta_alignment(fixture.path)
+    matrix = load_dna_bin_alignment(fixture.path)
 
     assert records[0].sequence == "acgtaa"
     assert records[1].sequence == "acgtta"
+    assert [record.sequence for record in matrix.records] == [
+        "acgtaa",
+        "acgtta",
+        "atgtnn",
+    ]
+
+
+def test_shared_dna_alignment_fixture_catalog_marks_invalid_symbol_rejection() -> None:
+    fixture = get_shared_dna_alignment_fixture("invalid_symbol_alignment")
+
+    assert fixture.load_expectation == "invalid-symbol"
+    with pytest.raises(InvalidAlignmentError, match="A:5=Z"):
+        load_dna_bin_alignment(fixture.path)
 
 
 def test_shared_dna_alignment_fixture_catalog_reports_unequal_length_invalid_input() -> (

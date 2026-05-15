@@ -765,6 +765,7 @@ from bijux_phylogenetics.io.fasta import (
     inspect_coding_alignment,
     link_alignment_to_tree,
     list_alignment_filter_profiles,
+    load_dna_bin_alignment,
     load_fasta_alignment,
     prepare_coding_sequences_for_alignment,
     remove_all_gap_columns,
@@ -779,6 +780,7 @@ from bijux_phylogenetics.io.fasta import (
     trim_alignment,
     trim_columns_above_missingness_threshold,
     validate_fasta_input,
+    write_dna_bin_alignment_fasta,
     write_fasta_alignment,
 )
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
@@ -3629,6 +3631,11 @@ def test_compute_consensus_tree_requires_identical_taxon_sets() -> None:
     )
     assert bijux_phylogenetics.trim_alignment is trim_alignment
     assert bijux_phylogenetics.translate_coding_alignment is translate_coding_alignment
+    assert bijux_phylogenetics.load_dna_bin_alignment is load_dna_bin_alignment
+    assert (
+        bijux_phylogenetics.write_dna_bin_alignment_fasta
+        is write_dna_bin_alignment_fasta
+    )
     assert bijux_phylogenetics.TreeRootingReport is TreeRootingReport
     assert bijux_phylogenetics.root_tree_on_outgroup is root_tree_on_outgroup
     assert bijux_phylogenetics.reroot_tree_by_midpoint is reroot_tree_by_midpoint
@@ -5723,6 +5730,20 @@ def test_write_fasta_alignment_preserves_record_order_and_sequences(
         ">A\nACTGACTG\n>B\nACTGACTA\n>C\nACTGACGG\n>D\nACTGACGA\n"
     )
     assert load_fasta_alignment(output) == records
+
+
+def test_write_dna_bin_alignment_fasta_preserves_normalized_nucleotide_states(
+    tmp_path: Path,
+) -> None:
+    alignment = load_dna_bin_alignment(fixture("example_alignment_ambiguity.fasta"))
+    output = tmp_path / "dnabin-alignment.fasta"
+
+    write_dna_bin_alignment_fasta(output, alignment)
+
+    assert output.read_text(encoding="utf-8") == (
+        ">A\nacgtn?\n>B\nacgtr?\n>C\nacgt-?\n"
+    )
+    assert load_dna_bin_alignment(output).records == alignment.records
 
 
 def test_alignment_detects_sequences_with_excessive_missing_data() -> None:
