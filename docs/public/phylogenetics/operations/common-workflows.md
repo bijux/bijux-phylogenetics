@@ -3337,6 +3337,16 @@ exports and validates one complete result bundle automatically. That bundle now
 includes the resolved workflow config plus copied config-source, metadata, and
 traits files when they were supplied.
 
+When one of these governed workflows fails and `--json` is enabled, the error
+surface now explains the biological blocker directly. The structured payload
+includes `failure_reason`, `scientific_explanation`, `likely_causes`,
+`actionable_fixes`, and `evidence`, so the same run can say whether the input
+FASTA contains duplicate or empty records, whether trimming removed every
+retained site, whether inference never produced a tree or produced an
+unparsable tree artifact, whether the tree and trait table disagree on taxon
+membership, or whether a BEAST or MrBayes artifact is missing its expected
+file, header, sampled row, or posterior-tree block.
+
 Use `phylo replay` when you need to rerun one of those manifests and verify the
 result against the original workflow output.
 

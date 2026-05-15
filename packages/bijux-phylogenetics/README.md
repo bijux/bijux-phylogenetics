@@ -376,6 +376,17 @@ one complete result bundle carrying the resolved workflow config plus copied
 config source, metadata, and traits files alongside the inference outputs and
 engine artifacts.
 
+When one of those governed workflows fails under `--json`, the error payload
+now stays scientific instead of stopping at a bare Python exception.
+Structured failures expose `failure_reason`, `scientific_explanation`,
+`likely_causes`, `actionable_fixes`, and `evidence`. Invalid FASTA inputs name
+duplicate or empty records and illegal characters, trimming failures
+distinguish empty retained alignments from missing artifacts, tree-inference
+failures distinguish missing trees from unparsable tree outputs, comparative
+taxon-linkage failures list the missing or extra taxa explicitly, and BEAST or
+MrBayes parser failures identify the missing file, header, sampled row, or
+tree block section that prevented scientific review.
+
 Use `phylo replay` when you need to rerun one governed manifest and verify that
 the new outputs are still scientifically equivalent.
 

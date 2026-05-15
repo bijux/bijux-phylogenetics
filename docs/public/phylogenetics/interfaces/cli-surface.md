@@ -5204,6 +5204,17 @@ from a governed workflow manifest, while `phylo validate-bundle` fails if the
 bundle is missing its required report, workflow outputs, or declared step
 manifests even when the remaining copied files still hash correctly.
 
+Across those governed engine-backed commands, JSON error payloads now carry one
+scientific failure block instead of only a bare exception surface. The details
+include `failure_reason`, `scientific_explanation`, `likely_causes`,
+`actionable_fixes`, and `evidence`, so a blocked workflow can distinguish:
+
+- invalid FASTA record problems such as duplicate identifiers, illegal characters, empty records, or length outliers
+- trimming failures that removed every retained site versus workflows that never wrote the trimmed artifact
+- tree-inference failures that never wrote a tree versus tree-like outputs that are present but unparsable
+- comparative taxon-linkage mismatches listing tree taxa missing from the trait table and extra trait-table taxa
+- BEAST and MrBayes parser failures naming the missing file, header, sampled row, or posterior-tree block section
+
 `adapter compare-engines` is the governed side-by-side inference mode for one
 aligned matrix. It runs IQ-TREE model selection, IQ-TREE ultrafast bootstrap
 support inference, and FastTree approximate inference on the same input, then
