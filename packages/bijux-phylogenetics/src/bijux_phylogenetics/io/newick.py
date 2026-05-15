@@ -256,6 +256,35 @@ def load_newick_tree_set(path: Path) -> list[PhyloTree]:
     return loads_newick_tree_set(path.read_text(encoding="utf-8"))
 
 
+def iter_newick_tree_records(text: str):
+    """Yield one normalized Newick record per parsed statement."""
+    record_index = 0
+    buffer = ""
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        buffer = f"{buffer} {line}".strip() if buffer else line
+        while ";" in buffer:
+            statement, buffer = buffer.split(";", 1)
+            normalized = statement.strip()
+            if not normalized:
+                continue
+            record_index += 1
+            yield record_index, f"{normalized};"
+    remainder = buffer.strip()
+    if remainder:
+        record_index += 1
+        yield record_index, remainder
+
+
+def iter_newick_tree_records_from_path(path: Path):
+    """Yield one normalized Newick record per parsed statement from disk."""
+    if not path.exists():
+        raise FileNotFoundError(f"tree-set file not found: {path}")
+    yield from iter_newick_tree_records(path.read_text(encoding="utf-8"))
+
+
 def _sort_key(node: TreeNode) -> tuple[str, int]:
     tip_names = sorted(name for name in node.descendant_taxa if name)
     return (tip_names[0] if tip_names else "", len(tip_names))
