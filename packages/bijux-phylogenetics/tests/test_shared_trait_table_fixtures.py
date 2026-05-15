@@ -318,3 +318,53 @@ def test_shared_trait_table_fixture_catalog_supports_governed_discrete_ace_cases
     assert pectinate_report.parameter_count == 1
     assert missing_report.taxon_count == 3
     assert missing_report.dropped_missing_taxa == ["D"]
+
+
+def test_shared_trait_table_fixture_catalog_supports_governed_discrete_sym_ace_cases() -> (
+    None
+):
+    balanced_fixture = get_shared_trait_table_fixture("ace_discrete_sym_balanced")
+    pectinate_fixture = get_shared_trait_table_fixture("ace_discrete_sym_pectinate")
+    six_taxon_fixture = get_shared_trait_table_fixture("ace_discrete_sym_six_taxon")
+    missing_fixture = get_shared_trait_table_fixture("ace_discrete_sym_missing_values")
+
+    balanced_tree = get_shared_tree_fixture(balanced_fixture.tree_fixture_id).path
+    pectinate_tree = get_shared_tree_fixture(pectinate_fixture.tree_fixture_id).path
+    six_taxon_tree = get_shared_tree_fixture(six_taxon_fixture.tree_fixture_id).path
+
+    balanced_report = reconstruct_discrete_ancestral_states(
+        balanced_tree,
+        balanced_fixture.path,
+        trait="region",
+        model="symmetric",
+    )
+    pectinate_report = reconstruct_discrete_ancestral_states(
+        pectinate_tree,
+        pectinate_fixture.path,
+        trait="region",
+        model="symmetric",
+    )
+    six_taxon_report = reconstruct_discrete_ancestral_states(
+        six_taxon_tree,
+        six_taxon_fixture.path,
+        trait="region",
+        model="symmetric",
+    )
+    missing_report = reconstruct_discrete_ancestral_states(
+        six_taxon_tree,
+        missing_fixture.path,
+        trait="region",
+        model="symmetric",
+    )
+
+    assert balanced_report.model == "symmetric"
+    assert balanced_report.parameter_count == 3
+    assert balanced_report.optimizer_diagnostics is not None
+    assert pectinate_report.model == "symmetric"
+    assert len(pectinate_report.transition_rate_rows) == 6
+    assert six_taxon_report.taxon_count == 6
+    assert six_taxon_report.baseline_comparison is not None
+    assert six_taxon_report.baseline_comparison.delta_aic > 0.0
+    assert six_taxon_report.baseline_comparison.preferred_model_by_aic == "equal-rates"
+    assert missing_report.taxon_count == 5
+    assert missing_report.dropped_missing_taxa == ["F"]
