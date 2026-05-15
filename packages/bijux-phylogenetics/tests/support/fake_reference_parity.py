@@ -337,11 +337,12 @@ if case_payload["operation"] in {{
     "root-tree-outgroup",
     "unroot-tree",
     "drop-tree-taxa",
+    "keep-tree-taxa",
     "read-tree-set-structure",
     "write-tree-set-structure",
 }}:
     try:
-        if case_payload["operation"] in {{"read-tree-structure", "write-tree-structure", "root-tree-outgroup", "unroot-tree", "drop-tree-taxa"}}:
+        if case_payload["operation"] in {{"read-tree-structure", "write-tree-structure", "root-tree-outgroup", "unroot-tree", "drop-tree-taxa", "keep-tree-taxa"}}:
             newick_path = output_root / "normalized-tree.nwk"
             if case_payload["operation"] == "root-tree-outgroup":
                 outgroup_taxa = tuple(case_payload.get("outgroup_taxa", []))
@@ -395,6 +396,33 @@ if case_payload["operation"] in {{
                     absent_requested_taxa = ["Z"]
                 newick_path.write_text(newick_text, encoding="utf-8")
                 tree = Phylo.read(newick_path, "newick")
+            elif case_payload["operation"] == "keep-tree-taxa":
+                if case_id == "keep-tip-rooted-selected-two":
+                    newick_text = "(A:0.3,C:0.3);\\n"
+                    requested_taxa = ["A", "C"]
+                    dropped_taxa = ["B", "D"]
+                elif case_id == "keep-tip-rooted-order-insensitive":
+                    newick_text = "(A:0.3,C:0.3);\\n"
+                    requested_taxa = ["A", "C"]
+                    dropped_taxa = ["B", "D"]
+                elif case_id == "keep-tip-root-change-after-outgroup-rooting":
+                    newick_text = "((A:0.2,B:0.2):0.7,C:0.1);\\n"
+                    requested_taxa = ["A", "B", "C"]
+                    dropped_taxa = ["D"]
+                elif case_id == "keep-tip-unrooted-three-tip":
+                    newick_text = "(A:0.1,B:0.2,C:0.3);\\n"
+                    requested_taxa = ["A", "B", "C"]
+                    dropped_taxa = ["D"]
+                elif case_id == "keep-tip-unrooted-two-tip":
+                    newick_text = "(A:0.1,B:0.2);\\n"
+                    requested_taxa = ["A", "B"]
+                    dropped_taxa = ["C", "D"]
+                else:
+                    newick_text = Path(case_payload["input_fixture"]).read_text(encoding="utf-8")
+                    requested_taxa = sorted(set(case_payload.get("requested_taxa", [])))
+                    dropped_taxa = []
+                newick_path.write_text(newick_text, encoding="utf-8")
+                tree = Phylo.read(newick_path, "newick")
             else:
                 tree = Phylo.read(case_payload["input_fixture"], "newick")
             summary = {{
@@ -412,13 +440,16 @@ if case_payload["operation"] in {{
             if case_payload["operation"] == "drop-tree-taxa":
                 summary["dropped_taxa"] = dropped_taxa
                 summary["absent_requested_taxa"] = absent_requested_taxa
+            if case_payload["operation"] == "keep-tree-taxa":
+                summary["requested_taxa"] = requested_taxa
+                summary["dropped_taxa"] = dropped_taxa
             rows = clade_rows(tree, "")
             summary.update(SUMMARY_OVERRIDES)
             summary_path = output_root / "summary.json"
             clades_path = output_root / "clades.tsv"
             write_json(summary_path, summary)
             write_tsv(clades_path, rows)
-            if case_payload["operation"] in {{"root-tree-outgroup", "unroot-tree", "drop-tree-taxa"}}:
+            if case_payload["operation"] in {{"root-tree-outgroup", "unroot-tree", "drop-tree-taxa", "keep-tree-taxa"}}:
                 pass
             elif case_id == "read-tree-quoted-taxon-labels":
                 newick_path.write_text(
