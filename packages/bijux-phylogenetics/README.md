@@ -309,6 +309,8 @@ bijux-phylogenetics demo rabies-cross-host-geography-panel --out artifacts/rabie
 bijux-phylogenetics demo catarrhine-data-quality-stress-panel --out artifacts/catarrhine-data-quality-stress-panel --json
 bijux-phylogenetics demo known-answer-reference-panel --out artifacts/known-answer-reference-panel --json
 bijux-phylogenetics simulate tree-birth-death --tree-count 5 --tip-count 16 --out simulated.trees
+bijux-phylogenetics simulate tree-random --tree-count 64 --tip-count 12 --out simulated-random.trees --record-table-out artifacts/random-tree-records.tsv --envelope-table-out artifacts/random-tree-envelope.tsv --json
+bijux-phylogenetics simulate tree-coalescent --tree-count 64 --tip-count 12 --out simulated-coalescent.trees --record-table-out artifacts/coalescent-tree-records.tsv --envelope-table-out artifacts/coalescent-tree-envelope.tsv --json
 bijux-phylogenetics simulate traits-early-burst tree.nwk --root-state 1.0 --sigma 0.5 --rate-change 4.0 --out simulated-early-burst.tsv --json
 bijux-phylogenetics demo continuous-mode-recovery-panel --out artifacts/continuous-mode-recovery-panel --json
 bijux-phylogenetics simulate alignment-dna tree.nwk --sequence-length 500 --out simulated-alignment.fasta
@@ -735,11 +737,14 @@ DNAbin state ledgers, DNA-state frequency tables, DNA-distance ledgers, and
 translated amino-acid rows are compared as owned artifacts rather than scraped
 console text. The governed live cases now cover `ape::read.tree`, `ape::write.tree`,
 `ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::ace`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::nj`, `ape::pic`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans` over shared tree, trait-table, and DNA
-fixture ids. The tree, trait-table, and DNA inputs for that lane now come from
+fixture ids. The lane now also covers governed `ape::rtree` and `ape::rcoal`
+simulation-envelope cases over shared random-tree and coalescent simulation
+fixtures. The tree, trait-table, DNA, and simulation inputs for that lane now come from
 the governed shared fixture catalogs in
 `tests/fixtures/metadata/shared_tree_fixture_catalog.json`,
-`tests/fixtures/metadata/shared_trait_table_fixture_catalog.json`, and
-`tests/fixtures/metadata/shared_dna_alignment_fixture_catalog.json`, so Bijux
+`tests/fixtures/metadata/shared_trait_table_fixture_catalog.json`,
+`tests/fixtures/metadata/shared_dna_alignment_fixture_catalog.json`, and
+`tests/fixtures/metadata/shared_tree_simulation_fixture_catalog.json`, so Bijux
 and `ape` resolve the same durable fixture identities instead of hand-picked
 path lists. The `ape::read.tree` lane now checks structured clade rows rather
 than only raw parse success, including rooted and unrooted trees, branch

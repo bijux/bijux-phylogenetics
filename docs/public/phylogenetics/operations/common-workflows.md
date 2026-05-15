@@ -154,7 +154,10 @@ reproducible artifact bundle is written for review.
 The live lane now uses two governed shared fixture catalogs. Tree parity cases
 resolve durable fixture ids from `shared_tree_fixture_catalog.json`, while DNA
 parity cases resolve durable fixture ids from
-`shared_dna_alignment_fixture_catalog.json`. The DNA portion of the lane covers
+`shared_dna_alignment_fixture_catalog.json`. The lane now also resolves one
+governed simulation catalog from
+`shared_tree_simulation_fixture_catalog.json` for `ape::rtree` and
+`ape::rcoal` envelope checks. The DNA portion of the lane covers
 shared lowercase, ambiguity, gap, missing-data, identical-sequence,
 high-divergence, invariant, one-variable-site, and coding-translation
 fixtures across `ape::as.DNAbin`, `ape::base.freq`, `ape::seg.sites`,

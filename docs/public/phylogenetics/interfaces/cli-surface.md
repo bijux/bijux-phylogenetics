@@ -160,11 +160,12 @@ Skipped live cases are not hidden. When `ape` or `Rscript` is unavailable, the
 observation ledger records the skip reason and the harness writes one small
 reproducible artifact bundle for that case.
 
-The governed live `ape` cases now span both shared tree and shared DNA
+The governed live `ape` cases now span shared tree, DNA, and simulation
 fixtures. Today that lane covers `ape::read.tree`, `ape::write.tree`,
-`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::nj`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans`, with durable inputs
-resolved from `shared_tree_fixture_catalog.json` and
-`shared_dna_alignment_fixture_catalog.json`. The `ape::read.tree` portion now
+`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::nj`, `ape::rcoal`, `ape::rtree`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans`, with durable inputs
+resolved from `shared_tree_fixture_catalog.json`,
+`shared_dna_alignment_fixture_catalog.json`, and
+`shared_tree_simulation_fixture_catalog.json`. The `ape::read.tree` portion now
 compares structured clade rows and covers branch lengths, internal labels,
 support labels, quoted labels, one governed multiple-tree Newick input, and
 one governed malformed-Newick rejection case. The `ape::root` portion now
@@ -948,6 +949,16 @@ The packaged recovery contract is explicit:
 early-burst branch-rate case. It writes one tip-trait table and reports the
 declared `rate_change` in JSON output so reviewers can tie downstream recovery
 rows back to the generating parameter instead of inferring it indirectly.
+
+`simulate tree-random` and `simulate tree-coalescent` are the owned governed
+tree-simulation review surfaces for random rooted trees and coalescent trees.
+They can each write one tree-set output plus one per-tree record ledger and one
+envelope ledger through `--record-table-out` and `--envelope-table-out`. The
+live `ape` parity lane now checks those envelope ledgers against governed
+`ape::rtree` and `ape::rcoal` cases from
+`shared_tree_simulation_fixture_catalog.json`, so simulation parity is tracked
+as a machine-readable distribution review surface rather than one unstable
+literal Newick target.
 
 `demo rabies-cross-host-panel` is the governed packaged pathogen
 host-switching surface. It materializes the shipped rabies nucleoprotein panel

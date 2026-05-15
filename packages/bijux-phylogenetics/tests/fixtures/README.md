@@ -94,6 +94,12 @@ durable fixture ids to analytical, ultrametric, and non-ultrametric distance
 matrices for owned neighbor-joining validation plus live `ape::nj` parity, so
 distance-tree trust does not depend on loose file names or incidental matrix
 paths.
+The metadata fixture corpus now also has one governed shared simulation catalog
+at `metadata/shared_tree_simulation_fixture_catalog.json`. That catalog assigns
+durable fixture ids to rooted random-tree and coalescent simulation envelopes,
+records replicate count, tip count, seed, branch-length model, and reference
+function, and gives the live `ape::rtree` and `ape::rcoal` parity lane one
+owned distribution-review surface instead of ad hoc seeded script fragments.
 
 The `expected/` directory now also carries benchmark-corpus regression
 snapshots used to pin stable dataset summaries across releases.
