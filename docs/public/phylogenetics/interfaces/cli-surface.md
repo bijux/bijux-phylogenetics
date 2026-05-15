@@ -306,6 +306,14 @@ branching-time table keyed by stable ape-style node ids, and the owned Bijux
 surface `compute_tree_branching_times(...)` rejects non-ultrametric trees
 instead of forwarding the invalid negative or inconsistent node ages that
 `ape::branching.times` can still produce on those inputs.
+The `ape::gammaStat` portion now covers rooted ultrametric trees with and
+without internal labels, one medium ultrametric tree, and one zero-internal-
+branch ultrametric tree. It compares one governed one-row
+`gamma-statistic.tsv` ledger, and the owned Bijux surface
+`compute_diversification_gamma_statistic(...)` keeps two workflow-side
+boundaries explicit instead of inheriting `ape`'s looser behavior: the tree
+must stay fully bifurcating, and incomplete sampling remains a warning surface
+rather than an implicit correction.
 The `ape::is.ultrametric` portion now covers exact ultrametric,
 near-ultrametric, tight-tolerance near-ultrametric, and clearly
 non-ultrametric trees. It compares one governed tip-depth diagnostic table,
