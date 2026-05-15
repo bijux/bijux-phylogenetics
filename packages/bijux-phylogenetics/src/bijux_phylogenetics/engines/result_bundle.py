@@ -15,6 +15,7 @@ from .common import load_engine_manifest
 from .reports import render_inference_workflow_report
 
 __all__ = [
+    "WorkflowResultBundleExtraInput",
     "WorkflowResultBundleFile",
     "WorkflowResultBundleIssue",
     "WorkflowResultBundleReport",
@@ -27,6 +28,12 @@ _BUNDLE_MANIFEST_NAME = "bundle.manifest.json"
 _WORKFLOW_REPORT_NAME = "workflow-report.html"
 _WORKFLOW_CONFIG_NAME = "workflow-config.json"
 _WORKFLOW_RERUN_NAME = "workflow-rerun.json"
+
+
+@dataclass(frozen=True, slots=True)
+class WorkflowResultBundleExtraInput:
+    label: str
+    source_path: Path
 
 
 @dataclass(slots=True)
@@ -83,6 +90,9 @@ def export_workflow_result_bundle(
     manifest_path: Path,
     *,
     bundle_root: Path,
+    config_payload: dict[str, object] | None = None,
+    extra_inputs: list[WorkflowResultBundleExtraInput] | None = None,
+    extra_notes: list[str] | None = None,
 ) -> WorkflowResultBundleReport:
     """Export one portable workflow-result bundle rooted on one workflow manifest."""
     payload = load_engine_manifest(manifest_path)
@@ -137,8 +147,12 @@ def export_workflow_result_bundle(
         )
 
     config_path = bundle_root / _WORKFLOW_CONFIG_NAME
-    config_payload = dict(payload.get("config", {}))
-    _write_json(config_path, config_payload)
+    bundle_config_payload = (
+        dict(payload.get("config", {}))
+        if config_payload is None
+        else dict(config_payload)
+    )
+    _write_json(config_path, bundle_config_payload)
     files.append(
         _record_bundle_file(
             role="workflow_config",
@@ -215,6 +229,45 @@ def export_workflow_result_bundle(
                 "label": prepared_label,
                 "relative_path": destination.relative_to(bundle_root).as_posix(),
                 "source_path": str(prepared_input_path),
+            }
+        )
+
+    for extra_input in [] if extra_inputs is None else extra_inputs:
+        if not extra_input.source_path.exists():
+            missing_input_paths.append(extra_input.source_path)
+            input_entries.append(
+                {
+                    "label": extra_input.label,
+                    "source_path": str(extra_input.source_path),
+                }
+            )
+            continue
+        destination = bundle_root / "inputs" / extra_input.label
+        if destination.exists():
+            raise EngineWorkflowError(
+                "workflow bundle extra input label would overwrite an existing bundled file",
+                code="workflow_bundle_duplicate_extra_input",
+                details={
+                    "label": extra_input.label,
+                    "destination": str(destination),
+                },
+            )
+        _copy_file(extra_input.source_path, destination)
+        files.append(
+            _record_bundle_file(
+                role="input_file",
+                label=extra_input.label,
+                bundle_root=bundle_root,
+                path=destination,
+                source_path=extra_input.source_path,
+            )
+        )
+        copied_input_count += 1
+        input_entries.append(
+            {
+                "label": extra_input.label,
+                "relative_path": destination.relative_to(bundle_root).as_posix(),
+                "source_path": str(extra_input.source_path),
             }
         )
 
@@ -298,6 +351,13 @@ def export_workflow_result_bundle(
         )
         copied_report_count += 1
 
+    if missing_input_paths:
+        notes.append(
+            "bundle exported with missing source input files; original manifest input checksums remain recorded for reproducibility"
+        )
+    if extra_notes:
+        notes.extend(extra_notes)
+
     report_path = bundle_root / "reports" / _WORKFLOW_REPORT_NAME
     _write_bundle_report(
         report_path,
@@ -306,18 +366,11 @@ def export_workflow_result_bundle(
         input_entries=input_entries,
         output_entries=output_entries,
         step_manifest_entries=step_manifest_entries,
-        notes=notes
-        + (
-            []
-            if not missing_input_paths
-            else [
-                "One or more source inputs were unavailable at bundle-export time, so the bundle relies on the recorded input checksums for those paths."
-            ]
-        ),
+        notes=notes,
         stage_fingerprints=payload.get("stage_fingerprints"),
         embedded_manifest={
             "workflow": workflow,
-            "config": config_payload,
+            "config": bundle_config_payload,
             "input_checksums": payload.get("input_checksums", {}),
             "output_checksums": payload.get("output_checksums", {}),
         },
@@ -332,11 +385,6 @@ def export_workflow_result_bundle(
         )
     )
     copied_report_count += 1
-
-    if missing_input_paths:
-        notes.append(
-            "bundle exported with missing source input files; original manifest input checksums remain recorded for reproducibility"
-        )
 
     readme_path = bundle_root / "README.md"
     readme_path.write_text(
