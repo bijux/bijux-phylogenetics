@@ -644,6 +644,7 @@ from bijux_phylogenetics.io.fasta import (
     clean_alignment_with_profile,
     compare_alignment_versions,
     compute_alignment_base_frequency_report,
+    compute_alignment_segregating_site_report,
     compute_pairwise_sequence_identity_matrix,
     detect_composition_outlier_sequences,
     detect_fasta_sequence_type,
@@ -666,6 +667,7 @@ from bijux_phylogenetics.io.fasta import (
     trim_alignment,
     validate_fasta_input,
     write_alignment_base_frequency_table,
+    write_alignment_segregating_site_table,
     write_fasta_alignment,
     write_sequence_identity_matrix,
 )
@@ -1707,6 +1709,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the report as JSON."
     )
     _add_manifest_argument(alignment_composition)
+    alignment_segregating_sites = alignment_subparsers.add_parser(
+        "segregating-sites",
+        help="Report ape-style segregating alignment columns and their site indices.",
+    )
+    alignment_segregating_sites.add_argument("alignment", type=Path)
+    alignment_segregating_sites.add_argument(
+        "--site-table-out",
+        type=Path,
+        help="Write one TSV ledger of segregating alignment sites.",
+    )
+    alignment_segregating_sites.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
+    _add_manifest_argument(alignment_segregating_sites)
     alignment_invalid = alignment_subparsers.add_parser(
         "invalid",
         help="List alignment characters invalid for a declared alphabet.",
@@ -7555,6 +7571,37 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 else base_frequency_report.per_sequence_rows
                             ),
                         },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "segregating-sites":
+                report = compute_alignment_segregating_site_report(args.alignment)
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
+                if args.site_table_out is not None:
+                    outputs.append(
+                        write_alignment_segregating_site_table(
+                            args.site_table_out,
+                            report,
+                        )
+                    )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "alphabet": report.inferred_alphabet,
+                            "sequence_count": report.sequence_count,
+                            "alignment_length": report.alignment_length,
+                            "segregating_site_count": len(
+                                report.segregating_site_positions
+                            ),
+                        },
+                        data=report,
                     ),
                     json_output=args.json,
                 )

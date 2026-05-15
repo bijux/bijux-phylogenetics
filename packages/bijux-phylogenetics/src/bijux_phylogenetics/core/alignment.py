@@ -201,6 +201,19 @@ class NucleotideStateFrequencyRow:
 
 
 @dataclass(frozen=True, slots=True)
+class SegregatingSiteRow:
+    """One reviewer-facing segregating alignment column."""
+
+    position: int
+    original_states: str
+    effective_states: str
+    known_state_count: int
+    ambiguity_state_count: int
+    gap_count: int
+    missing_count: int
+
+
+@dataclass(frozen=True, slots=True)
 class SequenceCompositionOutlier:
     """One sequence whose composition deviates strongly from the alignment baseline."""
 
@@ -728,6 +741,23 @@ class AlignmentBaseFrequencyReport:
     alignment_rows: list[NucleotideStateFrequencyRow]
     per_sequence_rows: list[NucleotideStateFrequencyRow]
     composition_outliers: list[SequenceCompositionOutlier]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class AlignmentSegregatingSiteReport:
+    """ape-style segregating-site report for one nucleotide alignment."""
+
+    path: Path
+    inferred_alphabet: AlignmentAlphabet
+    sequence_count: int
+    alignment_length: int
+    ambiguity_policy: str
+    gap_policy: str
+    missing_data_policy: str
+    trailing_gap_policy: str
+    segregating_site_positions: list[int]
+    rows: list[SegregatingSiteRow]
     warnings: list[str]
 
 
