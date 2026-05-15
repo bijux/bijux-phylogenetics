@@ -172,6 +172,12 @@ transition, transversion, AG-transition, CT-transition, ambiguity, and
 saturation fields alongside the distance matrix. TN93 warns explicitly when
 the resolved alignment composition omits a nucleotide instead of silently
 falling back to a simpler model.
+The owned `alignment composition` surface now also exposes
+`--base-frequency-out` for one combined alignment-plus-sequence literal-state
+frequency ledger that mirrors `ape::base.freq`. Lowercase, ambiguity-bearing,
+missing-data, and all-gap-or-missing alignments all stay on the governed live
+parity path, and the all-gap or missing edge case now warns explicitly instead
+of fabricating canonical nucleotide content.
 The `ape::read.tree` portion of the same lane now validates structured clade
 rows for rooted and unrooted trees, branch lengths, internal labels, support
 labels, quoted labels, one governed multiple-tree Newick input, and one

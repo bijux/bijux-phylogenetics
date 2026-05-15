@@ -206,6 +206,15 @@ reviewer-facing base-frequency and coefficient inspection, and unequal-length
 alignments fail explicitly before any matrix is written. TN93 also warns
 explicitly when the resolved alignment composition omits a nucleotide instead
 of silently degrading to JC69 or K80.
+The `ape::base.freq` portion now covers lowercase, ambiguity-bearing,
+missing-data, and all-gap-or-missing alignments. On the owned Bijux side,
+`alignment composition --base-frequency-out <table.tsv>` writes one combined
+alignment-plus-sequence TSV ledger with `scope`, `identifier`, `state`,
+`count`, and `frequency` columns, returns the same literal-state frequencies
+in JSON output, and reports composition outlier sequences beside those base
+frequency rows. Ambiguity codes, gaps, and explicit missing states are counted
+as literal states to match `ape::base.freq`, and all-gap or missing inputs
+warn explicitly instead of fabricating canonical A/C/G/T content.
 The `ape::keep.tip` portion now covers valid rooted and unrooted keep-set
 cases, selected-tip order differences, and rootedness changes after pruning.
 Bijux keeps the workflow-facing absent-requested-taxon report and minimum-two

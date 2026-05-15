@@ -771,6 +771,15 @@ to a simpler model. `alignment distance-matrix` can also write one
 transversion, AG-transition, CT-transition, ambiguity, and saturation fields
 alongside the distance matrix. Unequal-length alignments still fail
 explicitly instead of deferring that failure until later matrix handling.
+The `ape::base.freq` lane now covers lowercase, ambiguity-bearing,
+missing-data, and all-gap-or-missing alignments. On the owned Bijux side,
+`alignment composition --base-frequency-out <table.tsv>` writes one combined
+alignment-plus-sequence TSV ledger with `scope`, `identifier`, `state`,
+`count`, and `frequency` columns, returns the same literal-state frequencies
+in JSON output, and reports composition outlier sequences beside those base
+frequency rows. Ambiguity codes, gaps, and explicit missing states are counted
+as literal states to match `ape::base.freq`, and all-gap or missing inputs
+warn explicitly instead of fabricating canonical A/C/G/T content.
 The
 `ape::root` lane now uses the same shared tree catalog for single-tip
 outgroups, monophyletic multi-tip outgroups, already-rooted trees, missing
