@@ -882,6 +882,7 @@ from bijux_phylogenetics.tree_set import (
     compare_posterior_tree_sets,
     compute_clade_frequency_table,
     compute_consensus_tree,
+    compute_strict_consensus_tree,
     compute_tree_distance_matrix,
     detect_posterior_topology_multimodality,
     detect_unstable_clades,
@@ -1858,6 +1859,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     )
     assert bijux_phylogenetics.BootstrapUnstableBranch is BootstrapUnstableBranch
     assert bijux_phylogenetics.compute_consensus_tree is compute_consensus_tree
+    assert bijux_phylogenetics.compute_strict_consensus_tree is compute_strict_consensus_tree
     assert (
         bijux_phylogenetics.compute_clade_frequency_table
         is compute_clade_frequency_table
@@ -3589,6 +3591,28 @@ def test_compute_consensus_tree_returns_majority_rule_consensus() -> None:
     )
     assert report.tree_count == 3
     assert report.shared_taxa == ["A", "B", "C", "D"]
+    assert report.consensus_method == "majority-rule"
+    assert report.consensus_threshold == 0.5
+    assert report.included_clade_count == 2
+
+
+def test_compute_strict_consensus_tree_returns_star_when_no_clade_is_unanimous() -> None:
+    tree, report = compute_strict_consensus_tree(fixture("example_tree_set_left.nwk"))
+
+    assert dumps_newick(tree) == "(A:0.1,B:0.1,C:0.1,D:0.1);"
+    assert report.tree_count == 3
+    assert report.shared_taxa == ["A", "B", "C", "D"]
+    assert report.consensus_method == "strict"
+    assert report.consensus_threshold == 1.0
+    assert report.included_clade_count == 0
+
+
+def test_compute_consensus_tree_requires_identical_taxon_sets() -> None:
+    with pytest.raises(
+        InvalidAlignmentError,
+        match="share the exact same taxon set",
+    ):
+        compute_consensus_tree(fixture("example_tree_set_mismatched.nwk"))
     assert (
         bijux_phylogenetics.trim_columns_above_missingness_threshold
         is trim_columns_above_missingness_threshold
@@ -6564,6 +6588,47 @@ def test_cli_tree_set_consensus_writes_newick(tmp_path: Path, capsys) -> None:
         "((A:0.1,B:0.1)66.6666666666667:0.2,(C:0.1,D:0.1)66.6666666666667:0.2);\n"
     )
     assert payload["metrics"]["tree_count"] == 3
+    assert payload["metrics"]["consensus_method"] == "majority-rule"
+    assert payload["metrics"]["consensus_threshold"] == 0.5
+    assert payload["metrics"]["included_clade_count"] == 2
+
+
+def test_cli_tree_set_consensus_supports_strict_mode_and_frequency_ledger(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "strict-consensus.nwk"
+    frequency_path = tmp_path / "clade-frequencies.tsv"
+
+    exit_code = main(
+        [
+            "tree-set",
+            "consensus",
+            str(fixture("example_tree_set_left.nwk")),
+            "--out",
+            str(output_path),
+            "--method",
+            "strict",
+            "--clade-frequencies-out",
+            str(frequency_path),
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == "(A:0.1,B:0.1,C:0.1,D:0.1);\n"
+    assert frequency_path.read_text(encoding="utf-8") == (
+        "clade\ttree_count\tfrequency\n"
+        "A|B\t2\t0.666666666666667\n"
+        "A|C\t1\t0.333333333333333\n"
+        "B|D\t1\t0.333333333333333\n"
+        "C|D\t2\t0.666666666666667\n"
+    )
+    assert payload["metrics"]["consensus_method"] == "strict"
+    assert payload["metrics"]["consensus_threshold"] == 1.0
+    assert payload["metrics"]["included_clade_count"] == 0
 
 
 def test_cli_tree_set_compare_reports_shared_topologies(capsys) -> None:
