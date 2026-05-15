@@ -151,6 +151,16 @@ state, and mismatch reason for every governed case. If `Rscript` or `ape` is
 unavailable, the case is recorded explicitly as skipped and one small
 reproducible artifact bundle is written for review.
 
+The live lane now uses two governed shared fixture catalogs. Tree parity cases
+resolve durable fixture ids from `shared_tree_fixture_catalog.json`, while DNA
+parity cases resolve durable fixture ids from
+`shared_dna_alignment_fixture_catalog.json`. The DNA portion of the lane covers
+shared lowercase, ambiguity, gap, missing-data, identical-sequence,
+high-divergence, and coding-translation fixtures across `ape::base.freq`,
+`ape::dist.dna`, and `ape::trans`. Frame-error and unequal-length DNA fixtures
+are still governed shared inputs, but they stay on the diagnostic side of the
+contract because Bijux rejects them more strictly than `ape` does.
+
 When the goal is to check resource behavior across the repository's largest
 owned workload families, use `benchmark stress-suite`. This workflow does not
 invent a separate benchmark harness. It drives the owned large-alignment,

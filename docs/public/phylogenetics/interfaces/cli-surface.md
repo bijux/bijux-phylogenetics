@@ -160,6 +160,17 @@ Skipped live cases are not hidden. When `ape` or `Rscript` is unavailable, the
 observation ledger records the skip reason and the harness writes one small
 reproducible artifact bundle for that case.
 
+The governed live `ape` cases now span both shared tree and shared DNA
+fixtures. Today that lane covers `ape::read.tree`, `ape::base.freq`,
+`ape::dist.dna`, and `ape::trans`, with durable inputs resolved from
+`shared_tree_fixture_catalog.json` and `shared_dna_alignment_fixture_catalog.json`.
+The DNA cases include lowercase input, ambiguity, missing data, identical
+sequences, high-divergence distances, and valid, internal-stop, or
+terminal-stop coding translation rows. Unequal-length and frame-error DNA
+fixtures remain governed shared inputs too, but they stay on the diagnostics
+surface rather than the parity-pass registry because `ape::trans` truncates
+partial codons while Bijux rejects them for workflow safety.
+
 The governed PGLS lane is not limited to one intercept-plus-slope example. The
 core suite now includes one fixed-Brownian numeric regression, one
 treatment-coded categorical regression, and one treatment-coded interaction

@@ -726,11 +726,16 @@ launches the checked-in R runner through `Rscript`, records the R version,
 tolerance, pass or fail state, and mismatch reason for each governed case, and
 writes reproducible failure or skip artifacts whenever the live lane disagrees
 or `ape` is unavailable. The live observation table is structured rather than
-string-based, so tree summaries, tip ledgers, and normalized Newick outputs
-are compared as owned artifacts rather than scraped console text. The tree
-inputs for that lane now come from the governed shared tree fixture catalog in
-`tests/fixtures/metadata/shared_tree_fixture_catalog.json`, so Bijux and `ape`
-resolve the same durable tree identities instead of hand-picked path lists.
+string-based, so tree summaries, tip ledgers, normalized Newick outputs,
+DNA-state frequency tables, raw-distance ledgers, and translated amino-acid
+rows are compared as owned artifacts rather than scraped console text. The
+governed live cases now cover `ape::read.tree`, `ape::base.freq`,
+`ape::dist.dna`, and `ape::trans` over shared tree and DNA fixture ids. The
+tree and DNA inputs for that lane now come from the governed shared fixture
+catalogs in `tests/fixtures/metadata/shared_tree_fixture_catalog.json` and
+`tests/fixtures/metadata/shared_dna_alignment_fixture_catalog.json`, so Bijux
+and `ape` resolve the same durable fixture identities instead of hand-picked
+path lists.
 
 `report release-truth` is the governed pre-release summary surface. It consumes
 actual pytest JUnit XML reports for the full test lane and the real-engine test

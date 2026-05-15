@@ -22,6 +22,16 @@ zero-branch, long-branch, internal-label, branch-support, quoted-label, and
 malformed-Newick cases. The live `ape` parity harness resolves its tree inputs
 through those fixture ids instead of hardcoding ad hoc file paths.
 
+The DNA alignment fixture corpus now also has one governed shared catalog at
+`metadata/shared_dna_alignment_fixture_catalog.json`. That catalog assigns
+durable fixture ids, records load and translation expectations, and marks the
+distance, composition, missingness, lowercase, identical-sequence,
+high-divergence, unequal-length, valid-coding, frame-error, internal-stop, and
+terminal-stop cases that matter for cross-tool DNA parity. The live `ape`
+parity harness resolves its DNA inputs through those fixture ids for
+`base.freq`, `dist.dna`, and `trans` instead of relying on loose path lists or
+one-off inline sequences.
+
 The `expected/` directory now also carries benchmark-corpus regression
 snapshots used to pin stable dataset summaries across releases.
 
