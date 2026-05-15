@@ -100,6 +100,17 @@ durable fixture ids to rooted random-tree and coalescent simulation envelopes,
 records replicate count, tip count, seed, branch-length model, and reference
 function, and gives the live `ape::rtree` and `ape::rcoal` parity lane one
 owned distribution-review surface instead of ad hoc seeded script fragments.
+The same metadata corpus now also has one governed shared `phytools`
+comparative catalog at
+`metadata/shared_phytools_comparative_fixture_catalog.json`. That catalog pairs
+shared tree fixtures and shared trait-table fixtures into one comparative
+surface with durable fixture ids for twenty-four-taxon and one-hundred-
+twenty-eight-taxon ultrametric signal cases, rooted non-ultrametric cases,
+binary and multistate discrete traits, missing-value pruning, constant-trait
+negatives, tree-versus-table mismatch, branch-length edge cases, and explicit
+known-truth simulation metadata. The live `phytools` harness now resolves its
+governed comparative cases through those ids instead of hardcoded ad hoc tree
+and trait paths.
 
 The `expected/` directory now also carries benchmark-corpus regression
 snapshots used to pin stable dataset summaries across releases.

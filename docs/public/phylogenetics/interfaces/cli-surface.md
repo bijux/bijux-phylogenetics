@@ -250,9 +250,11 @@ Its JSON metrics report:
 
 The initial live `phytools` registry is intentionally narrow for this goal. It
 currently covers `phytools::phylosig(method='lambda')` and
-`phytools::phylosig(method='K')` on the governed comparative example tree, so
-the repository now has one real external comparative-method execution harness
-instead of only checked reference JSON.
+`phytools::phylosig(method='K')` on one governed twenty-four-taxon
+strong-signal comparative fixture from the shared
+`shared_phytools_comparative_fixture_catalog.json` corpus, so the repository
+now has one real external comparative-method execution harness instead of only
+checked reference JSON.
 For this round, `bionj` is explicitly excluded. The distance-tree CLI surfaces
 therefore accept `--method bionj` only so the owned runtime can return one
 structured out-of-scope error naming `ape::bionj`, rather than failing with

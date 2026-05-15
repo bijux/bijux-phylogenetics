@@ -221,9 +221,10 @@ The same `parity` command now also exposes one governed
 `--reference-source phytools-live` lane for real `phytools` execution through
 the checked-in R runner. That initial registry is intentionally narrow for
 goal 201: it currently covers `phytools::phylosig(method='lambda')` and
-`phytools::phylosig(method='K')` on the governed comparative example tree and
-writes the same summary-versus-observation TSV artifacts plus reproducible
-failure bundles as the live `ape` lane.
+`phytools::phylosig(method='K')` on one governed twenty-four-taxon
+strong-signal comparative fixture drawn from the shared `phytools`
+comparative fixture catalog, and writes the same summary-versus-observation
+TSV artifacts plus reproducible failure bundles as the live `ape` lane.
 The same baseline surface now also exposes
 `simulate_random_tree(...)` and `simulate_coalescent_tree(...)` for one-tree
 native simulation review, so callers that need one governed random or
