@@ -187,6 +187,11 @@ subtree extraction plus clear tip-node and out-of-bounds failures. Bijux also
 keeps one owned selector next to that live parity lane: the same subtree can
 be resolved by exact descendant taxa when a workflow has stable taxon identity
 but not a durable ape-style node number.
+The `ape::getMRCA` portion now covers stable internal-node identity for
+two-tip, many-tip, full-tip-set, duplicate-tip, rooted-polytomy, and
+already-rooted-outgroup cases. Bijux keeps one explicit workflow-side
+difference next to that live lane: missing requested taxa fail clearly instead
+of surfacing as a low-level parser-side condition.
 The
 `ape::write.tree` portion now
 roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
