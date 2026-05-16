@@ -99,7 +99,8 @@ The same owned discrete-evolution runtime now also exposes seeded stochastic
 character mapping through `simulate_discrete_stochastic_maps(...)` and
 `simulate_discrete_stochastic_maps_from_fit_report(...)` plus review-friendly
 writers for the resulting collection JSON, transition summary, flat
-branch-segment ledger, and per-state time-in-state ledger. That surface fits
+branch-segment ledger, per-state time-in-state ledger, and per-branch
+state-occupancy ledger. That surface fits
 one discrete CTMC, carries one explicit fitted-model audit with model
 identity, parameter count, log-likelihood, AIC, AICc, baseline-model
 comparison, optimizer convergence, and weak-fit warnings, conditions one
@@ -110,6 +111,10 @@ draws explicitly, and now underlies the governed live
 exact stochastic-history identity across languages. Governed multistate ARD
 cases stay on summary-envelope parity only when weakly identified boundary
 rates make row-level transition summaries unstable across optimizers.
+The same owned summary contract also underlies the governed live
+`phytools::describe.simmap` lane, which compares total-change summary,
+transition-count rows, time-in-state rows, and per-branch state-occupancy rows
+over selected seeded map collections.
 
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the

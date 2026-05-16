@@ -224,7 +224,8 @@ goal 201: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
 `phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
 `phytools::make.simmap(model='ER')`, `phytools::make.simmap(model='SYM')`,
-`phytools::make.simmap(model='ARD')`, `phytools::rerootingMethod`,
+`phytools::make.simmap(model='ARD')`, `phytools::describe.simmap`,
+`phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed
 twenty-four-taxon comparative fixtures drawn from the shared `phytools`
 comparative fixture catalog. The live lambda lane now includes one
@@ -253,8 +254,13 @@ envelopes only: excluded taxa, total-transition-count mean plus interval,
 transition-count summary rows, and time-in-state summary rows. It does not
 claim exact stochastic-history identity with `phytools`. On the owned Bijux
 side, `discrete-evolution stochastic-map` now also carries fitted-model audit
-fields, writes one flat branch-segment ledger, and writes one per-state
-time-summary ledger in addition to the JSON collection and transition summary.
+fields, writes one flat branch-segment ledger, writes one per-state
+time-summary ledger, and writes one per-branch state-occupancy ledger in
+addition to the JSON collection and transition summary.
+The live `describe.simmap` lane now also covers clean binary, clean multistate,
+clean multistate SYM, and missing-value-pruned binary cases. It compares the
+owned stochastic-map summary contract directly, including total changes,
+transition rows, time-in-state rows, and per-branch state-occupancy rows.
 The live
 `rerootingMethod` lane now also covers governed ER binary, ER multistate, ER
 missing-value-pruned, SYM multistate, and SYM missing-value-pruned cases. It
