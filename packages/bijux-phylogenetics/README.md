@@ -190,7 +190,7 @@ differences.
 - reconstruct discrete ancestral states under Fitch parsimony or likelihood-style ER, SYM, and ARD models with explicit ambiguity and low-confidence reporting, root-prior controls, and fitted transition-rate ledgers
 - validate discrete ancestral likelihood surfaces against governed `ape::ace` references plus root-prior, ordered, irreversible, and ambiguity policy checks
 - compare continuous ancestral reconstructions across two supported models, summarize ancestral sensitivity across model, tree, pruning, or coding choices, and package publication-ready ancestral figures
-- validate discrete geographic state coding, detect incomplete ordered vocabularies, estimate ancestral node states under ordered or unordered assumptions, compare equal-rates, symmetric, and all-rates-different models, export node and transition tables, highlight model-sensitive ancestral regions, simulate approximate stochastic maps, and render discrete-state HTML reports
+- validate discrete geographic state coding, detect incomplete ordered vocabularies, estimate ancestral node states under ordered or unordered assumptions, compare equal-rates, symmetric, and all-rates-different models, export node and transition tables, highlight model-sensitive ancestral regions, simulate seeded stochastic character maps from a fitted discrete-state CTMC with branch-segment and time-in-state ledgers, and render discrete-state HTML reports
 - audit alignment inference readiness, validate model-selection outputs against engine artifacts, verify inferred-tree taxa against the alignment, inspect metadata-group clustering, classify inference failures, and validate bootstrap tree sets before interpreting engine outputs
 - estimate lineage-through-time curves, Pybus-Harvey gamma statistics, simple Yule or birth-death diversification rates, sampling-aware corrections, clade outlier summaries, and trait-linked diversification tables for rooted ultrametric trees
 - run governed MAFFT-, trimAl-, IQ-TREE-, and FastTree-style external workflows with captured commands, versions, logs, and warning summaries
@@ -296,8 +296,8 @@ bijux-phylogenetics ancestral sensitivity tree.nwk traits.tsv --trait height_cm 
 bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --compare-tree tree-alt.nwk --out artifacts/ancestral-report.html
 bijux-phylogenetics ancestral package tree.nwk traits.tsv --trait habitat --kind discrete --model symmetric --state-ordering ordered --ordered-states low,medium,high --out-dir artifacts/ancestral-package --json
 bijux-phylogenetics discrete-evolution model tree.nwk geography.tsv --trait region --model symmetric --state-ordering ordered --ordered-states north,south,island --node-table-out artifacts/node-states.tsv --transitions-out artifacts/transitions.tsv --json
-bijux-phylogenetics discrete-evolution stochastic-map tree.nwk geography.tsv --trait region --model symmetric --replicates 200 --collection-out artifacts/geography-maps.json --summary-out artifacts/geography-stochastic-summary.tsv --json
-bijux-phylogenetics discrete-evolution summarize-maps artifacts/geography-maps.json --summary-out artifacts/geography-stochastic-summary.tsv --json
+bijux-phylogenetics discrete-evolution stochastic-map tree.nwk geography.tsv --trait region --model symmetric --replicates 200 --collection-out artifacts/geography-maps.json --summary-out artifacts/geography-stochastic-summary.tsv --state-times-out artifacts/geography-stochastic-state-times.tsv --segments-out artifacts/geography-stochastic-segments.tsv --json
+bijux-phylogenetics discrete-evolution summarize-maps artifacts/geography-maps.json --summary-out artifacts/geography-stochastic-summary.tsv --state-times-out artifacts/geography-stochastic-state-times.tsv --json
 bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait region --compare-model symmetric --out artifacts/geography-report.html
 bijux-phylogenetics diversification gamma-stat tree.nwk --metadata sampling.tsv --out artifacts/diversification-gamma-statistic.tsv --json
 bijux-phylogenetics diversification estimate tree.nwk --metadata sampling.tsv --model birth-death --json
@@ -844,7 +844,7 @@ surfaces. The initial live `phytools` registry is intentionally narrow for this
 goal: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
 `phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
-`phytools::rerootingMethod`, `phytools::fastAnc`, and
+`phytools::make.simmap(model='ER')`, `phytools::rerootingMethod`, `phytools::fastAnc`, and
 `phytools::anc.ML` on governed strong-signal,
 weak-signal, non-ultrametric, discrete-state, and missing-value comparative
 fixtures. The live lambda lane includes one
@@ -861,6 +861,13 @@ rate-matrix ledger for binary and multistate traits. The live `fitMk` lane
 now covers governed ER binary and multistate cases, governed SYM
 multistate cases, and governed ARD binary plus weakly identified multistate
 cases, including missing-value-pruned surfaces. The live
+`make.simmap` lane now covers governed clean binary, clean multistate, and
+missing-value-pruned binary ER cases at one governed seed and one governed
+replicate count of 128 maps per case. It compares distributional envelopes
+only: excluded taxa, total-transition-count mean plus interval, transition-count
+summary rows, and time-in-state summary rows. It does not claim exact
+stochastic-history identity with `phytools`.
+The live
 `rerootingMethod` lane now covers governed ER binary, governed ER multistate,
 governed ER missing-value-pruned, governed SYM multistate, and governed SYM
 missing-value-pruned node-probability cases under the same flat equal root

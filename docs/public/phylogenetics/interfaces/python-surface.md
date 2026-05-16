@@ -95,6 +95,14 @@ tell whether one ER or SYM reconstruction with the equal root prior is
 comparable to the governed live `phytools::rerootingMethod` lane. Fitch,
 ordered-state, ARD, empirical-root-prior, and fixed-root-prior runs are marked
 explicitly as non-comparable instead of being left to inference.
+The same owned discrete-evolution runtime now also exposes seeded stochastic
+character mapping through `simulate_discrete_stochastic_maps(...)` plus
+review-friendly writers for the resulting collection JSON, transition summary,
+flat branch-segment ledger, and per-state time-in-state ledger. That surface
+fits one discrete CTMC, conditions one sampled history on the observed tip
+states, reports failed branch-history draws explicitly, and now underlies the
+governed live `phytools::make.simmap(model='ER')` summary-parity lane without
+claiming exact stochastic-history identity across languages.
 
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the

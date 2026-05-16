@@ -223,7 +223,8 @@ the checked-in R runner. That initial registry is intentionally narrow for
 goal 201: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
 `phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
-`phytools::rerootingMethod`, `phytools::fastAnc`, and
+`phytools::make.simmap(model='ER')`, `phytools::rerootingMethod`,
+`phytools::fastAnc`, and
 `phytools::anc.ML` on governed
 twenty-four-taxon comparative fixtures drawn from the shared `phytools`
 comparative fixture catalog. The live lambda lane now includes one
@@ -241,6 +242,16 @@ summary parity when the owned optimizer reports weakly identified boundary
 rates, so reviewers can compare flat-root log-likelihood, AIC, AICc,
 excluded taxa, ER-versus-SYM-versus-ARD model identity, and directed-rate
 evidence honestly against real `phytools`. The live
+`make.simmap` lane now also includes clean binary, clean multistate, and
+missing-value-pruned binary ER cases at one governed seed and one governed
+replicate count of 128 maps per case. It compares summary envelopes only:
+excluded taxa, total-transition-count mean plus interval, transition-count
+summary rows, and time-in-state summary rows. It does not claim exact
+stochastic-history identity with `phytools`. On the owned Bijux side,
+`discrete-evolution stochastic-map` now also writes one flat branch-segment
+ledger and one per-state time-summary ledger in addition to the JSON
+collection and transition summary.
+The live
 `rerootingMethod` lane now also covers governed ER binary, ER multistate, ER
 missing-value-pruned, SYM multistate, and SYM missing-value-pruned cases. It
 compares one node-probability table keyed by stable node signature and state

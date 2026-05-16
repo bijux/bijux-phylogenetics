@@ -252,7 +252,8 @@ The initial live `phytools` registry is intentionally narrow for this goal. It
 currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
 `phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
-`phytools::rerootingMethod`, `phytools::fastAnc`, and `phytools::anc.ML` on governed twenty-four-taxon
+`phytools::make.simmap(model='ER')`, `phytools::rerootingMethod`,
+`phytools::fastAnc`, and `phytools::anc.ML` on governed twenty-four-taxon
 comparative fixtures from the shared
 `shared_phytools_comparative_fixture_catalog.json` corpus. The live lambda
 lane now includes one non-ultrametric strong-signal fixture plus one
@@ -269,7 +270,16 @@ rate-row parity plus clean and missing-value-pruned multistate ARD cases at
 summary parity when the optimizer reports weakly identified boundary rates. It
 compares flat-root log-likelihood, AIC, AICc, excluded taxa, one explicit
 ER-versus-SYM-versus-ARD model identity summary, and the directed rate matrix
-when the governed case is identifiable against real `phytools` output. The live
+when the governed case is identifiable against real `phytools` output.
+The live `make.simmap` lane now includes clean binary, clean multistate, and
+missing-value-pruned binary ER cases at one governed seed and one governed
+replicate count of 128 maps per case. It compares distributional envelopes
+only: excluded taxa, total-transition-count mean plus interval,
+transition-count summary rows, and time-in-state summary rows. It does not
+claim exact stochastic-history identity with real `phytools`.
+It also writes one flat branch-segment TSV and one per-state time-summary TSV
+on the owned Bijux side through `discrete-evolution stochastic-map`.
+The live
 `rerootingMethod` lane now includes governed ER binary, ER multistate, ER
 missing-value-pruned, SYM multistate, and SYM missing-value-pruned cases. It
 compares one flat node-probability ledger keyed by stable node signature and
