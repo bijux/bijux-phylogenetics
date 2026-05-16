@@ -24,6 +24,7 @@ from bijux_phylogenetics.comparative.signal import (
     estimate_pagels_lambda,
 )
 from bijux_phylogenetics.discrete_evolution import (
+    count_discrete_stochastic_map_transitions,
     simulate_discrete_stochastic_maps,
     summarize_discrete_stochastic_maps,
 )
@@ -719,6 +720,121 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
             compare_rows=False,
         ),
         PhytoolsParityCase(
+            case_id="count-simmap-er-binary-twenty-four-taxa",
+            fixture_id=binary_discrete_fixture.fixture_id,
+            function_name="phytools::countSimmap",
+            python_function_name="count_discrete_stochastic_map_transitions",
+            operation="discrete-stochastic-map-count",
+            input_fixtures=(
+                binary_discrete_fixture.tree_path,
+                binary_discrete_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=binary_discrete_fixture.trait_name,
+            taxon_column=binary_discrete_fixture.taxon_column,
+            discrete_model="equal-rates",
+            stochastic_map_replicate_count=128,
+            stochastic_map_seed=17,
+            field_tolerances={
+                "mean_total_transition_count": 1.5,
+                "lower_95_total_transition_count": 3.0,
+                "upper_95_total_transition_count": 3.0,
+            },
+            row_field_tolerances={
+                "mean_value": 1.5,
+                "lower_95_interval": 3.0,
+                "upper_95_interval": 3.0,
+                "presence_fraction": 0.2,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="count-simmap-er-multistate-twenty-four-taxa",
+            fixture_id=multistate_discrete_fixture.fixture_id,
+            function_name="phytools::countSimmap",
+            python_function_name="count_discrete_stochastic_map_transitions",
+            operation="discrete-stochastic-map-count",
+            input_fixtures=(
+                multistate_discrete_fixture.tree_path,
+                multistate_discrete_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=multistate_discrete_fixture.trait_name,
+            taxon_column=multistate_discrete_fixture.taxon_column,
+            discrete_model="equal-rates",
+            stochastic_map_replicate_count=128,
+            stochastic_map_seed=17,
+            field_tolerances={
+                "mean_total_transition_count": 2.0,
+                "lower_95_total_transition_count": 4.0,
+                "upper_95_total_transition_count": 4.0,
+            },
+            row_field_tolerances={
+                "mean_value": 2.0,
+                "lower_95_interval": 4.0,
+                "upper_95_interval": 4.0,
+                "presence_fraction": 0.2,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="count-simmap-sym-multistate-twenty-four-taxa",
+            fixture_id=multistate_discrete_fixture.fixture_id,
+            function_name="phytools::countSimmap",
+            python_function_name="count_discrete_stochastic_map_transitions",
+            operation="discrete-stochastic-map-count",
+            input_fixtures=(
+                multistate_discrete_fixture.tree_path,
+                multistate_discrete_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=multistate_discrete_fixture.trait_name,
+            taxon_column=multistate_discrete_fixture.taxon_column,
+            discrete_model="symmetric",
+            stochastic_map_replicate_count=128,
+            stochastic_map_seed=17,
+            field_tolerances={
+                "log_likelihood": 2e-4,
+                "aic": 2e-4,
+                "aicc": 2e-4,
+                "mean_total_transition_count": 2.5,
+                "lower_95_total_transition_count": 5.0,
+                "upper_95_total_transition_count": 5.0,
+            },
+            row_field_tolerances={
+                "mean_value": 2.5,
+                "lower_95_interval": 5.0,
+                "upper_95_interval": 5.0,
+                "presence_fraction": 0.25,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="count-simmap-er-binary-missing-twenty-four-taxa",
+            fixture_id=binary_discrete_missing_fixture.fixture_id,
+            function_name="phytools::countSimmap",
+            python_function_name="count_discrete_stochastic_map_transitions",
+            operation="discrete-stochastic-map-count",
+            input_fixtures=(
+                binary_discrete_missing_fixture.tree_path,
+                binary_discrete_missing_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=binary_discrete_missing_fixture.trait_name,
+            taxon_column=binary_discrete_missing_fixture.taxon_column,
+            discrete_model="equal-rates",
+            stochastic_map_replicate_count=128,
+            stochastic_map_seed=17,
+            field_tolerances={
+                "mean_total_transition_count": 1.5,
+                "lower_95_total_transition_count": 3.0,
+                "upper_95_total_transition_count": 3.0,
+            },
+            row_field_tolerances={
+                "mean_value": 1.5,
+                "lower_95_interval": 3.0,
+                "upper_95_interval": 3.0,
+                "presence_fraction": 0.2,
+            },
+        ),
+        PhytoolsParityCase(
             case_id="describe-simmap-er-binary-twenty-four-taxa",
             fixture_id=binary_discrete_fixture.fixture_id,
             function_name="phytools::describe.simmap",
@@ -1121,6 +1237,25 @@ def _stochastic_map_parity_rows(
     return sorted(rows, key=lambda row: (str(row["row_kind"]), str(row["label"])))
 
 
+def _stochastic_map_count_parity_rows(
+    report,
+) -> list[dict[str, object]]:
+    return sorted(
+        [
+            {
+                "row_kind": "transition_count",
+                "label": row.transition,
+                "mean_value": row.mean_count,
+                "lower_95_interval": row.lower_95_interval,
+                "upper_95_interval": row.upper_95_interval,
+                "presence_fraction": row.presence_fraction,
+            }
+            for row in report.aggregate_rows
+        ],
+        key=lambda row: (str(row["row_kind"]), str(row["label"])),
+    )
+
+
 def _selected_cases(case_ids: list[str] | None) -> list[PhytoolsParityCase]:
     registry = {case.case_id: case for case in list_phytools_parity_cases()}
     if case_ids is None:
@@ -1353,6 +1488,49 @@ def _build_bijux_case_payload(
                 "simulation_failure_count": report.simulation_failure_count,
                 "seed": collection.seed,
                 "branch_count": len(collection.maps[0].branch_histories),
+                "mean_total_transition_count": report.mean_total_transition_count,
+                "lower_95_total_transition_count": report.lower_95_total_transition_count,
+                "upper_95_total_transition_count": report.upper_95_total_transition_count,
+            },
+            rows,
+        )
+    if case.operation == "discrete-stochastic-map-count":
+        dataset = load_discrete_dataset(
+            tree_path,
+            traits_path,
+            trait=case.trait_name,
+            taxon_column=case.taxon_column,
+        )
+        collection = simulate_discrete_stochastic_maps(
+            tree_path,
+            traits_path,
+            trait=case.trait_name,
+            taxon_column=case.taxon_column,
+            model=case.discrete_model or "equal-rates",
+            replicates=case.stochastic_map_replicate_count or 128,
+            seed=case.stochastic_map_seed or 1,
+        )
+        report = count_discrete_stochastic_map_transitions(collection)
+        rows = _stochastic_map_count_parity_rows(report)
+        return (
+            {
+                "taxon_count": len(dataset.taxa),
+                "trait_name": collection.trait,
+                "excluded_taxon_count": len(dataset.dropped_missing_taxa),
+                "excluded_taxa": list(dataset.dropped_missing_taxa),
+                "model": collection.model,
+                "state_count": len(collection.fit_audit.state_order),
+                "parameter_count": collection.fit_audit.parameter_count,
+                "log_likelihood": collection.fit_audit.log_likelihood,
+                "aic": collection.fit_audit.aic,
+                "aicc": collection.fit_audit.aicc,
+                "overparameterized": collection.fit_audit.overparameterized,
+                "baseline_model": collection.fit_audit.baseline_model,
+                "preferred_model_by_aic": collection.fit_audit.preferred_model_by_aic,
+                "requested_replicate_count": collection.replicates,
+                "successful_replicate_count": report.replicate_count,
+                "simulation_failure_count": len(collection.failures),
+                "seed": collection.seed,
                 "mean_total_transition_count": report.mean_total_transition_count,
                 "lower_95_total_transition_count": report.lower_95_total_transition_count,
                 "upper_95_total_transition_count": report.upper_95_total_transition_count,
@@ -1620,6 +1798,7 @@ def _mismatch_reason(
         )
     elif case.operation in {
         "discrete-stochastic-map",
+        "discrete-stochastic-map-count",
         "discrete-stochastic-map-description",
     }:
         compare_keys = (
@@ -1648,7 +1827,7 @@ def _mismatch_reason(
             compare_keys = compare_keys[:16] + (
                 "conditioned_on_node_estimates",
             ) + compare_keys[16:]
-        else:
+        elif case.operation == "discrete-stochastic-map-description":
             compare_keys = compare_keys + ("branch_count",)
     elif case.operation == "discrete-ancestral-rerooting":
         compare_keys = (
@@ -1707,6 +1886,7 @@ def _row_mismatch_reason(
     if case.operation not in {
         "discrete-fit-mk",
         "discrete-stochastic-map",
+        "discrete-stochastic-map-count",
         "discrete-stochastic-map-description",
         "discrete-ancestral-rerooting",
         "continuous-ancestral-fast-anc",
@@ -1747,6 +1927,7 @@ def _row_mismatch_reason(
         )
     elif case.operation in {
         "discrete-stochastic-map",
+        "discrete-stochastic-map-count",
         "discrete-stochastic-map-description",
     }:
         reference_rows = sorted(
@@ -1784,6 +1965,7 @@ def _row_mismatch_reason(
         )
     elif case.operation in {
         "discrete-stochastic-map",
+        "discrete-stochastic-map-count",
         "discrete-stochastic-map-description",
     }:
         compare_keys = (
@@ -2032,6 +2214,7 @@ def run_phytools_parity_cases(
                         if mismatch_reason is None and case.compare_rows and case.operation in {
                             "discrete-fit-mk",
                             "discrete-stochastic-map",
+                            "discrete-stochastic-map-count",
                             "discrete-stochastic-map-description",
                             "discrete-ancestral-rerooting",
                             "continuous-ancestral-fast-anc",
@@ -2045,6 +2228,7 @@ def run_phytools_parity_cases(
                                     if case.operation
                                     in {
                                         "discrete-stochastic-map",
+                                        "discrete-stochastic-map-count",
                                         "discrete-stochastic-map-description",
                                     }
                                     else (
