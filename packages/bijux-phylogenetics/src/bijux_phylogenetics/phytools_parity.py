@@ -18,6 +18,11 @@ from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
 )
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
+from bijux_phylogenetics.comparative.pgls import (
+    build_pgls_model_matrix,
+    inspect_pgls_inputs,
+    run_pgls,
+)
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     compute_phylogenetic_signal_test,
@@ -76,6 +81,9 @@ class PhytoolsParityCase:
     continuous_trait_names: tuple[str, ...] | None = None
     continuous_root_states: tuple[float, ...] | None = None
     continuous_covariance_matrix: tuple[tuple[float, ...], ...] | None = None
+    comparative_formula: str | None = None
+    comparative_predictors: tuple[str, ...] | None = None
+    comparative_lambda_value: float | None = None
     field_tolerances: dict[str, float] | None = None
     row_field_tolerances: dict[str, float] | None = None
     compare_rows: bool = True
@@ -201,6 +209,15 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
     )
     missing_signal_fixture = get_shared_phytools_comparative_fixture(
         "phytools_continuous_missing_values_twenty_four_taxa"
+    )
+    pgls_continuous_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_pgls_brownian_continuous_four_taxa"
+    )
+    pgls_categorical_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_pgls_brownian_categorical_eight_taxa"
+    )
+    pgls_interaction_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_pgls_brownian_interaction_eight_taxa"
     )
     binary_discrete_fixture = get_shared_phytools_comparative_fixture(
         "phytools_discrete_binary_twenty_four_taxa"
@@ -1542,6 +1559,57 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
                 "correlation": 0.22,
             },
         ),
+        PhytoolsParityCase(
+            case_id="pgls-sey-brownian-continuous-four-taxa",
+            fixture_id=pgls_continuous_fixture.fixture_id,
+            function_name="phytools::pgls.SEy",
+            python_function_name="run_pgls",
+            operation="comparative-pgls-brownian",
+            input_fixtures=(
+                pgls_continuous_fixture.tree_path,
+                pgls_continuous_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=pgls_continuous_fixture.trait_name,
+            taxon_column=pgls_continuous_fixture.taxon_column,
+            comparative_formula="response ~ predictor_one",
+            comparative_lambda_value=1.0,
+            row_field_tolerances={"value": 1e-6},
+        ),
+        PhytoolsParityCase(
+            case_id="pgls-sey-brownian-categorical-eight-taxa",
+            fixture_id=pgls_categorical_fixture.fixture_id,
+            function_name="phytools::pgls.SEy",
+            python_function_name="run_pgls",
+            operation="comparative-pgls-brownian",
+            input_fixtures=(
+                pgls_categorical_fixture.tree_path,
+                pgls_categorical_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=pgls_categorical_fixture.trait_name,
+            taxon_column=pgls_categorical_fixture.taxon_column,
+            comparative_formula="response ~ habitat + diet",
+            comparative_lambda_value=1.0,
+            row_field_tolerances={"value": 1e-6},
+        ),
+        PhytoolsParityCase(
+            case_id="pgls-sey-brownian-interaction-eight-taxa",
+            fixture_id=pgls_interaction_fixture.fixture_id,
+            function_name="phytools::pgls.SEy",
+            python_function_name="run_pgls",
+            operation="comparative-pgls-brownian",
+            input_fixtures=(
+                pgls_interaction_fixture.tree_path,
+                pgls_interaction_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=pgls_interaction_fixture.trait_name,
+            taxon_column=pgls_interaction_fixture.taxon_column,
+            comparative_formula="response ~ habitat * diet",
+            comparative_lambda_value=1.0,
+            row_field_tolerances={"value": 1e-6},
+        ),
     ]
 
 
@@ -1670,6 +1738,9 @@ def _write_case_file(path: Path, case: PhytoolsParityCase) -> Path:
         "continuous_trait_names": case.continuous_trait_names,
         "continuous_root_states": case.continuous_root_states,
         "continuous_covariance_matrix": case.continuous_covariance_matrix,
+        "comparative_formula": case.comparative_formula,
+        "comparative_predictors": case.comparative_predictors,
+        "comparative_lambda_value": case.comparative_lambda_value,
     }
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return path
@@ -1729,6 +1800,40 @@ def _correlated_continuous_trait_collection_parity_rows(
         }
         for row in report.rows
     ]
+
+
+def _pgls_parity_rows(*, model_matrix, report) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for coefficient in report.coefficients:
+        rows.extend(
+            [
+                {
+                    "row_kind": "coefficient_estimate",
+                    "label": coefficient.name,
+                    "value": coefficient.estimate,
+                },
+                {
+                    "row_kind": "coefficient_standard_error",
+                    "label": coefficient.name,
+                    "value": coefficient.standard_error,
+                },
+                {
+                    "row_kind": "coefficient_p_value",
+                    "label": coefficient.name,
+                    "value": coefficient.p_value,
+                },
+            ]
+        )
+    for matrix_row in model_matrix.rows:
+        for column_name, value in matrix_row.encoded_values.items():
+            rows.append(
+                {
+                    "row_kind": "model_matrix",
+                    "label": f"{matrix_row.taxon}:{column_name}",
+                    "value": value,
+                }
+            )
+    return sorted(rows, key=lambda row: (str(row["row_kind"]), str(row["label"])))
 
 
 def _build_bijux_case_payload(
@@ -1797,6 +1902,50 @@ def _build_bijux_case_payload(
                 "warning_count": len(report.input_audit.warnings),
             },
             None,
+        )
+    if case.operation == "comparative-pgls-brownian":
+        if case.comparative_formula is None:
+            raise ValueError("comparative-pgls-brownian requires comparative_formula")
+        input_report = inspect_pgls_inputs(
+            tree_path,
+            traits_path,
+            formula=case.comparative_formula,
+            taxon_column=case.taxon_column,
+        )
+        model_matrix = build_pgls_model_matrix(
+            tree_path,
+            traits_path,
+            formula=case.comparative_formula,
+            taxon_column=case.taxon_column,
+        )
+        report = run_pgls(
+            tree_path,
+            traits_path,
+            formula=case.comparative_formula,
+            taxon_column=case.taxon_column,
+            lambda_value=case.comparative_lambda_value or 1.0,
+        )
+        return (
+            {
+                "taxon_count": report.taxon_count,
+                "trait_name": report.response,
+                "formula": report.formula.formula,
+                "analysis_taxon_count": len(report.taxa),
+                "coefficient_count": len(report.coefficients),
+                "model_matrix_row_count": len(model_matrix.rows),
+                "model_matrix_column_count": len(model_matrix.encoded_columns),
+                "categorical_predictor_count": len(input_report.categorical_predictors),
+                "interaction_term_count": len(report.interaction_terms),
+                "lambda_value": report.lambda_value,
+                "lambda_estimation_mode": report.lambda_fit.mode,
+                "log_likelihood": report.log_likelihood,
+                "aic": report.aic,
+                "residual_variance": report.residual_variance,
+                "r_squared": report.r_squared,
+                "diagnostic_outlier_count": len(report.diagnostics.outlier_taxa),
+                "diagnostic_leverage_row_count": len(report.diagnostics.leverage_rows),
+            },
+            _pgls_parity_rows(model_matrix=model_matrix, report=report),
         )
     if case.operation == "simulate-continuous-brownian":
         report = simulate_brownian_trait_collection(
@@ -2450,6 +2599,22 @@ def _mismatch_reason(
             "successful_replicate_count",
             "seed",
         )
+    elif case.operation == "comparative-pgls-brownian":
+        compare_keys = (
+            "taxon_count",
+            "trait_name",
+            "formula",
+            "analysis_taxon_count",
+            "coefficient_count",
+            "model_matrix_row_count",
+            "model_matrix_column_count",
+            "categorical_predictor_count",
+            "interaction_term_count",
+            "lambda_value",
+            "lambda_estimation_mode",
+            "log_likelihood",
+            "aic",
+        )
     elif case.operation == "discrete-ancestral-rerooting":
         compare_keys = (
             "taxon_count",
@@ -2512,6 +2677,7 @@ def _row_mismatch_reason(
         "simulate-discrete-history",
         "simulate-continuous-brownian",
         "simulate-continuous-correlated-brownian",
+        "comparative-pgls-brownian",
         "discrete-ancestral-rerooting",
         "continuous-ancestral-fast-anc",
         "continuous-ancestral-anc-ml",
@@ -2626,6 +2792,12 @@ def _row_mismatch_reason(
             "maximum",
             "covariance",
             "correlation",
+        )
+    elif case.operation == "comparative-pgls-brownian":
+        compare_keys = (
+            "row_kind",
+            "label",
+            "value",
         )
     else:
         compare_keys = (
@@ -2871,6 +3043,7 @@ def run_phytools_parity_cases(
                             "simulate-discrete-history",
                             "simulate-continuous-brownian",
                             "simulate-continuous-correlated-brownian",
+                            "comparative-pgls-brownian",
                             "discrete-ancestral-rerooting",
                             "continuous-ancestral-fast-anc",
                             "continuous-ancestral-anc-ml",
@@ -2897,14 +3070,19 @@ def run_phytools_parity_cases(
                                             if case.operation
                                             == "simulate-continuous-correlated-brownian"
                                             else (
-                                                "rerooting-method-node-probabilities.tsv"
+                                                "pgls-summary-rows.tsv"
                                                 if case.operation
-                                                == "discrete-ancestral-rerooting"
+                                                == "comparative-pgls-brownian"
                                                 else (
-                                                    "fast-anc-node-estimates.tsv"
+                                                    "rerooting-method-node-probabilities.tsv"
                                                     if case.operation
-                                                    == "continuous-ancestral-fast-anc"
-                                                    else "anc-ml-node-estimates.tsv"
+                                                    == "discrete-ancestral-rerooting"
+                                                    else (
+                                                        "fast-anc-node-estimates.tsv"
+                                                        if case.operation
+                                                        == "continuous-ancestral-fast-anc"
+                                                        else "anc-ml-node-estimates.tsv"
+                                                    )
                                                 )
                                             )
                                         )

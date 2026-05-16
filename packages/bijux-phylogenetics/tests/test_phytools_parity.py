@@ -74,6 +74,9 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "simcorrs-example-tree-low-correlation",
         "simcorrs-example-tree-negative-correlation-root-shift",
         "simcorrs-six-taxa-three-trait",
+        "pgls-sey-brownian-continuous-four-taxa",
+        "pgls-sey-brownian-categorical-eight-taxa",
+        "pgls-sey-brownian-interaction-eight-taxa",
     ]
     assert cases[0].function_name == "phytools::phylosig(method='lambda')"
     assert cases[1].function_name == "phytools::phylosig(method='lambda')"
@@ -188,6 +191,12 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[53].continuous_trait_names == ("trait_alpha", "trait_beta")
     assert cases[54].continuous_root_states == (2.0, -1.0)
     assert cases[55].continuous_replicate_count == 512
+    assert cases[56].function_name == "phytools::pgls.SEy"
+    assert cases[58].function_name == "phytools::pgls.SEy"
+    assert cases[56].comparative_formula == "response ~ predictor_one"
+    assert cases[57].comparative_formula == "response ~ habitat + diet"
+    assert cases[58].comparative_formula == "response ~ habitat * diet"
+    assert cases[58].comparative_lambda_value == 1.0
 
 
 def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
@@ -198,7 +207,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     report = run_phytools_parity_cases(rscript_executable=str(rscript))
 
     assert report.all_passed is True
-    assert report.case_count == 56
+    assert report.case_count == 59
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -214,6 +223,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
         "phytools::make.simmap(model='ARD')",
         "phytools::make.simmap(model='ER')",
         "phytools::make.simmap(model='SYM')",
+        "phytools::pgls.SEy",
         "phytools::phylosig(method='K')",
         "phytools::phylosig(method='lambda')",
         "phytools::rerootingMethod",
@@ -324,6 +334,32 @@ def test_run_phytools_parity_cases_passes_simcorrs_cases_against_fake_reference_
     ]
     assert all(
         observation.function_name == "phytools::sim.corrs"
+        for observation in report.observations
+    )
+
+
+def test_run_phytools_parity_cases_passes_pgls_cases_against_fake_reference_runner(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_phytools_rscript(tmp_path / "fake-phytools-rscript")
+
+    report = run_phytools_parity_cases(
+        case_ids=[
+            "pgls-sey-brownian-continuous-four-taxa",
+            "pgls-sey-brownian-categorical-eight-taxa",
+            "pgls-sey-brownian-interaction-eight-taxa",
+        ],
+        rscript_executable=str(rscript),
+    )
+
+    assert report.all_passed is True
+    assert report.case_count == 3
+    assert report.failed_case_count == 0
+    assert [row.function_name for row in report.summary_rows] == [
+        "phytools::pgls.SEy"
+    ]
+    assert all(
+        observation.function_name == "phytools::pgls.SEy"
         for observation in report.observations
     )
 

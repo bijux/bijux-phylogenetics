@@ -85,6 +85,7 @@ fast_anc_rows_path <- file.path(output_root, "fast-anc-node-estimates.tsv")
 anc_ml_rows_path <- file.path(output_root, "anc-ml-node-estimates.tsv")
 fastbm_rows_path <- file.path(output_root, "fastbm-summary-rows.tsv")
 simcorrs_rows_path <- file.path(output_root, "simcorrs-summary-rows.tsv")
+pgls_rows_path <- file.path(output_root, "pgls-summary-rows.tsv")
 case_payload <- jsonlite::fromJSON(case_path)
 r_version <- as.character(getRversion())
 
@@ -306,6 +307,150 @@ build_fitmk_result <- function(tree, trait_values, trait_name, excluded_taxa, di
       }
     ),
     rows = rate_rows
+  )
+}
+
+normalize_pgls_term_component <- function(component, data) {
+  if (identical(component, "(Intercept)")) {
+    return("intercept")
+  }
+  if (component %in% names(data)) {
+    return(component)
+  }
+  for (column_name in names(data)) {
+    if (!is.factor(data[[column_name]])) {
+      next
+    }
+    levels_to_encode <- levels(data[[column_name]])
+    if (length(levels_to_encode) <= 1) {
+      next
+    }
+    for (level_name in levels_to_encode[-1]) {
+      if (identical(component, paste0(column_name, level_name))) {
+        return(paste0(column_name, "[", level_name, "]"))
+      }
+    }
+  }
+  component
+}
+
+normalize_pgls_column_name <- function(column_name, data) {
+  if (identical(column_name, "(Intercept)")) {
+    return("intercept")
+  }
+  components <- strsplit(column_name, ":", fixed = TRUE)[[1]]
+  paste(
+    vapply(
+      components,
+      normalize_pgls_term_component,
+      character(1),
+      data = data
+    ),
+    collapse = ":"
+  )
+}
+
+build_pgls_result <- function(tree, trait_table, taxon_column, formula_string, lambda_value) {
+  formula_object <- stats::as.formula(formula_string)
+  formula_variables <- all.vars(formula_object)
+  pgls_data <- trait_table
+  rownames(pgls_data) <- pgls_data[[taxon_column]]
+  pgls_data[[taxon_column]] <- NULL
+  if (length(formula_variables) > 0) {
+    complete_rows <- stats::complete.cases(pgls_data[, formula_variables, drop = FALSE])
+    pgls_data <- pgls_data[complete_rows, , drop = FALSE]
+  }
+  pgls_data <- pgls_data[rownames(pgls_data) %in% tree$tip.label, , drop = FALSE]
+  kept_taxa <- rownames(pgls_data)
+  excluded_taxa <- sort(setdiff(tree$tip.label, kept_taxa))
+  if (length(excluded_taxa) > 0) {
+    tree <- ape::drop.tip(tree, excluded_taxa)
+  }
+  for (column_name in names(pgls_data)) {
+    if (!is.numeric(pgls_data[[column_name]])) {
+      pgls_data[[column_name]] <- factor(pgls_data[[column_name]])
+    }
+  }
+  fit <- phytools::pgls.SEy(
+    formula_object,
+    data = pgls_data,
+    tree = tree,
+    method = "ML"
+  )
+  coefficient_table <- as.data.frame(summary(fit)$tTable, stringsAsFactors = FALSE)
+  coefficient_table$coefficient_name <- vapply(
+    rownames(coefficient_table),
+    normalize_pgls_column_name,
+    character(1),
+    data = pgls_data
+  )
+  model_matrix <- stats::model.matrix(formula_object, data = pgls_data)
+  normalized_column_names <- vapply(
+    colnames(model_matrix),
+    normalize_pgls_column_name,
+    character(1),
+    data = pgls_data
+  )
+  colnames(model_matrix) <- normalized_column_names
+  term_labels <- attr(stats::terms(formula_object), "term.labels")
+  predictor_components <- unique(unlist(strsplit(term_labels, ":", fixed = TRUE)))
+  categorical_predictor_count <- sum(
+    predictor_components %in% names(pgls_data) &
+      vapply(
+        predictor_components,
+        function(component_name) is.factor(pgls_data[[component_name]]),
+        logical(1)
+      )
+  )
+  rows <- list()
+  for (row_index in seq_len(nrow(coefficient_table))) {
+    coefficient_name <- coefficient_table$coefficient_name[[row_index]]
+    rows[[length(rows) + 1]] <- list(
+      row_kind = "coefficient_estimate",
+      label = coefficient_name,
+      value = unname(as.numeric(coefficient_table$Value[[row_index]]))
+    )
+    rows[[length(rows) + 1]] <- list(
+      row_kind = "coefficient_standard_error",
+      label = coefficient_name,
+      value = unname(as.numeric(coefficient_table$Std.Error[[row_index]]))
+    )
+    rows[[length(rows) + 1]] <- list(
+      row_kind = "coefficient_p_value",
+      label = coefficient_name,
+      value = unname(as.numeric(coefficient_table[["p-value"]][[row_index]]))
+    )
+  }
+  for (taxon_name in rownames(model_matrix)) {
+    for (column_name in colnames(model_matrix)) {
+      rows[[length(rows) + 1]] <- list(
+        row_kind = "model_matrix",
+        label = paste0(taxon_name, ":", column_name),
+        value = unname(as.numeric(model_matrix[taxon_name, column_name]))
+      )
+    }
+  }
+  rows <- rows[order(
+    vapply(rows, function(row) row$row_kind, character(1)),
+    vapply(rows, function(row) row$label, character(1))
+  )]
+  list(
+    summary = list(
+      taxon_count = nrow(pgls_data),
+      trait_name = formula_variables[[1]],
+      formula = formula_string,
+      analysis_taxon_count = nrow(pgls_data),
+      coefficient_count = nrow(coefficient_table),
+      model_matrix_row_count = nrow(model_matrix),
+      model_matrix_column_count = ncol(model_matrix),
+      categorical_predictor_count = categorical_predictor_count,
+      interaction_term_count = sum(grepl(":", term_labels, fixed = TRUE)),
+      lambda_value = as.numeric(lambda_value),
+      lambda_estimation_mode = "fixed",
+      log_likelihood = unname(as.numeric(stats::logLik(fit))),
+      aic = unname(as.numeric(stats::AIC(fit)))
+    ),
+    rows = rows
   )
 }
 
@@ -1126,6 +1271,13 @@ result_payload <- switch(
   "simulate-continuous-correlated-brownian" = build_simcorrs_result(
     tree
   ),
+  "comparative-pgls-brownian" = build_pgls_result(
+    tree,
+    trait_table,
+    taxon_column,
+    case_payload$comparative_formula,
+    case_payload$comparative_lambda_value
+  ),
   "discrete-ancestral-rerooting" = build_rerooting_method_result(
     tree,
     trait_values,
@@ -1179,6 +1331,8 @@ if (!is.null(result_payload$rows)) {
     write_table(fastbm_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "simulate-continuous-correlated-brownian")) {
     write_table(simcorrs_rows_path, result_payload$rows)
+  } else if (identical(case_payload$operation, "comparative-pgls-brownian")) {
+    write_table(pgls_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "discrete-ancestral-rerooting")) {
     write_table(rerooting_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "continuous-ancestral-fast-anc")) {

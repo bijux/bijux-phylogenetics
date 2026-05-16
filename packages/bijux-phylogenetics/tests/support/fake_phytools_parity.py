@@ -724,6 +724,97 @@ print(json.dumps({"summary": summary, "rows": rows}))
     return payload["summary"], payload["rows"]
 
 
+def compute_pgls_payload(
+    case_payload: dict[str, object],
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    package_root = find_repo_root()
+    repo_python = find_repo_python(package_root)
+    inline_script = '''
+import json
+from pathlib import Path
+from bijux_phylogenetics.comparative.pgls import (
+    build_pgls_model_matrix,
+    inspect_pgls_inputs,
+    run_pgls,
+)
+
+payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
+tree_path, traits_path = payload["input_fixtures"]
+input_report = inspect_pgls_inputs(
+    Path(tree_path),
+    Path(traits_path),
+    formula=payload["comparative_formula"],
+    taxon_column=payload["taxon_column"],
+)
+model_matrix = build_pgls_model_matrix(
+    Path(tree_path),
+    Path(traits_path),
+    formula=payload["comparative_formula"],
+    taxon_column=payload["taxon_column"],
+)
+report = run_pgls(
+    Path(tree_path),
+    Path(traits_path),
+    formula=payload["comparative_formula"],
+    taxon_column=payload["taxon_column"],
+    lambda_value=payload.get("comparative_lambda_value", 1.0),
+)
+rows = []
+for coefficient in report.coefficients:
+    rows.extend([
+        {"row_kind": "coefficient_estimate", "label": coefficient.name, "value": coefficient.estimate},
+        {"row_kind": "coefficient_standard_error", "label": coefficient.name, "value": coefficient.standard_error},
+        {"row_kind": "coefficient_p_value", "label": coefficient.name, "value": coefficient.p_value},
+    ])
+for matrix_row in model_matrix.rows:
+    for column_name, value in matrix_row.encoded_values.items():
+        rows.append(
+            {
+                "row_kind": "model_matrix",
+                "label": f"{matrix_row.taxon}:{column_name}",
+                "value": value,
+            }
+        )
+rows = sorted(rows, key=lambda row: (row["row_kind"], row["label"]))
+summary = {
+    "taxon_count": report.taxon_count,
+    "trait_name": report.response,
+    "formula": report.formula.formula,
+    "analysis_taxon_count": len(report.taxa),
+    "coefficient_count": len(report.coefficients),
+    "model_matrix_row_count": len(model_matrix.rows),
+    "model_matrix_column_count": len(model_matrix.encoded_columns),
+    "categorical_predictor_count": len(input_report.categorical_predictors),
+    "interaction_term_count": len(report.interaction_terms),
+    "lambda_value": report.lambda_value,
+    "lambda_estimation_mode": report.lambda_fit.mode,
+    "log_likelihood": report.log_likelihood,
+    "aic": report.aic,
+}
+print(json.dumps({"summary": summary, "rows": rows}))
+'''
+    payload_path = package_root / "artifacts" / "fake-phytools-pgls-payload.json"
+    payload_path.parent.mkdir(parents=True, exist_ok=True)
+    payload_path.write_text(json.dumps(case_payload), encoding="utf-8")
+    command = [
+        str(repo_python),
+        "-c",
+        inline_script.replace("__PAYLOAD_PATH__", repr(str(payload_path))),
+    ]
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(package_root / "src")
+    result = subprocess.run(
+        command,
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=str(package_root),
+        env=env,
+    )
+    payload = json.loads(result.stdout)
+    return payload["summary"], payload["rows"]
+
+
 case_payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 output_root = Path(sys.argv[3])
 output_root.mkdir(parents=True, exist_ok=True)
@@ -737,6 +828,7 @@ fast_anc_rows_path = output_root / "fast-anc-node-estimates.tsv"
 anc_ml_rows_path = output_root / "anc-ml-node-estimates.tsv"
 fastbm_rows_path = output_root / "fastbm-summary-rows.tsv"
 simcorrs_rows_path = output_root / "simcorrs-summary-rows.tsv"
+pgls_rows_path = output_root / "pgls-summary-rows.tsv"
 
 if not __PHYTOOLS_AVAILABLE__:
     write_json(
@@ -760,6 +852,7 @@ if case_id not in SUMMARIES and case_payload["operation"] not in {
     "simulate-discrete-history",
     "simulate-continuous-brownian",
     "simulate-continuous-correlated-brownian",
+    "comparative-pgls-brownian",
     "discrete-ancestral-rerooting",
     "continuous-ancestral-fast-anc",
     "continuous-ancestral-anc-ml",
@@ -811,6 +904,8 @@ elif case_payload["operation"] == "simulate-continuous-brownian":
     summary, rows = compute_continuous_brownian_payload(case_payload)
 elif case_payload["operation"] == "simulate-continuous-correlated-brownian":
     summary, rows = compute_correlated_continuous_brownian_payload(case_payload)
+elif case_payload["operation"] == "comparative-pgls-brownian":
+    summary, rows = compute_pgls_payload(case_payload)
 elif case_payload["operation"] == "discrete-ancestral-rerooting":
     summary, rows = compute_discrete_ancestral_payload(case_payload)
 elif case_payload["operation"] == "continuous-ancestral-fast-anc":
@@ -848,6 +943,8 @@ if rows is not None:
         write_rows_table(fastbm_rows_path, rows)
     elif case_payload["operation"] == "simulate-continuous-correlated-brownian":
         write_rows_table(simcorrs_rows_path, rows)
+    elif case_payload["operation"] == "comparative-pgls-brownian":
+        write_rows_table(pgls_rows_path, rows)
     elif case_payload["operation"] == "discrete-ancestral-rerooting":
         write_rows_table(rerooting_rows_path, rows)
     elif case_payload["operation"] == "continuous-ancestral-fast-anc":
