@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-import bijux_phylogenetics
+import bijux_phylogenetics.benchmark as benchmark_api
 from bijux_phylogenetics.benchmark import benchmark_large_dataset_stress_suite
 from bijux_phylogenetics.command_line import main
 
@@ -109,7 +109,4 @@ def test_benchmark_large_dataset_stress_suite_heavy_tier_meets_large_input_thres
 
 
 def test_public_runtime_exports_stress_suite_surface() -> None:
-    assert (
-        bijux_phylogenetics.benchmark_large_dataset_stress_suite
-        is benchmark_large_dataset_stress_suite
-    )
+    assert benchmark_api.benchmark_large_dataset_stress_suite is benchmark_large_dataset_stress_suite

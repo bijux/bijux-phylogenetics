@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
+import bijux_phylogenetics.validation as validation_api
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_site_scaling,
     benchmark_tree_set_consensus,
@@ -170,15 +170,13 @@ def test_validate_simulation_reproducibility_confirms_same_seed_repeatability() 
 
 
 def test_package_root_exports_validation_corpus_surfaces() -> None:
+    assert validation_api.build_clean_benchmark_corpus is build_clean_benchmark_corpus
     assert (
-        bijux_phylogenetics.build_clean_benchmark_corpus is build_clean_benchmark_corpus
-    )
-    assert (
-        bijux_phylogenetics.build_method_limitation_registry
+        validation_api.build_method_limitation_registry
         is build_method_limitation_registry
     )
     assert (
-        bijux_phylogenetics.validate_simulation_reproducibility
+        validation_api.validate_simulation_reproducibility
         is validate_simulation_reproducibility
     )
 

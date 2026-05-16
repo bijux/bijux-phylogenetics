@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import bijux_phylogenetics
+import bijux_phylogenetics.validation as validation_api
 from bijux_phylogenetics.validation import (
     aggregate_pytest_junit_reports,
     build_release_truth_report,
@@ -116,4 +116,4 @@ def test_aggregate_and_build_release_truth_report_uses_actual_runtime_surfaces(
 
 
 def test_public_runtime_exports_release_truth_builder() -> None:
-    assert bijux_phylogenetics.build_release_truth_report is build_release_truth_report
+    assert validation_api.build_release_truth_report is build_release_truth_report

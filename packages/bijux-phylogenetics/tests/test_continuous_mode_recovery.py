@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
+import bijux_phylogenetics.comparative.continuous_mode_recovery as continuous_mode_recovery_api
 from bijux_phylogenetics.comparative.continuous_mode_recovery import (
     ContinuousModeRecoveryScenario,
     run_continuous_mode_recovery,
@@ -110,22 +110,23 @@ def test_continuous_mode_recovery_writers_emit_review_ledgers(
 
 def test_public_runtime_exports_include_continuous_mode_recovery_surface() -> None:
     assert (
-        bijux_phylogenetics.run_continuous_mode_recovery is run_continuous_mode_recovery
+        continuous_mode_recovery_api.run_continuous_mode_recovery
+        is run_continuous_mode_recovery
     )
     assert (
-        bijux_phylogenetics.write_continuous_mode_recovery_summary_table
+        continuous_mode_recovery_api.write_continuous_mode_recovery_summary_table
         is write_continuous_mode_recovery_summary_table
     )
     assert (
-        bijux_phylogenetics.write_continuous_mode_recovery_parameter_table
+        continuous_mode_recovery_api.write_continuous_mode_recovery_parameter_table
         is write_continuous_mode_recovery_parameter_table
     )
     assert (
-        bijux_phylogenetics.write_continuous_mode_recovery_model_choice_table
+        continuous_mode_recovery_api.write_continuous_mode_recovery_model_choice_table
         is write_continuous_mode_recovery_model_choice_table
     )
     assert (
-        bijux_phylogenetics.write_continuous_mode_recovery_warning_table
+        continuous_mode_recovery_api.write_continuous_mode_recovery_warning_table
         is write_continuous_mode_recovery_warning_table
     )
 
