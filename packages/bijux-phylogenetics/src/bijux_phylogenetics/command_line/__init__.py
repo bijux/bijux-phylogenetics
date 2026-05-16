@@ -514,7 +514,7 @@ from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
 )
-from bijux_phylogenetics.discrete_evolution import (
+from bijux_phylogenetics.comparative.discrete_evolution import (
     compare_discrete_state_models,
     count_discrete_stochastic_map_transitions,
     detect_state_imbalance_problems,

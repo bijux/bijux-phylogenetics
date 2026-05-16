@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.discrete_evolution import (
+from bijux_phylogenetics.comparative.discrete_evolution import (
     audit_discrete_state_coding,
     estimate_ancestral_geographic_states,
 )

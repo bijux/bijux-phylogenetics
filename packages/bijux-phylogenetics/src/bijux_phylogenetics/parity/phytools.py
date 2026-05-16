@@ -28,7 +28,7 @@ from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
 )
-from bijux_phylogenetics.discrete_evolution import (
+from bijux_phylogenetics.comparative.discrete_evolution import (
     count_discrete_stochastic_map_transitions,
     simulate_discrete_stochastic_maps,
     summarize_discrete_stochastic_map_density,

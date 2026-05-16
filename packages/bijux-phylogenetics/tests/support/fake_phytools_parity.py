@@ -336,7 +336,7 @@ def compute_stochastic_map_payload(
 import json
 from pathlib import Path
 from bijux_phylogenetics.ancestral.common import load_discrete_dataset
-from bijux_phylogenetics.discrete_evolution import (
+from bijux_phylogenetics.comparative.discrete_evolution import (
     count_discrete_stochastic_map_transitions,
     simulate_discrete_stochastic_maps,
     summarize_discrete_stochastic_map_density,

@@ -15,7 +15,9 @@ from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.discrete_evolution import audit_discrete_state_coding
+from bijux_phylogenetics.comparative.discrete_evolution import (
+    audit_discrete_state_coding,
+)
 from bijux_phylogenetics.errors import AncestralReconstructionError
 
 from .geographic_states import GeographicExcludedTaxonRow

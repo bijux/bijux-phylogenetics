@@ -24,7 +24,9 @@ from bijux_phylogenetics.ancestral.visualization import (
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     transform_tree_for_evolutionary_mode,
 )
-from bijux_phylogenetics.discrete_evolution import run_discrete_state_transition_model
+from bijux_phylogenetics.comparative.discrete_evolution import (
+    run_discrete_state_transition_model,
+)
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.svg import TreeRenderResult
 

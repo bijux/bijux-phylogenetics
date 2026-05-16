@@ -19,7 +19,7 @@ from bijux_phylogenetics.biogeography.migration_events import (
     write_geographic_migration_event_table,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.discrete_evolution import (
+from bijux_phylogenetics.comparative.discrete_evolution import (
     estimate_ancestral_geographic_states,
     render_tree_with_geographic_states,
 )

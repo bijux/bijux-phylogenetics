@@ -1079,7 +1079,7 @@ from .diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
 )
-from .discrete_evolution import (
+from .comparative.discrete_evolution import (
     DiscreteEvolutionNarrative,
     DiscreteEvolutionReportBuildResult,
     DiscreteModelComparisonReport,

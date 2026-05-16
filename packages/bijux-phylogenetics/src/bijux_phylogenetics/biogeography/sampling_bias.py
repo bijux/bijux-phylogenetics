@@ -15,7 +15,7 @@ from bijux_phylogenetics.biogeography.geographic_states import (
     GeographicExcludedTaxonRow,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.discrete_evolution import (
+from bijux_phylogenetics.comparative.discrete_evolution import (
     NodeStateEstimate,
     TransitionEvent,
     TransitionSupportRow,

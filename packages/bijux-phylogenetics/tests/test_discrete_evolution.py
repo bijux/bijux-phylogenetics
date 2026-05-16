@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
-from bijux_phylogenetics.discrete_evolution import (
+from bijux_phylogenetics.comparative.discrete_evolution import (
     StochasticMapBranchHistory,
     StochasticMapCollectionReport,
     StochasticMapModelFitAudit,

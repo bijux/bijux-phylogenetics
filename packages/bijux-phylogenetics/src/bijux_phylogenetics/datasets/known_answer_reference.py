@@ -33,7 +33,7 @@ from bijux_phylogenetics.compare.topology import (
     compare_tree_paths,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.discrete_evolution import (
+from bijux_phylogenetics.comparative.discrete_evolution import (
     DiscreteStateEvolutionReport,
     estimate_ancestral_geographic_states,
     write_node_state_probability_table,
