@@ -623,6 +623,7 @@ from bijux_phylogenetics.discrete_evolution import (
     render_tree_with_geographic_states,
     run_discrete_state_transition_model,
     simulate_discrete_stochastic_maps,
+    simulate_discrete_stochastic_maps_from_fit_report,
     summarize_discrete_stochastic_maps,
     validate_discrete_state_coding,
     write_discrete_model_comparison_table,
@@ -1736,6 +1737,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.simulate_discrete_stochastic_maps
         is simulate_discrete_stochastic_maps
+    )
+    assert (
+        bijux_phylogenetics.simulate_discrete_stochastic_maps_from_fit_report
+        is simulate_discrete_stochastic_maps_from_fit_report
     )
     assert (
         bijux_phylogenetics.summarize_discrete_stochastic_maps

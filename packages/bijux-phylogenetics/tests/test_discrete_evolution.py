@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.discrete_evolution import (
     assess_geographic_state_analysis_readiness,
     audit_discrete_state_coding,
@@ -16,6 +17,7 @@ from bijux_phylogenetics.discrete_evolution import (
     render_tree_with_geographic_states,
     run_discrete_state_transition_model,
     simulate_discrete_stochastic_maps,
+    simulate_discrete_stochastic_maps_from_fit_report,
     summarize_discrete_stochastic_maps,
     validate_discrete_state_coding,
     validate_discrete_transition_reference_examples,
@@ -28,6 +30,9 @@ from bijux_phylogenetics.discrete_evolution import (
     write_transition_summary_table,
 )
 from bijux_phylogenetics.errors import AncestralReconstructionError
+from bijux_phylogenetics.shared_phytools_comparative_fixtures import (
+    get_shared_phytools_comparative_fixture,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -418,3 +423,93 @@ def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(
         "replicate_index\tbranch_index\tparent_node\tchild_node\tstate\tstart_time_fraction\tend_time_fraction\tduration"
         in segments_path.read_text(encoding="utf-8")
     )
+
+
+def test_simulate_discrete_stochastic_maps_from_fit_report_matches_path_surface() -> (
+    None
+):
+    fixture_entry = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_multistate_twenty_four_taxa"
+    )
+    fit_report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="symmetric",
+    )
+
+    direct_report = simulate_discrete_stochastic_maps_from_fit_report(
+        fit_report,
+        replicates=8,
+        seed=17,
+    )
+    path_report = simulate_discrete_stochastic_maps(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="symmetric",
+        replicates=8,
+        seed=17,
+    )
+
+    assert direct_report.summary == path_report.summary
+    assert direct_report.maps[0].transition_counts == path_report.maps[0].transition_counts
+    assert direct_report.fit_audit.parameter_count == 3
+    assert direct_report.fit_audit.optimizer_converged is True
+    assert direct_report.fit_audit.preferred_model_by_aic == "equal-rates"
+
+
+def test_simulate_discrete_stochastic_maps_reports_ard_fit_instability_honestly() -> (
+    None
+):
+    fixture_entry = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_multistate_twenty_four_taxa"
+    )
+    report = simulate_discrete_stochastic_maps(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="all-rates-different",
+        replicates=8,
+        seed=17,
+    )
+
+    transition_rows = {row.transition: row for row in report.summary.rows}
+
+    assert report.summary.replicate_count == 8
+    assert report.summary.simulation_failure_count == 0
+    assert report.fit_audit.parameter_count == 12
+    assert report.fit_audit.overparameterized is False
+    assert report.fit_audit.optimizer_converged is False
+    assert report.fit_audit.optimizer_hit_lower_parameter_bound is True
+    assert report.fit_audit.preferred_model_by_aic == "equal-rates"
+    assert any("weakly identified" in warning for warning in report.fit_audit.warnings)
+    assert any("weakly identified" in warning for warning in report.warnings)
+    assert "north->south" in transition_rows
+    assert "west->south" in transition_rows
+
+
+def test_simulate_discrete_stochastic_maps_keeps_ard_binary_transition_directions_distinct() -> (
+    None
+):
+    fixture_entry = get_shared_phytools_comparative_fixture(
+        "phytools_discrete_ard_binary_twenty_four_taxa"
+    )
+    report = simulate_discrete_stochastic_maps(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="all-rates-different",
+        replicates=16,
+        seed=17,
+    )
+
+    transition_rows = {row.transition: row for row in report.summary.rows}
+
+    assert "0->1" in transition_rows
+    assert "1->0" in transition_rows
+    assert transition_rows["0->1"].mean_count != transition_rows["1->0"].mean_count

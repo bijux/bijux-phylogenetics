@@ -235,6 +235,11 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
     assert stochastic_payload["metrics"]["simulation_failure_count"] == 0
     assert stochastic_payload["metrics"]["mean_total_transition_count"] >= 0.0
     assert stochastic_payload["metrics"]["conditioned_on_node_estimates"] is False
+    assert stochastic_payload["metrics"]["parameter_count"] == 3
+    assert stochastic_payload["metrics"]["optimizer_converged"] is True
+    assert stochastic_payload["metrics"]["overparameterized"] is False
+    assert stochastic_payload["metrics"]["preferred_model_by_aic"] == "equal-rates"
+    assert stochastic_payload["metrics"]["fit_warning_count"] >= 1
     assert collection_path.exists()
     assert state_times_path.exists()
     assert segments_path.exists()
