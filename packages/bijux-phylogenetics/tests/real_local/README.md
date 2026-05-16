@@ -17,6 +17,9 @@ external engines, not only with fake runners:
 - `test_bayesian_engine_validation_matrix.py` exercises a real MrBayes run and
   records BEAST either from a live executable run when available or from the
   governed checked-in BEAST XML/log/tree corpus when the executable is absent.
+- `test_external_engine_validation_matrix.py` merges those governed alignment
+  and Bayesian cases into one reviewer-facing matrix over MAFFT, trimAl,
+  IQ-TREE, FastTree, MrBayes, and BEAST.
 - `test_bayesian_execution_lane.py` also proves that `adapter beast-run
   --resume` and `adapter mrbayes-run --resume` only reuse one verified
   completed manifest when the installed executable, checked inputs, and
