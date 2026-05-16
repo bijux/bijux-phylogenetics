@@ -5241,7 +5241,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     simulate_brownian.add_argument("tree", type=Path)
     simulate_brownian.add_argument("--root-state", type=float, default=0.0)
-    simulate_brownian.add_argument("--sigma", type=float, default=1.0)
+    simulate_brownian.add_argument("--sigma", type=float)
+    simulate_brownian.add_argument("--sigma-squared", type=float)
     simulate_brownian.add_argument("--seed", type=int, default=1)
     simulate_brownian.add_argument("--out", required=True, type=Path)
     simulate_brownian.add_argument(
@@ -15084,6 +15085,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.tree,
                     root_state=args.root_state,
                     sigma=args.sigma,
+                    sigma_squared=args.sigma_squared,
                     seed=args.seed,
                 )
                 output_path = write_continuous_trait_table(args.out, report)
@@ -15098,6 +15100,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "tip_count": report.tip_count,
                             "trait_count": len(report.traits),
+                            "sigma_squared": report.sigma_squared,
                         },
                         data=report,
                     ),
