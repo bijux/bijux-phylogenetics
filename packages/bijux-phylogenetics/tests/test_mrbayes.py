@@ -98,6 +98,66 @@ print("warning: mrbayes fixture posterior run", file=sys.stderr)
     )
 
 
+def _fake_mrbayes_version_variant(
+    path: Path,
+    *,
+    version_text: str,
+    log_likelihood: float,
+) -> Path:
+    return _write_executable(
+        path,
+        f"""#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv[1:] or "-v" in sys.argv[1:]:
+    print("{version_text}")
+    raise SystemExit(0)
+
+nexus_path = Path(sys.argv[1])
+trace_path = Path(f"{{nexus_path}}.run1.p")
+tree_path = Path(f"{{nexus_path}}.run1.t")
+mcmc_path = Path(f"{{nexus_path}}.mcmc")
+consensus_path = Path(f"{{nexus_path}}.con.tre")
+trace_path.write_text(
+    "Gen\\tLnL\\tTL\\talpha\\n"
+    "0\\t{log_likelihood:.1f}\\t0.40\\t0.90\\n"
+    "100\\t-108.0\\t0.41\\t0.95\\n"
+    "200\\t-107.0\\t0.42\\t1.00\\n"
+    "300\\t-106.5\\t0.43\\t1.05\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree gen2 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree gen3 = [&R] ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\\n"
+    "tree gen4 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+mcmc_path.write_text(
+    "[ID: 1]\\n"
+    "[   Gen -- Generation]\\n"
+    "Gen\\tMove$acc_run1\\tSwap(1<>2)$acc(1)\\tAvgStdDev(s)\\n"
+    "100\\t0.5\\t0.75\\t0.20\\n"
+    "200\\tNA\\t1.0\\t0.10\\n",
+    encoding="utf-8",
+)
+consensus_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree con_50_majrule = [&R] ((A[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1,B[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1)"
+    "[&prob=0.75,prob(percent)=\\\"75\\\"]:0.2,(C[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1,D[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1)"
+    "[&prob=0.5,prob(percent)=\\\"50\\\"]:0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
 def _fake_mrbayes_timeout(path: Path) -> Path:
     return _write_executable(
         path,
@@ -319,6 +379,36 @@ def test_run_mrbayes_and_summarize_posterior_outputs(tmp_path: Path) -> None:
     assert summary.rooted_topology_count == 2
     assert summary.filtered_tree_set_path.exists()
     assert consensus_tree.tip_count == 4
+
+
+def test_run_mrbayes_rebuilds_outputs_after_version_change(tmp_path: Path) -> None:
+    first_executable = _fake_mrbayes_version_variant(
+        tmp_path / "mb-fixture-first",
+        version_text="MrBayes v3.2.7a fixture",
+        log_likelihood=-110.0,
+    )
+    second_executable = _fake_mrbayes_version_variant(
+        tmp_path / "mb-fixture-second",
+        version_text="MrBayes v3.2.8 fixture",
+        log_likelihood=-111.0,
+    )
+    nexus_path = tmp_path / "analysis.nex"
+    prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
+
+    run_mrbayes_posterior_inference(
+        nexus_path,
+        executable=first_executable,
+        resume=False,
+    )
+    rebuilt = run_mrbayes_posterior_inference(
+        nexus_path,
+        executable=second_executable,
+        resume=True,
+    )
+
+    assert rebuilt.resumed is False
+    trace_text = rebuilt.output_paths["parameter_traces"].read_text(encoding="utf-8")
+    assert "-111.0" in trace_text
 
 
 def test_run_mrbayes_posterior_inference_reports_missing_executable_without_marker(
