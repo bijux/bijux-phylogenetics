@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bijux_phylogenetics.shared_tree_simulation_fixtures import (
+from bijux_phylogenetics.fixtures import (
     get_shared_tree_simulation_fixture,
     list_shared_tree_simulation_fixtures,
 )

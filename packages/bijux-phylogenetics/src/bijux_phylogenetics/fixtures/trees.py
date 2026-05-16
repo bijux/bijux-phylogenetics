@@ -6,15 +6,15 @@ from pathlib import Path
 
 
 @dataclass(frozen=True, slots=True)
-class SharedTreeSetFixture:
-    """One governed tree-set fixture shared across Bijux and external references."""
+class SharedTreeFixture:
+    """One governed tree fixture shared across Bijux and external references."""
 
     fixture_id: str
     relative_path: str
-    source_format: str
     parse_expectation: str
-    tree_count: int
-    shared_taxa: tuple[str, ...]
+    validation_expectation: str
+    ape_read_tree_expectation: str
+    tip_count: int | None
     feature_tags: tuple[str, ...]
     notes: str
 
@@ -24,7 +24,7 @@ class SharedTreeSetFixture:
 
 
 def _package_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[3]
 
 
 def _fixtures_root() -> Path:
@@ -32,24 +32,24 @@ def _fixtures_root() -> Path:
 
 
 def _catalog_path() -> Path:
-    return _fixtures_root() / "metadata" / "shared_tree_set_fixture_catalog.json"
+    return _fixtures_root() / "metadata" / "shared_tree_fixture_catalog.json"
 
 
 def _load_catalog() -> dict[str, object]:
     return json.loads(_catalog_path().read_text(encoding="utf-8"))
 
 
-def list_shared_tree_set_fixtures() -> list[SharedTreeSetFixture]:
-    """Return the governed shared tree-set fixture corpus."""
+def list_shared_tree_fixtures() -> list[SharedTreeFixture]:
+    """Return the governed shared tree fixture corpus."""
     catalog = _load_catalog()
     return [
-        SharedTreeSetFixture(
+        SharedTreeFixture(
             fixture_id=entry["fixture_id"],
             relative_path=entry["relative_path"],
-            source_format=entry["source_format"],
             parse_expectation=entry["parse_expectation"],
-            tree_count=entry["tree_count"],
-            shared_taxa=tuple(entry["shared_taxa"]),
+            validation_expectation=entry["validation_expectation"],
+            ape_read_tree_expectation=entry["ape_read_tree_expectation"],
+            tip_count=entry.get("tip_count"),
             feature_tags=tuple(entry["feature_tags"]),
             notes=entry["notes"],
         )
@@ -57,14 +57,14 @@ def list_shared_tree_set_fixtures() -> list[SharedTreeSetFixture]:
     ]
 
 
-def get_shared_tree_set_fixture(fixture_id: str) -> SharedTreeSetFixture:
-    """Resolve one governed shared tree-set fixture by durable fixture id."""
-    for fixture in list_shared_tree_set_fixtures():
+def get_shared_tree_fixture(fixture_id: str) -> SharedTreeFixture:
+    """Resolve one governed shared tree fixture by durable fixture id."""
+    for fixture in list_shared_tree_fixtures():
         if fixture.fixture_id == fixture_id:
             return fixture
     supported = ", ".join(
-        sorted(fixture.fixture_id for fixture in list_shared_tree_set_fixtures())
+        sorted(fixture.fixture_id for fixture in list_shared_tree_fixtures())
     )
     raise ValueError(
-        f"unsupported shared tree-set fixture '{fixture_id}'; expected one of: {supported}"
+        f"unsupported shared tree fixture '{fixture_id}'; expected one of: {supported}"
     )

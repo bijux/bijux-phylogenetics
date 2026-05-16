@@ -4,11 +4,11 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.shared_trait_table_fixtures import (
+from .trait_tables import (
     SharedTraitTableFixture,
     get_shared_trait_table_fixture,
 )
-from bijux_phylogenetics.shared_tree_fixtures import (
+from .trees import (
     SharedTreeFixture,
     get_shared_tree_fixture,
 )
@@ -48,7 +48,7 @@ class SharedPhytoolsComparativeFixture:
 
 
 def _package_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[3]
 
 
 def _fixtures_root() -> Path:

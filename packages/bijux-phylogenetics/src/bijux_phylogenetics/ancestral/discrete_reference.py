@@ -18,10 +18,10 @@ from bijux_phylogenetics.ancestral.root_sensitivity import (
     summarize_ancestral_root_sensitivity,
     summarize_ancestral_root_sensitivity_report,
 )
-from bijux_phylogenetics.shared_trait_table_fixtures import (
+from bijux_phylogenetics.fixtures import (
     get_shared_trait_table_fixture,
 )
-from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
+from bijux_phylogenetics.fixtures import get_shared_tree_fixture
 
 
 @dataclass(slots=True)

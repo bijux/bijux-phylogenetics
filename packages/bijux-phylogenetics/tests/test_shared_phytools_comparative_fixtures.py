@@ -20,7 +20,7 @@ from bijux_phylogenetics.comparative.signal import (
 )
 from bijux_phylogenetics.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.shared_phytools_comparative_fixtures import (
+from bijux_phylogenetics.fixtures import (
     get_shared_phytools_comparative_fixture,
     list_shared_phytools_comparative_fixtures,
 )

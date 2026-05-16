@@ -10,7 +10,7 @@ from bijux_phylogenetics.comparative.discrete_mk import (
     fit_discrete_mk_model_from_dataset,
 )
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.shared_phytools_comparative_fixtures import (
+from bijux_phylogenetics.fixtures import (
     get_shared_phytools_comparative_fixture,
 )
 from bijux_phylogenetics.simulation import (

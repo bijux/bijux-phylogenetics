@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bijux_phylogenetics.shared_distance_matrix_fixtures import (
+from bijux_phylogenetics.fixtures import (
     get_shared_distance_matrix_fixture,
     list_shared_distance_matrix_fixtures,
 )

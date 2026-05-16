@@ -34,7 +34,7 @@ from bijux_phylogenetics.discrete_evolution import (
     summarize_discrete_stochastic_map_density,
     summarize_discrete_stochastic_maps,
 )
-from bijux_phylogenetics.shared_phytools_comparative_fixtures import (
+from bijux_phylogenetics.fixtures import (
     get_shared_phytools_comparative_fixture,
 )
 from bijux_phylogenetics.simulation import (

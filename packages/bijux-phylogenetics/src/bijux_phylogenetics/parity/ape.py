@@ -79,18 +79,18 @@ from bijux_phylogenetics.io.newick import (
     write_newick_tree_set,
 )
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.shared_distance_matrix_fixtures import (
+from bijux_phylogenetics.fixtures import (
     get_shared_distance_matrix_fixture,
 )
-from bijux_phylogenetics.shared_dna_alignment_fixtures import (
+from bijux_phylogenetics.fixtures import (
     get_shared_dna_alignment_fixture,
 )
-from bijux_phylogenetics.shared_trait_table_fixtures import (
+from bijux_phylogenetics.fixtures import (
     get_shared_trait_table_fixture,
 )
-from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
-from bijux_phylogenetics.shared_tree_set_fixtures import get_shared_tree_set_fixture
-from bijux_phylogenetics.shared_tree_simulation_fixtures import (
+from bijux_phylogenetics.fixtures import get_shared_tree_fixture
+from bijux_phylogenetics.fixtures import get_shared_tree_set_fixture
+from bijux_phylogenetics.fixtures import (
     get_shared_tree_simulation_fixture,
 )
 from bijux_phylogenetics.simulation import (
