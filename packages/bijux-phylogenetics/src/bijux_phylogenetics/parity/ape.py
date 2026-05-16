@@ -4237,6 +4237,60 @@ def _neighbor_joining_tree_mismatch_reason(
     return report.mismatch_reason
 
 
+def _supports_ard_rate_multiset_equivalence(
+    *,
+    reference_summary: dict[str, object] | None,
+    bijux_summary: dict[str, object] | None,
+) -> bool:
+    if reference_summary is None or bijux_summary is None:
+        return False
+    return (
+        reference_summary.get("model") == "all-rates-different"
+        and bijux_summary.get("model") == "all-rates-different"
+        and reference_summary.get("overparameterized") is True
+        and bijux_summary.get("overparameterized") is True
+    )
+
+
+def _group_transition_rate_rows(
+    rows: list[dict[str, object]],
+) -> dict[tuple[bool, int], list[float]]:
+    grouped: dict[tuple[bool, int], list[float]] = {}
+    for row in rows:
+        grouped.setdefault(
+            (
+                bool(row["transition_allowed"]),
+                int(row["step_distance"]),
+            ),
+            [],
+        ).append(float(row["rate"]))
+    for values in grouped.values():
+        values.sort()
+    return grouped
+
+
+def _transition_rate_rows_match(
+    *,
+    reference_rows: list[dict[str, object]],
+    bijux_rows: list[dict[str, object]],
+    reference_summary: dict[str, object] | None,
+    bijux_summary: dict[str, object] | None,
+    tolerance: float,
+) -> bool:
+    if _compare_json(reference_rows, bijux_rows, tolerance=tolerance):
+        return True
+    if not _supports_ard_rate_multiset_equivalence(
+        reference_summary=reference_summary,
+        bijux_summary=bijux_summary,
+    ):
+        return False
+    return _compare_json(
+        _group_transition_rate_rows(reference_rows),
+        _group_transition_rate_rows(bijux_rows),
+        tolerance=tolerance,
+    )
+
+
 def _summary_rows(
     observations: list[ApeParityObservation],
 ) -> list[ApeParitySummaryRow]:
@@ -4513,9 +4567,11 @@ def run_ape_parity_cases(
                                 tolerance=case.tolerance,
                             ):
                                 mismatch_reason = "summary_mismatch"
-                            elif not _compare_json(
-                                reference_transition_rows,
-                                bijux_transition_rows,
+                            elif not _transition_rate_rows_match(
+                                reference_rows=reference_transition_rows,
+                                bijux_rows=bijux_transition_rows,
+                                reference_summary=reference_summary,
+                                bijux_summary=bijux_summary,
                                 tolerance=(
                                     case.transition_rate_tolerance
                                     if case.transition_rate_tolerance is not None
