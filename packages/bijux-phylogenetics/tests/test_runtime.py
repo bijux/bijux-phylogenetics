@@ -904,9 +904,12 @@ from bijux_phylogenetics.reports.service import (
     render_workflow_validation_report,
 )
 from bijux_phylogenetics.simulation import (
+    CorrelatedContinuousTraitSimulationCollectionReport,
+    CorrelatedContinuousTraitSimulationReport,
     DiscreteHistoryRateRow,
     DiscreteHistorySimulationCollectionReport,
     DiscreteHistorySummaryRow,
+    SimulatedCorrelatedContinuousTrait,
     SimulatedDiscreteBranchHistory,
     SimulatedDiscreteStateSegment,
     SimulatedDiscreteTransitionEvent,
@@ -915,6 +918,8 @@ from bijux_phylogenetics.simulation import (
     simulate_brownian_traits,
     simulate_coalescent_tree,
     simulate_coalescent_trees,
+    simulate_correlated_brownian_trait_collection,
+    simulate_correlated_brownian_traits,
     simulate_discrete_histories,
     simulate_discrete_traits,
     simulate_dna_alignment,
@@ -923,6 +928,9 @@ from bijux_phylogenetics.simulation import (
     simulate_random_tree,
     simulate_random_trees,
     simulate_protein_alignment,
+    write_correlated_continuous_trait_collection_summary_table,
+    write_correlated_continuous_trait_collection_table,
+    write_correlated_continuous_trait_table,
     write_continuous_trait_table,
     write_discrete_history_branch_truth_table,
     write_discrete_history_event_table,
@@ -2157,6 +2165,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.simulate_coalescent_tree is simulate_coalescent_tree
     assert bijux_phylogenetics.simulate_random_trees is simulate_random_trees
     assert (
+        bijux_phylogenetics.simulate_correlated_brownian_trait_collection
+        is simulate_correlated_brownian_trait_collection
+    )
+    assert (
+        bijux_phylogenetics.simulate_correlated_brownian_traits
+        is simulate_correlated_brownian_traits
+    )
+    assert (
         bijux_phylogenetics.simulate_brownian_trait_collection
         is simulate_brownian_trait_collection
     )
@@ -2164,6 +2180,18 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.simulate_early_burst_traits is simulate_early_burst_traits
     assert bijux_phylogenetics.simulate_ou_traits is simulate_ou_traits
     assert bijux_phylogenetics.DiscreteHistoryRateRow is DiscreteHistoryRateRow
+    assert (
+        bijux_phylogenetics.CorrelatedContinuousTraitSimulationCollectionReport
+        is CorrelatedContinuousTraitSimulationCollectionReport
+    )
+    assert (
+        bijux_phylogenetics.CorrelatedContinuousTraitSimulationReport
+        is CorrelatedContinuousTraitSimulationReport
+    )
+    assert (
+        bijux_phylogenetics.SimulatedCorrelatedContinuousTrait
+        is SimulatedCorrelatedContinuousTrait
+    )
     assert (
         bijux_phylogenetics.DiscreteHistorySimulationCollectionReport
         is DiscreteHistorySimulationCollectionReport
@@ -2877,6 +2905,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_multivariate_excluded_taxa_table
         is write_multivariate_excluded_taxa_table
+    )
+    assert (
+        bijux_phylogenetics.write_correlated_continuous_trait_collection_summary_table
+        is write_correlated_continuous_trait_collection_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_correlated_continuous_trait_collection_table
+        is write_correlated_continuous_trait_collection_table
+    )
+    assert (
+        bijux_phylogenetics.write_correlated_continuous_trait_table
+        is write_correlated_continuous_trait_table
     )
     assert (
         bijux_phylogenetics.write_phylogenetic_signal_summary_table
