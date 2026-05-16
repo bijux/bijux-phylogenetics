@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import bijux_phylogenetics
+import bijux_phylogenetics.datasets.rabies_geography as rabies_geography_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets.rabies_geography import (
     export_rabies_geographic_transition_panel_dataset,
@@ -108,23 +108,24 @@ def test_public_runtime_exports_include_rabies_geographic_transition_panel_surfa
     None
 ):
     assert (
-        bijux_phylogenetics.load_rabies_geographic_transition_panel_dataset
+        rabies_geography_api.load_rabies_geographic_transition_panel_dataset
         is load_rabies_geographic_transition_panel_dataset
     )
     assert (
-        bijux_phylogenetics.export_rabies_geographic_transition_panel_dataset
+        rabies_geography_api.export_rabies_geographic_transition_panel_dataset
         is export_rabies_geographic_transition_panel_dataset
     )
     assert (
-        bijux_phylogenetics.run_rabies_geographic_transition_panel_workflow
+        rabies_geography_api.run_rabies_geographic_transition_panel_workflow
         is run_rabies_geographic_transition_panel_workflow
     )
     assert (
-        bijux_phylogenetics.write_rabies_geographic_transition_panel_workflow_bundle
+        rabies_geography_api.write_rabies_geographic_transition_panel_workflow_bundle
         is write_rabies_geographic_transition_panel_workflow_bundle
     )
-    assert bijux_phylogenetics.run_rabies_geographic_transition_panel_demo is (
-        run_rabies_geographic_transition_panel_demo
+    assert (
+        rabies_geography_api.run_rabies_geographic_transition_panel_demo
+        is run_rabies_geographic_transition_panel_demo
     )
 
 

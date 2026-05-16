@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import bijux_phylogenetics
+import bijux_phylogenetics.datasets.pathogens as pathogens_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_rabies_cross_host_panel_dataset,
@@ -86,25 +86,20 @@ def test_export_rabies_cross_host_panel_dataset_copies_expected_outputs(
 
 
 def test_public_runtime_exports_include_rabies_cross_host_panel_surface() -> None:
+    assert pathogens_api.load_rabies_cross_host_panel_dataset is load_rabies_cross_host_panel_dataset
     assert (
-        bijux_phylogenetics.load_rabies_cross_host_panel_dataset
-        is load_rabies_cross_host_panel_dataset
-    )
-    assert (
-        bijux_phylogenetics.export_rabies_cross_host_panel_dataset
+        pathogens_api.export_rabies_cross_host_panel_dataset
         is export_rabies_cross_host_panel_dataset
     )
     assert (
-        bijux_phylogenetics.run_rabies_cross_host_panel_workflow
+        pathogens_api.run_rabies_cross_host_panel_workflow
         is run_rabies_cross_host_panel_workflow
     )
     assert (
-        bijux_phylogenetics.write_rabies_cross_host_panel_workflow_bundle
+        pathogens_api.write_rabies_cross_host_panel_workflow_bundle
         is write_rabies_cross_host_panel_workflow_bundle
     )
-    assert bijux_phylogenetics.run_rabies_cross_host_panel_demo is (
-        run_rabies_cross_host_panel_demo
-    )
+    assert pathogens_api.run_rabies_cross_host_panel_demo is run_rabies_cross_host_panel_demo
 
 
 def test_cli_demo_rabies_cross_host_panel_json_output_reports_host_switch_review(

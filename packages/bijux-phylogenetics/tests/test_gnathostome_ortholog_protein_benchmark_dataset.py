@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
+import bijux_phylogenetics.datasets.vertebrates as vertebrates_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_gnathostome_ortholog_protein_benchmark_dataset,
@@ -114,23 +114,24 @@ def test_public_runtime_exports_include_gnathostome_ortholog_protein_benchmark_s
     None
 ):
     assert (
-        bijux_phylogenetics.load_gnathostome_ortholog_protein_benchmark_dataset
+        vertebrates_api.load_gnathostome_ortholog_protein_benchmark_dataset
         is load_gnathostome_ortholog_protein_benchmark_dataset
     )
     assert (
-        bijux_phylogenetics.export_gnathostome_ortholog_protein_benchmark_dataset
+        vertebrates_api.export_gnathostome_ortholog_protein_benchmark_dataset
         is export_gnathostome_ortholog_protein_benchmark_dataset
     )
     assert (
-        bijux_phylogenetics.run_gnathostome_ortholog_protein_benchmark_workflow
+        vertebrates_api.run_gnathostome_ortholog_protein_benchmark_workflow
         is run_gnathostome_ortholog_protein_benchmark_workflow
     )
     assert (
-        bijux_phylogenetics.write_gnathostome_ortholog_protein_benchmark_workflow_bundle
+        vertebrates_api.write_gnathostome_ortholog_protein_benchmark_workflow_bundle
         is write_gnathostome_ortholog_protein_benchmark_workflow_bundle
     )
-    assert bijux_phylogenetics.run_gnathostome_ortholog_protein_benchmark_demo is (
-        run_gnathostome_ortholog_protein_benchmark_demo
+    assert (
+        vertebrates_api.run_gnathostome_ortholog_protein_benchmark_demo
+        is run_gnathostome_ortholog_protein_benchmark_demo
     )
 
 

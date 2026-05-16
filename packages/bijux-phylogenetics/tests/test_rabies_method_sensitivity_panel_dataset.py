@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
 from bijux_phylogenetics.command_line import main
 import bijux_phylogenetics.datasets.rabies_method_sensitivity as rabies_method_sensitivity
 from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
@@ -129,23 +128,24 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
 
 def test_public_runtime_exports_include_rabies_method_sensitivity_surface() -> None:
     assert (
-        bijux_phylogenetics.load_rabies_method_sensitivity_panel_dataset
+        rabies_method_sensitivity.load_rabies_method_sensitivity_panel_dataset
         is load_rabies_method_sensitivity_panel_dataset
     )
     assert (
-        bijux_phylogenetics.export_rabies_method_sensitivity_panel_dataset
+        rabies_method_sensitivity.export_rabies_method_sensitivity_panel_dataset
         is export_rabies_method_sensitivity_panel_dataset
     )
     assert (
-        bijux_phylogenetics.run_rabies_method_sensitivity_panel_workflow
+        rabies_method_sensitivity.run_rabies_method_sensitivity_panel_workflow
         is run_rabies_method_sensitivity_panel_workflow
     )
     assert (
-        bijux_phylogenetics.write_rabies_method_sensitivity_panel_workflow_bundle
+        rabies_method_sensitivity.write_rabies_method_sensitivity_panel_workflow_bundle
         is write_rabies_method_sensitivity_panel_workflow_bundle
     )
-    assert bijux_phylogenetics.run_rabies_method_sensitivity_panel_demo is (
-        run_rabies_method_sensitivity_panel_demo
+    assert (
+        rabies_method_sensitivity.run_rabies_method_sensitivity_panel_demo
+        is run_rabies_method_sensitivity_panel_demo
     )
 
 

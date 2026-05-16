@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import bijux_phylogenetics
+import bijux_phylogenetics.datasets.data_quality_stress as data_quality_stress_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets.data_quality_stress import (
     export_catarrhine_data_quality_stress_panel_dataset,
@@ -40,23 +40,24 @@ def test_public_runtime_exports_include_catarrhine_data_quality_stress_panel_sur
     None
 ):
     assert (
-        bijux_phylogenetics.load_catarrhine_data_quality_stress_panel_dataset
+        data_quality_stress_api.load_catarrhine_data_quality_stress_panel_dataset
         is load_catarrhine_data_quality_stress_panel_dataset
     )
     assert (
-        bijux_phylogenetics.export_catarrhine_data_quality_stress_panel_dataset
+        data_quality_stress_api.export_catarrhine_data_quality_stress_panel_dataset
         is export_catarrhine_data_quality_stress_panel_dataset
     )
     assert (
-        bijux_phylogenetics.run_catarrhine_data_quality_stress_panel_workflow
+        data_quality_stress_api.run_catarrhine_data_quality_stress_panel_workflow
         is run_catarrhine_data_quality_stress_panel_workflow
     )
     assert (
-        bijux_phylogenetics.write_catarrhine_data_quality_stress_panel_workflow_bundle
+        data_quality_stress_api.write_catarrhine_data_quality_stress_panel_workflow_bundle
         is write_catarrhine_data_quality_stress_panel_workflow_bundle
     )
-    assert bijux_phylogenetics.run_catarrhine_data_quality_stress_panel_demo is (
-        run_catarrhine_data_quality_stress_panel_demo
+    assert (
+        data_quality_stress_api.run_catarrhine_data_quality_stress_panel_demo
+        is run_catarrhine_data_quality_stress_panel_demo
     )
 
 

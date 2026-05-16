@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
+import bijux_phylogenetics.datasets.mammals as mammals_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_primate_comparative_dataset,
@@ -101,25 +101,20 @@ def test_export_primate_comparative_dataset_copies_expected_outputs(
 
 
 def test_public_runtime_exports_include_primate_comparative_dataset_surface() -> None:
+    assert mammals_api.load_primate_comparative_dataset is load_primate_comparative_dataset
     assert (
-        bijux_phylogenetics.load_primate_comparative_dataset
-        is load_primate_comparative_dataset
-    )
-    assert (
-        bijux_phylogenetics.export_primate_comparative_dataset
+        mammals_api.export_primate_comparative_dataset
         is export_primate_comparative_dataset
     )
     assert (
-        bijux_phylogenetics.run_primate_comparative_workflow
+        mammals_api.run_primate_comparative_workflow
         is run_primate_comparative_workflow
     )
     assert (
-        bijux_phylogenetics.write_primate_comparative_workflow_bundle
+        mammals_api.write_primate_comparative_workflow_bundle
         is write_primate_comparative_workflow_bundle
     )
-    assert (
-        bijux_phylogenetics.run_primate_comparative_demo is run_primate_comparative_demo
-    )
+    assert mammals_api.run_primate_comparative_demo is run_primate_comparative_demo
 
 
 @pytest.mark.slow

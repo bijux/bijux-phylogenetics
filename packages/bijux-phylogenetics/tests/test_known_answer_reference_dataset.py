@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
+import bijux_phylogenetics.datasets.known_answer_reference as known_answer_reference_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets.known_answer_reference import (
     export_known_answer_reference_dataset,
@@ -162,23 +162,24 @@ def test_export_known_answer_reference_dataset_copies_expected_outputs(
 @pytest.mark.slow
 def test_public_runtime_exports_include_known_answer_reference_surface() -> None:
     assert (
-        bijux_phylogenetics.load_known_answer_reference_dataset
+        known_answer_reference_api.load_known_answer_reference_dataset
         is load_known_answer_reference_dataset
     )
     assert (
-        bijux_phylogenetics.export_known_answer_reference_dataset
+        known_answer_reference_api.export_known_answer_reference_dataset
         is export_known_answer_reference_dataset
     )
     assert (
-        bijux_phylogenetics.run_known_answer_reference_workflow
+        known_answer_reference_api.run_known_answer_reference_workflow
         is run_known_answer_reference_workflow
     )
     assert (
-        bijux_phylogenetics.write_known_answer_reference_workflow_bundle
+        known_answer_reference_api.write_known_answer_reference_workflow_bundle
         is write_known_answer_reference_workflow_bundle
     )
-    assert bijux_phylogenetics.run_known_answer_reference_demo is (
-        run_known_answer_reference_demo
+    assert (
+        known_answer_reference_api.run_known_answer_reference_demo
+        is run_known_answer_reference_demo
     )
 
 

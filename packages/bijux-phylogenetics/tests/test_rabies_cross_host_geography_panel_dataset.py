@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import bijux_phylogenetics
+import bijux_phylogenetics.datasets.rabies_host_geography as rabies_host_geography_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     RabiesCrossHostGeographyPanelDemoResult,
@@ -769,23 +769,24 @@ def test_public_runtime_exports_include_rabies_cross_host_geography_panel_surfac
     None
 ):
     assert (
-        bijux_phylogenetics.load_rabies_cross_host_geography_panel_dataset
+        rabies_host_geography_api.load_rabies_cross_host_geography_panel_dataset
         is load_rabies_cross_host_geography_panel_dataset
     )
     assert (
-        bijux_phylogenetics.export_rabies_cross_host_geography_panel_dataset
+        rabies_host_geography_api.export_rabies_cross_host_geography_panel_dataset
         is export_rabies_cross_host_geography_panel_dataset
     )
     assert (
-        bijux_phylogenetics.run_rabies_cross_host_geography_panel_workflow
+        rabies_host_geography_api.run_rabies_cross_host_geography_panel_workflow
         is run_rabies_cross_host_geography_panel_workflow
     )
     assert (
-        bijux_phylogenetics.write_rabies_cross_host_geography_panel_workflow_bundle
+        rabies_host_geography_api.write_rabies_cross_host_geography_panel_workflow_bundle
         is write_rabies_cross_host_geography_panel_workflow_bundle
     )
-    assert bijux_phylogenetics.run_rabies_cross_host_geography_panel_demo is (
-        run_rabies_cross_host_geography_panel_demo
+    assert (
+        rabies_host_geography_api.run_rabies_cross_host_geography_panel_demo
+        is run_rabies_cross_host_geography_panel_demo
     )
 
 

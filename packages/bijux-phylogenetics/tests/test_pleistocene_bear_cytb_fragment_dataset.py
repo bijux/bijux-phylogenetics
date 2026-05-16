@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
+import bijux_phylogenetics.datasets.ancient_dna as ancient_dna_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_pleistocene_bear_cytb_fragment_dataset,
@@ -115,23 +115,24 @@ def test_public_runtime_exports_include_pleistocene_bear_cytb_fragment_surface()
     None
 ):
     assert (
-        bijux_phylogenetics.load_pleistocene_bear_cytb_fragment_dataset
+        ancient_dna_api.load_pleistocene_bear_cytb_fragment_dataset
         is load_pleistocene_bear_cytb_fragment_dataset
     )
     assert (
-        bijux_phylogenetics.export_pleistocene_bear_cytb_fragment_dataset
+        ancient_dna_api.export_pleistocene_bear_cytb_fragment_dataset
         is export_pleistocene_bear_cytb_fragment_dataset
     )
     assert (
-        bijux_phylogenetics.run_pleistocene_bear_cytb_fragment_workflow
+        ancient_dna_api.run_pleistocene_bear_cytb_fragment_workflow
         is run_pleistocene_bear_cytb_fragment_workflow
     )
     assert (
-        bijux_phylogenetics.write_pleistocene_bear_cytb_fragment_workflow_bundle
+        ancient_dna_api.write_pleistocene_bear_cytb_fragment_workflow_bundle
         is write_pleistocene_bear_cytb_fragment_workflow_bundle
     )
-    assert bijux_phylogenetics.run_pleistocene_bear_cytb_fragment_demo is (
-        run_pleistocene_bear_cytb_fragment_demo
+    assert (
+        ancient_dna_api.run_pleistocene_bear_cytb_fragment_demo
+        is run_pleistocene_bear_cytb_fragment_demo
     )
 
 

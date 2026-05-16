@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
+import bijux_phylogenetics.datasets.birds as birds_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_avian_reproductive_trait_dataset,
@@ -112,25 +112,20 @@ def test_export_avian_reproductive_trait_dataset_copies_expected_outputs(
 def test_public_runtime_exports_include_avian_reproductive_trait_dataset_surface() -> (
     None
 ):
+    assert birds_api.load_avian_reproductive_trait_dataset is load_avian_reproductive_trait_dataset
     assert (
-        bijux_phylogenetics.load_avian_reproductive_trait_dataset
-        is load_avian_reproductive_trait_dataset
-    )
-    assert (
-        bijux_phylogenetics.export_avian_reproductive_trait_dataset
+        birds_api.export_avian_reproductive_trait_dataset
         is export_avian_reproductive_trait_dataset
     )
     assert (
-        bijux_phylogenetics.run_avian_reproductive_trait_workflow
+        birds_api.run_avian_reproductive_trait_workflow
         is run_avian_reproductive_trait_workflow
     )
     assert (
-        bijux_phylogenetics.write_avian_reproductive_trait_workflow_bundle
+        birds_api.write_avian_reproductive_trait_workflow_bundle
         is write_avian_reproductive_trait_workflow_bundle
     )
-    assert bijux_phylogenetics.run_avian_reproductive_trait_demo is (
-        run_avian_reproductive_trait_demo
-    )
+    assert birds_api.run_avian_reproductive_trait_demo is run_avian_reproductive_trait_demo
 
 
 @pytest.mark.slow
