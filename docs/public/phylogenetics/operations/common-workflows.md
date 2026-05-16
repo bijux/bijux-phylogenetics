@@ -928,6 +928,7 @@ inspection rather than only raw tree production:
 - one workflow summary with stable-clade, changed-clade, rooted preprocessing, and rooted engine counts
 - one variant summary with alignment length, trimmed length, selected model, support range, and rooted engine RF distance
 - one parallel-execution summary plus one workflow manifest that record the worker count, execution mode, and per-variant isolated task outputs
+- one raw workflow execution record at `workflow/rabies-method-sensitivity-panel.run.json` that records run status, worker count, successful variants, failed variants, and per-variant task logs before the reviewer bundle is even inspected
 - one rooted preprocessing comparison table across every declared variant pair
 - one stable-clade ledger and one changed-clade ledger aggregated across variants
 - one method-conclusion ledger that states which claims remained stable and which remained engine-sensitive
@@ -940,6 +941,9 @@ conclusion text, then links the large TSV and JSON artifacts instead of
 embedding those tables directly. The JSON metrics expose the same report-size
 surface through `report_linked_artifact_count`, `report_html_size_bytes`,
 `report_linked_artifact_bytes`, and `report_total_output_bytes`.
+If a second caller tries to reuse the same workflow output root while one run
+is still active, the command now fails explicitly instead of interleaving task
+logs and variant outputs.
 
 When the goal is to review posterior or bootstrap uncertainty at larger scale,
 `tree-set report` now uses the same summary-first rule. Large tables are

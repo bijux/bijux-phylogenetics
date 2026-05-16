@@ -1253,6 +1253,7 @@ The command writes:
 - `workflow/workflow-summary.tsv`
 - `workflow/variant-summary.tsv`
 - `workflow/parallel-execution-summary.tsv`
+- `workflow/rabies-method-sensitivity-panel.run.json`
 - `workflow/preprocessing-rooted-comparisons.tsv`
 - `workflow/stable-clades.tsv`
 - `workflow/changed-clades.tsv`
@@ -1270,12 +1271,6 @@ The command writes:
 - `workflow/variants/<variant-id>/rooted-iqtree-support.nwk`
 - `workflow/variants/<variant-id>/rooting-summary.tsv`
 - `workflow/variants/<variant-id>/rooted-engine-comparison.tsv`
-
-Parallel execution is safe only because each declared variant uses its own
-isolated output root. Reusing the same workflow output prefix concurrently is
-rejected by the shared engine layer with a structured
-`engine_workflow_already_running` failure instead of risking log or manifest
-corruption.
 - `workflow/variants/<variant-id>/unrooted-comparison.tsv`
 - `workflow/variants/<variant-id>/unrooted-shared-clades.tsv`
 - `workflow/variants/<variant-id>/unrooted-conflicting-clades.tsv`
@@ -1283,6 +1278,14 @@ corruption.
 - `workflow/variants/<variant-id>/unrooted-conclusions.tsv`
 - `workflow/variants/<variant-id>/unrooted-stability-summary.tsv`
 - `overview.md`
+
+The governed workflow now rejects concurrent reuse of the same `--out`
+directory while one run is still active. Parallel execution stays safe because
+each declared variant uses its own isolated output root inside that workflow
+directory, and the raw `workflow/rabies-method-sensitivity-panel.run.json`
+execution record keeps the worker count, execution mode, successful variants,
+failed variants, and per-variant task logs auditable even when one isolated
+variant task fails.
 
 The packaged workflow matrix currently declares four durable variants:
 
