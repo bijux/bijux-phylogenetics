@@ -241,6 +241,10 @@ from bijux_phylogenetics.command_line.metadata import (
     add_metadata_commands,
     run_metadata_command,
 )
+from bijux_phylogenetics.command_line.traits import (
+    add_traits_commands,
+    run_traits_command,
+)
 from bijux_phylogenetics.command_line.arguments import (
     _adapter_version_args,
     _add_distance_tree_method_argument,
@@ -506,12 +510,7 @@ from bijux_phylogenetics.core.topology import (
     unroot_tree,
     write_tree_rooting_report,
 )
-from bijux_phylogenetics.core.traits import (
-    detect_missing_trait_values,
-    link_tree_to_traits,
-    prune_traits_to_tree,
-    validate_traits_table,
-)
+
 from bijux_phylogenetics.datasets import (
     run_avian_reproductive_trait_demo,
     run_catarrhine_mitogenome_five_locus_panel_demo,
@@ -923,50 +922,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     add_metadata_commands(subparsers)
 
-    traits = subparsers.add_parser(
-        get_command_spec("traits").name, help=get_command_spec("traits").summary
-    )
-    traits_subparsers = traits.add_subparsers(dest="traits_command", required=True)
-    traits_validate = traits_subparsers.add_parser(
-        "validate", help="Validate a traits table keyed by taxon."
-    )
-    traits_validate.add_argument("table", type=Path)
-    traits_validate.add_argument("--taxon-column")
-    traits_validate.add_argument(
-        "--json", action="store_true", help="Emit the report as JSON."
-    )
-    _add_manifest_argument(traits_validate)
-    traits_missing = traits_subparsers.add_parser(
-        "missing", help="List missing trait values by taxon and column."
-    )
-    traits_missing.add_argument("table", type=Path)
-    traits_missing.add_argument("--taxon-column")
-    traits_missing.add_argument(
-        "--json", action="store_true", help="Emit the report as JSON."
-    )
-    _add_manifest_argument(traits_missing)
-    traits_link = traits_subparsers.add_parser(
-        "link", help="Link tree tips to a traits table."
-    )
-    traits_link.add_argument("tree", type=Path)
-    traits_link.add_argument("table", type=Path)
-    traits_link.add_argument("--taxon-column")
-    traits_link.add_argument("--strict", action="store_true")
-    traits_link.add_argument(
-        "--json", action="store_true", help="Emit the report as JSON."
-    )
-    _add_manifest_argument(traits_link)
-    traits_prune = traits_subparsers.add_parser(
-        "prune", help="Prune a traits table to tree taxa."
-    )
-    traits_prune.add_argument("tree", type=Path)
-    traits_prune.add_argument("table", type=Path)
-    traits_prune.add_argument("--taxon-column")
-    traits_prune.add_argument("--out", required=True, type=Path)
-    traits_prune.add_argument(
-        "--json", action="store_true", help="Emit the pruning report as JSON."
-    )
-    _add_manifest_argument(traits_prune)
+    add_traits_commands(subparsers)
 
     prune = subparsers.add_parser(
         get_command_spec("prune").name, help=get_command_spec("prune").summary
@@ -6521,96 +6477,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "metadata":
             return run_metadata_command(args)
         if args.command == "traits":
-            if args.traits_command == "validate":
-                report = validate_traits_table(
-                    args.table, taxon_column=args.taxon_column
-                )
-                outputs = _finalize_outputs(args, command="traits", inputs=[args.table])
-                _print_result(
-                    build_command_result(
-                        command="traits",
-                        inputs=[args.table],
-                        outputs=outputs,
-                        metrics={
-                            "row_count": report.row_count,
-                            "trait_column_count": len(report.trait_columns),
-                        },
-                        data=report,
-                    ),
-                    json_output=args.json,
-                )
-                return 0
-            if args.traits_command == "missing":
-                report = detect_missing_trait_values(
-                    args.table, taxon_column=args.taxon_column
-                )
-                outputs = _finalize_outputs(args, command="traits", inputs=[args.table])
-                _print_result(
-                    build_command_result(
-                        command="traits",
-                        inputs=[args.table],
-                        outputs=outputs,
-                        metrics={"missing_value_count": len(report.missing_values)},
-                        data=report,
-                    ),
-                    json_output=args.json,
-                )
-                return 0
-            if args.traits_command == "prune":
-                rows, report = prune_traits_to_tree(
-                    args.tree,
-                    args.table,
-                    taxon_column=args.taxon_column,
-                )
-                table = load_taxon_table(args.table, taxon_column=args.taxon_column)
-                output_path = write_taxon_rows(
-                    args.out, columns=table.columns, rows=rows
-                )
-                outputs = _finalize_outputs(
-                    args,
-                    command="traits",
-                    inputs=[args.tree, args.table],
-                    outputs=[output_path],
-                )
-                _print_result(
-                    build_command_result(
-                        command="traits",
-                        inputs=[args.tree, args.table],
-                        outputs=outputs,
-                        metrics={
-                            "original_row_count": report.original_row_count,
-                            "kept_taxa": len(report.kept_taxa),
-                            "removed_taxa": len(report.removed_taxa),
-                        },
-                        data=report,
-                    ),
-                    json_output=args.json,
-                )
-                return 0
-            report = link_tree_to_traits(
-                args.tree,
-                args.table,
-                taxon_column=args.taxon_column,
-                strict=args.strict,
-            )
-            outputs = _finalize_outputs(
-                args, command="traits", inputs=[args.tree, args.table]
-            )
-            _print_result(
-                build_command_result(
-                    command="traits",
-                    inputs=[args.tree, args.table],
-                    outputs=outputs,
-                    metrics={
-                        "tree_taxa": report.tree_taxa,
-                        "trait_taxa": report.trait_taxa,
-                        "linked_taxa": report.linked_taxa,
-                    },
-                    data=report,
-                ),
-                json_output=args.json,
-            )
-            return 0
+            return run_traits_command(args)
         if args.command == "validate":
             report = validate_tree_path(
                 args.tree,
