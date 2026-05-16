@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from Bio import Phylo
 import csv
 from dataclasses import dataclass
 import json
 from pathlib import Path
+import re
 import tempfile
 
 from bijux_phylogenetics.comparative import validate_comparative_reference_examples
@@ -18,7 +20,9 @@ from bijux_phylogenetics.compare.topology import (
 )
 from bijux_phylogenetics.core.clade_sets import informative_unrooted_splits
 from bijux_phylogenetics.diagnostics.validation import _load_tree
-from bijux_phylogenetics.io.newick import write_newick
+from bijux_phylogenetics.io.biopython import tree_from_biophylo
+from bijux_phylogenetics.io.newick import dumps_newick, write_newick
+from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.tree_set import (
     compute_clade_frequency_table,
     compute_consensus_tree,
@@ -113,6 +117,11 @@ def _resolve_input_path(relative_path: str) -> Path:
     if repository_candidate.exists():
         return repository_candidate
     return package_candidate
+
+
+def _strip_nexus_rooted_flag(tree_text: str) -> str:
+    """Remove a leading Nexus rootedness marker before plain Newick comparison."""
+    return re.sub(r"^\s*\[\&[RU]\]\s*", "", tree_text, count=1)
 
 
 def _numeric_outputs_match(
@@ -230,6 +239,30 @@ def _consensus_splits(path: Path) -> list[str]:
     )
 
 
+def _clade_frequency_observed_output(path: Path) -> dict[str, float]:
+    with tempfile.TemporaryDirectory(prefix="bijux-reference-parity-") as tmp_dir:
+        normalized_path = _normalize_tree_set_path(path, Path(tmp_dir))
+        report = compute_clade_frequency_table(normalized_path)
+    return {row.clade: row.frequency for row in report.clade_frequencies}
+
+
+def _normalize_tree_set_path(path: Path, work_dir: Path) -> Path:
+    source_format = detect_tree_format(path)
+    if source_format == "newick":
+        return path
+
+    trees = [
+        tree_from_biophylo(tree, source_format=source_format)
+        for tree in Phylo.parse(path, source_format)
+    ]
+    normalized_path = work_dir / f"{path.stem}.normalized.nwk"
+    normalized_path.write_text(
+        "".join(f"{dumps_newick(tree)}\n" for tree in trees),
+        encoding="utf-8",
+    )
+    return normalized_path
+
+
 def _build_tree_observation(
     entry: dict[str, object],
     *,
@@ -291,8 +324,7 @@ def _build_tree_observation(
         )
         mismatch_kind = None if passed else "branch_length"
     elif method == "posterior-clade-frequencies":
-        report = compute_clade_frequency_table(input_paths[0])
-        observed_output = {row.clade: row.frequency for row in report.clade_frequencies}
+        observed_output = _clade_frequency_observed_output(input_paths[0])
         passed = _numeric_outputs_match(
             expected_output,
             observed_output,
@@ -300,13 +332,17 @@ def _build_tree_observation(
         )
         mismatch_kind = None if passed else "numerical_tolerance"
     elif method == "consensus-tree-generation":
-        tree, _consensus = compute_consensus_tree(input_paths[0])
         with tempfile.TemporaryDirectory(prefix="bijux-reference-parity-") as tmp_dir:
+            normalized_input_path = _normalize_tree_set_path(
+                input_paths[0],
+                Path(tmp_dir),
+            )
+            tree, _consensus = compute_consensus_tree(normalized_input_path)
             observed_path = Path(tmp_dir) / "observed-consensus.nwk"
             reference_path = Path(tmp_dir) / "reference-consensus.nwk"
             write_newick(observed_path, tree)
             reference_path.write_text(
-                f"{expected_output['reference_consensus_newick']}\n",
+                f"{_strip_nexus_rooted_flag(str(expected_output['reference_consensus_newick']))}\n",
                 encoding="utf-8",
             )
             rf_report = compare_robinson_foulds(
