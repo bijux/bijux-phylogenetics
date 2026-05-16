@@ -756,9 +756,11 @@ from bijux_phylogenetics.provenance.method_tiers import (
 )
 from bijux_phylogenetics.results import build_command_result, build_error_result
 from bijux_phylogenetics.simulation import (
+    DiscreteHistoryRateRow,
     simulate_birth_death_trees,
     simulate_brownian_traits,
     simulate_coalescent_trees,
+    simulate_discrete_histories,
     simulate_discrete_traits,
     simulate_dna_alignment,
     simulate_early_burst_traits,
@@ -766,6 +768,12 @@ from bijux_phylogenetics.simulation import (
     simulate_random_trees,
     simulate_protein_alignment,
     write_continuous_trait_table,
+    write_discrete_history_branch_truth_table,
+    write_discrete_history_event_table,
+    write_discrete_history_node_truth_table,
+    write_discrete_history_segment_table,
+    write_discrete_history_summary_table,
+    write_discrete_history_tip_truth_table,
     write_discrete_trait_table,
     write_simulated_alignment,
     write_tree_simulation_envelope_table,
@@ -1018,6 +1026,53 @@ def _parse_transition_pairs(raw: str | None) -> list[tuple[str, str]]:
             )
         pairs.append((source_state.strip(), target_state.strip()))
     return pairs
+
+
+def _parse_rate_rows(raw_rows: list[str]) -> list[DiscreteHistoryRateRow]:
+    rows: list[DiscreteHistoryRateRow] = []
+    for raw in raw_rows:
+        if "=" not in raw or "->" not in raw:
+            raise ValueError(
+                f"rate item must be in SOURCE->TARGET=RATE form, got '{raw}'"
+            )
+        transition, raw_rate = raw.split("=", 1)
+        source_state, target_state = transition.split("->", 1)
+        if not source_state.strip() or not target_state.strip():
+            raise ValueError(
+                f"rate item must include both SOURCE and TARGET, got '{raw}'"
+            )
+        try:
+            rate = float(raw_rate.strip())
+        except ValueError as error:
+            raise ValueError(f"rate item must end with a numeric RATE, got '{raw}'") from error
+        rows.append(
+            DiscreteHistoryRateRow(
+                source_state=source_state.strip(),
+                target_state=target_state.strip(),
+                rate=rate,
+            )
+        )
+    return rows
+
+
+def _parse_probability_assignments(raw_rows: list[str]) -> dict[str, float]:
+    probabilities: dict[str, float] = {}
+    for raw in raw_rows:
+        if "=" not in raw:
+            raise ValueError(
+                f"probability item must be in STATE=PROBABILITY form, got '{raw}'"
+            )
+        state, raw_probability = raw.split("=", 1)
+        if not state.strip():
+            raise ValueError(f"probability item must include a STATE, got '{raw}'")
+        try:
+            probability = float(raw_probability.strip())
+        except ValueError as error:
+            raise ValueError(
+                f"probability item must end with a numeric PROBABILITY, got '{raw}'"
+            ) from error
+        probabilities[state.strip()] = probability
+    return probabilities
 
 
 def _parse_labelled_run(raw: str) -> tuple[str, Path]:
@@ -5236,6 +5291,42 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the simulation report as JSON."
     )
     _add_manifest_argument(simulate_discrete)
+    simulate_history_discrete = simulate_subparsers.add_parser(
+        "history-discrete",
+        help="Simulate true discrete histories on a fixed tree from one explicit rate matrix.",
+    )
+    simulate_history_discrete.add_argument("tree", type=Path)
+    simulate_history_discrete.add_argument("--states", nargs="+", required=True)
+    simulate_history_discrete.add_argument(
+        "--rate",
+        action="append",
+        required=True,
+        help="One SOURCE->TARGET=RATE entry. Repeat to build the rate matrix.",
+    )
+    simulate_history_discrete.add_argument("--root-state")
+    simulate_history_discrete.add_argument(
+        "--root-probability",
+        action="append",
+        default=[],
+        help="One STATE=PROBABILITY entry. Repeat to define the root prior.",
+    )
+    simulate_history_discrete.add_argument("--replicates", type=int, default=1)
+    simulate_history_discrete.add_argument("--seed", type=int, default=1)
+    simulate_history_discrete.add_argument(
+        "--out",
+        required=True,
+        type=Path,
+        help="Tip-state truth table output path.",
+    )
+    simulate_history_discrete.add_argument("--nodes-out", type=Path)
+    simulate_history_discrete.add_argument("--branches-out", type=Path)
+    simulate_history_discrete.add_argument("--events-out", type=Path)
+    simulate_history_discrete.add_argument("--segments-out", type=Path)
+    simulate_history_discrete.add_argument("--summary-out", type=Path)
+    simulate_history_discrete.add_argument(
+        "--json", action="store_true", help="Emit the simulation report as JSON."
+    )
+    _add_manifest_argument(simulate_history_discrete)
     simulate_dna = simulate_subparsers.add_parser(
         "alignment-dna",
         help="Simulate a DNA alignment along a rooted tree.",
@@ -15087,6 +15178,75 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "tip_count": report.tip_count,
                             "trait_count": len(report.traits),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.simulate_command == "history-discrete":
+                root_probability_rows = _parse_probability_assignments(
+                    args.root_probability
+                )
+                report = simulate_discrete_histories(
+                    args.tree,
+                    states=args.states,
+                    rate_rows=_parse_rate_rows(args.rate),
+                    root_state=args.root_state,
+                    root_state_probabilities=(
+                        root_probability_rows or None
+                    ),
+                    replicates=args.replicates,
+                    seed=args.seed,
+                )
+                outputs_to_finalize = [
+                    write_discrete_history_tip_truth_table(args.out, report)
+                ]
+                if args.nodes_out is not None:
+                    outputs_to_finalize.append(
+                        write_discrete_history_node_truth_table(args.nodes_out, report)
+                    )
+                if args.branches_out is not None:
+                    outputs_to_finalize.append(
+                        write_discrete_history_branch_truth_table(
+                            args.branches_out,
+                            report,
+                        )
+                    )
+                if args.events_out is not None:
+                    outputs_to_finalize.append(
+                        write_discrete_history_event_table(args.events_out, report)
+                    )
+                if args.segments_out is not None:
+                    outputs_to_finalize.append(
+                        write_discrete_history_segment_table(args.segments_out, report)
+                    )
+                if args.summary_out is not None:
+                    outputs_to_finalize.append(
+                        write_discrete_history_summary_table(
+                            args.summary_out,
+                            report,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="simulate",
+                    inputs=[args.tree],
+                    outputs=outputs_to_finalize,
+                )
+                _print_result(
+                    build_command_result(
+                        command="simulate",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={
+                            "tip_count": report.tip_count,
+                            "branch_count": report.branch_count,
+                            "replicate_count": report.replicate_count,
+                            "state_count": len(report.states),
+                            "mean_total_transition_count": (
+                                report.mean_total_transition_count
+                            ),
                         },
                         data=report,
                     ),

@@ -904,10 +904,17 @@ from bijux_phylogenetics.reports.service import (
     render_workflow_validation_report,
 )
 from bijux_phylogenetics.simulation import (
+    DiscreteHistoryRateRow,
+    DiscreteHistorySimulationCollectionReport,
+    DiscreteHistorySummaryRow,
+    SimulatedDiscreteBranchHistory,
+    SimulatedDiscreteStateSegment,
+    SimulatedDiscreteTransitionEvent,
     simulate_birth_death_trees,
     simulate_brownian_traits,
     simulate_coalescent_tree,
     simulate_coalescent_trees,
+    simulate_discrete_histories,
     simulate_discrete_traits,
     simulate_dna_alignment,
     simulate_early_burst_traits,
@@ -916,6 +923,12 @@ from bijux_phylogenetics.simulation import (
     simulate_random_trees,
     simulate_protein_alignment,
     write_continuous_trait_table,
+    write_discrete_history_branch_truth_table,
+    write_discrete_history_event_table,
+    write_discrete_history_node_truth_table,
+    write_discrete_history_segment_table,
+    write_discrete_history_summary_table,
+    write_discrete_history_tip_truth_table,
     write_discrete_trait_table,
     write_simulated_alignment,
     write_tree_simulation_envelope_table,
@@ -2145,9 +2158,55 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.simulate_brownian_traits is simulate_brownian_traits
     assert bijux_phylogenetics.simulate_early_burst_traits is simulate_early_burst_traits
     assert bijux_phylogenetics.simulate_ou_traits is simulate_ou_traits
+    assert bijux_phylogenetics.DiscreteHistoryRateRow is DiscreteHistoryRateRow
+    assert (
+        bijux_phylogenetics.DiscreteHistorySimulationCollectionReport
+        is DiscreteHistorySimulationCollectionReport
+    )
+    assert bijux_phylogenetics.DiscreteHistorySummaryRow is DiscreteHistorySummaryRow
+    assert (
+        bijux_phylogenetics.SimulatedDiscreteBranchHistory
+        is SimulatedDiscreteBranchHistory
+    )
+    assert (
+        bijux_phylogenetics.SimulatedDiscreteStateSegment
+        is SimulatedDiscreteStateSegment
+    )
+    assert (
+        bijux_phylogenetics.SimulatedDiscreteTransitionEvent
+        is SimulatedDiscreteTransitionEvent
+    )
+    assert (
+        bijux_phylogenetics.simulate_discrete_histories
+        is simulate_discrete_histories
+    )
     assert bijux_phylogenetics.simulate_discrete_traits is simulate_discrete_traits
     assert bijux_phylogenetics.simulate_dna_alignment is simulate_dna_alignment
     assert bijux_phylogenetics.simulate_protein_alignment is simulate_protein_alignment
+    assert (
+        bijux_phylogenetics.write_discrete_history_tip_truth_table
+        is write_discrete_history_tip_truth_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_history_node_truth_table
+        is write_discrete_history_node_truth_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_history_branch_truth_table
+        is write_discrete_history_branch_truth_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_history_event_table
+        is write_discrete_history_event_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_history_segment_table
+        is write_discrete_history_segment_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_history_summary_table
+        is write_discrete_history_summary_table
+    )
     assert (
         bijux_phylogenetics.write_tree_simulation_record_table
         is write_tree_simulation_record_table
@@ -3692,6 +3751,81 @@ def test_simulate_discrete_traits_assigns_a_state_to_every_tip(tmp_path: Path) -
         ("mixed", "wet"),
         ("wet", "mixed"),
     ]
+    assert all(row.segments for row in report.branch_histories)
+    assert all(
+        abs(sum(segment.duration for segment in row.segments) - row.branch_length) < 1e-9
+        for row in report.branch_histories
+    )
+
+
+def test_simulate_discrete_histories_reports_no_change_and_writes_truth_tables(
+    tmp_path: Path,
+) -> None:
+    report = simulate_discrete_histories(
+        fixture("example_tree.nwk"),
+        states=["0", "1"],
+        rate_rows=[
+            DiscreteHistoryRateRow("0", "1", 0.001),
+            DiscreteHistoryRateRow("1", "0", 0.001),
+        ],
+        root_state="0",
+        replicates=8,
+        seed=5,
+    )
+    tip_path = tmp_path / "history-tips.tsv"
+    branch_path = tmp_path / "history-branches.tsv"
+    event_path = tmp_path / "history-events.tsv"
+    segment_path = tmp_path / "history-segments.tsv"
+    summary_path = tmp_path / "history-summary.tsv"
+    write_discrete_history_tip_truth_table(tip_path, report)
+    write_discrete_history_branch_truth_table(branch_path, report)
+    write_discrete_history_event_table(event_path, report)
+    write_discrete_history_segment_table(segment_path, report)
+    write_discrete_history_summary_table(summary_path, report)
+
+    assert report.replicate_count == 8
+    assert report.branch_count == 6
+    assert report.fixed_root_state == "0"
+    assert report.mean_total_transition_count < 1.0
+    assert any(row.row_kind == "tip_state_frequency" for row in report.rows)
+    assert "replicate_index\ttaxon\tstate" in tip_path.read_text(encoding="utf-8")
+    assert "replicate_index\tparent_node\tchild_node\tbranch_length" in branch_path.read_text(
+        encoding="utf-8"
+    )
+    assert (
+        "replicate_index\tparent_node\tchild_node\tsource_state\ttarget_state"
+        in event_path.read_text(encoding="utf-8")
+    )
+    assert "start_distance\tend_distance\tduration" in segment_path.read_text(
+        encoding="utf-8"
+    )
+    assert "row_kind\tlabel\tmean_value" in summary_path.read_text(encoding="utf-8")
+
+
+def test_simulate_discrete_histories_supports_multistate_high_rate_tip_frequencies() -> (
+    None
+):
+    report = simulate_discrete_histories(
+        fixture("example_tree_six_taxa.nwk"),
+        states=["red", "blue", "green"],
+        rate_rows=[
+            DiscreteHistoryRateRow("red", "blue", 6.0),
+            DiscreteHistoryRateRow("red", "green", 4.0),
+            DiscreteHistoryRateRow("blue", "red", 6.0),
+            DiscreteHistoryRateRow("blue", "green", 5.0),
+            DiscreteHistoryRateRow("green", "red", 4.0),
+            DiscreteHistoryRateRow("green", "blue", 5.0),
+        ],
+        root_state_probabilities={"red": 0.2, "blue": 0.5, "green": 0.3},
+        replicates=12,
+        seed=9,
+    )
+    assert report.replicate_count == 12
+    assert report.tip_count == 6
+    assert report.mean_total_transition_count > 1.0
+    tip_rows = [row for row in report.rows if row.row_kind == "tip_state_frequency"]
+    assert tip_rows
+    assert all(0.0 <= row.mean_value <= 1.0 for row in tip_rows)
 
 
 def test_simulate_dna_alignment_returns_requested_taxa_and_length(
@@ -7126,6 +7260,68 @@ def test_cli_simulate_coalescent_writes_envelope_ledgers(
     assert "total_branch_length\ttree\t2\t" in envelope_path.read_text(
         encoding="utf-8"
     )
+
+
+def test_cli_simulate_discrete_history_writes_truth_outputs(
+    tmp_path: Path, capsys
+) -> None:
+    tip_path = tmp_path / "history-tips.tsv"
+    node_path = tmp_path / "history-nodes.tsv"
+    branch_path = tmp_path / "history-branches.tsv"
+    event_path = tmp_path / "history-events.tsv"
+    segment_path = tmp_path / "history-segments.tsv"
+    summary_path = tmp_path / "history-summary.tsv"
+    exit_code = main(
+        [
+            "simulate",
+            "history-discrete",
+            str(fixture("example_tree.nwk")),
+            "--states",
+            "0",
+            "1",
+            "--rate",
+            "0->1=0.05",
+            "--rate",
+            "1->0=0.02",
+            "--root-state",
+            "0",
+            "--replicates",
+            "6",
+            "--seed",
+            "11",
+            "--out",
+            str(tip_path),
+            "--nodes-out",
+            str(node_path),
+            "--branches-out",
+            str(branch_path),
+            "--events-out",
+            str(event_path),
+            "--segments-out",
+            str(segment_path),
+            "--summary-out",
+            str(summary_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["replicate_count"] == 6
+    assert payload["metrics"]["state_count"] == 2
+    assert "replicate_index\ttaxon\tstate" in tip_path.read_text(encoding="utf-8")
+    assert "replicate_index\tnode\tnode_name\tis_tip" in node_path.read_text(
+        encoding="utf-8"
+    )
+    assert "start_state\tend_state\tchanged\tevent_count" in branch_path.read_text(
+        encoding="utf-8"
+    )
+    assert "source_state\ttarget_state\tevent_index\tbranch_distance" in event_path.read_text(
+        encoding="utf-8"
+    )
+    assert "state\tstart_distance\tend_distance\tduration" in segment_path.read_text(
+        encoding="utf-8"
+    )
+    assert "row_kind\tlabel\tmean_value" in summary_path.read_text(encoding="utf-8")
 
 
 def test_cli_simulate_dna_alignment_writes_fasta(tmp_path: Path, capsys) -> None:
