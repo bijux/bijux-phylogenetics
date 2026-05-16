@@ -328,6 +328,7 @@ def compute_stochastic_map_payload(
     case_payload: dict[str, object],
     *,
     include_branch_occupancy: bool,
+    count_only: bool,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
     package_root = find_repo_root()
     repo_python = find_repo_python(package_root)
@@ -336,6 +337,7 @@ import json
 from pathlib import Path
 from bijux_phylogenetics.ancestral.common import load_discrete_dataset
 from bijux_phylogenetics.discrete_evolution import (
+    count_discrete_stochastic_map_transitions,
     simulate_discrete_stochastic_maps,
     summarize_discrete_stochastic_maps,
 )
@@ -362,6 +364,7 @@ summary_report = (
     if payload["operation"] == "discrete-stochastic-map"
     else summarize_discrete_stochastic_maps(collection)
 )
+count_report = count_discrete_stochastic_map_transitions(collection)
 summary = {
     "taxon_count": len(dataset.taxa),
     "trait_name": collection.trait,
@@ -377,16 +380,32 @@ summary = {
     "baseline_model": collection.fit_audit.baseline_model,
     "preferred_model_by_aic": collection.fit_audit.preferred_model_by_aic,
     "requested_replicate_count": collection.replicates,
-    "successful_replicate_count": summary_report.replicate_count,
-    "simulation_failure_count": summary_report.simulation_failure_count,
+    "successful_replicate_count": (
+        count_report.replicate_count if __COUNT_ONLY__ else summary_report.replicate_count
+    ),
+    "simulation_failure_count": (
+        len(collection.failures) if __COUNT_ONLY__ else summary_report.simulation_failure_count
+    ),
     "seed": collection.seed,
-    "mean_total_transition_count": summary_report.mean_total_transition_count,
-    "lower_95_total_transition_count": summary_report.lower_95_total_transition_count,
-    "upper_95_total_transition_count": summary_report.upper_95_total_transition_count,
+    "mean_total_transition_count": (
+        count_report.mean_total_transition_count
+        if __COUNT_ONLY__
+        else summary_report.mean_total_transition_count
+    ),
+    "lower_95_total_transition_count": (
+        count_report.lower_95_total_transition_count
+        if __COUNT_ONLY__
+        else summary_report.lower_95_total_transition_count
+    ),
+    "upper_95_total_transition_count": (
+        count_report.upper_95_total_transition_count
+        if __COUNT_ONLY__
+        else summary_report.upper_95_total_transition_count
+    ),
 }
 if payload["operation"] == "discrete-stochastic-map":
     summary["conditioned_on_node_estimates"] = collection.conditioned_on_node_estimates
-else:
+elif payload["operation"] == "discrete-stochastic-map-description":
     summary["branch_count"] = len(collection.maps[0].branch_histories)
 rows = sorted(
     [
@@ -398,22 +417,28 @@ rows = sorted(
             "upper_95_interval": row.upper_95_interval,
             "presence_fraction": row.presence_fraction,
         }
-        for row in summary_report.rows
+        for row in (
+            count_report.aggregate_rows if __COUNT_ONLY__ else summary_report.rows
+        )
     ]
-    + [
-        {
-            "row_kind": "state_time",
-            "label": row.state,
-            "mean_value": row.mean_time,
-            "lower_95_interval": row.lower_95_interval,
-            "upper_95_interval": row.upper_95_interval,
-            "presence_fraction": 1.0,
-        }
-        for row in summary_report.state_time_rows
-    ],
+    + (
+        []
+        if __COUNT_ONLY__
+        else [
+            {
+                "row_kind": "state_time",
+                "label": row.state,
+                "mean_value": row.mean_time,
+                "lower_95_interval": row.lower_95_interval,
+                "upper_95_interval": row.upper_95_interval,
+                "presence_fraction": 1.0,
+            }
+            for row in summary_report.state_time_rows
+        ]
+    ),
     key=lambda row: (row["row_kind"], row["label"]),
 )
-if __INCLUDE_BRANCH_OCCUPANCY__:
+if __INCLUDE_BRANCH_OCCUPANCY__ and not __COUNT_ONLY__:
     rows = sorted(
         rows
         + [
@@ -442,7 +467,8 @@ print(json.dumps({"summary": summary, "rows": rows}))
         .replace(
             "__INCLUDE_BRANCH_OCCUPANCY__",
             "True" if include_branch_occupancy else "False",
-        ),
+        )
+        .replace("__COUNT_ONLY__", "True" if count_only else "False"),
     ]
     env = dict(os.environ)
     env["PYTHONPATH"] = str(package_root / "src")
@@ -486,6 +512,7 @@ case_id = case_payload["case_id"]
 if case_id not in SUMMARIES and case_payload["operation"] not in {
     "discrete-fit-mk",
     "discrete-stochastic-map",
+    "discrete-stochastic-map-count",
     "discrete-stochastic-map-description",
     "discrete-ancestral-rerooting",
     "continuous-ancestral-fast-anc",
@@ -512,11 +539,19 @@ elif case_payload["operation"] == "discrete-stochastic-map":
     summary, rows = compute_stochastic_map_payload(
         case_payload,
         include_branch_occupancy=False,
+        count_only=False,
+    )
+elif case_payload["operation"] == "discrete-stochastic-map-count":
+    summary, rows = compute_stochastic_map_payload(
+        case_payload,
+        include_branch_occupancy=False,
+        count_only=True,
     )
 elif case_payload["operation"] == "discrete-stochastic-map-description":
     summary, rows = compute_stochastic_map_payload(
         case_payload,
         include_branch_occupancy=True,
+        count_only=False,
     )
 elif case_payload["operation"] == "discrete-ancestral-rerooting":
     summary, rows = compute_discrete_ancestral_payload(case_payload)
@@ -545,6 +580,7 @@ if rows is not None:
         write_rows_table(fitmk_rows_path, rows)
     elif case_payload["operation"] in {
         "discrete-stochastic-map",
+        "discrete-stochastic-map-count",
         "discrete-stochastic-map-description",
     }:
         write_rows_table(stochastic_map_rows_path, rows)

@@ -118,6 +118,7 @@ taxon_names <- trait_table[[taxon_column]]
 is_discrete_operation <- case_payload$operation %in% c(
   "discrete-fit-mk",
   "discrete-stochastic-map",
+  "discrete-stochastic-map-count",
   "discrete-stochastic-map-description",
   "discrete-ancestral-rerooting"
 )
@@ -358,6 +359,27 @@ build_simmap_summary_rows <- function(fit, description, include_branch_occupancy
   )]
 }
 
+build_countsimmap_summary_rows <- function(count_matrix) {
+  count_table <- as.data.frame(count_matrix, stringsAsFactors = FALSE)
+  transition_columns <- setdiff(colnames(count_table), "N")
+  summary_rows <- list()
+  for (transition_label in transition_columns) {
+    values <- as.numeric(count_table[[transition_label]])
+    summary_rows[[length(summary_rows) + 1]] <- list(
+      row_kind = "transition_count",
+      label = gsub(",", "->", transition_label, fixed = TRUE),
+      mean_value = as.numeric(mean(values)),
+      lower_95_interval = as.numeric(stats::quantile(values, probs = 0.025, names = FALSE)),
+      upper_95_interval = as.numeric(stats::quantile(values, probs = 0.975, names = FALSE)),
+      presence_fraction = as.numeric(mean(values > 0))
+    )
+  }
+  summary_rows[order(
+    vapply(summary_rows, function(row) row$row_kind, character(1)),
+    vapply(summary_rows, function(row) row$label, character(1))
+  )]
+}
+
 build_make_simmap_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
   phytools_model <- switch(
     discrete_model,
@@ -467,6 +489,41 @@ build_describe_simmap_result <- function(tree, trait_values, trait_name, exclude
     description,
     include_branch_occupancy = TRUE
   )
+  simmap_result
+}
+
+build_count_simmap_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
+  simmap_result <- build_make_simmap_result(
+    tree,
+    trait_values,
+    trait_name,
+    excluded_taxa,
+    discrete_model
+  )
+  phytools_model <- switch(
+    discrete_model,
+    "equal-rates" = "ER",
+    "symmetric" = "SYM",
+    "all-rates-different" = "ARD",
+    stop(paste("unsupported countSimmap parity model:", discrete_model))
+  )
+  requested_replicate_count <- as.integer(case_payload$stochastic_map_replicate_count)
+  stochastic_map_seed <- as.integer(case_payload$stochastic_map_seed)
+  set.seed(stochastic_map_seed)
+  fit <- phytools::make.simmap(
+    tree,
+    trait_values,
+    model = phytools_model,
+    nsim = requested_replicate_count,
+    pi = "equal",
+    message = FALSE
+  )
+  count_matrix <- phytools::countSimmap(fit, message = FALSE)
+  total_transition_counts <- as.numeric(count_matrix[, "N"])
+  simmap_result$summary$mean_total_transition_count <- as.numeric(mean(total_transition_counts))
+  simmap_result$summary$lower_95_total_transition_count <- as.numeric(stats::quantile(total_transition_counts, probs = 0.025, names = FALSE))
+  simmap_result$summary$upper_95_total_transition_count <- as.numeric(stats::quantile(total_transition_counts, probs = 0.975, names = FALSE))
+  simmap_result$rows <- build_countsimmap_summary_rows(count_matrix)
   simmap_result
 }
 
@@ -619,6 +676,13 @@ result_payload <- switch(
     excluded_taxa,
     case_payload$discrete_model
   ),
+  "discrete-stochastic-map-count" = build_count_simmap_result(
+    tree,
+    trait_values,
+    trait_name,
+    excluded_taxa,
+    case_payload$discrete_model
+  ),
   "discrete-stochastic-map-description" = build_describe_simmap_result(
     tree,
     trait_values,
@@ -669,6 +733,7 @@ if (!is.null(result_payload$rows)) {
     write_table(fitmk_rows_path, result_payload$rows)
   } else if (case_payload$operation %in% c(
     "discrete-stochastic-map",
+    "discrete-stochastic-map-count",
     "discrete-stochastic-map-description"
   )) {
     write_table(stochastic_map_rows_path, result_payload$rows)
