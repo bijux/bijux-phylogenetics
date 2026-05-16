@@ -18,8 +18,9 @@ external engines, not only with fake runners:
   records BEAST either from a live executable run when available or from the
   governed checked-in BEAST XML/log/tree corpus when the executable is absent.
 - `test_bayesian_execution_lane.py` also proves that `adapter beast-run
-  --resume` only reuses one verified completed manifest when the installed
-  BEAST executable, checked inputs, and recorded outputs still match.
+  --resume` and `adapter mrbayes-run --resume` only reuse one verified
+  completed manifest when the installed executable, checked inputs, and
+  recorded outputs still match.
 
 Each matrix case records the reviewer-facing engine name, validation name,
 validation mode, executable path when one was used, version text, command,
