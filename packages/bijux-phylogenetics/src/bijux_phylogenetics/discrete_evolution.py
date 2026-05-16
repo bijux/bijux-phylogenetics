@@ -398,6 +398,22 @@ class StochasticMapStateTimeRow:
 
 
 @dataclass(slots=True)
+class StochasticMapBranchOccupancyRow:
+    branch_index: int
+    parent_node: str
+    child_node: str
+    state: str
+    branch_length: float
+    mean_time: float
+    lower_95_interval: float
+    upper_95_interval: float
+    minimum_time: float
+    maximum_time: float
+    mean_fraction: float
+    presence_fraction: float
+
+
+@dataclass(slots=True)
 class StochasticMapSimulationFailure:
     replicate_index: int
     branch_index: int
@@ -439,6 +455,7 @@ class StochasticMapSummaryReport:
     upper_95_total_transition_count: float
     rows: list[StochasticMapSummaryRow]
     state_time_rows: list[StochasticMapStateTimeRow]
+    branch_occupancy_rows: list[StochasticMapBranchOccupancyRow]
     simulation_failure_count: int
     warnings: list[str]
 
@@ -1535,6 +1552,71 @@ def _summarize_stochastic_map_replicates(
                 maximum_time=max(values, default=0.0),
             )
         )
+    branch_lookup: dict[tuple[int, str, str, float], list[dict[str, float]]] = {}
+    for replicate in replicates:
+        for history in replicate.branch_histories:
+            key = (
+                history.branch_index,
+                history.parent_node,
+                history.child_node,
+                float(history.branch_length),
+            )
+            branch_lookup.setdefault(key, [])
+            state_times = {
+                state: 0.0
+                for state in state_names
+            }
+            for segment in history.segments:
+                state_times[segment.state] = state_times.get(segment.state, 0.0) + float(
+                    segment.duration
+                )
+            branch_lookup[key].append(state_times)
+    branch_occupancy_rows: list[StochasticMapBranchOccupancyRow] = []
+    for (
+        branch_index,
+        parent_node,
+        child_node,
+        branch_length,
+    ), state_times in sorted(
+        branch_lookup.items(),
+        key=lambda item: (
+            item[0][0],
+            item[0][1],
+            item[0][2],
+        ),
+    ):
+        for state in state_names:
+            values = [
+                replicate_state_times.get(state, 0.0)
+                for replicate_state_times in state_times
+            ]
+            sorted_values = sorted(float(value) for value in values)
+            mean_time = float(format(sum(values) / max(len(values), 1), ".15g"))
+            mean_fraction = 0.0
+            if branch_length > 0.0:
+                mean_fraction = float(format(mean_time / branch_length, ".15g"))
+            branch_occupancy_rows.append(
+                StochasticMapBranchOccupancyRow(
+                    branch_index=branch_index,
+                    parent_node=parent_node,
+                    child_node=child_node,
+                    state=state,
+                    branch_length=branch_length,
+                    mean_time=mean_time,
+                    lower_95_interval=_quantile(sorted_values, 0.025),
+                    upper_95_interval=_quantile(sorted_values, 0.975),
+                    minimum_time=min(values, default=0.0),
+                    maximum_time=max(values, default=0.0),
+                    mean_fraction=mean_fraction,
+                    presence_fraction=float(
+                        format(
+                            sum(1 for value in values if value > 0.0)
+                            / max(len(values), 1),
+                            ".15g",
+                        )
+                    ),
+                )
+            )
     warnings: list[str] = []
     if simulation_failure_count > 0:
         warnings.append(
@@ -1549,6 +1631,7 @@ def _summarize_stochastic_map_replicates(
         upper_95_total_transition_count=_quantile(total_counts, 0.975),
         rows=rows,
         state_time_rows=state_time_rows,
+        branch_occupancy_rows=branch_occupancy_rows,
         simulation_failure_count=simulation_failure_count,
         warnings=warnings,
     )
@@ -2917,6 +3000,47 @@ def write_stochastic_map_state_time_table(
     )
 
 
+def write_stochastic_map_branch_occupancy_table(
+    path: Path, report: StochasticMapSummaryReport
+) -> Path:
+    """Export one per-branch state-occupancy summary table for a stochastic-map collection."""
+    rows = [
+        {
+            "branch_index": row.branch_index,
+            "parent_node": row.parent_node,
+            "child_node": row.child_node,
+            "state": row.state,
+            "branch_length": row.branch_length,
+            "mean_time": row.mean_time,
+            "lower_95_interval": row.lower_95_interval,
+            "upper_95_interval": row.upper_95_interval,
+            "minimum_time": row.minimum_time,
+            "maximum_time": row.maximum_time,
+            "mean_fraction": row.mean_fraction,
+            "presence_fraction": row.presence_fraction,
+        }
+        for row in report.branch_occupancy_rows
+    ]
+    return write_taxon_rows(
+        path,
+        columns=[
+            "branch_index",
+            "parent_node",
+            "child_node",
+            "state",
+            "branch_length",
+            "mean_time",
+            "lower_95_interval",
+            "upper_95_interval",
+            "minimum_time",
+            "maximum_time",
+            "mean_fraction",
+            "presence_fraction",
+        ],
+        rows=rows,
+    )
+
+
 def write_stochastic_map_segment_table(
     path: Path, report: StochasticMapCollectionReport
 ) -> Path:
@@ -3042,6 +3166,23 @@ def load_stochastic_map_collection(path: Path) -> StochasticMapCollectionReport:
                 maximum_time=row["maximum_time"],
             )
             for row in payload["summary"].get("state_time_rows", [])
+        ],
+        branch_occupancy_rows=[
+            StochasticMapBranchOccupancyRow(
+                branch_index=row["branch_index"],
+                parent_node=row["parent_node"],
+                child_node=row["child_node"],
+                state=row["state"],
+                branch_length=row["branch_length"],
+                mean_time=row["mean_time"],
+                lower_95_interval=row["lower_95_interval"],
+                upper_95_interval=row["upper_95_interval"],
+                minimum_time=row["minimum_time"],
+                maximum_time=row["maximum_time"],
+                mean_fraction=row.get("mean_fraction", 0.0),
+                presence_fraction=row.get("presence_fraction", 1.0),
+            )
+            for row in payload["summary"].get("branch_occupancy_rows", [])
         ],
         simulation_failure_count=payload["summary"].get("simulation_failure_count", 0),
         warnings=payload["summary"]["warnings"],
