@@ -1,0 +1,978 @@
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+from bijux_phylogenetics.command_line.arguments import (
+    _add_manifest_argument,
+    _split_csv_values,
+)
+from bijux_phylogenetics.command_line.output import _print_result
+from bijux_phylogenetics.command_line.routing import _finalize_outputs
+from bijux_phylogenetics.comparative.brownian_regime_rates import (
+    summarize_brownian_regime_rates,
+    write_brownian_regime_branch_table,
+    write_brownian_regime_comparison_table,
+    write_brownian_regime_exclusion_table,
+    write_brownian_regime_profile_table,
+    write_brownian_regime_rate_table,
+    write_brownian_regime_summary_table,
+)
+from bijux_phylogenetics.comparative.brownian_trait_evolution import (
+    summarize_brownian_trait_evolution,
+    write_brownian_trait_evolution_exclusion_table,
+    write_brownian_trait_evolution_summary_table,
+)
+from bijux_phylogenetics.comparative.correlated_trait_evolution import (
+    summarize_correlated_trait_evolution,
+    write_correlated_trait_comparison_table,
+    write_correlated_trait_exclusion_table,
+    write_correlated_trait_observation_table,
+    write_correlated_trait_summary_table,
+)
+from bijux_phylogenetics.comparative.discrete_mk import (
+    fit_discrete_mk_model,
+    write_discrete_mk_rate_table,
+    write_discrete_mk_summary_table,
+)
+from bijux_phylogenetics.comparative.early_burst_trait_evolution import (
+    summarize_early_burst_trait_evolution,
+    write_early_burst_rate_change_profile_table,
+    write_early_burst_trait_evolution_comparison_table,
+    write_early_burst_trait_evolution_exclusion_table,
+    write_early_burst_trait_evolution_summary_table,
+)
+from bijux_phylogenetics.comparative.models import (
+    audit_comparative_parameter_uncertainty,
+    audit_ou_identifiability_reference_examples,
+    compare_brownian_and_ou_models,
+    run_comparative_sensitivity_analysis,
+    validate_comparative_reference_examples,
+)
+from bijux_phylogenetics.comparative.ou_trait_evolution import (
+    summarize_ou_trait_evolution,
+    write_ou_trait_evolution_exclusion_table,
+    write_ou_trait_evolution_summary_table,
+)
+from bijux_phylogenetics.comparative.trait_rate_through_time import (
+    summarize_trait_rate_through_time,
+    write_trait_rate_through_time_exclusion_table,
+    write_trait_rate_through_time_interval_table,
+    write_trait_rate_through_time_summary_table,
+)
+from bijux_phylogenetics.comparative.trait_regime_mapping import (
+    render_trait_regime_map,
+    summarize_trait_regime_mapping,
+    write_trait_regime_branch_table,
+    write_trait_regime_exclusion_table,
+    write_trait_regime_node_table,
+    write_trait_regime_summary_table,
+)
+from bijux_phylogenetics.runtime.results import build_command_result
+
+
+def add_comparative_evolution_commands(comparative_subparsers: Any) -> None:
+    comparative_discrete_mk = comparative_subparsers.add_parser(
+        "discrete-mk",
+        help="Fit one discrete Mk likelihood model for a tip-state trait.",
+    )
+    comparative_discrete_mk.add_argument("tree", type=Path)
+    comparative_discrete_mk.add_argument("table", type=Path)
+    comparative_discrete_mk.add_argument("--trait", required=True)
+    comparative_discrete_mk.add_argument("--taxon-column")
+    comparative_discrete_mk.add_argument(
+        "--model",
+        choices=("equal-rates", "symmetric", "all-rates-different"),
+        default="equal-rates",
+        help="Choose the discrete Mk rate-constraint surface to fit.",
+    )
+    comparative_discrete_mk.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one discrete Mk fit summary ledger as TSV or CSV.",
+    )
+    comparative_discrete_mk.add_argument(
+        "--rates-out",
+        type=Path,
+        help="Write one fitted directed rate-matrix ledger as TSV or CSV.",
+    )
+    comparative_discrete_mk.add_argument(
+        "--json", action="store_true", help="Emit the discrete Mk report as JSON."
+    )
+    _add_manifest_argument(comparative_discrete_mk)
+
+    comparative_correlated_traits = comparative_subparsers.add_parser(
+        "correlated-traits",
+        help="Review correlated evolution between two traits on one tree.",
+    )
+    comparative_correlated_traits.add_argument("tree", type=Path)
+    comparative_correlated_traits.add_argument("table", type=Path)
+    comparative_correlated_traits.add_argument("--left-trait", required=True)
+    comparative_correlated_traits.add_argument("--right-trait", required=True)
+    comparative_correlated_traits.add_argument("--taxon-column")
+    comparative_correlated_traits.add_argument(
+        "--analysis-kind",
+        choices=("auto", "continuous", "binary"),
+        default="auto",
+        help="Choose auto trait-kind detection or force continuous or binary coupling analysis.",
+    )
+    comparative_correlated_traits.add_argument(
+        "--binary-model",
+        choices=("equal-rates", "symmetric", "all-rates-different"),
+        default="all-rates-different",
+        help="Discrete transition surface for binary-binary correlated-trait review.",
+    )
+    comparative_correlated_traits.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write the correlated-trait summary ledger as TSV or CSV.",
+    )
+    comparative_correlated_traits.add_argument(
+        "--comparison-out",
+        type=Path,
+        help="Write the independent-versus-correlated model comparison ledger as TSV or CSV.",
+    )
+    comparative_correlated_traits.add_argument(
+        "--observations-out",
+        type=Path,
+        help="Write the contrast or tip-state observation ledger as TSV or CSV.",
+    )
+    comparative_correlated_traits.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write the explicit excluded-taxa ledger as TSV or CSV.",
+    )
+    comparative_correlated_traits.add_argument(
+        "--json", action="store_true", help="Emit the correlated-trait report as JSON."
+    )
+    _add_manifest_argument(comparative_correlated_traits)
+
+    comparative_brownian = comparative_subparsers.add_parser(
+        "brownian",
+        help="Fit a standalone Brownian-motion continuous-trait model.",
+    )
+    comparative_brownian.add_argument("tree", type=Path)
+    comparative_brownian.add_argument("table", type=Path)
+    comparative_brownian.add_argument("--trait", required=True)
+    comparative_brownian.add_argument("--taxon-column")
+    comparative_brownian.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one Brownian trait-evolution summary ledger as TSV or CSV.",
+    )
+    comparative_brownian.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write one excluded-taxa ledger for the Brownian trait fit as TSV or CSV.",
+    )
+    comparative_brownian.add_argument(
+        "--json", action="store_true", help="Emit the Brownian model fit as JSON."
+    )
+    _add_manifest_argument(comparative_brownian)
+
+    comparative_brownian_regimes = comparative_subparsers.add_parser(
+        "brownian-regimes",
+        help="Fit a multi-rate Brownian trait-evolution model from a branch regime map.",
+    )
+    comparative_brownian_regimes.add_argument("tree", type=Path)
+    comparative_brownian_regimes.add_argument("table", type=Path)
+    comparative_brownian_regimes.add_argument("regime_map", type=Path)
+    comparative_brownian_regimes.add_argument("--trait", required=True)
+    comparative_brownian_regimes.add_argument("--taxon-column")
+    comparative_brownian_regimes.add_argument("--branch-id-column")
+    comparative_brownian_regimes.add_argument("--regime-column", default="regime")
+    comparative_brownian_regimes.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one overall multi-rate Brownian summary ledger as TSV or CSV.",
+    )
+    comparative_brownian_regimes.add_argument(
+        "--rates-out",
+        type=Path,
+        help="Write one regime-rate ledger as TSV or CSV.",
+    )
+    comparative_brownian_regimes.add_argument(
+        "--comparison-out",
+        type=Path,
+        help="Write one single-rate versus multi-rate comparison ledger as TSV or CSV.",
+    )
+    comparative_brownian_regimes.add_argument(
+        "--profile-out",
+        type=Path,
+        help="Write one conditional regime-rate profile ledger as TSV or CSV.",
+    )
+    comparative_brownian_regimes.add_argument(
+        "--branches-out",
+        type=Path,
+        help="Write one normalized branch-regime assignment ledger as TSV or CSV.",
+    )
+    comparative_brownian_regimes.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write one excluded-taxa ledger for the multi-rate Brownian fit as TSV or CSV.",
+    )
+    comparative_brownian_regimes.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the multi-rate Brownian model fit as JSON.",
+    )
+    _add_manifest_argument(comparative_brownian_regimes)
+
+    comparative_regime_map = comparative_subparsers.add_parser(
+        "regime-map",
+        help="Reconstruct or normalize branch regime assignments for comparative workflows.",
+    )
+    comparative_regime_map.add_argument("tree", type=Path)
+    regime_map_source = comparative_regime_map.add_mutually_exclusive_group(
+        required=True
+    )
+    regime_map_source.add_argument(
+        "--table",
+        type=Path,
+        help="Tip-state table used to reconstruct branch regimes.",
+    )
+    regime_map_source.add_argument(
+        "--regime-map",
+        type=Path,
+        help="User-provided branch regime table to validate and normalize.",
+    )
+    comparative_regime_map.add_argument(
+        "--trait",
+        help="Discrete trait column used when reconstructing regimes from tip states.",
+    )
+    comparative_regime_map.add_argument("--taxon-column")
+    comparative_regime_map.add_argument(
+        "--reconstruction-model",
+        default="fitch",
+        choices=("fitch", "equal-rates", "symmetric", "all-rates-different"),
+    )
+    comparative_regime_map.add_argument(
+        "--state-ordering",
+        default="unordered",
+        choices=("unordered", "ordered"),
+    )
+    comparative_regime_map.add_argument(
+        "--ordered-states",
+        help="Comma-delimited explicit ordered state vocabulary.",
+    )
+    comparative_regime_map.add_argument("--branch-id-column")
+    comparative_regime_map.add_argument("--regime-column", default="regime")
+    comparative_regime_map.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one regime-map summary ledger as TSV or CSV.",
+    )
+    comparative_regime_map.add_argument(
+        "--branches-out",
+        type=Path,
+        help="Write one normalized branch-regime ledger as TSV or CSV.",
+    )
+    comparative_regime_map.add_argument(
+        "--nodes-out",
+        type=Path,
+        help="Write one node-reconstruction ledger as TSV or CSV.",
+    )
+    comparative_regime_map.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write one excluded-taxa ledger for tip-state regime mapping as TSV or CSV.",
+    )
+    comparative_regime_map.add_argument(
+        "--svg-out",
+        type=Path,
+        help="Render one SVG regime-map figure.",
+    )
+    comparative_regime_map.add_argument(
+        "--layout",
+        default="cladogram",
+        choices=("cladogram", "phylogram", "circular"),
+    )
+    comparative_regime_map.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the regime-map report as JSON.",
+    )
+    _add_manifest_argument(comparative_regime_map)
+
+    comparative_ou = comparative_subparsers.add_parser(
+        "ou",
+        help="Fit a standalone Ornstein-Uhlenbeck continuous-trait model.",
+    )
+    comparative_ou.add_argument("tree", type=Path)
+    comparative_ou.add_argument("table", type=Path)
+    comparative_ou.add_argument("--trait", required=True)
+    comparative_ou.add_argument("--taxon-column")
+    comparative_ou.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one OU trait-evolution summary ledger as TSV or CSV.",
+    )
+    comparative_ou.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write one excluded-taxa ledger for the OU trait fit as TSV or CSV.",
+    )
+    comparative_ou.add_argument(
+        "--json", action="store_true", help="Emit the OU model fit as JSON."
+    )
+    _add_manifest_argument(comparative_ou)
+
+    comparative_early_burst = comparative_subparsers.add_parser(
+        "early-burst",
+        help="Fit a standalone early-burst continuous-trait model with BM/OU comparison.",
+    )
+    comparative_early_burst.add_argument("tree", type=Path)
+    comparative_early_burst.add_argument("table", type=Path)
+    comparative_early_burst.add_argument("--trait", required=True)
+    comparative_early_burst.add_argument("--taxon-column")
+    comparative_early_burst.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one early-burst trait-evolution summary ledger as TSV or CSV.",
+    )
+    comparative_early_burst.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write one excluded-taxa ledger for the early-burst trait fit as TSV or CSV.",
+    )
+    comparative_early_burst.add_argument(
+        "--comparison-out",
+        type=Path,
+        help="Write one BM/OU/early-burst comparison ledger as TSV or CSV.",
+    )
+    comparative_early_burst.add_argument(
+        "--profile-out",
+        type=Path,
+        help="Write one bounded rate-change likelihood profile as TSV or CSV.",
+    )
+    comparative_early_burst.add_argument(
+        "--json", action="store_true", help="Emit the early-burst model fit as JSON."
+    )
+    _add_manifest_argument(comparative_early_burst)
+
+    comparative_rate_through_time = comparative_subparsers.add_parser(
+        "rate-through-time",
+        help="Summarize how trait-rate evidence changes across tree depth intervals.",
+    )
+    comparative_rate_through_time.add_argument("tree", type=Path)
+    comparative_rate_through_time.add_argument("table", type=Path)
+    comparative_rate_through_time.add_argument("--trait", required=True)
+    comparative_rate_through_time.add_argument("--taxon-column")
+    comparative_rate_through_time.add_argument(
+        "--interval-count",
+        type=int,
+        default=5,
+        help="Number of equal-width depth intervals used for the rate-through-time ledger.",
+    )
+    comparative_rate_through_time.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one rate-through-time summary ledger as TSV or CSV.",
+    )
+    comparative_rate_through_time.add_argument(
+        "--intervals-out",
+        type=Path,
+        help="Write one interval rate ledger as TSV or CSV.",
+    )
+    comparative_rate_through_time.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write one excluded-taxa ledger for the rate-through-time fit as TSV or CSV.",
+    )
+    comparative_rate_through_time.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the rate-through-time report as JSON.",
+    )
+    _add_manifest_argument(comparative_rate_through_time)
+
+    comparative_compare_models = comparative_subparsers.add_parser(
+        "compare-models",
+        help="Compare standalone Brownian-motion and OU models for one continuous trait.",
+    )
+    comparative_compare_models.add_argument("tree", type=Path)
+    comparative_compare_models.add_argument("table", type=Path)
+    comparative_compare_models.add_argument("--trait", required=True)
+    comparative_compare_models.add_argument("--taxon-column")
+    comparative_compare_models.add_argument(
+        "--json", action="store_true", help="Emit the model comparison as JSON."
+    )
+    _add_manifest_argument(comparative_compare_models)
+
+    comparative_validate_reference = comparative_subparsers.add_parser(
+        "validate-reference",
+        help="Validate built-in Brownian-motion and OU reference examples.",
+    )
+    comparative_validate_reference.add_argument(
+        "--json", action="store_true", help="Emit the validation report as JSON."
+    )
+    _add_manifest_argument(comparative_validate_reference)
+
+    comparative_sensitivity = comparative_subparsers.add_parser(
+        "sensitivity",
+        help="Run leave-one-taxon-out sensitivity for a standalone BM or OU model.",
+    )
+    comparative_sensitivity.add_argument("tree", type=Path)
+    comparative_sensitivity.add_argument("table", type=Path)
+    comparative_sensitivity.add_argument("--trait", required=True)
+    comparative_sensitivity.add_argument(
+        "--model", choices=("brownian", "ou"), required=True
+    )
+    comparative_sensitivity.add_argument("--taxon-column")
+    comparative_sensitivity.add_argument(
+        "--json", action="store_true", help="Emit the sensitivity report as JSON."
+    )
+    _add_manifest_argument(comparative_sensitivity)
+
+
+def run_comparative_evolution_command(
+    args: Any,
+    *,
+    parser: Any,
+) -> int | None:
+    if args.comparative_command == "discrete-mk":
+        report = fit_discrete_mk_model(
+            args.tree,
+            args.table,
+            trait=args.trait,
+            taxon_column=args.taxon_column,
+            model=args.model,
+        )
+        outputs: list[Path | str] = []
+        if args.summary_out:
+            outputs.append(write_discrete_mk_summary_table(args.summary_out, report))
+        if args.rates_out:
+            outputs.append(write_discrete_mk_rate_table(args.rates_out, report))
+        outputs = _finalize_outputs(
+            args,
+            command="comparative",
+            inputs=[args.tree, args.table],
+            outputs=outputs,
+        )
+        _print_result(
+            build_command_result(
+                command="comparative",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
+                warnings=report.input_audit.warnings,
+                metrics={
+                    "taxon_count": report.taxon_count,
+                    "model": report.model,
+                    "observed_state_count": len(report.input_audit.observed_states),
+                    "sparse_state_count": len(report.input_audit.sparse_states),
+                    "pruned_missing_value_taxon_count": len(
+                        report.input_audit.pruned_missing_value_taxa
+                    ),
+                    "log_likelihood": report.log_likelihood,
+                    "parameter_count": report.parameter_count,
+                    "aic": report.aic,
+                    "aicc": report.aicc,
+                    "optimizer_name": report.optimizer_diagnostics.optimizer_name,
+                    "optimizer_converged": report.optimizer_diagnostics.converged,
+                    "optimizer_iteration_count": (
+                        report.optimizer_diagnostics.iteration_count
+                    ),
+                    "optimizer_function_evaluation_count": (
+                        report.optimizer_diagnostics.function_evaluation_count
+                    ),
+                    "optimizer_hit_lower_parameter_bound": (
+                        report.optimizer_diagnostics.hit_lower_parameter_bound
+                    ),
+                    "optimizer_hit_upper_parameter_bound": (
+                        report.optimizer_diagnostics.hit_upper_parameter_bound
+                    ),
+                    "overparameterized": report.overparameterized,
+                    "transition_rate_count": len(report.transition_rate_rows),
+                    "baseline_model": (
+                        None
+                        if report.baseline_comparison is None
+                        else report.baseline_comparison.baseline_model
+                    ),
+                    "baseline_aic": (
+                        None
+                        if report.baseline_comparison is None
+                        else report.baseline_comparison.baseline_aic
+                    ),
+                    "delta_aic": (
+                        None
+                        if report.baseline_comparison is None
+                        else report.baseline_comparison.delta_aic
+                    ),
+                    "preferred_model_by_aic": (
+                        None
+                        if report.baseline_comparison is None
+                        else report.baseline_comparison.preferred_model_by_aic
+                    ),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.comparative_command == "correlated-traits":
+        report = summarize_correlated_trait_evolution(
+            args.tree,
+            args.table,
+            left_trait=args.left_trait,
+            right_trait=args.right_trait,
+            taxon_column=args.taxon_column,
+            analysis_kind=args.analysis_kind,
+            binary_model=args.binary_model,
+        )
+        outputs: list[Path | str] = []
+        if args.summary_out is not None:
+            outputs.append(write_correlated_trait_summary_table(args.summary_out, report))
+        if args.comparison_out is not None:
+            outputs.append(
+                write_correlated_trait_comparison_table(args.comparison_out, report)
+            )
+        if args.observations_out is not None:
+            outputs.append(
+                write_correlated_trait_observation_table(args.observations_out, report)
+            )
+        if args.excluded_taxa_out is not None:
+            outputs.append(
+                write_correlated_trait_exclusion_table(args.excluded_taxa_out, report)
+            )
+        outputs = _finalize_outputs(
+            args,
+            command="comparative",
+            inputs=[args.tree, args.table],
+            outputs=outputs,
+        )
+        _print_result(
+            build_command_result(
+                command="comparative",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
+                warnings=report.warnings,
+                metrics={
+                    "analysis_kind": report.analysis_kind,
+                    "tree_taxon_count": report.tree_taxon_count,
+                    "analyzed_taxon_count": len(report.analyzed_taxa),
+                    "excluded_taxon_count": len(report.excluded_taxa),
+                    "observation_row_count": len(report.observation_rows),
+                    "comparison_row_count": len(report.comparison_rows),
+                    "association_measure_name": report.association_measure_name,
+                    "association_measure_value": report.association_measure_value,
+                    "evolutionary_covariance": report.evolutionary_covariance,
+                    "evolutionary_correlation": report.evolutionary_correlation,
+                    "better_model": report.better_model,
+                    "likelihood_ratio_p_value": report.likelihood_ratio_p_value,
+                    "joint_state_count": len(report.joint_state_counts),
+                    "warning_count": len(report.warnings),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.comparative_command == "brownian":
+        report = summarize_brownian_trait_evolution(
+            args.tree,
+            args.table,
+            trait=args.trait,
+            taxon_column=args.taxon_column,
+        )
+        if args.summary_out:
+            write_brownian_trait_evolution_summary_table(args.summary_out, report)
+        if args.excluded_taxa_out:
+            write_brownian_trait_evolution_exclusion_table(
+                args.excluded_taxa_out,
+                report,
+            )
+        outputs = _finalize_outputs(
+            args,
+            command="comparative",
+            inputs=[args.tree, args.table],
+        )
+        _print_result(
+            build_command_result(
+                command="comparative",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
+                warnings=report.warnings,
+                metrics={
+                    "tree_taxon_count": report.tree_taxon_count,
+                    "analyzed_taxon_count": report.analyzed_taxon_count,
+                    "excluded_taxon_count": len(report.excluded_taxa),
+                    "root_state": report.root_state,
+                    "sigma_squared": report.sigma_squared,
+                    "rate": report.sigma_squared,
+                    "log_likelihood": report.log_likelihood,
+                    "aic": report.aic,
+                    "aicc": report.aicc,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.comparative_command == "brownian-regimes":
+        report = summarize_brownian_regime_rates(
+            args.tree,
+            args.table,
+            args.regime_map,
+            trait=args.trait,
+            taxon_column=args.taxon_column,
+            branch_id_column=args.branch_id_column,
+            regime_column=args.regime_column,
+        )
+        if args.summary_out:
+            write_brownian_regime_summary_table(args.summary_out, report)
+        if args.rates_out:
+            write_brownian_regime_rate_table(args.rates_out, report)
+        if args.comparison_out:
+            write_brownian_regime_comparison_table(args.comparison_out, report)
+        if args.profile_out:
+            write_brownian_regime_profile_table(args.profile_out, report)
+        if args.branches_out:
+            write_brownian_regime_branch_table(args.branches_out, report)
+        if args.excluded_taxa_out:
+            write_brownian_regime_exclusion_table(args.excluded_taxa_out, report)
+        outputs = _finalize_outputs(
+            args,
+            command="comparative",
+            inputs=[args.tree, args.table, args.regime_map],
+        )
+        _print_result(
+            build_command_result(
+                command="comparative",
+                inputs=[args.tree, args.table, args.regime_map],
+                outputs=outputs,
+                warnings=report.warnings,
+                metrics={
+                    "tree_taxon_count": report.tree_taxon_count,
+                    "analyzed_taxon_count": report.analyzed_taxon_count,
+                    "excluded_taxon_count": len(report.excluded_taxa),
+                    "regime_count": len(report.regime_rows),
+                    "root_state": report.root_state,
+                    "log_likelihood": report.log_likelihood,
+                    "aic": report.aic,
+                    "aicc": report.aicc,
+                    "better_model": report.better_model,
+                    "likelihood_ratio_statistic": report.likelihood_ratio_statistic,
+                    "likelihood_ratio_p_value": report.likelihood_ratio_p_value,
+                    "identifiability_warning_count": len(
+                        report.identifiability_warnings
+                    ),
+                    "profile_row_count": len(report.profile_rows),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.comparative_command == "regime-map":
+        if args.table and not args.trait:
+            parser.error("--trait is required when reconstructing regimes from --table")
+        report = summarize_trait_regime_mapping(
+            args.tree,
+            tip_states_path=args.table,
+            regime_map_path=args.regime_map,
+            trait=args.trait,
+            taxon_column=args.taxon_column,
+            reconstruction_model=args.reconstruction_model,
+            state_ordering=args.state_ordering,
+            ordered_states=_split_csv_values(args.ordered_states) or None,
+            branch_id_column=args.branch_id_column,
+            regime_column=args.regime_column,
+        )
+        render = None
+        if args.summary_out:
+            write_trait_regime_summary_table(args.summary_out, report)
+        if args.branches_out:
+            write_trait_regime_branch_table(args.branches_out, report)
+        if args.nodes_out:
+            write_trait_regime_node_table(args.nodes_out, report)
+        if args.excluded_taxa_out:
+            write_trait_regime_exclusion_table(args.excluded_taxa_out, report)
+        if args.svg_out:
+            render = render_trait_regime_map(
+                report,
+                out_path=args.svg_out,
+                layout=args.layout,
+            )
+        inputs = [args.tree, args.table or args.regime_map]
+        outputs = _finalize_outputs(
+            args,
+            command="comparative",
+            inputs=inputs,
+        )
+        _print_result(
+            build_command_result(
+                command="comparative",
+                inputs=inputs,
+                outputs=outputs,
+                warnings=report.warnings,
+                metrics={
+                    "source_kind": report.source_kind,
+                    "tree_taxon_count": report.tree_taxon_count,
+                    "analyzed_taxon_count": report.analyzed_taxon_count,
+                    "excluded_taxon_count": len(report.excluded_taxa),
+                    "regime_count": len(report.observed_regimes),
+                    "branch_count": len(report.branch_rows),
+                    "node_count": len(report.node_rows),
+                    "ambiguous_branch_count": report.ambiguous_branch_count,
+                    "rendered_internal_annotation_count": (
+                        0
+                        if render is None
+                        else render.rendered_internal_annotation_count
+                    ),
+                    "rendered_categorical_trait_count": (
+                        0
+                        if render is None
+                        else render.rendered_categorical_trait_count
+                    ),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.comparative_command == "ou":
+        report = summarize_ou_trait_evolution(
+            args.tree,
+            args.table,
+            trait=args.trait,
+            taxon_column=args.taxon_column,
+        )
+        if args.summary_out:
+            write_ou_trait_evolution_summary_table(args.summary_out, report)
+        if args.excluded_taxa_out:
+            write_ou_trait_evolution_exclusion_table(args.excluded_taxa_out, report)
+        outputs = _finalize_outputs(
+            args,
+            command="comparative",
+            inputs=[args.tree, args.table],
+        )
+        _print_result(
+            build_command_result(
+                command="comparative",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
+                warnings=report.warnings,
+                metrics={
+                    "tree_taxon_count": report.tree_taxon_count,
+                    "analyzed_taxon_count": report.analyzed_taxon_count,
+                    "excluded_taxon_count": len(report.excluded_taxa),
+                    "alpha": report.alpha,
+                    "theta": report.theta,
+                    "sigma_squared": report.sigma_squared,
+                    "log_likelihood": report.log_likelihood,
+                    "aic": report.aic,
+                    "aicc": report.aicc,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.comparative_command == "early-burst":
+        report = summarize_early_burst_trait_evolution(
+            args.tree,
+            args.table,
+            trait=args.trait,
+            taxon_column=args.taxon_column,
+        )
+        if args.summary_out:
+            write_early_burst_trait_evolution_summary_table(args.summary_out, report)
+        if args.excluded_taxa_out:
+            write_early_burst_trait_evolution_exclusion_table(
+                args.excluded_taxa_out,
+                report,
+            )
+        if args.comparison_out:
+            write_early_burst_trait_evolution_comparison_table(
+                args.comparison_out,
+                report,
+            )
+        if args.profile_out:
+            write_early_burst_rate_change_profile_table(args.profile_out, report)
+        outputs = _finalize_outputs(
+            args,
+            command="comparative",
+            inputs=[args.tree, args.table],
+        )
+        _print_result(
+            build_command_result(
+                command="comparative",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
+                warnings=report.warnings,
+                metrics={
+                    "tree_taxon_count": report.tree_taxon_count,
+                    "analyzed_taxon_count": report.analyzed_taxon_count,
+                    "excluded_taxon_count": len(report.excluded_taxa),
+                    "rate_change": report.rate_change,
+                    "root_state": report.root_state,
+                    "sigma_squared": report.sigma_squared,
+                    "log_likelihood": report.log_likelihood,
+                    "aic": report.aic,
+                    "aicc": report.aicc,
+                    "better_model": report.better_model,
+                    "identifiability_warning_count": len(
+                        report.identifiability_warnings
+                    ),
+                    "profile_row_count": len(report.profile_rows),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.comparative_command == "rate-through-time":
+        report = summarize_trait_rate_through_time(
+            args.tree,
+            args.table,
+            trait=args.trait,
+            taxon_column=args.taxon_column,
+            interval_count=args.interval_count,
+        )
+        if args.summary_out:
+            write_trait_rate_through_time_summary_table(args.summary_out, report)
+        if args.intervals_out:
+            write_trait_rate_through_time_interval_table(args.intervals_out, report)
+        if args.excluded_taxa_out:
+            write_trait_rate_through_time_exclusion_table(
+                args.excluded_taxa_out,
+                report,
+            )
+        outputs = _finalize_outputs(
+            args,
+            command="comparative",
+            inputs=[args.tree, args.table],
+        )
+        _print_result(
+            build_command_result(
+                command="comparative",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
+                warnings=report.warnings,
+                metrics={
+                    "tree_taxon_count": report.tree_taxon_count,
+                    "analyzed_taxon_count": report.analyzed_taxon_count,
+                    "excluded_taxon_count": len(report.excluded_taxa),
+                    "interval_count": report.interval_count,
+                    "nonempty_interval_count": report.nonempty_interval_count,
+                    "tree_depth": report.tree_depth,
+                    "trend_direction": report.trend_direction,
+                    "earliest_interval_rate": report.earliest_interval_rate,
+                    "latest_interval_rate": report.latest_interval_rate,
+                    "latest_to_earliest_rate_ratio": (
+                        report.latest_to_earliest_rate_ratio
+                    ),
+                    "weighted_rate_slope": report.weighted_rate_slope,
+                    "normalized_rate_slope": report.normalized_rate_slope,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.comparative_command == "compare-models":
+        report = compare_brownian_and_ou_models(
+            args.tree,
+            args.table,
+            trait=args.trait,
+            taxon_column=args.taxon_column,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="comparative",
+            inputs=[args.tree, args.table],
+        )
+        _print_result(
+            build_command_result(
+                command="comparative",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
+                metrics={
+                    "taxon_count": report.taxon_count,
+                    "better_model": report.better_model,
+                    "model_count": len(report.rows),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.comparative_command == "validate-reference":
+        report = validate_comparative_reference_examples()
+        uncertainty_audit = audit_comparative_parameter_uncertainty()
+        identifiability_audit = audit_ou_identifiability_reference_examples()
+        outputs = _finalize_outputs(args, command="comparative", inputs=[])
+        _print_result(
+            build_command_result(
+                command="comparative",
+                inputs=[],
+                outputs=outputs,
+                metrics={
+                    "case_count": len(report.observations),
+                    "all_passed": report.all_passed,
+                    "interval_audit_passed": (
+                        uncertainty_audit.all_reference_estimates_covered
+                    ),
+                    "identifiability_audit_passed": (
+                        identifiability_audit.all_expected_warning_kinds_detected
+                    ),
+                },
+                warnings=[
+                    *uncertainty_audit.warnings,
+                    *(
+                        []
+                        if identifiability_audit.all_expected_warning_kinds_detected
+                        else [
+                            "one or more expected OU warning modes were not detected on the reference fixtures"
+                        ]
+                    ),
+                ],
+                data={
+                    "reference_validation": report,
+                    "parameter_uncertainty_audit": uncertainty_audit,
+                    "ou_identifiability_audit": identifiability_audit,
+                },
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.comparative_command == "sensitivity":
+        report = run_comparative_sensitivity_analysis(
+            args.tree,
+            args.table,
+            trait=args.trait,
+            model=args.model,
+            taxon_column=args.taxon_column,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="comparative",
+            inputs=[args.tree, args.table],
+        )
+        _print_result(
+            build_command_result(
+                command="comparative",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
+                metrics={
+                    "taxon_count": len(report.rows),
+                    "model": report.model,
+                    "influential_taxa": len(report.most_influential_taxa),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    return None
