@@ -7,10 +7,20 @@ from pathlib import Path
 import random
 import tempfile
 
+import numpy
+
 from bijux_phylogenetics.ancestral.common import (
     load_discrete_dataset,
     node_descendant_taxa,
     node_signature,
+)
+from bijux_phylogenetics.ancestral.discrete import (
+    _branch_length,
+    _fit_discrete_mk_model,
+    _resolve_allowed_transition_pairs,
+    _resolve_discrete_model_name,
+    _resolve_root_prior,
+    _transition_probability_matrix,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.traits import load_tsv_summary
@@ -331,6 +341,17 @@ class StochasticMapTransitionEvent:
 
 
 @dataclass(slots=True)
+class StochasticMapStateSegment:
+    branch_index: int
+    parent_node: str
+    child_node: str
+    state: str
+    start_time_fraction: float
+    end_time_fraction: float
+    duration: float
+
+
+@dataclass(slots=True)
 class StochasticMapBranchHistory:
     branch_index: int
     parent_node: str
@@ -340,6 +361,7 @@ class StochasticMapBranchHistory:
     end_state: str
     event_count: int
     events: list[StochasticMapTransitionEvent]
+    segments: list[StochasticMapStateSegment]
 
 
 @dataclass(slots=True)
@@ -348,6 +370,7 @@ class StochasticMapReplicate:
     root_state: str
     total_transition_count: int
     transition_counts: dict[str, int]
+    state_time_totals: dict[str, float]
     branch_histories: list[StochasticMapBranchHistory]
 
 
@@ -363,12 +386,37 @@ class StochasticMapSummaryRow:
 
 
 @dataclass(slots=True)
+class StochasticMapStateTimeRow:
+    state: str
+    mean_time: float
+    lower_95_interval: float
+    upper_95_interval: float
+    minimum_time: float
+    maximum_time: float
+
+
+@dataclass(slots=True)
+class StochasticMapSimulationFailure:
+    replicate_index: int
+    branch_index: int
+    parent_node: str
+    child_node: str
+    source_state: str
+    target_state: str
+    branch_length: float
+    attempt_count: int
+    reason: str
+
+
+@dataclass(slots=True)
 class StochasticMapSummaryReport:
     replicate_count: int
     mean_total_transition_count: float
     lower_95_total_transition_count: float
     upper_95_total_transition_count: float
     rows: list[StochasticMapSummaryRow]
+    state_time_rows: list[StochasticMapStateTimeRow]
+    simulation_failure_count: int
     warnings: list[str]
 
 
@@ -385,6 +433,7 @@ class StochasticMapCollectionReport:
     seed: int
     conditioned_on_node_estimates: bool
     maps: list[StochasticMapReplicate]
+    failures: list[StochasticMapSimulationFailure]
     summary: StochasticMapSummaryReport
 
 
@@ -1169,6 +1218,21 @@ def _sample_state(probabilities: dict[str, float], rng: random.Random) -> str:
     return ordered_items[-1][0]
 
 
+def _sample_index(weights: numpy.ndarray, rng: random.Random) -> int:
+    total = float(weights.sum())
+    if total <= 0.0:
+        raise AncestralReconstructionError(
+            "cannot sample a discrete state from zero-probability weights"
+        )
+    threshold = rng.random() * total
+    cumulative = 0.0
+    for index, weight in enumerate(weights):
+        cumulative += float(weight)
+        if threshold <= cumulative:
+            return index
+    return len(weights) - 1
+
+
 def _sample_transition_target(
     source_state: str,
     transition_lookup: dict[str, dict[str, float]],
@@ -1189,8 +1253,204 @@ def _sample_transition_target(
     return _sample_state(normalized, rng)
 
 
+def _postorder_discrete_partials(
+    tree,
+    states_by_taxon: dict[str, str],
+    *,
+    state_order: list[str],
+    rate_matrix: numpy.ndarray,
+) -> dict[str, numpy.ndarray]:
+    state_index = {state: index for index, state in enumerate(state_order)}
+    transition_cache: dict[float, numpy.ndarray] = {}
+    partials: dict[str, numpy.ndarray] = {}
+
+    def transition(branch_length: float) -> numpy.ndarray:
+        cached = transition_cache.get(branch_length)
+        if cached is None:
+            cached = _transition_probability_matrix(rate_matrix, branch_length)
+            transition_cache[branch_length] = cached
+        return cached
+
+    def visit(node) -> numpy.ndarray:
+        signature = node_signature(node)
+        if node.is_leaf():
+            partial = numpy.zeros(len(state_order), dtype=float)
+            partial[state_index[states_by_taxon[node.name]]] = 1.0
+            partials[signature] = partial
+            return partial
+        partial = numpy.ones(len(state_order), dtype=float)
+        for child in node.children:
+            partial *= transition(_branch_length(child)) @ visit(child)
+        partials[signature] = partial
+        return partial
+
+    visit(tree.root)
+    return partials
+
+
+def _sample_conditional_node_states(
+    tree,
+    *,
+    state_order: list[str],
+    rate_matrix: numpy.ndarray,
+    root_prior: numpy.ndarray,
+    partials: dict[str, numpy.ndarray],
+    rng: random.Random,
+) -> dict[str, str]:
+    state_index = {state: index for index, state in enumerate(state_order)}
+    transition_cache: dict[float, numpy.ndarray] = {}
+    node_states: dict[str, str] = {}
+
+    def transition(branch_length: float) -> numpy.ndarray:
+        cached = transition_cache.get(branch_length)
+        if cached is None:
+            cached = _transition_probability_matrix(rate_matrix, branch_length)
+            transition_cache[branch_length] = cached
+        return cached
+
+    root_signature = node_signature(tree.root)
+    root_weights = root_prior * partials[root_signature]
+    node_states[root_signature] = state_order[_sample_index(root_weights, rng)]
+
+    def visit(node) -> None:
+        parent_signature = node_signature(node)
+        parent_index = state_index[node_states[parent_signature]]
+        for child in node.children:
+            child_signature = node_signature(child)
+            child_weights = (
+                partials[child_signature]
+                if child.is_leaf()
+                else transition(_branch_length(child))[parent_index, :]
+                * partials[child_signature]
+            )
+            node_states[child_signature] = state_order[_sample_index(child_weights, rng)]
+            if not child.is_leaf():
+                visit(child)
+
+    visit(tree.root)
+    return node_states
+
+
+def _simulate_ctmc_branch_path(
+    *,
+    branch_index: int,
+    parent_node: str,
+    child_node: str,
+    branch_length: float,
+    start_state: str,
+    end_state: str,
+    state_order: list[str],
+    rate_matrix: numpy.ndarray,
+    rng: random.Random,
+    max_attempts: int = 2000,
+) -> tuple[list[StochasticMapTransitionEvent], list[StochasticMapStateSegment], int]:
+    if branch_length <= 0.0:
+        if start_state != end_state:
+            raise AncestralReconstructionError(
+                "zero-length branch cannot support different start and end states"
+            )
+        return (
+            [],
+            [
+                StochasticMapStateSegment(
+                    branch_index=branch_index,
+                    parent_node=parent_node,
+                    child_node=child_node,
+                    state=start_state,
+                    start_time_fraction=0.0,
+                    end_time_fraction=1.0,
+                    duration=0.0,
+                )
+            ],
+            0,
+        )
+
+    state_index = {state: index for index, state in enumerate(state_order)}
+
+    def choose_target(current_index: int) -> int:
+        row = rate_matrix[current_index, :]
+        weights = numpy.array(
+            [
+                0.0 if index == current_index else float(rate)
+                for index, rate in enumerate(row)
+            ],
+            dtype=float,
+        )
+        return _sample_index(weights, rng)
+
+    for attempt_index in range(1, max_attempts + 1):
+        current_state = start_state
+        current_index = state_index[current_state]
+        elapsed = 0.0
+        events: list[StochasticMapTransitionEvent] = []
+        while elapsed < branch_length:
+            exit_rate = float(-rate_matrix[current_index, current_index])
+            if exit_rate <= 0.0:
+                break
+            elapsed += rng.expovariate(exit_rate)  # nosec B311
+            if elapsed >= branch_length:
+                break
+            next_index = choose_target(current_index)
+            next_state = state_order[next_index]
+            if next_state == current_state:
+                continue
+            events.append(
+                StochasticMapTransitionEvent(
+                    branch_index=branch_index,
+                    parent_node=parent_node,
+                    child_node=child_node,
+                    source_state=current_state,
+                    target_state=next_state,
+                    event_time_fraction=float(format(elapsed / branch_length, ".15g")),
+                )
+            )
+            current_state = next_state
+            current_index = next_index
+        if current_state != end_state:
+            continue
+        segments: list[StochasticMapStateSegment] = []
+        segment_state = start_state
+        segment_start = 0.0
+        for event in events:
+            segment_end = min(max(event.event_time_fraction, segment_start), 1.0)
+            segments.append(
+                StochasticMapStateSegment(
+                    branch_index=branch_index,
+                    parent_node=parent_node,
+                    child_node=child_node,
+                    state=segment_state,
+                    start_time_fraction=float(format(segment_start, ".15g")),
+                    end_time_fraction=float(format(segment_end, ".15g")),
+                    duration=float(
+                        format(branch_length * (segment_end - segment_start), ".15g")
+                    ),
+                )
+            )
+            segment_state = event.target_state
+            segment_start = segment_end
+        segments.append(
+            StochasticMapStateSegment(
+                branch_index=branch_index,
+                parent_node=parent_node,
+                child_node=child_node,
+                state=segment_state,
+                start_time_fraction=float(format(segment_start, ".15g")),
+                end_time_fraction=1.0,
+                duration=float(
+                    format(branch_length * max(1.0 - segment_start, 0.0), ".15g")
+                ),
+            )
+        )
+        return events, segments, attempt_index
+    raise AncestralReconstructionError(
+        "failed to sample a branch history consistent with the conditioned endpoint states"
+    )
+
+
 def _summarize_stochastic_map_replicates(
     replicates: list[StochasticMapReplicate],
+    *,
+    simulation_failure_count: int,
 ) -> StochasticMapSummaryReport:
     total_counts = sorted(
         float(replicate.total_transition_count) for replicate in replicates
@@ -1224,6 +1484,35 @@ def _summarize_stochastic_map_replicates(
                 ),
             )
         )
+    state_names = sorted(
+        {
+            state
+            for replicate in replicates
+            for state in replicate.state_time_totals
+        }
+    )
+    state_time_rows: list[StochasticMapStateTimeRow] = []
+    for state in state_names:
+        values = [
+            float(replicate.state_time_totals.get(state, 0.0))
+            for replicate in replicates
+        ]
+        sorted_values = sorted(values)
+        state_time_rows.append(
+            StochasticMapStateTimeRow(
+                state=state,
+                mean_time=float(format(sum(values) / max(len(values), 1), ".15g")),
+                lower_95_interval=_quantile(sorted_values, 0.025),
+                upper_95_interval=_quantile(sorted_values, 0.975),
+                minimum_time=min(values, default=0.0),
+                maximum_time=max(values, default=0.0),
+            )
+        )
+    warnings: list[str] = []
+    if simulation_failure_count > 0:
+        warnings.append(
+            "one or more stochastic-map replicates failed to sample a branch history consistent with the conditioned endpoint states"
+        )
     return StochasticMapSummaryReport(
         replicate_count=len(replicates),
         mean_total_transition_count=float(
@@ -1232,9 +1521,9 @@ def _summarize_stochastic_map_replicates(
         lower_95_total_transition_count=_quantile(total_counts, 0.025),
         upper_95_total_transition_count=_quantile(total_counts, 0.975),
         rows=rows,
-        warnings=[
-            "stochastic maps are simulated from deterministic node estimates and transition weights rather than sampled from a full posterior process"
-        ],
+        state_time_rows=state_time_rows,
+        simulation_failure_count=simulation_failure_count,
+        warnings=warnings,
     )
 
 
@@ -1869,133 +2158,170 @@ def simulate_discrete_stochastic_maps(
     replicates: int = 100,
     seed: int = 0,
 ) -> StochasticMapCollectionReport:
-    """Generate approximate stochastic transition maps from deterministic node-state estimates."""
+    """Generate stochastic transition maps from a fitted discrete-state CTMC."""
     if replicates < 1:
         raise ValueError(f"replicates must be at least 1, got {replicates}")
-    report = run_discrete_state_transition_model(
+    dataset = load_discrete_dataset(
         tree_path,
         traits_path,
         trait=trait,
         taxon_column=taxon_column,
-        model=model,
+    )
+    resolved_model = _resolve_discrete_model_name(model)
+    state_order = _resolve_state_order(
+        dataset.observed_states,
         allowed_states=allowed_states,
         state_ordering=state_ordering,
         ordered_states=ordered_states,
     )
-    tree = load_tree(tree_path)
-    estimate_by_node = {estimate.node: estimate for estimate in report.estimates}
-    transition_lookup = _row_lookup(report.transition_model.transition_matrix)
+    resolved_allowed_transition_pairs = _resolve_allowed_transition_pairs(
+        state_order,
+        model=resolved_model,
+        state_ordering=state_ordering,
+        allowed_transition_pairs=None,
+    )
+    rate_matrix, default_root_prior, _optimizer_diagnostics = _fit_discrete_mk_model(
+        dataset.tree,
+        dataset.states_by_taxon,
+        state_order=state_order,
+        model=resolved_model,
+        state_ordering=state_ordering,
+        allowed_transition_pairs=resolved_allowed_transition_pairs,
+    )
+    root_prior = _resolve_root_prior(
+        state_order,
+        state_counts=dataset.state_counts,
+        mode="equal",
+        fixed_root_state=None,
+        default_root_prior=default_root_prior,
+    )
+    partials = _postorder_discrete_partials(
+        dataset.tree,
+        dataset.states_by_taxon,
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+    )
     branch_rows = [
         (
             index,
-            event.parent_node,
-            event.child_node,
-            next(
-                node
-                for node in tree.iter_nodes()
-                if node_signature(node) == event.child_node
-            ),
+            node_signature(node.parent),
+            node_signature(node),
+            node,
         )
-        for index, event in enumerate(report.transition_summary.events)
+        for index, node in enumerate(dataset.tree.iter_nodes())
+        if node.parent is not None
     ]
     randomizer = random.Random(seed)  # nosec B311
     maps: list[StochasticMapReplicate] = []
+    failures: list[StochasticMapSimulationFailure] = []
     for replicate_index in range(replicates):
-        root_state = _sample_state(
-            next(
-                estimate.state_probabilities
-                for estimate in report.estimates
-                if estimate.node == node_signature(tree.root)
-            ),
-            randomizer,
+        node_states = _sample_conditional_node_states(
+            dataset.tree,
+            state_order=state_order,
+            rate_matrix=rate_matrix,
+            root_prior=root_prior,
+            partials=partials,
+            rng=randomizer,
         )
-        node_states = {node_signature(tree.root): root_state}
+        root_state = node_states[node_signature(dataset.tree.root)]
         branch_histories: list[StochasticMapBranchHistory] = []
         transition_counts: dict[str, int] = {}
+        state_time_totals = {state: 0.0 for state in state_order}
         total_transition_count = 0
         for branch_index, parent_node, child_node, child in branch_rows:
             parent_state = node_states[parent_node]
-            child_estimate = estimate_by_node[child_node]
-            branch_length = float(child.branch_length or 0.0)
-            start_state = parent_state
-            end_state = _sample_state(child_estimate.state_probabilities, randomizer)
-            max_event_count = max(1, int(math.ceil(max(branch_length, 0.0) * 2.0)))
-            provisional_event_count = (
-                0
-                if start_state == end_state
-                else randomizer.randint(1, max_event_count)
-            )
-            events: list[StochasticMapTransitionEvent] = []
-            current_state = start_state
-            for _ in range(provisional_event_count):
-                next_state = _sample_transition_target(
-                    current_state, transition_lookup, randomizer
-                )
-                if next_state == current_state:
-                    continue
-                event = StochasticMapTransitionEvent(
+            child_state = node_states[child_node]
+            branch_length = _branch_length(child)
+            try:
+                events, segments, attempt_count = _simulate_ctmc_branch_path(
                     branch_index=branch_index,
                     parent_node=parent_node,
                     child_node=child_node,
-                    source_state=current_state,
-                    target_state=next_state,
-                    event_time_fraction=float(format(randomizer.random(), ".15g")),
+                    branch_length=branch_length,
+                    start_state=parent_state,
+                    end_state=child_state,
+                    state_order=state_order,
+                    rate_matrix=rate_matrix,
+                    rng=randomizer,
                 )
-                events.append(event)
-                transition = f"{current_state}->{next_state}"
-                transition_counts[transition] = transition_counts.get(transition, 0) + 1
-                total_transition_count += 1
-                current_state = next_state
-            if current_state != end_state:
-                events.append(
-                    StochasticMapTransitionEvent(
+            except AncestralReconstructionError:
+                failures.append(
+                    StochasticMapSimulationFailure(
+                        replicate_index=replicate_index,
                         branch_index=branch_index,
                         parent_node=parent_node,
                         child_node=child_node,
-                        source_state=current_state,
-                        target_state=end_state,
-                        event_time_fraction=1.0,
+                        source_state=parent_state,
+                        target_state=child_state,
+                        branch_length=branch_length,
+                        attempt_count=2000,
+                        reason=(
+                            "failed to sample a branch history consistent with the conditioned endpoint states"
+                        ),
                     )
                 )
-                transition = f"{current_state}->{end_state}"
+                branch_histories = []
+                transition_counts = {}
+                state_time_totals = {state: 0.0 for state in state_order}
+                total_transition_count = 0
+                break
+            for event in events:
+                transition = f"{event.source_state}->{event.target_state}"
                 transition_counts[transition] = transition_counts.get(transition, 0) + 1
                 total_transition_count += 1
-            ordered_events = sorted(events, key=lambda event: event.event_time_fraction)
-            node_states[child_node] = end_state
+            for segment in segments:
+                state_time_totals[segment.state] = float(
+                    format(
+                        state_time_totals.get(segment.state, 0.0) + segment.duration,
+                        ".15g",
+                    )
+                )
             branch_histories.append(
                 StochasticMapBranchHistory(
                     branch_index=branch_index,
                     parent_node=parent_node,
                     child_node=child_node,
                     branch_length=branch_length,
-                    start_state=start_state,
-                    end_state=end_state,
-                    event_count=len(ordered_events),
-                    events=ordered_events,
+                    start_state=parent_state,
+                    end_state=child_state,
+                    event_count=len(events),
+                    events=events,
+                    segments=segments,
                 )
             )
+        if not branch_histories:
+            continue
         maps.append(
             StochasticMapReplicate(
                 replicate_index=replicate_index,
                 root_state=root_state,
                 total_transition_count=total_transition_count,
                 transition_counts=dict(sorted(transition_counts.items())),
+                state_time_totals=dict(sorted(state_time_totals.items())),
                 branch_histories=branch_histories,
             )
+        )
+    if not maps:
+        raise AncestralReconstructionError(
+            "stochastic character mapping failed for every requested replicate"
         )
     return StochasticMapCollectionReport(
         tree_path=tree_path,
         traits_path=traits_path,
-        taxon_column=report.taxon_column,
+        taxon_column=dataset.taxon_column,
         trait=trait,
-        model=model,
-        state_ordering=report.state_ordering,
-        ordered_states=report.ordered_states,
+        model=resolved_model,
+        state_ordering=state_ordering,
+        ordered_states=state_order if state_ordering == "ordered" else [],
         replicates=replicates,
         seed=seed,
-        conditioned_on_node_estimates=True,
+        conditioned_on_node_estimates=False,
         maps=maps,
-        summary=_summarize_stochastic_map_replicates(maps),
+        failures=failures,
+        summary=_summarize_stochastic_map_replicates(
+            maps,
+            simulation_failure_count=len(failures),
+        ),
     )
 
 
@@ -2003,7 +2329,10 @@ def summarize_discrete_stochastic_maps(
     report: StochasticMapCollectionReport,
 ) -> StochasticMapSummaryReport:
     """Summarize one stochastic-map collection without regenerating maps."""
-    return _summarize_stochastic_map_replicates(report.maps)
+    return _summarize_stochastic_map_replicates(
+        report.maps,
+        simulation_failure_count=len(report.failures),
+    )
 
 
 def build_biogeographic_interpretation_report(
@@ -2399,6 +2728,70 @@ def write_stochastic_map_summary_table(
     )
 
 
+def write_stochastic_map_state_time_table(
+    path: Path, report: StochasticMapSummaryReport
+) -> Path:
+    """Export one per-state time-in-state summary table for a stochastic-map collection."""
+    rows = [
+        {
+            "state": row.state,
+            "mean_time": row.mean_time,
+            "lower_95_interval": row.lower_95_interval,
+            "upper_95_interval": row.upper_95_interval,
+            "minimum_time": row.minimum_time,
+            "maximum_time": row.maximum_time,
+        }
+        for row in report.state_time_rows
+    ]
+    return write_taxon_rows(
+        path,
+        columns=[
+            "state",
+            "mean_time",
+            "lower_95_interval",
+            "upper_95_interval",
+            "minimum_time",
+            "maximum_time",
+        ],
+        rows=rows,
+    )
+
+
+def write_stochastic_map_segment_table(
+    path: Path, report: StochasticMapCollectionReport
+) -> Path:
+    """Export one flat branch-state segment table for a stochastic-map collection."""
+    rows = [
+        {
+            "replicate_index": replicate.replicate_index,
+            "branch_index": segment.branch_index,
+            "parent_node": segment.parent_node,
+            "child_node": segment.child_node,
+            "state": segment.state,
+            "start_time_fraction": segment.start_time_fraction,
+            "end_time_fraction": segment.end_time_fraction,
+            "duration": segment.duration,
+        }
+        for replicate in report.maps
+        for history in replicate.branch_histories
+        for segment in history.segments
+    ]
+    return write_taxon_rows(
+        path,
+        columns=[
+            "replicate_index",
+            "branch_index",
+            "parent_node",
+            "child_node",
+            "state",
+            "start_time_fraction",
+            "end_time_fraction",
+            "duration",
+        ],
+        rows=rows,
+    )
+
+
 def write_stochastic_map_collection(
     path: Path, report: StochasticMapCollectionReport
 ) -> Path:
@@ -2439,9 +2832,22 @@ def load_stochastic_map_collection(path: Path) -> StochasticMapCollectionReport:
                         )
                         for event in history["events"]
                     ],
+                    segments=[
+                        StochasticMapStateSegment(
+                            branch_index=segment["branch_index"],
+                            parent_node=segment["parent_node"],
+                            child_node=segment["child_node"],
+                            state=segment["state"],
+                            start_time_fraction=segment["start_time_fraction"],
+                            end_time_fraction=segment["end_time_fraction"],
+                            duration=segment["duration"],
+                        )
+                        for segment in history.get("segments", [])
+                    ],
                 )
                 for history in replicate["branch_histories"]
             ],
+            state_time_totals=replicate.get("state_time_totals", {}),
         )
         for replicate in payload["maps"]
     ]
@@ -2466,6 +2872,18 @@ def load_stochastic_map_collection(path: Path) -> StochasticMapCollectionReport:
             )
             for row in payload["summary"]["rows"]
         ],
+        state_time_rows=[
+            StochasticMapStateTimeRow(
+                state=row["state"],
+                mean_time=row["mean_time"],
+                lower_95_interval=row["lower_95_interval"],
+                upper_95_interval=row["upper_95_interval"],
+                minimum_time=row["minimum_time"],
+                maximum_time=row["maximum_time"],
+            )
+            for row in payload["summary"].get("state_time_rows", [])
+        ],
+        simulation_failure_count=payload["summary"].get("simulation_failure_count", 0),
         warnings=payload["summary"]["warnings"],
     )
     return StochasticMapCollectionReport(
@@ -2478,8 +2896,24 @@ def load_stochastic_map_collection(path: Path) -> StochasticMapCollectionReport:
         ordered_states=payload["ordered_states"],
         replicates=payload["replicates"],
         seed=payload["seed"],
-        conditioned_on_node_estimates=payload["conditioned_on_node_estimates"],
+        conditioned_on_node_estimates=payload.get(
+            "conditioned_on_node_estimates", False
+        ),
         maps=maps,
+        failures=[
+            StochasticMapSimulationFailure(
+                replicate_index=row["replicate_index"],
+                branch_index=row["branch_index"],
+                parent_node=row["parent_node"],
+                child_node=row["child_node"],
+                source_state=row["source_state"],
+                target_state=row["target_state"],
+                branch_length=row["branch_length"],
+                attempt_count=row["attempt_count"],
+                reason=row["reason"],
+            )
+            for row in payload.get("failures", [])
+        ],
         summary=summary,
     )
 
