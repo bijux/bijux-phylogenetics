@@ -515,9 +515,11 @@ Fast `engine_contract` tests keep fake-executable and parser behavior stable in
 routine verification, while `tests/real_local` carries the governed
 `engine_real` lane for installed MAFFT, trimAl, IQ-TREE, FastTree, and
 MrBayes executables plus the checked-in real BEAST XML/log/tree corpus. Those
-real-local tests write one external validation matrix JSON artifact per lane
-that records reviewer-facing engine names, validation modes, executable paths,
-version text, commands, exit codes, runtime, output paths, and output hashes.
+real-local tests now write one combined external validation matrix JSON
+artifact over all governed engines, while still preserving focused alignment
+and Bayesian matrix artifacts for narrower debugging. Each matrix records
+reviewer-facing engine names, validation modes, executable paths, version
+text, commands, exit codes, runtime, output paths, and output hashes.
 
 Use `phylo preflight` before any external-engine workflow when you need to know
 whether the local environment is actually runnable. The command inspects MAFFT,
