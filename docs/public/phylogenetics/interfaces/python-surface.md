@@ -120,6 +120,18 @@ event ledger. That surface now underlies the governed live
 directional transition-count rows over selected seeded map collections,
 including zero diagonal state pairs, without claiming exact stochastic-history
 identity.
+The same owned stochastic-map runtime also exposes
+`bijux_phylogenetics.summarize_discrete_stochastic_map_density(...)`,
+`bijux_phylogenetics.render_stochastic_map_density_artifact(...)`, and writers
+for one branch-probability table, one branch-level density envelope, and one
+slice-level probability table. Binary collections can summarize one default
+focal state directly; multistate collections keep branch probability summaries
+for every state, and require one explicit focal state before generating
+density-slice rows or one report-ready artifact. That surface now underlies
+the governed live `phytools::densityMap` lane for selected binary ER
+collections, including one missing-value-pruned case, and compares
+branch-level posterior probability summaries plus branch uncertainty without
+claiming pixel-perfect plot parity.
 The same owned summary contract also underlies the governed live
 `phytools::describe.simmap` lane, which compares total-change summary,
 transition-count rows, time-in-state rows, and per-branch state-occupancy rows

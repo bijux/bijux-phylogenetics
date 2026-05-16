@@ -225,6 +225,7 @@ goal 201: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
 `phytools::make.simmap(model='ER')`, `phytools::make.simmap(model='SYM')`,
 `phytools::make.simmap(model='ARD')`, `phytools::countSimmap`,
+`phytools::densityMap`,
 `phytools::describe.simmap`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed
@@ -266,6 +267,15 @@ clean multistate, clean multistate SYM, and missing-value-pruned binary cases.
 It compares total-transition envelopes plus directional transition-count rows,
 including zero diagonal state pairs, without claiming exact stochastic-history
 identity.
+The same owned surface now also supports `discrete-evolution density-maps` over
+saved stochastic-map collections, writing one branch-probability table, one
+branch-level density envelope, one slice-level probability table at the
+requested resolution, and one report-ready HTML or SVG artifact. The live
+`densityMap` lane stays intentionally narrow: it currently covers governed
+binary ER collections only, including one missing-value-pruned case. It
+compares per-branch posterior probability summaries and branch-level
+uncertainty against live `phytools::densityMap`, and does not claim
+pixel-perfect plotting parity.
 The live `describe.simmap` lane now also covers clean binary, clean multistate,
 clean multistate SYM, and missing-value-pruned binary cases. It compares the
 owned stochastic-map summary contract directly, including total changes,

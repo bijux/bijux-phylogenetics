@@ -299,6 +299,7 @@ bijux-phylogenetics discrete-evolution model tree.nwk geography.tsv --trait regi
 bijux-phylogenetics discrete-evolution stochastic-map tree.nwk geography.tsv --trait region --model symmetric --replicates 200 --collection-out artifacts/geography-maps.json --summary-out artifacts/geography-stochastic-summary.tsv --state-times-out artifacts/geography-stochastic-state-times.tsv --branch-occupancy-out artifacts/geography-stochastic-branch-occupancy.tsv --segments-out artifacts/geography-stochastic-segments.tsv --count-matrix-out artifacts/geography-stochastic-counts.tsv --aggregate-matrix-out artifacts/geography-stochastic-aggregate.tsv --branch-transition-out artifacts/geography-stochastic-branch-transitions.tsv --events-out artifacts/geography-stochastic-events.tsv --json
 bijux-phylogenetics discrete-evolution summarize-maps artifacts/geography-maps.json --summary-out artifacts/geography-stochastic-summary.tsv --state-times-out artifacts/geography-stochastic-state-times.tsv --branch-occupancy-out artifacts/geography-stochastic-branch-occupancy.tsv --json
 bijux-phylogenetics discrete-evolution count-maps artifacts/geography-maps.json --count-matrix-out artifacts/geography-stochastic-counts.tsv --aggregate-matrix-out artifacts/geography-stochastic-aggregate.tsv --branch-transition-out artifacts/geography-stochastic-branch-transitions.tsv --events-out artifacts/geography-stochastic-events.tsv --json
+bijux-phylogenetics discrete-evolution density-maps artifacts/geography-maps.json --focal-state island --branch-probabilities-out artifacts/geography-density-branches.tsv --density-branches-out artifacts/geography-density-envelope.tsv --density-slices-out artifacts/geography-density-slices.tsv --out artifacts/geography-density.html --json
 bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait region --compare-model symmetric --out artifacts/geography-report.html
 bijux-phylogenetics diversification gamma-stat tree.nwk --metadata sampling.tsv --out artifacts/diversification-gamma-statistic.tsv --json
 bijux-phylogenetics diversification estimate tree.nwk --metadata sampling.tsv --model birth-death --json
@@ -847,6 +848,7 @@ goal: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
 `phytools::make.simmap(model='ER')`, `phytools::make.simmap(model='SYM')`,
 `phytools::make.simmap(model='ARD')`, `phytools::countSimmap`,
+`phytools::densityMap`,
 `phytools::describe.simmap`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed strong-signal,
@@ -897,6 +899,15 @@ governed seed and one governed replicate count of 128 maps per case. It
 compares total-transition envelopes plus directional transition-count rows,
 including zero diagonal state pairs such as `0->0`, without claiming exact
 stochastic-history identity.
+The same owned stochastic-map collection surface now also exposes one
+`densityMap`-style branch-probability contract over saved map collections,
+including one branch-probability table, one branch-level probability envelope,
+one slice-level probability table at governed resolution, and one report-ready
+HTML or SVG artifact. The live `densityMap` lane is intentionally narrower
+than the owned surface: it currently covers governed clean binary and
+missing-value-pruned binary ER cases only. It compares per-branch posterior
+probability summaries and branch-level uncertainty against live
+`phytools::densityMap`, and does not claim pixel-perfect plotting parity.
 The live
 `rerootingMethod` lane now covers governed ER binary, governed ER multistate,
 governed ER missing-value-pruned, governed SYM multistate, and governed SYM
