@@ -488,14 +488,15 @@ matching `analysis.manifest.json` from `adapter beast-run` is present, those
 diagnostics identify the posterior log and tree set as outputs from a recorded
 prior BEAST inference rather than implying the report executed BEAST itself.
 
-The Bayesian runtime controls are intentionally strict. `adapter beast-run`
-and `adapter mrbayes-run` leave an explicit `.incomplete.json` marker not only
-for timeouts and nonzero exits but also when the engine exits yet the emitted
-posterior files fail validation. `--resume` reuses only one verified completed
-manifest from the same command, same checked inputs, and same recorded engine
-version, `--incomplete-run-policy clean` is the governed way to discard that
-partial state, and a missing executable stops before any incomplete-run marker
-is written because no engine run started.
+The Bayesian runtime controls are intentionally strict and now aligned across
+BEAST and MrBayes. `adapter beast-run` and `adapter mrbayes-run` leave an
+explicit `.incomplete.json` marker not only for timeouts and nonzero exits but
+also when the engine exits yet the emitted posterior files fail validation.
+`--resume` reuses only one verified completed manifest from the same command,
+same checked inputs, and same recorded engine version, `--incomplete-run-policy
+clean` is the governed way to discard that partial state, and a missing
+executable stops before any incomplete-run marker is written because no engine
+run started.
 
 That strictness now applies across every governed external-engine workflow.
 MAFFT and trimAl runs succeed only when they emit non-empty valid alignments,
