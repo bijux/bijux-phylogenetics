@@ -11,6 +11,7 @@ from .core import (
     _stationary_frequencies as _stationary_frequencies,
     _transition_events as _transition_events,
 )
+from .stochastic_maps import *  # noqa: F403
 from .reporting import (
     build_biogeographic_interpretation_report as build_biogeographic_interpretation_report,
     render_discrete_state_evolution_report as render_discrete_state_evolution_report,
