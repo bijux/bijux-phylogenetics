@@ -32,6 +32,11 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "fitmk-ard-multistate-twenty-four-taxa",
         "fitmk-ard-binary-missing-twenty-four-taxa",
         "fitmk-ard-multistate-missing-twenty-four-taxa",
+        "rerooting-er-binary-twenty-four-taxa",
+        "rerooting-er-multistate-twenty-four-taxa",
+        "rerooting-er-binary-missing-twenty-four-taxa",
+        "rerooting-sym-multistate-twenty-four-taxa",
+        "rerooting-sym-multistate-missing-twenty-four-taxa",
         "fast-anc-strong-signal-twenty-four-taxa",
         "fast-anc-weak-signal-twenty-four-taxa",
         "fast-anc-non-ultrametric-strong-signal-twenty-four-taxa",
@@ -51,10 +56,12 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[9].function_name == "phytools::fitMk(model='SYM')"
     assert cases[10].function_name == "phytools::fitMk(model='ARD')"
     assert cases[13].function_name == "phytools::fitMk(model='ARD')"
-    assert cases[14].function_name == "phytools::fastAnc"
-    assert cases[17].function_name == "phytools::fastAnc"
-    assert cases[18].function_name == "phytools::anc.ML"
-    assert cases[21].function_name == "phytools::anc.ML"
+    assert cases[14].function_name == "phytools::rerootingMethod"
+    assert cases[18].function_name == "phytools::rerootingMethod"
+    assert cases[19].function_name == "phytools::fastAnc"
+    assert cases[22].function_name == "phytools::fastAnc"
+    assert cases[23].function_name == "phytools::anc.ML"
+    assert cases[26].function_name == "phytools::anc.ML"
     assert (
         cases[0].fixture_id == "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
     )
@@ -63,13 +70,16 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[7].row_field_tolerances == {"rate": 1e-5}
     assert cases[8].row_field_tolerances == {"rate": 1e-4}
     assert cases[10].row_field_tolerances == {"rate": 1e-3}
-    assert cases[21].row_field_tolerances == {
+    assert cases[14].row_field_tolerances == {"probability": 1e-5}
+    assert cases[17].row_field_tolerances == {"probability": 5e-5}
+    assert cases[18].row_field_tolerances == {"probability": 5e-5}
+    assert cases[26].row_field_tolerances == {
         "estimate": 1e-8,
         "standard_error": 5e-8,
         "lower_95_interval": 5e-8,
         "upper_95_interval": 5e-8,
     }
-    assert cases[17].row_field_tolerances == {
+    assert cases[22].row_field_tolerances == {
         "estimate": 1e-8,
         "standard_error": 1e-8,
     }
@@ -83,7 +93,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     report = run_phytools_parity_cases(rscript_executable=str(rscript))
 
     assert report.all_passed is True
-    assert report.case_count == 22
+    assert report.case_count == 27
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -94,6 +104,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
         "phytools::fitMk(model='SYM')",
         "phytools::phylosig(method='K')",
         "phytools::phylosig(method='lambda')",
+        "phytools::rerootingMethod",
     ]
     first = report.observations[0]
     assert first.phytools_version == "2.5.2"
@@ -185,6 +196,38 @@ def test_load_rows_table_preserves_discrete_state_identity_and_booleans(
             "transition_allowed": False,
             "step_distance": 2,
             "rate": 0.15,
+        },
+    ]
+
+
+def test_load_rows_table_preserves_rerooting_state_identity(
+    tmp_path: Path,
+) -> None:
+    rows_path = tmp_path / "rerooting-method-node-probabilities.tsv"
+    rows_path.write_text(
+        "\n".join(
+            [
+                "node\tstate\tprobability",
+                "A|B|C\t0\t0.75",
+                "A|B|C\tnorth\t0.25",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rows = _load_rows_table(rows_path)
+
+    assert rows == [
+        {
+            "node": "A|B|C",
+            "state": "0",
+            "probability": 0.75,
+        },
+        {
+            "node": "A|B|C",
+            "state": "north",
+            "probability": 0.25,
         },
     ]
 
