@@ -30,7 +30,9 @@ from bijux_phylogenetics.discrete_evolution import (
     summarize_discrete_stochastic_maps,
 )
 from bijux_phylogenetics.simulation import (
+    ContinuousTraitSimulationCollectionReport,
     DiscreteHistoryRateRow,
+    simulate_brownian_trait_collection,
     simulate_discrete_histories,
 )
 from bijux_phylogenetics.shared_phytools_comparative_fixtures import (
@@ -65,6 +67,10 @@ class PhytoolsParityCase:
     simulation_root_state_probabilities: dict[str, float] | None = None
     simulation_replicate_count: int | None = None
     simulation_seed: int | None = None
+    continuous_root_state: float | None = None
+    continuous_sigma_squared: float | None = None
+    continuous_replicate_count: int | None = None
+    continuous_seed: int | None = None
     field_tolerances: dict[str, float] | None = None
     row_field_tolerances: dict[str, float] | None = None
     compare_rows: bool = True
@@ -1386,6 +1392,75 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
                 "upper_95_interval": 5e-8,
             },
         ),
+        PhytoolsParityCase(
+            case_id="fastbm-example-tree-low-variance",
+            fixture_id="example_tree_brownian_fastbm_low_variance",
+            function_name="phytools::fastBM",
+            python_function_name="simulate_brownian_trait_collection",
+            operation="simulate-continuous-brownian",
+            input_fixtures=(simulation_tree_fixture,),
+            tolerance=1e-6,
+            trait_name="simulated_continuous_trait",
+            continuous_root_state=0.0,
+            continuous_sigma_squared=0.25,
+            continuous_replicate_count=512,
+            continuous_seed=17,
+            row_field_tolerances={
+                "mean_value": 0.12,
+                "standard_deviation": 0.12,
+                "minimum": 0.4,
+                "median": 0.15,
+                "maximum": 0.4,
+                "covariance": 0.15,
+                "correlation": 0.18,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="fastbm-example-tree-root-shift-high-variance",
+            fixture_id="example_tree_brownian_fastbm_root_shift_high_variance",
+            function_name="phytools::fastBM",
+            python_function_name="simulate_brownian_trait_collection",
+            operation="simulate-continuous-brownian",
+            input_fixtures=(simulation_tree_fixture,),
+            tolerance=1e-6,
+            trait_name="simulated_continuous_trait",
+            continuous_root_state=2.5,
+            continuous_sigma_squared=3.0,
+            continuous_replicate_count=512,
+            continuous_seed=23,
+            row_field_tolerances={
+                "mean_value": 0.3,
+                "standard_deviation": 0.3,
+                "minimum": 0.9,
+                "median": 0.35,
+                "maximum": 0.9,
+                "covariance": 0.45,
+                "correlation": 0.16,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="fastbm-six-taxa-root-shift",
+            fixture_id="example_tree_six_taxa_brownian_fastbm_root_shift",
+            function_name="phytools::fastBM",
+            python_function_name="simulate_brownian_trait_collection",
+            operation="simulate-continuous-brownian",
+            input_fixtures=(simulation_six_taxa_tree_fixture,),
+            tolerance=1e-6,
+            trait_name="simulated_continuous_trait",
+            continuous_root_state=-1.0,
+            continuous_sigma_squared=1.25,
+            continuous_replicate_count=512,
+            continuous_seed=31,
+            row_field_tolerances={
+                "mean_value": 0.2,
+                "standard_deviation": 0.2,
+                "minimum": 0.6,
+                "median": 0.25,
+                "maximum": 0.6,
+                "covariance": 0.8,
+                "correlation": 0.2,
+            },
+        ),
     ]
 
 
@@ -1507,6 +1582,10 @@ def _write_case_file(path: Path, case: PhytoolsParityCase) -> Path:
         "simulation_root_state_probabilities": case.simulation_root_state_probabilities,
         "simulation_replicate_count": case.simulation_replicate_count,
         "simulation_seed": case.simulation_seed,
+        "continuous_root_state": case.continuous_root_state,
+        "continuous_sigma_squared": case.continuous_sigma_squared,
+        "continuous_replicate_count": case.continuous_replicate_count,
+        "continuous_seed": case.continuous_seed,
     }
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return path
@@ -1521,6 +1600,27 @@ def _discrete_history_parity_rows(report) -> list[dict[str, object]]:
             "lower_95_interval": row.lower_95_interval,
             "upper_95_interval": row.upper_95_interval,
             "presence_fraction": row.presence_fraction,
+        }
+        for row in report.rows
+    ]
+
+
+def _continuous_trait_collection_parity_rows(
+    report: ContinuousTraitSimulationCollectionReport,
+) -> list[dict[str, object]]:
+    return [
+        {
+            "row_kind": row.row_kind,
+            "label": row.label,
+            "mean_value": "" if row.mean_value is None else row.mean_value,
+            "standard_deviation": (
+                "" if row.standard_deviation is None else row.standard_deviation
+            ),
+            "minimum": "" if row.minimum is None else row.minimum,
+            "median": "" if row.median is None else row.median,
+            "maximum": "" if row.maximum is None else row.maximum,
+            "covariance": "" if row.covariance is None else row.covariance,
+            "correlation": "" if row.correlation is None else row.correlation,
         }
         for row in report.rows
     ]
@@ -1592,6 +1692,26 @@ def _build_bijux_case_payload(
                 "warning_count": len(report.input_audit.warnings),
             },
             None,
+        )
+    if case.operation == "simulate-continuous-brownian":
+        report = simulate_brownian_trait_collection(
+            tree_path,
+            root_state=case.continuous_root_state or 0.0,
+            sigma_squared=case.continuous_sigma_squared,
+            replicates=case.continuous_replicate_count or 256,
+            seed=case.continuous_seed or 1,
+        )
+        return (
+            {
+                "taxon_count": report.tip_count,
+                "branch_count": report.branch_count,
+                "requested_replicate_count": report.replicate_count,
+                "successful_replicate_count": report.replicate_count,
+                "seed": report.seed,
+                "root_state": report.root_state,
+                "sigma_squared": report.sigma_squared,
+            },
+            _continuous_trait_collection_parity_rows(report),
         )
     if case.operation == "discrete-fit-mk":
         report = fit_discrete_mk_model(
@@ -2184,6 +2304,16 @@ def _mismatch_reason(
             "lower_95_total_transition_count",
             "upper_95_total_transition_count",
         )
+    elif case.operation == "simulate-continuous-brownian":
+        compare_keys = (
+            "taxon_count",
+            "branch_count",
+            "requested_replicate_count",
+            "successful_replicate_count",
+            "seed",
+            "root_state",
+            "sigma_squared",
+        )
     elif case.operation == "discrete-ancestral-rerooting":
         compare_keys = (
             "taxon_count",
@@ -2244,6 +2374,7 @@ def _row_mismatch_reason(
         "discrete-stochastic-map-count",
         "discrete-stochastic-map-description",
         "simulate-discrete-history",
+        "simulate-continuous-brownian",
         "discrete-ancestral-rerooting",
         "continuous-ancestral-fast-anc",
         "continuous-ancestral-anc-ml",
@@ -2286,6 +2417,7 @@ def _row_mismatch_reason(
         "discrete-stochastic-map-count",
         "discrete-stochastic-map-description",
         "simulate-discrete-history",
+        "simulate-continuous-brownian",
     }:
         reference_rows = sorted(
             reference_rows,
@@ -2333,6 +2465,18 @@ def _row_mismatch_reason(
             "lower_95_interval",
             "upper_95_interval",
             "presence_fraction",
+        )
+    elif case.operation == "simulate-continuous-brownian":
+        compare_keys = (
+            "row_kind",
+            "label",
+            "mean_value",
+            "standard_deviation",
+            "minimum",
+            "median",
+            "maximum",
+            "covariance",
+            "correlation",
         )
     else:
         compare_keys = (
@@ -2576,6 +2720,7 @@ def run_phytools_parity_cases(
                             "discrete-stochastic-map-description",
                             "discrete-stochastic-map-density",
                             "simulate-discrete-history",
+                            "simulate-continuous-brownian",
                             "discrete-ancestral-rerooting",
                             "continuous-ancestral-fast-anc",
                             "continuous-ancestral-anc-ml",
@@ -2594,13 +2739,19 @@ def run_phytools_parity_cases(
                                         "simulate-discrete-history",
                                     }
                                     else (
-                                        "rerooting-method-node-probabilities.tsv"
-                                        if case.operation == "discrete-ancestral-rerooting"
+                                        "fastbm-summary-rows.tsv"
+                                        if case.operation
+                                        == "simulate-continuous-brownian"
                                         else (
-                                            "fast-anc-node-estimates.tsv"
+                                            "rerooting-method-node-probabilities.tsv"
                                             if case.operation
-                                            == "continuous-ancestral-fast-anc"
-                                            else "anc-ml-node-estimates.tsv"
+                                            == "discrete-ancestral-rerooting"
+                                            else (
+                                                "fast-anc-node-estimates.tsv"
+                                                if case.operation
+                                                == "continuous-ancestral-fast-anc"
+                                                else "anc-ml-node-estimates.tsv"
+                                            )
                                         )
                                     )
                                 )
