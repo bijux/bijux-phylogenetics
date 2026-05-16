@@ -850,6 +850,7 @@ goal: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::make.simmap(model='ARD')`, `phytools::countSimmap`,
 `phytools::densityMap`,
 `phytools::describe.simmap`,
+`phytools::sim.history`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed strong-signal,
 weak-signal, non-ultrametric, discrete-state, and missing-value comparative
@@ -908,6 +909,18 @@ than the owned surface: it currently covers governed clean binary and
 missing-value-pruned binary ER cases only. It compares per-branch posterior
 probability summaries and branch-level uncertainty against live
 `phytools::densityMap`, and does not claim pixel-perfect plotting parity.
+The owned simulation surface now also exposes one fixed-tree
+`simulate_discrete_histories(...)` contract over an explicit discrete rate
+matrix. It supports binary and multistate states, fixed or probabilistic root
+states, seeded replication, true branch-history segments, true transition
+events, tip-state truth tables, node-state truth tables, branch-history truth
+tables, and one parity-ready summary ledger over transition counts,
+time-in-state totals, and tip-state frequencies. The live `sim.history` lane
+now covers governed binary and multistate no-change plus high-rate fixtures on
+fixed trees. It compares distribution-summary envelopes against real
+`phytools::sim.history`, including total-transition-count summaries,
+transition-count rows, time-in-state rows, and tip-state-frequency rows, and
+does not claim exact simulated-history identity across languages.
 The live
 `rerootingMethod` lane now covers governed ER binary, governed ER multistate,
 governed ER missing-value-pruned, governed SYM multistate, and governed SYM

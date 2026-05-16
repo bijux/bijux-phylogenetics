@@ -227,6 +227,7 @@ goal 201: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::make.simmap(model='ARD')`, `phytools::countSimmap`,
 `phytools::densityMap`,
 `phytools::describe.simmap`,
+`phytools::sim.history`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed
 twenty-four-taxon comparative fixtures drawn from the shared `phytools`
@@ -280,6 +281,15 @@ The live `describe.simmap` lane now also covers clean binary, clean multistate,
 clean multistate SYM, and missing-value-pruned binary cases. It compares the
 owned stochastic-map summary contract directly, including total changes,
 transition rows, time-in-state rows, and per-branch state-occupancy rows.
+The same owned surface now also supports `simulate history-discrete` for
+fixed-tree discrete-history truth generation from one explicit rate matrix. It
+writes one tip-state truth table, one node-state truth table, one branch
+history table, one transition-event ledger, one branch-segment ledger, and
+one parity summary table. The live `sim.history` lane now covers governed
+binary and multistate no-change plus high-rate fixed-tree cases, and compares
+total-transition summaries, transition-count rows, time-in-state rows, and
+tip-state-frequency rows against real `phytools::sim.history` without
+claiming exact cross-language history identity.
 The live
 `rerootingMethod` lane now also covers governed ER binary, ER multistate, ER
 missing-value-pruned, SYM multistate, and SYM missing-value-pruned cases. It

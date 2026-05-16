@@ -136,6 +136,18 @@ The same owned summary contract also underlies the governed live
 `phytools::describe.simmap` lane, which compares total-change summary,
 transition-count rows, time-in-state rows, and per-branch state-occupancy rows
 over selected seeded map collections.
+The same owned simulation surface also exposes
+`bijux_phylogenetics.simulate_discrete_histories(...)` plus writers for one
+tip-state truth table, one node-state truth table, one branch-history truth
+table, one transition-event ledger, one branch-segment ledger, and one parity
+summary table. That surface simulates discrete histories on one fixed tree
+from an explicit rate matrix, supports binary and multistate states, supports
+fixed or probabilistic root states, and keeps one seeded truth surface for
+downstream recovery tests. It now underlies the governed live
+`phytools::sim.history` lane over selected no-change and high-rate fixed-tree
+cases, comparing total-transition summaries, transition-count rows,
+time-in-state rows, and tip-state-frequency rows without claiming exact
+cross-language history identity.
 
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the
