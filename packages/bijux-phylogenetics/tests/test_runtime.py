@@ -871,7 +871,7 @@ from bijux_phylogenetics.parity import (
     write_reference_parity_observation_table,
     write_reference_parity_summary_table,
 )
-from bijux_phylogenetics.reference_validation import (
+from bijux_phylogenetics.validation import (
     build_core_workflow_failure_gallery,
     build_core_workflow_validation_report,
     build_level_one_release_gate_report,
@@ -883,7 +883,7 @@ from bijux_phylogenetics.reference_validation import (
     validate_taxon_naming_reference_fixtures,
     validate_tree_reference_fixtures,
 )
-from bijux_phylogenetics.release_truth import build_release_truth_report
+from bijux_phylogenetics.validation import build_release_truth_report
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg

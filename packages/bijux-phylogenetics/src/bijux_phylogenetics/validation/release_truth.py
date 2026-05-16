@@ -23,7 +23,7 @@ from bijux_phylogenetics.parity import (
     ReferenceParityReport,
     validate_reference_parity_examples,
 )
-from bijux_phylogenetics.reference_validation import (
+from bijux_phylogenetics.validation.reference import (
     CoreWorkflowValidationReport,
     LevelOneReleaseGateReport,
     build_core_workflow_validation_report,

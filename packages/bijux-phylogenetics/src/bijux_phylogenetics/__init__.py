@@ -1442,7 +1442,7 @@ from .parity import (
     write_reference_parity_observation_table,
     write_reference_parity_summary_table,
 )
-from .reference_validation import (
+from .validation import (
     CoreWorkflowFailureCase,
     CoreWorkflowValidationReport,
     CoreWorkflowValidationRow,
@@ -1464,7 +1464,7 @@ from .reference_validation import (
     write_core_workflow_validation_json,
     write_level_one_release_gate_json,
 )
-from .release_truth import (
+from .validation import (
     PytestSessionAggregate,
     PytestSessionSummary,
     ReleaseTruthReport,
@@ -1647,7 +1647,7 @@ from .tree_shape import (
     summarize_tree_shape,
     write_tree_shape_table,
 )
-from .validation_corpus import (
+from .validation import (
     BenchmarkCorpusReport,
     BenchmarkDashboardRow,
     CorpusDatasetCase,

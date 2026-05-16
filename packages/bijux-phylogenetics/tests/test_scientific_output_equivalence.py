@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.scientific_output_equivalence import compare_scientific_output
+from bijux_phylogenetics.validation import compare_scientific_output
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

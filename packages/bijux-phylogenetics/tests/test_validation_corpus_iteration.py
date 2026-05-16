@@ -9,7 +9,7 @@ from bijux_phylogenetics.benchmark import (
     benchmark_alignment_site_scaling,
     benchmark_tree_set_consensus,
 )
-from bijux_phylogenetics.validation_corpus import (
+from bijux_phylogenetics.validation import (
     build_broken_benchmark_corpus,
     build_clean_benchmark_corpus,
     build_memory_benchmark_dashboard,

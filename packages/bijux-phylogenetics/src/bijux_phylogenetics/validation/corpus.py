@@ -16,7 +16,7 @@ from bijux_phylogenetics.core.dataset import DatasetAuditReport, audit_dataset_i
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.errors import PhylogeneticsError
 from bijux_phylogenetics.io.fasta import summarise_fasta
-from bijux_phylogenetics.reference_validation import (
+from bijux_phylogenetics.validation.reference import (
     build_core_workflow_validation_report,
 )
 from bijux_phylogenetics.simulation import (
@@ -209,7 +209,7 @@ class SimulationReproducibilityReport:
 
 
 def _default_fixtures_root() -> Path:
-    return Path(__file__).resolve().parents[2] / "tests" / "fixtures"
+    return Path(__file__).resolve().parents[3] / "tests" / "fixtures"
 
 
 def _fixture(root: Path, *parts: str) -> Path:

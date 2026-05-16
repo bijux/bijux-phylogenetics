@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import bijux_phylogenetics
-from bijux_phylogenetics.release_truth import (
+from bijux_phylogenetics.validation import (
     aggregate_pytest_junit_reports,
     build_release_truth_report,
     parse_pytest_junit_report,

@@ -74,13 +74,13 @@ from bijux_phylogenetics.io.fasta import (
     summarise_fasta,
 )
 from bijux_phylogenetics.io.newick import dumps_newick
-from bijux_phylogenetics.reference_validation import (
+from bijux_phylogenetics.validation import (
     CoreWorkflowValidationReport,
     LevelOneReleaseGateReport,
     build_core_workflow_validation_report,
     build_level_one_release_gate_report,
 )
-from bijux_phylogenetics.release_truth import (
+from bijux_phylogenetics.validation import (
     ReleaseTruthReport,
     build_release_truth_report,
 )

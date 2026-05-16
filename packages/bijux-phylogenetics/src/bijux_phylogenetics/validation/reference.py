@@ -135,7 +135,7 @@ class LevelOneReleaseGateReport:
 
 
 def _default_fixtures_root() -> Path:
-    return Path(__file__).resolve().parents[2] / "tests" / "fixtures"
+    return Path(__file__).resolve().parents[3] / "tests" / "fixtures"
 
 
 def _fixture(root: Path, *parts: str) -> Path:
@@ -663,7 +663,7 @@ def validate_report_regression_fixtures(
         render_taxon_report,
         render_tree_report,
     )
-    from bijux_phylogenetics.scientific_output_equivalence import (
+    from bijux_phylogenetics.validation import (
         compare_scientific_output,
     )
 

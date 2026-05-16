@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.scientific_output_equivalence import (
+from bijux_phylogenetics.validation import (
     ScientificOutputEquivalenceReport,
     compare_scientific_output,
 )
