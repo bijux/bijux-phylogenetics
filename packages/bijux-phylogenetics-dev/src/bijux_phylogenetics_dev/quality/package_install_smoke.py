@@ -19,10 +19,7 @@ _ARTIFACT_KIND_PATTERNS = {
     "sdist": "bijux_phylogenetics-*.tar.gz",
 }
 _RUNTIME_SOURCE_ROOT = (
-    Path("packages")
-    / "bijux-phylogenetics"
-    / "src"
-    / "bijux_phylogenetics"
+    Path("packages") / "bijux-phylogenetics" / "src" / "bijux_phylogenetics"
 )
 _RESOURCE_SENTINELS: dict[str, tuple[str, ...]] = {
     "example_alignment": ("examples", "alignments", "example_alignment.fasta"),
@@ -79,7 +76,9 @@ def _as_str(value: object) -> str:
 
 def _write_json(path: Path, payload: JsonObject) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
 
 def _write_text(path: Path, text: str) -> None:
@@ -101,21 +100,27 @@ def _venv_executable(venv_root: Path, name: str) -> Path:
     return venv_root / bin_dir / f"{name}{suffix}"
 
 
+def _select_newest_artifact(dist_dir: Path, pattern: str, artifact_kind: str) -> Path:
+    matches = sorted(dist_dir.glob(pattern))
+    if not matches:
+        raise ValueError(
+            f"expected at least one {artifact_kind} artifact for pattern {pattern} in {dist_dir}"
+        )
+    return max(matches, key=lambda path: (path.stat().st_mtime_ns, path.name))
+
+
 def select_artifact_paths(dist_dir: Path, artifact_kind: str) -> list[tuple[str, Path]]:
     """Select the built runtime artifacts to smoke-test."""
     selections: list[tuple[str, Path]] = []
     for kind in _artifact_kind_choices(artifact_kind):
         pattern = _ARTIFACT_KIND_PATTERNS[kind]
-        matches = sorted(dist_dir.glob(pattern))
-        if len(matches) != 1:
-            raise ValueError(
-                f"expected exactly one {kind} artifact for pattern {pattern} in {dist_dir}"
-            )
-        selections.append((kind, matches[0]))
+        selections.append((kind, _select_newest_artifact(dist_dir, pattern, kind)))
     return selections
 
 
-def _probe_installed_resources(venv_python: Path, cwd: Path, env: dict[str, str]) -> JsonObject:
+def _probe_installed_resources(
+    venv_python: Path, cwd: Path, env: dict[str, str]
+) -> JsonObject:
     sentinel_json = json.dumps(_RESOURCE_SENTINELS, sort_keys=True)
     probe_script = f"""
 import importlib.resources
@@ -290,7 +295,9 @@ def validate_alignment_payload(payload: JsonObject) -> list[SmokeIssue]:
     return issues
 
 
-def validate_tree_package_payload(payload: JsonObject, out_dir: Path) -> list[SmokeIssue]:
+def validate_tree_package_payload(
+    payload: JsonObject, out_dir: Path
+) -> list[SmokeIssue]:
     """Validate the installed tree report package smoke payload."""
     metrics = _as_dict(payload.get("metrics"))
     issues: list[SmokeIssue] = []
@@ -310,7 +317,9 @@ def validate_tree_package_payload(payload: JsonObject, out_dir: Path) -> list[Sm
                 message="installed tree report package did not preserve the packaged example tip count",
             )
         )
-    output_names = {path.name for path in out_dir.iterdir()} if out_dir.is_dir() else set()
+    output_names = (
+        {path.name for path in out_dir.iterdir()} if out_dir.is_dir() else set()
+    )
     missing_outputs = [
         filename for filename in _TREE_PACKAGE_OUTPUTS if filename not in output_names
     ]

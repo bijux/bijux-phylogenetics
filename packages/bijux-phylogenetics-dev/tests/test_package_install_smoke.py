@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from bijux_phylogenetics_dev.quality.package_install_smoke import (
@@ -27,14 +28,31 @@ def test_select_artifact_paths_supports_wheel_sdist_and_both(tmp_path: Path) -> 
     ]
 
 
-def test_validate_resource_probe_rejects_repository_source_paths(tmp_path: Path) -> None:
+def test_select_artifact_paths_prefers_the_newest_matching_artifact(
+    tmp_path: Path,
+) -> None:
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    older_wheel = dist_dir / "bijux_phylogenetics-0.1.0-py3-none-any.whl"
+    newer_wheel = dist_dir / "bijux_phylogenetics-0.1.1-py3-none-any.whl"
+    older_wheel.write_text("older", encoding="utf-8")
+    newer_wheel.write_text("newer", encoding="utf-8")
+    older_stat = older_wheel.stat()
+    os.utime(older_wheel, ns=(older_stat.st_atime_ns, older_stat.st_mtime_ns))
+    os.utime(
+        newer_wheel,
+        ns=(older_stat.st_atime_ns + 1, older_stat.st_mtime_ns + 1),
+    )
+
+    assert select_artifact_paths(dist_dir, "wheel") == [("wheel", newer_wheel)]
+
+
+def test_validate_resource_probe_rejects_repository_source_paths(
+    tmp_path: Path,
+) -> None:
     repo_root = tmp_path / "repo"
     source_root = (
-        repo_root
-        / "packages"
-        / "bijux-phylogenetics"
-        / "src"
-        / "bijux_phylogenetics"
+        repo_root / "packages" / "bijux-phylogenetics" / "src" / "bijux_phylogenetics"
     )
     resource_root = source_root / "resources"
     for relative in (

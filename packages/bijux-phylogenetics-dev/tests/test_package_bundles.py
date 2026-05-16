@@ -172,6 +172,7 @@ def test_runtime_publication_policy_allows_secured_xml_dependency() -> None:
         "biopython>=1.87,<2.0",
         "cairosvg>=2.9.0,<3.0",
         "defusedxml>=0.7.1,<1.0",
+        "PyYAML>=6.0,<7.0",
     )
     assert (
         "src/bijux_phylogenetics/resources/examples/alignments/example_alignment.fasta"

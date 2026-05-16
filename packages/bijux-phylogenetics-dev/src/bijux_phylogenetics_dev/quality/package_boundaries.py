@@ -174,6 +174,10 @@ def _iter_python_files(root: Path) -> list[Path]:
     return sorted(path for path in root.rglob("*.py") if path.is_file())
 
 
+def _is_generated_python_cache(path: Path) -> bool:
+    return "__pycache__" in path.parts or path.suffix in {".pyc", ".pyo"}
+
+
 def _repo_import_roots(path: Path, known_roots: tuple[str, ...]) -> list[str]:
     module = ast.parse(path.read_text(encoding="utf-8"))
     imports: list[str] = []
@@ -348,7 +352,7 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
     actual_alias_files = sorted(
         path.relative_to(alias_root).as_posix()
         for path in alias_root.rglob("*")
-        if path.is_file()
+        if path.is_file() and not _is_generated_python_cache(path)
     )
     allowed_alias_files = sorted(policy.alias_allowed_local_files)
     unexpected_alias_files = sorted(
