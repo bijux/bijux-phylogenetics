@@ -1,12 +1,18 @@
-# Real Engine Validation
+# Real-Local Validation
 
-The `real_local/` suite is the governed external-engine validation lane.
+The `real_local/` suite is the governed installed-environment validation lane.
 
 It is intentionally separate from the fast `engine_contract` tests that use
 fixture executables and parser-only contract coverage.
 
 Use this lane when you need evidence that Bijux still works with installed
-external engines, not only with fake runners:
+artifacts and installed external engines, not only with fake runners:
+
+- `test_installability_smoke.py` builds wheel and sdist artifacts, installs
+  each into a clean virtual environment, runs `bijux-phylogenetics --help`,
+  validates packaged FASTA input, renders a tree report from packaged example
+  data, runs a comparative signal command from packaged example data, and
+  verifies that the built distributions include governed packaged resources.
 
 - `test_engine_preflight_lane.py` exercises `phylo preflight` against the local
   MAFFT, trimAl, and IQ-TREE environment and verifies that the selected-workflow
@@ -29,7 +35,13 @@ Each matrix case records the reviewer-facing engine name, validation name,
 validation mode, executable path when one was used, version text, command,
 exit code, runtime, output paths, and output hashes.
 
-Run only this lane with:
+Run the full real-local lane with:
+
+```bash
+./.venv/bin/pytest tests/real_local -m real_local
+```
+
+Run only the external-engine subset with:
 
 ```bash
 ./.venv/bin/pytest tests/real_local -m engine_real
