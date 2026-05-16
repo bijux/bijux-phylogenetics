@@ -243,6 +243,10 @@ from bijux_phylogenetics.command_line.alignment_matrix import (
     add_alignment_matrix_commands,
     run_alignment_matrix_command,
 )
+from bijux_phylogenetics.command_line.annotate import (
+    add_annotate_command,
+    run_annotate_command,
+)
 from bijux_phylogenetics.command_line.alignment_coding import (
     add_alignment_coding_commands,
     run_alignment_coding_command,
@@ -408,7 +412,7 @@ from bijux_phylogenetics.comparative.trait_outliers import (
 )
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
-from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.core.taxonomy import (
     normalize_tree_taxa,
     write_taxon_mapping,
@@ -579,7 +583,6 @@ from bijux_phylogenetics.parity import (
 from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.svg import audit_support_label_rendering, render_tree_svg
 from bijux_phylogenetics.reports.service import (
-    annotate_tree_against_table,
     render_alignment_report,
     render_dataset_report,
     render_level_one_release_gate_report,
@@ -588,7 +591,6 @@ from bijux_phylogenetics.reports.service import (
     render_taxon_report,
     render_tree_report,
     render_workflow_validation_report,
-    write_annotation_report,
 )
 from bijux_phylogenetics.reports.tree_package import build_tree_report_package
 from bijux_phylogenetics.runtime.results import build_command_result, build_error_result
@@ -3092,18 +3094,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     add_compare_command(subparsers)
 
-    annotate = subparsers.add_parser(
-        get_command_spec("annotate").name, help=get_command_spec("annotate").summary
-    )
-    annotate.add_argument("tree", type=Path)
-    annotate.add_argument("--metadata", required=True, type=Path)
-    annotate.add_argument("--taxon-column")
-    annotate.add_argument("--out", type=Path)
-    annotate.add_argument("--joined-out", type=Path)
-    annotate.add_argument(
-        "--json", action="store_true", help="Emit the linkage report as JSON."
-    )
-    _add_manifest_argument(annotate)
+    add_annotate_command(subparsers)
 
     add_diagnose_command(subparsers)
 
@@ -9706,61 +9697,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "compare":
             return run_compare_command(args, parser=parser)
         if args.command == "annotate":
-            report = annotate_tree_against_table(
-                args.tree, args.metadata, taxon_column=args.taxon_column
-            )
-            outputs: list[Path | str] = []
-            if args.out is not None:
-                outputs.append(write_annotation_report(args.out, report))
-            if args.joined_out is not None:
-                table = load_taxon_table(args.metadata, taxon_column=args.taxon_column)
-                outputs.append(
-                    write_taxon_rows(
-                        args.joined_out,
-                        columns=[
-                            "taxon",
-                            "matched",
-                            *[
-                                column
-                                for column in table.columns
-                                if column != table.taxon_column
-                            ],
-                        ],
-                        rows=[
-                            {
-                                "taxon": row.taxon,
-                                "matched": str(row.matched).lower(),
-                                **{
-                                    column: row.values.get(column, "")
-                                    for column in table.columns
-                                    if column != table.taxon_column
-                                },
-                            }
-                            for row in report.joined_rows
-                        ],
-                    )
-                )
-            outputs = _finalize_outputs(
-                args,
-                command="annotate",
-                inputs=[args.tree, args.metadata],
-                outputs=outputs,
-            )
-            _print_result(
-                build_command_result(
-                    command="annotate",
-                    inputs=[args.tree, args.metadata],
-                    outputs=outputs,
-                    metrics={
-                        "tree_taxa": report.tree_taxa,
-                        "table_rows": report.table_rows,
-                        "linked_taxa": report.linked_taxa,
-                    },
-                    data=report,
-                ),
-                json_output=args.json,
-            )
-            return 0
+            return run_annotate_command(args)
         if args.command == "render":
             metadata_table = (
                 load_taxon_table(args.metadata, taxon_column=args.taxon_column)
