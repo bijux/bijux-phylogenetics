@@ -84,6 +84,7 @@ rerooting_rows_path <- file.path(output_root, "rerooting-method-node-probabiliti
 fast_anc_rows_path <- file.path(output_root, "fast-anc-node-estimates.tsv")
 anc_ml_rows_path <- file.path(output_root, "anc-ml-node-estimates.tsv")
 fastbm_rows_path <- file.path(output_root, "fastbm-summary-rows.tsv")
+simcorrs_rows_path <- file.path(output_root, "simcorrs-summary-rows.tsv")
 case_payload <- jsonlite::fromJSON(case_path)
 r_version <- as.character(getRversion())
 
@@ -607,6 +608,158 @@ build_fastbm_result <- function(tree) {
   )
 }
 
+normalize_simcorrs_matrix <- function(simulated_matrix, tip_labels, trait_names) {
+  matrix_result <- as.matrix(simulated_matrix)
+  rownames(matrix_result) <- tip_labels
+  if (is.null(colnames(matrix_result)) || length(colnames(matrix_result)) != length(trait_names)) {
+    colnames(matrix_result) <- trait_names
+  }
+  matrix_result[tip_labels, trait_names, drop = FALSE]
+}
+
+build_simcorrs_summary_rows <- function(simulated_matrices, trait_names, root_states, covariance_matrix) {
+  rows <- list()
+  for (index in seq_along(trait_names)) {
+    rows[[length(rows) + 1]] <- list(
+      row_kind = "root_state",
+      label = trait_names[[index]],
+      mean_value = as.numeric(root_states[[index]]),
+      standard_deviation = "",
+      minimum = "",
+      median = "",
+      maximum = "",
+      covariance = "",
+      correlation = ""
+    )
+  }
+  for (left_index in seq_along(trait_names)) {
+    for (right_index in left_index:length(trait_names)) {
+      covariance <- as.numeric(covariance_matrix[left_index, right_index])
+      left_variance <- as.numeric(covariance_matrix[left_index, left_index])
+      right_variance <- as.numeric(covariance_matrix[right_index, right_index])
+      correlation <- if (left_variance <= 0 || right_variance <= 0) {
+        0.0
+      } else {
+        covariance / sqrt(left_variance * right_variance)
+      }
+      rows[[length(rows) + 1]] <- list(
+        row_kind = "evolutionary_covariance",
+        label = paste0(trait_names[[left_index]], "|", trait_names[[right_index]]),
+        mean_value = "",
+        standard_deviation = "",
+        minimum = "",
+        median = "",
+        maximum = "",
+        covariance = covariance,
+        correlation = as.numeric(correlation)
+      )
+    }
+  }
+  dimension_labels <- list()
+  for (taxon in rownames(simulated_matrices[[1]])) {
+    for (trait_name in trait_names) {
+      dimension_labels[[length(dimension_labels) + 1]] <- c(taxon, trait_name)
+    }
+  }
+  values_by_dimension <- lapply(dimension_labels, function(label_parts) {
+    vapply(
+      simulated_matrices,
+      function(simulated_matrix) as.numeric(simulated_matrix[label_parts[[1]], label_parts[[2]]]),
+      numeric(1)
+    )
+  })
+  for (index in seq_along(dimension_labels)) {
+    label_parts <- dimension_labels[[index]]
+    values <- values_by_dimension[[index]]
+    rows[[length(rows) + 1]] <- list(
+      row_kind = "tip_distribution",
+      label = paste0(label_parts[[1]], "|", label_parts[[2]]),
+      mean_value = as.numeric(mean(values)),
+      standard_deviation = as.numeric(stats::sd(values)),
+      minimum = as.numeric(min(values)),
+      median = as.numeric(stats::median(values)),
+      maximum = as.numeric(max(values)),
+      covariance = "",
+      correlation = ""
+    )
+  }
+  for (left_index in seq_along(dimension_labels)) {
+    left_label <- dimension_labels[[left_index]]
+    left_values <- values_by_dimension[[left_index]]
+    for (right_index in left_index:length(dimension_labels)) {
+      right_label <- dimension_labels[[right_index]]
+      right_values <- values_by_dimension[[right_index]]
+      correlation <- if (stats::sd(left_values) == 0 || stats::sd(right_values) == 0) {
+        0.0
+      } else {
+        as.numeric(stats::cor(left_values, right_values))
+      }
+      rows[[length(rows) + 1]] <- list(
+        row_kind = "tip_covariance",
+        label = paste0(
+          left_label[[1]], "|", left_label[[2]], "||",
+          right_label[[1]], "|", right_label[[2]]
+        ),
+        mean_value = "",
+        standard_deviation = "",
+        minimum = "",
+        median = "",
+        maximum = "",
+        covariance = as.numeric(stats::cov(left_values, right_values)),
+        correlation = correlation
+      )
+    }
+  }
+  rows[order(
+    vapply(rows, function(row) row$row_kind, character(1)),
+    vapply(rows, function(row) row$label, character(1))
+  )]
+}
+
+build_simcorrs_result <- function(tree) {
+  requested_replicate_count <- as.integer(case_payload$continuous_replicate_count)
+  simulation_seed <- as.integer(case_payload$continuous_seed)
+  trait_names <- as.character(unname(case_payload$continuous_trait_names))
+  root_states <- as.numeric(unname(case_payload$continuous_root_states))
+  covariance_values <- as.numeric(unlist(case_payload$continuous_covariance_matrix))
+  covariance_matrix <- matrix(
+    covariance_values,
+    nrow = length(trait_names),
+    byrow = TRUE
+  )
+  rownames(covariance_matrix) <- trait_names
+  colnames(covariance_matrix) <- trait_names
+  set.seed(simulation_seed)
+  simulated_matrices <- lapply(seq_len(requested_replicate_count), function(index) {
+    normalize_simcorrs_matrix(
+      phytools::sim.corrs(
+        tree,
+        vcv = covariance_matrix,
+        anc = root_states,
+        internal = FALSE
+      ),
+      tree$tip.label,
+      trait_names
+    )
+  })
+  list(
+    summary = list(
+      taxon_count = length(tree$tip.label),
+      branch_count = nrow(tree$edge),
+      trait_count = length(trait_names),
+      requested_replicate_count = requested_replicate_count,
+      successful_replicate_count = requested_replicate_count,
+      seed = simulation_seed
+    ),
+    rows = build_simcorrs_summary_rows(
+      simulated_matrices,
+      trait_names,
+      root_states,
+      covariance_matrix
+    )
+  )
+}
+
 build_make_simmap_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
   phytools_model <- switch(
     discrete_model,
@@ -970,6 +1123,9 @@ result_payload <- switch(
   "simulate-continuous-brownian" = build_fastbm_result(
     tree
   ),
+  "simulate-continuous-correlated-brownian" = build_simcorrs_result(
+    tree
+  ),
   "discrete-ancestral-rerooting" = build_rerooting_method_result(
     tree,
     trait_values,
@@ -1021,6 +1177,8 @@ if (!is.null(result_payload$rows)) {
     write_table(stochastic_map_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "simulate-continuous-brownian")) {
     write_table(fastbm_rows_path, result_payload$rows)
+  } else if (identical(case_payload$operation, "simulate-continuous-correlated-brownian")) {
+    write_table(simcorrs_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "discrete-ancestral-rerooting")) {
     write_table(rerooting_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "continuous-ancestral-fast-anc")) {
