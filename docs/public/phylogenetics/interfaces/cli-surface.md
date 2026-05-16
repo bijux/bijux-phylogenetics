@@ -257,6 +257,7 @@ currently covers `phytools::phylosig(method='lambda')`,
 `phytools::densityMap`,
 `phytools::describe.simmap`,
 `phytools::sim.history`,
+`phytools::fastBM`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed twenty-four-taxon
 comparative fixtures from the shared
@@ -322,6 +323,14 @@ frequency rows. The live `sim.history` lane now covers governed binary and
 multistate no-change plus high-rate fixed-tree cases and compares those
 distribution-summary envelopes against real `phytools::sim.history` without
 claiming exact history identity across languages.
+The owned `simulate traits-brownian` surface now accepts either `--sigma` or
+`--sigma-squared` and reports the resolved Brownian rate parameter in JSON
+output. The same simulation family now also owns one Brownian replicate-review
+surface over tip distributions and tip covariances, which underlies the live
+`phytools::fastBM` lane for governed low-variance, root-shift high-variance,
+and six-taxon fixed-tree cases. That lane compares summary envelopes and
+tip-covariance rows against real `phytools::fastBM` without claiming
+cross-language draw identity.
 The live
 `rerootingMethod` lane now includes governed ER binary, ER multistate, ER
 missing-value-pruned, SYM multistate, and SYM missing-value-pruned cases. It
@@ -1083,6 +1092,12 @@ The packaged recovery contract is explicit:
 early-burst branch-rate case. It writes one tip-trait table and reports the
 declared `rate_change` in JSON output so reviewers can tie downstream recovery
 rows back to the generating parameter instead of inferring it indirectly.
+
+`simulate traits-brownian` is the owned one-trait Brownian simulator. It writes
+one tip-trait table, accepts one root state plus either `--sigma` or
+`--sigma-squared`, and reports the resolved Brownian rate in JSON output so the
+generated trait table keeps one explicit covariance-generating parameter
+contract.
 
 `simulate tree-random` and `simulate tree-coalescent` are the owned governed
 tree-simulation review surfaces for random rooted trees and coalescent trees.

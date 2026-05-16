@@ -137,6 +137,18 @@ The same owned summary contract also underlies the governed live
 transition-count rows, time-in-state rows, and per-branch state-occupancy rows
 over selected seeded map collections.
 The same owned simulation surface also exposes
+`bijux_phylogenetics.simulate_brownian_trait_collection(...)` plus writers for
+one replicate trait ledger and one Brownian summary ledger over tip
+distributions and tip covariances. The one-trait Brownian entrypoint
+`bijux_phylogenetics.simulate_brownian_traits(...)` now accepts either
+`sigma` or explicit `sigma_squared`, keeps the resolved Brownian rate
+parameter in the returned report, and shares the same fixed-tree covariance
+contract as the collection surface. That runtime now underlies the governed
+live `phytools::fastBM` lane over selected low-variance, root-shift
+high-variance, and six-taxon fixed-tree cases, comparing distribution
+summaries and tip-covariance rows without claiming exact cross-language
+draw identity.
+The same owned simulation surface also exposes
 `bijux_phylogenetics.simulate_discrete_histories(...)` plus writers for one
 tip-state truth table, one node-state truth table, one branch-history truth
 table, one transition-event ledger, one branch-segment ledger, and one parity

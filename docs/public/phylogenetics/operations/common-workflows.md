@@ -228,6 +228,7 @@ goal 201: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::densityMap`,
 `phytools::describe.simmap`,
 `phytools::sim.history`,
+`phytools::fastBM`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed
 twenty-four-taxon comparative fixtures drawn from the shared `phytools`
@@ -290,6 +291,14 @@ binary and multistate no-change plus high-rate fixed-tree cases, and compares
 total-transition summaries, transition-count rows, time-in-state rows, and
 tip-state-frequency rows against real `phytools::sim.history` without
 claiming exact cross-language history identity.
+The same simulation surface now also supports one Brownian replicate-review
+contract over tip distributions and tip covariances. One-off Brownian runs now
+accept either `sigma` or explicit `sigma_squared`, keep the resolved Brownian
+rate parameter in the report, and share the same covariance contract as the
+replicate collection surface. The live `fastBM` lane now covers governed
+low-variance, root-shift high-variance, and six-taxon fixed trees, and compares
+summary envelopes plus tip-covariance rows against real `phytools::fastBM`
+without claiming exact cross-language draws.
 The live
 `rerootingMethod` lane now also covers governed ER binary, ER multistate, ER
 missing-value-pruned, SYM multistate, and SYM missing-value-pruned cases. It
