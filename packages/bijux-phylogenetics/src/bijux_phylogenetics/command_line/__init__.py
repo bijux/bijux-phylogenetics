@@ -510,6 +510,7 @@ from bijux_phylogenetics.diagnostics.validation import (
     validate_tree_path,
 )
 from bijux_phylogenetics.discrete_evolution import (
+    count_discrete_stochastic_map_transitions,
     compare_discrete_state_models,
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
@@ -522,10 +523,14 @@ from bijux_phylogenetics.discrete_evolution import (
     validate_discrete_transition_reference_examples,
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
+    write_stochastic_map_aggregate_transition_matrix,
+    write_stochastic_map_branch_transition_count_table,
     write_stochastic_map_collection,
     write_stochastic_map_branch_occupancy_table,
+    write_stochastic_map_event_table,
     write_stochastic_map_segment_table,
     write_stochastic_map_state_time_table,
+    write_stochastic_map_transition_count_matrix,
     write_stochastic_map_summary_table,
     write_transition_summary_table,
 )
@@ -4436,9 +4441,29 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write per-branch state-occupancy summaries as TSV.",
     )
     discrete_stochastic.add_argument(
+        "--count-matrix-out",
+        type=Path,
+        help="Write one per-replicate transition count matrix as TSV.",
+    )
+    discrete_stochastic.add_argument(
+        "--aggregate-matrix-out",
+        type=Path,
+        help="Write one aggregate mean transition matrix as TSV.",
+    )
+    discrete_stochastic.add_argument(
+        "--branch-transition-out",
+        type=Path,
+        help="Write per-branch transition-count summaries as TSV.",
+    )
+    discrete_stochastic.add_argument(
         "--segments-out",
         type=Path,
         help="Write flat branch-state segment rows as TSV.",
+    )
+    discrete_stochastic.add_argument(
+        "--events-out",
+        type=Path,
+        help="Write flat stochastic transition-event rows as TSV.",
     )
     discrete_stochastic.add_argument(
         "--json",
@@ -4468,6 +4493,37 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the stochastic-map summary as JSON."
     )
     _add_manifest_argument(discrete_summarize_maps)
+    discrete_count_maps = discrete_evolution_subparsers.add_parser(
+        "count-maps",
+        help="Count directional transitions in a previously written stochastic-map collection.",
+    )
+    discrete_count_maps.add_argument("input_path", type=Path)
+    discrete_count_maps.add_argument(
+        "--count-matrix-out",
+        type=Path,
+        help="Write one per-replicate transition count matrix as TSV.",
+    )
+    discrete_count_maps.add_argument(
+        "--aggregate-matrix-out",
+        type=Path,
+        help="Write one aggregate mean transition matrix as TSV.",
+    )
+    discrete_count_maps.add_argument(
+        "--branch-transition-out",
+        type=Path,
+        help="Write per-branch transition-count summaries as TSV.",
+    )
+    discrete_count_maps.add_argument(
+        "--events-out",
+        type=Path,
+        help="Write flat stochastic transition-event rows as TSV.",
+    )
+    discrete_count_maps.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the stochastic-map count report as JSON.",
+    )
+    _add_manifest_argument(discrete_count_maps)
     discrete_render = discrete_evolution_subparsers.add_parser(
         "render",
         help="Render a tree annotated with reconstructed geographic or other discrete states.",
@@ -13239,6 +13295,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     replicates=args.replicates,
                     seed=args.seed,
                 )
+                count_report = count_discrete_stochastic_map_transitions(report)
                 outputs: list[Path | str] = []
                 if args.collection_out is not None:
                     outputs.append(
@@ -13264,10 +13321,38 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             report.summary,
                         )
                     )
+                if args.count_matrix_out is not None:
+                    outputs.append(
+                        write_stochastic_map_transition_count_matrix(
+                            args.count_matrix_out,
+                            count_report,
+                        )
+                    )
+                if args.aggregate_matrix_out is not None:
+                    outputs.append(
+                        write_stochastic_map_aggregate_transition_matrix(
+                            args.aggregate_matrix_out,
+                            count_report,
+                        )
+                    )
+                if args.branch_transition_out is not None:
+                    outputs.append(
+                        write_stochastic_map_branch_transition_count_table(
+                            args.branch_transition_out,
+                            count_report,
+                        )
+                    )
                 if args.segments_out is not None:
                     outputs.append(
                         write_stochastic_map_segment_table(
                             args.segments_out,
+                            report,
+                        )
+                    )
+                if args.events_out is not None:
+                    outputs.append(
+                        write_stochastic_map_event_table(
+                            args.events_out,
                             report,
                         )
                     )
@@ -13290,6 +13375,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "mean_total_transition_count": report.summary.mean_total_transition_count,
                             "branch_state_row_count": len(
                                 report.summary.branch_occupancy_rows
+                            ),
+                            "count_matrix_row_count": len(count_report.matrix_rows),
+                            "branch_transition_row_count": len(
+                                count_report.branch_rows
                             ),
                             "model": report.model,
                             "state_ordering": report.state_ordering,
@@ -13351,6 +13440,61 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "branch_state_row_count": len(
                                 report.branch_occupancy_rows
                             ),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.discrete_evolution_command == "count-maps":
+                collection = load_stochastic_map_collection(args.input_path)
+                report = count_discrete_stochastic_map_transitions(collection)
+                outputs: list[Path | str] = []
+                if args.count_matrix_out is not None:
+                    outputs.append(
+                        write_stochastic_map_transition_count_matrix(
+                            args.count_matrix_out,
+                            report,
+                        )
+                    )
+                if args.aggregate_matrix_out is not None:
+                    outputs.append(
+                        write_stochastic_map_aggregate_transition_matrix(
+                            args.aggregate_matrix_out,
+                            report,
+                        )
+                    )
+                if args.branch_transition_out is not None:
+                    outputs.append(
+                        write_stochastic_map_branch_transition_count_table(
+                            args.branch_transition_out,
+                            report,
+                        )
+                    )
+                if args.events_out is not None:
+                    outputs.append(
+                        write_stochastic_map_event_table(
+                            args.events_out,
+                            collection,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="discrete-evolution",
+                    inputs=[args.input_path],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="discrete-evolution",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "replicate_count": report.replicate_count,
+                            "mean_total_transition_count": report.mean_total_transition_count,
+                            "count_matrix_row_count": len(report.matrix_rows),
+                            "branch_transition_row_count": len(report.branch_rows),
                         },
                         data=report,
                     ),
