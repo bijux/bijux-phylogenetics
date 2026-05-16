@@ -329,3 +329,72 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
     assert count_payload["metrics"]["mean_total_transition_count"] >= 0.0
     assert count_payload["metrics"]["count_matrix_row_count"] == 6
     assert count_payload["metrics"]["branch_transition_row_count"] > 0
+
+
+def test_discrete_evolution_density_maps_cli_writes_branch_density_outputs(
+    tmp_path: Path, capsys
+) -> None:
+    collection_path = tmp_path / "binary-stochastic-maps.json"
+    branch_probability_path = tmp_path / "branch-probabilities.tsv"
+    density_branch_path = tmp_path / "density-branches.tsv"
+    density_slice_path = tmp_path / "density-slices.tsv"
+    density_html_path = tmp_path / "density-report.html"
+
+    stochastic_exit = main(
+        [
+            "discrete-evolution",
+            "stochastic-map",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(fixture("example_traits_phytools_signal_twenty_four_taxa.tsv")),
+            "--trait",
+            "binary_state",
+            "--model",
+            "equal-rates",
+            "--replicates",
+            "6",
+            "--seed",
+            "17",
+            "--collection-out",
+            str(collection_path),
+            "--json",
+        ]
+    )
+    _ = json.loads(capsys.readouterr().out)
+    assert stochastic_exit == 0
+
+    density_exit = main(
+        [
+            "discrete-evolution",
+            "density-maps",
+            str(collection_path),
+            "--resolution",
+            "12",
+            "--branch-probabilities-out",
+            str(branch_probability_path),
+            "--density-branches-out",
+            str(density_branch_path),
+            "--density-slices-out",
+            str(density_slice_path),
+            "--out",
+            str(density_html_path),
+            "--json",
+        ]
+    )
+    density_payload = json.loads(capsys.readouterr().out)
+
+    assert density_exit == 0
+    assert density_payload["metrics"]["replicate_count"] == 6
+    assert density_payload["metrics"]["resolution"] == 12
+    assert density_payload["metrics"]["focal_state"] == "1"
+    assert density_payload["metrics"]["branch_probability_row_count"] > 0
+    assert density_payload["metrics"]["density_branch_row_count"] > 0
+    assert density_payload["metrics"]["density_slice_row_count"] > 0
+    assert density_payload["metrics"]["rendered_branch_color_count"] > 0
+    assert "mean_probability" in branch_probability_path.read_text(encoding="utf-8")
+    assert (
+        "mean_posterior_probability"
+        in density_branch_path.read_text(encoding="utf-8")
+    )
+    assert "posterior_probability" in density_slice_path.read_text(encoding="utf-8")
+    assert density_html_path.exists()
+    assert density_html_path.with_suffix(".svg").exists()

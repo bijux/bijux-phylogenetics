@@ -515,18 +515,23 @@ from bijux_phylogenetics.discrete_evolution import (
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
     load_stochastic_map_collection,
+    render_stochastic_map_density_artifact,
     render_discrete_state_evolution_report,
     render_tree_with_geographic_states,
     simulate_discrete_stochastic_maps,
+    summarize_discrete_stochastic_map_density,
     summarize_discrete_stochastic_maps,
     validate_discrete_state_coding,
     validate_discrete_transition_reference_examples,
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
     write_stochastic_map_aggregate_transition_matrix,
+    write_stochastic_map_branch_probability_table,
     write_stochastic_map_branch_transition_count_table,
     write_stochastic_map_collection,
     write_stochastic_map_branch_occupancy_table,
+    write_stochastic_map_density_branch_table,
+    write_stochastic_map_density_slice_table,
     write_stochastic_map_event_table,
     write_stochastic_map_segment_table,
     write_stochastic_map_state_time_table,
@@ -4466,6 +4471,42 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write flat stochastic transition-event rows as TSV.",
     )
     discrete_stochastic.add_argument(
+        "--focal-state",
+        help="Resolve one focal state for density slices and density rendering. When omitted, binary collections default to the second state in the fitted state order.",
+    )
+    discrete_stochastic.add_argument(
+        "--density-resolution",
+        type=int,
+        default=100,
+        help="Set the branch-slice resolution used for density summaries.",
+    )
+    discrete_stochastic.add_argument(
+        "--branch-probabilities-out",
+        type=Path,
+        help="Write per-branch state-probability summaries as TSV.",
+    )
+    discrete_stochastic.add_argument(
+        "--density-branches-out",
+        type=Path,
+        help="Write per-branch focal-state density summaries as TSV.",
+    )
+    discrete_stochastic.add_argument(
+        "--density-slices-out",
+        type=Path,
+        help="Write flat branch-slice density rows as TSV.",
+    )
+    discrete_stochastic.add_argument(
+        "--density-figure-out",
+        type=Path,
+        help="Write one branch-colored density artifact as .svg or .html.",
+    )
+    discrete_stochastic.add_argument(
+        "--layout",
+        choices=("phylogram", "cladogram", "circular"),
+        default="phylogram",
+        help="Choose the layout for any density artifact written from this command.",
+    )
+    discrete_stochastic.add_argument(
         "--json",
         action="store_true",
         help="Emit the stochastic-map collection as JSON.",
@@ -4524,6 +4565,52 @@ def build_parser() -> argparse.ArgumentParser:
         help="Emit the stochastic-map count report as JSON.",
     )
     _add_manifest_argument(discrete_count_maps)
+    discrete_density_maps = discrete_evolution_subparsers.add_parser(
+        "density-maps",
+        help="Summarize posterior density over a previously written stochastic-map collection.",
+    )
+    discrete_density_maps.add_argument("input_path", type=Path)
+    discrete_density_maps.add_argument(
+        "--focal-state",
+        help="Resolve one focal state for density slices and density rendering. When omitted, binary collections default to the second state in the fitted state order.",
+    )
+    discrete_density_maps.add_argument(
+        "--resolution",
+        type=int,
+        default=100,
+        help="Set the branch-slice resolution used for density summaries.",
+    )
+    discrete_density_maps.add_argument(
+        "--branch-probabilities-out",
+        type=Path,
+        help="Write per-branch state-probability summaries as TSV.",
+    )
+    discrete_density_maps.add_argument(
+        "--density-branches-out",
+        type=Path,
+        help="Write per-branch focal-state density summaries as TSV.",
+    )
+    discrete_density_maps.add_argument(
+        "--density-slices-out",
+        type=Path,
+        help="Write flat branch-slice density rows as TSV.",
+    )
+    discrete_density_maps.add_argument(
+        "--out",
+        type=Path,
+        help="Write one branch-colored density artifact as .svg or .html.",
+    )
+    discrete_density_maps.add_argument(
+        "--layout",
+        choices=("phylogram", "cladogram", "circular"),
+        default="phylogram",
+    )
+    discrete_density_maps.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the stochastic-map density report as JSON.",
+    )
+    _add_manifest_argument(discrete_density_maps)
     discrete_render = discrete_evolution_subparsers.add_parser(
         "render",
         help="Render a tree annotated with reconstructed geographic or other discrete states.",
@@ -13296,6 +13383,22 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     seed=args.seed,
                 )
                 count_report = count_discrete_stochastic_map_transitions(report)
+                density_report = None
+                density_result = None
+                if any(
+                    output is not None
+                    for output in (
+                        args.branch_probabilities_out,
+                        args.density_branches_out,
+                        args.density_slices_out,
+                        args.density_figure_out,
+                    )
+                ):
+                    density_report = summarize_discrete_stochastic_map_density(
+                        report,
+                        resolution=args.density_resolution,
+                        focal_state=args.focal_state,
+                    )
                 outputs: list[Path | str] = []
                 if args.collection_out is not None:
                     outputs.append(
@@ -13356,6 +13459,39 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             report,
                         )
                     )
+                if density_report is not None and args.branch_probabilities_out is not None:
+                    outputs.append(
+                        write_stochastic_map_branch_probability_table(
+                            args.branch_probabilities_out,
+                            density_report,
+                        )
+                    )
+                if density_report is not None and args.density_branches_out is not None:
+                    outputs.append(
+                        write_stochastic_map_density_branch_table(
+                            args.density_branches_out,
+                            density_report,
+                        )
+                    )
+                if density_report is not None and args.density_slices_out is not None:
+                    outputs.append(
+                        write_stochastic_map_density_slice_table(
+                            args.density_slices_out,
+                            density_report,
+                        )
+                    )
+                if density_report is not None and args.density_figure_out is not None:
+                    density_result = render_stochastic_map_density_artifact(
+                        density_report,
+                        tree_path=report.tree_path,
+                        out_path=args.density_figure_out,
+                        layout=args.layout,
+                    )
+                    outputs.extend(
+                        [density_result.output_path, density_result.svg_path]
+                        if density_result.format == "html"
+                        else [density_result.output_path]
+                    )
                 outputs = _finalize_outputs(
                     args,
                     command="discrete-evolution",
@@ -13367,7 +13503,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="discrete-evolution",
                         inputs=[args.tree, args.table],
                         outputs=outputs,
-                        warnings=report.warnings,
+                        warnings=list(
+                            dict.fromkeys(
+                                [
+                                    *report.warnings,
+                                    *(
+                                        density_report.warnings
+                                        if density_report is not None
+                                        else []
+                                    ),
+                                ]
+                            )
+                        ),
                         metrics={
                             "requested_replicate_count": report.replicates,
                             "successful_replicate_count": report.summary.replicate_count,
@@ -13393,6 +13540,36 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "fit_warning_count": len(report.fit_audit.warnings),
                             "baseline_model": report.fit_audit.baseline_model,
                             "preferred_model_by_aic": report.fit_audit.preferred_model_by_aic,
+                            "branch_probability_row_count": (
+                                len(density_report.branch_state_rows)
+                                if density_report is not None
+                                else 0
+                            ),
+                            "density_branch_row_count": (
+                                len(density_report.branch_rows)
+                                if density_report is not None
+                                else 0
+                            ),
+                            "density_slice_row_count": (
+                                len(density_report.density_rows)
+                                if density_report is not None
+                                else 0
+                            ),
+                            "density_focal_state": (
+                                density_report.focal_state
+                                if density_report is not None
+                                else None
+                            ),
+                            "density_resolution": (
+                                density_report.resolution
+                                if density_report is not None
+                                else None
+                            ),
+                            "density_rendered_branch_color_count": (
+                                density_result.rendered_branch_color_count
+                                if density_result is not None
+                                else 0
+                            ),
                         },
                         data=report,
                     ),
@@ -13495,6 +13672,79 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "mean_total_transition_count": report.mean_total_transition_count,
                             "count_matrix_row_count": len(report.matrix_rows),
                             "branch_transition_row_count": len(report.branch_rows),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.discrete_evolution_command == "density-maps":
+                collection = load_stochastic_map_collection(args.input_path)
+                report = summarize_discrete_stochastic_map_density(
+                    collection,
+                    resolution=args.resolution,
+                    focal_state=args.focal_state,
+                )
+                outputs: list[Path | str] = []
+                density_result = None
+                if args.branch_probabilities_out is not None:
+                    outputs.append(
+                        write_stochastic_map_branch_probability_table(
+                            args.branch_probabilities_out,
+                            report,
+                        )
+                    )
+                if args.density_branches_out is not None:
+                    outputs.append(
+                        write_stochastic_map_density_branch_table(
+                            args.density_branches_out,
+                            report,
+                        )
+                    )
+                if args.density_slices_out is not None:
+                    outputs.append(
+                        write_stochastic_map_density_slice_table(
+                            args.density_slices_out,
+                            report,
+                        )
+                    )
+                if args.out is not None:
+                    density_result = render_stochastic_map_density_artifact(
+                        report,
+                        tree_path=collection.tree_path,
+                        out_path=args.out,
+                        layout=args.layout,
+                    )
+                    outputs.extend(
+                        [density_result.output_path, density_result.svg_path]
+                        if density_result.format == "html"
+                        else [density_result.output_path]
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="discrete-evolution",
+                    inputs=[args.input_path],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="discrete-evolution",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "replicate_count": report.replicate_count,
+                            "resolution": report.resolution,
+                            "branch_probability_row_count": len(report.branch_state_rows),
+                            "density_branch_row_count": len(report.branch_rows),
+                            "density_slice_row_count": len(report.density_rows),
+                            "focal_state": report.focal_state,
+                            "baseline_state": report.baseline_state,
+                            "rendered_branch_color_count": (
+                                density_result.rendered_branch_color_count
+                                if density_result is not None
+                                else 0
+                            ),
                         },
                         data=report,
                     ),
