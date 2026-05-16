@@ -616,6 +616,7 @@ from bijux_phylogenetics.diagnostics.validation import (
 )
 from bijux_phylogenetics.discrete_evolution import (
     compare_discrete_state_models,
+    count_discrete_stochastic_map_transitions,
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
     load_stochastic_map_collection,
@@ -628,10 +629,14 @@ from bijux_phylogenetics.discrete_evolution import (
     validate_discrete_state_coding,
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
+    write_stochastic_map_aggregate_transition_matrix,
+    write_stochastic_map_branch_transition_count_table,
     write_stochastic_map_collection,
     write_stochastic_map_branch_occupancy_table,
+    write_stochastic_map_event_table,
     write_stochastic_map_segment_table,
     write_stochastic_map_state_time_table,
+    write_stochastic_map_transition_count_matrix,
     write_stochastic_map_summary_table,
     write_transition_summary_table,
 )
@@ -1748,12 +1753,32 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is summarize_discrete_stochastic_maps
     )
     assert (
+        bijux_phylogenetics.count_discrete_stochastic_map_transitions
+        is count_discrete_stochastic_map_transitions
+    )
+    assert (
         bijux_phylogenetics.write_stochastic_map_collection
         is write_stochastic_map_collection
     )
     assert (
         bijux_phylogenetics.write_stochastic_map_branch_occupancy_table
         is write_stochastic_map_branch_occupancy_table
+    )
+    assert (
+        bijux_phylogenetics.write_stochastic_map_transition_count_matrix
+        is write_stochastic_map_transition_count_matrix
+    )
+    assert (
+        bijux_phylogenetics.write_stochastic_map_aggregate_transition_matrix
+        is write_stochastic_map_aggregate_transition_matrix
+    )
+    assert (
+        bijux_phylogenetics.write_stochastic_map_branch_transition_count_table
+        is write_stochastic_map_branch_transition_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_stochastic_map_event_table
+        is write_stochastic_map_event_table
     )
     assert (
         bijux_phylogenetics.write_stochastic_map_summary_table
