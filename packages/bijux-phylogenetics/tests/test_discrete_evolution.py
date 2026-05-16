@@ -20,11 +20,13 @@ from bijux_phylogenetics.discrete_evolution import (
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
     load_stochastic_map_collection,
+    render_stochastic_map_density_artifact,
     render_discrete_state_evolution_report,
     render_tree_with_geographic_states,
     run_discrete_state_transition_model,
     simulate_discrete_stochastic_maps,
     simulate_discrete_stochastic_maps_from_fit_report,
+    summarize_discrete_stochastic_map_density,
     summarize_discrete_stochastic_maps,
     validate_discrete_state_coding,
     validate_discrete_transition_reference_examples,
@@ -32,8 +34,11 @@ from bijux_phylogenetics.discrete_evolution import (
     write_node_state_probability_table,
     write_stochastic_map_aggregate_transition_matrix,
     write_stochastic_map_branch_transition_count_table,
+    write_stochastic_map_branch_probability_table,
     write_stochastic_map_collection,
     write_stochastic_map_branch_occupancy_table,
+    write_stochastic_map_density_branch_table,
+    write_stochastic_map_density_slice_table,
     write_stochastic_map_event_table,
     write_stochastic_map_segment_table,
     write_stochastic_map_state_time_table,
@@ -64,9 +69,10 @@ def fixture(name: str) -> Path:
 def manual_stochastic_map_collection(
     *,
     maps: list[StochasticMapReplicate],
+    tree_path: Path | None = None,
 ) -> StochasticMapCollectionReport:
     report = StochasticMapCollectionReport(
-        tree_path=Path("manual-tree.nwk"),
+        tree_path=tree_path or Path("manual-tree.nwk"),
         traits_path=Path("manual-traits.tsv"),
         taxon_column="taxon",
         trait="state",
@@ -811,6 +817,271 @@ def test_summarize_discrete_stochastic_maps_tracks_multistate_branch_occupancy()
     assert branch_rows[("A|B|C", "A|B", "1")].mean_time == 1.25
     assert branch_rows[("A|B|C", "A|B", "1")].mean_fraction == 0.625
     assert branch_rows[("A|B|C", "C", "2")].mean_fraction == 1.0
+
+
+def test_summarize_discrete_stochastic_map_density_tracks_binary_branch_slices(
+    tmp_path: Path,
+) -> None:
+    tree_path = tmp_path / "binary-density-tree.nwk"
+    tree_path.write_text("(A:1,B:1);\n", encoding="utf-8")
+    report = manual_stochastic_map_collection(
+        tree_path=tree_path,
+        maps=[
+            StochasticMapReplicate(
+                replicate_index=0,
+                root_state="0",
+                total_transition_count=1,
+                transition_counts={"0->1": 1},
+                state_time_totals={"0": 1.5, "1": 0.5},
+                branch_histories=[
+                    StochasticMapBranchHistory(
+                        branch_index=0,
+                        parent_node="A|B",
+                        child_node="A",
+                        branch_length=1.0,
+                        start_state="0",
+                        end_state="1",
+                        event_count=1,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=0,
+                                parent_node="A|B",
+                                child_node="A",
+                                state="0",
+                                start_time_fraction=0.0,
+                                end_time_fraction=0.5,
+                                duration=0.5,
+                            ),
+                            StochasticMapStateSegment(
+                                branch_index=0,
+                                parent_node="A|B",
+                                child_node="A",
+                                state="1",
+                                start_time_fraction=0.5,
+                                end_time_fraction=1.0,
+                                duration=0.5,
+                            ),
+                        ],
+                    ),
+                    StochasticMapBranchHistory(
+                        branch_index=1,
+                        parent_node="A|B",
+                        child_node="B",
+                        branch_length=1.0,
+                        start_state="0",
+                        end_state="0",
+                        event_count=0,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=1,
+                                parent_node="A|B",
+                                child_node="B",
+                                state="0",
+                                start_time_fraction=0.0,
+                                end_time_fraction=1.0,
+                                duration=1.0,
+                            )
+                        ],
+                    ),
+                ],
+            ),
+            StochasticMapReplicate(
+                replicate_index=1,
+                root_state="0",
+                total_transition_count=0,
+                transition_counts={},
+                state_time_totals={"0": 1.0, "1": 1.0},
+                branch_histories=[
+                    StochasticMapBranchHistory(
+                        branch_index=0,
+                        parent_node="A|B",
+                        child_node="A",
+                        branch_length=1.0,
+                        start_state="1",
+                        end_state="1",
+                        event_count=0,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=0,
+                                parent_node="A|B",
+                                child_node="A",
+                                state="1",
+                                start_time_fraction=0.0,
+                                end_time_fraction=1.0,
+                                duration=1.0,
+                            )
+                        ],
+                    ),
+                    StochasticMapBranchHistory(
+                        branch_index=1,
+                        parent_node="A|B",
+                        child_node="B",
+                        branch_length=1.0,
+                        start_state="0",
+                        end_state="0",
+                        event_count=0,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=1,
+                                parent_node="A|B",
+                                child_node="B",
+                                state="0",
+                                start_time_fraction=0.0,
+                                end_time_fraction=1.0,
+                                duration=1.0,
+                            )
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    density_report = summarize_discrete_stochastic_map_density(report, resolution=2)
+
+    assert density_report.focal_state == "1"
+    assert density_report.baseline_state == "0"
+    branch_state_rows = {
+        (row.parent_node, row.child_node, row.state): row
+        for row in density_report.branch_state_rows
+    }
+    assert branch_state_rows[("A|B", "A", "1")].mean_probability == 0.75
+    assert branch_state_rows[("A|B", "B", "1")].mean_probability == 0.0
+    branch_rows = {
+        (row.parent_node, row.child_node): row for row in density_report.branch_rows
+    }
+    assert branch_rows[("A|B", "A")].mean_posterior_probability == 0.75
+    assert branch_rows[("A|B", "A")].uncertainty == 0.5
+    assert branch_rows[("A|B", "B")].mean_posterior_probability == 0.0
+    slice_rows = [
+        row
+        for row in density_report.density_rows
+        if row.parent_node == "A|B" and row.child_node == "A"
+    ]
+    assert [row.posterior_probability for row in slice_rows] == [0.5, 1.0]
+    assert [row.posterior_uncertainty for row in slice_rows] == [1.0, 0.0]
+
+    branch_probability_path = tmp_path / "branch-probabilities.tsv"
+    density_branch_path = tmp_path / "density-branches.tsv"
+    density_slice_path = tmp_path / "density-slices.tsv"
+    density_html_path = tmp_path / "density-report.html"
+    write_stochastic_map_branch_probability_table(branch_probability_path, density_report)
+    write_stochastic_map_density_branch_table(density_branch_path, density_report)
+    write_stochastic_map_density_slice_table(density_slice_path, density_report)
+    render_result = render_stochastic_map_density_artifact(
+        density_report,
+        tree_path=tree_path,
+        out_path=density_html_path,
+        layout="phylogram",
+    )
+    assert "mean_probability" in branch_probability_path.read_text(encoding="utf-8")
+    assert (
+        "mean_posterior_probability"
+        in density_branch_path.read_text(encoding="utf-8")
+    )
+    assert "posterior_probability" in density_slice_path.read_text(encoding="utf-8")
+    assert density_html_path.exists()
+    assert density_html_path.with_suffix(".svg").exists()
+    assert render_result.rendered_branch_color_count == 2
+
+
+def test_summarize_discrete_stochastic_map_density_keeps_multistate_branch_probabilities(
+    tmp_path: Path,
+) -> None:
+    tree_path = tmp_path / "multistate-density-tree.nwk"
+    tree_path.write_text("(A:1,B:1,C:1);\n", encoding="utf-8")
+    report = manual_stochastic_map_collection(
+        tree_path=tree_path,
+        maps=[
+            StochasticMapReplicate(
+                replicate_index=0,
+                root_state="0",
+                total_transition_count=0,
+                transition_counts={},
+                state_time_totals={"0": 1.0, "1": 1.0, "2": 1.0},
+                branch_histories=[
+                    StochasticMapBranchHistory(
+                        branch_index=0,
+                        parent_node="A|B|C",
+                        child_node="A",
+                        branch_length=1.0,
+                        start_state="0",
+                        end_state="0",
+                        event_count=0,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=0,
+                                parent_node="A|B|C",
+                                child_node="A",
+                                state="0",
+                                start_time_fraction=0.0,
+                                end_time_fraction=1.0,
+                                duration=1.0,
+                            )
+                        ],
+                    ),
+                    StochasticMapBranchHistory(
+                        branch_index=1,
+                        parent_node="A|B|C",
+                        child_node="B",
+                        branch_length=1.0,
+                        start_state="1",
+                        end_state="1",
+                        event_count=0,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=1,
+                                parent_node="A|B|C",
+                                child_node="B",
+                                state="1",
+                                start_time_fraction=0.0,
+                                end_time_fraction=1.0,
+                                duration=1.0,
+                            )
+                        ],
+                    ),
+                    StochasticMapBranchHistory(
+                        branch_index=2,
+                        parent_node="A|B|C",
+                        child_node="C",
+                        branch_length=1.0,
+                        start_state="2",
+                        end_state="2",
+                        event_count=0,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=2,
+                                parent_node="A|B|C",
+                                child_node="C",
+                                state="2",
+                                start_time_fraction=0.0,
+                                end_time_fraction=1.0,
+                                duration=1.0,
+                            )
+                        ],
+                    ),
+                ],
+            )
+        ],
+    )
+
+    density_report = summarize_discrete_stochastic_map_density(report, resolution=4)
+
+    assert density_report.focal_state is None
+    assert density_report.density_rows == []
+    assert density_report.branch_rows == []
+    assert len(density_report.branch_state_rows) == 9
+    assert any(
+        "density slices require one explicit focal state" in warning
+        for warning in density_report.warnings
+    )
 
 
 def test_simulate_discrete_stochastic_maps_from_fit_report_matches_path_surface() -> (
