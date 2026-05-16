@@ -585,24 +585,25 @@ def run_mrbayes_posterior_inference(
     mcmc_path = Path(f"{nexus_path}.mcmc")
     consensus_path = Path(f"{nexus_path}.con.tre")
     manifest_path = prefix_path.with_suffix(".manifest.json")
+    version = read_engine_version(
+        "MrBayes",
+        executable,
+        version_args=("-v",),
+        timeout_seconds=timeout_seconds,
+    )
     command = [resolved, nexus_path.name]
     if resume:
         resumed = _resume_existing_workflow(
             manifest_path=manifest_path,
             input_paths=[nexus_path],
             expected_command=command,
+            expected_version=version,
         )
         if resumed is not None:
             return resumed
     incomplete_notes = _resolve_incomplete_workflow_state(
         manifest_path=manifest_path,
         incomplete_run_policy=incomplete_run_policy,
-    )
-    version = read_engine_version(
-        "MrBayes",
-        executable,
-        version_args=("-v",),
-        timeout_seconds=timeout_seconds,
     )
     run = execute_engine_command(
         engine_name="MrBayes",
