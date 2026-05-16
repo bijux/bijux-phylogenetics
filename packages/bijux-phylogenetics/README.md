@@ -844,7 +844,7 @@ surfaces. The initial live `phytools` registry is intentionally narrow for this
 goal: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
 `phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
-`phytools::fastAnc`, and
+`phytools::rerootingMethod`, `phytools::fastAnc`, and
 `phytools::anc.ML` on governed strong-signal,
 weak-signal, non-ultrametric, discrete-state, and missing-value comparative
 fixtures. The live lambda lane includes one
@@ -861,6 +861,15 @@ rate-matrix ledger for binary and multistate traits. The live `fitMk` lane
 now covers governed ER binary and multistate cases, governed SYM
 multistate cases, and governed ARD binary plus weakly identified multistate
 cases, including missing-value-pruned surfaces. The live
+`rerootingMethod` lane now covers governed ER binary, governed ER multistate,
+governed ER missing-value-pruned, governed SYM multistate, and governed SYM
+missing-value-pruned node-probability cases under the same flat equal root
+prior that `phytools::rerootingMethod` inherits from `fitMk`. Bijux reports
+that boundary explicitly: ER and SYM runs with `--root-prior-mode equal` are
+governed live `phytools::rerootingMethod` parity surfaces, while Fitch,
+ordered-state, ARD, empirical-root-prior, and fixed-root-prior runs remain
+owned Bijux review surfaces without a false live `phytools` parity claim.
+The live
 continuous ancestral lanes now compare stable node-signature rows, standard
 errors, and 95% intervals against real `phytools` execution instead of only
 checked-in expected JSON.
@@ -926,7 +935,11 @@ alongside node probabilities, and it supports owned `equal`, `empirical`, and
 `fixed` root-prior policies. The live parity lane is scoped honestly to
 `ape::ace(type='discrete', model='ER'|'SYM'|'ARD')`, so root-prior controls
 remain an explicit Bijux-owned review surface rather than a false live `ape`
-parity claim. The same owned discrete ancestral runtime is now also reusable
+parity claim. The same summary surface now also reports whether a given
+likelihood run is comparable to live `phytools::rerootingMethod`: ER and SYM
+with the equal root prior are governed rerooting-parity surfaces, while ARD,
+Fitch, ordered-state, empirical-root-prior, and fixed-root-prior runs are
+flagged explicitly as non-comparable. The same owned discrete ancestral runtime is now also reusable
 directly from Python through
 `reconstruct_discrete_ancestral_states_from_dataset(...)` once one
 `AncestralDiscreteDataset` has already been loaded.
