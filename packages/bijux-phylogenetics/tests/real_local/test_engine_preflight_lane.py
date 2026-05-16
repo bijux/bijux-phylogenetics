@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 
 from ..support.external_engines import (
     real_beast_executable,

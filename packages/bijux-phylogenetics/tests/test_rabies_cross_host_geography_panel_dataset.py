@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import pytest
 
 import bijux_phylogenetics
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     RabiesCrossHostGeographyPanelDemoResult,
     RabiesCrossHostGeographyPanelExportResult,

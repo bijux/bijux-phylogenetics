@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 import bijux_phylogenetics
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_gnathostome_ortholog_protein_benchmark_dataset,
     load_gnathostome_ortholog_protein_benchmark_dataset,

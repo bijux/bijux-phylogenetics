@@ -259,7 +259,7 @@ from bijux_phylogenetics.trees import (
     extract_tree_set_clades,
     write_clade_table,
 )
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.comparative import (
     BranchIdentityMetadata,

@@ -64,7 +64,7 @@ dev = [
 ]
 
 [project.scripts]
-bijux-phylogenetics = "bijux_phylogenetics.cli:main"
+bijux-phylogenetics = "bijux_phylogenetics.command_line:main"
 
 [tool.hatch.version]
 source = "vcs"

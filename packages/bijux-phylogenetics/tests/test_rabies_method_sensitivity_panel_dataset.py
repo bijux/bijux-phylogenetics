@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 import bijux_phylogenetics
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 import bijux_phylogenetics.datasets.rabies_method_sensitivity as rabies_method_sensitivity
 from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     export_rabies_method_sensitivity_panel_dataset,

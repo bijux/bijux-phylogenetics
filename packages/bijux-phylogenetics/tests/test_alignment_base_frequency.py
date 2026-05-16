@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.io.fasta import (
     compute_alignment_base_frequency_report,
     write_alignment_base_frequency_table,

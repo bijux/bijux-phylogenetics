@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 import bijux_phylogenetics
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_influenza_a_ha_reference_dataset,
     load_influenza_a_ha_reference_dataset,

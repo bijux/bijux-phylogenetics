@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.engines import run_fasta_to_tree_workflow
 from tests.support.fake_external_engines import fake_iqtree, fake_mafft, fake_trimal
 

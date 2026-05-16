@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.distance import (
     compute_pairwise_genetic_distance_matrix,
     validate_distance_reference_examples,

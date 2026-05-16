@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 
 
 def test_topology_support_reference_cli_reports_passing_cases(capsys) -> None:

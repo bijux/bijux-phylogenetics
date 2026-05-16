@@ -6,7 +6,7 @@ import pytest
 
 import bijux_phylogenetics
 from bijux_phylogenetics.benchmark import benchmark_large_dataset_stress_suite
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 
 
 def _observations_by_workload(report):

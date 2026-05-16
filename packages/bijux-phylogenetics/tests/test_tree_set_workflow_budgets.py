@@ -8,7 +8,7 @@ import pytest
 from bijux_phylogenetics.bayesian.uncertainty import (
     build_posterior_uncertainty_figure_package,
 )
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.runtime.errors import WorkflowBudgetError
 from bijux_phylogenetics.reports.service import render_tree_uncertainty_report
 from bijux_phylogenetics.trees import write_bootstrap_tree_set_artifacts

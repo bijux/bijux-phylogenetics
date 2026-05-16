@@ -7,6 +7,8 @@ from pathlib import Path
 import sys
 from typing import Any
 
+__all__ = ["build_parser", "main", "run_command"]
+
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.ancestral.confidence import (
     build_continuous_ancestral_confidence_rows,
@@ -20358,3 +20360,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
 
     parser.print_help(sys.stderr)
     return 2
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the canonical phylogenetics command-line interface."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    args._argv = list(argv) if argv is not None else list(sys.argv[1:])
+    return run_command(args, parser=parser)

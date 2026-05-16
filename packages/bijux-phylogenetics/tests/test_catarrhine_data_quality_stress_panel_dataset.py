@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 import bijux_phylogenetics
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets.data_quality_stress import (
     export_catarrhine_data_quality_stress_panel_dataset,
     load_catarrhine_data_quality_stress_panel_dataset,

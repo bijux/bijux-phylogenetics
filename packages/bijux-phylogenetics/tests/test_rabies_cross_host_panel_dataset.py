@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 import bijux_phylogenetics
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_rabies_cross_host_panel_dataset,
     load_rabies_cross_host_panel_dataset,
