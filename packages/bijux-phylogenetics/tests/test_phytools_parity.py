@@ -49,6 +49,8 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "describe-simmap-er-multistate-twenty-four-taxa",
         "describe-simmap-sym-multistate-twenty-four-taxa",
         "describe-simmap-er-binary-missing-twenty-four-taxa",
+        "density-map-er-binary-twenty-four-taxa",
+        "density-map-er-binary-missing-twenty-four-taxa",
         "rerooting-er-binary-twenty-four-taxa",
         "rerooting-er-multistate-twenty-four-taxa",
         "rerooting-er-binary-missing-twenty-four-taxa",
@@ -83,12 +85,14 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[26].function_name == "phytools::countSimmap"
     assert cases[27].function_name == "phytools::describe.simmap"
     assert cases[30].function_name == "phytools::describe.simmap"
-    assert cases[31].function_name == "phytools::rerootingMethod"
-    assert cases[35].function_name == "phytools::rerootingMethod"
-    assert cases[36].function_name == "phytools::fastAnc"
-    assert cases[39].function_name == "phytools::fastAnc"
-    assert cases[40].function_name == "phytools::anc.ML"
-    assert cases[43].function_name == "phytools::anc.ML"
+    assert cases[31].function_name == "phytools::densityMap"
+    assert cases[32].function_name == "phytools::densityMap"
+    assert cases[33].function_name == "phytools::rerootingMethod"
+    assert cases[37].function_name == "phytools::rerootingMethod"
+    assert cases[38].function_name == "phytools::fastAnc"
+    assert cases[41].function_name == "phytools::fastAnc"
+    assert cases[42].function_name == "phytools::anc.ML"
+    assert cases[45].function_name == "phytools::anc.ML"
     assert (
         cases[0].fixture_id == "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
     )
@@ -131,16 +135,22 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "upper_95_interval": 5.0,
         "presence_fraction": 0.25,
     }
-    assert cases[31].row_field_tolerances == {"probability": 1e-5}
-    assert cases[34].row_field_tolerances == {"probability": 5e-5}
-    assert cases[35].row_field_tolerances == {"probability": 5e-5}
-    assert cases[43].row_field_tolerances == {
+    assert cases[31].row_field_tolerances == {
+        "mean_posterior_probability": 2e-3,
+        "minimum_posterior_probability": 2e-3,
+        "maximum_posterior_probability": 2e-3,
+        "uncertainty": 2e-3,
+    }
+    assert cases[33].row_field_tolerances == {"probability": 1e-5}
+    assert cases[36].row_field_tolerances == {"probability": 5e-5}
+    assert cases[37].row_field_tolerances == {"probability": 5e-5}
+    assert cases[45].row_field_tolerances == {
         "estimate": 1e-8,
         "standard_error": 5e-8,
         "lower_95_interval": 5e-8,
         "upper_95_interval": 5e-8,
     }
-    assert cases[39].row_field_tolerances == {
+    assert cases[41].row_field_tolerances == {
         "estimate": 1e-8,
         "standard_error": 1e-8,
     }
@@ -154,12 +164,13 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     report = run_phytools_parity_cases(rscript_executable=str(rscript))
 
     assert report.all_passed is True
-    assert report.case_count == 44
+    assert report.case_count == 46
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
         "phytools::anc.ML",
         "phytools::countSimmap",
+        "phytools::densityMap",
         "phytools::describe.simmap",
         "phytools::fastAnc",
         "phytools::fitMk(model='ARD')",
@@ -176,6 +187,31 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     assert first.phytools_version == "2.5.2"
     assert first.r_version == "4.6.0"
     assert first.reference_summary is not None
+
+
+def test_run_phytools_parity_cases_passes_density_map_cases_against_fake_reference_runner(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_phytools_rscript(tmp_path / "fake-phytools-rscript")
+
+    report = run_phytools_parity_cases(
+        case_ids=[
+            "density-map-er-binary-twenty-four-taxa",
+            "density-map-er-binary-missing-twenty-four-taxa",
+        ],
+        rscript_executable=str(rscript),
+    )
+
+    assert report.all_passed is True
+    assert report.case_count == 2
+    assert report.failed_case_count == 0
+    assert [row.function_name for row in report.summary_rows] == [
+        "phytools::densityMap"
+    ]
+    assert all(
+        observation.function_name == "phytools::densityMap"
+        for observation in report.observations
+    )
 
 
 def test_run_phytools_parity_cases_records_failure_artifacts(
