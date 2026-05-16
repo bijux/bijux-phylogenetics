@@ -41,6 +41,10 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "simmap-ard-multistate-twenty-four-taxa",
         "simmap-ard-binary-missing-twenty-four-taxa",
         "simmap-ard-multistate-missing-twenty-four-taxa",
+        "describe-simmap-er-binary-twenty-four-taxa",
+        "describe-simmap-er-multistate-twenty-four-taxa",
+        "describe-simmap-sym-multistate-twenty-four-taxa",
+        "describe-simmap-er-binary-missing-twenty-four-taxa",
         "rerooting-er-binary-twenty-four-taxa",
         "rerooting-er-multistate-twenty-four-taxa",
         "rerooting-er-binary-missing-twenty-four-taxa",
@@ -71,12 +75,14 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[18].function_name == "phytools::make.simmap(model='SYM')"
     assert cases[19].function_name == "phytools::make.simmap(model='ARD')"
     assert cases[22].function_name == "phytools::make.simmap(model='ARD')"
-    assert cases[23].function_name == "phytools::rerootingMethod"
+    assert cases[23].function_name == "phytools::describe.simmap"
+    assert cases[26].function_name == "phytools::describe.simmap"
     assert cases[27].function_name == "phytools::rerootingMethod"
-    assert cases[28].function_name == "phytools::fastAnc"
-    assert cases[31].function_name == "phytools::fastAnc"
-    assert cases[32].function_name == "phytools::anc.ML"
-    assert cases[35].function_name == "phytools::anc.ML"
+    assert cases[31].function_name == "phytools::rerootingMethod"
+    assert cases[32].function_name == "phytools::fastAnc"
+    assert cases[35].function_name == "phytools::fastAnc"
+    assert cases[36].function_name == "phytools::anc.ML"
+    assert cases[39].function_name == "phytools::anc.ML"
     assert (
         cases[0].fixture_id == "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
     )
@@ -95,16 +101,28 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     }
     assert cases[20].compare_rows is False
     assert cases[22].compare_rows is False
-    assert cases[23].row_field_tolerances == {"probability": 1e-5}
-    assert cases[26].row_field_tolerances == {"probability": 5e-5}
-    assert cases[27].row_field_tolerances == {"probability": 5e-5}
-    assert cases[35].row_field_tolerances == {
+    assert cases[23].row_field_tolerances == {
+        "mean_value": 1.5,
+        "lower_95_interval": 3.0,
+        "upper_95_interval": 3.0,
+        "presence_fraction": 0.2,
+    }
+    assert cases[25].row_field_tolerances == {
+        "mean_value": 2.5,
+        "lower_95_interval": 5.0,
+        "upper_95_interval": 5.0,
+        "presence_fraction": 0.25,
+    }
+    assert cases[27].row_field_tolerances == {"probability": 1e-5}
+    assert cases[30].row_field_tolerances == {"probability": 5e-5}
+    assert cases[31].row_field_tolerances == {"probability": 5e-5}
+    assert cases[39].row_field_tolerances == {
         "estimate": 1e-8,
         "standard_error": 5e-8,
         "lower_95_interval": 5e-8,
         "upper_95_interval": 5e-8,
     }
-    assert cases[31].row_field_tolerances == {
+    assert cases[35].row_field_tolerances == {
         "estimate": 1e-8,
         "standard_error": 1e-8,
     }
@@ -118,11 +136,12 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     report = run_phytools_parity_cases(rscript_executable=str(rscript))
 
     assert report.all_passed is True
-    assert report.case_count == 36
+    assert report.case_count == 40
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
         "phytools::anc.ML",
+        "phytools::describe.simmap",
         "phytools::fastAnc",
         "phytools::fitMk(model='ARD')",
         "phytools::fitMk(model='ER')",
@@ -225,6 +244,35 @@ def test_load_rows_table_preserves_discrete_state_identity_and_booleans(
             "step_distance": 2,
             "rate": 0.15,
         },
+    ]
+
+
+def test_load_rows_table_preserves_stochastic_branch_summary_identity(
+    tmp_path: Path,
+) -> None:
+    rows_path = tmp_path / "stochastic-map-summary-rows.tsv"
+    rows_path.write_text(
+        "\n".join(
+            [
+                "row_kind\tlabel\tmean_value\tlower_95_interval\tupper_95_interval\tpresence_fraction",
+                "branch_state_occupancy\tA|B->A:0\t1.0\t1.0\t1.0\t1.0",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rows = _load_rows_table(rows_path)
+
+    assert rows == [
+        {
+            "row_kind": "branch_state_occupancy",
+            "label": "A|B->A:0",
+            "mean_value": 1.0,
+            "lower_95_interval": 1.0,
+            "upper_95_interval": 1.0,
+            "presence_fraction": 1.0,
+        }
     ]
 
 
