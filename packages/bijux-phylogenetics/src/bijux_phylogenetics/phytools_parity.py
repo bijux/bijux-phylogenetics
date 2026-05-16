@@ -2441,6 +2441,15 @@ def _mismatch_reason(
             "root_state",
             "sigma_squared",
         )
+    elif case.operation == "simulate-continuous-correlated-brownian":
+        compare_keys = (
+            "taxon_count",
+            "branch_count",
+            "trait_count",
+            "requested_replicate_count",
+            "successful_replicate_count",
+            "seed",
+        )
     elif case.operation == "discrete-ancestral-rerooting":
         compare_keys = (
             "taxon_count",
@@ -2502,6 +2511,7 @@ def _row_mismatch_reason(
         "discrete-stochastic-map-description",
         "simulate-discrete-history",
         "simulate-continuous-brownian",
+        "simulate-continuous-correlated-brownian",
         "discrete-ancestral-rerooting",
         "continuous-ancestral-fast-anc",
         "continuous-ancestral-anc-ml",
@@ -2594,6 +2604,18 @@ def _row_mismatch_reason(
             "presence_fraction",
         )
     elif case.operation == "simulate-continuous-brownian":
+        compare_keys = (
+            "row_kind",
+            "label",
+            "mean_value",
+            "standard_deviation",
+            "minimum",
+            "median",
+            "maximum",
+            "covariance",
+            "correlation",
+        )
+    elif case.operation == "simulate-continuous-correlated-brownian":
         compare_keys = (
             "row_kind",
             "label",

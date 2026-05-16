@@ -658,6 +658,72 @@ print(json.dumps({"summary": summary, "rows": rows}))
     return payload["summary"], payload["rows"]
 
 
+def compute_correlated_continuous_brownian_payload(
+    case_payload: dict[str, object],
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    package_root = find_repo_root()
+    repo_python = find_repo_python(package_root)
+    inline_script = '''
+import json
+from pathlib import Path
+from bijux_phylogenetics.simulation import simulate_correlated_brownian_trait_collection
+
+payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
+tree_path = payload["input_fixtures"][0]
+report = simulate_correlated_brownian_trait_collection(
+    Path(tree_path),
+    trait_names=payload["continuous_trait_names"],
+    evolutionary_covariance_matrix=payload["continuous_covariance_matrix"],
+    root_states=payload["continuous_root_states"],
+    replicates=payload["continuous_replicate_count"],
+    seed=payload["continuous_seed"],
+)
+summary = {
+    "taxon_count": report.tip_count,
+    "branch_count": report.branch_count,
+    "trait_count": len(report.trait_names),
+    "requested_replicate_count": report.replicate_count,
+    "successful_replicate_count": report.replicate_count,
+    "seed": report.seed,
+}
+rows = [
+    {
+        "row_kind": row.row_kind,
+        "label": row.label,
+        "mean_value": "" if row.mean_value is None else row.mean_value,
+        "standard_deviation": "" if row.standard_deviation is None else row.standard_deviation,
+        "minimum": "" if row.minimum is None else row.minimum,
+        "median": "" if row.median is None else row.median,
+        "maximum": "" if row.maximum is None else row.maximum,
+        "covariance": "" if row.covariance is None else row.covariance,
+        "correlation": "" if row.correlation is None else row.correlation,
+    }
+    for row in report.rows
+]
+print(json.dumps({"summary": summary, "rows": rows}))
+'''
+    payload_path = package_root / "artifacts" / "fake-phytools-simcorrs-payload.json"
+    payload_path.parent.mkdir(parents=True, exist_ok=True)
+    payload_path.write_text(json.dumps(case_payload), encoding="utf-8")
+    command = [
+        str(repo_python),
+        "-c",
+        inline_script.replace("__PAYLOAD_PATH__", repr(str(payload_path))),
+    ]
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(package_root / "src")
+    result = subprocess.run(
+        command,
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=str(package_root),
+        env=env,
+    )
+    payload = json.loads(result.stdout)
+    return payload["summary"], payload["rows"]
+
+
 case_payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 output_root = Path(sys.argv[3])
 output_root.mkdir(parents=True, exist_ok=True)
@@ -670,6 +736,7 @@ rerooting_rows_path = output_root / "rerooting-method-node-probabilities.tsv"
 fast_anc_rows_path = output_root / "fast-anc-node-estimates.tsv"
 anc_ml_rows_path = output_root / "anc-ml-node-estimates.tsv"
 fastbm_rows_path = output_root / "fastbm-summary-rows.tsv"
+simcorrs_rows_path = output_root / "simcorrs-summary-rows.tsv"
 
 if not __PHYTOOLS_AVAILABLE__:
     write_json(
@@ -692,6 +759,7 @@ if case_id not in SUMMARIES and case_payload["operation"] not in {
     "discrete-stochastic-map-density",
     "simulate-discrete-history",
     "simulate-continuous-brownian",
+    "simulate-continuous-correlated-brownian",
     "discrete-ancestral-rerooting",
     "continuous-ancestral-fast-anc",
     "continuous-ancestral-anc-ml",
@@ -741,6 +809,8 @@ elif case_payload["operation"] == "simulate-discrete-history":
     summary, rows = compute_discrete_history_payload(case_payload)
 elif case_payload["operation"] == "simulate-continuous-brownian":
     summary, rows = compute_continuous_brownian_payload(case_payload)
+elif case_payload["operation"] == "simulate-continuous-correlated-brownian":
+    summary, rows = compute_correlated_continuous_brownian_payload(case_payload)
 elif case_payload["operation"] == "discrete-ancestral-rerooting":
     summary, rows = compute_discrete_ancestral_payload(case_payload)
 elif case_payload["operation"] == "continuous-ancestral-fast-anc":
@@ -776,6 +846,8 @@ if rows is not None:
         write_rows_table(stochastic_map_rows_path, rows)
     elif case_payload["operation"] == "simulate-continuous-brownian":
         write_rows_table(fastbm_rows_path, rows)
+    elif case_payload["operation"] == "simulate-continuous-correlated-brownian":
+        write_rows_table(simcorrs_rows_path, rows)
     elif case_payload["operation"] == "discrete-ancestral-rerooting":
         write_rows_table(rerooting_rows_path, rows)
     elif case_payload["operation"] == "continuous-ancestral-fast-anc":

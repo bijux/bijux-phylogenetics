@@ -71,6 +71,9 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "fastbm-example-tree-low-variance",
         "fastbm-example-tree-root-shift-high-variance",
         "fastbm-six-taxa-root-shift",
+        "simcorrs-example-tree-low-correlation",
+        "simcorrs-example-tree-negative-correlation-root-shift",
+        "simcorrs-six-taxa-three-trait",
     ]
     assert cases[0].function_name == "phytools::phylosig(method='lambda')"
     assert cases[1].function_name == "phytools::phylosig(method='lambda')"
@@ -104,6 +107,8 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[49].function_name == "phytools::anc.ML"
     assert cases[50].function_name == "phytools::fastBM"
     assert cases[52].function_name == "phytools::fastBM"
+    assert cases[53].function_name == "phytools::sim.corrs"
+    assert cases[55].function_name == "phytools::sim.corrs"
     assert (
         cases[0].fixture_id == "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
     )
@@ -180,6 +185,9 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[50].continuous_sigma_squared == 0.25
     assert cases[51].continuous_root_state == 2.5
     assert cases[52].continuous_replicate_count == 512
+    assert cases[53].continuous_trait_names == ("trait_alpha", "trait_beta")
+    assert cases[54].continuous_root_states == (2.0, -1.0)
+    assert cases[55].continuous_replicate_count == 512
 
 
 def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
@@ -190,7 +198,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     report = run_phytools_parity_cases(rscript_executable=str(rscript))
 
     assert report.all_passed is True
-    assert report.case_count == 53
+    assert report.case_count == 56
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -209,6 +217,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
         "phytools::phylosig(method='K')",
         "phytools::phylosig(method='lambda')",
         "phytools::rerootingMethod",
+        "phytools::sim.corrs",
         "phytools::sim.history",
     ]
     first = report.observations[0]
@@ -289,6 +298,32 @@ def test_run_phytools_parity_cases_passes_fastbm_cases_against_fake_reference_ru
     assert [row.function_name for row in report.summary_rows] == ["phytools::fastBM"]
     assert all(
         observation.function_name == "phytools::fastBM"
+        for observation in report.observations
+    )
+
+
+def test_run_phytools_parity_cases_passes_simcorrs_cases_against_fake_reference_runner(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_phytools_rscript(tmp_path / "fake-phytools-rscript")
+
+    report = run_phytools_parity_cases(
+        case_ids=[
+            "simcorrs-example-tree-low-correlation",
+            "simcorrs-example-tree-negative-correlation-root-shift",
+            "simcorrs-six-taxa-three-trait",
+        ],
+        rscript_executable=str(rscript),
+    )
+
+    assert report.all_passed is True
+    assert report.case_count == 3
+    assert report.failed_case_count == 0
+    assert [row.function_name for row in report.summary_rows] == [
+        "phytools::sim.corrs"
+    ]
+    assert all(
+        observation.function_name == "phytools::sim.corrs"
         for observation in report.observations
     )
 
