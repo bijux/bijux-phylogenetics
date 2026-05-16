@@ -97,6 +97,7 @@ _DISTANCE_MODEL_ALIASES = {
     "tamura-nei-93": "tamura-nei-93",
     "amino-acid-p-distance": "amino-acid-p-distance",
 }
+_PACKAGE_ROOT = Path(__file__).resolve().parents[3]
 
 
 @dataclass(frozen=True, slots=True)
@@ -2024,7 +2025,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
     """Validate core distance examples against durable reference expectations."""
     examples = [
         {
-            "path": Path(__file__).resolve().parents[2]
+            "path": _PACKAGE_ROOT
             / "tests/fixtures/alignments/example_alignment_distance.fasta",
             "case": "dna-p-distance",
             "model": "p-distance",
@@ -2036,7 +2037,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 0,
         },
         {
-            "path": Path(__file__).resolve().parents[2]
+            "path": _PACKAGE_ROOT
             / "tests/fixtures/alignments/example_alignment_distance.fasta",
             "case": "dna-jukes-cantor",
             "model": "jukes-cantor",
@@ -2048,7 +2049,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 0,
         },
         {
-            "path": Path(__file__).resolve().parents[2]
+            "path": _PACKAGE_ROOT
             / "tests/fixtures/alignments/example_alignment_distance.fasta",
             "case": "dna-kimura-2-parameter",
             "model": "kimura-2-parameter",
@@ -2060,7 +2061,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 0,
         },
         {
-            "path": Path(__file__).resolve().parents[2]
+            "path": _PACKAGE_ROOT
             / "tests/fixtures/alignments/example_alignment_distance_gaps.fasta",
             "case": "dna-felsenstein-81",
             "model": "felsenstein-81",
@@ -2072,7 +2073,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 0,
         },
         {
-            "path": Path(__file__).resolve().parents[2]
+            "path": _PACKAGE_ROOT
             / "tests/fixtures/alignments/example_alignment_duplicates.fasta",
             "case": "dna-tamura-nei-93",
             "model": "tamura-nei-93",
@@ -2084,7 +2085,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 0,
         },
         {
-            "path": Path(__file__).resolve().parents[2]
+            "path": _PACKAGE_ROOT
             / "tests/fixtures/alignments/example_alignment_protein.fasta",
             "case": "protein-p-distance",
             "model": "amino-acid-p-distance",
@@ -2096,7 +2097,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 0,
         },
         {
-            "path": Path(__file__).resolve().parents[2]
+            "path": _PACKAGE_ROOT
             / "tests/fixtures/alignments/example_alignment_distance_gaps.fasta",
             "case": "gap-complete-deletion",
             "model": "p-distance",
@@ -2108,7 +2109,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 0,
         },
         {
-            "path": Path(__file__).resolve().parents[2]
+            "path": _PACKAGE_ROOT
             / "tests/fixtures/alignments/example_alignment_ambiguity.fasta",
             "case": "ambiguity-ignore",
             "model": "p-distance",
@@ -2120,7 +2121,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 1,
         },
         {
-            "path": Path(__file__).resolve().parents[2]
+            "path": _PACKAGE_ROOT
             / "tests/fixtures/alignments/example_alignment_ambiguity.fasta",
             "case": "ambiguity-partial-match",
             "model": "p-distance",
@@ -2132,7 +2133,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 1,
         },
         {
-            "path": Path(__file__).resolve().parents[2]
+            "path": _PACKAGE_ROOT
             / "tests/fixtures/alignments/example_alignment_ambiguity.fasta",
             "case": "ambiguity-strict-mismatch",
             "model": "p-distance",
@@ -2144,7 +2145,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 1,
         },
         {
-            "path": Path(__file__).resolve().parents[2]
+            "path": _PACKAGE_ROOT
             / "tests/fixtures/alignments/example_alignment_ambiguity.fasta",
             "case": "ambiguity-report-only",
             "model": "p-distance",
@@ -2194,8 +2195,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
         )
     tree_observations: list[DistanceTreeReferenceObservation] = []
     nj_matrix_path = (
-        Path(__file__).resolve().parents[2]
-        / "tests/fixtures/metadata/example_distance_matrix_ultrametric.tsv"
+        _PACKAGE_ROOT / "tests/fixtures/metadata/example_distance_matrix_ultrametric.tsv"
     )
     nj_tree, _ = build_tree_from_imported_distance_matrix(
         nj_matrix_path, method="neighbor-joining"
@@ -2216,8 +2216,7 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
         )
     )
     upgma_matrix_path = (
-        Path(__file__).resolve().parents[2]
-        / "tests/fixtures/metadata/example_distance_matrix_ultrametric.tsv"
+        _PACKAGE_ROOT / "tests/fixtures/metadata/example_distance_matrix_ultrametric.tsv"
     )
     upgma_tree, _ = build_tree_from_imported_distance_matrix(
         upgma_matrix_path, method="upgma"
