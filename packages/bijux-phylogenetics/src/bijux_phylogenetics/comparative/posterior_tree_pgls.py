@@ -16,7 +16,7 @@ from bijux_phylogenetics.comparative.pgls import (
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.core.tree import PhyloTree
-from bijux_phylogenetics.errors import ComparativeMethodError, InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError, InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import detect_tree_format

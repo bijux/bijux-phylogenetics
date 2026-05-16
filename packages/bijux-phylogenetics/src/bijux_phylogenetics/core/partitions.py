@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
-from bijux_phylogenetics.errors import InvalidPartitionError
+from bijux_phylogenetics.runtime.errors import InvalidPartitionError
 
 __all__ = [
     "LocusPartition",

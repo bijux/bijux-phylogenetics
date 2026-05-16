@@ -10,7 +10,7 @@ from bijux_phylogenetics.comparative.pgls_brownian_covariance import (
     summarize_brownian_covariance_pgls,
     write_brownian_covariance_table,
 )
-from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

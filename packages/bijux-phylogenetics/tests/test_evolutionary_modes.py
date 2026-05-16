@@ -14,7 +14,7 @@ from bijux_phylogenetics.comparative import (
     rescale_tree_early_burst,
     rescale_tree_ornstein_uhlenbeck,
 )
-from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures"
 EXAMPLE_TREE = FIXTURE_ROOT / "trees" / "example_tree.nwk"

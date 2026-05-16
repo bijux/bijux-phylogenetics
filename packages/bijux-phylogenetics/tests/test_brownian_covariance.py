@@ -11,7 +11,7 @@ from bijux_phylogenetics.comparative.brownian_covariance import (
     write_brownian_covariance_long_table,
     write_brownian_covariance_matrix_table,
 )
-from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
 
 FIXTURES = Path(__file__).parent / "fixtures"

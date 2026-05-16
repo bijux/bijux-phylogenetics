@@ -15,7 +15,7 @@ from bijux_phylogenetics.engines.fasta_to_tree import (
     write_fasta_to_tree_model_table,
     write_fasta_to_tree_support_table,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import EngineWorkflowError, InvalidAlignmentError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

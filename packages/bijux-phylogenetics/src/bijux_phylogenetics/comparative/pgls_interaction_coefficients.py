@@ -11,7 +11,7 @@ from bijux_phylogenetics.comparative.pgls import (
     run_pgls,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 
 @dataclass(slots=True)

@@ -30,7 +30,7 @@ from bijux_phylogenetics.comparative.pgls import (
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
-from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 
 @dataclass(slots=True)

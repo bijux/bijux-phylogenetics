@@ -12,7 +12,7 @@ from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.comparative.discrete_evolution import (
     audit_discrete_state_coding,
 )
-from bijux_phylogenetics.errors import AncestralReconstructionError
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.newick import loads_newick
 
 _MODEL_ALIAS_TO_INTERNAL = {

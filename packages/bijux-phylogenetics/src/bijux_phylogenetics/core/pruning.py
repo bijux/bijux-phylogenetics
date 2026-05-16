@@ -12,7 +12,7 @@ from bijux_phylogenetics.core.topology import (
     _summarize_transformation,
 )
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import MetadataJoinError
+from bijux_phylogenetics.runtime.errors import MetadataJoinError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 

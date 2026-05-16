@@ -16,7 +16,7 @@ from bijux_phylogenetics.core.partitions import (
     LocusSegment,
     normalize_partition_data_type,
 )
-from bijux_phylogenetics.errors import InvalidAlignmentError, InvalidPartitionError
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError, InvalidPartitionError
 from bijux_phylogenetics.io.fasta import (
     infer_alignment_alphabet,
     load_fasta_alignment,

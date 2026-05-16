@@ -16,7 +16,7 @@ from bijux_phylogenetics.core.ultrametric import (
     APE_ULTRAMETRIC_TOLERANCE,
     summarize_ultrametric_tip_depths,
 )
-from bijux_phylogenetics.errors import (
+from bijux_phylogenetics.runtime.errors import (
     DuplicateTaxonError,
     InvalidBranchLengthError,
     NonUltrametricTreeError,

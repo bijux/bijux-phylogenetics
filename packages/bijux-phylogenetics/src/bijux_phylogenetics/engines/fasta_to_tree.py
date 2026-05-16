@@ -13,7 +13,7 @@ from bijux_phylogenetics.core.alignment import (
     FastaRepairReport,
 )
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
-from bijux_phylogenetics.errors import InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
     detect_fasta_sequence_type,
     repair_fasta_input,

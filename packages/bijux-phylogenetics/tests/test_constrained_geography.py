@@ -21,7 +21,7 @@ from bijux_phylogenetics.biogeography import (
     write_constrained_geographic_transition_table,
     write_unsupported_geographic_transition_claim_table,
 )
-from bijux_phylogenetics.errors import AncestralReconstructionError
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

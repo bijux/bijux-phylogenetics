@@ -17,7 +17,7 @@ from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
     reconstruct_discrete_ancestral_states_from_dataset,
 )
-from bijux_phylogenetics.errors import AncestralReconstructionError
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

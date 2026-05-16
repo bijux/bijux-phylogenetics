@@ -21,7 +21,7 @@ from bijux_phylogenetics.biogeography.migration_events import (
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
-from bijux_phylogenetics.errors import AncestralReconstructionError
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.trees import load_tree
 
 

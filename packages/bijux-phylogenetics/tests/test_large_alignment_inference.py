@@ -7,7 +7,7 @@ import pytest
 from bijux_phylogenetics.engines.large_alignment_inference import (
     run_large_alignment_inference,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError
+from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 
 pytestmark = pytest.mark.engine_contract
 

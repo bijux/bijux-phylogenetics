@@ -30,7 +30,7 @@ from bijux_phylogenetics.engines.workflows import (
     run_alignment_trimming,
     run_multiple_sequence_alignment,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError, PhylogeneticsError
+from bijux_phylogenetics.runtime.errors import EngineWorkflowError, PhylogeneticsError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment, validate_fasta_input
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.render.html import write_html_report

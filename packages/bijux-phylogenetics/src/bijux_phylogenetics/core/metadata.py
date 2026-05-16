@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TypeAlias
 
-from bijux_phylogenetics.errors import MetadataJoinError
+from bijux_phylogenetics.runtime.errors import MetadataJoinError
 
 
 @dataclass(slots=True)

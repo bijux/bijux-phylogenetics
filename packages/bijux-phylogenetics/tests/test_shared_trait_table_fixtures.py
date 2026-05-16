@@ -18,7 +18,7 @@ from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs
 from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_independent_contrasts,
 )
-from bijux_phylogenetics.errors import AncestralReconstructionError
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.fixtures import (
     get_shared_trait_table_fixture,

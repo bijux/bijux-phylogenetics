@@ -14,7 +14,7 @@ from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
 )
-from bijux_phylogenetics.errors import (
+from bijux_phylogenetics.runtime.errors import (
     DiversificationAnalysisError,
     NonUltrametricTreeError,
     UnrootedTreeError,

@@ -8,7 +8,7 @@ import pytest
 import bijux_phylogenetics
 from bijux_phylogenetics import concatenate_locus_alignments
 from bijux_phylogenetics.core.partitions import write_locus_partitions
-from bijux_phylogenetics.errors import InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import write_fasta_alignment
 
 FIXTURES = Path(__file__).parent / "fixtures"

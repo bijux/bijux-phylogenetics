@@ -9,7 +9,7 @@ from bijux_phylogenetics.engines import (
     run_fasta_to_tree_workflow,
     run_model_selection,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError
+from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 
 pytestmark = pytest.mark.engine_contract
 

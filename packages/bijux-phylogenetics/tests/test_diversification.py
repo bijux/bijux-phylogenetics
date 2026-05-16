@@ -20,7 +20,7 @@ from bijux_phylogenetics.comparative import (
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
-from bijux_phylogenetics.errors import DiversificationAnalysisError, UnrootedTreeError
+from bijux_phylogenetics.runtime.errors import DiversificationAnalysisError, UnrootedTreeError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

@@ -21,7 +21,7 @@ from bijux_phylogenetics.ancestral.continuous import (
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.core.tree import PhyloTree
-from bijux_phylogenetics.errors import (
+from bijux_phylogenetics.runtime.errors import (
     AncestralReconstructionError,
     InvalidAlignmentError,
 )

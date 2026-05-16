@@ -14,7 +14,7 @@ from bijux_phylogenetics.core.clade_sets import (
     informative_unrooted_splits,
 )
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import TreeRootingError
+from bijux_phylogenetics.runtime.errors import TreeRootingError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo, tree_to_biophylo
 from bijux_phylogenetics.io.trees import load_tree
 

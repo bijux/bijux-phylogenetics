@@ -7,7 +7,7 @@ from bijux_phylogenetics.core.node_depth import (
     compute_tree_node_depths,
 )
 from bijux_phylogenetics.core.ultrametric import assess_tree_ultrametricity
-from bijux_phylogenetics.errors import NonUltrametricTreeError, UnrootedTreeError
+from bijux_phylogenetics.runtime.errors import NonUltrametricTreeError, UnrootedTreeError
 
 
 @dataclass(slots=True)

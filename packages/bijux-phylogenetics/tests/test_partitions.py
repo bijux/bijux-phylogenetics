@@ -12,7 +12,7 @@ from bijux_phylogenetics.core.partitions import (
     write_locus_partitions,
     write_partition_summary_table,
 )
-from bijux_phylogenetics.errors import InvalidPartitionError
+from bijux_phylogenetics.runtime.errors import InvalidPartitionError
 
 
 def test_parse_locus_partitions_accepts_whitespace_and_stride_syntax(

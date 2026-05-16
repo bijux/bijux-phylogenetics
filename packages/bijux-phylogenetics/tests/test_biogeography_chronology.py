@@ -12,7 +12,7 @@ from bijux_phylogenetics.biogeography.transition_chronology import (
     write_dated_biogeography_summary_table,
     write_dated_biogeography_time_bin_table,
 )
-from bijux_phylogenetics.errors import AncestralReconstructionError
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

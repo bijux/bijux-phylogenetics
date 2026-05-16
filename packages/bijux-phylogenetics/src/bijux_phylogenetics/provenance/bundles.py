@@ -7,7 +7,7 @@ from pathlib import Path
 import shutil
 
 from bijux_phylogenetics.core.environment import inspect_environment
-from bijux_phylogenetics.errors import EvidenceContractError
+from bijux_phylogenetics.runtime.errors import EvidenceContractError
 
 
 @dataclass(slots=True)

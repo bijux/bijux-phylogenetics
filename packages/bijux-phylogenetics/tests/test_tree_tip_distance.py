@@ -9,7 +9,7 @@ from bijux_phylogenetics.core.tree_distance import (
     write_tree_tip_distance_long_table,
     write_tree_tip_distance_matrix,
 )
-from bijux_phylogenetics.errors import InvalidBranchLengthError
+from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError
 
 
 def fixture(name: str) -> Path:

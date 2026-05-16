@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.errors import PhylogeneticsError
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 from bijux_phylogenetics.io.fasta import (
     summarize_alignment_readiness,
     validate_fasta_input,

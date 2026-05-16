@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode, normalize_taxon_key
-from bijux_phylogenetics.errors import MetadataJoinError
+from bijux_phylogenetics.runtime.errors import MetadataJoinError
 
 _SAMPLE_TOKENS = ("sample", "specimen", "individual", "indiv", "voucher")
 _ISOLATE_TOKENS = ("isolate", "strain", "clone", "cultivar", "lineage")

@@ -17,7 +17,7 @@ from bijux_phylogenetics.core.clade_sets import (
     robinson_foulds_metrics,
 )
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import (
+from bijux_phylogenetics.runtime.errors import (
     InvalidAlignmentError,
     UnsupportedTreeFormatError,
     WorkflowBudgetError,

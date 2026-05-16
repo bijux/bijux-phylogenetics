@@ -76,7 +76,7 @@ from bijux_phylogenetics.core.alignment import (
     TrimmedAlignmentColumn,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table
-from bijux_phylogenetics.errors import (
+from bijux_phylogenetics.runtime.errors import (
     AlignmentTaxonMismatchError,
     InvalidAlignmentError,
 )

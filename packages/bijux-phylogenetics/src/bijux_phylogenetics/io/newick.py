@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import (
+from bijux_phylogenetics.runtime.errors import (
     InvalidBranchLengthError,
     TreeParseError,
     UnnamedTipError,

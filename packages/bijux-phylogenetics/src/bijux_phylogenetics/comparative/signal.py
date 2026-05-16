@@ -18,7 +18,7 @@ from bijux_phylogenetics.comparative.common import (
 )
 from bijux_phylogenetics.core._node_identity import ape_node_id_for_node
 from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
-from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 
 @dataclass(slots=True)

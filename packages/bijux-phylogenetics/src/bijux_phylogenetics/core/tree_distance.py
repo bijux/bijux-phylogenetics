@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import InvalidBranchLengthError
+from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError
 from bijux_phylogenetics.io.trees import load_tree
 
 MissingBranchLengthPolicy = str

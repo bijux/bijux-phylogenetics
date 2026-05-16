@@ -29,7 +29,7 @@ from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
 )
-from bijux_phylogenetics.errors import MetadataJoinError
+from bijux_phylogenetics.runtime.errors import MetadataJoinError
 from bijux_phylogenetics.io.fasta import (
     detect_composition_outlier_sequences,
     detect_sequence_length_outliers,

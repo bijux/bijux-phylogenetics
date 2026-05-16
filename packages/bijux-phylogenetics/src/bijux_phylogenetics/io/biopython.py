@@ -7,7 +7,7 @@ from Bio import Phylo
 from Bio.Phylo.BaseTree import Clade, Tree
 
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import TreeParseError
+from bijux_phylogenetics.runtime.errors import TreeParseError
 
 
 def _convert_clade(clade: Clade) -> TreeNode:

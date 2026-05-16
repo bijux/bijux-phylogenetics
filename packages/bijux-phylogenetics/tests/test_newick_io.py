@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from bijux_phylogenetics.errors import InvalidBranchLengthError, TreeParseError
+from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError, TreeParseError
 from bijux_phylogenetics.io.newick import (
     dumps_newick,
     iter_newick_tree_records,

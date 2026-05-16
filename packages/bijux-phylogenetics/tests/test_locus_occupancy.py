@@ -11,7 +11,7 @@ from bijux_phylogenetics.core.locus_occupancy import (
     parse_locus_partitions,
     write_locus_partitions,
 )
-from bijux_phylogenetics.errors import InvalidPartitionError
+from bijux_phylogenetics.runtime.errors import InvalidPartitionError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment, write_fasta_alignment
 
 FIXTURES = Path(__file__).parent / "fixtures"

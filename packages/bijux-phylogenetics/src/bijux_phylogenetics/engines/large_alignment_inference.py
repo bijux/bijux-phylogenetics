@@ -8,7 +8,7 @@ import time
 import tracemalloc
 
 from bijux_phylogenetics.core.alignment import AlignmentAlphabet
-from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import EngineWorkflowError, InvalidAlignmentError
 
 from .common import (
     EngineIncompleteRunRecord,

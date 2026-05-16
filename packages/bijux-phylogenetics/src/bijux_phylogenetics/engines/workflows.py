@@ -26,7 +26,7 @@ from bijux_phylogenetics.core.partitions import (
     write_partition_summary_table,
 )
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
-from bijux_phylogenetics.errors import EngineWorkflowError, PhylogeneticsError
+from bijux_phylogenetics.runtime.errors import EngineWorkflowError, PhylogeneticsError
 from bijux_phylogenetics.io.fasta import (
     back_translate_aligned_coding_sequences,
     classify_sequence_coding_behavior,

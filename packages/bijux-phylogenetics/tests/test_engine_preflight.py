@@ -8,7 +8,7 @@ from bijux_phylogenetics.engines.preflight import (
     inspect_external_engine_preflight,
     require_preflight_workflow,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError
+from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 
 
 @pytest.fixture
@@ -96,7 +96,7 @@ def test_engine_preflight_blocks_missing_selected_workflow_dependencies(
 ) -> None:
     def fake_resolve(executable: str | Path) -> str:
         if str(executable) == "beast":
-            from bijux_phylogenetics.errors import EngineUnavailableError
+            from bijux_phylogenetics.runtime.errors import EngineUnavailableError
 
             raise EngineUnavailableError(
                 "engine executable is not available on PATH: beast"

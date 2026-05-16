@@ -8,7 +8,7 @@ from bijux_phylogenetics.core._node_identity import (
     build_ape_tip_node_map,
 )
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import InvalidBranchLengthError
+from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError
 from bijux_phylogenetics.io.trees import load_tree
 
 

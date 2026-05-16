@@ -42,7 +42,7 @@ from bijux_phylogenetics.engines.workflows import (
     _resolve_incomplete_workflow_state,
     _resume_existing_workflow,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError, PhylogeneticsError
+from bijux_phylogenetics.runtime.errors import EngineWorkflowError, PhylogeneticsError
 from bijux_phylogenetics.io.biopython import loads_biophylo
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick

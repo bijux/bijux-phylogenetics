@@ -29,7 +29,7 @@ from bijux_phylogenetics.comparative.discrete_evolution import (
     _transition_events,
     audit_discrete_state_coding,
 )
-from bijux_phylogenetics.errors import AncestralReconstructionError
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 _MODEL_ALIAS_TO_INTERNAL = {
     "er": "equal-rates",

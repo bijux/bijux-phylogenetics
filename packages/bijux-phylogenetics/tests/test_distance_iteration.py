@@ -24,7 +24,7 @@ from bijux_phylogenetics.distance import (
     validate_distance_reference_examples,
     write_distance_reproducibility_bundle,
 )
-from bijux_phylogenetics.errors import UnsupportedDistanceTreeMethodError
+from bijux_phylogenetics.runtime.errors import UnsupportedDistanceTreeMethodError
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.reports.service import render_distance_report
 

@@ -15,7 +15,7 @@ from bijux_phylogenetics.comparative.phylogenetic_logistic import (
     write_phylogenetic_logistic_excluded_taxa_table,
     write_phylogenetic_logistic_fitted_table,
 )
-from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

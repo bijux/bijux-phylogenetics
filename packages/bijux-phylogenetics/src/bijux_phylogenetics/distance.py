@@ -27,7 +27,7 @@ from bijux_phylogenetics.core.clade_sets import (
 )
 from bijux_phylogenetics.core.neighbor_joining import build_neighbor_joining_tree
 from bijux_phylogenetics.core.tree import PhyloTree
-from bijux_phylogenetics.errors import (
+from bijux_phylogenetics.runtime.errors import (
     InvalidAlignmentError,
     InvalidDistanceMatrixError,
     UnsupportedDistanceTreeMethodError,

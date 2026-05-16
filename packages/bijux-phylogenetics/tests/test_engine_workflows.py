@@ -32,7 +32,7 @@ from bijux_phylogenetics.engines import (
 from bijux_phylogenetics.engines.inference_reproducibility import (
     run_inference_reproducibility_check,
 )
-from bijux_phylogenetics.errors import (
+from bijux_phylogenetics.runtime.errors import (
     EngineUnavailableError,
     EngineWorkflowError,
     InvalidAlignmentError,

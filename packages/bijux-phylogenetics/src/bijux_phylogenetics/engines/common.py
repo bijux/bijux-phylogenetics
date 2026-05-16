@@ -12,7 +12,7 @@ import subprocess  # nosec B404
 import time
 from typing import Any
 
-from bijux_phylogenetics.errors import (
+from bijux_phylogenetics.runtime.errors import (
     EngineUnavailableError,
     EngineWorkflowError,
     InvalidAlignmentError,

@@ -14,7 +14,7 @@ from bijux_phylogenetics.comparative.signal import (
     evaluate_pagels_lambda_likelihood,
     evaluate_pagels_lambda_likelihood_from_dataset,
 )
-from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

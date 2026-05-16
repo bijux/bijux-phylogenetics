@@ -8,7 +8,7 @@ from bijux_phylogenetics.distance import (
     compute_pairwise_genetic_distance_matrix,
     compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment,
 )
-from bijux_phylogenetics.errors import InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
     compute_alignment_base_frequency_report,
     compute_alignment_base_frequency_report_from_dna_bin_alignment,

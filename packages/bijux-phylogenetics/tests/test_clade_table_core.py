@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.trees import extract_tree_clades, extract_tree_set_clades
-from bijux_phylogenetics.errors import InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 
 def tree_fixture(name: str) -> Path:

@@ -5,12 +5,12 @@ from pathlib import Path
 from typing import Any
 
 from bijux_phylogenetics import __version__
-from bijux_phylogenetics.error_explanations import (
+from bijux_phylogenetics.runtime.error_explanations import (
     explain_phylogenetics_error,
     explanation_payload,
 )
-from bijux_phylogenetics.errors import PhylogeneticsError
-from bijux_phylogenetics.identity import CLI_NAME, IMPORT_NAME, PACKAGE_NAME
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError
+from bijux_phylogenetics.runtime.identity import CLI_NAME, IMPORT_NAME, PACKAGE_NAME
 
 
 @dataclass(slots=True)

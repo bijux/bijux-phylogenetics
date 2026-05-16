@@ -10,7 +10,7 @@ from Bio.Phylo.BaseTree import Tree as BioTree
 
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.iqtree_support import (
     parse_iqtree_branch_support_label,

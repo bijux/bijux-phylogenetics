@@ -13,7 +13,7 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     load_rabies_method_sensitivity_panel_dataset,
     run_rabies_method_sensitivity_panel_workflow,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError
+from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 
 
 def _build_stub_dataset(

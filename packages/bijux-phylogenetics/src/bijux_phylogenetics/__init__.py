@@ -1354,7 +1354,7 @@ from .host_association import (
     write_host_switch_summary_table,
     write_unsupported_host_switch_claim_table,
 )
-from .identity import (
+from .runtime.identity import (
     CLI_NAME,
     IDENTITY,
     IMPORT_NAME,

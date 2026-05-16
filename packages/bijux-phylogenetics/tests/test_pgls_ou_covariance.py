@@ -11,7 +11,7 @@ from bijux_phylogenetics.comparative.pgls_ou_covariance import (
     write_ou_alpha_profile_table,
     write_ou_covariance_table,
 )
-from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

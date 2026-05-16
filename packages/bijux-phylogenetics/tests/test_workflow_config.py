@@ -9,7 +9,7 @@ from bijux_phylogenetics.engines.workflow_config import (
     load_phylo_workflow_config,
     run_phylo_workflow_config,
 )
-from bijux_phylogenetics.errors import PhylogeneticsError
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 from tests.support.fake_external_engines import fake_iqtree, fake_mafft, fake_trimal
 
 

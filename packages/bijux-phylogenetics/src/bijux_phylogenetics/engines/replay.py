@@ -10,7 +10,7 @@ from bijux_phylogenetics.compare.topology import (
     compare_support_values,
     compare_tree_paths,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError
+from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 
 from .common import build_file_checksums, load_engine_manifest, read_engine_version

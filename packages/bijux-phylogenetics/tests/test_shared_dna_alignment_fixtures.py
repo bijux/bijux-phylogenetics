@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from bijux_phylogenetics.errors import InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
     inspect_coding_alignment,
     load_dna_bin_alignment,

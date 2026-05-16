@@ -14,7 +14,7 @@ from bijux_phylogenetics.benchmark import (
 )
 from bijux_phylogenetics.core.dataset import DatasetAuditReport, audit_dataset_inputs
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
-from bijux_phylogenetics.errors import PhylogeneticsError
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 from bijux_phylogenetics.io.fasta import summarise_fasta
 from bijux_phylogenetics.validation.reference import (
     build_core_workflow_validation_report,

@@ -9,7 +9,7 @@ from bijux_phylogenetics.core.branching_times import (
     compute_tree_branching_times,
     write_tree_branching_time_table,
 )
-from bijux_phylogenetics.errors import NonUltrametricTreeError
+from bijux_phylogenetics.runtime.errors import NonUltrametricTreeError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

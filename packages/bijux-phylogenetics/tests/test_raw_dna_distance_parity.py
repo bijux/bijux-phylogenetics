@@ -7,7 +7,7 @@ import pytest
 
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matrix
-from bijux_phylogenetics.errors import InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

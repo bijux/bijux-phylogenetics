@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
-from bijux_phylogenetics.errors import InvalidBranchLengthError, TreeParseError
+from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError, TreeParseError
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.fixtures import (
     get_shared_tree_fixture,

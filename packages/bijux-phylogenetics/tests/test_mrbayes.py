@@ -25,7 +25,7 @@ from bijux_phylogenetics.bayesian.posterior import (
     write_posterior_tree_subsample,
     write_posterior_tree_subsample_table,
 )
-from bijux_phylogenetics.errors import EngineUnavailableError, EngineWorkflowError
+from bijux_phylogenetics.runtime.errors import EngineUnavailableError, EngineWorkflowError
 
 pytestmark = pytest.mark.engine_contract
 
