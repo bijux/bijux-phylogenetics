@@ -258,6 +258,10 @@ from bijux_phylogenetics.command_line.alignment_coding import (
     add_alignment_coding_commands,
     run_alignment_coding_command,
 )
+from bijux_phylogenetics.command_line.alignment_linkage import (
+    add_alignment_linkage_commands,
+    run_alignment_linkage_command,
+)
 from bijux_phylogenetics.command_line.distance import (
     add_distance_commands,
     run_distance_command,
@@ -652,9 +656,6 @@ from bijux_phylogenetics.host_association import (
     write_host_switch_summary_table,
     write_unsupported_host_switch_claim_table,
 )
-from bijux_phylogenetics.io.fasta import (
-    link_alignment_to_tree,
-)
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylogeography import (
@@ -862,16 +863,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_alignment_matrix_commands(alignment_subparsers)
     add_alignment_distance_commands(alignment_subparsers)
     add_alignment_coding_commands(alignment_subparsers)
-    alignment_link = alignment_subparsers.add_parser(
-        "link", help="Link tree tips to an aligned FASTA file."
-    )
-    alignment_link.add_argument("tree", type=Path)
-    alignment_link.add_argument("alignment", type=Path)
-    alignment_link.add_argument("--strict", action="store_true")
-    alignment_link.add_argument(
-        "--json", action="store_true", help="Emit the report as JSON."
-    )
-    _add_manifest_argument(alignment_link)
+    add_alignment_linkage_commands(alignment_subparsers)
 
     comparative = subparsers.add_parser(
         get_command_spec("comparative").name,
@@ -5606,27 +5598,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             coding_exit_code = run_alignment_coding_command(args)
             if coding_exit_code is not None:
                 return coding_exit_code
-            report = link_alignment_to_tree(
-                args.tree, args.alignment, strict=args.strict
-            )
-            outputs = _finalize_outputs(
-                args, command="alignment", inputs=[args.tree, args.alignment]
-            )
-            _print_result(
-                build_command_result(
-                    command="alignment",
-                    inputs=[args.tree, args.alignment],
-                    outputs=outputs,
-                    metrics={
-                        "tree_taxa": report.tree_taxa,
-                        "alignment_ids": report.alignment_ids,
-                        "linked_taxa": report.linked_taxa,
-                    },
-                    data=report,
-                ),
-                json_output=args.json,
-            )
-            return 0
+            linkage_exit_code = run_alignment_linkage_command(args)
+            if linkage_exit_code is not None:
+                return linkage_exit_code
         if args.command == "comparative":
             if args.comparative_command == "readiness":
                 report = summarize_numeric_trait_readiness(
