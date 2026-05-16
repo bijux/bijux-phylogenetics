@@ -259,6 +259,7 @@ currently covers `phytools::phylosig(method='lambda')`,
 `phytools::sim.history`,
 `phytools::fastBM`,
 `phytools::sim.corrs`,
+`phytools::pgls.SEy`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed twenty-four-taxon
 comparative fixtures from the shared
@@ -278,6 +279,14 @@ summary parity when the optimizer reports weakly identified boundary rates. It
 compares flat-root log-likelihood, AIC, AICc, excluded taxa, one explicit
 ER-versus-SYM-versus-ARD model identity summary, and the directed rate matrix
 when the governed case is identifiable against real `phytools` output.
+The same live registry now also includes one governed `phytools::pgls.SEy`
+lane for fixed-lambda Brownian covariance PGLS over one simple numeric
+regression plus one categorical and one interaction-coded regression. That
+claim stays deliberately narrow: installed `phytools 2.5.2` does not export a
+general `phytools::pgls` surface, so the live lane proves `pgls.SEy` with
+`lambda = 1.0`, while the broader exact PGLS contract for estimated lambda
+and full coefficient parity remains the checked-in `ape` plus `nlme`
+reference suite.
 The live `make.simmap` lane now includes clean binary, clean multistate, and
 missing-value-pruned binary ER cases; clean multistate and
 missing-value-pruned multistate SYM cases; and binary plus

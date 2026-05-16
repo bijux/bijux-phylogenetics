@@ -82,6 +82,14 @@ unordered-multistate SYM cases, and it now also underlies the governed live
 `phytools::fitMk(model='ARD')` lane for one rate-row-parity binary surface
 plus one summary-parity multistate surface when the optimizer flags weakly
 identified boundary rates.
+The same owned comparative runtime also underlies the governed live
+`phytools::pgls.SEy` lane for fixed-lambda Brownian covariance regression over
+simple numeric, categorical, and interaction-coded fixtures. That governed
+claim is narrower than the full owned PGLS API on purpose: installed
+`phytools 2.5.2` does not export a general `phytools::pgls` surface, so live
+parity stays on `pgls.SEy` with `lambda = 1.0`, while estimated-lambda and
+broader exact regression parity remain covered by the checked-in `ape` plus
+`nlme` reference suite.
 
 The owned ancestral runtime now also exposes direct dataset-backed
 reconstruction surfaces through
