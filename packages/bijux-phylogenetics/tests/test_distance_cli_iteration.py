@@ -114,7 +114,15 @@ def test_cli_alignment_distance_models_json_output(capsys) -> None:
     )
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
-    assert payload["metrics"]["model_count"] == 3
+    model_rows = payload["data"]["rows"]
+    assert payload["metrics"]["model_count"] == len(model_rows)
+    assert {row["model"] for row in model_rows} >= {
+        "p-distance",
+        "jukes-cantor",
+        "kimura-2-parameter",
+        "felsenstein-81",
+        "tamura-nei-93",
+    }
 
 
 def test_cli_alignment_distance_gap_sensitivity_json_output(capsys) -> None:
@@ -201,7 +209,19 @@ def test_cli_distance_reference_json_output(capsys) -> None:
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["all_passed"] is True
-    assert payload["metrics"]["case_count"] == 9
+    observations = payload["data"]["observations"]
+    assert payload["metrics"]["case_count"] == len(observations)
+    assert {row["case"] for row in observations} >= {
+        "dna-p-distance",
+        "dna-jukes-cantor",
+        "dna-kimura-2-parameter",
+        "dna-felsenstein-81",
+        "dna-tamura-nei-93",
+        "protein-p-distance",
+        "ambiguity-partial-match",
+        "ambiguity-strict-mismatch",
+        "ambiguity-report-only",
+    }
 
 
 def test_cli_distance_assumptions_json_output(capsys) -> None:
