@@ -224,7 +224,8 @@ goal 201: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
 `phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
 `phytools::make.simmap(model='ER')`, `phytools::make.simmap(model='SYM')`,
-`phytools::make.simmap(model='ARD')`, `phytools::describe.simmap`,
+`phytools::make.simmap(model='ARD')`, `phytools::countSimmap`,
+`phytools::describe.simmap`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed
 twenty-four-taxon comparative fixtures drawn from the shared `phytools`
@@ -257,6 +258,14 @@ side, `discrete-evolution stochastic-map` now also carries fitted-model audit
 fields, writes one flat branch-segment ledger, writes one per-state
 time-summary ledger, and writes one per-branch state-occupancy ledger in
 addition to the JSON collection and transition summary.
+The same owned surface now also supports `discrete-evolution count-maps` over
+saved stochastic-map collections, writing one per-replicate count matrix, one
+aggregate transition matrix, one per-branch directional transition table, and
+one flat event ledger. The live `countSimmap` lane now covers clean binary,
+clean multistate, clean multistate SYM, and missing-value-pruned binary cases.
+It compares total-transition envelopes plus directional transition-count rows,
+including zero diagonal state pairs, without claiming exact stochastic-history
+identity.
 The live `describe.simmap` lane now also covers clean binary, clean multistate,
 clean multistate SYM, and missing-value-pruned binary cases. It compares the
 owned stochastic-map summary contract directly, including total changes,

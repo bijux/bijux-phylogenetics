@@ -296,8 +296,9 @@ bijux-phylogenetics ancestral sensitivity tree.nwk traits.tsv --trait height_cm 
 bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --compare-tree tree-alt.nwk --out artifacts/ancestral-report.html
 bijux-phylogenetics ancestral package tree.nwk traits.tsv --trait habitat --kind discrete --model symmetric --state-ordering ordered --ordered-states low,medium,high --out-dir artifacts/ancestral-package --json
 bijux-phylogenetics discrete-evolution model tree.nwk geography.tsv --trait region --model symmetric --state-ordering ordered --ordered-states north,south,island --node-table-out artifacts/node-states.tsv --transitions-out artifacts/transitions.tsv --json
-bijux-phylogenetics discrete-evolution stochastic-map tree.nwk geography.tsv --trait region --model symmetric --replicates 200 --collection-out artifacts/geography-maps.json --summary-out artifacts/geography-stochastic-summary.tsv --state-times-out artifacts/geography-stochastic-state-times.tsv --branch-occupancy-out artifacts/geography-stochastic-branch-occupancy.tsv --segments-out artifacts/geography-stochastic-segments.tsv --json
+bijux-phylogenetics discrete-evolution stochastic-map tree.nwk geography.tsv --trait region --model symmetric --replicates 200 --collection-out artifacts/geography-maps.json --summary-out artifacts/geography-stochastic-summary.tsv --state-times-out artifacts/geography-stochastic-state-times.tsv --branch-occupancy-out artifacts/geography-stochastic-branch-occupancy.tsv --segments-out artifacts/geography-stochastic-segments.tsv --count-matrix-out artifacts/geography-stochastic-counts.tsv --aggregate-matrix-out artifacts/geography-stochastic-aggregate.tsv --branch-transition-out artifacts/geography-stochastic-branch-transitions.tsv --events-out artifacts/geography-stochastic-events.tsv --json
 bijux-phylogenetics discrete-evolution summarize-maps artifacts/geography-maps.json --summary-out artifacts/geography-stochastic-summary.tsv --state-times-out artifacts/geography-stochastic-state-times.tsv --branch-occupancy-out artifacts/geography-stochastic-branch-occupancy.tsv --json
+bijux-phylogenetics discrete-evolution count-maps artifacts/geography-maps.json --count-matrix-out artifacts/geography-stochastic-counts.tsv --aggregate-matrix-out artifacts/geography-stochastic-aggregate.tsv --branch-transition-out artifacts/geography-stochastic-branch-transitions.tsv --events-out artifacts/geography-stochastic-events.tsv --json
 bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait region --compare-model symmetric --out artifacts/geography-report.html
 bijux-phylogenetics diversification gamma-stat tree.nwk --metadata sampling.tsv --out artifacts/diversification-gamma-statistic.tsv --json
 bijux-phylogenetics diversification estimate tree.nwk --metadata sampling.tsv --model birth-death --json
@@ -845,7 +846,8 @@ goal: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
 `phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
 `phytools::make.simmap(model='ER')`, `phytools::make.simmap(model='SYM')`,
-`phytools::make.simmap(model='ARD')`, `phytools::describe.simmap`,
+`phytools::make.simmap(model='ARD')`, `phytools::countSimmap`,
+`phytools::describe.simmap`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed strong-signal,
 weak-signal, non-ultrametric, discrete-state, and missing-value comparative
@@ -885,6 +887,16 @@ clean binary, clean multistate, clean multistate SYM, and missing-value-pruned
 binary cases at one governed seed and one governed replicate count of 128 maps
 per case. It compares those summary rows, including branch occupancy, without
 claiming exact stochastic-history identity.
+The owned stochastic-map collection surface now also exposes one
+`countSimmap`-style transition-count contract over saved map collections,
+including one per-replicate total-transition ledger, one flat event table, one
+aggregate transition matrix, and one per-branch directional transition summary.
+The live `countSimmap` lane now covers governed clean binary, clean
+multistate, clean multistate SYM, and missing-value-pruned binary cases at one
+governed seed and one governed replicate count of 128 maps per case. It
+compares total-transition envelopes plus directional transition-count rows,
+including zero diagonal state pairs such as `0->0`, without claiming exact
+stochastic-history identity.
 The live
 `rerootingMethod` lane now covers governed ER binary, governed ER multistate,
 governed ER missing-value-pruned, governed SYM multistate, and governed SYM

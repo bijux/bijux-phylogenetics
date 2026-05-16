@@ -111,6 +111,15 @@ draws explicitly, and now underlies the governed live
 exact stochastic-history identity across languages. Governed multistate ARD
 cases stay on summary-envelope parity only when weakly identified boundary
 rates make row-level transition summaries unstable across optimizers.
+The same owned runtime also exposes
+`bijux_phylogenetics.count_discrete_stochastic_map_transitions(...)` plus
+writers for one per-replicate transition-count matrix, one aggregate
+transition matrix, one per-branch directional transition table, and one flat
+event ledger. That surface now underlies the governed live
+`phytools::countSimmap` lane, which compares total-transition envelopes and
+directional transition-count rows over selected seeded map collections,
+including zero diagonal state pairs, without claiming exact stochastic-history
+identity.
 The same owned summary contract also underlies the governed live
 `phytools::describe.simmap` lane, which compares total-change summary,
 transition-count rows, time-in-state rows, and per-branch state-occupancy rows
