@@ -237,6 +237,10 @@ from bijux_phylogenetics.command_line.routing import (
     _finalize_outputs,
 )
 from bijux_phylogenetics.command_line.engines import run_phylo_command
+from bijux_phylogenetics.command_line.metadata import (
+    add_metadata_commands,
+    run_metadata_command,
+)
 from bijux_phylogenetics.command_line.arguments import (
     _adapter_version_args,
     _add_distance_tree_method_argument,
@@ -467,11 +471,7 @@ from bijux_phylogenetics.core.locus_occupancy import (
     filter_locus_occupancy,
     write_locus_partitions,
 )
-from bijux_phylogenetics.core.metadata import (
-    inspect_metadata_table,
-    load_taxon_table,
-    write_taxon_rows,
-)
+from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.partitions import (
     build_partition_summary_report,
     parse_locus_partitions,
@@ -921,21 +921,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_manifest_argument(phylo_validate_bundle)
 
-    metadata = subparsers.add_parser(
-        get_command_spec("metadata").name, help=get_command_spec("metadata").summary
-    )
-    metadata_subparsers = metadata.add_subparsers(
-        dest="metadata_command", required=True
-    )
-    metadata_inspect = metadata_subparsers.add_parser(
-        "inspect", help="Inspect a metadata table keyed by taxon."
-    )
-    metadata_inspect.add_argument("table", type=Path)
-    metadata_inspect.add_argument("--taxon-column")
-    metadata_inspect.add_argument(
-        "--json", action="store_true", help="Emit the report as JSON."
-    )
-    _add_manifest_argument(metadata_inspect)
+    add_metadata_commands(subparsers)
 
     traits = subparsers.add_parser(
         get_command_spec("traits").name, help=get_command_spec("traits").summary
@@ -6533,23 +6519,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "phylo":
             return run_phylo_command(args)
         if args.command == "metadata":
-            report = inspect_metadata_table(args.table, taxon_column=args.taxon_column)
-            outputs = _finalize_outputs(args, command="metadata", inputs=[args.table])
-            _print_result(
-                build_command_result(
-                    command="metadata",
-                    inputs=[args.table],
-                    outputs=outputs,
-                    metrics={
-                        "row_count": report.row_count,
-                        "column_count": report.column_count,
-                        "taxon_count": len(report.taxa),
-                    },
-                    data=report,
-                ),
-                json_output=args.json,
-            )
-            return 0
+            return run_metadata_command(args)
         if args.command == "traits":
             if args.traits_command == "validate":
                 report = validate_traits_table(
