@@ -263,6 +263,10 @@ from bijux_phylogenetics.command_line.distance import (
     add_distance_commands,
     run_distance_command,
 )
+from bijux_phylogenetics.command_line.diagnose import (
+    add_diagnose_command,
+    run_diagnose_command,
+)
 from bijux_phylogenetics.command_line.tree_set import (
     add_tree_set_commands,
     run_tree_set_command,
@@ -448,14 +452,7 @@ from bijux_phylogenetics.datasets.data_quality_stress import (
 from bijux_phylogenetics.datasets.known_answer_reference import (
     run_known_answer_reference_demo,
 )
-from bijux_phylogenetics.diagnostics.assumptions import assess_tree_assumptions
-from bijux_phylogenetics.diagnostics.root_to_tip import (
-    compute_root_to_tip_distances,
-    diagnose_ultrametricity,
-    write_root_to_tip_tsv,
-)
 from bijux_phylogenetics.diagnostics.validation import (
-    diagnose_tree_path,
     inspect_tree_path,
     validate_tree_path,
 )
@@ -3157,19 +3154,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_manifest_argument(annotate)
 
-    diagnose = subparsers.add_parser(
-        get_command_spec("diagnose").name, help=get_command_spec("diagnose").summary
-    )
-    diagnose.add_argument("target")
-    diagnose.add_argument("tree", nargs="?", type=Path)
-    diagnose.add_argument("--metadata", type=Path)
-    diagnose.add_argument("--taxon-column")
-    diagnose.add_argument("--out", type=Path)
-    diagnose.add_argument("--tolerance", type=float, default=1e-6)
-    diagnose.add_argument(
-        "--json", action="store_true", help="Emit the report as JSON."
-    )
-    _add_manifest_argument(diagnose)
+    add_diagnose_command(subparsers)
 
     render = subparsers.add_parser(
         get_command_spec("render").name, help=get_command_spec("render").summary
@@ -9766,113 +9751,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "topology":
             return run_topology_command(args)
         if args.command == "diagnose":
-            if args.target == "distances":
-                if args.tree is None:
-                    parser.exit(
-                        status=2, message="diagnose distances requires a tree path\n"
-                    )
-                report = compute_root_to_tip_distances(args.tree)
-                outputs: list[Path | str] = []
-                if args.out is not None:
-                    output_path = write_root_to_tip_tsv(args.out, report)
-                    outputs.append(output_path)
-                outputs = _finalize_outputs(
-                    args, command="diagnose", inputs=[args.tree], outputs=outputs
-                )
-                _print_result(
-                    build_command_result(
-                        command="diagnose",
-                        inputs=[args.tree],
-                        outputs=outputs,
-                        metrics={"tip_count": len(report.distances)},
-                        data=report,
-                    ),
-                    json_output=args.json,
-                )
-                return 0
-            if args.target == "ultrametric":
-                if args.tree is None:
-                    parser.exit(
-                        status=2, message="diagnose ultrametric requires a tree path\n"
-                    )
-                report = diagnose_ultrametricity(args.tree, tolerance=args.tolerance)
-                outputs = _finalize_outputs(
-                    args, command="diagnose", inputs=[args.tree]
-                )
-                _print_result(
-                    build_command_result(
-                        command="diagnose",
-                        inputs=[args.tree],
-                        outputs=outputs,
-                        metrics={
-                            "tip_count": report.tip_count,
-                            "tolerance": report.tolerance,
-                            "max_deviation": report.max_deviation,
-                        },
-                        data=report,
-                    ),
-                    json_output=args.json,
-                )
-                return 0
-            if args.target == "assumptions":
-                if args.tree is None:
-                    parser.exit(
-                        status=2, message="diagnose assumptions requires a tree path\n"
-                    )
-                report = assess_tree_assumptions(
-                    args.tree,
-                    metadata_path=args.metadata,
-                    taxon_column=args.taxon_column,
-                )
-                diagnose_inputs: list[Path | str] = [args.tree]
-                if args.metadata is not None:
-                    diagnose_inputs.append(args.metadata)
-                outputs = _finalize_outputs(
-                    args, command="diagnose", inputs=diagnose_inputs
-                )
-                _print_result(
-                    build_command_result(
-                        command="diagnose",
-                        inputs=diagnose_inputs,
-                        outputs=outputs,
-                        warnings=report.warnings,
-                        metrics={
-                            "standardized_support_count": len(
-                                report.standardized_support_labels
-                            ),
-                            "time_tree_compatible": report.time_tree_compatible,
-                            "substitution_tree_compatible": report.substitution_tree_compatible,
-                        },
-                        data=report,
-                    ),
-                    json_output=args.json,
-                )
-                return 0
-            tree_path = Path(args.target) if args.tree is None else args.tree
-            report = diagnose_tree_path(tree_path)
-            outputs = _finalize_outputs(args, command="diagnose", inputs=[tree_path])
-            _print_result(
-                build_command_result(
-                    command="diagnose",
-                    inputs=[tree_path],
-                    outputs=outputs,
-                    warnings=report.forensic.warnings,
-                    metrics={
-                        "tip_count": report.inspection.tip_count,
-                        "validity_decision": report.validation.validity_decision,
-                        "polytomy_count": report.validation.polytomy_count,
-                        "cherry_count": report.inspection.cherry_count,
-                        "tree_diameter": report.inspection.tree_diameter,
-                        "tree_quality_score": report.inspection.tree_quality_score,
-                        "safe_for_topology_comparison": report.forensic.safe_for_topology_comparison,
-                        "safe_for_time_tree_analysis": report.forensic.safe_for_time_tree_analysis,
-                        "safe_for_comparative_methods": report.forensic.safe_for_comparative_methods,
-                    },
-                    data=report,
-                ),
-                json_output=args.json,
-            )
-            return 0
+            return run_diagnose_command(args, parser=parser)
         if args.command == "compare":
             if args.left == "report":
                 if args.third is None:
