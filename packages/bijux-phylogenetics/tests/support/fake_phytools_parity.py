@@ -513,6 +513,85 @@ print(json.dumps({"summary": summary, "rows": rows}))
     return payload["summary"], payload["rows"]
 
 
+def compute_discrete_history_payload(
+    case_payload: dict[str, object],
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    package_root = find_repo_root()
+    repo_python = find_repo_python(package_root)
+    inline_script = '''
+import json
+from pathlib import Path
+from bijux_phylogenetics.simulation import (
+    DiscreteHistoryRateRow,
+    simulate_discrete_histories,
+)
+
+payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
+tree_path = payload["input_fixtures"][0]
+report = simulate_discrete_histories(
+    Path(tree_path),
+    states=list(payload["simulation_states"]),
+    rate_rows=[
+        DiscreteHistoryRateRow(
+            source_state=row["source_state"],
+            target_state=row["target_state"],
+            rate=row["rate"],
+        )
+        for row in payload["simulation_rate_rows"]
+    ],
+    root_state=payload["simulation_root_state"],
+    root_state_probabilities=payload["simulation_root_state_probabilities"],
+    replicates=payload["simulation_replicate_count"],
+    seed=payload["simulation_seed"],
+)
+summary = {
+    "taxon_count": report.tip_count,
+    "trait_name": payload["trait_name"],
+    "branch_count": report.branch_count,
+    "state_count": len(report.states),
+    "requested_replicate_count": report.replicate_count,
+    "successful_replicate_count": report.replicate_count,
+    "fixed_root_state": report.fixed_root_state,
+    "seed": report.seed,
+    "mean_total_transition_count": report.mean_total_transition_count,
+    "lower_95_total_transition_count": report.lower_95_total_transition_count,
+    "upper_95_total_transition_count": report.upper_95_total_transition_count,
+}
+rows = [
+    {
+        "row_kind": row.row_kind,
+        "label": row.label,
+        "mean_value": row.mean_value,
+        "lower_95_interval": row.lower_95_interval,
+        "upper_95_interval": row.upper_95_interval,
+        "presence_fraction": row.presence_fraction,
+    }
+    for row in report.rows
+]
+print(json.dumps({"summary": summary, "rows": rows}))
+'''
+    payload_path = package_root / "artifacts" / "fake-phytools-sim-history-payload.json"
+    payload_path.parent.mkdir(parents=True, exist_ok=True)
+    payload_path.write_text(json.dumps(case_payload), encoding="utf-8")
+    command = [
+        str(repo_python),
+        "-c",
+        inline_script.replace("__PAYLOAD_PATH__", repr(str(payload_path))),
+    ]
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(package_root / "src")
+    result = subprocess.run(
+        command,
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=str(package_root),
+        env=env,
+    )
+    payload = json.loads(result.stdout)
+    return payload["summary"], payload["rows"]
+
+
 case_payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 output_root = Path(sys.argv[3])
 output_root.mkdir(parents=True, exist_ok=True)
@@ -544,6 +623,7 @@ if case_id not in SUMMARIES and case_payload["operation"] not in {
     "discrete-stochastic-map-count",
     "discrete-stochastic-map-description",
     "discrete-stochastic-map-density",
+    "simulate-discrete-history",
     "discrete-ancestral-rerooting",
     "continuous-ancestral-fast-anc",
     "continuous-ancestral-anc-ml",
@@ -589,6 +669,8 @@ elif case_payload["operation"] == "discrete-stochastic-map-density":
         include_branch_occupancy=False,
         count_only=False,
     )
+elif case_payload["operation"] == "simulate-discrete-history":
+    summary, rows = compute_discrete_history_payload(case_payload)
 elif case_payload["operation"] == "discrete-ancestral-rerooting":
     summary, rows = compute_discrete_ancestral_payload(case_payload)
 elif case_payload["operation"] == "continuous-ancestral-fast-anc":
@@ -619,6 +701,7 @@ if rows is not None:
         "discrete-stochastic-map-count",
         "discrete-stochastic-map-description",
         "discrete-stochastic-map-density",
+        "simulate-discrete-history",
     }:
         write_rows_table(stochastic_map_rows_path, rows)
     elif case_payload["operation"] == "discrete-ancestral-rerooting":

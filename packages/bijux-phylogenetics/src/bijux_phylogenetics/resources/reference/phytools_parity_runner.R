@@ -104,17 +104,11 @@ library(phytools)
 
 input_fixtures <- unname(unlist(case_payload$input_fixtures))
 tree <- ape::read.tree(input_fixtures[[1]])
-traits_path <- input_fixtures[[2]]
+traits_path <- if (length(input_fixtures) >= 2) input_fixtures[[2]] else NULL
 trait_name <- case_payload$trait_name
 taxon_column <- case_payload$taxon_column
-trait_table <- utils::read.table(
-  traits_path,
-  header = TRUE,
-  sep = if (grepl("\\.csv$", traits_path, ignore.case = TRUE)) "," else "\t",
-  stringsAsFactors = FALSE,
-  check.names = FALSE
-)
-taxon_names <- trait_table[[taxon_column]]
+trait_table <- NULL
+taxon_names <- NULL
 is_discrete_operation <- case_payload$operation %in% c(
   "discrete-fit-mk",
   "discrete-stochastic-map",
@@ -123,7 +117,17 @@ is_discrete_operation <- case_payload$operation %in% c(
   "discrete-stochastic-map-density",
   "discrete-ancestral-rerooting"
 )
-if (is_discrete_operation) {
+if (!is.null(traits_path)) {
+  trait_table <- utils::read.table(
+    traits_path,
+    header = TRUE,
+    sep = if (grepl("\\.csv$", traits_path, ignore.case = TRUE)) "," else "\t",
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  taxon_names <- trait_table[[taxon_column]]
+}
+if (is_discrete_operation && !is.null(traits_path)) {
   raw_trait_values <- trait_table[[trait_name]]
   trait_values <- stats::setNames(
     ifelse(is.na(raw_trait_values), "", trimws(as.character(raw_trait_values))),
@@ -134,16 +138,21 @@ if (is_discrete_operation) {
       names(trait_values) %in% tree$tip.label
   ]
   trait_values <- trait_values[kept_taxa]
-} else {
+} else if (!is.null(traits_path)) {
   trait_values <- stats::setNames(as.numeric(trait_table[[trait_name]]), taxon_names)
   kept_taxa <- names(trait_values)[
     !is.na(trait_values) &
       names(trait_values) %in% tree$tip.label
   ]
   trait_values <- trait_values[kept_taxa]
+} else {
+  trait_values <- NULL
+  kept_taxa <- tree$tip.label
 }
 excluded_taxa <- sort(setdiff(tree$tip.label, kept_taxa))
-tree <- ape::drop.tip(tree, excluded_taxa)
+if (length(excluded_taxa) > 0) {
+  tree <- ape::drop.tip(tree, excluded_taxa)
+}
 
 leaf_descendants <- function(phy, node) {
   if (node <= length(phy$tip.label)) {
@@ -411,6 +420,93 @@ build_densitymap_branch_rows <- function(density_map) {
     )
   }
   branch_rows[order(vapply(branch_rows, function(row) row$label, character(1)))]
+}
+
+build_sim_history_summary_rows <- function(simmap_result) {
+  description <- phytools::describe.simmap(simmap_result, plot = FALSE)
+  summary_rows <- build_simmap_summary_rows(
+    simmap_result,
+    description,
+    include_branch_occupancy = FALSE
+  )
+  reference_tree <- if (inherits(simmap_result, "multiSimmap")) simmap_result[[1]] else simmap_result
+  simmap_list <- if (inherits(simmap_result, "simmap")) list(simmap_result) else simmap_result
+  state_order <- sort(unique(unname(unlist(lapply(simmap_list, function(map_tree) map_tree$states)))))
+  tip_rows <- list()
+  for (taxon in reference_tree$tip.label) {
+    for (state_label in state_order) {
+      values <- vapply(
+        simmap_list,
+        function(map_tree) as.numeric(map_tree$states[[taxon]] == state_label),
+        numeric(1)
+      )
+      tip_rows[[length(tip_rows) + 1]] <- list(
+        row_kind = "tip_state_frequency",
+        label = paste0(taxon, ":", state_label),
+        mean_value = as.numeric(mean(values)),
+        lower_95_interval = as.numeric(stats::quantile(values, probs = 0.025, names = FALSE)),
+        upper_95_interval = as.numeric(stats::quantile(values, probs = 0.975, names = FALSE)),
+        presence_fraction = as.numeric(mean(values))
+      )
+    }
+  }
+  rows <- c(summary_rows, tip_rows)
+  rows[order(
+    vapply(rows, function(row) row$row_kind, character(1)),
+    vapply(rows, function(row) row$label, character(1))
+  )]
+}
+
+build_sim_history_result <- function(tree, trait_name) {
+  states <- unname(unlist(case_payload$simulation_states))
+  rate_rows <- rows_to_data_frame(case_payload$simulation_rate_rows)
+  q_matrix <- matrix(
+    0,
+    nrow = length(states),
+    ncol = length(states),
+    dimnames = list(states, states)
+  )
+  for (row_index in seq_len(nrow(rate_rows))) {
+    source_state <- as.character(rate_rows[row_index, "source_state"])
+    target_state <- as.character(rate_rows[row_index, "target_state"])
+    rate <- as.numeric(rate_rows[row_index, "rate"])
+    q_matrix[source_state, target_state] <- rate
+  }
+  diag(q_matrix) <- -rowSums(q_matrix)
+  anc <- case_payload$simulation_root_state
+  if (is.null(anc) && !is.null(case_payload$simulation_root_state_probabilities)) {
+    anc <- unlist(case_payload$simulation_root_state_probabilities)[states]
+  }
+  requested_replicate_count <- as.integer(case_payload$simulation_replicate_count)
+  simulation_seed <- as.integer(case_payload$simulation_seed)
+  set.seed(simulation_seed)
+  simmap_result <- phytools::sim.history(
+    tree,
+    q_matrix,
+    anc = anc,
+    nsim = requested_replicate_count,
+    direction = "row_to_column",
+    message = FALSE
+  )
+  description <- phytools::describe.simmap(simmap_result, plot = FALSE)
+  count_table <- as.data.frame(description$count, stringsAsFactors = FALSE)
+  total_transition_counts <- as.numeric(count_table$N)
+  list(
+    summary = list(
+      taxon_count = length(tree$tip.label),
+      trait_name = trait_name,
+      branch_count = nrow(tree$edge),
+      state_count = length(states),
+      requested_replicate_count = requested_replicate_count,
+      successful_replicate_count = requested_replicate_count,
+      fixed_root_state = case_payload$simulation_root_state,
+      seed = simulation_seed,
+      mean_total_transition_count = as.numeric(mean(total_transition_counts)),
+      lower_95_total_transition_count = as.numeric(stats::quantile(total_transition_counts, probs = 0.025, names = FALSE)),
+      upper_95_total_transition_count = as.numeric(stats::quantile(total_transition_counts, probs = 0.975, names = FALSE))
+    ),
+    rows = build_sim_history_summary_rows(simmap_result)
+  )
 }
 
 build_make_simmap_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
@@ -769,6 +865,10 @@ result_payload <- switch(
     excluded_taxa,
     case_payload$discrete_model
   ),
+  "simulate-discrete-history" = build_sim_history_result(
+    tree,
+    trait_name
+  ),
   "discrete-ancestral-rerooting" = build_rerooting_method_result(
     tree,
     trait_values,
@@ -814,7 +914,8 @@ if (!is.null(result_payload$rows)) {
     "discrete-stochastic-map",
     "discrete-stochastic-map-count",
     "discrete-stochastic-map-description",
-    "discrete-stochastic-map-density"
+    "discrete-stochastic-map-density",
+    "simulate-discrete-history"
   )) {
     write_table(stochastic_map_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "discrete-ancestral-rerooting")) {
