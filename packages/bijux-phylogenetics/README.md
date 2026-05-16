@@ -413,6 +413,11 @@ outputs were executed together without mixing their logs. The workflow summary
 records the variant count, stable-clade count, changed-clade count, rooted
 preprocessing change count, rooted engine change count, and the number of
 variants that still show serious unrooted engine conflicts before rooting.
+Concurrent reuse of the same workflow output root is rejected explicitly while
+one run is active, and the raw workflow root now writes one
+`rabies-method-sensitivity-panel.run.json` execution record so parallel worker
+count, execution mode, successful variants, failed variants, and per-variant
+task logs remain auditable even when one isolated task fails.
 Its reviewer-facing HTML report is now intentionally compact: it surfaces one
 summary card set plus explicit links to the governed TSV and JSON ledgers
 instead of embedding those tables directly, and the bundle now includes
