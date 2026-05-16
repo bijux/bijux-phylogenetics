@@ -118,6 +118,7 @@ taxon_names <- trait_table[[taxon_column]]
 is_discrete_operation <- case_payload$operation %in% c(
   "discrete-fit-mk",
   "discrete-stochastic-map",
+  "discrete-stochastic-map-description",
   "discrete-ancestral-rerooting"
 )
 if (is_discrete_operation) {
@@ -295,6 +296,68 @@ build_fitmk_result <- function(tree, trait_values, trait_name, excluded_taxa, di
   )
 }
 
+build_simmap_summary_rows <- function(fit, description, include_branch_occupancy) {
+  count_table <- as.data.frame(description$count, stringsAsFactors = FALSE)
+  time_table <- as.data.frame(description$times, stringsAsFactors = FALSE)
+  transition_columns <- setdiff(colnames(count_table), "N")
+  state_columns <- setdiff(colnames(time_table), "total")
+  summary_rows <- list()
+  for (transition_label in transition_columns) {
+    values <- as.numeric(count_table[[transition_label]])
+    summary_rows[[length(summary_rows) + 1]] <- list(
+      row_kind = "transition_count",
+      label = gsub(",", "->", transition_label, fixed = TRUE),
+      mean_value = as.numeric(mean(values)),
+      lower_95_interval = as.numeric(stats::quantile(values, probs = 0.025, names = FALSE)),
+      upper_95_interval = as.numeric(stats::quantile(values, probs = 0.975, names = FALSE)),
+      presence_fraction = as.numeric(mean(values > 0))
+    )
+  }
+  for (state_label in state_columns) {
+    values <- as.numeric(time_table[[state_label]])
+    summary_rows[[length(summary_rows) + 1]] <- list(
+      row_kind = "state_time",
+      label = state_label,
+      mean_value = as.numeric(mean(values)),
+      lower_95_interval = as.numeric(stats::quantile(values, probs = 0.025, names = FALSE)),
+      upper_95_interval = as.numeric(stats::quantile(values, probs = 0.975, names = FALSE)),
+      presence_fraction = 1.0
+    )
+  }
+  if (include_branch_occupancy) {
+    reference_tree <- fit[[1]]
+    state_order <- colnames(reference_tree$mapped.edge)
+    for (edge_index in seq_len(nrow(reference_tree$edge))) {
+      parent_node <- node_signature(reference_tree, reference_tree$edge[edge_index, 1])
+      child_node <- node_signature(reference_tree, reference_tree$edge[edge_index, 2])
+      for (state_label in state_order) {
+        values <- vapply(
+          fit,
+          function(map_tree) {
+            if (!(state_label %in% colnames(map_tree$mapped.edge))) {
+              return(0.0)
+            }
+            unname(as.numeric(map_tree$mapped.edge[edge_index, state_label]))
+          },
+          numeric(1)
+        )
+        summary_rows[[length(summary_rows) + 1]] <- list(
+          row_kind = "branch_state_occupancy",
+          label = paste0(parent_node, "->", child_node, ":", state_label),
+          mean_value = as.numeric(mean(values)),
+          lower_95_interval = as.numeric(stats::quantile(values, probs = 0.025, names = FALSE)),
+          upper_95_interval = as.numeric(stats::quantile(values, probs = 0.975, names = FALSE)),
+          presence_fraction = as.numeric(mean(values > 0))
+        )
+      }
+    }
+  }
+  summary_rows[order(
+    vapply(summary_rows, function(row) row$row_kind, character(1)),
+    vapply(summary_rows, function(row) row$label, character(1))
+  )]
+}
+
 build_make_simmap_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
   phytools_model <- switch(
     discrete_model,
@@ -332,37 +395,7 @@ build_make_simmap_result <- function(tree, trait_values, trait_name, excluded_ta
   )
   description <- phytools::describe.simmap(fit, plot = FALSE)
   count_table <- as.data.frame(description$count, stringsAsFactors = FALSE)
-  time_table <- as.data.frame(description$times, stringsAsFactors = FALSE)
   total_transition_counts <- as.numeric(count_table$N)
-  transition_columns <- setdiff(colnames(count_table), "N")
-  state_columns <- setdiff(colnames(time_table), "total")
-  summary_rows <- list()
-  for (transition_label in transition_columns) {
-    values <- as.numeric(count_table[[transition_label]])
-    summary_rows[[length(summary_rows) + 1]] <- list(
-      row_kind = "transition_count",
-      label = gsub(",", "->", transition_label, fixed = TRUE),
-      mean_value = as.numeric(mean(values)),
-      lower_95_interval = as.numeric(stats::quantile(values, probs = 0.025, names = FALSE)),
-      upper_95_interval = as.numeric(stats::quantile(values, probs = 0.975, names = FALSE)),
-      presence_fraction = as.numeric(mean(values > 0))
-    )
-  }
-  for (state_label in state_columns) {
-    values <- as.numeric(time_table[[state_label]])
-    summary_rows[[length(summary_rows) + 1]] <- list(
-      row_kind = "state_time",
-      label = state_label,
-      mean_value = as.numeric(mean(values)),
-      lower_95_interval = as.numeric(stats::quantile(values, probs = 0.025, names = FALSE)),
-      upper_95_interval = as.numeric(stats::quantile(values, probs = 0.975, names = FALSE)),
-      presence_fraction = 1.0
-    )
-  }
-  summary_rows <- summary_rows[order(
-    vapply(summary_rows, function(row) row$row_kind, character(1)),
-    vapply(summary_rows, function(row) row$label, character(1))
-  )]
   list(
     summary = list(
       taxon_count = length(trait_values),
@@ -393,8 +426,48 @@ build_make_simmap_result <- function(tree, trait_values, trait_name, excluded_ta
       lower_95_total_transition_count = as.numeric(stats::quantile(total_transition_counts, probs = 0.025, names = FALSE)),
       upper_95_total_transition_count = as.numeric(stats::quantile(total_transition_counts, probs = 0.975, names = FALSE))
     ),
-    rows = summary_rows
+    rows = build_simmap_summary_rows(
+      fit,
+      description,
+      include_branch_occupancy = FALSE
+    )
   )
+}
+
+build_describe_simmap_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
+  simmap_result <- build_make_simmap_result(
+    tree,
+    trait_values,
+    trait_name,
+    excluded_taxa,
+    discrete_model
+  )
+  phytools_model <- switch(
+    discrete_model,
+    "equal-rates" = "ER",
+    "symmetric" = "SYM",
+    "all-rates-different" = "ARD",
+    stop(paste("unsupported describe.simmap parity model:", discrete_model))
+  )
+  requested_replicate_count <- as.integer(case_payload$stochastic_map_replicate_count)
+  stochastic_map_seed <- as.integer(case_payload$stochastic_map_seed)
+  set.seed(stochastic_map_seed)
+  fit <- phytools::make.simmap(
+    tree,
+    trait_values,
+    model = phytools_model,
+    nsim = requested_replicate_count,
+    pi = "equal",
+    message = FALSE
+  )
+  description <- phytools::describe.simmap(fit, plot = FALSE)
+  simmap_result$summary$branch_count <- nrow(fit[[1]]$edge)
+  simmap_result$rows <- build_simmap_summary_rows(
+    fit,
+    description,
+    include_branch_occupancy = TRUE
+  )
+  simmap_result
 }
 
 build_rerooting_method_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
@@ -546,6 +619,13 @@ result_payload <- switch(
     excluded_taxa,
     case_payload$discrete_model
   ),
+  "discrete-stochastic-map-description" = build_describe_simmap_result(
+    tree,
+    trait_values,
+    trait_name,
+    excluded_taxa,
+    case_payload$discrete_model
+  ),
   "discrete-ancestral-rerooting" = build_rerooting_method_result(
     tree,
     trait_values,
@@ -587,7 +667,10 @@ write_table(
 if (!is.null(result_payload$rows)) {
   if (identical(case_payload$operation, "discrete-fit-mk")) {
     write_table(fitmk_rows_path, result_payload$rows)
-  } else if (identical(case_payload$operation, "discrete-stochastic-map")) {
+  } else if (case_payload$operation %in% c(
+    "discrete-stochastic-map",
+    "discrete-stochastic-map-description"
+  )) {
     write_table(stochastic_map_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "discrete-ancestral-rerooting")) {
     write_table(rerooting_rows_path, result_payload$rows)

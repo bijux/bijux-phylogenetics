@@ -326,6 +326,8 @@ print(json.dumps({"summary": summary, "rows": rows}))
 
 def compute_stochastic_map_payload(
     case_payload: dict[str, object],
+    *,
+    include_branch_occupancy: bool,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
     package_root = find_repo_root()
     repo_python = find_repo_python(package_root)
@@ -333,7 +335,10 @@ def compute_stochastic_map_payload(
 import json
 from pathlib import Path
 from bijux_phylogenetics.ancestral.common import load_discrete_dataset
-from bijux_phylogenetics.discrete_evolution import simulate_discrete_stochastic_maps
+from bijux_phylogenetics.discrete_evolution import (
+    simulate_discrete_stochastic_maps,
+    summarize_discrete_stochastic_maps,
+)
 
 payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
 tree_path, traits_path = payload["input_fixtures"]
@@ -343,7 +348,7 @@ dataset = load_discrete_dataset(
     trait=payload["trait_name"],
     taxon_column=payload["taxon_column"],
 )
-report = simulate_discrete_stochastic_maps(
+collection = simulate_discrete_stochastic_maps(
     Path(tree_path),
     Path(traits_path),
     trait=payload["trait_name"],
@@ -352,29 +357,37 @@ report = simulate_discrete_stochastic_maps(
     replicates=payload.get("stochastic_map_replicate_count", 128),
     seed=payload.get("stochastic_map_seed", 1),
 )
+summary_report = (
+    collection.summary
+    if payload["operation"] == "discrete-stochastic-map"
+    else summarize_discrete_stochastic_maps(collection)
+)
 summary = {
     "taxon_count": len(dataset.taxa),
-    "trait_name": report.trait,
+    "trait_name": collection.trait,
     "excluded_taxon_count": len(dataset.dropped_missing_taxa),
     "excluded_taxa": list(dataset.dropped_missing_taxa),
-    "model": report.model,
-    "state_count": len(report.fit_audit.state_order),
-    "parameter_count": report.fit_audit.parameter_count,
-    "log_likelihood": report.fit_audit.log_likelihood,
-    "aic": report.fit_audit.aic,
-    "aicc": report.fit_audit.aicc,
-    "overparameterized": report.fit_audit.overparameterized,
-    "baseline_model": report.fit_audit.baseline_model,
-    "preferred_model_by_aic": report.fit_audit.preferred_model_by_aic,
-    "requested_replicate_count": report.replicates,
-    "successful_replicate_count": report.summary.replicate_count,
-    "simulation_failure_count": report.summary.simulation_failure_count,
-    "conditioned_on_node_estimates": report.conditioned_on_node_estimates,
-    "seed": report.seed,
-    "mean_total_transition_count": report.summary.mean_total_transition_count,
-    "lower_95_total_transition_count": report.summary.lower_95_total_transition_count,
-    "upper_95_total_transition_count": report.summary.upper_95_total_transition_count,
+    "model": collection.model,
+    "state_count": len(collection.fit_audit.state_order),
+    "parameter_count": collection.fit_audit.parameter_count,
+    "log_likelihood": collection.fit_audit.log_likelihood,
+    "aic": collection.fit_audit.aic,
+    "aicc": collection.fit_audit.aicc,
+    "overparameterized": collection.fit_audit.overparameterized,
+    "baseline_model": collection.fit_audit.baseline_model,
+    "preferred_model_by_aic": collection.fit_audit.preferred_model_by_aic,
+    "requested_replicate_count": collection.replicates,
+    "successful_replicate_count": summary_report.replicate_count,
+    "simulation_failure_count": summary_report.simulation_failure_count,
+    "seed": collection.seed,
+    "mean_total_transition_count": summary_report.mean_total_transition_count,
+    "lower_95_total_transition_count": summary_report.lower_95_total_transition_count,
+    "upper_95_total_transition_count": summary_report.upper_95_total_transition_count,
 }
+if payload["operation"] == "discrete-stochastic-map":
+    summary["conditioned_on_node_estimates"] = collection.conditioned_on_node_estimates
+else:
+    summary["branch_count"] = len(collection.maps[0].branch_histories)
 rows = sorted(
     [
         {
@@ -385,7 +398,7 @@ rows = sorted(
             "upper_95_interval": row.upper_95_interval,
             "presence_fraction": row.presence_fraction,
         }
-        for row in report.summary.rows
+        for row in summary_report.rows
     ]
     + [
         {
@@ -396,10 +409,26 @@ rows = sorted(
             "upper_95_interval": row.upper_95_interval,
             "presence_fraction": 1.0,
         }
-        for row in report.summary.state_time_rows
+        for row in summary_report.state_time_rows
     ],
     key=lambda row: (row["row_kind"], row["label"]),
 )
+if __INCLUDE_BRANCH_OCCUPANCY__:
+    rows = sorted(
+        rows
+        + [
+            {
+                "row_kind": "branch_state_occupancy",
+                "label": f"{row.parent_node}->{row.child_node}:{row.state}",
+                "mean_value": row.mean_time,
+                "lower_95_interval": row.lower_95_interval,
+                "upper_95_interval": row.upper_95_interval,
+                "presence_fraction": row.presence_fraction,
+            }
+            for row in summary_report.branch_occupancy_rows
+        ],
+        key=lambda row: (row["row_kind"], row["label"]),
+    )
 print(json.dumps({"summary": summary, "rows": rows}))
 '''
     payload_path = package_root / "artifacts" / "fake-phytools-simmap-payload.json"
@@ -408,7 +437,12 @@ print(json.dumps({"summary": summary, "rows": rows}))
     command = [
         str(repo_python),
         "-c",
-        inline_script.replace("__PAYLOAD_PATH__", repr(str(payload_path))),
+        inline_script
+        .replace("__PAYLOAD_PATH__", repr(str(payload_path)))
+        .replace(
+            "__INCLUDE_BRANCH_OCCUPANCY__",
+            "True" if include_branch_occupancy else "False",
+        ),
     ]
     env = dict(os.environ)
     env["PYTHONPATH"] = str(package_root / "src")
@@ -452,6 +486,7 @@ case_id = case_payload["case_id"]
 if case_id not in SUMMARIES and case_payload["operation"] not in {
     "discrete-fit-mk",
     "discrete-stochastic-map",
+    "discrete-stochastic-map-description",
     "discrete-ancestral-rerooting",
     "continuous-ancestral-fast-anc",
     "continuous-ancestral-anc-ml",
@@ -474,7 +509,15 @@ rows = None
 if case_payload["operation"] == "discrete-fit-mk":
     summary, rows = compute_discrete_mk_payload(case_payload)
 elif case_payload["operation"] == "discrete-stochastic-map":
-    summary, rows = compute_stochastic_map_payload(case_payload)
+    summary, rows = compute_stochastic_map_payload(
+        case_payload,
+        include_branch_occupancy=False,
+    )
+elif case_payload["operation"] == "discrete-stochastic-map-description":
+    summary, rows = compute_stochastic_map_payload(
+        case_payload,
+        include_branch_occupancy=True,
+    )
 elif case_payload["operation"] == "discrete-ancestral-rerooting":
     summary, rows = compute_discrete_ancestral_payload(case_payload)
 elif case_payload["operation"] == "continuous-ancestral-fast-anc":
@@ -500,7 +543,10 @@ write_summary_table(summary_table_path, summary)
 if rows is not None:
     if case_payload["operation"] == "discrete-fit-mk":
         write_rows_table(fitmk_rows_path, rows)
-    elif case_payload["operation"] == "discrete-stochastic-map":
+    elif case_payload["operation"] in {
+        "discrete-stochastic-map",
+        "discrete-stochastic-map-description",
+    }:
         write_rows_table(stochastic_map_rows_path, rows)
     elif case_payload["operation"] == "discrete-ancestral-rerooting":
         write_rows_table(rerooting_rows_path, rows)
