@@ -36,6 +36,17 @@ python3.11 -m pip install bijux-phylogenetics
 bijux-phylogenetics --help
 ```
 
+The installed runtime also ships small packaged example inputs. You can copy
+them into one writable directory without relying on a source checkout:
+
+```python
+from pathlib import Path
+
+from bijux_phylogenetics.core import copy_example_inputs
+
+copy_example_inputs(Path("artifacts/example-inputs"))
+```
+
 ## Python Workflow Surface
 
 The stable notebook-and-pipeline surface now lives under
@@ -510,14 +521,18 @@ errors such as `engine_required_output_missing`, `engine_output_empty`,
 `engine_model_result_missing`, and `engine_support_values_missing` before any
 workflow manifest or reviewer-facing report is written.
 
-The external-engine trust surface now has two distinct verification lanes.
-Fast `engine_contract` tests keep fake-executable and parser behavior stable in
-routine verification, while `tests/real_local` carries the governed
-`engine_real` lane for installed MAFFT, trimAl, IQ-TREE, FastTree, and
-MrBayes executables plus the checked-in real BEAST XML/log/tree corpus. Those
-real-local tests now write one combined external validation matrix JSON
-artifact over all governed engines, while still preserving focused alignment
-and Bayesian matrix artifacts for narrower debugging. Each matrix records
+The external-engine and release-install trust surface now has three distinct
+verification lanes. Fast `engine_contract` tests keep fake-executable and
+parser behavior stable in routine verification. `tests/real_local` carries the
+governed `engine_real` lane for installed MAFFT, trimAl, IQ-TREE, FastTree,
+and MrBayes executables plus the checked-in real BEAST XML/log/tree corpus.
+That same `real_local` suite also carries one installability smoke lane that
+builds wheel and sdist artifacts, installs each into a clean virtual
+environment, runs core CLI commands against packaged example inputs, and
+verifies that packaged resources are present in the built distributions. The
+engine-real tests still write one combined external validation matrix JSON
+artifact over all governed engines, while preserving focused alignment and
+Bayesian matrix artifacts for narrower debugging. Each matrix records
 reviewer-facing engine names, validation modes, executable paths, version
 text, commands, exit codes, runtime, output paths, and output hashes.
 
