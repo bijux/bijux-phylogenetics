@@ -444,6 +444,65 @@
       ],
       "simulation_metadata": null,
       "notes": "Eight-taxon categorical interaction table used for governed Brownian PGLS parity on treatment-coded interaction coefficients."
+    },
+    {
+      "fixture_id": "phytools_phyl_resid_bm_allometry_six_taxa",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "trait_table_fixture_id": "phylogenetic_residual_allometry_match",
+      "trait_name": "brain_mass",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "phylogenetic-residual-ready",
+      "phytools_reference_expectation": "phytools-phyl-resid-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-predictor-case",
+        "allometry-case",
+        "brownian-residuals",
+        "six-taxon-tree"
+      ],
+      "simulation_metadata": null,
+      "notes": "Six-taxon allometry-style fixture used for governed live `phytools::phyl.resid(method=\"BM\")` parity."
+    },
+    {
+      "fixture_id": "phytools_phyl_resid_lambda_allometry_six_taxa",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "trait_table_fixture_id": "phylogenetic_residual_allometry_match",
+      "trait_name": "brain_mass",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "phylogenetic-residual-ready",
+      "phytools_reference_expectation": "phytools-phyl-resid-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-predictor-case",
+        "allometry-case",
+        "lambda-residuals",
+        "six-taxon-tree"
+      ],
+      "simulation_metadata": null,
+      "notes": "Six-taxon allometry-style fixture used for governed live `phytools::phyl.resid(method=\"lambda\")` parity."
+    },
+    {
+      "fixture_id": "phytools_phyl_resid_lambda_missing_six_taxa",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "trait_table_fixture_id": "phylogenetic_residual_allometry_missing",
+      "trait_name": "brain_mass",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "phylogenetic-residual-ready",
+      "phytools_reference_expectation": "phytools-phyl-resid-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-predictor-case",
+        "allometry-case",
+        "lambda-residuals",
+        "missing-trait-values",
+        "extra-taxa-not-in-tree",
+        "six-taxon-tree"
+      ],
+      "simulation_metadata": null,
+      "notes": "Six-taxon allometry-style fixture with governed missing-value pruning used for live `phytools::phyl.resid(method=\"lambda\")` parity."
     }
   ]
 }

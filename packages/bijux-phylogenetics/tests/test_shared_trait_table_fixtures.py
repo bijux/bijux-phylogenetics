@@ -203,6 +203,34 @@ def test_shared_trait_table_fixture_catalog_preserves_categorical_order_independ
     assert reordered_report.analysis_taxa == ["A", "B", "C", "D"]
 
 
+def test_shared_trait_table_fixture_catalog_supports_phylogenetic_residual_cases() -> (
+    None
+):
+    clean_fixture = get_shared_trait_table_fixture("phylogenetic_residual_allometry_match")
+    missing_fixture = get_shared_trait_table_fixture(
+        "phylogenetic_residual_allometry_missing"
+    )
+
+    assert clean_fixture.tree_fixture_id == "balanced_rooted_six_taxon"
+    assert missing_fixture.tree_fixture_id == "balanced_rooted_six_taxon"
+    assert clean_fixture.row_count == 6
+    assert missing_fixture.row_count == 7
+    assert {"body_mass", "brain_mass"} <= set(clean_fixture.primary_trait_columns)
+    assert "allometry-case" in clean_fixture.feature_tags
+    assert "residual-diagnostics" in clean_fixture.feature_tags
+    assert "missing-trait-values" in missing_fixture.feature_tags
+    assert "extra-taxa-not-in-tree" in missing_fixture.feature_tags
+    assert _read_taxa("phylogenetic_residual_allometry_match") == [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+    ]
+    assert _read_taxa("phylogenetic_residual_allometry_missing")[-1] == "G"
+
+
 def test_shared_trait_table_fixture_catalog_supports_governed_pic_cases() -> None:
     balanced_fixture = get_shared_trait_table_fixture("pic_continuous_balanced")
     pectinate_fixture = get_shared_trait_table_fixture("pic_continuous_pectinate")
