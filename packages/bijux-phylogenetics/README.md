@@ -871,6 +871,7 @@ goal: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::describe.simmap`,
 `phytools::sim.history`,
 `phytools::fastBM`,
+`phytools::sim.corrs`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed strong-signal,
 weak-signal, non-ultrametric, discrete-state, and missing-value comparative
@@ -951,6 +952,19 @@ for downstream recovery work. The live `fastBM` lane now covers governed
 low-variance, root-shift high-variance, and six-taxon Brownian cases. It
 compares distribution summaries and tip-covariance rows against real
 `phytools::fastBM` without claiming exact cross-language draws.
+The same owned simulation surface now also exposes
+`simulate_correlated_brownian_trait_collection(...)` for two or more
+continuous traits on one fixed tree from one explicit evolutionary covariance
+matrix, plus writers for replicate tip ledgers and multivariate summary rows
+over root states, evolutionary covariance, tip distributions, and tip
+covariances. The CLI surface `simulate traits-brownian-correlated` accepts
+either one covariance matrix directly or one correlation matrix plus per-trait
+standard deviations, rejects invalid non-positive-definite covariance inputs
+explicitly, and keeps the generating parameter matrix in the returned report.
+The live `sim.corrs` lane now covers governed low-correlation,
+negative-correlation root-shift, and three-trait six-taxon cases. It compares
+distribution summaries, tip-covariance rows, and tip-correlation rows against
+real `phytools::sim.corrs` without claiming exact cross-language draws.
 The live
 `rerootingMethod` lane now covers governed ER binary, governed ER multistate,
 governed ER missing-value-pruned, governed SYM multistate, and governed SYM

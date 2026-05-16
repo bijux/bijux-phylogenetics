@@ -229,6 +229,7 @@ goal 201: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::describe.simmap`,
 `phytools::sim.history`,
 `phytools::fastBM`,
+`phytools::sim.corrs`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed
 twenty-four-taxon comparative fixtures drawn from the shared `phytools`
@@ -298,6 +299,17 @@ rate parameter in the report, and share the same covariance contract as the
 replicate collection surface. The live `fastBM` lane now covers governed
 low-variance, root-shift high-variance, and six-taxon fixed trees, and compares
 summary envelopes plus tip-covariance rows against real `phytools::fastBM`
+without claiming exact cross-language draws.
+The same simulation surface now also supports one correlated Brownian
+collection contract for two or more continuous traits on one fixed tree from
+one explicit evolutionary covariance matrix. The owned CLI accepts either one
+covariance matrix directly or one correlation matrix plus per-trait standard
+deviations, keeps the generating covariance contract in the report, and can
+write multivariate summary rows over root states, evolutionary covariance, tip
+distributions, and tip covariances. The live `phytools::sim.corrs` lane now
+covers governed low-correlation, negative-correlation root-shift, and
+three-trait six-taxon fixed-tree cases, comparing summary envelopes,
+tip-covariance rows, and tip-correlation rows against real `phytools::sim.corrs`
 without claiming exact cross-language draws.
 The live
 `rerootingMethod` lane now also covers governed ER binary, ER multistate, ER

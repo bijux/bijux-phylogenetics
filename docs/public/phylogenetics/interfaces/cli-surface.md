@@ -258,6 +258,7 @@ currently covers `phytools::phylosig(method='lambda')`,
 `phytools::describe.simmap`,
 `phytools::sim.history`,
 `phytools::fastBM`,
+`phytools::sim.corrs`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed twenty-four-taxon
 comparative fixtures from the shared
@@ -331,6 +332,18 @@ surface over tip distributions and tip covariances, which underlies the live
 and six-taxon fixed-tree cases. That lane compares summary envelopes and
 tip-covariance rows against real `phytools::fastBM` without claiming
 cross-language draw identity.
+The same simulation family now also owns one
+`simulate traits-brownian-correlated` surface for two or more continuous
+traits on one fixed tree from one explicit evolutionary covariance matrix. It
+accepts either repeated `--covariance-row` values directly or repeated
+`--correlation-row` values plus one `--trait-standard-deviation` per trait,
+writes one long-form replicate tip-trait ledger plus one optional summary
+ledger, and reports trait count, replicate count, and the generating
+covariance contract in JSON output. The live `phytools::sim.corrs` lane now
+covers governed low-correlation, negative-correlation root-shift, and
+three-trait six-taxon cases. It compares summary envelopes, tip-covariance
+rows, and tip-correlation rows against real `phytools::sim.corrs` without
+claiming exact cross-language draw identity.
 The live
 `rerootingMethod` lane now includes governed ER binary, ER multistate, ER
 missing-value-pruned, SYM multistate, and SYM missing-value-pruned cases. It
@@ -1098,6 +1111,15 @@ one tip-trait table, accepts one root state plus either `--sigma` or
 `--sigma-squared`, and reports the resolved Brownian rate in JSON output so the
 generated trait table keeps one explicit covariance-generating parameter
 contract.
+
+`simulate traits-brownian-correlated` is the owned multivariate Brownian
+simulator. It writes one long-form replicate tip-trait table, accepts one
+fixed-tree evolutionary covariance contract either directly through repeated
+`--covariance-row` values or indirectly through repeated `--correlation-row`
+values plus one `--trait-standard-deviation` per trait, and can also write one
+summary ledger over root states, evolutionary covariance, tip distributions,
+and tip covariances. Invalid covariance inputs fail explicitly instead of being
+coerced into one fallback matrix.
 
 `simulate tree-random` and `simulate tree-coalescent` are the owned governed
 tree-simulation review surfaces for random rooted trees and coalescent trees.

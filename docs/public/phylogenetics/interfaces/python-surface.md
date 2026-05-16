@@ -149,6 +149,18 @@ high-variance, and six-taxon fixed-tree cases, comparing distribution
 summaries and tip-covariance rows without claiming exact cross-language
 draw identity.
 The same owned simulation surface also exposes
+`bijux_phylogenetics.simulate_correlated_brownian_trait_collection(...)` plus
+writers for one long-form replicate tip-trait ledger and one multivariate
+summary ledger over root states, evolutionary covariance, tip distributions,
+and tip covariances. It accepts either one explicit covariance matrix or one
+correlation matrix plus per-trait standard deviations, rejects invalid
+non-positive-definite covariance inputs explicitly, and keeps the generating
+parameter matrix in the returned report. That runtime now underlies the
+governed live `phytools::sim.corrs` lane over selected low-correlation,
+negative-correlation root-shift, and three-trait fixed-tree cases, comparing
+distribution summaries, tip-covariance rows, and tip-correlation rows without
+claiming exact cross-language draw identity.
+The same owned simulation surface also exposes
 `bijux_phylogenetics.simulate_discrete_histories(...)` plus writers for one
 tip-state truth table, one node-state truth table, one branch-history truth
 table, one transition-event ledger, one branch-segment ledger, and one parity
