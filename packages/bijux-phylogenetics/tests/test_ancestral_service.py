@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.ancestral.continuous import (
     reconstruct_continuous_ancestral_states,
 )
@@ -68,6 +70,7 @@ def test_write_ancestral_state_table_exports_continuous_and_discrete_rows(
     assert "most_likely_state\tstate_set" in discrete_path.read_text(encoding="utf-8")
 
 
+@pytest.mark.slow
 def test_compare_discrete_ancestral_models_selects_supported_model() -> None:
     report = compare_discrete_ancestral_models(
         fixture("example_tree.nwk"),

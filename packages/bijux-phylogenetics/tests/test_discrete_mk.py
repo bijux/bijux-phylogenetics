@@ -4,6 +4,8 @@ import math
 from pathlib import Path
 import random
 
+import pytest
+
 from bijux_phylogenetics.ancestral.common import load_discrete_dataset
 from bijux_phylogenetics.comparative.discrete_mk import (
     fit_discrete_mk_model,
@@ -218,6 +220,7 @@ def test_fit_discrete_mk_model_reports_binary_ard_surface() -> None:
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_reports_multistate_ard_surface() -> None:
     fixture_entry = get_shared_phytools_comparative_fixture(
         "phytools_discrete_ard_multistate_twenty_four_taxa"
@@ -314,6 +317,7 @@ def test_fit_discrete_mk_model_reports_symmetric_pruned_missing_values() -> None
     assert report.baseline_comparison is not None
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_reports_ard_pruned_missing_values() -> None:
     binary_fixture = get_shared_phytools_comparative_fixture(
         "phytools_discrete_ard_binary_missing_twenty_four_taxa"
@@ -366,6 +370,7 @@ def test_fit_discrete_mk_model_recovers_binary_er_known_truth(tmp_path: Path) ->
     assert math.isclose(_single_allowed_rate(report), 0.35, rel_tol=0.0, abs_tol=0.18)
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_recovers_binary_ard_known_truth(
     tmp_path: Path,
 ) -> None:
@@ -414,6 +419,7 @@ def test_fit_discrete_mk_model_recovers_multistate_er_known_truth() -> None:
     assert math.isclose(_single_allowed_rate(report), 0.15, rel_tol=0.0, abs_tol=0.05)
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_recovers_multistate_sym_known_truth(
     tmp_path: Path,
 ) -> None:
@@ -485,6 +491,7 @@ def test_fit_discrete_mk_model_marks_overparameterized_symmetric_surface(
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_marks_overparameterized_ard_surface(
     tmp_path: Path,
 ) -> None:

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 import bijux_phylogenetics
 from bijux_phylogenetics.comparative.continuous_mode_recovery import (
     ContinuousModeRecoveryScenario,
@@ -19,6 +21,7 @@ _REFERENCE_TREE = (
 )
 
 
+@pytest.mark.slow
 def test_run_continuous_mode_recovery_validates_strong_and_weak_cases(
     tmp_path: Path,
 ) -> None:
@@ -50,6 +53,7 @@ def test_run_continuous_mode_recovery_validates_strong_and_weak_cases(
     assert case_by_id["weak-ou-identifiability"].parameter_rows == []
 
 
+@pytest.mark.slow
 def test_continuous_mode_recovery_writers_emit_review_ledgers(
     tmp_path: Path,
 ) -> None:

@@ -487,6 +487,7 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
     }
 
 
+@pytest.mark.slow
 def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     tmp_path: Path,
 ) -> None:
@@ -948,6 +949,7 @@ def test_run_ape_parity_cases_marks_missing_rscript_as_skipped(tmp_path: Path) -
     assert observation.reproducible_artifact_root.exists()
 
 
+@pytest.mark.slow
 def test_write_ape_parity_tables_writes_summary_and_observations(
     tmp_path: Path,
 ) -> None:

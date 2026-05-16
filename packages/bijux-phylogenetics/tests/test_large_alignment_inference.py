@@ -108,6 +108,7 @@ def _write_large_alignment(
     return path
 
 
+@pytest.mark.slow
 def test_run_large_alignment_inference_streams_many_sequences_and_reports_resources(
     tmp_path: Path,
 ) -> None:

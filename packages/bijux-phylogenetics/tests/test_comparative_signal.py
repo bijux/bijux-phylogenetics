@@ -137,6 +137,7 @@ def test_phylogenetic_signal_test_reuses_seeded_permutation_path() -> None:
     assert left.permutation_rows != different_seed.permutation_rows
 
 
+@pytest.mark.slow
 def test_phylogenetic_signal_test_distinguishes_strong_and_weak_signal_permutation_summaries() -> (
     None
 ):

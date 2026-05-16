@@ -4,6 +4,8 @@ import csv
 import json
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.parity import (
     list_phytools_parity_cases,
     run_phytools_parity_cases,
@@ -202,6 +204,7 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[58].comparative_lambda_value == 1.0
 
 
+@pytest.mark.slow
 def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     tmp_path: Path,
 ) -> None:
@@ -239,6 +242,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     assert first.reference_summary is not None
 
 
+@pytest.mark.slow
 def test_run_phytools_parity_cases_passes_density_map_cases_against_fake_reference_runner(
     tmp_path: Path,
 ) -> None:
@@ -264,6 +268,7 @@ def test_run_phytools_parity_cases_passes_density_map_cases_against_fake_referen
     )
 
 
+@pytest.mark.slow
 def test_run_phytools_parity_cases_passes_sim_history_cases_against_fake_reference_runner(
     tmp_path: Path,
 ) -> None:
@@ -291,6 +296,7 @@ def test_run_phytools_parity_cases_passes_sim_history_cases_against_fake_referen
     )
 
 
+@pytest.mark.slow
 def test_run_phytools_parity_cases_passes_fastbm_cases_against_fake_reference_runner(
     tmp_path: Path,
 ) -> None:
@@ -315,6 +321,7 @@ def test_run_phytools_parity_cases_passes_fastbm_cases_against_fake_reference_ru
     )
 
 
+@pytest.mark.slow
 def test_run_phytools_parity_cases_passes_simcorrs_cases_against_fake_reference_runner(
     tmp_path: Path,
 ) -> None:
@@ -339,6 +346,7 @@ def test_run_phytools_parity_cases_passes_simcorrs_cases_against_fake_reference_
     )
 
 
+@pytest.mark.slow
 def test_run_phytools_parity_cases_passes_pgls_cases_against_fake_reference_runner(
     tmp_path: Path,
 ) -> None:
@@ -550,6 +558,7 @@ def test_load_rows_table_preserves_stochastic_map_row_identity(
     ]
 
 
+@pytest.mark.slow
 def test_write_phytools_parity_tables_writes_summary_and_observations(
     tmp_path: Path,
 ) -> None:

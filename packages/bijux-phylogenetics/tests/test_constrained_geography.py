@@ -38,6 +38,7 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
+@pytest.mark.slow
 def test_summarize_constrained_geographic_model_supports_aliases() -> None:
     for model in ("er", "sym", "ard"):
         report = summarize_constrained_geographic_model(
@@ -345,6 +346,7 @@ def test_summarize_constrained_geographic_model_rejects_invalid_adjacency_matrix
         )
 
 
+@pytest.mark.slow
 def test_write_constrained_geographic_tables_emit_expected_ledgers(
     tmp_path: Path,
 ) -> None:

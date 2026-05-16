@@ -52,6 +52,7 @@ def test_summarize_host_switching_reconstructs_hosts_and_counts_switches() -> No
     ]
 
 
+@pytest.mark.slow
 def test_summarize_host_switching_supports_constrained_transition_models() -> None:
     report = summarize_host_switching(
         fixture("example_tree.nwk"),
@@ -68,6 +69,7 @@ def test_summarize_host_switching_supports_constrained_transition_models() -> No
     assert report.summary.preferred_constraint in {"constrained", "unconstrained"}
 
 
+@pytest.mark.slow
 def test_summarize_host_switching_reports_unsupported_unconstrained_claims(
     tmp_path: Path,
 ) -> None:
@@ -95,6 +97,7 @@ def test_summarize_host_switching_reports_unsupported_unconstrained_claims(
     assert any(row.claim_resolved for row in report.unsupported_claim_rows)
 
 
+@pytest.mark.slow
 def test_summarize_host_switching_rejects_unknown_constraint_host(
     tmp_path: Path,
 ) -> None:
@@ -116,6 +119,7 @@ def test_summarize_host_switching_rejects_unknown_constraint_host(
         )
 
 
+@pytest.mark.slow
 def test_write_host_switching_tables_emit_expected_ledgers(tmp_path: Path) -> None:
     report = summarize_host_switching(
         fixture("example_tree.nwk"),

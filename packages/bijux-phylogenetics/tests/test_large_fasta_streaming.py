@@ -28,6 +28,7 @@ def _write_large_fasta(
     return path
 
 
+@pytest.mark.slow
 def test_validate_fasta_input_handles_thousand_sequence_raw_fasta_with_recorded_peak(
     tmp_path: Path,
 ) -> None:

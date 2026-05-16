@@ -4,6 +4,8 @@ import json
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     estimate_pagels_lambda,
@@ -68,6 +70,7 @@ def test_pagels_lambda_matches_core_phytools_reference() -> None:
     )
 
 
+@pytest.mark.slow
 def test_pagels_lambda_matches_governed_primate_reference() -> None:
     observation = _reference_observation(
         fixture("reference_parity_extended_comparative.json"),

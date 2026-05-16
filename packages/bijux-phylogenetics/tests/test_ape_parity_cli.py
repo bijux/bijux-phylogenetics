@@ -3,10 +3,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.command_line import main
 from tests.support.fake_reference_parity import fake_ape_rscript
 
 
+@pytest.mark.slow
 def test_parity_cli_runs_live_ape_harness_and_writes_tables(
     tmp_path: Path, capsys
 ) -> None:

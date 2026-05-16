@@ -184,6 +184,7 @@ def test_reconstruct_continuous_ancestral_states_matches_primate_reference_fixtu
         )
 
 
+@pytest.mark.slow
 def test_reconstruct_continuous_ancestral_states_tracks_live_ape_ace_when_available() -> (
     None
 ):

@@ -437,6 +437,7 @@ def test_discrete_reconstruction_supports_ordered_state_models() -> None:
     )
 
 
+@pytest.mark.slow
 def test_discrete_reconstruction_reports_rerooting_method_assumption_limits() -> None:
     fixed_root_report = reconstruct_discrete_ancestral_states(
         fixture("example_tree.nwk"),

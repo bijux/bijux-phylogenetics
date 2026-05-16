@@ -3,8 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.command_line import main
 from tests.support.fake_phytools_parity import fake_phytools_rscript
+
+pytestmark = pytest.mark.slow
 
 
 def test_parity_cli_runs_live_phytools_harness_and_writes_tables(

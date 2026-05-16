@@ -225,6 +225,7 @@ def test_replay_workflow_manifest_rejects_changed_inputs(tmp_path: Path) -> None
     assert error.value.code == "manifest_replay_input_changed"
 
 
+@pytest.mark.slow
 def test_replay_workflow_manifest_reports_engine_version_drift_for_fasta_to_tree(
     tmp_path: Path,
 ) -> None:

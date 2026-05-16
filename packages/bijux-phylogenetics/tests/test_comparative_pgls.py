@@ -4,6 +4,8 @@ import json
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.comparative.pgls import (
     inspect_pgls_inputs,
     run_pgls,
@@ -280,6 +282,7 @@ def test_run_pgls_matches_primate_reference_when_lambda_is_fixed() -> None:
     )
 
 
+@pytest.mark.slow
 def test_run_pgls_reports_aic_for_estimated_lambda() -> None:
     repository_root = Path(__file__).resolve().parents[3]
     report = run_pgls(

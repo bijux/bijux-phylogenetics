@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 import shutil
 
+import pytest
+
 from bijux_phylogenetics.command_line import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -319,6 +321,7 @@ def test_ancestral_discrete_cli_reports_sym_fit_diagnostics_and_er_comparison(
     )
 
 
+@pytest.mark.slow
 def test_ancestral_discrete_cli_reports_ard_fit_diagnostics_and_weak_fit_warning(
     tmp_path: Path, capsys
 ) -> None:
@@ -409,6 +412,7 @@ def test_ancestral_discrete_cli_can_export_parsimony_comparison(
     )
 
 
+@pytest.mark.slow
 def test_ancestral_discrete_reference_cli_reports_passing_cases(capsys) -> None:
     exit_code = main(["ancestral", "discrete-reference", "--json"])
     payload = json.loads(capsys.readouterr().out)
@@ -560,6 +564,7 @@ def test_ancestral_ordered_discrete_cli_can_export_review(
     )
 
 
+@pytest.mark.slow
 def test_ancestral_irreversible_discrete_cli_can_export_review(
     tmp_path: Path, capsys
 ) -> None:

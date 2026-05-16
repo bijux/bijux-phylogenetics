@@ -15,7 +15,7 @@ from ..support.installability_smoke import (
     run_installed_cli,
 )
 
-pytestmark = pytest.mark.real_local
+pytestmark = [pytest.mark.real_local, pytest.mark.slow]
 
 
 def test_installable_distributions_run_core_cli_smoke_commands(

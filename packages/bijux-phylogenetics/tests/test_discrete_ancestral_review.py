@@ -190,6 +190,7 @@ def test_reconstruct_discrete_ancestral_states_flags_overparameterized_sym_case(
     )
 
 
+@pytest.mark.slow
 def test_write_discrete_ancestral_ard_fit_table_tracks_directional_rates_and_weak_fit_warnings(
     tmp_path: Path,
 ) -> None:
@@ -242,6 +243,7 @@ def test_fitch_summary_table_includes_parsimony_counts(tmp_path: Path) -> None:
     assert "\t1\tA|B|C|D\tforest\t1.0\t" in rows[1]
 
 
+@pytest.mark.slow
 def test_reconstruct_discrete_ancestral_states_matches_checked_ace_reference() -> None:
     reference = json.loads(
         fixture("discrete_ancestral_ace_reference.json").read_text(encoding="utf-8")
@@ -270,6 +272,7 @@ def test_reconstruct_discrete_ancestral_states_matches_checked_ace_reference() -
                 )
 
 
+@pytest.mark.slow
 def test_reconstruct_discrete_ancestral_states_tracks_live_ape_ace_when_available() -> (
     None
 ):

@@ -362,6 +362,7 @@ def test_comparative_discrete_mk_cli_reports_symmetric_baseline_metrics(
     assert payload["metrics"]["delta_aic"] > 0.0
 
 
+@pytest.mark.slow
 def test_comparative_discrete_mk_cli_reports_ard_boundary_metrics(
     capsys,
 ) -> None:

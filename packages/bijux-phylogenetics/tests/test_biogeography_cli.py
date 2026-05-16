@@ -91,6 +91,7 @@ def test_biogeography_model_cli_accepts_region_vocabulary(capsys) -> None:
     assert payload["metrics"]["observed_region_count"] == 3
 
 
+@pytest.mark.slow
 def test_biogeography_constrained_cli_can_export_review(
     tmp_path: Path,
     capsys,

@@ -17,7 +17,7 @@ from ..support.engine_validation_matrix_cases import (
 )
 from ..support.external_engines import real_beast_executable
 
-pytestmark = [pytest.mark.real_local, pytest.mark.engine_real]
+pytestmark = [pytest.mark.real_local, pytest.mark.engine_real, pytest.mark.slow]
 
 
 def test_external_engine_validation_matrix_collects_all_governed_engines(

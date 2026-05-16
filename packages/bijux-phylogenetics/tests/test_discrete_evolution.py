@@ -1121,6 +1121,7 @@ def test_simulate_discrete_stochastic_maps_from_fit_report_matches_path_surface(
     assert direct_report.fit_audit.preferred_model_by_aic == "equal-rates"
 
 
+@pytest.mark.slow
 def test_simulate_discrete_stochastic_maps_reports_ard_fit_instability_honestly() -> (
     None
 ):

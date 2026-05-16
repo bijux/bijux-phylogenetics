@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.ecological_niche import (
     summarize_niche_transitions,
     write_niche_state_node_table,
@@ -28,6 +30,7 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
+@pytest.mark.slow
 def test_summarize_niche_transitions_supports_er_sym_and_ard_aliases() -> None:
     for model in ("er", "sym", "ard"):
         report = summarize_niche_transitions(

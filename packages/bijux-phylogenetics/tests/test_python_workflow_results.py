@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.api import (
     render_report_workflow,
     run_alignment_workflow,
@@ -64,6 +66,7 @@ def _write_workflow_config(
     return path
 
 
+@pytest.mark.slow
 def test_python_workflow_results_write_json_and_tsv_for_major_workflows(
     tmp_path: Path,
 ) -> None:
