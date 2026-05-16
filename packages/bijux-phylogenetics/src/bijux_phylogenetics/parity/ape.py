@@ -63,7 +63,7 @@ from bijux_phylogenetics.distance import (
     build_tree_from_imported_distance_matrix,
     compute_pairwise_genetic_distance_matrix,
 )
-from bijux_phylogenetics.diversification import (
+from bijux_phylogenetics.comparative import (
     compute_diversification_gamma_statistic,
 )
 from bijux_phylogenetics.io.fasta import (

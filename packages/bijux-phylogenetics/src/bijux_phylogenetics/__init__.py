@@ -1203,7 +1203,7 @@ from .distance import (
     write_distance_reproducibility_bundle,
     write_genetic_distance_matrix,
 )
-from .diversification import (
+from .comparative import (
     CladeDiversificationObservation,
     CladeDiversificationScanReport,
     DiversificationGammaStatisticReport,

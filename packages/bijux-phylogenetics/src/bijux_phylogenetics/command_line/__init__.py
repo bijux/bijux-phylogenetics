@@ -568,7 +568,7 @@ from bijux_phylogenetics.distance import (
     write_genetic_distance_matrix,
     write_genetic_distance_parameter_table,
 )
-from bijux_phylogenetics.diversification import (
+from bijux_phylogenetics.comparative import (
     compare_diversification_models,
     compute_diversification_gamma_statistic,
     compute_lineage_through_time_curve,

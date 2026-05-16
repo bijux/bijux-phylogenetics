@@ -670,7 +670,7 @@ from bijux_phylogenetics.distance import (
     summarize_distance_bootstrap_support,
     validate_imported_distance_matrix,
 )
-from bijux_phylogenetics.diversification import (
+from bijux_phylogenetics.comparative import (
     compare_diversification_models,
     compute_diversification_gamma_statistic,
     compute_lineage_through_time_curve,
