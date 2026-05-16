@@ -5,9 +5,12 @@ from pathlib import Path
 
 from bijux_phylogenetics.engines import run_model_selection
 from bijux_phylogenetics.engines.validation_matrix import (
+    ExternalEngineValidationCase,
+    ExternalEngineValidationMatrixReport,
     build_beast_artifact_validation_case,
     build_external_engine_validation_case,
     build_external_engine_validation_matrix,
+    merge_external_engine_validation_matrices,
     write_external_engine_validation_matrix,
 )
 
@@ -138,3 +141,47 @@ def test_build_beast_artifact_validation_case_parses_real_fixture_outputs(
     assert payload["cases"][0]["output_paths"]["analysis_xml"].endswith(
         "beast2_strict_yule_posterior.xml"
     )
+
+
+def test_merge_external_engine_validation_matrices_preserves_case_order() -> None:
+    first = ExternalEngineValidationMatrixReport(
+        generated_at_utc="2026-05-16T00:00:00Z",
+        cases=[
+            ExternalEngineValidationCase(
+                engine_name="MAFFT",
+                validation_name="mafft alignment",
+                validation_mode="workflow-run",
+                manifest_path=None,
+                executable="/tmp/mafft",
+                version_text="MAFFT v7",
+                command=["/tmp/mafft", "--auto", "input.fasta"],
+                exit_code=0,
+                runtime_seconds=1.0,
+                output_paths={},
+                output_checksums={},
+            )
+        ],
+    )
+    second = ExternalEngineValidationMatrixReport(
+        generated_at_utc="2026-05-16T00:00:01Z",
+        cases=[
+            ExternalEngineValidationCase(
+                engine_name="BEAST",
+                validation_name="beast fixture parser acceptance",
+                validation_mode="fixture-parse",
+                manifest_path=None,
+                executable=None,
+                version_text="2.7",
+                command=[],
+                exit_code=None,
+                runtime_seconds=None,
+                output_paths={},
+                output_checksums={},
+            )
+        ],
+    )
+
+    merged = merge_external_engine_validation_matrices([first, second])
+
+    assert len(merged.cases) == 2
+    assert [case.engine_name for case in merged.cases] == ["MAFFT", "BEAST"]
