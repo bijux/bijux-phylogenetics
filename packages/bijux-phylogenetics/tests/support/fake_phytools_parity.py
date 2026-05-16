@@ -324,6 +324,99 @@ print(json.dumps({"summary": summary, "rows": rows}))
     return payload["summary"], payload["rows"]
 
 
+def compute_stochastic_map_payload(
+    case_payload: dict[str, object],
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    package_root = find_repo_root()
+    repo_python = find_repo_python(package_root)
+    inline_script = '''
+import json
+from pathlib import Path
+from bijux_phylogenetics.ancestral.common import load_discrete_dataset
+from bijux_phylogenetics.discrete_evolution import simulate_discrete_stochastic_maps
+
+payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
+tree_path, traits_path = payload["input_fixtures"]
+dataset = load_discrete_dataset(
+    Path(tree_path),
+    Path(traits_path),
+    trait=payload["trait_name"],
+    taxon_column=payload["taxon_column"],
+)
+report = simulate_discrete_stochastic_maps(
+    Path(tree_path),
+    Path(traits_path),
+    trait=payload["trait_name"],
+    taxon_column=payload["taxon_column"],
+    model=payload.get("discrete_model", "equal-rates"),
+    replicates=payload.get("stochastic_map_replicate_count", 128),
+    seed=payload.get("stochastic_map_seed", 1),
+)
+summary = {
+    "taxon_count": len(dataset.taxa),
+    "trait_name": report.trait,
+    "excluded_taxon_count": len(dataset.dropped_missing_taxa),
+    "excluded_taxa": list(dataset.dropped_missing_taxa),
+    "model": report.model,
+    "state_count": len(dataset.observed_states),
+    "requested_replicate_count": report.replicates,
+    "successful_replicate_count": report.summary.replicate_count,
+    "simulation_failure_count": report.summary.simulation_failure_count,
+    "conditioned_on_node_estimates": report.conditioned_on_node_estimates,
+    "seed": report.seed,
+    "mean_total_transition_count": report.summary.mean_total_transition_count,
+    "lower_95_total_transition_count": report.summary.lower_95_total_transition_count,
+    "upper_95_total_transition_count": report.summary.upper_95_total_transition_count,
+}
+rows = sorted(
+    [
+        {
+            "row_kind": "transition_count",
+            "label": row.transition,
+            "mean_value": row.mean_count,
+            "lower_95_interval": row.lower_95_interval,
+            "upper_95_interval": row.upper_95_interval,
+            "presence_fraction": row.presence_fraction,
+        }
+        for row in report.summary.rows
+    ]
+    + [
+        {
+            "row_kind": "state_time",
+            "label": row.state,
+            "mean_value": row.mean_time,
+            "lower_95_interval": row.lower_95_interval,
+            "upper_95_interval": row.upper_95_interval,
+            "presence_fraction": 1.0,
+        }
+        for row in report.summary.state_time_rows
+    ],
+    key=lambda row: (row["row_kind"], row["label"]),
+)
+print(json.dumps({"summary": summary, "rows": rows}))
+'''
+    payload_path = package_root / "artifacts" / "fake-phytools-simmap-payload.json"
+    payload_path.parent.mkdir(parents=True, exist_ok=True)
+    payload_path.write_text(json.dumps(case_payload), encoding="utf-8")
+    command = [
+        str(repo_python),
+        "-c",
+        inline_script.replace("__PAYLOAD_PATH__", repr(str(payload_path))),
+    ]
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(package_root / "src")
+    result = subprocess.run(
+        command,
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=str(package_root),
+        env=env,
+    )
+    payload = json.loads(result.stdout)
+    return payload["summary"], payload["rows"]
+
+
 case_payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 output_root = Path(sys.argv[3])
 output_root.mkdir(parents=True, exist_ok=True)
@@ -331,6 +424,7 @@ execution_path = output_root / "reference-execution.json"
 summary_path = output_root / "reference-summary.json"
 summary_table_path = output_root / "reference-summary.tsv"
 fitmk_rows_path = output_root / "fitmk-rate-matrix.tsv"
+stochastic_map_rows_path = output_root / "stochastic-map-summary-rows.tsv"
 rerooting_rows_path = output_root / "rerooting-method-node-probabilities.tsv"
 fast_anc_rows_path = output_root / "fast-anc-node-estimates.tsv"
 anc_ml_rows_path = output_root / "anc-ml-node-estimates.tsv"
@@ -350,6 +444,7 @@ if not __PHYTOOLS_AVAILABLE__:
 case_id = case_payload["case_id"]
 if case_id not in SUMMARIES and case_payload["operation"] not in {
     "discrete-fit-mk",
+    "discrete-stochastic-map",
     "discrete-ancestral-rerooting",
     "continuous-ancestral-fast-anc",
     "continuous-ancestral-anc-ml",
@@ -371,6 +466,8 @@ summary = SUMMARIES.get(case_id)
 rows = None
 if case_payload["operation"] == "discrete-fit-mk":
     summary, rows = compute_discrete_mk_payload(case_payload)
+elif case_payload["operation"] == "discrete-stochastic-map":
+    summary, rows = compute_stochastic_map_payload(case_payload)
 elif case_payload["operation"] == "discrete-ancestral-rerooting":
     summary, rows = compute_discrete_ancestral_payload(case_payload)
 elif case_payload["operation"] == "continuous-ancestral-fast-anc":
@@ -396,6 +493,8 @@ write_summary_table(summary_table_path, summary)
 if rows is not None:
     if case_payload["operation"] == "discrete-fit-mk":
         write_rows_table(fitmk_rows_path, rows)
+    elif case_payload["operation"] == "discrete-stochastic-map":
+        write_rows_table(stochastic_map_rows_path, rows)
     elif case_payload["operation"] == "discrete-ancestral-rerooting":
         write_rows_table(rerooting_rows_path, rows)
     elif case_payload["operation"] == "continuous-ancestral-fast-anc":

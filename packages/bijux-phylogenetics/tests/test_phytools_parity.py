@@ -32,6 +32,9 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "fitmk-ard-multistate-twenty-four-taxa",
         "fitmk-ard-binary-missing-twenty-four-taxa",
         "fitmk-ard-multistate-missing-twenty-four-taxa",
+        "simmap-er-binary-twenty-four-taxa",
+        "simmap-er-multistate-twenty-four-taxa",
+        "simmap-er-binary-missing-twenty-four-taxa",
         "rerooting-er-binary-twenty-four-taxa",
         "rerooting-er-multistate-twenty-four-taxa",
         "rerooting-er-binary-missing-twenty-four-taxa",
@@ -56,12 +59,14 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[9].function_name == "phytools::fitMk(model='SYM')"
     assert cases[10].function_name == "phytools::fitMk(model='ARD')"
     assert cases[13].function_name == "phytools::fitMk(model='ARD')"
-    assert cases[14].function_name == "phytools::rerootingMethod"
-    assert cases[18].function_name == "phytools::rerootingMethod"
-    assert cases[19].function_name == "phytools::fastAnc"
+    assert cases[14].function_name == "phytools::make.simmap(model='ER')"
+    assert cases[16].function_name == "phytools::make.simmap(model='ER')"
+    assert cases[17].function_name == "phytools::rerootingMethod"
+    assert cases[21].function_name == "phytools::rerootingMethod"
     assert cases[22].function_name == "phytools::fastAnc"
-    assert cases[23].function_name == "phytools::anc.ML"
+    assert cases[25].function_name == "phytools::fastAnc"
     assert cases[26].function_name == "phytools::anc.ML"
+    assert cases[29].function_name == "phytools::anc.ML"
     assert (
         cases[0].fixture_id == "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
     )
@@ -70,16 +75,18 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[7].row_field_tolerances == {"rate": 1e-5}
     assert cases[8].row_field_tolerances == {"rate": 1e-4}
     assert cases[10].row_field_tolerances == {"rate": 1e-3}
-    assert cases[14].row_field_tolerances == {"probability": 1e-5}
-    assert cases[17].row_field_tolerances == {"probability": 5e-5}
-    assert cases[18].row_field_tolerances == {"probability": 5e-5}
-    assert cases[26].row_field_tolerances == {
+    assert cases[14].stochastic_map_replicate_count == 128
+    assert cases[16].stochastic_map_seed == 17
+    assert cases[17].row_field_tolerances == {"probability": 1e-5}
+    assert cases[20].row_field_tolerances == {"probability": 5e-5}
+    assert cases[21].row_field_tolerances == {"probability": 5e-5}
+    assert cases[29].row_field_tolerances == {
         "estimate": 1e-8,
         "standard_error": 5e-8,
         "lower_95_interval": 5e-8,
         "upper_95_interval": 5e-8,
     }
-    assert cases[22].row_field_tolerances == {
+    assert cases[25].row_field_tolerances == {
         "estimate": 1e-8,
         "standard_error": 1e-8,
     }
@@ -93,7 +100,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     report = run_phytools_parity_cases(rscript_executable=str(rscript))
 
     assert report.all_passed is True
-    assert report.case_count == 27
+    assert report.case_count == 30
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -102,6 +109,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
         "phytools::fitMk(model='ARD')",
         "phytools::fitMk(model='ER')",
         "phytools::fitMk(model='SYM')",
+        "phytools::make.simmap(model='ER')",
         "phytools::phylosig(method='K')",
         "phytools::phylosig(method='lambda')",
         "phytools::rerootingMethod",
@@ -228,6 +236,44 @@ def test_load_rows_table_preserves_rerooting_state_identity(
             "node": "A|B|C",
             "state": "north",
             "probability": 0.25,
+        },
+    ]
+
+
+def test_load_rows_table_preserves_stochastic_map_row_identity(
+    tmp_path: Path,
+) -> None:
+    rows_path = tmp_path / "stochastic-map-summary-rows.tsv"
+    rows_path.write_text(
+        "\n".join(
+            [
+                "row_kind\tlabel\tmean_value\tlower_95_interval\tupper_95_interval\tpresence_fraction",
+                "transition_count\tnorth->south\t1.5\t0\t4\t0.75",
+                "state_time\t0\t2.25\t1\t3\t1.0",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rows = _load_rows_table(rows_path)
+
+    assert rows == [
+        {
+            "row_kind": "transition_count",
+            "label": "north->south",
+            "mean_value": 1.5,
+            "lower_95_interval": 0,
+            "upper_95_interval": 4,
+            "presence_fraction": 0.75,
+        },
+        {
+            "row_kind": "state_time",
+            "label": "0",
+            "mean_value": 2.25,
+            "lower_95_interval": 1,
+            "upper_95_interval": 3,
+            "presence_fraction": 1.0,
         },
     ]
 
