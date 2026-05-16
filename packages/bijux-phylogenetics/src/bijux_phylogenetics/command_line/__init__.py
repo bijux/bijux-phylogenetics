@@ -523,6 +523,8 @@ from bijux_phylogenetics.discrete_evolution import (
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
     write_stochastic_map_collection,
+    write_stochastic_map_segment_table,
+    write_stochastic_map_state_time_table,
     write_stochastic_map_summary_table,
     write_transition_summary_table,
 )
@@ -4393,7 +4395,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_manifest_argument(discrete_compare)
     discrete_stochastic = discrete_evolution_subparsers.add_parser(
         "stochastic-map",
-        help="Generate approximate stochastic maps conditioned on deterministic discrete-state estimates.",
+        help="Generate seeded stochastic character maps from a fitted discrete-state CTMC.",
     )
     discrete_stochastic.add_argument("tree", type=Path)
     discrete_stochastic.add_argument("table", type=Path)
@@ -4423,6 +4425,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--summary-out", type=Path, help="Write stochastic-map summary as TSV."
     )
     discrete_stochastic.add_argument(
+        "--state-times-out",
+        type=Path,
+        help="Write per-state time-in-state summaries as TSV.",
+    )
+    discrete_stochastic.add_argument(
+        "--segments-out",
+        type=Path,
+        help="Write flat branch-state segment rows as TSV.",
+    )
+    discrete_stochastic.add_argument(
         "--json",
         action="store_true",
         help="Emit the stochastic-map collection as JSON.",
@@ -4435,6 +4447,11 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_summarize_maps.add_argument("input_path", type=Path)
     discrete_summarize_maps.add_argument(
         "--summary-out", type=Path, help="Write stochastic-map summary as TSV."
+    )
+    discrete_summarize_maps.add_argument(
+        "--state-times-out",
+        type=Path,
+        help="Write per-state time-in-state summaries as TSV.",
     )
     discrete_summarize_maps.add_argument(
         "--json", action="store_true", help="Emit the stochastic-map summary as JSON."
@@ -13222,6 +13239,20 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             args.summary_out, report.summary
                         )
                     )
+                if args.state_times_out is not None:
+                    outputs.append(
+                        write_stochastic_map_state_time_table(
+                            args.state_times_out,
+                            report.summary,
+                        )
+                    )
+                if args.segments_out is not None:
+                    outputs.append(
+                        write_stochastic_map_segment_table(
+                            args.segments_out,
+                            report,
+                        )
+                    )
                 outputs = _finalize_outputs(
                     args,
                     command="discrete-evolution",
@@ -13235,10 +13266,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         warnings=report.summary.warnings,
                         metrics={
-                            "replicate_count": report.summary.replicate_count,
+                            "requested_replicate_count": report.replicates,
+                            "successful_replicate_count": report.summary.replicate_count,
+                            "simulation_failure_count": report.summary.simulation_failure_count,
                             "mean_total_transition_count": report.summary.mean_total_transition_count,
                             "model": report.model,
                             "state_ordering": report.state_ordering,
+                            "conditioned_on_node_estimates": report.conditioned_on_node_estimates,
                         },
                         data=report,
                     ),
@@ -13252,6 +13286,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 if args.summary_out is not None:
                     outputs.append(
                         write_stochastic_map_summary_table(args.summary_out, report)
+                    )
+                if args.state_times_out is not None:
+                    outputs.append(
+                        write_stochastic_map_state_time_table(
+                            args.state_times_out,
+                            report,
+                        )
                     )
                 outputs = _finalize_outputs(
                     args,
@@ -13268,6 +13309,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "replicate_count": report.replicate_count,
                             "mean_total_transition_count": report.mean_total_transition_count,
+                            "simulation_failure_count": report.simulation_failure_count,
                         },
                         data=report,
                     ),
