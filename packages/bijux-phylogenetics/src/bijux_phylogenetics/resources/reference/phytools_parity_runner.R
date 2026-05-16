@@ -296,16 +296,36 @@ build_fitmk_result <- function(tree, trait_values, trait_name, excluded_taxa, di
 }
 
 build_make_simmap_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
-  if (!identical(discrete_model, "equal-rates")) {
+  phytools_model <- switch(
+    discrete_model,
+    "equal-rates" = "ER",
+    "symmetric" = "SYM",
+    "all-rates-different" = "ARD",
     stop(paste("unsupported make.simmap parity model:", discrete_model))
-  }
+  )
   requested_replicate_count <- as.integer(case_payload$stochastic_map_replicate_count)
   stochastic_map_seed <- as.integer(case_payload$stochastic_map_seed)
+  fitmk_fit <- phytools::fitMk(
+    tree,
+    trait_values,
+    model = phytools_model
+  )
+  parameter_count <- length(unname(fitmk_fit$rates))
+  log_likelihood <- unname(as.numeric(stats::logLik(fitmk_fit)))
+  aic <- unname(as.numeric(stats::AIC(fitmk_fit)))
+  baseline_fit <- NULL
+  if (!identical(discrete_model, "equal-rates")) {
+    baseline_fit <- phytools::fitMk(
+      tree,
+      trait_values,
+      model = "ER"
+    )
+  }
   set.seed(stochastic_map_seed)
   fit <- phytools::make.simmap(
     tree,
     trait_values,
-    model = "ER",
+    model = phytools_model,
     nsim = requested_replicate_count,
     pi = "equal",
     message = FALSE
@@ -351,6 +371,19 @@ build_make_simmap_result <- function(tree, trait_values, trait_name, excluded_ta
       excluded_taxa = unname(as.list(excluded_taxa)),
       model = discrete_model,
       state_count = length(unique(unname(trait_values))),
+      parameter_count = parameter_count,
+      log_likelihood = log_likelihood,
+      aic = aic,
+      aicc = fit_aicc(aic, length(trait_values), parameter_count),
+      overparameterized = parameter_count >= length(trait_values),
+      baseline_model = if (is.null(baseline_fit)) NULL else "equal-rates",
+      preferred_model_by_aic = if (is.null(baseline_fit)) {
+        NULL
+      } else if (aic <= unname(as.numeric(stats::AIC(baseline_fit)))) {
+        discrete_model
+      } else {
+        "equal-rates"
+      },
       requested_replicate_count = requested_replicate_count,
       successful_replicate_count = requested_replicate_count,
       simulation_failure_count = 0L,
