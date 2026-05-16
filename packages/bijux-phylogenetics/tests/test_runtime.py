@@ -238,7 +238,6 @@ from bijux_phylogenetics.core.taxonomy import (
     write_taxon_mapping,
 )
 from bijux_phylogenetics.core.topology import (
-    TreeRootingReport,
     assess_tree_monophyly,
     collapse_branches_below_length,
     extract_named_clade,
@@ -295,7 +294,6 @@ from bijux_phylogenetics.distance import (
     compare_distance_models,
     compare_distance_tree_topologies,
     compute_pairwise_genetic_distance_matrix,
-    compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment,
     load_imported_distance_matrix,
     summarize_distance_bootstrap_support,
     validate_imported_distance_matrix,
@@ -366,7 +364,6 @@ from bijux_phylogenetics.io.fasta import (
     summarize_alignment_readiness,
     summarize_alignment_windows,
     translate_coding_alignment,
-    translate_coding_alignment_from_dna_bin_alignment,
     trim_alignment,
     trim_columns_above_missingness_threshold,
     write_dna_bin_alignment_fasta,
@@ -495,6 +492,46 @@ def test_package_identity_matches_canonical_names() -> None:
     assert IDENTITY.cli_name == "bijux-phylogenetics"
     assert IDENTITY.umbrella_command == "bijux phylogenetics"
     assert IDENTITY.cli_aliases == ("bijux phylo",)
+
+
+def test_package_root_exposes_curated_domain_gateways() -> None:
+    import bijux_phylogenetics.ancestral as ancestral_api
+    import bijux_phylogenetics.api as workflow_api
+    import bijux_phylogenetics.bayesian as bayesian_api
+    import bijux_phylogenetics.biogeography as biogeography_api
+    import bijux_phylogenetics.comparative as comparative_api
+    import bijux_phylogenetics.datasets as datasets_api
+    import bijux_phylogenetics.distance as distance_api
+    import bijux_phylogenetics.evidence as evidence_api
+    import bijux_phylogenetics.parity as parity_api
+    import bijux_phylogenetics.trees as trees_api
+
+    assert bijux_phylogenetics.__all__ == [
+        "__version__",
+        "ancestral",
+        "api",
+        "bayesian",
+        "biogeography",
+        "comparative",
+        "datasets",
+        "distance",
+        "evidence",
+        "parity",
+        "trees",
+    ]
+    assert bijux_phylogenetics.ancestral is ancestral_api
+    assert bijux_phylogenetics.api is workflow_api
+    assert bijux_phylogenetics.bayesian is bayesian_api
+    assert bijux_phylogenetics.biogeography is biogeography_api
+    assert bijux_phylogenetics.comparative is comparative_api
+    assert bijux_phylogenetics.datasets is datasets_api
+    assert bijux_phylogenetics.distance is distance_api
+    assert bijux_phylogenetics.evidence is evidence_api
+    assert bijux_phylogenetics.parity is parity_api
+    assert bijux_phylogenetics.trees is trees_api
+    assert not hasattr(bijux_phylogenetics, "trim_alignment")
+    assert not hasattr(bijux_phylogenetics, "run_pgls")
+    assert not hasattr(bijux_phylogenetics, "bundle_directory")
 
 
 def test_public_package_exports_alignment_and_topology_workflows() -> None:
@@ -931,33 +968,6 @@ def test_compute_consensus_tree_requires_identical_taxon_sets() -> None:
         match="share the exact same taxon set",
     ):
         compute_consensus_tree(fixture("example_tree_set_mismatched.nwk"))
-    assert (
-        bijux_phylogenetics.trim_columns_above_missingness_threshold
-        is trim_columns_above_missingness_threshold
-    )
-    assert bijux_phylogenetics.trim_alignment is trim_alignment
-    assert bijux_phylogenetics.translate_coding_alignment is translate_coding_alignment
-    assert (
-        bijux_phylogenetics.translate_coding_alignment_from_dna_bin_alignment
-        is translate_coding_alignment_from_dna_bin_alignment
-    )
-    assert bijux_phylogenetics.load_dna_bin_alignment is load_dna_bin_alignment
-    assert (
-        bijux_phylogenetics.write_dna_bin_alignment_fasta
-        is write_dna_bin_alignment_fasta
-    )
-    assert (
-        bijux_phylogenetics.compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment
-        is compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment
-    )
-    assert bijux_phylogenetics.TreeRootingReport is TreeRootingReport
-    assert bijux_phylogenetics.root_tree_on_outgroup is root_tree_on_outgroup
-    assert bijux_phylogenetics.reroot_tree_by_midpoint is reroot_tree_by_midpoint
-    assert bijux_phylogenetics.rotate_named_node is rotate_named_node
-    assert bijux_phylogenetics.rotate_all_internal_nodes is rotate_all_internal_nodes
-    assert bijux_phylogenetics.unroot_tree is unroot_tree
-    assert bijux_phylogenetics.write_tree_rooting_report is write_tree_rooting_report
-    assert bijux_phylogenetics.render_phylo_inputs_report is render_phylo_inputs_report
 
 
 def test_compute_tree_distance_matrix_reports_symmetric_rf_pairs() -> None:

@@ -36,8 +36,6 @@ from bijux_phylogenetics.io.newick import (
     write_newick,
 )
 from bijux_phylogenetics.io.trees import detect_tree_format, load_tree
-from bijux_phylogenetics.simulation import simulate_birth_death_trees, write_tree_set
-
 
 @dataclass(frozen=True, slots=True)
 class TreeSetRecord:
@@ -2516,6 +2514,11 @@ def benchmark_tree_set_uncertainty(
     seed: int = 1,
 ) -> TreeSetScalingBenchmarkReport:
     """Benchmark core posterior-uncertainty summaries across tree-count and taxon-count scaling."""
+    from bijux_phylogenetics.simulation import (
+        simulate_birth_death_trees,
+        write_tree_set,
+    )
+
     counts = tree_counts or [8, 32, 128]
     taxa = taxon_counts or [8, 32, 64]
     if replicates < 1:
@@ -2614,6 +2617,8 @@ def assess_tree_set_thinning_sensitivity(
     thinning_intervals: list[int] | None = None,
 ) -> TreeSetThinningSensitivityReport:
     """Compare core posterior conclusions before and after deterministic thinning intervals."""
+    from bijux_phylogenetics.simulation import write_tree_set
+
     intervals = thinning_intervals or [2, 5, 10]
     if any(interval < 1 for interval in intervals):
         raise ValueError("all thinning intervals must be at least 1")

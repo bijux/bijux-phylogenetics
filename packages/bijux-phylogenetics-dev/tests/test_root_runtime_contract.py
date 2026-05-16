@@ -5,6 +5,27 @@ from configparser import ConfigParser
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+PACKAGE_INIT = (
+    REPO_ROOT
+    / "packages"
+    / "bijux-phylogenetics"
+    / "src"
+    / "bijux_phylogenetics"
+    / "__init__.py"
+)
+EXPECTED_ROOT_GATEWAYS = [
+    "__version__",
+    "ancestral",
+    "api",
+    "bayesian",
+    "biogeography",
+    "comparative",
+    "datasets",
+    "distance",
+    "evidence",
+    "parity",
+    "trees",
+]
 
 
 def _tox_config() -> ConfigParser:
@@ -84,6 +105,29 @@ def _stress_marked_functions(module_path: Path) -> set[str]:
     return stress_functions
 
 
+def _package_init_module() -> ast.Module:
+    return ast.parse(PACKAGE_INIT.read_text(encoding="utf-8"))
+
+
+def _package_init_exports() -> list[str]:
+    module = _package_init_module()
+    for node in module.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(
+            isinstance(target, ast.Name) and target.id == "__all__"
+            for target in node.targets
+        ):
+            continue
+        assert isinstance(node.value, ast.List)
+        return [
+            element.value
+            for element in node.value.elts
+            if isinstance(element, ast.Constant) and isinstance(element.value, str)
+        ]
+    raise AssertionError("__all__ definition not found in package root")
+
+
 def test_root_tox_keeps_the_shared_env_families_and_drops_proteomics_only_ones() -> (
     None
 ):
@@ -157,74 +201,30 @@ def test_phylogenetic_alias_security_audits_the_installed_environment() -> None:
     assert 'PIP_AUDIT_INPUTS = -r "$(SECURITY_REQS)"' not in package_make
 
 
-def test_top_level_runtime_exports_cover_every_relative_import() -> None:
-    package_init = (
-        REPO_ROOT
-        / "packages"
-        / "bijux-phylogenetics"
-        / "src"
-        / "bijux_phylogenetics"
-        / "__init__.py"
-    )
-    module = ast.parse(package_init.read_text(encoding="utf-8"))
+def test_top_level_runtime_exports_define_curated_domain_gateways() -> None:
+    assert _package_init_exports() == EXPECTED_ROOT_GATEWAYS
 
-    imported_names = [
+
+def test_top_level_runtime_exports_use_lazy_module_gateway_pattern() -> None:
+    module = _package_init_module()
+
+    import_from_names = [
         alias.asname or alias.name
         for node in module.body
         if isinstance(node, ast.ImportFrom) and node.level > 0
         for alias in node.names
     ]
-    exported_names: list[str] = []
-    for node in module.body:
-        if not isinstance(node, ast.Assign):
-            continue
-        if not any(
-            isinstance(target, ast.Name) and target.id == "__all__"
-            for target in node.targets
-        ):
-            continue
-        assert isinstance(node.value, ast.List)
-        exported_names = [
-            element.value
-            for element in node.value.elts
-            if isinstance(element, ast.Constant) and isinstance(element.value, str)
-        ]
-        break
 
-    missing_exports = [name for name in imported_names if name not in exported_names]
-    assert missing_exports == []
+    assert import_from_names == []
 
 
-def test_top_level_runtime_exports_do_not_leak_evidence_book_helpers() -> None:
-    package_init = (
-        REPO_ROOT
-        / "packages"
-        / "bijux-phylogenetics"
-        / "src"
-        / "bijux_phylogenetics"
-        / "__init__.py"
-    )
-    module = ast.parse(package_init.read_text(encoding="utf-8"))
-
-    exported_names: list[str] = []
-    for node in module.body:
-        if not isinstance(node, ast.Assign):
-            continue
-        if not any(
-            isinstance(target, ast.Name) and target.id == "__all__"
-            for target in node.targets
-        ):
-            continue
-        assert isinstance(node.value, ast.List)
-        exported_names = [
-            element.value
-            for element in node.value.elts
-            if isinstance(element, ast.Constant) and isinstance(element.value, str)
-        ]
-        break
+def test_top_level_runtime_exports_do_not_leak_leaf_level_symbols() -> None:
+    exported_names = _package_init_exports()
 
     assert "EvidenceBundleReport" not in exported_names
     assert "bundle_directory" not in exported_names
+    assert "trim_alignment" not in exported_names
+    assert "run_pgls" not in exported_names
 
 
 def test_runtime_workflows_use_provenance_bundle_contracts_instead_of_evidence_modules() -> (
