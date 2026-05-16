@@ -414,6 +414,27 @@ class StochasticMapBranchOccupancyRow:
 
 
 @dataclass(slots=True)
+class StochasticMapTransitionCountMatrixRow:
+    replicate_index: int
+    total_transition_count: int
+    transition_counts: dict[str, int]
+
+
+@dataclass(slots=True)
+class StochasticMapBranchTransitionCountRow:
+    branch_index: int
+    parent_node: str
+    child_node: str
+    transition: str
+    mean_count: float
+    lower_95_interval: float
+    upper_95_interval: float
+    minimum_count: int
+    maximum_count: int
+    presence_fraction: float
+
+
+@dataclass(slots=True)
 class StochasticMapSimulationFailure:
     replicate_index: int
     branch_index: int
@@ -477,6 +498,19 @@ class StochasticMapCollectionReport:
     maps: list[StochasticMapReplicate]
     failures: list[StochasticMapSimulationFailure]
     summary: StochasticMapSummaryReport
+
+
+@dataclass(slots=True)
+class StochasticMapTransitionCountReport:
+    replicate_count: int
+    mean_total_transition_count: float
+    lower_95_total_transition_count: float
+    upper_95_total_transition_count: float
+    transition_order: list[str]
+    matrix_rows: list[StochasticMapTransitionCountMatrixRow]
+    aggregate_rows: list[StochasticMapSummaryRow]
+    branch_rows: list[StochasticMapBranchTransitionCountRow]
+    warnings: list[str]
 
 
 @dataclass(slots=True)
@@ -2578,6 +2612,120 @@ def summarize_discrete_stochastic_maps(
     )
 
 
+def count_discrete_stochastic_map_transitions(
+    report: StochasticMapCollectionReport,
+) -> StochasticMapTransitionCountReport:
+    """Count directional transitions across one stochastic-map collection."""
+    summary = summarize_discrete_stochastic_maps(report)
+    transition_order = [row.transition for row in summary.rows]
+    matrix_rows = [
+        StochasticMapTransitionCountMatrixRow(
+            replicate_index=replicate.replicate_index,
+            total_transition_count=replicate.total_transition_count,
+            transition_counts={
+                transition: int(replicate.transition_counts.get(transition, 0))
+                for transition in transition_order
+            },
+        )
+        for replicate in report.maps
+    ]
+    branch_keys = [
+        (
+            history.branch_index,
+            history.parent_node,
+            history.child_node,
+        )
+        for history in report.maps[0].branch_histories
+    ]
+    branch_transition_values: dict[tuple[int, str, str, str], list[int]] = {
+        (*branch_key, transition): []
+        for branch_key in branch_keys
+        for transition in transition_order
+    }
+    for replicate in report.maps:
+        replicate_branch_counts: dict[tuple[int, str, str], dict[str, int]] = {}
+        for history in replicate.branch_histories:
+            transition_counts = {transition: 0 for transition in transition_order}
+            inferred_transitions = [
+                f"{event.source_state}->{event.target_state}"
+                for event in history.events
+            ]
+            if not inferred_transitions and len(history.segments) > 1:
+                inferred_transitions = [
+                    f"{left.state}->{right.state}"
+                    for left, right in zip(
+                        history.segments,
+                        history.segments[1:],
+                        strict=False,
+                    )
+                    if left.state != right.state
+                ]
+            for transition in inferred_transitions:
+                transition_counts[transition] = transition_counts.get(transition, 0) + 1
+            replicate_branch_counts[
+                (
+                    history.branch_index,
+                    history.parent_node,
+                    history.child_node,
+                )
+            ] = transition_counts
+        for branch_key in branch_keys:
+            transition_counts = replicate_branch_counts.get(
+                branch_key,
+                {transition: 0 for transition in transition_order},
+            )
+            for transition in transition_order:
+                branch_transition_values[(*branch_key, transition)].append(
+                    int(transition_counts.get(transition, 0))
+                )
+    branch_rows: list[StochasticMapBranchTransitionCountRow] = []
+    for (
+        branch_index,
+        parent_node,
+        child_node,
+        transition,
+    ), values in sorted(
+        branch_transition_values.items(),
+        key=lambda item: (
+            item[0][0],
+            item[0][1],
+            item[0][2],
+            item[0][3],
+        ),
+    ):
+        sorted_values = sorted(float(value) for value in values)
+        branch_rows.append(
+            StochasticMapBranchTransitionCountRow(
+                branch_index=branch_index,
+                parent_node=parent_node,
+                child_node=child_node,
+                transition=transition,
+                mean_count=float(format(sum(values) / max(len(values), 1), ".15g")),
+                lower_95_interval=_quantile(sorted_values, 0.025),
+                upper_95_interval=_quantile(sorted_values, 0.975),
+                minimum_count=min(values, default=0),
+                maximum_count=max(values, default=0),
+                presence_fraction=float(
+                    format(
+                        sum(1 for value in values if value > 0) / max(len(values), 1),
+                        ".15g",
+                    )
+                ),
+            )
+        )
+    return StochasticMapTransitionCountReport(
+        replicate_count=summary.replicate_count,
+        mean_total_transition_count=summary.mean_total_transition_count,
+        lower_95_total_transition_count=summary.lower_95_total_transition_count,
+        upper_95_total_transition_count=summary.upper_95_total_transition_count,
+        transition_order=transition_order,
+        matrix_rows=matrix_rows,
+        aggregate_rows=summary.rows,
+        branch_rows=branch_rows,
+        warnings=list(summary.warnings),
+    )
+
+
 def build_biogeographic_interpretation_report(
     tree_path: Path,
     traits_path: Path,
@@ -2971,6 +3119,101 @@ def write_stochastic_map_summary_table(
     )
 
 
+def write_stochastic_map_transition_count_matrix(
+    path: Path, report: StochasticMapTransitionCountReport
+) -> Path:
+    """Export one countSimmap-style transition matrix with one row per replicate."""
+    columns = ["replicate_index", "total_transition_count", *report.transition_order]
+    rows = [
+        {
+            "replicate_index": row.replicate_index,
+            "total_transition_count": row.total_transition_count,
+            **{
+                transition: row.transition_counts.get(transition, 0)
+                for transition in report.transition_order
+            },
+        }
+        for row in report.matrix_rows
+    ]
+    return write_taxon_rows(path, columns=columns, rows=rows)
+
+
+def write_stochastic_map_aggregate_transition_matrix(
+    path: Path, report: StochasticMapTransitionCountReport
+) -> Path:
+    """Export one mean transition matrix aggregated over a stochastic-map collection."""
+    source_states = sorted(
+        {
+            transition.split("->", 1)[0]
+            for transition in report.transition_order
+            if "->" in transition
+        }
+    )
+    target_states = sorted(
+        {
+            transition.split("->", 1)[1]
+            for transition in report.transition_order
+            if "->" in transition
+        }
+    )
+    mean_lookup = {
+        row.transition: row.mean_count
+        for row in report.aggregate_rows
+    }
+    rows = [
+        {
+            "source_state": source_state,
+            **{
+                target_state: mean_lookup.get(f"{source_state}->{target_state}", 0.0)
+                for target_state in target_states
+            },
+        }
+        for source_state in source_states
+    ]
+    return write_taxon_rows(
+        path,
+        columns=["source_state", *target_states],
+        rows=rows,
+    )
+
+
+def write_stochastic_map_branch_transition_count_table(
+    path: Path, report: StochasticMapTransitionCountReport
+) -> Path:
+    """Export one per-branch transition-count summary table for a stochastic-map collection."""
+    rows = [
+        {
+            "branch_index": row.branch_index,
+            "parent_node": row.parent_node,
+            "child_node": row.child_node,
+            "transition": row.transition,
+            "mean_count": row.mean_count,
+            "lower_95_interval": row.lower_95_interval,
+            "upper_95_interval": row.upper_95_interval,
+            "minimum_count": row.minimum_count,
+            "maximum_count": row.maximum_count,
+            "presence_fraction": row.presence_fraction,
+        }
+        for row in report.branch_rows
+    ]
+    return write_taxon_rows(
+        path,
+        columns=[
+            "branch_index",
+            "parent_node",
+            "child_node",
+            "transition",
+            "mean_count",
+            "lower_95_interval",
+            "upper_95_interval",
+            "minimum_count",
+            "maximum_count",
+            "presence_fraction",
+        ],
+        rows=rows,
+    )
+
+
 def write_stochastic_map_state_time_table(
     path: Path, report: StochasticMapSummaryReport
 ) -> Path:
@@ -3071,6 +3314,47 @@ def write_stochastic_map_segment_table(
             "start_time_fraction",
             "end_time_fraction",
             "duration",
+        ],
+        rows=rows,
+    )
+
+
+def write_stochastic_map_event_table(
+    path: Path, report: StochasticMapCollectionReport
+) -> Path:
+    """Export one flat transition-event table for a stochastic-map collection."""
+    rows = [
+        {
+            "replicate_index": replicate.replicate_index,
+            "branch_index": history.branch_index,
+            "parent_node": history.parent_node,
+            "child_node": history.child_node,
+            "event_index": event_index,
+            "source_state": event.source_state,
+            "target_state": event.target_state,
+            "branch_length": history.branch_length,
+            "event_time_fraction": event.event_time_fraction,
+            "event_time": float(
+                format(history.branch_length * event.event_time_fraction, ".15g")
+            ),
+        }
+        for replicate in report.maps
+        for history in replicate.branch_histories
+        for event_index, event in enumerate(history.events)
+    ]
+    return write_taxon_rows(
+        path,
+        columns=[
+            "replicate_index",
+            "branch_index",
+            "parent_node",
+            "child_node",
+            "event_index",
+            "source_state",
+            "target_state",
+            "branch_length",
+            "event_time_fraction",
+            "event_time",
         ],
         rows=rows,
     )
