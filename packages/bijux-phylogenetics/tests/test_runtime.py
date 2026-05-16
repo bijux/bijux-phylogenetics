@@ -620,19 +620,24 @@ from bijux_phylogenetics.discrete_evolution import (
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
     load_stochastic_map_collection,
+    render_stochastic_map_density_artifact,
     render_discrete_state_evolution_report,
     render_tree_with_geographic_states,
     run_discrete_state_transition_model,
     simulate_discrete_stochastic_maps,
     simulate_discrete_stochastic_maps_from_fit_report,
+    summarize_discrete_stochastic_map_density,
     summarize_discrete_stochastic_maps,
     validate_discrete_state_coding,
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
     write_stochastic_map_aggregate_transition_matrix,
+    write_stochastic_map_branch_probability_table,
     write_stochastic_map_branch_transition_count_table,
     write_stochastic_map_collection,
     write_stochastic_map_branch_occupancy_table,
+    write_stochastic_map_density_branch_table,
+    write_stochastic_map_density_slice_table,
     write_stochastic_map_event_table,
     write_stochastic_map_segment_table,
     write_stochastic_map_state_time_table,
@@ -1757,12 +1762,24 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is count_discrete_stochastic_map_transitions
     )
     assert (
+        bijux_phylogenetics.summarize_discrete_stochastic_map_density
+        is summarize_discrete_stochastic_map_density
+    )
+    assert (
+        bijux_phylogenetics.render_stochastic_map_density_artifact
+        is render_stochastic_map_density_artifact
+    )
+    assert (
         bijux_phylogenetics.write_stochastic_map_collection
         is write_stochastic_map_collection
     )
     assert (
         bijux_phylogenetics.write_stochastic_map_branch_occupancy_table
         is write_stochastic_map_branch_occupancy_table
+    )
+    assert (
+        bijux_phylogenetics.write_stochastic_map_branch_probability_table
+        is write_stochastic_map_branch_probability_table
     )
     assert (
         bijux_phylogenetics.write_stochastic_map_transition_count_matrix
@@ -1775,6 +1792,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.write_stochastic_map_branch_transition_count_table
         is write_stochastic_map_branch_transition_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_stochastic_map_density_branch_table
+        is write_stochastic_map_density_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_stochastic_map_density_slice_table
+        is write_stochastic_map_density_slice_table
     )
     assert (
         bijux_phylogenetics.write_stochastic_map_event_table
