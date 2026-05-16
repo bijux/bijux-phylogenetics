@@ -141,16 +141,16 @@ class PhytoolsParityReport:
 
 
 def _package_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[3]
 
 
 def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[4]
+    return Path(__file__).resolve().parents[5]
 
 
 def _phytools_runner_path() -> Path:
     return (
-        Path(__file__).resolve().parent
+        Path(__file__).resolve().parents[1]
         / "resources"
         / "reference"
         / "phytools_parity_runner.R"

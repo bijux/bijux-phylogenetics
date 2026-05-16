@@ -93,7 +93,7 @@ from bijux_phylogenetics.ancestral import (
     write_ordered_discrete_summary_table,
     write_ordered_discrete_transition_table,
 )
-from bijux_phylogenetics.ape_parity import (
+from bijux_phylogenetics.parity import (
     list_ape_parity_cases,
     run_ape_parity_cases,
     write_ape_parity_observation_table,
@@ -860,13 +860,13 @@ from bijux_phylogenetics.phylogeography import (
     write_geographic_map_marker_table,
     write_geographic_map_summary_table,
 )
-from bijux_phylogenetics.phytools_parity import (
+from bijux_phylogenetics.parity import (
     list_phytools_parity_cases,
     run_phytools_parity_cases,
     write_phytools_parity_observation_table,
     write_phytools_parity_summary_table,
 )
-from bijux_phylogenetics.reference_parity import (
+from bijux_phylogenetics.parity import (
     validate_reference_parity_examples,
     write_reference_parity_observation_table,
     write_reference_parity_summary_table,

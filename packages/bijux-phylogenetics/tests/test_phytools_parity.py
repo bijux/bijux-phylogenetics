@@ -4,12 +4,14 @@ import csv
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.phytools_parity import (
-    _load_rows_table,
+from bijux_phylogenetics.parity import (
     list_phytools_parity_cases,
     run_phytools_parity_cases,
     write_phytools_parity_observation_table,
     write_phytools_parity_summary_table,
+)
+from bijux_phylogenetics.parity.phytools import (
+    _load_rows_table,
 )
 from tests.support.fake_phytools_parity import fake_phytools_rscript
 

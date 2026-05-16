@@ -5,7 +5,7 @@ import json
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.reference_parity import (
+from bijux_phylogenetics.parity import (
     validate_reference_parity_examples,
     write_reference_parity_observation_table,
     write_reference_parity_summary_table,

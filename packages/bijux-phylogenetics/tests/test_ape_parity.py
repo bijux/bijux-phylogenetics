@@ -9,7 +9,7 @@ import subprocess
 
 import pytest
 
-from bijux_phylogenetics.ape_parity import (
+from bijux_phylogenetics.parity import (
     list_ape_parity_cases,
     run_ape_parity_cases,
     write_ape_parity_observation_table,

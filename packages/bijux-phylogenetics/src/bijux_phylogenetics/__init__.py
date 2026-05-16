@@ -158,7 +158,7 @@ from .ancestral import (
     write_ordered_discrete_summary_table,
     write_ordered_discrete_transition_table,
 )
-from .ape_parity import (
+from .parity import (
     ApeParityObservation,
     ApeParityReport,
     ApeParitySummaryRow,
@@ -1425,7 +1425,7 @@ from .phylogeography import (
     write_geographic_map_marker_table,
     write_geographic_map_summary_table,
 )
-from .phytools_parity import (
+from .parity import (
     PhytoolsParityObservation,
     PhytoolsParityReport,
     PhytoolsParitySummaryRow,
@@ -1434,7 +1434,7 @@ from .phytools_parity import (
     write_phytools_parity_observation_table,
     write_phytools_parity_summary_table,
 )
-from .reference_parity import (
+from .parity import (
     ReferenceParityObservation,
     ReferenceParityReport,
     ReferenceParitySummaryRow,

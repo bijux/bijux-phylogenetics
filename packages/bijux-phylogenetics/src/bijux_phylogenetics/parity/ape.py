@@ -190,11 +190,11 @@ class ApeParityReport:
 
 
 def _package_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[3]
 
 
 def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[4]
+    return Path(__file__).resolve().parents[5]
 
 
 def _fixtures_root() -> Path:
@@ -203,7 +203,7 @@ def _fixtures_root() -> Path:
 
 def _ape_runner_path() -> Path:
     return (
-        Path(__file__).resolve().parent
+        Path(__file__).resolve().parents[1]
         / "resources"
         / "reference"
         / "ape_parity_runner.R"

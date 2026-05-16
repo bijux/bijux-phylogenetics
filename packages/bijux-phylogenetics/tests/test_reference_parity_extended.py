@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from bijux_phylogenetics.reference_parity import validate_reference_parity_examples
+from bijux_phylogenetics.parity import validate_reference_parity_examples
 
 pytestmark = [pytest.mark.scientific_validation]
 

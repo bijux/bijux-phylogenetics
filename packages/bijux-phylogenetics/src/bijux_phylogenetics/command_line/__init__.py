@@ -110,7 +110,7 @@ from bijux_phylogenetics.ancestral.tree_set import (
 from bijux_phylogenetics.ancestral.visualization import (
     render_ancestral_state_visualization,
 )
-from bijux_phylogenetics.ape_parity import (
+from bijux_phylogenetics.parity import (
     run_ape_parity_cases,
     write_ape_parity_observation_table,
     write_ape_parity_summary_table,
@@ -718,7 +718,7 @@ from bijux_phylogenetics.phylogeography import (
     write_geographic_map_marker_table,
     write_geographic_map_summary_table,
 )
-from bijux_phylogenetics.phytools_parity import (
+from bijux_phylogenetics.parity import (
     run_phytools_parity_cases,
     write_phytools_parity_observation_table,
     write_phytools_parity_summary_table,
@@ -727,7 +727,7 @@ from bijux_phylogenetics.provenance.method_tiers import (
     method_tier_metrics,
     method_tier_warnings,
 )
-from bijux_phylogenetics.reference_parity import (
+from bijux_phylogenetics.parity import (
     validate_reference_parity_examples,
     write_reference_parity_observation_table,
     write_reference_parity_summary_table,

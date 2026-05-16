@@ -19,7 +19,7 @@ from bijux_phylogenetics.provenance.method_tiers import (
     method_tier_warnings,
     release_method_tier_inventory,
 )
-from bijux_phylogenetics.reference_parity import (
+from bijux_phylogenetics.parity import (
     ReferenceParityReport,
     validate_reference_parity_examples,
 )
