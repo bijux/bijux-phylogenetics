@@ -29,6 +29,10 @@ from bijux_phylogenetics.discrete_evolution import (
     summarize_discrete_stochastic_map_density,
     summarize_discrete_stochastic_maps,
 )
+from bijux_phylogenetics.simulation import (
+    DiscreteHistoryRateRow,
+    simulate_discrete_histories,
+)
 from bijux_phylogenetics.shared_phytools_comparative_fixtures import (
     get_shared_phytools_comparative_fixture,
 )
@@ -55,6 +59,12 @@ class PhytoolsParityCase:
     stochastic_map_seed: int | None = None
     density_resolution: int | None = None
     focal_state: str | None = None
+    simulation_states: tuple[str, ...] | None = None
+    simulation_rate_rows: tuple[DiscreteHistoryRateRow, ...] | None = None
+    simulation_root_state: str | None = None
+    simulation_root_state_probabilities: dict[str, float] | None = None
+    simulation_replicate_count: int | None = None
+    simulation_seed: int | None = None
     field_tolerances: dict[str, float] | None = None
     row_field_tolerances: dict[str, float] | None = None
     compare_rows: bool = True
@@ -163,6 +173,12 @@ def _bijux_commit() -> str | None:
 
 def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
     """Return the governed live `phytools` parity cases."""
+    simulation_tree_fixture = (
+        _package_root() / "tests" / "fixtures" / "trees" / "example_tree.nwk"
+    )
+    simulation_six_taxa_tree_fixture = (
+        _package_root() / "tests" / "fixtures" / "trees" / "example_tree_six_taxa.nwk"
+    )
     strong_signal_fixture = get_shared_phytools_comparative_fixture(
         "phytools_continuous_strong_signal_twenty_four_taxa"
     )
@@ -1003,6 +1019,130 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
             },
         ),
         PhytoolsParityCase(
+            case_id="sim-history-binary-no-change-example-tree",
+            fixture_id="example_tree_discrete_history_binary_no_change",
+            function_name="phytools::sim.history",
+            python_function_name="simulate_discrete_histories",
+            operation="simulate-discrete-history",
+            input_fixtures=(simulation_tree_fixture,),
+            tolerance=1e-6,
+            trait_name="simulated_state",
+            simulation_states=("0", "1"),
+            simulation_rate_rows=(
+                DiscreteHistoryRateRow("0", "1", 0.01),
+                DiscreteHistoryRateRow("1", "0", 0.01),
+            ),
+            simulation_root_state="0",
+            simulation_replicate_count=128,
+            simulation_seed=17,
+            field_tolerances={
+                "mean_total_transition_count": 0.5,
+                "lower_95_total_transition_count": 1.0,
+                "upper_95_total_transition_count": 1.0,
+            },
+            row_field_tolerances={
+                "mean_value": 0.25,
+                "lower_95_interval": 0.35,
+                "upper_95_interval": 0.35,
+                "presence_fraction": 0.2,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="sim-history-binary-high-rate-example-tree",
+            fixture_id="example_tree_discrete_history_binary_high_rate",
+            function_name="phytools::sim.history",
+            python_function_name="simulate_discrete_histories",
+            operation="simulate-discrete-history",
+            input_fixtures=(simulation_tree_fixture,),
+            tolerance=1e-6,
+            trait_name="simulated_state",
+            simulation_states=("0", "1"),
+            simulation_rate_rows=(
+                DiscreteHistoryRateRow("0", "1", 4.0),
+                DiscreteHistoryRateRow("1", "0", 2.5),
+            ),
+            simulation_root_state="0",
+            simulation_replicate_count=128,
+            simulation_seed=17,
+            field_tolerances={
+                "mean_total_transition_count": 2.0,
+                "lower_95_total_transition_count": 4.0,
+                "upper_95_total_transition_count": 4.0,
+            },
+            row_field_tolerances={
+                "mean_value": 1.0,
+                "lower_95_interval": 2.0,
+                "upper_95_interval": 2.0,
+                "presence_fraction": 0.2,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="sim-history-multistate-no-change-six-taxa",
+            fixture_id="example_tree_six_taxa_discrete_history_multistate_no_change",
+            function_name="phytools::sim.history",
+            python_function_name="simulate_discrete_histories",
+            operation="simulate-discrete-history",
+            input_fixtures=(simulation_six_taxa_tree_fixture,),
+            tolerance=1e-6,
+            trait_name="simulated_state",
+            simulation_states=("red", "blue", "green"),
+            simulation_rate_rows=(
+                DiscreteHistoryRateRow("red", "blue", 0.01),
+                DiscreteHistoryRateRow("red", "green", 0.005),
+                DiscreteHistoryRateRow("blue", "red", 0.01),
+                DiscreteHistoryRateRow("blue", "green", 0.01),
+                DiscreteHistoryRateRow("green", "red", 0.005),
+                DiscreteHistoryRateRow("green", "blue", 0.01),
+            ),
+            simulation_root_state="red",
+            simulation_replicate_count=128,
+            simulation_seed=17,
+            field_tolerances={
+                "mean_total_transition_count": 0.75,
+                "lower_95_total_transition_count": 1.5,
+                "upper_95_total_transition_count": 1.5,
+            },
+            row_field_tolerances={
+                "mean_value": 0.15,
+                "lower_95_interval": 1.25,
+                "upper_95_interval": 1.6,
+                "presence_fraction": 0.03,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="sim-history-multistate-high-rate-six-taxa",
+            fixture_id="example_tree_six_taxa_discrete_history_multistate_high_rate",
+            function_name="phytools::sim.history",
+            python_function_name="simulate_discrete_histories",
+            operation="simulate-discrete-history",
+            input_fixtures=(simulation_six_taxa_tree_fixture,),
+            tolerance=1e-6,
+            trait_name="simulated_state",
+            simulation_states=("red", "blue", "green"),
+            simulation_rate_rows=(
+                DiscreteHistoryRateRow("red", "blue", 6.0),
+                DiscreteHistoryRateRow("red", "green", 3.5),
+                DiscreteHistoryRateRow("blue", "red", 4.5),
+                DiscreteHistoryRateRow("blue", "green", 5.5),
+                DiscreteHistoryRateRow("green", "red", 3.0),
+                DiscreteHistoryRateRow("green", "blue", 4.0),
+            ),
+            simulation_root_state="red",
+            simulation_replicate_count=128,
+            simulation_seed=17,
+            field_tolerances={
+                "mean_total_transition_count": 3.0,
+                "lower_95_total_transition_count": 6.0,
+                "upper_95_total_transition_count": 6.0,
+            },
+            row_field_tolerances={
+                "mean_value": 1.5,
+                "lower_95_interval": 3.0,
+                "upper_95_interval": 3.0,
+                "presence_fraction": 0.2,
+            },
+        ),
+        PhytoolsParityCase(
             case_id="rerooting-er-binary-twenty-four-taxa",
             fixture_id=binary_discrete_fixture.fixture_id,
             function_name="phytools::rerootingMethod",
@@ -1357,15 +1497,40 @@ def _write_case_file(path: Path, case: PhytoolsParityCase) -> Path:
         "stochastic_map_seed": case.stochastic_map_seed,
         "density_resolution": case.density_resolution,
         "focal_state": case.focal_state,
+        "simulation_states": case.simulation_states,
+        "simulation_rate_rows": (
+            None
+            if case.simulation_rate_rows is None
+            else [asdict(row) for row in case.simulation_rate_rows]
+        ),
+        "simulation_root_state": case.simulation_root_state,
+        "simulation_root_state_probabilities": case.simulation_root_state_probabilities,
+        "simulation_replicate_count": case.simulation_replicate_count,
+        "simulation_seed": case.simulation_seed,
     }
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return path
 
 
+def _discrete_history_parity_rows(report) -> list[dict[str, object]]:
+    return [
+        {
+            "row_kind": row.row_kind,
+            "label": row.label,
+            "mean_value": row.mean_value,
+            "lower_95_interval": row.lower_95_interval,
+            "upper_95_interval": row.upper_95_interval,
+            "presence_fraction": row.presence_fraction,
+        }
+        for row in report.rows
+    ]
+
+
 def _build_bijux_case_payload(
     case: PhytoolsParityCase,
 ) -> tuple[dict[str, object], list[dict[str, object]] | None]:
-    tree_path, traits_path = case.input_fixtures
+    tree_path = case.input_fixtures[0]
+    traits_path = case.input_fixtures[1] if len(case.input_fixtures) > 1 else None
     if case.operation == "phylogenetic-signal-lambda":
         report = estimate_pagels_lambda(
             tree_path,
@@ -1612,6 +1777,7 @@ def _build_bijux_case_payload(
             rows,
         )
     if case.operation == "discrete-stochastic-map-density":
+        assert traits_path is not None
         dataset = load_discrete_dataset(
             tree_path,
             traits_path,
@@ -1660,7 +1826,34 @@ def _build_bijux_case_payload(
             },
             rows,
         )
+    if case.operation == "simulate-discrete-history":
+        report = simulate_discrete_histories(
+            tree_path,
+            states=list(case.simulation_states or ()),
+            rate_rows=list(case.simulation_rate_rows or ()),
+            root_state=case.simulation_root_state,
+            root_state_probabilities=case.simulation_root_state_probabilities,
+            replicates=case.simulation_replicate_count or 128,
+            seed=case.simulation_seed or 1,
+        )
+        return (
+            {
+                "taxon_count": report.tip_count,
+                "trait_name": case.trait_name,
+                "branch_count": report.branch_count,
+                "state_count": len(report.states),
+                "requested_replicate_count": report.replicate_count,
+                "successful_replicate_count": report.replicate_count,
+                "fixed_root_state": report.fixed_root_state,
+                "seed": report.seed,
+                "mean_total_transition_count": report.mean_total_transition_count,
+                "lower_95_total_transition_count": report.lower_95_total_transition_count,
+                "upper_95_total_transition_count": report.upper_95_total_transition_count,
+            },
+            _discrete_history_parity_rows(report),
+        )
     if case.operation == "discrete-ancestral-rerooting":
+        assert traits_path is not None
         report = reconstruct_discrete_ancestral_states(
             tree_path,
             traits_path,
@@ -1977,6 +2170,20 @@ def _mismatch_reason(
             "resolution",
             "total_tree_depth",
         )
+    elif case.operation == "simulate-discrete-history":
+        compare_keys = (
+            "taxon_count",
+            "trait_name",
+            "branch_count",
+            "state_count",
+            "requested_replicate_count",
+            "successful_replicate_count",
+            "fixed_root_state",
+            "seed",
+            "mean_total_transition_count",
+            "lower_95_total_transition_count",
+            "upper_95_total_transition_count",
+        )
     elif case.operation == "discrete-ancestral-rerooting":
         compare_keys = (
             "taxon_count",
@@ -2036,6 +2243,7 @@ def _row_mismatch_reason(
         "discrete-stochastic-map",
         "discrete-stochastic-map-count",
         "discrete-stochastic-map-description",
+        "simulate-discrete-history",
         "discrete-ancestral-rerooting",
         "continuous-ancestral-fast-anc",
         "continuous-ancestral-anc-ml",
@@ -2077,6 +2285,7 @@ def _row_mismatch_reason(
         "discrete-stochastic-map",
         "discrete-stochastic-map-count",
         "discrete-stochastic-map-description",
+        "simulate-discrete-history",
     }:
         reference_rows = sorted(
             reference_rows,
@@ -2115,6 +2324,7 @@ def _row_mismatch_reason(
         "discrete-stochastic-map",
         "discrete-stochastic-map-count",
         "discrete-stochastic-map-description",
+        "simulate-discrete-history",
     }:
         compare_keys = (
             "row_kind",
@@ -2365,6 +2575,7 @@ def run_phytools_parity_cases(
                             "discrete-stochastic-map-count",
                             "discrete-stochastic-map-description",
                             "discrete-stochastic-map-density",
+                            "simulate-discrete-history",
                             "discrete-ancestral-rerooting",
                             "continuous-ancestral-fast-anc",
                             "continuous-ancestral-anc-ml",
@@ -2380,6 +2591,7 @@ def run_phytools_parity_cases(
                                         "discrete-stochastic-map-count",
                                         "discrete-stochastic-map-description",
                                         "discrete-stochastic-map-density",
+                                        "simulate-discrete-history",
                                     }
                                     else (
                                         "rerooting-method-node-probabilities.tsv"
