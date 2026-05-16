@@ -202,7 +202,11 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
     summary_path = tmp_path / "stochastic-summary.tsv"
     state_times_path = tmp_path / "stochastic-state-times.tsv"
     branch_occupancy_path = tmp_path / "stochastic-branch-occupancy.tsv"
+    count_matrix_path = tmp_path / "stochastic-count-matrix.tsv"
+    aggregate_matrix_path = tmp_path / "stochastic-aggregate-matrix.tsv"
+    branch_transition_path = tmp_path / "stochastic-branch-transitions.tsv"
     segments_path = tmp_path / "stochastic-segments.tsv"
+    events_path = tmp_path / "stochastic-events.tsv"
 
     stochastic_exit = main(
         [
@@ -226,8 +230,16 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
             str(state_times_path),
             "--branch-occupancy-out",
             str(branch_occupancy_path),
+            "--count-matrix-out",
+            str(count_matrix_path),
+            "--aggregate-matrix-out",
+            str(aggregate_matrix_path),
+            "--branch-transition-out",
+            str(branch_transition_path),
             "--segments-out",
             str(segments_path),
+            "--events-out",
+            str(events_path),
             "--json",
         ]
     )
@@ -238,6 +250,8 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
     assert stochastic_payload["metrics"]["simulation_failure_count"] == 0
     assert stochastic_payload["metrics"]["mean_total_transition_count"] >= 0.0
     assert stochastic_payload["metrics"]["branch_state_row_count"] > 0
+    assert stochastic_payload["metrics"]["count_matrix_row_count"] == 6
+    assert stochastic_payload["metrics"]["branch_transition_row_count"] > 0
     assert stochastic_payload["metrics"]["conditioned_on_node_estimates"] is False
     assert stochastic_payload["metrics"]["parameter_count"] == 3
     assert stochastic_payload["metrics"]["optimizer_converged"] is True
@@ -247,14 +261,30 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
     assert collection_path.exists()
     assert state_times_path.exists()
     assert branch_occupancy_path.exists()
+    assert count_matrix_path.exists()
+    assert aggregate_matrix_path.exists()
+    assert branch_transition_path.exists()
     assert segments_path.exists()
+    assert events_path.exists()
     assert "transition\tmean_count" in summary_path.read_text(encoding="utf-8")
     assert "state\tmean_time" in state_times_path.read_text(encoding="utf-8")
     assert (
         "branch_index\tparent_node\tchild_node\tstate\tbranch_length\tmean_time"
         in branch_occupancy_path.read_text(encoding="utf-8")
     )
+    assert "replicate_index\ttotal_transition_count" in count_matrix_path.read_text(
+        encoding="utf-8"
+    )
+    assert "source_state" in aggregate_matrix_path.read_text(encoding="utf-8")
+    assert (
+        "branch_index\tparent_node\tchild_node\ttransition\tmean_count"
+        in branch_transition_path.read_text(encoding="utf-8")
+    )
     assert "replicate_index\tbranch_index" in segments_path.read_text(encoding="utf-8")
+    assert (
+        "replicate_index\tbranch_index\tparent_node\tchild_node\tevent_index\tsource_state\ttarget_state"
+        in events_path.read_text(encoding="utf-8")
+    )
 
     summarize_exit = main(
         [
@@ -276,3 +306,26 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
     assert summarize_payload["metrics"]["mean_total_transition_count"] >= 0.0
     assert summarize_payload["metrics"]["simulation_failure_count"] == 0
     assert summarize_payload["metrics"]["branch_state_row_count"] > 0
+
+    count_exit = main(
+        [
+            "discrete-evolution",
+            "count-maps",
+            str(collection_path),
+            "--count-matrix-out",
+            str(count_matrix_path),
+            "--aggregate-matrix-out",
+            str(aggregate_matrix_path),
+            "--branch-transition-out",
+            str(branch_transition_path),
+            "--events-out",
+            str(events_path),
+            "--json",
+        ]
+    )
+    count_payload = json.loads(capsys.readouterr().out)
+    assert count_exit == 0
+    assert count_payload["metrics"]["replicate_count"] == 6
+    assert count_payload["metrics"]["mean_total_transition_count"] >= 0.0
+    assert count_payload["metrics"]["count_matrix_row_count"] == 6
+    assert count_payload["metrics"]["branch_transition_row_count"] > 0

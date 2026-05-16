@@ -16,6 +16,7 @@ from bijux_phylogenetics.discrete_evolution import (
     audit_discrete_state_coding,
     build_biogeographic_interpretation_report,
     compare_discrete_state_models,
+    count_discrete_stochastic_map_transitions,
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
     load_stochastic_map_collection,
@@ -29,10 +30,14 @@ from bijux_phylogenetics.discrete_evolution import (
     validate_discrete_transition_reference_examples,
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
+    write_stochastic_map_aggregate_transition_matrix,
+    write_stochastic_map_branch_transition_count_table,
     write_stochastic_map_collection,
     write_stochastic_map_branch_occupancy_table,
+    write_stochastic_map_event_table,
     write_stochastic_map_segment_table,
     write_stochastic_map_state_time_table,
+    write_stochastic_map_transition_count_matrix,
     write_stochastic_map_summary_table,
     write_transition_summary_table,
 )
@@ -445,13 +450,25 @@ def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(
     summary_path = tmp_path / "stochastic-summary.tsv"
     state_times_path = tmp_path / "stochastic-state-times.tsv"
     branch_occupancy_path = tmp_path / "stochastic-branch-occupancy.tsv"
+    count_matrix_path = tmp_path / "stochastic-count-matrix.tsv"
+    aggregate_matrix_path = tmp_path / "stochastic-aggregate-matrix.tsv"
+    branch_transition_path = tmp_path / "stochastic-branch-transitions.tsv"
     segments_path = tmp_path / "stochastic-segments.tsv"
+    events_path = tmp_path / "stochastic-events.tsv"
+    count_report = count_discrete_stochastic_map_transitions(report)
 
     write_stochastic_map_collection(collection_path, report)
     write_stochastic_map_summary_table(summary_path, summary)
     write_stochastic_map_state_time_table(state_times_path, summary)
     write_stochastic_map_branch_occupancy_table(branch_occupancy_path, summary)
+    write_stochastic_map_transition_count_matrix(count_matrix_path, count_report)
+    write_stochastic_map_aggregate_transition_matrix(aggregate_matrix_path, count_report)
+    write_stochastic_map_branch_transition_count_table(
+        branch_transition_path,
+        count_report,
+    )
     write_stochastic_map_segment_table(segments_path, report)
+    write_stochastic_map_event_table(events_path, report)
     reloaded = load_stochastic_map_collection(collection_path)
 
     assert report.summary.replicate_count == 8
@@ -476,6 +493,9 @@ def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(
     assert reloaded.summary.state_time_rows
     assert reloaded.summary.branch_occupancy_rows
     assert reloaded.summary.simulation_failure_count == 0
+    assert count_report.replicate_count == 8
+    assert len(count_report.matrix_rows) == 8
+    assert count_report.branch_rows
     assert "transition\tmean_count\tlower_95_interval" in summary_path.read_text(
         encoding="utf-8"
     )
@@ -487,8 +507,24 @@ def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(
         in branch_occupancy_path.read_text(encoding="utf-8")
     )
     assert (
+        "replicate_index\ttotal_transition_count"
+        in count_matrix_path.read_text(encoding="utf-8")
+    )
+    assert (
+        "source_state"
+        in aggregate_matrix_path.read_text(encoding="utf-8")
+    )
+    assert (
+        "branch_index\tparent_node\tchild_node\ttransition\tmean_count"
+        in branch_transition_path.read_text(encoding="utf-8")
+    )
+    assert (
         "replicate_index\tbranch_index\tparent_node\tchild_node\tstate\tstart_time_fraction\tend_time_fraction\tduration"
         in segments_path.read_text(encoding="utf-8")
+    )
+    assert (
+        "replicate_index\tbranch_index\tparent_node\tchild_node\tevent_index\tsource_state\ttarget_state"
+        in events_path.read_text(encoding="utf-8")
     )
 
 
@@ -607,6 +643,16 @@ def test_summarize_discrete_stochastic_maps_handles_no_transition_manual_maps() 
     transition_rows = {row.transition: row for row in summary.rows}
     assert transition_rows["0->1"].mean_count == 0.0
     assert transition_rows["0->1"].presence_fraction == 0.0
+    count_report = count_discrete_stochastic_map_transitions(report)
+    matrix_row = count_report.matrix_rows[0]
+    assert matrix_row.total_transition_count == 0
+    assert matrix_row.transition_counts["0->1"] == 0
+    branch_transition_rows = {
+        (row.parent_node, row.child_node, row.transition): row
+        for row in count_report.branch_rows
+    }
+    assert branch_transition_rows[("A|B", "A", "0->1")].mean_count == 0.0
+    assert branch_transition_rows[("A|B", "A", "0->1")].presence_fraction == 0.0
     branch_rows = {
         (row.parent_node, row.child_node, row.state): row
         for row in summary.branch_occupancy_rows
@@ -753,6 +799,15 @@ def test_summarize_discrete_stochastic_maps_tracks_multistate_branch_occupancy()
         (row.parent_node, row.child_node, row.state): row
         for row in summary.branch_occupancy_rows
     }
+    count_report = count_discrete_stochastic_map_transitions(report)
+    count_matrix_rows = {row.replicate_index: row for row in count_report.matrix_rows}
+    assert count_matrix_rows[0].transition_counts["0->1"] == 1
+    branch_transition_rows = {
+        (row.parent_node, row.child_node, row.transition): row
+        for row in count_report.branch_rows
+    }
+    assert branch_transition_rows[("A|B|C", "A|B", "0->1")].mean_count == 1.0
+    assert branch_transition_rows[("A|B|C", "C", "1->2")].mean_count == 0.0
     assert branch_rows[("A|B|C", "A|B", "1")].mean_time == 1.25
     assert branch_rows[("A|B|C", "A|B", "1")].mean_fraction == 0.625
     assert branch_rows[("A|B|C", "C", "2")].mean_fraction == 1.0
