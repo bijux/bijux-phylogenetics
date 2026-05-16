@@ -121,6 +121,13 @@ The PGLS portion of the suite now covers four distinct trust questions:
 - treatment-coded interaction encoding and coefficients against R output
 - one governed estimated-lambda primate regression against R `ape` plus `nlme`
 
+The live `phytools` lane now adds a separate honest Brownian-only check for
+those fixed-lambda regression shapes through `phytools::pgls.SEy`. Installed
+`phytools 2.5.2` does not export a general `phytools::pgls` function, so the
+governed live lane stays on `pgls.SEy` with `lambda = 1.0`, while the broader
+exact PGLS contract for estimated lambda and full coefficient parity remains
+the checked-in `ape` plus `nlme` suite.
+
 The observation ledger records the expected failure classification, overlap
 policy, and shared-versus-exclusive taxa so reviewer-visible mismatches can be
 sorted quickly into topology, branch-length, missing-taxa-policy, numerical,
@@ -230,6 +237,7 @@ goal 201: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::sim.history`,
 `phytools::fastBM`,
 `phytools::sim.corrs`,
+`phytools::pgls.SEy`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed
 twenty-four-taxon comparative fixtures drawn from the shared `phytools`
@@ -311,6 +319,13 @@ covers governed low-correlation, negative-correlation root-shift, and
 three-trait six-taxon fixed-tree cases, comparing summary envelopes,
 tip-covariance rows, and tip-correlation rows against real `phytools::sim.corrs`
 without claiming exact cross-language draws.
+The same governed live `phytools` lane now also covers fixed-lambda Brownian
+PGLS through `phytools::pgls.SEy` on one simple numeric regression plus one
+categorical and one interaction-coded regression. That boundary is explicit:
+installed `phytools 2.5.2` does not export a general `phytools::pgls`
+function, so the live lane proves only `pgls.SEy` with `lambda = 1.0`, while
+the broader exact PGLS contract for estimated lambda and full coefficient
+parity remains the checked-in `ape` plus `nlme` suite.
 The live
 `rerootingMethod` lane now also covers governed ER binary, ER multistate, ER
 missing-value-pruned, SYM multistate, and SYM missing-value-pruned cases. It
