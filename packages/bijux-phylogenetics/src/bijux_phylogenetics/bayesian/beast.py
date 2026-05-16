@@ -2280,6 +2280,12 @@ def run_beast_posterior_inference(
     stderr_path = xml_path.with_suffix(".stderr.log")
     posterior_log_path = _beast_output_path(xml_path, seed=seed, suffix="log")
     posterior_trees_path = _beast_output_path(xml_path, seed=seed, suffix="trees")
+    version = read_engine_version(
+        "BEAST",
+        executable,
+        version_args=("-version",),
+        timeout_seconds=timeout_seconds,
+    )
     command = [
         resolved,
         *(["-overwrite"] if overwrite else []),
@@ -2294,18 +2300,13 @@ def run_beast_posterior_inference(
             manifest_path=manifest_path,
             input_paths=[xml_path],
             expected_command=command,
+            expected_version=version,
         )
         if resumed is not None:
             return resumed
     incomplete_notes = _resolve_incomplete_workflow_state(
         manifest_path=manifest_path,
         incomplete_run_policy=incomplete_run_policy,
-    )
-    version = read_engine_version(
-        "BEAST",
-        executable,
-        version_args=("-version",),
-        timeout_seconds=timeout_seconds,
     )
     run = execute_engine_command(
         engine_name="BEAST",
