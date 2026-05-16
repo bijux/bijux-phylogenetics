@@ -23,7 +23,12 @@ from bijux_phylogenetics.biogeography import (
     BiogeographyReportPackageResult,
     build_biogeography_report_package,
 )
-from bijux_phylogenetics.clades import CladeTableReport, CladeTableRow, extract_tree_clades, write_clade_table
+from bijux_phylogenetics.clades import (
+    CladeTableReport,
+    CladeTableRow,
+    extract_tree_clades,
+    write_clade_table,
+)
 from bijux_phylogenetics.comparative.posterior_tree_pgls import (
     PosteriorTreePGLSReport,
     run_posterior_tree_pgls,
@@ -129,6 +134,7 @@ from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.simulation import write_tree_set
 from bijux_phylogenetics.tree_set import (
     BootstrapTreeSetArtifactReport,
+    BootstrapTreeSetSummaryReport,
     compute_clade_frequency_table,
     write_bootstrap_tree_set_artifacts,
 )
@@ -532,7 +538,9 @@ def export_rabies_cross_host_geography_panel_dataset(
     workflow_config_path = shutil.copy2(
         dataset.workflow_config_path, destination / _WORKFLOW_CONFIG_NAME
     )
-    sequences_path = shutil.copy2(dataset.sequences_path, destination / "sequences.fasta")
+    sequences_path = shutil.copy2(
+        dataset.sequences_path, destination / "sequences.fasta"
+    )
     metadata_path = shutil.copy2(dataset.metadata_path, destination / "metadata.csv")
     centroids_path = shutil.copy2(
         dataset.centroids_path, destination / "region-centroids.csv"
@@ -562,9 +570,7 @@ def _write_source_accession_table(
 ) -> Path:
     metadata_rows = _read_metadata_rows(dataset.metadata_path)
     accession_index = {
-        str(row["accession"]): row
-        for row in metadata_rows
-        if row.get("accession")
+        str(row["accession"]): row for row in metadata_rows if row.get("accession")
     }
     ordered_rows = []
     for accession in dataset.source_accessions:
@@ -681,7 +687,9 @@ def run_rabies_cross_host_geography_panel_workflow(
         host_trait=dataset.host_trait,
         geography_trait=dataset.geography_trait,
     )
-    comparative_traits_path = out_dir / f"{dataset.workflow_prefix}.comparative-traits.tsv"
+    comparative_traits_path = (
+        out_dir / f"{dataset.workflow_prefix}.comparative-traits.tsv"
+    )
     write_taxon_rows(
         comparative_traits_path,
         columns=list(comparative_traits_rows[0].keys()),
@@ -1046,9 +1054,7 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         comparative_output_root / "contrast-table.tsv",
         comparative_report,
     )
-    comparative_model_matrix_path = (
-        comparative_output_root / "model-matrix.tsv"
-    )
+    comparative_model_matrix_path = comparative_output_root / "model-matrix.tsv"
     write_pgls_model_matrix_table(
         comparative_model_matrix_path,
         comparative_report.snapshot.pgls_inputs.model_matrix,
@@ -1100,8 +1106,7 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
     )
     comparative_coefficient_stability_path = (
         write_comparative_coefficient_stability_table(
-            conclusion_stability_output_root
-            / "comparative-coefficient-stability.tsv",
+            conclusion_stability_output_root / "comparative-coefficient-stability.tsv",
             report.conclusion_stability_report.comparative_coefficient_rows,
         )
     )
@@ -1170,12 +1175,24 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
             "support_table": support_table_path,
             "clade_table": clade_table_path,
             "bootstrap_summary": bootstrap_summary_path,
-            "bootstrap_consensus_tree": bootstrap_artifacts.output_paths["consensus_tree"],
-            "bootstrap_clade_frequencies": bootstrap_artifacts.output_paths["clade_frequencies"],
-            "bootstrap_unstable_branches": bootstrap_artifacts.output_paths["unstable_branches"],
-            "bootstrap_unstable_clades": bootstrap_artifacts.output_paths["unstable_clades"],
-            "bootstrap_distance_matrix": bootstrap_artifacts.output_paths["distance_matrix"],
-            "bootstrap_topology_clusters": bootstrap_artifacts.output_paths["topology_clusters"],
+            "bootstrap_consensus_tree": bootstrap_artifacts.output_paths[
+                "consensus_tree"
+            ],
+            "bootstrap_clade_frequencies": bootstrap_artifacts.output_paths[
+                "clade_frequencies"
+            ],
+            "bootstrap_unstable_branches": bootstrap_artifacts.output_paths[
+                "unstable_branches"
+            ],
+            "bootstrap_unstable_clades": bootstrap_artifacts.output_paths[
+                "unstable_clades"
+            ],
+            "bootstrap_distance_matrix": bootstrap_artifacts.output_paths[
+                "distance_matrix"
+            ],
+            "bootstrap_topology_clusters": bootstrap_artifacts.output_paths[
+                "topology_clusters"
+            ],
             "bootstrap_tree_comparison_summary": bootstrap_tree_comparison_summary_path,
             "bootstrap_tree_comparison_table": bootstrap_tree_comparison_table_path,
             "bootstrap_tree_comparison_report": (
@@ -1313,15 +1330,25 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         clade_table_path=clade_table_path,
         bootstrap_output_root=bootstrap_output_root,
         bootstrap_summary_path=bootstrap_summary_path,
-        bootstrap_consensus_tree_path=bootstrap_artifacts.output_paths["consensus_tree"],
-        bootstrap_clade_frequencies_path=bootstrap_artifacts.output_paths["clade_frequencies"],
-        bootstrap_unstable_branches_path=bootstrap_artifacts.output_paths["unstable_branches"],
-        bootstrap_unstable_clades_path=bootstrap_artifacts.output_paths["unstable_clades"],
-        bootstrap_distance_matrix_path=bootstrap_artifacts.output_paths["distance_matrix"],
-        bootstrap_topology_clusters_path=bootstrap_artifacts.output_paths["topology_clusters"],
-        bootstrap_tree_comparison_summary_path=(
-            bootstrap_tree_comparison_summary_path
-        ),
+        bootstrap_consensus_tree_path=bootstrap_artifacts.output_paths[
+            "consensus_tree"
+        ],
+        bootstrap_clade_frequencies_path=bootstrap_artifacts.output_paths[
+            "clade_frequencies"
+        ],
+        bootstrap_unstable_branches_path=bootstrap_artifacts.output_paths[
+            "unstable_branches"
+        ],
+        bootstrap_unstable_clades_path=bootstrap_artifacts.output_paths[
+            "unstable_clades"
+        ],
+        bootstrap_distance_matrix_path=bootstrap_artifacts.output_paths[
+            "distance_matrix"
+        ],
+        bootstrap_topology_clusters_path=bootstrap_artifacts.output_paths[
+            "topology_clusters"
+        ],
+        bootstrap_tree_comparison_summary_path=(bootstrap_tree_comparison_summary_path),
         bootstrap_tree_comparison_table_path=bootstrap_tree_comparison_table_path,
         bootstrap_tree_comparison_report_path=(
             bootstrap_tree_comparison_report.output_path
@@ -1359,9 +1386,7 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         key_clade_stability_path=key_clade_stability_path,
         support_value_stability_path=support_value_stability_path,
         ancestral_state_stability_path=ancestral_state_stability_path,
-        comparative_coefficient_stability_path=(
-            comparative_coefficient_stability_path
-        ),
+        comparative_coefficient_stability_path=(comparative_coefficient_stability_path),
         conclusion_stability_report_path=conclusion_stability_report_path,
         scientific_findings_path=scientific_findings_path,
         final_report_path=final_report_path,
@@ -1499,9 +1524,7 @@ def _load_workflow_config(
             None
             if payload.get("max_bootstrap_tree_count", _MAX_BOOTSTRAP_TREE_COUNT)
             is None
-            else int(
-                payload.get("max_bootstrap_tree_count", _MAX_BOOTSTRAP_TREE_COUNT)
-            )
+            else int(payload.get("max_bootstrap_tree_count", _MAX_BOOTSTRAP_TREE_COUNT))
         ),
         max_report_table_rows=(
             None
@@ -1543,9 +1566,7 @@ def _load_workflow_config(
             payload.get("clade_metadata_columns", list(_CLADE_METADATA_COLUMNS))
         ),
         comparative_formula=payload.get("comparative_formula", _COMPARATIVE_FORMULA),
-        comparative_response=payload.get(
-            "comparative_response", _COMPARATIVE_RESPONSE
-        ),
+        comparative_response=payload.get("comparative_response", _COMPARATIVE_RESPONSE),
         comparative_branch_length_floor=float(
             payload.get(
                 "comparative_branch_length_floor",
@@ -1572,7 +1593,9 @@ def _build_workflow_config_audit_rows(
                 check_id=check_id,
                 status="pass" if exists else "fail",
                 observed_value=path.name,
-                detail="input file is present" if exists else "configured input file is missing",
+                detail="input file is present"
+                if exists
+                else "configured input file is missing",
             )
         )
         if not exists:
@@ -1582,11 +1605,7 @@ def _build_workflow_config_audit_rows(
 
     records = load_permissive_fasta_records(config.sequences_path)
     sequence_ids = sorted(
-        {
-            record.identifier.strip()
-            for record in records
-            if record.identifier.strip()
-        }
+        {record.identifier.strip() for record in records if record.identifier.strip()}
     )
     sequence_id_set = set(sequence_ids)
     metadata_rows: list[dict[str, str]] = []
@@ -1612,12 +1631,13 @@ def _build_workflow_config_audit_rows(
         RabiesWorkflowConfigAuditRow(
             check_id="metadata_required_columns",
             status="pass" if not missing_metadata_columns else "fail",
-            observed_value=str(len(required_metadata_columns) - len(missing_metadata_columns)),
+            observed_value=str(
+                len(required_metadata_columns) - len(missing_metadata_columns)
+            ),
             detail=(
                 "metadata exposes the required workflow columns"
                 if not missing_metadata_columns
-                else "missing metadata columns: "
-                + ", ".join(missing_metadata_columns)
+                else "missing metadata columns: " + ", ".join(missing_metadata_columns)
             ),
         )
     )
@@ -1718,7 +1738,9 @@ def _build_workflow_config_audit_rows(
             check_id="timeout_seconds",
             status="pass" if timeout_valid else "fail",
             observed_value=(
-                "" if config.timeout_seconds is None else _format_number(config.timeout_seconds)
+                ""
+                if config.timeout_seconds is None
+                else _format_number(config.timeout_seconds)
             ),
             detail=(
                 "workflow timeout budget is positive"
@@ -1863,7 +1885,9 @@ def _write_comparative_tree_set(
     reference_tree_path: Path,
     branch_length_floor: float,
 ) -> Path:
-    reference_length_lookup = _build_branch_length_lookup(load_tree(reference_tree_path))
+    reference_length_lookup = _build_branch_length_lookup(
+        load_tree(reference_tree_path)
+    )
     rooted_trees = _load_tree_set_trees(rooted_tree_set_path)
     adjusted_trees = []
     for tree in rooted_trees:
@@ -1909,9 +1933,7 @@ def _root_tree_on_outgroup_from_tree(
         raise ValueError(
             "none of the requested outgroup taxa were found while rooting a tree set"
         )
-    biophylo_tree.root_with_outgroup(
-        *[clade for clade in matched if clade is not None]
-    )
+    biophylo_tree.root_with_outgroup(*[clade for clade in matched if clade is not None])
     return tree_from_biophylo(biophylo_tree, source_format="newick")
 
 
@@ -1977,11 +1999,14 @@ def _build_conclusion_stability_report(
     geography_ancestral_tree_set_report: DiscreteAncestralTreeSetReport,
 ) -> ConclusionStabilityReport:
     baseline_clades = extract_tree_clades(rooted_tree_path)
-    bootstrap_frequencies = compute_clade_frequency_table(rooted_bootstrap_tree_set_path)
+    bootstrap_frequencies = compute_clade_frequency_table(
+        rooted_bootstrap_tree_set_path
+    )
     method_tree_paths = [
         variant.rooted_iqtree_path for variant in method_sensitivity_report.variant_runs
     ] + [
-        variant.rooted_fasttree_path for variant in method_sensitivity_report.variant_runs
+        variant.rooted_fasttree_path
+        for variant in method_sensitivity_report.variant_runs
     ]
     method_clade_reports = [extract_tree_clades(path) for path in method_tree_paths]
     key_clade_rows = build_key_clade_stability_rows(
@@ -2014,17 +2039,14 @@ def _build_conclusion_stability_report(
         )
         for path in method_tree_paths
     ]
-    ancestral_state_rows = (
-        build_ancestral_state_stability_rows(
-            baseline_report=host_ancestral_report,
-            bootstrap_report=host_ancestral_tree_set_report,
-            method_reports=host_method_reports,
-        )
-        + build_ancestral_state_stability_rows(
-            baseline_report=geography_ancestral_report,
-            bootstrap_report=geography_ancestral_tree_set_report,
-            method_reports=geography_method_reports,
-        )
+    ancestral_state_rows = build_ancestral_state_stability_rows(
+        baseline_report=host_ancestral_report,
+        bootstrap_report=host_ancestral_tree_set_report,
+        method_reports=host_method_reports,
+    ) + build_ancestral_state_stability_rows(
+        baseline_report=geography_ancestral_report,
+        bootstrap_report=geography_ancestral_tree_set_report,
+        method_reports=geography_method_reports,
     )
     comparative_method_results = [
         _run_comparative_pgls_on_tree(
@@ -2208,9 +2230,7 @@ def _write_resolved_workflow_config(
             "timeout_seconds": config.timeout_seconds,
             "max_bootstrap_tree_count": config.max_bootstrap_tree_count,
             "max_report_table_rows": config.max_report_table_rows,
-            "memory_warning_threshold_bytes": (
-                config.memory_warning_threshold_bytes
-            ),
+            "memory_warning_threshold_bytes": (config.memory_warning_threshold_bytes),
             "alignment_mode": config.alignment_mode,
             "trimming_mode": config.trimming_mode,
             "trim_gap_threshold": config.trim_gap_threshold,
@@ -2221,9 +2241,7 @@ def _write_resolved_workflow_config(
             "clade_metadata_columns": list(config.clade_metadata_columns),
             "comparative_formula": config.comparative_formula,
             "comparative_response": config.comparative_response,
-            "comparative_branch_length_floor": (
-                config.comparative_branch_length_floor
-            ),
+            "comparative_branch_length_floor": (config.comparative_branch_length_floor),
         },
     }
     path.write_text(
@@ -2326,15 +2344,13 @@ def _build_scientific_finding_rows(
     host_summary = report.host_switching.summary
     geography_summary = report.biogeography_report.state_report.summary
     migration_summary = report.biogeography_report.event_report.summary
-    bootstrap_question = "Does the bootstrap consensus preserve the rooted ML conclusion?"
+    bootstrap_question = (
+        "Does the bootstrap consensus preserve the rooted ML conclusion?"
+    )
     if bootstrap_tree_comparison_report.topology.topology_equal:
-        bootstrap_claim = (
-            "The bootstrap consensus preserves the rooted ML topology on the shared taxon set."
-        )
+        bootstrap_claim = "The bootstrap consensus preserves the rooted ML topology on the shared taxon set."
     else:
-        bootstrap_claim = (
-            "The bootstrap consensus differs from the rooted ML topology after support-driven summarization."
-        )
+        bootstrap_claim = "The bootstrap consensus differs from the rooted ML topology after support-driven summarization."
     comparative_claim = next(
         (
             row.claim
@@ -2616,17 +2632,13 @@ def _write_workflow_summary_table(
         "minimum_support": _format_number(support.minimum_support),
         "maximum_support": _format_number(support.maximum_support),
         "median_support": _format_number(support.median_support),
-        "weakly_supported_clade_count": str(
-            support.weakly_supported_clade_count
-        ),
+        "weakly_supported_clade_count": str(support.weakly_supported_clade_count),
         "clade_row_count": str(clade_row_count),
         "bootstrap_tree_count": str(bootstrap_summary.tree_count),
         "bootstrap_topology_count": str(
             bootstrap_summary.diversity.rooted_topology_count
         ),
-        "bootstrap_unstable_branch_count": str(
-            bootstrap_summary.unstable_branch_count
-        ),
+        "bootstrap_unstable_branch_count": str(bootstrap_summary.unstable_branch_count),
         "bootstrap_consensus_rooted_rf_distance": str(
             bootstrap_tree_comparison_report.topology.rooted_robinson_foulds_distance
         ),
@@ -2662,15 +2674,11 @@ def _write_workflow_summary_table(
         "comparative_response": comparative_summary_row.response,
         "comparative_formula": comparative_summary_row.formula,
         "comparative_selected_model": comparative_summary_row.selected_model,
-        "comparative_pgls_lambda": _format_number(
-            comparative_summary_row.pgls_lambda
-        ),
+        "comparative_pgls_lambda": _format_number(comparative_summary_row.pgls_lambda),
         "comparative_pgls_r_squared": _format_number(
             comparative_summary_row.pgls_r_squared
         ),
-        "comparative_branch_repair_count": str(
-            len(report.comparative_branch_repairs)
-        ),
+        "comparative_branch_repair_count": str(len(report.comparative_branch_repairs)),
         "conclusion_stable_count": str(
             report.conclusion_stability_report.summary.stable_count
         ),
@@ -2827,7 +2835,7 @@ def _write_demo_overview_html(
             '  <section class="panel">',
             "    <h2>Biological Question</h2>",
             f"    <p>{escape(_FLAGSHIP_QUESTION)}</p>",
-            "    <h2 style=\"margin-top: 16px;\">Short Answer</h2>",
+            '    <h2 style="margin-top: 16px;">Short Answer</h2>',
             f"    <p>{escape(short_answer)}</p>",
             "  </section>",
             '  <section class="cards">',

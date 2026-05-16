@@ -5,13 +5,17 @@ from pathlib import Path
 import re
 
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import InvalidBranchLengthError, TreeParseError, UnnamedTipError
+from bijux_phylogenetics.errors import (
+    InvalidBranchLengthError,
+    TreeParseError,
+    UnnamedTipError,
+)
 
-_BRANCH_LENGTH_PATTERN = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$")
-_UNQUOTED_LABEL_PATTERN = re.compile(r"^[0-9A-Za-z._-]+$")
-_NUMERIC_LABEL_PATTERN = re.compile(
+_BRANCH_LENGTH_PATTERN = re.compile(  # nosec B105 - Newick grammar regex
     r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$"
 )
+_UNQUOTED_LABEL_PATTERN = re.compile(r"^[0-9A-Za-z._-]+$")  # nosec B105 - grammar
+_NUMERIC_LABEL_PATTERN = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$")  # nosec B105 - grammar
 
 
 class _NewickParser:
@@ -93,9 +97,9 @@ class _NewickParser:
     def _parse_optional_label(self) -> str | None:
         self._skip_whitespace()
         token = self._peek()
-        if token is None or token in ",():;":
+        if token is None or token in ",():;":  # nosec B105
             return None
-        if token == "'":
+        if token == "'":  # nosec B105
             return self._parse_quoted_label()
         return self._parse_unquoted_label()
 
@@ -106,7 +110,7 @@ class _NewickParser:
             token = self._peek()
             if token is None:
                 raise self._parse_error("unterminated quoted label")
-            if token == "'":
+            if token == "'":  # nosec B105
                 self._advance()
                 if self._peek() == "'":
                     self._advance()
@@ -120,7 +124,7 @@ class _NewickParser:
         start = self.index
         while True:
             token = self._peek()
-            if token is None or token in ",():;":
+            if token is None or token in ",():;":  # nosec B105
                 break
             self._advance()
         label = self.text[start : self.index].strip()
@@ -137,7 +141,7 @@ class _NewickParser:
         start = self.index
         while True:
             token = self._peek()
-            if token is None or token in ",();":
+            if token is None or token in ",();":  # nosec B105
                 break
             self._advance()
         raw_value = self.text[start : self.index].strip()
@@ -172,7 +176,9 @@ class _NewickParser:
         observed = self._peek()
         if observed != token:
             if observed is None:
-                raise self._parse_error(f"expected '{token}' before end of Newick string")
+                raise self._parse_error(
+                    f"expected '{token}' before end of Newick string"
+                )
             raise self._parse_error(f"expected '{token}' but found '{observed}'")
         self._advance()
 
@@ -307,7 +313,9 @@ def _format_label(label: str | None) -> str:
 
 def _validate_tree_for_newick(node: TreeNode) -> None:
     if node.is_leaf() and node.name is None:
-        raise UnnamedTipError("tree contains unnamed tips and cannot be written as Newick")
+        raise UnnamedTipError(
+            "tree contains unnamed tips and cannot be written as Newick"
+        )
     if node.branch_length is not None and not math.isfinite(node.branch_length):
         raise InvalidBranchLengthError(
             f"invalid branch length {node.branch_length!r} in tree node"
@@ -349,7 +357,9 @@ def write_newick(path: Path, tree: PhyloTree) -> Path:
 def dumps_newick_tree_set(trees: list[PhyloTree]) -> str:
     """Serialize a list of trees as one canonical Newick record per line."""
     if not trees:
-        raise TreeParseError("tree set contains no trees and cannot be written as Newick")
+        raise TreeParseError(
+            "tree set contains no trees and cannot be written as Newick"
+        )
     return "".join(f"{dumps_newick(tree)}\n" for tree in trees)
 
 

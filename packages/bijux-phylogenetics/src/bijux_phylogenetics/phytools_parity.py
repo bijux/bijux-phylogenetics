@@ -7,7 +7,7 @@ from importlib import metadata
 import math
 import os
 from pathlib import Path
-import subprocess
+import subprocess  # nosec B404 - parity helpers invoke repository-owned reference commands
 import tempfile
 
 from bijux_phylogenetics.ancestral.continuous import (
@@ -177,7 +177,8 @@ def _bijux_version() -> str:
 
 
 def _bijux_commit() -> str | None:
-    result = subprocess.run(
+    # Fixed repository git metadata probe.
+    result = subprocess.run(  # nosec
         ["git", "rev-parse", "--short", "HEAD"],
         capture_output=True,
         check=False,
@@ -188,6 +189,11 @@ def _bijux_commit() -> str | None:
         return None
     commit = result.stdout.strip()
     return commit or None
+
+
+def _optional_payload_string(payload: dict[str, object], key: str) -> str | None:
+    value = payload.get(key)
+    return value if isinstance(value, str) else None
 
 
 def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
@@ -2014,7 +2020,9 @@ def _build_bijux_case_payload(
             {
                 "taxon_count": report.taxon_count,
                 "trait_name": report.trait,
-                "excluded_taxon_count": len(report.input_audit.pruned_missing_value_taxa),
+                "excluded_taxon_count": len(
+                    report.input_audit.pruned_missing_value_taxa
+                ),
                 "excluded_taxa": list(report.input_audit.pruned_missing_value_taxa),
                 "model": report.model,
                 "state_count": len(report.input_audit.observed_states),
@@ -2173,7 +2181,10 @@ def _build_bijux_case_payload(
             rows,
         )
     if case.operation == "discrete-stochastic-map-density":
-        assert traits_path is not None
+        if traits_path is None:
+            raise ValueError(
+                "discrete-stochastic-map-density requires one traits fixture"
+            )
         dataset = load_discrete_dataset(
             tree_path,
             traits_path,
@@ -2249,7 +2260,8 @@ def _build_bijux_case_payload(
             _discrete_history_parity_rows(report),
         )
     if case.operation == "discrete-ancestral-rerooting":
-        assert traits_path is not None
+        if traits_path is None:
+            raise ValueError("discrete-ancestral-rerooting requires one traits fixture")
         report = reconstruct_discrete_ancestral_states(
             tree_path,
             traits_path,
@@ -2536,9 +2548,11 @@ def _mismatch_reason(
             "upper_95_total_transition_count",
         )
         if case.operation == "discrete-stochastic-map":
-            compare_keys = compare_keys[:16] + (
-                "conditioned_on_node_estimates",
-            ) + compare_keys[16:]
+            compare_keys = (
+                compare_keys[:16]
+                + ("conditioned_on_node_estimates",)
+                + compare_keys[16:]
+            )
         elif case.operation == "discrete-stochastic-map-description":
             compare_keys = compare_keys + ("branch_count",)
     elif case.operation == "discrete-stochastic-map-density":
@@ -2737,7 +2751,9 @@ def _row_mismatch_reason(
             ),
         )
     else:
-        reference_rows = sorted(reference_rows, key=lambda row: str(row.get("node", "")))
+        reference_rows = sorted(
+            reference_rows, key=lambda row: str(row.get("node", ""))
+        )
         bijux_rows = sorted(bijux_rows, key=lambda row: str(row.get("node", "")))
     if len(reference_rows) != len(bijux_rows):
         return "row_count_mismatch"
@@ -2969,7 +2985,8 @@ def run_phytools_parity_cases(
             process_stdout = ""
             process_stderr = ""
             try:
-                process = subprocess.run(
+                # Repository-owned R parity runner.
+                process = subprocess.run(  # nosec
                     [
                         rscript_executable,
                         str(_phytools_runner_path()),
@@ -2995,8 +3012,10 @@ def run_phytools_parity_cases(
                     mismatch_reason = "reference_execution_failed"
                 else:
                     execution_payload = _load_json(execution_path)
-                    r_version = execution_payload.get("r_version")  # type: ignore[assignment]
-                    phytools_version = execution_payload.get("phytools_version")  # type: ignore[assignment]
+                    r_version = _optional_payload_string(execution_payload, "r_version")
+                    phytools_version = _optional_payload_string(
+                        execution_payload, "phytools_version"
+                    )
                     execution_status = execution_payload.get("status")
                     if execution_status == "unavailable":
                         status = "skipped"
@@ -3034,20 +3053,25 @@ def run_phytools_parity_cases(
                             reference_summary=reference_summary,
                             bijux_summary=bijux_summary,
                         )
-                        if mismatch_reason is None and case.compare_rows and case.operation in {
-                            "discrete-fit-mk",
-                            "discrete-stochastic-map",
-                            "discrete-stochastic-map-count",
-                            "discrete-stochastic-map-description",
-                            "discrete-stochastic-map-density",
-                            "simulate-discrete-history",
-                            "simulate-continuous-brownian",
-                            "simulate-continuous-correlated-brownian",
-                            "comparative-pgls-brownian",
-                            "discrete-ancestral-rerooting",
-                            "continuous-ancestral-fast-anc",
-                            "continuous-ancestral-anc-ml",
-                        }:
+                        if (
+                            mismatch_reason is None
+                            and case.compare_rows
+                            and case.operation
+                            in {
+                                "discrete-fit-mk",
+                                "discrete-stochastic-map",
+                                "discrete-stochastic-map-count",
+                                "discrete-stochastic-map-description",
+                                "discrete-stochastic-map-density",
+                                "simulate-discrete-history",
+                                "simulate-continuous-brownian",
+                                "simulate-continuous-correlated-brownian",
+                                "comparative-pgls-brownian",
+                                "discrete-ancestral-rerooting",
+                                "continuous-ancestral-fast-anc",
+                                "continuous-ancestral-anc-ml",
+                            }
+                        ):
                             rows_path = execution_root / (
                                 "fitmk-rate-matrix.tsv"
                                 if case.operation == "discrete-fit-mk"

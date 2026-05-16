@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TypeAlias
+from typing import Mapping, Sequence, TypeAlias
 
 from bijux_phylogenetics.errors import MetadataJoinError
 
@@ -238,7 +238,7 @@ def _stringify_table_value(value: TableValue) -> str:
 
 
 def write_taxon_rows(
-    path: Path, *, columns: list[str], rows: list[dict[str, TableValue]]
+    path: Path, *, columns: list[str], rows: Sequence[Mapping[str, TableValue]]
 ) -> Path:
     """Write taxon-keyed rows as CSV or TSV based on the output suffix."""
     delimiter, _ = _detect_delimiter(path)

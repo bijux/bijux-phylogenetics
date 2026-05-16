@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from defusedxml import ElementTree
 from pathlib import Path
-from xml.etree import ElementTree
+from typing import Any
 
 from bijux_phylogenetics.benchmark import (
     LargeDatasetStressSuiteReport,
@@ -78,7 +79,7 @@ class ReleaseTruthReport:
     known_limitations: list[str]
 
 
-def _iter_junit_testsuites(root: ElementTree.Element) -> list[ElementTree.Element]:
+def _iter_junit_testsuites(root: Any) -> list[Any]:
     if root.tag == "testsuite":
         return [root]
     suites = list(root.findall("testsuite"))

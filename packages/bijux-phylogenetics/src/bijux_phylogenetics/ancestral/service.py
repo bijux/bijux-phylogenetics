@@ -310,7 +310,11 @@ def reconstruct_continuous_evolutionary_mode_states(
         dataset,
         working_tree=transformed_tree,
         model="brownian",
+        estimator="fast-anc",
         alpha=1.0,
+        brownian_fit_diagnostics=None,
+        optimizer_diagnostics=None,
+        anc_ml_profile_fit=None,
     )
     return ContinuousEvolutionaryModeAncestralReport(
         tree_path=tree_path,

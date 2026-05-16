@@ -229,8 +229,7 @@ def load_phylo_workflow_config(config_path: Path) -> PhyloWorkflowConfig:
         field_name="output.bundle_root",
     )
     bundle_root = (
-        out_dir
-        / f"{input_fasta_path.stem if prefix is None else prefix}.result-bundle"
+        out_dir / f"{input_fasta_path.stem if prefix is None else prefix}.result-bundle"
         if bundle_root_text is None
         else _resolve_output_path(bundle_root_text, config_path=config_path)
     )
@@ -493,7 +492,10 @@ def run_phylo_workflow_config(config_path: Path) -> WorkflowConfigRunReport:
     bundle_notes = [
         "workflow config source was copied into the result bundle alongside the resolved workflow config",
     ]
-    if workflow_config.metadata_path is not None or workflow_config.traits_path is not None:
+    if (
+        workflow_config.metadata_path is not None
+        or workflow_config.traits_path is not None
+    ):
         bundle_notes.append(
             "metadata and traits files were bundled for reviewer context and downstream comparative work; the current fasta-to-tree execution path does not consume them during tree building"
         )
@@ -763,7 +765,7 @@ def _optional_sequence_type(
     if value is None:
         return None
     if isinstance(value, str) and value in {"dna", "rna", "protein", "unknown"}:
-        return cast(AlignmentAlphabet, value)
+        return value
     raise _invalid_config_error(
         f"{field_name} must be one of: dna, protein, rna, unknown",
         config_path=config_path,

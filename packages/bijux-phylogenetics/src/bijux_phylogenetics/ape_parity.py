@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 import re
 import shutil
-import subprocess
+import subprocess  # nosec B404 - parity helpers invoke repository-owned reference commands
 import tempfile
 
 from bijux_phylogenetics.ancestral.common import (
@@ -230,7 +230,8 @@ def _bijux_version() -> str:
 
 
 def _bijux_commit() -> str | None:
-    result = subprocess.run(
+    # Fixed repository git metadata probe.
+    result = subprocess.run(  # nosec
         ["git", "rev-parse", "--short", "HEAD"],
         capture_output=True,
         check=False,
@@ -411,7 +412,9 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::consensus",
             python_function_name="compute_consensus_tree+compute_clade_frequency_table",
             operation="tree-consensus",
-            input_fixture=fixture_path("tree-set", "consensus_conflicting_four_taxon_tree_set"),
+            input_fixture=fixture_path(
+                "tree-set", "consensus_conflicting_four_taxon_tree_set"
+            ),
             tolerance=1e-12,
             consensus_method="majority-rule",
         ),
@@ -422,7 +425,9 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::consensus",
             python_function_name="compute_strict_consensus_tree+compute_clade_frequency_table",
             operation="tree-consensus",
-            input_fixture=fixture_path("tree-set", "consensus_conflicting_four_taxon_tree_set"),
+            input_fixture=fixture_path(
+                "tree-set", "consensus_conflicting_four_taxon_tree_set"
+            ),
             tolerance=1e-12,
             consensus_method="strict",
         ),
@@ -433,7 +438,9 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::consensus",
             python_function_name="compute_consensus_tree+compute_clade_frequency_table",
             operation="tree-consensus",
-            input_fixture=fixture_path("tree-set", "consensus_posterior_six_taxon_tree_set"),
+            input_fixture=fixture_path(
+                "tree-set", "consensus_posterior_six_taxon_tree_set"
+            ),
             tolerance=1e-12,
             consensus_method="majority-rule",
         ),
@@ -444,7 +451,9 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::consensus",
             python_function_name="compute_consensus_tree",
             operation="tree-consensus",
-            input_fixture=fixture_path("tree-set", "consensus_mismatched_taxon_tree_set"),
+            input_fixture=fixture_path(
+                "tree-set", "consensus_mismatched_taxon_tree_set"
+            ),
             tolerance=0.0,
             expected_status="consensus-error",
             consensus_method="majority-rule",
@@ -456,7 +465,9 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::prop.clades",
             python_function_name="compute_reference_tree_clade_support",
             operation="tree-clade-support",
-            input_fixture=fixture_path("tree-set", "prop_clades_duplicate_conflict_tree_set"),
+            input_fixture=fixture_path(
+                "tree-set", "prop_clades_duplicate_conflict_tree_set"
+            ),
             reference_tree_path=fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
         ),
@@ -489,7 +500,9 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::prop.clades",
             python_function_name="compute_reference_tree_clade_support",
             operation="tree-clade-support",
-            input_fixture=fixture_path("tree-set", "prop_clades_posterior_six_taxon_tree_set"),
+            input_fixture=fixture_path(
+                "tree-set", "prop_clades_posterior_six_taxon_tree_set"
+            ),
             reference_tree_path=fixture_path("tree", "balanced_rooted_six_taxon"),
             tolerance=1e-12,
         ),
@@ -500,7 +513,9 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::prop.clades",
             python_function_name="compute_reference_tree_clade_support",
             operation="tree-clade-support",
-            input_fixture=fixture_path("tree-set", "prop_clades_mismatched_taxon_tree_set"),
+            input_fixture=fixture_path(
+                "tree-set", "prop_clades_mismatched_taxon_tree_set"
+            ),
             reference_tree_path=fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
             expected_status="prop-clades-error",
@@ -1547,7 +1562,9 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::rtree",
             python_function_name="simulate_random_trees",
             operation="tree-simulation-envelope",
-            input_fixture=fixture_path("simulation", "rtree_rooted_six_taxon_uniform_64"),
+            input_fixture=fixture_path(
+                "simulation", "rtree_rooted_six_taxon_uniform_64"
+            ),
             tolerance=1.5,
         ),
         ApeParityCase(
@@ -2410,12 +2427,16 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
                 "rf_mode": case.rf_mode,
                 "consensus_method": case.consensus_method,
                 "reference_tree_path": (
-                    None if case.reference_tree_path is None else str(case.reference_tree_path)
+                    None
+                    if case.reference_tree_path is None
+                    else str(case.reference_tree_path)
                 ),
                 "ancestral_model": case.ancestral_model,
                 "trait_fixture_id": case.trait_fixture_id,
                 "trait_table_path": (
-                    None if case.trait_table_path is None else str(case.trait_table_path)
+                    None
+                    if case.trait_table_path is None
+                    else str(case.trait_table_path)
                 ),
                 "trait_name": case.trait_name,
                 "trait_taxon_column": case.trait_taxon_column,
@@ -2465,7 +2486,9 @@ def _tree_structure_payload(
     rooted: bool | None,
     clade_rows,
 ) -> tuple[dict[str, object], list[dict[str, object]], str]:
-    phylo_tree = tree if isinstance(tree, PhyloTree) else PhyloTree(root=tree, rooted=rooted)
+    phylo_tree = (
+        tree if isinstance(tree, PhyloTree) else PhyloTree(root=tree, rooted=rooted)
+    )
     summary = {
         "tree_count": 1,
         "tip_count": phylo_tree.tip_count,
@@ -2489,15 +2512,19 @@ def _build_bijux_tree_set_structure(
     parity_rows = _clade_rows_to_parity_rows(clades.rows)
     tree_indices = sorted(
         {
-            row["tree_index"]
+            tree_index
             for row in parity_rows
-            if row["tree_index"] != ""
+            for tree_index in [row.get("tree_index")]
+            if isinstance(tree_index, int)
         }
     )
     first_tree_tip_labels = [
-        row["node_label"]
+        node_label
         for row in parity_rows
-        if row["tree_index"] == 1 and row["node_kind"] == "tip"
+        for node_label in [row.get("node_label")]
+        if row.get("tree_index") == 1
+        and row.get("node_kind") == "tip"
+        and isinstance(node_label, str)
     ]
     summary = {
         "tree_count": clades.tree_count,
@@ -2561,7 +2588,9 @@ def _build_bijux_keep_tip_structure(
     *,
     requested_taxa: tuple[str, ...],
 ) -> tuple[dict[str, object], list[dict[str, object]], str]:
-    pruned_tree, report = prune_tree_to_requested_taxa(input_fixture, list(requested_taxa))
+    pruned_tree, report = prune_tree_to_requested_taxa(
+        input_fixture, list(requested_taxa)
+    )
     with tempfile.TemporaryDirectory(prefix="bijux-ape-keep-tip-") as tmpdir:
         pruned_path = Path(tmpdir) / "keep-tip.nwk"
         write_newick(pruned_path, pruned_tree)
@@ -2689,7 +2718,10 @@ def _build_bijux_base_frequency_summary(
     input_fixture: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
     report = compute_alignment_base_frequency_report(input_fixture)
-    rows = [{"state": row.state, "frequency": row.frequency} for row in report.alignment_rows]
+    rows = [
+        {"state": row.state, "frequency": row.frequency}
+        for row in report.alignment_rows
+    ]
     return {
         "sequence_count": report.sequence_count,
         "alignment_length": report.alignment_length,
@@ -2737,7 +2769,10 @@ def _build_bijux_distance_rows(
                     "distance parity rows require a complete symmetric pair lookup"
                 )
             if pair.distance is None:
-                if pair.saturation_reason and "tends to infinity" in pair.saturation_reason:
+                if (
+                    pair.saturation_reason
+                    and "tends to infinity" in pair.saturation_reason
+                ):
                     distance = ""
                     distance_status = "infinite"
                     infinite_distance_count += 1
@@ -2816,24 +2851,28 @@ def _build_bijux_consensus_rows(
     tree.rooted = False
     frequency_report = compute_clade_frequency_table(input_fixture)
     included_split_count = len(informative_unrooted_splits(tree, set(tree.tip_names)))
-    return {
-        "tree_count": report.tree_count,
-        "shared_taxa": report.shared_taxa,
-        "shared_taxon_count": len(report.shared_taxa),
-        "tip_count": len(tree.tip_names),
-        "rooted": False,
-        "consensus_method": report.consensus_method,
-        "consensus_threshold": report.consensus_threshold,
-        "included_clade_count": included_split_count,
-        "clade_frequency_count": len(frequency_report.clade_frequencies),
-    }, [
+    return (
         {
-            "clade": row.clade,
-            "tree_count": row.tree_count,
-            "frequency": row.frequency,
-        }
-        for row in frequency_report.clade_frequencies
-    ], dumps_newick(tree)
+            "tree_count": report.tree_count,
+            "shared_taxa": report.shared_taxa,
+            "shared_taxon_count": len(report.shared_taxa),
+            "tip_count": len(tree.tip_names),
+            "rooted": False,
+            "consensus_method": report.consensus_method,
+            "consensus_threshold": report.consensus_threshold,
+            "included_clade_count": included_split_count,
+            "clade_frequency_count": len(frequency_report.clade_frequencies),
+        },
+        [
+            {
+                "clade": row.clade,
+                "tree_count": row.tree_count,
+                "frequency": row.frequency,
+            }
+            for row in frequency_report.clade_frequencies
+        ],
+        dumps_newick(tree),
+    )
 
 
 def _build_bijux_prop_clades_rows(
@@ -2861,12 +2900,18 @@ def _build_bijux_prop_clades_rows(
             "supporting_tree_count": (
                 "" if row.supporting_tree_count is None else row.supporting_tree_count
             ),
-            "clade_frequency": "" if row.clade_frequency is None else row.clade_frequency,
-            "support_percent": "" if row.support_percent is None else row.support_percent,
+            "clade_frequency": ""
+            if row.clade_frequency is None
+            else row.clade_frequency,
+            "support_percent": ""
+            if row.support_percent is None
+            else row.support_percent,
             "support_status": row.support_status,
             "explanation": row.explanation,
             "reference_branch_length": (
-                "" if row.reference_branch_length is None else row.reference_branch_length
+                ""
+                if row.reference_branch_length is None
+                else row.reference_branch_length
             ),
             "reference_root_depth": (
                 "" if row.reference_root_depth is None else row.reference_root_depth
@@ -2887,7 +2932,9 @@ def _inspect_tree_set_rooted_flags(input_fixture: Path) -> tuple[bool, bool]:
             "ape topology-distance parity fixtures must contain exactly two trees"
         )
     rooted_flags: list[bool] = []
-    with tempfile.TemporaryDirectory(prefix="bijux-topology-distance-rootedness-") as tmpdir:
+    with tempfile.TemporaryDirectory(
+        prefix="bijux-topology-distance-rootedness-"
+    ) as tmpdir:
         temporary_root = Path(tmpdir)
         for index, line in enumerate(lines, start=1):
             temporary_path = temporary_root / f"tree-{index}.nwk"
@@ -3419,6 +3466,18 @@ def _normalize_reference_summary(summary: dict[str, object]) -> dict[str, object
     return normalized
 
 
+def _summary_rooted_flag(summary: dict[str, object]) -> bool:
+    rooted = summary.get("rooted")
+    if isinstance(rooted, bool):
+        return rooted
+    raise ValueError("reference summary must include a boolean rooted flag")
+
+
+def _optional_payload_string(payload: dict[str, object], key: str) -> str | None:
+    value = payload.get(key)
+    return value if isinstance(value, str) else None
+
+
 def _coerce_table_cell(value: str) -> object:
     if value == "":
         return ""
@@ -3453,7 +3512,9 @@ def _load_rows_table(
         rows = list(csv.DictReader(handle, delimiter="\t"))
     normalized_rows = [
         {
-            key: _normalize_expected_label(value, expected_tip_labels=expected_tip_labels)
+            key: _normalize_expected_label(
+                value, expected_tip_labels=expected_tip_labels
+            )
             if key.endswith("label")
             else _normalize_joined_labels(
                 value,
@@ -3580,7 +3641,10 @@ def _persist_failure_bundle(
         execution_root.parent / "bijux-reference-input.nwk",
         artifact_root / "bijux-reference-input.nwk",
     )
-    _copy_if_exists(execution_root / "reference-execution.json", artifact_root / "reference-execution.json")
+    _copy_if_exists(
+        execution_root / "reference-execution.json",
+        artifact_root / "reference-execution.json",
+    )
     if execution_payload is not None:
         outputs = execution_payload.get("outputs")
         if isinstance(outputs, dict):
@@ -3589,9 +3653,13 @@ def _persist_failure_bundle(
                     source = Path(path_string)
                     _copy_if_exists(source, artifact_root / f"reference-{source.name}")
     if execution_payload is not None:
-        _write_json(artifact_root / "reference-execution.observed.json", execution_payload)
+        _write_json(
+            artifact_root / "reference-execution.observed.json", execution_payload
+        )
     if reference_summary is not None:
-        _write_json(artifact_root / "reference-summary.observed.json", reference_summary)
+        _write_json(
+            artifact_root / "reference-summary.observed.json", reference_summary
+        )
     if reference_rows is not None:
         _write_json(artifact_root / "reference-rows.observed.json", reference_rows)
         _write_rows_table(artifact_root / "reference-rows.observed.tsv", reference_rows)
@@ -3661,9 +3729,7 @@ def _build_bijux_case_payload(
         return summary, rows, normalized_text
     if case.operation == "get-tree-mrca":
         if not case.mrca_taxa:
-            raise ValueError(
-                f"ape parity case '{case.case_id}' is missing MRCA taxa"
-            )
+            raise ValueError(f"ape parity case '{case.case_id}' is missing MRCA taxa")
         summary = _build_bijux_mrca_summary(
             case.input_fixture,
             mrca_taxa=case.mrca_taxa,
@@ -3681,7 +3747,9 @@ def _build_bijux_case_payload(
         )
         return summary, None, None
     if case.operation in {"read-tree-set-structure", "write-tree-set-structure"}:
-        summary, rows, normalized_text = _build_bijux_tree_set_structure(case.input_fixture)
+        summary, rows, normalized_text = _build_bijux_tree_set_structure(
+            case.input_fixture
+        )
         return summary, rows, normalized_text
     if case.operation == "tree-consensus":
         if case.consensus_method is None:
@@ -3838,10 +3906,10 @@ def _load_reference_case_payload(
         "keep-tree-taxa",
         "extract-tree-clade",
     }:
-        summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
-        expected_tip_labels = {
-            str(label) for label in summary.get("tip_labels", [])
-        }
+        summary = _normalize_reference_summary(
+            _load_json(execution_root / "summary.json")
+        )
+        expected_tip_labels = {str(label) for label in summary.get("tip_labels", [])}
         rows = _load_rows_table(
             execution_root / "clades.tsv",
             expected_tip_labels=expected_tip_labels,
@@ -3853,10 +3921,14 @@ def _load_reference_case_payload(
         )
         return summary, rows, normalized_text
     if case.operation == "get-tree-mrca":
-        summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
+        summary = _normalize_reference_summary(
+            _load_json(execution_root / "summary.json")
+        )
         return summary, None, None
     if case.operation == "assess-tree-monophyly":
-        summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
+        summary = _normalize_reference_summary(
+            _load_json(execution_root / "summary.json")
+        )
         return summary, None, None
     if case.operation in {"read-tree-set-structure", "write-tree-set-structure"}:
         summary = _load_json(execution_root / "summary.json")
@@ -3876,7 +3948,9 @@ def _load_reference_case_payload(
         rows = _load_rows_table(execution_root / "tip-distance-long.tsv")
         return summary, rows, None
     if case.operation == "distance-matrix-neighbor-joining":
-        summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
+        summary = _normalize_reference_summary(
+            _load_json(execution_root / "summary.json")
+        )
         normalized_text = _canonical_newick(execution_root / "normalized-tree.nwk")
         return summary, None, normalized_text
     if case.operation == "tree-topology-distance":
@@ -3965,12 +4039,12 @@ def _tree_set_structure_mismatch_reason(
     case: ApeParityCase,
     execution_root: Path,
 ) -> str | None:
-    reference_tree_set = load_newick_tree_set(execution_root / "normalized-tree-set.nwk")
+    reference_tree_set = load_newick_tree_set(
+        execution_root / "normalized-tree-set.nwk"
+    )
     expected_tree_set = load_newick_tree_set(case.input_fixture)
     expected_tip_labels = {
-        tip_name
-        for tree in expected_tree_set
-        for tip_name in tree.tip_names
+        tip_name for tree in expected_tree_set for tip_name in tree.tip_names
     }
     for tree in reference_tree_set:
         _normalize_tree_labels(tree.root, expected_tip_labels=expected_tip_labels)
@@ -4032,10 +4106,14 @@ def _drop_tip_tree_mismatch_reason(
     case: ApeParityCase,
     execution_root: Path,
 ) -> str | None:
-    reference_summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
+    reference_summary = _normalize_reference_summary(
+        _load_json(execution_root / "summary.json")
+    )
     reference_tree = load_tree(execution_root / "normalized-tree.nwk")
-    reference_tree.rooted = reference_summary.get("rooted")  # type: ignore[assignment]
-    expected_tree, _report = drop_tree_taxa(case.input_fixture, list(case.excluded_taxa))
+    reference_tree.rooted = _summary_rooted_flag(reference_summary)
+    expected_tree, _report = drop_tree_taxa(
+        case.input_fixture, list(case.excluded_taxa)
+    )
     _normalize_tree_labels(
         reference_tree.root,
         expected_tip_labels=set(expected_tree.tip_names),
@@ -4053,9 +4131,11 @@ def _keep_tip_tree_mismatch_reason(
     case: ApeParityCase,
     execution_root: Path,
 ) -> str | None:
-    reference_summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
+    reference_summary = _normalize_reference_summary(
+        _load_json(execution_root / "summary.json")
+    )
     reference_tree = load_tree(execution_root / "normalized-tree.nwk")
-    reference_tree.rooted = reference_summary.get("rooted")  # type: ignore[assignment]
+    reference_tree.rooted = _summary_rooted_flag(reference_summary)
     expected_tree, _report = prune_tree_to_requested_taxa(
         case.input_fixture,
         list(case.requested_taxa),
@@ -4077,11 +4157,15 @@ def _extract_clade_tree_mismatch_reason(
     case: ApeParityCase,
     execution_root: Path,
 ) -> str | None:
-    reference_summary = _normalize_reference_summary(_load_json(execution_root / "summary.json"))
+    reference_summary = _normalize_reference_summary(
+        _load_json(execution_root / "summary.json")
+    )
     reference_tree = load_tree(execution_root / "normalized-tree.nwk")
-    reference_tree.rooted = reference_summary.get("rooted")  # type: ignore[assignment]
+    reference_tree.rooted = _summary_rooted_flag(reference_summary)
     if case.node_id is None:
-        raise ValueError(f"ape parity case '{case.case_id}' is missing an extraction node id")
+        raise ValueError(
+            f"ape parity case '{case.case_id}' is missing an extraction node id"
+        )
     expected_tree, _report = extract_tree_clade_by_node_id(
         case.input_fixture,
         node_id=case.node_id,
@@ -4153,17 +4237,27 @@ def _neighbor_joining_tree_mismatch_reason(
     return report.mismatch_reason
 
 
-def _summary_rows(observations: list[ApeParityObservation]) -> list[ApeParitySummaryRow]:
+def _summary_rows(
+    observations: list[ApeParityObservation],
+) -> list[ApeParitySummaryRow]:
     rows: list[ApeParitySummaryRow] = []
     for function_name in sorted({item.function_name for item in observations}):
-        selected = [item for item in observations if item.function_name == function_name]
+        selected = [
+            item for item in observations if item.function_name == function_name
+        ]
         rows.append(
             ApeParitySummaryRow(
                 function_name=function_name,
                 case_count=len(selected),
-                passed_case_count=sum(1 for item in selected if item.status == "passed"),
-                failed_case_count=sum(1 for item in selected if item.status == "failed"),
-                skipped_case_count=sum(1 for item in selected if item.status == "skipped"),
+                passed_case_count=sum(
+                    1 for item in selected if item.status == "passed"
+                ),
+                failed_case_count=sum(
+                    1 for item in selected if item.status == "failed"
+                ),
+                skipped_case_count=sum(
+                    1 for item in selected if item.status == "skipped"
+                ),
             )
         )
     return rows
@@ -4183,7 +4277,9 @@ def run_ape_parity_cases(
     bijux_version = _bijux_version()
     bijux_commit = _bijux_commit()
     for case in selected:
-        with tempfile.TemporaryDirectory(prefix=f"bijux-ape-parity-{case.case_id}-") as tmpdir:
+        with tempfile.TemporaryDirectory(
+            prefix=f"bijux-ape-parity-{case.case_id}-"
+        ) as tmpdir:
             working_root = Path(tmpdir)
             reference_input_path = _materialize_reference_input(case, working_root)
             reference_case = replace(case, input_fixture=reference_input_path)
@@ -4218,7 +4314,8 @@ def run_ape_parity_cases(
             process_stdout = ""
             process_stderr = ""
             try:
-                process = subprocess.run(
+                # Repository-owned R parity runner.
+                process = subprocess.run(  # nosec
                     [
                         rscript_executable,
                         str(_ape_runner_path()),
@@ -4247,8 +4344,10 @@ def run_ape_parity_cases(
                     mismatch_reason = "reference_execution_failed"
                 else:
                     execution_payload = _load_json(execution_path)
-                    r_version = execution_payload.get("r_version")  # type: ignore[assignment]
-                    ape_version = execution_payload.get("ape_version")  # type: ignore[assignment]
+                    r_version = _optional_payload_string(execution_payload, "r_version")
+                    ape_version = _optional_payload_string(
+                        execution_payload, "ape_version"
+                    )
                     execution_status = execution_payload.get("status")
                     if execution_status == "unavailable":
                         status = "skipped"
@@ -4280,7 +4379,10 @@ def run_ape_parity_cases(
                             reference_rows,
                             reference_normalized_text,
                         ) = _load_reference_case_payload(case, execution_root)
-                        if case.operation in {"read-tree-structure", "write-tree-structure"}:
+                        if case.operation in {
+                            "read-tree-structure",
+                            "write-tree-structure",
+                        }:
                             mismatch_reason = _tree_structure_mismatch_reason(
                                 case,
                                 execution_root,
@@ -4448,7 +4550,9 @@ def run_ape_parity_cases(
                     mismatch_reason = "bijux_expected_parse_error_missing"
                 elif reference_error is None:
                     mismatch_reason = "reference_expected_parse_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get("message"):
+                elif not bijux_error.get("message") or not reference_error.get(
+                    "message"
+                ):
                     mismatch_reason = "parse_error_message_missing"
                 else:
                     status = "passed"
@@ -4458,7 +4562,9 @@ def run_ape_parity_cases(
                     mismatch_reason = "bijux_expected_rooting_error_missing"
                 elif reference_error is None:
                     mismatch_reason = "reference_expected_rooting_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get("message"):
+                elif not bijux_error.get("message") or not reference_error.get(
+                    "message"
+                ):
                     mismatch_reason = "rooting_error_message_missing"
                 else:
                     status = "passed"
@@ -4467,8 +4573,12 @@ def run_ape_parity_cases(
                 if bijux_error is None:
                     mismatch_reason = "bijux_expected_clade_extraction_error_missing"
                 elif reference_error is None:
-                    mismatch_reason = "reference_expected_clade_extraction_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get("message"):
+                    mismatch_reason = (
+                        "reference_expected_clade_extraction_error_missing"
+                    )
+                elif not bijux_error.get("message") or not reference_error.get(
+                    "message"
+                ):
                     mismatch_reason = "clade_extraction_error_message_missing"
                 else:
                     status = "passed"
@@ -4478,7 +4588,9 @@ def run_ape_parity_cases(
                     mismatch_reason = "bijux_expected_mrca_error_missing"
                 elif reference_error is None:
                     mismatch_reason = "reference_expected_mrca_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get("message"):
+                elif not bijux_error.get("message") or not reference_error.get(
+                    "message"
+                ):
                     mismatch_reason = "mrca_error_message_missing"
                 else:
                     status = "passed"
@@ -4488,7 +4600,9 @@ def run_ape_parity_cases(
                     mismatch_reason = "bijux_expected_monophyly_error_missing"
                 elif reference_error is None:
                     mismatch_reason = "reference_expected_monophyly_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get("message"):
+                elif not bijux_error.get("message") or not reference_error.get(
+                    "message"
+                ):
                     mismatch_reason = "monophyly_error_message_missing"
                 else:
                     status = "passed"
@@ -4498,7 +4612,9 @@ def run_ape_parity_cases(
                     mismatch_reason = "bijux_expected_consensus_error_missing"
                 elif reference_error is None:
                     mismatch_reason = "reference_expected_consensus_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get("message"):
+                elif not bijux_error.get("message") or not reference_error.get(
+                    "message"
+                ):
                     mismatch_reason = "consensus_error_message_missing"
                 else:
                     status = "passed"
@@ -4508,7 +4624,9 @@ def run_ape_parity_cases(
                     mismatch_reason = "bijux_expected_prop_clades_error_missing"
                 elif reference_error is None:
                     mismatch_reason = "reference_expected_prop_clades_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get("message"):
+                elif not bijux_error.get("message") or not reference_error.get(
+                    "message"
+                ):
                     mismatch_reason = "prop_clades_error_message_missing"
                 else:
                     status = "passed"
@@ -4518,7 +4636,9 @@ def run_ape_parity_cases(
                     mismatch_reason = "bijux_expected_dna_distance_error_missing"
                 elif reference_error is None:
                     mismatch_reason = "reference_expected_dna_distance_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get("message"):
+                elif not bijux_error.get("message") or not reference_error.get(
+                    "message"
+                ):
                     mismatch_reason = "dna_distance_error_message_missing"
                 else:
                     status = "passed"
