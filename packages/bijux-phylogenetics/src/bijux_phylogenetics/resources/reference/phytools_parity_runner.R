@@ -79,6 +79,7 @@ execution_path <- file.path(output_root, "reference-execution.json")
 summary_path <- file.path(output_root, "reference-summary.json")
 summary_table_path <- file.path(output_root, "reference-summary.tsv")
 fitmk_rows_path <- file.path(output_root, "fitmk-rate-matrix.tsv")
+rerooting_rows_path <- file.path(output_root, "rerooting-method-node-probabilities.tsv")
 fast_anc_rows_path <- file.path(output_root, "fast-anc-node-estimates.tsv")
 anc_ml_rows_path <- file.path(output_root, "anc-ml-node-estimates.tsv")
 case_payload <- jsonlite::fromJSON(case_path)
@@ -113,7 +114,10 @@ trait_table <- utils::read.table(
   check.names = FALSE
 )
 taxon_names <- trait_table[[taxon_column]]
-is_discrete_operation <- identical(case_payload$operation, "discrete-fit-mk")
+is_discrete_operation <- case_payload$operation %in% c(
+  "discrete-fit-mk",
+  "discrete-ancestral-rerooting"
+)
 if (is_discrete_operation) {
   raw_trait_values <- trait_table[[trait_name]]
   trait_values <- stats::setNames(
@@ -289,6 +293,50 @@ build_fitmk_result <- function(tree, trait_values, trait_name, excluded_taxa, di
   )
 }
 
+build_rerooting_method_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
+  phytools_model <- switch(
+    discrete_model,
+    "equal-rates" = "ER",
+    "symmetric" = "SYM",
+    stop(paste("unsupported rerootingMethod parity model:", discrete_model))
+  )
+  fit <- phytools::rerootingMethod(
+    tree,
+    trait_values,
+    model = phytools_model
+  )
+  node_rows <- list()
+  marginal <- fit$marginal.anc
+  for (row_index in seq_len(nrow(marginal))) {
+    node <- as.integer(rownames(marginal)[[row_index]])
+    for (state in colnames(marginal)) {
+      node_rows[[length(node_rows) + 1]] <- list(
+        node = node_signature(tree, node),
+        state = state,
+        probability = unname(as.numeric(marginal[row_index, state]))
+      )
+    }
+  }
+  node_rows <- node_rows[order(
+    vapply(node_rows, function(row) row$node, character(1)),
+    vapply(node_rows, function(row) row$state, character(1))
+  )]
+  list(
+    summary = list(
+      taxon_count = length(trait_values),
+      trait_name = trait_name,
+      excluded_taxon_count = length(excluded_taxa),
+      excluded_taxa = unname(as.list(excluded_taxa)),
+      model = discrete_model,
+      state_count = length(unique(unname(trait_values))),
+      internal_node_count = nrow(marginal),
+      root_prior_mode = "equal",
+      phytools_rerooting_method_comparable = TRUE
+    ),
+    rows = node_rows
+  )
+}
+
 build_fast_anc_result <- function(tree, trait_values, trait_name, excluded_taxa) {
   fit <- phytools::fastAnc(
     tree,
@@ -387,6 +435,13 @@ result_payload <- switch(
     excluded_taxa,
     case_payload$discrete_model
   ),
+  "discrete-ancestral-rerooting" = build_rerooting_method_result(
+    tree,
+    trait_values,
+    trait_name,
+    excluded_taxa,
+    case_payload$discrete_model
+  ),
   "continuous-ancestral-fast-anc" = build_fast_anc_result(
     tree,
     trait_values,
@@ -421,6 +476,8 @@ write_table(
 if (!is.null(result_payload$rows)) {
   if (identical(case_payload$operation, "discrete-fit-mk")) {
     write_table(fitmk_rows_path, result_payload$rows)
+  } else if (identical(case_payload$operation, "discrete-ancestral-rerooting")) {
+    write_table(rerooting_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "continuous-ancestral-fast-anc")) {
     write_table(fast_anc_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "continuous-ancestral-anc-ml")) {

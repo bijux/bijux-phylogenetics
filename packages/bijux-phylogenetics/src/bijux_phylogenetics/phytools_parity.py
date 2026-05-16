@@ -13,6 +13,9 @@ import tempfile
 from bijux_phylogenetics.ancestral.continuous import (
     reconstruct_continuous_ancestral_states,
 )
+from bijux_phylogenetics.ancestral.discrete import (
+    reconstruct_discrete_ancestral_states,
+)
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
@@ -38,6 +41,7 @@ class PhytoolsParityCase:
     trait_name: str
     taxon_column: str | None = None
     discrete_model: str | None = None
+    root_prior_mode: str = "equal"
     permutation_count: int | None = None
     permutation_seed: int | None = None
     field_tolerances: dict[str, float] | None = None
@@ -448,6 +452,86 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
             compare_rows=False,
         ),
         PhytoolsParityCase(
+            case_id="rerooting-er-binary-twenty-four-taxa",
+            fixture_id=binary_discrete_fixture.fixture_id,
+            function_name="phytools::rerootingMethod",
+            python_function_name="reconstruct_discrete_ancestral_states",
+            operation="discrete-ancestral-rerooting",
+            input_fixtures=(
+                binary_discrete_fixture.tree_path,
+                binary_discrete_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=binary_discrete_fixture.trait_name,
+            taxon_column=binary_discrete_fixture.taxon_column,
+            discrete_model="equal-rates",
+            row_field_tolerances={"probability": 1e-5},
+        ),
+        PhytoolsParityCase(
+            case_id="rerooting-er-multistate-twenty-four-taxa",
+            fixture_id=multistate_discrete_fixture.fixture_id,
+            function_name="phytools::rerootingMethod",
+            python_function_name="reconstruct_discrete_ancestral_states",
+            operation="discrete-ancestral-rerooting",
+            input_fixtures=(
+                multistate_discrete_fixture.tree_path,
+                multistate_discrete_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=multistate_discrete_fixture.trait_name,
+            taxon_column=multistate_discrete_fixture.taxon_column,
+            discrete_model="equal-rates",
+            row_field_tolerances={"probability": 1e-5},
+        ),
+        PhytoolsParityCase(
+            case_id="rerooting-er-binary-missing-twenty-four-taxa",
+            fixture_id=binary_discrete_missing_fixture.fixture_id,
+            function_name="phytools::rerootingMethod",
+            python_function_name="reconstruct_discrete_ancestral_states",
+            operation="discrete-ancestral-rerooting",
+            input_fixtures=(
+                binary_discrete_missing_fixture.tree_path,
+                binary_discrete_missing_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=binary_discrete_missing_fixture.trait_name,
+            taxon_column=binary_discrete_missing_fixture.taxon_column,
+            discrete_model="equal-rates",
+            row_field_tolerances={"probability": 1e-5},
+        ),
+        PhytoolsParityCase(
+            case_id="rerooting-sym-multistate-twenty-four-taxa",
+            fixture_id=multistate_discrete_fixture.fixture_id,
+            function_name="phytools::rerootingMethod",
+            python_function_name="reconstruct_discrete_ancestral_states",
+            operation="discrete-ancestral-rerooting",
+            input_fixtures=(
+                multistate_discrete_fixture.tree_path,
+                multistate_discrete_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=multistate_discrete_fixture.trait_name,
+            taxon_column=multistate_discrete_fixture.taxon_column,
+            discrete_model="symmetric",
+            row_field_tolerances={"probability": 5e-5},
+        ),
+        PhytoolsParityCase(
+            case_id="rerooting-sym-multistate-missing-twenty-four-taxa",
+            fixture_id=multistate_discrete_missing_fixture.fixture_id,
+            function_name="phytools::rerootingMethod",
+            python_function_name="reconstruct_discrete_ancestral_states",
+            operation="discrete-ancestral-rerooting",
+            input_fixtures=(
+                multistate_discrete_missing_fixture.tree_path,
+                multistate_discrete_missing_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=multistate_discrete_missing_fixture.trait_name,
+            taxon_column=multistate_discrete_missing_fixture.taxon_column,
+            discrete_model="symmetric",
+            row_field_tolerances={"probability": 5e-5},
+        ),
+        PhytoolsParityCase(
             case_id="fast-anc-strong-signal-twenty-four-taxa",
             fixture_id=strong_signal_fixture.fixture_id,
             function_name="phytools::fastAnc",
@@ -635,6 +719,7 @@ def _write_case_file(path: Path, case: PhytoolsParityCase) -> Path:
         "trait_name": case.trait_name,
         "taxon_column": case.taxon_column,
         "discrete_model": case.discrete_model,
+        "root_prior_mode": case.root_prior_mode,
         "tolerance": case.tolerance,
         "permutation_count": case.permutation_count,
         "permutation_seed": case.permutation_seed,
@@ -756,6 +841,46 @@ def _build_bijux_case_payload(
             },
             rows,
         )
+    if case.operation == "discrete-ancestral-rerooting":
+        report = reconstruct_discrete_ancestral_states(
+            tree_path,
+            traits_path,
+            trait=case.trait_name,
+            taxon_column=case.taxon_column,
+            model=case.discrete_model or "equal-rates",
+            root_prior_mode=case.root_prior_mode,
+        )
+        rows = sorted(
+            [
+                {
+                    "node": estimate.node,
+                    "state": state,
+                    "probability": probability,
+                }
+                for estimate in report.estimates
+                if not estimate.is_tip
+                for state, probability in estimate.state_probabilities.items()
+            ],
+            key=lambda row: (str(row["node"]), str(row["state"])),
+        )
+        return (
+            {
+                "taxon_count": report.taxon_count,
+                "trait_name": report.trait,
+                "excluded_taxon_count": len(report.dropped_missing_taxa),
+                "excluded_taxa": list(report.dropped_missing_taxa),
+                "model": report.model,
+                "state_count": len(report.observed_states),
+                "internal_node_count": sum(
+                    1 for estimate in report.estimates if not estimate.is_tip
+                ),
+                "root_prior_mode": report.root_prior_mode,
+                "phytools_rerooting_method_comparable": (
+                    report.rerooting_method_compatibility.comparable
+                ),
+            },
+            rows,
+        )
     if case.operation == "continuous-ancestral-fast-anc":
         report = reconstruct_continuous_ancestral_states(
             tree_path,
@@ -872,6 +997,7 @@ def _load_rows_table(path: Path) -> list[dict[str, object]]:
         "source_state",
         "target_state",
         "node",
+        "state",
     }
     boolean_fields = {
         "transition_allowed",
@@ -972,6 +1098,18 @@ def _mismatch_reason(
             "baseline_model",
             "preferred_model_by_aic",
         )
+    elif case.operation == "discrete-ancestral-rerooting":
+        compare_keys = (
+            "taxon_count",
+            "trait_name",
+            "excluded_taxon_count",
+            "excluded_taxa",
+            "model",
+            "state_count",
+            "internal_node_count",
+            "root_prior_mode",
+            "phytools_rerooting_method_comparable",
+        )
     elif case.operation == "continuous-ancestral-fast-anc":
         compare_keys = (
             "taxon_count",
@@ -1016,6 +1154,7 @@ def _row_mismatch_reason(
         return None
     if case.operation not in {
         "discrete-fit-mk",
+        "discrete-ancestral-rerooting",
         "continuous-ancestral-fast-anc",
         "continuous-ancestral-anc-ml",
     }:
@@ -1037,6 +1176,21 @@ def _row_mismatch_reason(
                 str(row.get("target_state", "")),
             ),
         )
+    elif case.operation == "discrete-ancestral-rerooting":
+        reference_rows = sorted(
+            reference_rows,
+            key=lambda row: (
+                str(row.get("node", "")),
+                str(row.get("state", "")),
+            ),
+        )
+        bijux_rows = sorted(
+            bijux_rows,
+            key=lambda row: (
+                str(row.get("node", "")),
+                str(row.get("state", "")),
+            ),
+        )
     else:
         reference_rows = sorted(reference_rows, key=lambda row: str(row.get("node", "")))
         bijux_rows = sorted(bijux_rows, key=lambda row: str(row.get("node", "")))
@@ -1049,6 +1203,12 @@ def _row_mismatch_reason(
             "transition_allowed",
             "step_distance",
             "rate",
+        )
+    elif case.operation == "discrete-ancestral-rerooting":
+        compare_keys = (
+            "node",
+            "state",
+            "probability",
         )
     else:
         compare_keys = (
@@ -1287,6 +1447,7 @@ def run_phytools_parity_cases(
                         )
                         if mismatch_reason is None and case.compare_rows and case.operation in {
                             "discrete-fit-mk",
+                            "discrete-ancestral-rerooting",
                             "continuous-ancestral-fast-anc",
                             "continuous-ancestral-anc-ml",
                         }:
@@ -1294,9 +1455,14 @@ def run_phytools_parity_cases(
                                 "fitmk-rate-matrix.tsv"
                                 if case.operation == "discrete-fit-mk"
                                 else (
-                                    "fast-anc-node-estimates.tsv"
-                                    if case.operation == "continuous-ancestral-fast-anc"
-                                    else "anc-ml-node-estimates.tsv"
+                                    "rerooting-method-node-probabilities.tsv"
+                                    if case.operation == "discrete-ancestral-rerooting"
+                                    else (
+                                        "fast-anc-node-estimates.tsv"
+                                        if case.operation
+                                        == "continuous-ancestral-fast-anc"
+                                        else "anc-ml-node-estimates.tsv"
+                                    )
                                 )
                             )
                             if not rows_path.exists():
