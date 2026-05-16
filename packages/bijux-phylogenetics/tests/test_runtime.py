@@ -911,6 +911,7 @@ from bijux_phylogenetics.simulation import (
     SimulatedDiscreteStateSegment,
     SimulatedDiscreteTransitionEvent,
     simulate_birth_death_trees,
+    simulate_brownian_trait_collection,
     simulate_brownian_traits,
     simulate_coalescent_tree,
     simulate_coalescent_trees,
@@ -2155,6 +2156,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.simulate_coalescent_trees is simulate_coalescent_trees
     assert bijux_phylogenetics.simulate_coalescent_tree is simulate_coalescent_tree
     assert bijux_phylogenetics.simulate_random_trees is simulate_random_trees
+    assert (
+        bijux_phylogenetics.simulate_brownian_trait_collection
+        is simulate_brownian_trait_collection
+    )
     assert bijux_phylogenetics.simulate_brownian_traits is simulate_brownian_traits
     assert bijux_phylogenetics.simulate_early_burst_traits is simulate_early_burst_traits
     assert bijux_phylogenetics.simulate_ou_traits is simulate_ou_traits
