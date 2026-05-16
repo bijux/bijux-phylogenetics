@@ -5,32 +5,25 @@ import hashlib
 import json
 import math
 from pathlib import Path
-import random
 import shutil
 from statistics import median
 import tempfile
 
-from Bio.Phylo.TreeConstruction import DistanceMatrix, DistanceTreeConstructor
+from Bio.Phylo.TreeConstruction import DistanceMatrix
 
 from bijux_phylogenetics.compare.topology import (
     BranchLengthComparisonReport,
     TreeComparisonReport,
-    compare_branch_lengths,
-    compare_tree_paths,
 )
 from bijux_phylogenetics.core.alignment import AlignmentRecord, DnaBinAlignment
 from bijux_phylogenetics.core.clade_sets import (
     informative_rooted_clades,
-    informative_unrooted_splits,
-    robinson_foulds_metrics,
 )
-from bijux_phylogenetics.core.neighbor_joining import build_neighbor_joining_tree
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import (
     InvalidAlignmentError,
     UnsupportedDistanceTreeMethodError,
 )
-from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.fasta import (
     infer_alignment_alphabet,
     load_dna_bin_alignment,
@@ -1616,6 +1609,124 @@ def build_tree_from_imported_distance_matrix(
     return build_imported_tree_impl(path, method=method)
 
 
+def build_distance_tree(
+    path: Path,
+    *,
+    method: str,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+) -> tuple[PhyloTree, DistanceTreeBuildReport]:
+    from .tree_inference import build_distance_tree as build_tree_impl
+
+    return build_tree_impl(
+        path,
+        method=method,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+
+
+def build_distance_tree_from_genetic_distance_matrix(
+    report: GeneticDistanceMatrix,
+    *,
+    method: str,
+) -> tuple[PhyloTree, DistanceTreeBuildReport]:
+    from .tree_inference import (
+        build_distance_tree_from_genetic_distance_matrix as build_from_matrix_impl,
+    )
+
+    return build_from_matrix_impl(report, method=method)
+
+
+def compare_distance_tree_topologies(
+    path: Path,
+    *,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+) -> DistanceTreeTopologyComparison:
+    from .tree_inference import compare_distance_tree_topologies as compare_trees_impl
+
+    return compare_trees_impl(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+
+
+def bootstrap_distance_trees(
+    path: Path,
+    *,
+    method: str,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+    replicates: int = 100,
+    seed: int = 1,
+) -> tuple[list[PhyloTree], DistanceBootstrapReport]:
+    from .tree_inference import bootstrap_distance_trees as bootstrap_impl
+
+    return bootstrap_impl(
+        path,
+        method=method,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+        replicates=replicates,
+        seed=seed,
+    )
+
+
+def write_distance_bootstrap_support(
+    path: Path, report: DistanceBootstrapReport
+) -> Path:
+    from .tree_inference import (
+        write_distance_bootstrap_support as write_support_impl,
+    )
+
+    return write_support_impl(path, report)
+
+
+def summarize_distance_bootstrap_support(
+    report: DistanceBootstrapReport,
+    *,
+    weak_frequency_threshold: float = 0.5,
+) -> DistanceBootstrapSupportSummary:
+    from .tree_inference import (
+        summarize_distance_bootstrap_support as summarize_support_impl,
+    )
+
+    return summarize_support_impl(
+        report, weak_frequency_threshold=weak_frequency_threshold
+    )
+
+
+def compare_distance_tree_to_reference_tree(
+    path: Path,
+    reference_tree_path: Path,
+    *,
+    method: str,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+) -> DistanceTreeReferenceComparisonReport:
+    from .tree_inference import (
+        compare_distance_tree_to_reference_tree as compare_reference_impl,
+    )
+
+    return compare_reference_impl(
+        path,
+        reference_tree_path,
+        method=method,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+
+
 
 def compute_pairwise_genetic_distance_matrix(
     path: Path,
@@ -2152,334 +2263,6 @@ def write_genetic_distance_parameter_table(
             lines.append(f"{parameter}\t{rendered}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
-
-
-def build_distance_tree(
-    path: Path,
-    *,
-    method: str,
-    model: DistanceModel = "p-distance",
-    gap_handling: GapHandlingMode = "pairwise-deletion",
-    ambiguity_policy: AmbiguityPolicy = "ignore",
-) -> tuple[PhyloTree, DistanceTreeBuildReport]:
-    """Build a distance-based tree from an aligned dataset."""
-    method_policy = _require_supported_distance_tree_method(method)
-    quality = inspect_distance_matrix_quality(
-        path,
-        model=model,
-        gap_handling=gap_handling,
-        ambiguity_policy=ambiguity_policy,
-    )
-    if quality.method_assessment.decision == "blocked":
-        raise InvalidAlignmentError(
-            "distance tree building is blocked: "
-            + "; ".join(quality.method_assessment.reasons)
-        )
-    report = compute_pairwise_genetic_distance_matrix(
-        path,
-        model=model,
-        gap_handling=gap_handling,
-        ambiguity_policy=ambiguity_policy,
-    )
-    return _build_distance_tree_from_genetic_distance_matrix(
-        report,
-        method_policy=method_policy,
-        assumptions=quality.assumptions,
-    )
-
-
-def _build_distance_tree_from_genetic_distance_matrix(
-    report: GeneticDistanceMatrix,
-    *,
-    method_policy: DistanceTreeMethodPolicy,
-    assumptions: DistanceMethodAssumptionReport,
-) -> tuple[PhyloTree, DistanceTreeBuildReport]:
-    if len(report.identifiers) < 2:
-        raise InvalidAlignmentError("distance tree building requires at least two taxa")
-    if method_policy.method == "neighbor-joining":
-        tree = build_neighbor_joining_tree(
-            report.identifiers,
-            _distance_lookup(report),
-        )
-    elif method_policy.method == "upgma":
-        constructor = DistanceTreeConstructor()
-        distance_matrix = _bio_distance_matrix(report)
-        tree = constructor.upgma(distance_matrix)
-    return (
-        tree
-        if method_policy.method == "neighbor-joining"
-        else tree_from_biophylo(tree, source_format="newick")
-    ), DistanceTreeBuildReport(
-        alignment_path=report.path,
-        model=report.model,
-        gap_handling=report.gap_handling,
-        ambiguity_policy=report.ambiguity_policy,
-        method=method_policy.method,
-        method_policy=method_policy,
-        taxon_count=len(report.identifiers),
-        pair_count=len(report.pairs),
-        assumptions=assumptions,
-    )
-
-
-def build_distance_tree_from_genetic_distance_matrix(
-    report: GeneticDistanceMatrix,
-    *,
-    method: str,
-) -> tuple[PhyloTree, DistanceTreeBuildReport]:
-    """Build a distance tree directly from one in-memory genetic distance matrix."""
-    method_policy = _require_supported_distance_tree_method(method)
-    assumptions = assess_distance_method_assumptions_from_genetic_distance_matrix(
-        report
-    )
-    return _build_distance_tree_from_genetic_distance_matrix(
-        report,
-        method_policy=method_policy,
-        assumptions=assumptions,
-    )
-
-
-def compare_distance_tree_topologies(
-    path: Path,
-    *,
-    model: DistanceModel = "p-distance",
-    gap_handling: GapHandlingMode = "pairwise-deletion",
-    ambiguity_policy: AmbiguityPolicy = "ignore",
-) -> DistanceTreeTopologyComparison:
-    """Compare NJ and UPGMA topologies built from the same alignment."""
-    nj_tree, _ = build_distance_tree(
-        path,
-        method="neighbor-joining",
-        model=model,
-        gap_handling=gap_handling,
-        ambiguity_policy=ambiguity_policy,
-    )
-    upgma_tree, _ = build_distance_tree(
-        path,
-        method="upgma",
-        model=model,
-        gap_handling=gap_handling,
-        ambiguity_policy=ambiguity_policy,
-    )
-    shared_taxa = set(nj_tree.tip_names) & set(upgma_tree.tip_names)
-    rooted_metrics = robinson_foulds_metrics(
-        nj_tree,
-        upgma_tree,
-        shared_taxa,
-        rf_mode="rooted",
-    )
-    topology_equal = rooted_metrics.distance == 0
-    same_unrooted_topology = informative_unrooted_splits(
-        nj_tree,
-        shared_taxa,
-    ) == informative_unrooted_splits(
-        upgma_tree,
-        shared_taxa,
-    )
-    return DistanceTreeTopologyComparison(
-        alignment_path=path,
-        model=model,
-        gap_handling=gap_handling,
-        ambiguity_policy=ambiguity_policy,
-        shared_taxa=sorted(shared_taxa),
-        nj_informative_clades=rooted_metrics.left_count,
-        upgma_informative_clades=rooted_metrics.right_count,
-        robinson_foulds_distance=rooted_metrics.distance,
-        normalized_robinson_foulds=rooted_metrics.normalized_distance,
-        topology_equal=topology_equal,
-        same_unrooted_topology=same_unrooted_topology,
-        same_taxa_different_rooting=topology_equal is False and same_unrooted_topology,
-    )
-
-
-def _resampled_records(
-    records: list[AlignmentRecord], *, rng: random.Random
-) -> list[AlignmentRecord]:
-    positions = [
-        rng.randrange(len(records[0].sequence)) for _ in range(len(records[0].sequence))
-    ]
-    return [
-        AlignmentRecord(
-            identifier=record.identifier,
-            sequence="".join(record.sequence[position] for position in positions),
-        )
-        for record in records
-    ]
-
-
-def _write_bootstrap_alignment(path: Path, records: list[AlignmentRecord]) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    lines: list[str] = []
-    for record in records:
-        lines.append(f">{record.identifier}")
-        lines.append(record.sequence)
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return path
-
-
-def bootstrap_distance_trees(
-    path: Path,
-    *,
-    method: str,
-    model: DistanceModel = "p-distance",
-    gap_handling: GapHandlingMode = "pairwise-deletion",
-    ambiguity_policy: AmbiguityPolicy = "ignore",
-    replicates: int = 100,
-    seed: int = 1,
-) -> tuple[list[PhyloTree], DistanceBootstrapReport]:
-    """Bootstrap a distance tree by resampling alignment sites with replacement."""
-    method_policy = _require_supported_distance_tree_method(method)
-    if replicates < 1:
-        raise ValueError(f"replicates must be at least 1, got {replicates}")
-    quality = inspect_distance_matrix_quality(
-        path,
-        model=model,
-        gap_handling=gap_handling,
-        ambiguity_policy=ambiguity_policy,
-    )
-    if quality.method_assessment.decision == "blocked":
-        raise InvalidAlignmentError(
-            "distance bootstrap is blocked: "
-            + "; ".join(quality.method_assessment.reasons)
-        )
-    records, _ = _load_alignment_for_model(path, model=model)
-    # Deterministic scientific resampling is required for reproducible bootstrap review.
-    rng = random.Random(seed)  # nosec B311
-    temp_dir = Path(tempfile.mkdtemp(prefix="bijux-distance-bootstrap-"))
-    trees: list[PhyloTree] = []
-    for index in range(replicates):
-        replicate_records = _resampled_records(records, rng=rng)
-        replicate_path = temp_dir / f"replicate-{index + 1}.fasta"
-        _write_bootstrap_alignment(replicate_path, replicate_records)
-        tree, _ = build_distance_tree(
-            replicate_path,
-            method=method_policy.method,
-            model=model,
-            gap_handling=gap_handling,
-            ambiguity_policy=ambiguity_policy,
-        )
-        trees.append(tree)
-    tree_set_path = temp_dir / "bootstrap.trees"
-    from bijux_phylogenetics.simulation import write_tree_set
-
-    write_tree_set(tree_set_path, trees)
-    consensus_tree, consensus = compute_consensus_tree(tree_set_path)
-    support = compute_clade_frequency_table(tree_set_path)
-    return trees, DistanceBootstrapReport(
-        alignment_path=path,
-        model=model,
-        gap_handling=gap_handling,
-        ambiguity_policy=ambiguity_policy,
-        method=method_policy.method,
-        replicates=replicates,
-        seed=seed,
-        tree_count=len(trees),
-        consensus_newick=dumps_newick(consensus_tree),
-        support=[
-            DistanceBootstrapSupportRow(
-                clade=row.clade,
-                tree_count=row.tree_count,
-                frequency=row.frequency,
-            )
-            for row in support.clade_frequencies
-        ],
-    )
-
-
-def write_distance_bootstrap_support(
-    path: Path, report: DistanceBootstrapReport
-) -> Path:
-    """Write bootstrap clade support as TSV."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    lines = ["clade\ttree_count\tfrequency"]
-    lines.extend(
-        f"{row.clade}\t{row.tree_count}\t{format(row.frequency, '.15g')}"
-        for row in report.support
-    )
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return path
-
-
-def summarize_distance_bootstrap_support(
-    report: DistanceBootstrapReport,
-    *,
-    weak_frequency_threshold: float = 0.5,
-) -> DistanceBootstrapSupportSummary:
-    """Summarize bootstrap clade frequencies for reviewer-facing reporting."""
-    frequencies = sorted(row.frequency for row in report.support)
-    weak_clade_count = sum(
-        1 for row in report.support if row.frequency < weak_frequency_threshold
-    )
-    warnings: list[str] = []
-    if weak_clade_count:
-        warnings.append(
-            "one or more consensus clades remain weakly supported across bootstrap replicates"
-        )
-    if not frequencies:
-        warnings.append(
-            "bootstrap replicates did not yield any informative internal clades"
-        )
-    return DistanceBootstrapSupportSummary(
-        alignment_path=report.alignment_path,
-        method=report.method,
-        model=report.model,
-        gap_handling=report.gap_handling,
-        ambiguity_policy=report.ambiguity_policy,
-        replicates=report.replicates,
-        clade_count=len(report.support),
-        minimum_frequency=None if not frequencies else min(frequencies),
-        maximum_frequency=None if not frequencies else max(frequencies),
-        median_frequency=None if not frequencies else median(frequencies),
-        weak_clade_count=weak_clade_count,
-        warnings=warnings,
-    )
-
-
-def compare_distance_tree_to_reference_tree(
-    path: Path,
-    reference_tree_path: Path,
-    *,
-    method: str,
-    model: DistanceModel = "p-distance",
-    gap_handling: GapHandlingMode = "pairwise-deletion",
-    ambiguity_policy: AmbiguityPolicy = "ignore",
-) -> DistanceTreeReferenceComparisonReport:
-    """Compare one built distance tree to an external ML or reviewer-supplied reference tree."""
-    tree, _ = build_distance_tree(
-        path,
-        method=method,
-        model=model,
-        gap_handling=gap_handling,
-        ambiguity_policy=ambiguity_policy,
-    )
-    temp_dir = Path(tempfile.mkdtemp(prefix="bijux-distance-reference-"))
-    built_tree_path = write_newick(temp_dir / "distance-tree.nwk", tree)
-    topology = compare_tree_paths(built_tree_path, reference_tree_path)
-    branch_lengths = compare_branch_lengths(built_tree_path, reference_tree_path)
-    warnings: list[str] = []
-    if not topology.topology_equal:
-        warnings.append(
-            "distance tree disagrees topologically with the supplied reference tree"
-        )
-    if topology.same_unrooted_topology and not topology.topology_equal:
-        warnings.append(
-            "distance tree matches the reference on unrooted splits but differs in rooting"
-        )
-    if topology.same_topology_different_branch_lengths:
-        warnings.append(
-            "distance tree preserves topology but shifts branch-length interpretation relative to the reference"
-        )
-    return DistanceTreeReferenceComparisonReport(
-        alignment_path=path,
-        reference_tree_path=reference_tree_path,
-        method=method,
-        model=model,
-        gap_handling=gap_handling,
-        ambiguity_policy=ambiguity_policy,
-        topology=topology,
-        branch_lengths=branch_lengths,
-        warnings=warnings,
-    )
 
 
 def compare_distance_models(
