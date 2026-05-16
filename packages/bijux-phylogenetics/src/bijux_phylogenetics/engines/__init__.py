@@ -116,6 +116,7 @@ from .validation_matrix import (
     build_beast_artifact_validation_case,
     build_external_engine_validation_case,
     build_external_engine_validation_matrix,
+    merge_external_engine_validation_matrices,
     write_external_engine_validation_matrix,
 )
 from .workflows import (
@@ -203,6 +204,7 @@ __all__ = [
     "build_inference_comparison_weighted_conflict_rows",
     "build_external_engine_validation_case",
     "build_external_engine_validation_matrix",
+    "merge_external_engine_validation_matrices",
     "build_model_selection_limitations_report",
     "InferenceOutputConsistencyReport",
     "infer_unaligned_sequence_type",

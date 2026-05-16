@@ -170,6 +170,19 @@ def build_external_engine_validation_matrix(
     )
 
 
+def merge_external_engine_validation_matrices(
+    reports: list[ExternalEngineValidationMatrixReport],
+) -> ExternalEngineValidationMatrixReport:
+    """Merge multiple ordered validation matrices into one reviewer-facing report."""
+    merged_cases: list[ExternalEngineValidationCase] = []
+    for report in reports:
+        merged_cases.extend(report.cases)
+    return ExternalEngineValidationMatrixReport(
+        generated_at_utc=utc_now_text(),
+        cases=merged_cases,
+    )
+
+
 def write_external_engine_validation_matrix(
     path: Path,
     report: ExternalEngineValidationMatrixReport,
