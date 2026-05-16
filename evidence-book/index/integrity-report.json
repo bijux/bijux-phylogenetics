@@ -3,20 +3,20 @@
   "bundle_count": 19,
   "entries": [
     {
-      "bundle_digest": "64776b1a7262760c94848c9607afa364be06d4a86c994a1665aad370f79b1349",
+      "bundle_digest": "73de77c7248a9e2ae12b31dd679b0fc079ba922048bf1afd3b4bee4b4c7ab310",
       "evidence_id": "evidence-001",
       "file_count": 61,
       "integrity_status": "tracked",
-      "manifest_digest": "0550b40d52f42632541ee440078b050a081ba3895751f1a1a0a035c0e072d01e",
+      "manifest_digest": "5b93210c2d739da3d49d84c69682bc7da5025ed64978e85c0678bc5c7e3b0932",
       "relative_path": "studies/primate-longevity-signal/evidence-001",
       "study_id": "primate-longevity-signal"
     },
     {
-      "bundle_digest": "b54d4da9861d62cd6e7d828d9f988d1fff7e7f2cd63e634d87f991cad597aed5",
+      "bundle_digest": "4afb43f5565dee476a90ba3d8f3271a5a96b6427dcff68336b3cf8e412a8ef19",
       "evidence_id": "evidence-002",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "b56c5418a59dde096a5c33cbfeb4af0f96f680dc4ac230006bcfbcd0101b2119",
+      "manifest_digest": "1910c87843af731130dbe54d38a9868f01710c6d0f96a8486833ae1c9f57f40b",
       "relative_path": "studies/primate-longevity-signal/evidence-002",
       "study_id": "primate-longevity-signal"
     },

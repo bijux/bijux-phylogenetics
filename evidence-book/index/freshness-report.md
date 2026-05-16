@@ -9,9 +9,9 @@
 ## Bundles
 
 - `primate-longevity-signal/evidence-001` — `current`
-  Generated: `2026-05-14`; latest governed change: `2026-05-13`
+  Generated: `2026-05-16`; latest governed change: `2026-05-16`
 - `primate-longevity-signal/evidence-002` — `current`
-  Generated: `2026-05-14`; latest governed change: `2026-05-11`
+  Generated: `2026-05-16`; latest governed change: `2026-05-11`
 - `primate-longevity-signal/evidence-003` — `current`
   Generated: `2026-05-14`; latest governed change: `2026-05-11`
 - `primate-longevity-signal/evidence-004` — `current`
