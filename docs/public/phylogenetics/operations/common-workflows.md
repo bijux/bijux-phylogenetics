@@ -4,7 +4,7 @@ audience: public
 type: how-to
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-15
+last_reviewed: 2026-05-16
 ---
 
 # Common Workflows
@@ -223,7 +223,7 @@ the checked-in R runner. That initial registry is intentionally narrow for
 goal 201: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
 `phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
-`phytools::fastAnc`, and
+`phytools::rerootingMethod`, `phytools::fastAnc`, and
 `phytools::anc.ML` on governed
 twenty-four-taxon comparative fixtures drawn from the shared `phytools`
 comparative fixture catalog. The live lambda lane now includes one
@@ -241,6 +241,14 @@ summary parity when the owned optimizer reports weakly identified boundary
 rates, so reviewers can compare flat-root log-likelihood, AIC, AICc,
 excluded taxa, ER-versus-SYM-versus-ARD model identity, and directed-rate
 evidence honestly against real `phytools`. The live
+`rerootingMethod` lane now also covers governed ER binary, ER multistate, ER
+missing-value-pruned, SYM multistate, and SYM missing-value-pruned cases. It
+compares one node-probability table keyed by stable node signature and state
+label against real `phytools` output. That governed claim stays narrow on
+purpose: only ER or SYM with the equal root prior inherited from `fitMk` are
+treated as live rerooting parity, while ARD, Fitch, ordered-state,
+empirical-root-prior, and fixed-root-prior ancestral runs remain owned Bijux
+review surfaces. The live
 `fastAnc` lane now includes ultrametric strong-signal, ultrametric
 weak-signal, non-ultrametric strong-signal, and missing-value pruning cases so
 reviewers can compare node-signature estimates and standard errors directly
@@ -1220,7 +1228,11 @@ ARD fit directly instead of inferring it from node calls alone. When
 `--comparison-out` is supplied, the command also writes one direct node-wise
 comparison ledger between the baseline model and the requested comparison
 model. The excluded-taxa ledger keeps one row per dropped tip with an explicit
-reason such as `missing_discrete_trait_state`.
+reason such as `missing_discrete_trait_state`. The same summary ledger now also
+states whether the run is comparable to live `phytools::rerootingMethod`: ER
+and SYM with the equal root prior are governed rerooting-parity surfaces,
+while ARD, Fitch, ordered-state, empirical-root-prior, and fixed-root-prior
+runs are flagged explicitly as non-comparable.
 
 For Python-native work, the same discrete ancestral runtime is also available
 directly through `reconstruct_discrete_ancestral_states_from_dataset(...)`

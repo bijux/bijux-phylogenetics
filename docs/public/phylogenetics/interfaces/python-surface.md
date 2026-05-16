@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-15
+last_reviewed: 2026-05-16
 ---
 
 # Python Surface
@@ -89,7 +89,12 @@ reconstruction surfaces through
 `reconstruct_discrete_ancestral_states_from_dataset(...)`. Once a caller
 already holds one `AncestralContinuousDataset` or `AncestralDiscreteDataset`,
 continuous and discrete ancestral reconstruction no longer need to restart
-from path-based loading wrappers.
+from path-based loading wrappers. The discrete ancestral report now also carries
+one explicit `rerooting_method_compatibility` contract so Python callers can
+tell whether one ER or SYM reconstruction with the equal root prior is
+comparable to the governed live `phytools::rerootingMethod` lane. Fitch,
+ordered-state, ARD, empirical-root-prior, and fixed-root-prior runs are marked
+explicitly as non-comparable instead of being left to inference.
 
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the

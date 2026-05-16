@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-15
+last_reviewed: 2026-05-16
 ---
 
 # CLI Surface
@@ -252,7 +252,7 @@ The initial live `phytools` registry is intentionally narrow for this goal. It
 currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
 `phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
-`phytools::fastAnc`, and `phytools::anc.ML` on governed twenty-four-taxon
+`phytools::rerootingMethod`, `phytools::fastAnc`, and `phytools::anc.ML` on governed twenty-four-taxon
 comparative fixtures from the shared
 `shared_phytools_comparative_fixture_catalog.json` corpus. The live lambda
 lane now includes one non-ultrametric strong-signal fixture plus one
@@ -270,6 +270,14 @@ summary parity when the optimizer reports weakly identified boundary rates. It
 compares flat-root log-likelihood, AIC, AICc, excluded taxa, one explicit
 ER-versus-SYM-versus-ARD model identity summary, and the directed rate matrix
 when the governed case is identifiable against real `phytools` output. The live
+`rerootingMethod` lane now includes governed ER binary, ER multistate, ER
+missing-value-pruned, SYM multistate, and SYM missing-value-pruned cases. It
+compares one flat node-probability ledger keyed by stable node signature and
+state label against real `phytools` output. That claim is intentionally
+narrow: `phytools::rerootingMethod` is only governed here for ER or SYM under
+the equal root prior inherited from `fitMk`, while ARD, Fitch, ordered-state,
+empirical-root-prior, and fixed-root-prior ancestral runs remain owned Bijux
+review surfaces without a live `phytools` parity claim. The live
 `fastAnc` lane now includes ultrametric strong-signal, ultrametric
 weak-signal, non-ultrametric strong-signal, and missing-value pruning cases,
 and compares stable node-signature rows plus standard errors against real
@@ -1453,6 +1461,7 @@ probabilities. Its JSON metrics report:
 - `parameter_count`
 - `aic`
 - `transition_rate_count`
+- `phytools_rerooting_method_comparable`
 
 For the likelihood models, the owned runtime fits an explicit Mk rate matrix,
 reports node-level marginal probabilities, and can export one fitted directed
@@ -1464,7 +1473,11 @@ while root-prior controls remain an owned Bijux policy surface because
 `ape::ace` does not expose the same runtime root-prior interface. The owned
 fit surface also warns when multi-parameter likelihood fits hit optimizer
 bounds so weakly identified ARD and SYM reconstructions are reviewable instead
-of looking falsely settled.
+of looking falsely settled. The same report now also states whether the
+requested run is comparable to live `phytools::rerootingMethod`: ER and SYM
+with `--root-prior-mode equal` are governed rerooting-parity surfaces, while
+Fitch, ordered-state, ARD, empirical-root-prior, and fixed-root-prior runs are
+flagged explicitly as non-comparable.
 
 For Fitch, the owned runtime now also reports the exact minimum parsimony
 change count for the analyzed tree and the number of parsimonious root states.
@@ -1493,6 +1506,7 @@ supplied, it also writes one summary ledger. The summary row preserves:
 - `root_node`
 - `root_most_likely_state`
 - `root_confidence`
+- `phytools_rerooting_method_comparable`
 - `log_likelihood`
 - `parameter_count`
 - `aic`
