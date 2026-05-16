@@ -628,6 +628,8 @@ from bijux_phylogenetics.discrete_evolution import (
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
     write_stochastic_map_collection,
+    write_stochastic_map_segment_table,
+    write_stochastic_map_state_time_table,
     write_stochastic_map_summary_table,
     write_transition_summary_table,
 )
@@ -1746,6 +1748,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.write_stochastic_map_summary_table
         is write_stochastic_map_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_stochastic_map_state_time_table
+        is write_stochastic_map_state_time_table
+    )
+    assert (
+        bijux_phylogenetics.write_stochastic_map_segment_table
+        is write_stochastic_map_segment_table
     )
     assert (
         bijux_phylogenetics.load_stochastic_map_collection

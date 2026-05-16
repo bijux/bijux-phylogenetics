@@ -200,6 +200,8 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
 ) -> None:
     collection_path = tmp_path / "stochastic-maps.json"
     summary_path = tmp_path / "stochastic-summary.tsv"
+    state_times_path = tmp_path / "stochastic-state-times.tsv"
+    segments_path = tmp_path / "stochastic-segments.tsv"
 
     stochastic_exit = main(
         [
@@ -219,15 +221,26 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
             str(collection_path),
             "--summary-out",
             str(summary_path),
+            "--state-times-out",
+            str(state_times_path),
+            "--segments-out",
+            str(segments_path),
             "--json",
         ]
     )
     stochastic_payload = json.loads(capsys.readouterr().out)
     assert stochastic_exit == 0
-    assert stochastic_payload["metrics"]["replicate_count"] == 6
+    assert stochastic_payload["metrics"]["requested_replicate_count"] == 6
+    assert stochastic_payload["metrics"]["successful_replicate_count"] == 6
+    assert stochastic_payload["metrics"]["simulation_failure_count"] == 0
     assert stochastic_payload["metrics"]["mean_total_transition_count"] >= 0.0
+    assert stochastic_payload["metrics"]["conditioned_on_node_estimates"] is False
     assert collection_path.exists()
+    assert state_times_path.exists()
+    assert segments_path.exists()
     assert "transition\tmean_count" in summary_path.read_text(encoding="utf-8")
+    assert "state\tmean_time" in state_times_path.read_text(encoding="utf-8")
+    assert "replicate_index\tbranch_index" in segments_path.read_text(encoding="utf-8")
 
     summarize_exit = main(
         [
@@ -236,6 +249,8 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
             str(collection_path),
             "--summary-out",
             str(summary_path),
+            "--state-times-out",
+            str(state_times_path),
             "--json",
         ]
     )
@@ -243,3 +258,4 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
     assert summarize_exit == 0
     assert summarize_payload["metrics"]["replicate_count"] == 6
     assert summarize_payload["metrics"]["mean_total_transition_count"] >= 0.0
+    assert summarize_payload["metrics"]["simulation_failure_count"] == 0

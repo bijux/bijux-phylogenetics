@@ -22,6 +22,8 @@ from bijux_phylogenetics.discrete_evolution import (
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
     write_stochastic_map_collection,
+    write_stochastic_map_segment_table,
+    write_stochastic_map_state_time_table,
     write_stochastic_map_summary_table,
     write_transition_summary_table,
 )
@@ -376,16 +378,43 @@ def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(
     summary = summarize_discrete_stochastic_maps(report)
     collection_path = tmp_path / "stochastic-maps.json"
     summary_path = tmp_path / "stochastic-summary.tsv"
+    state_times_path = tmp_path / "stochastic-state-times.tsv"
+    segments_path = tmp_path / "stochastic-segments.tsv"
 
     write_stochastic_map_collection(collection_path, report)
     write_stochastic_map_summary_table(summary_path, summary)
+    write_stochastic_map_state_time_table(state_times_path, summary)
+    write_stochastic_map_segment_table(segments_path, report)
     reloaded = load_stochastic_map_collection(collection_path)
 
     assert report.summary.replicate_count == 8
     assert report.summary.rows
+    assert report.summary.state_time_rows
     assert report.summary.mean_total_transition_count >= 0.0
+    assert report.conditioned_on_node_estimates is False
+    assert report.failures == []
+    assert report.maps[0].state_time_totals
+    assert report.maps[0].branch_histories[0].segments
+    assert abs(
+        sum(report.maps[0].state_time_totals.values())
+        - sum(
+            history.branch_length
+            for history in report.maps[0].branch_histories
+        )
+    ) < 1e-9
     assert reloaded.summary.replicate_count == 8
     assert reloaded.maps[0].branch_histories
+    assert reloaded.maps[0].branch_histories[0].segments
+    assert reloaded.maps[0].state_time_totals
+    assert reloaded.summary.state_time_rows
+    assert reloaded.summary.simulation_failure_count == 0
     assert "transition\tmean_count\tlower_95_interval" in summary_path.read_text(
         encoding="utf-8"
+    )
+    assert "state\tmean_time\tlower_95_interval" in state_times_path.read_text(
+        encoding="utf-8"
+    )
+    assert (
+        "replicate_index\tbranch_index\tparent_node\tchild_node\tstate\tstart_time_fraction\tend_time_fraction\tduration"
+        in segments_path.read_text(encoding="utf-8")
     )
