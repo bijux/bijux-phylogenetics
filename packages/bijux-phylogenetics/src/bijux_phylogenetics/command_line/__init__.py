@@ -241,6 +241,10 @@ from bijux_phylogenetics.command_line.metadata import (
     add_metadata_commands,
     run_metadata_command,
 )
+from bijux_phylogenetics.command_line.prune import (
+    add_prune_command,
+    run_prune_command,
+)
 from bijux_phylogenetics.command_line.traits import (
     add_traits_commands,
     run_traits_command,
@@ -480,12 +484,6 @@ from bijux_phylogenetics.core.partitions import (
     build_partition_summary_report,
     parse_locus_partitions,
     write_partition_summary_table,
-)
-from bijux_phylogenetics.core.pruning import (
-    drop_tree_taxa,
-    prune_tree_to_requested_taxa,
-    prune_tree_to_taxa,
-    write_pruned_taxa,
 )
 from bijux_phylogenetics.core.taxon_workflows import (
     build_taxon_stability_report,
@@ -924,19 +922,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     add_traits_commands(subparsers)
 
-    prune = subparsers.add_parser(
-        get_command_spec("prune").name, help=get_command_spec("prune").summary
-    )
-    prune.add_argument("tree", type=Path)
-    prune_targets = prune.add_mutually_exclusive_group(required=True)
-    prune_targets.add_argument("--keep-from", type=Path)
-    prune_targets.add_argument("--taxa", nargs="+")
-    prune_targets.add_argument("--exclude-taxa", nargs="+")
-    prune.add_argument("--taxon-column")
-    prune.add_argument("--out", required=True, type=Path)
-    prune.add_argument("--pruned-taxa-out", type=Path)
-    prune.add_argument("--json", action="store_true", help="Emit the report as JSON.")
-    _add_manifest_argument(prune)
+    add_prune_command(subparsers)
 
     alignment = subparsers.add_parser(
         get_command_spec("alignment").name, help=get_command_spec("alignment").summary
@@ -6522,42 +6508,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "prune":
-            if args.keep_from is not None:
-                tree, report = prune_tree_to_taxa(
-                    args.tree, args.keep_from, taxon_column=args.taxon_column
-                )
-                prune_inputs = [args.tree, args.keep_from]
-            elif args.exclude_taxa is not None:
-                tree, report = drop_tree_taxa(args.tree, list(args.exclude_taxa))
-                prune_inputs = [args.tree]
-            else:
-                tree, report = prune_tree_to_requested_taxa(args.tree, list(args.taxa))
-                prune_inputs = [args.tree]
-            output_path = write_newick(args.out, tree)
-            pruned_taxa_path = args.pruned_taxa_out or args.out.with_name(
-                "pruned_taxa.tsv"
-            )
-            write_pruned_taxa(pruned_taxa_path, report.removed_taxa)
-            outputs = _finalize_outputs(
-                args,
-                command="prune",
-                inputs=prune_inputs,
-                outputs=[output_path, pruned_taxa_path],
-            )
-            _print_result(
-                build_command_result(
-                    command="prune",
-                    inputs=prune_inputs,
-                    outputs=outputs,
-                    metrics={
-                        "kept_taxa": len(report.kept_taxa),
-                        "removed_taxa": len(report.removed_taxa),
-                    },
-                    data=report,
-                ),
-                json_output=args.json,
-            )
-            return 0
+            return run_prune_command(args)
         if args.command == "alignment":
             if args.alignment_command == "alphabet":
                 records = load_fasta_alignment(args.alignment)
