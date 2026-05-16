@@ -23,7 +23,7 @@ from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.io.trees import detect_tree_format
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,
     compute_consensus_tree,
 )

@@ -203,7 +203,7 @@ def _validate_posterior_frequency_reference(
     *,
     tolerance: float,
 ) -> SupportReferenceObservation:
-    from bijux_phylogenetics.tree_set import compute_clade_frequency_table
+    from bijux_phylogenetics.trees import compute_clade_frequency_table
 
     tree_set_path = _trees_root() / "example_tree_set_left.nwk"
     report = compute_clade_frequency_table(tree_set_path)
@@ -295,7 +295,7 @@ def _validate_bootstrap_posterior_topology_mismatch_case(
     *,
     tolerance: float,
 ) -> SupportReferenceObservation:
-    from bijux_phylogenetics.tree_set import compare_bootstrap_and_posterior_uncertainty
+    from bijux_phylogenetics.trees import compare_bootstrap_and_posterior_uncertainty
 
     bootstrap_tree_path = _trees_root() / "example_tree_support_iqtree_composite.nwk"
     posterior_tree_set_path = _trees_root() / "example_tree_set_right.nwk"

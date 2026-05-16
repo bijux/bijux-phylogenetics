@@ -46,7 +46,7 @@ from bijux_phylogenetics.errors import EngineWorkflowError, PhylogeneticsError
 from bijux_phylogenetics.io.biopython import loads_biophylo
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,
     compute_consensus_tree,
     load_tree_set,

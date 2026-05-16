@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.tree_set import load_tree_set, summarize_bootstrap_tree_set
+from bijux_phylogenetics.trees import load_tree_set, summarize_bootstrap_tree_set
 
 FIXTURES = Path(__file__).parent / "fixtures" / "trees"
 

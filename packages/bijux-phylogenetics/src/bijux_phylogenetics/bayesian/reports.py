@@ -36,7 +36,7 @@ from bijux_phylogenetics.provenance.method_tiers import (
     bayesian_report_method_tier,
 )
 from bijux_phylogenetics.render.html import write_html_report
-from bijux_phylogenetics.tree_set import compute_clade_frequency_table
+from bijux_phylogenetics.trees import compute_clade_frequency_table
 
 
 @dataclass(slots=True)

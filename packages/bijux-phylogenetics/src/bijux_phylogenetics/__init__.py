@@ -420,7 +420,7 @@ from .biogeography import (
     write_time_stratified_transition_summary_table,
     write_unsupported_geographic_transition_claim_table,
 )
-from .branch_lengths import (
+from .trees import (
     BranchLengthAggregate,
     BranchLengthDistributionReport,
     BranchLengthRow,
@@ -428,7 +428,7 @@ from .branch_lengths import (
     analyze_tree_set_branch_lengths,
     write_branch_length_table,
 )
-from .clades import (
+from .trees import (
     CladeMetadataObservation,
     CladeTableReport,
     CladeTableRow,
@@ -1565,7 +1565,7 @@ from .simulation import (
     write_tree_simulation_envelope_table,
     write_tree_simulation_record_table,
 )
-from .tree_set import (
+from .trees import (
     BootstrapPosteriorCladeComparison,
     BootstrapPosteriorSupportComparisonReport,
     BootstrapTreeSetArtifactReport,
@@ -1639,7 +1639,7 @@ from .tree_set import (
     write_tree_distance_distribution_table,
     write_tree_distance_matrix,
 )
-from .tree_shape import (
+from .trees import (
     TreeShapeAggregate,
     TreeShapeReport,
     TreeShapeRow,

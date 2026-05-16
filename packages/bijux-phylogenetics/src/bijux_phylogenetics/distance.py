@@ -40,7 +40,7 @@ from bijux_phylogenetics.io.fasta import (
 )
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.simulation import write_tree_set
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,
     compute_consensus_tree,
     write_clade_frequency_table,

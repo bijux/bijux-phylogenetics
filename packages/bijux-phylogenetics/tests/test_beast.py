@@ -39,7 +39,7 @@ from bijux_phylogenetics.bayesian.reports import (
     render_calibration_audit_report,
 )
 from bijux_phylogenetics.errors import EngineUnavailableError, EngineWorkflowError
-from bijux_phylogenetics.tree_set import compute_consensus_tree
+from bijux_phylogenetics.trees import compute_consensus_tree
 
 pytestmark = pytest.mark.engine_contract
 

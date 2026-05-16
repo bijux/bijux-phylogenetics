@@ -243,7 +243,7 @@ from bijux_phylogenetics.biogeography import (
     write_time_stratified_transition_summary_table,
     write_unsupported_geographic_transition_claim_table,
 )
-from bijux_phylogenetics.branch_lengths import (
+from bijux_phylogenetics.trees import (
     BranchLengthAggregate,
     BranchLengthDistributionReport,
     BranchLengthRow,
@@ -251,7 +251,7 @@ from bijux_phylogenetics.branch_lengths import (
     analyze_tree_set_branch_lengths,
     write_branch_length_table,
 )
-from bijux_phylogenetics.clades import (
+from bijux_phylogenetics.trees import (
     CladeMetadataObservation,
     CladeTableReport,
     CladeTableRow,
@@ -944,7 +944,7 @@ from bijux_phylogenetics.simulation import (
     write_tree_simulation_envelope_table,
     write_tree_simulation_record_table,
 )
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     BootstrapTreeSetArtifactReport,
     BootstrapTreeSetSummaryReport,
     BootstrapUnstableBranch,
@@ -972,7 +972,7 @@ from bijux_phylogenetics.tree_set import (
     write_topology_cluster_table,
     write_uncertainty_conclusion_table,
 )
-from bijux_phylogenetics.tree_shape import (
+from bijux_phylogenetics.trees import (
     TreeShapeAggregate,
     TreeShapeReport,
     TreeShapeRow,
@@ -3980,7 +3980,7 @@ def test_compute_consensus_tree_returns_majority_rule_consensus() -> None:
 
 
 def test_compute_consensus_tree_stays_native_without_biopython_bridge() -> None:
-    import bijux_phylogenetics.tree_set as tree_set_module
+    import bijux_phylogenetics.trees as tree_set_module
 
     assert not hasattr(tree_set_module, "Phylo")
     assert not hasattr(tree_set_module, "tree_from_biophylo")

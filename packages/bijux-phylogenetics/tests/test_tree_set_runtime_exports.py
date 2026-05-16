@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import bijux_phylogenetics
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     TreeDistanceDistributionRow,
     TreeSetProcessingSummary,
     summarize_posterior_topology_diversity,

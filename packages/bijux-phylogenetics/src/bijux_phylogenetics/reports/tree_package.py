@@ -7,11 +7,11 @@ from html import escape
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.branch_lengths import (
+from bijux_phylogenetics.trees import (
     BranchLengthDistributionReport,
     analyze_branch_length_distribution,
 )
-from bijux_phylogenetics.clades import (
+from bijux_phylogenetics.trees import (
     CladeTableReport,
     CladeTableRow,
     extract_tree_clades,
@@ -610,7 +610,7 @@ def build_tree_report_package(
     )
 
     write_tree_support_table(support_table_path, support_rows)
-    from bijux_phylogenetics.clades import write_clade_table
+    from bijux_phylogenetics.trees import write_clade_table
 
     write_clade_table(clade_table_path, clades)
     write_tree_branch_statistics_table(branch_stats_path, branch_stats)

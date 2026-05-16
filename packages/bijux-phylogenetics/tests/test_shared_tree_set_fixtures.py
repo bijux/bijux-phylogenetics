@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from bijux_phylogenetics.clades import extract_tree_set_clades
+from bijux_phylogenetics.trees import extract_tree_set_clades
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.fixtures import (
     get_shared_tree_set_fixture,

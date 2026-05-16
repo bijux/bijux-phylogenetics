@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.clades import extract_tree_clades, extract_tree_set_clades
+from bijux_phylogenetics.trees import extract_tree_clades, extract_tree_set_clades
 from bijux_phylogenetics.errors import InvalidAlignmentError
 
 

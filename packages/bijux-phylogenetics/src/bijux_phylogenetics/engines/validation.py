@@ -39,7 +39,7 @@ from bijux_phylogenetics.io.iqtree_support import (
     support_fraction,
 )
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.tree_set import load_tree_set
+from bijux_phylogenetics.trees import load_tree_set
 
 
 @dataclass(slots=True)
@@ -621,7 +621,7 @@ def classify_inference_workflow_failure(
         }:
             try:
                 if key == "bootstrap_trees":
-                    from bijux_phylogenetics.tree_set import load_tree_set
+                    from bijux_phylogenetics.trees import load_tree_set
 
                     load_tree_set(path)
                 else:

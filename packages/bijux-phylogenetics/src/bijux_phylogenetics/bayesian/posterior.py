@@ -16,7 +16,7 @@ from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentErro
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import detect_tree_format
-from bijux_phylogenetics.tree_set import compare_posterior_tree_sets, load_tree_set
+from bijux_phylogenetics.trees import compare_posterior_tree_sets, load_tree_set
 
 
 @dataclass(slots=True)

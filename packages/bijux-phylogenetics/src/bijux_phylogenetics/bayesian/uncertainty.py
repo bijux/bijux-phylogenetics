@@ -22,7 +22,7 @@ from bijux_phylogenetics.engines.common import (
 )
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.render.svg import render_tree_svg
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     TreeSetProcessingSummary,
     TreeSetWorkflowBudgetReport,
     build_tree_set_budget_report,

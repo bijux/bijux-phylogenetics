@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.errors import InvalidAlignmentError
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     compute_reference_tree_clade_support,
     write_reference_tree_clade_support_table,
 )

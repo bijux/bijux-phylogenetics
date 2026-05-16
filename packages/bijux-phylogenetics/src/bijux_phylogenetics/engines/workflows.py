@@ -38,7 +38,7 @@ from bijux_phylogenetics.io.fasta import (
     write_fasta_alignment,
 )
 from bijux_phylogenetics.io.newick import loads_newick
-from bijux_phylogenetics.tree_set import load_tree_set
+from bijux_phylogenetics.trees import load_tree_set
 
 from .bootstrap_artifacts import (
     build_bootstrap_support_histogram_rows,

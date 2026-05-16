@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.clades import extract_tree_clades, write_clade_table
+from bijux_phylogenetics.trees import extract_tree_clades, write_clade_table
 from bijux_phylogenetics.datasets.rabies_host_geography import (
     load_rabies_cross_host_geography_panel_dataset,
 )

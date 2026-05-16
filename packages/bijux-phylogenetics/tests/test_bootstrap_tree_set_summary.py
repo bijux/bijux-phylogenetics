@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     summarize_bootstrap_tree_set,
     write_bootstrap_tree_set_artifacts,
 )

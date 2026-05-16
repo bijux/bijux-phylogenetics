@@ -18,7 +18,7 @@ from bijux_phylogenetics.io.newick import (
     write_newick_tree_set,
 )
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.tree_shape import summarize_tree_shape_from_tree
+from bijux_phylogenetics.trees.tree_shape import summarize_tree_shape_from_tree
 
 
 @dataclass(frozen=True, slots=True)

@@ -23,7 +23,7 @@ from bijux_phylogenetics.biogeography import (
     BiogeographyReportPackageResult,
     build_biogeography_report_package,
 )
-from bijux_phylogenetics.clades import (
+from bijux_phylogenetics.trees import (
     CladeTableReport,
     CladeTableRow,
     extract_tree_clades,
@@ -130,7 +130,7 @@ from bijux_phylogenetics.io.fasta import (
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.simulation import write_tree_set
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     BootstrapTreeSetArtifactReport,
     BootstrapTreeSetSummaryReport,
     compute_clade_frequency_table,

@@ -24,7 +24,7 @@ from bijux_phylogenetics.errors import (
     UnrootedTreeError,
 )
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.tree_shape import summarize_tree_shape_from_tree
+from bijux_phylogenetics.trees import summarize_tree_shape_from_tree
 
 
 @dataclass(slots=True)

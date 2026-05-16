@@ -6,8 +6,8 @@ import tempfile
 import time
 import tracemalloc
 
-from bijux_phylogenetics.branch_lengths import analyze_branch_length_distribution
-from bijux_phylogenetics.clades import extract_tree_clades
+from bijux_phylogenetics.trees import analyze_branch_length_distribution
+from bijux_phylogenetics.trees import extract_tree_clades
 from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_independent_contrasts,
 )
@@ -27,7 +27,7 @@ from bijux_phylogenetics.simulation import (
     write_simulated_alignment,
     write_tree_set,
 )
-from bijux_phylogenetics.tree_set import compute_consensus_tree
+from bijux_phylogenetics.trees import compute_consensus_tree
 
 
 @dataclass(frozen=True, slots=True)

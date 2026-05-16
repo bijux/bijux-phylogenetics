@@ -85,7 +85,7 @@ from bijux_phylogenetics.validation import (
     build_release_truth_report,
 )
 from bijux_phylogenetics.render.html import write_html_report
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     TreeSetProcessingSummary,
     TreeSetWorkflowBudgetReport,
     assess_tree_set_maturity,

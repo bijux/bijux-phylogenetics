@@ -23,7 +23,7 @@ from bijux_phylogenetics.ancestral.continuous import (
 from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
 )
-from bijux_phylogenetics.clades import extract_tree_clades, extract_tree_set_clades
+from bijux_phylogenetics.trees import extract_tree_clades, extract_tree_set_clades
 from bijux_phylogenetics.comparative.brownian_covariance import (
     summarize_brownian_covariance,
 )
@@ -97,7 +97,7 @@ from bijux_phylogenetics.simulation import (
     simulate_coalescent_trees,
     simulate_random_trees,
 )
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,
     compute_consensus_tree,
     compute_reference_tree_clade_support,

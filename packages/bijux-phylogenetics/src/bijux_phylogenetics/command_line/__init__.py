@@ -214,12 +214,12 @@ from bijux_phylogenetics.biogeography.transition_chronology import (
     write_dated_biogeography_summary_table,
     write_dated_biogeography_time_bin_table,
 )
-from bijux_phylogenetics.branch_lengths import (
+from bijux_phylogenetics.trees import (
     analyze_branch_length_distribution,
     analyze_tree_set_branch_lengths,
     write_branch_length_table,
 )
-from bijux_phylogenetics.clades import (
+from bijux_phylogenetics.trees import (
     extract_tree_clades,
     extract_tree_set_clades,
     write_clade_table,
@@ -783,7 +783,7 @@ from bijux_phylogenetics.simulation import (
     write_tree_simulation_envelope_table,
     write_tree_simulation_record_table,
 )
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     cluster_trees_by_topology,
     compare_posterior_topological_diversity,
     compare_posterior_tree_sets,
@@ -808,7 +808,7 @@ from bijux_phylogenetics.tree_set import (
     write_tree_distance_matrix,
     write_unstable_clade_table,
 )
-from bijux_phylogenetics.tree_shape import (
+from bijux_phylogenetics.trees import (
     summarize_tree_set_shapes,
     summarize_tree_shape,
     write_tree_shape_table,

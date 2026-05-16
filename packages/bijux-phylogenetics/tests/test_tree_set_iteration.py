@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.reports.service import render_tree_uncertainty_report
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     assess_tree_set_maturity,
     assess_tree_set_storage_risk,
     assess_tree_set_thinning_sensitivity,
