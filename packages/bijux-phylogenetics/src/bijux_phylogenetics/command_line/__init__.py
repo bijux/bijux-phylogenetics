@@ -523,6 +523,7 @@ from bijux_phylogenetics.discrete_evolution import (
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
     write_stochastic_map_collection,
+    write_stochastic_map_branch_occupancy_table,
     write_stochastic_map_segment_table,
     write_stochastic_map_state_time_table,
     write_stochastic_map_summary_table,
@@ -4430,6 +4431,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write per-state time-in-state summaries as TSV.",
     )
     discrete_stochastic.add_argument(
+        "--branch-occupancy-out",
+        type=Path,
+        help="Write per-branch state-occupancy summaries as TSV.",
+    )
+    discrete_stochastic.add_argument(
         "--segments-out",
         type=Path,
         help="Write flat branch-state segment rows as TSV.",
@@ -4452,6 +4458,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--state-times-out",
         type=Path,
         help="Write per-state time-in-state summaries as TSV.",
+    )
+    discrete_summarize_maps.add_argument(
+        "--branch-occupancy-out",
+        type=Path,
+        help="Write per-branch state-occupancy summaries as TSV.",
     )
     discrete_summarize_maps.add_argument(
         "--json", action="store_true", help="Emit the stochastic-map summary as JSON."
@@ -13246,6 +13257,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             report.summary,
                         )
                     )
+                if args.branch_occupancy_out is not None:
+                    outputs.append(
+                        write_stochastic_map_branch_occupancy_table(
+                            args.branch_occupancy_out,
+                            report.summary,
+                        )
+                    )
                 if args.segments_out is not None:
                     outputs.append(
                         write_stochastic_map_segment_table(
@@ -13270,6 +13288,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "successful_replicate_count": report.summary.replicate_count,
                             "simulation_failure_count": report.summary.simulation_failure_count,
                             "mean_total_transition_count": report.summary.mean_total_transition_count,
+                            "branch_state_row_count": len(
+                                report.summary.branch_occupancy_rows
+                            ),
                             "model": report.model,
                             "state_ordering": report.state_ordering,
                             "conditioned_on_node_estimates": report.conditioned_on_node_estimates,
@@ -13304,6 +13325,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             report,
                         )
                     )
+                if args.branch_occupancy_out is not None:
+                    outputs.append(
+                        write_stochastic_map_branch_occupancy_table(
+                            args.branch_occupancy_out,
+                            report,
+                        )
+                    )
                 outputs = _finalize_outputs(
                     args,
                     command="discrete-evolution",
@@ -13320,6 +13348,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "replicate_count": report.replicate_count,
                             "mean_total_transition_count": report.mean_total_transition_count,
                             "simulation_failure_count": report.simulation_failure_count,
+                            "branch_state_row_count": len(
+                                report.branch_occupancy_rows
+                            ),
                         },
                         data=report,
                     ),
