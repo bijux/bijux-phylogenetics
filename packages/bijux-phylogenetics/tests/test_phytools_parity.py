@@ -68,6 +68,9 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "anc-ml-weak-signal-twenty-four-taxa",
         "anc-ml-non-ultrametric-strong-signal-twenty-four-taxa",
         "anc-ml-missing-values-twenty-four-taxa",
+        "fastbm-example-tree-low-variance",
+        "fastbm-example-tree-root-shift-high-variance",
+        "fastbm-six-taxa-root-shift",
     ]
     assert cases[0].function_name == "phytools::phylosig(method='lambda')"
     assert cases[1].function_name == "phytools::phylosig(method='lambda')"
@@ -99,6 +102,8 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[45].function_name == "phytools::fastAnc"
     assert cases[46].function_name == "phytools::anc.ML"
     assert cases[49].function_name == "phytools::anc.ML"
+    assert cases[50].function_name == "phytools::fastBM"
+    assert cases[52].function_name == "phytools::fastBM"
     assert (
         cases[0].fixture_id == "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
     )
@@ -172,6 +177,9 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "estimate": 1e-8,
         "standard_error": 1e-8,
     }
+    assert cases[50].continuous_sigma_squared == 0.25
+    assert cases[51].continuous_root_state == 2.5
+    assert cases[52].continuous_replicate_count == 512
 
 
 def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
@@ -182,7 +190,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     report = run_phytools_parity_cases(rscript_executable=str(rscript))
 
     assert report.all_passed is True
-    assert report.case_count == 50
+    assert report.case_count == 53
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -191,6 +199,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
         "phytools::densityMap",
         "phytools::describe.simmap",
         "phytools::fastAnc",
+        "phytools::fastBM",
         "phytools::fitMk(model='ARD')",
         "phytools::fitMk(model='ER')",
         "phytools::fitMk(model='SYM')",
@@ -256,6 +265,30 @@ def test_run_phytools_parity_cases_passes_sim_history_cases_against_fake_referen
     ]
     assert all(
         observation.function_name == "phytools::sim.history"
+        for observation in report.observations
+    )
+
+
+def test_run_phytools_parity_cases_passes_fastbm_cases_against_fake_reference_runner(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_phytools_rscript(tmp_path / "fake-phytools-rscript")
+
+    report = run_phytools_parity_cases(
+        case_ids=[
+            "fastbm-example-tree-low-variance",
+            "fastbm-example-tree-root-shift-high-variance",
+            "fastbm-six-taxa-root-shift",
+        ],
+        rscript_executable=str(rscript),
+    )
+
+    assert report.all_passed is True
+    assert report.case_count == 3
+    assert report.failed_case_count == 0
+    assert [row.function_name for row in report.summary_rows] == ["phytools::fastBM"]
+    assert all(
+        observation.function_name == "phytools::fastBM"
         for observation in report.observations
     )
 
