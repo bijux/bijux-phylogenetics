@@ -107,6 +107,45 @@ print("warning: beast fixture posterior run", file=sys.stderr)
     )
 
 
+def _fake_beast_version_variant(
+    path: Path,
+    *,
+    version_text: str,
+    posterior_value: float,
+) -> Path:
+    return _write_executable(
+        path,
+        f"""#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "-version" in args:
+    print("{version_text}")
+    raise SystemExit(0)
+
+xml_path = Path(args[-1])
+seed = args[args.index("-seed") + 1]
+log_path = xml_path.with_name(f"{{xml_path.stem}}.{{seed}}.log")
+tree_path = xml_path.with_name(f"{{xml_path.stem}}.{{seed}}.trees")
+log_path.write_text(
+    "Sample\\tposterior\\tlikelihood\\tprior\\ttreeHeight\\tclockRate\\tbirthRate\\n"
+    "0\\t{posterior_value:.1f}\\t-80.0\\t-40.0\\t1.1\\t0.01\\t0.2\\n"
+    "20\\t-118.0\\t-79.0\\t-39.0\\t1.0\\t0.011\\t0.21\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "Begin trees;\\n"
+    "tree STATE_0 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree STATE_20 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "End;\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
 def _fake_beast_timeout(path: Path) -> Path:
     return _write_executable(
         path,
@@ -463,6 +502,46 @@ def test_run_beast_posterior_inference_writes_outputs_and_resumes(
         ).kept_tree_count
         == 2
     )
+
+
+def test_run_beast_posterior_inference_rebuilds_outputs_after_version_change(
+    tmp_path: Path,
+) -> None:
+    first_executable = _fake_beast_version_variant(
+        tmp_path / "beast-fixture-first",
+        version_text="BEAST v2.7.7 fixture",
+        posterior_value=-120.0,
+    )
+    second_executable = _fake_beast_version_variant(
+        tmp_path / "beast-fixture-second",
+        version_text="BEAST v2.7.8 fixture",
+        posterior_value=-121.0,
+    )
+    xml_path = tmp_path / "strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        xml_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    run_beast_posterior_inference(
+        xml_path,
+        executable=first_executable,
+        seed=1,
+    )
+    rebuilt = run_beast_posterior_inference(
+        xml_path,
+        executable=second_executable,
+        seed=1,
+        resume=True,
+    )
+
+    assert rebuilt.resumed is False
+    log_text = rebuilt.output_paths["posterior_log"].read_text(encoding="utf-8")
+    assert "-121.0" in log_text
 
 
 def test_run_beast_posterior_inference_reports_missing_executable_without_marker(
