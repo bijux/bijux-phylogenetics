@@ -387,6 +387,63 @@
       ],
       "simulation_metadata": null,
       "notes": "Twenty-four-taxon continuous trait with one absent tree tip and one extra trait taxon so tree-versus-table mismatch stays governed."
+    },
+    {
+      "fixture_id": "phytools_pgls_brownian_continuous_four_taxa",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "trait_table_fixture_id": "categorical_predictor_match",
+      "trait_name": "response",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "pgls-brownian-ready",
+      "phytools_reference_expectation": "phytools-pgls-sey-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-predictor-case",
+        "brownian-pgls",
+        "formula-ready"
+      ],
+      "simulation_metadata": null,
+      "notes": "Four-taxon continuous comparative table used as the smallest governed Brownian PGLS surface for live `phytools::pgls.SEy` parity."
+    },
+    {
+      "fixture_id": "phytools_pgls_brownian_categorical_eight_taxa",
+      "tree_fixture_id": "larger_binary_tree",
+      "trait_table_fixture_id": "categorical_interaction_match",
+      "trait_name": "response",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "pgls-brownian-ready",
+      "phytools_reference_expectation": "phytools-pgls-sey-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "categorical-predictor-case",
+        "brownian-pgls",
+        "formula-ready",
+        "eight-taxon-tree"
+      ],
+      "simulation_metadata": null,
+      "notes": "Eight-taxon categorical comparative table used for governed Brownian PGLS parity on treatment-coded categorical main effects."
+    },
+    {
+      "fixture_id": "phytools_pgls_brownian_interaction_eight_taxa",
+      "tree_fixture_id": "larger_binary_tree",
+      "trait_table_fixture_id": "categorical_interaction_match",
+      "trait_name": "response",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "pgls-brownian-ready",
+      "phytools_reference_expectation": "phytools-pgls-sey-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "categorical-predictor-case",
+        "interaction-term-case",
+        "brownian-pgls",
+        "formula-ready",
+        "eight-taxon-tree"
+      ],
+      "simulation_metadata": null,
+      "notes": "Eight-taxon categorical interaction table used for governed Brownian PGLS parity on treatment-coded interaction coefficients."
     }
   ]
 }

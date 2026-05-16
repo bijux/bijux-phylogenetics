@@ -6,6 +6,10 @@ import pytest
 
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
+from bijux_phylogenetics.comparative.pgls import (
+    build_pgls_model_matrix,
+    run_pgls,
+)
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     compute_phylogenetic_signal_test,
@@ -461,3 +465,86 @@ def test_shared_phytools_comparative_fixture_catalog_covers_discrete_nonultramet
     assert branch_edge_tree.tip_count == 24
     assert min(branch_lengths) == 0.0
     assert max(branch_lengths) > 2.0
+
+
+def test_shared_phytools_comparative_fixture_catalog_supports_brownian_pgls_cases() -> (
+    None
+):
+    continuous_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_pgls_brownian_continuous_four_taxa"
+    )
+    categorical_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_pgls_brownian_categorical_eight_taxa"
+    )
+    interaction_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_pgls_brownian_interaction_eight_taxa"
+    )
+
+    continuous_report = run_pgls(
+        continuous_fixture.tree_path,
+        continuous_fixture.traits_path,
+        response=continuous_fixture.trait_name,
+        predictors=["predictor_one"],
+        taxon_column=continuous_fixture.taxon_column,
+        lambda_value=1.0,
+    )
+    categorical_report = run_pgls(
+        categorical_fixture.tree_path,
+        categorical_fixture.traits_path,
+        formula="response ~ habitat + diet",
+        taxon_column=categorical_fixture.taxon_column,
+        lambda_value=1.0,
+    )
+    interaction_report = run_pgls(
+        interaction_fixture.tree_path,
+        interaction_fixture.traits_path,
+        formula="response ~ habitat * diet",
+        taxon_column=interaction_fixture.taxon_column,
+        lambda_value=1.0,
+    )
+    categorical_model_matrix = build_pgls_model_matrix(
+        categorical_fixture.tree_path,
+        categorical_fixture.traits_path,
+        formula="response ~ habitat + diet",
+        taxon_column=categorical_fixture.taxon_column,
+    )
+    interaction_model_matrix = build_pgls_model_matrix(
+        interaction_fixture.tree_path,
+        interaction_fixture.traits_path,
+        formula="response ~ habitat * diet",
+        taxon_column=interaction_fixture.taxon_column,
+    )
+
+    assert continuous_report.lambda_fit.mode == "fixed"
+    assert continuous_report.lambda_value == 1.0
+    assert continuous_report.encoded_columns == ["intercept", "predictor_one"]
+    assert continuous_report.coefficients[1].name == "predictor_one"
+    assert "continuous-predictor-case" in continuous_fixture.feature_tags
+    assert categorical_report.lambda_fit.mode == "fixed"
+    assert categorical_report.lambda_value == 1.0
+    assert categorical_report.encoded_columns == [
+        "intercept",
+        "habitat[tundra]",
+        "diet[herbivore]",
+    ]
+    assert "categorical-predictor-case" in categorical_fixture.feature_tags
+    assert categorical_model_matrix.encoded_columns == [
+        "intercept",
+        "habitat[tundra]",
+        "diet[herbivore]",
+    ]
+    assert interaction_report.lambda_fit.mode == "fixed"
+    assert interaction_report.lambda_value == 1.0
+    assert interaction_report.encoded_columns == [
+        "intercept",
+        "habitat[tundra]",
+        "diet[herbivore]",
+        "habitat[tundra]:diet[herbivore]",
+    ]
+    assert "interaction-term-case" in interaction_fixture.feature_tags
+    assert interaction_model_matrix.encoded_columns == [
+        "intercept",
+        "habitat[tundra]",
+        "diet[herbivore]",
+        "habitat[tundra]:diet[herbivore]",
+    ]

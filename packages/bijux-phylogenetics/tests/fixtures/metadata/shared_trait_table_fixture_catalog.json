@@ -284,6 +284,26 @@
       "notes": "Canonical comparative fixture with one categorical predictor and one numeric response that also serves as a clean continuous ace baseline."
     },
     {
+      "fixture_id": "categorical_interaction_match",
+      "relative_path": "metadata/example_traits_comparative_categorical_interaction.tsv",
+      "tree_fixture_id": "larger_binary_tree",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response",
+        "habitat",
+        "diet"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "pgls-brownian-ready",
+      "row_count": 8,
+      "feature_tags": [
+        "categorical-predictor-case",
+        "interaction-term-case",
+        "eight-taxon-tree"
+      ],
+      "notes": "Eight-taxon categorical comparative table used for governed Brownian PGLS parity over treatment-coded main effects and interaction terms."
+    },
+    {
       "fixture_id": "categorical_predictor_misordered",
       "relative_path": "metadata/example_traits_comparative_reordered.tsv",
       "tree_fixture_id": "balanced_rooted_ultrametric",
