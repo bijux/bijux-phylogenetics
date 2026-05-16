@@ -79,6 +79,7 @@ execution_path <- file.path(output_root, "reference-execution.json")
 summary_path <- file.path(output_root, "reference-summary.json")
 summary_table_path <- file.path(output_root, "reference-summary.tsv")
 fitmk_rows_path <- file.path(output_root, "fitmk-rate-matrix.tsv")
+stochastic_map_rows_path <- file.path(output_root, "stochastic-map-summary-rows.tsv")
 rerooting_rows_path <- file.path(output_root, "rerooting-method-node-probabilities.tsv")
 fast_anc_rows_path <- file.path(output_root, "fast-anc-node-estimates.tsv")
 anc_ml_rows_path <- file.path(output_root, "anc-ml-node-estimates.tsv")
@@ -116,6 +117,7 @@ trait_table <- utils::read.table(
 taxon_names <- trait_table[[taxon_column]]
 is_discrete_operation <- case_payload$operation %in% c(
   "discrete-fit-mk",
+  "discrete-stochastic-map",
   "discrete-ancestral-rerooting"
 )
 if (is_discrete_operation) {
@@ -293,6 +295,75 @@ build_fitmk_result <- function(tree, trait_values, trait_name, excluded_taxa, di
   )
 }
 
+build_make_simmap_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
+  if (!identical(discrete_model, "equal-rates")) {
+    stop(paste("unsupported make.simmap parity model:", discrete_model))
+  }
+  requested_replicate_count <- as.integer(case_payload$stochastic_map_replicate_count)
+  stochastic_map_seed <- as.integer(case_payload$stochastic_map_seed)
+  set.seed(stochastic_map_seed)
+  fit <- phytools::make.simmap(
+    tree,
+    trait_values,
+    model = "ER",
+    nsim = requested_replicate_count,
+    pi = "equal",
+    message = FALSE
+  )
+  description <- phytools::describe.simmap(fit, plot = FALSE)
+  count_table <- as.data.frame(description$count, stringsAsFactors = FALSE)
+  time_table <- as.data.frame(description$times, stringsAsFactors = FALSE)
+  total_transition_counts <- as.numeric(count_table$N)
+  transition_columns <- setdiff(colnames(count_table), "N")
+  state_columns <- setdiff(colnames(time_table), "total")
+  summary_rows <- list()
+  for (transition_label in transition_columns) {
+    values <- as.numeric(count_table[[transition_label]])
+    summary_rows[[length(summary_rows) + 1]] <- list(
+      row_kind = "transition_count",
+      label = gsub(",", "->", transition_label, fixed = TRUE),
+      mean_value = as.numeric(mean(values)),
+      lower_95_interval = as.numeric(stats::quantile(values, probs = 0.025, names = FALSE)),
+      upper_95_interval = as.numeric(stats::quantile(values, probs = 0.975, names = FALSE)),
+      presence_fraction = as.numeric(mean(values > 0))
+    )
+  }
+  for (state_label in state_columns) {
+    values <- as.numeric(time_table[[state_label]])
+    summary_rows[[length(summary_rows) + 1]] <- list(
+      row_kind = "state_time",
+      label = state_label,
+      mean_value = as.numeric(mean(values)),
+      lower_95_interval = as.numeric(stats::quantile(values, probs = 0.025, names = FALSE)),
+      upper_95_interval = as.numeric(stats::quantile(values, probs = 0.975, names = FALSE)),
+      presence_fraction = 1.0
+    )
+  }
+  summary_rows <- summary_rows[order(
+    vapply(summary_rows, function(row) row$row_kind, character(1)),
+    vapply(summary_rows, function(row) row$label, character(1))
+  )]
+  list(
+    summary = list(
+      taxon_count = length(trait_values),
+      trait_name = trait_name,
+      excluded_taxon_count = length(excluded_taxa),
+      excluded_taxa = unname(as.list(excluded_taxa)),
+      model = discrete_model,
+      state_count = length(unique(unname(trait_values))),
+      requested_replicate_count = requested_replicate_count,
+      successful_replicate_count = requested_replicate_count,
+      simulation_failure_count = 0L,
+      conditioned_on_node_estimates = FALSE,
+      seed = stochastic_map_seed,
+      mean_total_transition_count = as.numeric(mean(total_transition_counts)),
+      lower_95_total_transition_count = as.numeric(stats::quantile(total_transition_counts, probs = 0.025, names = FALSE)),
+      upper_95_total_transition_count = as.numeric(stats::quantile(total_transition_counts, probs = 0.975, names = FALSE))
+    ),
+    rows = summary_rows
+  )
+}
+
 build_rerooting_method_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
   phytools_model <- switch(
     discrete_model,
@@ -435,6 +506,13 @@ result_payload <- switch(
     excluded_taxa,
     case_payload$discrete_model
   ),
+  "discrete-stochastic-map" = build_make_simmap_result(
+    tree,
+    trait_values,
+    trait_name,
+    excluded_taxa,
+    case_payload$discrete_model
+  ),
   "discrete-ancestral-rerooting" = build_rerooting_method_result(
     tree,
     trait_values,
@@ -476,6 +554,8 @@ write_table(
 if (!is.null(result_payload$rows)) {
   if (identical(case_payload$operation, "discrete-fit-mk")) {
     write_table(fitmk_rows_path, result_payload$rows)
+  } else if (identical(case_payload$operation, "discrete-stochastic-map")) {
+    write_table(stochastic_map_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "discrete-ancestral-rerooting")) {
     write_table(rerooting_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "continuous-ancestral-fast-anc")) {
