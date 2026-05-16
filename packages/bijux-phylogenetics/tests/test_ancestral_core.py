@@ -406,6 +406,9 @@ def test_discrete_reconstruction_supports_likelihood_models() -> None:
         model="symmetric",
     )
     assert report.model == "symmetric"
+    assert report.rerooting_method_compatibility.comparable is True
+    assert report.rerooting_method_compatibility.reference_model == "SYM"
+    assert report.rerooting_method_compatibility.reference_root_prior_mode == "equal"
     assert report.estimates[0].confidence > 0.0
     assert isinstance(report.unstable_nodes, list)
 
@@ -421,6 +424,39 @@ def test_discrete_reconstruction_supports_ordered_state_models() -> None:
     )
     assert report.state_ordering == "ordered"
     assert report.ordered_states == ["north", "south", "island"]
+    assert report.rerooting_method_compatibility.comparable is False
+    assert (
+        "phytools::rerootingMethod does not provide a governed ordered-transition parity surface in this repository"
+        in report.rerooting_method_compatibility.notes
+    )
+
+
+def test_discrete_reconstruction_reports_rerooting_method_assumption_limits() -> None:
+    fixed_root_report = reconstruct_discrete_ancestral_states(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        model="equal-rates",
+        root_prior_mode="fixed",
+        fixed_root_state="north",
+    )
+    ard_report = reconstruct_discrete_ancestral_states(
+        fixture("example_tree_ladderized.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        model="all-rates-different",
+    )
+
+    assert fixed_root_report.rerooting_method_compatibility.comparable is False
+    assert (
+        "phytools::rerootingMethod inherits fitMk's default equal root prior; empirical or fixed root-prior runs remain Bijux sensitivity scenarios without direct rerootingMethod parity"
+        in fixed_root_report.warnings
+    )
+    assert ard_report.rerooting_method_compatibility.comparable is False
+    assert (
+        "phytools::rerootingMethod is invalid for non-symmetric Q matrices such as all-rates-different models in phytools 2.5.2"
+        in ard_report.warnings
+    )
 
 
 def test_discrete_reconstruction_rejects_single_observed_state() -> None:

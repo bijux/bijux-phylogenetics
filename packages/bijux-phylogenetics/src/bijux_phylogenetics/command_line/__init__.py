@@ -10846,6 +10846,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "aic": report.aic,
                             "root_prior_mode": report.root_prior_mode,
                             "fixed_root_state": report.fixed_root_state,
+                            "phytools_rerooting_method_comparable": (
+                                report.rerooting_method_compatibility.comparable
+                            ),
                             "optimizer_converged": (
                                 None
                                 if report.optimizer_diagnostics is None

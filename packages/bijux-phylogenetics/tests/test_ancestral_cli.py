@@ -210,6 +210,7 @@ def test_ancestral_discrete_cli_can_export_probability_review(
     assert payload["metrics"]["parameter_count"] == 1
     assert payload["metrics"]["aic"] is not None
     assert payload["metrics"]["root_prior_mode"] == "equal"
+    assert payload["metrics"]["phytools_rerooting_method_comparable"] is True
     assert payload["metrics"]["transition_rate_count"] == 6
     assert summary_path.read_text(encoding="utf-8").startswith(
         "trait\ttaxon_column\tmodel\tstate_ordering"
@@ -256,7 +257,12 @@ def test_ancestral_discrete_cli_supports_fixed_root_prior_policy(
     assert payload["metrics"]["model"] == "equal-rates"
     assert payload["metrics"]["root_prior_mode"] == "fixed"
     assert payload["metrics"]["fixed_root_state"] == "north"
+    assert payload["metrics"]["phytools_rerooting_method_comparable"] is False
     assert payload["metrics"]["transition_rate_count"] == 6
+    assert (
+        "phytools::rerootingMethod inherits fitMk's default equal root prior; empirical or fixed root-prior runs remain Bijux sensitivity scenarios without direct rerootingMethod parity"
+        in payload["warnings"]
+    )
     assert "\tfixed\tnorth\t" in summary_path.read_text(encoding="utf-8")
     assert transitions_path.read_text(encoding="utf-8").startswith(
         "source_state\ttarget_state\ttransition_allowed\tstep_distance\trate"
@@ -344,12 +350,17 @@ def test_ancestral_discrete_cli_reports_ard_fit_diagnostics_and_weak_fit_warning
 
     assert exit_code == 0
     assert payload["metrics"]["model"] == "all-rates-different"
+    assert payload["metrics"]["phytools_rerooting_method_comparable"] is False
     assert payload["metrics"]["optimizer_iteration_count"] > 0
     assert payload["metrics"]["overparameterized"] is True
     assert payload["metrics"]["baseline_model"] == "equal-rates"
     assert payload["metrics"]["preferred_model_by_aic"] == "equal-rates"
     assert (
         "one or more discrete rate parameters hit an optimizer bound and should be interpreted as weakly identified"
+        in payload["warnings"]
+    )
+    assert (
+        "phytools::rerootingMethod is invalid for non-symmetric Q matrices such as all-rates-different models in phytools 2.5.2"
         in payload["warnings"]
     )
     assert fit_path.read_text(encoding="utf-8").startswith(

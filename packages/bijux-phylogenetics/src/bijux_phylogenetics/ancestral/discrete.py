@@ -84,12 +84,23 @@ class DiscreteModelBaselineComparison:
 
 
 @dataclass(slots=True)
+class DiscreteRerootingMethodCompatibility:
+    """Compatibility of the owned marginal surface with `phytools::rerootingMethod`."""
+
+    comparable: bool
+    reference_model: str | None
+    reference_root_prior_mode: str | None
+    notes: list[str]
+
+
+@dataclass(slots=True)
 class DiscreteLikelihoodFitResult:
     """Internal likelihood fit details for one discrete ancestral reconstruction."""
 
     estimates: list[DiscreteAncestralEstimate]
     ordered_states: list[str]
     state_order: list[str]
+    rerooting_method_compatibility: DiscreteRerootingMethodCompatibility
     log_likelihood: float
     parameter_count: int
     aic: float
@@ -125,6 +136,7 @@ class DiscreteAncestralReport:
     unstable_nodes: list[str]
     weak_support_nodes: list[str]
     estimates: list[DiscreteAncestralEstimate]
+    rerooting_method_compatibility: DiscreteRerootingMethodCompatibility
     log_likelihood: float | None
     parameter_count: int | None
     aic: float | None
@@ -158,6 +170,7 @@ class DiscreteAncestralSummary:
     root_node: str
     root_most_likely_state: str
     root_confidence: float
+    phytools_rerooting_method_comparable: bool
     log_likelihood: float | None
     parameter_count: int | None
     aic: float | None
@@ -306,6 +319,9 @@ def reconstruct_discrete_ancestral_states_from_dataset(
             warnings.append(
                 "the equal-rates baseline remains preferred by AIC over the requested discrete likelihood model"
             )
+        warnings.extend(
+            fit_result.rerooting_method_compatibility.notes,
+        )
         return DiscreteAncestralReport(
             tree_path=dataset.tree_path,
             traits_path=dataset.traits_path,
@@ -328,6 +344,7 @@ def reconstruct_discrete_ancestral_states_from_dataset(
             unstable_nodes=unstable_nodes,
             weak_support_nodes=weak_support_nodes,
             estimates=fit_result.estimates,
+            rerooting_method_compatibility=fit_result.rerooting_method_compatibility,
             log_likelihood=fit_result.log_likelihood,
             parameter_count=fit_result.parameter_count,
             aic=fit_result.aic,
@@ -403,6 +420,13 @@ def reconstruct_discrete_ancestral_states_from_dataset(
         warnings.append(
             "low-confidence ancestral state assignments should not be overinterpreted as definitive transitions"
         )
+    warnings.extend(
+        _rerooting_method_compatibility(
+            model=resolved_model,
+            state_ordering=state_ordering,
+            root_prior_mode="equal",
+        ).notes
+    )
 
     return DiscreteAncestralReport(
         tree_path=dataset.tree_path,
@@ -428,6 +452,11 @@ def reconstruct_discrete_ancestral_states_from_dataset(
         unstable_nodes=unstable_nodes,
         weak_support_nodes=weak_support_nodes,
         estimates=estimates,
+        rerooting_method_compatibility=_rerooting_method_compatibility(
+            model=resolved_model,
+            state_ordering=state_ordering,
+            root_prior_mode="equal",
+        ),
         log_likelihood=None,
         parameter_count=None,
         aic=None,
@@ -480,6 +509,9 @@ def summarize_discrete_ancestral_report(
         root_node=root_estimate.node,
         root_most_likely_state=root_estimate.most_likely_state,
         root_confidence=root_estimate.confidence,
+        phytools_rerooting_method_comparable=(
+            report.rerooting_method_compatibility.comparable
+        ),
         log_likelihood=report.log_likelihood,
         parameter_count=report.parameter_count,
         aic=report.aic,
@@ -559,6 +591,7 @@ def write_discrete_ancestral_summary_table(
             "root_node",
             "root_most_likely_state",
             "root_confidence",
+            "phytools_rerooting_method_comparable",
             "log_likelihood",
             "parameter_count",
             "aic",
@@ -598,6 +631,9 @@ def write_discrete_ancestral_summary_table(
                 "root_node": summary.root_node,
                 "root_most_likely_state": summary.root_most_likely_state,
                 "root_confidence": str(summary.root_confidence),
+                "phytools_rerooting_method_comparable": str(
+                    summary.phytools_rerooting_method_comparable
+                ).lower(),
                 "log_likelihood": _format_optional_float(summary.log_likelihood),
                 "parameter_count": _format_optional_int(summary.parameter_count),
                 "aic": _format_optional_float(summary.aic),
@@ -955,6 +991,11 @@ def _reconstruct_likelihood_estimates(
         estimates=estimates,
         ordered_states=(state_order if state_ordering == "ordered" else []),
         state_order=state_order,
+        rerooting_method_compatibility=_rerooting_method_compatibility(
+            model=model,
+            state_ordering=state_ordering,
+            root_prior_mode=root_prior_mode,
+        ),
         log_likelihood=reported_log_likelihood,
         parameter_count=parameter_count,
         aic=aic,
@@ -971,6 +1012,50 @@ def _reconstruct_likelihood_estimates(
         optimizer_diagnostics=optimizer_diagnostics,
         overparameterized=overparameterized,
         baseline_comparison=baseline_comparison,
+    )
+
+
+def _rerooting_method_compatibility(
+    *,
+    model: str,
+    state_ordering: str,
+    root_prior_mode: str,
+) -> DiscreteRerootingMethodCompatibility:
+    notes: list[str] = []
+    reference_model: str | None = None
+    reference_root_prior_mode: str | None = None
+    comparable = True
+    if model == "fitch":
+        comparable = False
+        notes.append(
+            "phytools::rerootingMethod is a likelihood Mk marginal-probability reference and does not apply to Fitch parsimony reconstructions"
+        )
+    elif model == "all-rates-different":
+        comparable = False
+        notes.append(
+            "phytools::rerootingMethod is invalid for non-symmetric Q matrices such as all-rates-different models in phytools 2.5.2"
+        )
+    elif model == "symmetric":
+        reference_model = "SYM"
+    elif model == "equal-rates":
+        reference_model = "ER"
+    if state_ordering != "unordered":
+        comparable = False
+        notes.append(
+            "phytools::rerootingMethod does not provide a governed ordered-transition parity surface in this repository"
+        )
+    if root_prior_mode != "equal":
+        comparable = False
+        notes.append(
+            "phytools::rerootingMethod inherits fitMk's default equal root prior; empirical or fixed root-prior runs remain Bijux sensitivity scenarios without direct rerootingMethod parity"
+        )
+    if comparable:
+        reference_root_prior_mode = "equal"
+    return DiscreteRerootingMethodCompatibility(
+        comparable=comparable,
+        reference_model=reference_model,
+        reference_root_prior_mode=reference_root_prior_mode,
+        notes=notes,
     )
 
 
