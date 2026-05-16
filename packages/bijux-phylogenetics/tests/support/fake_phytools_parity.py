@@ -339,6 +339,7 @@ from bijux_phylogenetics.ancestral.common import load_discrete_dataset
 from bijux_phylogenetics.discrete_evolution import (
     count_discrete_stochastic_map_transitions,
     simulate_discrete_stochastic_maps,
+    summarize_discrete_stochastic_map_density,
     summarize_discrete_stochastic_maps,
 )
 
@@ -365,6 +366,11 @@ summary_report = (
     else summarize_discrete_stochastic_maps(collection)
 )
 count_report = count_discrete_stochastic_map_transitions(collection)
+density_report = summarize_discrete_stochastic_map_density(
+    collection,
+    resolution=payload.get("density_resolution", 100),
+    focal_state=payload.get("focal_state"),
+)
 summary = {
     "taxon_count": len(dataset.taxa),
     "trait_name": collection.trait,
@@ -407,7 +413,26 @@ if payload["operation"] == "discrete-stochastic-map":
     summary["conditioned_on_node_estimates"] = collection.conditioned_on_node_estimates
 elif payload["operation"] == "discrete-stochastic-map-description":
     summary["branch_count"] = len(collection.maps[0].branch_histories)
+elif payload["operation"] == "discrete-stochastic-map-density":
+    summary["branch_count"] = len(density_report.branch_rows)
+    summary["focal_state"] = density_report.focal_state
+    summary["baseline_state"] = density_report.baseline_state
+    summary["resolution"] = density_report.resolution
+    summary["total_tree_depth"] = density_report.total_tree_depth
 rows = sorted(
+    [
+        {
+            "label": f"{row.parent_node}->{row.child_node}",
+            "mean_posterior_probability": row.mean_posterior_probability,
+            "minimum_posterior_probability": row.minimum_posterior_probability,
+            "maximum_posterior_probability": row.maximum_posterior_probability,
+            "uncertainty": row.uncertainty,
+            "slice_count": row.slice_count,
+        }
+        for row in density_report.branch_rows
+    ],
+    key=lambda row: row["label"],
+) if payload["operation"] == "discrete-stochastic-map-density" else sorted(
     [
         {
             "row_kind": "transition_count",
@@ -438,7 +463,11 @@ rows = sorted(
     ),
     key=lambda row: (row["row_kind"], row["label"]),
 )
-if __INCLUDE_BRANCH_OCCUPANCY__ and not __COUNT_ONLY__:
+if (
+    __INCLUDE_BRANCH_OCCUPANCY__
+    and not __COUNT_ONLY__
+    and payload["operation"] != "discrete-stochastic-map-density"
+):
     rows = sorted(
         rows
         + [
@@ -514,6 +543,7 @@ if case_id not in SUMMARIES and case_payload["operation"] not in {
     "discrete-stochastic-map",
     "discrete-stochastic-map-count",
     "discrete-stochastic-map-description",
+    "discrete-stochastic-map-density",
     "discrete-ancestral-rerooting",
     "continuous-ancestral-fast-anc",
     "continuous-ancestral-anc-ml",
@@ -553,6 +583,12 @@ elif case_payload["operation"] == "discrete-stochastic-map-description":
         include_branch_occupancy=True,
         count_only=False,
     )
+elif case_payload["operation"] == "discrete-stochastic-map-density":
+    summary, rows = compute_stochastic_map_payload(
+        case_payload,
+        include_branch_occupancy=False,
+        count_only=False,
+    )
 elif case_payload["operation"] == "discrete-ancestral-rerooting":
     summary, rows = compute_discrete_ancestral_payload(case_payload)
 elif case_payload["operation"] == "continuous-ancestral-fast-anc":
@@ -582,6 +618,7 @@ if rows is not None:
         "discrete-stochastic-map",
         "discrete-stochastic-map-count",
         "discrete-stochastic-map-description",
+        "discrete-stochastic-map-density",
     }:
         write_rows_table(stochastic_map_rows_path, rows)
     elif case_payload["operation"] == "discrete-ancestral-rerooting":

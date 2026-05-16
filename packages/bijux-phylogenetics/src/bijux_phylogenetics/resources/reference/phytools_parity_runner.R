@@ -120,6 +120,7 @@ is_discrete_operation <- case_payload$operation %in% c(
   "discrete-stochastic-map",
   "discrete-stochastic-map-count",
   "discrete-stochastic-map-description",
+  "discrete-stochastic-map-density",
   "discrete-ancestral-rerooting"
 )
 if (is_discrete_operation) {
@@ -380,6 +381,38 @@ build_countsimmap_summary_rows <- function(count_matrix) {
   )]
 }
 
+binary_entropy <- function(probability) {
+  bounded <- min(max(as.numeric(probability), 0.0), 1.0)
+  if (bounded <= 0.0 || bounded >= 1.0) {
+    return(0.0)
+  }
+  as.numeric(-bounded * log(bounded, 2) - (1.0 - bounded) * log(1.0 - bounded, 2))
+}
+
+build_densitymap_branch_rows <- function(density_map) {
+  reference_tree <- density_map$tree
+  branch_rows <- list()
+  for (edge_index in seq_len(nrow(reference_tree$edge))) {
+    branch_segments <- as.numeric(reference_tree$maps[[edge_index]])
+    branch_probabilities <- as.numeric(names(reference_tree$maps[[edge_index]])) / 1000.0
+    branch_length <- sum(branch_segments)
+    if (branch_length <= 0.0) {
+      next
+    }
+    parent_node <- node_signature(reference_tree, reference_tree$edge[edge_index, 1])
+    child_node <- node_signature(reference_tree, reference_tree$edge[edge_index, 2])
+    branch_rows[[length(branch_rows) + 1]] <- list(
+      label = paste0(parent_node, "->", child_node),
+      mean_posterior_probability = as.numeric(sum(branch_segments * branch_probabilities) / branch_length),
+      minimum_posterior_probability = as.numeric(min(branch_probabilities)),
+      maximum_posterior_probability = as.numeric(max(branch_probabilities)),
+      uncertainty = as.numeric(sum(branch_segments * vapply(branch_probabilities, binary_entropy, numeric(1))) / branch_length),
+      slice_count = length(branch_probabilities)
+    )
+  }
+  branch_rows[order(vapply(branch_rows, function(row) row$label, character(1)))]
+}
+
 build_make_simmap_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
   phytools_model <- switch(
     discrete_model,
@@ -524,6 +557,45 @@ build_count_simmap_result <- function(tree, trait_values, trait_name, excluded_t
   simmap_result$summary$lower_95_total_transition_count <- as.numeric(stats::quantile(total_transition_counts, probs = 0.025, names = FALSE))
   simmap_result$summary$upper_95_total_transition_count <- as.numeric(stats::quantile(total_transition_counts, probs = 0.975, names = FALSE))
   simmap_result$rows <- build_countsimmap_summary_rows(count_matrix)
+  simmap_result
+}
+
+build_density_map_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
+  simmap_result <- build_make_simmap_result(
+    tree,
+    trait_values,
+    trait_name,
+    excluded_taxa,
+    discrete_model
+  )
+  if (!identical(discrete_model, "equal-rates")) {
+    stop("densityMap parity is only governed for equal-rates binary stochastic maps")
+  }
+  requested_replicate_count <- as.integer(case_payload$stochastic_map_replicate_count)
+  stochastic_map_seed <- as.integer(case_payload$stochastic_map_seed)
+  density_resolution <- as.integer(case_payload$density_resolution)
+  set.seed(stochastic_map_seed)
+  fit <- phytools::make.simmap(
+    tree,
+    trait_values,
+    model = "ER",
+    nsim = requested_replicate_count,
+    pi = "equal",
+    message = FALSE
+  )
+  capture.output({
+    density_map <- phytools::densityMap(
+      fit,
+      plot = FALSE,
+      res = density_resolution
+    )
+  })
+  simmap_result$summary$branch_count <- nrow(density_map$tree$edge)
+  simmap_result$summary$focal_state <- density_map$states[[2]]
+  simmap_result$summary$baseline_state <- density_map$states[[1]]
+  simmap_result$summary$resolution <- density_resolution
+  simmap_result$summary$total_tree_depth <- as.numeric(max(nodeHeights(density_map$tree)))
+  simmap_result$rows <- build_densitymap_branch_rows(density_map)
   simmap_result
 }
 
@@ -690,6 +762,13 @@ result_payload <- switch(
     excluded_taxa,
     case_payload$discrete_model
   ),
+  "discrete-stochastic-map-density" = build_density_map_result(
+    tree,
+    trait_values,
+    trait_name,
+    excluded_taxa,
+    case_payload$discrete_model
+  ),
   "discrete-ancestral-rerooting" = build_rerooting_method_result(
     tree,
     trait_values,
@@ -734,7 +813,8 @@ if (!is.null(result_payload$rows)) {
   } else if (case_payload$operation %in% c(
     "discrete-stochastic-map",
     "discrete-stochastic-map-count",
-    "discrete-stochastic-map-description"
+    "discrete-stochastic-map-description",
+    "discrete-stochastic-map-density"
   )) {
     write_table(stochastic_map_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "discrete-ancestral-rerooting")) {

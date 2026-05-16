@@ -26,6 +26,7 @@ from bijux_phylogenetics.comparative.signal import (
 from bijux_phylogenetics.discrete_evolution import (
     count_discrete_stochastic_map_transitions,
     simulate_discrete_stochastic_maps,
+    summarize_discrete_stochastic_map_density,
     summarize_discrete_stochastic_maps,
 )
 from bijux_phylogenetics.shared_phytools_comparative_fixtures import (
@@ -52,6 +53,8 @@ class PhytoolsParityCase:
     permutation_seed: int | None = None
     stochastic_map_replicate_count: int | None = None
     stochastic_map_seed: int | None = None
+    density_resolution: int | None = None
+    focal_state: str | None = None
     field_tolerances: dict[str, float] | None = None
     row_field_tolerances: dict[str, float] | None = None
     compare_rows: bool = True
@@ -950,6 +953,56 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
             },
         ),
         PhytoolsParityCase(
+            case_id="density-map-er-binary-twenty-four-taxa",
+            fixture_id=binary_discrete_fixture.fixture_id,
+            function_name="phytools::densityMap",
+            python_function_name="summarize_discrete_stochastic_map_density",
+            operation="discrete-stochastic-map-density",
+            input_fixtures=(
+                binary_discrete_fixture.tree_path,
+                binary_discrete_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=binary_discrete_fixture.trait_name,
+            taxon_column=binary_discrete_fixture.taxon_column,
+            discrete_model="equal-rates",
+            stochastic_map_replicate_count=128,
+            stochastic_map_seed=17,
+            density_resolution=12,
+            focal_state="1",
+            row_field_tolerances={
+                "mean_posterior_probability": 2e-3,
+                "minimum_posterior_probability": 2e-3,
+                "maximum_posterior_probability": 2e-3,
+                "uncertainty": 2e-3,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="density-map-er-binary-missing-twenty-four-taxa",
+            fixture_id=binary_discrete_missing_fixture.fixture_id,
+            function_name="phytools::densityMap",
+            python_function_name="summarize_discrete_stochastic_map_density",
+            operation="discrete-stochastic-map-density",
+            input_fixtures=(
+                binary_discrete_missing_fixture.tree_path,
+                binary_discrete_missing_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=binary_discrete_missing_fixture.trait_name,
+            taxon_column=binary_discrete_missing_fixture.taxon_column,
+            discrete_model="equal-rates",
+            stochastic_map_replicate_count=128,
+            stochastic_map_seed=17,
+            density_resolution=12,
+            focal_state="1",
+            row_field_tolerances={
+                "mean_posterior_probability": 2e-3,
+                "minimum_posterior_probability": 2e-3,
+                "maximum_posterior_probability": 2e-3,
+                "uncertainty": 2e-3,
+            },
+        ),
+        PhytoolsParityCase(
             case_id="rerooting-er-binary-twenty-four-taxa",
             fixture_id=binary_discrete_fixture.fixture_id,
             function_name="phytools::rerootingMethod",
@@ -1256,6 +1309,25 @@ def _stochastic_map_count_parity_rows(
     )
 
 
+def _stochastic_map_density_parity_rows(
+    report,
+) -> list[dict[str, object]]:
+    return sorted(
+        [
+            {
+                "label": f"{row.parent_node}->{row.child_node}",
+                "mean_posterior_probability": row.mean_posterior_probability,
+                "minimum_posterior_probability": row.minimum_posterior_probability,
+                "maximum_posterior_probability": row.maximum_posterior_probability,
+                "uncertainty": row.uncertainty,
+                "slice_count": row.slice_count,
+            }
+            for row in report.branch_rows
+        ],
+        key=lambda row: str(row["label"]),
+    )
+
+
 def _selected_cases(case_ids: list[str] | None) -> list[PhytoolsParityCase]:
     registry = {case.case_id: case for case in list_phytools_parity_cases()}
     if case_ids is None:
@@ -1283,6 +1355,8 @@ def _write_case_file(path: Path, case: PhytoolsParityCase) -> Path:
         "permutation_seed": case.permutation_seed,
         "stochastic_map_replicate_count": case.stochastic_map_replicate_count,
         "stochastic_map_seed": case.stochastic_map_seed,
+        "density_resolution": case.density_resolution,
+        "focal_state": case.focal_state,
     }
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return path
@@ -1534,6 +1608,55 @@ def _build_bijux_case_payload(
                 "mean_total_transition_count": report.mean_total_transition_count,
                 "lower_95_total_transition_count": report.lower_95_total_transition_count,
                 "upper_95_total_transition_count": report.upper_95_total_transition_count,
+            },
+            rows,
+        )
+    if case.operation == "discrete-stochastic-map-density":
+        dataset = load_discrete_dataset(
+            tree_path,
+            traits_path,
+            trait=case.trait_name,
+            taxon_column=case.taxon_column,
+        )
+        collection = simulate_discrete_stochastic_maps(
+            tree_path,
+            traits_path,
+            trait=case.trait_name,
+            taxon_column=case.taxon_column,
+            model=case.discrete_model or "equal-rates",
+            replicates=case.stochastic_map_replicate_count or 128,
+            seed=case.stochastic_map_seed or 1,
+        )
+        report = summarize_discrete_stochastic_map_density(
+            collection,
+            resolution=case.density_resolution or 100,
+            focal_state=case.focal_state,
+        )
+        rows = _stochastic_map_density_parity_rows(report)
+        return (
+            {
+                "taxon_count": len(dataset.taxa),
+                "trait_name": collection.trait,
+                "excluded_taxon_count": len(dataset.dropped_missing_taxa),
+                "excluded_taxa": list(dataset.dropped_missing_taxa),
+                "model": collection.model,
+                "state_count": len(report.state_order),
+                "parameter_count": collection.fit_audit.parameter_count,
+                "log_likelihood": collection.fit_audit.log_likelihood,
+                "aic": collection.fit_audit.aic,
+                "aicc": collection.fit_audit.aicc,
+                "overparameterized": collection.fit_audit.overparameterized,
+                "baseline_model": collection.fit_audit.baseline_model,
+                "preferred_model_by_aic": collection.fit_audit.preferred_model_by_aic,
+                "requested_replicate_count": collection.replicates,
+                "successful_replicate_count": report.replicate_count,
+                "simulation_failure_count": len(collection.failures),
+                "seed": collection.seed,
+                "branch_count": len(report.branch_rows),
+                "focal_state": report.focal_state,
+                "baseline_state": report.baseline_state,
+                "resolution": report.resolution,
+                "total_tree_depth": report.total_tree_depth,
             },
             rows,
         )
@@ -1829,6 +1952,31 @@ def _mismatch_reason(
             ) + compare_keys[16:]
         elif case.operation == "discrete-stochastic-map-description":
             compare_keys = compare_keys + ("branch_count",)
+    elif case.operation == "discrete-stochastic-map-density":
+        compare_keys = (
+            "taxon_count",
+            "trait_name",
+            "excluded_taxon_count",
+            "excluded_taxa",
+            "model",
+            "state_count",
+            "parameter_count",
+            "log_likelihood",
+            "aic",
+            "aicc",
+            "overparameterized",
+            "baseline_model",
+            "preferred_model_by_aic",
+            "requested_replicate_count",
+            "successful_replicate_count",
+            "simulation_failure_count",
+            "seed",
+            "branch_count",
+            "focal_state",
+            "baseline_state",
+            "resolution",
+            "total_tree_depth",
+        )
     elif case.operation == "discrete-ancestral-rerooting":
         compare_keys = (
             "taxon_count",
@@ -2216,6 +2364,7 @@ def run_phytools_parity_cases(
                             "discrete-stochastic-map",
                             "discrete-stochastic-map-count",
                             "discrete-stochastic-map-description",
+                            "discrete-stochastic-map-density",
                             "discrete-ancestral-rerooting",
                             "continuous-ancestral-fast-anc",
                             "continuous-ancestral-anc-ml",
@@ -2230,6 +2379,7 @@ def run_phytools_parity_cases(
                                         "discrete-stochastic-map",
                                         "discrete-stochastic-map-count",
                                         "discrete-stochastic-map-description",
+                                        "discrete-stochastic-map-density",
                                     }
                                     else (
                                         "rerooting-method-node-probabilities.tsv"
