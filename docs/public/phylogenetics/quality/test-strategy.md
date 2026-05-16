@@ -55,15 +55,16 @@ Use the repository make surfaces when you want the separated lanes explicitly.
 
 - `make test-external-engines` runs the real executable integration lane and the
   non-slow scientific-validation lane.
-- `make test-scientific-validation-slow` runs the slower governed FASTA-to-tree
-  reference reruns separately, with a longer timeout budget.
-- `make test-stress-small` runs the routine large-dataset stress tier. It
-  covers large alignment inference, supermatrix assembly, tree-set consensus,
-  comparative regression, and tree-annotation table generation on governed
-  compact-but-realistic sizes.
-- `make test-stress-heavy` runs the optional heavy stress tier. It pushes the
-  same owned surfaces to `1,000+` sequences, `1,000+` trees, and
-  hundred-to-thousand taxon review tables with a larger timeout budget.
+- `make test-all` is the exhaustive local gate. It is the maintainer-owned
+  entry point for slow, evaluation, stress, and real-local tests, and it
+  overrides the repository timeout budget to zero so governed long-running
+  workloads can finish.
+- `make test-all-plus-run-time` runs the same exhaustive local gate and adds
+  per-test duration reporting.
+- `make test-scientific-validation-slow`, `make test-stress-small`, and
+  `make test-stress-heavy` are intentionally blocked as standalone commands.
+  Those slow surfaces are reserved for the explicit `test-all*` gates so CI,
+  GitHub Actions, and tox never trigger them accidentally.
 
 That split keeps the routine local engine check reviewable while preserving a
 durable place for slower golden-workflow validation and heavier resource

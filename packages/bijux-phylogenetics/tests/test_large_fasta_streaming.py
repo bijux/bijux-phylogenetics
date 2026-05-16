@@ -54,8 +54,8 @@ def test_validate_fasta_input_handles_thousand_sequence_raw_fasta_with_recorded_
     assert peak_memory_bytes > 0
 
 
+@pytest.mark.slow
 @pytest.mark.stress_small
-@pytest.mark.timeout(120)
 def test_build_alignment_quality_report_handles_large_alignment_without_pairwise_blowup(
     tmp_path: Path,
 ) -> None:

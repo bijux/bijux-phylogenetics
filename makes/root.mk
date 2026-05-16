@@ -12,6 +12,11 @@ UV_SYNC := UV_PROJECT_ENVIRONMENT="$(ROOT_CHECK_VENV)" $(UV) sync --frozen --gro
 CLI := $(ROOT_CHECK_VENV)/bin/bijux-phylogenetics
 DEV_RUN = PYTHONPATH="$(ROOT_DEV_PYTHONPATH)$${PYTHONPATH:+:$$PYTHONPATH}" "$(ROOT_CHECK_PYTHON)"
 DOCS_RENDER_SERVE_CONFIG := 0
+ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time
+ROOT_TARGET_GROUPS_test-all ?= check
+ROOT_TARGET_GROUPS_test-all-plus-run-time ?= check
+ROOT_TARGET_SHARED_ENV_test-all ?= 1
+ROOT_TARGET_SHARED_ENV_test-all-plus-run-time ?= 1
 
 include $(ROOT_MAKEFILE_DIR)/bijux-py/repository/root.mk
 
@@ -20,6 +25,8 @@ ROOT_FORBIDDEN_ARTIFACTS := $(filter-out \
 	"$(CURDIR)/.benchmarks",$(ROOT_FORBIDDEN_ARTIFACTS))
 
 include $(ROOT_MAKEFILE_DIR)/bijux-py/root/package-dispatch.mk
+ROOT_TARGET_PACKAGES_test-all := $(CHECK_PACKAGES)
+ROOT_TARGET_PACKAGES_test-all-plus-run-time := $(CHECK_PACKAGES)
 include $(ROOT_MAKEFILE_DIR)/bijux-py/root/docs.mk
 include $(ROOT_MAKEFILE_DIR)/bijux-docs.mk
 include $(ROOT_MAKEFILE_DIR)/bijux-std.mk
@@ -48,47 +55,8 @@ EVIDENCE_IDS ?=
 
 check: sync-license-assets lock-check check-config-ssot check-evidence-governance check-execution-surfaces check-package-boundaries lint test quality security docs build sbom ## Run the full repository verification flow
 
-test-all: root-check-env ## Run every repository test surface, including slow, evaluation, and real-local tests
-	@$(MAKE) -C "packages/bijux-phylogenetics" -f "$(CURDIR)/makes/packages/bijux-phylogenetics.mk" \
-		PROJECT_SLUG="bijux-phylogenetics" \
-		PYTEST_ADDOPTS_EXTRA='-o timeout=0' \
-		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,bijux-phylogenetics) \
-		$(ROOT_SHARED_CHECK_OVERRIDES) \
-		test-all
-	@$(MAKE) -C "packages/bijux-phylogenetics-dev" -f "$(CURDIR)/makes/packages/bijux-phylogenetics-dev.mk" \
-		PROJECT_SLUG="bijux-phylogenetics-dev" \
-		PYTEST_ADDOPTS_EXTRA='-o timeout=0' \
-		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,bijux-phylogenetics-dev) \
-		$(ROOT_SHARED_CHECK_OVERRIDES) \
-		test-all
-	@$(MAKE) -C "packages/phylogenetic" -f "$(CURDIR)/makes/packages/phylogenetic.mk" \
-		PROJECT_SLUG="phylogenetic" \
-		PYTEST_ADDOPTS_EXTRA='-o timeout=0' \
-		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,phylogenetic) \
-		$(ROOT_SHARED_CHECK_OVERRIDES) \
-		test-all
-.PHONY: test-all
-
-test-all-plus-run-time: root-check-env ## Run every repository test surface and report per-test durations
-	@$(MAKE) -C "packages/bijux-phylogenetics" -f "$(CURDIR)/makes/packages/bijux-phylogenetics.mk" \
-		PROJECT_SLUG="bijux-phylogenetics" \
-		PYTEST_ADDOPTS_EXTRA='-o timeout=0 --durations=0 --durations-min=0' \
-		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,bijux-phylogenetics) \
-		$(ROOT_SHARED_CHECK_OVERRIDES) \
-		test-all-plus-run-time
-	@$(MAKE) -C "packages/bijux-phylogenetics-dev" -f "$(CURDIR)/makes/packages/bijux-phylogenetics-dev.mk" \
-		PROJECT_SLUG="bijux-phylogenetics-dev" \
-		PYTEST_ADDOPTS_EXTRA='-o timeout=0 --durations=0 --durations-min=0' \
-		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,bijux-phylogenetics-dev) \
-		$(ROOT_SHARED_CHECK_OVERRIDES) \
-		test-all-plus-run-time
-	@$(MAKE) -C "packages/phylogenetic" -f "$(CURDIR)/makes/packages/phylogenetic.mk" \
-		PROJECT_SLUG="phylogenetic" \
-		PYTEST_ADDOPTS_EXTRA='-o timeout=0 --durations=0 --durations-min=0' \
-		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,phylogenetic) \
-		$(ROOT_SHARED_CHECK_OVERRIDES) \
-		test-all-plus-run-time
-.PHONY: test-all-plus-run-time
+test-all: ## Run every repository test surface, including slow, evaluation, and real-local tests
+test-all-plus-run-time: ## Run every repository test surface and report per-test durations
 
 install-external-engine-runtime: ## Install the local external engine lane dependencies on macOS with Homebrew
 	@command -v brew >/dev/null || { echo "Homebrew is required for install-external-engine-runtime"; exit 2; }
