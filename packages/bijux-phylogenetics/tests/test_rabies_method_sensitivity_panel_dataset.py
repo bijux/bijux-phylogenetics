@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import json
 from pathlib import Path
 
 import pytest
 
 import bijux_phylogenetics
+import bijux_phylogenetics.datasets.rabies_method_sensitivity as rabies_method_sensitivity
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     export_rabies_method_sensitivity_panel_dataset,
@@ -17,6 +19,17 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
 from .support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
+
+
+def _build_stub_dataset(
+    *, variant_count: int, parallel_workers: int
+) -> rabies_method_sensitivity.RabiesMethodSensitivityPanelDataset:
+    dataset = load_rabies_method_sensitivity_panel_dataset()
+    return replace(
+        dataset,
+        parallel_workers=parallel_workers,
+        variants=dataset.variants[:variant_count],
+    )
 
 
 def test_load_rabies_method_sensitivity_panel_dataset_exposes_packaged_surface() -> None:
@@ -127,6 +140,51 @@ def test_public_runtime_exports_include_rabies_method_sensitivity_surface() -> N
     assert bijux_phylogenetics.run_rabies_method_sensitivity_panel_demo is (
         run_rabies_method_sensitivity_panel_demo
     )
+
+
+def test_run_rabies_method_sensitivity_panel_workflow_writes_execution_record(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dataset = _build_stub_dataset(variant_count=1, parallel_workers=1)
+    monkeypatch.setattr(
+        rabies_method_sensitivity,
+        "load_rabies_method_sensitivity_panel_dataset",
+        lambda: dataset,
+    )
+    monkeypatch.setattr(
+        rabies_method_sensitivity,
+        "_run_variant_workflow",
+        lambda **_: object(),
+    )
+    monkeypatch.setattr(
+        rabies_method_sensitivity,
+        "_build_preprocessing_comparison_rows",
+        lambda _: [],
+    )
+    monkeypatch.setattr(
+        rabies_method_sensitivity,
+        "_aggregate_clades",
+        lambda *_args, **_kwargs: [],
+    )
+    monkeypatch.setattr(
+        rabies_method_sensitivity,
+        "_build_conclusion_rows",
+        lambda **_: [],
+    )
+
+    output_root = tmp_path / "workflow"
+    report = run_rabies_method_sensitivity_panel_workflow(output_root)
+
+    execution_record_path = output_root / "rabies-method-sensitivity-panel.run.json"
+    payload = json.loads(execution_record_path.read_text(encoding="utf-8"))
+    assert report.execution_mode == "serial"
+    assert payload["dataset_id"] == dataset.dataset_id
+    assert payload["status"] == "succeeded"
+    assert payload["parallel_workers"] == 1
+    assert payload["execution_mode"] == "serial"
+    assert payload["successful_variants"] == [dataset.variants[0].variant_id]
+    assert payload["failed_variants"] == []
+    assert payload["task_records"][0]["log_path"] == "parallel-logs/auto-gap-threshold.log"
 
 
 @pytest.mark.slow
