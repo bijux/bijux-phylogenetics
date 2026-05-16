@@ -2617,7 +2617,39 @@ def count_discrete_stochastic_map_transitions(
 ) -> StochasticMapTransitionCountReport:
     """Count directional transitions across one stochastic-map collection."""
     summary = summarize_discrete_stochastic_maps(report)
-    transition_order = [row.transition for row in summary.rows]
+    state_order = list(report.fit_audit.state_order)
+    if not state_order:
+        state_order = sorted(
+            {
+                state
+                for replicate in report.maps
+                for state in replicate.state_time_totals
+            }
+        )
+    transition_order = [
+        f"{source_state}->{target_state}"
+        for source_state in state_order
+        for target_state in state_order
+    ]
+    aggregate_lookup = {
+        row.transition: row
+        for row in summary.rows
+    }
+    aggregate_rows = [
+        aggregate_lookup.get(
+            transition,
+            StochasticMapSummaryRow(
+                transition=transition,
+                mean_count=0.0,
+                lower_95_interval=0.0,
+                upper_95_interval=0.0,
+                minimum_count=0,
+                maximum_count=0,
+                presence_fraction=0.0,
+            ),
+        )
+        for transition in transition_order
+    ]
     matrix_rows = [
         StochasticMapTransitionCountMatrixRow(
             replicate_index=replicate.replicate_index,
@@ -2720,7 +2752,7 @@ def count_discrete_stochastic_map_transitions(
         upper_95_total_transition_count=summary.upper_95_total_transition_count,
         transition_order=transition_order,
         matrix_rows=matrix_rows,
-        aggregate_rows=summary.rows,
+        aggregate_rows=aggregate_rows,
         branch_rows=branch_rows,
         warnings=list(summary.warnings),
     )
