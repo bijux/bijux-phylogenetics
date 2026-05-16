@@ -844,8 +844,9 @@ surfaces. The initial live `phytools` registry is intentionally narrow for this
 goal: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
 `phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
-`phytools::make.simmap(model='ER')`, `phytools::rerootingMethod`, `phytools::fastAnc`, and
-`phytools::anc.ML` on governed strong-signal,
+`phytools::make.simmap(model='ER')`, `phytools::make.simmap(model='SYM')`,
+`phytools::make.simmap(model='ARD')`, `phytools::rerootingMethod`,
+`phytools::fastAnc`, and `phytools::anc.ML` on governed strong-signal,
 weak-signal, non-ultrametric, discrete-state, and missing-value comparative
 fixtures. The live lambda lane includes one
 non-ultrametric case that tracks the live `phytools` likelihood surface within
@@ -862,11 +863,19 @@ now covers governed ER binary and multistate cases, governed SYM
 multistate cases, and governed ARD binary plus weakly identified multistate
 cases, including missing-value-pruned surfaces. The live
 `make.simmap` lane now covers governed clean binary, clean multistate, and
-missing-value-pruned binary ER cases at one governed seed and one governed
-replicate count of 128 maps per case. It compares distributional envelopes
-only: excluded taxa, total-transition-count mean plus interval, transition-count
-summary rows, and time-in-state summary rows. It does not claim exact
-stochastic-history identity with `phytools`.
+missing-value-pruned binary ER cases; governed clean multistate and
+missing-value-pruned multistate SYM cases; and governed binary plus
+missing-value-pruned binary ARD cases at one governed seed and one governed
+replicate count of 128 maps per case. It now also carries the owned fitted
+discrete-Mk audit through the stochastic-mapping surface, including fitted
+model identity, parameter count, log-likelihood, AIC, AICc, baseline-model
+comparison, optimizer convergence, and weak-fit warnings. It compares
+distributional envelopes only: excluded taxa, total-transition-count mean plus
+interval, transition-count summary rows, and time-in-state summary rows. It
+does not claim exact stochastic-history identity with `phytools`. Governed
+multistate ARD cases stay on summary-envelope parity only when weakly
+identified boundary rates make row-level transition summaries unstable across
+optimizers.
 The live
 `rerootingMethod` lane now covers governed ER binary, governed ER multistate,
 governed ER missing-value-pruned, governed SYM multistate, and governed SYM
