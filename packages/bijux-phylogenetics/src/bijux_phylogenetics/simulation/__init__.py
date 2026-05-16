@@ -1194,113 +1194,16 @@ def simulate_discrete_traits(
     root_state: str | None = None,
     seed: int = 1,
 ) -> DiscreteTraitSimulationReport:
-    """Simulate one discrete tip trait over a tree using symmetric jump changes."""
-    from bijux_phylogenetics.ancestral.common import (
-        node_descendant_taxa,
-        node_signature,
+    from .discrete_traits import (
+        simulate_discrete_traits as simulate_discrete_traits_impl,
     )
 
-    unique_states = _normalize_discrete_states(states)
-    if transition_rate < 0.0:
-        raise ValueError(f"transition_rate must be nonnegative, got {transition_rate}")
-    tree = load_tree(tree_path)
-    rng = random.Random(seed)  # nosec B311
-    starting_state = root_state or unique_states[0]
-    if starting_state not in unique_states:
-        raise ValueError(f"root_state '{starting_state}' is not present in states")
-    node_values: dict[str, str] = {}
-    branch_histories: list[SimulatedDiscreteBranchHistory] = []
-
-    def visit(node: TreeNode, state: str) -> None:
-        parent_signature = node_signature(node)
-        node_values[parent_signature] = state
-        if node.is_leaf():
-            return
-        for child in node.children:
-            branch_length = max(child.branch_length or 0.0, 0.0)
-            child_signature = node_signature(child)
-            child_state, events, segments = _simulate_symmetric_state_trajectory(
-                state,
-                branch_length=branch_length,
-                rate=transition_rate,
-                states=unique_states,
-                rng=rng,
-            )
-            branch_histories.append(
-                SimulatedDiscreteBranchHistory(
-                    parent_node=parent_signature,
-                    child_node=child_signature,
-                    branch_length=float(format(branch_length, ".15g")),
-                    start_state=state,
-                    end_state=child_state,
-                    changed=bool(events),
-                    event_count=len(events),
-                    events=[
-                        SimulatedDiscreteTransitionEvent(
-                            parent_node=parent_signature,
-                            child_node=child_signature,
-                            source_state=event.source_state,
-                            target_state=event.target_state,
-                            event_index=event.event_index,
-                            branch_distance=event.branch_distance,
-                        )
-                        for event in events
-                    ],
-                    segments=[
-                        SimulatedDiscreteStateSegment(
-                            parent_node=parent_signature,
-                            child_node=child_signature,
-                            state=segment.state,
-                            start_distance=segment.start_distance,
-                            end_distance=segment.end_distance,
-                            duration=segment.duration,
-                        )
-                        for segment in segments
-                    ],
-                )
-            )
-            visit(child, child_state)
-
-    visit(tree.root, starting_state)
-    values = _tip_values_from_node_map(tree, node_values)
-    return DiscreteTraitSimulationReport(
-        model="symmetric-discrete",
-        tree_path=tree_path,
-        tip_count=tree.tip_count,
-        seed=seed,
-        states=list(unique_states),
+    return simulate_discrete_traits_impl(
+        tree_path,
+        states=states,
         transition_rate=transition_rate,
-        root_state=starting_state,
-        root_state_probabilities=_normalize_root_state_probabilities(
-            states=unique_states,
-            root_state=starting_state,
-            root_state_probabilities=None,
-        ),
-        traits=[
-            SimulatedDiscreteTrait(taxon=taxon, state=state)
-            for taxon, state in sorted(values.items())
-        ],
-        node_states=[
-            SimulatedDiscreteNode(
-                node=node_signature(node),
-                node_name=node.name,
-                is_tip=node.is_leaf(),
-                descendant_taxa=node_descendant_taxa(node),
-                state=str(node_values[node_signature(node)]),
-            )
-            for node in tree.iter_nodes()
-        ],
-        branch_histories=branch_histories,
-        rate_rows=[
-            DiscreteHistoryRateRow(
-                source_state=source_state,
-                target_state=target_state,
-                rate=float(transition_rate),
-            )
-            for source_state in unique_states
-            for target_state in unique_states
-            if source_state != target_state
-        ],
+        root_state=root_state,
+        seed=seed,
     )
 
 
@@ -1439,12 +1342,11 @@ def write_correlated_continuous_trait_collection_summary_table(
 def write_discrete_trait_table(
     path: Path, report: DiscreteTraitSimulationReport
 ) -> Path:
-    """Write simulated discrete trait states as a taxon-keyed table."""
-    return write_taxon_rows(
-        path,
-        columns=["taxon", "state"],
-        rows=[{"taxon": row.taxon, "state": row.state} for row in report.traits],
+    from .discrete_traits import (
+        write_discrete_trait_table as write_discrete_trait_table_impl,
     )
+
+    return write_discrete_trait_table_impl(path, report)
 
 
 def write_discrete_history_tip_truth_table(
