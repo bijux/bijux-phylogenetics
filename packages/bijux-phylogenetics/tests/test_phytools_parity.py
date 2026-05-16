@@ -35,6 +35,12 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "simmap-er-binary-twenty-four-taxa",
         "simmap-er-multistate-twenty-four-taxa",
         "simmap-er-binary-missing-twenty-four-taxa",
+        "simmap-sym-multistate-twenty-four-taxa",
+        "simmap-sym-multistate-missing-twenty-four-taxa",
+        "simmap-ard-binary-twenty-four-taxa",
+        "simmap-ard-multistate-twenty-four-taxa",
+        "simmap-ard-binary-missing-twenty-four-taxa",
+        "simmap-ard-multistate-missing-twenty-four-taxa",
         "rerooting-er-binary-twenty-four-taxa",
         "rerooting-er-multistate-twenty-four-taxa",
         "rerooting-er-binary-missing-twenty-four-taxa",
@@ -61,12 +67,16 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[13].function_name == "phytools::fitMk(model='ARD')"
     assert cases[14].function_name == "phytools::make.simmap(model='ER')"
     assert cases[16].function_name == "phytools::make.simmap(model='ER')"
-    assert cases[17].function_name == "phytools::rerootingMethod"
-    assert cases[21].function_name == "phytools::rerootingMethod"
-    assert cases[22].function_name == "phytools::fastAnc"
-    assert cases[25].function_name == "phytools::fastAnc"
-    assert cases[26].function_name == "phytools::anc.ML"
-    assert cases[29].function_name == "phytools::anc.ML"
+    assert cases[17].function_name == "phytools::make.simmap(model='SYM')"
+    assert cases[18].function_name == "phytools::make.simmap(model='SYM')"
+    assert cases[19].function_name == "phytools::make.simmap(model='ARD')"
+    assert cases[22].function_name == "phytools::make.simmap(model='ARD')"
+    assert cases[23].function_name == "phytools::rerootingMethod"
+    assert cases[27].function_name == "phytools::rerootingMethod"
+    assert cases[28].function_name == "phytools::fastAnc"
+    assert cases[31].function_name == "phytools::fastAnc"
+    assert cases[32].function_name == "phytools::anc.ML"
+    assert cases[35].function_name == "phytools::anc.ML"
     assert (
         cases[0].fixture_id == "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
     )
@@ -77,16 +87,24 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[10].row_field_tolerances == {"rate": 1e-3}
     assert cases[14].stochastic_map_replicate_count == 128
     assert cases[16].stochastic_map_seed == 17
-    assert cases[17].row_field_tolerances == {"probability": 1e-5}
-    assert cases[20].row_field_tolerances == {"probability": 5e-5}
-    assert cases[21].row_field_tolerances == {"probability": 5e-5}
-    assert cases[29].row_field_tolerances == {
+    assert cases[17].row_field_tolerances == {
+        "mean_value": 2.5,
+        "lower_95_interval": 5.0,
+        "upper_95_interval": 5.0,
+        "presence_fraction": 0.25,
+    }
+    assert cases[20].compare_rows is False
+    assert cases[22].compare_rows is False
+    assert cases[23].row_field_tolerances == {"probability": 1e-5}
+    assert cases[26].row_field_tolerances == {"probability": 5e-5}
+    assert cases[27].row_field_tolerances == {"probability": 5e-5}
+    assert cases[35].row_field_tolerances == {
         "estimate": 1e-8,
         "standard_error": 5e-8,
         "lower_95_interval": 5e-8,
         "upper_95_interval": 5e-8,
     }
-    assert cases[25].row_field_tolerances == {
+    assert cases[31].row_field_tolerances == {
         "estimate": 1e-8,
         "standard_error": 1e-8,
     }
@@ -100,7 +118,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     report = run_phytools_parity_cases(rscript_executable=str(rscript))
 
     assert report.all_passed is True
-    assert report.case_count == 30
+    assert report.case_count == 36
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -109,7 +127,9 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
         "phytools::fitMk(model='ARD')",
         "phytools::fitMk(model='ER')",
         "phytools::fitMk(model='SYM')",
+        "phytools::make.simmap(model='ARD')",
         "phytools::make.simmap(model='ER')",
+        "phytools::make.simmap(model='SYM')",
         "phytools::phylosig(method='K')",
         "phytools::phylosig(method='lambda')",
         "phytools::rerootingMethod",
