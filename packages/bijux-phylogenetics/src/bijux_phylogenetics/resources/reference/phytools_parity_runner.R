@@ -83,6 +83,7 @@ stochastic_map_rows_path <- file.path(output_root, "stochastic-map-summary-rows.
 rerooting_rows_path <- file.path(output_root, "rerooting-method-node-probabilities.tsv")
 fast_anc_rows_path <- file.path(output_root, "fast-anc-node-estimates.tsv")
 anc_ml_rows_path <- file.path(output_root, "anc-ml-node-estimates.tsv")
+fastbm_rows_path <- file.path(output_root, "fastbm-summary-rows.tsv")
 case_payload <- jsonlite::fromJSON(case_path)
 r_version <- as.character(getRversion())
 
@@ -509,6 +510,103 @@ build_sim_history_result <- function(tree, trait_name) {
   )
 }
 
+normalize_fastbm_matrix <- function(simulated, tip_labels) {
+  if (is.null(dim(simulated))) {
+    matrix_result <- matrix(
+      as.numeric(simulated),
+      nrow = length(tip_labels),
+      ncol = 1,
+      dimnames = list(names(simulated), "simulation_1")
+    )
+  } else {
+    matrix_result <- as.matrix(simulated)
+  }
+  if (!is.null(rownames(matrix_result)) && identical(rownames(matrix_result), tip_labels)) {
+    return(matrix_result)
+  }
+  if (!is.null(colnames(matrix_result)) && identical(colnames(matrix_result), tip_labels)) {
+    return(t(matrix_result))
+  }
+  rownames(matrix_result) <- tip_labels
+  matrix_result
+}
+
+build_fastbm_summary_rows <- function(simulated_matrix) {
+  rows <- list()
+  tip_frame <- t(simulated_matrix)
+  for (taxon in rownames(simulated_matrix)) {
+    values <- as.numeric(simulated_matrix[taxon, ])
+    rows[[length(rows) + 1]] <- list(
+      row_kind = "tip_distribution",
+      label = taxon,
+      mean_value = as.numeric(mean(values)),
+      standard_deviation = as.numeric(stats::sd(values)),
+      minimum = as.numeric(min(values)),
+      median = as.numeric(stats::median(values)),
+      maximum = as.numeric(max(values)),
+      covariance = "",
+      correlation = ""
+    )
+  }
+  tip_labels <- rownames(simulated_matrix)
+  for (left_index in seq_along(tip_labels)) {
+    for (right_index in left_index:length(tip_labels)) {
+      left_taxon <- tip_labels[[left_index]]
+      right_taxon <- tip_labels[[right_index]]
+      left_values <- tip_frame[, left_taxon]
+      right_values <- tip_frame[, right_taxon]
+      correlation <- if (stats::sd(left_values) == 0 || stats::sd(right_values) == 0) {
+        0.0
+      } else {
+        as.numeric(stats::cor(left_values, right_values))
+      }
+      rows[[length(rows) + 1]] <- list(
+        row_kind = "tip_covariance",
+        label = paste0(left_taxon, "|", right_taxon),
+        mean_value = "",
+        standard_deviation = "",
+        minimum = "",
+        median = "",
+        maximum = "",
+        covariance = as.numeric(stats::cov(left_values, right_values)),
+        correlation = correlation
+      )
+    }
+  }
+  rows[order(
+    vapply(rows, function(row) row$row_kind, character(1)),
+    vapply(rows, function(row) row$label, character(1))
+  )]
+}
+
+build_fastbm_result <- function(tree) {
+  requested_replicate_count <- as.integer(case_payload$continuous_replicate_count)
+  simulation_seed <- as.integer(case_payload$continuous_seed)
+  root_state <- as.numeric(case_payload$continuous_root_state)
+  sigma_squared <- as.numeric(case_payload$continuous_sigma_squared)
+  set.seed(simulation_seed)
+  simulated <- phytools::fastBM(
+    tree,
+    a = root_state,
+    sig2 = sigma_squared,
+    nsim = requested_replicate_count,
+    internal = FALSE
+  )
+  simulated_matrix <- normalize_fastbm_matrix(simulated, tree$tip.label)
+  list(
+    summary = list(
+      taxon_count = length(tree$tip.label),
+      branch_count = nrow(tree$edge),
+      requested_replicate_count = requested_replicate_count,
+      successful_replicate_count = requested_replicate_count,
+      seed = simulation_seed,
+      root_state = root_state,
+      sigma_squared = sigma_squared
+    ),
+    rows = build_fastbm_summary_rows(simulated_matrix)
+  )
+}
+
 build_make_simmap_result <- function(tree, trait_values, trait_name, excluded_taxa, discrete_model) {
   phytools_model <- switch(
     discrete_model,
@@ -869,6 +967,9 @@ result_payload <- switch(
     tree,
     trait_name
   ),
+  "simulate-continuous-brownian" = build_fastbm_result(
+    tree
+  ),
   "discrete-ancestral-rerooting" = build_rerooting_method_result(
     tree,
     trait_values,
@@ -918,6 +1019,8 @@ if (!is.null(result_payload$rows)) {
     "simulate-discrete-history"
   )) {
     write_table(stochastic_map_rows_path, result_payload$rows)
+  } else if (identical(case_payload$operation, "simulate-continuous-brownian")) {
+    write_table(fastbm_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "discrete-ancestral-rerooting")) {
     write_table(rerooting_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "continuous-ancestral-fast-anc")) {
