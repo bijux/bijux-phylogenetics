@@ -143,7 +143,9 @@ def _validate_external_probability_cases(
                 tolerance=tolerance,
                 expected_metrics={
                     "node_count": len(case["rows"]),
-                    "root_state": _expected_most_likely_state(root_expected_probabilities),
+                    "root_state": _expected_most_likely_state(
+                        root_expected_probabilities
+                    ),
                     "root_ambiguous": _expected_ambiguous(root_expected_probabilities),
                 },
                 observed_metrics={
@@ -156,7 +158,9 @@ def _validate_external_probability_cases(
                 },
                 probability_rows=probability_rows,
                 passed=passed,
-                notes=[] if passed else ["one or more node-state probabilities drifted beyond tolerance"],
+                notes=[]
+                if passed
+                else ["one or more node-state probabilities drifted beyond tolerance"],
             )
         )
     return observations
@@ -225,7 +229,11 @@ def _validate_root_prior_behavior() -> DiscreteAncestralReferenceObservation:
         observed_metrics=observed_metrics,
         probability_rows=[],
         passed=passed,
-        notes=[] if passed else ["root-prior sensitivity behavior diverged from the governed policy surface"],
+        notes=[]
+        if passed
+        else [
+            "root-prior sensitivity behavior diverged from the governed policy surface"
+        ],
     )
 
 
@@ -250,9 +258,7 @@ def _validate_ambiguous_state_behavior() -> DiscreteAncestralReferenceObservatio
     }
     observed_metrics = {
         "ambiguous_nodes": sorted(
-            estimate.node
-            for estimate in internal_rows.values()
-            if estimate.ambiguous
+            estimate.node for estimate in internal_rows.values() if estimate.ambiguous
         ),
         "root_state_set": list(root.state_set),
         "root_probabilities": dict(root.state_probabilities),
@@ -266,7 +272,9 @@ def _validate_ambiguous_state_behavior() -> DiscreteAncestralReferenceObservatio
             observed_probability=root.state_probabilities[state],
             absolute_delta=abs(root.state_probabilities[state] - expected_probability),
         )
-        for state, expected_probability in expected_metrics["root_probabilities"].items()
+        for state, expected_probability in expected_metrics[
+            "root_probabilities"
+        ].items()
     ]
     max_probability_delta = max(row.absolute_delta for row in probability_rows)
     passed = (
@@ -286,7 +294,11 @@ def _validate_ambiguous_state_behavior() -> DiscreteAncestralReferenceObservatio
         observed_metrics=observed_metrics,
         probability_rows=probability_rows,
         passed=passed,
-        notes=[] if passed else ["ambiguous internal states were not reported with the governed state sets or probabilities"],
+        notes=[]
+        if passed
+        else [
+            "ambiguous internal states were not reported with the governed state sets or probabilities"
+        ],
     )
 
 
@@ -342,11 +354,17 @@ def _validate_ordered_constraint_behavior() -> DiscreteAncestralReferenceObserva
         observed_metrics=observed_metrics,
         probability_rows=[],
         passed=passed,
-        notes=[] if passed else ["ordered-state constraints no longer produce the governed transition restriction surface"],
+        notes=[]
+        if passed
+        else [
+            "ordered-state constraints no longer produce the governed transition restriction surface"
+        ],
     )
 
 
-def _validate_irreversible_constraint_behavior() -> DiscreteAncestralReferenceObservation:
+def _validate_irreversible_constraint_behavior() -> (
+    DiscreteAncestralReferenceObservation
+):
     fixtures_root = _fixtures_root()
     report = summarize_irreversible_discrete_reconstruction(
         fixtures_root / "trees/example_tree_six_taxa.nwk",
@@ -397,7 +415,11 @@ def _validate_irreversible_constraint_behavior() -> DiscreteAncestralReferenceOb
         observed_metrics=observed_metrics,
         probability_rows=[],
         passed=passed,
-        notes=[] if passed else ["irreversible-transition constraints no longer preserve the governed one-way loss behavior"],
+        notes=[]
+        if passed
+        else [
+            "irreversible-transition constraints no longer preserve the governed one-way loss behavior"
+        ],
     )
 
 
@@ -410,7 +432,9 @@ def _load_ace_reference_fixture() -> dict[str, object]:
 
 
 def _fixtures_root() -> Path:
-    return _repository_root() / "packages" / "bijux-phylogenetics" / "tests" / "fixtures"
+    return (
+        _repository_root() / "packages" / "bijux-phylogenetics" / "tests" / "fixtures"
+    )
 
 
 def _repository_root() -> Path:

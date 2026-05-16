@@ -65,8 +65,7 @@ def test_tn93_alias_matches_canonical_surface_and_reports_coefficients() -> None
     assert alias_report.model_parameters.tn93_ag_coefficient == 0.225
     assert alias_report.model_parameters.tn93_ct_coefficient == 0.264705882352941
     assert (
-        alias_report.model_parameters.tn93_transversion_coefficient
-        == 0.254434742647059
+        alias_report.model_parameters.tn93_transversion_coefficient == 0.254434742647059
     )
 
 

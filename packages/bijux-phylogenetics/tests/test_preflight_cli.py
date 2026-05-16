@@ -95,7 +95,9 @@ def test_phylo_preflight_cli_reports_ready_selected_workflow(
     assert selected["runnable"] is True
     assert selected["blocking_engines"] == []
     mafft_status = next(
-        engine for engine in payload["data"]["engines"] if engine["engine_id"] == "mafft"
+        engine
+        for engine in payload["data"]["engines"]
+        if engine["engine_id"] == "mafft"
     )
     assert mafft_status["executable_path"] == str(mafft)
     assert mafft_status["support_status"] == "tested"

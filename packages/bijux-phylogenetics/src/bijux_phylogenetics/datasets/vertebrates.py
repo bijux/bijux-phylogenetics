@@ -114,7 +114,9 @@ def load_gnathostome_ortholog_protein_benchmark_dataset() -> (
     dataset_root = _resource_root()
     sequences_path = dataset_root / "sequences.fasta"
     validation = validate_fasta_input(sequences_path, sequence_type=_SEQUENCE_TYPE)
-    sequence_lengths = [len(record.sequence) for record in load_fasta_records(sequences_path)]
+    sequence_lengths = [
+        len(record.sequence) for record in load_fasta_records(sequences_path)
+    ]
     return GnathostomeOrthologProteinBenchmarkDataset(
         dataset_id=_DATASET_ID,
         label=_DATASET_LABEL,
@@ -301,7 +303,9 @@ def run_gnathostome_ortholog_protein_benchmark_demo(
             output_root / "workflow",
             workflow_report,
         )
-    overview_path = _write_overview(output_root / "overview.md", dataset, workflow_bundle)
+    overview_path = _write_overview(
+        output_root / "overview.md", dataset, workflow_bundle
+    )
     return GnathostomeOrthologProteinBenchmarkDemoResult(
         output_root=output_root,
         dataset=dataset,

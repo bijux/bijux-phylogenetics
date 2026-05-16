@@ -20,8 +20,8 @@ from bijux_phylogenetics.discrete_evolution import (
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
     load_stochastic_map_collection,
-    render_stochastic_map_density_artifact,
     render_discrete_state_evolution_report,
+    render_stochastic_map_density_artifact,
     render_tree_with_geographic_states,
     run_discrete_state_transition_model,
     simulate_discrete_stochastic_maps,
@@ -33,17 +33,17 @@ from bijux_phylogenetics.discrete_evolution import (
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
     write_stochastic_map_aggregate_transition_matrix,
-    write_stochastic_map_branch_transition_count_table,
-    write_stochastic_map_branch_probability_table,
-    write_stochastic_map_collection,
     write_stochastic_map_branch_occupancy_table,
+    write_stochastic_map_branch_probability_table,
+    write_stochastic_map_branch_transition_count_table,
+    write_stochastic_map_collection,
     write_stochastic_map_density_branch_table,
     write_stochastic_map_density_slice_table,
     write_stochastic_map_event_table,
     write_stochastic_map_segment_table,
     write_stochastic_map_state_time_table,
-    write_stochastic_map_transition_count_matrix,
     write_stochastic_map_summary_table,
+    write_stochastic_map_transition_count_matrix,
     write_transition_summary_table,
 )
 from bijux_phylogenetics.errors import AncestralReconstructionError
@@ -468,7 +468,9 @@ def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(
     write_stochastic_map_state_time_table(state_times_path, summary)
     write_stochastic_map_branch_occupancy_table(branch_occupancy_path, summary)
     write_stochastic_map_transition_count_matrix(count_matrix_path, count_report)
-    write_stochastic_map_aggregate_transition_matrix(aggregate_matrix_path, count_report)
+    write_stochastic_map_aggregate_transition_matrix(
+        aggregate_matrix_path, count_report
+    )
     write_stochastic_map_branch_transition_count_table(
         branch_transition_path,
         count_report,
@@ -485,13 +487,13 @@ def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(
     assert report.failures == []
     assert report.maps[0].state_time_totals
     assert report.maps[0].branch_histories[0].segments
-    assert abs(
-        sum(report.maps[0].state_time_totals.values())
-        - sum(
-            history.branch_length
-            for history in report.maps[0].branch_histories
+    assert (
+        abs(
+            sum(report.maps[0].state_time_totals.values())
+            - sum(history.branch_length for history in report.maps[0].branch_histories)
         )
-    ) < 1e-9
+        < 1e-9
+    )
     assert reloaded.summary.replicate_count == 8
     assert reloaded.maps[0].branch_histories
     assert reloaded.maps[0].branch_histories[0].segments
@@ -512,14 +514,10 @@ def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(
         "branch_index\tparent_node\tchild_node\tstate\tbranch_length\tmean_time"
         in branch_occupancy_path.read_text(encoding="utf-8")
     )
-    assert (
-        "replicate_index\ttotal_transition_count"
-        in count_matrix_path.read_text(encoding="utf-8")
+    assert "replicate_index\ttotal_transition_count" in count_matrix_path.read_text(
+        encoding="utf-8"
     )
-    assert (
-        "source_state"
-        in aggregate_matrix_path.read_text(encoding="utf-8")
-    )
+    assert "source_state" in aggregate_matrix_path.read_text(encoding="utf-8")
     assert (
         "branch_index\tparent_node\tchild_node\ttransition\tmean_count"
         in branch_transition_path.read_text(encoding="utf-8")
@@ -969,7 +967,9 @@ def test_summarize_discrete_stochastic_map_density_tracks_binary_branch_slices(
     density_branch_path = tmp_path / "density-branches.tsv"
     density_slice_path = tmp_path / "density-slices.tsv"
     density_html_path = tmp_path / "density-report.html"
-    write_stochastic_map_branch_probability_table(branch_probability_path, density_report)
+    write_stochastic_map_branch_probability_table(
+        branch_probability_path, density_report
+    )
     write_stochastic_map_density_branch_table(density_branch_path, density_report)
     write_stochastic_map_density_slice_table(density_slice_path, density_report)
     render_result = render_stochastic_map_density_artifact(
@@ -979,9 +979,8 @@ def test_summarize_discrete_stochastic_map_density_tracks_binary_branch_slices(
         layout="phylogram",
     )
     assert "mean_probability" in branch_probability_path.read_text(encoding="utf-8")
-    assert (
-        "mean_posterior_probability"
-        in density_branch_path.read_text(encoding="utf-8")
+    assert "mean_posterior_probability" in density_branch_path.read_text(
+        encoding="utf-8"
     )
     assert "posterior_probability" in density_slice_path.read_text(encoding="utf-8")
     assert density_html_path.exists()
@@ -1114,7 +1113,9 @@ def test_simulate_discrete_stochastic_maps_from_fit_report_matches_path_surface(
     )
 
     assert direct_report.summary == path_report.summary
-    assert direct_report.maps[0].transition_counts == path_report.maps[0].transition_counts
+    assert (
+        direct_report.maps[0].transition_counts == path_report.maps[0].transition_counts
+    )
     assert direct_report.fit_audit.parameter_count == 3
     assert direct_report.fit_audit.optimizer_converged is True
     assert direct_report.fit_audit.preferred_model_by_aic == "equal-rates"

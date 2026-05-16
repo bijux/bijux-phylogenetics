@@ -95,7 +95,9 @@ def test_method_tier_metrics_emit_cli_ready_fields() -> None:
     }
 
 
-def test_phylogenetic_logistic_method_tier_warnings_include_explicit_non_claim() -> None:
+def test_phylogenetic_logistic_method_tier_warnings_include_explicit_non_claim() -> (
+    None
+):
     warnings = method_tier_warnings(
         phylogenetic_logistic_method_tier("phylogenetic-working-correlation-gee")
     )

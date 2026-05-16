@@ -16,7 +16,10 @@ from bijux_phylogenetics.bayesian.beast import (
 )
 from bijux_phylogenetics.bayesian.burnin import DEFAULT_BURNIN_FRACTIONS
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.engines.common import build_file_checksums, load_engine_manifest
+from bijux_phylogenetics.engines.common import (
+    build_file_checksums,
+    load_engine_manifest,
+)
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.render.svg import render_tree_svg
 from bijux_phylogenetics.tree_set import (
@@ -481,7 +484,9 @@ def summarize_beast_workflow_evidence(
 ) -> BeastWorkflowEvidenceReport:
     """Describe whether current BEAST diagnostics are prepared-only, parsed, or tied to a recorded run."""
     manifest_path = (
-        None if analysis_xml_path is None else analysis_xml_path.with_suffix(".manifest.json")
+        None
+        if analysis_xml_path is None
+        else analysis_xml_path.with_suffix(".manifest.json")
     )
     manifest_matches_outputs = False
     manifest_mismatch = False
@@ -498,7 +503,9 @@ def summarize_beast_workflow_evidence(
                 else dict(run_payload.get("output_paths", {}))
             )
             workflow = (
-                None if not isinstance(run_payload, dict) else run_payload.get("workflow")
+                None
+                if not isinstance(run_payload, dict)
+                else run_payload.get("workflow")
             )
             expected_output_checksums = build_file_checksums(
                 [primary_log_path, posterior_tree_path]

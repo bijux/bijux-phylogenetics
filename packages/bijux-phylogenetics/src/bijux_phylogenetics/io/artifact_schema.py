@@ -125,6 +125,8 @@ _RUN_MANIFEST_KEYS = (
     "python_version",
     "timestamp_utc",
 )
+
+
 @dataclass(frozen=True, slots=True)
 class ArtifactSchemaValidationReport:
     """Validation result for one stable reviewer-facing artifact schema."""
@@ -151,7 +153,11 @@ class ArtifactSchemaValidationReport:
             details.append("field order changed")
         if self.notes:
             details.append("; ".join(self.notes))
-        return ": ".join([details[0], " | ".join(details[1:])]) if len(details) > 1 else details[0]
+        return (
+            ": ".join([details[0], " | ".join(details[1:])])
+            if len(details) > 1
+            else details[0]
+        )
 
 
 def artifact_schema_names() -> tuple[str, ...]:
@@ -213,7 +219,9 @@ def validate_clade_table_schema(path: Path) -> ArtifactSchemaValidationReport:
     notes: list[str] = []
     if len(metadata_fields) % 3 != 0:
         unexpected_fields.extend(metadata_fields)
-        notes.append("metadata columns must appear in values/distinct_values/missing_taxa triplets")
+        notes.append(
+            "metadata columns must appear in values/distinct_values/missing_taxa triplets"
+        )
     else:
         seen_metadata_columns: set[str] = set()
         for offset in range(0, len(metadata_fields), 3):
@@ -411,9 +419,9 @@ def _validate_exact_json_schema(
             artifact_format="json",
             valid=False,
             expected_fields=expected_fields,
-            observed_fields=tuple(),
+            observed_fields=(),
             missing_fields=tuple(expected_fields),
-            unexpected_fields=tuple(),
+            unexpected_fields=(),
             order_matches=False,
             notes=("top-level JSON payload must be an object",),
         )
@@ -455,7 +463,7 @@ def _build_exact_report(
         missing_fields=missing_fields,
         unexpected_fields=unexpected_fields,
         order_matches=order_matches,
-        notes=tuple(),
+        notes=(),
     )
 
 

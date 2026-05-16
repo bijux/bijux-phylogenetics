@@ -33,13 +33,13 @@ from bijux_phylogenetics.compare.topology import (
     compare_tree_paths,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.distance import DistanceTreeBuildReport, build_distance_tree
 from bijux_phylogenetics.discrete_evolution import (
     DiscreteStateEvolutionReport,
     estimate_ancestral_geographic_states,
     write_node_state_probability_table,
     write_transition_summary_table,
 )
+from bijux_phylogenetics.distance import DistanceTreeBuildReport, build_distance_tree
 from bijux_phylogenetics.host_association import (
     HostSwitchingReport,
     summarize_host_switching,
@@ -972,8 +972,12 @@ def _build_host_event_recovery_rows(
             child_node=row.child_node,
             true_transition=_format_transition(row.source_state, row.target_state),
             estimated_transition=_format_transition(
-                inferred_by_branch[(row.parent_node, row.child_node)].parent_most_likely_host,
-                inferred_by_branch[(row.parent_node, row.child_node)].child_most_likely_host,
+                inferred_by_branch[
+                    (row.parent_node, row.child_node)
+                ].parent_most_likely_host,
+                inferred_by_branch[
+                    (row.parent_node, row.child_node)
+                ].child_most_likely_host,
             ),
             true_changed=row.changed,
             estimated_changed=inferred_by_branch[
@@ -1012,7 +1016,8 @@ def _build_transition_recovery_rows(
     report: DiscreteStateEvolutionReport,
 ) -> list[KnownAnswerTransitionRecoveryRow]:
     inferred_by_branch = {
-        (row.parent_node, row.child_node): row for row in report.transition_summary.events
+        (row.parent_node, row.child_node): row
+        for row in report.transition_summary.events
     }
     return [
         KnownAnswerTransitionRecoveryRow(

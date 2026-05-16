@@ -854,9 +854,7 @@ def run_fasta_to_tree_workflow(
             "sequence_type": inferred_sequence_type,
         },
         engine_versions={
-            "iqtree_maximum_likelihood": (
-                maximum_likelihood_workflow.run.version.text
-            )
+            "iqtree_maximum_likelihood": (maximum_likelihood_workflow.run.version.text)
         },
         upstream_fingerprints={
             "trimming": trimming_stage.fingerprint,

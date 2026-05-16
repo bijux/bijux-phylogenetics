@@ -1,5 +1,12 @@
 """Comparative-analysis methods and helpers."""
 
+from .brownian_covariance import (
+    BrownianCovarianceReport,
+    summarize_brownian_covariance,
+    summarize_brownian_covariance_from_tree,
+    write_brownian_covariance_long_table,
+    write_brownian_covariance_matrix_table,
+)
 from .brownian_regime_rates import (
     BrownianRegimeBranchRow,
     BrownianRegimeExclusion,
@@ -55,23 +62,6 @@ from .common import (
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
 )
-from .covariance_audit import (
-    ComparativeCovarianceAuditReport,
-    CovarianceAuditCandidateRow,
-    CovarianceAuditExcludedTaxon,
-    summarize_comparative_covariance_audit,
-    write_comparative_covariance_audit_candidate_table,
-    write_comparative_covariance_audit_excluded_taxa_table,
-    write_comparative_covariance_audit_summary_table,
-)
-from .discrete_mk import (
-    DiscreteMkFitReport,
-    DiscreteMkInputAudit,
-    fit_discrete_mk_model,
-    fit_discrete_mk_model_from_dataset,
-    write_discrete_mk_rate_table,
-    write_discrete_mk_summary_table,
-)
 from .continuous_mode_recovery import (
     ContinuousModeRecoveryCaseReport,
     ContinuousModeRecoveryModelChoiceRow,
@@ -95,6 +85,23 @@ from .correlated_trait_evolution import (
     write_correlated_trait_exclusion_table,
     write_correlated_trait_observation_table,
     write_correlated_trait_summary_table,
+)
+from .covariance_audit import (
+    ComparativeCovarianceAuditReport,
+    CovarianceAuditCandidateRow,
+    CovarianceAuditExcludedTaxon,
+    summarize_comparative_covariance_audit,
+    write_comparative_covariance_audit_candidate_table,
+    write_comparative_covariance_audit_excluded_taxa_table,
+    write_comparative_covariance_audit_summary_table,
+)
+from .discrete_mk import (
+    DiscreteMkFitReport,
+    DiscreteMkInputAudit,
+    fit_discrete_mk_model,
+    fit_discrete_mk_model_from_dataset,
+    write_discrete_mk_rate_table,
+    write_discrete_mk_summary_table,
 )
 from .early_burst_trait_evolution import (
     EarlyBurstIdentifiabilityWarning,
@@ -202,13 +209,6 @@ from .pgls import (
     run_pgls,
     run_pgls_multiple_testing,
     write_pgls_model_matrix_table,
-)
-from .brownian_covariance import (
-    BrownianCovarianceReport,
-    summarize_brownian_covariance,
-    summarize_brownian_covariance_from_tree,
-    write_brownian_covariance_long_table,
-    write_brownian_covariance_matrix_table,
 )
 from .pgls_brownian_covariance import (
     BrownianCovariancePGLSReport,
@@ -331,9 +331,9 @@ from .signal import (
     compute_phylogenetic_independent_contrasts,
     compute_phylogenetic_independent_contrasts_from_dataset,
     compute_phylogenetic_signal_test,
+    estimate_pagels_lambda,
     evaluate_pagels_lambda_likelihood,
     evaluate_pagels_lambda_likelihood_from_dataset,
-    estimate_pagels_lambda,
 )
 from .trait_imputation import (
     TraitImputationExclusion,
@@ -434,6 +434,8 @@ __all__ = [
     "ContinuousModeRecoveryReport",
     "ContinuousModeRecoveryScenario",
     "ContinuousModeRecoveryWarningRow",
+    "DiscreteMkFitReport",
+    "DiscreteMkInputAudit",
     "PosteriorTreePGLSCoefficientRow",
     "PosteriorTreePGLSCoefficientSummaryRow",
     "PosteriorTreePGLSReport",
@@ -494,6 +496,7 @@ __all__ = [
     "PhylogeneticLogisticWarning",
     "PGLSLambdaFitReport",
     "PGLSLambdaProfileRow",
+    "BrownianCovarianceReport",
     "BrownianCovariancePGLSReport",
     "BrownianCovarianceRow",
     "OUCovarianceModelFit",
@@ -558,6 +561,8 @@ __all__ = [
     "estimate_pagels_lambda",
     "fit_continuous_evolutionary_mode",
     "fit_brownian_motion_model",
+    "fit_discrete_mk_model",
+    "fit_discrete_mk_model_from_dataset",
     "fit_ornstein_uhlenbeck_model",
     "inspect_pgls_inputs",
     "render_trait_regime_map",
@@ -614,8 +619,12 @@ __all__ = [
     "write_pgls_categorical_contrast_table",
     "write_pgls_interaction_coefficient_table",
     "write_pgls_lambda_profile_table",
+    "write_discrete_mk_rate_table",
+    "write_discrete_mk_summary_table",
     "write_pgls_model_matrix_table",
     "write_brownian_covariance_table",
+    "write_brownian_covariance_long_table",
+    "write_brownian_covariance_matrix_table",
     "write_brownian_regime_branch_table",
     "write_brownian_regime_comparison_table",
     "write_brownian_regime_exclusion_table",

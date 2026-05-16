@@ -80,9 +80,7 @@ def summarize_brownian_covariance_from_tree(
 ) -> BrownianCovarianceReport:
     """Summarize one Brownian shared-ancestry covariance matrix from a native tree."""
     ordered_taxa = _resolve_taxa(tree, taxa)
-    effective_tree_path = (
-        Path("<in-memory-tree>") if tree_path is None else tree_path
-    )
+    effective_tree_path = Path("<in-memory-tree>") if tree_path is None else tree_path
     minimum_branch_length, maximum_branch_length = _branch_length_range(
         tree, effective_tree_path
     )
@@ -100,7 +98,9 @@ def summarize_brownian_covariance_from_tree(
     condition_number = math.inf
     if not singular:
         condition_number = symmetric_matrix_condition_number(covariance_matrix)
-    near_singular = singular or condition_number >= BROWNIAN_COVARIANCE_CONDITION_THRESHOLD
+    near_singular = (
+        singular or condition_number >= BROWNIAN_COVARIANCE_CONDITION_THRESHOLD
+    )
     return BrownianCovarianceReport(
         tree_path=effective_tree_path,
         taxa=ordered_taxa,
@@ -221,7 +221,9 @@ def write_brownian_covariance_matrix_table(
 
 def _resolve_taxa(tree: PhyloTree, taxa: list[str] | None) -> list[str]:
     ordered_taxa = list(tree.tip_names if taxa is None else taxa)
-    duplicate_taxa = sorted({taxon for taxon in ordered_taxa if ordered_taxa.count(taxon) > 1})
+    duplicate_taxa = sorted(
+        {taxon for taxon in ordered_taxa if ordered_taxa.count(taxon) > 1}
+    )
     if duplicate_taxa:
         raise ComparativeMethodError(
             "Brownian covariance requires each requested taxon at most once",
@@ -345,7 +347,9 @@ def _build_covariance_rows(
                     left_taxon=left_taxon,
                     right_taxon=right_taxon,
                     is_diagonal=row_index == column_index,
-                    shared_ancestry_covariance=covariance_matrix[row_index][column_index],
+                    shared_ancestry_covariance=covariance_matrix[row_index][
+                        column_index
+                    ],
                     left_root_depth=root_depths[left_taxon],
                     right_root_depth=root_depths[right_taxon],
                 )

@@ -39,7 +39,9 @@ def test_run_rabies_method_sensitivity_panel_workflow_rejects_concurrent_reuse_o
 
     def slow_failure(**_: object) -> object:
         time.sleep(0.3)
-        raise EngineWorkflowError("fixture variant failed", code="fixture_variant_failed")
+        raise EngineWorkflowError(
+            "fixture variant failed", code="fixture_variant_failed"
+        )
 
     monkeypatch.setattr(
         rabies_method_sensitivity,
@@ -160,7 +162,9 @@ def test_run_rabies_method_sensitivity_panel_workflow_preserves_successful_outpu
             kept_output = variant_root / "kept-output.txt"
             kept_output.write_text("kept\n", encoding="utf-8")
             return object()
-        raise EngineWorkflowError("fixture variant failed", code="fixture_variant_failed")
+        raise EngineWorkflowError(
+            "fixture variant failed", code="fixture_variant_failed"
+        )
 
     monkeypatch.setattr(
         rabies_method_sensitivity,
@@ -173,13 +177,12 @@ def test_run_rabies_method_sensitivity_panel_workflow_preserves_successful_outpu
         run_rabies_method_sensitivity_panel_workflow(output_root)
 
     assert error.value.code == "workflow_parallel_task_failed"
-    assert error.value.details["successful_variants"] == [dataset.variants[0].variant_id]
+    assert error.value.details["successful_variants"] == [
+        dataset.variants[0].variant_id
+    ]
     assert error.value.details["failed_variants"] == [dataset.variants[1].variant_id]
     assert (
-        output_root
-        / "variants"
-        / dataset.variants[0].variant_id
-        / "kept-output.txt"
+        output_root / "variants" / dataset.variants[0].variant_id / "kept-output.txt"
     ).read_text(encoding="utf-8") == "kept\n"
     assert (
         output_root / "parallel-logs" / f"{dataset.variants[0].variant_id}.log"

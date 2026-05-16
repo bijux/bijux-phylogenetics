@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 import csv
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping, Sequence, TypeAlias
+from typing import TypeAlias
 
 from bijux_phylogenetics.errors import MetadataJoinError
 

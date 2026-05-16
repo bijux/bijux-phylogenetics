@@ -11,11 +11,11 @@ from bijux_phylogenetics.engines.validation_matrix import (
     write_external_engine_validation_matrix,
 )
 
-from ..support.external_engines import real_beast_executable
 from ..support.engine_validation_matrix_cases import (
     build_real_alignment_validation_cases,
     build_real_bayesian_validation_cases,
 )
+from ..support.external_engines import real_beast_executable
 
 pytestmark = [pytest.mark.real_local, pytest.mark.engine_real]
 

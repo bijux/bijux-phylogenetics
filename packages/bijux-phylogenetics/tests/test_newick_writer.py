@@ -6,7 +6,11 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import InvalidBranchLengthError, TreeParseError, UnnamedTipError
+from bijux_phylogenetics.errors import (
+    InvalidBranchLengthError,
+    TreeParseError,
+    UnnamedTipError,
+)
 from bijux_phylogenetics.io.newick import (
     dumps_newick_tree_set,
     load_newick_tree_set,

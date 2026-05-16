@@ -117,7 +117,10 @@ def test_dna_bin_alignment_supports_segregating_site_report_without_reloading() 
     assert direct_report.path == alignment.path
     assert direct_report.sequence_count == alignment.sequence_count
     assert direct_report.alignment_length == alignment.alignment_length
-    assert direct_report.segregating_site_positions == path_report.segregating_site_positions
+    assert (
+        direct_report.segregating_site_positions
+        == path_report.segregating_site_positions
+    )
     assert direct_report.rows == path_report.rows
     assert direct_report.warnings == path_report.warnings
 
@@ -137,7 +140,9 @@ def test_dna_bin_alignment_supports_coding_alignment_diagnostics_without_reloadi
     assert direct_report.sequence_count == alignment.sequence_count
     assert direct_report.alignment_length == alignment.alignment_length
     assert direct_report.alignment_length_multiple_of_three is True
-    assert direct_report.frameshift_like_sequences == path_report.frameshift_like_sequences
+    assert (
+        direct_report.frameshift_like_sequences == path_report.frameshift_like_sequences
+    )
     assert direct_report.partial_codon_sequences == path_report.partial_codon_sequences
     assert direct_report.coding_behaviors == path_report.coding_behaviors
     assert direct_report.invalid_codons == path_report.invalid_codons
@@ -174,7 +179,10 @@ def test_dna_bin_alignment_supports_aligned_translation_without_reloading(
     assert direct_report.source_alignment_length == alignment.alignment_length
     assert direct_report.genetic_code_id == path_report.genetic_code_id
     assert direct_report.genetic_code_name == path_report.genetic_code_name
-    assert direct_report.translated_alignment_length == path_report.translated_alignment_length
+    assert (
+        direct_report.translated_alignment_length
+        == path_report.translated_alignment_length
+    )
     assert direct_report.invalid_codon_count == path_report.invalid_codon_count
     assert direct_report.stop_codon_count == path_report.stop_codon_count
     assert direct_report.warnings == path_report.warnings
@@ -203,7 +211,9 @@ def test_dna_bin_alignment_supports_nucleotide_distance_models_without_reloading
     )
 
     assert direct_report.path == alignment.path
-    assert direct_report.identifiers == [record.identifier for record in alignment.records]
+    assert direct_report.identifiers == [
+        record.identifier for record in alignment.records
+    ]
     assert direct_report.alignment_length == alignment.alignment_length
     assert direct_report.model == path_report.model
     assert direct_report.model_parameters == path_report.model_parameters

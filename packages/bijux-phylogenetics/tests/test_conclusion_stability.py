@@ -83,7 +83,8 @@ def test_build_conclusion_stability_report_counts_classes() -> None:
     assert report.summary.ancestral_state_count == 1
     assert report.summary.comparative_coefficient_count == 1
     assert any(
-        row == ConclusionStabilityConclusionRow(
+        row
+        == ConclusionStabilityConclusionRow(
             category="comparative_coefficient",
             conclusion_id="host_group[canid]",
             label="host_group[canid]",

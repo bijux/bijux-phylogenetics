@@ -14,6 +14,7 @@ from bijux_phylogenetics.datasets.continuous_mode_recovery import (
     run_continuous_mode_recovery_panel_workflow,
     write_continuous_mode_recovery_panel_workflow_bundle,
 )
+
 from .support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
@@ -40,14 +41,14 @@ def test_write_continuous_mode_recovery_panel_workflow_bundle_matches_expected_o
         report,
     )
     expected_root = report.dataset.reference_output_root
-    generated_paths = sorted(path for path in bundle.output_root.rglob("*") if path.is_file())
+    generated_paths = sorted(
+        path for path in bundle.output_root.rglob("*") if path.is_file()
+    )
     expected_paths = sorted(path for path in expected_root.rglob("*") if path.is_file())
     assert [path.relative_to(bundle.output_root) for path in generated_paths] == [
         path.relative_to(expected_root) for path in expected_paths
     ]
-    generated = {
-        path.relative_to(bundle.output_root): path for path in generated_paths
-    }
+    generated = {path.relative_to(bundle.output_root): path for path in generated_paths}
     assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 

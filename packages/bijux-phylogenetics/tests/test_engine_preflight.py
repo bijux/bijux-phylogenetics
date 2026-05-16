@@ -29,7 +29,11 @@ def fake_engine_metadata(monkeypatch: pytest.MonkeyPatch):
         return installed[key][1]
 
     def fake_read(engine_name: str, executable: str | Path, *, version_args):
-        key = Path(executable).name if Path(executable).name in installed else str(executable)
+        key = (
+            Path(executable).name
+            if Path(executable).name in installed
+            else str(executable)
+        )
         if key == "mb":
             assert version_args == ("-v",)
         version_text = installed[key][0]
@@ -57,7 +61,9 @@ def test_engine_preflight_marks_supported_versions_ready(fake_engine_metadata) -
     assert report.overall_status == "ready"
     assert all(engine.support_status == "tested" for engine in report.engines)
     fasta_to_tree = next(
-        workflow for workflow in report.workflows if workflow.workflow_id == "fasta-to-tree"
+        workflow
+        for workflow in report.workflows
+        if workflow.workflow_id == "fasta-to-tree"
     )
     assert fasta_to_tree.runnable is True
     assert fasta_to_tree.readiness_status == "ready"
@@ -73,7 +79,9 @@ def test_engine_preflight_marks_newer_versions_as_caution(fake_engine_metadata) 
 
     iqtree = next(engine for engine in report.engines if engine.engine_id == "iqtree")
     workflow = next(
-        workflow for workflow in report.workflows if workflow.workflow_id == "fasta-to-tree"
+        workflow
+        for workflow in report.workflows
+        if workflow.workflow_id == "fasta-to-tree"
     )
     assert iqtree.support_status == "untested"
     assert iqtree.compatible is True
@@ -90,7 +98,9 @@ def test_engine_preflight_blocks_missing_selected_workflow_dependencies(
         if str(executable) == "beast":
             from bijux_phylogenetics.errors import EngineUnavailableError
 
-            raise EngineUnavailableError("engine executable is not available on PATH: beast")
+            raise EngineUnavailableError(
+                "engine executable is not available on PATH: beast"
+            )
         return fake_engine_metadata[str(executable)][1]
 
     monkeypatch.setattr(
@@ -99,25 +109,33 @@ def test_engine_preflight_blocks_missing_selected_workflow_dependencies(
 
     report = inspect_external_engine_preflight(selected_workflow="beast-posterior")
     workflow = next(
-        workflow for workflow in report.workflows if workflow.workflow_id == "beast-posterior"
+        workflow
+        for workflow in report.workflows
+        if workflow.workflow_id == "beast-posterior"
     )
 
     assert workflow.runnable is False
     assert workflow.readiness_status == "blocked"
     assert workflow.blocking_engines == ["BEAST"]
-    with pytest.raises(EngineWorkflowError, match="workflow 'beast-posterior' is blocked") as error:
+    with pytest.raises(
+        EngineWorkflowError, match="workflow 'beast-posterior' is blocked"
+    ) as error:
         require_preflight_workflow(report, workflow_id="beast-posterior")
     assert error.value.code == "engine_preflight_workflow_blocked"
 
 
-def test_engine_preflight_marks_older_versions_unsupported(fake_engine_metadata) -> None:
+def test_engine_preflight_marks_older_versions_unsupported(
+    fake_engine_metadata,
+) -> None:
     fake_engine_metadata["mb"] = ("MrBayes v3.1.2", "/opt/tools/mb")
 
     report = inspect_external_engine_preflight(selected_workflow="mrbayes-posterior")
 
     mrbayes = next(engine for engine in report.engines if engine.engine_id == "mrbayes")
     workflow = next(
-        workflow for workflow in report.workflows if workflow.workflow_id == "mrbayes-posterior"
+        workflow
+        for workflow in report.workflows
+        if workflow.workflow_id == "mrbayes-posterior"
     )
     assert mrbayes.support_status == "unsupported"
     assert mrbayes.compatible is False

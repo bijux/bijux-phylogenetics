@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import csv
 from dataclasses import dataclass
 from pathlib import Path
 import re
@@ -686,9 +685,7 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
         unexpected_field_code="mrbayes_trace_unexpected_field_count",
     )
     generation_field = _mrbayes_generation_field(header_fields)
-    columns = [
-        field for field in header_fields if field and field != generation_field
-    ]
+    columns = [field for field in header_fields if field and field != generation_field]
     for row_number, fields in enumerate(data_lines, start=2):
         raw_row = _build_mrbayes_tabular_row(header_fields, fields)
         generation_text = _normalize_tabular_field(raw_row.get(generation_field))
@@ -739,9 +736,7 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
                         "expected_section": "sampled parameter row",
                     },
                 ) from error
-        rows.append(
-            MrBayesTraceRow(generation=generation, values=values)
-        )
+        rows.append(MrBayesTraceRow(generation=generation, values=values))
     if not rows:
         raise _mrbayes_artifact_error(
             f"MrBayes trace file contains no sampled rows: {path}",
@@ -776,9 +771,7 @@ def parse_mrbayes_mcmc_diagnostics(path: Path) -> MrBayesMcmcReport:
         unexpected_field_code="mrbayes_mcmc_unexpected_field_count",
     )
     generation_field = _mrbayes_generation_field(header_fields)
-    columns = [
-        field for field in header_fields if field and field != generation_field
-    ]
+    columns = [field for field in header_fields if field and field != generation_field]
     rows: list[MrBayesMcmcRow] = []
     for row_number, fields in enumerate(data_lines, start=2):
         raw_row = _build_mrbayes_tabular_row(header_fields, fields)
@@ -834,9 +827,7 @@ def parse_mrbayes_mcmc_diagnostics(path: Path) -> MrBayesMcmcReport:
                             "expected_section": "sampled diagnostics row",
                         },
                     ) from error
-        rows.append(
-            MrBayesMcmcRow(generation=generation, values=values)
-        )
+        rows.append(MrBayesMcmcRow(generation=generation, values=values))
     if not rows:
         raise _mrbayes_artifact_error(
             f"MrBayes MCMC diagnostics file contains no sampled rows: {path}",
@@ -942,7 +933,9 @@ def _split_mrbayes_tabular_table(
         if _is_tabular_warning_line(line):
             continue
         fields = _split_tabular_fields(line)
-        if any((_normalize_tabular_field(field) or "").lower() == "gen" for field in fields):
+        if any(
+            (_normalize_tabular_field(field) or "").lower() == "gen" for field in fields
+        ):
             header_fields = fields
             header_index = index
             break

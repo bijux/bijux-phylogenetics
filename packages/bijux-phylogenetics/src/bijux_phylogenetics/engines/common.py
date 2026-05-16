@@ -298,7 +298,9 @@ def acquire_active_engine_run(record: EngineActiveRunRecord) -> Path:
                 },
             )
         marker_path.unlink(missing_ok=True)
-    payload_text = json.dumps(asdict(record), default=str, indent=2, sort_keys=True) + "\n"
+    payload_text = (
+        json.dumps(asdict(record), default=str, indent=2, sort_keys=True) + "\n"
+    )
     try:
         marker_fd = os.open(marker_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
     except FileExistsError as error:

@@ -10,7 +10,6 @@ from bijux_phylogenetics.errors import EngineWorkflowError
 from .common import build_file_checksums, utc_now_text
 from .workflows import EngineWorkflowReport
 
-
 _CANONICAL_ENGINE_NAMES = {
     "mafft": "MAFFT",
     "trimal": "trimAl",
@@ -27,7 +26,9 @@ def _parse_utc_timestamp(text: str) -> datetime:
 
 def _runtime_seconds(*, started_at_utc: str, ended_at_utc: str) -> float:
     return max(
-        (_parse_utc_timestamp(ended_at_utc) - _parse_utc_timestamp(started_at_utc)).total_seconds(),
+        (
+            _parse_utc_timestamp(ended_at_utc) - _parse_utc_timestamp(started_at_utc)
+        ).total_seconds(),
         0.0,
     )
 
@@ -47,10 +48,7 @@ def _labeled_output_checksums(
         else dict(stored_checksums)
     )
     checksums_by_path = {str(key): value for key, value in checksum_payload.items()}
-    return {
-        label: checksums_by_path[str(path)]
-        for label, path in output_paths.items()
-    }
+    return {label: checksums_by_path[str(path)] for label, path in output_paths.items()}
 
 
 @dataclass(slots=True)
@@ -86,9 +84,7 @@ def build_external_engine_validation_case(
     output_checksums = _labeled_output_checksums(
         dict(report.output_paths),
         stored_checksums=(
-            None
-            if not report.output_checksums
-            else dict(report.output_checksums)
+            None if not report.output_checksums else dict(report.output_checksums)
         ),
     )
     return ExternalEngineValidationCase(
@@ -215,5 +211,7 @@ def write_external_engine_validation_matrix(
             for case in report.cases
         ],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path

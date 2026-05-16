@@ -2,18 +2,18 @@ from __future__ import annotations
 
 import csv
 from dataclasses import asdict, dataclass
-import json
 from importlib import metadata
+import json
 import math
 import os
 from pathlib import Path
 import subprocess  # nosec B404 - parity helpers invoke repository-owned reference commands
 import tempfile
 
+from bijux_phylogenetics.ancestral.common import load_discrete_dataset
 from bijux_phylogenetics.ancestral.continuous import (
     reconstruct_continuous_ancestral_states,
 )
-from bijux_phylogenetics.ancestral.common import load_discrete_dataset
 from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
 )
@@ -34,16 +34,16 @@ from bijux_phylogenetics.discrete_evolution import (
     summarize_discrete_stochastic_map_density,
     summarize_discrete_stochastic_maps,
 )
+from bijux_phylogenetics.shared_phytools_comparative_fixtures import (
+    get_shared_phytools_comparative_fixture,
+)
 from bijux_phylogenetics.simulation import (
-    CorrelatedContinuousTraitSimulationCollectionReport,
     ContinuousTraitSimulationCollectionReport,
+    CorrelatedContinuousTraitSimulationCollectionReport,
     DiscreteHistoryRateRow,
     simulate_brownian_trait_collection,
     simulate_correlated_brownian_trait_collection,
     simulate_discrete_histories,
-)
-from bijux_phylogenetics.shared_phytools_comparative_fixtures import (
-    get_shared_phytools_comparative_fixture,
 )
 
 
@@ -2785,19 +2785,10 @@ def _row_mismatch_reason(
             "upper_95_interval",
             "presence_fraction",
         )
-    elif case.operation == "simulate-continuous-brownian":
-        compare_keys = (
-            "row_kind",
-            "label",
-            "mean_value",
-            "standard_deviation",
-            "minimum",
-            "median",
-            "maximum",
-            "covariance",
-            "correlation",
-        )
-    elif case.operation == "simulate-continuous-correlated-brownian":
+    elif (
+        case.operation == "simulate-continuous-brownian"
+        or case.operation == "simulate-continuous-correlated-brownian"
+    ):
         compare_keys = (
             "row_kind",
             "label",

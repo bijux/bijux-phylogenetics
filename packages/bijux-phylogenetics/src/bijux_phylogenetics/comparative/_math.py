@@ -208,14 +208,10 @@ def symmetric_matrix_eigenvalues(
                 sine * left + cosine * right
             )
         working[pivot_row][pivot_row] = (
-            cosine * cosine * app
-            - 2.0 * sine * cosine * apq
-            + sine * sine * aqq
+            cosine * cosine * app - 2.0 * sine * cosine * apq + sine * sine * aqq
         )
         working[pivot_column][pivot_column] = (
-            sine * sine * app
-            + 2.0 * sine * cosine * apq
-            + cosine * cosine * aqq
+            sine * sine * app + 2.0 * sine * cosine * apq + cosine * cosine * aqq
         )
         working[pivot_row][pivot_column] = 0.0
         working[pivot_column][pivot_row] = 0.0
@@ -227,7 +223,8 @@ def symmetric_matrix_condition_number(
 ) -> float:
     """Return the exact singular-value condition number of a symmetric matrix."""
     singular_values = sorted(
-        abs(value) for value in symmetric_matrix_eigenvalues(matrix, tolerance=tolerance)
+        abs(value)
+        for value in symmetric_matrix_eigenvalues(matrix, tolerance=tolerance)
     )
     if not singular_values:
         return 0.0

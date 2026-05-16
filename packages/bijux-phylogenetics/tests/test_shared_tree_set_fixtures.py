@@ -42,17 +42,25 @@ def test_shared_tree_set_fixture_catalog_loads_tree_set_clades() -> None:
 
     assert report.tree_count == 3
     assert report.source_format == "newick"
-    assert sorted({row.tree_index for row in report.rows if row.tree_index is not None}) == [
+    assert sorted(
+        {row.tree_index for row in report.rows if row.tree_index is not None}
+    ) == [
         1,
         2,
         3,
     ]
     assert sorted(
-        {row.node_label for row in report.rows if row.tree_index == 1 and row.node_kind == "tip"}
+        {
+            row.node_label
+            for row in report.rows
+            if row.tree_index == 1 and row.node_kind == "tip"
+        }
     ) == ["A", "B", "C", "D"]
 
 
-def test_shared_tree_set_fixture_catalog_preserves_large_topology_distance_pair() -> None:
+def test_shared_tree_set_fixture_catalog_preserves_large_topology_distance_pair() -> (
+    None
+):
     fixture = get_shared_tree_set_fixture("topology_distance_large_rooted_pair")
 
     report = extract_tree_set_clades(fixture.path)
@@ -65,7 +73,9 @@ def test_shared_tree_set_fixture_catalog_preserves_large_topology_distance_pair(
     ) == [1, 2]
 
 
-def test_shared_tree_set_fixture_catalog_preserves_consensus_posterior_fixture() -> None:
+def test_shared_tree_set_fixture_catalog_preserves_consensus_posterior_fixture() -> (
+    None
+):
     fixture = get_shared_tree_set_fixture("consensus_posterior_six_taxon_tree_set")
 
     report = extract_tree_set_clades(fixture.path)
@@ -87,7 +97,9 @@ def test_shared_tree_set_fixture_catalog_preserves_consensus_failure_fixture() -
         extract_tree_set_clades(fixture.path)
 
 
-def test_shared_tree_set_fixture_catalog_preserves_prop_clades_posterior_fixture() -> None:
+def test_shared_tree_set_fixture_catalog_preserves_prop_clades_posterior_fixture() -> (
+    None
+):
     fixture = get_shared_tree_set_fixture("prop_clades_posterior_six_taxon_tree_set")
 
     report = extract_tree_set_clades(fixture.path)
@@ -97,7 +109,9 @@ def test_shared_tree_set_fixture_catalog_preserves_prop_clades_posterior_fixture
     assert report.tree_count == 5
 
 
-def test_shared_tree_set_fixture_catalog_preserves_prop_clades_failure_fixture() -> None:
+def test_shared_tree_set_fixture_catalog_preserves_prop_clades_failure_fixture() -> (
+    None
+):
     fixture = get_shared_tree_set_fixture("prop_clades_mismatched_taxon_tree_set")
 
     assert fixture.shared_taxa == ()

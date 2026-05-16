@@ -1,26 +1,15 @@
 """Tree comparison workflows."""
 
-from .support_reference import (
-    SupportReferenceObservation,
-    SupportReferenceValidationReport,
-    validate_support_reference_examples,
-)
-from .topology_distance import (
-    TopologyDistanceReport,
-    TopologyDistanceSplitRow,
-    compare_topology_distance,
-    write_topology_distance_split_table,
-)
 from .structural_parity import (
     StructuralTreeParityReport,
     StructuralTreeSetParityReport,
     compare_tree_sets_structurally,
     compare_tree_structurally,
 )
-from .tree_distance_reference import (
-    TreeDistanceReferenceObservation,
-    TreeDistanceReferenceValidationReport,
-    validate_tree_distance_reference_examples,
+from .support_reference import (
+    SupportReferenceObservation,
+    SupportReferenceValidationReport,
+    validate_support_reference_examples,
 )
 from .taxon_influence import (
     TaxonInfluenceReport,
@@ -46,6 +35,17 @@ from .topology import (
     write_shared_taxa_pruning_table,
     write_shared_taxa_removed_taxa_table,
     write_support_comparison_table,
+)
+from .topology_distance import (
+    TopologyDistanceReport,
+    TopologyDistanceSplitRow,
+    compare_topology_distance,
+    write_topology_distance_split_table,
+)
+from .tree_distance_reference import (
+    TreeDistanceReferenceObservation,
+    TreeDistanceReferenceValidationReport,
+    validate_tree_distance_reference_examples,
 )
 
 __all__ = [

@@ -19,7 +19,9 @@ class _ActiveCluster:
     node: TreeNode
 
 
-def _cluster_pair_key(left: ClusterKey, right: ClusterKey) -> tuple[ClusterKey, ClusterKey]:
+def _cluster_pair_key(
+    left: ClusterKey, right: ClusterKey
+) -> tuple[ClusterKey, ClusterKey]:
     return (left, right) if left < right else (right, left)
 
 
@@ -52,15 +54,23 @@ def _validate_distance_lookup(
     distance_lookup: dict[tuple[str, str], float],
 ) -> None:
     if len(identifiers) < 2:
-        raise InvalidDistanceMatrixError("distance matrix must contain at least two taxa")
+        raise InvalidDistanceMatrixError(
+            "distance matrix must contain at least two taxa"
+        )
     if len(set(identifiers)) != len(identifiers):
-        raise InvalidDistanceMatrixError("distance matrix contains duplicated taxon labels")
+        raise InvalidDistanceMatrixError(
+            "distance matrix contains duplicated taxon labels"
+        )
     for left_identifier in identifiers:
         diagonal = _require_distance(distance_lookup, left_identifier, left_identifier)
         if not math.isclose(diagonal, 0.0, abs_tol=_TIE_TOLERANCE, rel_tol=0.0):
-            raise InvalidDistanceMatrixError("distance matrix has nonzero diagonal entries")
+            raise InvalidDistanceMatrixError(
+                "distance matrix has nonzero diagonal entries"
+            )
         if diagonal < 0.0:
-            raise InvalidDistanceMatrixError("distance matrix contains negative distances")
+            raise InvalidDistanceMatrixError(
+                "distance matrix contains negative distances"
+            )
         for right_identifier in identifiers:
             if left_identifier >= right_identifier:
                 continue
@@ -75,7 +85,9 @@ def _validate_distance_lookup(
                 left_identifier,
             )
             if left_to_right < 0.0 or right_to_left < 0.0:
-                raise InvalidDistanceMatrixError("distance matrix contains negative distances")
+                raise InvalidDistanceMatrixError(
+                    "distance matrix contains negative distances"
+                )
             if not math.isclose(
                 left_to_right,
                 right_to_left,
@@ -133,7 +145,9 @@ def _choose_join_pair(
             ):
                 best_pair = pair_key
     if best_pair is None:
-        raise InvalidDistanceMatrixError("distance matrix did not yield a valid NJ join pair")
+        raise InvalidDistanceMatrixError(
+            "distance matrix did not yield a valid NJ join pair"
+        )
     return best_pair
 
 
@@ -152,8 +166,12 @@ def _join_clusters(
         (distance_sums[left_key] - distance_sums[right_key]) / (2 * (active_count - 2))
     )
     right_length = pair_distance - left_length
-    active_clusters[left_key].node.branch_length = _normalized_branch_length(left_length)
-    active_clusters[right_key].node.branch_length = _normalized_branch_length(right_length)
+    active_clusters[left_key].node.branch_length = _normalized_branch_length(
+        left_length
+    )
+    active_clusters[right_key].node.branch_length = _normalized_branch_length(
+        right_length
+    )
     merged_key = tuple(sorted(left_key + right_key))
     merged_node = TreeNode(
         name=f"Inner{join_counter}",
@@ -196,11 +214,15 @@ def _build_three_taxon_tree(
     left_length = (left_middle + left_right - middle_right) / 2.0
     middle_length = (left_middle + middle_right - left_right) / 2.0
     right_length = (left_right + middle_right - left_middle) / 2.0
-    active_clusters[left_key].node.branch_length = _normalized_branch_length(left_length)
+    active_clusters[left_key].node.branch_length = _normalized_branch_length(
+        left_length
+    )
     active_clusters[middle_key].node.branch_length = _normalized_branch_length(
         middle_length
     )
-    active_clusters[right_key].node.branch_length = _normalized_branch_length(right_length)
+    active_clusters[right_key].node.branch_length = _normalized_branch_length(
+        right_length
+    )
     root = TreeNode(
         name=f"Inner{join_counter}",
         children=[

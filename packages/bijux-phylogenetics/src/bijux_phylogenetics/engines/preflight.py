@@ -8,7 +8,6 @@ from bijux_phylogenetics.errors import EngineUnavailableError, EngineWorkflowErr
 
 from .common import EngineVersionInfo, read_engine_version, resolve_engine_executable
 
-
 VersionTuple = tuple[int, ...]
 
 
@@ -358,7 +357,9 @@ def inspect_external_engine_preflight(
     overall_status = (
         "blocked"
         if "blocked" in statuses_by_readiness
-        else "caution" if "caution" in statuses_by_readiness else "ready"
+        else "caution"
+        if "caution" in statuses_by_readiness
+        else "ready"
     )
     return ExternalEnginePreflightReport(
         engines=statuses,

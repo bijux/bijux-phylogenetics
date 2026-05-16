@@ -105,6 +105,5 @@ def test_load_comparative_dataset_rejects_negative_branch_lengths() -> None:
         )
 
     assert (
-        error.value.details["failure_reason"]
-        == "comparative_negative_branch_lengths"
+        error.value.details["failure_reason"] == "comparative_negative_branch_lengths"
     )

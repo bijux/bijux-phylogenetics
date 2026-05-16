@@ -391,9 +391,8 @@ def test_discrete_evolution_density_maps_cli_writes_branch_density_outputs(
     assert density_payload["metrics"]["density_slice_row_count"] > 0
     assert density_payload["metrics"]["rendered_branch_color_count"] > 0
     assert "mean_probability" in branch_probability_path.read_text(encoding="utf-8")
-    assert (
-        "mean_posterior_probability"
-        in density_branch_path.read_text(encoding="utf-8")
+    assert "mean_posterior_probability" in density_branch_path.read_text(
+        encoding="utf-8"
     )
     assert "posterior_probability" in density_slice_path.read_text(encoding="utf-8")
     assert density_html_path.exists()

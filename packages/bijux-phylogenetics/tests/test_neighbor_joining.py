@@ -20,7 +20,9 @@ def _write_distance_matrix(path: Path, rows: list[str]) -> Path:
     return path
 
 
-def test_build_tree_from_imported_distance_matrix_matches_analytical_nj_fixture() -> None:
+def test_build_tree_from_imported_distance_matrix_matches_analytical_nj_fixture() -> (
+    None
+):
     tree, report = build_tree_from_imported_distance_matrix(
         get_shared_distance_matrix_fixture("analytical_three_taxon").path,
         method="neighbor-joining",

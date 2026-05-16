@@ -12,7 +12,11 @@ from bijux_phylogenetics.core.alignment import AlignmentRecord
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.fasta import write_fasta_alignment
-from bijux_phylogenetics.io.newick import dumps_newick, write_newick, write_newick_tree_set
+from bijux_phylogenetics.io.newick import (
+    dumps_newick,
+    write_newick,
+    write_newick_tree_set,
+)
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.tree_shape import summarize_tree_shape_from_tree
 
@@ -394,7 +398,10 @@ def _iter_non_root_nodes_preorder(node: TreeNode):
 
 
 def _branch_lengths(tree: PhyloTree) -> list[float]:
-    return [float(node.branch_length or 0.0) for node in _iter_non_root_nodes_preorder(tree.root)]
+    return [
+        float(node.branch_length or 0.0)
+        for node in _iter_non_root_nodes_preorder(tree.root)
+    ]
 
 
 def _simulation_envelope_metric(
@@ -570,7 +577,9 @@ def _simulate_birth_death_tree_once(
     )
 
 
-def _simulate_random_tree_topology(node: TreeNode, tip_count: int, rng: random.Random) -> None:
+def _simulate_random_tree_topology(
+    node: TreeNode, tip_count: int, rng: random.Random
+) -> None:
     if tip_count == 1:
         return
     if tip_count == 2:
@@ -789,7 +798,9 @@ def _normalize_trait_names(trait_names: list[str] | tuple[str, ...]) -> list[str
             "correlated Brownian simulation requires at least two non-empty trait names"
         )
     if len(set(normalized)) != len(normalized):
-        raise ValueError("trait names must be unique for correlated Brownian simulation")
+        raise ValueError(
+            "trait names must be unique for correlated Brownian simulation"
+        )
     return normalized
 
 
@@ -814,9 +825,7 @@ def _normalize_square_matrix(
 ) -> list[list[float]]:
     rows = [list(row) for row in matrix]
     if len(rows) != size:
-        raise ValueError(
-            f"{label} must contain {size} rows, got {len(rows)}"
-        )
+        raise ValueError(f"{label} must contain {size} rows, got {len(rows)}")
     for row_index, row in enumerate(rows, start=1):
         if len(row) != size:
             raise ValueError(
@@ -843,7 +852,9 @@ def _covariance_matrix_from_correlation_matrix(
         raise ValueError(
             "trait_standard_deviations length must match the correlation matrix dimension"
         )
-    normalized_standard_deviations = [float(value) for value in trait_standard_deviations]
+    normalized_standard_deviations = [
+        float(value) for value in trait_standard_deviations
+    ]
     if any(value <= 0.0 for value in normalized_standard_deviations):
         raise ValueError("trait_standard_deviations must be strictly positive")
     covariance_matrix: list[list[float]] = []
@@ -872,7 +883,10 @@ def _resolve_correlated_brownian_covariance_matrix(
     | None,
     trait_standard_deviations: list[float] | tuple[float, ...] | None,
 ) -> list[list[float]]:
-    if evolutionary_covariance_matrix is None and evolutionary_correlation_matrix is None:
+    if (
+        evolutionary_covariance_matrix is None
+        and evolutionary_correlation_matrix is None
+    ):
         raise ValueError(
             "provide either evolutionary_covariance_matrix or evolutionary_correlation_matrix"
         )
@@ -955,9 +969,7 @@ def _simulate_correlated_brownian_node_values(
             )
             for row_index in range(len(state))
         ]
-        return [
-            state[index] + increments[index] for index in range(len(state))
-        ]
+        return [state[index] + increments[index] for index in range(len(state))]
 
     def visit(node: TreeNode, state: list[float]) -> None:
         node_values[node_signature(node)] = list(state)
@@ -990,7 +1002,9 @@ def _build_correlated_brownian_collection_summary_rows(
         )
     for left_index, left_trait in enumerate(trait_names):
         left_variance = covariance_matrix[left_index][left_index]
-        for right_index, right_trait in enumerate(trait_names[left_index:], start=left_index):
+        for right_index, right_trait in enumerate(
+            trait_names[left_index:], start=left_index
+        ):
             right_variance = covariance_matrix[right_index][right_index]
             covariance = covariance_matrix[left_index][right_index]
             correlation = 0.0
@@ -1004,15 +1018,9 @@ def _build_correlated_brownian_collection_summary_rows(
                     correlation=_round_float(correlation),
                 )
             )
-    dimension_labels = [
-        (row.taxon, row.trait)
-        for row in simulations[0].traits
-    ]
+    dimension_labels = [(row.taxon, row.trait) for row in simulations[0].traits]
     values_by_dimension = {
-        label: [
-            simulation.traits[index].value
-            for simulation in simulations
-        ]
+        label: [simulation.traits[index].value for simulation in simulations]
         for index, label in enumerate(dimension_labels)
     }
     for taxon, trait_name in dimension_labels:
@@ -1170,9 +1178,13 @@ def _normalize_rate_rows(
     seen_pairs: set[tuple[str, str]] = set()
     for row in rate_rows:
         if row.source_state not in state_set:
-            raise ValueError(f"unknown source_state '{row.source_state}' in rate matrix")
+            raise ValueError(
+                f"unknown source_state '{row.source_state}' in rate matrix"
+            )
         if row.target_state not in state_set:
-            raise ValueError(f"unknown target_state '{row.target_state}' in rate matrix")
+            raise ValueError(
+                f"unknown target_state '{row.target_state}' in rate matrix"
+            )
         if row.source_state == row.target_state:
             raise ValueError("rate matrix rows must describe source->target changes")
         if row.rate < 0.0:
@@ -1225,7 +1237,9 @@ def _normalize_root_state_probabilities(
     total = sum(probabilities.values())
     if total <= 0.0:
         raise ValueError("root_state_probabilities must sum to a positive value")
-    return {state: _round_float(value / total) for state, value in probabilities.items()}
+    return {
+        state: _round_float(value / total) for state, value in probabilities.items()
+    }
 
 
 def _sample_discrete_state(
@@ -1250,7 +1264,9 @@ def _build_rate_lookup(
     rate_rows: list[DiscreteHistoryRateRow],
 ) -> dict[str, dict[str, float]]:
     lookup = {
-        source_state: {target_state: 0.0 for target_state in states if target_state != source_state}
+        source_state: {
+            target_state: 0.0 for target_state in states if target_state != source_state
+        }
         for source_state in states
     }
     for row in rate_rows:
@@ -1442,8 +1458,8 @@ def _summarize_discrete_history_collection(
     state_time_values = {state: [] for state in states}
     tip_state_values: dict[str, list[float]] = {}
     for simulation in simulations:
-        branch_transition_counts = {label: 0.0 for label in transition_labels}
-        branch_state_totals = {state: 0.0 for state in states}
+        branch_transition_counts = dict.fromkeys(transition_labels, 0.0)
+        branch_state_totals = dict.fromkeys(states, 0.0)
         tip_lookup = {row.taxon: row.state for row in simulation.traits}
         for history in simulation.branch_histories:
             for event in history.events:
@@ -1591,9 +1607,7 @@ def _simulate_coalescent_tree_once(
             lineage_count * (lineage_count - 1) / (2.0 * population_size)
         )
         node_heights.append(cumulative_height)
-    pool: list[tuple[TreeNode, float]] = [
-        (TreeNode(), 0.0) for _ in range(tip_count)
-    ]
+    pool: list[tuple[TreeNode, float]] = [(TreeNode(), 0.0) for _ in range(tip_count)]
     for node_height in node_heights:
         left_index, right_index = _choose_two_indices(rng, len(pool))
         right_node, right_height = pool.pop(right_index)
@@ -2253,7 +2267,9 @@ def write_simulated_tree(path: Path, tree: PhyloTree) -> Path:
     return write_newick(path, tree)
 
 
-def write_tree_simulation_record_table(path: Path, report: TreeSimulationReport) -> Path:
+def write_tree_simulation_record_table(
+    path: Path, report: TreeSimulationReport
+) -> Path:
     """Write one per-tree simulation metrics row for a governed tree simulation report."""
     return write_taxon_rows(
         path,

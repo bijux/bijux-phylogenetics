@@ -61,7 +61,10 @@ def test_native_tree_model_copies_without_shared_mutation() -> None:
     assert "analysis" not in tree.root.metadata
     assert tree.root.children[0].metadata["habitat"] == "forest"
     assert tree.root.children[1].children[0].name == "B"
-    assert cloned.root.children[1].children[0].node_id != tree.root.children[1].children[0].node_id
+    assert (
+        cloned.root.children[1].children[0].node_id
+        != tree.root.children[1].children[0].node_id
+    )
 
 
 def test_native_tree_model_validation_detects_duplicate_parentage() -> None:

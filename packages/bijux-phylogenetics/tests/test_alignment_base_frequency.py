@@ -29,7 +29,10 @@ def test_compute_alignment_base_frequency_report_matches_lowercase_fixture() -> 
     assert report.alignment_length == 6
     assert report.ambiguity_policy == "count ambiguity codes as literal states"
     assert report.gap_policy == "count gap characters as literal states"
-    assert report.missing_data_policy == "count explicit missing characters as literal states"
+    assert (
+        report.missing_data_policy
+        == "count explicit missing characters as literal states"
+    )
     assert _frequency_by_state(report) == {
         "a": pytest.approx(6 / 18),
         "c": pytest.approx(2 / 18),
@@ -84,7 +87,9 @@ def test_compute_alignment_base_frequency_report_warns_on_all_gap_missing_alignm
 
     assert _frequency_by_state(report)["-"] == pytest.approx(8 / 18)
     assert _frequency_by_state(report)["?"] == pytest.approx(10 / 18)
-    assert all(_frequency_by_state(report)[state] == 0.0 for state in ["a", "c", "g", "t", "n"])
+    assert all(
+        _frequency_by_state(report)[state] == 0.0 for state in ["a", "c", "g", "t", "n"]
+    )
     assert report.composition_outliers == []
     assert report.warnings == [
         "alignment contains no canonical A/C/G/T residues, so ape-style base frequencies reflect only ambiguity, gap, and missing states"

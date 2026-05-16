@@ -46,9 +46,7 @@ pytestmark = pytest.mark.engine_contract
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
-EXPECTED_BEAST_REFERENCE_ROOT = (
-    FIXTURES / "expected" / "beast2_strict_yule_posterior"
-)
+EXPECTED_BEAST_REFERENCE_ROOT = FIXTURES / "expected" / "beast2_strict_yule_posterior"
 
 
 def fixture(name: str) -> Path:
@@ -1027,7 +1025,9 @@ def test_parse_beast_posterior_tree_samples_reports_metadata_annotations(
     assert sample.annotation_values["height_95%_HPD"] == "{0.2,0.4}"
 
 
-def test_parse_beast_posterior_tree_samples_reads_annotation_rich_beast_fixture() -> None:
+def test_parse_beast_posterior_tree_samples_reads_annotation_rich_beast_fixture() -> (
+    None
+):
     report = parse_beast_posterior_tree_samples(
         fixture("beast2_annotated_posterior.trees"),
         burnin_fraction=0.0,
@@ -1235,9 +1235,7 @@ def test_real_beast_reference_bundle_matches_expected_outputs(tmp_path: Path) ->
         fixture("beast2_strict_yule_posterior.log"),
         burnin_fraction=0.1,
     )
-    parameters = {
-        row.parameter: row for row in parameter_summary.parameter_summaries
-    }
+    parameters = {row.parameter: row for row in parameter_summary.parameter_summaries}
     for parameter, expected in parameter_reference.items():
         observed = parameters[parameter]
         assert observed.effective_sample_size == pytest.approx(
@@ -1267,9 +1265,10 @@ def test_real_beast_reference_bundle_matches_expected_outputs(tmp_path: Path) ->
         .strip()
     )
     assert consensus.consensus_newick == reference["consensus_reference_0.1"]["newick"]
-    assert consensus.annotated_node_count == reference["consensus_reference_0.1"][
-        "annotated_node_count"
-    ]
+    assert (
+        consensus.annotated_node_count
+        == reference["consensus_reference_0.1"]["annotated_node_count"]
+    )
     assert consensus.minimum_posterior_probability == pytest.approx(
         reference["consensus_reference_0.1"]["minimum_posterior_probability"]
     )
@@ -1282,9 +1281,9 @@ def test_real_beast_reference_bundle_matches_expected_outputs(tmp_path: Path) ->
         .strip()
     )
     assert mcc.mcc_newick == reference["mcc_reference_0.1"]["newick"]
-    assert mcc.selected_tree_index == reference["mcc_reference_0.1"][
-        "selected_tree_index"
-    ]
+    assert (
+        mcc.selected_tree_index == reference["mcc_reference_0.1"]["selected_tree_index"]
+    )
     assert mcc.clade_credibility_score == pytest.approx(
         reference["mcc_reference_0.1"]["clade_credibility_score"]
     )

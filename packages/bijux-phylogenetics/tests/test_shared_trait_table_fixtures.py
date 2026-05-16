@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+
 import pytest
 
 from bijux_phylogenetics.ancestral.continuous import (
@@ -13,23 +14,25 @@ from bijux_phylogenetics.ancestral.discrete import (
 from bijux_phylogenetics.comparative.covariance_audit import (
     summarize_comparative_covariance_audit,
 )
+from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs
 from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_independent_contrasts,
 )
-from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs
+from bijux_phylogenetics.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.shared_trait_table_fixtures import (
     get_shared_trait_table_fixture,
     list_shared_trait_table_fixtures,
 )
 from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
-from bijux_phylogenetics.errors import AncestralReconstructionError
 
 
 def _read_taxa(fixture_id: str) -> list[str]:
     fixture = get_shared_trait_table_fixture(fixture_id)
     with fixture.path.open(encoding="utf-8", newline="") as handle:
-        return [row[fixture.taxon_column] for row in csv.DictReader(handle, delimiter="\t")]
+        return [
+            row[fixture.taxon_column] for row in csv.DictReader(handle, delimiter="\t")
+        ]
 
 
 def test_shared_trait_table_fixture_catalog_covers_required_goal_cases() -> None:
@@ -63,17 +66,24 @@ def test_shared_trait_table_fixture_lookup_preserves_durable_ids() -> None:
 
 
 def test_shared_trait_table_fixture_catalog_supports_governed_phytools_panels() -> None:
-    small_fixture = get_shared_trait_table_fixture("phytools_signal_panel_twenty_four_taxa")
+    small_fixture = get_shared_trait_table_fixture(
+        "phytools_signal_panel_twenty_four_taxa"
+    )
     large_fixture = get_shared_trait_table_fixture(
         "phytools_signal_panel_one_hundred_twenty_eight_taxa"
     )
-    missing_fixture = get_shared_trait_table_fixture("phytools_signal_missing_twenty_four_taxa")
+    missing_fixture = get_shared_trait_table_fixture(
+        "phytools_signal_missing_twenty_four_taxa"
+    )
     mismatch_fixture = get_shared_trait_table_fixture(
         "phytools_signal_mismatch_twenty_four_taxa"
     )
 
     assert small_fixture.tree_fixture_id == "phytools_ultrametric_twenty_four_taxa"
-    assert large_fixture.tree_fixture_id == "phytools_ultrametric_one_hundred_twenty_eight_taxa"
+    assert (
+        large_fixture.tree_fixture_id
+        == "phytools_ultrametric_one_hundred_twenty_eight_taxa"
+    )
     assert small_fixture.row_count == 24
     assert large_fixture.row_count == 128
     assert {
@@ -86,7 +96,9 @@ def test_shared_trait_table_fixture_catalog_supports_governed_phytools_panels() 
     assert "tree-trait-taxon-mismatch" in mismatch_fixture.feature_tags
 
 
-def test_shared_trait_table_fixture_catalog_tracks_tree_trait_mismatch_surface() -> None:
+def test_shared_trait_table_fixture_catalog_tracks_tree_trait_mismatch_surface() -> (
+    None
+):
     fixture = get_shared_trait_table_fixture("continuous_tree_mismatch")
     tree_fixture = get_shared_tree_fixture(fixture.tree_fixture_id)
 
@@ -178,10 +190,14 @@ def test_shared_trait_table_fixture_catalog_supports_comparative_mismatch_and_du
     )
 
 
-def test_shared_trait_table_fixture_catalog_preserves_categorical_order_independence() -> None:
+def test_shared_trait_table_fixture_catalog_preserves_categorical_order_independence() -> (
+    None
+):
     tree = get_shared_tree_fixture("balanced_rooted_ultrametric").path
     ordered_fixture = get_shared_trait_table_fixture("categorical_predictor_match")
-    reordered_fixture = get_shared_trait_table_fixture("categorical_predictor_misordered")
+    reordered_fixture = get_shared_trait_table_fixture(
+        "categorical_predictor_misordered"
+    )
 
     ordered_report = inspect_pgls_inputs(
         tree,
@@ -206,7 +222,9 @@ def test_shared_trait_table_fixture_catalog_preserves_categorical_order_independ
 def test_shared_trait_table_fixture_catalog_supports_phylogenetic_residual_cases() -> (
     None
 ):
-    clean_fixture = get_shared_trait_table_fixture("phylogenetic_residual_allometry_match")
+    clean_fixture = get_shared_trait_table_fixture(
+        "phylogenetic_residual_allometry_match"
+    )
     missing_fixture = get_shared_trait_table_fixture(
         "phylogenetic_residual_allometry_missing"
     )

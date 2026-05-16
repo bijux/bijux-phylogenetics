@@ -174,11 +174,7 @@ def _compare_file(
 
 
 def _relative_file_map(root: Path) -> dict[Path, Path]:
-    return {
-        path.relative_to(root): path
-        for path in root.rglob("*")
-        if path.is_file()
-    }
+    return {path.relative_to(root): path for path in root.rglob("*") if path.is_file()}
 
 
 def _compare_tree_file(
@@ -264,8 +260,12 @@ def _compare_tabular_file(
     numeric_tolerance: float,
 ) -> None:
     delimiter = "\t" if expected_path.suffix.lower() == ".tsv" else ","
-    expected_rows, expected_fields = _read_tabular_rows(expected_path, delimiter=delimiter)
-    observed_rows, observed_fields = _read_tabular_rows(observed_path, delimiter=delimiter)
+    expected_rows, expected_fields = _read_tabular_rows(
+        expected_path, delimiter=delimiter
+    )
+    observed_rows, observed_fields = _read_tabular_rows(
+        observed_path, delimiter=delimiter
+    )
     if expected_fields != observed_fields:
         issues.append(
             ScientificOutputEquivalenceIssue(
@@ -296,8 +296,12 @@ def _compare_tabular_file(
         observed_rows,
     )
     sort_fields = identity_fields or expected_fields
-    expected_sorted = sorted(expected_rows, key=lambda row: _row_sort_key(row, sort_fields))
-    observed_sorted = sorted(observed_rows, key=lambda row: _row_sort_key(row, sort_fields))
+    expected_sorted = sorted(
+        expected_rows, key=lambda row: _row_sort_key(row, sort_fields)
+    )
+    observed_sorted = sorted(
+        observed_rows, key=lambda row: _row_sort_key(row, sort_fields)
+    )
     for index, (expected_row, observed_row) in enumerate(
         zip(expected_sorted, observed_sorted, strict=True),
         start=1,
@@ -438,7 +442,9 @@ def _compare_text_or_binary_file(
         )
 
 
-def _read_tabular_rows(path: Path, *, delimiter: str) -> tuple[list[dict[str, str]], list[str]]:
+def _read_tabular_rows(
+    path: Path, *, delimiter: str
+) -> tuple[list[dict[str, str]], list[str]]:
     with path.open(encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle, delimiter=delimiter)
         fieldnames = list(reader.fieldnames or [])
@@ -456,11 +462,7 @@ def _table_field_tolerance(
     relative_path: Path,
     base_tolerance: float,
 ) -> float:
-    if (
-        field == "confidence"
-        or field.endswith("_confidence")
-        or field.endswith("_probabilities")
-    ):
+    if field == "confidence" or field.endswith(("_confidence", "_probabilities")):
         return max(base_tolerance, 0.05)
     if relative_path.name.endswith("-probabilities.tsv"):
         return max(base_tolerance, 0.05)
@@ -501,7 +503,9 @@ def _resolve_tabular_identity_fields(
     return None
 
 
-def _cells_match(expected_value: str, observed_value: str, *, numeric_tolerance: float) -> bool:
+def _cells_match(
+    expected_value: str, observed_value: str, *, numeric_tolerance: float
+) -> bool:
     expected_text = expected_value.strip()
     observed_text = observed_value.strip()
     if expected_text == observed_text:
@@ -562,8 +566,12 @@ def _field_is_tie_equivalent(
 ) -> bool:
     if field != "most_likely_state":
         return False
-    expected_probabilities = _maybe_json_cell(expected_row.get("state_probabilities", ""))
-    observed_probabilities = _maybe_json_cell(observed_row.get("state_probabilities", ""))
+    expected_probabilities = _maybe_json_cell(
+        expected_row.get("state_probabilities", "")
+    )
+    observed_probabilities = _maybe_json_cell(
+        observed_row.get("state_probabilities", "")
+    )
     if not isinstance(expected_probabilities, dict) or not isinstance(
         observed_probabilities, dict
     ):
@@ -576,11 +584,12 @@ def _field_is_tie_equivalent(
         return False
     expected_state = expected_row.get(field, "").strip()
     observed_state = observed_row.get(field, "").strip()
-    if expected_state not in expected_probabilities or observed_state not in expected_probabilities:
+    if (
+        expected_state not in expected_probabilities
+        or observed_state not in expected_probabilities
+    ):
         return False
-    maximum_probability = max(
-        float(value) for value in expected_probabilities.values()
-    )
+    maximum_probability = max(float(value) for value in expected_probabilities.values())
     return math.isclose(
         float(expected_probabilities[expected_state]),
         maximum_probability,
@@ -755,8 +764,4 @@ def _normalize_manifest_path(path_text: str) -> str:
 
 
 def _is_local_link(value: str) -> bool:
-    return not (
-        value.startswith("#")
-        or "://" in value
-        or value.startswith("mailto:")
-    )
+    return not (value.startswith(("#", "mailto:")) or "://" in value)

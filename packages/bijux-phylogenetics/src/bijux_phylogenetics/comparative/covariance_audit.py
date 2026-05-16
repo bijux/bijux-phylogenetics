@@ -19,7 +19,10 @@ from bijux_phylogenetics.comparative.common import (
 )
 from bijux_phylogenetics.comparative.models import _alpha_grid
 from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs
-from bijux_phylogenetics.core.metadata import inspect_taxon_table_index, write_taxon_rows
+from bijux_phylogenetics.core.metadata import (
+    inspect_taxon_table_index,
+    write_taxon_rows,
+)
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
@@ -117,7 +120,9 @@ def summarize_comparative_covariance_audit(
         )
     if analysis == "brownian-trait":
         if trait is None:
-            raise ComparativeMethodError("brownian-trait covariance audit requires --trait")
+            raise ComparativeMethodError(
+                "brownian-trait covariance audit requires --trait"
+            )
         return _summarize_brownian_trait_covariance_audit(
             tree_path,
             traits_path,
@@ -235,7 +240,9 @@ def write_comparative_covariance_audit_candidate_table(
                 "candidate_label": row.candidate_label,
                 "parameter_name": row.parameter_name or "",
                 "parameter_value": (
-                    "" if row.parameter_value is None else format(row.parameter_value, ".15g")
+                    ""
+                    if row.parameter_value is None
+                    else format(row.parameter_value, ".15g")
                 ),
                 "matrix_dimension": row.matrix_dimension,
                 "matrix_rank": row.matrix_rank,
@@ -520,13 +527,19 @@ def _base_input_messages(tree_validation, table_audit) -> tuple[list[str], list[
     if not tree_validation.rooted:
         blockers.append("tree must be rooted for comparative covariance audit")
     if not tree_validation.has_complete_branch_lengths:
-        blockers.append("tree requires complete branch lengths for comparative covariance audit")
+        blockers.append(
+            "tree requires complete branch lengths for comparative covariance audit"
+        )
     if tree_validation.negative_branch_lengths:
-        blockers.append("tree contains negative branch lengths that invalidate comparative covariance")
+        blockers.append(
+            "tree contains negative branch lengths that invalidate comparative covariance"
+        )
     return blockers, warnings
 
 
-def _trait_readiness_exclusions(readiness, *, trait: str) -> list[CovarianceAuditExcludedTaxon]:
+def _trait_readiness_exclusions(
+    readiness, *, trait: str
+) -> list[CovarianceAuditExcludedTaxon]:
     rows: list[CovarianceAuditExcludedTaxon] = []
     rows.extend(
         CovarianceAuditExcludedTaxon(
@@ -555,20 +568,26 @@ def _trait_readiness_exclusions(readiness, *, trait: str) -> list[CovarianceAudi
     return rows
 
 
-def _pgls_candidate_rows(tree, taxa: list[str], *, lambda_value: float | str) -> list[CovarianceAuditCandidateRow]:
+def _pgls_candidate_rows(
+    tree, taxa: list[str], *, lambda_value: float | str
+) -> list[CovarianceAuditCandidateRow]:
     base_covariance = build_brownian_covariance_matrix(tree, taxa)
     if isinstance(lambda_value, (float, int)):
         candidate_values = [float(lambda_value)]
     elif lambda_value == "estimate":
         candidate_values = [round(index / 100.0, 2) for index in range(101)]
     else:
-        raise ComparativeMethodError("PGLS lambda must be 'estimate' or a numeric value")
+        raise ComparativeMethodError(
+            "PGLS lambda must be 'estimate' or a numeric value"
+        )
     return [
         _assess_covariance_candidate(
             candidate_label=f"lambda={candidate:.2f}",
             parameter_name="lambda",
             parameter_value=candidate,
-            covariance_matrix=_raw_lambda_transform_covariance(base_covariance, candidate),
+            covariance_matrix=_raw_lambda_transform_covariance(
+                base_covariance, candidate
+            ),
             fit_strategy="regularization",
             fit_strategy_details=(
                 "PGLS applies diagonal stabilization epsilon=1e-8 before covariance inversion"
@@ -585,7 +604,9 @@ def _resolved_alpha_candidates(dataset, *, alpha: float | str) -> list[float]:
             raise ComparativeMethodError("OU alpha must be positive")
         return [resolved]
     if alpha != "estimate":
-        raise ComparativeMethodError("OU alpha must be 'estimate' or a positive numeric value")
+        raise ComparativeMethodError(
+            "OU alpha must be 'estimate' or a positive numeric value"
+        )
     return _alpha_grid(dataset)
 
 
@@ -605,9 +626,7 @@ def _assess_covariance_candidate(
     condition_number = math.inf
     if positive_definite_before_fit and not singular:
         condition_number = matrix_condition_number(covariance_matrix)
-    near_singular = (
-        singular or condition_number >= COVARIANCE_AUDIT_CONDITION_THRESHOLD
-    )
+    near_singular = singular or condition_number >= COVARIANCE_AUDIT_CONDITION_THRESHOLD
     fit_condition_number: float | None = None
     actual_fit_strategy = fit_strategy
     if fit_strategy == "regularization":
@@ -716,7 +735,9 @@ def _candidate_failure_messages(
 ) -> list[str]:
     if not candidate_rows:
         return []
-    failed = [row.candidate_label for row in candidate_rows if row.fit_strategy == "failure"]
+    failed = [
+        row.candidate_label for row in candidate_rows if row.fit_strategy == "failure"
+    ]
     if not failed:
         return []
     return [

@@ -9,8 +9,8 @@ from tempfile import TemporaryDirectory
 from bijux_phylogenetics.core.alignment import (
     AlignmentRecord,
     CodingSequencePreparationReport,
-    FastaRepairReport,
     FastaInputValidationReport,
+    FastaRepairReport,
     SequenceCompositionOutlier,
     SequenceLengthOutlier,
 )
@@ -23,13 +23,13 @@ from bijux_phylogenetics.core.traits import (
     validate_traits_table,
 )
 from bijux_phylogenetics.core.tree import TreeNode
-from bijux_phylogenetics.errors import MetadataJoinError
 from bijux_phylogenetics.diagnostics.validation import (
     TreeInspectionReport,
     TreeValidationReport,
     inspect_tree_path,
     validate_tree_path,
 )
+from bijux_phylogenetics.errors import MetadataJoinError
 from bijux_phylogenetics.io.fasta import (
     detect_composition_outlier_sequences,
     detect_sequence_length_outliers,
@@ -582,7 +582,9 @@ def write_catarrhine_data_quality_stress_panel_workflow_bundle(
         duplicate_sequence_identifier_count=len(
             report.raw_sequence_input_validation.duplicate_identifiers
         ),
-        illegal_character_count=len(report.raw_sequence_input_validation.illegal_characters),
+        illegal_character_count=len(
+            report.raw_sequence_input_validation.illegal_characters
+        ),
         empty_sequence_count=len(report.raw_sequence_input_validation.empty_sequences),
         raw_sequence_length_outlier_count=len(report.raw_sequence_length_outliers),
         duplicate_trait_taxon_count=len(report.trait_duplicates),
@@ -1319,7 +1321,9 @@ def _write_raw_trait_linkage_table(
                 "missing_from_traits": ",".join(linkage.missing_from_traits),
                 "extra_trait_taxa": ",".join(linkage.extra_trait_taxa),
                 "strict_status": (
-                    "failed" if report.raw_trait_mismatch_error is not None else "passed"
+                    "failed"
+                    if report.raw_trait_mismatch_error is not None
+                    else "passed"
                 ),
                 "detail": report.raw_trait_mismatch_error or "raw linkage passed",
             }

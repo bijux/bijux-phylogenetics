@@ -22,7 +22,16 @@ from bijux_phylogenetics.io.artifact_schema import (
     validate_geographic_event_table_schema,
 )
 
-DATASET_CONFIG = Path(__file__).parent.parent / "src" / "bijux_phylogenetics" / "resources" / "datasets" / "pathogens" / "rabies_cross_host_geography_panel" / "workflow-config.json"
+DATASET_CONFIG = (
+    Path(__file__).parent.parent
+    / "src"
+    / "bijux_phylogenetics"
+    / "resources"
+    / "datasets"
+    / "pathogens"
+    / "rabies_cross_host_geography_panel"
+    / "workflow-config.json"
+)
 
 
 def _dataset():

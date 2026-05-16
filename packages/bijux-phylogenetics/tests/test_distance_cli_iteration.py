@@ -171,7 +171,9 @@ def test_cli_alignment_build_tree_reports_explicit_bionj_exclusion_json(capsys) 
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 2
     assert payload["errors"][0]["code"] == "unsupported_distance_tree_method_error"
-    assert payload["errors"][0]["message"].startswith("BIONJ is explicitly out of scope")
+    assert payload["errors"][0]["message"].startswith(
+        "BIONJ is explicitly out of scope"
+    )
     assert payload["errors"][0]["details"]["reference_surface"] == "ape::bionj"
 
 

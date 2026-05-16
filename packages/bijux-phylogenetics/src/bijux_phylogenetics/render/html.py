@@ -5,7 +5,6 @@ from html import escape
 import json
 from pathlib import Path
 
-
 SummaryValue = str | int | float | bool
 SummaryMetric = tuple[str, SummaryValue]
 ArtifactLink = tuple[str, str, str | None]
@@ -62,10 +61,10 @@ def write_html_report(
 """
         summary_section = "\n".join(
             [
-                "<section><h2>summary</h2><div class=\"summary-grid\">",
+                '<section><h2>summary</h2><div class="summary-grid">',
                 *[
                     (
-                        "<dl class=\"summary-card\">"
+                        '<dl class="summary-card">'
                         f"<dt>{escape(name)}</dt>"
                         f"<dd>{escape(str(value))}</dd>"
                         "</dl>"
@@ -104,17 +103,15 @@ def write_html_report(
                 f'<span class="artifact-note">{escape(note)}</span>' if note else ""
             )
             artifact_items.append(
-                (
-                    "<li>"
-                    f"{escape(label)}: "
-                    f'<a href="{escape(href, quote=True)}">{escape(href)}</a>'
-                    f"{note_markup}"
-                    "</li>"
-                )
+                "<li>"
+                f"{escape(label)}: "
+                f'<a href="{escape(href, quote=True)}">{escape(href)}</a>'
+                f"{note_markup}"
+                "</li>"
             )
         artifact_section = "\n".join(
             [
-                "<section><h2>artifacts</h2><ul class=\"artifact-list\">",
+                '<section><h2>artifacts</h2><ul class="artifact-list">',
                 *artifact_items,
                 "</ul></section>",
             ]
@@ -192,7 +189,9 @@ def write_html_report(
 """
     else:
         main_content = "\n".join(
-            block for block in (manifest, summary_section, artifact_section, body) if block
+            block
+            for block in (manifest, summary_section, artifact_section, body)
+            if block
         )
         html = f"""<!doctype html>
 <html lang="en">

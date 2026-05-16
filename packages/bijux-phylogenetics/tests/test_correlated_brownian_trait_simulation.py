@@ -91,9 +91,7 @@ def test_correlated_brownian_collection_reports_tree_and_trait_covariance(
         len([row for row in report.rows if row.row_kind == "evolutionary_covariance"])
         == 3
     )
-    assert (
-        len([row for row in report.rows if row.row_kind == "tip_distribution"]) == 8
-    )
+    assert len([row for row in report.rows if row.row_kind == "tip_distribution"]) == 8
     assert len([row for row in report.rows if row.row_kind == "tip_covariance"]) == 36
 
     same_taxon_cross_trait = _row_by_label(

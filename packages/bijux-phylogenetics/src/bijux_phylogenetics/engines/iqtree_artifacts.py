@@ -370,7 +370,9 @@ def _merge_model_sidecar(
             continue
         if normalized_key in _SIDECAR_FLOAT_KEYS and parsed_value:
             try:
-                setattr(summary, _SIDECAR_FLOAT_KEYS[normalized_key], float(parsed_value))
+                setattr(
+                    summary, _SIDECAR_FLOAT_KEYS[normalized_key], float(parsed_value)
+                )
             except ValueError:
                 continue
             continue

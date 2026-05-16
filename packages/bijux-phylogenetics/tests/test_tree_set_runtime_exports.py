@@ -19,7 +19,6 @@ def test_public_runtime_exports_tree_set_scaling_surface() -> None:
         is write_tree_distance_distribution_table
     )
     assert (
-        bijux_phylogenetics.TreeDistanceDistributionRow
-        is TreeDistanceDistributionRow
+        bijux_phylogenetics.TreeDistanceDistributionRow is TreeDistanceDistributionRow
     )
     assert bijux_phylogenetics.TreeSetProcessingSummary is TreeSetProcessingSummary

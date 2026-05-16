@@ -56,14 +56,20 @@ def _fixtures_root() -> Path:
 
 
 def _catalog_path() -> Path:
-    return _fixtures_root() / "metadata" / "shared_phytools_comparative_fixture_catalog.json"
+    return (
+        _fixtures_root()
+        / "metadata"
+        / "shared_phytools_comparative_fixture_catalog.json"
+    )
 
 
 def _load_catalog() -> dict[str, object]:
     return json.loads(_catalog_path().read_text(encoding="utf-8"))
 
 
-def list_shared_phytools_comparative_fixtures() -> list[SharedPhytoolsComparativeFixture]:
+def list_shared_phytools_comparative_fixtures() -> list[
+    SharedPhytoolsComparativeFixture
+]:
     """Return the governed comparative fixture corpus used by live `phytools` parity."""
     catalog = _load_catalog()
     return [
@@ -92,7 +98,10 @@ def get_shared_phytools_comparative_fixture(
         if fixture.fixture_id == fixture_id:
             return fixture
     supported = ", ".join(
-        sorted(fixture.fixture_id for fixture in list_shared_phytools_comparative_fixtures())
+        sorted(
+            fixture.fixture_id
+            for fixture in list_shared_phytools_comparative_fixtures()
+        )
     )
     raise ValueError(
         f"unsupported shared phytools comparative fixture '{fixture_id}'; expected one of: {supported}"

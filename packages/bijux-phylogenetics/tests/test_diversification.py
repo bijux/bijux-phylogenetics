@@ -74,7 +74,9 @@ def test_compute_diversification_gamma_statistic_matches_governed_ultrametric_ex
     None
 ):
     balanced = compute_diversification_gamma_statistic(fixture("example_tree.nwk"))
-    larger = compute_diversification_gamma_statistic(fixture("example_tree_eight_taxa.nwk"))
+    larger = compute_diversification_gamma_statistic(
+        fixture("example_tree_eight_taxa.nwk")
+    )
     zero_internal = compute_diversification_gamma_statistic(
         fixture("example_tree_ultrametric_zero_internal.nwk")
     )
@@ -96,7 +98,9 @@ def test_compute_diversification_gamma_statistic_warns_on_incomplete_sampling() 
     )
 
     assert report.sampling_fraction == 0.75
-    assert any("assumes complete taxon sampling" in warning for warning in report.warnings)
+    assert any(
+        "assumes complete taxon sampling" in warning for warning in report.warnings
+    )
 
 
 def test_compute_diversification_gamma_statistic_rejects_small_or_non_bifurcating_trees(

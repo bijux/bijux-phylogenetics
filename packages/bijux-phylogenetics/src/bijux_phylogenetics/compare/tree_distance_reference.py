@@ -72,7 +72,10 @@ def _validate_robinson_foulds_reference_rows(
 ) -> list[TreeDistanceReferenceObservation]:
     observations: list[TreeDistanceReferenceObservation] = []
     for row in _load_robinson_foulds_reference_rows():
-        input_paths = [_trees_root() / row["left_tree"], _trees_root() / row["right_tree"]]
+        input_paths = [
+            _trees_root() / row["left_tree"],
+            _trees_root() / row["right_tree"],
+        ]
         report = compare_robinson_foulds(
             input_paths[0],
             input_paths[1],
@@ -128,7 +131,10 @@ def _validate_branch_score_reference_rows(
 ) -> list[TreeDistanceReferenceObservation]:
     observations: list[TreeDistanceReferenceObservation] = []
     for row in _load_branch_score_reference_rows():
-        input_paths = [_trees_root() / row["left_tree"], _trees_root() / row["right_tree"]]
+        input_paths = [
+            _trees_root() / row["left_tree"],
+            _trees_root() / row["right_tree"],
+        ]
         report = compare_branch_score_distance(
             input_paths[0],
             input_paths[1],
@@ -179,8 +185,9 @@ def _validate_branch_score_reference_rows(
     return observations
 
 
-def _validate_identical_taxa_policy_for_robinson_foulds(
-) -> TreeDistanceReferenceObservation:
+def _validate_identical_taxa_policy_for_robinson_foulds() -> (
+    TreeDistanceReferenceObservation
+):
     left_path = _trees_root() / "example_tree.nwk"
     right_path = _trees_root() / "example_tree_overlap.nwk"
     expected_metrics = {
@@ -218,8 +225,9 @@ def _validate_identical_taxa_policy_for_robinson_foulds(
     )
 
 
-def _validate_identical_taxa_policy_for_branch_score(
-) -> TreeDistanceReferenceObservation:
+def _validate_identical_taxa_policy_for_branch_score() -> (
+    TreeDistanceReferenceObservation
+):
     left_path = _trees_root() / "example_tree.nwk"
     right_path = _trees_root() / "example_tree_overlap.nwk"
     expected_metrics = {

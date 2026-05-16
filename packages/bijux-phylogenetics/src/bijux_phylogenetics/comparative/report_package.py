@@ -620,7 +620,9 @@ def _write_comparative_report_html(
         <div class="card"><div class="label">Selected Model</div><div class="value">{
         escape(summary_row.selected_model)
     }</div></div>
-        <div class="card"><div class="label">Method Tier</div><div class="value">{escape(method_tier.tier)}</div></div>
+        <div class="card"><div class="label">Method Tier</div><div class="value">{
+        escape(method_tier.tier)
+    }</div></div>
         <div class="card"><div class="label">PGLS R²</div><div class="value">{
         summary_row.pgls_r_squared:.3f}</div></div>
       </div>

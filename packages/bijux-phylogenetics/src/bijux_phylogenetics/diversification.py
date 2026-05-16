@@ -229,7 +229,9 @@ def _sampling_fraction_from_rows(rows: list[float]) -> float:
 
 
 def _is_strictly_bifurcating(tree: PhyloTree) -> bool:
-    return all(len(node.children) == 2 for node in tree.iter_nodes() if not node.is_leaf())
+    return all(
+        len(node.children) == 2 for node in tree.iter_nodes() if not node.is_leaf()
+    )
 
 
 def _resolve_sampling_column(columns: list[str], requested: str | None) -> str | None:
@@ -604,9 +606,7 @@ def compute_diversification_gamma_statistic(
     )
     gamma_statistic = float(
         format(
-            (
-                (cumulative_total / (tree.tip_count - 2)) - statistic_mean
-            )
+            ((cumulative_total / (tree.tip_count - 2)) - statistic_mean)
             / statistic_standard_deviation,
             ".15g",
         )

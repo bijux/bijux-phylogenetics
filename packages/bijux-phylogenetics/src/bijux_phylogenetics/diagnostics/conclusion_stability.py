@@ -3,16 +3,16 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 import json
-import statistics
 from pathlib import Path
+import statistics
 
 from bijux_phylogenetics.ancestral.discrete import DiscreteAncestralReport
 from bijux_phylogenetics.ancestral.tree_set import DiscreteAncestralTreeSetReport
 from bijux_phylogenetics.clades import CladeTableReport, CladeTableRow
 from bijux_phylogenetics.comparative.pgls import PGLSResult
 from bijux_phylogenetics.comparative.posterior_tree_pgls import (
-    PosteriorTreePGLSReport,
     PosteriorTreePGLSCoefficientSummaryRow,
+    PosteriorTreePGLSReport,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.render.html import write_html_report
@@ -141,13 +141,12 @@ def build_key_clade_stability_rows(
     method_tree_count = max(len(method_clade_sets), 1)
     rows: list[KeyCladeStabilityRow] = []
     for row in baseline_rows:
-        method_presence_fraction = sum(
-            row.clade_id in clade_set for clade_set in method_clade_sets
-        ) / method_tree_count
-        bootstrap_frequency = bootstrap_frequency_by_clade.get(row.clade_id, 0.0)
-        combined_score = _mean_score(
-            [bootstrap_frequency, method_presence_fraction]
+        method_presence_fraction = (
+            sum(row.clade_id in clade_set for clade_set in method_clade_sets)
+            / method_tree_count
         )
+        bootstrap_frequency = bootstrap_frequency_by_clade.get(row.clade_id, 0.0)
+        combined_score = _mean_score([bootstrap_frequency, method_presence_fraction])
         rows.append(
             KeyCladeStabilityRow(
                 clade_id=row.clade_id,
@@ -187,9 +186,10 @@ def build_support_value_stability_rows(
             for clade_map in method_clade_maps
             if row.clade_id in clade_map and clade_map[row.clade_id] is not None
         ]
-        method_presence_fraction = sum(
-            row.clade_id in clade_map for clade_map in method_clade_maps
-        ) / method_tree_count
+        method_presence_fraction = (
+            sum(row.clade_id in clade_map for clade_map in method_clade_maps)
+            / method_tree_count
+        )
         if comparable_method_supports and baseline_support is not None:
             mean_abs_delta = statistics.fmean(
                 abs(value - baseline_support) for value in comparable_method_supports
@@ -204,9 +204,7 @@ def build_support_value_stability_rows(
             0.0, method_presence_fraction * (1.0 - mean_abs_delta)
         )
         bootstrap_frequency = bootstrap_frequency_by_clade.get(row.clade_id, 0.0)
-        combined_score = _mean_score(
-            [bootstrap_frequency, method_support_consistency]
-        )
+        combined_score = _mean_score([bootstrap_frequency, method_support_consistency])
         rows.append(
             SupportValueStabilityRow(
                 clade_id=row.clade_id,
@@ -242,9 +240,7 @@ def build_ancestral_state_stability_rows(
 ) -> list[AncestralStateStabilityRow]:
     """Score discrete ancestral-state conclusions across bootstrap trees and method variants."""
     baseline_by_clade = _ancestral_state_by_clade(baseline_report)
-    bootstrap_by_clade = {
-        row.clade_id: row for row in bootstrap_report.clade_summaries
-    }
+    bootstrap_by_clade = {row.clade_id: row for row in bootstrap_report.clade_summaries}
     method_maps = [_ancestral_state_by_clade(report) for report in method_reports]
     method_tree_count = max(len(method_maps), 1)
     rows: list[AncestralStateStabilityRow] = []
@@ -267,17 +263,13 @@ def build_ancestral_state_stability_rows(
         method_state_consistency = (
             0.0
             if not method_states
-            else sum(
-                state == baseline["state"] for state in method_states
-            )
+            else sum(state == baseline["state"] for state in method_states)
             / method_tree_count
         )
         method_dominant_state = (
             None if not method_states else Counter(method_states).most_common(1)[0][0]
         )
-        combined_score = _mean_score(
-            [bootstrap_consistency, method_state_consistency]
-        )
+        combined_score = _mean_score([bootstrap_consistency, method_state_consistency])
         rows.append(
             AncestralStateStabilityRow(
                 trait=baseline_report.trait,
@@ -351,14 +343,20 @@ def build_comparative_coefficient_stability_rows(
             method_direction_consistency = 0.0
             method_significance_consistency = 0.0
         else:
-            method_direction_consistency = sum(
-                direction == baseline_direction
-                for direction, _significant in method_observations
-            ) / method_tree_count
-            method_significance_consistency = sum(
-                significant == baseline_significant
-                for _direction, significant in method_observations
-            ) / method_tree_count
+            method_direction_consistency = (
+                sum(
+                    direction == baseline_direction
+                    for direction, _significant in method_observations
+                )
+                / method_tree_count
+            )
+            method_significance_consistency = (
+                sum(
+                    significant == baseline_significant
+                    for _direction, significant in method_observations
+                )
+                / method_tree_count
+            )
         combined_score = _mean_score(
             [
                 bootstrap_direction_consistency,
@@ -444,9 +442,7 @@ def build_conclusion_stability_report(
             )
         )
     summary = ConclusionStabilitySummary(
-        stable_count=sum(
-            row.stability_class == "stable" for row in conclusion_rows
-        ),
+        stable_count=sum(row.stability_class == "stable" for row in conclusion_rows),
         weak_count=sum(row.stability_class == "weak" for row in conclusion_rows),
         unstable_count=sum(
             row.stability_class == "unstable" for row in conclusion_rows
@@ -492,9 +488,7 @@ def write_key_clade_stability_table(
                 "clade_id": row.clade_id,
                 "descendant_taxa": ",".join(row.descendant_taxa),
                 "bootstrap_frequency": _format_score(row.bootstrap_frequency),
-                "method_presence_fraction": _format_score(
-                    row.method_presence_fraction
-                ),
+                "method_presence_fraction": _format_score(row.method_presence_fraction),
                 "combined_score": _format_score(row.combined_score),
                 "stability_class": row.stability_class,
                 "evidence": row.evidence,
@@ -531,9 +525,7 @@ def write_support_value_stability_table(
                     row.baseline_support_fraction
                 ),
                 "bootstrap_frequency": _format_score(row.bootstrap_frequency),
-                "method_presence_fraction": _format_score(
-                    row.method_presence_fraction
-                ),
+                "method_presence_fraction": _format_score(row.method_presence_fraction),
                 "mean_method_support_fraction": _format_optional_score(
                     row.mean_method_support_fraction
                 ),
@@ -582,9 +574,7 @@ def write_ancestral_state_stability_table(
                     row.bootstrap_state_consistency
                 ),
                 "method_dominant_state": row.method_dominant_state or "",
-                "method_state_consistency": _format_score(
-                    row.method_state_consistency
-                ),
+                "method_state_consistency": _format_score(row.method_state_consistency),
                 "combined_score": _format_score(row.combined_score),
                 "stability_class": row.stability_class,
                 "evidence": row.evidence,
@@ -688,9 +678,7 @@ def write_conclusion_stability_report_html(
             },
             "stable_conclusions": [_asdict_conclusion(row) for row in stable_rows],
             "weak_conclusions": [_asdict_conclusion(row) for row in weak_rows],
-            "unstable_conclusions": [
-                _asdict_conclusion(row) for row in unstable_rows
-            ],
+            "unstable_conclusions": [_asdict_conclusion(row) for row in unstable_rows],
         },
         summary_metrics=[
             ("stable_count", report.summary.stable_count),

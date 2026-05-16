@@ -273,9 +273,7 @@ def _validate_rotated_clade_mapping_case(
         expected_metrics,
         observed_metrics,
         tolerance=tolerance,
-    ) and all(
-        row.support_fraction_delta == 0.0 for row in report.shared_clades
-    )
+    ) and all(row.support_fraction_delta == 0.0 for row in report.shared_clades)
     return SupportReferenceObservation(
         case_id="clade-mapped-support-rotation",
         category="clade-mapping-policy",
@@ -287,7 +285,9 @@ def _validate_rotated_clade_mapping_case(
         passed=passed,
         notes=[]
         if passed
-        else ["support comparison drifted toward node-order matching instead of clades"],
+        else [
+            "support comparison drifted toward node-order matching instead of clades"
+        ],
     )
 
 

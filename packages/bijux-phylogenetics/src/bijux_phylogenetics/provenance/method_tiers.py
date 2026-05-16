@@ -22,8 +22,7 @@ class MethodTierAssessment:
 
     def __post_init__(self) -> None:
         if self.tier == "supported" and not any(
-            basis.startswith("reference-parity:")
-            or basis.startswith("real-engine-validation:")
+            basis.startswith(("reference-parity:", "real-engine-validation:"))
             for basis in self.validation_basis
         ):
             raise ValueError(
@@ -124,9 +123,7 @@ def release_method_tier_inventory() -> list[MethodTierAssessment]:
     return [
         fasta_to_tree_method_tier(),
         comparative_report_method_tier(),
-        phylogenetic_logistic_method_tier(
-            "phylogenetic-working-correlation-gee"
-        ),
+        phylogenetic_logistic_method_tier("phylogenetic-working-correlation-gee"),
         tree_report_method_tier(),
         bayesian_report_method_tier("bayesian-posterior-report"),
         bayesian_report_method_tier("bayesian-diagnostics-report"),

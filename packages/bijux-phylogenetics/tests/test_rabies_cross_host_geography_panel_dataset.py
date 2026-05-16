@@ -293,12 +293,8 @@ def test_export_rabies_cross_host_geography_panel_dataset_copies_expected_output
         "bootstrap-review/rooted-tree-vs-bootstrap-consensus.summary.tsv"
         in expected_files
     )
-    assert (
-        "conclusion-stability/conclusion-stability-report.html" in expected_files
-    )
-    assert (
-        "conclusion-stability/conclusion-stability-summary.tsv" in expected_files
-    )
+    assert "conclusion-stability/conclusion-stability-report.html" in expected_files
+    assert "conclusion-stability/conclusion-stability-summary.tsv" in expected_files
     assert "workflow-config-audit.tsv" in expected_files
     assert "scientific-findings.tsv" in expected_files
 
@@ -488,66 +484,189 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
         resolved_config_path=output / "workflow" / "workflow-config.resolved.json",
         input_validation_path=output / "workflow" / "input-validation.tsv",
         alignment_quality_path=output / "workflow" / "alignment-quality.tsv",
-        alignment_sequence_ranking_path=output / "workflow" / "alignment-sequence-ranking.tsv",
+        alignment_sequence_ranking_path=output
+        / "workflow"
+        / "alignment-sequence-ranking.tsv",
         alignment_path=output / "workflow" / "rabies-cross-host-geography-panel.aln",
-        trimmed_alignment_path=output / "workflow" / "rabies-cross-host-geography-panel.trimmed.aln",
+        trimmed_alignment_path=output
+        / "workflow"
+        / "rabies-cross-host-geography-panel.trimmed.aln",
         tree_path=output / "workflow" / "rabies-cross-host-geography-panel.rooted.tree",
-        rooting_report_path=output / "workflow" / "rabies-cross-host-geography-panel.rooting.tsv",
-        model_table_path=output / "workflow" / "rabies-cross-host-geography-panel.model.tsv",
-        support_table_path=output / "workflow" / "rabies-cross-host-geography-panel.support.tsv",
+        rooting_report_path=output
+        / "workflow"
+        / "rabies-cross-host-geography-panel.rooting.tsv",
+        model_table_path=output
+        / "workflow"
+        / "rabies-cross-host-geography-panel.model.tsv",
+        support_table_path=output
+        / "workflow"
+        / "rabies-cross-host-geography-panel.support.tsv",
         log_path=output / "workflow" / "rabies-cross-host-geography-panel.log",
-        manifest_path=output / "workflow" / "rabies-cross-host-geography-panel.manifest.json",
+        manifest_path=output
+        / "workflow"
+        / "rabies-cross-host-geography-panel.manifest.json",
         engine_artifact_root=output / "workflow" / "engine-artifacts",
         clade_table_path=output / "workflow" / "clade-table.tsv",
         bootstrap_output_root=output / "workflow" / "bootstrap-review",
-        bootstrap_summary_path=output / "workflow" / "bootstrap-review" / "bootstrap-review.summary.tsv",
-        bootstrap_consensus_tree_path=output / "workflow" / "bootstrap-review" / "bootstrap-consensus.tree",
-        bootstrap_clade_frequencies_path=output / "workflow" / "bootstrap-review" / "bootstrap-clade-frequencies.tsv",
-        bootstrap_unstable_branches_path=output / "workflow" / "bootstrap-review" / "bootstrap-unstable-branches.tsv",
-        bootstrap_unstable_clades_path=output / "workflow" / "bootstrap-review" / "bootstrap-unstable-clades.tsv",
-        bootstrap_distance_matrix_path=output / "workflow" / "bootstrap-review" / "bootstrap-review.distance-matrix.tsv",
-        bootstrap_topology_clusters_path=output / "workflow" / "bootstrap-review" / "bootstrap-topology-clusters.tsv",
-        bootstrap_tree_comparison_summary_path=output / "workflow" / "bootstrap-review" / "rooted-tree-vs-bootstrap-consensus.summary.tsv",
-        bootstrap_tree_comparison_table_path=output / "workflow" / "bootstrap-review" / "rooted-tree-vs-bootstrap-consensus.table.tsv",
-        bootstrap_tree_comparison_report_path=output / "workflow" / "bootstrap-review" / "rooted-tree-vs-bootstrap-consensus.report.html",
+        bootstrap_summary_path=output
+        / "workflow"
+        / "bootstrap-review"
+        / "bootstrap-review.summary.tsv",
+        bootstrap_consensus_tree_path=output
+        / "workflow"
+        / "bootstrap-review"
+        / "bootstrap-consensus.tree",
+        bootstrap_clade_frequencies_path=output
+        / "workflow"
+        / "bootstrap-review"
+        / "bootstrap-clade-frequencies.tsv",
+        bootstrap_unstable_branches_path=output
+        / "workflow"
+        / "bootstrap-review"
+        / "bootstrap-unstable-branches.tsv",
+        bootstrap_unstable_clades_path=output
+        / "workflow"
+        / "bootstrap-review"
+        / "bootstrap-unstable-clades.tsv",
+        bootstrap_distance_matrix_path=output
+        / "workflow"
+        / "bootstrap-review"
+        / "bootstrap-review.distance-matrix.tsv",
+        bootstrap_topology_clusters_path=output
+        / "workflow"
+        / "bootstrap-review"
+        / "bootstrap-topology-clusters.tsv",
+        bootstrap_tree_comparison_summary_path=output
+        / "workflow"
+        / "bootstrap-review"
+        / "rooted-tree-vs-bootstrap-consensus.summary.tsv",
+        bootstrap_tree_comparison_table_path=output
+        / "workflow"
+        / "bootstrap-review"
+        / "rooted-tree-vs-bootstrap-consensus.table.tsv",
+        bootstrap_tree_comparison_report_path=output
+        / "workflow"
+        / "bootstrap-review"
+        / "rooted-tree-vs-bootstrap-consensus.report.html",
         host_switch_summary_path=output / "workflow" / "host-switch-summary.tsv",
         host_state_nodes_path=output / "workflow" / "host-state-nodes.tsv",
         host_switch_branches_path=output / "workflow" / "host-switch-branches.tsv",
         host_switch_counts_path=output / "workflow" / "host-switch-counts.tsv",
         host_switch_fits_path=output / "workflow" / "host-switch-fits.tsv",
-        host_switch_unsupported_path=output / "workflow" / "host-switch-unsupported.tsv",
+        host_switch_unsupported_path=output
+        / "workflow"
+        / "host-switch-unsupported.tsv",
         host_switch_exclusions_path=output / "workflow" / "host-switch-exclusions.tsv",
         biogeography_output_root=output / "workflow" / "biogeography",
-        biogeography_report_path=output / "workflow" / "biogeography" / "biogeography-report.html",
-        biogeography_tree_figure_path=output / "workflow" / "biogeography" / "ancestral-region-tree.svg",
-        biogeography_map_path=output / "workflow" / "biogeography" / "geographic-region-map.html",
-        comparative_traits_path=output / "workflow" / "comparative" / "comparative-traits.tsv",
-        comparative_tree_path=output / "workflow" / "comparative" / "comparative-tree.nwk",
-        comparative_repairs_path=output / "workflow" / "comparative" / "comparative-branch-repairs.tsv",
+        biogeography_report_path=output
+        / "workflow"
+        / "biogeography"
+        / "biogeography-report.html",
+        biogeography_tree_figure_path=output
+        / "workflow"
+        / "biogeography"
+        / "ancestral-region-tree.svg",
+        biogeography_map_path=output
+        / "workflow"
+        / "biogeography"
+        / "geographic-region-map.html",
+        comparative_traits_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-traits.tsv",
+        comparative_tree_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-tree.nwk",
+        comparative_repairs_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-branch-repairs.tsv",
         comparative_output_root=output / "workflow" / "comparative",
-        comparative_report_path=output / "workflow" / "comparative" / "comparative-report.html",
-        comparative_summary_path=output / "workflow" / "comparative" / "comparative-summary.tsv",
-        comparative_coefficients_path=output / "workflow" / "comparative" / "comparative-coefficients.tsv",
-        comparative_residuals_path=output / "workflow" / "comparative" / "comparative-residuals.tsv",
-        comparative_signal_path=output / "workflow" / "comparative" / "comparative-signal.tsv",
-        comparative_model_comparison_path=output / "workflow" / "comparative" / "comparative-model-comparison.tsv",
-        comparative_interpretation_path=output / "workflow" / "comparative" / "comparative-interpretation.tsv",
-        comparative_audit_path=output / "workflow" / "comparative" / "comparative-audit.tsv",
-        comparative_contrasts_path=output / "workflow" / "comparative" / "comparative-contrasts.tsv",
-        comparative_model_matrix_path=output / "workflow" / "comparative" / "comparative-model-matrix.tsv",
-        comparative_categorical_contrasts_path=output / "workflow" / "comparative" / "comparative-categorical-contrasts.tsv",
-        comparative_lambda_profile_path=output / "workflow" / "comparative" / "comparative-lambda-profile.tsv",
-        comparative_manifest_path=output / "workflow" / "comparative" / "comparative.manifest.json",
+        comparative_report_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-report.html",
+        comparative_summary_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-summary.tsv",
+        comparative_coefficients_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-coefficients.tsv",
+        comparative_residuals_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-residuals.tsv",
+        comparative_signal_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-signal.tsv",
+        comparative_model_comparison_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-model-comparison.tsv",
+        comparative_interpretation_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-interpretation.tsv",
+        comparative_audit_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-audit.tsv",
+        comparative_contrasts_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-contrasts.tsv",
+        comparative_model_matrix_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-model-matrix.tsv",
+        comparative_categorical_contrasts_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-categorical-contrasts.tsv",
+        comparative_lambda_profile_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative-lambda-profile.tsv",
+        comparative_manifest_path=output
+        / "workflow"
+        / "comparative"
+        / "comparative.manifest.json",
         conclusion_stability_output_root=output / "workflow" / "conclusion-stability",
-        conclusion_stability_summary_path=output / "workflow" / "conclusion-stability" / "conclusion-stability-summary.tsv",
-        key_clade_stability_path=output / "workflow" / "conclusion-stability" / "key-clade-stability.tsv",
-        support_value_stability_path=output / "workflow" / "conclusion-stability" / "support-value-stability.tsv",
-        ancestral_state_stability_path=output / "workflow" / "conclusion-stability" / "ancestral-state-stability.tsv",
-        comparative_coefficient_stability_path=output / "workflow" / "conclusion-stability" / "comparative-coefficient-stability.tsv",
-        conclusion_stability_report_path=output / "workflow" / "conclusion-stability" / "conclusion-stability-report.html",
+        conclusion_stability_summary_path=output
+        / "workflow"
+        / "conclusion-stability"
+        / "conclusion-stability-summary.tsv",
+        key_clade_stability_path=output
+        / "workflow"
+        / "conclusion-stability"
+        / "key-clade-stability.tsv",
+        support_value_stability_path=output
+        / "workflow"
+        / "conclusion-stability"
+        / "support-value-stability.tsv",
+        ancestral_state_stability_path=output
+        / "workflow"
+        / "conclusion-stability"
+        / "ancestral-state-stability.tsv",
+        comparative_coefficient_stability_path=output
+        / "workflow"
+        / "conclusion-stability"
+        / "comparative-coefficient-stability.tsv",
+        conclusion_stability_report_path=output
+        / "workflow"
+        / "conclusion-stability"
+        / "conclusion-stability-report.html",
         scientific_findings_path=output / "workflow" / "scientific-findings.tsv",
-        final_report_path=output / "workflow" / "rabies-cross-host-geography-report.html",
-        final_manifest_path=output / "workflow" / "rabies-cross-host-geography.manifest.json",
+        final_report_path=output
+        / "workflow"
+        / "rabies-cross-host-geography-report.html",
+        final_manifest_path=output
+        / "workflow"
+        / "rabies-cross-host-geography.manifest.json",
     )
     fake_result = RabiesCrossHostGeographyPanelDemoResult(
         output_root=output,
@@ -556,7 +675,8 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
         workflow_bundle=workflow_bundle,
         overview_path=output / "overview.md",
         overview_html_path=output / "rabies-cross-host-geography-overview.html",
-        package_manifest_path=output / "rabies-cross-host-geography-package.manifest.json",
+        package_manifest_path=output
+        / "rabies-cross-host-geography-package.manifest.json",
     )
 
     for path in [
@@ -627,9 +747,10 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
     assert payload["metrics"]["biological_question"].startswith(
         "Do the host-associated rabies lineages"
     )
-    assert "nominally supported positive longitude association" in payload["metrics"][
-        "short_answer"
-    ]
+    assert (
+        "nominally supported positive longitude association"
+        in payload["metrics"]["short_answer"]
+    )
     assert payload["data"]["dataset_export"]["accession_table_path"] == str(
         output / "dataset" / "source-accessions.tsv"
     )
@@ -697,13 +818,16 @@ def test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrat
     assert payload["command"] == "demo"
     assert payload["metrics"]["artifact_count"] == 41
     assert payload["metrics"]["sequence_count"] == 9
-    assert payload["metrics"]["config_path"] == str(output / "dataset" / "workflow-config.json")
+    assert payload["metrics"]["config_path"] == str(
+        output / "dataset" / "workflow-config.json"
+    )
     assert payload["metrics"]["biological_question"].startswith(
         "Do the host-associated rabies lineages"
     )
-    assert "nominally supported positive longitude association" in payload["metrics"][
-        "short_answer"
-    ]
+    assert (
+        "nominally supported positive longitude association"
+        in payload["metrics"]["short_answer"]
+    )
     assert payload["metrics"]["host_trait"] == "host_group"
     assert payload["metrics"]["geography_trait"] == "region_group"
     assert payload["metrics"]["selected_model"] == "TPM2u+F+G4"

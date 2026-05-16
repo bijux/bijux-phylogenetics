@@ -69,7 +69,9 @@ def assert_distribution_contains_packaged_resources(distribution_path: Path) -> 
         for resource in REQUIRED_DISTRIBUTION_RESOURCES
         if not any(member.endswith(resource) for member in members)
     ]
-    assert not missing, f"missing packaged resources in {distribution_path.name}: {missing}"
+    assert not missing, (
+        f"missing packaged resources in {distribution_path.name}: {missing}"
+    )
 
 
 def create_clean_virtualenv(venv_root: Path) -> Path:
@@ -119,7 +121,9 @@ def run_installed_cli(
     )
 
 
-def copy_installed_example_inputs(venv_python: Path, destination: Path) -> dict[str, Path]:
+def copy_installed_example_inputs(
+    venv_python: Path, destination: Path
+) -> dict[str, Path]:
     completed = subprocess.run(
         [
             str(venv_python),

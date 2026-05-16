@@ -11,11 +11,11 @@ from bijux_phylogenetics.core.taxonomy import (
     inspect_tree_taxa_safety,
     inspect_tree_taxon_identity,
 )
+from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.core.ultrametric import (
     APE_ULTRAMETRIC_TOLERANCE,
     summarize_ultrametric_tip_depths,
 )
-from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.errors import (
     DuplicateTaxonError,
     InvalidBranchLengthError,

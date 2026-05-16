@@ -539,7 +539,7 @@ def render_bayesian_diagnostics_report(
                     json.dumps(
                         asdict(analysis_summary), default=str, indent=2, sort_keys=True
                     ),
-                )
+                ),
             ]
             if analysis_summary is not None
             else []

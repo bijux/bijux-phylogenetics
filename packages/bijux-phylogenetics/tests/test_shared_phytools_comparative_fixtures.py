@@ -4,6 +4,9 @@ import csv
 
 import pytest
 
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+)
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.pgls import (
@@ -14,9 +17,6 @@ from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
-)
-from bijux_phylogenetics.ancestral.continuous import (
-    reconstruct_continuous_ancestral_states,
 )
 from bijux_phylogenetics.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
@@ -32,7 +32,9 @@ def _read_trait_values(fixture_id: str, trait_name: str) -> list[str]:
         return [row[trait_name] for row in csv.DictReader(handle, delimiter="\t")]
 
 
-def test_shared_phytools_comparative_fixture_catalog_covers_required_goal_cases() -> None:
+def test_shared_phytools_comparative_fixture_catalog_covers_required_goal_cases() -> (
+    None
+):
     fixtures = list_shared_phytools_comparative_fixtures()
     feature_tags = {tag for fixture in fixtures for tag in fixture.feature_tags}
 
@@ -53,7 +55,9 @@ def test_shared_phytools_comparative_fixture_catalog_covers_required_goal_cases(
     } <= feature_tags
 
 
-def test_shared_phytools_comparative_fixture_lookup_resolves_linked_shared_surfaces() -> None:
+def test_shared_phytools_comparative_fixture_lookup_resolves_linked_shared_surfaces() -> (
+    None
+):
     fixture = get_shared_phytools_comparative_fixture(
         "phytools_continuous_strong_signal_twenty_four_taxa"
     )
@@ -70,7 +74,9 @@ def test_shared_phytools_comparative_fixture_lookup_resolves_linked_shared_surfa
     }
 
 
-def test_shared_phytools_comparative_fixture_catalog_includes_large_ultrametric_cases() -> None:
+def test_shared_phytools_comparative_fixture_catalog_includes_large_ultrametric_cases() -> (
+    None
+):
     small_fixture = get_shared_phytools_comparative_fixture(
         "phytools_continuous_strong_signal_twenty_four_taxa"
     )
@@ -443,7 +449,9 @@ def test_shared_phytools_comparative_fixture_catalog_covers_discrete_nonultramet
         "phytools_continuous_strong_signal_branch_edge_twenty_four_taxa"
     )
 
-    binary_values = set(_read_trait_values(binary_fixture.fixture_id, binary_fixture.trait_name))
+    binary_values = set(
+        _read_trait_values(binary_fixture.fixture_id, binary_fixture.trait_name)
+    )
     multistate_values = set(
         _read_trait_values(multistate_fixture.fixture_id, multistate_fixture.trait_name)
     )

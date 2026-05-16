@@ -33,9 +33,7 @@ def test_loads_newick_unescapes_embedded_quotes_in_labels() -> None:
 
 
 def test_loads_newick_tree_set_reads_multiple_records_from_text() -> None:
-    trees = loads_newick_tree_set(
-        "((A:0.1,B:0.1):0.2,C:0.3);\n(A:0.1,B:0.2,C:0.3);\n"
-    )
+    trees = loads_newick_tree_set("((A:0.1,B:0.1):0.2,C:0.3);\n(A:0.1,B:0.2,C:0.3);\n")
 
     assert len(trees) == 2
     assert dumps_newick(trees[0]) == "((A:0.1,B:0.1):0.2,C:0.3);"

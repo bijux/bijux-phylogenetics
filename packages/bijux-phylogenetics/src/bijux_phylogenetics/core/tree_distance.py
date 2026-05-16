@@ -121,7 +121,9 @@ def compute_tree_tip_distance_matrix(
         1 for node in tree.iter_nodes() if node is not tree.root
     )
     branch_length_count = sum(
-        1 for node in tree.iter_nodes() if node is not tree.root and node.branch_length is not None
+        1
+        for node in tree.iter_nodes()
+        if node is not tree.root and node.branch_length is not None
     )
     complete_branch_lengths = branch_length_count == expected_branch_length_count
     if not complete_branch_lengths and missing_branch_length_policy == "error":
@@ -158,9 +160,7 @@ def compute_tree_tip_distance_matrix(
                     left_path[prefix_length - 1].node_id or ""
                 ]
                 distance = (
-                    left_root_distance
-                    + right_root_distance
-                    - (2.0 * mrca_distance)
+                    left_root_distance + right_root_distance - (2.0 * mrca_distance)
                 )
             distance = round(distance, 15)
             row.append(distance)
@@ -173,7 +173,9 @@ def compute_tree_tip_distance_matrix(
             )
         matrix.append(row)
 
-    diagonal_zero = all(matrix[index][index] == 0.0 for index in range(len(identifiers)))
+    diagonal_zero = all(
+        matrix[index][index] == 0.0 for index in range(len(identifiers))
+    )
     symmetric = all(
         matrix[left_index][right_index] == matrix[right_index][left_index]
         for left_index in range(len(identifiers))

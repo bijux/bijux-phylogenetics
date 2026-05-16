@@ -12,6 +12,7 @@ from bijux_phylogenetics.datasets.data_quality_stress import (
     run_catarrhine_data_quality_stress_panel_workflow,
     write_catarrhine_data_quality_stress_panel_workflow_bundle,
 )
+
 from .support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
@@ -77,12 +78,8 @@ def test_workflow_identifies_intended_stress_conditions_and_cleans_subset(
         ("gorilla_gorilla", "internal-stop-codon"),
         ("pan_troglodytes", "frame-error"),
     ]
-    assert report.raw_trait_mismatch_linkage.missing_from_traits == [
-        "pan_troglodytes"
-    ]
-    assert report.raw_trait_mismatch_linkage.extra_trait_taxa == [
-        "nomascus_leucogenys"
-    ]
+    assert report.raw_trait_mismatch_linkage.missing_from_traits == ["pan_troglodytes"]
+    assert report.raw_trait_mismatch_linkage.extra_trait_taxa == ["nomascus_leucogenys"]
     assert report.raw_trait_mismatch_error == (
         "trait linkage mismatch: 1 tree taxa missing from traits and 1 trait taxa absent from tree"
     )

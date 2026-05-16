@@ -68,7 +68,9 @@ def test_render_tree_uncertainty_report_truncates_budgeted_sections(
     assert "preview_rows" in html
     assert "&quot;rows&quot;: [" not in html
     assert report.machine_manifest["budget"]["truncated_section_names"]
-    assert report.machine_manifest["linked_artifact_count"] == report.linked_artifact_count
+    assert (
+        report.machine_manifest["linked_artifact_count"] == report.linked_artifact_count
+    )
     assert report.total_output_bytes >= report.html_size_bytes
 
 
@@ -76,7 +78,9 @@ def test_render_tree_uncertainty_report_scales_to_large_tree_sets(
     tmp_path: Path,
 ) -> None:
     large_tree_set = tmp_path / "large-tree-set.nwk"
-    source_lines = fixture("example_tree_set_left.nwk").read_text(encoding="utf-8").splitlines()
+    source_lines = (
+        fixture("example_tree_set_left.nwk").read_text(encoding="utf-8").splitlines()
+    )
     large_tree_set.write_text("\n".join(source_lines * 400) + "\n", encoding="utf-8")
     output_path = tmp_path / "large-tree-set-report.html"
 
@@ -165,7 +169,12 @@ def test_cli_tree_set_report_reports_output_size_metrics(
     assert payload["metrics"]["linked_artifact_count"] >= 10
     assert payload["metrics"]["html_size_bytes"] > 0
     assert payload["metrics"]["linked_artifact_bytes"] > 0
-    assert payload["metrics"]["total_output_bytes"] >= payload["metrics"]["html_size_bytes"]
+    assert (
+        payload["metrics"]["total_output_bytes"]
+        >= payload["metrics"]["html_size_bytes"]
+    )
     assert payload["data"]["artifact_manifest_path"] == str(
-        output_path.parent / "tree-set-report.artifacts" / "tree-uncertainty.manifest.json"
+        output_path.parent
+        / "tree-set-report.artifacts"
+        / "tree-uncertainty.manifest.json"
     )

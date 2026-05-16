@@ -113,7 +113,8 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[53].function_name == "phytools::sim.corrs"
     assert cases[55].function_name == "phytools::sim.corrs"
     assert (
-        cases[0].fixture_id == "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
+        cases[0].fixture_id
+        == "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
     )
     assert cases[2].permutation_count == 199
     assert cases[3].permutation_seed == 17
@@ -329,9 +330,7 @@ def test_run_phytools_parity_cases_passes_simcorrs_cases_against_fake_reference_
     assert report.all_passed is True
     assert report.case_count == 3
     assert report.failed_case_count == 0
-    assert [row.function_name for row in report.summary_rows] == [
-        "phytools::sim.corrs"
-    ]
+    assert [row.function_name for row in report.summary_rows] == ["phytools::sim.corrs"]
     assert all(
         observation.function_name == "phytools::sim.corrs"
         for observation in report.observations
@@ -355,9 +354,7 @@ def test_run_phytools_parity_cases_passes_pgls_cases_against_fake_reference_runn
     assert report.all_passed is True
     assert report.case_count == 3
     assert report.failed_case_count == 0
-    assert [row.function_name for row in report.summary_rows] == [
-        "phytools::pgls.SEy"
-    ]
+    assert [row.function_name for row in report.summary_rows] == ["phytools::pgls.SEy"]
     assert all(
         observation.function_name == "phytools::pgls.SEy"
         for observation in report.observations

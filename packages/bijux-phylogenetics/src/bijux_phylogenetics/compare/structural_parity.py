@@ -25,7 +25,9 @@ class StructuralTreeSetParityReport:
 def _leaf_names(node: TreeNode) -> tuple[str, ...]:
     if node.is_leaf():
         if node.name is None:
-            raise ValueError("tree contains unnamed tips and cannot be compared structurally")
+            raise ValueError(
+                "tree contains unnamed tips and cannot be compared structurally"
+            )
         return (node.name,)
     labels: list[str] = []
     for child in node.children:
@@ -48,7 +50,9 @@ def _edge_key(
         return ("tip", descendant_taxa[0])
     if rooted is False:
         descendant_set = set(descendant_taxa)
-        complement_taxa = tuple(taxon for taxon in all_taxa if taxon not in descendant_set)
+        complement_taxa = tuple(
+            taxon for taxon in all_taxa if taxon not in descendant_set
+        )
         canonical = min(
             (descendant_taxa, complement_taxa),
             key=lambda value: (len(value), value),
@@ -74,7 +78,12 @@ def _internal_label(node: TreeNode) -> str:
 
 def _edge_records(
     tree: PhyloTree,
-) -> tuple[Counter[str], dict[tuple[str, tuple[str, ...] | str], float | None], dict[tuple[str, tuple[str, ...] | str], str], str]:
+) -> tuple[
+    Counter[str],
+    dict[tuple[str, tuple[str, ...] | str], float | None],
+    dict[tuple[str, tuple[str, ...] | str], str],
+    str,
+]:
     tip_counts = Counter(tree.tip_names)
     all_taxa = tuple(sorted(tree.tip_names))
     branch_lengths: dict[tuple[str, tuple[str, ...] | str], float | None] = {}
@@ -118,8 +127,12 @@ def compare_tree_structurally(
             ),
         )
 
-    expected_tips, expected_branch_lengths, expected_labels, expected_root_label = _edge_records(expected)
-    observed_tips, observed_branch_lengths, observed_labels, observed_root_label = _edge_records(observed)
+    expected_tips, expected_branch_lengths, expected_labels, expected_root_label = (
+        _edge_records(expected)
+    )
+    observed_tips, observed_branch_lengths, observed_labels, observed_root_label = (
+        _edge_records(observed)
+    )
 
     if expected_tips != observed_tips:
         return StructuralTreeParityReport(
@@ -138,7 +151,9 @@ def compare_tree_structurally(
     for edge_key in sorted(expected_branch_lengths, key=str):
         expected_length = expected_branch_lengths[edge_key]
         observed_length = observed_branch_lengths[edge_key]
-        if not _branch_lengths_match(expected_length, observed_length, tolerance=tolerance):
+        if not _branch_lengths_match(
+            expected_length, observed_length, tolerance=tolerance
+        ):
             return StructuralTreeParityReport(
                 equivalent=False,
                 mismatch_reason=(
@@ -147,7 +162,10 @@ def compare_tree_structurally(
             )
 
     if compare_internal_labels:
-        if _rooted_flag(expected) is not False and expected_root_label != observed_root_label:
+        if (
+            _rooted_flag(expected) is not False
+            and expected_root_label != observed_root_label
+        ):
             return StructuralTreeParityReport(
                 equivalent=False,
                 mismatch_reason=(
@@ -160,7 +178,9 @@ def compare_tree_structurally(
                 key=str,
             )
             for edge_key in differing_keys:
-                if expected_labels.get(edge_key, "") != observed_labels.get(edge_key, ""):
+                if expected_labels.get(edge_key, "") != observed_labels.get(
+                    edge_key, ""
+                ):
                     return StructuralTreeParityReport(
                         equivalent=False,
                         mismatch_reason=(

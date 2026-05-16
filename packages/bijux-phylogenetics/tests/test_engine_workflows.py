@@ -1040,7 +1040,9 @@ def test_run_multiple_sequence_alignment_rejects_concurrent_reuse_of_same_output
     deadline = time.time() + 5.0
     while not marker_path.exists():
         if time.time() >= deadline:
-            raise AssertionError("expected running marker to appear for slow MAFFT fixture")
+            raise AssertionError(
+                "expected running marker to appear for slow MAFFT fixture"
+            )
         time.sleep(0.01)
 
     try:
@@ -1119,7 +1121,9 @@ def test_run_model_selection_rejects_or_cleans_incomplete_outputs(
     input_path = fixture("alignments/example_alignment.fasta")
     out_dir = tmp_path / "model-selection"
 
-    with pytest.raises(EngineWorkflowError, match="did not produce expected outputs") as error:
+    with pytest.raises(
+        EngineWorkflowError, match="did not produce expected outputs"
+    ) as error:
         run_model_selection(
             input_path,
             out_dir=out_dir,
@@ -1768,9 +1772,7 @@ def test_run_sh_alrt_support_estimation_requires_joint_support_labels(
 
 
 def test_run_fast_tree_inference_requires_support_annotations(tmp_path: Path) -> None:
-    executable = _fake_fasttree_without_support_labels(
-        tmp_path / "fasttree-no-support"
-    )
+    executable = _fake_fasttree_without_support_labels(tmp_path / "fasttree-no-support")
 
     with pytest.raises(EngineWorkflowError) as error:
         run_fast_tree_inference(

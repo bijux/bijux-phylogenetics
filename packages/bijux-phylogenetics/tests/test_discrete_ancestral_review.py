@@ -215,7 +215,9 @@ def test_write_discrete_ancestral_ard_fit_table_tracks_directional_rates_and_wea
         (row.source_state, row.target_state): row.rate
         for row in report.transition_rate_rows
     }
-    assert transition_pairs[("island", "south")] != transition_pairs[("south", "island")]
+    assert (
+        transition_pairs[("island", "south")] != transition_pairs[("south", "island")]
+    )
     assert (
         "one or more discrete rate parameters hit an optimizer bound and should be interpreted as weakly identified"
         in report.warnings

@@ -92,10 +92,7 @@ def test_compare_topology_distance_reports_rooted_conflict_rows(tmp_path: Path) 
     assert report.shared_split_count == 1
     assert report.left_only_split_count == 1
     assert report.right_only_split_count == 1
-    assert [
-        (row.split_id, row.comparison_status)
-        for row in report.split_rows
-    ] == [
+    assert [(row.split_id, row.comparison_status) for row in report.split_rows] == [
         ("A|B", "shared"),
         ("C|D", "left_only"),
         ("A|B|C", "right_only"),
@@ -168,7 +165,9 @@ def test_compare_topology_distance_scales_to_large_rooted_pair(tmp_path: Path) -
     assert report.normalized_robinson_foulds == pytest.approx(24 / 252)
 
 
-def test_write_topology_distance_split_table_writes_governed_rows(tmp_path: Path) -> None:
+def test_write_topology_distance_split_table_writes_governed_rows(
+    tmp_path: Path,
+) -> None:
     left_path, right_path = _fixture_pair(
         tmp_path, "topology_distance_rooted_conflict_pair"
     )

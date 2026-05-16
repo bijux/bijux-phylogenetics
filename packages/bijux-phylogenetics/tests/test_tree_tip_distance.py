@@ -59,9 +59,7 @@ def test_compute_tree_tip_distance_matrix_rejects_missing_branch_lengths_by_defa
         compute_tree_tip_distance_matrix(fixture("example_tree_partial_lengths.nwk"))
 
 
-def test_compute_tree_tip_distance_matrix_can_use_explicit_unit_length_policy() -> (
-    None
-):
+def test_compute_tree_tip_distance_matrix_can_use_explicit_unit_length_policy() -> None:
     report = compute_tree_tip_distance_matrix(
         fixture("example_tree_partial_lengths.nwk"),
         missing_branch_length_policy="unit-length",

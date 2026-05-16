@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from html import escape
 import hashlib
+from html import escape
 import json
 from pathlib import Path
 import shutil
@@ -273,10 +273,16 @@ def export_workflow_result_bundle(
 
     output_entries: dict[str, str] = {}
     for label, source_path in _required_output_paths(payload).items():
-        if label == "manifest" and source_path.resolve() == Path(manifest_path).resolve():
+        if (
+            label == "manifest"
+            and source_path.resolve() == Path(manifest_path).resolve()
+        ):
             continue
-        destination = bundle_root / "outputs" / "final" / _output_filename(
-            label=label, source_path=source_path
+        destination = (
+            bundle_root
+            / "outputs"
+            / "final"
+            / _output_filename(label=label, source_path=source_path)
         )
         _copy_file(source_path, destination)
         files.append(
@@ -294,7 +300,9 @@ def export_workflow_result_bundle(
     step_manifest_entries: dict[str, str] = {}
     step_output_entries: dict[str, dict[str, str]] = {}
     for step_label, source_manifest_path in _step_manifest_paths(payload).items():
-        destination = bundle_root / "manifests" / "steps" / f"{step_label}.manifest.json"
+        destination = (
+            bundle_root / "manifests" / "steps" / f"{step_label}.manifest.json"
+        )
         _copy_file(source_manifest_path, destination)
         files.append(
             _record_bundle_file(
@@ -306,7 +314,9 @@ def export_workflow_result_bundle(
             )
         )
         copied_step_manifest_count += 1
-        step_manifest_entries[step_label] = destination.relative_to(bundle_root).as_posix()
+        step_manifest_entries[step_label] = destination.relative_to(
+            bundle_root
+        ).as_posix()
 
         step_payload = load_engine_manifest(source_manifest_path)
         step_output_entries[step_label] = {}
@@ -329,9 +339,9 @@ def export_workflow_result_bundle(
                 )
             )
             copied_step_output_count += 1
-            step_output_entries[step_label][output_label] = step_destination.relative_to(
-                bundle_root
-            ).as_posix()
+            step_output_entries[step_label][output_label] = (
+                step_destination.relative_to(bundle_root).as_posix()
+            )
 
         step_report_path = (
             bundle_root / "reports" / "steps" / f"{step_label}-report.html"
@@ -412,9 +422,10 @@ def export_workflow_result_bundle(
     bundle_manifest = {
         "workflow": workflow,
         "source_manifest_path": str(Path(manifest_path)),
-        "created_at_utc": datetime.now(UTC).replace(microsecond=0).isoformat().replace(
-            "+00:00", "Z"
-        ),
+        "created_at_utc": datetime.now(UTC)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z"),
         "bundle_root": str(bundle_root),
         "workflow_manifest": workflow_manifest_path.relative_to(bundle_root).as_posix(),
         "workflow_config": config_path.relative_to(bundle_root).as_posix(),
@@ -467,7 +478,9 @@ def export_workflow_result_bundle(
     )
 
 
-def validate_workflow_result_bundle(bundle_root: Path) -> WorkflowResultBundleValidationReport:
+def validate_workflow_result_bundle(
+    bundle_root: Path,
+) -> WorkflowResultBundleValidationReport:
     """Validate one workflow-result bundle for checksum integrity and completeness."""
     issues: list[WorkflowResultBundleIssue] = []
     bundle_manifest_path = bundle_root / _BUNDLE_MANIFEST_NAME
@@ -487,7 +500,9 @@ def validate_workflow_result_bundle(bundle_root: Path) -> WorkflowResultBundleVa
             ],
         )
     payload = json.loads(bundle_manifest_path.read_text(encoding="utf-8"))
-    workflow = str(payload.get("workflow")) if payload.get("workflow") is not None else None
+    workflow = (
+        str(payload.get("workflow")) if payload.get("workflow") is not None else None
+    )
     file_entries = list(payload.get("files", []))
     for entry in file_entries:
         relative_path = Path(str(entry["relative_path"]))
@@ -635,9 +650,7 @@ def _required_output_paths(payload: dict[str, Any]) -> dict[str, Path]:
             "workflow bundle requires recorded output paths",
             code="workflow_bundle_missing_outputs",
         )
-    missing = {
-        label: path for label, path in output_paths.items() if not path.exists()
-    }
+    missing = {label: path for label, path in output_paths.items() if not path.exists()}
     if missing:
         missing_payload = {label: str(path) for label, path in missing.items()}
         raise EngineWorkflowError(
@@ -676,7 +689,9 @@ def _build_bundle_rerun_payload(
         "bundle_local_inputs": [
             {
                 "source_path": str(path),
-                "relative_path": (bundle_root / "inputs" / _input_label(index=index, path=path))
+                "relative_path": (
+                    bundle_root / "inputs" / _input_label(index=index, path=path)
+                )
                 .relative_to(bundle_root)
                 .as_posix(),
             }
@@ -712,12 +727,15 @@ def _write_bundle_report(
         ("inputs", "\n".join(input_lines) if input_lines else "none copied"),
         (
             "outputs",
-            "\n".join(f"{label}: {path_text}" for label, path_text in output_entries.items()),
+            "\n".join(
+                f"{label}: {path_text}" for label, path_text in output_entries.items()
+            ),
         ),
         (
             "step-manifests",
             "\n".join(
-                f"{label}: {path_text}" for label, path_text in step_manifest_entries.items()
+                f"{label}: {path_text}"
+                for label, path_text in step_manifest_entries.items()
             )
             if step_manifest_entries
             else "none",
@@ -744,7 +762,7 @@ def _write_bundle_report(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{escape(f'Bijux Workflow Result Bundle: {workflow}')}</title>
+  <title>{escape(f"Bijux Workflow Result Bundle: {workflow}")}</title>
   <style>
     :root {{
       color-scheme: light;
@@ -797,7 +815,7 @@ def _write_bundle_report(
 </head>
 <body>
   <main>
-    <h1>{escape(f'Bijux Workflow Result Bundle: {workflow}')}</h1>
+    <h1>{escape(f"Bijux Workflow Result Bundle: {workflow}")}</h1>
     <script id="bijux-report-manifest" type="application/json">{embedded_json}</script>
     {body}
   </main>
@@ -975,7 +993,11 @@ def _prepared_input_label(path: Path) -> str:
 
 
 def _output_filename(*, label: str, source_path: Path) -> str:
-    return f"{label}{source_path.suffix}" if source_path.suffix else f"{label}-{source_path.name}"
+    return (
+        f"{label}{source_path.suffix}"
+        if source_path.suffix
+        else f"{label}-{source_path.name}"
+    )
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> Path:

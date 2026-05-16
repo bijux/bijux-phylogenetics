@@ -58,8 +58,8 @@ from .common import (
     engine_active_marker_path,
     engine_incomplete_marker_path,
     execute_engine_command,
-    load_engine_manifest,
     load_active_engine_run,
+    load_engine_manifest,
     load_incomplete_engine_run,
     load_unaligned_fasta,
     read_engine_version,
@@ -824,8 +824,7 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
             for key, value in dict(payload.get("output_checksums", {})).items()
         },
         config={
-            str(key): value
-            for key, value in dict(payload.get("config", {})).items()
+            str(key): value for key, value in dict(payload.get("config", {})).items()
         },
         selected_model=None
         if payload.get("selected_model") is None
@@ -1414,8 +1413,7 @@ def _restore_codon_aware_alignment_report(
             for key, value in dict(payload.get("output_checksums", {})).items()
         },
         config={
-            str(key): value
-            for key, value in dict(payload.get("config", {})).items()
+            str(key): value for key, value in dict(payload.get("config", {})).items()
         },
         sequence_type=str(payload["sequence_type"]),
         genetic_code_id=int(payload.get("genetic_code_id", 1)),

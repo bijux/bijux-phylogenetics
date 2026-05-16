@@ -114,7 +114,9 @@ def test_summarize_ou_covariance_pgls_reports_negative_branch_length_details() -
             alpha=1.0,
         )
 
-    assert error.value.details["failure_reason"] == "ou_covariance_negative_branch_lengths"
+    assert (
+        error.value.details["failure_reason"] == "ou_covariance_negative_branch_lengths"
+    )
     assert error.value.details["evidence"]["tree_path"].endswith(
         "example_tree_negative_length.nwk"
     )

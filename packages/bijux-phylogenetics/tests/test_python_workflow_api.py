@@ -194,9 +194,7 @@ def test_python_workflow_api_runs_sequence_to_tree_and_configured_workflows(
     assert isinstance(configured_result, ConfiguredPhyloWorkflowResult)
     assert configured_result.bundle_validation.valid is True
     bundle_manifest = json.loads(
-        configured_result.bundle_report.bundle_manifest_path.read_text(
-            encoding="utf-8"
-        )
+        configured_result.bundle_report.bundle_manifest_path.read_text(encoding="utf-8")
     )
     assert bundle_manifest["workflow"] == "fasta-to-tree"
 

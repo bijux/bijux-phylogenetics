@@ -100,7 +100,9 @@ def test_summarize_brownian_covariance_pgls_detects_invalid_covariance() -> None
     assert "non-positive root-to-tip path length" in str(error.value)
 
 
-def test_summarize_brownian_covariance_pgls_reports_negative_branch_length_details() -> None:
+def test_summarize_brownian_covariance_pgls_reports_negative_branch_length_details() -> (
+    None
+):
     with pytest.raises(ComparativeMethodError) as error:
         summarize_brownian_covariance_pgls(
             fixture("example_tree_negative_length.nwk"),
@@ -109,7 +111,10 @@ def test_summarize_brownian_covariance_pgls_reports_negative_branch_length_detai
             predictors=["predictor_one"],
         )
 
-    assert error.value.details["failure_reason"] == "brownian_covariance_negative_branch_lengths"
+    assert (
+        error.value.details["failure_reason"]
+        == "brownian_covariance_negative_branch_lengths"
+    )
     assert error.value.details["evidence"]["tree_path"].endswith(
         "example_tree_negative_length.nwk"
     )

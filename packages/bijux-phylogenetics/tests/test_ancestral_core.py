@@ -132,7 +132,9 @@ def test_continuous_reconstruction_from_dataset_matches_path_surface() -> None:
     assert direct_report.analysis_tree_newick == path_report.analysis_tree_newick
     assert direct_report.warnings == path_report.warnings
     assert direct_report.estimates == path_report.estimates
-    assert direct_report.brownian_fit_diagnostics == path_report.brownian_fit_diagnostics
+    assert (
+        direct_report.brownian_fit_diagnostics == path_report.brownian_fit_diagnostics
+    )
 
 
 def test_continuous_reconstruction_supports_ou_model() -> None:
@@ -201,7 +203,9 @@ def test_continuous_fast_anc_reconstruction_from_dataset_matches_path_surface() 
     assert direct_report.analysis_tree_newick == path_report.analysis_tree_newick
     assert direct_report.warnings == path_report.warnings
     assert direct_report.estimates == path_report.estimates
-    assert direct_report.brownian_fit_diagnostics == path_report.brownian_fit_diagnostics
+    assert (
+        direct_report.brownian_fit_diagnostics == path_report.brownian_fit_diagnostics
+    )
 
 
 def test_continuous_reconstruction_supports_anc_ml_estimator() -> None:
@@ -291,7 +295,9 @@ def test_continuous_anc_ml_reconstruction_from_dataset_matches_path_surface() ->
     assert direct_report.analysis_tree_newick == path_report.analysis_tree_newick
     assert direct_report.warnings == path_report.warnings
     assert direct_report.estimates == path_report.estimates
-    assert direct_report.brownian_fit_diagnostics == path_report.brownian_fit_diagnostics
+    assert (
+        direct_report.brownian_fit_diagnostics == path_report.brownian_fit_diagnostics
+    )
     assert direct_report.optimizer_diagnostics == path_report.optimizer_diagnostics
 
 

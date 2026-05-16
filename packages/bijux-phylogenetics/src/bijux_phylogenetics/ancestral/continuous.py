@@ -13,8 +13,8 @@ from bijux_phylogenetics.ancestral.common import (
     stable_value,
     write_ancestral_rows,
 )
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.topology import _root_tree_by_outgroup_node
+from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
 
 _NORMAL_95_CRITICAL = 1.959963984540054
@@ -189,9 +189,7 @@ def reconstruct_continuous_ancestral_states_from_dataset(
         )
     resolved_estimator = _resolve_continuous_estimator(model, estimator)
     brownian_fit_diagnostics = (
-        _summarize_brownian_fit_diagnostics(dataset)
-        if model == "brownian"
-        else None
+        _summarize_brownian_fit_diagnostics(dataset) if model == "brownian" else None
     )
     optimizer_diagnostics: ContinuousAncestralOptimizerDiagnostics | None = None
     anc_ml_profile_fit: _ContinuousAncMlProfileFit | None = None
@@ -500,14 +498,18 @@ def write_continuous_ancestral_summary_table(
                     else str(summary.covariance_condition_number)
                 ),
                 "log_likelihood": (
-                    "" if summary.log_likelihood is None else str(summary.log_likelihood)
+                    ""
+                    if summary.log_likelihood is None
+                    else str(summary.log_likelihood)
                 ),
                 "residual_sigma_squared": (
                     ""
                     if summary.residual_sigma_squared is None
                     else str(summary.residual_sigma_squared)
                 ),
-                "optimizer_name": "" if summary.optimizer_name is None else summary.optimizer_name,
+                "optimizer_name": ""
+                if summary.optimizer_name is None
+                else summary.optimizer_name,
                 "optimizer_converged": (
                     ""
                     if summary.optimizer_converged is None
@@ -925,12 +927,8 @@ def _fit_continuous_anc_ml_profile(
     internal_nodes = ordered_nodes[tip_count:]
     internal_count = len(internal_nodes)
     precision_tips = [row[:tip_count] for row in inverse_covariance[:tip_count]]
-    precision_tip_internal = [
-        row[tip_count:] for row in inverse_covariance[:tip_count]
-    ]
-    precision_internal_tip = [
-        row[:tip_count] for row in inverse_covariance[tip_count:]
-    ]
+    precision_tip_internal = [row[tip_count:] for row in inverse_covariance[:tip_count]]
+    precision_internal_tip = [row[:tip_count] for row in inverse_covariance[tip_count:]]
     precision_internal = [row[tip_count:] for row in inverse_covariance[tip_count:]]
     inverse_internal_precision = (
         _invert_matrix(precision_internal) if internal_count > 0 else []
@@ -961,14 +959,17 @@ def _fit_continuous_anc_ml_profile(
     tip_values = [dataset.values_by_taxon[taxon] for taxon in dataset.taxa]
     unit_vector = [1.0] * tip_count
     denominator = _quadratic_form(unit_vector, schur_precision)
-    root_state = sum(
-        unit_vector[row_index]
-        * sum(
-            schur_precision[row_index][column_index] * tip_values[column_index]
-            for column_index in range(tip_count)
+    root_state = (
+        sum(
+            unit_vector[row_index]
+            * sum(
+                schur_precision[row_index][column_index] * tip_values[column_index]
+                for column_index in range(tip_count)
+            )
+            for row_index in range(tip_count)
         )
-        for row_index in range(tip_count)
-    ) / denominator
+        / denominator
+    )
     tip_residuals = [value - root_state for value in tip_values]
     internal_states_by_node: dict[str, float] = {}
     centered_internal_states: list[float] = []
@@ -990,12 +991,15 @@ def _fit_continuous_anc_ml_profile(
             for row_index in range(internal_count)
         ]
         internal_states_by_node = {
-            node_signature(node): stable_value(root_state + centered_internal_states[index])
+            node_signature(node): stable_value(
+                root_state + centered_internal_states[index]
+            )
             for index, node in enumerate(internal_nodes)
         }
     completed_residuals = tip_residuals + centered_internal_states
     sigma_squared = max(
-        _quadratic_form(completed_residuals, inverse_covariance) / len(covariance_matrix),
+        _quadratic_form(completed_residuals, inverse_covariance)
+        / len(covariance_matrix),
         1e-12,
     )
     log_likelihood = -0.5 * (
@@ -1072,14 +1076,18 @@ def _compute_fast_anc_pic_payload(
 ) -> tuple[list[float], float, float]:
     if node.is_leaf():
         if node.name is None:
-            raise ValueError("leaf taxon name is required for fast ancestral reconstruction")
+            raise ValueError(
+                "leaf taxon name is required for fast ancestral reconstruction"
+            )
         if node.branch_length is None:
             raise ValueError(
                 "branch lengths are required for fast ancestral reconstruction"
             )
         return [], values_by_taxon[node.name], node.branch_length
     if len(node.children) != 2:
-        raise ValueError("fast ancestral reconstruction requires a strictly binary tree")
+        raise ValueError(
+            "fast ancestral reconstruction requires a strictly binary tree"
+        )
     left_contrasts, left_value, left_variance = _compute_fast_anc_pic_payload(
         node.children[0], values_by_taxon
     )
@@ -1179,8 +1187,7 @@ def _summarize_brownian_fit_diagnostics(
         sum(
             ones[row_index]
             * sum(
-                inverse_covariance[row_index][column_index]
-                * trait_values[column_index]
+                inverse_covariance[row_index][column_index] * trait_values[column_index]
                 for column_index in range(len(trait_values))
             )
             for row_index in range(len(trait_values))
@@ -1272,7 +1279,9 @@ def _build_anc_ml_covariance_matrix(
     leaves = {node.name: node for node in tree.iter_leaves()}
     ordered_tip_nodes = [leaves[taxon] for taxon in taxa]
     ordered_internal_nodes = [
-        node for node in tree.iter_internal_nodes(order="preorder") if node is not tree.root
+        node
+        for node in tree.iter_internal_nodes(order="preorder")
+        if node is not tree.root
     ]
     ordered_nodes = ordered_tip_nodes + ordered_internal_nodes
     covariance_matrix: list[list[float]] = []
@@ -1303,7 +1312,9 @@ def _leaf_ancestor_depths(tree: PhyloTree) -> dict[str, dict[str, float]]:
         current_path[node.node_id or ""] = current_depth
         if node.is_leaf():
             if node.name is None:
-                raise ValueError("leaf taxon name is required for ancestral reconstruction")
+                raise ValueError(
+                    "leaf taxon name is required for ancestral reconstruction"
+                )
             depths_by_leaf[node.name] = current_path
             return
         for child in node.children:
@@ -1513,14 +1524,10 @@ def _symmetric_matrix_eigenvalues(
                 sine * left + cosine * right
             )
         working[pivot_row][pivot_row] = (
-            cosine * cosine * app
-            - 2.0 * sine * cosine * apq
-            + sine * sine * aqq
+            cosine * cosine * app - 2.0 * sine * cosine * apq + sine * sine * aqq
         )
         working[pivot_column][pivot_column] = (
-            sine * sine * app
-            + 2.0 * sine * cosine * apq
-            + cosine * cosine * aqq
+            sine * sine * app + 2.0 * sine * cosine * apq + cosine * cosine * aqq
         )
         working[pivot_row][pivot_column] = 0.0
         working[pivot_column][pivot_row] = 0.0

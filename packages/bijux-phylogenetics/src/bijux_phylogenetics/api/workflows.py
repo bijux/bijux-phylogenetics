@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
+from bijux_phylogenetics.comparative.pgls import run_pgls
+from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.core.alignment import AlignmentAlphabet
 from bijux_phylogenetics.engines.fasta_to_tree import run_fasta_to_tree_workflow
 from bijux_phylogenetics.engines.workflow_config import run_phylo_workflow_config
@@ -27,9 +30,6 @@ from .workflow_results import (
     TreeComparisonWorkflowResult,
     TrimmingWorkflowResult,
 )
-from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
-from bijux_phylogenetics.comparative.pgls import run_pgls
-from bijux_phylogenetics.compare.topology import compare_tree_paths
 
 __all__ = [
     "AlignmentWorkflowResult",

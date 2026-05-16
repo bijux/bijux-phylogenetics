@@ -4,20 +4,19 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.core.pruning import (
-    RequestedTaxaPruningReport,
-    _prune_tree_against_taxa,
-    prune_tree_to_requested_taxa,
-)
 from bijux_phylogenetics.core.clade_sets import (
     canonical_bipartition,
     canonical_clade_id,
     informative_rooted_clade_nodes,
     informative_rooted_clades,
-    informative_unrooted_splits,
     node_support_value,
     robinson_foulds_metrics,
     split_sort_key,
+)
+from bijux_phylogenetics.core.pruning import (
+    RequestedTaxaPruningReport,
+    _prune_tree_against_taxa,
+    prune_tree_to_requested_taxa,
 )
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.diagnostics.validation import _load_tree
@@ -259,6 +258,7 @@ class InMemoryBranchLengthComparison:
     branch_score_distance: float | None
     branch_score_splits: list[BranchScoreSplit]
     missing_length_split_count: int
+
 
 def _format_clade_set(clades: set[frozenset[str]]) -> list[str]:
     return sorted(canonical_clade_id(clade) for clade in clades)
@@ -624,6 +624,7 @@ def _compare_branch_lengths_for_trees(
         branch_score_splits=branch_score.splits,
         missing_length_split_count=branch_score.missing_length_split_count,
     )
+
 
 def _resolve_shared_taxa_for_many_trees(
     tree_paths: list[Path],
@@ -1081,7 +1082,9 @@ def _build_support_comparison_report(
 
     left_clades = informative_rooted_clade_nodes(left, shared_taxa)
     right_clades = informative_rooted_clade_nodes(right, shared_taxa)
-    shared_clade_ids = sorted(left_clades.keys() & right_clades.keys(), key=split_sort_key)
+    shared_clade_ids = sorted(
+        left_clades.keys() & right_clades.keys(), key=split_sort_key
+    )
     all_clade_ids = sorted(
         left_clades.keys() | right_clades.keys(),
         key=split_sort_key,
@@ -1119,14 +1122,10 @@ def _build_support_comparison_report(
         if left_present and right_present:
             continue
         left_support = (
-            node_support_value(left_clades[clade_id])
-            if left_present
-            else None
+            node_support_value(left_clades[clade_id]) if left_present else None
         )
         right_support = (
-            node_support_value(right_clades[clade_id])
-            if right_present
-            else None
+            node_support_value(right_clades[clade_id]) if right_present else None
         )
         left_fraction = support_fraction(left_support)
         right_fraction = support_fraction(right_support)

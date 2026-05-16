@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from defusedxml import ElementTree
 from pathlib import Path
 from typing import Any
+
+from defusedxml import ElementTree
 
 from bijux_phylogenetics.benchmark import (
     LargeDatasetStressSuiteReport,

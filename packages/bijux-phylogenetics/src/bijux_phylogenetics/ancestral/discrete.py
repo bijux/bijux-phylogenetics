@@ -313,8 +313,7 @@ def reconstruct_discrete_ancestral_states_from_dataset(
             )
         if (
             fit_result.baseline_comparison is not None
-            and fit_result.baseline_comparison.preferred_model_by_aic
-            == "equal-rates"
+            and fit_result.baseline_comparison.preferred_model_by_aic == "equal-rates"
         ):
             warnings.append(
                 "the equal-rates baseline remains preferred by AIC over the requested discrete likelihood model"
@@ -788,7 +787,9 @@ def write_discrete_ancestral_fit_table(
                 "log_likelihood": _format_optional_float(report.log_likelihood),
                 "aic": _format_optional_float(report.aic),
                 "overparameterized": str(report.overparameterized).lower(),
-                "optimizer_name": "" if diagnostics is None else diagnostics.optimizer_name,
+                "optimizer_name": ""
+                if diagnostics is None
+                else diagnostics.optimizer_name,
                 "optimizer_converged": _format_optional_bool(
                     None if diagnostics is None else diagnostics.converged
                 ),
@@ -804,9 +805,7 @@ def write_discrete_ancestral_fit_table(
                     None if diagnostics is None else diagnostics.simplex_shrink_count
                 ),
                 "initial_candidate_count": _format_optional_int(
-                    None
-                    if diagnostics is None
-                    else diagnostics.initial_candidate_count
+                    None if diagnostics is None else diagnostics.initial_candidate_count
                 ),
                 "best_initial_scale": _format_optional_float(
                     None if diagnostics is None else diagnostics.best_initial_scale
@@ -1146,26 +1145,28 @@ def _fit_discrete_mk_model(
         allowed_transition_pairs=allowed_transition_pairs,
     )
     root_prior = _uniform_root_prior(len(state_order))
-    return rate_matrix, root_prior, DiscreteOptimizerDiagnostics(
-        optimizer_name="nelder-mead",
-        parameter_count=parameter_count,
-        initial_candidate_count=len(initial_candidates),
-        best_initial_scale=best_run.initial_scale,
-        converged=best_run.converged,
-        iteration_count=best_run.iteration_count,
-        function_evaluation_count=best_run.function_evaluation_count,
-        simplex_shrink_count=best_run.simplex_shrink_count,
-        hit_lower_parameter_bound=bool(
-            numpy.any(
-                best_log_parameters
-                <= (_DISCRETE_LOG_PARAMETER_LOWER_BOUND + 1e-9)
-            )
-        ),
-        hit_upper_parameter_bound=bool(
-            numpy.any(
-                best_log_parameters
-                >= (_DISCRETE_LOG_PARAMETER_UPPER_BOUND - 1e-9)
-            )
+    return (
+        rate_matrix,
+        root_prior,
+        DiscreteOptimizerDiagnostics(
+            optimizer_name="nelder-mead",
+            parameter_count=parameter_count,
+            initial_candidate_count=len(initial_candidates),
+            best_initial_scale=best_run.initial_scale,
+            converged=best_run.converged,
+            iteration_count=best_run.iteration_count,
+            function_evaluation_count=best_run.function_evaluation_count,
+            simplex_shrink_count=best_run.simplex_shrink_count,
+            hit_lower_parameter_bound=bool(
+                numpy.any(
+                    best_log_parameters <= (_DISCRETE_LOG_PARAMETER_LOWER_BOUND + 1e-9)
+                )
+            ),
+            hit_upper_parameter_bound=bool(
+                numpy.any(
+                    best_log_parameters >= (_DISCRETE_LOG_PARAMETER_UPPER_BOUND - 1e-9)
+                )
+            ),
         ),
     )
 
@@ -1200,7 +1201,9 @@ def _build_discrete_initial_candidates(
             ],
             dtype=float,
         )
-        candidates.append((float(math.exp(float(numpy.mean(log_parameters)))), log_parameters))
+        candidates.append(
+            (float(math.exp(float(numpy.mean(log_parameters)))), log_parameters)
+        )
     return candidates
 
 
@@ -1263,7 +1266,8 @@ def _optimize_log_parameters(
     converged = False
     iteration_count = 0
     simplex_shrink_count = 0
-    for iteration_count in range(1, 601):
+    for _iteration_count in range(1, 601):
+        iteration_count = _iteration_count
         ordering = sorted(
             range(len(simplex)),
             key=lambda index: scores[index],

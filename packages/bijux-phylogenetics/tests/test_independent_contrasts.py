@@ -4,6 +4,7 @@ import json
 import math
 from pathlib import Path
 
+from bijux_phylogenetics.comparative.common import load_comparative_dataset
 from bijux_phylogenetics.comparative.independent_contrasts import (
     summarize_independent_contrast_regression,
     write_independent_contrast_regression_table,
@@ -13,7 +14,6 @@ from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_independent_contrasts,
     compute_phylogenetic_independent_contrasts_from_dataset,
 )
-from bijux_phylogenetics.comparative.common import load_comparative_dataset
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

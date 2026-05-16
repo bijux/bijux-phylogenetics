@@ -29,10 +29,6 @@ from bijux_phylogenetics.clades import (
     extract_tree_clades,
     write_clade_table,
 )
-from bijux_phylogenetics.comparative.posterior_tree_pgls import (
-    PosteriorTreePGLSReport,
-    run_posterior_tree_pgls,
-)
 from bijux_phylogenetics.comparative.pgls import (
     PGLSResult,
     run_pgls,
@@ -46,9 +42,12 @@ from bijux_phylogenetics.comparative.pgls_categorical_contrasts import (
 from bijux_phylogenetics.comparative.pgls_lambda_fit import (
     write_pgls_lambda_profile_table,
 )
+from bijux_phylogenetics.comparative.posterior_tree_pgls import (
+    PosteriorTreePGLSReport,
+    run_posterior_tree_pgls,
+)
 from bijux_phylogenetics.comparative.report_package import (
     ComparativeAnalysisSummaryRow,
-    ComparativeAuditTableRow,
     ComparativeCoefficientTableRow,
     ComparativeInterpretationRow,
     ComparativeResidualTableRow,
@@ -93,7 +92,6 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     run_rabies_method_sensitivity_panel_workflow,
 )
 from bijux_phylogenetics.diagnostics.conclusion_stability import (
-    ComparativeCoefficientStabilityRow,
     ConclusionStabilityReport,
     build_ancestral_state_stability_rows,
     build_comparative_coefficient_stability_rows,
@@ -122,13 +120,13 @@ from bijux_phylogenetics.host_association import (
     write_host_switch_summary_table,
     write_unsupported_host_switch_claim_table,
 )
+from bijux_phylogenetics.io.biopython import tree_from_biophylo, tree_to_biophylo
 from bijux_phylogenetics.io.fasta import (
     build_alignment_quality_report,
     build_sequence_quality_ranking,
     load_permissive_fasta_records,
     validate_fasta_input,
 )
-from bijux_phylogenetics.io.biopython import tree_from_biophylo, tree_to_biophylo
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.simulation import write_tree_set

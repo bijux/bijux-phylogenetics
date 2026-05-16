@@ -65,7 +65,9 @@ def test_alignment_translate_cli_reports_genetic_code_and_invalid_codon_metrics(
         "A\t1\t1\tATG\tM\ttranslated",
         "A\t2\t4\tGAA\tE\ttranslated",
     ]
-    assert exclusion_table_path.read_text(encoding="utf-8") == "identifier\treason\tnote\n"
+    assert (
+        exclusion_table_path.read_text(encoding="utf-8") == "identifier\treason\tnote\n"
+    )
     assert payload["metrics"]["genetic_code_id"] == 1
     assert payload["metrics"]["translated_sequence_count"] == 4
     assert payload["metrics"]["invalid_codon_count"] == 1

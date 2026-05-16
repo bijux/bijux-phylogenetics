@@ -19,7 +19,9 @@ def _row_lookup(report):
     return {tuple(row.descendant_taxa): row for row in report.rows}
 
 
-def test_compute_reference_tree_clade_support_maps_duplicate_and_conflicting_clades() -> None:
+def test_compute_reference_tree_clade_support_maps_duplicate_and_conflicting_clades() -> (
+    None
+):
     report = compute_reference_tree_clade_support(
         fixture("example_tree.nwk"),
         fixture("example_tree_set_left.nwk"),
@@ -57,7 +59,9 @@ def test_compute_reference_tree_clade_support_is_child_order_insensitive() -> No
     assert rows[("C", "D")].support_percent == pytest.approx(100.0)
 
 
-def test_compute_reference_tree_clade_support_matches_root_adjacent_split_support() -> None:
+def test_compute_reference_tree_clade_support_matches_root_adjacent_split_support() -> (
+    None
+):
     report = compute_reference_tree_clade_support(
         fixture("example_tree_six_taxa.nwk"),
         fixture("example_posterior_tree_set_six_taxa.nwk"),
@@ -73,7 +77,9 @@ def test_compute_reference_tree_clade_support_matches_root_adjacent_split_suppor
     assert rows[("C", "D")].supporting_tree_count == 3
 
 
-def test_compute_reference_tree_clade_support_leaves_absent_root_splits_unscored() -> None:
+def test_compute_reference_tree_clade_support_leaves_absent_root_splits_unscored() -> (
+    None
+):
     report = compute_reference_tree_clade_support(
         fixture("example_tree_topology_diff.nwk"),
         fixture("example_tree_set_right.nwk"),
@@ -121,7 +127,9 @@ def test_compute_reference_tree_clade_support_reports_absent_non_root_clades(
     assert rows[("E", "F")].supporting_tree_count == 3
 
 
-def test_compute_reference_tree_clade_support_marks_singleton_complements_unscored() -> None:
+def test_compute_reference_tree_clade_support_marks_singleton_complements_unscored() -> (
+    None
+):
     report = compute_reference_tree_clade_support(
         fixture("example_tree_rooted_on_d.nwk"),
         fixture("example_tree_set_left.nwk"),
@@ -164,16 +172,19 @@ def test_write_reference_tree_clade_support_table_writes_expected_columns(
     assert lines[0].startswith(
         "node_id\tnode_kind\tnode_label\tdescendant_taxa\tsupporting_tree_count"
     )
-    assert any("\tA|B\t2\t0.666666666666667\t66.6666666666667\tpartial-support\t" in line for line in lines[1:])
+    assert any(
+        "\tA|B\t2\t0.666666666666667\t66.6666666666667\tpartial-support\t" in line
+        for line in lines[1:]
+    )
 
 
 def test_compute_reference_tree_clade_support_scales_to_thousand_tree_stress_case(
     tmp_path: Path,
 ) -> None:
     balanced = fixture("example_tree.nwk").read_text(encoding="utf-8").strip()
-    cross_pairing = fixture("example_tree_topology_diff.nwk").read_text(
-        encoding="utf-8"
-    ).strip()
+    cross_pairing = (
+        fixture("example_tree_topology_diff.nwk").read_text(encoding="utf-8").strip()
+    )
     tree_set_path = tmp_path / "thousand-tree-support-set.nwk"
     tree_set_path.write_text(
         "\n".join([balanced] * 600 + [cross_pairing] * 400) + "\n",

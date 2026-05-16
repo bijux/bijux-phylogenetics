@@ -35,7 +35,11 @@ def test_validate_reference_parity_examples_passes() -> None:
 
 def test_validate_reference_parity_examples_records_failure_modes_and_inputs() -> None:
     report = validate_reference_parity_examples()
-    pgls = next(item for item in report.observations if item.case == "pgls-example-tree-brownian")
+    pgls = next(
+        item
+        for item in report.observations
+        if item.case == "pgls-example-tree-brownian"
+    )
     pgls_categorical = next(
         item
         for item in report.observations

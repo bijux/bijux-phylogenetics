@@ -110,6 +110,11 @@ from bijux_phylogenetics.ancestral.tree_set import (
 from bijux_phylogenetics.ancestral.visualization import (
     render_ancestral_state_visualization,
 )
+from bijux_phylogenetics.ape_parity import (
+    run_ape_parity_cases,
+    write_ape_parity_observation_table,
+    write_ape_parity_summary_table,
+)
 from bijux_phylogenetics.bayesian import (
     assess_beast_burnin_sensitivity,
     assess_beast_convergence,
@@ -261,6 +266,17 @@ from bijux_phylogenetics.comparative.correlated_trait_evolution import (
     write_correlated_trait_observation_table,
     write_correlated_trait_summary_table,
 )
+from bijux_phylogenetics.comparative.covariance_audit import (
+    summarize_comparative_covariance_audit,
+    write_comparative_covariance_audit_candidate_table,
+    write_comparative_covariance_audit_excluded_taxa_table,
+    write_comparative_covariance_audit_summary_table,
+)
+from bijux_phylogenetics.comparative.discrete_mk import (
+    fit_discrete_mk_model,
+    write_discrete_mk_rate_table,
+    write_discrete_mk_summary_table,
+)
 from bijux_phylogenetics.comparative.early_burst_trait_evolution import (
     summarize_early_burst_trait_evolution,
     write_early_burst_rate_change_profile_table,
@@ -289,12 +305,6 @@ from bijux_phylogenetics.comparative.multivariate_regression import (
     write_multivariate_residual_covariance_table,
     write_multivariate_response_coefficient_table,
     write_multivariate_response_model_table,
-)
-from bijux_phylogenetics.comparative.covariance_audit import (
-    summarize_comparative_covariance_audit,
-    write_comparative_covariance_audit_candidate_table,
-    write_comparative_covariance_audit_excluded_taxa_table,
-    write_comparative_covariance_audit_summary_table,
 )
 from bijux_phylogenetics.comparative.ou_trait_evolution import (
     summarize_ou_trait_evolution,
@@ -337,11 +347,6 @@ from bijux_phylogenetics.comparative.phylogenetic_signal import (
     summarize_phylogenetic_signal,
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,
-)
-from bijux_phylogenetics.comparative.discrete_mk import (
-    fit_discrete_mk_model,
-    write_discrete_mk_rate_table,
-    write_discrete_mk_summary_table,
 )
 from bijux_phylogenetics.comparative.posterior_tree_pgls import (
     run_posterior_tree_pgls,
@@ -396,12 +401,12 @@ from bijux_phylogenetics.comparative.trait_regime_mapping import (
     write_trait_regime_summary_table,
 )
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
+from bijux_phylogenetics.compare.support_reference import (
+    validate_support_reference_examples,
+)
 from bijux_phylogenetics.compare.taxon_influence import (
     analyze_taxon_influence,
     write_taxon_influence_table,
-)
-from bijux_phylogenetics.compare.topology_distance import (
-    write_topology_distance_split_table,
 )
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
@@ -416,8 +421,8 @@ from bijux_phylogenetics.compare.topology import (
     write_support_comparison_table,
     write_tree_comparison_table,
 )
-from bijux_phylogenetics.compare.support_reference import (
-    validate_support_reference_examples,
+from bijux_phylogenetics.compare.topology_distance import (
+    write_topology_distance_split_table,
 )
 from bijux_phylogenetics.compare.tree_distance_reference import (
     validate_tree_distance_reference_examples,
@@ -489,11 +494,11 @@ from bijux_phylogenetics.datasets import (
     run_rabies_geographic_transition_panel_demo,
     run_rabies_method_sensitivity_panel_demo,
 )
-from bijux_phylogenetics.datasets.data_quality_stress import (
-    run_catarrhine_data_quality_stress_panel_demo,
-)
 from bijux_phylogenetics.datasets.continuous_mode_recovery import (
     run_continuous_mode_recovery_panel_demo,
+)
+from bijux_phylogenetics.datasets.data_quality_stress import (
+    run_catarrhine_data_quality_stress_panel_demo,
 )
 from bijux_phylogenetics.datasets.known_answer_reference import (
     run_known_answer_reference_demo,
@@ -510,13 +515,13 @@ from bijux_phylogenetics.diagnostics.validation import (
     validate_tree_path,
 )
 from bijux_phylogenetics.discrete_evolution import (
-    count_discrete_stochastic_map_transitions,
     compare_discrete_state_models,
+    count_discrete_stochastic_map_transitions,
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
     load_stochastic_map_collection,
-    render_stochastic_map_density_artifact,
     render_discrete_state_evolution_report,
+    render_stochastic_map_density_artifact,
     render_tree_with_geographic_states,
     simulate_discrete_stochastic_maps,
     summarize_discrete_stochastic_map_density,
@@ -526,17 +531,17 @@ from bijux_phylogenetics.discrete_evolution import (
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
     write_stochastic_map_aggregate_transition_matrix,
+    write_stochastic_map_branch_occupancy_table,
     write_stochastic_map_branch_probability_table,
     write_stochastic_map_branch_transition_count_table,
     write_stochastic_map_collection,
-    write_stochastic_map_branch_occupancy_table,
     write_stochastic_map_density_branch_table,
     write_stochastic_map_density_slice_table,
     write_stochastic_map_event_table,
     write_stochastic_map_segment_table,
     write_stochastic_map_state_time_table,
-    write_stochastic_map_transition_count_matrix,
     write_stochastic_map_summary_table,
+    write_stochastic_map_transition_count_matrix,
     write_transition_summary_table,
 )
 from bijux_phylogenetics.distance import (
@@ -595,8 +600,8 @@ from bijux_phylogenetics.engines import (
     list_mafft_alignment_modes,
     list_trimal_trimming_modes,
     read_engine_version,
-    replay_workflow_manifest,
     render_inference_workflow_report,
+    replay_workflow_manifest,
     require_preflight_workflow,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
@@ -619,8 +624,8 @@ from bijux_phylogenetics.engines.large_alignment_inference import (
     run_large_alignment_inference,
 )
 from bijux_phylogenetics.errors import (
-    EngineWorkflowError,
     EngineUnavailableError,
+    EngineWorkflowError,
     EvidenceContractError,
     InvalidAlignmentError,
     MetadataJoinError,
@@ -713,15 +718,14 @@ from bijux_phylogenetics.phylogeography import (
     write_geographic_map_marker_table,
     write_geographic_map_summary_table,
 )
-from bijux_phylogenetics.ape_parity import (
-    run_ape_parity_cases,
-    write_ape_parity_observation_table,
-    write_ape_parity_summary_table,
-)
 from bijux_phylogenetics.phytools_parity import (
     run_phytools_parity_cases,
     write_phytools_parity_observation_table,
     write_phytools_parity_summary_table,
+)
+from bijux_phylogenetics.provenance.method_tiers import (
+    method_tier_metrics,
+    method_tier_warnings,
 )
 from bijux_phylogenetics.reference_parity import (
     validate_reference_parity_examples,
@@ -750,10 +754,6 @@ from bijux_phylogenetics.reports.service import (
     write_annotation_report,
 )
 from bijux_phylogenetics.reports.tree_package import build_tree_report_package
-from bijux_phylogenetics.provenance.method_tiers import (
-    method_tier_metrics,
-    method_tier_warnings,
-)
 from bijux_phylogenetics.results import build_command_result, build_error_result
 from bijux_phylogenetics.simulation import (
     DiscreteHistoryRateRow,
@@ -766,11 +766,11 @@ from bijux_phylogenetics.simulation import (
     simulate_dna_alignment,
     simulate_early_burst_traits,
     simulate_ou_traits,
-    simulate_random_trees,
     simulate_protein_alignment,
+    simulate_random_trees,
+    write_continuous_trait_table,
     write_correlated_continuous_trait_collection_summary_table,
     write_correlated_continuous_trait_collection_table,
-    write_continuous_trait_table,
     write_discrete_history_branch_truth_table,
     write_discrete_history_event_table,
     write_discrete_history_node_truth_table,
@@ -779,9 +779,9 @@ from bijux_phylogenetics.simulation import (
     write_discrete_history_tip_truth_table,
     write_discrete_trait_table,
     write_simulated_alignment,
+    write_tree_set,
     write_tree_simulation_envelope_table,
     write_tree_simulation_record_table,
-    write_tree_set,
 )
 from bijux_phylogenetics.tree_set import (
     cluster_trees_by_topology,
@@ -796,15 +796,15 @@ from bijux_phylogenetics.tree_set import (
     detect_unstable_clades,
     detect_unstable_taxa,
     load_tree_set,
-    summarize_posterior_topology_diversity,
     summarize_clade_credibility_conflicts,
+    summarize_posterior_topology_diversity,
     summarize_uncertainty_aware_conclusions,
     write_bootstrap_tree_set_artifacts,
     write_clade_frequency_table,
     write_consensus_tree,
     write_reference_tree_clade_support_table,
-    write_tree_distance_distribution_table,
     write_topology_cluster_table,
+    write_tree_distance_distribution_table,
     write_tree_distance_matrix,
     write_unstable_clade_table,
 )
@@ -1059,7 +1059,9 @@ def _parse_rate_rows(raw_rows: list[str]) -> list[DiscreteHistoryRateRow]:
         try:
             rate = float(raw_rate.strip())
         except ValueError as error:
-            raise ValueError(f"rate item must end with a numeric RATE, got '{raw}'") from error
+            raise ValueError(
+                f"rate item must end with a numeric RATE, got '{raw}'"
+            ) from error
         rows.append(
             DiscreteHistoryRateRow(
                 source_state=source_state.strip(),
@@ -4799,10 +4801,14 @@ def build_parser() -> argparse.ArgumentParser:
     diversification_gamma.add_argument("--taxon-column")
     diversification_gamma.add_argument("--sampling-column")
     diversification_gamma.add_argument(
-        "--out", type=Path, help="Write the diversification gamma-statistic table as TSV."
+        "--out",
+        type=Path,
+        help="Write the diversification gamma-statistic table as TSV.",
     )
     diversification_gamma.add_argument(
-        "--json", action="store_true", help="Emit the diversification gamma-statistic report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the diversification gamma-statistic report as JSON.",
     )
     _add_manifest_argument(diversification_gamma)
     diversification_compare = diversification_subparsers.add_parser(
@@ -6216,9 +6222,7 @@ def build_parser() -> argparse.ArgumentParser:
     demo_rabies_method_sensitivity.add_argument("--iqtree-executable", type=str)
     demo_rabies_method_sensitivity.add_argument("--fasttree-executable", type=str)
     demo_rabies_method_sensitivity.add_argument("--iqtree-seed", type=int, default=1)
-    demo_rabies_method_sensitivity.add_argument(
-        "--iqtree-threads", type=int, default=1
-    )
+    demo_rabies_method_sensitivity.add_argument("--iqtree-threads", type=int, default=1)
     demo_rabies_method_sensitivity.add_argument(
         "--bootstrap-replicates", type=int, default=1000
     )
@@ -9307,7 +9311,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 if args.rates_out:
                     outputs.append(write_discrete_mk_rate_table(args.rates_out, report))
                 outputs = _finalize_outputs(
-                    args, command="comparative", inputs=[args.tree, args.table], outputs=outputs
+                    args,
+                    command="comparative",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
                 )
                 _print_result(
                     build_command_result(
@@ -9318,7 +9325,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "taxon_count": report.taxon_count,
                             "model": report.model,
-                            "observed_state_count": len(report.input_audit.observed_states),
+                            "observed_state_count": len(
+                                report.input_audit.observed_states
+                            ),
                             "sparse_state_count": len(report.input_audit.sparse_states),
                             "pruned_missing_value_taxon_count": len(
                                 report.input_audit.pruned_missing_value_taxa
@@ -11041,9 +11050,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 summary.covariance_condition_number
                             ),
                             "log_likelihood": summary.log_likelihood,
-                            "residual_sigma_squared": (
-                                summary.residual_sigma_squared
-                            ),
+                            "residual_sigma_squared": (summary.residual_sigma_squared),
                             "optimizer_name": summary.optimizer_name,
                             "optimizer_converged": summary.optimizer_converged,
                             "optimizer_iteration_count": (
@@ -13614,7 +13621,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             report,
                         )
                     )
-                if density_report is not None and args.branch_probabilities_out is not None:
+                if (
+                    density_report is not None
+                    and args.branch_probabilities_out is not None
+                ):
                     outputs.append(
                         write_stochastic_map_branch_probability_table(
                             args.branch_probabilities_out,
@@ -13769,9 +13779,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "replicate_count": report.replicate_count,
                             "mean_total_transition_count": report.mean_total_transition_count,
                             "simulation_failure_count": report.simulation_failure_count,
-                            "branch_state_row_count": len(
-                                report.branch_occupancy_rows
-                            ),
+                            "branch_state_row_count": len(report.branch_occupancy_rows),
                         },
                         data=report,
                     ),
@@ -13890,7 +13898,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "replicate_count": report.replicate_count,
                             "resolution": report.resolution,
-                            "branch_probability_row_count": len(report.branch_state_rows),
+                            "branch_probability_row_count": len(
+                                report.branch_state_rows
+                            ),
                             "density_branch_row_count": len(report.branch_rows),
                             "density_slice_row_count": len(report.density_rows),
                             "focal_state": report.focal_state,
@@ -14682,7 +14692,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 report = summarize_posterior_topology_diversity(args.tree_set)
                 outputs = []
                 if args.out is not None:
-                    outputs.append(write_tree_distance_distribution_table(args.out, report))
+                    outputs.append(
+                        write_tree_distance_distribution_table(args.out, report)
+                    )
                 outputs = _finalize_outputs(
                     args,
                     command="tree-set",
@@ -15028,7 +15040,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 outputs_to_finalize = [output_path]
                 if args.record_table_out is not None:
                     outputs_to_finalize.append(
-                        write_tree_simulation_record_table(args.record_table_out, report)
+                        write_tree_simulation_record_table(
+                            args.record_table_out, report
+                        )
                     )
                 if args.envelope_table_out is not None:
                     outputs_to_finalize.append(
@@ -15069,7 +15083,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 outputs_to_finalize = [output_path]
                 if args.record_table_out is not None:
                     outputs_to_finalize.append(
-                        write_tree_simulation_record_table(args.record_table_out, report)
+                        write_tree_simulation_record_table(
+                            args.record_table_out, report
+                        )
                     )
                 if args.envelope_table_out is not None:
                     outputs_to_finalize.append(
@@ -15112,7 +15128,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 outputs_to_finalize = [output_path]
                 if args.record_table_out is not None:
                     outputs_to_finalize.append(
-                        write_tree_simulation_record_table(args.record_table_out, report)
+                        write_tree_simulation_record_table(
+                            args.record_table_out, report
+                        )
                     )
                 if args.envelope_table_out is not None:
                     outputs_to_finalize.append(
@@ -15179,7 +15197,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     parser.error(
                         "trait standard deviations can only be used with --correlation-row"
                     )
-                if args.correlation_rows is not None and not args.trait_standard_deviation:
+                if (
+                    args.correlation_rows is not None
+                    and not args.trait_standard_deviation
+                ):
                     parser.error(
                         "correlated Brownian simulation requires --trait-standard-deviation with --correlation-row"
                     )
@@ -15332,9 +15353,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     states=args.states,
                     rate_rows=_parse_rate_rows(args.rate),
                     root_state=args.root_state,
-                    root_state_probabilities=(
-                        root_probability_rows or None
-                    ),
+                    root_state_probabilities=(root_probability_rows or None),
                     replicates=args.replicates,
                     seed=args.seed,
                 )
@@ -15473,10 +15492,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "parity":
-            if (
-                args.reference_source in {"ape-live", "phytools-live"}
-                and args.extended
-            ):
+            if args.reference_source in {"ape-live", "phytools-live"} and args.extended:
                 raise ValueError(
                     "--extended is only supported for the checked fixture parity suite"
                 )
@@ -18418,11 +18434,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 inputs = [
                     *args.test_report,
                     *args.real_engine_test_report,
-                    *(
-                        [args.fixtures_root]
-                        if args.fixtures_root is not None
-                        else []
-                    ),
+                    *([args.fixtures_root] if args.fixtures_root is not None else []),
                 ]
                 outputs = _finalize_outputs(
                     args,

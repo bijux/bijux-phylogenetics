@@ -105,8 +105,8 @@ from bijux_phylogenetics.tree_set import (
     detect_unstable_taxa,
     enforce_tree_set_tree_budget,
     load_tree_set,
-    summarize_posterior_topology_diversity,
     summarize_clade_credibility_conflicts,
+    summarize_posterior_topology_diversity,
     summarize_uncertainty_aware_conclusions,
     write_clade_frequency_table,
     write_consensus_tree,
@@ -1558,37 +1558,49 @@ def render_tree_uncertainty_report(
             truncated_sections=truncated_sections,
         )
         conflict_rows, conflict_truncated = _truncate_report_rows(
-            [] if clade_conflicts is None else [asdict(row) for row in clade_conflicts.conflicts],
+            []
+            if clade_conflicts is None
+            else [asdict(row) for row in clade_conflicts.conflicts],
             limit=budget.max_report_table_rows,
             section_name="clade-credibility-conflicts",
             truncated_sections=truncated_sections,
         )
         robust_rows, robust_truncated = _truncate_report_rows(
-            [] if conclusion_summary is None else [asdict(row) for row in conclusion_summary.robust_clades],
+            []
+            if conclusion_summary is None
+            else [asdict(row) for row in conclusion_summary.robust_clades],
             limit=budget.max_report_table_rows,
             section_name="uncertainty-aware-conclusions.robust",
             truncated_sections=truncated_sections,
         )
         uncertain_rows, uncertain_truncated = _truncate_report_rows(
-            [] if conclusion_summary is None else [asdict(row) for row in conclusion_summary.uncertain_clades],
+            []
+            if conclusion_summary is None
+            else [asdict(row) for row in conclusion_summary.uncertain_clades],
             limit=budget.max_report_table_rows,
             section_name="uncertainty-aware-conclusions.uncertain",
             truncated_sections=truncated_sections,
         )
         conflicting_rows, conflicting_truncated = _truncate_report_rows(
-            [] if conclusion_summary is None else [asdict(row) for row in conclusion_summary.conflicting_clades],
+            []
+            if conclusion_summary is None
+            else [asdict(row) for row in conclusion_summary.conflicting_clades],
             limit=budget.max_report_table_rows,
             section_name="uncertainty-aware-conclusions.conflicting",
             truncated_sections=truncated_sections,
         )
         thinning_rows, thinning_truncated = _truncate_report_rows(
-            [] if thinning_sensitivity is None else [asdict(row) for row in thinning_sensitivity.rows],
+            []
+            if thinning_sensitivity is None
+            else [asdict(row) for row in thinning_sensitivity.rows],
             limit=budget.max_report_table_rows,
             section_name="thinning-sensitivity",
             truncated_sections=truncated_sections,
         )
         consensus_rows, consensus_truncated = _truncate_report_rows(
-            [] if consensus_sensitivity is None else [asdict(row) for row in consensus_sensitivity.rows],
+            []
+            if consensus_sensitivity is None
+            else [asdict(row) for row in consensus_sensitivity.rows],
             limit=budget.max_report_table_rows,
             section_name="consensus-threshold-sensitivity",
             truncated_sections=truncated_sections,
@@ -1686,9 +1698,7 @@ def render_tree_uncertainty_report(
                     "shared_taxa": clade_frequencies.shared_taxa,
                     "row_count": len(clade_frequencies.clade_frequencies),
                     "truncated_row_count": clade_frequency_truncated,
-                    "preview_row_count": min(
-                        len(clade_frequency_rows), preview_limit
-                    ),
+                    "preview_row_count": min(len(clade_frequency_rows), preview_limit),
                     "preview_rows": _preview_report_rows(
                         clade_frequency_rows, limit=preview_limit
                     ),
@@ -1944,8 +1954,10 @@ def render_tree_uncertainty_report(
                             "taxon_counts": benchmark.taxon_counts,
                             "sampled_tree_count": benchmark_tree_count,
                             "sampled_taxon_count": benchmark_taxon_count,
-                            "benchmark_capped": benchmark_tree_count != summary.tree_count
-                            or benchmark_taxon_count != max(len(summary.shared_taxa), 2),
+                            "benchmark_capped": benchmark_tree_count
+                            != summary.tree_count
+                            or benchmark_taxon_count
+                            != max(len(summary.shared_taxa), 2),
                             "row_count": len(benchmark.rows),
                             "truncated_row_count": benchmark_truncated,
                             "preview_row_count": min(
@@ -2040,9 +2052,9 @@ def render_tree_uncertainty_report(
             for name, path in artifact_paths.items()
         ]
         artifact_manifest_path = artifact_root / "tree-uncertainty.manifest.json"
-        machine_manifest["artifact_manifest_path"] = (
-            artifact_manifest_path.relative_to(out_path.parent).as_posix()
-        )
+        machine_manifest["artifact_manifest_path"] = artifact_manifest_path.relative_to(
+            out_path.parent
+        ).as_posix()
         machine_manifest["linked_artifact_count"] = len(artifact_paths) + 1
         machine_manifest["linked_artifacts"]["tree_uncertainty_manifest"] = {
             "path": artifact_manifest_path.relative_to(out_path.parent).as_posix(),
@@ -2065,7 +2077,9 @@ def render_tree_uncertainty_report(
             ],
         )
         html_size_bytes = out_path.stat().st_size
-        linked_artifact_bytes = sum(path.stat().st_size for path in artifact_paths.values())
+        linked_artifact_bytes = sum(
+            path.stat().st_size for path in artifact_paths.values()
+        )
         manifest_size_bytes = artifact_manifest_path.stat().st_size
         linked_artifact_bytes += manifest_size_bytes
         total_output_bytes = html_size_bytes + linked_artifact_bytes
@@ -2445,9 +2459,7 @@ def render_release_truth_report(
             "real_engine_tests_failed": release_truth.real_engine_tests.failed_tests,
             "real_engine_tests_skipped": release_truth.real_engine_tests.skipped_tests,
             "supported_workflow_count": len(release_truth.supported_workflows),
-            "experimental_workflow_count": len(
-                release_truth.experimental_workflows
-            ),
+            "experimental_workflow_count": len(release_truth.experimental_workflows),
             "flagship_dataset_count": len(release_truth.flagship_datasets),
             "reference_parity_case_count": release_truth.reference_parity.case_count,
             "stress_workload_count": len(release_truth.stress_suite.observations),

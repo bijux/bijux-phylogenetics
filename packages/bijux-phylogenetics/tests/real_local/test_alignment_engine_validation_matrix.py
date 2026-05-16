@@ -39,4 +39,7 @@ def test_alignment_engine_validation_matrix_collects_real_run_metadata(
         assert case["runtime_seconds"] is not None
         assert case["runtime_seconds"] >= 0.0
         assert case["output_checksums"]
-    assert any(case["validation_name"] == "iqtree bootstrap support" for case in payload["cases"])
+    assert any(
+        case["validation_name"] == "iqtree bootstrap support"
+        for case in payload["cases"]
+    )

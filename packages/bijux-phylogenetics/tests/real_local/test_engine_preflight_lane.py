@@ -50,7 +50,9 @@ def test_phylo_preflight_cli_reports_real_alignment_workflow_readiness(capsys) -
 
     for engine_id in ("mafft", "trimal", "iqtree"):
         engine = next(
-            item for item in payload["data"]["engines"] if item["engine_id"] == engine_id
+            item
+            for item in payload["data"]["engines"]
+            if item["engine_id"] == engine_id
         )
         assert engine["available"] is True
         assert engine["executable_path"] == executables[engine_id]

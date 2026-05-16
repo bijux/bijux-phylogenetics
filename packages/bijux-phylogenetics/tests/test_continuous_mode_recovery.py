@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import bijux_phylogenetics
-
 from bijux_phylogenetics.comparative.continuous_mode_recovery import (
     ContinuousModeRecoveryScenario,
     run_continuous_mode_recovery,
@@ -35,9 +34,7 @@ def test_run_continuous_mode_recovery_validates_strong_and_weak_cases(
         "weak-ou-identifiability",
     }
     assert case_by_id["brownian-sigma-recovery"].selected_model == "brownian"
-    assert case_by_id["ou-parameter-recovery"].selected_model == (
-        "ornstein-uhlenbeck"
-    )
+    assert case_by_id["ou-parameter-recovery"].selected_model == ("ornstein-uhlenbeck")
     assert case_by_id["early-burst-rate-recovery"].selected_model == "early-burst"
     assert case_by_id["weak-ou-identifiability"].selected_model == "brownian"
     assert case_by_id["weak-ou-identifiability"].expected_warning_kinds_present is True
@@ -88,12 +85,16 @@ def test_continuous_mode_recovery_writers_emit_review_ledgers(
     )
     assert parameter_rows[0].startswith("case_id\tgenerating_model\tfitted_model")
     assert any(
-        row.startswith("early-burst-rate-recovery\tearly-burst\tearly-burst\trate_change\t")
+        row.startswith(
+            "early-burst-rate-recovery\tearly-burst\tearly-burst\trate_change\t"
+        )
         for row in parameter_rows[1:]
     )
     assert model_choice_rows[0].startswith("case_id\tgenerating_model")
     assert any(
-        row.startswith("ou-parameter-recovery\tornstein-uhlenbeck\tornstein-uhlenbeck\tornstein-uhlenbeck\t")
+        row.startswith(
+            "ou-parameter-recovery\tornstein-uhlenbeck\tornstein-uhlenbeck\tornstein-uhlenbeck\t"
+        )
         for row in model_choice_rows[1:]
     )
     assert warning_rows[0] == "case_id\tfitted_model\tkind\tmessage"
@@ -104,7 +105,9 @@ def test_continuous_mode_recovery_writers_emit_review_ledgers(
 
 
 def test_public_runtime_exports_include_continuous_mode_recovery_surface() -> None:
-    assert bijux_phylogenetics.run_continuous_mode_recovery is run_continuous_mode_recovery
+    assert (
+        bijux_phylogenetics.run_continuous_mode_recovery is run_continuous_mode_recovery
+    )
     assert (
         bijux_phylogenetics.write_continuous_mode_recovery_summary_table
         is write_continuous_mode_recovery_summary_table

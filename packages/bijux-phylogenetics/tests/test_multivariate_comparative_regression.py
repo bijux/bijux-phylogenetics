@@ -104,8 +104,7 @@ def _multivariate_reference_gls(
         residual_variance = residual_scale / degrees_of_freedom
         residual_variances[response] = residual_variance
         log_likelihoods[response] = -0.5 * (
-            len(taxa)
-            * math.log(2.0 * math.pi * max(residual_scale / len(taxa), 1e-12))
+            len(taxa) * math.log(2.0 * math.pi * max(residual_scale / len(taxa), 1e-12))
             + float(log_determinant)
             + len(taxa)
         )
@@ -208,7 +207,9 @@ def test_run_multivariate_comparative_regression_matches_independent_python_refe
         )
     coefficient_reference = reference["coefficients_by_response"]
     for row in report.coefficient_rows:
-        estimate, standard_error, p_value = coefficient_reference[row.response][row.term]
+        estimate, standard_error, p_value = coefficient_reference[row.response][
+            row.term
+        ]
         assert math.isclose(
             row.estimate,
             estimate,
@@ -220,7 +221,9 @@ def test_run_multivariate_comparative_regression_matches_independent_python_refe
             abs_tol=REFERENCE_PARITY_TOLERANCE,
         )
         assert math.isclose(row.p_value, p_value, abs_tol=REFERENCE_PARITY_TOLERANCE)
-    response_index = {response: index for index, response in enumerate(report.responses)}
+    response_index = {
+        response: index for index, response in enumerate(report.responses)
+    }
     covariance_reference = reference["residual_covariance"]
     correlation_reference = reference["residual_correlation"]
     for row in report.covariance_rows:

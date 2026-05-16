@@ -83,7 +83,9 @@ def test_summarize_comparative_covariance_audit_detects_duplicate_tree_taxa() ->
     assert "tree contains duplicate tip labels" in report.blockers
 
 
-def test_summarize_comparative_covariance_audit_detects_invalid_branch_lengths() -> None:
+def test_summarize_comparative_covariance_audit_detects_invalid_branch_lengths() -> (
+    None
+):
     report = summarize_comparative_covariance_audit(
         fixture("example_tree_negative_length.nwk"),
         fixture("example_traits_comparative.tsv"),

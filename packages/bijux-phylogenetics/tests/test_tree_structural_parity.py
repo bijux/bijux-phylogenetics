@@ -192,7 +192,10 @@ def test_compare_tree_structurally_reports_rootedness_mismatch() -> None:
     )
 
     assert report.equivalent is False
-    assert report.mismatch_reason == "tree rootedness differs: expected True, observed False"
+    assert (
+        report.mismatch_reason
+        == "tree rootedness differs: expected True, observed False"
+    )
 
 
 def test_compare_tree_structurally_reports_internal_label_mismatch() -> None:

@@ -68,7 +68,11 @@ def _support_rows(tree: PhyloTree) -> list[SupportNormalizationAuditRow]:
         return sorted(taxa)
 
     def node_id(node: TreeNode) -> str:
-        return node.node_id or ("|".join(descendant_taxa(node)) if descendant_taxa(node) else (node.name or "<unnamed>"))
+        return node.node_id or (
+            "|".join(descendant_taxa(node))
+            if descendant_taxa(node)
+            else (node.name or "<unnamed>")
+        )
 
     for node in tree.iter_nodes():
         if node.is_leaf() or node.name is None or not node.name.strip():

@@ -81,7 +81,9 @@ def test_compute_alignment_segregating_site_report_handles_invariant_and_missing
     ]
 
 
-def test_compute_alignment_segregating_site_report_matches_one_variable_fixture() -> None:
+def test_compute_alignment_segregating_site_report_matches_one_variable_fixture() -> (
+    None
+):
     report = compute_alignment_segregating_site_report(
         fixture("example_alignment_one_variable_site.fasta")
     )

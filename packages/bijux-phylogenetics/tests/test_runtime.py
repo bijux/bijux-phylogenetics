@@ -26,7 +26,6 @@ from bijux_phylogenetics.ancestral import (
     render_ancestral_state_report,
     render_ancestral_state_tree,
     render_ancestral_state_visualization,
-    validate_discrete_ancestral_reference_examples,
     summarize_ancestral_root_sensitivity,
     summarize_ancestral_root_sensitivity_report,
     summarize_ancestral_transition_report,
@@ -49,6 +48,7 @@ from bijux_phylogenetics.ancestral import (
     summarize_irreversible_discrete_report,
     summarize_ordered_discrete_reconstruction,
     summarize_ordered_discrete_report,
+    validate_discrete_ancestral_reference_examples,
     write_ancestral_confidence_summary_table,
     write_ancestral_root_assumption_table,
     write_ancestral_root_sensitivity_node_table,
@@ -92,6 +92,12 @@ from bijux_phylogenetics.ancestral import (
     write_ordered_discrete_node_table,
     write_ordered_discrete_summary_table,
     write_ordered_discrete_transition_table,
+)
+from bijux_phylogenetics.ape_parity import (
+    list_ape_parity_cases,
+    run_ape_parity_cases,
+    write_ape_parity_observation_table,
+    write_ape_parity_summary_table,
 )
 from bijux_phylogenetics.bayesian import (
     BeastAnalysisXmlReport,
@@ -288,6 +294,8 @@ from bijux_phylogenetics.comparative import (
     CorrelatedTraitEvolutionReport,
     CorrelatedTraitExclusion,
     CorrelatedTraitObservationRow,
+    DiscreteMkFitReport,
+    DiscreteMkInputAudit,
     EarlyBurstIdentifiabilityWarning,
     EarlyBurstRateChangeProfileRow,
     EarlyBurstTraitEvolutionExclusion,
@@ -301,6 +309,9 @@ from bijux_phylogenetics.comparative import (
     MultivariateResponseCoefficientRow,
     MultivariateResponseModelRow,
     MultivariateTaxonExclusion,
+    PagelLambdaLikelihoodReport,
+    PagelLambdaOptimizerDiagnostics,
+    PagelLambdaProfileRow,
     PhylogeneticLogisticCoefficient,
     PhylogeneticLogisticFittedRow,
     PhylogeneticLogisticReport,
@@ -335,19 +346,14 @@ from bijux_phylogenetics.comparative import (
     build_pgls_model_matrix,
     compare_comparative_regression_models,
     compute_blombergs_k,
-    fit_discrete_mk_model,
-    fit_discrete_mk_model_from_dataset,
     compute_phylogenetic_independent_contrasts,
     compute_phylogenetic_independent_contrasts_from_dataset,
     compute_phylogenetic_signal_test,
+    estimate_pagels_lambda,
     evaluate_pagels_lambda_likelihood,
     evaluate_pagels_lambda_likelihood_from_dataset,
-    estimate_pagels_lambda,
-    DiscreteMkFitReport,
-    DiscreteMkInputAudit,
-    PagelLambdaLikelihoodReport,
-    PagelLambdaOptimizerDiagnostics,
-    PagelLambdaProfileRow,
+    fit_discrete_mk_model,
+    fit_discrete_mk_model_from_dataset,
     inspect_pgls_inputs,
     run_multivariate_comparative_regression,
     run_pgls,
@@ -462,17 +468,16 @@ from bijux_phylogenetics.comparative.evidence_contract import (
 )
 import bijux_phylogenetics.compare as compare_api
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
+from bijux_phylogenetics.compare.support_reference import (
+    SupportReferenceObservation,
+    SupportReferenceValidationReport,
+    validate_support_reference_examples,
+)
 from bijux_phylogenetics.compare.taxon_influence import (
     TaxonInfluenceReport,
     TaxonInfluenceRow,
     analyze_taxon_influence,
     write_taxon_influence_table,
-)
-from bijux_phylogenetics.compare.topology_distance import (
-    TopologyDistanceReport,
-    TopologyDistanceSplitRow,
-    compare_topology_distance,
-    write_topology_distance_split_table,
 )
 from bijux_phylogenetics.compare.topology import (
     BranchScoreComparisonReport,
@@ -495,10 +500,11 @@ from bijux_phylogenetics.compare.topology import (
     write_shared_taxa_removed_taxa_table,
     write_support_comparison_table,
 )
-from bijux_phylogenetics.compare.support_reference import (
-    SupportReferenceObservation,
-    SupportReferenceValidationReport,
-    validate_support_reference_examples,
+from bijux_phylogenetics.compare.topology_distance import (
+    TopologyDistanceReport,
+    TopologyDistanceSplitRow,
+    compare_topology_distance,
+    write_topology_distance_split_table,
 )
 from bijux_phylogenetics.compare.tree_distance_reference import (
     TreeDistanceReferenceObservation,
@@ -506,6 +512,12 @@ from bijux_phylogenetics.compare.tree_distance_reference import (
     validate_tree_distance_reference_examples,
 )
 from bijux_phylogenetics.core.alignment import AlignmentRecord, AlignmentSummary
+from bijux_phylogenetics.core.branching_times import (
+    TreeBranchingTimeReport,
+    TreeBranchingTimeRow,
+    compute_tree_branching_times,
+    write_tree_branching_time_table,
+)
 from bijux_phylogenetics.core.dataset import (
     audit_dataset_inputs,
     audit_dataset_taxon_ordering,
@@ -523,6 +535,12 @@ from bijux_phylogenetics.core.locus_occupancy import (
 )
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table, join_table_to_taxa
+from bijux_phylogenetics.core.node_depth import (
+    TreeNodeDepthReport,
+    TreeNodeDepthRow,
+    compute_tree_node_depths,
+    write_tree_node_depth_table,
+)
 from bijux_phylogenetics.core.partitions import (
     build_partition_summary_report,
     parse_locus_partitions,
@@ -566,25 +584,14 @@ from bijux_phylogenetics.core.topology import (
     unroot_tree,
     write_tree_rooting_report,
 )
-from bijux_phylogenetics.core.branching_times import (
-    TreeBranchingTimeReport,
-    TreeBranchingTimeRow,
-    compute_tree_branching_times,
-    write_tree_branching_time_table,
+from bijux_phylogenetics.core.traits import (
+    detect_missing_trait_values,
+    detect_unusable_trait_columns,
+    link_tree_to_traits,
+    prune_traits_to_tree,
+    validate_traits_table,
 )
-from bijux_phylogenetics.core.node_depth import (
-    TreeNodeDepthReport,
-    TreeNodeDepthRow,
-    compute_tree_node_depths,
-    write_tree_node_depth_table,
-)
-from bijux_phylogenetics.core.ultrametric import (
-    APE_ULTRAMETRIC_TOLERANCE,
-    TreeUltrametricReport,
-    TreeUltrametricTipRow,
-    assess_tree_ultrametricity,
-    write_tree_ultrametric_table,
-)
+from bijux_phylogenetics.core.tree import PhyloTree, TaxonLabel, TreeNode
 from bijux_phylogenetics.core.tree_distance import (
     TipDistanceMatrixReport,
     TipDistanceMatrixRow,
@@ -592,12 +599,12 @@ from bijux_phylogenetics.core.tree_distance import (
     write_tree_tip_distance_long_table,
     write_tree_tip_distance_matrix,
 )
-from bijux_phylogenetics.core.traits import (
-    detect_missing_trait_values,
-    detect_unusable_trait_columns,
-    link_tree_to_traits,
-    prune_traits_to_tree,
-    validate_traits_table,
+from bijux_phylogenetics.core.ultrametric import (
+    APE_ULTRAMETRIC_TOLERANCE,
+    TreeUltrametricReport,
+    TreeUltrametricTipRow,
+    assess_tree_ultrametricity,
+    write_tree_ultrametric_table,
 )
 from bijux_phylogenetics.diagnostics.assumptions import (
     assess_tree_assumptions,
@@ -620,8 +627,8 @@ from bijux_phylogenetics.discrete_evolution import (
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
     load_stochastic_map_collection,
-    render_stochastic_map_density_artifact,
     render_discrete_state_evolution_report,
+    render_stochastic_map_density_artifact,
     render_tree_with_geographic_states,
     run_discrete_state_transition_model,
     simulate_discrete_stochastic_maps,
@@ -632,17 +639,17 @@ from bijux_phylogenetics.discrete_evolution import (
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
     write_stochastic_map_aggregate_transition_matrix,
+    write_stochastic_map_branch_occupancy_table,
     write_stochastic_map_branch_probability_table,
     write_stochastic_map_branch_transition_count_table,
     write_stochastic_map_collection,
-    write_stochastic_map_branch_occupancy_table,
     write_stochastic_map_density_branch_table,
     write_stochastic_map_density_slice_table,
     write_stochastic_map_event_table,
     write_stochastic_map_segment_table,
     write_stochastic_map_state_time_table,
-    write_stochastic_map_transition_count_matrix,
     write_stochastic_map_summary_table,
+    write_stochastic_map_transition_count_matrix,
     write_transition_summary_table,
 )
 from bijux_phylogenetics.distance import (
@@ -655,8 +662,8 @@ from bijux_phylogenetics.distance import (
     compare_distance_models,
     compare_distance_tree_to_reference_tree,
     compare_distance_tree_topologies,
-    compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment,
     compute_pairwise_genetic_distance_matrix,
+    compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment,
     list_distance_tree_method_policies,
     load_imported_distance_matrix,
     resolve_distance_tree_method_policy,
@@ -824,7 +831,6 @@ from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.roundtrip import validate_tree_roundtrip
 from bijux_phylogenetics.io.trees import detect_tree_format
-from bijux_phylogenetics.core.tree import PhyloTree, TaxonLabel, TreeNode
 from bijux_phylogenetics.phylogeography import (
     CoordinateEstimateRow,
     CoordinateMovementBranchRow,
@@ -854,22 +860,16 @@ from bijux_phylogenetics.phylogeography import (
     write_geographic_map_marker_table,
     write_geographic_map_summary_table,
 )
-from bijux_phylogenetics.reference_parity import (
-    validate_reference_parity_examples,
-    write_reference_parity_observation_table,
-    write_reference_parity_summary_table,
-)
-from bijux_phylogenetics.ape_parity import (
-    list_ape_parity_cases,
-    run_ape_parity_cases,
-    write_ape_parity_observation_table,
-    write_ape_parity_summary_table,
-)
 from bijux_phylogenetics.phytools_parity import (
     list_phytools_parity_cases,
     run_phytools_parity_cases,
     write_phytools_parity_observation_table,
     write_phytools_parity_summary_table,
+)
+from bijux_phylogenetics.reference_parity import (
+    validate_reference_parity_examples,
+    write_reference_parity_observation_table,
+    write_reference_parity_summary_table,
 )
 from bijux_phylogenetics.reference_validation import (
     build_core_workflow_failure_gallery,
@@ -925,13 +925,13 @@ from bijux_phylogenetics.simulation import (
     simulate_dna_alignment,
     simulate_early_burst_traits,
     simulate_ou_traits,
+    simulate_protein_alignment,
     simulate_random_tree,
     simulate_random_trees,
-    simulate_protein_alignment,
+    write_continuous_trait_table,
     write_correlated_continuous_trait_collection_summary_table,
     write_correlated_continuous_trait_collection_table,
     write_correlated_continuous_trait_table,
-    write_continuous_trait_table,
     write_discrete_history_branch_truth_table,
     write_discrete_history_event_table,
     write_discrete_history_node_truth_table,
@@ -940,9 +940,9 @@ from bijux_phylogenetics.simulation import (
     write_discrete_history_tip_truth_table,
     write_discrete_trait_table,
     write_simulated_alignment,
+    write_tree_set,
     write_tree_simulation_envelope_table,
     write_tree_simulation_record_table,
-    write_tree_set,
 )
 from bijux_phylogenetics.tree_set import (
     BootstrapTreeSetArtifactReport,
@@ -1008,8 +1008,8 @@ def _write_junit_report(
 ) -> Path:
     path.write_text(
         (
-            "<testsuites name=\"pytest\">"
-            f"<testsuite name=\"{suite_name}\" tests=\"{tests}\" failures=\"{failures}\" errors=\"{errors}\" skipped=\"{skipped}\" />"
+            '<testsuites name="pytest">'
+            f'<testsuite name="{suite_name}" tests="{tests}" failures="{failures}" errors="{errors}" skipped="{skipped}" />'
             "</testsuites>\n"
         ),
         encoding="utf-8",
@@ -1143,7 +1143,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.extract_tree_set_clades is extract_tree_set_clades
     assert bijux_phylogenetics.summarize_tree_shape is summarize_tree_shape
     assert bijux_phylogenetics.summarize_tree_set_shapes is summarize_tree_set_shapes
-    assert bijux_phylogenetics.extract_tree_clade_by_node_id is extract_tree_clade_by_node_id
+    assert (
+        bijux_phylogenetics.extract_tree_clade_by_node_id
+        is extract_tree_clade_by_node_id
+    )
     assert (
         bijux_phylogenetics.extract_tree_clade_by_descendant_taxa
         is extract_tree_clade_by_descendant_taxa
@@ -1153,8 +1156,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.TreeBranchingTimeReport is TreeBranchingTimeReport
     assert bijux_phylogenetics.TreeBranchingTimeRow is TreeBranchingTimeRow
     assert (
-        bijux_phylogenetics.compute_tree_branching_times
-        is compute_tree_branching_times
+        bijux_phylogenetics.compute_tree_branching_times is compute_tree_branching_times
     )
     assert (
         bijux_phylogenetics.write_tree_branching_time_table
@@ -1167,22 +1169,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.TreeNodeDepthRow is TreeNodeDepthRow
     assert bijux_phylogenetics.compute_tree_node_depths is compute_tree_node_depths
     assert (
-        bijux_phylogenetics.write_tree_node_depth_table
-        is write_tree_node_depth_table
+        bijux_phylogenetics.write_tree_node_depth_table is write_tree_node_depth_table
     )
-    assert (
-        bijux_phylogenetics.APE_ULTRAMETRIC_TOLERANCE
-        == APE_ULTRAMETRIC_TOLERANCE
-    )
+    assert bijux_phylogenetics.APE_ULTRAMETRIC_TOLERANCE == APE_ULTRAMETRIC_TOLERANCE
     assert bijux_phylogenetics.TreeUltrametricReport is TreeUltrametricReport
     assert bijux_phylogenetics.TreeUltrametricTipRow is TreeUltrametricTipRow
+    assert bijux_phylogenetics.assess_tree_ultrametricity is assess_tree_ultrametricity
     assert (
-        bijux_phylogenetics.assess_tree_ultrametricity
-        is assess_tree_ultrametricity
-    )
-    assert (
-        bijux_phylogenetics.write_tree_ultrametric_table
-        is write_tree_ultrametric_table
+        bijux_phylogenetics.write_tree_ultrametric_table is write_tree_ultrametric_table
     )
     assert bijux_phylogenetics.TipDistanceMatrixReport is TipDistanceMatrixReport
     assert bijux_phylogenetics.TipDistanceMatrixRow is TipDistanceMatrixRow
@@ -1230,8 +1224,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert compare_api.TaxonInfluenceReport is TaxonInfluenceReport
     assert compare_api.TaxonInfluenceRow is TaxonInfluenceRow
     assert (
-        compare_api.TreeDistanceReferenceObservation
-        is TreeDistanceReferenceObservation
+        compare_api.TreeDistanceReferenceObservation is TreeDistanceReferenceObservation
     )
     assert (
         compare_api.TreeDistanceReferenceValidationReport
@@ -1287,8 +1280,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is validate_tree_distance_reference_examples
     )
     assert (
-        bijux_phylogenetics.SupportReferenceObservation
-        is SupportReferenceObservation
+        bijux_phylogenetics.SupportReferenceObservation is SupportReferenceObservation
     )
     assert (
         bijux_phylogenetics.SupportReferenceValidationReport
@@ -1296,8 +1288,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     )
     assert compare_api.SupportReferenceObservation is SupportReferenceObservation
     assert (
-        compare_api.SupportReferenceValidationReport
-        is SupportReferenceValidationReport
+        compare_api.SupportReferenceValidationReport is SupportReferenceValidationReport
     )
     assert (
         bijux_phylogenetics.assess_distance_method_maturity
@@ -2016,7 +2007,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     )
     assert bijux_phylogenetics.BootstrapUnstableBranch is BootstrapUnstableBranch
     assert bijux_phylogenetics.compute_consensus_tree is compute_consensus_tree
-    assert bijux_phylogenetics.compute_strict_consensus_tree is compute_strict_consensus_tree
+    assert (
+        bijux_phylogenetics.compute_strict_consensus_tree
+        is compute_strict_consensus_tree
+    )
     assert (
         bijux_phylogenetics.compute_clade_frequency_table
         is compute_clade_frequency_table
@@ -2118,14 +2112,9 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is validate_reference_parity_examples
     )
     assert bijux_phylogenetics.list_ape_parity_cases is list_ape_parity_cases
-    assert (
-        bijux_phylogenetics.list_phytools_parity_cases is list_phytools_parity_cases
-    )
+    assert bijux_phylogenetics.list_phytools_parity_cases is list_phytools_parity_cases
     assert bijux_phylogenetics.run_ape_parity_cases is run_ape_parity_cases
-    assert (
-        bijux_phylogenetics.run_phytools_parity_cases
-        is run_phytools_parity_cases
-    )
+    assert bijux_phylogenetics.run_phytools_parity_cases is run_phytools_parity_cases
     assert (
         bijux_phylogenetics.write_reference_parity_summary_table
         is write_reference_parity_summary_table
@@ -2177,7 +2166,9 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is simulate_brownian_trait_collection
     )
     assert bijux_phylogenetics.simulate_brownian_traits is simulate_brownian_traits
-    assert bijux_phylogenetics.simulate_early_burst_traits is simulate_early_burst_traits
+    assert (
+        bijux_phylogenetics.simulate_early_burst_traits is simulate_early_burst_traits
+    )
     assert bijux_phylogenetics.simulate_ou_traits is simulate_ou_traits
     assert bijux_phylogenetics.DiscreteHistoryRateRow is DiscreteHistoryRateRow
     assert (
@@ -2210,8 +2201,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is SimulatedDiscreteTransitionEvent
     )
     assert (
-        bijux_phylogenetics.simulate_discrete_histories
-        is simulate_discrete_histories
+        bijux_phylogenetics.simulate_discrete_histories is simulate_discrete_histories
     )
     assert bijux_phylogenetics.simulate_discrete_traits is simulate_discrete_traits
     assert bijux_phylogenetics.simulate_dna_alignment is simulate_dna_alignment
@@ -2388,8 +2378,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     )
     assert bijux_phylogenetics.estimate_pagels_lambda is estimate_pagels_lambda
     assert (
-        bijux_phylogenetics.PagelLambdaLikelihoodReport
-        is PagelLambdaLikelihoodReport
+        bijux_phylogenetics.PagelLambdaLikelihoodReport is PagelLambdaLikelihoodReport
     )
     assert (
         bijux_phylogenetics.PagelLambdaOptimizerDiagnostics
@@ -3798,7 +3787,8 @@ def test_simulate_discrete_traits_assigns_a_state_to_every_tip(tmp_path: Path) -
     ]
     assert all(row.segments for row in report.branch_histories)
     assert all(
-        abs(sum(segment.duration for segment in row.segments) - row.branch_length) < 1e-9
+        abs(sum(segment.duration for segment in row.segments) - row.branch_length)
+        < 1e-9
         for row in report.branch_histories
     )
 
@@ -3834,8 +3824,9 @@ def test_simulate_discrete_histories_reports_no_change_and_writes_truth_tables(
     assert report.mean_total_transition_count < 1.0
     assert any(row.row_kind == "tip_state_frequency" for row in report.rows)
     assert "replicate_index\ttaxon\tstate" in tip_path.read_text(encoding="utf-8")
-    assert "replicate_index\tparent_node\tchild_node\tbranch_length" in branch_path.read_text(
-        encoding="utf-8"
+    assert (
+        "replicate_index\tparent_node\tchild_node\tbranch_length"
+        in branch_path.read_text(encoding="utf-8")
     )
     assert (
         "replicate_index\tparent_node\tchild_node\tsource_state\ttarget_state"
@@ -4004,7 +3995,9 @@ def test_compute_consensus_tree_stays_native_without_biopython_bridge() -> None:
     assert report.tree_count == 3
 
 
-def test_compute_strict_consensus_tree_returns_star_when_no_clade_is_unanimous() -> None:
+def test_compute_strict_consensus_tree_returns_star_when_no_clade_is_unanimous() -> (
+    None
+):
     tree, report = compute_strict_consensus_tree(fixture("example_tree_set_left.nwk"))
 
     assert dumps_newick(tree) == "(A:0.1,B:0.1,C:0.1,D:0.1);"
@@ -4989,7 +4982,9 @@ def test_find_tree_mrca_matches_polytomy_case() -> None:
 
 
 def test_find_tree_mrca_rejects_missing_tips() -> None:
-    with pytest.raises(ValueError, match="requested taxa are not present in the tree: Z"):
+    with pytest.raises(
+        ValueError, match="requested taxa are not present in the tree: Z"
+    ):
         find_tree_mrca(
             fixture("example_tree.nwk"),
             taxa=["A", "Z"],
@@ -5047,7 +5042,9 @@ def test_assess_tree_monophyly_matches_rooted_two_tip_clade() -> None:
     assert report.is_root is False
 
 
-def test_assess_tree_monophyly_reports_root_extra_taxa_for_non_monophyletic_group() -> None:
+def test_assess_tree_monophyly_reports_root_extra_taxa_for_non_monophyletic_group() -> (
+    None
+):
     report = assess_tree_monophyly(
         fixture("example_tree.nwk"),
         taxa=["A", "C"],
@@ -5140,7 +5137,9 @@ def test_assess_tree_monophyly_matches_unrooted_reroot_true_policy() -> None:
 
 
 def test_assess_tree_monophyly_rejects_all_missing_taxa_when_rerooting() -> None:
-    with pytest.raises(ValueError, match="specified outgroup not in labels of the tree"):
+    with pytest.raises(
+        ValueError, match="specified outgroup not in labels of the tree"
+    ):
         assess_tree_monophyly(
             fixture("example_tree_unrooted.nwk"),
             taxa=["Z"],
@@ -5292,7 +5291,10 @@ def test_root_tree_on_outgroup_rejects_non_monophyletic_outgroup_clade() -> None
         )
 
     assert error.value.code == "outgroup_not_monophyletic"
-    assert str(error.value) == "requested outgroup taxa are not monophyletic in the input tree"
+    assert (
+        str(error.value)
+        == "requested outgroup taxa are not monophyletic in the input tree"
+    )
     assert error.value.details["matched_taxa"] == ["B", "D"]
     assert error.value.details["outgroup_mrca_taxa"] == ["A", "B", "C", "D"]
     assert error.value.details["outgroup_mrca_extra_taxa"] == ["A", "C"]
@@ -6348,7 +6350,13 @@ def test_translate_coding_alignment_emits_amino_acid_records() -> None:
     assert report.dropped_trailing_nucleotide_count == 0
     assert report.warnings == []
     assert [
-        (row.identifier, row.codon_index, row.codon, row.amino_acid, row.translation_status)
+        (
+            row.identifier,
+            row.codon_index,
+            row.codon,
+            row.amino_acid,
+            row.translation_status,
+        )
         for row in report.codon_observations[:5]
     ] == [
         ("A", 1, "ATG", "M", "translated"),
@@ -6906,7 +6914,9 @@ def test_build_distance_tree_constructs_neighbor_joining_tree() -> None:
     assert report.taxon_count == 4
 
 
-def test_build_distance_tree_from_genetic_distance_matrix_matches_path_surface() -> None:
+def test_build_distance_tree_from_genetic_distance_matrix_matches_path_surface() -> (
+    None
+):
     matrix = compute_pairwise_genetic_distance_matrix(
         fixture("example_alignment_distance.fasta")
     )
@@ -7302,9 +7312,7 @@ def test_cli_simulate_coalescent_writes_envelope_ledgers(
     assert payload["metrics"]["envelope_metric_count"] == 6
     assert output_path.read_text(encoding="utf-8").count(";\n") == 2
     assert "tree_height_branch_length" in record_path.read_text(encoding="utf-8")
-    assert "total_branch_length\ttree\t2\t" in envelope_path.read_text(
-        encoding="utf-8"
-    )
+    assert "total_branch_length\ttree\t2\t" in envelope_path.read_text(encoding="utf-8")
 
 
 def test_cli_simulate_discrete_history_writes_truth_outputs(
@@ -7360,8 +7368,9 @@ def test_cli_simulate_discrete_history_writes_truth_outputs(
     assert "start_state\tend_state\tchanged\tevent_count" in branch_path.read_text(
         encoding="utf-8"
     )
-    assert "source_state\ttarget_state\tevent_index\tbranch_distance" in event_path.read_text(
-        encoding="utf-8"
+    assert (
+        "source_state\ttarget_state\tevent_index\tbranch_distance"
+        in event_path.read_text(encoding="utf-8")
     )
     assert "state\tstart_distance\tend_distance\tduration" in segment_path.read_text(
         encoding="utf-8"
@@ -7449,7 +7458,9 @@ def test_cli_alignment_translate_writes_amino_acid_alignment(
     assert codon_table_path.read_text(encoding="utf-8").splitlines()[0] == (
         "identifier\tcodon_index\tnucleotide_start\tcodon\tamino_acid\ttranslation_status"
     )
-    assert exclusion_table_path.read_text(encoding="utf-8") == "identifier\treason\tnote\n"
+    assert (
+        exclusion_table_path.read_text(encoding="utf-8") == "identifier\treason\tnote\n"
+    )
     assert payload["metrics"]["translated_sequence_count"] == 4
     assert payload["metrics"]["invalid_codon_count"] == 1
     assert payload["metrics"]["stop_codon_count"] == 2
@@ -9224,7 +9235,9 @@ def test_cli_traits_link_strict_mode_returns_typed_error(capsys) -> None:
     assert exit_code == 2
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == MetadataJoinError.code
-    assert payload["errors"][0]["details"]["failure_reason"] == "tree_trait_taxon_mismatch"
+    assert (
+        payload["errors"][0]["details"]["failure_reason"] == "tree_trait_taxon_mismatch"
+    )
     assert payload["errors"][0]["details"]["evidence"]["missing_from_traits"] == ["D"]
     assert payload["errors"][0]["details"]["evidence"]["extra_trait_taxa"] == ["E"]
 
@@ -10328,7 +10341,11 @@ def test_write_html_report_renders_summary_metrics_and_artifact_links(
         embedded_json={"report_kind": "summary"},
         summary_metrics=[("tree count", 12), ("report mode", "scaled-summary")],
         artifact_links=[
-            ("clade-frequencies", "summary-report.artifacts/clade-frequencies.tsv", "128 bytes"),
+            (
+                "clade-frequencies",
+                "summary-report.artifacts/clade-frequencies.tsv",
+                "128 bytes",
+            ),
             ("report-manifest", "summary-report.artifacts/summary.manifest.json", None),
         ],
     )
@@ -10754,8 +10771,7 @@ def test_build_release_truth_report_aggregates_test_counts_and_release_surfaces(
     assert report.real_engine_tests.total_tests == 6
     assert report.real_engine_tests.passed_tests == 5
     assert any(
-        workflow.surface == "fasta-to-tree"
-        for workflow in report.supported_workflows
+        workflow.surface == "fasta-to-tree" for workflow in report.supported_workflows
     )
     assert any(
         dataset.demo_command == "rabies-cross-host-geography-panel"
@@ -11304,9 +11320,7 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is write_brownian_covariance_table
     )
     assert (
-        resolved[
-            "bijux_phylogenetics.comparative:write_brownian_covariance_long_table"
-        ]
+        resolved["bijux_phylogenetics.comparative:write_brownian_covariance_long_table"]
         is write_brownian_covariance_long_table
     )
     assert (
@@ -11988,13 +12002,11 @@ def test_public_package_exports_python_workflow_api_surface() -> None:
     assert bijux_phylogenetics.InferenceWorkflowResult is InferenceWorkflowResult
     assert bijux_phylogenetics.ReportWorkflowResult is ReportWorkflowResult
     assert (
-        bijux_phylogenetics.SequenceToTreeWorkflowResult
-        is SequenceToTreeWorkflowResult
+        bijux_phylogenetics.SequenceToTreeWorkflowResult is SequenceToTreeWorkflowResult
     )
     assert bijux_phylogenetics.SupportWorkflowResult is SupportWorkflowResult
     assert (
-        bijux_phylogenetics.TreeComparisonWorkflowResult
-        is TreeComparisonWorkflowResult
+        bijux_phylogenetics.TreeComparisonWorkflowResult is TreeComparisonWorkflowResult
     )
     assert bijux_phylogenetics.TrimmingWorkflowResult is TrimmingWorkflowResult
     assert bijux_phylogenetics.run_alignment_workflow is run_alignment_workflow
@@ -12020,12 +12032,10 @@ def test_public_package_exports_python_workflow_api_surface() -> None:
     )
     assert bijux_phylogenetics.run_support_workflow is run_support_workflow
     assert (
-        bijux_phylogenetics.run_tree_comparison_workflow
-        is run_tree_comparison_workflow
+        bijux_phylogenetics.run_tree_comparison_workflow is run_tree_comparison_workflow
     )
     assert (
-        bijux_phylogenetics.run_tree_inference_workflow
-        is run_tree_inference_workflow
+        bijux_phylogenetics.run_tree_inference_workflow is run_tree_inference_workflow
     )
     assert bijux_phylogenetics.run_trimming_workflow is run_trimming_workflow
     assert bijux_phylogenetics.render_report_workflow is render_report_workflow

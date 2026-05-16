@@ -5,17 +5,13 @@ from bijux_phylogenetics.ancestral.discrete_reference import (
 )
 
 
-def test_validate_discrete_ancestral_reference_examples_reports_passing_cases() -> (
-    None
-):
+def test_validate_discrete_ancestral_reference_examples_reports_passing_cases() -> None:
     report = validate_discrete_ancestral_reference_examples()
 
     assert report.case_count == 10
     assert report.external_case_count == 6
     assert report.all_passed is True
-    assert {
-        observation.category for observation in report.observations
-    } == {
+    assert {observation.category for observation in report.observations} == {
         "ambiguity-policy",
         "external-marginal-probability",
         "irreversible-constraint-policy",
@@ -39,8 +35,7 @@ def test_validate_discrete_ancestral_reference_examples_tracks_expanded_ace_case
     assert observation.observed_metrics["root_state"] == "island"
     assert observation.observed_metrics["root_ambiguous"] is False
     assert (
-        observation.observed_metrics["max_probability_delta"]
-        <= observation.tolerance
+        observation.observed_metrics["max_probability_delta"] <= observation.tolerance
     )
     assert len(observation.probability_rows) == 15
 

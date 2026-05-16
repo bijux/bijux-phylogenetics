@@ -5,6 +5,7 @@ import re
 
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.reports.service import render_tree_report
+
 from .support.scientific_output_assertions import (
     assert_scientific_outputs_equivalent,
 )

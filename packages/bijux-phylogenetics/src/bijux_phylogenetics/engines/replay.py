@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import shutil
 from pathlib import Path
+import shutil
 from typing import Any
 
 from bijux_phylogenetics.compare.topology import (
@@ -264,7 +264,9 @@ def _replay_engine_workflow(
             executable=executable,
             mode=str(config.get("mode", "auto")),
             sequence_type=(
-                None if config.get("sequence_type") is None else str(config["sequence_type"])
+                None
+                if config.get("sequence_type") is None
+                else str(config["sequence_type"])
             ),
             genetic_code=config.get("genetic_code_id"),
             timeout_seconds=(
@@ -293,7 +295,9 @@ def _replay_engine_workflow(
             prefix=_replay_prefix(manifest_path, "model-selection"),
             executable=executable,
             sequence_type=(
-                None if config.get("sequence_type") is None else str(config["sequence_type"])
+                None
+                if config.get("sequence_type") is None
+                else str(config["sequence_type"])
             ),
             partition_path=(
                 None
@@ -316,7 +320,9 @@ def _replay_engine_workflow(
             executable=executable,
             model=str(config["model"]),
             sequence_type=(
-                None if config.get("sequence_type") is None else str(config["sequence_type"])
+                None
+                if config.get("sequence_type") is None
+                else str(config["sequence_type"])
             ),
             partition_path=(
                 None
@@ -340,7 +346,9 @@ def _replay_engine_workflow(
             prefix=_replay_prefix(manifest_path, "bootstrap-support"),
             executable=executable,
             sequence_type=(
-                None if config.get("sequence_type") is None else str(config["sequence_type"])
+                None
+                if config.get("sequence_type") is None
+                else str(config["sequence_type"])
             ),
             partition_path=(
                 None
@@ -365,7 +373,9 @@ def _replay_engine_workflow(
             prefix=_replay_prefix(manifest_path, "sh-alrt-support"),
             executable=executable,
             sequence_type=(
-                None if config.get("sequence_type") is None else str(config["sequence_type"])
+                None
+                if config.get("sequence_type") is None
+                else str(config["sequence_type"])
             ),
             partition_path=(
                 None
@@ -399,7 +409,9 @@ def _replay_engine_workflow(
             replay_out_dir / output_paths["tree"].name,
             executable=executable,
             sequence_type=(
-                None if config.get("sequence_type") is None else str(config["sequence_type"])
+                None
+                if config.get("sequence_type") is None
+                else str(config["sequence_type"])
             ),
             timeout_seconds=(
                 None
@@ -461,7 +473,9 @@ def _replay_composite_workflow(
             out_dir=replay_out_dir,
             prefix=prefix,
             sequence_type=(
-                None if payload.get("sequence_type") is None else str(payload["sequence_type"])
+                None
+                if payload.get("sequence_type") is None
+                else str(payload["sequence_type"])
             ),
             mafft_executable=executables.get("mafft") or "mafft",
             alignment_mode=str(payload["alignment_mode"]),
@@ -486,7 +500,9 @@ def _replay_composite_workflow(
             out_dir=replay_out_dir,
             prefix=prefix,
             sequence_type=(
-                None if payload.get("sequence_type") is None else str(payload["sequence_type"])
+                None
+                if payload.get("sequence_type") is None
+                else str(payload["sequence_type"])
             ),
             executable=executables.get("fasttree") or "FastTree",
             timeout_seconds=(
@@ -501,7 +517,9 @@ def _replay_composite_workflow(
             out_dir=replay_out_dir,
             prefix=prefix,
             sequence_type=(
-                None if payload.get("sequence_type") is None else str(payload["sequence_type"])
+                None
+                if payload.get("sequence_type") is None
+                else str(payload["sequence_type"])
             ),
             iqtree_executable=executables.get("iqtree") or "iqtree2",
             fasttree_executable=executables.get("fasttree") or "FastTree",
@@ -521,7 +539,9 @@ def _replay_composite_workflow(
             out_dir=replay_out_dir,
             prefix=prefix,
             sequence_type=(
-                None if payload.get("sequence_type") is None else str(payload["sequence_type"])
+                None
+                if payload.get("sequence_type") is None
+                else str(payload["sequence_type"])
             ),
             executable=executables.get("iqtree") or "iqtree2",
             repeats=int(payload["repeat_count"]),
@@ -536,9 +556,15 @@ def _replay_composite_workflow(
     )
 
 
-def _compare_alignment_outputs(left_path: Path, right_path: Path) -> ManifestReplayComparison:
-    left_records = [(row.identifier, row.sequence) for row in load_fasta_alignment(left_path)]
-    right_records = [(row.identifier, row.sequence) for row in load_fasta_alignment(right_path)]
+def _compare_alignment_outputs(
+    left_path: Path, right_path: Path
+) -> ManifestReplayComparison:
+    left_records = [
+        (row.identifier, row.sequence) for row in load_fasta_alignment(left_path)
+    ]
+    right_records = [
+        (row.identifier, row.sequence) for row in load_fasta_alignment(right_path)
+    ]
     return ManifestReplayComparison(
         label=left_path.name,
         status="equivalent" if left_records == right_records else "different",
@@ -550,7 +576,9 @@ def _compare_alignment_outputs(left_path: Path, right_path: Path) -> ManifestRep
     )
 
 
-def _compare_tree_outputs(left_path: Path, right_path: Path, *, label: str) -> list[ManifestReplayComparison]:
+def _compare_tree_outputs(
+    left_path: Path, right_path: Path, *, label: str
+) -> list[ManifestReplayComparison]:
     topology = compare_tree_paths(left_path, right_path)
     support = compare_support_values(left_path, right_path)
     branch_lengths = compare_branch_lengths(left_path, right_path)
@@ -592,11 +620,15 @@ def _compare_posterior_outputs(
             parse_mrbayes_posterior_tree_samples,
         )
 
-        original_trace = parse_mrbayes_parameter_traces(output_paths["parameter_traces"])
+        original_trace = parse_mrbayes_parameter_traces(
+            output_paths["parameter_traces"]
+        )
         replay_trace = parse_mrbayes_parameter_traces(
             replay_report.output_paths["parameter_traces"]
         )
-        original_consensus = parse_mrbayes_consensus_tree(output_paths["consensus_tree"])
+        original_consensus = parse_mrbayes_consensus_tree(
+            output_paths["consensus_tree"]
+        )
         replay_consensus = parse_mrbayes_consensus_tree(
             replay_report.output_paths["consensus_tree"]
         )
@@ -623,7 +655,9 @@ def _compare_posterior_outputs(
                 label="posterior-trees",
                 status=(
                     "equivalent"
-                    if parse_mrbayes_posterior_tree_samples(output_paths["posterior_trees"]).tree_count
+                    if parse_mrbayes_posterior_tree_samples(
+                        output_paths["posterior_trees"]
+                    ).tree_count
                     == parse_mrbayes_posterior_tree_samples(
                         replay_report.output_paths["posterior_trees"]
                     ).tree_count
@@ -689,7 +723,9 @@ def _compare_posterior_outputs(
     ]
 
 
-def _compare_outputs(payload: dict[str, Any], replay_report: Any) -> list[ManifestReplayComparison]:
+def _compare_outputs(
+    payload: dict[str, Any], replay_report: Any
+) -> list[ManifestReplayComparison]:
     workflow = _payload_workflow(payload)
     output_paths = _path_map(dict(payload["output_paths"]))
     if workflow in {
@@ -698,7 +734,11 @@ def _compare_outputs(payload: dict[str, Any], replay_report: Any) -> list[Manife
         "alignment-trimming",
     }:
         key = "alignment" if "alignment" in output_paths else "trimmed_alignment"
-        return [_compare_alignment_outputs(output_paths[key], replay_report.output_paths[key])]
+        return [
+            _compare_alignment_outputs(
+                output_paths[key], replay_report.output_paths[key]
+            )
+        ]
     if workflow == "model-selection":
         original_model = str(payload.get("selected_model"))
         replay_model = getattr(replay_report, "selected_model", None)
@@ -712,15 +752,35 @@ def _compare_outputs(payload: dict[str, Any], replay_report: Any) -> list[Manife
             )
         ]
     if workflow == "maximum-likelihood-tree":
-        return _compare_tree_outputs(output_paths["tree"], replay_report.output_paths["tree"], label="maximum-likelihood-tree")
+        return _compare_tree_outputs(
+            output_paths["tree"],
+            replay_report.output_paths["tree"],
+            label="maximum-likelihood-tree",
+        )
     if workflow == "bootstrap-support":
-        return _compare_tree_outputs(output_paths["support_tree"], replay_report.output_paths["support_tree"], label="bootstrap-support-tree")
+        return _compare_tree_outputs(
+            output_paths["support_tree"],
+            replay_report.output_paths["support_tree"],
+            label="bootstrap-support-tree",
+        )
     if workflow == "sh-alrt-support":
-        return _compare_tree_outputs(output_paths["support_tree"], replay_report.output_paths["support_tree"], label="sh-alrt-support-tree")
+        return _compare_tree_outputs(
+            output_paths["support_tree"],
+            replay_report.output_paths["support_tree"],
+            label="sh-alrt-support-tree",
+        )
     if workflow == "bootstrap-consensus":
-        return _compare_tree_outputs(output_paths["consensus_tree"], replay_report.output_paths["consensus_tree"], label="bootstrap-consensus-tree")
+        return _compare_tree_outputs(
+            output_paths["consensus_tree"],
+            replay_report.output_paths["consensus_tree"],
+            label="bootstrap-consensus-tree",
+        )
     if workflow == "fast-approximate-tree":
-        return _compare_tree_outputs(output_paths["tree"], replay_report.output_paths["tree"], label="fast-approximate-tree")
+        return _compare_tree_outputs(
+            output_paths["tree"],
+            replay_report.output_paths["tree"],
+            label="fast-approximate-tree",
+        )
     if workflow == "posterior-tree-inference":
         return _compare_posterior_outputs(payload, replay_report)
     if workflow == "fasta-to-tree":
@@ -729,11 +789,13 @@ def _compare_outputs(payload: dict[str, Any], replay_report: Any) -> list[Manife
                 label="selected-model",
                 status=(
                     "equivalent"
-                    if str(payload["selected_model"]) == getattr(replay_report, "selected_model", None)
+                    if str(payload["selected_model"])
+                    == getattr(replay_report, "selected_model", None)
                     else "different"
                 ),
                 detail="selected substitution model matched"
-                if str(payload["selected_model"]) == getattr(replay_report, "selected_model", None)
+                if str(payload["selected_model"])
+                == getattr(replay_report, "selected_model", None)
                 else "selected substitution model differed",
             )
         ]
@@ -746,7 +808,11 @@ def _compare_outputs(payload: dict[str, Any], replay_report: Any) -> list[Manife
         )
         return comparisons
     if workflow == "large-alignment-inference":
-        return _compare_tree_outputs(output_paths["tree"], replay_report.output_paths["tree"], label="large-alignment-inference")
+        return _compare_tree_outputs(
+            output_paths["tree"],
+            replay_report.output_paths["tree"],
+            label="large-alignment-inference",
+        )
     if workflow == "tree-inference-comparison":
         return [
             *_compare_tree_outputs(
@@ -762,11 +828,13 @@ def _compare_outputs(payload: dict[str, Any], replay_report: Any) -> list[Manife
         ]
     if workflow == "inference-reproducibility":
         original_status = str(payload["overall_status"])
-        replay_status = str(getattr(replay_report, "overall_status"))
+        replay_status = str(replay_report.overall_status)
         return [
             ManifestReplayComparison(
                 label="overall-status",
-                status="equivalent" if original_status == replay_status else "different",
+                status="equivalent"
+                if original_status == replay_status
+                else "different",
                 detail="reproducibility classification matched"
                 if original_status == replay_status
                 else "reproducibility classification differed",
@@ -787,7 +855,9 @@ def replay_workflow_manifest(
 ) -> ManifestReplayReport:
     payload = load_engine_manifest(manifest_path)
     workflow = _payload_workflow(payload)
-    replay_out_dir = _default_replay_out_dir(manifest_path) if out_dir is None else out_dir
+    replay_out_dir = (
+        _default_replay_out_dir(manifest_path) if out_dir is None else out_dir
+    )
     replay_out_dir.mkdir(parents=True, exist_ok=True)
     executable_overrides = {} if executables is None else dict(executables)
 
@@ -800,7 +870,9 @@ def replay_workflow_manifest(
             details={
                 "manifest_path": str(manifest_path),
                 "workflow": workflow,
-                "changed_inputs": [drift.label for drift in input_drift if not drift.matched],
+                "changed_inputs": [
+                    drift.label for drift in input_drift if not drift.matched
+                ],
             },
         )
 

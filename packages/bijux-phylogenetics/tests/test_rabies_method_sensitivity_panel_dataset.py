@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 
 import bijux_phylogenetics
-import bijux_phylogenetics.datasets.rabies_method_sensitivity as rabies_method_sensitivity
 from bijux_phylogenetics.cli import main
+import bijux_phylogenetics.datasets.rabies_method_sensitivity as rabies_method_sensitivity
 from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     export_rabies_method_sensitivity_panel_dataset,
     load_rabies_method_sensitivity_panel_dataset,
@@ -16,6 +16,7 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     run_rabies_method_sensitivity_panel_workflow,
     write_rabies_method_sensitivity_panel_workflow_bundle,
 )
+
 from .support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
@@ -32,7 +33,9 @@ def _build_stub_dataset(
     )
 
 
-def test_load_rabies_method_sensitivity_panel_dataset_exposes_packaged_surface() -> None:
+def test_load_rabies_method_sensitivity_panel_dataset_exposes_packaged_surface() -> (
+    None
+):
     dataset = load_rabies_method_sensitivity_panel_dataset()
     assert dataset.dataset_id == "rabies_method_sensitivity_panel"
     assert dataset.label == "Rabies method-sensitivity panel"
@@ -70,12 +73,16 @@ def test_export_rabies_method_sensitivity_panel_dataset_copies_expected_outputs(
     )
     assert Path("parallel-logs/auto-gap-threshold.log") in expected_files
     assert Path("workflow-summary.tsv") in expected_files
-    assert Path("variants/auto-gap-threshold/unrooted-conclusions.tsv") in expected_files
+    assert (
+        Path("variants/auto-gap-threshold/unrooted-conclusions.tsv") in expected_files
+    )
     report_html = (
         result.expected_output_root / "rabies-method-sensitivity-report.html"
     ).read_text(encoding="utf-8")
     assert 'href="workflow-summary.tsv"' in report_html
-    assert "report-artifacts/rabies-method-sensitivity-report.manifest.json" in report_html
+    assert (
+        "report-artifacts/rabies-method-sensitivity-report.manifest.json" in report_html
+    )
 
 
 @pytest.mark.slow
@@ -184,7 +191,9 @@ def test_run_rabies_method_sensitivity_panel_workflow_writes_execution_record(
     assert payload["execution_mode"] == "serial"
     assert payload["successful_variants"] == [dataset.variants[0].variant_id]
     assert payload["failed_variants"] == []
-    assert payload["task_records"][0]["log_path"] == "parallel-logs/auto-gap-threshold.log"
+    assert (
+        payload["task_records"][0]["log_path"] == "parallel-logs/auto-gap-threshold.log"
+    )
 
 
 @pytest.mark.slow
@@ -225,7 +234,10 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     assert payload["metrics"]["report_linked_artifact_count"] == 10
     assert payload["metrics"]["report_html_size_bytes"] > 0
     assert payload["metrics"]["report_linked_artifact_bytes"] > 0
-    assert payload["metrics"]["report_total_output_bytes"] >= payload["metrics"]["report_html_size_bytes"]
+    assert (
+        payload["metrics"]["report_total_output_bytes"]
+        >= payload["metrics"]["report_html_size_bytes"]
+    )
     assert payload["metrics"]["reference_output_count"] == 71
     assert payload["data"]["dataset"]["dataset_id"] == "rabies_method_sensitivity_panel"
     assert payload["data"]["workflow_bundle"]["workflow_summary_path"] == str(

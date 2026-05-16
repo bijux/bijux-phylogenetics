@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 from pathlib import Path
 
 from bijux_phylogenetics.comparative._math import invert_matrix, log_determinant

@@ -107,9 +107,7 @@ def _summarize_tree_node_depths(
         )
     depth_lookup = _node_depth_lookup(tree)
     rows = _build_node_depth_rows(tree, depth_lookup)
-    tip_depths = [
-        row.branch_length_depth for row in rows if row.node_kind == "tip"
-    ]
+    tip_depths = [row.branch_length_depth for row in rows if row.node_kind == "tip"]
     internal_depths = [
         row.branch_length_depth for row in rows if row.node_kind != "tip"
     ]

@@ -61,6 +61,7 @@ class TopologyDistanceReport:
     topology_equal: bool
     split_rows: list[TopologyDistanceSplitRow]
 
+
 def _topology_signatures(
     tree: PhyloTree,
     shared_taxa: set[str],

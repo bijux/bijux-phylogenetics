@@ -8,6 +8,7 @@ import tempfile
 from time import perf_counter
 import tracemalloc
 
+from bijux_phylogenetics.core._node_identity import build_ape_internal_node_map
 from bijux_phylogenetics.core.clade_sets import (
     canonical_bipartition,
     informative_rooted_clade_nodes,
@@ -15,7 +16,6 @@ from bijux_phylogenetics.core.clade_sets import (
     informative_unrooted_splits,
     robinson_foulds_metrics,
 )
-from bijux_phylogenetics.core._node_identity import build_ape_internal_node_map
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import (
     InvalidAlignmentError,
@@ -24,6 +24,8 @@ from bijux_phylogenetics.errors import (
 )
 from bijux_phylogenetics.io.iqtree_support import (
     parse_iqtree_branch_support_label,
+)
+from bijux_phylogenetics.io.iqtree_support import (
     support_fraction as normalize_support_fraction,
 )
 from bijux_phylogenetics.io.newick import (
@@ -625,14 +627,18 @@ def _analyze_tree_set(path: Path) -> _TreeSetAnalysis:
             for tree in trees:
                 for clade in informative_rooted_clades(tree, exact_taxa_set):
                     clade_counts[clade] = clade_counts.get(clade, 0) + 1
-                for clade, length in _clade_branch_lengths(tree, exact_taxa_set).items():
+                for clade, length in _clade_branch_lengths(
+                    tree, exact_taxa_set
+                ).items():
                     if length is not None:
                         clade_branch_lengths.setdefault(clade, []).append(float(length))
                 for taxon, length in _terminal_branch_lengths(tree).items():
                     if length is not None:
                         terminal_lengths.setdefault(taxon, []).append(float(length))
     finally:
-        processing = _processing_summary(started=started, started_tracing=started_tracing)
+        processing = _processing_summary(
+            started=started, started_tracing=started_tracing
+        )
     processing = TreeSetProcessingSummary(
         runtime_seconds=processing.runtime_seconds,
         peak_memory_bytes=processing.peak_memory_bytes,
@@ -1008,7 +1014,9 @@ def _build_clade_frequency_report(analysis: _TreeSetAnalysis) -> CladeFrequencyR
                 tree_count=count,
                 frequency=round(count / total, 15),
             )
-            for clade, count in sorted(counts.items(), key=lambda item: _format_clade(item[0]))
+            for clade, count in sorted(
+                counts.items(), key=lambda item: _format_clade(item[0])
+            )
         ],
     )
 
@@ -1184,14 +1192,16 @@ def _build_topology_cluster_report(
     clusters: list[TreeTopologyCluster] = []
     indices_by_topology: dict[str, list[int]] = {}
     for record in analysis.records:
-        indices_by_topology.setdefault(record.rooted_topology_id, []).append(record.index)
+        indices_by_topology.setdefault(record.rooted_topology_id, []).append(
+            record.index
+        )
     for topology_id, indices in sorted(
         indices_by_topology.items(),
         key=lambda item: (-len(item[1]), item[1][0]),
     ):
-        representative_index, representative_newick, _tree = analysis.rooted_representatives[
-            topology_id
-        ]
+        representative_index, representative_newick, _tree = (
+            analysis.rooted_representatives[topology_id]
+        )
         clusters.append(
             TreeTopologyCluster(
                 rooted_topology_id=topology_id,
@@ -1228,14 +1238,18 @@ def _build_unstable_clade_report(analysis: _TreeSetAnalysis) -> UnstableCladeRep
                     if _clades_conflict(clade, other)
                 )
             ),
-            instability_score=round(min(count / tree_count, 1.0 - (count / tree_count)), 15),
+            instability_score=round(
+                min(count / tree_count, 1.0 - (count / tree_count)), 15
+            ),
             support_classification=_support_classification(
                 round(count / tree_count, 15),
                 len(conflicts),
             ),
             conflicting_clades=conflicts,
         )
-        for clade, count in sorted(counts.items(), key=lambda item: _format_clade(item[0]))
+        for clade, count in sorted(
+            counts.items(), key=lambda item: _format_clade(item[0])
+        )
         if count < tree_count
     ]
     unstable_clades.sort(
@@ -1376,11 +1390,13 @@ def _rf_distribution_from_analysis(
         for (distance, normalized), count in sorted(pair_counts.items())
     ]
     mean_rf = round(
-        sum(row.robinson_foulds_distance * row.pair_count for row in rows) / total_pairs,
+        sum(row.robinson_foulds_distance * row.pair_count for row in rows)
+        / total_pairs,
         15,
     )
     mean_normalized_rf = round(
-        sum(row.normalized_robinson_foulds * row.pair_count for row in rows) / total_pairs,
+        sum(row.normalized_robinson_foulds * row.pair_count for row in rows)
+        / total_pairs,
         15,
     )
     maximum_rf = max(row.robinson_foulds_distance for row in rows)
@@ -1540,13 +1556,19 @@ def write_reference_tree_clade_support_table(
                     "node_label": "" if row.node_label is None else row.node_label,
                     "descendant_taxa": "|".join(row.descendant_taxa),
                     "supporting_tree_count": (
-                        "" if row.supporting_tree_count is None else row.supporting_tree_count
+                        ""
+                        if row.supporting_tree_count is None
+                        else row.supporting_tree_count
                     ),
                     "clade_frequency": (
-                        "" if row.clade_frequency is None else format(row.clade_frequency, ".15g")
+                        ""
+                        if row.clade_frequency is None
+                        else format(row.clade_frequency, ".15g")
                     ),
                     "support_percent": (
-                        "" if row.support_percent is None else format(row.support_percent, ".15g")
+                        ""
+                        if row.support_percent is None
+                        else format(row.support_percent, ".15g")
                     ),
                     "support_status": row.support_status,
                     "explanation": row.explanation,
@@ -1585,7 +1607,9 @@ def compute_consensus_tree_with_threshold(
         raise ValueError(
             f"consensus threshold must be greater than 0 and at most 1, got {threshold}"
         )
-    return _build_consensus_tree_with_threshold(_analyze_tree_set(path), threshold=threshold)
+    return _build_consensus_tree_with_threshold(
+        _analyze_tree_set(path), threshold=threshold
+    )
 
 
 def write_consensus_tree(path: Path, tree: PhyloTree) -> Path:

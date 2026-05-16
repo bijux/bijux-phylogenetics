@@ -10,9 +10,6 @@ from bijux_phylogenetics.compare.topology import (
     compare_tree_paths,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table
-from bijux_phylogenetics.error_explanations import (
-    explain_inference_workflow_failure,
-)
 from bijux_phylogenetics.engines.common import (
     build_file_checksums,
     load_engine_manifest,
@@ -22,6 +19,9 @@ from bijux_phylogenetics.engines.iqtree_artifacts import (
     parse_iqtree_model_selection_summary,
     parse_log_likelihood_file,
     resolve_iqtree_model_sidecar,
+)
+from bijux_phylogenetics.error_explanations import (
+    explain_inference_workflow_failure,
 )
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (

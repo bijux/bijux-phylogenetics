@@ -14,6 +14,7 @@ from bijux_phylogenetics.datasets import (
     run_primate_comparative_workflow,
     write_primate_comparative_workflow_bundle,
 )
+
 from .support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )

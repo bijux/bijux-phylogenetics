@@ -116,7 +116,9 @@ def test_summarize_brownian_covariance_reports_singular_zero_length_matrix() -> 
 
 def test_summarize_brownian_covariance_rejects_missing_branch_lengths() -> None:
     with pytest.raises(ComparativeMethodError) as error:
-        summarize_brownian_covariance(fixture("example_tree_branch_lengths_missing.nwk"))
+        summarize_brownian_covariance(
+            fixture("example_tree_branch_lengths_missing.nwk")
+        )
 
     assert error.value.details["failure_reason"] == (
         "brownian_covariance_branch_lengths_incomplete"

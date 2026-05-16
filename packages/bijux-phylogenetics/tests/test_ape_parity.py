@@ -226,7 +226,9 @@ def test_list_ape_parity_cases_returns_governed_read_tree_registry() -> None:
     ]
     case_map = {case.case_id: case for case in cases}
     assert (
-        case_map["ace-discrete-sym-balanced-rooted-ultrametric"].transition_rate_tolerance
+        case_map[
+            "ace-discrete-sym-balanced-rooted-ultrametric"
+        ].transition_rate_tolerance
         == 1.0
     )
     assert (
@@ -531,8 +533,13 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         "ape::write.tree",
     ]
     assert all(observation.r_version == "4.6.0" for observation in report.observations)
-    assert all(observation.ape_version == "5.0.0" for observation in report.observations)
-    assert all(observation.reproducible_artifact_root is None for observation in report.observations)
+    assert all(
+        observation.ape_version == "5.0.0" for observation in report.observations
+    )
+    assert all(
+        observation.reproducible_artifact_root is None
+        for observation in report.observations
+    )
     continuous_missing_case = next(
         observation
         for observation in report.observations
@@ -540,7 +547,9 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
     assert continuous_missing_case.reference_summary is not None
     assert continuous_missing_case.reference_summary["dropped_missing_taxa"] == ["B"]
-    assert continuous_missing_case.reference_summary["dropped_non_numeric_taxa"] == ["C"]
+    assert continuous_missing_case.reference_summary["dropped_non_numeric_taxa"] == [
+        "C"
+    ]
     discrete_missing_case = next(
         observation
         for observation in report.observations
@@ -556,11 +565,14 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
     assert discrete_sym_case.reference_summary is not None
     assert discrete_sym_case.reference_summary["baseline_model"] == "equal-rates"
-    assert discrete_sym_case.reference_summary["preferred_model_by_aic"] == "equal-rates"
+    assert (
+        discrete_sym_case.reference_summary["preferred_model_by_aic"] == "equal-rates"
+    )
     discrete_ard_case = next(
         observation
         for observation in report.observations
-        if observation.case_id == "ace-discrete-ard-multistate-pectinate-non-ultrametric"
+        if observation.case_id
+        == "ace-discrete-ard-multistate-pectinate-non-ultrametric"
     )
     assert discrete_ard_case.reference_summary is not None
     assert discrete_ard_case.reference_summary["model"] == "all-rates-different"
@@ -607,10 +619,12 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
         if observation.case_id == "consensus-majority-conflicting-four-taxon"
     )
     assert consensus_majority_case.reference_summary is not None
-    assert consensus_majority_case.reference_summary["consensus_method"] == "majority-rule"
-    assert consensus_majority_case.reference_summary["consensus_threshold"] == pytest.approx(
-        0.5
+    assert (
+        consensus_majority_case.reference_summary["consensus_method"] == "majority-rule"
     )
+    assert consensus_majority_case.reference_summary[
+        "consensus_threshold"
+    ] == pytest.approx(0.5)
     assert consensus_majority_case.reference_summary["included_clade_count"] == 1
     consensus_error_case = next(
         observation
@@ -756,9 +770,7 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     assert branching_times_case.reference_summary is not None
     assert branching_times_case.reference_summary["internal_node_count"] == 3
     assert branching_times_case.reference_summary["root_age"] == pytest.approx(0.3)
-    assert (
-        branching_times_case.reference_summary["zero_branch_length_count"] == 1
-    )
+    assert branching_times_case.reference_summary["zero_branch_length_count"] == 1
     gamma_stat_case = next(
         observation
         for observation in report.observations
@@ -810,7 +822,9 @@ def test_run_ape_parity_cases_passes_against_fake_reference_runner(
     )
     assert ultrametric_tight_case.reference_summary is not None
     assert ultrametric_tight_case.reference_summary["ultrametric"] is False
-    assert ultrametric_tight_case.reference_summary["max_tip_depth_deviation"] == pytest.approx(
+    assert ultrametric_tight_case.reference_summary[
+        "max_tip_depth_deviation"
+    ] == pytest.approx(
         1e-9,
         abs=1e-15,
     )
@@ -934,7 +948,9 @@ def test_run_ape_parity_cases_marks_missing_rscript_as_skipped(tmp_path: Path) -
     assert observation.reproducible_artifact_root.exists()
 
 
-def test_write_ape_parity_tables_writes_summary_and_observations(tmp_path: Path) -> None:
+def test_write_ape_parity_tables_writes_summary_and_observations(
+    tmp_path: Path,
+) -> None:
     rscript = fake_ape_rscript(tmp_path / "fake-ape-rscript")
     report = run_ape_parity_cases(
         rscript_executable=str(rscript),

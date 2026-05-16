@@ -391,9 +391,7 @@ def _flatten_pgls_observed_output(
         observed_output[f"coefficient.{coefficient.name}.standard_error"] = (
             coefficient.standard_error
         )
-        observed_output[f"coefficient.{coefficient.name}.p_value"] = (
-            coefficient.p_value
-        )
+        observed_output[f"coefficient.{coefficient.name}.p_value"] = coefficient.p_value
     if model_matrix is not None:
         for row in model_matrix.rows:
             for column, value in row.encoded_values.items():
@@ -407,9 +405,7 @@ def _build_pgls_observation(
     suite: str,
 ) -> ReferenceParityObservation:
     input_paths = [_resolve_input_path(path) for path in entry["input_fixtures"]]
-    formula = (
-        None if entry.get("formula") is None else str(entry.get("formula"))
-    )
+    formula = None if entry.get("formula") is None else str(entry.get("formula"))
     predictors = (
         None
         if entry.get("predictors") is None
@@ -441,7 +437,9 @@ def _build_pgls_observation(
             predictors=predictors,
             formula=formula,
             taxon_column=(
-                None if entry.get("taxon_column") is None else str(entry["taxon_column"])
+                None
+                if entry.get("taxon_column") is None
+                else str(entry["taxon_column"])
             ),
         )
     expected_output = {
@@ -538,9 +536,7 @@ def _build_extended_comparative_observations() -> tuple[
         "pgls-primate-longevity-estimated-lambda": (
             _extended_primate_pgls_estimated_lambda_observation
         ),
-        "pagel-lambda-primate-longevity": (
-            _extended_primate_pagels_lambda_observation
-        ),
+        "pagel-lambda-primate-longevity": (_extended_primate_pagels_lambda_observation),
         "brownian-primate-longevity-intercept-only": (
             _extended_primate_brownian_mode_observation
         ),

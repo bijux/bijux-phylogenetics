@@ -160,7 +160,9 @@ def fit_discrete_mk_model_from_dataset(
         allowed_transition_pairs=resolved_allowed_transition_pairs,
     )
     aic = (2.0 * parameter_count) - (2.0 * log_likelihood)
-    aicc = _fit_aicc(aic, sample_size=len(dataset.taxa), parameter_count=parameter_count)
+    aicc = _fit_aicc(
+        aic, sample_size=len(dataset.taxa), parameter_count=parameter_count
+    )
     baseline_comparison: DiscreteModelBaselineComparison | None = None
     if (
         resolved_model != "equal-rates"
@@ -307,9 +309,7 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
                 "optimizer_function_evaluation_count": str(
                     diagnostics.function_evaluation_count
                 ),
-                "optimizer_simplex_shrink_count": str(
-                    diagnostics.simplex_shrink_count
-                ),
+                "optimizer_simplex_shrink_count": str(diagnostics.simplex_shrink_count),
                 "optimizer_initial_candidate_count": str(
                     diagnostics.initial_candidate_count
                 ),

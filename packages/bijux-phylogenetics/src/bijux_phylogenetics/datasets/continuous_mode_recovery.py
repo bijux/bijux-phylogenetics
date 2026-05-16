@@ -165,7 +165,9 @@ def write_continuous_mode_recovery_panel_workflow_bundle(
     output_root.mkdir(parents=True, exist_ok=True)
 
     selection_match_count = sum(
-        1 for case in report.recovery_report.case_reports if case.selection_matches_expectation
+        1
+        for case in report.recovery_report.case_reports
+        if case.selection_matches_expectation
     )
     parameter_rows = [
         row
@@ -239,7 +241,9 @@ def run_continuous_mode_recovery_panel_demo(
         shutil.rmtree(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
     workflow_report = run_continuous_mode_recovery_panel_workflow()
-    dataset_export = export_continuous_mode_recovery_panel_dataset(output_root / "dataset")
+    dataset_export = export_continuous_mode_recovery_panel_dataset(
+        output_root / "dataset"
+    )
     workflow_bundle = write_continuous_mode_recovery_panel_workflow_bundle(
         output_root / "workflow",
         workflow_report,

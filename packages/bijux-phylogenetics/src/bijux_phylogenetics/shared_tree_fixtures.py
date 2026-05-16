@@ -62,7 +62,9 @@ def get_shared_tree_fixture(fixture_id: str) -> SharedTreeFixture:
     for fixture in list_shared_tree_fixtures():
         if fixture.fixture_id == fixture_id:
             return fixture
-    supported = ", ".join(sorted(fixture.fixture_id for fixture in list_shared_tree_fixtures()))
+    supported = ", ".join(
+        sorted(fixture.fixture_id for fixture in list_shared_tree_fixtures())
+    )
     raise ValueError(
         f"unsupported shared tree fixture '{fixture_id}'; expected one of: {supported}"
     )

@@ -21,8 +21,8 @@ def _write_junit_report(
 ) -> Path:
     path.write_text(
         (
-            "<testsuites name=\"pytest\">"
-            f"<testsuite name=\"{suite_name}\" tests=\"{tests}\" failures=\"{failures}\" errors=\"{errors}\" skipped=\"{skipped}\" />"
+            '<testsuites name="pytest">'
+            f'<testsuite name="{suite_name}" tests="{tests}" failures="{failures}" errors="{errors}" skipped="{skipped}" />'
             "</testsuites>\n"
         ),
         encoding="utf-8",
@@ -100,8 +100,7 @@ def test_aggregate_and_build_release_truth_report_uses_actual_runtime_surfaces(
     assert report.real_engine_tests.total_tests == 5
     assert report.real_engine_tests.passed_tests == 3
     assert any(
-        workflow.surface == "fasta-to-tree"
-        for workflow in report.supported_workflows
+        workflow.surface == "fasta-to-tree" for workflow in report.supported_workflows
     )
     assert any(
         workflow.surface == "phylogenetic-logistic"

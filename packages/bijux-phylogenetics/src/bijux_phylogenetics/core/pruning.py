@@ -130,6 +130,7 @@ def _singleton_internal_nodes(tree: PhyloTree) -> list[str]:
         if not node.is_leaf() and len(node.children) == 1
     )
 
+
 def _pruning_artifact_audit(
     original: PhyloTree, pruned: PhyloTree
 ) -> PruningArtifactAudit:

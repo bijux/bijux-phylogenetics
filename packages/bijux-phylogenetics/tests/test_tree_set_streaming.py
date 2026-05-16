@@ -19,7 +19,9 @@ def _write_large_tree_set(
 ) -> Path:
     source_rows = [
         row.strip()
-        for row in fixture("example_tree_set_left.nwk").read_text(encoding="utf-8").splitlines()
+        for row in fixture("example_tree_set_left.nwk")
+        .read_text(encoding="utf-8")
+        .splitlines()
         if row.strip()
     ]
     rows = [source_rows[index % len(source_rows)] for index in range(tree_count)]

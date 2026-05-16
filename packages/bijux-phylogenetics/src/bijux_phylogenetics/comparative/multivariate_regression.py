@@ -5,8 +5,10 @@ import math
 from pathlib import Path
 import tempfile
 
-from bijux_phylogenetics.comparative._math import student_t_two_sided_p_value
-from bijux_phylogenetics.comparative._math import invert_matrix
+from bijux_phylogenetics.comparative._math import (
+    invert_matrix,
+    student_t_two_sided_p_value,
+)
 from bijux_phylogenetics.comparative.pgls import (
     PGLSInputReport,
     PGLSResult,
@@ -858,10 +860,7 @@ def _covariance_matrix(
         for row in covariance_rows
     }
     return [
-        [
-            lookup[(left_response, right_response)]
-            for right_response in response_names
-        ]
+        [lookup[(left_response, right_response)] for right_response in response_names]
         for left_response in response_names
     ]
 

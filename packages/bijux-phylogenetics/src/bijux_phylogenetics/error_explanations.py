@@ -42,8 +42,7 @@ def explain_phylogenetics_error(
                 str(item) for item in list(error.details.get("likely_causes", []))
             ],
             actionable_fixes=[
-                str(item)
-                for item in list(error.details.get("actionable_fixes", []))
+                str(item) for item in list(error.details.get("actionable_fixes", []))
             ],
             evidence=dict(error.details.get("evidence", {})),
         )
@@ -175,7 +174,9 @@ def explain_inference_workflow_failure(
                 ],
                 evidence={"missing_outputs": _serialize_output_map(missing_outputs)},
             )
-        if any(name in missing_outputs for name in {"posterior_trees", "consensus_tree"}):
+        if any(
+            name in missing_outputs for name in {"posterior_trees", "consensus_tree"}
+        ):
             return ScientificFailureExplanation(
                 failure_reason="posterior_tree_artifact_missing",
                 scientific_explanation=(
@@ -383,12 +384,16 @@ def _explain_alignment_engine_failure(
         and fasta_path.suffix.lower() in {".fasta", ".fa", ".fas", ".faa", ".fna"}
         else None
     )
-    blockers = [] if readiness is None else [
-        blocker
-        for decision in readiness.decisions
-        if decision.workflow == "maximum_likelihood"
-        for blocker in decision.blockers
-    ]
+    blockers = (
+        []
+        if readiness is None
+        else [
+            blocker
+            for decision in readiness.decisions
+            if decision.workflow == "maximum_likelihood"
+            for blocker in decision.blockers
+        ]
+    )
     warnings = [] if readiness is None else list(readiness.warnings)
     likely_causes = [
         "the raw sequence set could not be aligned into one defensible equal-length matrix"
@@ -423,7 +428,9 @@ def _explain_engine_output_error(
 ) -> ScientificFailureExplanation:
     details = error.details
     workflow = str(details.get("workflow", ""))
-    output_name = None if details.get("output_name") is None else str(details["output_name"])
+    output_name = (
+        None if details.get("output_name") is None else str(details["output_name"])
+    )
     missing_outputs = list(details.get("missing_outputs", []))
     if error.code == "engine_model_result_missing":
         return ScientificFailureExplanation(
@@ -467,23 +474,26 @@ def _explain_engine_output_error(
                 "support_kind": details.get("support_kind"),
             },
         )
-    if error.code == "engine_output_empty":
-        if workflow == "alignment-trimming" and output_name == "trimmed_alignment":
-            return ScientificFailureExplanation(
-                failure_reason="trimmed_alignment_empty",
-                scientific_explanation=(
-                    "The trimming step returned an empty retained alignment, meaning the filter removed all usable alignment signal."
-                ),
-                likely_causes=[
-                    "the trimming settings were too aggressive for the input matrix",
-                    "the alignment is so sparse or short that no columns survived",
-                ],
-                actionable_fixes=[
-                    "use a less aggressive trimming mode or higher gap threshold",
-                    "inspect the input alignment for sparse columns and extreme missingness",
-                ],
-                evidence={"workflow": workflow, "path": details.get("path")},
-            )
+    if (
+        error.code == "engine_output_empty"
+        and workflow == "alignment-trimming"
+        and output_name == "trimmed_alignment"
+    ):
+        return ScientificFailureExplanation(
+            failure_reason="trimmed_alignment_empty",
+            scientific_explanation=(
+                "The trimming step returned an empty retained alignment, meaning the filter removed all usable alignment signal."
+            ),
+            likely_causes=[
+                "the trimming settings were too aggressive for the input matrix",
+                "the alignment is so sparse or short that no columns survived",
+            ],
+            actionable_fixes=[
+                "use a less aggressive trimming mode or higher gap threshold",
+                "inspect the input alignment for sparse columns and extreme missingness",
+            ],
+            evidence={"workflow": workflow, "path": details.get("path")},
+        )
     if error.code == "engine_required_output_missing":
         missing_names = [
             str(row.get("output_name"))
@@ -504,7 +514,10 @@ def _explain_engine_output_error(
                     "inspect the posterior log, stderr log, and missing artifact path together",
                     "clean incomplete outputs before rerunning the Bayesian workflow",
                 ],
-                evidence={"missing_outputs": missing_outputs, "missing_output_names": missing_names},
+                evidence={
+                    "missing_outputs": missing_outputs,
+                    "missing_output_names": missing_names,
+                },
             )
     return ScientificFailureExplanation(
         failure_reason="engine_artifact_failure",
@@ -556,46 +569,48 @@ def _explain_beast_parser_error(
     artifact_kind = str(details.get("artifact_kind", "beast-artifact"))
     path = details.get("path")
     if code.endswith("_missing_file"):
-        explanation = (
-            "The expected BEAST artifact file is absent, so posterior diagnostics cannot be reconstructed."
-        )
+        explanation = "The expected BEAST artifact file is absent, so posterior diagnostics cannot be reconstructed."
         causes = ["the BEAST run did not write the expected output file"]
         fixes = ["confirm the file path and rerun the BEAST step that should create it"]
         reason = "beast_artifact_missing_file"
     elif code.endswith("_missing_header"):
-        explanation = (
-            "The BEAST tabular artifact is missing its header section, so sampled parameters cannot be identified safely."
-        )
+        explanation = "The BEAST tabular artifact is missing its header section, so sampled parameters cannot be identified safely."
         causes = ["the file is truncated or not a real BEAST tabular export"]
-        fixes = ["inspect the first lines of the file and rerun the BEAST export if the header is missing"]
+        fixes = [
+            "inspect the first lines of the file and rerun the BEAST export if the header is missing"
+        ]
         reason = "beast_tabular_header_missing"
     elif code.endswith("_missing_state_column"):
-        explanation = (
-            "The BEAST posterior log lacks the state column that anchors sampled rows to MCMC iteration order."
-        )
-        causes = ["the log file is malformed or not the expected posterior parameter log"]
-        fixes = ["use the BEAST posterior log with its full Sample or state column intact"]
+        explanation = "The BEAST posterior log lacks the state column that anchors sampled rows to MCMC iteration order."
+        causes = [
+            "the log file is malformed or not the expected posterior parameter log"
+        ]
+        fixes = [
+            "use the BEAST posterior log with its full Sample or state column intact"
+        ]
         reason = "beast_state_column_missing"
     elif code.endswith("_missing_rows"):
-        explanation = (
-            "The BEAST artifact contains no sampled rows or tree entries, so there is no posterior evidence to summarize."
-        )
-        causes = ["the file is truncated after the header or contains no posterior samples"]
-        fixes = ["rerun the BEAST analysis and confirm that sampling progressed beyond burn-in"]
+        explanation = "The BEAST artifact contains no sampled rows or tree entries, so there is no posterior evidence to summarize."
+        causes = [
+            "the file is truncated after the header or contains no posterior samples"
+        ]
+        fixes = [
+            "rerun the BEAST analysis and confirm that sampling progressed beyond burn-in"
+        ]
         reason = "beast_sample_rows_missing"
     elif code.endswith("_missing_entries"):
-        explanation = (
-            "The BEAST posterior tree file contains no tree entries, so topology uncertainty cannot be summarized."
-        )
+        explanation = "The BEAST posterior tree file contains no tree entries, so topology uncertainty cannot be summarized."
         causes = ["the trees block is empty or missing from the posterior tree file"]
-        fixes = ["inspect the BEAST trees file for a populated trees block and rerun if it is empty"]
+        fixes = [
+            "inspect the BEAST trees file for a populated trees block and rerun if it is empty"
+        ]
         reason = "beast_tree_entries_missing"
     else:
-        explanation = (
-            "The BEAST artifact contains a malformed sampled value or malformed tree content, so posterior summaries would be unreliable."
-        )
+        explanation = "The BEAST artifact contains a malformed sampled value or malformed tree content, so posterior summaries would be unreliable."
         causes = ["one sampled value or tree entry is malformed or truncated"]
-        fixes = ["inspect the reported row, column, or tree entry and regenerate the artifact from BEAST"]
+        fixes = [
+            "inspect the reported row, column, or tree entry and regenerate the artifact from BEAST"
+        ]
         reason = "beast_artifact_malformed"
     return ScientificFailureExplanation(
         failure_reason=reason,
@@ -605,7 +620,11 @@ def _explain_beast_parser_error(
         evidence={
             "artifact_kind": artifact_kind,
             "path": path,
-            **{key: value for key, value in details.items() if key not in {"artifact_kind", "path"}},
+            **{
+                key: value
+                for key, value in details.items()
+                if key not in {"artifact_kind", "path"}
+            },
         },
     )
 
@@ -618,39 +637,41 @@ def _explain_mrbayes_parser_error(
     artifact_kind = str(details.get("artifact_kind", "mrbayes-artifact"))
     path = details.get("path")
     if code.endswith("_missing_file"):
-        explanation = (
-            "The expected MrBayes artifact file is absent, so posterior diagnostics cannot be reconstructed."
-        )
+        explanation = "The expected MrBayes artifact file is absent, so posterior diagnostics cannot be reconstructed."
         causes = ["the MrBayes run did not write the expected output file"]
-        fixes = ["confirm the file path and rerun the MrBayes step that should create it"]
+        fixes = [
+            "confirm the file path and rerun the MrBayes step that should create it"
+        ]
         reason = "mrbayes_artifact_missing_file"
     elif code.endswith("_missing_header"):
-        explanation = (
-            "The MrBayes tabular artifact is missing its header section, so sampled parameters cannot be identified safely."
-        )
+        explanation = "The MrBayes tabular artifact is missing its header section, so sampled parameters cannot be identified safely."
         causes = ["the file is truncated or not a real MrBayes table export"]
-        fixes = ["inspect the first lines of the file and rerun the MrBayes export if the header is missing"]
+        fixes = [
+            "inspect the first lines of the file and rerun the MrBayes export if the header is missing"
+        ]
         reason = "mrbayes_tabular_header_missing"
     elif code.endswith("_missing_generation_column"):
-        explanation = (
-            "The MrBayes table lacks the Gen column that anchors sampled rows to MCMC generation order."
-        )
-        causes = ["the file is malformed or not the expected MrBayes trace or MCMC table"]
+        explanation = "The MrBayes table lacks the Gen column that anchors sampled rows to MCMC generation order."
+        causes = [
+            "the file is malformed or not the expected MrBayes trace or MCMC table"
+        ]
         fixes = ["use the original MrBayes table with its Gen column intact"]
         reason = "mrbayes_generation_column_missing"
     elif code.endswith("_missing_rows"):
-        explanation = (
-            "The MrBayes artifact contains no sampled rows, so convergence or parameter summaries cannot be computed."
-        )
-        causes = ["the file is truncated after the header or contains no posterior samples"]
-        fixes = ["rerun MrBayes and confirm that sampling progressed beyond its initial setup"]
+        explanation = "The MrBayes artifact contains no sampled rows, so convergence or parameter summaries cannot be computed."
+        causes = [
+            "the file is truncated after the header or contains no posterior samples"
+        ]
+        fixes = [
+            "rerun MrBayes and confirm that sampling progressed beyond its initial setup"
+        ]
         reason = "mrbayes_sample_rows_missing"
     else:
-        explanation = (
-            "The MrBayes artifact contains a malformed sampled value or malformed summary content, so posterior summaries would be unreliable."
-        )
+        explanation = "The MrBayes artifact contains a malformed sampled value or malformed summary content, so posterior summaries would be unreliable."
         causes = ["one sampled value is missing, non-numeric, or truncated"]
-        fixes = ["inspect the reported row and column and regenerate the artifact from MrBayes"]
+        fixes = [
+            "inspect the reported row and column and regenerate the artifact from MrBayes"
+        ]
         reason = "mrbayes_artifact_malformed"
     return ScientificFailureExplanation(
         failure_reason=reason,
@@ -660,7 +681,11 @@ def _explain_mrbayes_parser_error(
         evidence={
             "artifact_kind": artifact_kind,
             "path": path,
-            **{key: value for key, value in details.items() if key not in {"artifact_kind", "path"}},
+            **{
+                key: value
+                for key, value in details.items()
+                if key not in {"artifact_kind", "path"}
+            },
         },
     )
 

@@ -8,9 +8,9 @@ from statistics import median
 from Bio.Data import CodonTable
 
 from bijux_phylogenetics.core.alignment import (
-    AlignmentBaseFrequencyReport,
     AlignmentAlphabet,
     AlignmentAmbiguousColumnReport,
+    AlignmentBaseFrequencyReport,
     AlignmentCleaningReport,
     AlignmentComparisonReport,
     AlignmentCompositionShift,
@@ -24,6 +24,7 @@ from bijux_phylogenetics.core.alignment import (
     AlignmentQualityReport,
     AlignmentReadinessReport,
     AlignmentRecord,
+    AlignmentSegregatingSiteReport,
     AlignmentSequenceKindReport,
     AlignmentSignalWarning,
     AlignmentSummary,
@@ -54,7 +55,6 @@ from bijux_phylogenetics.core.alignment import (
     InvalidCodonObservation,
     NearDuplicateSequencePair,
     NucleotideStateFrequencyRow,
-    AlignmentSegregatingSiteReport,
     PairwiseSequenceIdentity,
     PartialCodonSequence,
     RemovedAlignmentSequence,
@@ -73,7 +73,6 @@ from bijux_phylogenetics.core.alignment import (
     StopCodonObservation,
     TranslationCodonObservation,
     TranslationReport,
-    TranslationSequenceExclusion,
     TrimmedAlignmentColumn,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table
@@ -997,7 +996,7 @@ def write_dna_bin_alignment_fasta(path: Path, alignment: DnaBinAlignment) -> Pat
 
 
 def _ape_nucleotide_state_counts(sequence: str) -> dict[str, int]:
-    counts = {state: 0 for state in _APE_DNA_STATE_ORDER}
+    counts = dict.fromkeys(_APE_DNA_STATE_ORDER, 0)
     for residue in sequence:
         normalized = _normalize_ape_nucleotide_state(residue)
         if normalized is None:
@@ -1013,7 +1012,7 @@ def compute_alignment_base_frequency_report_from_dna_bin_alignment(
     records = _records_from_dnabin_alignment(alignment, uppercase=False)
     alphabet = alignment.source_alphabet
 
-    alignment_counts = {state: 0 for state in _APE_DNA_STATE_ORDER}
+    alignment_counts = dict.fromkeys(_APE_DNA_STATE_ORDER, 0)
     per_sequence_rows: list[NucleotideStateFrequencyRow] = []
     for record in records:
         sequence_counts = _ape_nucleotide_state_counts(record.sequence)
@@ -1050,9 +1049,7 @@ def compute_alignment_base_frequency_report_from_dna_bin_alignment(
         for state in _APE_DNA_STATE_ORDER
     ]
     warnings: list[str] = []
-    canonical_total = sum(
-        alignment_counts[state] for state in _APE_DNA_STATE_ORDER[:4]
-    )
+    canonical_total = sum(alignment_counts[state] for state in _APE_DNA_STATE_ORDER[:4])
     if canonical_total == 0:
         warnings.append(
             "alignment contains no canonical A/C/G/T residues, so ape-style base frequencies reflect only ambiguity, gap, and missing states"
@@ -1233,7 +1230,9 @@ def compute_alignment_segregating_site_report_from_dna_bin_alignment(
                     if state in _APE_SEGREGATING_STATE_SETS
                     and not _is_ape_known_base(state)
                 ),
-                gap_count=sum(1 for state in effective_states if _is_ape_gap_state(state)),
+                gap_count=sum(
+                    1 for state in effective_states if _is_ape_gap_state(state)
+                ),
                 missing_count=sum(
                     1 for state in effective_states if _is_ape_missing_state(state)
                 ),

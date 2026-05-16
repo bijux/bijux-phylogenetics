@@ -63,7 +63,9 @@ def _assert_pgls_matches_reference(
         rel_tol=tolerance,
         abs_tol=tolerance,
     )
-    coefficients = {coefficient.name: coefficient for coefficient in report.coefficients}
+    coefficients = {
+        coefficient.name: coefficient for coefficient in report.coefficients
+    }
     for coefficient in report.coefficients:
         prefix = f"coefficient.{coefficient.name}"
         assert math.isclose(
@@ -144,9 +146,7 @@ def test_run_pgls_matches_interaction_brownian_reference_case() -> None:
         tolerance=float(reference["tolerance"]),
     )
     row_by_taxon = {row.taxon: row for row in matrix.rows}
-    assert (
-        row_by_taxon["H"].encoded_values["habitat[tundra]:diet[herbivore]"] == 1.0
-    )
+    assert row_by_taxon["H"].encoded_values["habitat[tundra]:diet[herbivore]"] == 1.0
 
 
 @pytest.mark.slow

@@ -220,7 +220,9 @@ class SupportWorkflowResult(_SerializableWorkflowResult):
                     }
                 ],
             )
-        return write_bootstrap_support_table(path, build_bootstrap_support_rows(summary))
+        return write_bootstrap_support_table(
+            path, build_bootstrap_support_rows(summary)
+        )
 
 
 @dataclass(slots=True)

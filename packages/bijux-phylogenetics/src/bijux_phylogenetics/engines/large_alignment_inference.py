@@ -486,8 +486,7 @@ def _restore_large_alignment_report(
             for key, value in dict(payload["output_checksums"]).items()
         },
         config={
-            str(key): value
-            for key, value in dict(payload.get("config", {})).items()
+            str(key): value for key, value in dict(payload.get("config", {})).items()
         },
         input_summary=LargeAlignmentInputSummary(
             input_path=Path(str(dict(payload["input_summary"])["input_path"])),

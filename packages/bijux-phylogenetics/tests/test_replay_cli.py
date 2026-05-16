@@ -6,7 +6,6 @@ from pathlib import Path
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.engines import run_model_selection
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
@@ -126,9 +125,7 @@ def test_phylo_replay_cli_fails_for_changed_inputs(tmp_path: Path, capsys) -> No
     assert payload["errors"][0]["code"] == "manifest_replay_input_changed"
 
 
-def test_phylo_replay_cli_reports_engine_version_drift(
-    tmp_path: Path, capsys
-) -> None:
+def test_phylo_replay_cli_reports_engine_version_drift(tmp_path: Path, capsys) -> None:
     executable = _fake_iqtree(tmp_path / "iqtree-fixture", version="2.9.9")
     drifted_executable = _fake_iqtree(tmp_path / "iqtree-drifted", version="3.0.0")
     workflow = run_model_selection(

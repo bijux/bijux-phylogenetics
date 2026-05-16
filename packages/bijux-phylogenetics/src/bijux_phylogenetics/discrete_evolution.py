@@ -1472,7 +1472,9 @@ def _sample_conditional_node_states(
                 else transition(_branch_length(child))[parent_index, :]
                 * partials[child_signature]
             )
-            node_states[child_signature] = state_order[_sample_index(child_weights, rng)]
+            node_states[child_signature] = state_order[
+                _sample_index(child_weights, rng)
+            ]
             if not child.is_leaf():
                 visit(child)
 
@@ -1636,11 +1638,7 @@ def _summarize_stochastic_map_replicates(
             )
         )
     state_names = sorted(
-        {
-            state
-            for replicate in replicates
-            for state in replicate.state_time_totals
-        }
+        {state for replicate in replicates for state in replicate.state_time_totals}
     )
     state_time_rows: list[StochasticMapStateTimeRow] = []
     for state in state_names:
@@ -1669,14 +1667,11 @@ def _summarize_stochastic_map_replicates(
                 float(history.branch_length),
             )
             branch_lookup.setdefault(key, [])
-            state_times = {
-                state: 0.0
-                for state in state_names
-            }
+            state_times = dict.fromkeys(state_names, 0.0)
             for segment in history.segments:
-                state_times[segment.state] = state_times.get(segment.state, 0.0) + float(
-                    segment.duration
-                )
+                state_times[segment.state] = state_times.get(
+                    segment.state, 0.0
+                ) + float(segment.duration)
             branch_lookup[key].append(state_times)
     branch_occupancy_rows: list[StochasticMapBranchOccupancyRow] = []
     for (
@@ -1849,7 +1844,7 @@ def _simulate_stochastic_maps_from_components(
         root_state = node_states[node_signature(dataset.tree.root)]
         branch_histories: list[StochasticMapBranchHistory] = []
         transition_counts: dict[str, int] = {}
-        state_time_totals = {state: 0.0 for state in state_order}
+        state_time_totals = dict.fromkeys(state_order, 0.0)
         total_transition_count = 0
         for branch_index, parent_node, child_node, child in branch_rows:
             parent_state = node_states[parent_node]
@@ -1885,7 +1880,7 @@ def _simulate_stochastic_maps_from_components(
                 )
                 branch_histories = []
                 transition_counts = {}
-                state_time_totals = {state: 0.0 for state in state_order}
+                state_time_totals = dict.fromkeys(state_order, 0.0)
                 total_transition_count = 0
                 break
             for event in events:
@@ -2621,9 +2616,7 @@ def simulate_discrete_stochastic_maps(
         model=resolved_model,
         state_order=fit_report.state_order,
         state_ordering=state_ordering,
-        ordered_states=(
-            fit_report.state_order if state_ordering == "ordered" else []
-        ),
+        ordered_states=(fit_report.state_order if state_ordering == "ordered" else []),
         rate_matrix=rate_matrix,
         root_prior=root_prior,
         replicates=replicates,
@@ -2704,10 +2697,7 @@ def count_discrete_stochastic_map_transitions(
         for source_state in state_order
         for target_state in state_order
     ]
-    aggregate_lookup = {
-        row.transition: row
-        for row in summary.rows
-    }
+    aggregate_lookup = {row.transition: row for row in summary.rows}
     aggregate_rows = [
         aggregate_lookup.get(
             transition,
@@ -2750,7 +2740,7 @@ def count_discrete_stochastic_map_transitions(
     for replicate in report.maps:
         replicate_branch_counts: dict[tuple[int, str, str], dict[str, int]] = {}
         for history in replicate.branch_histories:
-            transition_counts = {transition: 0 for transition in transition_order}
+            transition_counts = dict.fromkeys(transition_order, 0)
             inferred_transitions = [
                 f"{event.source_state}->{event.target_state}"
                 for event in history.events
@@ -2777,7 +2767,7 @@ def count_discrete_stochastic_map_transitions(
         for branch_key in branch_keys:
             transition_counts = replicate_branch_counts.get(
                 branch_key,
-                {transition: 0 for transition in transition_order},
+                dict.fromkeys(transition_order, 0),
             )
             for transition in transition_order:
                 branch_transition_values[(*branch_key, transition)].append(
@@ -2952,9 +2942,7 @@ def summarize_discrete_stochastic_map_density(
         )
         for row in summary.branch_occupancy_rows
     ]
-    observed_state_order = list(
-        dict.fromkeys(row.state for row in branch_state_rows)
-    )
+    observed_state_order = list(dict.fromkeys(row.state for row in branch_state_rows))
     declared_state_order = list(report.fit_audit.state_order)
     if declared_state_order:
         state_order = [
@@ -3022,9 +3010,7 @@ def summarize_discrete_stochastic_map_density(
         end_depth,
     ) in branch_geometry:
         boundaries = [start_depth]
-        boundaries.extend(
-            step for step in steps if start_depth < step < end_depth
-        )
+        boundaries.extend(step for step in steps if start_depth < step < end_depth)
         boundaries.append(end_depth)
         branch_slice_rows: list[StochasticMapDensitySliceRow] = []
         if branch_length <= 0.0:
@@ -3172,7 +3158,7 @@ def _write_stochastic_map_density_html(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{escape(f'Bijux Stochastic Density Map: {report.focal_state or "state density"}')}</title>
+  <title>{escape(f"Bijux Stochastic Density Map: {report.focal_state or 'state density'}")}</title>
   <style>
     :root {{
       color-scheme: light;
@@ -3761,10 +3747,7 @@ def write_stochastic_map_aggregate_transition_matrix(
             if "->" in transition
         }
     )
-    mean_lookup = {
-        row.transition: row.mean_count
-        for row in report.aggregate_rows
-    }
+    mean_lookup = {row.transition: row.mean_count for row in report.aggregate_rows}
     rows = [
         {
             "source_state": source_state,

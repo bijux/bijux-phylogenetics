@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-import sys
 from pathlib import Path
+import sys
 
 from bijux_phylogenetics.core.node_depth import (
     TreeNodeDepthReport,
-    TreeNodeDepthRow,
     compute_tree_node_depths,
 )
 
@@ -172,9 +171,7 @@ def _summarize_tree_ultrametricity(
     tolerance: float,
     option: int,
 ) -> TreeUltrametricReport:
-    tip_rows = [
-        row for row in node_depth_report.rows if row.node_kind == "tip"
-    ]
+    tip_rows = [row for row in node_depth_report.rows if row.node_kind == "tip"]
     summary = summarize_ultrametric_tip_depths(
         {row.node_label or "": row.branch_length_depth for row in tip_rows},
         tolerance=tolerance,
@@ -209,7 +206,8 @@ def _summarize_tree_ultrametricity(
                 deviation_from_max_depth=(
                     summary.maximum_tip_depth - row.branch_length_depth
                 ),
-                is_offending_taxon=(row.node_label or "") in set(summary.offending_taxa),
+                is_offending_taxon=(row.node_label or "")
+                in set(summary.offending_taxa),
             )
             for row in tip_rows
         ],

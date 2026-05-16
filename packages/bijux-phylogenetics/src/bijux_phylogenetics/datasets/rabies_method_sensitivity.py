@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
 import hashlib
 import json
-from dataclasses import dataclass
 import os
 from pathlib import Path
 import shutil
@@ -22,7 +22,6 @@ from bijux_phylogenetics.engines.common import (
     utc_now_text,
 )
 from bijux_phylogenetics.engines.inference_comparison import (
-    InferenceComparisonConclusionRow,
     InferenceComparisonWorkflowReport,
     run_tree_inference_comparison,
 )
@@ -234,7 +233,9 @@ def load_rabies_method_sensitivity_panel_dataset() -> (
 ):
     """Expose the packaged rabies method-sensitivity panel as a first-class surface."""
     dataset_root = _resource_root()
-    config = json.loads((dataset_root / "workflow-config.json").read_text(encoding="utf-8"))
+    config = json.loads(
+        (dataset_root / "workflow-config.json").read_text(encoding="utf-8")
+    )
     sequences_path = dataset_root / "sequences.fasta"
     metadata_path = dataset_root / "metadata.csv"
     validation = validate_fasta_input(sequences_path, sequence_type=_SEQUENCE_TYPE)
@@ -509,7 +510,8 @@ def run_rabies_method_sensitivity_panel_workflow(
                     "parallel_workers": resolved_parallel_workers,
                     "execution_mode": execution_mode,
                     "task_logs": {
-                        record.variant_id: str(record.log_path) for record in task_records
+                        record.variant_id: str(record.log_path)
+                        for record in task_records
                     },
                     "execution_record_path": str(execution_record_path),
                 },
@@ -598,7 +600,9 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         report,
     )
     task_logs_root = _copy_task_logs(output_root / "parallel-logs", report.task_records)
-    variants_root = _write_variant_outputs(output_root / "variants", report.variant_runs)
+    variants_root = _write_variant_outputs(
+        output_root / "variants", report.variant_runs
+    )
     manifest_path = _write_manifest(
         output_root / "rabies-method-sensitivity.manifest.json",
         report=report,
@@ -616,7 +620,9 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         },
     )
     report_manifest_path = _write_report_manifest(
-        output_root / "report-artifacts" / "rabies-method-sensitivity-report.manifest.json",
+        output_root
+        / "report-artifacts"
+        / "rabies-method-sensitivity-report.manifest.json",
         report=report,
         bundle_paths={
             "workflow_summary": workflow_summary_path,
@@ -660,7 +666,9 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         report_manifest_path=report_manifest_path,
     )
     report_html_size_bytes = report_path.stat().st_size
-    report_linked_artifact_bytes = sum(path.stat().st_size for path in report_linked_files)
+    report_linked_artifact_bytes = sum(
+        path.stat().st_size for path in report_linked_files
+    )
     report_total_output_bytes = report_html_size_bytes + report_linked_artifact_bytes
     preprocessing_change_pair_count = sum(
         1
@@ -725,7 +733,9 @@ def run_rabies_method_sensitivity_panel_demo(
         shutil.rmtree(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
     dataset = load_rabies_method_sensitivity_panel_dataset()
-    dataset_export = export_rabies_method_sensitivity_panel_dataset(output_root / "dataset")
+    dataset_export = export_rabies_method_sensitivity_panel_dataset(
+        output_root / "dataset"
+    )
     with TemporaryDirectory(prefix="rabies-method-sensitivity-") as temporary_root:
         workflow_report = run_rabies_method_sensitivity_panel_workflow(
             Path(temporary_root),
@@ -742,7 +752,9 @@ def run_rabies_method_sensitivity_panel_demo(
             output_root / "workflow",
             workflow_report,
         )
-    overview_path = _write_overview(output_root / "overview.md", dataset, workflow_bundle)
+    overview_path = _write_overview(
+        output_root / "overview.md", dataset, workflow_bundle
+    )
     return RabiesMethodSensitivityPanelDemoResult(
         output_root=output_root,
         dataset=dataset,
@@ -758,7 +770,9 @@ def _build_preprocessing_comparison_rows(
     rows: list[RabiesMethodSensitivityPreprocessingComparisonRow] = []
     for index, left in enumerate(variant_runs):
         for right in variant_runs[index + 1 :]:
-            comparison = compare_tree_paths(left.rooted_iqtree_path, right.rooted_iqtree_path)
+            comparison = compare_tree_paths(
+                left.rooted_iqtree_path, right.rooted_iqtree_path
+            )
             rows.append(
                 RabiesMethodSensitivityPreprocessingComparisonRow(
                     left_variant_id=left.config.variant_id,
@@ -877,7 +891,7 @@ def _aggregate_clades(
                 key, (row.evidence_class, row.detail, 0)
             )
             counts[key] = (evidence_class, detail, count + 1)
-    aggregated = [
+    return [
         RabiesMethodSensitivityCladeRow(
             split_id=split_id,
             conclusion_class=conclusion_class,
@@ -890,7 +904,6 @@ def _aggregate_clades(
             counts.items()
         )
     ]
-    return aggregated
 
 
 def _build_conclusion_rows(
@@ -916,7 +929,7 @@ def _build_conclusion_rows(
         variant.config.variant_id: variant.inference_comparison.conclusion_summary.stable_clade_count
         for variant in variant_runs
     }
-    rows = [
+    return [
         RabiesMethodSensitivityConclusionRow(
             conclusion_id="preprocessing_rooted_iqtree_topology",
             method_axis="alignment_and_trimming",
@@ -1007,7 +1020,6 @@ def _build_conclusion_rows(
             ),
         ),
     ]
-    return rows
 
 
 def _write_workflow_summary_table(
@@ -1250,7 +1262,9 @@ def _write_resolved_config(
             for variant in report.dataset.variants
         ],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 
@@ -1409,7 +1423,9 @@ def _write_manifest(
             if value.is_file()
         },
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 
@@ -1478,7 +1494,9 @@ def _write_report_manifest(
     bundle_paths: dict[str, Path],
 ) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
-    linked_files = {key: value for key, value in bundle_paths.items() if value.is_file()}
+    linked_files = {
+        key: value for key, value in bundle_paths.items() if value.is_file()
+    }
     payload = {
         "dataset_id": report.dataset.dataset_id,
         "report_kind": "rabies_method_sensitivity_html_report",
@@ -1497,7 +1515,9 @@ def _write_report_manifest(
             for key, value in linked_files.items()
         },
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

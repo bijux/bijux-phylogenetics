@@ -33,11 +33,14 @@ def test_shared_tree_fixture_catalog_covers_required_tree_shapes() -> None:
         "near-ultrametric",
         "malformed-newick",
     } <= feature_tags
-    assert max(
-        fixture.tip_count or 0
-        for fixture in fixtures
-        if fixture.parse_expectation == "parseable"
-    ) > 100
+    assert (
+        max(
+            fixture.tip_count or 0
+            for fixture in fixtures
+            if fixture.parse_expectation == "parseable"
+        )
+        > 100
+    )
 
 
 def test_shared_tree_fixture_catalog_preserves_durable_fixture_lookup() -> None:

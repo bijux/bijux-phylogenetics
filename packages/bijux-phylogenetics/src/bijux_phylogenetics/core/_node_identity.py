@@ -24,7 +24,7 @@ def build_ape_internal_node_map(tree: PhyloTree) -> dict[int, TreeNode]:
 
 def build_ape_tip_node_map(tree: PhyloTree) -> dict[int, TreeNode]:
     """Return one ape-style tip-node map in deterministic leaf order."""
-    return {node_id: node for node_id, node in enumerate(tree.iter_leaves(), start=1)}
+    return dict(enumerate(tree.iter_leaves(), start=1))
 
 
 def ape_node_id_for_node(tree: PhyloTree, node: TreeNode) -> int:

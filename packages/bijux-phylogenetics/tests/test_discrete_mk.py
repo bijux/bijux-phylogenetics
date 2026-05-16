@@ -97,7 +97,9 @@ def _write_simulated_state_table(
     trait: str = "state",
 ) -> Path:
     path.write_text(
-        "taxon\t" + trait + "\n"
+        "taxon\t"
+        + trait
+        + "\n"
         + "".join(f"{taxon}\t{state}\n" for taxon, state in sorted(tip_states.items())),
         encoding="utf-8",
     )
@@ -367,7 +369,9 @@ def test_fit_discrete_mk_model_recovers_binary_er_known_truth(tmp_path: Path) ->
 def test_fit_discrete_mk_model_recovers_binary_ard_known_truth(
     tmp_path: Path,
 ) -> None:
-    tree_path = fixture("example_tree_phytools_ultrametric_one_hundred_twenty_eight_taxa.nwk")
+    tree_path = fixture(
+        "example_tree_phytools_ultrametric_one_hundred_twenty_eight_taxa.nwk"
+    )
     traits_path = _write_simulated_state_table(
         tmp_path / "binary-ard.tsv",
         tip_states=_simulate_directional_tip_states(
@@ -420,7 +424,9 @@ def test_fit_discrete_mk_model_recovers_multistate_sym_known_truth(
         root_state="north",
         seed=51024,
     )
-    traits_path = write_discrete_trait_table(tmp_path / "multistate-sym.tsv", simulation)
+    traits_path = write_discrete_trait_table(
+        tmp_path / "multistate-sym.tsv", simulation
+    )
 
     report = fit_discrete_mk_model(
         fixture("example_tree_phytools_ultrametric_one_hundred_twenty_eight_taxa.nwk"),
@@ -474,9 +480,7 @@ def test_fit_discrete_mk_model_marks_overparameterized_symmetric_surface(
     assert report.parameter_count == 6
     assert report.overparameterized is True
     assert any(
-        warning.startswith(
-            "the discrete Mk likelihood fit is likely overparameterized"
-        )
+        warning.startswith("the discrete Mk likelihood fit is likely overparameterized")
         for warning in report.input_audit.warnings
     )
 
@@ -511,8 +515,6 @@ def test_fit_discrete_mk_model_marks_overparameterized_ard_surface(
     assert report.parameter_count == 12
     assert report.overparameterized is True
     assert any(
-        warning.startswith(
-            "the discrete Mk likelihood fit is likely overparameterized"
-        )
+        warning.startswith("the discrete Mk likelihood fit is likely overparameterized")
         for warning in report.input_audit.warnings
     )

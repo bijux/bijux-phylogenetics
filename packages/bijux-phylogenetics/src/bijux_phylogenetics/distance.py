@@ -858,7 +858,7 @@ def _p_distance(summary: _PairSummary) -> float | None:
 def _estimate_nucleotide_model_parameters(
     records: list[AlignmentRecord],
 ) -> tuple[GeneticDistanceModelParameters, list[str]]:
-    counts = {base: 0 for base in "ACGT"}
+    counts = dict.fromkeys("ACGT", 0)
     informative_base_count = 0
     for record in records:
         for symbol in record.sequence:
@@ -1059,9 +1059,7 @@ def _tamura_nei_93_distance(
     coefficient_ag = (2.0 * pi_a * pi_g) / pi_r
     coefficient_ct = (2.0 * pi_c * pi_t) / pi_y
     coefficient_tv = 2.0 * (
-        (pi_r * pi_y)
-        - ((pi_a * pi_g * pi_y) / pi_r)
-        - ((pi_c * pi_t * pi_r) / pi_y)
+        (pi_r * pi_y) - ((pi_a * pi_g * pi_y) / pi_r) - ((pi_c * pi_t * pi_r) / pi_y)
     )
     value = (
         (-coefficient_ag * math.log(first))
@@ -2463,7 +2461,9 @@ def write_genetic_distance_matrix(path: Path, report: GeneticDistanceMatrix) -> 
                 else pair.distance
             )
             distance = (
-                "" if normalized_distance is None else format(normalized_distance, ".15g")
+                ""
+                if normalized_distance is None
+                else format(normalized_distance, ".15g")
             )
             lines.append(f"{left}\t{right}\t{distance}\t{pair.comparable_sites}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -2507,7 +2507,9 @@ def write_genetic_distance_component_table(
                 [
                     pair.left_identifier,
                     pair.right_identifier,
-                    "" if normalized_distance is None else format(normalized_distance, ".15g"),
+                    ""
+                    if normalized_distance is None
+                    else format(normalized_distance, ".15g"),
                     str(pair.comparable_sites),
                     format(pair.mismatch_sites, ".15g"),
                     format(pair.transition_sites, ".15g"),

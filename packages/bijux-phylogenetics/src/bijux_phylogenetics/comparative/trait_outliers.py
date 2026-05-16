@@ -27,7 +27,7 @@ from bijux_phylogenetics.comparative.models import (
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.core.tree import PhyloTree
 
 _OUTLIER_THRESHOLD = 2.0
 

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import csv
 from dataclasses import asdict, dataclass, replace
-import json
 from importlib import metadata
+import json
 import math
 import os
 from pathlib import Path
@@ -30,31 +30,35 @@ from bijux_phylogenetics.comparative.brownian_covariance import (
 from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_independent_contrasts,
 )
-from bijux_phylogenetics.compare.topology_distance import (
-    compare_topology_distance_trees,
-)
-from bijux_phylogenetics.core.clade_sets import informative_unrooted_splits
 from bijux_phylogenetics.compare.structural_parity import (
     compare_tree_sets_structurally,
     compare_tree_structurally,
 )
+from bijux_phylogenetics.compare.topology_distance import (
+    compare_topology_distance_trees,
+)
+from bijux_phylogenetics.core._node_identity import build_ape_internal_node_map
+from bijux_phylogenetics.core.branching_times import compute_tree_branching_times
+from bijux_phylogenetics.core.clade_sets import informative_unrooted_splits
+from bijux_phylogenetics.core.node_depth import compute_tree_node_depths
 from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
     prune_tree_to_requested_taxa,
-)
-from bijux_phylogenetics.core.branching_times import compute_tree_branching_times
-from bijux_phylogenetics.core._node_identity import build_ape_internal_node_map
-from bijux_phylogenetics.core.node_depth import compute_tree_node_depths
-from bijux_phylogenetics.core.tree_distance import compute_tree_tip_distance_matrix
-from bijux_phylogenetics.core.ultrametric import (
-    APE_ULTRAMETRIC_TOLERANCE,
-    assess_tree_ultrametricity,
 )
 from bijux_phylogenetics.core.topology import (
     assess_tree_monophyly,
     extract_tree_clade_by_node_id,
     find_tree_mrca,
+    root_tree_on_outgroup,
+    unroot_tree,
 )
+from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.core.tree_distance import compute_tree_tip_distance_matrix
+from bijux_phylogenetics.core.ultrametric import (
+    APE_ULTRAMETRIC_TOLERANCE,
+    assess_tree_ultrametricity,
+)
+from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.distance import (
     build_tree_from_imported_distance_matrix,
     compute_pairwise_genetic_distance_matrix,
@@ -62,14 +66,10 @@ from bijux_phylogenetics.distance import (
 from bijux_phylogenetics.diversification import (
     compute_diversification_gamma_statistic,
 )
-from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.core.topology import root_tree_on_outgroup, unroot_tree
 from bijux_phylogenetics.io.fasta import (
     compute_alignment_base_frequency_report,
     compute_alignment_segregating_site_report,
     load_dna_bin_alignment,
-    load_fasta_alignment,
     translate_coding_alignment,
 )
 from bijux_phylogenetics.io.newick import (
@@ -79,17 +79,19 @@ from bijux_phylogenetics.io.newick import (
     write_newick_tree_set,
 )
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.shared_dna_alignment_fixtures import (
-    get_shared_dna_alignment_fixture,
-)
 from bijux_phylogenetics.shared_distance_matrix_fixtures import (
     get_shared_distance_matrix_fixture,
 )
-from bijux_phylogenetics.shared_tree_simulation_fixtures import (
-    get_shared_tree_simulation_fixture,
+from bijux_phylogenetics.shared_dna_alignment_fixtures import (
+    get_shared_dna_alignment_fixture,
 )
 from bijux_phylogenetics.shared_trait_table_fixtures import (
     get_shared_trait_table_fixture,
+)
+from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
+from bijux_phylogenetics.shared_tree_set_fixtures import get_shared_tree_set_fixture
+from bijux_phylogenetics.shared_tree_simulation_fixtures import (
+    get_shared_tree_simulation_fixture,
 )
 from bijux_phylogenetics.simulation import (
     simulate_coalescent_trees,
@@ -101,8 +103,6 @@ from bijux_phylogenetics.tree_set import (
     compute_reference_tree_clade_support,
     compute_strict_consensus_tree,
 )
-from bijux_phylogenetics.shared_tree_fixtures import get_shared_tree_fixture
-from bijux_phylogenetics.shared_tree_set_fixtures import get_shared_tree_set_fixture
 
 
 @dataclass(frozen=True, slots=True)
@@ -4430,16 +4430,10 @@ def run_ape_parity_cases(
                                 tolerance=case.tolerance,
                             ):
                                 mismatch_reason = "summary_mismatch"
-                        elif case.operation == "get-tree-mrca":
-                            if not _compare_json(
-                                reference_summary,
-                                bijux_summary,
-                                tolerance=case.tolerance,
-                            ):
-                                mismatch_reason = "summary_mismatch"
-                            else:
-                                status = "passed"
-                        elif case.operation == "assess-tree-monophyly":
+                        elif (
+                            case.operation == "get-tree-mrca"
+                            or case.operation == "assess-tree-monophyly"
+                        ):
                             if not _compare_json(
                                 reference_summary,
                                 bijux_summary,

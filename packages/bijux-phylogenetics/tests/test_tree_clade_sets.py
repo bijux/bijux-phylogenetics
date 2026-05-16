@@ -44,9 +44,7 @@ def test_rooted_clades_respect_shared_taxon_scope() -> None:
         frozenset({"A", "B"}),
         frozenset({"A", "B", "C"}),
     }
-    assert informative_rooted_clades(tree, {"A", "B", "C"}) == {
-        frozenset({"A", "B"})
-    }
+    assert informative_rooted_clades(tree, {"A", "B", "C"}) == {frozenset({"A", "B"})}
 
 
 def test_unrooted_splits_are_canonical_and_ignore_root_orientation() -> None:

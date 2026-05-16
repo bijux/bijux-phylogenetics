@@ -29,15 +29,11 @@ def _write_config(
     metadata_block = ""
     if metadata_path is not None:
         metadata_block = (
-            f"  metadata: {metadata_path.name}\n"
-            "  metadata_taxon_column: taxon\n"
+            f"  metadata: {metadata_path.name}\n  metadata_taxon_column: taxon\n"
         )
     traits_block = ""
     if traits_path is not None:
-        traits_block = (
-            f"  traits: {traits_path.name}\n"
-            "  traits_taxon_column: taxon\n"
-        )
+        traits_block = f"  traits: {traits_path.name}\n  traits_taxon_column: taxon\n"
     path.write_text(
         (
             "workflow: fasta-to-tree\n"
@@ -98,9 +94,10 @@ def test_load_phylo_workflow_config_resolves_relative_inputs_and_outputs(
     assert config.metadata_path == metadata_path.resolve()
     assert config.traits_path == traits_path.resolve()
     assert config.out_dir == (tmp_path / "artifacts/run").resolve()
-    assert config.bundle_root == (
-        tmp_path / "artifacts/run/example-study.result-bundle"
-    ).resolve()
+    assert (
+        config.bundle_root
+        == (tmp_path / "artifacts/run/example-study.result-bundle").resolve()
+    )
     assert config.iqtree_seed == 17
     assert config.iqtree_threads == 2
     assert config.timeout_seconds == 45.0

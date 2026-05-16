@@ -83,7 +83,9 @@ def test_simulate_coalescent_tree_matches_single_tree_batch_surface() -> None:
 def test_write_tree_simulation_tables_emit_reviewable_ledgers(tmp_path: Path) -> None:
     _trees, report = simulate_random_trees(tree_count=2, tip_count=4, seed=7)
 
-    record_path = write_tree_simulation_record_table(tmp_path / "simulation-records.tsv", report)
+    record_path = write_tree_simulation_record_table(
+        tmp_path / "simulation-records.tsv", report
+    )
     envelope_path = write_tree_simulation_envelope_table(
         tmp_path / "simulation-envelope.tsv",
         report,

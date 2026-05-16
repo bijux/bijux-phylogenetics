@@ -585,9 +585,12 @@ def test_run_fasta_to_tree_workflow_records_stage_fingerprints(
     assert manifest_payload["stage_fingerprints"]["fasta_validation"]["stage"] == (
         "fasta_validation"
     )
-    assert manifest_payload["stage_fingerprints"]["report"]["upstream_fingerprints"][
-        "inference"
-    ] == report.stage_fingerprints["inference"].fingerprint
+    assert (
+        manifest_payload["stage_fingerprints"]["report"]["upstream_fingerprints"][
+            "inference"
+        ]
+        == report.stage_fingerprints["inference"].fingerprint
+    )
 
 
 def test_run_fasta_to_tree_workflow_reruns_only_support_stage_when_replicates_change(

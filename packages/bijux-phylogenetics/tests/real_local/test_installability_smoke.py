@@ -41,7 +41,13 @@ def test_installable_distributions_run_core_cli_smoke_commands(
             venv_python,
             work_root / "example-inputs",
         )
-        assert set(copied_inputs) == {"alignment", "alt_tree", "metadata", "traits", "tree"}
+        assert set(copied_inputs) == {
+            "alignment",
+            "alt_tree",
+            "metadata",
+            "traits",
+            "tree",
+        }
         for path in copied_inputs.values():
             assert path.exists()
             assert not path.is_relative_to(PACKAGE_ROOT)

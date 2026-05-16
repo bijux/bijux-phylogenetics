@@ -140,9 +140,7 @@ def test_resolve_iqtree_model_sidecar_prefers_plain_text_before_gzip(
 
 
 def test_parse_iqtree_model_selection_summary_accepts_version_variant_fixture() -> None:
-    fixture_root = (
-        Path(__file__).parent / "fixtures" / "engine_outputs" / "iqtree"
-    )
+    fixture_root = Path(__file__).parent / "fixtures" / "engine_outputs" / "iqtree"
     summary = parse_iqtree_model_selection_summary(
         iqtree_report_path=fixture_root / "model-selection-version-variant.iqtree",
         model_sidecar_path=fixture_root / "model-selection-version-variant.model",

@@ -222,7 +222,9 @@ def _copy_node_payload(node: TreeNode, *, branch_length: float | None) -> TreeNo
     )
 
 
-def _clone_subtree_away_from(node: TreeNode, *, from_neighbor: TreeNode | None) -> TreeNode:
+def _clone_subtree_away_from(
+    node: TreeNode, *, from_neighbor: TreeNode | None
+) -> TreeNode:
     clone = _copy_node_payload(node, branch_length=node.branch_length)
     for neighbor in _adjacent_nodes(node):
         if neighbor is from_neighbor:
@@ -242,7 +244,9 @@ def _clone_subtree_component(
     from_neighbor: TreeNode,
     incoming_length: float | None,
 ) -> TreeNode:
-    neighbors = [neighbor for neighbor in _adjacent_nodes(node) if neighbor is not from_neighbor]
+    neighbors = [
+        neighbor for neighbor in _adjacent_nodes(node) if neighbor is not from_neighbor
+    ]
     if neighbors and len(neighbors) == 1 and not node.is_leaf():
         next_neighbor = neighbors[0]
         return _clone_subtree_component(
@@ -254,7 +258,10 @@ def _clone_subtree_component(
             ),
         )
     if node.parent is not None and node.parent in neighbors:
-        neighbors = [node.parent, *[neighbor for neighbor in neighbors if neighbor is not node.parent]]
+        neighbors = [
+            node.parent,
+            *[neighbor for neighbor in neighbors if neighbor is not node.parent],
+        ]
     clone = _copy_node_payload(node, branch_length=incoming_length)
     for neighbor in neighbors:
         child = _clone_subtree_component(
@@ -339,7 +346,9 @@ def _interpreted_rooted_state(tree: PhyloTree) -> bool:
     return len(tree.root.children) == 2
 
 
-def _build_subtree(node: TreeNode, *, source_format: str, rooted: bool | None) -> PhyloTree:
+def _build_subtree(
+    node: TreeNode, *, source_format: str, rooted: bool | None
+) -> PhyloTree:
     subtree_root = _clone_node(node)
     subtree_root.branch_length = None
     return PhyloTree(root=subtree_root, source_format=source_format, rooted=rooted)
@@ -565,13 +574,16 @@ def _normalize_outgroup_rooting_to_ape(
             details={"requested_taxa": sorted(requested_taxa_set)},
         )
 
-    if len(outgroup_children) == 1 and outgroup_children[0].is_leaf() and len(root_children) == 2:
+    if (
+        len(outgroup_children) == 1
+        and outgroup_children[0].is_leaf()
+        and len(root_children) == 2
+    ):
         outgroup_child = outgroup_children[0]
         ingroup_child = ingroup_children[0]
         if (
-            (outgroup_child.branch_length or 0.0) == 0.0
-            and ingroup_child.branch_length is not None
-        ):
+            outgroup_child.branch_length or 0.0
+        ) == 0.0 and ingroup_child.branch_length is not None:
             outgroup_child.branch_length = ingroup_child.branch_length
             ingroup_child.branch_length = 0.0
         return rooted_tree
@@ -728,6 +740,7 @@ def _summarize_transformation(
         branch_length_delta=round(transformed_total - original_total, 15),
         branch_lengths_affected=branch_lengths_affected,
     )
+
 
 def _compare_tree_topology(
     original: PhyloTree, transformed: PhyloTree
@@ -918,9 +931,7 @@ def find_tree_mrca(
     requested_taxa = sorted(taxa)
     unique_requested_taxa = sorted(set(requested_taxa))
     duplicate_requested_taxa = sorted(
-        taxon
-        for taxon, count in Counter(requested_taxa).items()
-        if count > 1
+        taxon for taxon, count in Counter(requested_taxa).items() if count > 1
     )
     missing_requested_taxa = sorted(set(unique_requested_taxa) - set(tree.tip_names))
     if missing_requested_taxa:
@@ -965,9 +976,7 @@ def assess_tree_monophyly(
     requested_taxa = sorted(taxa)
     unique_requested_taxa = sorted(set(requested_taxa))
     duplicate_requested_taxa = sorted(
-        taxon
-        for taxon, count in Counter(requested_taxa).items()
-        if count > 1
+        taxon for taxon, count in Counter(requested_taxa).items() if count > 1
     )
     if not unique_requested_taxa:
         raise ValueError("monophyly assessment requires at least one requested taxon")
@@ -1255,7 +1264,9 @@ def root_tree_on_outgroup(
         raise TreeRootingError("at least one outgroup taxon is required")
 
     tree = load_tree(tree_path)
-    matched_taxa = sorted(taxon for taxon in outgroup_taxa if taxon in set(tree.tip_names))
+    matched_taxa = sorted(
+        taxon for taxon in outgroup_taxa if taxon in set(tree.tip_names)
+    )
     absent_taxa = sorted(
         taxon for taxon in outgroup_taxa if taxon not in set(tree.tip_names)
     )
@@ -1446,9 +1457,7 @@ def unroot_tree(tree_path: Path) -> tuple[PhyloTree, TreeRootingReport]:
 
     expanded = sorted(expandable_children, key=_descendant_taxa)[0]
     retained = right if expanded is left else left
-    new_children = [
-        _clone_node(child) for child in expanded.children
-    ]
+    new_children = [_clone_node(child) for child in expanded.children]
     retained_child = _clone_node(retained)
     retained_child.branch_length = _combine_branch_lengths(
         retained.branch_length,

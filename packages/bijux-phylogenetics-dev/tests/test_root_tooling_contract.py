@@ -112,8 +112,7 @@ def test_root_make_routes_test_all_plus_run_time_across_repository_packages() ->
     assert "ROOT_TARGET_GROUPS_test-all-plus-run-time ?= check" in root_make
     assert "ROOT_TARGET_SHARED_ENV_test-all-plus-run-time ?= 1" in root_make
     assert (
-        "ROOT_TARGET_PACKAGES_test-all-plus-run-time := $(CHECK_PACKAGES)"
-        in root_make
+        "ROOT_TARGET_PACKAGES_test-all-plus-run-time := $(CHECK_PACKAGES)" in root_make
     )
     assert (
         "test-all-plus-run-time: ## Run every repository test surface and report per-test durations"

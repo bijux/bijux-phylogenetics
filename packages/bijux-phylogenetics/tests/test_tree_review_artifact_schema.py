@@ -16,7 +16,16 @@ from bijux_phylogenetics.io.artifact_schema import (
     validate_host_switch_branch_table_schema,
 )
 
-DATASET_CONFIG = Path(__file__).parent.parent / "src" / "bijux_phylogenetics" / "resources" / "datasets" / "pathogens" / "rabies_cross_host_geography_panel" / "workflow-config.json"
+DATASET_CONFIG = (
+    Path(__file__).parent.parent
+    / "src"
+    / "bijux_phylogenetics"
+    / "resources"
+    / "datasets"
+    / "pathogens"
+    / "rabies_cross_host_geography_panel"
+    / "workflow-config.json"
+)
 
 
 def _rooted_tree_path(dataset) -> Path:
@@ -35,7 +44,9 @@ def test_clade_table_schema_matches_live_output(tmp_path: Path) -> None:
     schema = validate_clade_table_schema(path)
 
     assert schema.valid
-    assert f"metadata_column_count={len(dataset.clade_metadata_columns)}" in schema.notes
+    assert (
+        f"metadata_column_count={len(dataset.clade_metadata_columns)}" in schema.notes
+    )
     assert validate_artifact_schema(path, "clade_table_tsv").valid
 
 

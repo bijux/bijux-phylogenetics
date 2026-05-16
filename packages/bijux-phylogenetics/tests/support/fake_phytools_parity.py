@@ -951,7 +951,7 @@ if rows is not None:
         write_rows_table(fast_anc_rows_path, rows)
     elif case_payload["operation"] == "continuous-ancestral-anc-ml":
         write_rows_table(anc_ml_rows_path, rows)
-"""
-        .replace("__SUMMARY_OVERRIDES__", summary_payload)
-        .replace("__PHYTOOLS_AVAILABLE__", repr(phytools_available)),
+""".replace("__SUMMARY_OVERRIDES__", summary_payload).replace(
+            "__PHYTOOLS_AVAILABLE__", repr(phytools_available)
+        ),
     )

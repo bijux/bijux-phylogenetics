@@ -10,9 +10,9 @@ from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
     compute_phylogenetic_signal_test,
+    estimate_pagels_lambda,
     evaluate_pagels_lambda_likelihood,
     evaluate_pagels_lambda_likelihood_from_dataset,
-    estimate_pagels_lambda,
 )
 from bijux_phylogenetics.errors import ComparativeMethodError
 
@@ -53,7 +53,9 @@ def test_independent_contrasts_return_expected_internal_node_values() -> None:
     assert math.isclose(report.root_estimate, 2.8055555555555554)
 
 
-def test_independent_contrasts_accept_pectinate_non_ultrametric_tree_by_policy() -> None:
+def test_independent_contrasts_accept_pectinate_non_ultrametric_tree_by_policy() -> (
+    None
+):
     report = compute_phylogenetic_independent_contrasts(
         fixture("example_tree_ladderized.nwk"),
         fixture("example_traits_comparative.tsv"),
@@ -135,7 +137,9 @@ def test_phylogenetic_signal_test_reuses_seeded_permutation_path() -> None:
     assert left.permutation_rows != different_seed.permutation_rows
 
 
-def test_phylogenetic_signal_test_distinguishes_strong_and_weak_signal_permutation_summaries() -> None:
+def test_phylogenetic_signal_test_distinguishes_strong_and_weak_signal_permutation_summaries() -> (
+    None
+):
     strong = compute_phylogenetic_signal_test(
         fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),
         fixture("example_traits_phytools_signal_twenty_four_taxa.tsv"),
@@ -196,7 +200,9 @@ def test_independent_contrasts_reject_negative_branch_lengths() -> None:
             trait="response",
         )
 
-    assert error.value.details["failure_reason"] == "comparative_negative_branch_lengths"
+    assert (
+        error.value.details["failure_reason"] == "comparative_negative_branch_lengths"
+    )
 
 
 def test_phylogenetic_signal_accepts_rooted_non_ultrametric_tree_by_policy() -> None:
@@ -215,7 +221,9 @@ def test_phylogenetic_signal_accepts_rooted_non_ultrametric_tree_by_policy() -> 
 
 def test_pagels_lambda_fixed_likelihood_surface_matches_boundary_reports() -> None:
     tree = fixture("example_tree_phytools_non_ultrametric_twenty_four_taxa.nwk")
-    traits = fixture("example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv")
+    traits = fixture(
+        "example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv"
+    )
 
     estimate = estimate_pagels_lambda(tree, traits, trait="signal_strong")
     null_report = evaluate_pagels_lambda_likelihood(
@@ -232,7 +240,9 @@ def test_pagels_lambda_fixed_likelihood_surface_matches_boundary_reports() -> No
     )
 
     assert math.isclose(null_report.log_likelihood, estimate.null_log_likelihood)
-    assert math.isclose(brownian_report.log_likelihood, estimate.brownian_log_likelihood)
+    assert math.isclose(
+        brownian_report.log_likelihood, estimate.brownian_log_likelihood
+    )
     assert math.isclose(
         estimate.likelihood_ratio_statistic,
         2.0 * (estimate.log_likelihood - estimate.null_log_likelihood),
@@ -242,7 +252,9 @@ def test_pagels_lambda_fixed_likelihood_surface_matches_boundary_reports() -> No
 
 def test_pagels_lambda_fixed_likelihood_from_dataset_matches_path_surface() -> None:
     tree = fixture("example_tree_phytools_non_ultrametric_twenty_four_taxa.nwk")
-    traits = fixture("example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv")
+    traits = fixture(
+        "example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv"
+    )
     dataset = load_comparative_dataset(tree, traits, trait="signal_strong")
 
     path_report = evaluate_pagels_lambda_likelihood(
@@ -262,7 +274,9 @@ def test_pagels_lambda_fixed_likelihood_from_dataset_matches_path_surface() -> N
     assert dataset_report.trait == path_report.trait
 
 
-def test_pagels_lambda_reports_optimizer_diagnostics_for_strong_and_weak_signal() -> None:
+def test_pagels_lambda_reports_optimizer_diagnostics_for_strong_and_weak_signal() -> (
+    None
+):
     strong_report = estimate_pagels_lambda(
         fixture("example_tree_phytools_non_ultrametric_twenty_four_taxa.nwk"),
         fixture("example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv"),
