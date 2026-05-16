@@ -8,6 +8,7 @@ import pytest
 from bijux_phylogenetics.bayesian.beast import (
     parse_beast_posterior_tree_samples,
     prepare_beast_time_tree_analysis,
+    run_beast_posterior_inference,
     summarize_beast_log,
     summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
@@ -187,3 +188,39 @@ def test_summarize_beast_posterior_topology_diversity_with_real_executable_on_sm
     assert report.rooted_topology_count >= 1
     assert report.dominant_topology_frequency > 0.0
     assert report.effective_topology_count >= 1.0
+
+
+def test_run_beast_posterior_inference_resumes_verified_real_outputs(
+    tmp_path: Path,
+) -> None:
+    executable = real_beast_executable()
+    if executable is None:
+        pytest.skip("real BEAST executable is not available for integration coverage")
+
+    output_path = tmp_path / "live-strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        output_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    first = run_beast_posterior_inference(
+        output_path,
+        executable=executable,
+        threads=1,
+        seed=1,
+    )
+    resumed = run_beast_posterior_inference(
+        output_path,
+        executable=executable,
+        threads=1,
+        seed=1,
+        resume=True,
+    )
+
+    assert first.output_paths["posterior_log"].exists()
+    assert first.output_paths["posterior_trees"].exists()
+    assert resumed.resumed is True
