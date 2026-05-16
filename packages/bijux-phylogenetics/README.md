@@ -877,6 +877,7 @@ goal: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::sim.history`,
 `phytools::fastBM`,
 `phytools::sim.corrs`,
+`phytools::pgls.SEy`,
 `phytools::rerootingMethod`,
 `phytools::fastAnc`, and `phytools::anc.ML` on governed strong-signal,
 weak-signal, non-ultrametric, discrete-state, and missing-value comparative
@@ -893,7 +894,14 @@ missing-value pruning audit, ER baseline comparison metrics, and one directed
 rate-matrix ledger for binary and multistate traits. The live `fitMk` lane
 now covers governed ER binary and multistate cases, governed SYM
 multistate cases, and governed ARD binary plus weakly identified multistate
-cases, including missing-value-pruned surfaces. The live
+cases, including missing-value-pruned surfaces. The live `pgls.SEy` lane now
+covers governed fixed-lambda Brownian covariance cases for one simple numeric
+regression plus one categorical and one interaction-coded regression. That
+boundary is explicit on purpose: installed `phytools 2.5.2` does not export a
+general `phytools::pgls` surface, so the governed live lane stays on
+`phytools::pgls.SEy` with `lambda = 1.0`, while the broader exact PGLS
+contract for estimated lambda and full coefficient parity remains the
+checked-in R `ape` plus `nlme` reference lane. The live
 `make.simmap` lane now covers governed clean binary, clean multistate, and
 missing-value-pruned binary ER cases; governed clean multistate and
 missing-value-pruned multistate SYM cases; and governed binary plus
