@@ -201,6 +201,7 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
     collection_path = tmp_path / "stochastic-maps.json"
     summary_path = tmp_path / "stochastic-summary.tsv"
     state_times_path = tmp_path / "stochastic-state-times.tsv"
+    branch_occupancy_path = tmp_path / "stochastic-branch-occupancy.tsv"
     segments_path = tmp_path / "stochastic-segments.tsv"
 
     stochastic_exit = main(
@@ -223,6 +224,8 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
             str(summary_path),
             "--state-times-out",
             str(state_times_path),
+            "--branch-occupancy-out",
+            str(branch_occupancy_path),
             "--segments-out",
             str(segments_path),
             "--json",
@@ -234,6 +237,7 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
     assert stochastic_payload["metrics"]["successful_replicate_count"] == 6
     assert stochastic_payload["metrics"]["simulation_failure_count"] == 0
     assert stochastic_payload["metrics"]["mean_total_transition_count"] >= 0.0
+    assert stochastic_payload["metrics"]["branch_state_row_count"] > 0
     assert stochastic_payload["metrics"]["conditioned_on_node_estimates"] is False
     assert stochastic_payload["metrics"]["parameter_count"] == 3
     assert stochastic_payload["metrics"]["optimizer_converged"] is True
@@ -242,9 +246,14 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
     assert stochastic_payload["metrics"]["fit_warning_count"] >= 1
     assert collection_path.exists()
     assert state_times_path.exists()
+    assert branch_occupancy_path.exists()
     assert segments_path.exists()
     assert "transition\tmean_count" in summary_path.read_text(encoding="utf-8")
     assert "state\tmean_time" in state_times_path.read_text(encoding="utf-8")
+    assert (
+        "branch_index\tparent_node\tchild_node\tstate\tbranch_length\tmean_time"
+        in branch_occupancy_path.read_text(encoding="utf-8")
+    )
     assert "replicate_index\tbranch_index" in segments_path.read_text(encoding="utf-8")
 
     summarize_exit = main(
@@ -256,6 +265,8 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
             str(summary_path),
             "--state-times-out",
             str(state_times_path),
+            "--branch-occupancy-out",
+            str(branch_occupancy_path),
             "--json",
         ]
     )
@@ -264,3 +275,4 @@ def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(
     assert summarize_payload["metrics"]["replicate_count"] == 6
     assert summarize_payload["metrics"]["mean_total_transition_count"] >= 0.0
     assert summarize_payload["metrics"]["simulation_failure_count"] == 0
+    assert summarize_payload["metrics"]["branch_state_row_count"] > 0

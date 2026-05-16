@@ -6,6 +6,12 @@ import pytest
 
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.discrete_evolution import (
+    StochasticMapBranchHistory,
+    StochasticMapCollectionReport,
+    StochasticMapModelFitAudit,
+    StochasticMapReplicate,
+    StochasticMapStateSegment,
+    StochasticMapSummaryReport,
     assess_geographic_state_analysis_readiness,
     audit_discrete_state_coding,
     build_biogeographic_interpretation_report,
@@ -24,6 +30,7 @@ from bijux_phylogenetics.discrete_evolution import (
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
     write_stochastic_map_collection,
+    write_stochastic_map_branch_occupancy_table,
     write_stochastic_map_segment_table,
     write_stochastic_map_state_time_table,
     write_stochastic_map_summary_table,
@@ -47,6 +54,59 @@ def fixture(name: str) -> Path:
         if candidate.exists():
             return candidate
     raise FileNotFoundError(name)
+
+
+def manual_stochastic_map_collection(
+    *,
+    maps: list[StochasticMapReplicate],
+) -> StochasticMapCollectionReport:
+    report = StochasticMapCollectionReport(
+        tree_path=Path("manual-tree.nwk"),
+        traits_path=Path("manual-traits.tsv"),
+        taxon_column="taxon",
+        trait="state",
+        model="equal-rates",
+        state_ordering="unordered",
+        ordered_states=[],
+        replicates=len(maps),
+        seed=0,
+        conditioned_on_node_estimates=False,
+        fit_audit=StochasticMapModelFitAudit(
+            state_order=["0", "1", "2"],
+            allowed_transitions=["0->1", "1->0", "1->2", "2->1"],
+            parameter_count=1,
+            log_likelihood=0.0,
+            aic=0.0,
+            aicc=0.0,
+            overparameterized=False,
+            optimizer_converged=True,
+            optimizer_iteration_count=0,
+            optimizer_function_evaluation_count=0,
+            optimizer_hit_lower_parameter_bound=False,
+            optimizer_hit_upper_parameter_bound=False,
+            baseline_model=None,
+            baseline_aic=None,
+            baseline_delta_aic=None,
+            preferred_model_by_aic=None,
+            warnings=[],
+        ),
+        warnings=[],
+        maps=maps,
+        failures=[],
+        summary=StochasticMapSummaryReport(
+            replicate_count=0,
+            mean_total_transition_count=0.0,
+            lower_95_total_transition_count=0.0,
+            upper_95_total_transition_count=0.0,
+            rows=[],
+            state_time_rows=[],
+            branch_occupancy_rows=[],
+            simulation_failure_count=0,
+            warnings=[],
+        ),
+    )
+    report.summary = summarize_discrete_stochastic_maps(report)
+    return report
 
 
 def test_validate_discrete_state_coding_reports_unsupported_and_delimited_states() -> (
@@ -384,11 +444,13 @@ def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(
     collection_path = tmp_path / "stochastic-maps.json"
     summary_path = tmp_path / "stochastic-summary.tsv"
     state_times_path = tmp_path / "stochastic-state-times.tsv"
+    branch_occupancy_path = tmp_path / "stochastic-branch-occupancy.tsv"
     segments_path = tmp_path / "stochastic-segments.tsv"
 
     write_stochastic_map_collection(collection_path, report)
     write_stochastic_map_summary_table(summary_path, summary)
     write_stochastic_map_state_time_table(state_times_path, summary)
+    write_stochastic_map_branch_occupancy_table(branch_occupancy_path, summary)
     write_stochastic_map_segment_table(segments_path, report)
     reloaded = load_stochastic_map_collection(collection_path)
 
@@ -412,6 +474,7 @@ def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(
     assert reloaded.maps[0].branch_histories[0].segments
     assert reloaded.maps[0].state_time_totals
     assert reloaded.summary.state_time_rows
+    assert reloaded.summary.branch_occupancy_rows
     assert reloaded.summary.simulation_failure_count == 0
     assert "transition\tmean_count\tlower_95_interval" in summary_path.read_text(
         encoding="utf-8"
@@ -420,9 +483,279 @@ def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(
         encoding="utf-8"
     )
     assert (
+        "branch_index\tparent_node\tchild_node\tstate\tbranch_length\tmean_time"
+        in branch_occupancy_path.read_text(encoding="utf-8")
+    )
+    assert (
         "replicate_index\tbranch_index\tparent_node\tchild_node\tstate\tstart_time_fraction\tend_time_fraction\tduration"
         in segments_path.read_text(encoding="utf-8")
     )
+
+
+def test_summarize_discrete_stochastic_maps_handles_no_transition_manual_maps() -> None:
+    report = manual_stochastic_map_collection(
+        maps=[
+            StochasticMapReplicate(
+                replicate_index=0,
+                root_state="0",
+                total_transition_count=0,
+                transition_counts={},
+                state_time_totals={"0": 2.0},
+                branch_histories=[
+                    StochasticMapBranchHistory(
+                        branch_index=0,
+                        parent_node="A|B",
+                        child_node="A",
+                        branch_length=1.0,
+                        start_state="0",
+                        end_state="0",
+                        event_count=0,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=0,
+                                parent_node="A|B",
+                                child_node="A",
+                                state="0",
+                                start_time_fraction=0.0,
+                                end_time_fraction=1.0,
+                                duration=1.0,
+                            )
+                        ],
+                    ),
+                    StochasticMapBranchHistory(
+                        branch_index=1,
+                        parent_node="A|B",
+                        child_node="B",
+                        branch_length=1.0,
+                        start_state="0",
+                        end_state="0",
+                        event_count=0,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=1,
+                                parent_node="A|B",
+                                child_node="B",
+                                state="0",
+                                start_time_fraction=0.0,
+                                end_time_fraction=1.0,
+                                duration=1.0,
+                            )
+                        ],
+                    ),
+                ],
+            ),
+            StochasticMapReplicate(
+                replicate_index=1,
+                root_state="0",
+                total_transition_count=0,
+                transition_counts={},
+                state_time_totals={"0": 2.0},
+                branch_histories=[
+                    StochasticMapBranchHistory(
+                        branch_index=0,
+                        parent_node="A|B",
+                        child_node="A",
+                        branch_length=1.0,
+                        start_state="0",
+                        end_state="0",
+                        event_count=0,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=0,
+                                parent_node="A|B",
+                                child_node="A",
+                                state="0",
+                                start_time_fraction=0.0,
+                                end_time_fraction=1.0,
+                                duration=1.0,
+                            )
+                        ],
+                    ),
+                    StochasticMapBranchHistory(
+                        branch_index=1,
+                        parent_node="A|B",
+                        child_node="B",
+                        branch_length=1.0,
+                        start_state="0",
+                        end_state="0",
+                        event_count=0,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=1,
+                                parent_node="A|B",
+                                child_node="B",
+                                state="0",
+                                start_time_fraction=0.0,
+                                end_time_fraction=1.0,
+                                duration=1.0,
+                            )
+                        ],
+                    ),
+                ],
+            ),
+        ]
+    )
+    summary = summarize_discrete_stochastic_maps(report)
+
+    assert summary.mean_total_transition_count == 0.0
+    assert summary.lower_95_total_transition_count == 0.0
+    assert summary.upper_95_total_transition_count == 0.0
+    transition_rows = {row.transition: row for row in summary.rows}
+    assert transition_rows["0->1"].mean_count == 0.0
+    assert transition_rows["0->1"].presence_fraction == 0.0
+    branch_rows = {
+        (row.parent_node, row.child_node, row.state): row
+        for row in summary.branch_occupancy_rows
+    }
+    assert branch_rows[("A|B", "A", "0")].mean_time == 1.0
+    assert branch_rows[("A|B", "A", "0")].mean_fraction == 1.0
+    assert branch_rows[("A|B", "B", "0")].presence_fraction == 1.0
+
+
+def test_summarize_discrete_stochastic_maps_tracks_multistate_branch_occupancy() -> (
+    None
+):
+    report = manual_stochastic_map_collection(
+        maps=[
+            StochasticMapReplicate(
+                replicate_index=0,
+                root_state="0",
+                total_transition_count=1,
+                transition_counts={"0->1": 1},
+                state_time_totals={"0": 1.0, "1": 1.0, "2": 1.0},
+                branch_histories=[
+                    StochasticMapBranchHistory(
+                        branch_index=0,
+                        parent_node="A|B|C",
+                        child_node="A|B",
+                        branch_length=2.0,
+                        start_state="0",
+                        end_state="1",
+                        event_count=1,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=0,
+                                parent_node="A|B|C",
+                                child_node="A|B",
+                                state="0",
+                                start_time_fraction=0.0,
+                                end_time_fraction=0.5,
+                                duration=1.0,
+                            ),
+                            StochasticMapStateSegment(
+                                branch_index=0,
+                                parent_node="A|B|C",
+                                child_node="A|B",
+                                state="1",
+                                start_time_fraction=0.5,
+                                end_time_fraction=1.0,
+                                duration=1.0,
+                            ),
+                        ],
+                    ),
+                    StochasticMapBranchHistory(
+                        branch_index=1,
+                        parent_node="A|B|C",
+                        child_node="C",
+                        branch_length=1.0,
+                        start_state="2",
+                        end_state="2",
+                        event_count=0,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=1,
+                                parent_node="A|B|C",
+                                child_node="C",
+                                state="2",
+                                start_time_fraction=0.0,
+                                end_time_fraction=1.0,
+                                duration=1.0,
+                            )
+                        ],
+                    ),
+                ],
+            ),
+            StochasticMapReplicate(
+                replicate_index=1,
+                root_state="0",
+                total_transition_count=1,
+                transition_counts={"0->1": 1},
+                state_time_totals={"0": 0.5, "1": 1.5, "2": 1.0},
+                branch_histories=[
+                    StochasticMapBranchHistory(
+                        branch_index=0,
+                        parent_node="A|B|C",
+                        child_node="A|B",
+                        branch_length=2.0,
+                        start_state="0",
+                        end_state="1",
+                        event_count=1,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=0,
+                                parent_node="A|B|C",
+                                child_node="A|B",
+                                state="0",
+                                start_time_fraction=0.0,
+                                end_time_fraction=0.25,
+                                duration=0.5,
+                            ),
+                            StochasticMapStateSegment(
+                                branch_index=0,
+                                parent_node="A|B|C",
+                                child_node="A|B",
+                                state="1",
+                                start_time_fraction=0.25,
+                                end_time_fraction=1.0,
+                                duration=1.5,
+                            ),
+                        ],
+                    ),
+                    StochasticMapBranchHistory(
+                        branch_index=1,
+                        parent_node="A|B|C",
+                        child_node="C",
+                        branch_length=1.0,
+                        start_state="2",
+                        end_state="2",
+                        event_count=0,
+                        events=[],
+                        segments=[
+                            StochasticMapStateSegment(
+                                branch_index=1,
+                                parent_node="A|B|C",
+                                child_node="C",
+                                state="2",
+                                start_time_fraction=0.0,
+                                end_time_fraction=1.0,
+                                duration=1.0,
+                            )
+                        ],
+                    ),
+                ],
+            ),
+        ]
+    )
+    summary = summarize_discrete_stochastic_maps(report)
+
+    transition_rows = {row.transition: row for row in summary.rows}
+    assert transition_rows["0->1"].mean_count == 1.0
+    state_rows = {row.state: row for row in summary.state_time_rows}
+    assert state_rows["1"].mean_time == 1.25
+    branch_rows = {
+        (row.parent_node, row.child_node, row.state): row
+        for row in summary.branch_occupancy_rows
+    }
+    assert branch_rows[("A|B|C", "A|B", "1")].mean_time == 1.25
+    assert branch_rows[("A|B|C", "A|B", "1")].mean_fraction == 0.625
+    assert branch_rows[("A|B|C", "C", "2")].mean_fraction == 1.0
 
 
 def test_simulate_discrete_stochastic_maps_from_fit_report_matches_path_surface() -> (
