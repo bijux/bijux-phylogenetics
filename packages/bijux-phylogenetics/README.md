@@ -533,13 +533,14 @@ governed `engine_real` lane for installed MAFFT, trimAl, IQ-TREE, FastTree,
 and MrBayes executables plus the checked-in real BEAST XML/log/tree corpus.
 That same `real_local` suite also carries one installability smoke lane that
 builds wheel and sdist artifacts, installs each into a clean virtual
-environment, runs core CLI commands against packaged example inputs, and
-verifies that packaged resources are present in the built distributions. The
-engine-real tests still write one combined external validation matrix JSON
-artifact over all governed engines, while preserving focused alignment and
-Bayesian matrix artifacts for narrower debugging. Each matrix records
-reviewer-facing engine names, validation modes, executable paths, version
-text, commands, exit codes, runtime, output paths, and output hashes.
+environment, copies the packaged example inputs through the installed runtime
+API, runs core CLI commands against those writable copies, and verifies that
+packaged resources are present in the built distributions. The engine-real
+tests still write one combined external validation matrix JSON artifact over
+all governed engines, while preserving focused alignment and Bayesian matrix
+artifacts for narrower debugging. Each matrix records reviewer-facing engine
+names, validation modes, executable paths, version text, commands, exit codes,
+runtime, output paths, and output hashes.
 
 Use `phylo preflight` before any external-engine workflow when you need to know
 whether the local environment is actually runnable. The command inspects MAFFT,

@@ -20,8 +20,8 @@ point for end users.
 
 Its packaging surface now also owns the installed-artifact smoke proof that
 builds the runtime wheel and sdist, installs each into a clean virtual
-environment, and verifies packaged example and dataset resources through the
-public CLI.
+environment, copies packaged example inputs through the installed runtime API,
+and verifies packaged example and dataset resources through the public CLI.
 
 ## Read this next
 
