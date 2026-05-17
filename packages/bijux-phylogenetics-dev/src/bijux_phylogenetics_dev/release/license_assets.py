@@ -1,4 +1,4 @@
-"""Synchronize package legal assets from repository root sources."""
+"""Synchronize package license assets from repository root sources."""
 
 from __future__ import annotations
 
@@ -10,6 +10,10 @@ from typing import Any, cast
 
 REPO_ROOT = Path(__file__).resolve().parents[5]
 MANAGED_FILENAMES: tuple[str, str] = ("LICENSE", "NOTICE")
+ROOT_LEGAL_ARTIFACTS = {
+    "LICENSE": Path("..") / ".." / "LICENSE",
+    "NOTICE": Path("..") / ".." / "NOTICE",
+}
 
 
 @dataclass(frozen=True)
@@ -43,11 +47,17 @@ def managed_assets(root: Path = REPO_ROOT) -> tuple[ManagedAsset, ...]:
     return tuple(assets)
 
 
-def _managed_copy_matches(asset: ManagedAsset) -> bool:
-    """Return whether the managed package file matches the repository root file."""
-    if asset.target.is_symlink() or not asset.target.is_file():
+def _expected_target(asset: ManagedAsset, root: Path = REPO_ROOT) -> Path:
+    """Return the expected symlink target relative to the package root."""
+    del root
+    return ROOT_LEGAL_ARTIFACTS[asset.target.name]
+
+
+def _link_matches(asset: ManagedAsset) -> bool:
+    """Return whether the package asset already links to the root source."""
+    if not asset.target.is_symlink():
         return False
-    return asset.target.read_bytes() == asset.source.read_bytes()
+    return asset.target.readlink() == _expected_target(asset)
 
 
 def _remove_existing_target(target: Path) -> None:
@@ -62,16 +72,16 @@ def _remove_existing_target(target: Path) -> None:
 
 
 def synchronize_license_assets(*, check: bool = False) -> list[Path]:
-    """Sync root legal assets into package directories or report drift."""
+    """Sync root license assets into package directories or report drift."""
     changed: list[Path] = []
     for asset in managed_assets():
-        if _managed_copy_matches(asset):
+        if _link_matches(asset):
             continue
         changed.append(asset.target)
         if not check:
             asset.target.parent.mkdir(parents=True, exist_ok=True)
             _remove_existing_target(asset.target)
-            asset.target.write_bytes(asset.source.read_bytes())
+            asset.target.symlink_to(_expected_target(asset))
     return changed
 
 
