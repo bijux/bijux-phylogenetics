@@ -8,6 +8,7 @@ description = "Reproducible tree validation, comparison, evidence bundles, and H
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
+license-files = []
 authors = [
     { name = "Bijan Mousavi", email = "bijan@bijux.io" },
 ]
