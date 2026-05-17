@@ -909,6 +909,11 @@ def _build_bijux_case_payload(
                 "requested_replicate_count": report.replicate_count,
                 "successful_replicate_count": report.replicate_count,
                 "fixed_root_state": report.fixed_root_state,
+                "root_prior_probabilities": (
+                    None
+                    if report.fixed_root_state is not None
+                    else report.root_state_probabilities
+                ),
                 "seed": report.seed,
                 "mean_total_transition_count": report.mean_total_transition_count,
                 "lower_95_total_transition_count": report.lower_95_total_transition_count,
@@ -1246,6 +1251,7 @@ def _mismatch_reason(
             "requested_replicate_count",
             "successful_replicate_count",
             "fixed_root_state",
+            "root_prior_probabilities",
             "seed",
             "mean_total_transition_count",
             "lower_95_total_transition_count",

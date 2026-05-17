@@ -870,6 +870,7 @@ build_sim_history_result <- function(tree, trait_name) {
       requested_replicate_count = requested_replicate_count,
       successful_replicate_count = requested_replicate_count,
       fixed_root_state = case_payload$simulation_root_state,
+      root_prior_probabilities = case_payload$simulation_root_state_probabilities,
       seed = simulation_seed,
       mean_total_transition_count = as.numeric(mean(total_transition_counts)),
       lower_95_total_transition_count = as.numeric(stats::quantile(total_transition_counts, probs = 0.025, names = FALSE)),
