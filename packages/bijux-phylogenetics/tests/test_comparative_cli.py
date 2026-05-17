@@ -1076,6 +1076,190 @@ def test_comparative_clade_traits_cli_writes_review_ledgers(
     ]
 
 
+def test_comparative_phylogenetic_residuals_cli_reports_outlier_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "phylogenetic-residuals",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_phylogenetic_residuals.tsv")),
+            "--response",
+            "brain_mass",
+            "--predictor",
+            "body_mass",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["tree_taxon_count"] == 6
+    assert payload["metrics"]["analyzed_taxon_count"] == 6
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["method"] == "lambda"
+    assert payload["metrics"]["outlier_count"] >= 1
+    assert payload["metrics"]["top_outlier_taxon"] == "F"
+
+
+def test_comparative_phylogenetic_residuals_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "phylogenetic-residual-summary.tsv"
+    residuals_out = tmp_path / "phylogenetic-residuals.tsv"
+    coefficients_out = tmp_path / "phylogenetic-residual-coefficients.tsv"
+    excluded_out = tmp_path / "phylogenetic-residual-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "phylogenetic-residuals",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_phylogenetic_residuals_missing.tsv")),
+            "--response",
+            "brain_mass",
+            "--predictor",
+            "body_mass",
+            "--method",
+            "brownian",
+            "--summary-out",
+            str(summary_out),
+            "--residuals-out",
+            str(residuals_out),
+            "--coefficients-out",
+            str(coefficients_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["analyzed_taxon_count"] == 5
+    assert payload["metrics"]["excluded_taxon_count"] == 2
+    assert summary_out.exists()
+    assert residuals_out.exists()
+    assert coefficients_out.exists()
+    assert excluded_out.exists()
+    assert (
+        summary_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("response\tpredictor\tmethod")
+    )
+    assert (
+        residuals_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("taxon\tinput_order\ttree_tip_label\tobserved_value")
+    )
+    assert (
+        coefficients_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("name\testimate\tstandard_error\tp_value")
+    )
+    assert excluded_out.read_text(encoding="utf-8").splitlines() == [
+        "taxon\treason\tdetails",
+        "E\tmissing_value\ttaxon is missing required value(s): brain_mass",
+        "G\tabsent_from_tree\ttaxon is present in the trait table but absent from the tree",
+    ]
+
+
+def test_comparative_phylogenetic_anova_cli_reports_group_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "phylogenetic-anova",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_phylogenetic_anova.tsv")),
+            "--response",
+            "trait_value",
+            "--group",
+            "habitat",
+            "--simulations",
+            "16",
+            "--seed",
+            "7",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["tree_taxon_count"] == 6
+    assert payload["metrics"]["analyzed_taxon_count"] == 6
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["group_count"] == 2
+    assert payload["metrics"]["simulation_count"] == 16
+    assert 0.0 <= payload["metrics"]["p_value"] <= 1.0
+    assert payload["metrics"]["low_sample_group_count"] == 1
+
+
+def test_comparative_phylogenetic_anova_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "phylogenetic-anova-summary.tsv"
+    groups_out = tmp_path / "phylogenetic-anova-groups.tsv"
+    pairwise_out = tmp_path / "phylogenetic-anova-pairwise.tsv"
+    simulations_out = tmp_path / "phylogenetic-anova-simulations.tsv"
+    excluded_out = tmp_path / "phylogenetic-anova-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "phylogenetic-anova",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_phylogenetic_anova_missing.tsv")),
+            "--response",
+            "trait_value",
+            "--group",
+            "habitat",
+            "--simulations",
+            "16",
+            "--seed",
+            "7",
+            "--summary-out",
+            str(summary_out),
+            "--groups-out",
+            str(groups_out),
+            "--pairwise-out",
+            str(pairwise_out),
+            "--simulations-out",
+            str(simulations_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["analyzed_taxon_count"] == 5
+    assert payload["metrics"]["excluded_taxon_count"] == 2
+    assert summary_out.exists()
+    assert groups_out.exists()
+    assert pairwise_out.exists()
+    assert simulations_out.exists()
+    assert excluded_out.exists()
+    assert (
+        summary_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("response\tgroup\ttaxon_column")
+    )
+    assert groups_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "group\ttaxon_count\ttaxa\tmean"
+    )
+    assert pairwise_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "left_group\tright_group\tleft_taxon_count"
+    )
+    assert simulations_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "simulation_index\tf_statistic\tat_or_above_observed"
+    )
+    assert excluded_out.read_text(encoding="utf-8").splitlines() == [
+        "taxon\treason\tdetails",
+        "F\tmissing_value\ttaxon is missing required value(s): habitat",
+        "G\tabsent_from_tree\ttaxon is present in the trait table but absent from the tree",
+    ]
+
+
 def test_comparative_trait_outliers_cli_reports_top_outlier_metrics(capsys) -> None:
     exit_code = main(
         [
