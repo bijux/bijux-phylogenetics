@@ -30,6 +30,13 @@ from bijux_phylogenetics.engines.workflows import (
     run_alignment_trimming,
     run_multiple_sequence_alignment,
 )
+from bijux_phylogenetics.datasets.rabies_method_sensitivity_audit import (
+    RabiesMethodSensitivityReproducibilityAuditReport,
+    audit_rabies_method_sensitivity_workflow_bundle,
+    write_rabies_method_sensitivity_reproducibility_audit_json,
+    write_rabies_method_sensitivity_reproducibility_checks_table,
+    write_rabies_method_sensitivity_variant_audit_table,
+)
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError, PhylogeneticsError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment, validate_fasta_input
 from bijux_phylogenetics.io.newick import write_newick
@@ -208,6 +215,13 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     config_path: Path
     manifest_path: Path
     report_manifest_path: Path
+    reproducibility_checks_path: Path
+    reproducibility_variant_audit_path: Path
+    reproducibility_audit_path: Path
+    reproducibility_passed: bool
+    reproducibility_check_count: int
+    reproducibility_failed_check_count: int
+    reproducibility_failed_variant_count: int
     report_path: Path
     report_linked_artifact_count: int
     report_html_size_bytes: int
@@ -636,6 +650,29 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "workflow_manifest": manifest_path,
         },
     )
+    reproducibility_report = audit_rabies_method_sensitivity_workflow_bundle(
+        output_root,
+        sequences_path=report.dataset.sequences_path,
+        metadata_path=report.dataset.metadata_path,
+    )
+    reproducibility_checks_path = (
+        write_rabies_method_sensitivity_reproducibility_checks_table(
+            output_root / "reproducibility-checks.tsv",
+            reproducibility_report,
+        )
+    )
+    reproducibility_variant_audit_path = (
+        write_rabies_method_sensitivity_variant_audit_table(
+            output_root / "reproducibility-variants.tsv",
+            reproducibility_report,
+        )
+    )
+    reproducibility_audit_path = (
+        write_rabies_method_sensitivity_reproducibility_audit_json(
+            output_root / "reproducibility-audit.json",
+            reproducibility_report,
+        )
+    )
     report_linked_files = (
         workflow_summary_path,
         variant_summary_path,
@@ -662,8 +699,12 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "conclusion_summary": conclusion_summary_path,
             "config": config_path,
             "workflow_manifest": manifest_path,
+            "reproducibility_checks": reproducibility_checks_path,
+            "reproducibility_variant_audit": reproducibility_variant_audit_path,
+            "reproducibility_audit": reproducibility_audit_path,
         },
         report_manifest_path=report_manifest_path,
+        reproducibility_report=reproducibility_report,
     )
     report_html_size_bytes = report_path.stat().st_size
     report_linked_artifact_bytes = sum(
@@ -706,6 +747,13 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         config_path=config_path,
         manifest_path=manifest_path,
         report_manifest_path=report_manifest_path,
+        reproducibility_checks_path=reproducibility_checks_path,
+        reproducibility_variant_audit_path=reproducibility_variant_audit_path,
+        reproducibility_audit_path=reproducibility_audit_path,
+        reproducibility_passed=reproducibility_report.all_passed,
+        reproducibility_check_count=reproducibility_report.check_count,
+        reproducibility_failed_check_count=reproducibility_report.failed_check_count,
+        reproducibility_failed_variant_count=reproducibility_report.failed_variant_count,
         report_path=report_path,
         report_linked_artifact_count=report_linked_artifact_count,
         report_html_size_bytes=report_html_size_bytes,
@@ -1527,6 +1575,7 @@ def _write_report(
     report: RabiesMethodSensitivityPanelWorkflowReport,
     bundle_paths: dict[str, Path],
     report_manifest_path: Path,
+    reproducibility_report: RabiesMethodSensitivityReproducibilityAuditReport,
 ) -> Path:
     variant_lines = [
         (
@@ -1567,6 +1616,23 @@ def _write_report(
             "\n".join(conclusion_lines).strip(),
         ),
         (
+            "reproducibility-audit",
+            "\n".join(
+                [
+                    f"all passed: {str(getattr(reproducibility_report, 'all_passed')).lower()}",
+                    f"top-level checks: {getattr(reproducibility_report, 'check_count')}",
+                    (
+                        "failed top-level checks: "
+                        f"{getattr(reproducibility_report, 'failed_check_count')}"
+                    ),
+                    (
+                        "failed variants: "
+                        f"{getattr(reproducibility_report, 'failed_variant_count')}"
+                    ),
+                ]
+            ),
+        ),
+        (
             "artifacts",
             "\n".join(
                 [
@@ -1579,6 +1645,15 @@ def _write_report(
                     f"method conclusions: {bundle_paths['conclusion_summary'].name}",
                     f"resolved config: {bundle_paths['config'].name}",
                     f"workflow manifest: {bundle_paths['workflow_manifest'].name}",
+                    f"reproducibility checks: {bundle_paths['reproducibility_checks'].name}",
+                    (
+                        "reproducibility variant audit: "
+                        f"{bundle_paths['reproducibility_variant_audit'].name}"
+                    ),
+                    (
+                        "reproducibility audit: "
+                        f"{bundle_paths['reproducibility_audit'].name}"
+                    ),
                 ]
             ),
         ),
@@ -1605,6 +1680,16 @@ def _write_report(
             "stable_clade_count": len(report.stable_clade_rows),
             "changed_clade_count": len(report.changed_clade_rows),
             "report_manifest_path": _relative_bundle_path(path, report_manifest_path),
+            "reproducibility_passed": getattr(reproducibility_report, "all_passed"),
+            "reproducibility_check_count": getattr(
+                reproducibility_report, "check_count"
+            ),
+            "reproducibility_failed_check_count": getattr(
+                reproducibility_report, "failed_check_count"
+            ),
+            "reproducibility_failed_variant_count": getattr(
+                reproducibility_report, "failed_variant_count"
+            ),
         },
         summary_metrics=[
             ("variants", len(report.variant_runs)),
@@ -1612,6 +1697,11 @@ def _write_report(
             ("parallel workers", report.parallel_workers),
             ("stable clades", len(report.stable_clade_rows)),
             ("changed clades", len(report.changed_clade_rows)),
+            ("reproducibility passed", str(getattr(reproducibility_report, "all_passed")).lower()),
+            (
+                "reproducibility checks",
+                getattr(reproducibility_report, "check_count"),
+            ),
             ("linked artifacts", report_manifest["linked_artifact_count"]),
         ],
         artifact_links=[
@@ -1648,8 +1738,15 @@ def _write_overview(
         f"- report linked artifacts: `{bundle.report_linked_artifact_count}`",
         f"- report html bytes: `{bundle.report_html_size_bytes}`",
         f"- report total output bytes: `{bundle.report_total_output_bytes}`",
+        f"- reproducibility passed: `{str(bundle.reproducibility_passed).lower()}`",
+        f"- reproducibility checks: `{bundle.reproducibility_check_count}`",
+        f"- failed reproducibility checks: `{bundle.reproducibility_failed_check_count}`",
+        f"- failed reproducibility variants: `{bundle.reproducibility_failed_variant_count}`",
         f"- workflow manifest: `{bundle.manifest_path.name}`",
         f"- report manifest: `{bundle.report_manifest_path.relative_to(bundle.output_root).as_posix()}`",
+        f"- reproducibility checks table: `{bundle.reproducibility_checks_path.name}`",
+        f"- reproducibility variant audit: `{bundle.reproducibility_variant_audit_path.name}`",
+        f"- reproducibility audit: `{bundle.reproducibility_audit_path.name}`",
         f"- report: `{bundle.report_path.name}`",
     ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
