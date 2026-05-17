@@ -90,6 +90,12 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
     phyl_resid_lambda_missing_fixture = get_shared_phytools_comparative_fixture(
         "phytools_phyl_resid_lambda_missing_six_taxa"
     )
+    phyl_anova_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_phyl_anova_group_effect_six_taxa"
+    )
+    phyl_anova_missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_phyl_anova_group_effect_missing_six_taxa"
+    )
     binary_discrete_fixture = get_shared_phytools_comparative_fixture(
         "phytools_discrete_binary_twenty_four_taxa"
     )
@@ -1537,5 +1543,49 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
                 "log_likelihood": 5e-4,
             },
             row_field_tolerances={"value": 5e-4},
+        ),
+        PhytoolsParityCase(
+            case_id="phyl-anova-group-effect-six-taxa",
+            fixture_id=phyl_anova_fixture.fixture_id,
+            function_name="phytools::phylANOVA",
+            python_function_name="summarize_phylogenetic_anova",
+            operation="phylogenetic-anova",
+            input_fixtures=(
+                phyl_anova_fixture.tree_path,
+                phyl_anova_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=phyl_anova_fixture.trait_name,
+            taxon_column=phyl_anova_fixture.taxon_column,
+            comparative_predictors=("habitat",),
+            permutation_count=199,
+            permutation_seed=17,
+            field_tolerances={"p_value": 0.15},
+            row_field_tolerances={
+                "uncorrected_p_value": 0.15,
+                "adjusted_p_value": 0.15,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="phyl-anova-group-effect-missing-six-taxa",
+            fixture_id=phyl_anova_missing_fixture.fixture_id,
+            function_name="phytools::phylANOVA",
+            python_function_name="summarize_phylogenetic_anova",
+            operation="phylogenetic-anova",
+            input_fixtures=(
+                phyl_anova_missing_fixture.tree_path,
+                phyl_anova_missing_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=phyl_anova_missing_fixture.trait_name,
+            taxon_column=phyl_anova_missing_fixture.taxon_column,
+            comparative_predictors=("habitat",),
+            permutation_count=199,
+            permutation_seed=17,
+            field_tolerances={"p_value": 0.15},
+            row_field_tolerances={
+                "uncorrected_p_value": 0.15,
+                "adjusted_p_value": 0.15,
+            },
         ),
     ]

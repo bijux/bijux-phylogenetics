@@ -84,6 +84,8 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "phyl-resid-bm-allometry-six-taxa",
         "phyl-resid-lambda-allometry-six-taxa",
         "phyl-resid-lambda-missing-six-taxa",
+        "phyl-anova-group-effect-six-taxa",
+        "phyl-anova-group-effect-missing-six-taxa",
     ]
     assert cases[0].function_name == "phytools::phylosig(method='lambda')"
     assert cases[1].function_name == "phytools::phylosig(method='lambda')"
@@ -213,6 +215,10 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "lambda_value": 5e-4,
         "log_likelihood": 5e-4,
     }
+    assert cases[62].function_name == "phytools::phylANOVA"
+    assert cases[63].comparative_predictors == ("habitat",)
+    assert cases[62].permutation_count == 199
+    assert cases[63].permutation_seed == 17
 
 
 @pytest.mark.slow
@@ -224,7 +230,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     report = run_phytools_parity_cases(rscript_executable=str(rscript))
 
     assert report.all_passed is True
-    assert report.case_count == 62
+    assert report.case_count == 64
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -243,6 +249,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
         "phytools::pgls.SEy",
         "phytools::phyl.resid(method='BM')",
         "phytools::phyl.resid(method='lambda')",
+        "phytools::phylANOVA",
         "phytools::phylosig(method='K')",
         "phytools::phylosig(method='lambda')",
         "phytools::rerootingMethod",
@@ -405,6 +412,29 @@ def test_run_phytools_parity_cases_passes_phylogenetic_residual_cases_against_fa
     assert [row.function_name for row in report.summary_rows] == [
         "phytools::phyl.resid(method='BM')",
         "phytools::phyl.resid(method='lambda')",
+    ]
+    assert report.observations[0].reference_rows is not None
+
+
+@pytest.mark.slow
+def test_run_phytools_parity_cases_passes_phylogenetic_anova_cases_against_fake_reference_runner(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_phytools_rscript(tmp_path / "fake-phytools-rscript")
+
+    report = run_phytools_parity_cases(
+        case_ids=[
+            "phyl-anova-group-effect-six-taxa",
+            "phyl-anova-group-effect-missing-six-taxa",
+        ],
+        rscript_executable=str(rscript),
+    )
+
+    assert report.all_passed is True
+    assert report.case_count == 2
+    assert report.failed_case_count == 0
+    assert [row.function_name for row in report.summary_rows] == [
+        "phytools::phylANOVA"
     ]
     assert report.observations[0].reference_rows is not None
 

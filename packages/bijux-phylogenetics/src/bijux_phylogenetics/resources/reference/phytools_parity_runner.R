@@ -87,6 +87,7 @@ fastbm_rows_path <- file.path(output_root, "fastbm-summary-rows.tsv")
 simcorrs_rows_path <- file.path(output_root, "simcorrs-summary-rows.tsv")
 pgls_rows_path <- file.path(output_root, "pgls-summary-rows.tsv")
 phyl_resid_rows_path <- file.path(output_root, "phyl-resid-summary-rows.tsv")
+phyl_anova_rows_path <- file.path(output_root, "phyl-anova-summary-rows.tsv")
 case_payload <- jsonlite::fromJSON(case_path)
 r_version <- as.character(getRversion())
 
@@ -538,6 +539,142 @@ build_phyl_resid_result <- function(tree, trait_table, taxon_column, trait_name,
     summary$log_likelihood <- unname(as.numeric(fit$logL[[1]]))
   }
   list(summary = summary, rows = rows)
+}
+
+build_phyl_anova_result <- function(tree, trait_table, taxon_column, trait_name, group_column, nsim, seed) {
+  taxa_in_tree <- trait_table[[taxon_column]] %in% tree$tip.label
+  complete_rows <- stats::complete.cases(
+    trait_table[, c(taxon_column, group_column, trait_name), drop = FALSE]
+  )
+  anova_data <- trait_table[taxa_in_tree & complete_rows, , drop = FALSE]
+  analyzed_taxa <- anova_data[[taxon_column]]
+  missing_tree_taxa <- setdiff(tree$tip.label, trait_table[[taxon_column]])
+  missing_value_taxa <- trait_table[[taxon_column]][
+    trait_table[[taxon_column]] %in% tree$tip.label &
+      !complete_rows
+  ]
+  absent_from_tree_taxa <- trait_table[[taxon_column]][!taxa_in_tree]
+  excluded_taxa <- sort(unique(c(
+    missing_tree_taxa,
+    missing_value_taxa,
+    absent_from_tree_taxa
+  )))
+  pruned_tree <- tree
+  tree_taxa_to_drop <- setdiff(pruned_tree$tip.label, analyzed_taxa)
+  if (length(tree_taxa_to_drop) > 0) {
+    pruned_tree <- ape::drop.tip(pruned_tree, tree_taxa_to_drop)
+  }
+  x <- stats::setNames(as.character(anova_data[[group_column]]), analyzed_taxa)
+  y <- stats::setNames(as.numeric(anova_data[[trait_name]]), analyzed_taxa)
+  if (!is.null(seed)) {
+    set.seed(as.integer(seed))
+  }
+  fit <- phytools::phylANOVA(
+    pruned_tree,
+    x,
+    y,
+    nsim = as.integer(nsim),
+    posthoc = TRUE,
+    p.adj = "holm"
+  )
+  if (!is.null(seed)) {
+    set.seed(as.integer(seed))
+  }
+  x_factor <- as.factor(x[pruned_tree$tip.label])
+  y_values <- y[pruned_tree$tip.label]
+  sigma_squared <- mean(pic(y_values, multi2di(pruned_tree, random = FALSE))^2)
+  group_levels <- levels(x_factor)
+  group_count <- length(group_levels)
+  observed_t <- tTests(x_factor, y_values)
+  simulated_values <- fastBM(pruned_tree, sig2 = sigma_squared, nsim = (nsim - 1))
+  null_t <- array(
+    NA,
+    dim = c(group_count, group_count, nsim),
+    dimnames = list(group_levels, group_levels, NULL)
+  )
+  null_t[, , 1] <- observed_t
+  for (simulation_index in 2:nsim) {
+    null_t[, , simulation_index] <- tTests(
+      x_factor,
+      simulated_values[, simulation_index - 1]
+    )
+  }
+  uncorrected_p <- matrix(
+    NA,
+    group_count,
+    group_count,
+    dimnames = list(group_levels, group_levels)
+  )
+  for (left_index in seq_len(group_count)) {
+    for (right_index in left_index:group_count) {
+      p_value <- sum(
+        abs(null_t[left_index, right_index, ]) >=
+          abs(observed_t[left_index, right_index])
+      ) / nsim
+      uncorrected_p[left_index, right_index] <- p_value
+      uncorrected_p[right_index, left_index] <- p_value
+    }
+  }
+  group_rows <- list()
+  group_sizes <- stats::setNames(numeric(), character())
+  for (group_name in group_levels) {
+    group_taxa <- analyzed_taxa[x[analyzed_taxa] == group_name]
+    group_values <- as.numeric(y[group_taxa])
+    group_sizes[[group_name]] <- length(group_taxa)
+    group_rows[[length(group_rows) + 1]] <- list(
+      row_kind = "group_summary",
+      label = group_name,
+      taxon_count = length(group_taxa),
+      taxa = paste(group_taxa, collapse = ","),
+      mean = as.numeric(mean(group_values)),
+      variance = as.numeric(stats::var(group_values)),
+      minimum = as.numeric(min(group_values)),
+      maximum = as.numeric(max(group_values))
+    )
+  }
+  pairwise_rows <- list()
+  for (left_index in seq_len(group_count - 1)) {
+    for (right_index in (left_index + 1):group_count) {
+      left_group <- group_levels[[left_index]]
+      right_group <- group_levels[[right_index]]
+      pairwise_rows[[length(pairwise_rows) + 1]] <- list(
+        row_kind = "pairwise_comparison",
+        label = paste0(left_group, "|", right_group),
+        left_taxon_count = group_sizes[[left_group]],
+        right_taxon_count = group_sizes[[right_group]],
+        observed_t_statistic = as.numeric(observed_t[left_group, right_group]),
+        uncorrected_p_value = as.numeric(uncorrected_p[left_group, right_group]),
+        adjusted_p_value = as.numeric(fit$Pt[left_group, right_group])
+      )
+    }
+  }
+  rows <- c(group_rows, pairwise_rows)
+  rows <- rows[order(
+    vapply(rows, function(row) row$row_kind, character(1)),
+    vapply(rows, function(row) row$label, character(1))
+  )]
+  list(
+    summary = list(
+      taxon_count = length(analyzed_taxa),
+      trait_name = trait_name,
+      group_column = group_column,
+      excluded_taxon_count = length(excluded_taxa),
+      excluded_taxa = unname(as.list(excluded_taxa)),
+      group_count = group_count,
+      simulation_count = as.integer(nsim),
+      seed = as.integer(seed),
+      pairwise_adjustment_method = fit$method,
+      brownian_sigma_squared = as.numeric(sigma_squared),
+      sum_of_squares_between = as.numeric(fit$"Sum Sq"[[1]]),
+      sum_of_squares_within = as.numeric(fit$"Sum Sq"[[2]]),
+      mean_square_between = as.numeric(fit$"Mean Sq"[[1]]),
+      mean_square_within = as.numeric(fit$"Mean Sq"[[2]]),
+      f_statistic = as.numeric(fit$F),
+      p_value = as.numeric(fit$Pf),
+      low_sample_group_count = sum(unname(group_sizes) < 3)
+    ),
+    rows = rows
+  )
 }
 
 build_simmap_summary_rows <- function(fit, description, include_branch_occupancy) {
@@ -1372,6 +1509,15 @@ result_payload <- switch(
     case_payload$comparative_predictors[[1]],
     case_payload$comparative_lambda_value
   ),
+  "phylogenetic-anova" = build_phyl_anova_result(
+    tree,
+    trait_table,
+    taxon_column,
+    trait_name,
+    case_payload$comparative_predictors[[1]],
+    case_payload$permutation_count,
+    case_payload$permutation_seed
+  ),
   "discrete-ancestral-rerooting" = build_rerooting_method_result(
     tree,
     trait_values,
@@ -1429,6 +1575,8 @@ if (!is.null(result_payload$rows)) {
     write_table(pgls_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "phylogenetic-residuals")) {
     write_table(phyl_resid_rows_path, result_payload$rows)
+  } else if (identical(case_payload$operation, "phylogenetic-anova")) {
+    write_table(phyl_anova_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "discrete-ancestral-rerooting")) {
     write_table(rerooting_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "continuous-ancestral-fast-anc")) {

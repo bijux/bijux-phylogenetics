@@ -898,6 +898,95 @@ print(json.dumps({"summary": summary, "rows": rows}))
     return payload["summary"], payload["rows"]
 
 
+def compute_phylogenetic_anova_payload(
+    case_payload: dict[str, object],
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    package_root = find_repo_root()
+    repo_python = find_repo_python(package_root)
+    inline_script = '''
+import json
+from pathlib import Path
+from bijux_phylogenetics.comparative.phylogenetic_anova import summarize_phylogenetic_anova
+
+payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
+tree_path, traits_path = payload["input_fixtures"]
+report = summarize_phylogenetic_anova(
+    Path(tree_path),
+    Path(traits_path),
+    response=payload["trait_name"],
+    group=payload["comparative_predictors"][0],
+    taxon_column=payload["taxon_column"],
+    simulations=payload.get("permutation_count", 199),
+    seed=payload.get("permutation_seed", 1),
+)
+summary = {
+    "taxon_count": report.analyzed_taxon_count,
+    "trait_name": report.response,
+    "group_column": report.group,
+    "excluded_taxon_count": len(report.excluded_taxa),
+    "excluded_taxa": [row.taxon for row in report.excluded_taxa],
+    "group_count": report.group_count,
+    "simulation_count": report.simulation_count,
+    "seed": report.seed,
+    "pairwise_adjustment_method": report.pairwise_adjustment_method,
+    "brownian_sigma_squared": report.brownian_sigma_squared,
+    "sum_of_squares_between": report.sum_of_squares_between,
+    "sum_of_squares_within": report.sum_of_squares_within,
+    "mean_square_between": report.mean_square_between,
+    "mean_square_within": report.mean_square_within,
+    "f_statistic": report.f_statistic,
+    "p_value": report.p_value,
+    "low_sample_group_count": report.low_sample_group_count,
+}
+rows = [
+    {
+        "row_kind": "group_summary",
+        "label": row.group,
+        "taxon_count": row.taxon_count,
+        "taxa": ",".join(row.taxa),
+        "mean": row.mean,
+        "variance": row.variance,
+        "minimum": row.minimum,
+        "maximum": row.maximum,
+    }
+    for row in report.group_rows
+] + [
+    {
+        "row_kind": "pairwise_comparison",
+        "label": f"{row.left_group}|{row.right_group}",
+        "left_taxon_count": row.left_taxon_count,
+        "right_taxon_count": row.right_taxon_count,
+        "observed_t_statistic": row.observed_t_statistic,
+        "uncorrected_p_value": row.uncorrected_p_value,
+        "adjusted_p_value": row.adjusted_p_value,
+    }
+    for row in report.pairwise_rows
+]
+rows = sorted(rows, key=lambda row: (row["row_kind"], row["label"]))
+print(json.dumps({"summary": summary, "rows": rows}))
+'''
+    payload_path = package_root / "artifacts" / "fake-phytools-phyl-anova-payload.json"
+    payload_path.parent.mkdir(parents=True, exist_ok=True)
+    payload_path.write_text(json.dumps(case_payload), encoding="utf-8")
+    command = [
+        str(repo_python),
+        "-c",
+        inline_script.replace("__PAYLOAD_PATH__", repr(str(payload_path))),
+    ]
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(package_root / "src")
+    result = subprocess.run(
+        command,
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=str(package_root),
+        env=env,
+    )
+    payload = json.loads(result.stdout)
+    return payload["summary"], payload["rows"]
+
+
 case_payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 output_root = Path(sys.argv[3])
 output_root.mkdir(parents=True, exist_ok=True)
@@ -913,6 +1002,7 @@ fastbm_rows_path = output_root / "fastbm-summary-rows.tsv"
 simcorrs_rows_path = output_root / "simcorrs-summary-rows.tsv"
 pgls_rows_path = output_root / "pgls-summary-rows.tsv"
 phyl_resid_rows_path = output_root / "phyl-resid-summary-rows.tsv"
+phyl_anova_rows_path = output_root / "phyl-anova-summary-rows.tsv"
 
 if not __PHYTOOLS_AVAILABLE__:
     write_json(
@@ -938,6 +1028,7 @@ if case_id not in SUMMARIES and case_payload["operation"] not in {
     "simulate-continuous-correlated-brownian",
     "comparative-pgls-brownian",
     "phylogenetic-residuals",
+    "phylogenetic-anova",
     "discrete-ancestral-rerooting",
     "continuous-ancestral-fast-anc",
     "continuous-ancestral-anc-ml",
@@ -993,6 +1084,8 @@ elif case_payload["operation"] == "comparative-pgls-brownian":
     summary, rows = compute_pgls_payload(case_payload)
 elif case_payload["operation"] == "phylogenetic-residuals":
     summary, rows = compute_phylogenetic_residual_payload(case_payload)
+elif case_payload["operation"] == "phylogenetic-anova":
+    summary, rows = compute_phylogenetic_anova_payload(case_payload)
 elif case_payload["operation"] == "discrete-ancestral-rerooting":
     summary, rows = compute_discrete_ancestral_payload(case_payload)
 elif case_payload["operation"] == "continuous-ancestral-fast-anc":
@@ -1034,6 +1127,8 @@ if rows is not None:
         write_rows_table(pgls_rows_path, rows)
     elif case_payload["operation"] == "phylogenetic-residuals":
         write_rows_table(phyl_resid_rows_path, rows)
+    elif case_payload["operation"] == "phylogenetic-anova":
+        write_rows_table(phyl_anova_rows_path, rows)
     elif case_payload["operation"] == "discrete-ancestral-rerooting":
         write_rows_table(rerooting_rows_path, rows)
     elif case_payload["operation"] == "continuous-ancestral-fast-anc":
