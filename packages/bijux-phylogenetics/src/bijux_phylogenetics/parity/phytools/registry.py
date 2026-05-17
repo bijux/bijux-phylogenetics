@@ -49,7 +49,7 @@ class PhytoolsParityCase:
 
 
 def _package_root() -> Path:
-    return Path(__file__).resolve().parents[3]
+    return Path(__file__).resolve().parents[4]
 
 
 def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
@@ -1044,6 +1044,38 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
                 "mean_value": 1.5,
                 "lower_95_interval": 3.0,
                 "upper_95_interval": 3.0,
+                "presence_fraction": 0.2,
+            },
+        ),
+        PhytoolsParityCase(
+            case_id="sim-history-binary-root-prior-example-tree",
+            fixture_id="example_tree_discrete_history_binary_root_prior",
+            function_name="phytools::sim.history",
+            python_function_name="simulate_discrete_histories",
+            operation="simulate-discrete-history",
+            input_fixtures=(simulation_tree_fixture,),
+            tolerance=1e-6,
+            trait_name="simulated_state",
+            simulation_states=("0", "1"),
+            simulation_rate_rows=(
+                DiscreteHistoryRateRow("0", "1", 0.5),
+                DiscreteHistoryRateRow("1", "0", 1.0),
+            ),
+            simulation_root_state_probabilities={
+                "0": 0.2,
+                "1": 0.8,
+            },
+            simulation_replicate_count=128,
+            simulation_seed=17,
+            field_tolerances={
+                "mean_total_transition_count": 1.0,
+                "lower_95_total_transition_count": 2.0,
+                "upper_95_total_transition_count": 2.0,
+            },
+            row_field_tolerances={
+                "mean_value": 0.35,
+                "lower_95_interval": 0.5,
+                "upper_95_interval": 0.5,
                 "presence_fraction": 0.2,
             },
         ),
