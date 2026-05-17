@@ -8,6 +8,7 @@ description = "Repository-owned developer tooling for bijux-phylogenetics."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
+license-files = ["LICENSE", "NOTICE"]
 authors = [
     { name = "Bijan Mousavi", email = "bijan@bijux.io" },
 ]
@@ -55,13 +56,12 @@ include = [
 ]
 
 [tool.hatch.build.targets.sdist]
-exclude = ["LICENSE", "NOTICE", "tests"]
+exclude = ["tests"]
 include = [
     "README.md",
     "CHANGELOG.md",
     "src/bijux_phylogenetics_dev/**",
 ]
-force-include = { "../../LICENSE" = "LICENSE", "../../NOTICE" = "NOTICE" }
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/bijux_phylogenetics_dev"]
