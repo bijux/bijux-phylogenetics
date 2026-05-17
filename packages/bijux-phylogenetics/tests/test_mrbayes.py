@@ -427,6 +427,19 @@ def test_run_mrbayes_posterior_inference_reports_missing_executable_without_mark
     assert list(tmp_path.glob("*.incomplete.json")) == []
 
 
+def test_run_mrbayes_posterior_inference_reports_missing_analysis_with_structured_error(
+    tmp_path: Path,
+) -> None:
+    missing_path = tmp_path / "missing-analysis.nex"
+
+    with pytest.raises(EngineWorkflowError) as error:
+        run_mrbayes_posterior_inference(missing_path)
+
+    assert error.value.code == "mrbayes_analysis_missing_file"
+    assert error.value.details["artifact_kind"] == "mrbayes-analysis-nexus"
+    assert error.value.details["path"] == str(missing_path)
+
+
 def test_run_mrbayes_posterior_inference_times_out_and_marks_incomplete_run(
     tmp_path: Path,
 ) -> None:

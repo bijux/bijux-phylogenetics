@@ -575,7 +575,13 @@ def run_mrbayes_posterior_inference(
 ) -> EngineWorkflowReport:
     """Run a MrBayes posterior tree inference workflow from a prepared NEXUS file."""
     if not nexus_path.exists():
-        raise FileNotFoundError(nexus_path)
+        raise _mrbayes_artifact_error(
+            f"MrBayes analysis NEXUS file was not found: {nexus_path}",
+            code="mrbayes_analysis_missing_file",
+            path=nexus_path,
+            artifact_kind="mrbayes-analysis-nexus",
+            details={"expected_section": "analysis nexus file"},
+        )
     validate_timeout_seconds(timeout_seconds)
     resolved = resolve_engine_executable(executable)
     prefix_path = nexus_path.with_suffix("")
