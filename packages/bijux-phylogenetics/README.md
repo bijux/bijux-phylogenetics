@@ -970,10 +970,12 @@ events, tip-state truth tables, node-state truth tables, branch-history truth
 tables, and one parity-ready summary ledger over transition counts,
 time-in-state totals, and tip-state frequencies. The live `sim.history` lane
 now covers governed binary and multistate no-change plus high-rate fixtures on
-fixed trees. It compares distribution-summary envelopes against real
+fixed trees, plus one governed probabilistic binary root-prior fixture. It
+compares distribution-summary envelopes against real
 `phytools::sim.history`, including total-transition-count summaries,
-transition-count rows, time-in-state rows, and tip-state-frequency rows, and
-does not claim exact simulated-history identity across languages.
+transition-count rows, time-in-state rows, tip-state-frequency rows, and the
+declared root-state policy, and does not claim exact simulated-history
+identity across languages.
 The same owned simulation surface now also exposes
 `simulate_brownian_trait_collection(...)` plus one replicate trait-table writer
 and one Brownian summary writer over tip distributions and tip covariances.
