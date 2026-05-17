@@ -2030,7 +2030,19 @@ def test_adapter_mrbayes_run_cli_rejects_or_cleans_incomplete_outputs(
 
     assert rejected_exit == 2
     assert rejected_payload["status"] == "error"
+    assert rejected_payload["errors"][0]["code"] == "engine_incomplete_outputs_present"
     assert "incomplete outputs" in rejected_payload["errors"][0]["message"]
+    assert (
+        rejected_payload["errors"][0]["details"]["failure_reason"]
+        == "mrbayes_trace_invalid_parameter_value"
+    )
+    assert (
+        rejected_payload["errors"][0]["details"]["available_actions"]
+        == ["resume", "clean"]
+    )
+    assert (
+        rejected_payload["errors"][0]["details"]["missing_output_names"] == []
+    )
     assert marker_path.exists()
 
     cleaned_exit = main(
@@ -2563,7 +2575,19 @@ def test_adapter_beast_run_cli_rejects_or_cleans_incomplete_outputs(
 
     assert rejected_exit == 2
     assert rejected_payload["status"] == "error"
+    assert rejected_payload["errors"][0]["code"] == "engine_incomplete_outputs_present"
     assert "incomplete outputs" in rejected_payload["errors"][0]["message"]
+    assert (
+        rejected_payload["errors"][0]["details"]["failure_reason"]
+        == "beast_log_invalid_parameter_value"
+    )
+    assert (
+        rejected_payload["errors"][0]["details"]["available_actions"]
+        == ["resume", "clean"]
+    )
+    assert (
+        rejected_payload["errors"][0]["details"]["missing_output_names"] == []
+    )
     assert marker_path.exists()
 
     cleaned_exit = main(
