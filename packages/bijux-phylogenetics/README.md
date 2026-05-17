@@ -295,6 +295,8 @@ bijux-phylogenetics comparative brownian tree.nwk traits.tsv --trait height_cm -
 bijux-phylogenetics comparative compare-models tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative pgls tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --json
 bijux-phylogenetics comparative pgls tree.nwk traits.tsv --formula "height_cm ~ body_mass * habitat" --json
+bijux-phylogenetics comparative phylogenetic-residuals tree.nwk traits.tsv --response brain_mass --predictor body_mass --summary-out artifacts/phylogenetic-residual-summary.tsv --residuals-out artifacts/phylogenetic-residuals.tsv --coefficients-out artifacts/phylogenetic-residual-coefficients.tsv --excluded-taxa-out artifacts/phylogenetic-residual-excluded.tsv --json
+bijux-phylogenetics comparative phylogenetic-anova tree.nwk traits.tsv --response trait_value --group habitat --simulations 199 --seed 17 --summary-out artifacts/phylogenetic-anova-summary.tsv --groups-out artifacts/phylogenetic-anova-groups.tsv --pairwise-out artifacts/phylogenetic-anova-pairwise.tsv --simulations-out artifacts/phylogenetic-anova-simulations.tsv --excluded-taxa-out artifacts/phylogenetic-anova-excluded.tsv --json
 bijux-phylogenetics comparative covariance-audit tree.nwk traits.tsv --analysis pgls --formula "height_cm ~ body_mass + habitat" --summary-out artifacts/covariance-audit-summary.tsv --candidates-out artifacts/covariance-audit-candidates.tsv --excluded-taxa-out artifacts/covariance-audit-excluded.tsv --json
 bijux-phylogenetics comparative multiple-testing tree.nwk traits.tsv --responses height_cm range_km --predictors body_mass log_range --json
 bijux-phylogenetics comparative report tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --out artifacts/comparative-report.html --json
@@ -474,6 +476,19 @@ trees are accepted whether or not they are ultrametric, overlapping missing
 trait values are pruned and reported, permutation rows are reproducible from
 the supplied seed, and constant post-pruning trait vectors fail with a typed
 comparative-method error instead of returning misleading scalar summaries.
+
+`comparative phylogenetic-residuals` is the owned review surface for one
+continuous response and one continuous predictor when reviewers need
+tree-aware fitted values and residuals instead of one full multivariate PGLS
+report. The command can either fix Brownian covariance or estimate Pagel's
+lambda before fitting, writes summary, taxon, coefficient, and exclusion
+ledgers, preserves one explicit missing-data audit, and reports large
+standardized residuals without reducing the review to one opaque outlier flag
+alone. `comparative phylogenetic-anova` is the matching categorical review
+surface for one continuous response and one group column; it runs one seeded
+Brownian null simulation, emits group, pairwise, simulation, and exclusion
+ledgers, keeps unequal group sizes explicit, and warns when one or more
+groups have fewer than three taxa after pruning.
 
 `comparative discrete-mk` is the governed standalone discrete trait-evolution
 fit surface for one rooted tree and one categorical tip trait when reviewers
@@ -1031,6 +1046,16 @@ directly from Python through
 `compute_phylogenetic_independent_contrasts_from_dataset(...)` on one loaded
 `ComparativeDataset`, so covariance review and PIC no longer need to restart
 from path-based loaders once the in-memory comparative inputs already exist.
+The governed `phytools::phyl.resid` lane now covers six-taxon Brownian,
+estimated-lambda, and missing-value-pruned allometry fixtures. On the owned
+Bijux side, `comparative phylogenetic-residuals` preserves that same
+response-predictor review in native Python while keeping one explicit
+excluded-taxa ledger and one coefficient ledger. The governed
+`phytools::phylANOVA` lane now covers six-taxon unequal-group and
+missing-value-pruned group-effect fixtures. On the owned Bijux side,
+`comparative phylogenetic-anova` carries the same seeded null-distribution
+surface, one pairwise Holm-adjusted comparison ledger, and one low-sample
+warning contract without relying on opaque plotting-side behavior.
 The `ape::ace` continuous lane now covers balanced rooted ultrametric,
 pectinate rooted non-ultrametric, six-taxon Brownian, and pruned missing-value
 fixtures through that same governed trait-table catalog. On the owned Bijux
