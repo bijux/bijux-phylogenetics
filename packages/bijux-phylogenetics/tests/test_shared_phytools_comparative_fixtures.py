@@ -9,6 +9,12 @@ from bijux_phylogenetics.ancestral.continuous import (
 )
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
+from bijux_phylogenetics.comparative.phylogenetic_anova import (
+    summarize_phylogenetic_anova,
+)
+from bijux_phylogenetics.comparative.phylogenetic_residuals import (
+    summarize_phylogenetic_residuals,
+)
 from bijux_phylogenetics.comparative.pgls import (
     build_pgls_model_matrix,
     run_pgls,
@@ -556,3 +562,94 @@ def test_shared_phytools_comparative_fixture_catalog_supports_brownian_pgls_case
         "diet[herbivore]",
         "habitat[tundra]:diet[herbivore]",
     ]
+
+
+def test_shared_phytools_comparative_fixture_catalog_supports_phylogenetic_residual_cases() -> (
+    None
+):
+    brownian_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_phyl_resid_bm_allometry_six_taxa"
+    )
+    lambda_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_phyl_resid_lambda_allometry_six_taxa"
+    )
+    missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_phyl_resid_lambda_missing_six_taxa"
+    )
+
+    brownian_report = summarize_phylogenetic_residuals(
+        brownian_fixture.tree_path,
+        brownian_fixture.traits_path,
+        response=brownian_fixture.trait_name,
+        predictor="body_mass",
+        taxon_column=brownian_fixture.taxon_column,
+        method="brownian",
+    )
+    lambda_report = summarize_phylogenetic_residuals(
+        lambda_fixture.tree_path,
+        lambda_fixture.traits_path,
+        response=lambda_fixture.trait_name,
+        predictor="body_mass",
+        taxon_column=lambda_fixture.taxon_column,
+        method="lambda",
+    )
+    missing_report = summarize_phylogenetic_residuals(
+        missing_fixture.tree_path,
+        missing_fixture.traits_path,
+        response=missing_fixture.trait_name,
+        predictor="body_mass",
+        taxon_column=missing_fixture.taxon_column,
+        method="lambda",
+    )
+
+    assert brownian_report.lambda_estimation_mode == "fixed"
+    assert brownian_report.lambda_value == 1.0
+    assert lambda_report.lambda_estimation_mode == "estimated"
+    assert lambda_report.analyzed_taxon_count == 6
+    assert "F" in lambda_report.outlier_taxa
+    assert {row.taxon: row.reason for row in missing_report.excluded_taxa} == {
+        "E": "missing_value",
+        "G": "absent_from_tree",
+    }
+
+
+def test_shared_phytools_comparative_fixture_catalog_supports_phylogenetic_anova_cases() -> (
+    None
+):
+    clean_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_phyl_anova_group_effect_six_taxa"
+    )
+    missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_phyl_anova_group_effect_missing_six_taxa"
+    )
+
+    clean_report = summarize_phylogenetic_anova(
+        clean_fixture.tree_path,
+        clean_fixture.traits_path,
+        response=clean_fixture.trait_name,
+        group="habitat",
+        taxon_column=clean_fixture.taxon_column,
+        simulations=16,
+        seed=9,
+    )
+    missing_report = summarize_phylogenetic_anova(
+        missing_fixture.tree_path,
+        missing_fixture.traits_path,
+        response=missing_fixture.trait_name,
+        group="habitat",
+        taxon_column=missing_fixture.taxon_column,
+        simulations=16,
+        seed=9,
+    )
+
+    assert clean_report.group_count == 2
+    assert {row.group: row.taxon_count for row in clean_report.group_rows} == {
+        "desert": 2,
+        "forest": 4,
+    }
+    assert clean_report.pairwise_rows[0].left_group == "desert"
+    assert clean_report.pairwise_rows[0].right_group == "forest"
+    assert {row.taxon: row.reason for row in missing_report.excluded_taxa} == {
+        "F": "missing_value",
+        "G": "absent_from_tree",
+    }

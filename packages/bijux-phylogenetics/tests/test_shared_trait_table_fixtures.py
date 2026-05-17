@@ -14,6 +14,9 @@ from bijux_phylogenetics.ancestral.discrete import (
 from bijux_phylogenetics.comparative.covariance_audit import (
     summarize_comparative_covariance_audit,
 )
+from bijux_phylogenetics.comparative.phylogenetic_anova import (
+    summarize_phylogenetic_anova,
+)
 from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs
 from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_independent_contrasts,
@@ -247,6 +250,51 @@ def test_shared_trait_table_fixture_catalog_supports_phylogenetic_residual_cases
         "F",
     ]
     assert _read_taxa("phylogenetic_residual_allometry_missing")[-1] == "G"
+
+
+def test_shared_trait_table_fixture_catalog_supports_phylogenetic_anova_cases() -> (
+    None
+):
+    clean_fixture = get_shared_trait_table_fixture("phylogenetic_anova_group_effect")
+    missing_fixture = get_shared_trait_table_fixture(
+        "phylogenetic_anova_group_effect_missing"
+    )
+    tree = get_shared_tree_fixture(clean_fixture.tree_fixture_id).path
+
+    clean_report = summarize_phylogenetic_anova(
+        tree,
+        clean_fixture.path,
+        response="trait_value",
+        group="habitat",
+        simulations=16,
+        seed=7,
+    )
+    missing_report = summarize_phylogenetic_anova(
+        tree,
+        missing_fixture.path,
+        response="trait_value",
+        group="habitat",
+        simulations=16,
+        seed=7,
+    )
+
+    assert clean_fixture.tree_fixture_id == "balanced_rooted_six_taxon"
+    assert missing_fixture.tree_fixture_id == "balanced_rooted_six_taxon"
+    assert clean_fixture.row_count == 6
+    assert missing_fixture.row_count == 7
+    assert {"trait_value", "habitat"} <= set(clean_fixture.primary_trait_columns)
+    assert "phylogenetic-anova" in clean_fixture.feature_tags
+    assert "unequal-group-sizes" in clean_fixture.feature_tags
+    assert "missing-trait-values" in missing_fixture.feature_tags
+    assert clean_report.group_count == 2
+    assert {row.group: row.taxon_count for row in clean_report.group_rows} == {
+        "desert": 2,
+        "forest": 4,
+    }
+    assert {row.taxon: row.reason for row in missing_report.excluded_taxa} == {
+        "F": "missing_value",
+        "G": "absent_from_tree",
+    }
 
 
 def test_shared_trait_table_fixture_catalog_supports_governed_pic_cases() -> None:

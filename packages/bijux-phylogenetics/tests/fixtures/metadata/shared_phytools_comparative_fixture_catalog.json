@@ -503,6 +503,46 @@
       ],
       "simulation_metadata": null,
       "notes": "Six-taxon allometry-style fixture with governed missing-value pruning used for live `phytools::phyl.resid(method=\"lambda\")` parity."
+    },
+    {
+      "fixture_id": "phytools_phyl_anova_group_effect_six_taxa",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "trait_table_fixture_id": "phylogenetic_anova_group_effect",
+      "trait_name": "trait_value",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "phylogenetic-anova-ready",
+      "phytools_reference_expectation": "phytools-phyl-anova-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "categorical-predictor-case",
+        "phylogenetic-anova",
+        "unequal-group-sizes",
+        "six-taxon-tree"
+      ],
+      "simulation_metadata": null,
+      "notes": "Six-taxon unequal-group fixture used for governed live `phytools::phylANOVA` parity on one continuous response and one categorical predictor."
+    },
+    {
+      "fixture_id": "phytools_phyl_anova_group_effect_missing_six_taxa",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "trait_table_fixture_id": "phylogenetic_anova_group_effect_missing",
+      "trait_name": "trait_value",
+      "taxon_column": "taxon",
+      "trait_kind": "continuous",
+      "validation_expectation": "phylogenetic-anova-ready",
+      "phytools_reference_expectation": "phytools-phyl-anova-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "categorical-predictor-case",
+        "phylogenetic-anova",
+        "missing-trait-values",
+        "extra-taxa-not-in-tree",
+        "unequal-group-sizes",
+        "six-taxon-tree"
+      ],
+      "simulation_metadata": null,
+      "notes": "Six-taxon phylogenetic ANOVA fixture with governed missing-group pruning used for live `phytools::phylANOVA` parity."
     }
   ]
 }
