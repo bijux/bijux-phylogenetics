@@ -86,5 +86,11 @@ The governed expected bundle now also includes:
   status, execution mode, and task log path
 - `rabies-method-sensitivity.manifest.json`: one workflow manifest describing
   the parallel batch surface and its reviewer-facing outputs
+- `reproducibility-checks.tsv`: one bundle-level audit ledger proving the
+  current summary artifacts still match their manifests and current inputs
+- `reproducibility-variants.tsv`: one per-variant provenance ledger over
+  current file inventory, alignment lengths, and output digests
+- `reproducibility-audit.json`: one machine-readable audit summary with the
+  pass/fail result and all recorded checks
 - `parallel-logs/*.log`: one orchestration log per variant, kept separate so
   concurrent batch execution remains inspectable

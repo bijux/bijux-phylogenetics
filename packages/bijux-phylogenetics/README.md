@@ -420,13 +420,22 @@ one run is active, and the raw workflow root now writes one
 `rabies-method-sensitivity-panel.run.json` execution record so parallel worker
 count, execution mode, successful variants, failed variants, and per-variant
 task logs remain auditable even when one isolated task fails.
+The bundle now also writes one reproducibility audit over the current rabies
+inputs, resolved settings, workflow manifest, report manifest, task logs, and
+per-variant output directories. That audit ships as
+`reproducibility-checks.tsv`, `reproducibility-variants.tsv`, and
+`reproducibility-audit.json` so reviewers can verify that the current batch
+outputs still correspond to the declared inputs and settings.
 Its reviewer-facing HTML report is now intentionally compact: it surfaces one
 summary card set plus explicit links to the governed TSV and JSON ledgers
 instead of embedding those tables directly, and the bundle now includes
 `workflow/report-artifacts/rabies-method-sensitivity-report.manifest.json`
 with linked-artifact checksums and byte counts. The JSON metrics for the demo
 also report `report_linked_artifact_count`, `report_html_size_bytes`,
-`report_linked_artifact_bytes`, and `report_total_output_bytes`.
+`report_linked_artifact_bytes`, `report_total_output_bytes`,
+`reproducibility_passed`, `reproducibility_check_count`,
+`reproducibility_failed_check_count`, and
+`reproducibility_failed_variant_count`.
 
 `tree-set report` now follows the same scaling contract. The HTML report keeps
 top-level uncertainty summaries in the page body, writes large reviewer tables
