@@ -35,13 +35,13 @@ from bijux_phylogenetics.engines.common import (
     execute_engine_command,
     read_engine_version,
     resolve_engine_executable,
-    update_incomplete_engine_run,
     validate_timeout_seconds,
 )
 from bijux_phylogenetics.engines.workflows import (
     EngineWorkflowReport,
     _ensure_inference_ready_alignment,
     _persist_workflow_report,
+    _record_output_validation_failure,
     _resolve_incomplete_workflow_state,
     _resume_existing_workflow,
 )
@@ -2328,16 +2328,7 @@ def run_beast_posterior_inference(
         parse_beast_log(posterior_log_path)
         parse_beast_posterior_tree_samples(posterior_trees_path, burnin_fraction=0.0)
     except PhylogeneticsError as error:
-        update_incomplete_engine_run(
-            manifest_path,
-            ended_at_utc=run.ended_at_utc,
-            timed_out=run.timed_out,
-            exit_code=run.exit_code,
-            failure_message=(
-                "BEAST posterior-tree-inference produced outputs that failed "
-                f"validation: {error.code}"
-            ),
-        )
+        _record_output_validation_failure(manifest_path, run, error)
         raise
     report = EngineWorkflowReport(
         workflow="posterior-tree-inference",

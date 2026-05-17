@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from statistics import stdev
 
@@ -486,16 +487,32 @@ def test_run_mrbayes_posterior_inference_rejects_or_cleans_malformed_outputs(
     manifest_path = nexus_path.with_suffix("").with_suffix(".manifest.json")
     marker_path = manifest_path.with_suffix(".incomplete.json")
     assert marker_path.exists()
-    marker_text = marker_path.read_text(encoding="utf-8")
-    assert "validation: mrbayes_trace_invalid_parameter_value" in marker_text
+    marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
+    assert marker_payload["failure_reason"] == "mrbayes_trace_invalid_parameter_value"
+    assert marker_payload["missing_output_names"] == []
+    observed_outputs = {
+        item["output_name"]: item for item in marker_payload["observed_outputs"]
+    }
+    assert observed_outputs["parameter_traces"]["exists"] is True
+    assert observed_outputs["parameter_traces"]["path_kind"] == "file"
+    assert observed_outputs["posterior_trees"]["exists"] is True
+    assert observed_outputs["posterior_trees"]["path_kind"] == "file"
+    assert observed_outputs["consensus_tree"]["exists"] is True
+    assert observed_outputs["consensus_tree"]["path_kind"] == "file"
 
-    with pytest.raises(EngineWorkflowError, match="incomplete outputs"):
+    with pytest.raises(EngineWorkflowError, match="incomplete outputs") as rejected:
         run_mrbayes_posterior_inference(
             nexus_path,
             executable=valid,
             resume=True,
             incomplete_run_policy="reject",
         )
+    assert rejected.value.code == "engine_incomplete_outputs_present"
+    assert (
+        rejected.value.details["failure_reason"]
+        == "mrbayes_trace_invalid_parameter_value"
+    )
+    assert rejected.value.details["observed_outputs"] == marker_payload["observed_outputs"]
 
     report = run_mrbayes_posterior_inference(
         nexus_path,

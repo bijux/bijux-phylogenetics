@@ -62,6 +62,7 @@ from .common import (
     load_engine_manifest,
     load_incomplete_engine_run,
     load_unaligned_fasta,
+    observe_engine_outputs,
     read_engine_version,
     resolve_engine_executable,
     update_incomplete_engine_run,
@@ -353,15 +354,21 @@ def _record_output_validation_failure(
     run: EngineRunReport,
     error: PhylogeneticsError,
 ) -> None:
+    observations = observe_engine_outputs(run.output_paths)
     update_incomplete_engine_run(
         manifest_path,
         ended_at_utc=run.ended_at_utc,
         timed_out=run.timed_out,
         exit_code=run.exit_code,
+        failure_reason=error.code,
         failure_message=(
             f"{run.engine_name} {run.workflow} produced outputs that failed "
             f"validation: {error.code}"
         ),
+        missing_output_names=[
+            observation.output_name for observation in observations if not observation.exists
+        ],
+        observed_outputs=observations,
     )
 
 
