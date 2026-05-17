@@ -508,6 +508,9 @@ The Bayesian runtime controls are intentionally strict and now aligned across
 BEAST and MrBayes. `adapter beast-run` and `adapter mrbayes-run` leave an
 explicit `.incomplete.json` marker not only for timeouts and nonzero exits but
 also when the engine exits yet the emitted posterior files fail validation.
+That marker records the failure reason plus the observed posterior output state
+so reviewers can see whether the run left missing files, empty files, or other
+partial artifacts before deciding to clean or rerun.
 `--resume` reuses only one verified completed manifest from the same command,
 same checked inputs, and same recorded engine version, `--incomplete-run-policy
 clean` is the governed way to discard that partial state, and a missing
