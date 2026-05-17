@@ -18,6 +18,9 @@ from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
 )
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
+from bijux_phylogenetics.comparative.phylogenetic_residuals import (
+    summarize_phylogenetic_residuals,
+)
 from bijux_phylogenetics.comparative.pgls import (
     build_pgls_model_matrix,
     inspect_pgls_inputs,
@@ -370,6 +373,30 @@ def _pgls_parity_rows(*, model_matrix, report) -> list[dict[str, object]]:
     return sorted(rows, key=lambda row: (str(row["row_kind"]), str(row["label"])))
 
 
+def _phylogenetic_residual_parity_rows(
+    report,
+) -> list[dict[str, object]]:
+    rows = [
+        {
+            "row_kind": "coefficient_estimate",
+            "label": row.name,
+            "value": row.estimate,
+        }
+        for row in report.coefficient_rows
+    ]
+    rows.extend(
+        {
+            "row_kind": "taxon_value",
+            "label": row.taxon,
+            "observed_value": row.observed_value,
+            "fitted_value": row.fitted_value,
+            "residual": row.residual,
+        }
+        for row in report.taxon_rows
+    )
+    return sorted(rows, key=lambda row: (str(row["row_kind"]), str(row["label"])))
+
+
 def _build_bijux_case_payload(
     case: PhytoolsParityCase,
 ) -> tuple[dict[str, object], list[dict[str, object]] | None]:
@@ -480,6 +507,40 @@ def _build_bijux_case_payload(
                 "diagnostic_leverage_row_count": len(report.diagnostics.leverage_rows),
             },
             _pgls_parity_rows(model_matrix=model_matrix, report=report),
+        )
+    if case.operation == "phylogenetic-residuals":
+        if case.comparative_predictors is None or len(case.comparative_predictors) != 1:
+            raise ValueError(
+                "phylogenetic-residuals requires one comparative predictor"
+            )
+        method = (
+            "brownian"
+            if case.comparative_lambda_value is not None
+            and math.isclose(case.comparative_lambda_value, 1.0, abs_tol=1e-12)
+            else "lambda"
+        )
+        report = summarize_phylogenetic_residuals(
+            tree_path,
+            traits_path,
+            response=case.trait_name,
+            predictor=case.comparative_predictors[0],
+            taxon_column=case.taxon_column,
+            method=method,
+        )
+        summary = {
+            "taxon_count": report.analyzed_taxon_count,
+            "trait_name": report.response,
+            "predictor_name": report.predictor,
+            "method": report.method,
+            "excluded_taxon_count": len(report.excluded_taxa),
+            "excluded_taxa": [row.taxon for row in report.excluded_taxa],
+        }
+        if method == "lambda":
+            summary["lambda_value"] = report.lambda_value
+            summary["log_likelihood"] = report.log_likelihood
+        return (
+            summary,
+            _phylogenetic_residual_parity_rows(report),
         )
     if case.operation == "simulate-continuous-brownian":
         report = simulate_brownian_trait_collection(
@@ -1157,6 +1218,20 @@ def _mismatch_reason(
             "log_likelihood",
             "aic",
         )
+    elif case.operation == "phylogenetic-residuals":
+        compare_keys = (
+            "taxon_count",
+            "trait_name",
+            "predictor_name",
+            "method",
+            "excluded_taxon_count",
+            "excluded_taxa",
+        )
+        if (
+            case.comparative_lambda_value is None
+            or not math.isclose(case.comparative_lambda_value, 1.0, abs_tol=1e-12)
+        ):
+            compare_keys = compare_keys + ("lambda_value", "log_likelihood")
     elif case.operation == "discrete-ancestral-rerooting":
         compare_keys = (
             "taxon_count",
@@ -1220,6 +1295,7 @@ def _row_mismatch_reason(
         "simulate-continuous-brownian",
         "simulate-continuous-correlated-brownian",
         "comparative-pgls-brownian",
+        "phylogenetic-residuals",
         "discrete-ancestral-rerooting",
         "continuous-ancestral-fast-anc",
         "continuous-ancestral-anc-ml",
@@ -1263,6 +1339,7 @@ def _row_mismatch_reason(
         "discrete-stochastic-map-description",
         "simulate-discrete-history",
         "simulate-continuous-brownian",
+        "phylogenetic-residuals",
     }:
         reference_rows = sorted(
             reference_rows,
@@ -1347,6 +1424,21 @@ def _row_mismatch_reason(
             )
         )
     for reference_row, bijux_row in zip(reference_rows, bijux_rows, strict=True):
+        if case.operation == "phylogenetic-residuals":
+            row_kind = str(reference_row.get("row_kind", ""))
+            if row_kind != str(bijux_row.get("row_kind", "")):
+                return "row_mismatch:row_kind"
+            compare_keys = (
+                ("row_kind", "label", "value")
+                if row_kind == "coefficient_estimate"
+                else (
+                    "row_kind",
+                    "label",
+                    "observed_value",
+                    "fitted_value",
+                    "residual",
+                )
+            )
         for key in compare_keys:
             if key not in reference_row or key not in bijux_row:
                 return f"row_field_missing:{key}"
@@ -1586,6 +1678,7 @@ def run_phytools_parity_cases(
                                 "simulate-continuous-brownian",
                                 "simulate-continuous-correlated-brownian",
                                 "comparative-pgls-brownian",
+                                "phylogenetic-residuals",
                                 "discrete-ancestral-rerooting",
                                 "continuous-ancestral-fast-anc",
                                 "continuous-ancestral-anc-ml",
@@ -1617,14 +1710,19 @@ def run_phytools_parity_cases(
                                                 if case.operation
                                                 == "comparative-pgls-brownian"
                                                 else (
-                                                    "rerooting-method-node-probabilities.tsv"
+                                                    "phyl-resid-summary-rows.tsv"
                                                     if case.operation
-                                                    == "discrete-ancestral-rerooting"
+                                                    == "phylogenetic-residuals"
                                                     else (
-                                                        "fast-anc-node-estimates.tsv"
+                                                        "rerooting-method-node-probabilities.tsv"
                                                         if case.operation
-                                                        == "continuous-ancestral-fast-anc"
-                                                        else "anc-ml-node-estimates.tsv"
+                                                        == "discrete-ancestral-rerooting"
+                                                        else (
+                                                            "fast-anc-node-estimates.tsv"
+                                                            if case.operation
+                                                            == "continuous-ancestral-fast-anc"
+                                                            else "anc-ml-node-estimates.tsv"
+                                                        )
                                                     )
                                                 )
                                             )

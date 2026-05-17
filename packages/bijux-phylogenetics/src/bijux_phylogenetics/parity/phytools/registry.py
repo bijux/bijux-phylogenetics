@@ -81,6 +81,15 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
     pgls_interaction_fixture = get_shared_phytools_comparative_fixture(
         "phytools_pgls_brownian_interaction_eight_taxa"
     )
+    phyl_resid_brownian_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_phyl_resid_bm_allometry_six_taxa"
+    )
+    phyl_resid_lambda_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_phyl_resid_lambda_allometry_six_taxa"
+    )
+    phyl_resid_lambda_missing_fixture = get_shared_phytools_comparative_fixture(
+        "phytools_phyl_resid_lambda_missing_six_taxa"
+    )
     binary_discrete_fixture = get_shared_phytools_comparative_fixture(
         "phytools_discrete_binary_twenty_four_taxa"
     )
@@ -1472,6 +1481,61 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
             comparative_lambda_value=1.0,
             row_field_tolerances={"value": 1e-6},
         ),
+        PhytoolsParityCase(
+            case_id="phyl-resid-bm-allometry-six-taxa",
+            fixture_id=phyl_resid_brownian_fixture.fixture_id,
+            function_name="phytools::phyl.resid(method='BM')",
+            python_function_name="summarize_phylogenetic_residuals",
+            operation="phylogenetic-residuals",
+            input_fixtures=(
+                phyl_resid_brownian_fixture.tree_path,
+                phyl_resid_brownian_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=phyl_resid_brownian_fixture.trait_name,
+            taxon_column=phyl_resid_brownian_fixture.taxon_column,
+            comparative_predictors=("body_mass",),
+            comparative_lambda_value=1.0,
+            row_field_tolerances={"value": 1e-6},
+        ),
+        PhytoolsParityCase(
+            case_id="phyl-resid-lambda-allometry-six-taxa",
+            fixture_id=phyl_resid_lambda_fixture.fixture_id,
+            function_name="phytools::phyl.resid(method='lambda')",
+            python_function_name="summarize_phylogenetic_residuals",
+            operation="phylogenetic-residuals",
+            input_fixtures=(
+                phyl_resid_lambda_fixture.tree_path,
+                phyl_resid_lambda_fixture.traits_path,
+            ),
+            tolerance=5e-4,
+            trait_name=phyl_resid_lambda_fixture.trait_name,
+            taxon_column=phyl_resid_lambda_fixture.taxon_column,
+            comparative_predictors=("body_mass",),
+            field_tolerances={
+                "lambda_value": 5e-4,
+                "log_likelihood": 5e-4,
+            },
+            row_field_tolerances={"value": 5e-4},
+        ),
+        PhytoolsParityCase(
+            case_id="phyl-resid-lambda-missing-six-taxa",
+            fixture_id=phyl_resid_lambda_missing_fixture.fixture_id,
+            function_name="phytools::phyl.resid(method='lambda')",
+            python_function_name="summarize_phylogenetic_residuals",
+            operation="phylogenetic-residuals",
+            input_fixtures=(
+                phyl_resid_lambda_missing_fixture.tree_path,
+                phyl_resid_lambda_missing_fixture.traits_path,
+            ),
+            tolerance=5e-4,
+            trait_name=phyl_resid_lambda_missing_fixture.trait_name,
+            taxon_column=phyl_resid_lambda_missing_fixture.taxon_column,
+            comparative_predictors=("body_mass",),
+            field_tolerances={
+                "lambda_value": 5e-4,
+                "log_likelihood": 5e-4,
+            },
+            row_field_tolerances={"value": 5e-4},
+        ),
     ]
-
-

@@ -86,6 +86,7 @@ anc_ml_rows_path <- file.path(output_root, "anc-ml-node-estimates.tsv")
 fastbm_rows_path <- file.path(output_root, "fastbm-summary-rows.tsv")
 simcorrs_rows_path <- file.path(output_root, "simcorrs-summary-rows.tsv")
 pgls_rows_path <- file.path(output_root, "pgls-summary-rows.tsv")
+phyl_resid_rows_path <- file.path(output_root, "phyl-resid-summary-rows.tsv")
 case_payload <- jsonlite::fromJSON(case_path)
 r_version <- as.character(getRversion())
 
@@ -452,6 +453,91 @@ build_pgls_result <- function(tree, trait_table, taxon_column, formula_string, l
     ),
     rows = rows
   )
+}
+
+build_phyl_resid_result <- function(tree, trait_table, taxon_column, trait_name, predictor_name, lambda_value) {
+  taxa_in_tree <- trait_table[[taxon_column]] %in% tree$tip.label
+  complete_rows <- stats::complete.cases(
+    trait_table[, c(taxon_column, predictor_name, trait_name), drop = FALSE]
+  )
+  residual_data <- trait_table[taxa_in_tree & complete_rows, , drop = FALSE]
+  kept_taxa <- residual_data[[taxon_column]]
+  missing_tree_taxa <- setdiff(tree$tip.label, trait_table[[taxon_column]])
+  missing_value_taxa <- trait_table[[taxon_column]][
+    trait_table[[taxon_column]] %in% tree$tip.label &
+      !complete_rows
+  ]
+  absent_from_tree_taxa <- trait_table[[taxon_column]][!taxa_in_tree]
+  excluded_taxa <- sort(unique(c(
+    missing_tree_taxa,
+    missing_value_taxa,
+    absent_from_tree_taxa
+  )))
+  pruned_tree <- tree
+  if (length(excluded_taxa) > 0) {
+    tree_taxa_to_drop <- intersect(pruned_tree$tip.label, excluded_taxa)
+    if (length(tree_taxa_to_drop) > 0) {
+      pruned_tree <- ape::drop.tip(pruned_tree, tree_taxa_to_drop)
+    }
+  }
+  x <- stats::setNames(
+    as.numeric(residual_data[[predictor_name]]),
+    residual_data[[taxon_column]]
+  )
+  y <- stats::setNames(
+    as.numeric(residual_data[[trait_name]]),
+    residual_data[[taxon_column]]
+  )
+  method_name <- if (
+    !is.null(lambda_value) && abs(as.numeric(lambda_value) - 1.0) < 1e-12
+  ) {
+    "BM"
+  } else {
+    "lambda"
+  }
+  fit <- phytools::phyl.resid(pruned_tree, x, y, method = method_name)
+  fitted_values <- as.vector(cbind(1, x[pruned_tree$tip.label]) %*% fit$beta)
+  names(fitted_values) <- pruned_tree$tip.label
+  residual_values <- as.vector(fit$resid)
+  names(residual_values) <- pruned_tree$tip.label
+  rows <- list(
+    list(
+      row_kind = "coefficient_estimate",
+      label = "intercept",
+      value = unname(as.numeric(fit$beta[1, 1]))
+    ),
+    list(
+      row_kind = "coefficient_estimate",
+      label = predictor_name,
+      value = unname(as.numeric(fit$beta[2, 1]))
+    )
+  )
+  for (taxon_name in residual_data[[taxon_column]]) {
+    rows[[length(rows) + 1]] <- list(
+      row_kind = "taxon_value",
+      label = taxon_name,
+      observed_value = unname(as.numeric(y[[taxon_name]])),
+      fitted_value = unname(as.numeric(fitted_values[[taxon_name]])),
+      residual = unname(as.numeric(residual_values[[taxon_name]]))
+    )
+  }
+  rows <- rows[order(
+    vapply(rows, function(row) row$row_kind, character(1)),
+    vapply(rows, function(row) row$label, character(1))
+  )]
+  summary <- list(
+    taxon_count = nrow(residual_data),
+    trait_name = trait_name,
+    predictor_name = predictor_name,
+    method = if (identical(method_name, "BM")) "brownian" else "lambda",
+    excluded_taxon_count = length(excluded_taxa),
+    excluded_taxa = unname(as.list(excluded_taxa))
+  )
+  if (identical(method_name, "lambda")) {
+    summary$lambda_value <- unname(as.numeric(fit$lambda[[1]]))
+    summary$log_likelihood <- unname(as.numeric(fit$logL[[1]]))
+  }
+  list(summary = summary, rows = rows)
 }
 
 build_simmap_summary_rows <- function(fit, description, include_branch_occupancy) {
@@ -1278,6 +1364,14 @@ result_payload <- switch(
     case_payload$comparative_formula,
     case_payload$comparative_lambda_value
   ),
+  "phylogenetic-residuals" = build_phyl_resid_result(
+    tree,
+    trait_table,
+    taxon_column,
+    trait_name,
+    case_payload$comparative_predictors[[1]],
+    case_payload$comparative_lambda_value
+  ),
   "discrete-ancestral-rerooting" = build_rerooting_method_result(
     tree,
     trait_values,
@@ -1333,6 +1427,8 @@ if (!is.null(result_payload$rows)) {
     write_table(simcorrs_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "comparative-pgls-brownian")) {
     write_table(pgls_rows_path, result_payload$rows)
+  } else if (identical(case_payload$operation, "phylogenetic-residuals")) {
+    write_table(phyl_resid_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "discrete-ancestral-rerooting")) {
     write_table(rerooting_rows_path, result_payload$rows)
   } else if (identical(case_payload$operation, "continuous-ancestral-fast-anc")) {

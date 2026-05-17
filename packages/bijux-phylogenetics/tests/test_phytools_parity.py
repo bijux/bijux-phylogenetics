@@ -81,6 +81,9 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
         "pgls-sey-brownian-continuous-four-taxa",
         "pgls-sey-brownian-categorical-eight-taxa",
         "pgls-sey-brownian-interaction-eight-taxa",
+        "phyl-resid-bm-allometry-six-taxa",
+        "phyl-resid-lambda-allometry-six-taxa",
+        "phyl-resid-lambda-missing-six-taxa",
     ]
     assert cases[0].function_name == "phytools::phylosig(method='lambda')"
     assert cases[1].function_name == "phytools::phylosig(method='lambda')"
@@ -202,6 +205,14 @@ def test_list_phytools_parity_cases_returns_governed_registry() -> None:
     assert cases[57].comparative_formula == "response ~ habitat + diet"
     assert cases[58].comparative_formula == "response ~ habitat * diet"
     assert cases[58].comparative_lambda_value == 1.0
+    assert cases[59].function_name == "phytools::phyl.resid(method='BM')"
+    assert cases[61].function_name == "phytools::phyl.resid(method='lambda')"
+    assert cases[59].comparative_predictors == ("body_mass",)
+    assert cases[59].comparative_lambda_value == 1.0
+    assert cases[60].field_tolerances == {
+        "lambda_value": 5e-4,
+        "log_likelihood": 5e-4,
+    }
 
 
 @pytest.mark.slow
@@ -213,7 +224,7 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
     report = run_phytools_parity_cases(rscript_executable=str(rscript))
 
     assert report.all_passed is True
-    assert report.case_count == 59
+    assert report.case_count == 62
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert [row.function_name for row in report.summary_rows] == [
@@ -230,6 +241,8 @@ def test_run_phytools_parity_cases_passes_against_fake_reference_runner(
         "phytools::make.simmap(model='ER')",
         "phytools::make.simmap(model='SYM')",
         "phytools::pgls.SEy",
+        "phytools::phyl.resid(method='BM')",
+        "phytools::phyl.resid(method='lambda')",
         "phytools::phylosig(method='K')",
         "phytools::phylosig(method='lambda')",
         "phytools::rerootingMethod",
@@ -369,6 +382,31 @@ def test_run_phytools_parity_cases_passes_pgls_cases_against_fake_reference_runn
         observation.function_name == "phytools::pgls.SEy"
         for observation in report.observations
     )
+
+
+@pytest.mark.slow
+def test_run_phytools_parity_cases_passes_phylogenetic_residual_cases_against_fake_reference_runner(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_phytools_rscript(tmp_path / "fake-phytools-rscript")
+
+    report = run_phytools_parity_cases(
+        case_ids=[
+            "phyl-resid-bm-allometry-six-taxa",
+            "phyl-resid-lambda-allometry-six-taxa",
+            "phyl-resid-lambda-missing-six-taxa",
+        ],
+        rscript_executable=str(rscript),
+    )
+
+    assert report.all_passed is True
+    assert report.case_count == 3
+    assert report.failed_case_count == 0
+    assert [row.function_name for row in report.summary_rows] == [
+        "phytools::phyl.resid(method='BM')",
+        "phytools::phyl.resid(method='lambda')",
+    ]
+    assert report.observations[0].reference_rows is not None
 
 
 def test_run_phytools_parity_cases_records_failure_artifacts(

@@ -89,12 +89,17 @@ def write_summary_table(path: Path, summary: dict[str, object]) -> None:
 
 
 def write_rows_table(path: Path, rows: list[dict[str, object]]) -> None:
+    fieldnames: list[str] = []
+    for row in rows:
+        for key in row:
+            if key not in fieldnames:
+                fieldnames.append(key)
     with path.open("w", encoding="utf-8", newline="") as handle:
-        fieldnames = list(rows[0].keys()) if rows else []
         writer = csv.DictWriter(
             handle,
             fieldnames=fieldnames,
             delimiter="\\t",
+            extrasaction="ignore",
         )
         writer.writeheader()
         for row in rows:
@@ -815,6 +820,84 @@ print(json.dumps({"summary": summary, "rows": rows}))
     return payload["summary"], payload["rows"]
 
 
+def compute_phylogenetic_residual_payload(
+    case_payload: dict[str, object],
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    package_root = find_repo_root()
+    repo_python = find_repo_python(package_root)
+    inline_script = '''
+import json
+from pathlib import Path
+from bijux_phylogenetics.comparative.phylogenetic_residuals import summarize_phylogenetic_residuals
+
+payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
+tree_path, traits_path = payload["input_fixtures"]
+method = (
+    "brownian"
+    if payload.get("comparative_lambda_value") == 1.0
+    else "lambda"
+)
+report = summarize_phylogenetic_residuals(
+    Path(tree_path),
+    Path(traits_path),
+    response=payload["trait_name"],
+    predictor=payload["comparative_predictors"][0],
+    taxon_column=payload["taxon_column"],
+    method=method,
+)
+summary = {
+    "taxon_count": report.analyzed_taxon_count,
+    "trait_name": report.response,
+    "predictor_name": report.predictor,
+    "method": report.method,
+    "excluded_taxon_count": len(report.excluded_taxa),
+    "excluded_taxa": [row.taxon for row in report.excluded_taxa],
+}
+if method == "lambda":
+    summary["lambda_value"] = report.lambda_value
+    summary["log_likelihood"] = report.log_likelihood
+rows = [
+    {
+        "row_kind": "coefficient_estimate",
+        "label": row.name,
+        "value": row.estimate,
+    }
+    for row in report.coefficient_rows
+] + [
+    {
+        "row_kind": "taxon_value",
+        "label": row.taxon,
+        "observed_value": row.observed_value,
+        "fitted_value": row.fitted_value,
+        "residual": row.residual,
+    }
+    for row in report.taxon_rows
+]
+rows = sorted(rows, key=lambda row: (row["row_kind"], row["label"]))
+print(json.dumps({"summary": summary, "rows": rows}))
+'''
+    payload_path = package_root / "artifacts" / "fake-phytools-phyl-resid-payload.json"
+    payload_path.parent.mkdir(parents=True, exist_ok=True)
+    payload_path.write_text(json.dumps(case_payload), encoding="utf-8")
+    command = [
+        str(repo_python),
+        "-c",
+        inline_script.replace("__PAYLOAD_PATH__", repr(str(payload_path))),
+    ]
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(package_root / "src")
+    result = subprocess.run(
+        command,
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=str(package_root),
+        env=env,
+    )
+    payload = json.loads(result.stdout)
+    return payload["summary"], payload["rows"]
+
+
 case_payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 output_root = Path(sys.argv[3])
 output_root.mkdir(parents=True, exist_ok=True)
@@ -829,6 +912,7 @@ anc_ml_rows_path = output_root / "anc-ml-node-estimates.tsv"
 fastbm_rows_path = output_root / "fastbm-summary-rows.tsv"
 simcorrs_rows_path = output_root / "simcorrs-summary-rows.tsv"
 pgls_rows_path = output_root / "pgls-summary-rows.tsv"
+phyl_resid_rows_path = output_root / "phyl-resid-summary-rows.tsv"
 
 if not __PHYTOOLS_AVAILABLE__:
     write_json(
@@ -853,6 +937,7 @@ if case_id not in SUMMARIES and case_payload["operation"] not in {
     "simulate-continuous-brownian",
     "simulate-continuous-correlated-brownian",
     "comparative-pgls-brownian",
+    "phylogenetic-residuals",
     "discrete-ancestral-rerooting",
     "continuous-ancestral-fast-anc",
     "continuous-ancestral-anc-ml",
@@ -906,6 +991,8 @@ elif case_payload["operation"] == "simulate-continuous-correlated-brownian":
     summary, rows = compute_correlated_continuous_brownian_payload(case_payload)
 elif case_payload["operation"] == "comparative-pgls-brownian":
     summary, rows = compute_pgls_payload(case_payload)
+elif case_payload["operation"] == "phylogenetic-residuals":
+    summary, rows = compute_phylogenetic_residual_payload(case_payload)
 elif case_payload["operation"] == "discrete-ancestral-rerooting":
     summary, rows = compute_discrete_ancestral_payload(case_payload)
 elif case_payload["operation"] == "continuous-ancestral-fast-anc":
@@ -945,6 +1032,8 @@ if rows is not None:
         write_rows_table(simcorrs_rows_path, rows)
     elif case_payload["operation"] == "comparative-pgls-brownian":
         write_rows_table(pgls_rows_path, rows)
+    elif case_payload["operation"] == "phylogenetic-residuals":
+        write_rows_table(phyl_resid_rows_path, rows)
     elif case_payload["operation"] == "discrete-ancestral-rerooting":
         write_rows_table(rerooting_rows_path, rows)
     elif case_payload["operation"] == "continuous-ancestral-fast-anc":
