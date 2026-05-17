@@ -1,0 +1,5 @@
+variant_id	status	output_file_count	output_byte_count	output_digest	missing_required_files	unexpected_files	issues
+auto-gap-threshold	passed	14	42065	b6d678e62f1dbbabf4b3cdaeb5a63f365c4e05bde6cba15412fb1cf759c95aa3			
+auto-gappyout	passed	14	42065	7c273f4ff6c889892d9d062861a733f9599dea20cece2e39489f3725f97d6202			
+ginsi-gap-threshold	passed	14	42065	0f5ec41454c3bc2d0195c5d43a33cbb5ee341773ee4ffaf1a7546cff44fd503d			
+ginsi-gappyout	passed	14	42065	e607a84477f7c99cd249b2c3950196d932d2228d0c27eb3bba8141a498618376			

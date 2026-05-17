@@ -1,0 +1,290 @@
+{
+  "all_passed": true,
+  "bundle_root": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-refresh/workflow",
+  "check_count": 29,
+  "checks": [
+    {
+      "check_id": "input-checksum:sequences.fasta",
+      "detail": "sequences.fasta matches the checksum recorded in workflow-config.resolved.json",
+      "expected": "a3a401e5ab1e9c76e7b0793c86c69708186a550fadb2931fa6d66af61ceb6236",
+      "observed": "a3a401e5ab1e9c76e7b0793c86c69708186a550fadb2931fa6d66af61ceb6236",
+      "status": "passed",
+      "surface": "input-checksum"
+    },
+    {
+      "check_id": "input-checksum:metadata.csv",
+      "detail": "metadata.csv matches the checksum recorded in workflow-config.resolved.json",
+      "expected": "cca2178210f8c8b9850b0773228fbc5bb26d2c363db8d115b2996df9399111f2",
+      "observed": "cca2178210f8c8b9850b0773228fbc5bb26d2c363db8d115b2996df9399111f2",
+      "status": "passed",
+      "surface": "input-checksum"
+    },
+    {
+      "check_id": "workflow-manifest:changed_clades",
+      "detail": "changed_clades matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "a9df7197e52f84272b6f4fd29091ff5ed8dc2105e1829e954f8e4ecebd73a5bf",
+      "observed": "a9df7197e52f84272b6f4fd29091ff5ed8dc2105e1829e954f8e4ecebd73a5bf",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:conclusion_summary",
+      "detail": "conclusion_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "4e7aabca06fecb33b83da7d623e7d110a72bf41e2a1175d4a8608ca32442e94f",
+      "observed": "4e7aabca06fecb33b83da7d623e7d110a72bf41e2a1175d4a8608ca32442e94f",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:config",
+      "detail": "config matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "6bf41c83ce33785660e9512bd4c18fc906ae263290d6498eb3aa458010823099",
+      "observed": "6bf41c83ce33785660e9512bd4c18fc906ae263290d6498eb3aa458010823099",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:parallel_summary",
+      "detail": "parallel_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "c3fc0e61aa6e70588a634914dfed2e8ecf36608445ac8d484c7b0fb8c2624be1",
+      "observed": "c3fc0e61aa6e70588a634914dfed2e8ecf36608445ac8d484c7b0fb8c2624be1",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:preprocessing_comparison",
+      "detail": "preprocessing_comparison matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "6949dfccbecc47cd8d67fe2c35a1b446b01b503096f24703ced81ef43b97c76d",
+      "observed": "6949dfccbecc47cd8d67fe2c35a1b446b01b503096f24703ced81ef43b97c76d",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:stable_clades",
+      "detail": "stable_clades matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "327bf8fd675001749f28120614045b4b63e374ed5cb98524177279485b67720e",
+      "observed": "327bf8fd675001749f28120614045b4b63e374ed5cb98524177279485b67720e",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:task_logs_root",
+      "detail": "task_logs_root resolves to an existing directory",
+      "expected": "directory exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:variant_summary",
+      "detail": "variant_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "94e0a7813ea68e816d4e6011ae6fe25b97eed6f6f0c955c7201abf429975d1ab",
+      "observed": "94e0a7813ea68e816d4e6011ae6fe25b97eed6f6f0c955c7201abf429975d1ab",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:variants_root",
+      "detail": "variants_root resolves to an existing directory",
+      "expected": "directory exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:workflow_summary",
+      "detail": "workflow_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "c6937a57f2ff0edfec1ff274450c6f89174594e36bf117981bf811abaae94e4f",
+      "observed": "c6937a57f2ff0edfec1ff274450c6f89174594e36bf117981bf811abaae94e4f",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "report-manifest:linked-artifact-count",
+      "detail": "linked artifact count matches the linked_artifacts payload",
+      "expected": "9",
+      "observed": "9",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:changed_clades",
+      "detail": "changed_clades matches the checksum recorded in the report manifest",
+      "expected": "a9df7197e52f84272b6f4fd29091ff5ed8dc2105e1829e954f8e4ecebd73a5bf",
+      "observed": "a9df7197e52f84272b6f4fd29091ff5ed8dc2105e1829e954f8e4ecebd73a5bf",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:conclusion_summary",
+      "detail": "conclusion_summary matches the checksum recorded in the report manifest",
+      "expected": "4e7aabca06fecb33b83da7d623e7d110a72bf41e2a1175d4a8608ca32442e94f",
+      "observed": "4e7aabca06fecb33b83da7d623e7d110a72bf41e2a1175d4a8608ca32442e94f",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:config",
+      "detail": "config matches the checksum recorded in the report manifest",
+      "expected": "6bf41c83ce33785660e9512bd4c18fc906ae263290d6498eb3aa458010823099",
+      "observed": "6bf41c83ce33785660e9512bd4c18fc906ae263290d6498eb3aa458010823099",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:parallel_summary",
+      "detail": "parallel_summary matches the checksum recorded in the report manifest",
+      "expected": "c3fc0e61aa6e70588a634914dfed2e8ecf36608445ac8d484c7b0fb8c2624be1",
+      "observed": "c3fc0e61aa6e70588a634914dfed2e8ecf36608445ac8d484c7b0fb8c2624be1",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:preprocessing_comparison",
+      "detail": "preprocessing_comparison matches the checksum recorded in the report manifest",
+      "expected": "6949dfccbecc47cd8d67fe2c35a1b446b01b503096f24703ced81ef43b97c76d",
+      "observed": "6949dfccbecc47cd8d67fe2c35a1b446b01b503096f24703ced81ef43b97c76d",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:stable_clades",
+      "detail": "stable_clades matches the checksum recorded in the report manifest",
+      "expected": "327bf8fd675001749f28120614045b4b63e374ed5cb98524177279485b67720e",
+      "observed": "327bf8fd675001749f28120614045b4b63e374ed5cb98524177279485b67720e",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:variant_summary",
+      "detail": "variant_summary matches the checksum recorded in the report manifest",
+      "expected": "94e0a7813ea68e816d4e6011ae6fe25b97eed6f6f0c955c7201abf429975d1ab",
+      "observed": "94e0a7813ea68e816d4e6011ae6fe25b97eed6f6f0c955c7201abf429975d1ab",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:workflow_manifest",
+      "detail": "workflow_manifest matches the checksum recorded in the report manifest",
+      "expected": "39442496722379a34c5d5df7336045f893d5dc0006cfa2366122dfa81579452a",
+      "observed": "39442496722379a34c5d5df7336045f893d5dc0006cfa2366122dfa81579452a",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:workflow_summary",
+      "detail": "workflow_summary matches the checksum recorded in the report manifest",
+      "expected": "c6937a57f2ff0edfec1ff274450c6f89174594e36bf117981bf811abaae94e4f",
+      "observed": "c6937a57f2ff0edfec1ff274450c6f89174594e36bf117981bf811abaae94e4f",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "variant-sets:manifest",
+      "detail": "workflow manifest task records cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-sets"
+    },
+    {
+      "check_id": "variant-sets:parallel-summary",
+      "detail": "parallel summary rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-sets"
+    },
+    {
+      "check_id": "variant-sets:variant-summary",
+      "detail": "variant summary rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-sets"
+    },
+    {
+      "check_id": "variant-sets:task-logs",
+      "detail": "task log files cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-sets"
+    },
+    {
+      "check_id": "variant-sets:variant-directories",
+      "detail": "variant output directories cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-sets"
+    },
+    {
+      "check_id": "variant-count:parallel-summary",
+      "detail": "parallel summary row count matches the configured variant count",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "variant-count"
+    },
+    {
+      "check_id": "variant-count:variant-summary",
+      "detail": "variant summary row count matches the configured variant count",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "variant-count"
+    }
+  ],
+  "config_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-refresh/workflow/workflow-config.resolved.json",
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "failed_check_count": 0,
+  "failed_variant_count": 0,
+  "metadata_path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/pathogens/rabies_method_sensitivity_panel/metadata.csv",
+  "report_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-refresh/workflow/report-artifacts/rabies-method-sensitivity-report.manifest.json",
+  "sequences_path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/pathogens/rabies_method_sensitivity_panel/sequences.fasta",
+  "variant_count": 4,
+  "variants": [
+    {
+      "issues": [],
+      "missing_required_files": [],
+      "output_byte_count": 42065,
+      "output_digest": "b6d678e62f1dbbabf4b3cdaeb5a63f365c4e05bde6cba15412fb1cf759c95aa3",
+      "output_file_count": 14,
+      "status": "passed",
+      "unexpected_files": [],
+      "variant_id": "auto-gap-threshold"
+    },
+    {
+      "issues": [],
+      "missing_required_files": [],
+      "output_byte_count": 42065,
+      "output_digest": "7c273f4ff6c889892d9d062861a733f9599dea20cece2e39489f3725f97d6202",
+      "output_file_count": 14,
+      "status": "passed",
+      "unexpected_files": [],
+      "variant_id": "auto-gappyout"
+    },
+    {
+      "issues": [],
+      "missing_required_files": [],
+      "output_byte_count": 42065,
+      "output_digest": "0f5ec41454c3bc2d0195c5d43a33cbb5ee341773ee4ffaf1a7546cff44fd503d",
+      "output_file_count": 14,
+      "status": "passed",
+      "unexpected_files": [],
+      "variant_id": "ginsi-gap-threshold"
+    },
+    {
+      "issues": [],
+      "missing_required_files": [],
+      "output_byte_count": 42065,
+      "output_digest": "e607a84477f7c99cd249b2c3950196d932d2228d0c27eb3bba8141a498618376",
+      "output_file_count": 14,
+      "status": "passed",
+      "unexpected_files": [],
+      "variant_id": "ginsi-gappyout"
+    }
+  ],
+  "workflow_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-refresh/workflow/rabies-method-sensitivity.manifest.json"
+}

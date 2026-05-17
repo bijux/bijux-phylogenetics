@@ -63,9 +63,12 @@ def test_export_rabies_method_sensitivity_panel_dataset_copies_expected_outputs(
     assert result.config_path.is_file()
     assert result.sequences_path.is_file()
     assert result.metadata_path.is_file()
-    assert len(expected_files) == 71
+    assert len(expected_files) == 74
     assert Path("parallel-execution-summary.tsv") in expected_files
     assert Path("rabies-method-sensitivity.manifest.json") in expected_files
+    assert Path("reproducibility-checks.tsv") in expected_files
+    assert Path("reproducibility-variants.tsv") in expected_files
+    assert Path("reproducibility-audit.json") in expected_files
     assert (
         Path("report-artifacts/rabies-method-sensitivity-report.manifest.json")
         in expected_files
@@ -79,6 +82,7 @@ def test_export_rabies_method_sensitivity_panel_dataset_copies_expected_outputs(
         result.expected_output_root / "rabies-method-sensitivity-report.html"
     ).read_text(encoding="utf-8")
     assert 'href="workflow-summary.tsv"' in report_html
+    assert 'href="reproducibility-audit.json"' in report_html
     assert (
         "report-artifacts/rabies-method-sensitivity-report.manifest.json" in report_html
     )
@@ -120,10 +124,16 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.workflow_bundle.parallel_summary_path.is_file()
     assert result.workflow_bundle.manifest_path.is_file()
     assert result.workflow_bundle.report_manifest_path.is_file()
+    assert result.workflow_bundle.reproducibility_checks_path.is_file()
+    assert result.workflow_bundle.reproducibility_variant_audit_path.is_file()
+    assert result.workflow_bundle.reproducibility_audit_path.is_file()
+    assert result.workflow_bundle.reproducibility_passed is True
     assert result.workflow_bundle.task_logs_root.is_dir()
     assert result.workflow_bundle.report_path.is_file()
     assert result.overview_path.is_file()
-    assert "variants" in result.overview_path.read_text(encoding="utf-8")
+    overview = result.overview_path.read_text(encoding="utf-8")
+    assert "variants" in overview
+    assert "reproducibility audit" in overview
 
 
 def test_public_runtime_exports_include_rabies_method_sensitivity_surface() -> None:
@@ -221,7 +231,7 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 16
+    assert payload["metrics"]["artifact_count"] == 19
     assert payload["metrics"]["taxon_count"] == 9
     assert payload["metrics"]["variant_count"] == 4
     assert payload["metrics"]["parallel_workers"] == 2
@@ -238,7 +248,11 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
         payload["metrics"]["report_total_output_bytes"]
         >= payload["metrics"]["report_html_size_bytes"]
     )
-    assert payload["metrics"]["reference_output_count"] == 71
+    assert payload["metrics"]["reproducibility_passed"] is True
+    assert payload["metrics"]["reproducibility_check_count"] > 0
+    assert payload["metrics"]["reproducibility_failed_check_count"] == 0
+    assert payload["metrics"]["reproducibility_failed_variant_count"] == 0
+    assert payload["metrics"]["reference_output_count"] == 74
     assert payload["data"]["dataset"]["dataset_id"] == "rabies_method_sensitivity_panel"
     assert payload["data"]["workflow_bundle"]["workflow_summary_path"] == str(
         output / "workflow" / "workflow-summary.tsv"
@@ -251,4 +265,10 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
         / "workflow"
         / "report-artifacts"
         / "rabies-method-sensitivity-report.manifest.json"
+    )
+    assert payload["data"]["workflow_bundle"]["reproducibility_checks_path"] == str(
+        output / "workflow" / "reproducibility-checks.tsv"
+    )
+    assert payload["data"]["workflow_bundle"]["reproducibility_audit_path"] == str(
+        output / "workflow" / "reproducibility-audit.json"
     )

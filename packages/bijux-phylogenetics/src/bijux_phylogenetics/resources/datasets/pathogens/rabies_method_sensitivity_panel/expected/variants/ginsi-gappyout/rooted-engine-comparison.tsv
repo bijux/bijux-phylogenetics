@@ -4,7 +4,7 @@ bat_chile_rv108|bat_chile_rv50	right_only	false						false							shared	0.051308
 bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011	right_only	false						false							shared	0.014125068799999994	0.00019951756860473328
 bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021	right_only	false						false							shared	0.003582479100000001	1.2834156501936816e-05
 bat_chile_rv50	right_only	false						false							shared	0.0005682629999999994	3.2292283716899933e-07
-bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025	shared	true	1.0		1.0			false			0.045029611	0.0550352189	0.010005607900000005	1.2222006292703707			
+bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025	shared	true	1.0		1.0			false			0.0	0.0	0.0				
 cattle_russia_4092_13_2025	right_only	false						false							shared	-3.691840000000007e-05	1.3629682585600051e-09
 cattle_russia_4092_13_2025|cattle_russia_4092_15_2025	shared	true	0.999	100.0	0.999	1.0	0.0010000000000000009	false			0.015726579	0.0170069874	0.0012804083999999986	1.0814168421498407	shared	0.0012804083999999986	1.6394456707905566e-06
 cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025	shared	true	1.0	100.0	1.0	1.0	0.0	false			0.084705093	0.1360134198	0.05130832680000001	1.6057289471366263			
