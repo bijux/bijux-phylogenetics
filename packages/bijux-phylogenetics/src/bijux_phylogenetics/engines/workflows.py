@@ -307,9 +307,40 @@ def _resolve_incomplete_workflow_state(
             "removed outputs from a previously incomplete engine run before restarting"
         ]
     marker_path = engine_incomplete_marker_path(manifest_path)
+    observed_outputs = [
+        {
+            "output_name": observation.output_name,
+            "path": str(observation.path),
+            "exists": observation.exists,
+            "path_kind": observation.path_kind,
+            "size_bytes": observation.size_bytes,
+            "sha256": observation.sha256,
+        }
+        for observation in record.observed_outputs
+    ]
     raise EngineWorkflowError(
         "a previous engine run left incomplete outputs and resume could not safely "
-        f"reuse them; marker: {marker_path}"
+        f"reuse them; marker: {marker_path}",
+        code="engine_incomplete_outputs_present",
+        details={
+            "manifest_path": str(manifest_path),
+            "marker_path": str(marker_path),
+            "engine_name": record.engine_name,
+            "workflow": record.workflow,
+            "failure_reason": (
+                record.failure_reason
+                if record.failure_reason is not None
+                else "engine_run_incomplete"
+            ),
+            "failure_message": record.failure_message,
+            "timed_out": record.timed_out,
+            "exit_code": record.exit_code,
+            "timeout_seconds": record.timeout_seconds,
+            "missing_output_names": list(record.missing_output_names),
+            "observed_outputs": observed_outputs,
+            "incomplete_run_policy": incomplete_run_policy,
+            "available_actions": ["resume", "clean"],
+        },
     )
 
 

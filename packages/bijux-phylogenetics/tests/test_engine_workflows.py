@@ -1167,7 +1167,7 @@ def test_run_model_selection_rejects_or_cleans_incomplete_outputs(
     assert observed_outputs["iqtree_log"]["exists"] is False
     assert observed_outputs["iqtree_log"]["path_kind"] == "missing"
 
-    with pytest.raises(EngineWorkflowError, match="incomplete outputs"):
+    with pytest.raises(EngineWorkflowError, match="incomplete outputs") as rejected:
         run_model_selection(
             input_path,
             out_dir=out_dir,
@@ -1176,6 +1176,11 @@ def test_run_model_selection_rejects_or_cleans_incomplete_outputs(
             resume=True,
             incomplete_run_policy="reject",
         )
+    assert rejected.value.code == "engine_incomplete_outputs_present"
+    assert rejected.value.details["failure_reason"] == "engine_required_output_missing"
+    assert rejected.value.details["missing_output_names"] == ["iqtree_log"]
+    assert rejected.value.details["available_actions"] == ["resume", "clean"]
+    assert rejected.value.details["observed_outputs"] == marker_payload["observed_outputs"]
 
     report = run_model_selection(
         input_path,
