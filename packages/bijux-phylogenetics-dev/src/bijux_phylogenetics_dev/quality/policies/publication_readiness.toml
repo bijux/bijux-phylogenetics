@@ -69,7 +69,7 @@ required_sdist_entries = [
     "LICENSE",
     "NOTICE",
     "src/bijux_phylogenetics/__init__.py",
-    "src/bijux_phylogenetics/cli.py",
+    "src/bijux_phylogenetics/command_line/__init__.py",
     "src/bijux_phylogenetics/resources/examples/alignments/example_alignment.fasta",
     "src/bijux_phylogenetics/resources/examples/trees/example_tree.nwk",
     "src/bijux_phylogenetics/resources/datasets/mammals/primate_comparative/tree.nwk",
@@ -78,7 +78,7 @@ required_sdist_entries = [
 ]
 required_wheel_entries = [
     "bijux_phylogenetics/__init__.py",
-    "bijux_phylogenetics/cli.py",
+    "bijux_phylogenetics/command_line/__init__.py",
     "bijux_phylogenetics/py.typed",
     "bijux_phylogenetics/resources/examples/alignments/example_alignment.fasta",
     "bijux_phylogenetics/resources/examples/trees/example_tree.nwk",
