@@ -6,6 +6,7 @@ from pathlib import Path
 from bijux_phylogenetics_dev.quality.package_install_smoke import (
     select_artifact_paths,
     validate_alignment_payload,
+    validate_example_input_probe,
     validate_pgls_payload,
     validate_resource_probe,
     validate_tree_package_payload,
@@ -135,6 +136,34 @@ def test_validate_alignment_and_pgls_payloads_check_expected_shapes() -> None:
 
     assert alignment_issues == []
     assert pgls_issues == []
+
+
+def test_validate_example_input_probe_rejects_source_tree_paths(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    source_root = (
+        repo_root / "packages" / "bijux-phylogenetics" / "src" / "bijux_phylogenetics"
+    )
+    copied_dir = source_root / "resources" / "examples" / "copied"
+    copied_dir.mkdir(parents=True, exist_ok=True)
+    report = {
+        "destination": copied_dir.as_posix(),
+        "copied_paths": {
+            "alignment": (copied_dir / "example_alignment.fasta").as_posix(),
+            "alt_tree": (copied_dir / "example_tree_alt.nwk").as_posix(),
+            "metadata": (copied_dir / "example_metadata.tsv").as_posix(),
+            "traits": (copied_dir / "example_traits.tsv").as_posix(),
+            "tree": (copied_dir / "example_tree.nwk").as_posix(),
+        },
+    }
+    for path in report["copied_paths"].values():
+        Path(path).write_text("sentinel\n", encoding="utf-8")
+
+    issues = validate_example_input_probe(report, repo_root)
+
+    issue_codes = {issue.code for issue in issues}
+    assert issue_codes == {"source-tree-example-input"}
 
 
 def test_validate_tree_package_payload_requires_full_output_bundle(

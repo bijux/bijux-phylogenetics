@@ -33,6 +33,7 @@ _RESOURCE_SENTINELS: dict[str, tuple[str, ...]] = {
         "workflow-config.json",
     ),
 }
+_EXPECTED_EXAMPLE_INPUTS = ("alignment", "alt_tree", "metadata", "traits", "tree")
 _TREE_PACKAGE_OUTPUTS = (
     "tree-report.html",
     "tree-image.svg",
@@ -162,6 +163,37 @@ print(
     return _as_dict(json.loads(completed.stdout))
 
 
+def _probe_copied_example_inputs(
+    venv_python: Path,
+    *,
+    cwd: Path,
+    env: dict[str, str],
+    destination: Path,
+) -> JsonObject:
+    probe_script = """
+import json
+from pathlib import Path
+import sys
+
+from bijux_phylogenetics.core import copy_example_inputs
+
+copied = copy_example_inputs(Path(sys.argv[1]))
+print(json.dumps({name: str(path.resolve()) for name, path in copied.items()}, sort_keys=True))
+"""
+    completed = run_text(
+        [venv_python, "-c", probe_script, str(destination)],
+        cwd=cwd,
+        check=True,
+        capture_output=True,
+        env=env,
+    )
+    copied_paths = _as_dict(json.loads(completed.stdout))
+    return {
+        "destination": destination.as_posix(),
+        "copied_paths": copied_paths,
+    }
+
+
 def validate_resource_probe(report: JsonObject, repo_root: Path) -> list[SmokeIssue]:
     """Validate that packaged resources resolve from the installed artifact."""
     issues: list[SmokeIssue] = []
@@ -224,6 +256,44 @@ def validate_resource_probe(report: JsonObject, repo_root: Path) -> list[SmokeIs
                 message="resource probe reported a missing packaged resource",
             )
         )
+    return issues
+
+
+def validate_example_input_probe(report: JsonObject, repo_root: Path) -> list[SmokeIssue]:
+    """Validate that installed example-copy helpers create usable writable inputs."""
+    issues: list[SmokeIssue] = []
+    source_root = (repo_root / _RUNTIME_SOURCE_ROOT).resolve()
+    copied_paths = {
+        name: _as_str(path) for name, path in _as_dict(report.get("copied_paths")).items()
+    }
+    for input_name in _EXPECTED_EXAMPLE_INPUTS:
+        path_text = copied_paths.get(input_name, "")
+        if not path_text:
+            issues.append(
+                SmokeIssue(
+                    code="missing-example-input",
+                    path=input_name,
+                    message="installed example-input copy omitted one required example file",
+                )
+            )
+            continue
+        copied_path = Path(path_text)
+        if not copied_path.exists():
+            issues.append(
+                SmokeIssue(
+                    code="missing-copied-example-input",
+                    path=path_text,
+                    message="installed example-input copy did not materialize one required file",
+                )
+            )
+        elif copied_path == source_root or source_root in copied_path.parents:
+            issues.append(
+                SmokeIssue(
+                    code="source-tree-example-input",
+                    path=path_text,
+                    message="installed example-input copy resolved back into the repository source tree",
+                )
+            )
     return issues
 
 
@@ -437,13 +507,26 @@ def run_artifact_install_smoke(
         for name, path in _as_dict(resource_probe.get("resource_paths")).items()
         if isinstance(path, str) and path
     }
+    example_input_probe = _probe_copied_example_inputs(
+        venv_python,
+        cwd=smoke_root,
+        env=env,
+        destination=smoke_root / "example-inputs",
+    )
+    _write_json(smoke_root / "example-input-probe.json", example_input_probe)
+    issues.extend(validate_example_input_probe(example_input_probe, repo_root))
+    copied_inputs = {
+        name: Path(path)
+        for name, path in _as_dict(example_input_probe.get("copied_paths")).items()
+        if isinstance(path, str) and path
+    }
 
     alignment_code, alignment_stdout, alignment_stderr = _run_command(
         [
             str(cli_path),
             "alignment",
             "validate-input",
-            str(resource_paths["example_alignment"]),
+            str(copied_inputs["alignment"]),
             "--json",
         ],
         cwd=smoke_root,
@@ -473,7 +556,7 @@ def run_artifact_install_smoke(
             str(cli_path),
             "report",
             "tree-package",
-            str(resource_paths["example_tree"]),
+            str(copied_inputs["tree"]),
             "--out-dir",
             str(tree_package_dir),
             "--json",
@@ -542,11 +625,13 @@ def run_artifact_install_smoke(
         "artifacts_root": smoke_root.as_posix(),
         "package_root": _as_str(resource_probe.get("package_root")),
         "resource_check_count": len(_RESOURCE_SENTINELS),
+        "copied_example_input_count": len(copied_inputs),
         "command_count": 5,
         "issue_count": len(issues),
         "all_passed": not issues,
         "issues": [asdict(issue) for issue in issues],
         "resource_probe": resource_probe,
+        "example_input_probe": example_input_probe,
         "commands": {
             "version": {
                 "returncode": version_code,
@@ -555,6 +640,9 @@ def run_artifact_install_smoke(
             "help": {
                 "returncode": help_code,
                 "stdout_path": (smoke_root / "help.txt").as_posix(),
+            },
+            "copy_example_inputs": {
+                "output_path": (smoke_root / "example-input-probe.json").as_posix(),
             },
             "alignment_validate": {
                 "returncode": alignment_code,
