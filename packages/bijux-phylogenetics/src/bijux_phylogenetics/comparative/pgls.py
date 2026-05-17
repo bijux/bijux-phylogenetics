@@ -307,7 +307,10 @@ def inspect_pgls_inputs(
         blockers.append(
             f"trait table does not contain response column '{response_descriptor.source_column}'"
         )
-    elif column_kinds[response_descriptor.source_column] != "numeric":
+    elif not _column_supports_numeric_values(
+        table.rows,
+        response_descriptor.source_column,
+    ):
         blockers.append(
             f"response column '{response_descriptor.source_column}' must be numeric for PGLS"
         )
@@ -318,17 +321,21 @@ def inspect_pgls_inputs(
     for predictor in specification.predictors:
         term_descriptor = _parse_term_descriptor(predictor)
         kind = column_kinds.get(term_descriptor.source_column)
+        numeric_candidate = _column_supports_numeric_values(
+            table.rows,
+            term_descriptor.source_column,
+        )
         if kind is None:
             blockers.append(
                 f"trait table does not contain predictor column '{term_descriptor.source_column}'"
             )
             continue
-        if kind != "numeric" and term_descriptor.transformation is not None:
+        if not numeric_candidate and term_descriptor.transformation is not None:
             blockers.append(
                 f"transformation '{term_descriptor.transformation}' requires numeric predictor column '{term_descriptor.source_column}'"
             )
             continue
-        if kind == "numeric":
+        if numeric_candidate:
             if term_descriptor.transformation is not None:
                 warnings.append(
                     f"predictor term '{predictor}' applies {term_descriptor.transformation} transformation to column '{term_descriptor.source_column}'"
@@ -336,7 +343,7 @@ def inspect_pgls_inputs(
             predictor_reports.append(
                 PGLSPredictorClassification(
                     name=predictor,
-                    kind=kind,
+                    kind="numeric",
                     raw_term=predictor,
                     source_column=term_descriptor.source_column,
                     transformation=term_descriptor.transformation,
@@ -973,6 +980,23 @@ def _coerce_numeric_value(
     raise ComparativeMethodError(
         f"unsupported transformation '{descriptor.transformation}'"
     )
+
+
+def _column_supports_numeric_values(
+    rows: list[dict[str, str]],
+    column: str,
+) -> bool:
+    observed_numeric = False
+    for row in rows:
+        raw_value = row.get(column, "")
+        if not raw_value:
+            continue
+        try:
+            float(raw_value)
+        except ValueError:
+            return False
+        observed_numeric = True
+    return observed_numeric
 
 
 def _resolve_formula_specification(

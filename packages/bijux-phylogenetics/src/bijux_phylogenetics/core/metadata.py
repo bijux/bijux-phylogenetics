@@ -135,7 +135,7 @@ def load_taxon_table(path: Path, *, taxon_column: str | None = None) -> TaxonTab
 
         for row_index, row in enumerate(reader, start=2):
             normalized_row = {
-                column: str(row.get(column, "")).strip() for column in columns
+                column: _normalize_table_cell(row.get(column, "")) for column in columns
             }
             taxon = normalized_row[resolved_taxon_column]
             if not taxon:
@@ -180,7 +180,7 @@ def inspect_taxon_table_index(
         row_count = 0
         for row_index, row in enumerate(reader, start=2):
             row_count += 1
-            taxon = str(row.get(resolved_taxon_column, "")).strip()
+            taxon = _normalize_table_cell(row.get(resolved_taxon_column, ""))
             if not taxon:
                 empty_taxon_rows.append(row_index)
                 continue
@@ -225,6 +225,12 @@ def inspect_metadata_table(
         taxa=table.taxa,
         column_completeness=column_completeness,
     )
+
+
+def _normalize_table_cell(value: object) -> str:
+    if value is None:
+        return ""
+    return str(value).strip()
 
 
 TableValue: TypeAlias = str | int | float | bool | None
