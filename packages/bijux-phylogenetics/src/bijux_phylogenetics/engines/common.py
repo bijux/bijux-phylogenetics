@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 import hashlib
 import json
@@ -56,6 +56,16 @@ class EngineResumeCheck:
 
 
 @dataclass(slots=True)
+class EngineOutputObservation:
+    output_name: str
+    path: Path
+    exists: bool
+    path_kind: str
+    size_bytes: int | None
+    sha256: str | None
+
+
+@dataclass(slots=True)
 class EngineIncompleteRunRecord:
     engine_name: str
     workflow: str
@@ -71,7 +81,10 @@ class EngineIncompleteRunRecord:
     timeout_seconds: float | None
     timed_out: bool
     exit_code: int | None
+    failure_reason: str | None
     failure_message: str | None
+    missing_output_names: list[str] = field(default_factory=list)
+    observed_outputs: list[EngineOutputObservation] = field(default_factory=list)
 
 
 @dataclass(slots=True)
@@ -210,6 +223,58 @@ def engine_incomplete_marker_path(manifest_path: Path) -> Path:
 def engine_active_marker_path(manifest_path: Path) -> Path:
     """Return the sidecar path used to mark one actively running engine workflow."""
     return manifest_path.with_suffix(".running.json")
+
+
+def _observe_engine_output(
+    output_name: str,
+    path: Path,
+) -> EngineOutputObservation:
+    exists = path.exists()
+    if not exists:
+        return EngineOutputObservation(
+            output_name=output_name,
+            path=path,
+            exists=False,
+            path_kind="missing",
+            size_bytes=None,
+            sha256=None,
+        )
+    if path.is_file():
+        return EngineOutputObservation(
+            output_name=output_name,
+            path=path,
+            exists=True,
+            path_kind="file",
+            size_bytes=path.stat().st_size,
+            sha256=file_sha256(path),
+        )
+    if path.is_dir():
+        return EngineOutputObservation(
+            output_name=output_name,
+            path=path,
+            exists=True,
+            path_kind="directory",
+            size_bytes=None,
+            sha256=None,
+        )
+    return EngineOutputObservation(
+        output_name=output_name,
+        path=path,
+        exists=True,
+        path_kind="other",
+        size_bytes=None,
+        sha256=None,
+    )
+
+
+def observe_engine_outputs(
+    output_paths: dict[str, Path],
+) -> list[EngineOutputObservation]:
+    """Capture the current on-disk state of declared engine outputs."""
+    return [
+        _observe_engine_output(output_name, output_paths[output_name])
+        for output_name in sorted(output_paths)
+    ]
 
 
 def restore_active_engine_run(
@@ -353,11 +418,38 @@ def restore_incomplete_engine_run(
         exit_code=(
             None if payload.get("exit_code") is None else int(payload["exit_code"])
         ),
+        failure_reason=(
+            None
+            if payload.get("failure_reason") is None
+            else str(payload["failure_reason"])
+        ),
         failure_message=(
             None
             if payload.get("failure_message") is None
             else str(payload["failure_message"])
         ),
+        missing_output_names=[
+            str(item) for item in payload.get("missing_output_names", [])
+        ],
+        observed_outputs=[
+            EngineOutputObservation(
+                output_name=str(dict(item)["output_name"]),
+                path=Path(dict(item)["path"]),
+                exists=bool(dict(item)["exists"]),
+                path_kind=str(dict(item)["path_kind"]),
+                size_bytes=(
+                    None
+                    if dict(item).get("size_bytes") is None
+                    else int(dict(item)["size_bytes"])
+                ),
+                sha256=(
+                    None
+                    if dict(item).get("sha256") is None
+                    else str(dict(item)["sha256"])
+                ),
+            )
+            for item in payload.get("observed_outputs", [])
+        ],
     )
 
 
@@ -409,7 +501,10 @@ def update_incomplete_engine_run(
     ended_at_utc: str | None = None,
     timed_out: bool | None = None,
     exit_code: int | None = None,
+    failure_reason: str | None = None,
     failure_message: str | None = None,
+    missing_output_names: list[str] | None = None,
+    observed_outputs: list[EngineOutputObservation] | None = None,
 ) -> EngineIncompleteRunRecord | None:
     """Refresh one incomplete-run marker with the latest failure details."""
     record = load_incomplete_engine_run(manifest_path)
@@ -421,8 +516,14 @@ def update_incomplete_engine_run(
         record.timed_out = timed_out
     if exit_code is not None:
         record.exit_code = exit_code
+    if failure_reason is not None:
+        record.failure_reason = failure_reason
     if failure_message is not None:
         record.failure_message = failure_message
+    if missing_output_names is not None:
+        record.missing_output_names = list(missing_output_names)
+    if observed_outputs is not None:
+        record.observed_outputs = list(observed_outputs)
     write_incomplete_engine_run(record)
     return record
 
@@ -464,7 +565,10 @@ def execute_engine_command(
         timeout_seconds=timeout_seconds,
         timed_out=False,
         exit_code=None,
+        failure_reason=None,
         failure_message=None,
+        missing_output_names=[],
+        observed_outputs=[],
     )
     active_record = EngineActiveRunRecord(
         engine_name=engine_name,
@@ -511,9 +615,16 @@ def execute_engine_command(
                 )
                 incomplete_record.ended_at_utc = utc_now_text()
                 incomplete_record.timed_out = True
+                incomplete_record.failure_reason = "engine_command_timeout"
                 incomplete_record.failure_message = (
                     f"{engine_name} {workflow} timed out after {budget} seconds"
                 )
+                incomplete_record.observed_outputs = observe_engine_outputs(output_paths)
+                incomplete_record.missing_output_names = [
+                    observation.output_name
+                    for observation in incomplete_record.observed_outputs
+                    if not observation.exists
+                ]
                 write_incomplete_engine_run(incomplete_record)
                 warning_lines = summarize_engine_warnings(
                     stdout_text=stdout_text,
@@ -536,9 +647,16 @@ def execute_engine_command(
         if result.returncode != 0:
             incomplete_record.ended_at_utc = ended_at_utc
             incomplete_record.exit_code = result.returncode
+            incomplete_record.failure_reason = "engine_command_exit_nonzero"
             incomplete_record.failure_message = (
                 f"{engine_name} {workflow} failed with exit code {result.returncode}"
             )
+            incomplete_record.observed_outputs = observe_engine_outputs(output_paths)
+            incomplete_record.missing_output_names = [
+                observation.output_name
+                for observation in incomplete_record.observed_outputs
+                if not observation.exists
+            ]
             write_incomplete_engine_run(incomplete_record)
             raise EngineWorkflowError(
                 f"{engine_name} {workflow} failed with exit code {result.returncode}; stderr log: {stderr_path}"
@@ -551,9 +669,14 @@ def execute_engine_command(
         if missing_outputs:
             incomplete_record.ended_at_utc = ended_at_utc
             incomplete_record.exit_code = result.returncode
+            incomplete_record.failure_reason = "engine_required_output_missing"
             incomplete_record.failure_message = (
                 f"{engine_name} {workflow} did not produce expected outputs"
             )
+            incomplete_record.observed_outputs = observe_engine_outputs(output_paths)
+            incomplete_record.missing_output_names = [
+                str(entry["output_name"]) for entry in missing_outputs
+            ]
             write_incomplete_engine_run(incomplete_record)
             missing_paths = ", ".join(
                 entry["path"]

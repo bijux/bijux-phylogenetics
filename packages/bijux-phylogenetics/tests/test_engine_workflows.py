@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import threading
 import time
@@ -962,9 +963,22 @@ def test_run_multiple_sequence_alignment_times_out_and_marks_incomplete_run(
     assert len(marker_candidates) == 1
     marker_path = marker_candidates[0]
     assert marker_path.exists()
-    marker_text = marker_path.read_text(encoding="utf-8")
-    assert '"timed_out": true' in marker_text
-    assert '"timeout_seconds": 0.5' in marker_text
+    marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
+    assert marker_payload["timed_out"] is True
+    assert marker_payload["timeout_seconds"] == 0.5
+    assert marker_payload["failure_reason"] == "engine_command_timeout"
+    assert marker_payload["missing_output_names"] == []
+    assert marker_payload["observed_outputs"] == [
+        {
+            "exists": True,
+            "output_name": "alignment",
+            "path": str(output_path),
+            "path_kind": "file",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb924"
+            "27ae41e4649b934ca495991b7852b855",
+            "size_bytes": 0,
+        }
+    ]
 
 
 def test_run_multiple_sequence_alignment_resume_reuses_completed_output(
@@ -1142,6 +1156,16 @@ def test_run_model_selection_rejects_or_cleans_incomplete_outputs(
     manifest_path = out_dir / "example.manifest.json"
     marker_path = manifest_path.with_suffix(".incomplete.json")
     assert marker_path.exists()
+    marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
+    assert marker_payload["failure_reason"] == "engine_required_output_missing"
+    assert marker_payload["missing_output_names"] == ["iqtree_log"]
+    observed_outputs = {
+        item["output_name"]: item for item in marker_payload["observed_outputs"]
+    }
+    assert observed_outputs["iqtree_report"]["exists"] is True
+    assert observed_outputs["iqtree_report"]["path_kind"] == "file"
+    assert observed_outputs["iqtree_log"]["exists"] is False
+    assert observed_outputs["iqtree_log"]["path_kind"] == "missing"
 
     with pytest.raises(EngineWorkflowError, match="incomplete outputs"):
         run_model_selection(
