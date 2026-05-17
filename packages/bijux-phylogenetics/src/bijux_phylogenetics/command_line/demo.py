@@ -891,6 +891,9 @@ def run_demo_command(args: Any) -> int:
                 result.workflow_bundle.config_path,
                 result.workflow_bundle.manifest_path,
                 result.workflow_bundle.report_manifest_path,
+                result.workflow_bundle.reproducibility_checks_path,
+                result.workflow_bundle.reproducibility_variant_audit_path,
+                result.workflow_bundle.reproducibility_audit_path,
                 result.workflow_bundle.report_path,
                 result.overview_path,
             ],
@@ -940,6 +943,18 @@ def run_demo_command(args: Any) -> int:
                         ),
                         "report_total_output_bytes": (
                             result.workflow_bundle.report_total_output_bytes
+                        ),
+                        "reproducibility_passed": (
+                            result.workflow_bundle.reproducibility_passed
+                        ),
+                        "reproducibility_check_count": (
+                            result.workflow_bundle.reproducibility_check_count
+                        ),
+                        "reproducibility_failed_check_count": (
+                            result.workflow_bundle.reproducibility_failed_check_count
+                        ),
+                        "reproducibility_failed_variant_count": (
+                            result.workflow_bundle.reproducibility_failed_variant_count
                         ),
                         "reference_output_count": expected_output_count,
                     },
