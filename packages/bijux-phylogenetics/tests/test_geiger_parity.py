@@ -25,6 +25,12 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     assert cases[0].function_name == "geiger::fitContinuous(model='BM')"
     assert cases[2].function_name == "geiger::fitContinuous(model='OU')"
     assert cases[3].function_name == "geiger::fitContinuous(model='EB')"
+    assert cases[1].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
+    assert cases[2].fixture_id == "geiger_continuous_ou_known_truth_twenty_four_taxa"
+    assert (
+        cases[3].fixture_id
+        == "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
+    )
     assert cases[1].optimizer_settings is not None
     assert cases[2].optimizer_settings["bijux_optimizer_name"] == (
         "governed-two-stage-grid-search"

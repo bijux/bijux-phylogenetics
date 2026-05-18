@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.fixtures import get_shared_geiger_continuous_fixture
+
 
 @dataclass(frozen=True, slots=True)
 class GeigerParityCase:
@@ -30,25 +32,19 @@ def _package_root() -> Path:
     return Path(__file__).resolve().parents[4]
 
 
-def _continuous_mode_recovery_root() -> Path:
-    return (
-        _package_root()
-        / "src"
-        / "bijux_phylogenetics"
-        / "resources"
-        / "datasets"
-        / "simulation"
-        / "continuous_mode_recovery_panel"
-    )
-
-
 def list_geiger_parity_cases() -> list[GeigerParityCase]:
     """Return the governed live `geiger` parity cases."""
     package_root = _package_root()
     tests_root = package_root / "tests" / "fixtures"
-    recovery_root = _continuous_mode_recovery_root()
-    recovery_tree_path = recovery_root / "reference-tree.nwk"
-    recovery_traits_root = recovery_root / "expected" / "simulated-traits"
+    brownian_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+    ou_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_ou_known_truth_twenty_four_taxa"
+    )
+    early_burst_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
+    )
     return [
         GeigerParityCase(
             case_id="fitcontinuous-bm-example-tree",
@@ -84,19 +80,16 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
         ),
         GeigerParityCase(
             case_id="fitcontinuous-bm-brownian-sigma-recovery",
-            fixture_id="continuous_mode_recovery_panel:brownian-sigma-recovery",
+            fixture_id=brownian_fixture.fixture_id,
             function_name="geiger::fitContinuous(model='BM')",
             python_function_name="fit_continuous_evolutionary_mode",
             operation="fit-continuous",
             model_name="BM",
             python_mode="brownian",
-            input_fixtures=(
-                recovery_tree_path,
-                recovery_traits_root / "brownian-sigma-recovery.tsv",
-            ),
+            input_fixtures=(brownian_fixture.tree_path, brownian_fixture.traits_path),
             tolerance=0.2,
-            trait_name="value",
-            taxon_column="taxon",
+            trait_name=brownian_fixture.trait_name,
+            taxon_column=brownian_fixture.taxon_column,
             optimizer_settings={
                 "reference_control_policy": "fitcontinuous-default",
                 "bijux_optimizer_name": "closed-form-profile-solution",
@@ -114,19 +107,16 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
         ),
         GeigerParityCase(
             case_id="fitcontinuous-ou-ou-parameter-recovery",
-            fixture_id="continuous_mode_recovery_panel:ou-parameter-recovery",
+            fixture_id=ou_fixture.fixture_id,
             function_name="geiger::fitContinuous(model='OU')",
             python_function_name="fit_continuous_evolutionary_mode",
             operation="fit-continuous",
             model_name="OU",
             python_mode="ornstein-uhlenbeck",
-            input_fixtures=(
-                recovery_tree_path,
-                recovery_traits_root / "ou-parameter-recovery.tsv",
-            ),
+            input_fixtures=(ou_fixture.tree_path, ou_fixture.traits_path),
             tolerance=0.75,
-            trait_name="value",
-            taxon_column="taxon",
+            trait_name=ou_fixture.trait_name,
+            taxon_column=ou_fixture.taxon_column,
             optimizer_settings={
                 "reference_control_policy": "fitcontinuous-default",
                 "bijux_optimizer_name": "governed-two-stage-grid-search",
@@ -149,19 +139,19 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
         ),
         GeigerParityCase(
             case_id="fitcontinuous-eb-early-burst-rate-recovery",
-            fixture_id="continuous_mode_recovery_panel:early-burst-rate-recovery",
+            fixture_id=early_burst_fixture.fixture_id,
             function_name="geiger::fitContinuous(model='EB')",
             python_function_name="fit_continuous_evolutionary_mode",
             operation="fit-continuous",
             model_name="EB",
             python_mode="early-burst",
             input_fixtures=(
-                recovery_tree_path,
-                recovery_traits_root / "early-burst-rate-recovery.tsv",
+                early_burst_fixture.tree_path,
+                early_burst_fixture.traits_path,
             ),
             tolerance=0.5,
-            trait_name="value",
-            taxon_column="taxon",
+            trait_name=early_burst_fixture.trait_name,
+            taxon_column=early_burst_fixture.taxon_column,
             optimizer_settings={
                 "reference_control_policy": "fitcontinuous-default",
                 "bijux_optimizer_name": "governed-two-stage-grid-search",
