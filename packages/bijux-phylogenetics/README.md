@@ -1346,6 +1346,13 @@ missing-value exclusion contract. The owned Bijux side exposes this through
 `fit_continuous_evolutionary_mode(mode='white-noise')` so the live parity lane
 compares a real repository-owned independent baseline instead of an ad hoc
 reference-only shortcut.
+Trend parity is explicitly excluded in this round. The shared fixture corpus
+retains a directional trend-proxy surface, but the owned runtime does not claim
+`fitContinuous(model='trend')` support because local `geiger` exposes distinct
+`rate_trend` and `mean_trend` likelihood contracts and the shorthand `trend`
+falls through to the rate-trend path by partial matching. Bijux now rejects
+`trend`, `rate_trend`, and `mean_trend` requests explicitly instead of
+pretending one interpretation is canonical.
 The lambda lane now has three governed `fitContinuous(model='lambda')` cases:
 a twenty-four-taxon strong-signal review surface that lands on the Brownian
 upper boundary, a twenty-four-taxon weak-signal review surface that collapses
