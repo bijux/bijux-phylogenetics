@@ -14,6 +14,7 @@ from bijux_phylogenetics.comparative.common import (
 from bijux_phylogenetics.comparative.models import (
     ComparativeModelComparisonRow,
     ComparativeResidualSummary,
+    OUIdentifiabilityWarning,
     _brownian_parameter_intervals,
     _build_residual_diagnostics,
     _comparison_row,
@@ -81,7 +82,37 @@ class ContinuousEvolutionaryModeFitReport:
     transformed_tree_newick: str
     confidence_intervals: list[object]
     residual_diagnostics: ComparativeResidualSummary
+    optimizer_diagnostics: ContinuousModeOptimizerDiagnostics | None
+    identifiability_warnings: list[OUIdentifiabilityWarning]
     assumptions: list[str]
+
+
+@dataclass(slots=True)
+class ContinuousModeOptimizerDiagnostics:
+    """Optimizer diagnostics for one governed evolutionary-mode parameter search."""
+
+    optimizer_name: str
+    lower_bound: float
+    upper_bound: float
+    coarse_grid_point_count: int
+    fine_grid_point_count: int
+    function_evaluation_count: int
+    coarse_best_parameter: float
+    coarse_best_log_likelihood: float
+    fine_search_start: float
+    fine_search_stop: float
+    converged: bool
+    hit_lower_boundary: bool
+    hit_upper_boundary: bool
+
+
+@dataclass(slots=True)
+class _TransformedModeSearchResult:
+    parameter_value: float
+    transformed_tree: PhyloTree
+    covariance: list[list[float]]
+    optimizer_diagnostics: ContinuousModeOptimizerDiagnostics
+    profile: list[tuple[float, float]]
 
 
 @dataclass(slots=True)
@@ -277,30 +308,46 @@ def _fit_evolutionary_mode_from_dataset(
         fit = _fit_intercept_only_model(dataset, covariance)
         parameter_name = None
         parameter_value = None
+        optimizer_diagnostics = None
+        identifiability_warnings: list[OUIdentifiabilityWarning] = []
         assumptions = [
             "Brownian mode retains the original rooted branch lengths.",
             "Trait variance accumulates proportionally with shared branch length.",
         ]
     elif mode == "ornstein-uhlenbeck":
         parameter_name = "alpha"
-        parameter_value, transformed_tree, covariance = _best_transformed_mode_fit(
+        search_result = _best_transformed_mode_fit(
             dataset,
             mode=mode,
             bounds=ou_bounds,
         )
+        parameter_value = search_result.parameter_value
+        transformed_tree = search_result.transformed_tree
+        covariance = search_result.covariance
         fit = _fit_intercept_only_model(dataset, covariance)
+        optimizer_diagnostics = search_result.optimizer_diagnostics
+        identifiability_warnings = _ou_identifiability_warnings_from_profile(
+            dataset,
+            parameter_value,
+            search_result.profile,
+        )
         assumptions = [
             "OU mode follows the lecture-style tree rescaling before Brownian intercept fitting.",
             "Alpha is selected by maximizing log likelihood over a governed bounded search grid.",
         ]
     else:
         parameter_name = "rate_change"
-        parameter_value, transformed_tree, covariance = _best_transformed_mode_fit(
+        search_result = _best_transformed_mode_fit(
             dataset,
             mode=mode,
             bounds=early_burst_bounds,
         )
+        parameter_value = search_result.parameter_value
+        transformed_tree = search_result.transformed_tree
+        covariance = search_result.covariance
         fit = _fit_intercept_only_model(dataset, covariance)
+        optimizer_diagnostics = search_result.optimizer_diagnostics
+        identifiability_warnings = []
         assumptions = [
             "Early-burst mode follows the lecture-style tree rescaling before Brownian intercept fitting.",
             "The rate-change parameter is selected by maximizing log likelihood over a governed bounded search grid.",
@@ -353,6 +400,8 @@ def _fit_evolutionary_mode_from_dataset(
         transformed_tree_newick=dumps_newick(transformed_tree),
         confidence_intervals=intervals,
         residual_diagnostics=residual_diagnostics,
+        optimizer_diagnostics=optimizer_diagnostics,
+        identifiability_warnings=identifiability_warnings,
         assumptions=assumptions,
     )
 
@@ -362,7 +411,7 @@ def _best_transformed_mode_fit(
     *,
     mode: str,
     bounds: tuple[float, float],
-) -> tuple[float, PhyloTree, list[list[float]]]:
+) -> _TransformedModeSearchResult:
     lower, upper = bounds
     if upper <= lower:
         raise ComparativeMethodError("parameter bounds must be strictly increasing")
@@ -377,6 +426,9 @@ def _best_transformed_mode_fit(
     )
     best_fit = _fit_intercept_only_model(dataset, best_covariance)
     best_index = 0
+    profile: list[tuple[float, float]] = [(best_parameter, best_fit.log_likelihood)]
+    coarse_best_parameter = best_parameter
+    coarse_best_log_likelihood = best_fit.log_likelihood
     for index, candidate in enumerate(coarse[1:], start=1):
         transformed_tree = _transform_tree(
             dataset.tree,
@@ -387,15 +439,19 @@ def _best_transformed_mode_fit(
             build_brownian_covariance_matrix(transformed_tree, dataset.taxa)
         )
         fit = _fit_intercept_only_model(dataset, covariance)
+        profile.append((candidate, fit.log_likelihood))
         if fit.log_likelihood > best_fit.log_likelihood:
             best_parameter = candidate
             best_tree = transformed_tree
             best_covariance = covariance
             best_fit = fit
             best_index = index
+            coarse_best_parameter = candidate
+            coarse_best_log_likelihood = fit.log_likelihood
 
     left = coarse[max(0, best_index - 1)]
     right = coarse[min(len(coarse) - 1, best_index + 1)]
+    fine_candidates = _linspace(left, right, 81)
     for candidate in _linspace(left, right, 81):
         if math.isclose(candidate, best_parameter, rel_tol=0.0, abs_tol=1e-12):
             continue
@@ -408,12 +464,52 @@ def _best_transformed_mode_fit(
             build_brownian_covariance_matrix(transformed_tree, dataset.taxa)
         )
         fit = _fit_intercept_only_model(dataset, covariance)
+        profile.append((candidate, fit.log_likelihood))
         if fit.log_likelihood > best_fit.log_likelihood:
             best_parameter = candidate
             best_tree = transformed_tree
             best_covariance = covariance
             best_fit = fit
-    return best_parameter, best_tree, best_covariance
+    fine_step = 0.0
+    if len(fine_candidates) > 1:
+        fine_step = fine_candidates[1] - fine_candidates[0]
+    tolerance = max(abs(fine_step) / 2.0, 1e-9)
+    diagnostics = ContinuousModeOptimizerDiagnostics(
+        optimizer_name="governed-two-stage-grid-search",
+        lower_bound=_stable_value(lower),
+        upper_bound=_stable_value(upper),
+        coarse_grid_point_count=len(coarse),
+        fine_grid_point_count=len(fine_candidates),
+        function_evaluation_count=len(profile),
+        coarse_best_parameter=_stable_value(coarse_best_parameter),
+        coarse_best_log_likelihood=_stable_value(coarse_best_log_likelihood),
+        fine_search_start=_stable_value(left),
+        fine_search_stop=_stable_value(right),
+        converged=True,
+        hit_lower_boundary=math.isclose(
+            best_parameter,
+            lower,
+            rel_tol=0.0,
+            abs_tol=tolerance,
+        ),
+        hit_upper_boundary=math.isclose(
+            best_parameter,
+            upper,
+            rel_tol=0.0,
+            abs_tol=tolerance,
+        ),
+    )
+    normalized_profile = sorted(
+        {round(parameter, 12): (parameter, log_likelihood) for parameter, log_likelihood in profile}.values(),
+        key=lambda item: item[0],
+    )
+    return _TransformedModeSearchResult(
+        parameter_value=best_parameter,
+        transformed_tree=best_tree,
+        covariance=best_covariance,
+        optimizer_diagnostics=diagnostics,
+        profile=normalized_profile,
+    )
 
 
 def _linspace(start: float, stop: float, count: int) -> list[float]:
@@ -421,6 +517,60 @@ def _linspace(start: float, stop: float, count: int) -> list[float]:
         return [start]
     step = (stop - start) / float(count - 1)
     return [start + (step * index) for index in range(count)]
+
+
+def _ou_identifiability_warnings_from_profile(
+    dataset: ComparativeDataset,
+    alpha: float,
+    profile: list[tuple[float, float]],
+) -> list[OUIdentifiabilityWarning]:
+    warnings: list[OUIdentifiabilityWarning] = []
+    if len(dataset.taxa) < 5:
+        warnings.append(
+            OUIdentifiabilityWarning(
+                kind="small_sample_size",
+                message="OU alpha is hard to identify with fewer than five taxa",
+            )
+        )
+    ordered_alphas = sorted(candidate for candidate, _ in profile)
+    if math.isclose(
+        alpha,
+        ordered_alphas[0],
+        rel_tol=0.0,
+        abs_tol=1e-9,
+    ) or math.isclose(
+        alpha,
+        ordered_alphas[-1],
+        rel_tol=0.0,
+        abs_tol=1e-9,
+    ):
+        warnings.append(
+            OUIdentifiabilityWarning(
+                kind="boundary_alpha",
+                message="best-supported OU alpha falls on the search boundary and may not be well identified",
+            )
+        )
+    ordered_log_likelihoods = sorted(
+        (log_likelihood for _, log_likelihood in profile),
+        reverse=True,
+    )
+    if len(ordered_log_likelihoods) > 1 and (
+        ordered_log_likelihoods[0] - ordered_log_likelihoods[1] < 0.5
+    ):
+        warnings.append(
+            OUIdentifiabilityWarning(
+                kind="flat_likelihood",
+                message="OU likelihood surface is shallow across alpha values, so model choice may be unstable",
+            )
+        )
+    if alpha < ordered_alphas[len(ordered_alphas) // 3]:
+        warnings.append(
+            OUIdentifiabilityWarning(
+                kind="weak_pull_to_optimum",
+                message="best-supported OU alpha is weak and may be difficult to distinguish from Brownian motion",
+            )
+        )
+    return warnings
 
 
 def _build_tree_rescaling_report(
