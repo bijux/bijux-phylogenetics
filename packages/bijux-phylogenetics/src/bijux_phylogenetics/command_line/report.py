@@ -13,6 +13,7 @@ from bijux_phylogenetics.reports.service import (
     render_dataset_report,
     render_level_one_release_gate_report,
     render_phylo_inputs_report,
+    render_production_scale_readiness_report,
     render_release_truth_report,
     render_taxon_report,
     render_tree_report,
@@ -20,6 +21,52 @@ from bijux_phylogenetics.reports.service import (
 )
 from bijux_phylogenetics.reports.tree_package import build_tree_report_package
 from bijux_phylogenetics.runtime.results import build_command_result
+
+
+def _build_production_scale_alignment_classes(
+    args: Any,
+) -> list[tuple[str, int, int]] | None:
+    if args.sequence_counts is None and args.alignment_lengths is None:
+        return None
+    sequence_counts = args.sequence_counts or []
+    alignment_lengths = args.alignment_lengths or []
+    if len(sequence_counts) != len(alignment_lengths):
+        raise ValueError(
+            "report production-scale-readiness requires the same number of --sequence-count and --alignment-length values"
+        )
+    return [
+        (
+            f"sequences-{sequence_count}-sites-{alignment_length}",
+            sequence_count,
+            alignment_length,
+        )
+        for sequence_count, alignment_length in zip(
+            sequence_counts,
+            alignment_lengths,
+            strict=True,
+        )
+    ]
+
+
+def _build_production_scale_tree_set_classes(
+    args: Any,
+) -> list[tuple[str, int, int]] | None:
+    if args.posterior_tree_counts is None and args.tree_set_tip_counts is None:
+        return None
+    posterior_tree_counts = args.posterior_tree_counts or []
+    tree_set_tip_counts = args.tree_set_tip_counts or []
+    if len(posterior_tree_counts) != len(tree_set_tip_counts):
+        raise ValueError(
+            "report production-scale-readiness requires the same number of --posterior-tree-count and --tree-set-tip-count values"
+        )
+    return [
+        (f"trees-{tree_count}-taxa-{tip_count}", tree_count, tip_count)
+        for tree_count, tip_count in zip(
+            posterior_tree_counts,
+            tree_set_tip_counts,
+            strict=True,
+        )
+    ]
 
 
 def add_report_command(subparsers: Any) -> None:
@@ -160,6 +207,59 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the report build result as JSON."
     )
     _add_manifest_argument(report_release_truth)
+
+    report_production_scale_readiness = report_subparsers.add_parser(
+        "production-scale-readiness",
+        help="Render one reviewer-facing production-scale readiness report from governed benchmark evidence.",
+    )
+    report_production_scale_readiness.add_argument("--replicates", type=int, default=1)
+    report_production_scale_readiness.add_argument(
+        "--tree-tip-count",
+        action="append",
+        dest="tree_tip_counts",
+        type=int,
+        help="Add one large-tree taxon count. Repeat to override the governed tree-size classes.",
+    )
+    report_production_scale_readiness.add_argument(
+        "--sequence-count",
+        action="append",
+        dest="sequence_counts",
+        type=int,
+        help="Add one sequence count for the large-alignment classes. Repeat alongside --alignment-length.",
+    )
+    report_production_scale_readiness.add_argument(
+        "--alignment-length",
+        action="append",
+        dest="alignment_lengths",
+        type=int,
+        help="Add one aligned-site count for the large-alignment classes. Repeat alongside --sequence-count.",
+    )
+    report_production_scale_readiness.add_argument(
+        "--posterior-tree-count",
+        action="append",
+        dest="posterior_tree_counts",
+        type=int,
+        help="Add one posterior tree count for the tree-set classes. Repeat alongside --tree-set-tip-count.",
+    )
+    report_production_scale_readiness.add_argument(
+        "--tree-set-tip-count",
+        action="append",
+        dest="tree_set_tip_counts",
+        type=int,
+        help="Add one taxon count for the tree-set classes. Repeat alongside --posterior-tree-count.",
+    )
+    report_production_scale_readiness.add_argument(
+        "--stress-tier",
+        action="append",
+        dest="stress_tiers",
+        choices=("small", "heavy"),
+        help="Include one governed stress tier. Repeat to aggregate multiple tiers.",
+    )
+    report_production_scale_readiness.add_argument("--out", required=True, type=Path)
+    report_production_scale_readiness.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
+    _add_manifest_argument(report_production_scale_readiness)
 
 
 def run_report_command(args: Any) -> int:
@@ -529,6 +629,37 @@ def run_report_command(args: Any) -> int:
                             result.release_truth.stress_suite.observations
                         ),
                     },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
+        return 0
+
+    if args.report_command == "production-scale-readiness":
+        result = render_production_scale_readiness_report(
+            out_path=args.out,
+            replicates=args.replicates,
+            tree_tip_counts=args.tree_tip_counts,
+            alignment_size_classes=_build_production_scale_alignment_classes(args),
+            tree_set_size_classes=_build_production_scale_tree_set_classes(args),
+            stress_tiers=args.stress_tiers,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=[],
+            outputs=[result.output_path, result.machine_manifest_path],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=[],
+                    outputs=outputs,
+                    warnings=result.production_scale_readiness.limitations,
+                    metrics=result.machine_manifest["metrics"],
                     data=result,
                 ),
                 json_output=True,
