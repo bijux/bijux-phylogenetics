@@ -108,7 +108,7 @@
   "execution_mode": "parallel",
   "parallel_workers": 2,
   "report_manifest_path": "report-artifacts/rabies-method-sensitivity-report.manifest.json",
-  "reproducibility_check_count": 116,
+  "reproducibility_check_count": 120,
   "reproducibility_failed_check_count": 0,
   "reproducibility_failed_variant_count": 0,
   "reproducibility_passed": true,
@@ -122,13 +122,17 @@
   "slurm_job_count": 4,
   "slurm_job_evidence_file_count": 36,
   "slurm_job_evidence_total_output_byte_count": 168260,
-  "slurm_job_evidence_total_runtime_seconds": 17.270621,
+  "slurm_job_evidence_total_runtime_seconds": 17.151419,
   "slurm_maximum_estimated_memory_mib": 1536,
   "slurm_maximum_estimated_wallclock_minutes": 35,
   "slurm_merge_failed_check_count": 0,
   "slurm_merge_ready": true,
   "slurm_merge_status": "merge-ready",
   "slurm_mergeable_variant_count": 4,
+  "slurm_output_explosion_global_issue_count": 0,
+  "slurm_output_explosion_high_risk_variant_count": 0,
+  "slurm_output_explosion_status": "low",
+  "slurm_output_explosion_warning_variant_count": 0,
   "slurm_output_freshness_check_count": 12,
   "slurm_output_freshness_failed_check_count": 0,
   "slurm_pending_job_count": 0,
@@ -157,6 +161,8 @@
 <dl class="summary-card"><dt>slurm job evidence files</dt><dd>36</dd></dl>
 <dl class="summary-card"><dt>slurm storage MiB</dt><dd>2</dd></dl>
 <dl class="summary-card"><dt>slurm largest storage variant</dt><dd>ginsi-gap-threshold</dd></dl>
+<dl class="summary-card"><dt>slurm output explosion risk</dt><dd>low</dd></dl>
+<dl class="summary-card"><dt>slurm output explosion high-risk variants</dt><dd>0</dd></dl>
 <dl class="summary-card"><dt>slurm merge ready</dt><dd>true</dd></dl>
 <dl class="summary-card"><dt>slurm mergeable variants</dt><dd>4</dd></dl>
 <dl class="summary-card"><dt>slurm fresh output jobs</dt><dd>4</dd></dl>
@@ -164,7 +170,7 @@
 <dl class="summary-card"><dt>slurm completed jobs</dt><dd>4</dd></dl>
 <dl class="summary-card"><dt>slurm stale jobs</dt><dd>0</dd></dl>
 <dl class="summary-card"><dt>reproducibility passed</dt><dd>true</dd></dl>
-<dl class="summary-card"><dt>reproducibility checks</dt><dd>116</dd></dl>
+<dl class="summary-card"><dt>reproducibility checks</dt><dd>120</dd></dl>
 <dl class="summary-card"><dt>linked artifacts</dt><dd>28</dd></dl>
 </div></section>
 <section><h2>artifacts</h2><ul class="artifact-list">
@@ -184,12 +190,16 @@
 <li>slurm-array-partitions: <a href="slurm-array-partitions.tsv">slurm-array-partitions.tsv</a><span class="artifact-note">739 bytes</span></li>
 <li>slurm-array-members: <a href="slurm-array-members.tsv">slurm-array-members.tsv</a><span class="artifact-note">1089 bytes</span></li>
 <li>slurm-array-strategy: <a href="slurm-array-strategy.json">slurm-array-strategy.json</a><span class="artifact-note">4177 bytes</span></li>
-<li>slurm-job-evidence-index: <a href="slurm-job-evidence.tsv">slurm-job-evidence.tsv</a><span class="artifact-note">1045 bytes</span></li>
+<li>slurm-job-evidence-index: <a href="slurm-job-evidence.tsv">slurm-job-evidence.tsv</a><span class="artifact-note">1046 bytes</span></li>
 <li>slurm-job-evidence-summary: <a href="slurm-job-evidence-summary.json">slurm-job-evidence-summary.json</a><span class="artifact-note">9311 bytes</span></li>
 <li>slurm-storage-categories: <a href="slurm-storage-categories.tsv">slurm-storage-categories.tsv</a><span class="artifact-note">1187 bytes</span></li>
 <li>slurm-storage-variants: <a href="slurm-storage-variants.tsv">slurm-storage-variants.tsv</a><span class="artifact-note">518 bytes</span></li>
 <li>slurm-storage-summary: <a href="slurm-storage-report.json">slurm-storage-report.json</a><span class="artifact-note">6809 bytes</span></li>
 <li>slurm-storage-report: <a href="slurm-storage-report.html">slurm-storage-report.html</a><span class="artifact-note">4731 bytes</span></li>
+<li>slurm-output-explosion-checks: <a href="slurm-output-explosion-checks.tsv">slurm-output-explosion-checks.tsv</a><span class="artifact-note">1494 bytes</span></li>
+<li>slurm-output-explosion-variants: <a href="slurm-output-explosion-variants.tsv">slurm-output-explosion-variants.tsv</a><span class="artifact-note">413 bytes</span></li>
+<li>slurm-output-explosion-summary: <a href="slurm-output-explosion-report.json">slurm-output-explosion-report.json</a><span class="artifact-note">4857 bytes</span></li>
+<li>slurm-output-explosion-report: <a href="slurm-output-explosion-report.html">slurm-output-explosion-report.html</a><span class="artifact-note">4436 bytes</span></li>
 <li>slurm-merge-checks: <a href="slurm-merge-checks.tsv">slurm-merge-checks.tsv</a><span class="artifact-note">2312 bytes</span></li>
 <li>slurm-merge-variants: <a href="slurm-merge-variants.tsv">slurm-merge-variants.tsv</a><span class="artifact-note">1001 bytes</span></li>
 <li>slurm-merge-summary: <a href="slurm-merge-report.json">slurm-merge-report.json</a><span class="artifact-note">6970 bytes</span></li>
@@ -200,9 +210,9 @@
 <li>slurm-job-status: <a href="slurm-job-status.tsv">slurm-job-status.tsv</a><span class="artifact-note">1413 bytes</span></li>
 <li>slurm-partition-status: <a href="slurm-partition-status.tsv">slurm-partition-status.tsv</a><span class="artifact-note">398 bytes</span></li>
 <li>slurm-workflow-status: <a href="slurm-workflow-status.json">slurm-workflow-status.json</a><span class="artifact-note">4558 bytes</span></li>
-<li>reproducibility-checks: <a href="reproducibility-checks.tsv">reproducibility-checks.tsv</a><span class="artifact-note">26073 bytes</span></li>
+<li>reproducibility-checks: <a href="reproducibility-checks.tsv">reproducibility-checks.tsv</a><span class="artifact-note">26804 bytes</span></li>
 <li>reproducibility-variant-audit: <a href="reproducibility-variants.tsv">reproducibility-variants.tsv</a><span class="artifact-note">524 bytes</span></li>
-<li>reproducibility-audit: <a href="reproducibility-audit.json">reproducibility-audit.json</a><span class="artifact-note">43843 bytes</span></li>
+<li>reproducibility-audit: <a href="reproducibility-audit.json">reproducibility-audit.json</a><span class="artifact-note">45138 bytes</span></li>
 <li>report-manifest: <a href="report-artifacts/rabies-method-sensitivity-report.manifest.json">report-artifacts/rabies-method-sensitivity-report.manifest.json</a><span class="artifact-note">5669 bytes</span></li>
 </ul></section>
 <section><h2>workflow-summary</h2><pre>dataset: Rabies method-sensitivity panel
@@ -235,7 +245,7 @@ claim: Before rooting, the FastTree versus IQ-TREE comparison changed several in
 evidence: serious unrooted engine conflicts ranged up to 8 per variant, while stable shared clades per variant ranged from 2 to 2.
 caution: The engine-sensitive clades are a warning against over-reading fine internal structure from one compact panel, especially when approximate and likelihood engines disagree before rooting.</pre></section>
 <section><h2>reproducibility-audit</h2><pre>all passed: true
-top-level checks: 116
+top-level checks: 120
 failed top-level checks: 0
 failed variants: 0</pre></section>
 <section><h2>slurm-job-planning</h2><pre>planned jobs: 4
@@ -250,7 +260,7 @@ partition scripts: 2
 total array jobs: 4</pre></section>
 <section><h2>slurm-job-evidence</h2><pre>job evidence packages: 4
 job evidence artifact files: 36
-job evidence total runtime seconds: 17.270621
+job evidence total runtime seconds: 17.151419
 job evidence total output bytes: 168260</pre></section>
 <section><h2>slurm-storage-estimate</h2><pre>estimated retained storage MiB: 2
 workflow outputs bytes: 161224
@@ -259,6 +269,12 @@ tree bytes: 7036
 posterior sample bytes: 0
 review artifact bytes: 1089128
 largest variant by retained bytes: ginsi-gap-threshold</pre></section>
+<section><h2>slurm-output-explosion-risk</h2><pre>overall risk status: low
+global issues: 0
+warning variants: 0
+high-risk variants: 0
+largest variant output share: 0.25
+posterior sample bytes: 0</pre></section>
 <section><h2>slurm-merge-report</h2><pre>merge status: merge-ready
 merge ready: true
 mergeable variants: 4
@@ -297,6 +313,10 @@ slurm storage categories: slurm-storage-categories.tsv
 slurm storage variants: slurm-storage-variants.tsv
 slurm storage summary: slurm-storage-report.json
 slurm storage report: slurm-storage-report.html
+slurm output explosion checks: slurm-output-explosion-checks.tsv
+slurm output explosion variants: slurm-output-explosion-variants.tsv
+slurm output explosion summary: slurm-output-explosion-report.json
+slurm output explosion report: slurm-output-explosion-report.html
 slurm merge checks: slurm-merge-checks.tsv
 slurm merge variants: slurm-merge-variants.tsv
 slurm merge summary: slurm-merge-report.json

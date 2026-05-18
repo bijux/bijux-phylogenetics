@@ -19,12 +19,12 @@
       "/opt/homebrew/bin/FastTree",
       "-gtr",
       "-nt",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln"
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln"
     ],
     "iqtree_support": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln",
       "-st",
       "DNA",
       "-seed",
@@ -37,12 +37,12 @@
       "1000",
       "-wbt",
       "-pre",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/ginsi-gap-threshold/engine-comparison/engine-artifacts/ginsi-gap-threshold/bootstrap-support/bootstrap-support"
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gap-threshold/engine-comparison/engine-artifacts/ginsi-gap-threshold/bootstrap-support/bootstrap-support"
     ],
     "model_selection": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln",
       "-st",
       "DNA",
       "-seed",
@@ -52,14 +52,14 @@
       "-m",
       "MF",
       "-pre",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/ginsi-gap-threshold/engine-comparison/engine-artifacts/ginsi-gap-threshold/model-selection/model-selection"
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gap-threshold/engine-comparison/engine-artifacts/ginsi-gap-threshold/model-selection/model-selection"
     ],
     "trimming": [
       "/opt/homebrew/bin/trimal",
       "-in",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/ginsi-gap-threshold/ginsi-gap-threshold.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gap-threshold/ginsi-gap-threshold.aln",
       "-out",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln",
       "-gt",
       "0.100000"
     ]
@@ -192,13 +192,13 @@
     }
   },
   "runtimes": {
-    "alignment_seconds": 0.742196,
-    "fasttree_seconds": 0.106282,
-    "inference_seconds": 3.510754,
-    "iqtree_support_seconds": 0.715675,
-    "model_selection_seconds": 0.234111,
-    "total_seconds": 4.28518,
-    "trimming_seconds": 0.03223
+    "alignment_seconds": 0.757877,
+    "fasttree_seconds": 0.104311,
+    "inference_seconds": 3.574582,
+    "iqtree_support_seconds": 0.744206,
+    "model_selection_seconds": 0.257589,
+    "total_seconds": 4.341409,
+    "trimming_seconds": 0.00895
   },
   "script_path": "slurm-arrays/compact-mafft-ginsi-elevated.sbatch",
   "status": "succeeded",

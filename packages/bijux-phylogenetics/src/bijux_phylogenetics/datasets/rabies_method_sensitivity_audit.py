@@ -34,6 +34,9 @@ _SLURM_JOB_EVIDENCE_SUMMARY_FILENAME = "slurm-job-evidence-summary.json"
 _SLURM_STORAGE_CATEGORIES_FILENAME = "slurm-storage-categories.tsv"
 _SLURM_STORAGE_VARIANTS_FILENAME = "slurm-storage-variants.tsv"
 _SLURM_STORAGE_SUMMARY_FILENAME = "slurm-storage-report.json"
+_SLURM_OUTPUT_EXPLOSION_CHECKS_FILENAME = "slurm-output-explosion-checks.tsv"
+_SLURM_OUTPUT_EXPLOSION_VARIANTS_FILENAME = "slurm-output-explosion-variants.tsv"
+_SLURM_OUTPUT_EXPLOSION_SUMMARY_FILENAME = "slurm-output-explosion-report.json"
 _SLURM_MERGE_CHECKS_FILENAME = "slurm-merge-checks.tsv"
 _SLURM_MERGE_VARIANTS_FILENAME = "slurm-merge-variants.tsv"
 _SLURM_MERGE_SUMMARY_FILENAME = "slurm-merge-report.json"
@@ -130,6 +133,15 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     slurm_storage_categories_path = bundle_root / _SLURM_STORAGE_CATEGORIES_FILENAME
     slurm_storage_variants_path = bundle_root / _SLURM_STORAGE_VARIANTS_FILENAME
     slurm_storage_summary_path = bundle_root / _SLURM_STORAGE_SUMMARY_FILENAME
+    slurm_output_explosion_checks_path = (
+        bundle_root / _SLURM_OUTPUT_EXPLOSION_CHECKS_FILENAME
+    )
+    slurm_output_explosion_variants_path = (
+        bundle_root / _SLURM_OUTPUT_EXPLOSION_VARIANTS_FILENAME
+    )
+    slurm_output_explosion_summary_path = (
+        bundle_root / _SLURM_OUTPUT_EXPLOSION_SUMMARY_FILENAME
+    )
     slurm_merge_checks_path = bundle_root / _SLURM_MERGE_CHECKS_FILENAME
     slurm_merge_variants_path = bundle_root / _SLURM_MERGE_VARIANTS_FILENAME
     slurm_merge_summary_path = bundle_root / _SLURM_MERGE_SUMMARY_FILENAME
@@ -158,6 +170,13 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     slurm_storage_category_rows = _read_tsv_rows(slurm_storage_categories_path)
     slurm_storage_variant_rows = _read_tsv_rows(slurm_storage_variants_path)
     slurm_storage_summary = _load_json(slurm_storage_summary_path)
+    slurm_output_explosion_check_rows = _read_tsv_rows(
+        slurm_output_explosion_checks_path
+    )
+    slurm_output_explosion_variant_rows = _read_tsv_rows(
+        slurm_output_explosion_variants_path
+    )
+    slurm_output_explosion_summary = _load_json(slurm_output_explosion_summary_path)
     slurm_merge_check_rows = _read_tsv_rows(slurm_merge_checks_path)
     slurm_merge_variant_rows = _read_tsv_rows(slurm_merge_variants_path)
     slurm_merge_summary = _load_json(slurm_merge_summary_path)
@@ -475,6 +494,74 @@ def audit_rabies_method_sensitivity_workflow_bundle(
             int(largest_storage_variant_row["total_byte_count"]),
         ),
         detail="storage summary largest-variant fields match the written per-variant storage ledger",
+    )
+    slurm_output_explosion_variant_ids = sorted(
+        str(row["variant_id"]) for row in slurm_output_explosion_variant_rows
+    )
+    add_check(
+        "slurm-output-explosion:variant-coverage",
+        surface="slurm-output-explosion",
+        condition=config_variant_ids == slurm_output_explosion_variant_ids,
+        expected=config_variant_ids,
+        observed=slurm_output_explosion_variant_ids,
+        detail="output-explosion rows cover the configured variant ids",
+    )
+    add_check(
+        "slurm-output-explosion:check-count",
+        surface="slurm-output-explosion",
+        condition=int(slurm_output_explosion_summary["check_count"])
+        == len(slurm_output_explosion_check_rows),
+        expected=slurm_output_explosion_summary["check_count"],
+        observed=len(slurm_output_explosion_check_rows),
+        detail="output-explosion summary check_count matches the written check rows",
+    )
+    observed_output_explosion_variant_total = (
+        sum(
+            1
+            for row in slurm_output_explosion_variant_rows
+            if str(row["risk_status"]) == "low"
+        )
+        + sum(
+            1
+            for row in slurm_output_explosion_variant_rows
+            if str(row["risk_status"]) == "warning"
+        )
+        + sum(
+            1
+            for row in slurm_output_explosion_variant_rows
+            if str(row["risk_status"]) == "high"
+        )
+    )
+    add_check(
+        "slurm-output-explosion:variant-counts",
+        surface="slurm-output-explosion",
+        condition=int(slurm_output_explosion_summary["variant_count"])
+        == observed_output_explosion_variant_total,
+        expected=slurm_output_explosion_summary["variant_count"],
+        observed=observed_output_explosion_variant_total,
+        detail="output-explosion summary variant_count matches the risk-classified variant rows",
+    )
+    observed_overall_output_explosion_status = "high"
+    if (
+        int(slurm_output_explosion_summary["failed_check_count"]) == 0
+        and int(slurm_output_explosion_summary["high_risk_variant_count"]) == 0
+        and int(slurm_output_explosion_summary["global_issue_count"]) == 0
+        and int(slurm_output_explosion_summary["warning_variant_count"]) == 0
+    ):
+        observed_overall_output_explosion_status = "low"
+    elif (
+        int(slurm_output_explosion_summary["failed_check_count"]) == 0
+        and int(slurm_output_explosion_summary["high_risk_variant_count"]) == 0
+    ):
+        observed_overall_output_explosion_status = "warning"
+    add_check(
+        "slurm-output-explosion:overall-risk",
+        surface="slurm-output-explosion",
+        condition=str(slurm_output_explosion_summary["overall_risk_status"])
+        == observed_overall_output_explosion_status,
+        expected=slurm_output_explosion_summary["overall_risk_status"],
+        observed=observed_overall_output_explosion_status,
+        detail="output-explosion summary overall_risk_status matches the written risk counts",
     )
     slurm_merge_variant_ids = sorted(
         str(row["variant_id"]) for row in slurm_merge_variant_rows

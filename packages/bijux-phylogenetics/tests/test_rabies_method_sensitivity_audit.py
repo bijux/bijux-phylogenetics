@@ -27,7 +27,7 @@ def test_audit_rabies_method_sensitivity_workflow_bundle_passes_on_packaged_outp
     assert report.failed_check_count == 0
     assert report.failed_variant_count == 0
     assert report.variant_count == 4
-    assert report.check_count >= 54
+    assert report.check_count >= 58
     assert all(row.status == "passed" for row in report.variants)
     workflow_status_check = next(
         row
@@ -51,6 +51,12 @@ def test_audit_rabies_method_sensitivity_workflow_bundle_passes_on_packaged_outp
         if row.check_id == "slurm-storage:category-coverage"
     )
     assert storage_check.status == "passed"
+    output_explosion_check = next(
+        row
+        for row in report.checks
+        if row.check_id == "slurm-output-explosion:variant-coverage"
+    )
+    assert output_explosion_check.status == "passed"
     merge_check = next(
         row for row in report.checks if row.check_id == "slurm-merge:job-coverage"
     )

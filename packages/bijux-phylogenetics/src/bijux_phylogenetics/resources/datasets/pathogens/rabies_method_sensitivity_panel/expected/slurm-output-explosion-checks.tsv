@@ -1,0 +1,9 @@
+check_id	surface	status	expected	observed	detail
+job-plan:variant-coverage	job-plan	passed	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	job-plan rows cover the configured variant ids
+storage:variant-coverage	storage	passed	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	storage variant rows cover the configured variant ids
+storage:category-coverage	storage	passed	['logs', 'outputs', 'posterior_samples', 'reports', 'trees']	['logs', 'outputs', 'posterior_samples', 'reports', 'trees']	storage category rows cover the explicit retained-output categories
+job-plan:total-output-mib	job-plan	passed	4	4	storage summary variant_count matches the configured variant count
+storage:total-storage-mib	storage	passed	storage summary rounds total retained bytes up into MiB	2	storage summary total_estimated_storage_mib is a rounded-up retained-byte estimate
+storage:largest-variant	storage	passed	ginsi-gap-threshold	ginsi-gap-threshold	storage summary largest_variant_id matches the written storage-variant rows
+risk-summary:variant-counts	risk-summary	passed	4	4	risk-status counts cover every configured variant exactly once
+risk-summary:overall-status	risk-summary	passed	low	low	overall explosion-risk status matches the global and per-variant risk counts

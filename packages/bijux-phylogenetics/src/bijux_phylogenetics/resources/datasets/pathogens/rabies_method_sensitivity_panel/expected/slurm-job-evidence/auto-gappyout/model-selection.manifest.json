@@ -10,10 +10,10 @@
   "engine_name": "iqtree",
   "fasttree_support_summary": null,
   "input_checksums": {
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/auto-gappyout.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/auto-gappyout.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
   },
   "input_paths": [
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/auto-gappyout.trimmed.aln"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/auto-gappyout.trimmed.aln"
   ],
   "iqtree_summary": {
     "log_likelihood": -3945.2345,
@@ -24,7 +24,7 @@
     "support_values": []
   },
   "log_likelihood": -3945.2345,
-  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.manifest.json",
+  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.manifest.json",
   "model_selection_summary": {
     "best_model_aic": "TIM2+F+G4",
     "best_model_aicc": "TIM2+F+G4",
@@ -969,25 +969,25 @@
     "model-selection workflow exposed a parsable log-likelihood score"
   ],
   "output_checksums": {
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.iqtree": "e7d70ce881409f01cf57dca676a719937133cfdd8f1fd30c1c81461407cd1b9e",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.log": "394b1996a31507640bb4167b9bcde18177a1a08c377aa9b2a3e9d89588a284bc",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.model-candidates.tsv": "72a260da691f9e5f28a72b7d3ee8391846895419852beae6b622b3a3bf0734fb",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.model.gz": "77278517f8c50ee086efe847174f7e67642b12600ee3243284d9b31c1a24e950",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.selected-model.txt": "83f15e8e7b4d36af68abb4efa0d72c8631518f540264c49447b4ff94816a91cd"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.iqtree": "630f3272c31fdc13773c09b9a3de383356d9d52492782a1402d945e92257424c",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.log": "30ae4784bcf36ac2da1bac9cf091c6d92c4e7d6929748202ab85ec5432e04527",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.model-candidates.tsv": "72a260da691f9e5f28a72b7d3ee8391846895419852beae6b622b3a3bf0734fb",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.model.gz": "8724d318fd28918206bab042ff8445eba598f1c034d54c798d040222dc733a15",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.selected-model.txt": "83f15e8e7b4d36af68abb4efa0d72c8631518f540264c49447b4ff94816a91cd"
   },
   "output_paths": {
-    "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.log",
-    "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.iqtree",
-    "model_candidates": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.model-candidates.tsv",
-    "model_selection_sidecar": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.model.gz",
-    "selected_model": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.selected-model.txt"
+    "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.log",
+    "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.iqtree",
+    "model_candidates": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.model-candidates.tsv",
+    "model_selection_sidecar": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.model.gz",
+    "selected_model": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.selected-model.txt"
   },
   "resumed": false,
   "run": {
     "command": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/auto-gappyout.trimmed.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/auto-gappyout.trimmed.aln",
       "-st",
       "DNA",
       "-seed",
@@ -997,20 +997,20 @@
       "-m",
       "MF",
       "-pre",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection"
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection"
     ],
-    "ended_at_utc": "2026-05-18T01:50:27Z",
+    "ended_at_utc": "2026-05-18T02:04:52Z",
     "engine_name": "iqtree",
     "executable": "/opt/homebrew/bin/iqtree2",
     "exit_code": 0,
     "output_paths": {
-      "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.log",
-      "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.iqtree"
+      "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.log",
+      "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.iqtree"
     },
-    "runtime_seconds": 0.265439,
-    "started_at_utc": "2026-05-18T01:50:27Z",
-    "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.stderr.log",
-    "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.stdout.log",
+    "runtime_seconds": 0.277835,
+    "started_at_utc": "2026-05-18T02:04:51Z",
+    "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.stderr.log",
+    "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection/model-selection.stdout.log",
     "timed_out": false,
     "timeout_seconds": null,
     "version": {
@@ -1024,7 +1024,7 @@
     },
     "warning_lines": [],
     "workflow": "model-selection",
-    "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection"
+    "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/model-selection"
   },
   "selected_model": "TPM2u+F+G4",
   "sh_alrt_support_summary": null,
