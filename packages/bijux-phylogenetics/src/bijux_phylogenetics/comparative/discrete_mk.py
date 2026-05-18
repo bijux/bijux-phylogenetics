@@ -34,6 +34,8 @@ _DISCRETE_TRANSFORM_COARSE_GRID_POINT_COUNT = 9
 _DISCRETE_TRANSFORM_FINE_GRID_POINT_COUNT = 17
 _DISCRETE_DELTA_LOWER_BOUND = math.exp(-5.0)
 _DISCRETE_DELTA_UPPER_BOUND = 3.0
+_DISCRETE_EARLY_BURST_LOWER_BOUND = -10.0
+_DISCRETE_EARLY_BURST_UPPER_BOUND = 10.0
 
 
 @dataclass(slots=True)
@@ -169,6 +171,10 @@ def fit_discrete_mk_model(
         _DISCRETE_DELTA_LOWER_BOUND,
         _DISCRETE_DELTA_UPPER_BOUND,
     ),
+    early_burst_bounds: tuple[float, float] = (
+        _DISCRETE_EARLY_BURST_LOWER_BOUND,
+        _DISCRETE_EARLY_BURST_UPPER_BOUND,
+    ),
 ) -> DiscreteMkFitReport:
     """Fit one Mk discrete-trait model on a rooted tree."""
     dataset = load_discrete_dataset(
@@ -187,6 +193,7 @@ def fit_discrete_mk_model(
         lambda_bounds=lambda_bounds,
         kappa_bounds=kappa_bounds,
         delta_bounds=delta_bounds,
+        early_burst_bounds=early_burst_bounds,
     )
 
 
@@ -203,6 +210,10 @@ def fit_discrete_mk_model_from_dataset(
     delta_bounds: tuple[float, float] = (
         _DISCRETE_DELTA_LOWER_BOUND,
         _DISCRETE_DELTA_UPPER_BOUND,
+    ),
+    early_burst_bounds: tuple[float, float] = (
+        _DISCRETE_EARLY_BURST_LOWER_BOUND,
+        _DISCRETE_EARLY_BURST_UPPER_BOUND,
     ),
 ) -> DiscreteMkFitReport:
     """Fit one Mk discrete-trait model from a native discrete dataset."""
@@ -221,6 +232,7 @@ def fit_discrete_mk_model_from_dataset(
         lambda_bounds=lambda_bounds,
         kappa_bounds=kappa_bounds,
         delta_bounds=delta_bounds,
+        early_burst_bounds=early_burst_bounds,
     )
     resolved_allowed_transition_pairs = _resolve_allowed_transition_pairs(
         state_order,
@@ -245,6 +257,7 @@ def fit_discrete_mk_model_from_dataset(
         lambda_bounds=lambda_bounds,
         kappa_bounds=kappa_bounds,
         delta_bounds=delta_bounds,
+        early_burst_bounds=early_burst_bounds,
     )
     log_likelihood = _tree_log_likelihood(
         fit_tree,
@@ -282,6 +295,7 @@ def fit_discrete_mk_model_from_dataset(
             lambda_bounds=lambda_bounds,
             kappa_bounds=kappa_bounds,
             delta_bounds=delta_bounds,
+            early_burst_bounds=early_burst_bounds,
         )
         baseline_comparison = DiscreteModelBaselineComparison(
             baseline_model="equal-rates",
@@ -305,6 +319,7 @@ def fit_discrete_mk_model_from_dataset(
             lambda_bounds=lambda_bounds,
             kappa_bounds=kappa_bounds,
             delta_bounds=delta_bounds,
+            early_burst_bounds=early_burst_bounds,
         )
         transform_baseline_comparison = DiscreteMkTransformBaselineComparison(
             baseline_transform="untransformed",
@@ -633,11 +648,13 @@ def _resolve_discrete_transform_name(transform: str | None) -> str | None:
         "pagel-kappa": "kappa",
         "delta": "delta",
         "pagel-delta": "delta",
+        "EB": "early-burst",
+        "early-burst": "early-burst",
     }
     resolved = aliases.get(transform)
     if resolved is None:
         raise ComparativeMethodError(
-            "unsupported discrete Mk transform; expected one of: lambda, kappa, delta"
+            "unsupported discrete Mk transform; expected one of: lambda, kappa, delta, early-burst"
         )
     return resolved
 
@@ -651,12 +668,13 @@ def _validate_discrete_transform_request(
     lambda_bounds: tuple[float, float],
     kappa_bounds: tuple[float, float],
     delta_bounds: tuple[float, float],
+    early_burst_bounds: tuple[float, float],
 ) -> None:
     if transform is None:
         return
-    if transform not in {"lambda", "kappa", "delta"}:
+    if transform not in {"lambda", "kappa", "delta", "early-burst"}:
         raise ComparativeMethodError(
-            "unsupported discrete Mk transform; expected one of: lambda, kappa, delta"
+            "unsupported discrete Mk transform; expected one of: lambda, kappa, delta, early-burst"
         )
     if state_ordering != "unordered":
         raise ComparativeMethodError(
@@ -680,7 +698,10 @@ def _validate_discrete_transform_request(
     if transform == "kappa":
         _validate_kappa_bounds(kappa_bounds)
         return
-    _validate_delta_bounds(delta_bounds)
+    if transform == "delta":
+        _validate_delta_bounds(delta_bounds)
+        return
+    _validate_early_burst_bounds(early_burst_bounds)
 
 
 def _validate_lambda_bounds(bounds: tuple[float, float]) -> None:
@@ -708,6 +729,20 @@ def _validate_delta_bounds(bounds: tuple[float, float]) -> None:
         )
 
 
+def _validate_early_burst_bounds(bounds: tuple[float, float]) -> None:
+    lower, upper = bounds
+    if not (
+        _DISCRETE_EARLY_BURST_LOWER_BOUND
+        <= lower
+        < upper
+        <= _DISCRETE_EARLY_BURST_UPPER_BOUND
+    ):
+        raise ComparativeMethodError(
+            "discrete Mk early-burst bounds must be strictly increasing within "
+            f"[{_DISCRETE_EARLY_BURST_LOWER_BOUND:g}, {_DISCRETE_EARLY_BURST_UPPER_BOUND:g}]"
+        )
+
+
 def _discrete_parameter_count(
     *,
     state_count: int,
@@ -722,7 +757,7 @@ def _discrete_parameter_count(
         state_ordering=state_ordering,
         allowed_transition_pairs=allowed_transition_pairs,
     )
-    if transform in {"lambda", "kappa", "delta"}:
+    if transform in {"lambda", "kappa", "delta", "early-burst"}:
         return parameter_count + 1
     return parameter_count
 
@@ -738,6 +773,7 @@ def _fit_discrete_mk_surface(
     lambda_bounds: tuple[float, float],
     kappa_bounds: tuple[float, float],
     delta_bounds: tuple[float, float],
+    early_burst_bounds: tuple[float, float],
 ) -> tuple[
     PhyloTree,
     object,
@@ -764,12 +800,14 @@ def _fit_discrete_mk_surface(
             None,
             [],
         )
-    if transform not in {"lambda", "kappa", "delta"}:
+    if transform not in {"lambda", "kappa", "delta", "early-burst"}:
         raise ComparativeMethodError(
-            "unsupported discrete Mk transform; expected one of: lambda, kappa, delta"
+            "unsupported discrete Mk transform; expected one of: lambda, kappa, delta, early-burst"
         )
     if transform == "delta":
         bounds = delta_bounds
+    elif transform == "early-burst":
+        bounds = early_burst_bounds
     elif transform == "lambda":
         bounds = lambda_bounds
     else:
@@ -978,7 +1016,7 @@ def _fit_discrete_mk_parameterized_transform_surface(
     )
     transform_fit = DiscreteMkTransformFit(
         transform_name=transform,
-        parameter_name=transform,
+        parameter_name=_discrete_transform_parameter_name(transform),
         parameter_value=best_parameter_value,
         lower_bound=lower,
         upper_bound=upper,
@@ -1061,9 +1099,17 @@ def _discrete_transform_mode_name(transform: str) -> str:
         return "pagel-kappa"
     if transform == "delta":
         return "pagel-delta"
+    if transform == "early-burst":
+        return "early-burst"
     raise ComparativeMethodError(
-        "unsupported discrete Mk transform; expected one of: lambda, kappa, delta"
+        "unsupported discrete Mk transform; expected one of: lambda, kappa, delta, early-burst"
     )
+
+
+def _discrete_transform_parameter_name(transform: str) -> str:
+    if transform == "early-burst":
+        return "a"
+    return transform
 
 
 def _transform_discrete_mk_tree(
@@ -1072,10 +1118,13 @@ def _transform_discrete_mk_tree(
     transform: str,
     parameter_value: float,
 ) -> PhyloTree:
+    transformed_parameter_value = (
+        -parameter_value if transform == "early-burst" else parameter_value
+    )
     return transform_tree_for_evolutionary_mode(
         tree,
         mode=_discrete_transform_mode_name(transform),
-        parameter_value=parameter_value,
+        parameter_value=transformed_parameter_value,
         sigsq=1.0,
     )
 
@@ -1125,8 +1174,16 @@ def _discrete_transform_warning_rows(
     ):
         warnings.append(
             DiscreteMkTransformWarning(
-                kind=f"boundary_{transform}",
-                message=f"best-supported discrete Mk {transform} falls on the search boundary and may not be well identified",
+                kind=(
+                    "boundary_early_burst"
+                    if transform == "early-burst"
+                    else f"boundary_{transform}"
+                ),
+                message=(
+                    "best-supported discrete Mk early-burst transform parameter falls on the search boundary and may not be well identified"
+                    if transform == "early-burst"
+                    else f"best-supported discrete Mk {transform} falls on the search boundary and may not be well identified"
+                ),
             )
         )
     if len(ordered_log_likelihoods) > 1 and (
@@ -1178,6 +1235,33 @@ def _discrete_transform_warning_rows(
             DiscreteMkTransformWarning(
                 kind="late_change_limit",
                 message="best-supported discrete Mk delta remains close to the late-change boundary and may be difficult to distinguish from an extreme tip-concentrated transition surface",
+            )
+        )
+    if transform == "early-burst" and abs(parameter_value) <= max(
+        boundary_tolerance, 1e-6
+    ):
+        warnings.append(
+            DiscreteMkTransformWarning(
+                kind="brownian_like_rate_change",
+                message="best-supported discrete Mk early-burst transform parameter remains close to the zero-change boundary and may be difficult to distinguish from the untransformed branch-length surface",
+            )
+        )
+    if transform == "early-burst" and parameter_value <= lower + max(
+        boundary_tolerance, 1e-6
+    ):
+        warnings.append(
+            DiscreteMkTransformWarning(
+                kind="late_change_limit",
+                message="best-supported discrete Mk early-burst rate change remains close to the strongest late-change boundary and may be difficult to distinguish from an extreme tip-concentrated transition surface",
+            )
+        )
+    if transform == "early-burst" and parameter_value >= upper - max(
+        boundary_tolerance, 1e-6
+    ):
+        warnings.append(
+            DiscreteMkTransformWarning(
+                kind="early_change_limit",
+                message="best-supported discrete Mk early-burst rate change remains close to the strongest early-change boundary and may be difficult to distinguish from an extreme root-concentrated transition surface",
             )
         )
     return warnings
