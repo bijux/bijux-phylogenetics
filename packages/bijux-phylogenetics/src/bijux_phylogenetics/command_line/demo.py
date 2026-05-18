@@ -917,6 +917,10 @@ def run_demo_command(args: Any) -> int:
                 result.workflow_bundle.slurm_output_explosion_variants_path,
                 result.workflow_bundle.slurm_output_explosion_summary_path,
                 result.workflow_bundle.slurm_output_explosion_report_path,
+                result.workflow_bundle.slurm_tree_retention_checks_path,
+                result.workflow_bundle.slurm_tree_retention_files_path,
+                result.workflow_bundle.slurm_tree_retention_summary_path,
+                result.workflow_bundle.slurm_tree_retention_report_path,
                 result.workflow_bundle.slurm_merge_checks_path,
                 result.workflow_bundle.slurm_merge_variants_path,
                 result.workflow_bundle.slurm_merge_summary_path,
@@ -1046,6 +1050,27 @@ def run_demo_command(args: Any) -> int:
                         ),
                         "slurm_output_explosion_high_risk_variant_count": (
                             result.workflow_bundle.slurm_output_explosion_high_risk_variant_count
+                        ),
+                        "slurm_tree_retention_status": (
+                            result.workflow_bundle.slurm_tree_retention_status
+                        ),
+                        "slurm_tree_set_file_count": (
+                            result.workflow_bundle.slurm_tree_set_file_count
+                        ),
+                        "slurm_tree_posterior_sample_file_count": (
+                            result.workflow_bundle.slurm_tree_posterior_sample_file_count
+                        ),
+                        "slurm_tree_thinning_recommended_file_count": (
+                            result.workflow_bundle.slurm_tree_thinning_recommended_file_count
+                        ),
+                        "slurm_tree_thinning_required_file_count": (
+                            result.workflow_bundle.slurm_tree_thinning_required_file_count
+                        ),
+                        "slurm_tree_compression_recommended_file_count": (
+                            result.workflow_bundle.slurm_tree_compression_recommended_file_count
+                        ),
+                        "slurm_tree_compression_required_file_count": (
+                            result.workflow_bundle.slurm_tree_compression_required_file_count
                         ),
                         "slurm_merge_status": (
                             result.workflow_bundle.slurm_merge_status
