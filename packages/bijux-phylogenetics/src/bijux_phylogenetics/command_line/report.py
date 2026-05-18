@@ -29,6 +29,7 @@ from bijux_phylogenetics.reports.service import (
 from bijux_phylogenetics.reports import (
     build_alignment_figure_package,
     write_alignment_filtering_methods_summary_text,
+    write_tree_inference_methods_summary_text,
     write_tree_validation_methods_summary_text,
     write_supplementary_alignment_diagnostics_table,
     write_supplementary_ancestral_state_table,
@@ -130,6 +131,19 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the methods-summary result as JSON."
     )
     _add_manifest_argument(report_tree_validation_methods_summary)
+
+    report_tree_inference_methods_summary = report_subparsers.add_parser(
+        "tree-inference-methods-summary",
+        help="Write reviewer-facing methods-summary text for a fasta-to-tree workflow manifest.",
+    )
+    report_tree_inference_methods_summary.add_argument("workflow_manifest", type=Path)
+    report_tree_inference_methods_summary.add_argument(
+        "--out", required=True, type=Path
+    )
+    report_tree_inference_methods_summary.add_argument(
+        "--json", action="store_true", help="Emit the methods-summary result as JSON."
+    )
+    _add_manifest_argument(report_tree_inference_methods_summary)
 
     report_trait_tree_package = report_subparsers.add_parser(
         "trait-tree-package",
@@ -684,6 +698,55 @@ def run_report_command(args: Any) -> int:
                         "blocked_context_count": result.blocked_context_count,
                         "repair_item_count": result.repair_item_count,
                         "validity_decision": result.validation.validity_decision,
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
+        return 0
+
+    if args.report_command == "tree-inference-methods-summary":
+        result = write_tree_inference_methods_summary_text(
+            args.out,
+            workflow_manifest_path=args.workflow_manifest,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=[args.workflow_manifest],
+            outputs=[result.output_path],
+        )
+        workflow_warnings = [
+            str(item)
+            for item in result.workflow_manifest.get("warnings", [])
+            if str(item).strip()
+        ]
+        support_summary = result.workflow_manifest.get("support_summary")
+        if isinstance(support_summary, dict):
+            workflow_warnings.extend(
+                str(item)
+                for item in support_summary.get("warnings", [])
+                if str(item).strip()
+            )
+        deduplicated_warnings: list[str] = []
+        for warning in workflow_warnings:
+            if warning not in deduplicated_warnings:
+                deduplicated_warnings.append(warning)
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=[args.workflow_manifest],
+                    outputs=outputs,
+                    warnings=deduplicated_warnings,
+                    metrics={
+                        "warning_count": result.warning_count,
+                        "selected_model": result.selected_model,
+                        "bootstrap_replicates": result.bootstrap_replicates,
+                        "trimmed_alignment_length": result.trimmed_alignment_length,
+                        "supported_node_count": result.supported_node_count,
                     },
                     data=result,
                 ),
