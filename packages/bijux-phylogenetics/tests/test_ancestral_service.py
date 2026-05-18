@@ -158,6 +158,7 @@ def test_render_ancestral_state_report_writes_html_and_svg(tmp_path: Path) -> No
     assert "ancestral-comparison" in html
     assert "ancestral-sensitivity" in html
     assert "ancestral-node-table" in html
+    assert "limitations" in html
     assert manifest["report_kind"] == "ancestral-state"
     assert manifest["supplement_sections"] == [
         "ancestral-methods",
@@ -165,9 +166,11 @@ def test_render_ancestral_state_report_writes_html_and_svg(tmp_path: Path) -> No
         "ancestral-node-table",
         "ancestral-uncertainty",
         "ancestral-sensitivity",
+        "limitations",
     ]
     assert result.supplement_sections == manifest["supplement_sections"]
     assert result.sensitivity is not None
+    assert manifest["limitations"]
 
 
 def test_render_ancestral_state_report_supports_fitch_comparison(
@@ -186,3 +189,4 @@ def test_render_ancestral_state_report_supports_fitch_comparison(
     html = output.read_text(encoding="utf-8")
     assert result.output_path == output
     assert "ancestral-comparison" in html
+    assert "limitations" in html

@@ -826,7 +826,14 @@ def render_ancestral_state_report(
         "ancestral-node-table",
         "ancestral-uncertainty",
         "ancestral-sensitivity",
+        "limitations",
     ]
+    limitations = _report_limitations(
+        report,
+        reconstruction_kind=reconstruction_kind,
+        sensitivity=sensitivity,
+        comparison=comparison,
+    )
     sections = [
         (
             "ancestral-reconstruction",
@@ -867,6 +874,7 @@ def render_ancestral_state_report(
             "ancestral-sensitivity",
             json.dumps(asdict(sensitivity), indent=2, sort_keys=True, default=str),
         ),
+        ("limitations", json.dumps(limitations, indent=2, sort_keys=True)),
     ]
     if comparison is not None:
         sections.append(
@@ -886,6 +894,7 @@ def render_ancestral_state_report(
         rendered_tree=str(render_path),
     )
     machine_manifest["supplement_sections"] = supplement_sections
+    machine_manifest["limitations"] = limitations
     write_html_report(
         title=title,
         sections=sections,
@@ -943,6 +952,46 @@ def _report_exclusions(
     if isinstance(report, ContinuousAncestralReport):
         payload["dropped_non_numeric_taxa"] = report.dropped_non_numeric_taxa
     return payload
+
+
+def _report_limitations(
+    report: ContinuousAncestralReport | DiscreteAncestralReport,
+    *,
+    reconstruction_kind: str,
+    sensitivity: object,
+    comparison: object | None,
+) -> list[str]:
+    limitations = list(report.warnings)
+    if reconstruction_kind == "continuous":
+        limitations.append(
+            "continuous ancestral estimates are model-based internal-node expectations and should not be treated as direct ancestral measurements"
+        )
+    else:
+        limitations.append(
+            "discrete ancestral state labels and probabilities summarize model support and should not be treated as direct proof of historical state occupancy"
+        )
+    if report.dropped_missing_taxa:
+        limitations.append(
+            f"{len(report.dropped_missing_taxa)} taxa were excluded because the requested trait is missing"
+        )
+    if isinstance(report, ContinuousAncestralReport) and report.dropped_non_numeric_taxa:
+        limitations.append(
+            f"{len(report.dropped_non_numeric_taxa)} taxa were excluded because the requested continuous trait is not numeric"
+        )
+    if comparison is not None:
+        limitations.append(
+            "alternative model comparison is included because internal-node reconstructions can change under different evolutionary assumptions"
+        )
+    for summary in (
+        sensitivity.model_sensitivity,
+        sensitivity.tree_sensitivity,
+        sensitivity.pruning_sensitivity,
+        sensitivity.trait_coding_sensitivity,
+    ):
+        if summary is None:
+            continue
+        limitations.extend(summary.notes)
+    return sorted(dict.fromkeys(item.strip() for item in limitations if item.strip()))
 
 
 def _report_node_table(
