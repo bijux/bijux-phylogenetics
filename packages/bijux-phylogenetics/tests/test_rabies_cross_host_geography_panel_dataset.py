@@ -243,22 +243,60 @@ def test_run_rabies_cross_host_geography_panel_demo_materializes_dataset_and_wor
     assert result.workflow_bundle.final_report_path.is_file()
     assert result.overview_path.is_file()
     assert result.overview_html_path.is_file()
+    assert result.artifact_inventory_path.is_file()
+    assert result.reproducibility_checklist_path.is_file()
     assert result.package_manifest_path.is_file()
     overview = result.overview_path.read_text(encoding="utf-8")
     overview_html = result.overview_html_path.read_text(encoding="utf-8")
     package_manifest = json.loads(
         result.package_manifest_path.read_text(encoding="utf-8")
     )
+    inventory_rows = list(
+        csv.DictReader(
+            result.artifact_inventory_path.open("r", encoding="utf-8", newline=""),
+            delimiter="\t",
+        )
+    )
+    checklist_rows = list(
+        csv.DictReader(
+            result.reproducibility_checklist_path.open(
+                "r", encoding="utf-8", newline=""
+            ),
+            delimiter="\t",
+        )
+    )
     assert "final report" in overview
     assert "comparative report" in overview
     assert "rooted-versus-consensus comparison" in overview
     assert "short answer" in overview
+    assert "package artifact inventory" in overview
     assert "Biological Question" in overview_html
+    assert "package reproducibility checklist" in overview_html
     assert package_manifest["biological_question"].startswith(
         "Do the host-associated rabies lineages"
     )
     assert package_manifest["workflow_files"]["final_report"]["path"] == (
         "workflow/rabies-cross-host-geography-report.html"
+    )
+    assert package_manifest["package_files"]["artifact_inventory"]["path"] == (
+        "rabies-cross-host-geography-artifacts.tsv"
+    )
+    assert package_manifest["package_files"]["reproducibility_checklist"]["path"] == (
+        "rabies-cross-host-geography-reproducibility-checklist.tsv"
+    )
+    assert package_manifest["package_files"]["artifact_inventory"]["artifact_count"] == (
+        len(inventory_rows)
+    )
+    assert (
+        package_manifest["package_files"]["reproducibility_checklist"]["item_count"]
+        == len(checklist_rows)
+    )
+    assert any(
+        row["relative_path"] == "workflow/rabies-cross-host-geography-report.html"
+        for row in inventory_rows
+    )
+    assert any(
+        row["check_id"] == "downstream-analysis-exported" for row in checklist_rows
     )
 
 
@@ -306,17 +344,26 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
     output_root = tmp_path / "demo"
     dataset = load_rabies_cross_host_geography_panel_dataset()
 
-    workflow_root = tmp_path / "workflow-fixture"
+    workflow_root = output_root / "workflow"
     workflow_root.mkdir(parents=True, exist_ok=True)
     final_report_path = workflow_root / "rabies-cross-host-geography-report.html"
     workflow_summary_path = workflow_root / "workflow-summary.tsv"
     resource_observations_path = workflow_root / "resource-observations.tsv"
     final_manifest_path = workflow_root / "rabies-cross-host-geography.manifest.json"
     scientific_findings_path = workflow_root / "scientific-findings.tsv"
-    bootstrap_summary_path = workflow_root / "bootstrap-review.summary.tsv"
-    comparative_report_path = workflow_root / "comparative-report.html"
+    bootstrap_summary_path = (
+        workflow_root / "bootstrap-review" / "bootstrap-review.summary.tsv"
+    )
+    comparative_report_path = (
+        workflow_root / "comparative" / "comparative-report.html"
+    )
+    biogeography_report_path = (
+        workflow_root / "biogeography" / "biogeography-report.html"
+    )
     conclusion_stability_report_path = (
-        workflow_root / "conclusion-stability-report.html"
+        workflow_root
+        / "conclusion-stability"
+        / "conclusion-stability-report.html"
     )
     for path, contents in (
         (final_report_path, "<html></html>\n"),
@@ -329,14 +376,23 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
         ),
         (bootstrap_summary_path, "metric\tvalue\n"),
         (comparative_report_path, "<html></html>\n"),
+        (biogeography_report_path, "<html></html>\n"),
         (conclusion_stability_report_path, "<html></html>\n"),
     ):
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(contents, encoding="utf-8")
 
     fake_config = SimpleNamespace(
         config_path=dataset.workflow_config_path,
         workflow_prefix=dataset.workflow_prefix,
+        alignment_mode="mafft_auto",
+        trimming_mode="strictplus",
+        trim_gap_threshold=0.2,
+        bootstrap_consensus_threshold=0.5,
+        bootstrap_robust_support_threshold=0.8,
         comparative_formula=dataset.comparative_formula,
+        comparative_response=dataset.comparative_response,
+        comparative_branch_length_floor=dataset.comparative_branch_length_floor,
         timeout_seconds=dataset.timeout_seconds,
         max_bootstrap_tree_count=dataset.max_bootstrap_tree_count,
         max_report_table_rows=dataset.max_report_table_rows,
@@ -353,32 +409,52 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
         comparative_pgls_r_squared=0.833944827574,
         scientific_finding_count=6,
         sequence_type="dna",
+        output_root=workflow_root,
         workflow_summary_path=workflow_summary_path,
         resource_observations_path=resource_observations_path,
+        tree_path=workflow_root / "rabies-cross-host-geography-panel.rooted.tree",
+        rooting_report_path=workflow_root / "rabies-cross-host-geography-panel.rooting.tsv",
+        model_table_path=workflow_root / "rabies-cross-host-geography-panel.model.tsv",
+        support_table_path=workflow_root / "rabies-cross-host-geography-panel.support.tsv",
+        manifest_path=workflow_root / "rabies-cross-host-geography-panel.manifest.json",
+        log_path=workflow_root / "rabies-cross-host-geography-panel.log",
         clade_table_path=workflow_root / "clade-table.tsv",
         bootstrap_summary_path=bootstrap_summary_path,
         bootstrap_tree_comparison_summary_path=workflow_root
+        / "bootstrap-review"
         / "rooted-tree-vs-bootstrap-consensus.summary.tsv",
+        host_switch_summary_path=workflow_root / "host-switch-summary.tsv",
         comparative_report_path=comparative_report_path,
+        biogeography_report_path=biogeography_report_path,
         conclusion_stability_report_path=conclusion_stability_report_path,
         final_report_path=final_report_path,
         final_manifest_path=final_manifest_path,
         scientific_findings_path=scientific_findings_path,
         bootstrap_tree_count=1000,
+        bootstrap_topology_count=4,
         workflow_runtime_seconds=12.5,
         bootstrap_review_runtime_seconds=0.25,
         bootstrap_review_peak_memory_bytes=2048,
         budget_warning_count=0,
         host_switch_count=2,
         migration_event_count=4,
+        comparative_branch_repair_count=0,
         conclusion_stable_count=6,
         conclusion_weak_count=3,
         conclusion_unstable_count=1,
     )
 
     for path in (
+        fake_workflow_bundle.tree_path,
+        fake_workflow_bundle.rooting_report_path,
+        fake_workflow_bundle.model_table_path,
+        fake_workflow_bundle.support_table_path,
+        fake_workflow_bundle.manifest_path,
+        fake_workflow_bundle.log_path,
         fake_workflow_bundle.clade_table_path,
         fake_workflow_bundle.bootstrap_tree_comparison_summary_path,
+        fake_workflow_bundle.host_switch_summary_path,
+        fake_workflow_bundle.biogeography_report_path,
     ):
         path.write_text("metric\tvalue\n", encoding="utf-8")
 
@@ -386,9 +462,35 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
         "bijux_phylogenetics.datasets.rabies_host_geography.run_rabies_cross_host_geography_panel_workflow",
         lambda *args, **kwargs: fake_workflow_report,
     )
+    def _fake_write_bundle(*args, **kwargs):
+        for path in (
+            final_report_path,
+            workflow_summary_path,
+            resource_observations_path,
+            final_manifest_path,
+            scientific_findings_path,
+            bootstrap_summary_path,
+            comparative_report_path,
+            biogeography_report_path,
+            conclusion_stability_report_path,
+            fake_workflow_bundle.tree_path,
+            fake_workflow_bundle.rooting_report_path,
+            fake_workflow_bundle.model_table_path,
+            fake_workflow_bundle.support_table_path,
+            fake_workflow_bundle.manifest_path,
+            fake_workflow_bundle.log_path,
+            fake_workflow_bundle.clade_table_path,
+            fake_workflow_bundle.bootstrap_tree_comparison_summary_path,
+            fake_workflow_bundle.host_switch_summary_path,
+        ):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if not path.exists():
+                path.write_text("metric\tvalue\n", encoding="utf-8")
+        return fake_workflow_bundle
+
     monkeypatch.setattr(
         "bijux_phylogenetics.datasets.rabies_host_geography.write_rabies_cross_host_geography_panel_workflow_bundle",
-        lambda *args, **kwargs: fake_workflow_bundle,
+        _fake_write_bundle,
     )
 
     result = run_rabies_cross_host_geography_panel_demo(output_root)
@@ -400,6 +502,12 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
     assert payload["report_kind"] == "rabies_cross_host_geography_package"
     assert payload["dataset_files"]["source_accessions"]["path"] == (
         "dataset/source-accessions.tsv"
+    )
+    assert payload["package_files"]["artifact_inventory"]["path"] == (
+        "rabies-cross-host-geography-artifacts.tsv"
+    )
+    assert payload["package_files"]["reproducibility_checklist"]["path"] == (
+        "rabies-cross-host-geography-reproducibility-checklist.tsv"
     )
     assert payload["workflow_files"]["final_report"]["path"] == (
         "workflow/rabies-cross-host-geography-report.html"
@@ -675,6 +783,9 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
         workflow_bundle=workflow_bundle,
         overview_path=output / "overview.md",
         overview_html_path=output / "rabies-cross-host-geography-overview.html",
+        artifact_inventory_path=output / "rabies-cross-host-geography-artifacts.tsv",
+        reproducibility_checklist_path=output
+        / "rabies-cross-host-geography-reproducibility-checklist.tsv",
         package_manifest_path=output
         / "rabies-cross-host-geography-package.manifest.json",
     )
@@ -720,13 +831,23 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
         workflow_bundle.final_manifest_path,
         fake_result.overview_path,
         fake_result.overview_html_path,
-        fake_result.package_manifest_path,
     ]:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("ok\n", encoding="utf-8")
+    fake_result.artifact_inventory_path.write_text(
+        "section\tkind\trelative_path\tsha256\tsize_bytes\n"
+        "package\tmarkdown\toverview.md\tabc\t3\n",
+        encoding="utf-8",
+    )
+    fake_result.reproducibility_checklist_path.write_text(
+        "section\tcheck_id\tstatus\tsummary\tevidence\tartifact_path\n"
+        "package\tpackage-navigation-exported\tpass\tok\tok\toverview.md\n",
+        encoding="utf-8",
+    )
+    fake_result.package_manifest_path.write_text("ok\n", encoding="utf-8")
 
     monkeypatch.setattr(
-        "bijux_phylogenetics.command_line.run_rabies_cross_host_geography_panel_demo",
+        "bijux_phylogenetics.command_line.demo.run_rabies_cross_host_geography_panel_demo",
         lambda *args, **kwargs: fake_result,
     )
 
@@ -742,8 +863,10 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
     payload = json.loads(capsys.readouterr().out)
 
     assert exit_code == 0
-    assert payload["metrics"]["artifact_count"] == 41
+    assert payload["metrics"]["artifact_count"] == 43
     assert payload["metrics"]["reference_output_count"] == 3
+    assert payload["metrics"]["package_artifact_count"] == 1
+    assert payload["metrics"]["package_checklist_item_count"] == 1
     assert payload["metrics"]["biological_question"].startswith(
         "Do the host-associated rabies lineages"
     )
@@ -817,7 +940,9 @@ def test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrat
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 41
+    assert payload["metrics"]["artifact_count"] == 43
+    assert payload["metrics"]["package_artifact_count"] > 0
+    assert payload["metrics"]["package_checklist_item_count"] == 6
     assert payload["metrics"]["sequence_count"] == 9
     assert payload["metrics"]["config_path"] == str(
         output / "dataset" / "workflow-config.json"
