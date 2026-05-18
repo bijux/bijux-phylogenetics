@@ -1482,6 +1482,13 @@ boundary and equal-rates-baseline caution. The sparse six-state ARD surface
 still stays owner-side only, where it continues to govern overfit and
 overparameterization warnings without pretending its full row-level maximum is
 durable enough for live parity.
+`geiger::fitDiscrete(model='meristic')` is explicitly excluded in this round.
+Local `geiger` exposes a distinct meristic lane with an integer-state contract,
+while Bijux currently offers generic ordered-state Mk support over user-named
+categorical states. That ordered-state surface remains available for reviewer
+work, but it is not claimed as meristic parity, and the runtime now rejects
+`meristic` requests directly with that reason instead of letting them blur
+into the ordered ER, SYM, or ARD paths.
 
 `parity --reference-source phytools-live` is the governed live `phytools`
 execution harness. It uses the same checked-in `Rscript` orchestration model
