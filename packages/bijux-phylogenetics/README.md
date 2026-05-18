@@ -1361,14 +1361,17 @@ rejects `standard_error_trait`, the shared fixture corpus now retains one
 governed per-taxon standard-error review surface for future parity work, and
 the live `geiger` lane reports the durable policy string
 `fitcontinuous-standard-error-explicitly-excluded-this-round`.
-The lambda lane now has three governed `fitContinuous(model='lambda')` cases:
+The lambda lane now has four governed `fitContinuous(model='lambda')` cases:
 a twenty-four-taxon strong-signal review surface that lands on the Brownian
 upper boundary, a twenty-four-taxon weak-signal review surface that collapses
-to the zero-signal lower boundary, and a twenty-four-taxon missing-value
-pruning review surface. Those cases govern Pagel-lambda covariance
-transformation, explicit lambda bounds, sigma-squared-backed rate, root-state
-recovery, log-likelihood, AIC, AICc, and reviewer-facing boundary warnings.
-The owned Bijux side exposes this through
+to the zero-signal lower boundary, a twenty-four-taxon missing-value pruning
+review surface, and a bounded-control review surface that keeps lambda inside
+`[0.2, 0.6]` under an explicit reference `control` contract. Those cases
+govern Pagel-lambda covariance transformation, explicit lambda bounds,
+sigma-squared-backed rate, root-state recovery, log-likelihood, AIC, AICc,
+reviewer-facing boundary warnings, and the durable mapping between live
+`geiger` control settings and the owned Bijux search-control surface. The
+owned Bijux side exposes this through
 `fit_continuous_evolutionary_mode(mode='pagel-lambda')`, which follows the
 `geiger::fitContinuous(model='lambda')` intercept-only likelihood contract
 rather than reusing the repo's `phytools::phylosig`-style signal summary
@@ -1399,14 +1402,23 @@ through `fit_continuous_evolutionary_mode(mode='pagel-delta')` and
 `geiger::fitContinuous(model='delta')` contract by raising each node-depth
 proportion to delta before recomputing branch lengths, rather than by applying
 an edge-wise power transform like Pagel kappa.
-The OU lane now has three governed cases with the same reviewer-facing rigor:
+The OU lane now has four governed cases with the same reviewer-facing rigor:
 the twenty-four-taxon OU known-truth recovery surface, a missing-value pruning
-review surface, and a lower-boundary review surface on the rooted
-non-ultrametric control tree. Those cases govern alpha, sigma-squared-backed
-rate, optimum-or-root parameterization, log-likelihood, AIC, AICc, declared
-parameter-bound policy, and explicit lower-boundary flags, and the Bijux side
-now records weak-identifiability and boundary warnings directly from the owned
-continuous-mode fit report instead of hiding them inside parity-only logic.
+review surface, a lower-boundary review surface on the rooted non-ultrametric
+control tree, and a bounded-control review surface that keeps alpha inside
+`[0.2, 1.0]` under explicit reference control settings. Those cases govern
+alpha, sigma-squared-backed rate, optimum-or-root parameterization,
+log-likelihood, AIC, AICc, declared parameter-bound policy, explicit
+lower-boundary flags, and the durable control mapping between the live
+reference lane and the owned Bijux search controls.
+The Bijux side now records weak-identifiability and boundary warnings directly
+from the owned continuous-mode fit report instead of hiding them inside
+parity-only logic.
+For parameterized continuous-mode fits, the owned side now also exposes
+`ContinuousModeSearchControls` so bounded parity cases can declare coarse-grid
+size, fine-grid size, and one explicit initial parameter value while the
+governed diagnostics preserve the starting-value policy, first evaluated
+likelihood, grid counts, and total evaluation count.
 The EB lane now has two governed cases on the same public `rate_change`
 surface: a twenty-four-taxon early-burst truth-recovery surface and a
 Brownian-signal lower-boundary review surface. Bijux keeps a positive public
