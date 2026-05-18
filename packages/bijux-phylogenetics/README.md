@@ -365,6 +365,7 @@ bijux-phylogenetics tree-set inspect posterior.trees --json
 bijux-phylogenetics tree-set diversity posterior.trees --out artifacts/posterior.rf-distribution.tsv --json
 bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk --method majority-rule --clade-frequencies-out artifacts/posterior.clade-frequencies.tsv
 bijux-phylogenetics tree-set support-map reference-tree.nwk posterior.trees --out artifacts/reference-tree-support.tsv --json
+bijux-phylogenetics tree-set methods-summary posterior.trees --out artifacts/tree-set-uncertainty-methods-summary.md --json
 bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html --max-tree-count 5000 --max-report-table-rows 50 --memory-warning-threshold-bytes 134217728
 bijux-phylogenetics demo gnathostome-ortholog-protein-benchmark --out artifacts/gnathostome-ortholog-protein-benchmark --json
 bijux-phylogenetics demo rabies-method-sensitivity-panel --out artifacts/rabies-method-sensitivity-panel --json
@@ -482,6 +483,14 @@ states, taxon pruning, reconstruction model and policy surface, node-level
 uncertainty contract, and interpretation risks that remain attached to the
 internal-node estimates.
 
+For one reviewer-facing tree-set uncertainty methods summary, use
+`tree-set methods-summary`. It writes one Markdown summary over one posterior,
+bootstrap, or other governed tree set, naming the retained tree count, shared
+taxon contract, consensus rule, clade-support dispersion, topology
+multimodality, and instability warnings that remain attached to the tree
+collection instead of collapsing the uncertainty review into a consensus tree
+alone.
+
 For one reviewer-facing supplementary clade-support ledger, use
 `report supplementary-clade-support-table`. It writes one TSV with one row per
 reference-tree clade, keeping descendant taxa, direct tree-label support,
@@ -577,7 +586,8 @@ For a journal-oriented tree-set uncertainty figure bundle, use
 `tree-set package`. It builds one consensus tree plus one explicit
 `consensus-tree.svg`, `clade-support-plot.svg`, `unstable-taxa-plot.svg`, and
 `topology-clusters-plot.svg` surface, then pairs those figures with
-`figure-legend.tsv`, `figure-caption.md`, `uncertainty-review.html`, and a
+`figure-legend.tsv`, `figure-caption.md`,
+`tree-set-uncertainty-methods-summary.md`, `uncertainty-review.html`, and a
 manifest-backed publication audit. Publication readiness stays blocked until
 the consensus support labels are rendered through the support-scale audit, the
 instability panel remains explicit even when no unstable taxa are detected, and
@@ -774,10 +784,12 @@ also report `report_linked_artifact_count`, `report_html_size_bytes`,
 
 `tree-set report` now follows the same scaling contract. The HTML report keeps
 top-level uncertainty summaries in the page body, writes large reviewer tables
-to one sibling `*.artifacts/` directory as TSV or JSON, links those artifacts
-explicitly, records report mode as either `full-review` or `scaled-summary`,
-and reports `html_size_bytes`, `linked_artifact_bytes`, and
-`total_output_bytes`. Tree sets with `1,000+` trees stay reviewable by
+to one sibling `*.artifacts/` directory as TSV, JSON, or Markdown, links those
+artifacts explicitly, keeps one durable
+`tree-set-uncertainty-methods-summary.md` beside the reviewer tables, records
+report mode as either `full-review` or `scaled-summary`, and reports
+`methods_summary_warning_count`, `html_size_bytes`, `linked_artifact_bytes`,
+and `total_output_bytes`. Tree sets with `1,000+` trees stay reviewable by
 switching the highest-cost supplemental sensitivity passes to linked note
 artifacts instead of rerunning them inline.
 
