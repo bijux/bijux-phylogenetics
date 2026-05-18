@@ -223,6 +223,45 @@ def test_fit_continuous_evolutionary_mode_white_noise_handles_missing_values() -
     assert fit.identifiability_warnings[0].kind == "no_phylogenetic_correlation"
 
 
+def test_fit_continuous_evolutionary_mode_explicitly_excludes_standard_error_review(
+) -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_standard_error_review_twenty_four_taxa"
+    )
+
+    with pytest.raises(
+        ComparativeMethodError,
+        match="standard-error parity is explicitly excluded in this round",
+    ):
+        fit_continuous_evolutionary_mode(
+            fixture.tree_path,
+            fixture.traits_path,
+            trait=fixture.trait_name,
+            mode="ornstein-uhlenbeck",
+            taxon_column=fixture.taxon_column,
+            standard_error_trait=fixture.standard_error_trait_name,
+        )
+
+
+def test_compare_continuous_evolutionary_modes_explicitly_excludes_standard_error_review(
+) -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_standard_error_review_twenty_four_taxa"
+    )
+
+    with pytest.raises(
+        ComparativeMethodError,
+        match="standard-error parity is explicitly excluded in this round",
+    ):
+        compare_continuous_evolutionary_modes(
+            fixture.tree_path,
+            fixture.traits_path,
+            trait=fixture.trait_name,
+            taxon_column=fixture.taxon_column,
+            standard_error_trait=fixture.standard_error_trait_name,
+        )
+
+
 @pytest.mark.parametrize("mode", ["trend", "mean_trend", "rate_trend"])
 def test_fit_continuous_evolutionary_mode_explicitly_excludes_geiger_trend_aliases(
     mode: str,
