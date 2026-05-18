@@ -33,6 +33,10 @@ from bijux_phylogenetics.reports.methods_summary import (
     TreeValidationMethodsSummaryTextResult,
     write_tree_validation_methods_summary_text,
 )
+from bijux_phylogenetics.reports.reviewer_audit import (
+    ReviewerAuditChecklist,
+    write_reviewer_audit_checklist,
+)
 from bijux_phylogenetics.render.svg import (
     SupportLabelRenderAudit,
     TreeRenderResult,
@@ -77,6 +81,7 @@ class TreeReportPackageResult:
     report_path: Path
     figure_path: Path
     methods_summary_path: Path
+    reviewer_audit_checklist_path: Path
     support_table_path: Path
     clade_table_path: Path
     branch_stats_path: Path
@@ -94,6 +99,7 @@ class TreeReportPackageResult:
     reviewer_summary: list[str]
     limitations: list[str]
     methods_summary: TreeValidationMethodsSummaryTextResult
+    reviewer_audit_checklist: ReviewerAuditChecklist
     machine_manifest: dict[str, object]
 
 
@@ -351,6 +357,26 @@ def _render_method_tier(method_tier: MethodTierAssessment) -> str:
     )
 
 
+def _render_reviewer_audit_table(checklist: ReviewerAuditChecklist) -> str:
+    rows = []
+    for item in checklist.items:
+        rows.append(
+            "<tr>"
+            f"<td>{escape(item.section)}</td>"
+            f"<td>{escape(item.status)}</td>"
+            f"<td>{escape(item.summary)}</td>"
+            f"<td>{escape('; '.join(item.evidence))}</td>"
+            "</tr>"
+        )
+    return (
+        "<table><thead><tr>"
+        "<th>section</th><th>status</th><th>summary</th><th>evidence</th>"
+        "</tr></thead><tbody>"
+        + "".join(rows)
+        + "</tbody></table>"
+    )
+
+
 def _write_tree_report_html(
     *,
     path: Path,
@@ -363,6 +389,7 @@ def _write_tree_report_html(
     clade_rows: list[CladeTableRow],
     branch_stats: TreeBranchStatisticsRow,
     method_tier: MethodTierAssessment,
+    reviewer_audit_checklist: ReviewerAuditChecklist,
     validation: TreeValidationReport,
     inspection: TreeInspectionReport,
     forensic: TreeForensicReport,
@@ -539,6 +566,10 @@ def _write_tree_report_html(
         <pre>{escape(methods_summary_text)}</pre>
       </section>
       <section>
+        <h2>Reviewer Audit Checklist</h2>
+        {_render_reviewer_audit_table(reviewer_audit_checklist)}
+      </section>
+      <section>
         <h2>Tree Image</h2>
         <div class="figure-frame">{figure_svg}</div>
       </section>
@@ -592,6 +623,7 @@ def build_tree_report_package(
     report_path = out_dir / "tree-report.html"
     figure_path = out_dir / "tree-image.svg"
     methods_summary_path = out_dir / "tree-validation-methods-summary.md"
+    reviewer_audit_checklist_path = out_dir / "reviewer-audit-checklist.tsv"
     support_table_path = out_dir / "support-table.tsv"
     clade_table_path = out_dir / "clade-table.tsv"
     branch_stats_path = out_dir / "branch-stats.tsv"
@@ -640,6 +672,7 @@ def build_tree_report_package(
             "report_path": str(report_path),
             "figure_path": str(figure_path),
             "methods_summary_path": str(methods_summary_path),
+            "reviewer_audit_checklist_path": str(reviewer_audit_checklist_path),
             "support_table_path": str(support_table_path),
             "clade_table_path": str(clade_table_path),
             "branch_stats_path": str(branch_stats_path),
@@ -663,6 +696,11 @@ def build_tree_report_package(
         "forensic": asdict(forensic),
         "support_audit": asdict(support_audit),
     }
+    reviewer_audit_checklist = write_reviewer_audit_checklist(
+        reviewer_audit_checklist_path,
+        machine_manifest,
+    ).checklist
+    machine_manifest["reviewer_audit_checklist"] = asdict(reviewer_audit_checklist)
     manifest_path.write_text(
         json.dumps(machine_manifest, default=str, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -678,6 +716,7 @@ def build_tree_report_package(
         clade_rows=clades.rows,
         branch_stats=branch_stats,
         method_tier=method_tier,
+        reviewer_audit_checklist=reviewer_audit_checklist,
         validation=validation,
         inspection=inspection,
         forensic=forensic,
@@ -688,6 +727,7 @@ def build_tree_report_package(
         report_path=report_path,
         figure_path=figure_path,
         methods_summary_path=methods_summary_path,
+        reviewer_audit_checklist_path=reviewer_audit_checklist_path,
         support_table_path=support_table_path,
         clade_table_path=clade_table_path,
         branch_stats_path=branch_stats_path,
@@ -705,5 +745,6 @@ def build_tree_report_package(
         reviewer_summary=reviewer_summary,
         limitations=limitations,
         methods_summary=methods_summary,
+        reviewer_audit_checklist=reviewer_audit_checklist,
         machine_manifest=machine_manifest,
     )

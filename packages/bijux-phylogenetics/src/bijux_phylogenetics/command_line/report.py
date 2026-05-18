@@ -695,6 +695,7 @@ def run_report_command(args: Any) -> int:
                 result.report_path,
                 result.figure_path,
                 result.methods_summary_path,
+                result.reviewer_audit_checklist_path,
                 result.support_table_path,
                 result.clade_table_path,
                 result.branch_stats_path,
@@ -716,6 +717,9 @@ def run_report_command(args: Any) -> int:
                         "rendered_support_count": result.figure.rendered_support_count,
                         "long_outlier_count": result.branch_stats.long_outlier_count,
                         "methods_warning_count": result.methods_summary.warning_count,
+                        "reviewer_audit_item_count": len(
+                            result.reviewer_audit_checklist.items
+                        ),
                         **method_tier_metrics(result.method_tier),
                     },
                     data=result,

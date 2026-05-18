@@ -25,6 +25,7 @@ def test_build_tree_report_package_writes_html_svg_and_tsv_outputs(
     assert result.report_path.exists()
     assert result.figure_path.exists()
     assert result.methods_summary_path.exists()
+    assert result.reviewer_audit_checklist_path.exists()
     assert result.support_table_path.exists()
     assert result.clade_table_path.exists()
     assert result.branch_stats_path.exists()
@@ -36,13 +37,19 @@ def test_build_tree_report_package_writes_html_svg_and_tsv_outputs(
     assert "Method Tier" in html
     assert "advisory" in html
     assert "Methods Summary" in html
+    assert "Reviewer Audit Checklist" in html
     assert "<svg" in html
     assert "Support Table" in html
     assert "Clade Table" in html
     assert "Branch-Length Stats" in html
 
     support_lines = result.support_table_path.read_text(encoding="utf-8").splitlines()
+    checklist_lines = (
+        result.reviewer_audit_checklist_path.read_text(encoding="utf-8").splitlines()
+    )
     assert support_lines[0].startswith("node_kind\tnode\tnode_label\tdescendant_taxa")
+    assert checklist_lines[0] == "section\tstatus\tsummary\tevidence\tartifact_paths"
+    assert any(line.startswith("validity\t") for line in checklist_lines[1:])
     assert any("\tstrong\t" in line for line in support_lines[1:])
 
     branch_lines = result.branch_stats_path.read_text(encoding="utf-8").splitlines()
@@ -54,8 +61,12 @@ def test_build_tree_report_package_writes_html_svg_and_tsv_outputs(
     assert manifest["outputs"]["methods_summary_path"].endswith(
         "tree-validation-methods-summary.md"
     )
+    assert manifest["outputs"]["reviewer_audit_checklist_path"].endswith(
+        "reviewer-audit-checklist.tsv"
+    )
     assert "Tree Validation Methods Summary" in manifest["methods_summary_text"]
     assert manifest["metrics"]["supported_branch_count"] == 3
+    assert len(manifest["reviewer_audit_checklist"]["items"]) == 5
     assert result.method_tier.tier == "advisory"
 
 
