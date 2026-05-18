@@ -10,6 +10,7 @@ from bijux_phylogenetics.ancestral.common import (
     write_ancestral_rows,
 )
 from bijux_phylogenetics.ancestral.discrete import (
+    _resolve_discrete_model_name,
     DiscreteAncestralReport,
     _resolve_root_prior,
     _resolve_state_order,
@@ -98,6 +99,8 @@ def summarize_ancestral_root_sensitivity(
     fixed_root_state: str | None = None,
 ) -> RootSensitivityReport:
     """Compare discrete ancestral reconstructions across explicit root assumptions."""
+    if model == "meristic":
+        _resolve_discrete_model_name(model)
     if model not in {"equal-rates", "symmetric", "all-rates-different"}:
         raise ValueError(
             "ancestral root sensitivity requires a discrete likelihood model"

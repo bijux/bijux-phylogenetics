@@ -5,6 +5,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import write_ancestral_rows
 from bijux_phylogenetics.ancestral.discrete import (
+    _resolve_discrete_model_name,
     reconstruct_discrete_ancestral_states,
 )
 
@@ -102,6 +103,8 @@ def summarize_ordered_discrete_reconstruction(
     model: str = "equal-rates",
 ) -> OrderedDiscreteReport:
     """Compare one ordered discrete likelihood fit against the unordered baseline."""
+    if model == "meristic":
+        _resolve_discrete_model_name(model)
     if model not in {"equal-rates", "symmetric", "all-rates-different"}:
         raise ValueError(
             "ordered discrete ancestral reconstruction requires a discrete likelihood model"

@@ -845,6 +845,11 @@ def write_discrete_ancestral_fit_table(
 
 
 def _resolve_discrete_model_name(model: str) -> str:
+    if model == "meristic":
+        raise ValueError(
+            "geiger::fitDiscrete(model='meristic') is explicitly excluded this round: "
+            "local geiger uses a distinct integer-state meristic contract, and bijux ordered-state Mk support is not claimed as meristic parity"
+        )
     aliases = {
         "fitch": "fitch",
         "equal-rates": "equal-rates",

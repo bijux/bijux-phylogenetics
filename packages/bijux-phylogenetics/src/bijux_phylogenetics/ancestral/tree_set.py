@@ -18,7 +18,10 @@ from bijux_phylogenetics.ancestral.common import (
 from bijux_phylogenetics.ancestral.continuous import (
     reconstruct_continuous_ancestral_states,
 )
-from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
+from bijux_phylogenetics.ancestral.discrete import (
+    _resolve_discrete_model_name,
+    reconstruct_discrete_ancestral_states,
+)
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import (
@@ -376,6 +379,8 @@ def summarize_discrete_ancestral_tree_set(
     burnin_fraction: float = 0.0,
 ) -> DiscreteAncestralTreeSetReport:
     """Run discrete ancestral reconstruction across a retained posterior or bootstrap tree set."""
+    if model == "meristic":
+        _resolve_discrete_model_name(model)
     if model not in {"fitch", "equal-rates", "symmetric", "all-rates-different"}:
         raise AncestralReconstructionError(
             f"unsupported discrete ancestral tree-set model: {model}"
