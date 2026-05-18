@@ -117,6 +117,7 @@ from bijux_phylogenetics.parity import (
 )
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
+    benchmark_large_alignment_scaling,
     benchmark_large_tree_scaling,
     benchmark_large_dataset_stress_suite,
     benchmark_tree_comparison,
@@ -3003,6 +3004,29 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the benchmark report as JSON."
     )
     _add_manifest_argument(benchmark_large_tree)
+    benchmark_large_alignment = benchmark_subparsers.add_parser(
+        "large-alignment-scaling",
+        help="Benchmark large-alignment diagnostics, trimming, distance, and readiness.",
+    )
+    benchmark_large_alignment.add_argument("--replicates", type=int, default=1)
+    benchmark_large_alignment.add_argument(
+        "--sequence-count",
+        action="append",
+        dest="sequence_counts",
+        type=int,
+        help="Add one sequence count to benchmark. Repeat to benchmark multiple size classes.",
+    )
+    benchmark_large_alignment.add_argument(
+        "--alignment-length",
+        action="append",
+        dest="alignment_lengths",
+        type=int,
+        help="Add one alignment length to benchmark. Repeat to benchmark multiple size classes.",
+    )
+    benchmark_large_alignment.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(benchmark_large_alignment)
     benchmark_alignment = benchmark_subparsers.add_parser(
         "alignment-diagnostics",
         help="Benchmark alignment diagnostics across increasing sequence counts.",
@@ -8456,6 +8480,31 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     replicates=args.replicates,
                     tip_counts=args.tip_counts,
                 )
+            elif args.benchmark_command == "large-alignment-scaling":
+                classes = None
+                if args.sequence_counts is not None or args.alignment_lengths is not None:
+                    sequence_counts = args.sequence_counts or []
+                    alignment_lengths = args.alignment_lengths or []
+                    if len(sequence_counts) != len(alignment_lengths):
+                        raise ValueError(
+                            "large-alignment-scaling requires the same number of --sequence-count and --alignment-length values"
+                        )
+                    classes = [
+                        (
+                            f"sequences-{sequence_count}-sites-{alignment_length}",
+                            sequence_count,
+                            alignment_length,
+                        )
+                        for sequence_count, alignment_length in zip(
+                            sequence_counts,
+                            alignment_lengths,
+                            strict=True,
+                        )
+                    ]
+                report = benchmark_large_alignment_scaling(
+                    replicates=args.replicates,
+                    size_classes=classes,
+                )
             elif args.benchmark_command == "stress-suite":
                 report = benchmark_large_dataset_stress_suite(tier=args.tier)
             else:
@@ -8477,7 +8526,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 metrics["tier"] = report.tier
             if hasattr(report, "workflows"):
                 metrics["workflow_count"] = len(report.workflows)
-                metrics["max_tip_count"] = max(report.tip_counts)
+                if hasattr(report, "tip_counts"):
+                    metrics["max_tip_count"] = max(report.tip_counts)
+                if hasattr(report, "alignment_lengths"):
+                    metrics["max_alignment_length"] = max(report.alignment_lengths)
+                    metrics["max_sequence_count"] = max(report.sequence_counts)
             _print_result(
                 build_command_result(
                     command="benchmark",
