@@ -1339,6 +1339,15 @@ rate, optimum-or-root parameterization, log-likelihood, AIC, AICc, declared
 parameter-bound policy, and explicit lower-boundary flags, and the Bijux side
 now records weak-identifiability and boundary warnings directly from the owned
 continuous-mode fit report instead of hiding them inside parity-only logic.
+The EB lane now has two governed cases on the same public `rate_change`
+surface: a twenty-four-taxon early-burst truth-recovery surface and a
+Brownian-signal lower-boundary review surface. Bijux keeps a positive public
+`rate_change` scale for the owned early-burst fit, while the live `geiger`
+runner maps that surface to `fitContinuous(model='EB')` through the equivalent
+negative `a` parameter and explicit bounded control. Those cases govern
+sigma-squared-backed rate, root-state recovery, log-likelihood, AIC, AICc,
+lower-boundary detection, and reviewer-facing weak-identifiability warnings
+when the fitted rate change collapses back toward the Brownian boundary.
 The same shared fixture layer now also has a dedicated
 `tests/fixtures/metadata/shared_geiger_discrete_fixture_catalog.json` catalog
 for future `geiger::fitDiscrete(...)` work. That governed corpus keeps binary,
