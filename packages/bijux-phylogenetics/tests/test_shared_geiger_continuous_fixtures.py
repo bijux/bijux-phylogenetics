@@ -193,9 +193,10 @@ def test_shared_geiger_continuous_fixture_catalog_handles_missing_constant_outli
     outlier_values = _read_numeric_trait_values(
         "geiger_continuous_outlier_signal_twenty_four_taxa"
     )
-    trend_values = _read_numeric_trait_values(
+    trend_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_trend_proxy_twenty_four_taxa"
     )
+    trend_values = _read_numeric_trait_values(trend_fixture.fixture_id)
 
     assert len(missing_readiness.analysis_taxa) == 22
     assert missing_readiness.pruned_missing_value_taxa == ["Phy10"]
@@ -206,6 +207,10 @@ def test_shared_geiger_continuous_fixture_catalog_handles_missing_constant_outli
             constant_fixture.traits_path,
             trait=constant_fixture.trait_name,
         )
+    assert trend_fixture.geiger_reference_expectation == (
+        "fitcontinuous-trend-explicitly-excluded-this-round"
+    )
+    assert "explicitly excludes geiger trend parity" in trend_fixture.notes
     assert max(outlier_values) - median(outlier_values) > 4.0
     assert trend_values[-1] > trend_values[0]
 
