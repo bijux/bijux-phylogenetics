@@ -1,6 +1,12 @@
 """Rendering helpers for phylogenetics reports and tree figures."""
 
 from .package import TreeFigurePackageResult, build_tree_figure_package
+from .reproducibility import (
+    FigureReproducibilityArtifact,
+    FigureReproducibilityFilter,
+    build_figure_reproducibility_manifest,
+    write_figure_reproducibility_manifest,
+)
 from .svg import AnnotationStrip, TreeRenderResult, render_tree_svg
 from .time_tree_svg import (
     TimeTreeNodeInterval,
@@ -15,12 +21,16 @@ from .trait_tree_package import (
 __all__ = [
     "AnnotationStrip",
     "AnnotatedTraitTreePackageResult",
+    "FigureReproducibilityArtifact",
+    "FigureReproducibilityFilter",
     "TimeTreeNodeInterval",
     "TimeTreeRenderResult",
     "TreeFigurePackageResult",
     "TreeRenderResult",
     "build_annotated_trait_tree_package",
+    "build_figure_reproducibility_manifest",
     "build_tree_figure_package",
     "render_time_tree_svg",
     "render_tree_svg",
+    "write_figure_reproducibility_manifest",
 ]
