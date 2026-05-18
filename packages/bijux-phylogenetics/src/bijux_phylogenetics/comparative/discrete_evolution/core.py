@@ -9,6 +9,7 @@ from bijux_phylogenetics.ancestral.common import (
     node_descendant_taxa,
     node_signature,
 )
+from bijux_phylogenetics.ancestral.discrete import _resolve_discrete_model_name
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.core.traits import load_tsv_summary
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
@@ -1359,6 +1360,8 @@ def run_discrete_state_transition_model(
     ordered_states: list[str] | None = None,
 ) -> DiscreteStateEvolutionReport:
     """Run a deterministic discrete-state evolution workflow on one tree and trait."""
+    if model == "meristic":
+        _resolve_discrete_model_name(model)
     if model not in {"equal-rates", "symmetric", "all-rates-different"}:
         raise ValueError(f"unsupported discrete-state model: {model}")
     coding = validate_discrete_state_coding(

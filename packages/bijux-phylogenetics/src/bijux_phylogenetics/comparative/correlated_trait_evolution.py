@@ -19,6 +19,7 @@ from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.comparative.discrete_evolution import (
     run_discrete_state_transition_model,
 )
+from bijux_phylogenetics.ancestral.discrete import _resolve_discrete_model_name
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
@@ -125,6 +126,8 @@ def summarize_correlated_trait_evolution(
         raise ComparativeMethodError(
             "analysis_kind must be one of: auto, continuous, binary"
         )
+    if binary_model == "meristic":
+        _resolve_discrete_model_name(binary_model)
     if binary_model not in {"equal-rates", "symmetric", "all-rates-different"}:
         raise ComparativeMethodError(
             "binary correlated-trait analysis requires a supported discrete model"
