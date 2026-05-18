@@ -7,7 +7,10 @@ from pathlib import Path
 from bijux_phylogenetics.comparative._math import stable_covariance
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.core.traits import validate_traits_table
+from bijux_phylogenetics.core.traits import (
+    align_tree_and_trait_table,
+    validate_traits_table,
+)
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
@@ -77,6 +80,12 @@ def summarize_numeric_trait_readiness(
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     if trait not in table.columns:
         raise ComparativeMethodError(f"trait table does not contain column '{trait}'")
+    alignment = align_tree_and_trait_table(
+        tree_path,
+        traits_path,
+        taxon_column=taxon_column,
+        required_trait_columns=(trait,),
+    )
     trait_report = validate_traits_table(traits_path, taxon_column=taxon_column)
     trait_column = next(
         (column for column in trait_report.trait_columns if column.name == trait), None
@@ -86,19 +95,13 @@ def summarize_numeric_trait_readiness(
             f"trait column '{trait}' is not available for validation"
         )
 
-    tree_taxa = set(tree.tip_names)
-    table_taxa = set(table.taxa)
-    missing_from_traits = sorted(tree_taxa - table_taxa)
-    extra_trait_taxa = sorted(table_taxa - tree_taxa)
     overlapping_rows = {
-        row[table.taxon_column]: row
-        for row in table.rows
-        if row[table.taxon_column] in tree_taxa
+        row[table.taxon_column]: row for row in alignment.rows
     }
     analysis_taxa: list[str] = []
     pruned_missing_value_taxa: list[str] = []
     pruned_non_numeric_taxa: list[str] = []
-    for taxon in tree.tip_names:
+    for taxon in alignment.report.aligned_taxa:
         row = overlapping_rows.get(taxon)
         if row is None:
             continue
@@ -112,6 +115,8 @@ def summarize_numeric_trait_readiness(
             pruned_non_numeric_taxa.append(taxon)
             continue
         analysis_taxa.append(taxon)
+    missing_from_traits = list(alignment.report.dropped_tree_taxa)
+    extra_trait_taxa = list(alignment.report.dropped_trait_taxa)
 
     blockers: list[str] = []
     warnings: list[str] = []
@@ -167,7 +172,7 @@ def summarize_numeric_trait_readiness(
         complete_branch_lengths=complete_branch_lengths,
         negative_branch_lengths=negative_branch_lengths,
         minimum_branch_length=minimum_branch_length,
-        tree_taxa=len(tree_taxa),
+        tree_taxa=alignment.report.original_tree_taxa,
         analysis_taxa=analysis_taxa,
         missing_from_traits=missing_from_traits,
         extra_trait_taxa=extra_trait_taxa,

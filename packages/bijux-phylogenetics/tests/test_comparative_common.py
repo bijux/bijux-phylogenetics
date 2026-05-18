@@ -43,6 +43,19 @@ def test_comparative_readiness_reports_numeric_trait_pruning() -> None:
     assert report.warnings == []
 
 
+def test_comparative_readiness_uses_tree_trait_alignment_overlap_policy() -> None:
+    report = summarize_numeric_trait_readiness(
+        fixture("example_tree.nwk"),
+        fixture("example_traits.tsv"),
+        trait="value",
+    )
+
+    assert report.analysis_taxa == ["A", "B", "C"]
+    assert report.missing_from_traits == ["D"]
+    assert report.extra_trait_taxa == ["E"]
+    assert report.pruned_missing_value_taxa == []
+
+
 def test_numeric_trait_summary_uses_phylogenetic_overlap_taxa() -> None:
     summary = summarize_numeric_trait(
         fixture("example_tree.nwk"),
