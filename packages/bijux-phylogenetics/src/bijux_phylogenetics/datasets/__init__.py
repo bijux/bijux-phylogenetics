@@ -195,6 +195,13 @@ from .rabies_method_sensitivity_slurm_freshness import (
     write_rabies_method_sensitivity_slurm_output_freshness_json,
     write_rabies_method_sensitivity_slurm_output_freshness_table,
 )
+from .rabies_method_sensitivity_slurm_job_evidence import (
+    RabiesMethodSensitivitySlurmJobEvidenceReport,
+    RabiesMethodSensitivitySlurmJobEvidenceRow,
+    write_rabies_method_sensitivity_slurm_job_evidence_bundle,
+    write_rabies_method_sensitivity_slurm_job_evidence_summary_json,
+    write_rabies_method_sensitivity_slurm_job_evidence_table,
+)
 from .rabies_method_sensitivity_slurm_status import (
     RabiesMethodSensitivitySlurmJobStatusRow,
     RabiesMethodSensitivitySlurmPartitionStatusRow,
@@ -344,6 +351,8 @@ __all__ = [
     "RabiesMethodSensitivitySlurmArrayPartitionRow",
     "RabiesMethodSensitivitySlurmArrayStrategyReport",
     "RabiesMethodSensitivitySlurmAssumptionRow",
+    "RabiesMethodSensitivitySlurmJobEvidenceReport",
+    "RabiesMethodSensitivitySlurmJobEvidenceRow",
     "RabiesMethodSensitivitySlurmJobPlanRow",
     "RabiesMethodSensitivitySlurmJobStatusRow",
     "RabiesMethodSensitivitySlurmOutputFreshnessReport",
@@ -370,6 +379,9 @@ __all__ = [
     "write_rabies_method_sensitivity_slurm_array_partitions_table",
     "write_rabies_method_sensitivity_slurm_array_strategy_json",
     "write_rabies_method_sensitivity_slurm_assumptions_table",
+    "write_rabies_method_sensitivity_slurm_job_evidence_bundle",
+    "write_rabies_method_sensitivity_slurm_job_evidence_summary_json",
+    "write_rabies_method_sensitivity_slurm_job_evidence_table",
     "write_rabies_method_sensitivity_slurm_output_freshness_checks_table",
     "write_rabies_method_sensitivity_slurm_output_freshness_json",
     "write_rabies_method_sensitivity_slurm_output_freshness_table",
