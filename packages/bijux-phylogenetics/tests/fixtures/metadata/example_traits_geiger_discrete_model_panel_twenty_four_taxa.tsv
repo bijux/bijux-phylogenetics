@@ -1,4 +1,4 @@
-taxon	er_binary_truth	er_binary_lambda_weak_signal	sym_three_state_truth	sym_four_state_truth	sym_six_state_truth	ard_binary_truth	ard_four_state_truth	constant_state
+taxon	er_binary_truth	er_binary_transform_weak_signal	sym_three_state_truth	sym_four_state_truth	sym_six_state_truth	ard_binary_truth	ard_four_state_truth	constant_state
 Phy1	0	1	north	north	b	0	east	north
 Phy10	0	0	central	south	d	0	north	north
 Phy11	1	1	central	south	a	0	east	north

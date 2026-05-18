@@ -816,7 +816,7 @@
       "taxon_column": "taxon",
       "primary_trait_columns": [
         "er_binary_truth",
-        "er_binary_lambda_weak_signal",
+        "er_binary_transform_weak_signal",
         "sym_three_state_truth",
         "sym_four_state_truth",
         "sym_six_state_truth",

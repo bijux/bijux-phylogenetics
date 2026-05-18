@@ -453,7 +453,7 @@ def test_fit_discrete_mk_model_marks_governed_geiger_lambda_weak_signal_surface(
     None
 ):
     fixture_entry = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_lambda_weak_signal_twenty_four_taxa"
+        "geiger_discrete_transform_weak_signal_twenty_four_taxa"
     )
 
     report = fit_discrete_mk_model(
@@ -477,6 +477,113 @@ def test_fit_discrete_mk_model_marks_governed_geiger_lambda_weak_signal_surface(
     assert any(
         warning.kind == "weak_phylogenetic_signal"
         for warning in report.transform_fit.warnings
+    )
+
+
+def test_fit_discrete_mk_model_matches_governed_geiger_er_kappa_surface() -> None:
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_kappa_branch_sensitive_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="equal-rates",
+        transform="kappa",
+    )
+
+    assert report.transform_fit is not None
+    assert report.parameter_count == 2
+    assert math.isclose(
+        report.log_likelihood,
+        -9.066235312319336,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        report.transform_fit.parameter_value,
+        0.9011763252454394,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        _single_allowed_rate(report),
+        0.34869516275650086,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+
+
+def test_fit_discrete_mk_model_marks_governed_geiger_kappa_weak_signal_surface() -> (
+    None
+):
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_kappa_weak_signal_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="equal-rates",
+        transform="kappa",
+    )
+
+    assert report.transform_fit is not None
+    assert report.parameter_count == 2
+    assert report.transform_fit.parameter_value <= 1e-6
+    assert math.isclose(
+        report.log_likelihood,
+        -16.635532333438686,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert any(
+        warning.kind == "branch_length_flattening_limit"
+        for warning in report.transform_fit.warnings
+    )
+
+
+def test_fit_discrete_mk_model_matches_governed_geiger_sym_kappa_missing_surface() -> (
+    None
+):
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_kappa_missing_three_state_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="symmetric",
+        transform="kappa",
+    )
+    rate_lookup = _allowed_rate_lookup(report)
+
+    assert report.transform_fit is not None
+    assert report.parameter_count == 4
+    assert report.input_audit.pruned_missing_value_taxa == ["Phy14"]
+    assert math.isclose(
+        report.log_likelihood,
+        -15.153000877556716,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        report.transform_fit.parameter_value,
+        1.0,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        rate_lookup[("central", "north")],
+        0.733706223323755,
+        rel_tol=0.0,
+        abs_tol=1e-6,
     )
 
 

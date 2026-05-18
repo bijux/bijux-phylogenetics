@@ -119,7 +119,7 @@ def test_shared_geiger_discrete_fixture_catalog_supports_lambda_transform_review
         "geiger_discrete_er_binary_twenty_four_taxa"
     )
     weak_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_lambda_weak_signal_twenty_four_taxa"
+        "geiger_discrete_transform_weak_signal_twenty_four_taxa"
     )
     missing_fixture = get_shared_geiger_discrete_fixture(
         "geiger_discrete_lambda_missing_binary_twenty_four_taxa"
@@ -162,6 +162,58 @@ def test_shared_geiger_discrete_fixture_catalog_supports_lambda_transform_review
     assert missing_report.transform_fit is not None
     assert missing_report.input_audit.pruned_missing_value_taxa == ["Phy10"]
     assert missing_report.parameter_count == 2
+
+
+def test_shared_geiger_discrete_fixture_catalog_supports_kappa_transform_review() -> (
+    None
+):
+    strong_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_kappa_branch_sensitive_twenty_four_taxa"
+    )
+    weak_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_kappa_weak_signal_twenty_four_taxa"
+    )
+    missing_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_kappa_missing_three_state_twenty_four_taxa"
+    )
+
+    strong_report = fit_discrete_mk_model(
+        strong_fixture.tree_path,
+        strong_fixture.traits_path,
+        trait=strong_fixture.trait_name,
+        taxon_column=strong_fixture.taxon_column,
+        model="equal-rates",
+        transform="kappa",
+    )
+    weak_report = fit_discrete_mk_model(
+        weak_fixture.tree_path,
+        weak_fixture.traits_path,
+        trait=weak_fixture.trait_name,
+        taxon_column=weak_fixture.taxon_column,
+        model="equal-rates",
+        transform="kappa",
+    )
+    missing_report = fit_discrete_mk_model(
+        missing_fixture.tree_path,
+        missing_fixture.traits_path,
+        trait=missing_fixture.trait_name,
+        taxon_column=missing_fixture.taxon_column,
+        model="symmetric",
+        transform="kappa",
+    )
+
+    assert strong_report.transform_fit is not None
+    assert strong_report.transform_fit.parameter_name == "kappa"
+    assert strong_report.parameter_count == 2
+    assert weak_report.transform_fit is not None
+    assert weak_report.transform_fit.parameter_value <= 1e-6
+    assert any(
+        warning.kind == "branch_length_flattening_limit"
+        for warning in weak_report.transform_fit.warnings
+    )
+    assert missing_report.transform_fit is not None
+    assert missing_report.input_audit.pruned_missing_value_taxa == ["Phy14"]
+    assert missing_report.parameter_count == 4
 
 
 def test_shared_geiger_discrete_fixture_catalog_handles_missing_sparse_and_mismatch_cases() -> (

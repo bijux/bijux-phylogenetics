@@ -87,7 +87,7 @@ GEIGER_FITDISCRETE_LAMBDA_REFERENCE_PAYLOADS: dict[str, dict[str, object]] = {
             "sparse_states": [],
             "state_order": ["0", "1"],
             "taxon_count": 24,
-            "trait_name": "er_binary_lambda_weak_signal",
+            "trait_name": "er_binary_transform_weak_signal",
             "transform_name": "pagel-lambda",
         },
         "rows": [

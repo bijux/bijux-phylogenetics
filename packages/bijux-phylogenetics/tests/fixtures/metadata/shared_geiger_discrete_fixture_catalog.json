@@ -33,14 +33,14 @@
       "notes": "Binary equal-rates surface simulated on the governed twenty-four-taxon ultrametric tree so `fitDiscrete(model='ER')` parity starts from a real non-toy known-truth panel."
     },
     {
-      "fixture_id": "geiger_discrete_lambda_weak_signal_twenty_four_taxa",
+      "fixture_id": "geiger_discrete_transform_weak_signal_twenty_four_taxa",
       "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
-      "trait_name": "er_binary_lambda_weak_signal",
+      "trait_name": "er_binary_transform_weak_signal",
       "taxon_column": "taxon",
       "trait_kind": "binary-discrete",
       "supported_model_names": ["ER"],
-      "validation_expectation": "clean-match-with-weak-lambda-signal",
-      "geiger_reference_expectation": "fitdiscrete-transform-lambda-ready",
+      "validation_expectation": "clean-match-with-weak-transform-signal",
+      "geiger_reference_expectation": "fitdiscrete-transform-ready",
       "feature_tags": [
         "binary-discrete-trait",
         "equal-rates-known-truth",
@@ -52,14 +52,67 @@
         "states": ["0", "1"],
         "matrix_shape": "2x2",
         "parameterization": "equal-rates",
-        "transform": "lambda",
+        "transform_review_kind": "shared-branch-length-transform",
         "expected_signal_boundary": "near-zero"
       },
       "simulation_metadata": {
-        "model": "curated-weak-lambda-review-surface",
+        "model": "curated-weak-transform-review-surface",
         "state_string_by_phy_index": "100100110010001011001111"
       },
-      "notes": "Binary equal-rates weak-signal surface curated on the governed twenty-four-taxon ultrametric tree so `fitDiscrete(model='ER', transform='lambda')` parity has an explicit near-zero lambda review lane instead of only high-signal examples."
+      "notes": "Binary equal-rates weak-signal surface curated on the governed twenty-four-taxon ultrametric tree so transformed `fitDiscrete` parity has an explicit near-zero branch-length review lane instead of only high-signal examples."
+    },
+    {
+      "fixture_id": "geiger_discrete_kappa_branch_sensitive_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitdiscrete-transform-kappa-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "branch-length-sensitive-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_er_binary_twenty_four_taxa",
+        "transform": "kappa"
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "er_binary_truth"
+      },
+      "notes": "Binary equal-rates surface reused as the governed kappa branch-length review lane because local `fitDiscrete(transform='kappa')` moves off the boundary and therefore proves real branch-length sensitivity instead of only weak-signal behavior."
+    },
+    {
+      "fixture_id": "geiger_discrete_kappa_weak_signal_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_transform_weak_signal",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "summary-match-with-weak-transform-signal",
+      "geiger_reference_expectation": "fitdiscrete-transform-kappa-ready-with-summary-parity",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "weak-phylogenetic-signal-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_transform_weak_signal_twenty_four_taxa",
+        "transform": "kappa",
+        "expected_signal_boundary": "near-zero"
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "er_binary_transform_weak_signal"
+      },
+      "notes": "Binary weak-signal surface reused as the governed kappa near-zero review lane, where parameter parity is durable but row-level ER rate maxima remain weakly identified at the branch-length boundary."
     },
     {
       "fixture_id": "geiger_discrete_sym_three_state_twenty_four_taxa",
@@ -251,6 +304,33 @@
         "source_trait_name": "er_binary_truth"
       },
       "notes": "Binary missing-value surface derived from the governed equal-rates panel so `fitDiscrete(model='ER', transform='lambda')` parity must prove explicit pruning before transformed likelihood comparison."
+    },
+    {
+      "fixture_id": "geiger_discrete_kappa_missing_three_state_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+      "trait_name": "sym_three_state_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "three-state-discrete",
+      "supported_model_names": ["SYM"],
+      "validation_expectation": "prune-invalid-overlap",
+      "geiger_reference_expectation": "fitdiscrete-transform-kappa-ready-after-pruning",
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "three-state-discrete-trait",
+        "missing-states",
+        "missing-trait-values",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_sym_three_state_twenty_four_taxa",
+        "transform": "kappa",
+        "missing_taxa": ["Phy14"]
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "sym_three_state_truth"
+      },
+      "notes": "Three-state missing-value surface derived from the governed symmetric panel so `fitDiscrete(model='SYM', transform='kappa')` parity must prove explicit pruning before transformed multistate likelihood comparison."
     },
     {
       "fixture_id": "geiger_discrete_constant_negative_twenty_four_taxa",

@@ -30,8 +30,8 @@ from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
 
-_DISCRETE_LAMBDA_COARSE_GRID_POINT_COUNT = 9
-_DISCRETE_LAMBDA_FINE_GRID_POINT_COUNT = 17
+_DISCRETE_TRANSFORM_COARSE_GRID_POINT_COUNT = 9
+_DISCRETE_TRANSFORM_FINE_GRID_POINT_COUNT = 17
 
 
 @dataclass(slots=True)
@@ -148,6 +148,7 @@ def fit_discrete_mk_model(
     ordered_states: list[str] | None = None,
     allowed_transition_pairs: list[tuple[str, str]] | None = None,
     lambda_bounds: tuple[float, float] = (0.0, 1.0),
+    kappa_bounds: tuple[float, float] = (0.0, 1.0),
 ) -> DiscreteMkFitReport:
     """Fit one Mk discrete-trait model on a rooted tree."""
     dataset = load_discrete_dataset(
@@ -164,6 +165,7 @@ def fit_discrete_mk_model(
         ordered_states=ordered_states,
         allowed_transition_pairs=allowed_transition_pairs,
         lambda_bounds=lambda_bounds,
+        kappa_bounds=kappa_bounds,
     )
 
 
@@ -176,6 +178,7 @@ def fit_discrete_mk_model_from_dataset(
     ordered_states: list[str] | None = None,
     allowed_transition_pairs: list[tuple[str, str]] | None = None,
     lambda_bounds: tuple[float, float] = (0.0, 1.0),
+    kappa_bounds: tuple[float, float] = (0.0, 1.0),
 ) -> DiscreteMkFitReport:
     """Fit one Mk discrete-trait model from a native discrete dataset."""
     resolved_model = _resolve_discrete_model_name(model)
@@ -191,6 +194,7 @@ def fit_discrete_mk_model_from_dataset(
         state_ordering=state_ordering,
         allowed_transition_pairs=allowed_transition_pairs,
         lambda_bounds=lambda_bounds,
+        kappa_bounds=kappa_bounds,
     )
     resolved_allowed_transition_pairs = _resolve_allowed_transition_pairs(
         state_order,
@@ -213,6 +217,7 @@ def fit_discrete_mk_model_from_dataset(
         state_order=state_order,
         allowed_transition_pairs=resolved_allowed_transition_pairs,
         lambda_bounds=lambda_bounds,
+        kappa_bounds=kappa_bounds,
     )
     log_likelihood = _tree_log_likelihood(
         fit_tree,
@@ -247,6 +252,7 @@ def fit_discrete_mk_model_from_dataset(
             ordered_states=state_order,
             allowed_transition_pairs=None,
             lambda_bounds=lambda_bounds,
+            kappa_bounds=kappa_bounds,
         )
         baseline_comparison = DiscreteModelBaselineComparison(
             baseline_model="equal-rates",
@@ -532,11 +538,13 @@ def _resolve_discrete_transform_name(transform: str | None) -> str | None:
     aliases = {
         "lambda": "lambda",
         "pagel-lambda": "lambda",
+        "kappa": "kappa",
+        "pagel-kappa": "kappa",
     }
     resolved = aliases.get(transform)
     if resolved is None:
         raise ComparativeMethodError(
-            "unsupported discrete Mk transform; expected one of: lambda"
+            "unsupported discrete Mk transform; expected one of: lambda, kappa"
         )
     return resolved
 
@@ -548,30 +556,34 @@ def _validate_discrete_transform_request(
     state_ordering: str,
     allowed_transition_pairs: list[tuple[str, str]] | None,
     lambda_bounds: tuple[float, float],
+    kappa_bounds: tuple[float, float],
 ) -> None:
     if transform is None:
         return
-    if transform != "lambda":
+    if transform not in {"lambda", "kappa"}:
         raise ComparativeMethodError(
-            "unsupported discrete Mk transform; expected one of: lambda"
+            "unsupported discrete Mk transform; expected one of: lambda, kappa"
         )
     if state_ordering != "unordered":
         raise ComparativeMethodError(
-            "discrete Mk lambda transform currently supports only unordered ER, SYM, and ARD fits"
+            "discrete Mk branch-length transforms currently support only unordered ER, SYM, and ARD fits"
         )
     if allowed_transition_pairs is not None:
         raise ComparativeMethodError(
-            "discrete Mk lambda transform does not yet support custom transition constraints"
+            "discrete Mk branch-length transforms do not yet support custom transition constraints"
         )
-    ultrametric_summary = summarize_ultrametric_tip_depths(
-        tip_root_depths(dataset.tree, dataset.taxa),
-        tolerance=1e-12,
-    )
-    if not ultrametric_summary.ultrametric:
-        raise ComparativeMethodError(
-            "discrete Mk lambda transform requires an ultrametric rooted tree so the transformed branch lengths preserve tip-depth meaning"
+    if transform == "lambda":
+        ultrametric_summary = summarize_ultrametric_tip_depths(
+            tip_root_depths(dataset.tree, dataset.taxa),
+            tolerance=1e-12,
         )
-    _validate_lambda_bounds(lambda_bounds)
+        if not ultrametric_summary.ultrametric:
+            raise ComparativeMethodError(
+                "discrete Mk lambda transform requires an ultrametric rooted tree so the transformed branch lengths preserve tip-depth meaning"
+            )
+        _validate_lambda_bounds(lambda_bounds)
+        return
+    _validate_kappa_bounds(kappa_bounds)
 
 
 def _validate_lambda_bounds(bounds: tuple[float, float]) -> None:
@@ -579,6 +591,14 @@ def _validate_lambda_bounds(bounds: tuple[float, float]) -> None:
     if not 0.0 <= lower < upper <= 1.0:
         raise ComparativeMethodError(
             "discrete Mk lambda bounds must be strictly increasing within [0, 1]"
+        )
+
+
+def _validate_kappa_bounds(bounds: tuple[float, float]) -> None:
+    lower, upper = bounds
+    if not 0.0 <= lower < upper <= 1.0:
+        raise ComparativeMethodError(
+            "discrete Mk kappa bounds must be strictly increasing within [0, 1]"
         )
 
 
@@ -596,7 +616,7 @@ def _discrete_parameter_count(
         state_ordering=state_ordering,
         allowed_transition_pairs=allowed_transition_pairs,
     )
-    if transform == "lambda":
+    if transform in {"lambda", "kappa"}:
         return parameter_count + 1
     return parameter_count
 
@@ -610,6 +630,7 @@ def _fit_discrete_mk_surface(
     state_order: list[str],
     allowed_transition_pairs: set[tuple[int, int]],
     lambda_bounds: tuple[float, float],
+    kappa_bounds: tuple[float, float],
 ) -> tuple[
     PhyloTree,
     object,
@@ -636,28 +657,30 @@ def _fit_discrete_mk_surface(
             None,
             [],
         )
-    if transform != "lambda":
+    if transform not in {"lambda", "kappa"}:
         raise ComparativeMethodError(
-            "unsupported discrete Mk transform; expected one of: lambda"
+            "unsupported discrete Mk transform; expected one of: lambda, kappa"
         )
-    return _fit_discrete_mk_lambda_surface(
+    return _fit_discrete_mk_parameterized_transform_surface(
         dataset,
         model=model,
+        transform=transform,
         state_ordering=state_ordering,
         state_order=state_order,
         allowed_transition_pairs=allowed_transition_pairs,
-        lambda_bounds=lambda_bounds,
+        bounds=lambda_bounds if transform == "lambda" else kappa_bounds,
     )
 
 
-def _fit_discrete_mk_lambda_surface(
+def _fit_discrete_mk_parameterized_transform_surface(
     dataset: AncestralDiscreteDataset,
     *,
     model: str,
+    transform: str,
     state_ordering: str,
     state_order: list[str],
     allowed_transition_pairs: set[tuple[int, int]],
-    lambda_bounds: tuple[float, float],
+    bounds: tuple[float, float],
 ) -> tuple[
     PhyloTree,
     object,
@@ -666,25 +689,26 @@ def _fit_discrete_mk_lambda_surface(
     DiscreteMkTransformFit,
     list[DiscreteMkTransformWarning],
 ]:
-    lower, upper = lambda_bounds
+    lower, upper = bounds
     candidate_cache: dict[
         float, tuple[PhyloTree, object, object, DiscreteOptimizerDiagnostics, float]
     ] = {}
 
     def evaluate(
-        lambda_value: float,
+        parameter_value: float,
     ) -> tuple[PhyloTree, object, object, DiscreteOptimizerDiagnostics, float]:
-        cache_key = _lambda_cache_key(lambda_value)
+        cache_key = _transform_cache_key(parameter_value)
         cached = candidate_cache.get(cache_key)
         if cached is not None:
             return cached
-        candidate = _evaluate_discrete_mk_lambda_candidate(
+        candidate = _evaluate_discrete_mk_transform_candidate(
             dataset,
             model=model,
+            transform=transform,
             state_ordering=state_ordering,
             state_order=state_order,
             allowed_transition_pairs=allowed_transition_pairs,
-            lambda_value=cache_key,
+            parameter_value=cache_key,
         )
         candidate_cache[cache_key] = candidate
         return candidate
@@ -692,24 +716,24 @@ def _fit_discrete_mk_lambda_surface(
     coarse_candidates = _grid_values(
         lower,
         upper,
-        point_count=_DISCRETE_LAMBDA_COARSE_GRID_POINT_COUNT,
+        point_count=_DISCRETE_TRANSFORM_COARSE_GRID_POINT_COUNT,
     )
     coarse_rows: list[tuple[float, float]] = []
     best_fit: tuple[
         float, PhyloTree, object, object, DiscreteOptimizerDiagnostics, float
     ] | None = None
-    for lambda_value in coarse_candidates:
+    for parameter_value in coarse_candidates:
         (
             transformed_tree,
             rate_matrix,
             root_prior,
             optimizer_diagnostics,
             log_likelihood,
-        ) = evaluate(lambda_value)
-        coarse_rows.append((lambda_value, log_likelihood))
+        ) = evaluate(parameter_value)
+        coarse_rows.append((parameter_value, log_likelihood))
         if best_fit is None or log_likelihood > best_fit[-1]:
             best_fit = (
-                lambda_value,
+                parameter_value,
                 transformed_tree,
                 rate_matrix,
                 root_prior,
@@ -721,7 +745,7 @@ def _fit_discrete_mk_lambda_surface(
         range(len(coarse_rows)),
         key=lambda index: coarse_rows[index][1],
     )
-    fine_lower, fine_upper = _lambda_search_bracket(
+    fine_lower, fine_upper = _transform_search_bracket(
         coarse_candidates=coarse_candidates,
         best_index=best_coarse_index,
         lower=lower,
@@ -766,7 +790,7 @@ def _fit_discrete_mk_lambda_surface(
                 right_optimizer_diagnostics,
                 right_score,
             )
-        for _ in range(max(_DISCRETE_LAMBDA_FINE_GRID_POINT_COUNT - 2, 0)):
+        for _ in range(max(_DISCRETE_TRANSFORM_FINE_GRID_POINT_COUNT - 2, 0)):
             if abs(fine_upper - fine_lower) < 1e-6:
                 break
             if left_score > right_score:
@@ -821,36 +845,46 @@ def _fit_discrete_mk_lambda_surface(
                         right_optimizer_diagnostics,
                         right_score,
                     )
-    best_lambda, transformed_tree, rate_matrix, root_prior, optimizer_diagnostics, _ = best_fit
-    transform_warning_rows = _discrete_lambda_warning_rows(
-        lambda_value=best_lambda,
+    (
+        best_parameter_value,
+        transformed_tree,
+        rate_matrix,
+        root_prior,
+        optimizer_diagnostics,
+        _,
+    ) = best_fit
+    transform_warning_rows = _discrete_transform_warning_rows(
+        transform=transform,
+        parameter_value=best_parameter_value,
         profile=profile_rows,
-        bounds=lambda_bounds,
+        bounds=bounds,
     )
     transformed_ultrametric = summarize_ultrametric_tip_depths(
         tip_root_depths(transformed_tree, dataset.taxa),
         tolerance=1e-12,
     )
     transform_fit = DiscreteMkTransformFit(
-        transform_name="lambda",
-        parameter_name="lambda",
-        parameter_value=best_lambda,
+        transform_name=transform,
+        parameter_name=transform,
+        parameter_value=best_parameter_value,
         lower_bound=lower,
         upper_bound=upper,
-        coarse_grid_point_count=_DISCRETE_LAMBDA_COARSE_GRID_POINT_COUNT,
-        fine_grid_point_count=_DISCRETE_LAMBDA_FINE_GRID_POINT_COUNT,
+        coarse_grid_point_count=_DISCRETE_TRANSFORM_COARSE_GRID_POINT_COUNT,
+        fine_grid_point_count=_DISCRETE_TRANSFORM_FINE_GRID_POINT_COUNT,
         function_evaluation_count=len(candidate_cache),
-        hit_lower_parameter_boundary=best_lambda <= lower + max((upper - lower) / 160.0, 1e-6),
-        hit_upper_parameter_boundary=best_lambda >= upper - max((upper - lower) / 160.0, 1e-6),
+        hit_lower_parameter_boundary=best_parameter_value
+        <= lower + max((upper - lower) / 160.0, 1e-6),
+        hit_upper_parameter_boundary=best_parameter_value
+        >= upper - max((upper - lower) / 160.0, 1e-6),
         transformed_tree_is_ultrametric=transformed_ultrametric.ultrametric,
         transformed_tree_minimum_tip_depth=transformed_ultrametric.minimum_tip_depth,
         transformed_tree_maximum_tip_depth=transformed_ultrametric.maximum_tip_depth,
         profile_rows=[
             DiscreteMkTransformProfileRow(
-                transform_parameter_value=lambda_value,
+                transform_parameter_value=transform_parameter_value,
                 log_likelihood=log_likelihood,
             )
-            for lambda_value, log_likelihood in sorted(
+            for transform_parameter_value, log_likelihood in sorted(
                 {row[0]: row[1] for row in profile_rows}.items()
             )
         ],
@@ -866,19 +900,20 @@ def _fit_discrete_mk_lambda_surface(
     )
 
 
-def _evaluate_discrete_mk_lambda_candidate(
+def _evaluate_discrete_mk_transform_candidate(
     dataset: AncestralDiscreteDataset,
     *,
     model: str,
+    transform: str,
     state_ordering: str,
     state_order: list[str],
     allowed_transition_pairs: set[tuple[int, int]],
-    lambda_value: float,
+    parameter_value: float,
 ) -> tuple[object, object, object, DiscreteOptimizerDiagnostics, float]:
     transformed_tree = transform_tree_for_evolutionary_mode(
         dataset.tree,
-        mode="pagel-lambda",
-        parameter_value=lambda_value,
+        mode=_discrete_transform_mode_name(transform),
+        parameter_value=parameter_value,
         sigsq=1.0,
     )
     rate_matrix, root_prior, optimizer_diagnostics = _fit_discrete_mk_model(
@@ -907,8 +942,18 @@ def _evaluate_discrete_mk_lambda_candidate(
     )
 
 
-def _lambda_cache_key(lambda_value: float) -> float:
-    return float(format(lambda_value, ".15g"))
+def _discrete_transform_mode_name(transform: str) -> str:
+    if transform == "lambda":
+        return "pagel-lambda"
+    if transform == "kappa":
+        return "pagel-kappa"
+    raise ComparativeMethodError(
+        "unsupported discrete Mk transform; expected one of: lambda, kappa"
+    )
+
+
+def _transform_cache_key(parameter_value: float) -> float:
+    return float(format(parameter_value, ".15g"))
 
 
 def _grid_values(lower: float, upper: float, *, point_count: int) -> list[float]:
@@ -918,7 +963,7 @@ def _grid_values(lower: float, upper: float, *, point_count: int) -> list[float]
     return [lower + (step * index) for index in range(point_count)]
 
 
-def _lambda_search_bracket(
+def _transform_search_bracket(
     *,
     coarse_candidates: list[float],
     best_index: int,
@@ -932,9 +977,10 @@ def _lambda_search_bracket(
     return coarse_candidates[best_index - 1], coarse_candidates[best_index + 1]
 
 
-def _discrete_lambda_warning_rows(
+def _discrete_transform_warning_rows(
     *,
-    lambda_value: float,
+    transform: str,
+    parameter_value: float,
     profile: list[tuple[float, float]],
     bounds: tuple[float, float],
 ) -> list[DiscreteMkTransformWarning]:
@@ -946,13 +992,13 @@ def _discrete_lambda_warning_rows(
         reverse=True,
     )
     warnings: list[DiscreteMkTransformWarning] = []
-    if math.isclose(lambda_value, lower, rel_tol=0.0, abs_tol=boundary_tolerance) or math.isclose(
-        lambda_value, upper, rel_tol=0.0, abs_tol=boundary_tolerance
+    if math.isclose(parameter_value, lower, rel_tol=0.0, abs_tol=boundary_tolerance) or math.isclose(
+        parameter_value, upper, rel_tol=0.0, abs_tol=boundary_tolerance
     ):
         warnings.append(
             DiscreteMkTransformWarning(
-                kind="boundary_lambda",
-                message="best-supported discrete Mk lambda falls on the search boundary and may not be well identified",
+                kind=f"boundary_{transform}",
+                message=f"best-supported discrete Mk {transform} falls on the search boundary and may not be well identified",
             )
         )
     if len(ordered_log_likelihoods) > 1 and (
@@ -961,21 +1007,35 @@ def _discrete_lambda_warning_rows(
         warnings.append(
             DiscreteMkTransformWarning(
                 kind="flat_likelihood",
-                message="discrete Mk lambda likelihood stays shallow across the bounded search, so phylogenetic signal transformation support may be unstable",
+                message=f"discrete Mk {transform} likelihood stays shallow across the bounded search, so branch-length transformation support may be unstable",
             )
         )
-    if lambda_value <= lower + max(boundary_tolerance, 1e-6):
+    if transform == "lambda" and parameter_value <= lower + max(boundary_tolerance, 1e-6):
         warnings.append(
             DiscreteMkTransformWarning(
                 kind="weak_phylogenetic_signal",
                 message="best-supported discrete Mk lambda remains close to the zero-signal boundary and may be difficult to distinguish from a star-like transition surface",
             )
         )
-    if lambda_value >= upper - max(boundary_tolerance, 1e-6):
+    if transform == "lambda" and parameter_value >= upper - max(boundary_tolerance, 1e-6):
         warnings.append(
             DiscreteMkTransformWarning(
                 kind="brownian_limit",
                 message="best-supported discrete Mk lambda remains close to the untransformed boundary and may be difficult to distinguish from the original branch-length surface",
+            )
+        )
+    if transform == "kappa" and parameter_value <= lower + max(boundary_tolerance, 1e-6):
+        warnings.append(
+            DiscreteMkTransformWarning(
+                kind="branch_length_flattening_limit",
+                message="best-supported discrete Mk kappa remains close to the zero-contrast boundary and may be difficult to distinguish from branch-length flattening",
+            )
+        )
+    if transform == "kappa" and parameter_value >= upper - max(boundary_tolerance, 1e-6):
+        warnings.append(
+            DiscreteMkTransformWarning(
+                kind="branch_length_contrast_limit",
+                message="best-supported discrete Mk kappa remains close to the untransformed branch-length boundary and may be weakly identified",
             )
         )
     return warnings
