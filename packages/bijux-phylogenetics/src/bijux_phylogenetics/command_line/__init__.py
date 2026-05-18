@@ -467,6 +467,7 @@ from bijux_phylogenetics.comparative import (
     estimate_diversification_rate,
     render_diversification_report,
     run_trait_dependent_diversification_analysis,
+    summarize_geiger_birth_death_exclusion,
     summarize_medusa_exclusion,
     write_diversification_methods_summary_text,
     write_clade_diversification_table,
@@ -2823,6 +2824,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the MEDUSA exclusion as JSON."
     )
     _add_manifest_argument(diversification_medusa)
+    diversification_bd_ms = diversification_subparsers.add_parser(
+        "bd-ms",
+        help="Explain the explicit exclusion boundary for geiger::bd.ms birth-death parity.",
+    )
+    diversification_bd_ms.add_argument("tree", type=Path)
+    diversification_bd_ms.add_argument("--metadata", type=Path)
+    diversification_bd_ms.add_argument("--taxon-column")
+    diversification_bd_ms.add_argument("--sampling-column")
+    diversification_bd_ms.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the birth-death exclusion as JSON.",
+    )
+    _add_manifest_argument(diversification_bd_ms)
 
     add_distance_commands(subparsers)
     add_tree_set_commands(subparsers)
@@ -8347,6 +8362,33 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "failure_reason": report.exclusion_code,
                         "supported_surfaces": report.supported_surfaces,
                         "missing_surfaces": report.missing_surfaces,
+                        "tip_count": report.validation.tip_count,
+                        "rooted": report.validation.rooted,
+                        "ultrametric": report.validation.ultrametric,
+                        "sampling_metadata_complete": (
+                            None
+                            if report.sampling_report is None
+                            else report.sampling_report.complete
+                        ),
+                    },
+                )
+            if args.diversification_command == "bd-ms":
+                report = summarize_geiger_birth_death_exclusion(
+                    args.tree,
+                    metadata_path=args.metadata,
+                    taxon_column=args.taxon_column,
+                    sampling_column=args.sampling_column,
+                )
+                raise DiversificationAnalysisError(
+                    report.exclusion_reason,
+                    code="diversification_birth_death_explicitly_excluded",
+                    details={
+                        "failure_reason": report.exclusion_code,
+                        "geiger_reference_surface": report.geiger_reference_surface,
+                        "geiger_reference_arguments": (
+                            report.geiger_reference_arguments
+                        ),
+                        "owned_surface": report.owned_surface,
                         "tip_count": report.validation.tip_count,
                         "rooted": report.validation.rooted,
                         "ultrametric": report.validation.ultrametric,
