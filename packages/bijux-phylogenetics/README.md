@@ -290,6 +290,7 @@ bijux-phylogenetics report supplementary-comparative-model-table --tree tree.nwk
 bijux-phylogenetics report supplementary-diversification-table --tree tree.nwk --metadata metadata.tsv --clade-model birth-death --out artifacts/supplementary-diversification.tsv --json
 bijux-phylogenetics report supplementary-model-selection-table --iqtree-report run.iqtree --model-sidecar run.model --out artifacts/supplementary-model-selection.tsv --json
 bijux-phylogenetics report supplementary-tree-table --tree tree.nwk --out artifacts/supplementary-tree.tsv --json
+bijux-phylogenetics report package-revalidation artifacts/rabies-cross-host-geography-package.manifest.json --out-dir artifacts/package-revalidation --json
 bijux-phylogenetics report tree-inference-methods-summary workflow.manifest.json --out artifacts/tree-inference-methods-summary.md --json
 bijux-phylogenetics report alignment-filtering-methods-summary alignment.fasta --profile moderate --group-table metadata.tsv --group-column region --out artifacts/alignment-filtering-methods-summary.md --json
 bijux-phylogenetics report ancestral-methods-summary tree.nwk traits.tsv --trait habitat --kind discrete --model equal-rates --out artifacts/ancestral-methods-summary.md --json
@@ -646,6 +647,27 @@ failures or warnings instead of silently overrunning those limits.
 Its JSON metrics also surface the same `biological_question` and
 `short_answer` directly so reviewers do not need to open the nested HTML report
 to understand the intended scientific claim.
+
+For a stored flagship package, use `report package-revalidation` on
+`rabies-cross-host-geography-package.manifest.json`. It rereads the stored
+manifest, verifies that the package artifact inventory and reproducibility
+checklist still match their recorded checksums and row counts, rechecks every
+inventory-listed dataset or workflow file against its stored checksum and size,
+and emits:
+
+- `publication-package-revalidation-artifacts.tsv` for one per-artifact
+  existence and checksum ledger
+- `publication-package-revalidation-checks.tsv` for one reviewer-facing
+  `pass` / `risk` / `blocked` decision table
+- `publication-package-revalidation-summary.json` for one machine-readable
+  verdict surface
+- `publication-package-revalidation-report.html` for one direct reviewer handoff
+
+`all_original_artifacts_match=true` means the original study inputs and outputs
+still match the stored package contract. An overall `risk` result means the
+original package still matches but the package root now contains undeclared
+extra files. An overall `blocked` result means some declared artifact,
+inventory, checklist, or manifest-declared checksum no longer matches.
 
 The workflow bundle now also writes one `workflow/conclusion-stability/`
 surface that scores:
