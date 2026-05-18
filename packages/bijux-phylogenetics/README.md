@@ -366,6 +366,7 @@ bijux-phylogenetics benchmark large-alignment-scaling --replicates 1 --sequence-
 bijux-phylogenetics benchmark large-tree-set-scaling --replicates 1 --tree-count 128 --tip-count 48 --tree-count 256 --tip-count 64 --json
 bijux-phylogenetics benchmark workflow-practical-limits --replicates 1 --stress-tier heavy --json
 bijux-phylogenetics report production-scale-readiness --replicates 1 --tree-tip-count 512 --tree-tip-count 1024 --sequence-count 256 --alignment-length 512 --sequence-count 512 --alignment-length 1024 --posterior-tree-count 128 --tree-set-tip-count 48 --posterior-tree-count 256 --tree-set-tip-count 64 --stress-tier heavy --out artifacts/production-scale-readiness.html --json
+bijux-phylogenetics report alignment-package alignment.fasta --out-dir artifacts/alignment-quality-package --json
 bijux-phylogenetics render tree.nwk --metadata metadata.tsv --label-column species --metadata-strip-columns location --traits traits.tsv --categorical-column habitat --continuous-column height_cm --heatmap-columns height_cm,status --layout phylogram --support-labels --package-dir artifacts/tree-publication-package --out artifacts/tree-publication-package/figure.svg --json
 bijux-phylogenetics report trait-tree-package tree.nwk --metadata metadata.tsv --traits traits.tsv --label-column species --categorical-column habitat --continuous-column height_cm --metadata-strip-columns location --heatmap-columns height_cm --support-labels --out-dir artifacts/trait-tree-package --json
 bijux-phylogenetics diagnose assumptions tree.nwk --metadata metadata.tsv --json
@@ -462,6 +463,17 @@ the consensus support labels are rendered through the support-scale audit, the
 instability panel remains explicit even when no unstable taxa are detected, and
 the topology-cluster panel keeps alternative rooted modes visible instead of
 burying them in tables alone.
+
+For a journal-oriented alignment quality figure bundle, use
+`report alignment-package`. It builds one explicit
+`alignment-missingness-heatmap.svg`, `alignment-site-quality-summary.svg`, and
+`alignment-sequence-quality-panel.svg` surface, pairs them with machine-readable
+heatmap, window, and ranking ledgers, and writes one reviewer HTML summary plus
+one manifest-backed audit. Publication readiness stays blocked when the
+alignment remains suspicious, contains invalid characters, or falls below the
+review quality threshold, but the full figure package still renders so missing
+or ambiguity-heavy alignments can be reviewed honestly instead of being hidden
+behind a boolean failure.
 
 `demo rabies-cross-host-geography-panel` is the repository's flagship public
 biological workflow surface. In addition to the dataset and workflow
