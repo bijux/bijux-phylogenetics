@@ -628,8 +628,13 @@ output root:
 
 - `dataset/source-accessions.tsv` for machine-readable accession provenance
 - `rabies-cross-host-geography-overview.html` for one direct public handoff
+- `rabies-cross-host-geography-artifacts.tsv` for one checksum-backed inventory
+  over the exported study inputs, workflow outputs, and overview surfaces
+- `rabies-cross-host-geography-reproducibility-checklist.tsv` for one
+  machine-produced pass/risk/blocked reviewer checklist over the study package
 - `rabies-cross-host-geography-package.manifest.json` for the biological
-  question, short answer, config provenance, output checksums, and key metrics
+  question, short answer, config provenance, package-control artifacts, output
+  checksums, and key metrics
 
 Its packaged `workflow-config.json` now also carries explicit resource-budget
 controls alongside the scientific settings: `iqtree_threads`,
