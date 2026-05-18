@@ -1342,13 +1342,16 @@ def run_demo_command(args: Any) -> int:
             inputs=[],
             outputs=[
                 result.dataset_export.readme_path,
-                result.dataset_export.reference_tree_path,
+                result.dataset_export.default_tree_path,
                 result.dataset_export.simulation_cases_path,
                 result.workflow_bundle.workflow_summary_path,
                 result.workflow_bundle.recovery_summary_path,
                 result.workflow_bundle.parameter_recovery_path,
+                result.workflow_bundle.parameter_comparison_path,
                 result.workflow_bundle.model_choice_path,
+                result.workflow_bundle.execution_review_path,
                 result.workflow_bundle.warning_review_path,
+                result.workflow_bundle.geiger_reference_path,
                 result.overview_path,
             ],
         )
@@ -1368,15 +1371,31 @@ def run_demo_command(args: Any) -> int:
                     metrics={
                         "artifact_count": len(outputs),
                         "taxon_count": result.dataset.taxon_count,
+                        "tree_count": result.dataset.tree_count,
                         "case_count": result.dataset.case_count,
+                        "selection_review_case_count": (
+                            result.workflow_bundle.selection_review_case_count
+                        ),
                         "selection_match_count": (
                             result.workflow_bundle.selection_match_count
+                        ),
+                        "geiger_selection_match_count": (
+                            result.workflow_bundle.geiger_selection_match_count
                         ),
                         "parameter_pass_count": (
                             result.workflow_bundle.parameter_pass_count
                         ),
                         "parameter_row_count": (
                             result.workflow_bundle.parameter_row_count
+                        ),
+                        "parameter_comparison_row_count": (
+                            result.workflow_bundle.parameter_comparison_row_count
+                        ),
+                        "parameter_closer_to_truth_count_bijux": (
+                            result.workflow_bundle.parameter_closer_to_truth_count_bijux
+                        ),
+                        "parameter_closer_to_truth_count_geiger": (
+                            result.workflow_bundle.parameter_closer_to_truth_count_geiger
                         ),
                         "expected_warning_case_count": (
                             result.workflow_bundle.expected_warning_case_count
