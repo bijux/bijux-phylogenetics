@@ -909,6 +909,10 @@ def run_demo_command(args: Any) -> int:
                 result.workflow_bundle.slurm_array_strategy_path,
                 result.workflow_bundle.slurm_job_evidence_index_path,
                 result.workflow_bundle.slurm_job_evidence_summary_path,
+                result.workflow_bundle.slurm_storage_categories_path,
+                result.workflow_bundle.slurm_storage_variants_path,
+                result.workflow_bundle.slurm_storage_summary_path,
+                result.workflow_bundle.slurm_storage_report_path,
                 result.workflow_bundle.slurm_merge_checks_path,
                 result.workflow_bundle.slurm_merge_variants_path,
                 result.workflow_bundle.slurm_merge_summary_path,
@@ -1005,6 +1009,27 @@ def run_demo_command(args: Any) -> int:
                         ),
                         "slurm_job_evidence_total_output_byte_count": (
                             result.workflow_bundle.slurm_job_evidence_total_output_byte_count
+                        ),
+                        "slurm_storage_total_estimated_mib": (
+                            result.workflow_bundle.slurm_storage_total_estimated_mib
+                        ),
+                        "slurm_storage_output_byte_count": (
+                            result.workflow_bundle.slurm_storage_output_byte_count
+                        ),
+                        "slurm_storage_log_byte_count": (
+                            result.workflow_bundle.slurm_storage_log_byte_count
+                        ),
+                        "slurm_storage_tree_byte_count": (
+                            result.workflow_bundle.slurm_storage_tree_byte_count
+                        ),
+                        "slurm_storage_posterior_sample_byte_count": (
+                            result.workflow_bundle.slurm_storage_posterior_sample_byte_count
+                        ),
+                        "slurm_storage_report_byte_count": (
+                            result.workflow_bundle.slurm_storage_report_byte_count
+                        ),
+                        "slurm_storage_largest_variant_id": (
+                            result.workflow_bundle.slurm_storage_largest_variant_id
                         ),
                         "slurm_merge_status": (
                             result.workflow_bundle.slurm_merge_status
