@@ -280,7 +280,7 @@ def _parameter_rows(summary: dict[str, object]) -> list[dict[str, object]]:
 
 
 def _standard_error_policy() -> str:
-    return "tip-standard-errors-not-supported"
+    return "fitcontinuous-standard-error-explicitly-excluded-this-round"
 
 
 def _missing_value_policy() -> str:

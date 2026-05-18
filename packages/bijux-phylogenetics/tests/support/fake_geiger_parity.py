@@ -72,7 +72,7 @@ def parameter_rows(summary: dict[str, object]) -> list[dict[str, object]]:
 
 
 def standard_error_policy() -> str:
-    return "tip-standard-errors-not-supported"
+    return "fitcontinuous-standard-error-explicitly-excluded-this-round"
 
 
 def missing_value_policy() -> str:

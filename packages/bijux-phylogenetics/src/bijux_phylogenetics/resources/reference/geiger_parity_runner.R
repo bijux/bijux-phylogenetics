@@ -252,7 +252,7 @@ build_fitcontinuous_payload <- function(tree, trait_values, excluded_taxa, case_
     aic = aic,
     aicc = aicc,
     missing_value_policy = "prune-tree-tip-overlap-with-missing-or-nonnumeric-trait-values",
-    standard_error_policy = "tip-standard-errors-not-supported",
+    standard_error_policy = "fitcontinuous-standard-error-explicitly-excluded-this-round",
     parameter_bound_policy = if (is.null(bounds)) {
       "reference-default-without-explicit-bounds"
     } else {
