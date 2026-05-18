@@ -59,6 +59,14 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_freshness impo
     write_rabies_method_sensitivity_slurm_output_freshness_json,
     write_rabies_method_sensitivity_slurm_output_freshness_table,
 )
+from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_failure_recovery import (
+    RabiesMethodSensitivitySlurmFailureRecoveryReport,
+    build_rabies_method_sensitivity_slurm_failure_recovery_report,
+    write_rabies_method_sensitivity_slurm_failure_recovery_html_report,
+    write_rabies_method_sensitivity_slurm_failure_recovery_jobs_table,
+    write_rabies_method_sensitivity_slurm_failure_recovery_partitions_table,
+    write_rabies_method_sensitivity_slurm_failure_recovery_summary_json,
+)
 from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_job_evidence import (
     RabiesMethodSensitivitySlurmJobEvidenceReport,
     write_rabies_method_sensitivity_slurm_job_evidence_bundle,
@@ -351,6 +359,10 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     slurm_job_status_path: Path
     slurm_partition_status_path: Path
     slurm_workflow_status_path: Path
+    slurm_failure_recovery_jobs_path: Path
+    slurm_failure_recovery_partitions_path: Path
+    slurm_failure_recovery_summary_path: Path
+    slurm_failure_recovery_report_path: Path
     slurm_output_freshness_check_count: int
     slurm_output_freshness_failed_check_count: int
     slurm_fresh_output_job_count: int
@@ -359,6 +371,10 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     slurm_failed_job_count: int
     slurm_pending_job_count: int
     slurm_stale_job_count: int
+    slurm_failure_recovery_status: str
+    slurm_failure_recovery_rerunnable_job_count: int
+    slurm_failure_recovery_blocked_job_count: int
+    slurm_failure_recovery_partition_count: int
     reproducibility_checks_path: Path
     reproducibility_variant_audit_path: Path
     reproducibility_audit_path: Path
@@ -861,6 +877,33 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         output_root / "slurm-workflow-status.json",
         slurm_status_report,
     )
+    slurm_failure_recovery_report = (
+        build_rabies_method_sensitivity_slurm_failure_recovery_report(output_root)
+    )
+    slurm_failure_recovery_jobs_path = (
+        write_rabies_method_sensitivity_slurm_failure_recovery_jobs_table(
+            output_root / "slurm-failure-recovery-jobs.tsv",
+            slurm_failure_recovery_report,
+        )
+    )
+    slurm_failure_recovery_partitions_path = (
+        write_rabies_method_sensitivity_slurm_failure_recovery_partitions_table(
+            output_root / "slurm-failure-recovery-partitions.tsv",
+            slurm_failure_recovery_report,
+        )
+    )
+    slurm_failure_recovery_summary_path = (
+        write_rabies_method_sensitivity_slurm_failure_recovery_summary_json(
+            output_root / "slurm-failure-recovery-report.json",
+            slurm_failure_recovery_report,
+        )
+    )
+    slurm_failure_recovery_report_path = (
+        write_rabies_method_sensitivity_slurm_failure_recovery_html_report(
+            output_root / "slurm-failure-recovery-report.html",
+            slurm_failure_recovery_report,
+        )
+    )
     slurm_job_evidence_report = (
         write_rabies_method_sensitivity_slurm_job_evidence_bundle(
             output_root / "slurm-job-evidence",
@@ -931,6 +974,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_job_status": slurm_job_status_path,
             "slurm_partition_status": slurm_partition_status_path,
             "slurm_workflow_status": slurm_workflow_status_path,
+            "slurm_failure_recovery_jobs": slurm_failure_recovery_jobs_path,
+            "slurm_failure_recovery_partitions": slurm_failure_recovery_partitions_path,
+            "slurm_failure_recovery_summary": slurm_failure_recovery_summary_path,
+            "slurm_failure_recovery_report": slurm_failure_recovery_report_path,
         },
     )
     report_manifest_path = _write_report_manifest(
@@ -967,6 +1014,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_job_status": slurm_job_status_path,
             "slurm_partition_status": slurm_partition_status_path,
             "slurm_workflow_status": slurm_workflow_status_path,
+            "slurm_failure_recovery_jobs": slurm_failure_recovery_jobs_path,
+            "slurm_failure_recovery_partitions": slurm_failure_recovery_partitions_path,
+            "slurm_failure_recovery_summary": slurm_failure_recovery_summary_path,
+            "slurm_failure_recovery_report": slurm_failure_recovery_report_path,
         },
     )
     slurm_storage_report = build_rabies_method_sensitivity_slurm_storage_report(
@@ -1115,6 +1166,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_job_status_path,
         slurm_partition_status_path,
         slurm_workflow_status_path,
+        slurm_failure_recovery_jobs_path,
+        slurm_failure_recovery_partitions_path,
+        slurm_failure_recovery_summary_path,
+        slurm_failure_recovery_report_path,
     )
     report_linked_artifact_count = len(report_linked_files)
     report_path = _write_report(
@@ -1161,6 +1216,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_job_status": slurm_job_status_path,
             "slurm_partition_status": slurm_partition_status_path,
             "slurm_workflow_status": slurm_workflow_status_path,
+            "slurm_failure_recovery_jobs": slurm_failure_recovery_jobs_path,
+            "slurm_failure_recovery_partitions": slurm_failure_recovery_partitions_path,
+            "slurm_failure_recovery_summary": slurm_failure_recovery_summary_path,
+            "slurm_failure_recovery_report": slurm_failure_recovery_report_path,
             "reproducibility_checks": reproducibility_checks_path,
             "reproducibility_variant_audit": reproducibility_variant_audit_path,
             "reproducibility_audit": reproducibility_audit_path,
@@ -1176,6 +1235,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_merge_report=slurm_merge_report,
         slurm_output_freshness_report=slurm_output_freshness_report,
         slurm_status_report=slurm_status_report,
+        slurm_failure_recovery_report=slurm_failure_recovery_report,
     )
     report_html_size_bytes = report_path.stat().st_size
     report_linked_artifact_bytes = sum(
@@ -1327,6 +1387,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_job_status_path=slurm_job_status_path,
         slurm_partition_status_path=slurm_partition_status_path,
         slurm_workflow_status_path=slurm_workflow_status_path,
+        slurm_failure_recovery_jobs_path=slurm_failure_recovery_jobs_path,
+        slurm_failure_recovery_partitions_path=slurm_failure_recovery_partitions_path,
+        slurm_failure_recovery_summary_path=slurm_failure_recovery_summary_path,
+        slurm_failure_recovery_report_path=slurm_failure_recovery_report_path,
         slurm_output_freshness_check_count=slurm_output_freshness_report.check_count,
         slurm_output_freshness_failed_check_count=(
             slurm_output_freshness_report.failed_check_count
@@ -1337,6 +1401,18 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_failed_job_count=slurm_status_report.failed_job_count,
         slurm_pending_job_count=slurm_status_report.pending_job_count,
         slurm_stale_job_count=slurm_status_report.stale_job_count,
+        slurm_failure_recovery_status=(
+            slurm_failure_recovery_report.overall_recovery_status
+        ),
+        slurm_failure_recovery_rerunnable_job_count=(
+            slurm_failure_recovery_report.rerunnable_job_count
+        ),
+        slurm_failure_recovery_blocked_job_count=(
+            slurm_failure_recovery_report.blocked_job_count
+        ),
+        slurm_failure_recovery_partition_count=(
+            slurm_failure_recovery_report.recovery_partition_count
+        ),
         reproducibility_checks_path=reproducibility_checks_path,
         reproducibility_variant_audit_path=reproducibility_variant_audit_path,
         reproducibility_audit_path=reproducibility_audit_path,
@@ -2208,6 +2284,7 @@ def _write_report(
     slurm_merge_report: RabiesMethodSensitivitySlurmMergeReport,
     slurm_output_freshness_report: RabiesMethodSensitivitySlurmOutputFreshnessReport,
     slurm_status_report: RabiesMethodSensitivitySlurmStatusReport,
+    slurm_failure_recovery_report: RabiesMethodSensitivitySlurmFailureRecoveryReport,
 ) -> Path:
     variant_lines = [
         (
@@ -2489,6 +2566,37 @@ def _write_report(
             ),
         ),
         (
+            "slurm-failure-recovery",
+            "\n".join(
+                [
+                    (
+                        "overall recovery status: "
+                        f"{slurm_failure_recovery_report.overall_recovery_status}"
+                    ),
+                    (
+                        "rerunnable jobs: "
+                        f"{slurm_failure_recovery_report.rerunnable_job_count}"
+                    ),
+                    (
+                        "blocked jobs: "
+                        f"{slurm_failure_recovery_report.blocked_job_count}"
+                    ),
+                    (
+                        "recovery partitions: "
+                        f"{slurm_failure_recovery_report.recovery_partition_count}"
+                    ),
+                    (
+                        "workflow state: "
+                        f"{slurm_failure_recovery_report.workflow_status}"
+                    ),
+                    (
+                        "active run state: "
+                        f"{slurm_failure_recovery_report.active_run_state}"
+                    ),
+                ]
+            ),
+        ),
+        (
             "artifacts",
             "\n".join(
                 [
@@ -2611,6 +2719,22 @@ def _write_report(
                     (
                         "slurm workflow status: "
                         f"{bundle_paths['slurm_workflow_status'].name}"
+                    ),
+                    (
+                        "slurm failure recovery jobs: "
+                        f"{bundle_paths['slurm_failure_recovery_jobs'].name}"
+                    ),
+                    (
+                        "slurm failure recovery partitions: "
+                        f"{bundle_paths['slurm_failure_recovery_partitions'].name}"
+                    ),
+                    (
+                        "slurm failure recovery summary: "
+                        f"{bundle_paths['slurm_failure_recovery_summary'].name}"
+                    ),
+                    (
+                        "slurm failure recovery report: "
+                        f"{bundle_paths['slurm_failure_recovery_report'].name}"
                     ),
                     f"reproducibility checks: {bundle_paths['reproducibility_checks'].name}",
                     (
@@ -2758,6 +2882,18 @@ def _write_report(
             "slurm_pending_job_count": slurm_status_report.pending_job_count,
             "slurm_stale_job_count": slurm_status_report.stale_job_count,
             "slurm_active_run_state": slurm_status_report.active_run_state,
+            "slurm_failure_recovery_status": (
+                slurm_failure_recovery_report.overall_recovery_status
+            ),
+            "slurm_failure_recovery_rerunnable_job_count": (
+                slurm_failure_recovery_report.rerunnable_job_count
+            ),
+            "slurm_failure_recovery_blocked_job_count": (
+                slurm_failure_recovery_report.blocked_job_count
+            ),
+            "slurm_failure_recovery_partition_count": (
+                slurm_failure_recovery_report.recovery_partition_count
+            ),
         },
         summary_metrics=[
             ("variants", len(report.variant_runs)),
@@ -2828,6 +2964,14 @@ def _write_report(
             (
                 "slurm stale jobs",
                 slurm_status_report.stale_job_count,
+            ),
+            (
+                "slurm recovery status",
+                slurm_failure_recovery_report.overall_recovery_status,
+            ),
+            (
+                "slurm rerunnable jobs",
+                slurm_failure_recovery_report.rerunnable_job_count,
             ),
             (
                 "reproducibility passed",
@@ -2919,6 +3063,10 @@ def _write_overview(
         f"- slurm failed jobs: `{bundle.slurm_failed_job_count}`",
         f"- slurm pending jobs: `{bundle.slurm_pending_job_count}`",
         f"- slurm stale jobs: `{bundle.slurm_stale_job_count}`",
+        f"- slurm recovery status: `{bundle.slurm_failure_recovery_status}`",
+        f"- slurm rerunnable jobs: `{bundle.slurm_failure_recovery_rerunnable_job_count}`",
+        f"- slurm blocked recovery jobs: `{bundle.slurm_failure_recovery_blocked_job_count}`",
+        f"- slurm recovery partitions: `{bundle.slurm_failure_recovery_partition_count}`",
         f"- workflow manifest: `{bundle.manifest_path.name}`",
         f"- report manifest: `{bundle.report_manifest_path.relative_to(bundle.output_root).as_posix()}`",
         f"- slurm job plan: `{bundle.slurm_job_plan_path.name}`",
@@ -2952,6 +3100,10 @@ def _write_overview(
         f"- slurm job status table: `{bundle.slurm_job_status_path.name}`",
         f"- slurm partition status table: `{bundle.slurm_partition_status_path.name}`",
         f"- slurm workflow status: `{bundle.slurm_workflow_status_path.name}`",
+        f"- slurm failure recovery jobs: `{bundle.slurm_failure_recovery_jobs_path.name}`",
+        f"- slurm failure recovery partitions: `{bundle.slurm_failure_recovery_partitions_path.name}`",
+        f"- slurm failure recovery summary: `{bundle.slurm_failure_recovery_summary_path.name}`",
+        f"- slurm failure recovery report: `{bundle.slurm_failure_recovery_report_path.name}`",
         f"- slurm array scripts: `{bundle.slurm_array_scripts_root.name}/`",
         f"- reproducibility checks table: `{bundle.reproducibility_checks_path.name}`",
         f"- reproducibility variant audit: `{bundle.reproducibility_variant_audit_path.name}`",

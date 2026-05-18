@@ -201,6 +201,10 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.workflow_bundle.slurm_job_status_path.is_file()
     assert result.workflow_bundle.slurm_partition_status_path.is_file()
     assert result.workflow_bundle.slurm_workflow_status_path.is_file()
+    assert result.workflow_bundle.slurm_failure_recovery_jobs_path.is_file()
+    assert result.workflow_bundle.slurm_failure_recovery_partitions_path.is_file()
+    assert result.workflow_bundle.slurm_failure_recovery_summary_path.is_file()
+    assert result.workflow_bundle.slurm_failure_recovery_report_path.is_file()
     assert result.workflow_bundle.slurm_array_scripts_root.is_dir()
     assert result.workflow_bundle.slurm_job_count == 4
     assert result.workflow_bundle.slurm_total_estimated_core_hours > 0
@@ -249,6 +253,10 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.workflow_bundle.slurm_failed_job_count == 0
     assert result.workflow_bundle.slurm_pending_job_count == 0
     assert result.workflow_bundle.slurm_stale_job_count == 0
+    assert result.workflow_bundle.slurm_failure_recovery_status == "clean"
+    assert result.workflow_bundle.slurm_failure_recovery_rerunnable_job_count == 0
+    assert result.workflow_bundle.slurm_failure_recovery_blocked_job_count == 0
+    assert result.workflow_bundle.slurm_failure_recovery_partition_count == 0
     assert result.workflow_bundle.reproducibility_checks_path.is_file()
     assert result.workflow_bundle.reproducibility_variant_audit_path.is_file()
     assert result.workflow_bundle.reproducibility_audit_path.is_file()
