@@ -401,6 +401,47 @@ def test_fit_discrete_mk_model_matches_governed_geiger_er_binary_surface() -> No
     )
 
 
+def test_fit_discrete_mk_model_matches_governed_geiger_sym_three_state_surface() -> None:
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_sym_three_state_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="symmetric",
+    )
+    rate_lookup = _allowed_rate_lookup(report)
+
+    assert report.optimizer_diagnostics.optimizer_name == "nelder-mead"
+    assert math.isclose(
+        report.log_likelihood,
+        -15.1632793478894,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        rate_lookup[("central", "north")],
+        0.7274457297910687,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        rate_lookup[("central", "south")],
+        0.9701467744758534,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        rate_lookup[("north", "south")],
+        0.3642863446871228,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+
+
 @pytest.mark.slow
 def test_fit_discrete_mk_model_recovers_binary_ard_known_truth(
     tmp_path: Path,
@@ -525,6 +566,38 @@ def test_fit_discrete_mk_model_marks_overparameterized_symmetric_surface(
     assert any(
         warning.startswith("the discrete Mk likelihood fit is likely overparameterized")
         for warning in report.input_audit.warnings
+    )
+
+
+def test_fit_discrete_mk_model_marks_sparse_shared_symmetric_surface() -> None:
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_sparse_six_state_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="symmetric",
+    )
+
+    assert report.parameter_count == 15
+    assert report.input_audit.sparse_states == ["f"]
+    assert report.optimizer_diagnostics.converged is False
+    assert report.optimizer_diagnostics.hit_lower_parameter_bound is True
+    assert report.baseline_comparison is not None
+    assert report.baseline_comparison.preferred_model_by_aic == "equal-rates"
+    assert any(
+        "represented by fewer than two taxa" in warning
+        for warning in report.input_audit.warnings
+    )
+    assert any(
+        "equal-rates baseline remains preferred" in warning
+        for warning in report.input_audit.warnings
+    )
+    assert any(
+        "weakly identified" in warning for warning in report.input_audit.warnings
     )
 
 
