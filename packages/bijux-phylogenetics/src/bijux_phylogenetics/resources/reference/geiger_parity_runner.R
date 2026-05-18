@@ -78,23 +78,50 @@ fit_aicc <- function(aic, sample_size, parameter_count) {
   aic + ((2 * parameter_count * (parameter_count + 1)) / denominator)
 }
 
+json_array <- function(values) {
+  if (length(values) == 0) {
+    return(list())
+  }
+  as.list(unname(values))
+}
+
 normalize_optimizer_result <- function(fit) {
-  if (is.null(fit$res)) {
-    return(NULL)
-  }
   result <- list()
-  if (!is.null(fit$res$convergence)) {
-    result$convergence_code <- as.integer(fit$res$convergence)
+  if (!is.null(fit$opt$method)) {
+    result$best_method <- as.character(fit$opt$method)
   }
-  if (!is.null(fit$res$message)) {
-    result$message <- as.character(fit$res$message)
-  }
-  if (!is.null(fit$res$counts)) {
-    counts <- unclass(fit$res$counts)
-    result$counts <- as.list(counts)
-  }
-  if (!is.null(fit$res$value)) {
-    result$objective_value <- as.numeric(fit$res$value)
+  if (is.matrix(fit$res) || is.data.frame(fit$res)) {
+    result$attempt_count <- nrow(fit$res)
+    if (!is.null(rownames(fit$res))) {
+      result$attempted_methods <- sort(unique(as.character(rownames(fit$res))))
+    }
+    if ("convergence" %in% colnames(fit$res)) {
+      convergence_codes <- as.integer(fit$res[, "convergence"])
+      result$converged_attempt_count <- sum(convergence_codes == 0, na.rm = TRUE)
+      best_method <- result$best_method
+      if (!is.null(best_method) && best_method %in% rownames(fit$res)) {
+        result$convergence_code <- as.integer(fit$res[best_method[[1]], "convergence"])
+      } else if (length(convergence_codes) > 0) {
+        result$convergence_code <- convergence_codes[[1]]
+      }
+    }
+    if ("lnL" %in% colnames(fit$res)) {
+      result$best_log_likelihood <- max(as.numeric(fit$res[, "lnL"]), na.rm = TRUE)
+    }
+  } else if (is.list(fit$res)) {
+    if (!is.null(fit$res$convergence)) {
+      result$convergence_code <- as.integer(fit$res$convergence)
+    }
+    if (!is.null(fit$res$message)) {
+      result$message <- as.character(fit$res$message)
+    }
+    if (!is.null(fit$res$counts)) {
+      counts <- unclass(fit$res$counts)
+      result$counts <- as.list(counts)
+    }
+    if (!is.null(fit$res$value)) {
+      result$objective_value <- as.numeric(fit$res$value)
+    }
   }
   if (length(result) == 0) {
     return(NULL)
@@ -155,12 +182,14 @@ build_fitcontinuous_payload <- function(tree, trait_values, excluded_taxa, case_
     trait_name = case_payload$trait_name,
     model_name = case_payload$model_name,
     excluded_taxon_count = length(excluded_taxa),
-    excluded_taxa = unname(excluded_taxa),
+    excluded_taxa = json_array(excluded_taxa),
     root_state = if (is.null(opt$z0)) NULL else as.numeric(opt$z0),
     rate = if (is.null(opt$sigsq)) NULL else as.numeric(opt$sigsq),
     log_likelihood = log_likelihood,
     aic = aic,
     aicc = aicc,
+    missing_value_policy = "prune-tree-tip-overlap-with-missing-or-nonnumeric-trait-values",
+    standard_error_policy = "tip-standard-errors-not-supported",
     parameter_name = parameter_surface_result$parameter_name,
     parameter_value = parameter_surface_result$parameter_value,
     optimizer_settings = case_payload$optimizer_settings,
@@ -186,6 +215,7 @@ result <- tryCatch(
   {
     input_fixtures <- unname(unlist(case_payload$input_fixtures))
     tree <- ape::read.tree(input_fixtures[[1]])
+    original_tree_tip_labels <- tree$tip.label
     traits_path <- input_fixtures[[2]]
     trait_table <- utils::read.table(
       traits_path,
@@ -195,18 +225,31 @@ result <- tryCatch(
       check.names = FALSE
     )
     taxon_names <- trait_table[[case_payload$taxon_column]]
+    raw_trait_column <- setNames(as.character(trait_table[[case_payload$trait_name]]), taxon_names)
     raw_trait_values <- suppressWarnings(as.numeric(trait_table[[case_payload$trait_name]]))
     trait_values <- stats::setNames(raw_trait_values, taxon_names)
-    kept_taxa <- names(trait_values)[
-      !is.na(trait_values) &
-        names(trait_values) %in% tree$tip.label
-    ]
+    tree_only_taxa <- sort(setdiff(original_tree_tip_labels, taxon_names))
+    extra_trait_taxa <- sort(setdiff(taxon_names, original_tree_tip_labels))
+    overlapping_taxa <- intersect(original_tree_tip_labels, taxon_names)
+    empty_or_missing_values <- is.na(raw_trait_column[overlapping_taxa]) |
+      !nzchar(trimws(raw_trait_column[overlapping_taxa]))
+    missing_value_taxa <- sort(
+      overlapping_taxa[is.na(trait_values[overlapping_taxa]) & empty_or_missing_values]
+    )
+    non_numeric_taxa <- sort(
+      overlapping_taxa[is.na(trait_values[overlapping_taxa]) & !empty_or_missing_values]
+    )
+    kept_taxa <- names(trait_values)[!is.na(trait_values) & names(trait_values) %in% original_tree_tip_labels]
     trait_values <- trait_values[kept_taxa]
-    excluded_taxa <- sort(setdiff(tree$tip.label, kept_taxa))
+    excluded_taxa <- sort(unique(c(tree_only_taxa, missing_value_taxa, non_numeric_taxa)))
     if (length(excluded_taxa) > 0) {
       tree <- ape::drop.tip(tree, excluded_taxa)
     }
     payload <- build_fitcontinuous_payload(tree, trait_values, excluded_taxa, case_payload)
+    payload$summary$missing_from_traits <- json_array(tree_only_taxa)
+    payload$summary$missing_value_taxa <- json_array(missing_value_taxa)
+    payload$summary$non_numeric_taxa <- json_array(non_numeric_taxa)
+    payload$summary$extra_trait_taxa <- json_array(extra_trait_taxa)
     write_payload(summary_path, payload$summary)
     write_table(rows_path, payload$rows)
     write_payload(

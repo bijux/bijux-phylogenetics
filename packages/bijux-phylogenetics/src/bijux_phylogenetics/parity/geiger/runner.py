@@ -14,6 +14,7 @@ import tempfile
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     fit_continuous_evolutionary_mode,
 )
+from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 
 from .registry import GeigerParityCase, list_geiger_parity_cases
 
@@ -269,10 +270,51 @@ def _parameter_rows(summary: dict[str, object]) -> list[dict[str, object]]:
     return rows
 
 
+def _standard_error_policy() -> str:
+    return "tip-standard-errors-not-supported"
+
+
+def _missing_value_policy() -> str:
+    return "prune-tree-tip-overlap-with-missing-or-nonnumeric-trait-values"
+
+
+def _bijux_optimizer_result(case: GeigerParityCase) -> dict[str, object]:
+    if case.python_mode == "brownian":
+        return {
+            "optimizer_name": "closed-form-profile-solution",
+            "parameter_search": "none",
+            "converged": True,
+            "parameter_count": 2,
+        }
+    if case.python_mode == "ornstein-uhlenbeck":
+        return {
+            "optimizer_name": "governed-two-stage-grid-search",
+            "parameter_search": "bounded-grid-search",
+            "converged": True,
+            "parameter_count": 3,
+            "coarse_grid_point_count": 81,
+            "fine_grid_point_count": 81,
+        }
+    return {
+        "optimizer_name": "governed-two-stage-grid-search",
+        "parameter_search": "bounded-grid-search",
+        "converged": True,
+        "parameter_count": 3,
+        "coarse_grid_point_count": 81,
+        "fine_grid_point_count": 81,
+    }
+
+
 def _build_bijux_case_payload(
     case: GeigerParityCase,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
     tree_path, traits_path = case.input_fixtures
+    readiness = summarize_numeric_trait_readiness(
+        tree_path,
+        traits_path,
+        trait=case.trait_name,
+        taxon_column=case.taxon_column,
+    )
     report = fit_continuous_evolutionary_mode(
         tree_path,
         traits_path,
@@ -284,10 +326,25 @@ def _build_bijux_case_payload(
         if case.early_burst_bounds is None
         else case.early_burst_bounds,
     )
+    excluded_taxa = sorted(
+        {
+            *readiness.missing_from_traits,
+            *readiness.pruned_missing_value_taxa,
+            *readiness.pruned_non_numeric_taxa,
+        }
+    )
     summary = {
         "taxon_count": report.taxon_count,
         "trait_name": report.trait,
         "model_name": case.model_name,
+        "excluded_taxon_count": len(excluded_taxa),
+        "excluded_taxa": excluded_taxa,
+        "missing_value_taxa": list(readiness.pruned_missing_value_taxa),
+        "non_numeric_taxa": list(readiness.pruned_non_numeric_taxa),
+        "missing_from_traits": list(readiness.missing_from_traits),
+        "extra_trait_taxa": list(readiness.extra_trait_taxa),
+        "missing_value_policy": _missing_value_policy(),
+        "standard_error_policy": _standard_error_policy(),
         "root_state": report.root_state,
         "rate": report.rate,
         "log_likelihood": report.log_likelihood,
@@ -296,6 +353,7 @@ def _build_bijux_case_payload(
         "parameter_name": report.parameter_name,
         "parameter_value": report.parameter_value,
         "optimizer_settings": case.optimizer_settings,
+        "optimizer_result": _bijux_optimizer_result(case),
     }
     return summary, _parameter_rows(summary)
 
