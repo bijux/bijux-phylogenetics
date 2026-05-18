@@ -34,6 +34,7 @@ from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.trait_tree_package import (
     build_annotated_trait_tree_package,
 )
+from bijux_phylogenetics.comparative import build_diversification_figure_package
 from bijux_phylogenetics.reports.alignment_package import (
     build_alignment_figure_package,
 )
@@ -1292,6 +1293,111 @@ def validate_alignment_figure_reference_fixtures(
         ],
         limitations=[
             "alignment figure publication readiness is governed through visible figure-surface counts, suspicious-alignment review, and machine-readable audits rather than screenshot goldens",
+        ],
+    )
+
+
+def validate_diversification_figure_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
+    """Validate diversification figure fixtures for visible macroevolution surfaces and sampling-aware blocking."""
+    root = _default_fixtures_root() if fixtures_root is None else fixtures_root
+    tree_path = _fixture(root, "trees", "example_tree.nwk")
+    complete_sampling = _fixture(root, "metadata", "example_sampling_fractions.tsv")
+    incomplete_sampling = _fixture(
+        root, "metadata", "example_sampling_fractions_incomplete.tsv"
+    )
+    temp_root = _temp_reference_dir("bijux-diversification-figure-reference")
+    temp_root.mkdir(parents=True, exist_ok=True)
+
+    complete_package = build_diversification_figure_package(
+        tree_path,
+        metadata_path=complete_sampling,
+        out_dir=temp_root / "complete-diversification-package",
+    )
+    blocked_package = build_diversification_figure_package(
+        tree_path,
+        metadata_path=incomplete_sampling,
+        out_dir=temp_root / "incomplete-sampling-diversification-package",
+    )
+
+    fixtures = [
+        _check(
+            goal_id=233,
+            suite="diversification-figure-publication-reference",
+            name="sampling_complete_diversification_figures_ready",
+            fixture_paths=[tree_path, complete_sampling],
+            expected={
+                "publication_ready": True,
+                "sampling_metadata_complete": True,
+                "plotted_ltt_point_count": 4,
+                "plotted_clade_count": 3,
+                "highlighted_outlier_count": 2,
+                "plotted_model_count": 2,
+                "better_model": "yule",
+            },
+            observed={
+                "publication_ready": complete_package.audit.publication_ready,
+                "sampling_metadata_complete": (
+                    complete_package.audit.sampling_metadata_complete
+                ),
+                "plotted_ltt_point_count": (
+                    complete_package.audit.plotted_ltt_point_count
+                ),
+                "plotted_clade_count": complete_package.audit.plotted_clade_count,
+                "highlighted_outlier_count": (
+                    complete_package.audit.highlighted_outlier_count
+                ),
+                "plotted_model_count": complete_package.audit.plotted_model_count,
+                "better_model": complete_package.audit.better_model,
+            },
+            notes=[
+                "the clean diversification fixture must keep the lineage-through-time curve, clade-rate outlier panel, and model-comparison surface all visible while remaining sampling-complete"
+            ],
+        ),
+        _check(
+            goal_id=233,
+            suite="diversification-figure-publication-reference",
+            name="incomplete_sampling_blocks_diversification_readiness",
+            fixture_paths=[tree_path, incomplete_sampling],
+            expected={
+                "publication_ready": False,
+                "sampling_metadata_complete": False,
+                "lineage_curve_visible": True,
+                "clade_outlier_surface_visible": True,
+                "model_comparison_visible": True,
+                "better_model": "yule",
+            },
+            observed={
+                "publication_ready": blocked_package.audit.publication_ready,
+                "sampling_metadata_complete": (
+                    blocked_package.audit.sampling_metadata_complete
+                ),
+                "lineage_curve_visible": blocked_package.audit.lineage_curve_visible,
+                "clade_outlier_surface_visible": (
+                    blocked_package.audit.clade_outlier_surface_visible
+                ),
+                "model_comparison_visible": (
+                    blocked_package.audit.model_comparison_visible
+                ),
+                "better_model": blocked_package.audit.better_model,
+            },
+            notes=[
+                "publication readiness remains blocked when sampling metadata is incomplete even though the full diversification figure package still renders for review"
+            ],
+        ),
+    ]
+    return _suite_report(
+        goal_id=233,
+        suite="diversification-figure-publication-reference",
+        reviewer_goal="Diversification figure publication fixtures",
+        fixtures=fixtures,
+        coverage_notes=[
+            "pins one sampling-complete diversification package where lineage accumulation, clade outliers, and model support all remain explicit on reviewer-facing figures",
+            "proves that incomplete sampling metadata still allows full figure rendering while keeping publication readiness blocked instead of silently claiming a corrected diversification review",
+        ],
+        limitations=[
+            "diversification figure publication readiness is governed through rendered surface counts, sampling-metadata completeness, and machine-readable audits rather than screenshot goldens",
         ],
     )
 
