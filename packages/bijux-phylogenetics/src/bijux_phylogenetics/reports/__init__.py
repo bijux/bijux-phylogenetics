@@ -10,8 +10,11 @@ from .supplementary_tables import (
     SupplementaryAlignmentDiagnosticsTableResult,
     SupplementaryTaxonTableResult,
     SupplementaryTaxonTableRow,
+    SupplementaryTreeDiagnosticsRow,
+    SupplementaryTreeDiagnosticsTableResult,
     write_supplementary_alignment_diagnostics_table,
     write_supplementary_taxon_table,
+    write_supplementary_tree_diagnostics_table,
 )
 from .tree_package import (
     TreeBranchStatisticsRow,
@@ -31,6 +34,8 @@ __all__ = [
     "SupplementaryAlignmentDiagnosticsTableResult",
     "SupplementaryTaxonTableResult",
     "SupplementaryTaxonTableRow",
+    "SupplementaryTreeDiagnosticsRow",
+    "SupplementaryTreeDiagnosticsTableResult",
     "TreeBranchStatisticsRow",
     "TreeReportPackageResult",
     "TreeSupportRow",
@@ -40,6 +45,7 @@ __all__ = [
     "summarize_tree_support",
     "write_supplementary_alignment_diagnostics_table",
     "write_supplementary_taxon_table",
+    "write_supplementary_tree_diagnostics_table",
     "write_tree_branch_statistics_table",
     "write_tree_support_table",
 ]
