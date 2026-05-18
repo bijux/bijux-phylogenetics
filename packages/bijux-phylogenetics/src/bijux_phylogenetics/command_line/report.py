@@ -11,6 +11,7 @@ from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.provenance.method_tiers import method_tier_metrics
+from bijux_phylogenetics.bayesian import build_time_tree_figure_package
 from bijux_phylogenetics.render.trait_tree_package import (
     build_annotated_trait_tree_package,
 )
@@ -124,6 +125,34 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the package build result as JSON."
     )
     _add_manifest_argument(report_trait_tree_package)
+
+    report_time_tree_package = report_subparsers.add_parser(
+        "time-tree-package",
+        help="Build a publication-oriented time-tree package with node-age labels and HPD intervals.",
+    )
+    report_time_tree_package.add_argument("posterior_trees", type=Path)
+    report_time_tree_package.add_argument(
+        "--source-format",
+        choices=("generic", "beast", "mrbayes"),
+        default="generic",
+    )
+    report_time_tree_package.add_argument("--burnin-fraction", type=float, default=0.25)
+    report_time_tree_package.add_argument("--metadata", type=Path)
+    report_time_tree_package.add_argument("--label-column")
+    report_time_tree_package.add_argument("--taxon-column")
+    report_time_tree_package.add_argument("--tip-dates", type=Path)
+    report_time_tree_package.add_argument("--calibrations", type=Path)
+    report_time_tree_package.add_argument("--alignment", type=Path)
+    report_time_tree_package.add_argument(
+        "--title",
+        default="Bijux Time Tree Figure",
+        help="Reviewer-facing title for the time-tree figure package.",
+    )
+    report_time_tree_package.add_argument("--out-dir", required=True, type=Path)
+    report_time_tree_package.add_argument(
+        "--json", action="store_true", help="Emit the package build result as JSON."
+    )
+    _add_manifest_argument(report_time_tree_package)
 
     report_alignment = report_subparsers.add_parser(
         "alignment", help="Render an alignment-only HTML diagnostic report."
@@ -405,6 +434,68 @@ def run_report_command(args: Any) -> int:
                         "legend_entry_count": result.audit.legend_entry_count,
                         "caption_ready": result.audit.caption_ready,
                         "legible": result.audit.legible,
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_dir)
+        return 0
+
+    if args.report_command == "time-tree-package":
+        result = build_time_tree_figure_package(
+            args.posterior_trees,
+            out_dir=args.out_dir,
+            source_format=args.source_format,
+            burnin_fraction=args.burnin_fraction,
+            metadata_path=args.metadata,
+            label_column=args.label_column,
+            taxon_column=args.taxon_column,
+            tip_dates_path=args.tip_dates,
+            calibration_path=args.calibrations,
+            alignment_path=args.alignment,
+            title=args.title,
+        )
+        inputs = [args.posterior_trees]
+        if args.metadata is not None:
+            inputs.append(args.metadata)
+        if args.tip_dates is not None:
+            inputs.append(args.tip_dates)
+        if args.calibrations is not None:
+            inputs.append(args.calibrations)
+        if args.alignment is not None:
+            inputs.append(args.alignment)
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=inputs,
+            outputs=[
+                result.figure_path,
+                result.retained_tree_set_path,
+                result.mcc_tree_path,
+                result.interval_table_path,
+                result.legend_path,
+                result.caption_path,
+                result.review_path,
+                result.manifest_path,
+            ],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=inputs,
+                    outputs=outputs,
+                    warnings=result.audit.limitations,
+                    metrics={
+                        "publication_ready": result.audit.publication_ready,
+                        "retained_tree_count": result.retained_tree_count,
+                        "root_age": result.render.root_age,
+                        "rendered_interval_count": result.render.rendered_interval_count,
+                        "expected_interval_count": result.audit.expected_interval_count,
+                        "ultrametric": result.audit.ultrametric,
+                        "readiness_decision": result.audit.readiness_decision,
                     },
                     data=result,
                 ),
