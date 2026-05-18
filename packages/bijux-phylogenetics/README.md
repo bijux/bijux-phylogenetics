@@ -234,7 +234,7 @@ differences.
 - cluster identical rooted topologies, detect unstable taxa or clades, and compare two posterior tree sets
 - simulate birth-death or coalescent trees, Brownian, OU, or early-burst continuous traits, discrete traits, and DNA or protein alignments
 - ship governed internal recovery panels that check whether Brownian, OU, and early-burst trait models recover known simulation truth with explicit parameter-error and warning ledgers
-- benchmark validation, tree comparison, large-tree rendering/report generation, and alignment diagnostics across increasing problem sizes
+- benchmark validation, tree comparison, large-tree rendering/report generation, large-alignment trimming/distance/readiness, and alignment diagnostics across increasing problem sizes
 - root trees on explicit outgroups or reroot them by midpoint
 - audit rooting, ordering, clade extraction, and pruning transforms with before/after summaries and retained-versus-removed taxon reasoning
 - validate tree roundtrips across Newick, Nexus, and phyloXML formats with topology-preservation checks, support-label audits, and semantic-loss warnings
@@ -362,6 +362,7 @@ bijux-phylogenetics demo continuous-mode-recovery-panel --out artifacts/continuo
 bijux-phylogenetics simulate alignment-dna tree.nwk --sequence-length 500 --out simulated-alignment.fasta
 bijux-phylogenetics benchmark tree-comparison --replicates 3 --json
 bijux-phylogenetics benchmark large-tree-scaling --replicates 1 --tip-count 512 --tip-count 1024 --json
+bijux-phylogenetics benchmark large-alignment-scaling --replicates 1 --sequence-count 256 --alignment-length 512 --sequence-count 512 --alignment-length 1024 --json
 bijux-phylogenetics diagnose assumptions tree.nwk --metadata metadata.tsv --json
 bijux-phylogenetics alignment translate coding.fasta --out translated.fasta --codon-validation-out artifacts/codon-validation.tsv --excluded-sequences-out artifacts/translation-exclusions.tsv
 bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json
@@ -375,6 +376,13 @@ For reviewer-facing scale checks on owned tree workflows, use
 `tree-comparison`, `tree-rendering`, and `tree-reporting` on governed
 high-taxon synthetic trees so validation, SVG rendering, and HTML report costs
 stay visible before larger production claims are made.
+
+For reviewer-facing scale checks on owned alignment workflows, use
+`benchmark large-alignment-scaling`. It benchmarks
+`alignment-diagnostics`, `alignment-trimming`, `distance-analysis`, and
+`alignment-readiness` on governed large aligned FASTA classes so diagnostics,
+trimAl-backed workflow cost, distance-report cost, and inference-readiness
+review stay visible before larger production claims are made.
 
 `demo rabies-cross-host-geography-panel` is the repository's flagship public
 biological workflow surface. In addition to the dataset and workflow
