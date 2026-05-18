@@ -53,6 +53,7 @@ def test_shared_geiger_continuous_fixture_catalog_covers_required_goal_cases() -
         "missing-trait-values",
         "constant-trait-negative-case",
         "extreme-outlier",
+        "trait-standard-error",
         "known-truth-simulation",
     } <= feature_tags
     assert {"BM", "OU", "EB", "lambda", "kappa", "delta", "white", "trend"} <= (
@@ -213,6 +214,22 @@ def test_shared_geiger_continuous_fixture_catalog_handles_missing_constant_outli
     assert "explicitly excludes geiger trend parity" in trend_fixture.notes
     assert max(outlier_values) - median(outlier_values) > 4.0
     assert trend_values[-1] > trend_values[0]
+
+
+def test_shared_geiger_continuous_fixture_catalog_tracks_standard_error_review_surface() -> (
+    None
+):
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_standard_error_review_twenty_four_taxa"
+    )
+
+    assert fixture.trait_name == "ou_truth"
+    assert fixture.standard_error_trait_name == "ou_truth_standard_error"
+    assert fixture.geiger_reference_expectation == (
+        "fitcontinuous-standard-error-explicitly-excluded-this-round"
+    )
+    assert "trait-standard-error" in fixture.feature_tags
+    assert "explicitly excludes measurement-error variance handling" in fixture.notes
 
 
 def test_public_runtime_exports_include_shared_geiger_continuous_fixture_surface() -> (

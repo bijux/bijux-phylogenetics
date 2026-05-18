@@ -99,6 +99,15 @@ def test_shared_trait_table_fixture_catalog_supports_governed_phytools_panels() 
     assert "tree-trait-taxon-mismatch" in mismatch_fixture.feature_tags
 
 
+def test_shared_trait_table_fixture_catalog_tracks_governed_standard_error_columns() -> (
+    None
+):
+    fixture = get_shared_trait_table_fixture("geiger_continuous_model_panel_twenty_four_taxa")
+
+    assert fixture.standard_error_columns == ("ou_truth_standard_error",)
+    assert "ou_truth" in fixture.primary_trait_columns
+
+
 def test_shared_trait_table_fixture_catalog_tracks_tree_trait_mismatch_surface() -> (
     None
 ):
