@@ -226,6 +226,19 @@ class DiversificationMethodsSummaryTextResult:
     report: DiversificationMethodReport
 
 
+@dataclass(slots=True)
+class MedusaExclusionReport:
+    tree_path: Path
+    metadata_path: Path | None
+    validation: TimeTreeValidationReport
+    sampling_report: SamplingFractionReport | None
+    supported_surfaces: list[str]
+    missing_surfaces: list[str]
+    exclusion_code: str
+    exclusion_reason: str
+    warnings: list[str]
+
+
 def _node_depths(tree: PhyloTree) -> dict[str, float]:
     depths: dict[str, float] = {node_signature(tree.root): 0.0}
 
@@ -280,6 +293,39 @@ def _deduplicate_text(values: list[str]) -> list[str]:
         seen.add(normalized)
         ordered.append(normalized)
     return ordered
+
+
+def _medusa_supported_surfaces() -> list[str]:
+    return [
+        "time-tree validation",
+        "lineage-through-time curve",
+        "sampling-fraction review",
+        "yule and birth-death rate estimation",
+        "gamma-statistic summary",
+        "two-model diversification AIC comparison",
+        "descriptive clade diversification outlier scan",
+        "trait-linked diversification summary",
+    ]
+
+
+def _medusa_missing_surfaces() -> list[str]:
+    return [
+        "stepwise branch-specific rate-shift search",
+        "shift-count model growth with information-criterion stopping",
+        "best shift-placement ranking across candidate branch partitions",
+        "background-versus-shift diversification parameterization",
+        "weak-support review for near-tied shift configurations",
+    ]
+
+
+def _medusa_exclusion_reason() -> str:
+    return (
+        "geiger::medusa parity is explicitly excluded in this round because bijux "
+        "does not yet implement MEDUSA's stepwise diversification rate-shift search, "
+        "shift-count model-growth selection, or branch-placement ranking; existing "
+        "clade diversification summaries are descriptive reviews and are not claimed "
+        "as MEDUSA-equivalent rate-shift detection"
+    )
 
 
 def _is_strictly_bifurcating(tree: PhyloTree) -> bool:
@@ -1091,6 +1137,7 @@ def _diversification_methods_summary_assumptions(
     assumptions = [
         *report.gamma_statistic.assumptions,
         *report.primary_estimate.assumptions,
+        _medusa_exclusion_reason(),
     ]
     if report.sampling_report is None:
         assumptions.append(
@@ -1129,6 +1176,7 @@ def _diversification_report_limitations(
     limitations = [
         "diversification rate, gamma-statistic, and clade outlier summaries depend on the supplied ultrametric tree and should not be treated as direct proof of diversification mechanism",
         "model-ranking differences do not by themselves establish a biological process without checking sampling completeness, model adequacy, and tree uncertainty",
+        _medusa_exclusion_reason(),
         *report.validation.warnings,
         *report.gamma_statistic.assumptions,
         *report.primary_estimate.assumptions,
@@ -1224,11 +1272,49 @@ def build_diversification_methods_summary_text(
                 + f"- trait-linked warnings: {_bullet_list(trait_report.warnings)}\n"
             )
         )
+        + f"- MEDUSA parity claim: {_medusa_exclusion_reason()}\n"
         + "\n## Assumptions And Caveats\n\n"
         + "\n".join(f"- {item}" for item in assumptions)
         + "\n\n## Reviewer Warnings\n\n"
         + f"- combined warning count: `{len(warnings)}`\n"
         + f"- warning details: {_bullet_list(warnings)}\n"
+    )
+
+
+def summarize_medusa_exclusion(
+    tree_path: Path,
+    *,
+    metadata_path: Path | None = None,
+    taxon_column: str | None = None,
+    sampling_column: str | None = None,
+) -> MedusaExclusionReport:
+    """Explain the current exclusion boundary for geiger::medusa parity."""
+    validation = validate_time_tree_for_diversification(tree_path)
+    sampling_report = (
+        None
+        if metadata_path is None
+        else detect_incomplete_taxon_sampling_metadata(
+            tree_path,
+            metadata_path,
+            taxon_column=taxon_column,
+            sampling_column=sampling_column,
+        )
+    )
+    exclusion_reason = _medusa_exclusion_reason()
+    warnings = list(validation.warnings)
+    if sampling_report is not None:
+        warnings.extend(sampling_report.warnings)
+    warnings.append(exclusion_reason)
+    return MedusaExclusionReport(
+        tree_path=tree_path,
+        metadata_path=metadata_path,
+        validation=validation,
+        sampling_report=sampling_report,
+        supported_surfaces=_medusa_supported_surfaces(),
+        missing_surfaces=_medusa_missing_surfaces(),
+        exclusion_code="geiger_medusa_explicitly_excluded_this_round",
+        exclusion_reason=exclusion_reason,
+        warnings=_deduplicate_text(warnings),
     )
 
 
