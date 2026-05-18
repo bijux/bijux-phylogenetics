@@ -907,6 +907,8 @@ def run_demo_command(args: Any) -> int:
                 result.workflow_bundle.slurm_array_partitions_path,
                 result.workflow_bundle.slurm_array_members_path,
                 result.workflow_bundle.slurm_array_strategy_path,
+                result.workflow_bundle.slurm_job_evidence_index_path,
+                result.workflow_bundle.slurm_job_evidence_summary_path,
                 result.workflow_bundle.slurm_output_freshness_path,
                 result.workflow_bundle.slurm_output_freshness_checks_path,
                 result.workflow_bundle.slurm_output_freshness_summary_path,
@@ -990,6 +992,15 @@ def run_demo_command(args: Any) -> int:
                         ),
                         "slurm_array_largest_partition_size": (
                             result.workflow_bundle.slurm_array_largest_partition_size
+                        ),
+                        "slurm_job_evidence_file_count": (
+                            result.workflow_bundle.slurm_job_evidence_file_count
+                        ),
+                        "slurm_job_evidence_total_runtime_seconds": (
+                            result.workflow_bundle.slurm_job_evidence_total_runtime_seconds
+                        ),
+                        "slurm_job_evidence_total_output_byte_count": (
+                            result.workflow_bundle.slurm_job_evidence_total_output_byte_count
                         ),
                         "slurm_output_freshness_check_count": (
                             result.workflow_bundle.slurm_output_freshness_check_count

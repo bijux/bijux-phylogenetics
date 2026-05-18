@@ -287,7 +287,7 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 32
+    assert payload["metrics"]["artifact_count"] == 34
     assert payload["metrics"]["taxon_count"] == 9
     assert payload["metrics"]["variant_count"] == 4
     assert payload["metrics"]["parallel_workers"] == 2
@@ -297,7 +297,7 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     assert payload["metrics"]["preprocessing_change_pair_count"] == 0
     assert payload["metrics"]["rooted_engine_change_variant_count"] == 0
     assert payload["metrics"]["serious_conflict_variant_count"] == 4
-    assert payload["metrics"]["report_linked_artifact_count"] == 23
+    assert payload["metrics"]["report_linked_artifact_count"] == 25
     assert payload["metrics"]["report_html_size_bytes"] > 0
     assert payload["metrics"]["report_linked_artifact_bytes"] > 0
     assert (
@@ -313,6 +313,9 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     assert payload["metrics"]["slurm_array_partition_count"] == 2
     assert payload["metrics"]["slurm_array_script_count"] == 2
     assert payload["metrics"]["slurm_array_largest_partition_size"] == 2
+    assert payload["metrics"]["slurm_job_evidence_file_count"] > 0
+    assert payload["metrics"]["slurm_job_evidence_total_runtime_seconds"] > 0
+    assert payload["metrics"]["slurm_job_evidence_total_output_byte_count"] > 0
     assert payload["metrics"]["slurm_output_freshness_check_count"] > 0
     assert payload["metrics"]["slurm_output_freshness_failed_check_count"] == 0
     assert payload["metrics"]["slurm_fresh_output_job_count"] == 4
@@ -347,6 +350,12 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     )
     assert payload["data"]["workflow_bundle"]["slurm_array_partitions_path"] == str(
         output / "workflow" / "slurm-array-partitions.tsv"
+    )
+    assert payload["data"]["workflow_bundle"]["slurm_job_evidence_index_path"] == str(
+        output / "workflow" / "slurm-job-evidence.tsv"
+    )
+    assert payload["data"]["workflow_bundle"]["slurm_job_evidence_summary_path"] == str(
+        output / "workflow" / "slurm-job-evidence-summary.json"
     )
     assert payload["data"]["workflow_bundle"]["slurm_output_freshness_path"] == str(
         output / "workflow" / "slurm-output-freshness.tsv"
