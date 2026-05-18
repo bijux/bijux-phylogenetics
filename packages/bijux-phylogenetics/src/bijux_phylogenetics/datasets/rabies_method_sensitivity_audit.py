@@ -28,6 +28,9 @@ _PARALLEL_SUMMARY_FILENAME = "parallel-execution-summary.tsv"
 _VARIANT_SUMMARY_FILENAME = "variant-summary.tsv"
 _SLURM_ARRAY_PARTITIONS_FILENAME = "slurm-array-partitions.tsv"
 _SLURM_ARRAY_MEMBERS_FILENAME = "slurm-array-members.tsv"
+_SLURM_JOB_STATUS_FILENAME = "slurm-job-status.tsv"
+_SLURM_PARTITION_STATUS_FILENAME = "slurm-partition-status.tsv"
+_SLURM_WORKFLOW_STATUS_FILENAME = "slurm-workflow-status.json"
 _TASK_LOGS_DIRECTORY = "parallel-logs"
 _VARIANTS_DIRECTORY = "variants"
 _EXPECTED_VARIANT_FILENAMES = (
@@ -107,6 +110,9 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     variant_summary_path = bundle_root / _VARIANT_SUMMARY_FILENAME
     slurm_array_partitions_path = bundle_root / _SLURM_ARRAY_PARTITIONS_FILENAME
     slurm_array_members_path = bundle_root / _SLURM_ARRAY_MEMBERS_FILENAME
+    slurm_job_status_path = bundle_root / _SLURM_JOB_STATUS_FILENAME
+    slurm_partition_status_path = bundle_root / _SLURM_PARTITION_STATUS_FILENAME
+    slurm_workflow_status_path = bundle_root / _SLURM_WORKFLOW_STATUS_FILENAME
     task_logs_root = bundle_root / _TASK_LOGS_DIRECTORY
     variants_root = bundle_root / _VARIANTS_DIRECTORY
 
@@ -117,6 +123,9 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     variant_rows = _read_tsv_rows(variant_summary_path)
     slurm_array_partition_rows = _read_tsv_rows(slurm_array_partitions_path)
     slurm_array_member_rows = _read_tsv_rows(slurm_array_members_path)
+    slurm_job_status_rows = _read_tsv_rows(slurm_job_status_path)
+    slurm_partition_status_rows = _read_tsv_rows(slurm_partition_status_path)
+    slurm_workflow_status = _load_json(slurm_workflow_status_path)
 
     checks: list[RabiesMethodSensitivityReproducibilityCheckRow] = []
     variant_audit_rows: list[RabiesMethodSensitivityVariantAuditRow] = []
@@ -332,6 +341,45 @@ def audit_rabies_method_sensitivity_workflow_bundle(
             observed="present" if script_path.is_file() else "missing",
             detail="array partition table references an existing sbatch script",
         )
+    slurm_job_status_variant_ids = sorted(
+        str(row["variant_id"]) for row in slurm_job_status_rows
+    )
+    slurm_partition_status_ids = sorted(
+        str(row["partition_id"]) for row in slurm_partition_status_rows
+    )
+    add_check(
+        "slurm-status:job-coverage",
+        surface="slurm-status",
+        condition=config_variant_ids == slurm_job_status_variant_ids,
+        expected=config_variant_ids,
+        observed=slurm_job_status_variant_ids,
+        detail="job-status rows cover the configured variant ids",
+    )
+    add_check(
+        "slurm-status:partition-coverage",
+        surface="slurm-status",
+        condition=sorted(slurm_partition_ids) == slurm_partition_status_ids,
+        expected=sorted(slurm_partition_ids),
+        observed=slurm_partition_status_ids,
+        detail="partition-status rows cover the same partition ids as the array partition table",
+    )
+    add_check(
+        "slurm-status:workflow-job-count",
+        surface="slurm-status",
+        condition=int(slurm_workflow_status["job_count"]) == len(slurm_job_status_rows),
+        expected=slurm_workflow_status["job_count"],
+        observed=len(slurm_job_status_rows),
+        detail="workflow status job_count matches the number of job-status rows",
+    )
+    add_check(
+        "slurm-status:workflow-partition-count",
+        surface="slurm-status",
+        condition=int(slurm_workflow_status["partition_count"])
+        == len(slurm_partition_status_rows),
+        expected=slurm_workflow_status["partition_count"],
+        observed=len(slurm_partition_status_rows),
+        detail="workflow status partition_count matches the number of partition-status rows",
+    )
 
     for variant_id in config_variant_ids:
         config_row = config_variants[variant_id]

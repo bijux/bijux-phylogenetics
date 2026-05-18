@@ -29,6 +29,12 @@ def test_audit_rabies_method_sensitivity_workflow_bundle_passes_on_packaged_outp
     assert report.variant_count == 4
     assert report.check_count >= 20
     assert all(row.status == "passed" for row in report.variants)
+    workflow_status_check = next(
+        row
+        for row in report.checks
+        if row.check_id == "slurm-status:workflow-job-count"
+    )
+    assert workflow_status_check.status == "passed"
 
 
 def test_audit_rabies_method_sensitivity_workflow_bundle_detects_input_checksum_drift(

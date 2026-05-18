@@ -2,7 +2,7 @@
   "changed_clade_count": 8,
   "dataset_id": "rabies_method_sensitivity_panel",
   "execution_mode": "parallel",
-  "linked_artifact_count": 15,
+  "linked_artifact_count": 19,
   "linked_artifacts": {
     "changed_clades": {
       "byte_count": 1979,
@@ -18,6 +18,11 @@
       "byte_count": 1548,
       "path": "../workflow-config.resolved.json",
       "sha256": "5dd5360de532fb56dbcb692abd39f84c850dca83095841692dbff887218f0f48"
+    },
+    "execution_record": {
+      "byte_count": 1977,
+      "path": "../rabies-method-sensitivity-panel.run.json",
+      "sha256": "b4ff6c88077daf1ae48da8dccb101c7e9e788b472aca984d8aab706bd3016ba8"
     },
     "parallel_summary": {
       "byte_count": 487,
@@ -52,12 +57,27 @@
     "slurm_job_plan": {
       "byte_count": 2240,
       "path": "../slurm-job-plan.tsv",
-      "sha256": "0658d538317fa94b7392675c32dae8b7c8ef8a231979a4118de16ea7b65ea7d9"
+      "sha256": "1dfaccc181e3264ef3ca27a54b7e6f38ecad5cf4993e8c9ca92f5fd5061bc051"
+    },
+    "slurm_job_status": {
+      "byte_count": 1331,
+      "path": "../slurm-job-status.tsv",
+      "sha256": "21cbe38627e6aa31501e64c0b6ef0193f3e4258e904dd3619975c6bbfcfafd97"
+    },
+    "slurm_partition_status": {
+      "byte_count": 398,
+      "path": "../slurm-partition-status.tsv",
+      "sha256": "4453774c25cebb2043a0c3907fd73d48d83e7d1feb3050f51a5da29f53968763"
     },
     "slurm_summary": {
       "byte_count": 6834,
       "path": "../slurm-planning-summary.json",
-      "sha256": "d39e865f8f19c78c33ba885034b22dd8291f1a5724e65fd05425e839497c9c67"
+      "sha256": "f190195723d4afa109d27a1652faa344678bccbae9b0344b1bb7b5512f438c68"
+    },
+    "slurm_workflow_status": {
+      "byte_count": 4074,
+      "path": "../slurm-workflow-status.json",
+      "sha256": "72dd0af4f92a10859fc48f465645dab68c6e6e3cf9073f8c320f7c1debad4dc5"
     },
     "stable_clades": {
       "byte_count": 439,
@@ -70,9 +90,9 @@
       "sha256": "94e0a7813ea68e816d4e6011ae6fe25b97eed6f6f0c955c7201abf429975d1ab"
     },
     "workflow_manifest": {
-      "byte_count": 3920,
+      "byte_count": 4534,
       "path": "../rabies-method-sensitivity.manifest.json",
-      "sha256": "0aad922fe2f7647c254f567686b875ea5594d977e381fa95bc3f1e834cad61f5"
+      "sha256": "d6530f823df75ae4b08509b0ab16e25f52f939365b21d0d0b556708a4e27c4e2"
     },
     "workflow_summary": {
       "byte_count": 239,

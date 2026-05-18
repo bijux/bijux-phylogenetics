@@ -439,5 +439,7 @@ def test_write_rabies_method_sensitivity_slurm_status_artifacts(tmp_path: Path) 
     assert "missing_required_file_count" in job_status_path.read_text(encoding="utf-8")
     assert "overall_status" in partition_status_path.read_text(encoding="utf-8")
     payload = json.loads(workflow_status_path.read_text(encoding="utf-8"))
+    assert payload["bundle_root"] == "."
+    assert payload["execution_record_path"] == "rabies-method-sensitivity-panel.run.json"
     assert payload["completed_job_count"] == 1
     assert payload["jobs"][0]["status"] == "completed"

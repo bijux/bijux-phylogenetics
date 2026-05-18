@@ -240,9 +240,15 @@ def write_rabies_method_sensitivity_slurm_status_json(
     """Write the structured workflow resume-state summary."""
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = asdict(report)
-    payload["bundle_root"] = report.bundle_root.as_posix()
-    payload["execution_record_path"] = report.execution_record_path.as_posix()
-    payload["active_marker_path"] = report.active_marker_path.as_posix()
+    payload["bundle_root"] = "."
+    payload["execution_record_path"] = _relative_bundle_path(
+        report.bundle_root,
+        report.execution_record_path,
+    )
+    payload["active_marker_path"] = _relative_bundle_path(
+        report.bundle_root,
+        report.active_marker_path,
+    )
     path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -445,6 +451,13 @@ def _missing_required_variant_outputs(
 
 def _load_json(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _relative_bundle_path(bundle_root: Path, value: Path) -> str:
+    try:
+        return value.relative_to(bundle_root).as_posix()
+    except ValueError:
+        return value.as_posix()
 
 
 def _parse_task_log(path: Path) -> dict[str, str]:

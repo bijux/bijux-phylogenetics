@@ -1,0 +1,3 @@
+partition_id	script_path	job_count	completed_job_count	failed_job_count	pending_job_count	stale_job_count	overall_status	variant_ids
+compact-mafft-auto-standard	slurm-arrays/compact-mafft-auto-standard.sbatch	2	2	0	0	0	completed	auto-gap-threshold,auto-gappyout
+compact-mafft-ginsi-elevated	slurm-arrays/compact-mafft-ginsi-elevated.sbatch	2	2	0	0	0	completed	ginsi-gap-threshold,ginsi-gappyout
