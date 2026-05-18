@@ -69,6 +69,7 @@ from .reference import (
     validate_report_regression_fixtures,
     validate_taxon_naming_reference_fixtures,
     validate_tree_reference_fixtures,
+    validate_tree_set_uncertainty_methods_summary_reference_fixtures,
     write_core_workflow_validation_json,
     write_level_one_release_gate_json,
 )
@@ -124,6 +125,7 @@ __all__ = [
     "SimulationReproducibilityReport",
     "validate_biogeography_figure_reference_fixtures",
     "validate_tree_set_uncertainty_reference_fixtures",
+    "validate_tree_set_uncertainty_methods_summary_reference_fixtures",
     "WorkflowPracticalLimitDashboard",
     "WorkflowProductionScaleReadinessEntry",
     "WorkflowScaleDecision",

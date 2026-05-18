@@ -44,6 +44,10 @@ from bijux_phylogenetics.reports.alignment_package import (
 from bijux_phylogenetics.trees.uncertainty_package import (
     build_tree_set_uncertainty_figure_package,
 )
+from bijux_phylogenetics.trees import (
+    build_tree_set_uncertainty_method_report,
+    write_tree_set_uncertainty_methods_summary_text,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -1202,6 +1206,101 @@ def validate_tree_set_uncertainty_reference_fixtures(
         ],
         limitations=[
             "tree-set publication readiness is governed through rendered support counts, plot-presence checks, and explicit empty-state review rather than screenshot goldens",
+        ],
+    )
+
+
+def validate_tree_set_uncertainty_methods_summary_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
+    """Validate tree-set uncertainty methods-summary fixtures for multi-topology and single-topology lanes."""
+    root = _default_fixtures_root() if fixtures_root is None else fixtures_root
+    tree_set_path = _fixture(root, "trees", "example_tree_set_left.nwk")
+    temp_root = _temp_reference_dir("bijux-tree-set-uncertainty-methods-reference")
+    temp_root.mkdir(parents=True, exist_ok=True)
+    single_topology_path = temp_root / "single-topology-tree-set.nwk"
+    repeated_tree = tree_set_path.read_text(encoding="utf-8").splitlines()[0]
+    single_topology_path.write_text(
+        "\n".join([repeated_tree, repeated_tree, repeated_tree]) + "\n",
+        encoding="utf-8",
+    )
+
+    multi_topology_summary = write_tree_set_uncertainty_methods_summary_text(
+        temp_root / "multi-topology-methods-summary.md",
+        build_tree_set_uncertainty_method_report(tree_set_path),
+    )
+    single_topology_summary = write_tree_set_uncertainty_methods_summary_text(
+        temp_root / "single-topology-methods-summary.md",
+        build_tree_set_uncertainty_method_report(single_topology_path),
+    )
+
+    fixtures = [
+        _check(
+            goal_id=253,
+            suite="tree-set-uncertainty-methods-reference",
+            name="multi_topology_methods_summary_keeps_support_and_instability",
+            fixture_paths=[tree_set_path],
+            expected={
+                "warning_count": 4,
+                "topology_cluster_count": 2,
+                "unstable_taxon_count": 4,
+                "multimodal": True,
+                "output_present": True,
+            },
+            observed={
+                "warning_count": multi_topology_summary.warning_count,
+                "topology_cluster_count": (
+                    multi_topology_summary.topology_cluster_count
+                ),
+                "unstable_taxon_count": multi_topology_summary.unstable_taxon_count,
+                "multimodal": (
+                    multi_topology_summary.report.multimodality.multimodal
+                ),
+                "output_present": multi_topology_summary.output_path.exists(),
+            },
+            notes=[
+                "the governed multi-topology fixture must keep consensus, support dispersion, and instability caveats explicit in reviewer-facing methods text"
+            ],
+        ),
+        _check(
+            goal_id=253,
+            suite="tree-set-uncertainty-methods-reference",
+            name="single_topology_methods_summary_keeps_clean_lane_explicit",
+            fixture_paths=[single_topology_path],
+            expected={
+                "warning_count": 0,
+                "topology_cluster_count": 1,
+                "unstable_taxon_count": 0,
+                "multimodal": False,
+                "output_present": True,
+            },
+            observed={
+                "warning_count": single_topology_summary.warning_count,
+                "topology_cluster_count": (
+                    single_topology_summary.topology_cluster_count
+                ),
+                "unstable_taxon_count": single_topology_summary.unstable_taxon_count,
+                "multimodal": (
+                    single_topology_summary.report.multimodality.multimodal
+                ),
+                "output_present": single_topology_summary.output_path.exists(),
+            },
+            notes=[
+                "the clean single-topology lane still has to describe the consensus and zero-instability state instead of dropping the methods surface when uncertainty is low"
+            ],
+        ),
+    ]
+    return _suite_report(
+        goal_id=253,
+        suite="tree-set-uncertainty-methods-reference",
+        reviewer_goal="Tree-set uncertainty methods-summary fixtures",
+        fixtures=fixtures,
+        coverage_notes=[
+            "pins one governed multi-topology tree set where the methods summary keeps support dispersion, multimodality, and instability warnings explicit",
+            "proves that a single-topology tree set still emits a real methods summary with a clean zero-warning lane instead of collapsing into an omitted artifact",
+        ],
+        limitations=[
+            "tree-set methods-summary governance is based on output presence and exact uncertainty counts rather than text snapshot goldens",
         ],
     )
 
