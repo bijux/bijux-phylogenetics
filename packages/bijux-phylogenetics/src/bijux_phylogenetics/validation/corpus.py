@@ -8,9 +8,11 @@ from pathlib import Path
 from bijux_phylogenetics.benchmark import (
     BenchmarkObservation,
     benchmark_alignment_site_scaling,
+    benchmark_large_tree_scaling,
     benchmark_tree_comparison,
     benchmark_tree_set_consensus,
     benchmark_tree_validation,
+    LargeTreeScalingWorkflowBenchmark,
 )
 from bijux_phylogenetics.core.dataset import DatasetAuditReport, audit_dataset_inputs
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
@@ -146,6 +148,15 @@ class MemoryBenchmarkDashboard:
 
     goal_id: int
     rows: list[BenchmarkDashboardRow]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class LargeTreeScalingBenchmarkDashboard:
+    """Goal 221 scaling summary for large-tree reviewer workflows."""
+
+    goal_id: int
+    workflows: list[LargeTreeScalingWorkflowBenchmark]
     limitations: list[str]
 
 
@@ -753,6 +764,23 @@ def build_memory_benchmark_dashboard(
         limitations=[
             "memory summaries capture Python-side peak allocations during benchmark runs and do not model every external-engine workflow",
         ],
+    )
+
+
+def build_large_tree_scaling_benchmark_dashboard(
+    *,
+    replicates: int = 1,
+    tip_counts: list[int] | None = None,
+) -> LargeTreeScalingBenchmarkDashboard:
+    """Summarize realistic large-tree scaling across validation and review workflows."""
+    report = benchmark_large_tree_scaling(
+        replicates=replicates,
+        tip_counts=tip_counts,
+    )
+    return LargeTreeScalingBenchmarkDashboard(
+        goal_id=221,
+        workflows=report.workflows,
+        limitations=report.limitations,
     )
 
 
