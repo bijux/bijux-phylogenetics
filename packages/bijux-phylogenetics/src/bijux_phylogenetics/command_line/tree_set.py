@@ -3,13 +3,15 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from bijux_phylogenetics.bayesian import build_posterior_uncertainty_figure_package
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.reports.service import render_tree_uncertainty_report
 from bijux_phylogenetics.runtime.results import build_command_result
+from bijux_phylogenetics.trees.uncertainty_package import (
+    build_tree_set_uncertainty_figure_package,
+)
 from bijux_phylogenetics.trees import (
     analyze_tree_set_branch_lengths,
     cluster_trees_by_topology,
@@ -297,7 +299,7 @@ def add_tree_set_commands(subparsers: Any) -> None:
 
     tree_set_package = tree_set_subparsers.add_parser(
         "package",
-        help="Build a posterior uncertainty figure package for one tree set.",
+        help="Build a publication-oriented uncertainty figure package for one tree set.",
     )
     tree_set_package.add_argument("tree_set", type=Path)
     tree_set_package.add_argument("--out-dir", required=True, type=Path)
@@ -840,7 +842,7 @@ def run_tree_set_command(args: Any) -> int:
         return 0
 
     if args.tree_set_command == "package":
-        report = build_posterior_uncertainty_figure_package(
+        report = build_tree_set_uncertainty_figure_package(
             args.tree_set,
             out_dir=args.out_dir,
             layout=args.layout,
@@ -855,10 +857,16 @@ def run_tree_set_command(args: Any) -> int:
             outputs=[
                 report.consensus_tree_path,
                 report.consensus_figure_path,
-                report.clade_frequency_plot_path,
+                report.clade_support_plot_path,
+                report.unstable_taxa_plot_path,
+                report.topology_clusters_plot_path,
                 report.unstable_taxa_table_path,
                 report.topology_clusters_table_path,
+                report.uncertainty_conclusions_table_path,
                 report.conclusion_summary_path,
+                report.legend_path,
+                report.caption_path,
+                report.review_path,
                 report.manifest_path,
             ],
         )
@@ -869,11 +877,19 @@ def run_tree_set_command(args: Any) -> int:
                 outputs=outputs,
                 warnings=report.budget_report.warning_messages,
                 metrics={
-                    "artifact_count": 7,
+                    "artifact_count": 13,
                     "tree_count": report.tree_count,
                     "runtime_seconds": report.processing.runtime_seconds,
                     "peak_memory_bytes": report.processing.peak_memory_bytes,
                     "budget_warning_count": len(report.budget_report.warning_messages),
+                    "publication_ready": report.audit.publication_ready,
+                    "support_labels_validated": report.audit.support_labels_validated,
+                    "plotted_unstable_taxon_count": (
+                        report.audit.plotted_unstable_taxon_count
+                    ),
+                    "plotted_topology_cluster_count": (
+                        report.audit.plotted_topology_cluster_count
+                    ),
                 },
                 data=report,
             ),
