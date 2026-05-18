@@ -32,6 +32,8 @@ from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depth
 
 _DISCRETE_TRANSFORM_COARSE_GRID_POINT_COUNT = 9
 _DISCRETE_TRANSFORM_FINE_GRID_POINT_COUNT = 17
+_DISCRETE_DELTA_LOWER_BOUND = math.exp(-5.0)
+_DISCRETE_DELTA_UPPER_BOUND = 3.0
 
 
 @dataclass(slots=True)
@@ -93,6 +95,19 @@ class DiscreteMkTransformFit:
 
 
 @dataclass(slots=True)
+class DiscreteMkTransformBaselineComparison:
+    """Likelihood comparison against the untransformed branch-length surface."""
+
+    baseline_transform: str
+    baseline_log_likelihood: float
+    baseline_parameter_count: int
+    baseline_aic: float
+    delta_log_likelihood: float
+    delta_aic: float
+    preferred_transform_by_aic: str
+
+
+@dataclass(slots=True)
 class DiscreteMkFitReport:
     """Discrete Mk trait-evolution fit over one rooted tree."""
 
@@ -114,6 +129,7 @@ class DiscreteMkFitReport:
     optimizer_diagnostics: DiscreteOptimizerDiagnostics
     overparameterized: bool
     transform_fit: DiscreteMkTransformFit | None
+    transform_baseline_comparison: DiscreteMkTransformBaselineComparison | None
     baseline_comparison: DiscreteModelBaselineComparison | None
 
 
@@ -149,6 +165,10 @@ def fit_discrete_mk_model(
     allowed_transition_pairs: list[tuple[str, str]] | None = None,
     lambda_bounds: tuple[float, float] = (0.0, 1.0),
     kappa_bounds: tuple[float, float] = (0.0, 1.0),
+    delta_bounds: tuple[float, float] = (
+        _DISCRETE_DELTA_LOWER_BOUND,
+        _DISCRETE_DELTA_UPPER_BOUND,
+    ),
 ) -> DiscreteMkFitReport:
     """Fit one Mk discrete-trait model on a rooted tree."""
     dataset = load_discrete_dataset(
@@ -166,6 +186,7 @@ def fit_discrete_mk_model(
         allowed_transition_pairs=allowed_transition_pairs,
         lambda_bounds=lambda_bounds,
         kappa_bounds=kappa_bounds,
+        delta_bounds=delta_bounds,
     )
 
 
@@ -179,6 +200,10 @@ def fit_discrete_mk_model_from_dataset(
     allowed_transition_pairs: list[tuple[str, str]] | None = None,
     lambda_bounds: tuple[float, float] = (0.0, 1.0),
     kappa_bounds: tuple[float, float] = (0.0, 1.0),
+    delta_bounds: tuple[float, float] = (
+        _DISCRETE_DELTA_LOWER_BOUND,
+        _DISCRETE_DELTA_UPPER_BOUND,
+    ),
 ) -> DiscreteMkFitReport:
     """Fit one Mk discrete-trait model from a native discrete dataset."""
     resolved_model = _resolve_discrete_model_name(model)
@@ -195,6 +220,7 @@ def fit_discrete_mk_model_from_dataset(
         allowed_transition_pairs=allowed_transition_pairs,
         lambda_bounds=lambda_bounds,
         kappa_bounds=kappa_bounds,
+        delta_bounds=delta_bounds,
     )
     resolved_allowed_transition_pairs = _resolve_allowed_transition_pairs(
         state_order,
@@ -218,6 +244,7 @@ def fit_discrete_mk_model_from_dataset(
         allowed_transition_pairs=resolved_allowed_transition_pairs,
         lambda_bounds=lambda_bounds,
         kappa_bounds=kappa_bounds,
+        delta_bounds=delta_bounds,
     )
     log_likelihood = _tree_log_likelihood(
         fit_tree,
@@ -239,6 +266,7 @@ def fit_discrete_mk_model_from_dataset(
         aic, sample_size=len(dataset.taxa), parameter_count=parameter_count
     )
     baseline_comparison: DiscreteModelBaselineComparison | None = None
+    transform_baseline_comparison: DiscreteMkTransformBaselineComparison | None = None
     if (
         resolved_model != "equal-rates"
         and allowed_transition_pairs is None
@@ -253,6 +281,7 @@ def fit_discrete_mk_model_from_dataset(
             allowed_transition_pairs=None,
             lambda_bounds=lambda_bounds,
             kappa_bounds=kappa_bounds,
+            delta_bounds=delta_bounds,
         )
         baseline_comparison = DiscreteModelBaselineComparison(
             baseline_model="equal-rates",
@@ -263,6 +292,29 @@ def fit_discrete_mk_model_from_dataset(
             delta_aic=aic - baseline_fit.aic,
             preferred_model_by_aic=(
                 resolved_model if aic <= baseline_fit.aic else "equal-rates"
+            ),
+        )
+    if resolved_transform is not None:
+        transform_baseline_fit = fit_discrete_mk_model_from_dataset(
+            dataset,
+            model=resolved_model,
+            transform=None,
+            state_ordering=state_ordering,
+            ordered_states=state_order,
+            allowed_transition_pairs=allowed_transition_pairs,
+            lambda_bounds=lambda_bounds,
+            kappa_bounds=kappa_bounds,
+            delta_bounds=delta_bounds,
+        )
+        transform_baseline_comparison = DiscreteMkTransformBaselineComparison(
+            baseline_transform="untransformed",
+            baseline_log_likelihood=transform_baseline_fit.log_likelihood,
+            baseline_parameter_count=transform_baseline_fit.parameter_count,
+            baseline_aic=transform_baseline_fit.aic,
+            delta_log_likelihood=log_likelihood - transform_baseline_fit.log_likelihood,
+            delta_aic=aic - transform_baseline_fit.aic,
+            preferred_transform_by_aic=(
+                resolved_transform if aic <= transform_baseline_fit.aic else "untransformed"
             ),
         )
     overparameterized = _detect_discrete_overparameterization(
@@ -293,6 +345,13 @@ def fit_discrete_mk_model_from_dataset(
     ):
         warnings.append(
             "the equal-rates baseline remains preferred by AIC over the requested discrete Mk model"
+        )
+    if (
+        transform_baseline_comparison is not None
+        and transform_baseline_comparison.preferred_transform_by_aic == "untransformed"
+    ):
+        warnings.append(
+            "the untransformed branch-length baseline remains preferred by AIC over the requested discrete Mk transform"
         )
     input_audit = _build_discrete_mk_input_audit(dataset, warnings=warnings)
     return DiscreteMkFitReport(
@@ -325,6 +384,7 @@ def fit_discrete_mk_model_from_dataset(
         optimizer_diagnostics=optimizer_diagnostics,
         overparameterized=overparameterized,
         transform_fit=transform_fit,
+        transform_baseline_comparison=transform_baseline_comparison,
         baseline_comparison=baseline_comparison,
     )
 
@@ -334,6 +394,7 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
     baseline = report.baseline_comparison
     diagnostics = report.optimizer_diagnostics
     transform_fit = report.transform_fit
+    transform_baseline = report.transform_baseline_comparison
     return write_ancestral_rows(
         path,
         columns=[
@@ -354,6 +415,13 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
             "transform_tree_is_ultrametric",
             "transform_tree_minimum_tip_depth",
             "transform_tree_maximum_tip_depth",
+            "transform_baseline",
+            "transform_baseline_parameter_count",
+            "transform_baseline_log_likelihood",
+            "transform_baseline_aic",
+            "transform_delta_log_likelihood",
+            "transform_delta_aic",
+            "preferred_transform_by_aic",
             "state_ordering",
             "analyzed_taxon_count",
             "excluded_taxon_count",
@@ -450,6 +518,29 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
                     if transform_fit is None
                     else format(transform_fit.transformed_tree_maximum_tip_depth, ".15g")
                 ),
+                "transform_baseline": (
+                    ""
+                    if transform_baseline is None
+                    else transform_baseline.baseline_transform
+                ),
+                "transform_baseline_parameter_count": ""
+                if transform_baseline is None
+                else str(transform_baseline.baseline_parameter_count),
+                "transform_baseline_log_likelihood": ""
+                if transform_baseline is None
+                else format(transform_baseline.baseline_log_likelihood, ".15g"),
+                "transform_baseline_aic": ""
+                if transform_baseline is None
+                else format(transform_baseline.baseline_aic, ".15g"),
+                "transform_delta_log_likelihood": ""
+                if transform_baseline is None
+                else format(transform_baseline.delta_log_likelihood, ".15g"),
+                "transform_delta_aic": ""
+                if transform_baseline is None
+                else format(transform_baseline.delta_aic, ".15g"),
+                "preferred_transform_by_aic": ""
+                if transform_baseline is None
+                else transform_baseline.preferred_transform_by_aic,
                 "state_ordering": report.state_ordering,
                 "analyzed_taxon_count": str(report.taxon_count),
                 "excluded_taxon_count": str(
@@ -540,11 +631,13 @@ def _resolve_discrete_transform_name(transform: str | None) -> str | None:
         "pagel-lambda": "lambda",
         "kappa": "kappa",
         "pagel-kappa": "kappa",
+        "delta": "delta",
+        "pagel-delta": "delta",
     }
     resolved = aliases.get(transform)
     if resolved is None:
         raise ComparativeMethodError(
-            "unsupported discrete Mk transform; expected one of: lambda, kappa"
+            "unsupported discrete Mk transform; expected one of: lambda, kappa, delta"
         )
     return resolved
 
@@ -557,12 +650,13 @@ def _validate_discrete_transform_request(
     allowed_transition_pairs: list[tuple[str, str]] | None,
     lambda_bounds: tuple[float, float],
     kappa_bounds: tuple[float, float],
+    delta_bounds: tuple[float, float],
 ) -> None:
     if transform is None:
         return
-    if transform not in {"lambda", "kappa"}:
+    if transform not in {"lambda", "kappa", "delta"}:
         raise ComparativeMethodError(
-            "unsupported discrete Mk transform; expected one of: lambda, kappa"
+            "unsupported discrete Mk transform; expected one of: lambda, kappa, delta"
         )
     if state_ordering != "unordered":
         raise ComparativeMethodError(
@@ -580,10 +674,13 @@ def _validate_discrete_transform_request(
         if not ultrametric_summary.ultrametric:
             raise ComparativeMethodError(
                 "discrete Mk lambda transform requires an ultrametric rooted tree so the transformed branch lengths preserve tip-depth meaning"
-            )
+        )
         _validate_lambda_bounds(lambda_bounds)
         return
-    _validate_kappa_bounds(kappa_bounds)
+    if transform == "kappa":
+        _validate_kappa_bounds(kappa_bounds)
+        return
+    _validate_delta_bounds(delta_bounds)
 
 
 def _validate_lambda_bounds(bounds: tuple[float, float]) -> None:
@@ -602,6 +699,15 @@ def _validate_kappa_bounds(bounds: tuple[float, float]) -> None:
         )
 
 
+def _validate_delta_bounds(bounds: tuple[float, float]) -> None:
+    lower, upper = bounds
+    if not 0.0 < lower < upper <= _DISCRETE_DELTA_UPPER_BOUND:
+        raise ComparativeMethodError(
+            "discrete Mk delta bounds must be strictly increasing within "
+            f"(0, {_DISCRETE_DELTA_UPPER_BOUND:g}]"
+        )
+
+
 def _discrete_parameter_count(
     *,
     state_count: int,
@@ -616,7 +722,7 @@ def _discrete_parameter_count(
         state_ordering=state_ordering,
         allowed_transition_pairs=allowed_transition_pairs,
     )
-    if transform in {"lambda", "kappa"}:
+    if transform in {"lambda", "kappa", "delta"}:
         return parameter_count + 1
     return parameter_count
 
@@ -631,6 +737,7 @@ def _fit_discrete_mk_surface(
     allowed_transition_pairs: set[tuple[int, int]],
     lambda_bounds: tuple[float, float],
     kappa_bounds: tuple[float, float],
+    delta_bounds: tuple[float, float],
 ) -> tuple[
     PhyloTree,
     object,
@@ -657,10 +764,16 @@ def _fit_discrete_mk_surface(
             None,
             [],
         )
-    if transform not in {"lambda", "kappa"}:
+    if transform not in {"lambda", "kappa", "delta"}:
         raise ComparativeMethodError(
-            "unsupported discrete Mk transform; expected one of: lambda, kappa"
+            "unsupported discrete Mk transform; expected one of: lambda, kappa, delta"
         )
+    if transform == "delta":
+        bounds = delta_bounds
+    elif transform == "lambda":
+        bounds = lambda_bounds
+    else:
+        bounds = kappa_bounds
     return _fit_discrete_mk_parameterized_transform_surface(
         dataset,
         model=model,
@@ -668,7 +781,7 @@ def _fit_discrete_mk_surface(
         state_ordering=state_ordering,
         state_order=state_order,
         allowed_transition_pairs=allowed_transition_pairs,
-        bounds=lambda_bounds if transform == "lambda" else kappa_bounds,
+        bounds=bounds,
     )
 
 
@@ -910,11 +1023,10 @@ def _evaluate_discrete_mk_transform_candidate(
     allowed_transition_pairs: set[tuple[int, int]],
     parameter_value: float,
 ) -> tuple[object, object, object, DiscreteOptimizerDiagnostics, float]:
-    transformed_tree = transform_tree_for_evolutionary_mode(
+    transformed_tree = _transform_discrete_mk_tree(
         dataset.tree,
-        mode=_discrete_transform_mode_name(transform),
+        transform=transform,
         parameter_value=parameter_value,
-        sigsq=1.0,
     )
     rate_matrix, root_prior, optimizer_diagnostics = _fit_discrete_mk_model(
         transformed_tree,
@@ -947,8 +1059,24 @@ def _discrete_transform_mode_name(transform: str) -> str:
         return "pagel-lambda"
     if transform == "kappa":
         return "pagel-kappa"
+    if transform == "delta":
+        return "pagel-delta"
     raise ComparativeMethodError(
-        "unsupported discrete Mk transform; expected one of: lambda, kappa"
+        "unsupported discrete Mk transform; expected one of: lambda, kappa, delta"
+    )
+
+
+def _transform_discrete_mk_tree(
+    tree: PhyloTree,
+    *,
+    transform: str,
+    parameter_value: float,
+) -> PhyloTree:
+    return transform_tree_for_evolutionary_mode(
+        tree,
+        mode=_discrete_transform_mode_name(transform),
+        parameter_value=parameter_value,
+        sigsq=1.0,
     )
 
 
@@ -1036,6 +1164,20 @@ def _discrete_transform_warning_rows(
             DiscreteMkTransformWarning(
                 kind="branch_length_contrast_limit",
                 message="best-supported discrete Mk kappa remains close to the untransformed branch-length boundary and may be weakly identified",
+            )
+        )
+    if transform == "delta" and parameter_value <= lower + max(boundary_tolerance, 1e-6):
+        warnings.append(
+            DiscreteMkTransformWarning(
+                kind="earliest_change_limit",
+                message="best-supported discrete Mk delta remains close to the earliest-change boundary and may be difficult to distinguish from an extreme root-concentrated transition surface",
+            )
+        )
+    if transform == "delta" and parameter_value >= upper - max(boundary_tolerance, 1e-6):
+        warnings.append(
+            DiscreteMkTransformWarning(
+                kind="late_change_limit",
+                message="best-supported discrete Mk delta remains close to the late-change boundary and may be difficult to distinguish from an extreme tip-concentrated transition surface",
             )
         )
     return warnings

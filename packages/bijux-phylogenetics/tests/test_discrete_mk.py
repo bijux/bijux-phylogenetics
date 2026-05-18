@@ -587,6 +587,128 @@ def test_fit_discrete_mk_model_matches_governed_geiger_sym_kappa_missing_surface
     )
 
 
+def test_fit_discrete_mk_model_matches_governed_geiger_er_delta_boundary_surface() -> (
+    None
+):
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_delta_late_change_binary_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="equal-rates",
+        transform="delta",
+    )
+
+    assert report.transform_fit is not None
+    assert report.parameter_count == 2
+    assert report.transform_baseline_comparison is not None
+    assert report.transform_baseline_comparison.baseline_transform == "untransformed"
+    assert math.isclose(
+        report.log_likelihood,
+        -8.52405,
+        rel_tol=0.0,
+        abs_tol=1e-5,
+    )
+    assert math.isclose(
+        report.transform_fit.parameter_value,
+        3.0,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+
+
+def test_fit_discrete_mk_model_reports_delta_time_sensitive_review_surface() -> (
+    None
+):
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_delta_time_sensitive_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="equal-rates",
+        transform="delta",
+    )
+
+    assert report.transform_fit is not None
+    assert report.parameter_count == 2
+    assert report.transform_baseline_comparison is not None
+    assert report.transform_fit.parameter_value >= math.exp(-5.0)
+    assert report.transform_fit.parameter_value <= 3.0
+    assert report.transform_baseline_comparison.preferred_transform_by_aic == (
+        "untransformed"
+    )
+    assert math.isfinite(report.log_likelihood)
+
+
+def test_fit_discrete_mk_model_matches_governed_geiger_sym_delta_boundary_surface() -> (
+    None
+):
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_sym_three_state_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="symmetric",
+        transform="delta",
+    )
+
+    assert report.transform_fit is not None
+    assert report.parameter_count == 4
+    assert report.transform_baseline_comparison is not None
+    assert math.isclose(
+        report.log_likelihood,
+        -15.03642,
+        rel_tol=0.0,
+        abs_tol=1e-5,
+    )
+    assert math.isclose(
+        report.transform_fit.parameter_value,
+        math.exp(-5.0),
+        rel_tol=0.0,
+        abs_tol=1e-9,
+    )
+
+
+def test_fit_discrete_mk_model_matches_governed_geiger_sym_delta_missing_surface() -> (
+    None
+):
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_missing_three_state_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="symmetric",
+        transform="delta",
+    )
+
+    assert report.transform_fit is not None
+    assert report.parameter_count == 4
+    assert report.input_audit.pruned_missing_value_taxa == ["Phy14"]
+    assert report.transform_baseline_comparison is not None
+    assert math.isclose(
+        report.log_likelihood,
+        -15.0279,
+        rel_tol=0.0,
+        abs_tol=1e-5,
+    )
+
+
 def test_fit_discrete_mk_model_matches_governed_geiger_sym_three_state_surface() -> None:
     fixture_entry = get_shared_geiger_discrete_fixture(
         "geiger_discrete_sym_three_state_twenty_four_taxa"
