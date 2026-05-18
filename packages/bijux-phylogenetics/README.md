@@ -1326,6 +1326,11 @@ cases always persist their case payload, structured summaries, parameter
 ledgers, and mismatch reason under `artifacts/geiger-parity-failures/` so the
 live parity lane stays reviewer-usable instead of collapsing into hidden
 manual reruns.
+The BM lane now has three governed cases instead of one generic smoke check:
+the four-taxon comparative example, a twenty-four-taxon sigma-recovery surface,
+and a twenty-four-taxon missing-value pruning surface that must prove explicit
+tip exclusion, missing-versus-nonnumeric classification, and the declared
+no-standard-error policy before likelihood comparison is treated as valid.
 The same shared fixture layer now also has a dedicated
 `tests/fixtures/metadata/shared_geiger_discrete_fixture_catalog.json` catalog
 for future `geiger::fitDiscrete(...)` work. That governed corpus keeps binary,
