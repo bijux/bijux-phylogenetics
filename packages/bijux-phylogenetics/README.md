@@ -1312,6 +1312,7 @@ artifact root for every governed case, and writes one summary TSV plus one
 observation TSV instead of relying on console scraping. The initial registry is
 intentionally narrow for this harness goal: it currently covers
 `geiger::fitContinuous(model='BM')`,
+`geiger::fitContinuous(model='lambda')`,
 `geiger::fitContinuous(model='OU')`, and
 `geiger::fitContinuous(model='EB')` over the four-taxon comparative smoke
 fixture plus the governed shared `geiger` continuous-trait fixtures. Those
@@ -1331,6 +1332,20 @@ the four-taxon comparative example, a twenty-four-taxon sigma-recovery surface,
 and a twenty-four-taxon missing-value pruning surface that must prove explicit
 tip exclusion, missing-versus-nonnumeric classification, and the declared
 no-standard-error policy before likelihood comparison is treated as valid.
+The lambda lane now has three governed `fitContinuous(model='lambda')` cases:
+a twenty-four-taxon strong-signal review surface that lands on the Brownian
+upper boundary, a twenty-four-taxon weak-signal review surface that collapses
+to the zero-signal lower boundary, and a twenty-four-taxon missing-value
+pruning review surface. Those cases govern Pagel-lambda covariance
+transformation, explicit lambda bounds, sigma-squared-backed rate, root-state
+recovery, log-likelihood, AIC, AICc, and reviewer-facing boundary warnings.
+The owned Bijux side exposes this through
+`fit_continuous_evolutionary_mode(mode='pagel-lambda')`, which follows the
+`geiger::fitContinuous(model='lambda')` intercept-only likelihood contract
+rather than reusing the repo's `phytools::phylosig`-style signal summary
+surface. That distinction matters because the parity lane compares full
+fit-likelihood, rate, and information-criterion behavior, not just one lambda
+estimate.
 The OU lane now has three governed cases with the same reviewer-facing rigor:
 the twenty-four-taxon OU known-truth recovery surface, a missing-value pruning
 review surface, and a lower-boundary review surface on the rooted
