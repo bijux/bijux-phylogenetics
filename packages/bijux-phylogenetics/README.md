@@ -290,6 +290,7 @@ bijux-phylogenetics report supplementary-comparative-model-table --tree tree.nwk
 bijux-phylogenetics report supplementary-diversification-table --tree tree.nwk --metadata metadata.tsv --clade-model birth-death --out artifacts/supplementary-diversification.tsv --json
 bijux-phylogenetics report supplementary-model-selection-table --iqtree-report run.iqtree --model-sidecar run.model --out artifacts/supplementary-model-selection.tsv --json
 bijux-phylogenetics report supplementary-tree-table --tree tree.nwk --out artifacts/supplementary-tree.tsv --json
+bijux-phylogenetics report package-comparison artifacts/package-a/rabies-cross-host-geography-package.manifest.json artifacts/package-b/rabies-cross-host-geography-package.manifest.json --out-dir artifacts/package-comparison --json
 bijux-phylogenetics report package-revalidation artifacts/rabies-cross-host-geography-package.manifest.json --out-dir artifacts/package-revalidation --json
 bijux-phylogenetics report tree-inference-methods-summary workflow.manifest.json --out artifacts/tree-inference-methods-summary.md --json
 bijux-phylogenetics report alignment-filtering-methods-summary alignment.fasta --profile moderate --group-table metadata.tsv --group-column region --out artifacts/alignment-filtering-methods-summary.md --json
@@ -668,6 +669,28 @@ still match the stored package contract. An overall `risk` result means the
 original package still matches but the package root now contains undeclared
 extra files. An overall `blocked` result means some declared artifact,
 inventory, checklist, or manifest-declared checksum no longer matches.
+
+For two stored flagship package versions, use `report package-comparison` on
+their two `rabies-cross-host-geography-package.manifest.json` files. It
+compares artifact inventory parity, governed workflow settings, input accession
+and sequence drift, alignment surfaces, rooted-tree structure, model-selection
+surfaces, reviewer-facing figures and reports, and the stored scientific
+findings or short-answer summary, then emits:
+
+- `publication-package-comparison-artifacts.tsv` for one per-artifact
+  `same` / `changed` / `left_only` / `right_only` ledger
+- `publication-package-comparison-checks.tsv` for one reviewer-facing drift
+  decision table across inputs, config, alignments, trees, models, and
+  conclusions
+- `publication-package-comparison-summary.json` for one machine-readable
+  comparison verdict surface
+- `publication-package-comparison-report.html` for one direct reviewer handoff
+
+An overall `pass` result means the stored study package versions remain
+scientifically and operationally aligned across those governed surfaces. An
+overall `risk` result means at least one governed study surface drifted between
+the two versions. An overall `blocked` result means the two manifests no longer
+describe the same governed study package contract at all.
 
 The workflow bundle now also writes one `workflow/conclusion-stability/`
 surface that scores:
