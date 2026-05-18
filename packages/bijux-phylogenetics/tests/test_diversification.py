@@ -16,6 +16,7 @@ from bijux_phylogenetics.comparative import (
     inspect_diversification_time_tree,
     render_diversification_report,
     run_trait_dependent_diversification_analysis,
+    summarize_medusa_exclusion,
     validate_time_tree_for_diversification,
     write_clade_diversification_table,
     write_diversification_gamma_statistic_table,
@@ -190,7 +191,23 @@ def test_build_diversification_methods_summary_text_reports_sampling_models_and_
     assert "- better-supported model by AIC: `yule`" in text
     assert "- sampling metadata complete: `no`" in text
     assert "- observed trait states reviewed: `2`" in text
+    assert "MEDUSA parity claim:" in text
     assert "- warning details:" in text
+
+
+def test_summarize_medusa_exclusion_reports_missing_shift_search_surface() -> None:
+    report = summarize_medusa_exclusion(
+        fixture("example_tree.nwk"),
+        metadata_path=fixture("example_sampling_fractions.tsv"),
+    )
+
+    assert report.exclusion_code == "geiger_medusa_explicitly_excluded_this_round"
+    assert report.validation.ultrametric is True
+    assert report.sampling_report is not None
+    assert report.sampling_report.complete is True
+    assert "descriptive clade diversification outlier scan" in report.supported_surfaces
+    assert "stepwise branch-specific rate-shift search" in report.missing_surfaces
+    assert "explicitly excluded in this round" in report.exclusion_reason
 
 
 def test_write_diversification_methods_summary_text_writes_markdown(
