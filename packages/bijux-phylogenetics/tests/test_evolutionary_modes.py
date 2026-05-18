@@ -9,6 +9,7 @@ from bijux_phylogenetics.ancestral import (
     reconstruct_continuous_evolutionary_mode_states,
 )
 from bijux_phylogenetics.comparative import (
+    ContinuousModeSearchControls,
     compare_continuous_evolutionary_modes,
     fit_continuous_evolutionary_mode,
     rescale_tree_early_burst,
@@ -221,6 +222,107 @@ def test_fit_continuous_evolutionary_mode_white_noise_handles_missing_values() -
     assert fit.taxon_count == 22
     assert fit.optimizer_diagnostics is None
     assert fit.identifiability_warnings[0].kind == "no_phylogenetic_correlation"
+
+
+def test_fit_continuous_evolutionary_mode_records_bounded_search_controls() -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="pagel-lambda",
+        taxon_column=fixture.taxon_column,
+        search_controls=ContinuousModeSearchControls(
+            coarse_grid_point_count=41,
+            fine_grid_point_count=31,
+            initial_parameter_value=0.35,
+        ),
+        lambda_bounds=(0.2, 0.6),
+    )
+
+    assert fit.parameter_value is not None
+    assert math.isclose(fit.parameter_value, 0.6, abs_tol=1e-12)
+    assert fit.optimizer_diagnostics is not None
+    assert fit.optimizer_diagnostics.parameter_search_strategy == (
+        "bounded-two-stage-grid-search"
+    )
+    assert fit.optimizer_diagnostics.starting_parameter_policy == (
+        "user-provided-first-evaluation"
+    )
+    assert math.isclose(
+        fit.optimizer_diagnostics.starting_parameter_value,
+        0.35,
+        abs_tol=1e-12,
+    )
+    assert fit.optimizer_diagnostics.coarse_grid_point_count == 41
+    assert fit.optimizer_diagnostics.fine_grid_point_count == 31
+    assert fit.optimizer_diagnostics.function_evaluation_count >= 71
+    assert fit.optimizer_diagnostics.hit_upper_boundary is True
+
+
+def test_fit_continuous_evolutionary_mode_rejects_out_of_bounds_initial_parameter_value(
+) -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+
+    with pytest.raises(
+        ComparativeMethodError,
+        match="initial_parameter_value must fall within the declared bounded search interval",
+    ):
+        fit_continuous_evolutionary_mode(
+            fixture.tree_path,
+            fixture.traits_path,
+            trait=fixture.trait_name,
+            mode="pagel-lambda",
+            taxon_column=fixture.taxon_column,
+            search_controls=ContinuousModeSearchControls(
+                initial_parameter_value=0.8,
+            ),
+            lambda_bounds=(0.2, 0.6),
+        )
+
+
+def test_fit_continuous_evolutionary_mode_rejects_invalid_grid_control_counts() -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+
+    with pytest.raises(
+        ComparativeMethodError,
+        match="coarse_grid_point_count must be at least 2",
+    ):
+        fit_continuous_evolutionary_mode(
+            fixture.tree_path,
+            fixture.traits_path,
+            trait=fixture.trait_name,
+            mode="pagel-kappa",
+            taxon_column=fixture.taxon_column,
+            search_controls=ContinuousModeSearchControls(coarse_grid_point_count=1),
+        )
+
+
+def test_fit_continuous_evolutionary_mode_rejects_search_controls_for_white_noise(
+) -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_white_noise_twenty_four_taxa"
+    )
+
+    with pytest.raises(
+        ComparativeMethodError,
+        match="white-noise mode does not expose bounded parameter-search controls",
+    ):
+        fit_continuous_evolutionary_mode(
+            fixture.tree_path,
+            fixture.traits_path,
+            trait=fixture.trait_name,
+            mode="white-noise",
+            taxon_column=fixture.taxon_column,
+            search_controls=ContinuousModeSearchControls(),
+        )
 
 
 def test_fit_continuous_evolutionary_mode_explicitly_excludes_standard_error_review(
