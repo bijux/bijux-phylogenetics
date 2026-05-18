@@ -280,6 +280,21 @@ def test_run_discrete_state_transition_model_supports_ordered_states() -> None:
     assert report.transition_model.ordered_states == ["north", "south", "island"]
 
 
+def test_run_discrete_state_transition_model_rejects_meristic_parity_claim() -> None:
+    with pytest.raises(ValueError) as excinfo:
+        run_discrete_state_transition_model(
+            fixture("example_tree.nwk"),
+            fixture("example_traits_geography.tsv"),
+            trait="region",
+            model="meristic",
+            state_ordering="ordered",
+            ordered_states=["north", "south", "island"],
+        )
+
+    assert "explicitly excluded this round" in str(excinfo.value)
+    assert "integer-state meristic contract" in str(excinfo.value)
+
+
 def test_assess_geographic_state_analysis_readiness_allows_balanced_example() -> None:
     report = assess_geographic_state_analysis_readiness(
         fixture("example_tree.nwk"),

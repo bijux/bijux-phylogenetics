@@ -320,6 +320,24 @@ def test_fit_discrete_mk_model_reports_symmetric_pruned_missing_values() -> None
     assert report.baseline_comparison is not None
 
 
+def test_fit_discrete_mk_model_rejects_meristic_parity_claim() -> None:
+    with pytest.raises(ValueError) as excinfo:
+        fit_discrete_mk_model(
+            fixture("example_tree.nwk"),
+            fixture("example_traits_geography.tsv"),
+            trait="region",
+            taxon_column="taxon",
+            model="meristic",
+            state_ordering="ordered",
+            ordered_states=["north", "south", "island"],
+        )
+
+    assert "explicitly excluded this round" in str(excinfo.value)
+    assert "ordered-state Mk support is not claimed as meristic parity" in str(
+        excinfo.value
+    )
+
+
 @pytest.mark.slow
 def test_fit_discrete_mk_model_reports_ard_pruned_missing_values() -> None:
     binary_fixture = get_shared_phytools_comparative_fixture(
