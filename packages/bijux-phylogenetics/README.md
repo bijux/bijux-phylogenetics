@@ -283,6 +283,7 @@ bijux-phylogenetics report workflow-validation --out artifacts/workflow-validati
 bijux-phylogenetics report release-gate --out artifacts/level-1-release-gate.html --json
 bijux-phylogenetics report release-truth --test-report artifacts/pytest/full-suite.xml --real-engine-test-report artifacts/pytest/real-engine.xml --out artifacts/release-truth-report.html --json
 bijux-phylogenetics report supplementary-alignment-table --alignment alignment.fasta --filtered-alignment filtered-alignment.fasta --out artifacts/supplementary-alignment.tsv --json
+bijux-phylogenetics report supplementary-ancestral-state-table --tree tree.nwk --traits traits.tsv --trait habitat --reconstruction-kind discrete --model equal-rates --out artifacts/supplementary-ancestral-states.tsv --json
 bijux-phylogenetics report supplementary-clade-support-table --tree tree.nwk --comparison-tree-set posterior-trees.nwk --out artifacts/supplementary-clade-support.tsv --json
 bijux-phylogenetics report supplementary-comparative-model-table --tree tree.nwk --traits traits.tsv --formula 'response ~ predictor_one' --formula 'response ~ predictor_one + predictor_two' --lambda-value 0.0 --out artifacts/supplementary-comparative-model.tsv --json
 bijux-phylogenetics report supplementary-model-selection-table --iqtree-report run.iqtree --model-sidecar run.model --out artifacts/supplementary-model-selection.tsv --json
@@ -462,6 +463,12 @@ For one reviewer-facing supplementary comparative-model ledger, use
 per fitted coefficient across the declared comparative candidate models,
 keeping the shared exclusion ledger, coefficient uncertainty, model ranking,
 and fitted diagnostics together on one reviewable surface.
+
+For one reviewer-facing supplementary ancestral-state ledger, use
+`report supplementary-ancestral-state-table`. It writes one TSV with one row
+per internal node across one continuous or discrete ancestral reconstruction,
+keeping descendant taxa, model settings, uncertainty, instability flags, and
+the shared warning and exclusion context together on one reviewable surface.
 
 For one reviewer-facing supplementary taxon ledger, use
 `report supplementary-taxon-table`. It writes one TSV that keeps taxon IDs
