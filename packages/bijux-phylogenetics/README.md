@@ -366,6 +366,7 @@ bijux-phylogenetics benchmark large-alignment-scaling --replicates 1 --sequence-
 bijux-phylogenetics benchmark large-tree-set-scaling --replicates 1 --tree-count 128 --tip-count 48 --tree-count 256 --tip-count 64 --json
 bijux-phylogenetics benchmark workflow-practical-limits --replicates 1 --stress-tier heavy --json
 bijux-phylogenetics report production-scale-readiness --replicates 1 --tree-tip-count 512 --tree-tip-count 1024 --sequence-count 256 --alignment-length 512 --sequence-count 512 --alignment-length 1024 --posterior-tree-count 128 --tree-set-tip-count 48 --posterior-tree-count 256 --tree-set-tip-count 64 --stress-tier heavy --out artifacts/production-scale-readiness.html --json
+bijux-phylogenetics render tree.nwk --metadata metadata.tsv --label-column species --metadata-strip-columns location --traits traits.tsv --categorical-column habitat --continuous-column height_cm --heatmap-columns height_cm,status --layout phylogram --support-labels --package-dir artifacts/tree-publication-package --out artifacts/tree-publication-package/figure.svg --json
 bijux-phylogenetics diagnose assumptions tree.nwk --metadata metadata.tsv --json
 bijux-phylogenetics alignment translate coding.fasta --out translated.fasta --codon-validation-out artifacts/codon-validation.tsv --excluded-sequences-out artifacts/translation-exclusions.tsv
 bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json
@@ -407,6 +408,13 @@ safe at small, medium, large, and HPC scale, use
 evidence into one HTML and JSON report that declares each workflow's applicable
 scale dimensions, highest proven readiness tier, and the workflows currently
 ready at each scale threshold.
+
+For a journal-oriented single-tree figure bundle, use `render` with
+`--package-dir`. The package writes one vector `figure.svg`, a structured
+`figure-caption.md` draft, a machine-readable `figure-legend.tsv`, the tip
+annotation ledger, and a manifest that records support-label validation,
+scale-bar audit, legend completeness, and label-legibility review before the
+figure is treated as publication-ready.
 
 `demo rabies-cross-host-geography-panel` is the repository's flagship public
 biological workflow surface. In addition to the dataset and workflow
