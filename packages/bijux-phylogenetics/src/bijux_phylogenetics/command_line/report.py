@@ -11,6 +11,11 @@ from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.provenance.method_tiers import method_tier_metrics
+from bijux_phylogenetics.ancestral import (
+    reconstruct_continuous_ancestral_states,
+    reconstruct_discrete_ancestral_states,
+    write_ancestral_methods_summary_text,
+)
 from bijux_phylogenetics.bayesian import build_time_tree_figure_package
 from bijux_phylogenetics.render.trait_tree_package import (
     build_annotated_trait_tree_package,
@@ -144,6 +149,53 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the methods-summary result as JSON."
     )
     _add_manifest_argument(report_tree_inference_methods_summary)
+
+    report_ancestral_methods_summary = report_subparsers.add_parser(
+        "ancestral-methods-summary",
+        help="Write reviewer-facing methods-summary text for an ancestral reconstruction.",
+    )
+    report_ancestral_methods_summary.add_argument("tree", type=Path)
+    report_ancestral_methods_summary.add_argument("traits", type=Path)
+    report_ancestral_methods_summary.add_argument(
+        "--trait",
+        required=True,
+        help="Trait column used for ancestral reconstruction.",
+    )
+    report_ancestral_methods_summary.add_argument(
+        "--kind",
+        choices=("continuous", "discrete"),
+        required=True,
+    )
+    report_ancestral_methods_summary.add_argument("--taxon-column")
+    report_ancestral_methods_summary.add_argument(
+        "--model",
+        help="Continuous model such as brownian or ou, or discrete model such as equal-rates, symmetric, all-rates-different, or fitch.",
+    )
+    report_ancestral_methods_summary.add_argument(
+        "--alpha",
+        type=float,
+        default=1.0,
+        help="Positive alpha value for continuous OU-style reconstruction.",
+    )
+    report_ancestral_methods_summary.add_argument(
+        "--state-ordering",
+        choices=("unordered", "ordered"),
+        default="unordered",
+    )
+    report_ancestral_methods_summary.add_argument("--ordered-states")
+    report_ancestral_methods_summary.add_argument(
+        "--root-prior-mode",
+        choices=("equal", "empirical", "fixed"),
+        default="equal",
+    )
+    report_ancestral_methods_summary.add_argument("--fixed-root-state")
+    report_ancestral_methods_summary.add_argument(
+        "--out", required=True, type=Path
+    )
+    report_ancestral_methods_summary.add_argument(
+        "--json", action="store_true", help="Emit the methods-summary result as JSON."
+    )
+    _add_manifest_argument(report_ancestral_methods_summary)
 
     report_trait_tree_package = report_subparsers.add_parser(
         "trait-tree-package",
@@ -747,6 +799,61 @@ def run_report_command(args: Any) -> int:
                         "bootstrap_replicates": result.bootstrap_replicates,
                         "trimmed_alignment_length": result.trimmed_alignment_length,
                         "supported_node_count": result.supported_node_count,
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
+        return 0
+
+    if args.report_command == "ancestral-methods-summary":
+        if args.kind == "continuous":
+            reconstruction = reconstruct_continuous_ancestral_states(
+                args.tree,
+                args.traits,
+                trait=args.trait,
+                taxon_column=args.taxon_column,
+                model=args.model or "brownian",
+                alpha=args.alpha,
+            )
+        else:
+            reconstruction = reconstruct_discrete_ancestral_states(
+                args.tree,
+                args.traits,
+                trait=args.trait,
+                taxon_column=args.taxon_column,
+                model=args.model or "equal-rates",
+                state_ordering=args.state_ordering,
+                ordered_states=_split_csv_values(args.ordered_states) or None,
+                root_prior_mode=args.root_prior_mode,
+                fixed_root_state=args.fixed_root_state,
+            )
+        result = write_ancestral_methods_summary_text(
+            args.out,
+            reconstruction_kind=args.kind,
+            reconstruction=reconstruction,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=[args.tree, args.traits],
+            outputs=[result.output_path],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=[args.tree, args.traits],
+                    outputs=outputs,
+                    warnings=reconstruction.warnings,
+                    metrics={
+                        "reconstruction_kind": result.reconstruction_kind,
+                        "model": result.model,
+                        "analyzed_taxon_count": result.analyzed_taxon_count,
+                        "unstable_node_count": result.unstable_node_count,
+                        "warning_count": result.warning_count,
                     },
                     data=result,
                 ),
