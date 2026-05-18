@@ -2,15 +2,28 @@ from __future__ import annotations
 
 import csv
 from dataclasses import asdict, dataclass
-from hashlib import sha256
 from html import escape
 import json
 from pathlib import Path
 
 from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.reports.publication_package_support import (
+    SUPPORTED_PUBLICATION_PACKAGE_KIND,
+    artifact_kind,
+    checksum,
+    entry_checksum,
+    entry_path,
+    entry_size,
+    ignored_package_prefixes,
+    manifest_file_entries,
+    mapping,
+    read_manifest,
+    read_tsv_rows,
+    section_counts,
+    text,
+)
 
 
-_SUPPORTED_REPORT_KIND = "rabies_cross_host_geography_package"
 _ARTIFACT_COLUMNS = [
     "artifact_scope",
     "section",
@@ -84,87 +97,6 @@ class PublicationPackageRevalidationResult:
     risk_check_count: int
     all_original_artifacts_match: bool
     overall_revalidation_status: str
-
-
-def _checksum(path: Path) -> str:
-    digest = sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def _artifact_kind(relative_path: str) -> str:
-    path = Path(relative_path)
-    suffix = path.suffix.lower()
-    if path.name.endswith(".manifest.json"):
-        return "manifest"
-    if suffix in {".html", ".htm"}:
-        return "report"
-    if suffix == ".md":
-        return "markdown"
-    if suffix == ".json":
-        return "json"
-    if suffix == ".tsv":
-        return "table"
-    if suffix == ".svg":
-        return "figure"
-    if suffix == ".log":
-        return "log"
-    if suffix in {".nwk", ".tree"}:
-        return "tree"
-    if suffix in {".aln", ".fasta"}:
-        return "alignment"
-    if suffix == ".csv":
-        return "metadata"
-    return "artifact"
-
-
-def _mapping(payload: dict[str, object], key: str) -> dict[str, object]:
-    value = payload.get(key)
-    if isinstance(value, dict):
-        return value
-    return {}
-
-
-def _text(payload: object) -> str:
-    return str(payload).strip()
-
-
-def _entry_path(mapping: dict[str, object]) -> str:
-    value = mapping.get("path")
-    return value.strip() if isinstance(value, str) else ""
-
-
-def _entry_checksum(mapping: dict[str, object]) -> str | None:
-    value = mapping.get("checksum")
-    if isinstance(value, str) and value.strip():
-        return value.strip()
-    return None
-
-
-def _entry_size(mapping: dict[str, object]) -> int | None:
-    value = mapping.get("size_bytes")
-    if value is None:
-        return None
-    text = str(value).strip()
-    if not text:
-        return None
-    return int(text)
-
-
-def _read_manifest(path: Path) -> dict[str, object]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise ValueError(f"{path} does not contain one JSON object")
-    return payload
-
-
-def _read_tsv_rows(path: Path) -> list[dict[str, str]]:
-    with path.open("r", encoding="utf-8", newline="") as handle:
-        return list(csv.DictReader(handle, delimiter="\t"))
-
-
 def _status(*, blocked: bool = False, risk: bool = False) -> str:
     if blocked:
         return "blocked"
@@ -186,7 +118,7 @@ def _artifact_row(
         return PublicationPackageRevalidationArtifactRow(
             artifact_scope=artifact_scope,
             section=section,
-            kind=_artifact_kind(relative_path),
+            kind=artifact_kind(relative_path),
             relative_path=relative_path,
             status="blocked",
             expected_sha256=expected_sha256,
@@ -196,7 +128,7 @@ def _artifact_row(
             detail="declared package artifact is missing",
         )
     observed_size = observed_path.stat().st_size
-    observed_sha256 = _checksum(observed_path)
+    observed_sha256 = checksum(observed_path)
     mismatches: list[str] = []
     if expected_size_bytes is not None and observed_size != expected_size_bytes:
         mismatches.append(
@@ -207,7 +139,7 @@ def _artifact_row(
     return PublicationPackageRevalidationArtifactRow(
         artifact_scope=artifact_scope,
         section=section,
-        kind=_artifact_kind(relative_path),
+        kind=artifact_kind(relative_path),
         relative_path=relative_path,
         status="blocked" if mismatches else "pass",
         expected_sha256=expected_sha256,
@@ -216,41 +148,6 @@ def _artifact_row(
         observed_size_bytes=observed_size,
         detail="; ".join(mismatches) if mismatches else "artifact matches stored package record",
     )
-
-
-def _manifest_file_entries(
-    manifest: dict[str, object],
-) -> list[tuple[str, str, str, str | None]]:
-    entries: list[tuple[str, str, str, str | None]] = []
-    for block_name in ("package_files", "dataset_files", "workflow_files"):
-        block = _mapping(manifest, block_name)
-        for entry_name, entry_payload in block.items():
-            if not isinstance(entry_payload, dict):
-                continue
-            relative_path = _entry_path(entry_payload)
-            if not relative_path:
-                continue
-            entries.append(
-                (
-                    block_name,
-                    entry_name,
-                    relative_path,
-                    _entry_checksum(entry_payload),
-                )
-            )
-    return entries
-
-
-def _section_counts(rows: list[dict[str, str]]) -> dict[str, int]:
-    counts: dict[str, int] = {}
-    for row in rows:
-        section = row.get("section", "").strip()
-        if not section:
-            continue
-        counts[section] = counts.get(section, 0) + 1
-    return counts
-
-
 def _unexpected_files(
     *,
     package_root: Path,
@@ -271,12 +168,6 @@ def _unexpected_files(
         if relative_path not in expected_relative_paths:
             unexpected.append(relative_path)
     return unexpected
-
-
-def _ignored_package_prefixes(report_kind: str) -> tuple[str, ...]:
-    if report_kind == _SUPPORTED_REPORT_KIND:
-        return ("dataset/expected/",)
-    return ()
 
 
 def _check_row(
@@ -400,12 +291,12 @@ def write_publication_package_revalidation_report(
     output_root.mkdir(parents=True, exist_ok=True)
     manifest_path = manifest_path.resolve()
     package_root = manifest_path.parent.resolve()
-    manifest = _read_manifest(manifest_path)
-    report_kind = _text(manifest.get("report_kind"))
+    manifest = read_manifest(manifest_path)
+    report_kind = text(manifest.get("report_kind"))
     artifact_rows: list[PublicationPackageRevalidationArtifactRow] = []
     check_rows: list[PublicationPackageRevalidationCheckRow] = []
 
-    supported = report_kind == _SUPPORTED_REPORT_KIND
+    supported = report_kind == SUPPORTED_PUBLICATION_PACKAGE_KIND
     check_rows.append(
         _check_row(
             section="manifest",
@@ -421,15 +312,15 @@ def write_publication_package_revalidation_report(
         )
     )
 
-    package_files = _mapping(manifest, "package_files")
-    inventory_entry = _mapping(package_files, "artifact_inventory")
-    inventory_relative_path = _entry_path(inventory_entry)
+    package_files = mapping(manifest, "package_files")
+    inventory_entry = mapping(package_files, "artifact_inventory")
+    inventory_relative_path = entry_path(inventory_entry)
     inventory_path = package_root / inventory_relative_path if inventory_relative_path else package_root
     inventory_row = _artifact_row(
         artifact_scope="package_control",
         section="package",
         relative_path=inventory_relative_path or manifest_path.name,
-        expected_sha256=_entry_checksum(inventory_entry),
+        expected_sha256=entry_checksum(inventory_entry),
         expected_size_bytes=None,
         observed_path=inventory_path,
     )
@@ -439,7 +330,7 @@ def write_publication_package_revalidation_report(
     inventory_parse_error: str | None = None
     if inventory_path.exists():
         try:
-            inventory_rows = _read_tsv_rows(inventory_path)
+            inventory_rows = read_tsv_rows(inventory_path)
         except (csv.Error, UnicodeDecodeError) as error:
             inventory_parse_error = str(error)
     else:
@@ -457,7 +348,7 @@ def write_publication_package_revalidation_report(
             str(key): int(value)
             for key, value in manifest_section_counts.items()
         }
-        == _section_counts(inventory_rows)
+        == section_counts(inventory_rows)
         if inventory_rows
         else False
     )
@@ -490,14 +381,14 @@ def write_publication_package_revalidation_report(
         )
     )
 
-    checklist_entry = _mapping(package_files, "reproducibility_checklist")
-    checklist_relative_path = _entry_path(checklist_entry)
+    checklist_entry = mapping(package_files, "reproducibility_checklist")
+    checklist_relative_path = entry_path(checklist_entry)
     checklist_path = package_root / checklist_relative_path if checklist_relative_path else package_root
     checklist_row = _artifact_row(
         artifact_scope="package_control",
         section="package",
         relative_path=checklist_relative_path or manifest_path.name,
-        expected_sha256=_entry_checksum(checklist_entry),
+        expected_sha256=entry_checksum(checklist_entry),
         expected_size_bytes=None,
         observed_path=checklist_path,
     )
@@ -507,7 +398,7 @@ def write_publication_package_revalidation_report(
     checklist_parse_error: str | None = None
     if checklist_path.exists():
         try:
-            checklist_rows_payload = _read_tsv_rows(checklist_path)
+            checklist_rows_payload = read_tsv_rows(checklist_path)
         except (csv.Error, UnicodeDecodeError) as error:
             checklist_parse_error = str(error)
     else:
@@ -556,7 +447,7 @@ def write_publication_package_revalidation_report(
                 section=row.get("section", "").strip() or "artifact",
                 relative_path=relative_path,
                 expected_sha256=row.get("sha256", "").strip() or None,
-                expected_size_bytes=_entry_size({"size_bytes": row.get("size_bytes", "")}),
+                expected_size_bytes=entry_size({"size_bytes": row.get("size_bytes", "")}),
                 observed_path=package_root / relative_path,
             )
         )
@@ -601,7 +492,7 @@ def write_publication_package_revalidation_report(
 
     manifest_file_rows: list[PublicationPackageRevalidationArtifactRow] = []
     manifest_file_mismatch_count = 0
-    for block_name, entry_name, relative_path, expected_sha256 in _manifest_file_entries(
+    for block_name, entry_name, relative_path, expected_sha256 in manifest_file_entries(
         manifest
     ):
         row = _artifact_row(
@@ -627,7 +518,7 @@ def write_publication_package_revalidation_report(
         relative_path=manifest_path.relative_to(package_root).as_posix(),
         status="pass",
         expected_sha256=None,
-        observed_sha256=_checksum(manifest_path),
+        observed_sha256=checksum(manifest_path),
         expected_size_bytes=None,
         observed_size_bytes=manifest_path.stat().st_size,
         detail="revalidation used this manifest as the stored package trust root",
@@ -654,7 +545,7 @@ def write_publication_package_revalidation_report(
         package_root=package_root,
         expected_relative_paths=expected_relative_paths,
         output_root=output_root,
-        ignored_prefixes=_ignored_package_prefixes(report_kind),
+        ignored_prefixes=ignored_package_prefixes(report_kind),
     )
     check_rows.append(
         _check_row(
