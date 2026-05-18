@@ -38,6 +38,9 @@ def test_build_annotated_trait_tree_package_writes_publication_review_bundle(
     )
 
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+    reproducibility = json.loads(
+        result.reproducibility_manifest_path.read_text(encoding="utf-8")
+    )
     coverage_lines = result.coverage_path.read_text(encoding="utf-8").splitlines()
     summary_lines = result.summary_path.read_text(encoding="utf-8").splitlines()
     review_html = result.review_path.read_text(encoding="utf-8")
@@ -50,11 +53,22 @@ def test_build_annotated_trait_tree_package_writes_publication_review_bundle(
     assert result.coverage_path.exists()
     assert result.summary_path.exists()
     assert result.review_path.exists()
+    assert result.reproducibility_manifest_path.exists()
     assert coverage_lines[0].startswith("surface\tsource_kind\trequired")
     assert summary_lines[0].startswith("surface\tsource_kind\tvalue_kind")
     assert "Rabies host trait tree" in review_html
     assert manifest["report_kind"] == "annotated_trait_tree_package"
     assert manifest["audit"]["publication_ready"] is True
+    assert manifest["reproducibility_manifest_path"] == str(
+        result.reproducibility_manifest_path
+    )
+    assert reproducibility["report_kind"] == "annotated_trait_tree_package"
+    assert {row["label"] for row in reproducibility["generated_tables"]} == {
+        "tree_legend",
+        "tree_annotations",
+        "annotation_coverage",
+        "annotation_surface_summary",
+    }
 
 
 def test_build_annotated_trait_tree_package_flags_incomplete_required_surfaces(

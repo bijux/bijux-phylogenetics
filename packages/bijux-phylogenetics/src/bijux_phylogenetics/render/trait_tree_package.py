@@ -12,6 +12,9 @@ from bijux_phylogenetics.render.package import (
     TreeFigurePackageResult,
     build_tree_figure_package,
 )
+from bijux_phylogenetics.render.reproducibility import (
+    write_figure_reproducibility_manifest,
+)
 from bijux_phylogenetics.render.svg import AnnotationStrip
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
 
@@ -69,6 +72,7 @@ class AnnotatedTraitTreePackageResult:
     summary_path: Path
     review_path: Path
     manifest_path: Path
+    reproducibility_manifest_path: Path
     coverage_rows: list[AnnotatedTraitTreeCoverageRow]
     summary_rows: list[AnnotatedTraitTreeSummaryRow]
     audit: AnnotatedTraitTreePublicationAudit
@@ -344,6 +348,9 @@ def build_annotated_trait_tree_package(
     summary_path = out_dir / "annotation-surface-summary.tsv"
     review_path = out_dir / "annotated-trait-tree-review.html"
     manifest_path = out_dir / "annotated-trait-tree-package-manifest.json"
+    reproducibility_manifest_path = (
+        out_dir / "annotated-trait-tree-reproducibility.manifest.json"
+    )
 
     metadata_strip_columns = metadata_strip_columns or []
     heatmap_columns = heatmap_columns or []
@@ -632,6 +639,52 @@ def build_annotated_trait_tree_package(
         "coverage_rows": [asdict(row) for row in coverage_rows],
         "summary_rows": [asdict(row) for row in summary_rows],
     }
+    reproducibility_manifest = write_figure_reproducibility_manifest(
+        reproducibility_manifest_path,
+        report_kind="annotated_trait_tree_package",
+        input_files=[
+            ("tree", tree_path),
+            *([] if metadata_path is None else [("metadata", metadata_path)]),
+            *([] if traits_path is None else [("traits", traits_path)]),
+        ],
+        generated_figures=[("annotated_trait_tree", figure_package.figure_path)],
+        generated_tables=[
+            ("tree_legend", figure_package.legend_path),
+            ("tree_annotations", figure_package.annotations_path),
+            ("annotation_coverage", coverage_path),
+            ("annotation_surface_summary", summary_path),
+        ],
+        filters=None,
+        model={
+            "kind": "none",
+            "name": None,
+            "detail": "the annotated trait tree package overlays supplied labels and trait metadata without fitting a new statistical model",
+        },
+        settings={
+            "title": title,
+            "taxon_column": taxon_column,
+            "label_column": label_column,
+            "categorical_column": categorical_column,
+            "continuous_column": continuous_column,
+            "metadata_strip_columns": metadata_strip_columns,
+            "heatmap_columns": heatmap_columns,
+            "layout": layout,
+            "show_support_values": show_support_values,
+        },
+        linked_artifacts=[
+            ("tree_caption", figure_package.caption_path),
+            ("tree_figure_manifest", figure_package.manifest_path),
+            (
+                "tree_figure_reproducibility_manifest",
+                figure_package.reproducibility_manifest_path,
+            ),
+        ],
+    )
+    manifest["reproducibility_manifest_path"] = str(reproducibility_manifest_path)
+    manifest["reproducibility_manifest_checksum"] = _sha256(
+        reproducibility_manifest_path
+    )
+    manifest["reproducibility_manifest"] = reproducibility_manifest
     manifest_path.write_text(
         json.dumps(manifest, default=str, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -674,6 +727,7 @@ def build_annotated_trait_tree_package(
         summary_path=summary_path,
         review_path=review_path,
         manifest_path=manifest_path,
+        reproducibility_manifest_path=reproducibility_manifest_path,
         coverage_rows=coverage_rows,
         summary_rows=summary_rows,
         audit=audit,

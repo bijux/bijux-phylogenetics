@@ -420,6 +420,12 @@ annotation ledger, and a manifest that records support-label validation,
 scale-bar audit, legend completeness, and label-legibility review before the
 figure is treated as publication-ready.
 
+Every publication-oriented figure package now also writes one dedicated
+reproducibility manifest. That artifact records the exact input files, any
+explicit filters, the model or analysis mode, the reviewer-facing settings,
+the generated figure surfaces, and the generated tables so downstream review
+does not depend on reverse-engineering package-specific JSON.
+
 For a journal-oriented annotated trait tree package, use
 `report trait-tree-package`. It builds on the figure package and adds one
 review HTML surface, one annotation-coverage ledger, one annotation-surface

@@ -8,6 +8,10 @@ from pathlib import Path
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.tree import TreeNode
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.render.reproducibility import (
+    FigureReproducibilityFilter,
+    write_figure_reproducibility_manifest,
+)
 from bijux_phylogenetics.render.svg import (
     AnnotationStrip,
     SupportLabelRenderAudit,
@@ -114,6 +118,7 @@ class TreeFigurePackageResult:
     output_dir: Path
     figure_path: Path
     manifest_path: Path
+    reproducibility_manifest_path: Path
     caption_path: Path
     legend_path: Path
     annotations_path: Path
@@ -502,6 +507,7 @@ def build_tree_figure_package(
     out_dir.mkdir(parents=True, exist_ok=True)
     figure_path = out_dir / "figure.svg"
     manifest_path = out_dir / "figure-manifest.json"
+    reproducibility_manifest_path = out_dir / "figure-reproducibility.manifest.json"
     caption_path = out_dir / "figure-caption.md"
     legend_path = out_dir / "figure-legend.tsv"
     annotations_path = out_dir / "tip-annotations.tsv"
@@ -721,11 +727,6 @@ def build_tree_figure_package(
         "legend_entries": [asdict(entry) for entry in legend_entries],
         "caption_draft": asdict(caption_draft),
     }
-    manifest_path.write_text(
-        json.dumps(manifest, default=str, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-
     caption = (
         f"# {title}\n\n"
         "## Draft Caption\n\n"
@@ -772,11 +773,66 @@ def build_tree_figure_package(
         + "\n"
     )
     caption_path.write_text(caption, encoding="utf-8")
+    reproducibility_manifest = write_figure_reproducibility_manifest(
+        reproducibility_manifest_path,
+        report_kind="tree_figure_package",
+        input_files=[("tree", tree_path)],
+        generated_figures=[("tree_figure", figure_path)],
+        generated_tables=[
+            ("figure_legend", legend_path),
+            ("tip_annotations", annotations_path),
+        ],
+        filters=[]
+        if not collapsed_clades
+        else [
+            FigureReproducibilityFilter(
+                name="collapsed_clades",
+                value="|".join(sorted(set(collapsed_clades))),
+                detail="these named clades were intentionally collapsed before the publication figure was rendered",
+            )
+        ],
+        model={
+            "kind": "none",
+            "name": None,
+            "detail": "the tree figure package renders the supplied tree directly and does not fit a new statistical model",
+        },
+        settings={
+            "title": title,
+            "layout": layout,
+            "show_support_values": show_support_values,
+            "collapsed_clades": sorted(set(collapsed_clades)),
+            "categorical_trait_count": 0
+            if categorical_traits is None
+            else len(categorical_traits),
+            "continuous_trait_count": 0
+            if continuous_traits is None
+            else len(continuous_traits),
+            "metadata_strip_count": 0
+            if metadata_strips is None
+            else len(metadata_strips),
+            "heatmap_column_count": 0
+            if heatmap_columns is None
+            else len(heatmap_columns),
+        },
+        linked_artifacts=[
+            ("figure_caption", caption_path),
+        ],
+    )
+    manifest["reproducibility_manifest_path"] = str(reproducibility_manifest_path)
+    manifest["reproducibility_manifest_checksum"] = _sha256(
+        reproducibility_manifest_path
+    )
+    manifest["reproducibility_manifest"] = reproducibility_manifest
+    manifest_path.write_text(
+        json.dumps(manifest, default=str, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
     return TreeFigurePackageResult(
         output_dir=out_dir,
         figure_path=figure_path,
         manifest_path=manifest_path,
+        reproducibility_manifest_path=reproducibility_manifest_path,
         caption_path=caption_path,
         legend_path=legend_path,
         annotations_path=annotations_path,

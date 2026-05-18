@@ -18,6 +18,9 @@ from bijux_phylogenetics.core.metadata import TaxonTable, load_taxon_table, writ
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.newick import load_newick_tree_set
 from bijux_phylogenetics.render.html import write_html_report
+from bijux_phylogenetics.render.reproducibility import (
+    write_figure_reproducibility_manifest,
+)
 from bijux_phylogenetics.render.time_tree_svg import (
     TimeTreeNodeInterval,
     TimeTreeRenderResult,
@@ -54,6 +57,7 @@ class TimeTreeFigurePackageResult:
     caption_path: Path
     review_path: Path
     manifest_path: Path
+    reproducibility_manifest_path: Path
     render: TimeTreeRenderResult
     node_intervals: list[TimeTreeNodeInterval]
     audit: TimeTreePublicationAudit
@@ -235,6 +239,7 @@ def build_time_tree_figure_package(
     caption_path = out_dir / "figure-caption.md"
     review_path = out_dir / "time-tree-review.html"
     manifest_path = out_dir / "time-tree-package.manifest.json"
+    reproducibility_manifest_path = out_dir / "figure-reproducibility.manifest.json"
 
     retained = _materialize_retained_tree_set(
         posterior_tree_set_path,
@@ -372,6 +377,46 @@ def build_time_tree_figure_package(
         ),
         encoding="utf-8",
     )
+    reproducibility_manifest = write_figure_reproducibility_manifest(
+        reproducibility_manifest_path,
+        report_kind="time_tree_package",
+        input_files=[
+            ("posterior_tree_set", posterior_tree_set_path),
+            *([("metadata", metadata_path)] if metadata_path is not None else []),
+            *([("tip_dates", tip_dates_path)] if tip_dates_path is not None else []),
+            *(
+                [("calibration", calibration_path)]
+                if calibration_path is not None
+                else []
+            ),
+            *([("alignment", alignment_path)] if alignment_path is not None else []),
+        ],
+        generated_figures=[
+            ("time_tree", figure_path),
+        ],
+        generated_tables=[
+            ("node_age_intervals", interval_table_path),
+            ("legend", legend_path),
+        ],
+        filters=None,
+        model={
+            "kind": "time_tree",
+            "name": source_format,
+            "readiness_decision": None if readiness is None else readiness.decision,
+        },
+        settings={
+            "burnin_fraction": burnin_fraction,
+            "title": title,
+            "label_column": label_column,
+            "taxon_column": taxon_column,
+            "retained_tree_count": retained.retained_tree_count,
+        },
+        linked_artifacts=[
+            ("retained_tree_set", retained_tree_set_path),
+            ("mcc_tree", mcc_tree_path),
+            ("caption", caption_path),
+        ],
+    )
 
     manifest = {
         "report_kind": "time_tree_package",
@@ -408,6 +453,9 @@ def build_time_tree_figure_package(
         "caption_path": str(caption_path),
         "caption_checksum": _sha256(caption_path),
         "review_path": str(review_path),
+        "reproducibility_manifest_path": str(reproducibility_manifest_path),
+        "reproducibility_manifest_checksum": _sha256(reproducibility_manifest_path),
+        "reproducibility_manifest": reproducibility_manifest,
         "retained_tree_count": retained.retained_tree_count,
         "render": asdict(render),
         "node_intervals": [asdict(row) for row in node_intervals],
@@ -492,6 +540,7 @@ def build_time_tree_figure_package(
         caption_path=caption_path,
         review_path=review_path,
         manifest_path=manifest_path,
+        reproducibility_manifest_path=reproducibility_manifest_path,
         render=render,
         node_intervals=node_intervals,
         audit=audit,

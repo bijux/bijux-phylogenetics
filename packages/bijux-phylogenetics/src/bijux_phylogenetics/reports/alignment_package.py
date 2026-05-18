@@ -20,6 +20,9 @@ from bijux_phylogenetics.io.fasta import (
     summarise_fasta,
     summarize_alignment_windows,
 )
+from bijux_phylogenetics.render.reproducibility import (
+    write_figure_reproducibility_manifest,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -92,6 +95,7 @@ class AlignmentFigurePackageResult:
     caption_path: Path
     review_path: Path
     manifest_path: Path
+    reproducibility_manifest_path: Path
     summary: AlignmentSummary
     forensic: AlignmentForensicReport
     windows: list[AlignmentWindowSummary]
@@ -870,6 +874,7 @@ def build_alignment_figure_package(
     caption_path = out_dir / "figure-caption.md"
     review_path = out_dir / "alignment-quality-review.html"
     manifest_path = out_dir / "alignment-quality-package.manifest.json"
+    reproducibility_manifest_path = out_dir / "figure-reproducibility.manifest.json"
 
     summary = summarise_fasta(alignment_path)
     records = load_fasta_alignment(alignment_path)
@@ -948,12 +953,50 @@ def build_alignment_figure_package(
         caption_path,
         review_path,
     ]
+    reproducibility_manifest = write_figure_reproducibility_manifest(
+        reproducibility_manifest_path,
+        report_kind="alignment_quality_figure_package",
+        input_files=[("alignment", alignment_path)],
+        generated_figures=[
+            ("missingness_heatmap", heatmap_figure_path),
+            ("site_quality_summary", site_summary_figure_path),
+            ("sequence_quality_panel", sequence_panel_figure_path),
+        ],
+        generated_tables=[
+            ("missingness_heatmap", heatmap_table_path),
+            ("site_quality_windows", window_table_path),
+            ("sequence_quality_ranking", ranking_table_path),
+            ("legend", legend_path),
+        ],
+        filters=None,
+        model={
+            "kind": "alignment_quality",
+            "name": "summary-and-forensic-review",
+        },
+        settings={
+            "maximum_site_bins": maximum_site_bins,
+            "window_size": window_size,
+            "step_size": step_size,
+            "panel_row_limit": panel_row_limit,
+            "alignment_length": summary.alignment_length,
+            "sequence_count": summary.sequence_count,
+        },
+        linked_artifacts=[
+            ("caption", caption_path),
+            ("review", review_path),
+        ],
+    )
     machine_manifest = {
         "report_kind": "alignment_quality_figure_package",
         "input_path": str(alignment_path),
         "input_checksum": _checksum(alignment_path),
         "output_paths": [str(path) for path in artifact_paths],
         "output_checksums": {str(path): _checksum(path) for path in artifact_paths},
+        "reproducibility_manifest_path": str(reproducibility_manifest_path),
+        "reproducibility_manifest_checksum": _checksum(
+            reproducibility_manifest_path
+        ),
+        "reproducibility_manifest": reproducibility_manifest,
         "settings": {
             "maximum_site_bins": maximum_site_bins,
             "window_size": window_size,
@@ -992,6 +1035,7 @@ def build_alignment_figure_package(
         caption_path=caption_path,
         review_path=review_path,
         manifest_path=manifest_path,
+        reproducibility_manifest_path=reproducibility_manifest_path,
         summary=summary,
         forensic=forensic,
         windows=windows,

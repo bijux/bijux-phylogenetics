@@ -41,12 +41,16 @@ def test_build_tree_figure_package_writes_publication_legend_and_caption_artifac
     )
 
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+    reproducibility = json.loads(
+        result.reproducibility_manifest_path.read_text(encoding="utf-8")
+    )
     legend_lines = result.legend_path.read_text(encoding="utf-8").splitlines()
     caption = result.caption_path.read_text(encoding="utf-8")
 
     assert result.figure_path.exists()
     assert result.caption_path.exists()
     assert result.legend_path.exists()
+    assert result.reproducibility_manifest_path.exists()
     assert result.caption_draft.caption_ready is True
     assert result.legibility_audit.legible is True
     assert len(result.legend_entries) >= 5
@@ -57,8 +61,17 @@ def test_build_tree_figure_package_writes_publication_legend_and_caption_artifac
     assert "## Figure Specifications" in caption
     assert "## Legibility" in caption
     assert manifest["legend_path"] == str(result.legend_path)
+    assert manifest["reproducibility_manifest_path"] == str(
+        result.reproducibility_manifest_path
+    )
     assert manifest["caption_draft"]["caption_ready"] is True
     assert manifest["legibility_audit"]["legible"] is True
+    assert reproducibility["report_kind"] == "tree_figure_package"
+    assert reproducibility["input_files"][0]["label"] == "tree"
+    assert {row["label"] for row in reproducibility["generated_tables"]} == {
+        "figure_legend",
+        "tip_annotations",
+    }
 
 
 def test_build_tree_figure_package_flags_long_labels_against_publication_lane(

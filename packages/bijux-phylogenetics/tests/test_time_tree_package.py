@@ -31,6 +31,9 @@ def test_build_time_tree_figure_package_writes_publication_review_bundle(
     )
 
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+    reproducibility = json.loads(
+        result.reproducibility_manifest_path.read_text(encoding="utf-8")
+    )
     review_html = result.review_path.read_text(encoding="utf-8")
     interval_rows = result.interval_table_path.read_text(encoding="utf-8").splitlines()
 
@@ -43,9 +46,15 @@ def test_build_time_tree_figure_package_writes_publication_review_bundle(
     assert result.legend_path.exists()
     assert result.caption_path.exists()
     assert result.review_path.exists()
+    assert result.reproducibility_manifest_path.exists()
     assert result.render.rendered_interval_count == result.render.internal_node_count
     assert manifest["report_kind"] == "time_tree_package"
     assert manifest["audit"]["publication_ready"] is True
+    assert manifest["reproducibility_manifest_path"] == str(
+        result.reproducibility_manifest_path
+    )
+    assert reproducibility["report_kind"] == "time_tree_package"
+    assert reproducibility["model"]["name"] == "beast"
     assert "Rabies time tree" in review_html
     assert interval_rows[0].startswith("clade\tnode_kind\tmean_age")
 
