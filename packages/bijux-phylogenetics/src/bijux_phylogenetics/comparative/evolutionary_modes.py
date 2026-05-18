@@ -27,6 +27,7 @@ from bijux_phylogenetics.io.trees import load_tree
 
 ALLOWED_EVOLUTIONARY_MODES = {
     "brownian",
+    "white-noise",
     "pagel-lambda",
     "pagel-kappa",
     "pagel-delta",
@@ -246,7 +247,7 @@ def fit_continuous_evolutionary_mode(
     ou_bounds: tuple[float, float] = (0.0, 10.0),
     early_burst_bounds: tuple[float, float] = (0.0, 50.0),
 ) -> ContinuousEvolutionaryModeFitReport:
-    """Fit a Brownian, Pagel-lambda, Pagel-kappa, Pagel-delta, OU, or early-burst intercept-only trait model."""
+    """Fit a Brownian, white-noise, Pagel-lambda, Pagel-kappa, Pagel-delta, OU, or early-burst intercept-only trait model."""
     dataset = load_comparative_dataset(
         tree_path,
         traits_path,
@@ -371,6 +372,23 @@ def _fit_evolutionary_mode_from_dataset(
         assumptions = [
             "Brownian mode retains the original rooted branch lengths.",
             "Trait variance accumulates proportionally with shared branch length.",
+        ]
+    elif mode == "white-noise":
+        transformed_tree = _clone_tree(dataset.tree)
+        covariance = _identity_covariance_matrix(len(dataset.taxa))
+        fit = _fit_intercept_only_model(dataset, covariance)
+        parameter_name = None
+        parameter_value = None
+        optimizer_diagnostics = None
+        identifiability_warnings = [
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="no_phylogenetic_correlation",
+                message="white-noise mode assumes independent residual variance across taxa and ignores shared phylogenetic covariance",
+            )
+        ]
+        assumptions = [
+            "White-noise mode treats taxa as independent and uses an identity covariance surface instead of branch-length-derived shared variance.",
+            "This mode is the no-phylogenetic-correlation baseline for comparing whether Brownian or transformed phylogenetic models explain trait covariance better.",
         ]
     elif mode == "pagel-lambda":
         parameter_name = "lambda"
@@ -1299,6 +1317,13 @@ def _delta_transformed_depth(
             "Pagel delta produced an invalid transformed node depth"
         )
     return transformed
+
+
+def _identity_covariance_matrix(size: int) -> list[list[float]]:
+    return [
+        [1.0 if row_index == column_index else 0.0 for column_index in range(size)]
+        for row_index in range(size)
+    ]
 
 
 def _likelihood_ratio_test(
