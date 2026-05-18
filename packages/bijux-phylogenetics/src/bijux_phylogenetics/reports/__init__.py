@@ -13,6 +13,14 @@ from .methods_summary import (
     write_tree_inference_methods_summary_text,
     write_tree_validation_methods_summary_text,
 )
+from .reviewer_audit import (
+    ReviewerAuditChecklist,
+    ReviewerAuditChecklistItem,
+    ReviewerAuditChecklistWriteResult,
+    build_reviewer_audit_checklist,
+    write_reviewer_audit_checklist,
+    write_reviewer_audit_checklist_from_manifest,
+)
 from .supplementary_tables import (
     SupplementaryAlignmentDiagnosticsRow,
     SupplementaryAlignmentDiagnosticsTableResult,
@@ -57,6 +65,9 @@ __all__ = [
     "AlignmentFigureAudit",
     "AlignmentFigurePackageResult",
     "AlignmentFilteringMethodsSummaryTextResult",
+    "ReviewerAuditChecklist",
+    "ReviewerAuditChecklistItem",
+    "ReviewerAuditChecklistWriteResult",
     "SupplementaryAlignmentDiagnosticsRow",
     "SupplementaryAlignmentDiagnosticsTableResult",
     "SupplementaryAncestralStateRow",
@@ -81,10 +92,13 @@ __all__ = [
     "TreeSupportRow",
     "TreeValidationMethodsSummaryTextResult",
     "build_alignment_figure_package",
+    "build_reviewer_audit_checklist",
     "build_tree_report_package",
     "summarize_tree_branch_statistics",
     "summarize_tree_support",
     "write_alignment_filtering_methods_summary_text",
+    "write_reviewer_audit_checklist",
+    "write_reviewer_audit_checklist_from_manifest",
     "write_tree_inference_methods_summary_text",
     "write_supplementary_alignment_diagnostics_table",
     "write_supplementary_ancestral_state_table",
