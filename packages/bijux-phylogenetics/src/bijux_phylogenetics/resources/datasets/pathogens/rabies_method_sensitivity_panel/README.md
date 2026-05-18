@@ -112,6 +112,16 @@ The governed expected bundle now also includes:
   retained bytes, total retained MiB, category totals, and the largest variant
 - `slurm-storage-report.html`: one reviewer-facing summary of the retained
   storage estimate before scaling the workflow further
+- `slurm-output-explosion-checks.tsv`: one check-level ledger over the global
+  and per-variant warnings that guard against retained-output growth
+- `slurm-output-explosion-variants.tsv`: one per-variant risk ledger over
+  retained output size, tree burden, posterior burden, and dominant output
+  share
+- `slurm-output-explosion-report.json`: one machine-readable warning summary
+  over overall risk status, failed checks, and warning or high-risk variants
+- `slurm-output-explosion-report.html`: one reviewer-facing summary of whether
+  retained outputs, tree files, posterior samples, or report artifacts are
+  starting to scale badly
 - `slurm-job-evidence.tsv`: one workflow-wide index over the per-job
   provenance packages written for each planned Slurm job
 - `slurm-job-evidence-summary.json`: one machine-readable summary over the

@@ -457,6 +457,14 @@ compact summary of the expected retained storage burden. The posterior-sample
 category remains explicit even when it is zero, so the workflow does not hide
 the fact that this governed rabies surface currently emits no Bayesian chain
 or posterior tree outputs.
+The same bundle now also writes one output-explosion warning surface before the
+workflow grows further: `slurm-output-explosion-checks.tsv` records the global
+and per-variant checks behind the warning contract,
+`slurm-output-explosion-variants.tsv` records each variant's risk class and
+dominant retained categories, `slurm-output-explosion-report.json` carries the
+machine-readable summary, and `slurm-output-explosion-report.html` gives
+reviewers one compact explanation of whether current retained outputs, tree
+artifacts, posterior samples, or report files are starting to scale badly.
 It now also writes one per-job evidence surface for independent debugging:
 `slurm-job-evidence.tsv` indexes one provenance package per planned job,
 `slurm-job-evidence-summary.json` carries the workflow-wide summary, and
@@ -497,6 +505,10 @@ also report `report_linked_artifact_count`, `report_html_size_bytes`,
 `slurm_job_evidence_file_count`,
 `slurm_job_evidence_total_runtime_seconds`, and
 `slurm_job_evidence_total_output_byte_count`,
+`slurm_output_explosion_status`,
+`slurm_output_explosion_global_issue_count`,
+`slurm_output_explosion_warning_variant_count`, and
+`slurm_output_explosion_high_risk_variant_count`,
 `slurm_output_freshness_check_count`,
 `slurm_output_freshness_failed_check_count`,
 `slurm_fresh_output_job_count`, and `slurm_stale_output_job_count`,
