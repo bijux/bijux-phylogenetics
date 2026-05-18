@@ -559,6 +559,7 @@ from bijux_phylogenetics.simulation import (
     simulate_dna_alignment,
     simulate_early_burst_traits,
     simulate_ou_traits,
+    simulate_speciational_traits,
     simulate_protein_alignment,
     simulate_random_trees,
     write_continuous_trait_table,
@@ -2907,6 +2908,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the simulation report as JSON."
     )
     _add_manifest_argument(simulate_brownian)
+    simulate_speciational = simulate_subparsers.add_parser(
+        "traits-speciational",
+        help="Simulate a continuous tip trait under geiger-style speciational Brownian motion.",
+    )
+    simulate_speciational.add_argument("tree", type=Path)
+    simulate_speciational.add_argument("--root-state", type=float, default=0.0)
+    simulate_speciational.add_argument("--sigma", type=float)
+    simulate_speciational.add_argument("--sigma-squared", type=float)
+    simulate_speciational.add_argument("--seed", type=int, default=1)
+    simulate_speciational.add_argument("--out", required=True, type=Path)
+    simulate_speciational.add_argument(
+        "--json", action="store_true", help="Emit the simulation report as JSON."
+    )
+    _add_manifest_argument(simulate_speciational)
     simulate_brownian_correlated = simulate_subparsers.add_parser(
         "traits-brownian-correlated",
         help="Simulate correlated continuous tip traits under multivariate Brownian motion.",
@@ -8580,6 +8595,33 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.simulate_command == "traits-brownian":
                 report = simulate_brownian_traits(
+                    args.tree,
+                    root_state=args.root_state,
+                    sigma=args.sigma,
+                    sigma_squared=args.sigma_squared,
+                    seed=args.seed,
+                )
+                output_path = write_continuous_trait_table(args.out, report)
+                outputs = _finalize_outputs(
+                    args, command="simulate", inputs=[args.tree], outputs=[output_path]
+                )
+                _print_result(
+                    build_command_result(
+                        command="simulate",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={
+                            "tip_count": report.tip_count,
+                            "trait_count": len(report.traits),
+                            "sigma_squared": report.sigma_squared,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.simulate_command == "traits-speciational":
+                report = simulate_speciational_traits(
                     args.tree,
                     root_state=args.root_state,
                     sigma=args.sigma,
