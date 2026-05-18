@@ -1456,6 +1456,17 @@ surfaces under durable fixture ids, explicit ER, SYM, and ARD
 transition-matrix metadata, and missing-state, constant-state, and
 tree-versus-table control panels so later discrete parity lanes do not fall
 back to one-off state tables or hand-entered rate matrices.
+The same live lane now also covers `geiger::fitDiscrete(model='SYM')` over
+three governed multistate surfaces: a three-state known-truth panel, a
+four-state known-truth panel, and a three-state missing-value pruning review
+panel. Bijux exposes that owned side through
+`fit_discrete_mk_model(model='symmetric')`, and the governed parity contract
+compares the full directed rate table, log-likelihood, AIC, and AICc against
+real local `geiger` outputs. The sparse six-state symmetric surface remains a
+governed owner-side overparameterization review surface for now rather than a
+row-level live parity claim, because its weakly identified multirate maximum
+is useful for trust review but not yet stable enough to present as durable
+pairwise-rate parity.
 
 `parity --reference-source phytools-live` is the governed live `phytools`
 execution harness. It uses the same checked-in `Rscript` orchestration model
