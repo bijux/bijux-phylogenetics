@@ -28,6 +28,7 @@ from bijux_phylogenetics.io.trees import load_tree
 ALLOWED_EVOLUTIONARY_MODES = {
     "brownian",
     "pagel-lambda",
+    "pagel-kappa",
     "ornstein-uhlenbeck",
     "early-burst",
 }
@@ -183,6 +184,22 @@ def rescale_tree_early_burst(
     )
 
 
+def rescale_tree_pagel_kappa(
+    tree_path: Path,
+    *,
+    kappa: float,
+) -> ComparativeTreeRescalingReport:
+    """Apply the geiger-style Pagel-kappa branch-length rescaling to a rooted tree."""
+    return _build_tree_rescaling_report(
+        load_tree(tree_path),
+        tree_path,
+        mode="pagel-kappa",
+        parameter_name="kappa",
+        parameter_value=kappa,
+        sigsq=1.0,
+    )
+
+
 def transform_tree_for_evolutionary_mode(
     tree: PhyloTree,
     *,
@@ -190,7 +207,7 @@ def transform_tree_for_evolutionary_mode(
     parameter_value: float,
     sigsq: float = 1.0,
 ) -> PhyloTree:
-    """Transform an in-memory tree under the governed OU or early-burst branch rule."""
+    """Transform an in-memory tree under a governed continuous-mode branch rule."""
     return _transform_tree(
         tree,
         mode=mode,
@@ -207,10 +224,11 @@ def fit_continuous_evolutionary_mode(
     mode: str,
     taxon_column: str | None = None,
     lambda_bounds: tuple[float, float] = (0.0, 1.0),
+    kappa_bounds: tuple[float, float] = (0.0, 3.0),
     ou_bounds: tuple[float, float] = (0.0, 10.0),
     early_burst_bounds: tuple[float, float] = (0.0, 50.0),
 ) -> ContinuousEvolutionaryModeFitReport:
-    """Fit a Brownian, Pagel-lambda, OU, or early-burst intercept-only trait model."""
+    """Fit a Brownian, Pagel-lambda, Pagel-kappa, OU, or early-burst intercept-only trait model."""
     dataset = load_comparative_dataset(
         tree_path,
         traits_path,
@@ -224,6 +242,7 @@ def fit_continuous_evolutionary_mode(
         dataset,
         mode=mode,
         lambda_bounds=lambda_bounds,
+        kappa_bounds=kappa_bounds,
         ou_bounds=ou_bounds,
         early_burst_bounds=early_burst_bounds,
     )
@@ -236,6 +255,7 @@ def compare_continuous_evolutionary_modes(
     trait: str,
     taxon_column: str | None = None,
     lambda_bounds: tuple[float, float] = (0.0, 1.0),
+    kappa_bounds: tuple[float, float] = (0.0, 3.0),
     ou_bounds: tuple[float, float] = (0.0, 10.0),
     early_burst_bounds: tuple[float, float] = (0.0, 50.0),
 ) -> ContinuousEvolutionaryModeComparisonReport:
@@ -254,6 +274,7 @@ def compare_continuous_evolutionary_modes(
             dataset,
             mode=mode,
             lambda_bounds=lambda_bounds,
+            kappa_bounds=kappa_bounds,
             ou_bounds=ou_bounds,
             early_burst_bounds=early_burst_bounds,
         )
@@ -305,6 +326,7 @@ def _fit_evolutionary_mode_from_dataset(
     *,
     mode: str,
     lambda_bounds: tuple[float, float],
+    kappa_bounds: tuple[float, float],
     ou_bounds: tuple[float, float],
     early_burst_bounds: tuple[float, float],
 ) -> ContinuousEvolutionaryModeFitReport:
@@ -347,6 +369,27 @@ def _fit_evolutionary_mode_from_dataset(
         assumptions = [
             "Pagel-lambda mode follows the geiger-style covariance transformation, scaling shared covariance while keeping each tip variance fixed.",
             "Unlike phytools::phylosig-style signal summaries, this mode keeps the full fitContinuous surface visible with root state, sigma-squared-backed rate, AIC, and AICc.",
+        ]
+    elif mode == "pagel-kappa":
+        parameter_name = "kappa"
+        search_result = _best_transformed_mode_fit(
+            dataset,
+            mode=mode,
+            bounds=kappa_bounds,
+        )
+        parameter_value = search_result.parameter_value
+        transformed_tree = search_result.transformed_tree
+        covariance = search_result.covariance
+        fit = _fit_intercept_only_model(dataset, covariance)
+        optimizer_diagnostics = search_result.optimizer_diagnostics
+        identifiability_warnings = _kappa_identifiability_warnings_from_profile(
+            parameter_value,
+            search_result.profile,
+            kappa_bounds,
+        )
+        assumptions = [
+            "Pagel-kappa mode follows the geiger-style branch-length power transformation, raising each branch length to kappa before Brownian intercept fitting.",
+            "The fitted covariance comes from the transformed branch-length tree rather than from a topology-only change count surface.",
         ]
     elif mode == "ornstein-uhlenbeck":
         parameter_name = "alpha"
@@ -832,6 +875,62 @@ def _lambda_identifiability_warnings_from_profile(
     return warnings
 
 
+def _kappa_identifiability_warnings_from_profile(
+    kappa_value: float,
+    profile: list[tuple[float, float]],
+    bounds: tuple[float, float],
+) -> list[EvolutionaryModeIdentifiabilityWarning]:
+    lower, upper = bounds
+    span = upper - lower
+    ordered_log_likelihoods = sorted(
+        (log_likelihood for _, log_likelihood in profile),
+        reverse=True,
+    )
+    warnings: list[EvolutionaryModeIdentifiabilityWarning] = []
+    boundary_tolerance = max(span / 160.0, 1e-9)
+    if math.isclose(
+        kappa_value,
+        lower,
+        rel_tol=0.0,
+        abs_tol=boundary_tolerance,
+    ) or math.isclose(
+        kappa_value,
+        upper,
+        rel_tol=0.0,
+        abs_tol=boundary_tolerance,
+    ):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="boundary_kappa",
+                message="best-supported Pagel kappa falls on the search boundary and may not be well identified",
+            )
+        )
+    if len(ordered_log_likelihoods) > 1 and (
+        ordered_log_likelihoods[0] - ordered_log_likelihoods[1] < 0.5
+    ):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="flat_likelihood",
+                message="Pagel-kappa likelihood stays shallow across the bounded search, so branch-length transformation support may be unstable",
+            )
+        )
+    if kappa_value <= lower + max(boundary_tolerance, 1e-6):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="punctuational_limit",
+                message="best-supported Pagel kappa remains close to the equal-length punctuational boundary and may be difficult to distinguish from a branch-count surface",
+            )
+        )
+    if kappa_value >= upper - max(boundary_tolerance, 1e-6):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="upper_search_limit",
+                message="best-supported Pagel kappa remains close to the upper search boundary, so a wider branch-length review may be needed",
+            )
+        )
+    return warnings
+
+
 def _build_tree_rescaling_report(
     tree: PhyloTree,
     tree_path: Path,
@@ -873,14 +972,21 @@ def _transform_tree(
     parameter_value: float,
     sigsq: float = 1.0,
 ) -> PhyloTree:
-    if mode not in {"ornstein-uhlenbeck", "early-burst", "pagel-lambda"}:
+    if mode not in {
+        "ornstein-uhlenbeck",
+        "early-burst",
+        "pagel-lambda",
+        "pagel-kappa",
+    }:
         raise ComparativeMethodError(
-            "tree transformation mode must be 'ornstein-uhlenbeck', 'early-burst', or 'pagel-lambda'"
+            "tree transformation mode must be 'ornstein-uhlenbeck', 'early-burst', 'pagel-lambda', or 'pagel-kappa'"
         )
     if mode == "ornstein-uhlenbeck" and parameter_value < 0.0:
         raise ComparativeMethodError("OU alpha must be non-negative")
     if mode == "pagel-lambda" and not 0.0 <= parameter_value <= 1.0:
         raise ComparativeMethodError("Pagel lambda must lie within [0, 1]")
+    if mode == "pagel-kappa" and parameter_value < 0.0:
+        raise ComparativeMethodError("Pagel kappa must be non-negative")
     cloned_root = _clone_node(tree.root)
     if mode == "pagel-lambda":
         def visit_pagel_lambda(node: TreeNode, depth: float) -> None:
@@ -895,6 +1001,22 @@ def _transform_tree(
                 visit_pagel_lambda(child, depth + original_length)
 
         visit_pagel_lambda(cloned_root, 0.0)
+        return PhyloTree(
+            root=cloned_root,
+            source_format=tree.source_format,
+            rooted=tree.rooted,
+        )
+    if mode == "pagel-kappa":
+        def visit_pagel_kappa(node: TreeNode) -> None:
+            for child in node.children:
+                original_length = float(child.branch_length or 0.0)
+                child.branch_length = _kappa_branch_length(
+                    original_length,
+                    kappa=parameter_value,
+                )
+                visit_pagel_kappa(child)
+
+        visit_pagel_kappa(cloned_root)
         return PhyloTree(
             root=cloned_root,
             source_format=tree.source_format,
@@ -1011,6 +1133,21 @@ def _early_burst_branch_length(
         - math.exp(-rate_change * child_depth)
     ) / rate_change
     return max(0.0, transformed * sigsq)
+
+
+def _kappa_branch_length(branch_length: float, *, kappa: float) -> float:
+    if kappa < 0.0:
+        raise ComparativeMethodError("Pagel kappa must be non-negative")
+    if branch_length < 0.0:
+        raise ComparativeMethodError(
+            "Pagel kappa cannot transform negative branch lengths"
+        )
+    transformed = math.pow(branch_length, kappa)
+    if not math.isfinite(transformed) or transformed < 0.0:
+        raise ComparativeMethodError(
+            "Pagel kappa produced an invalid transformed branch length"
+        )
+    return transformed
 
 
 def _likelihood_ratio_test(
