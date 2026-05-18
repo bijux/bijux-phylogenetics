@@ -6165,6 +6165,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 output_paths: list[Path | str] = [
                     result.report_path,
+                    result.methods_summary_path,
                     result.figure_path,
                     result.figure_png_path,
                     result.figure_html_path,
@@ -6203,7 +6204,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "report_kind": "ancestral-report-package",
                             "reconstruction_kind": result.reconstruction_kind,
                             "output_dir": str(result.output_dir),
-                            "artifact_count": 11,
+                            "artifact_count": 12,
+                            "methods_summary_warning_count": (
+                                result.methods_summary.warning_count
+                            ),
                             "transition_count_row_count": result.machine_manifest[
                                 "metrics"
                             ]["transition_count_row_count"],
