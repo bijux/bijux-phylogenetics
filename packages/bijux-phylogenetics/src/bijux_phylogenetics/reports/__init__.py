@@ -13,6 +13,12 @@ from .methods_summary import (
     write_tree_inference_methods_summary_text,
     write_tree_validation_methods_summary_text,
 )
+from .package_comparison import (
+    PublicationPackageComparisonArtifactRow,
+    PublicationPackageComparisonCheckRow,
+    PublicationPackageComparisonResult,
+    write_publication_package_comparison_report,
+)
 from .package_revalidation import (
     PublicationPackageRevalidationArtifactRow,
     PublicationPackageRevalidationCheckRow,
@@ -71,6 +77,9 @@ __all__ = [
     "AlignmentFigureAudit",
     "AlignmentFigurePackageResult",
     "AlignmentFilteringMethodsSummaryTextResult",
+    "PublicationPackageComparisonArtifactRow",
+    "PublicationPackageComparisonCheckRow",
+    "PublicationPackageComparisonResult",
     "PublicationPackageRevalidationArtifactRow",
     "PublicationPackageRevalidationCheckRow",
     "PublicationPackageRevalidationResult",
@@ -106,6 +115,7 @@ __all__ = [
     "summarize_tree_branch_statistics",
     "summarize_tree_support",
     "write_alignment_filtering_methods_summary_text",
+    "write_publication_package_comparison_report",
     "write_publication_package_revalidation_report",
     "write_reviewer_audit_checklist",
     "write_reviewer_audit_checklist_from_manifest",
