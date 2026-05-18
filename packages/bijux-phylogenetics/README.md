@@ -1489,6 +1489,20 @@ record explicit flattening or untransformed-branch warnings. The weak-signal
 kappa review remains summary-level on the parity surface because the
 likelihood surface still agrees even when the raw ER rate maximum becomes
 unstable near the zero-contrast boundary.
+The same owned surface now also supports
+`fit_discrete_mk_model(..., transform='delta')` and a governed live
+`geiger::fitDiscrete(transform='delta')` parity lane. That registry covers
+an ER late-change boundary review, a SYM earliest-change review, and a
+missing-value SYM earliest-change review. Bijux follows the local
+`geiger` discrete-delta contract by searching delta within
+`[exp(-5), 3]`, carrying the transform parameter in the discrete Mk
+information-criterion surface, and recording whether the transformed fit
+actually improves over the untransformed same-model baseline. The curated
+binary time-sensitive delta surface remains a governed owner-side review
+fixture rather than a row-level live parity claim, because both Bijux and
+local `geiger` agree on the broad boundary behavior there while the interior
+rate maximum is not stable enough to present as durable reviewer-facing
+pairwise-rate parity.
 The same live lane now also covers `geiger::fitDiscrete(model='SYM')` over
 three governed multistate surfaces: a three-state known-truth panel, a
 four-state known-truth panel, and a three-state missing-value pruning review
