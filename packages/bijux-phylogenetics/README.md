@@ -1467,6 +1467,21 @@ governed owner-side overparameterization review surface for now rather than a
 row-level live parity claim, because its weakly identified multirate maximum
 is useful for trust review but not yet stable enough to present as durable
 pairwise-rate parity.
+The same governed discrete lane now also covers
+`geiger::fitDiscrete(model='ARD')` over three reviewer-facing surfaces: a
+binary known-truth panel, a three-state missing-value pruning panel, and a
+four-state weak-identification review panel. Bijux exposes that owned side
+through `fit_discrete_mk_model(model='all-rates-different')`, and the stable
+binary and missing-value ARD cases now compare the full directed rate table,
+log-likelihood, AIC, and AICc against real local `geiger` outputs. The
+four-state ARD surface remains in the live lane as a governed weakly
+identified review case with a relaxed directional-rate tolerance, because
+local `geiger` and Bijux reach near-equivalent maxima on that twelve-parameter
+surface while still agreeing on the likelihood envelope and the need for
+boundary and equal-rates-baseline caution. The sparse six-state ARD surface
+still stays owner-side only, where it continues to govern overfit and
+overparameterization warnings without pretending its full row-level maximum is
+durable enough for live parity.
 
 `parity --reference-source phytools-live` is the governed live `phytools`
 execution harness. It uses the same checked-in `Rscript` orchestration model
