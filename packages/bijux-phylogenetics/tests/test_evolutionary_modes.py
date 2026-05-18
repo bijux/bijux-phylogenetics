@@ -14,6 +14,7 @@ from bijux_phylogenetics.comparative import (
     rescale_tree_early_burst,
     rescale_tree_ornstein_uhlenbeck,
 )
+from bijux_phylogenetics.fixtures import get_shared_geiger_continuous_fixture
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures"
@@ -76,6 +77,61 @@ def test_fit_continuous_evolutionary_mode_supports_early_burst() -> None:
     assert fit.transformed_tree_newick.endswith(";")
     assert fit.log_likelihood < 0.0
     assert fit.aic > 0.0
+    assert fit.optimizer_diagnostics is not None
+    assert fit.optimizer_diagnostics.optimizer_name == "governed-two-stage-grid-search"
+    assert fit.identifiability_warnings == []
+
+
+def test_fit_continuous_evolutionary_mode_reports_ou_identifiability_and_bounds() -> (
+    None
+):
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_nonultrametric_control_twenty_four_taxa"
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="ornstein-uhlenbeck",
+        taxon_column=fixture.taxon_column,
+    )
+
+    assert fit.mode == "ornstein-uhlenbeck"
+    assert fit.parameter_name == "alpha"
+    assert fit.parameter_value is not None
+    assert fit.optimizer_diagnostics is not None
+    assert fit.optimizer_diagnostics.hit_lower_boundary is True
+    assert fit.optimizer_diagnostics.hit_upper_boundary is False
+    assert [warning.kind for warning in fit.identifiability_warnings] == [
+        "boundary_alpha",
+        "flat_likelihood",
+        "weak_pull_to_optimum",
+    ]
+
+
+def test_fit_continuous_evolutionary_mode_reports_ou_aicc_and_missing_value_context() -> (
+    None
+):
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_missing_values_twenty_four_taxa"
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="ornstein-uhlenbeck",
+        taxon_column=fixture.taxon_column,
+    )
+
+    assert fit.aicc >= fit.aic
+    assert fit.optimizer_diagnostics is not None
+    assert fit.optimizer_diagnostics.lower_bound > 0.0
+    assert [warning.kind for warning in fit.identifiability_warnings] == [
+        "flat_likelihood",
+        "weak_pull_to_optimum",
+    ]
 
 
 def test_compare_continuous_evolutionary_modes_reports_likelihood_ratios() -> None:
