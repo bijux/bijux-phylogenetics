@@ -33,6 +33,7 @@ from bijux_phylogenetics.reports.service import (
 )
 from bijux_phylogenetics.reports import (
     build_alignment_figure_package,
+    write_publication_package_revalidation_report,
     write_reviewer_audit_checklist_from_manifest,
     write_alignment_filtering_methods_summary_text,
     write_tree_inference_methods_summary_text,
@@ -134,6 +135,19 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the checklist result as JSON."
     )
     _add_manifest_argument(report_reviewer_audit_checklist)
+
+    report_package_revalidation = report_subparsers.add_parser(
+        "package-revalidation",
+        help="Revalidate a stored publication package from its manifest and checksum inventory.",
+    )
+    report_package_revalidation.add_argument("manifest", type=Path)
+    report_package_revalidation.add_argument("--out-dir", required=True, type=Path)
+    report_package_revalidation.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the revalidation result as JSON.",
+    )
+    _add_manifest_argument(report_package_revalidation)
 
     report_tree_validation_methods_summary = report_subparsers.add_parser(
         "tree-validation-methods-summary",
@@ -779,6 +793,57 @@ def run_report_command(args: Any) -> int:
             )
             return 0
         print(result.output_path)
+        return 0
+
+    if args.report_command == "package-revalidation":
+        result = write_publication_package_revalidation_report(
+            args.out_dir,
+            args.manifest,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=[args.manifest],
+            outputs=[
+                result.artifact_table_path,
+                result.check_table_path,
+                result.summary_path,
+                result.report_path,
+            ],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=[args.manifest],
+                    outputs=outputs,
+                    warnings=[
+                        row.summary for row in result.check_rows if row.status != "pass"
+                    ],
+                    metrics={
+                        "report_kind": result.report_kind,
+                        "artifact_row_count": len(result.artifact_rows),
+                        "check_row_count": len(result.check_rows),
+                        "matched_artifact_count": result.matched_artifact_count,
+                        "missing_artifact_count": result.missing_artifact_count,
+                        "checksum_mismatch_count": result.checksum_mismatch_count,
+                        "size_mismatch_count": result.size_mismatch_count,
+                        "unexpected_file_count": result.unexpected_file_count,
+                        "blocked_check_count": result.blocked_check_count,
+                        "risk_check_count": result.risk_check_count,
+                        "all_original_artifacts_match": (
+                            result.all_original_artifacts_match
+                        ),
+                        "overall_revalidation_status": (
+                            result.overall_revalidation_status
+                        ),
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_root)
         return 0
 
     if args.report_command == "tree-validation-methods-summary":
