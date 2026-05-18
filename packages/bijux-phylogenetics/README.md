@@ -1492,6 +1492,16 @@ continuous trait matrices, writes curve, clade, exclusion, and optional
 time-bin ledgers, and renders an SVG review figure. The current parity scope
 is the observed DTT curve itself; simulated null envelopes and MDI-style
 simulation summaries are still intentionally out of scope for this round.
+That same owned clade kernel is also available directly through
+`summarize_continuous_clade_disparity(...)` and the `comparative disparity`
+command. The direct disparity surface reports one internal-clade disparity
+row per ape-style internal node, keeps two-tip and larger clades on the same
+formula, supports univariate and multivariate continuous matrices, writes a
+dedicated summary ledger with the explicit average-squared-Euclidean method
+formula, and is governed against local `geiger::disparity` references on the
+simple four-tip clade partitions as well as the larger ultrametric DTT
+fixtures. DTT now consumes that same owned clade-disparity surface rather
+than reimplementing internal clade disparity separately.
 The same governed discrete fixture layer now backs a live
 `geiger::fitDiscrete(model='ER')` parity lane. The current ER registry covers
 three reviewer-facing surfaces: a binary twenty-four-taxon known-truth panel,
