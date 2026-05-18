@@ -108,21 +108,25 @@
   "execution_mode": "parallel",
   "parallel_workers": 2,
   "report_manifest_path": "report-artifacts/rabies-method-sensitivity-report.manifest.json",
-  "reproducibility_check_count": 124,
-  "reproducibility_failed_check_count": 1,
+  "reproducibility_check_count": 136,
+  "reproducibility_failed_check_count": 0,
   "reproducibility_failed_variant_count": 0,
-  "reproducibility_passed": false,
+  "reproducibility_passed": true,
   "slurm_active_run_state": "absent",
   "slurm_array_largest_partition_size": 2,
   "slurm_array_partition_count": 2,
   "slurm_array_script_count": 2,
   "slurm_completed_job_count": 4,
   "slurm_failed_job_count": 0,
+  "slurm_failure_recovery_blocked_job_count": 0,
+  "slurm_failure_recovery_partition_count": 0,
+  "slurm_failure_recovery_rerunnable_job_count": 0,
+  "slurm_failure_recovery_status": "clean",
   "slurm_fresh_output_job_count": 4,
   "slurm_job_count": 4,
   "slurm_job_evidence_file_count": 36,
   "slurm_job_evidence_total_output_byte_count": 168260,
-  "slurm_job_evidence_total_runtime_seconds": 17.037225,
+  "slurm_job_evidence_total_runtime_seconds": 17.324942,
   "slurm_maximum_estimated_memory_mib": 1536,
   "slurm_maximum_estimated_wallclock_minutes": 35,
   "slurm_merge_failed_check_count": 0,
@@ -142,7 +146,7 @@
   "slurm_storage_log_byte_count": 900,
   "slurm_storage_output_byte_count": 161224,
   "slurm_storage_posterior_sample_byte_count": 0,
-  "slurm_storage_report_byte_count": 1089142,
+  "slurm_storage_report_byte_count": 1101231,
   "slurm_storage_total_estimated_mib": 2,
   "slurm_storage_tree_byte_count": 7036,
   "slurm_total_estimated_core_hours": 3.2,
@@ -178,9 +182,11 @@
 <dl class="summary-card"><dt>slurm stale output jobs</dt><dd>0</dd></dl>
 <dl class="summary-card"><dt>slurm completed jobs</dt><dd>4</dd></dl>
 <dl class="summary-card"><dt>slurm stale jobs</dt><dd>0</dd></dl>
-<dl class="summary-card"><dt>reproducibility passed</dt><dd>false</dd></dl>
-<dl class="summary-card"><dt>reproducibility checks</dt><dd>124</dd></dl>
-<dl class="summary-card"><dt>linked artifacts</dt><dd>28</dd></dl>
+<dl class="summary-card"><dt>slurm recovery status</dt><dd>clean</dd></dl>
+<dl class="summary-card"><dt>slurm rerunnable jobs</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>reproducibility passed</dt><dd>true</dd></dl>
+<dl class="summary-card"><dt>reproducibility checks</dt><dd>136</dd></dl>
+<dl class="summary-card"><dt>linked artifacts</dt><dd>32</dd></dl>
 </div></section>
 <section><h2>artifacts</h2><ul class="artifact-list">
 <li>workflow-summary: <a href="workflow-summary.tsv">workflow-summary.tsv</a><span class="artifact-note">239 bytes</span></li>
@@ -192,7 +198,7 @@
 <li>conclusion-summary: <a href="method-conclusion-summary.tsv">method-conclusion-summary.tsv</a><span class="artifact-note">1645 bytes</span></li>
 <li>config: <a href="workflow-config.resolved.json">workflow-config.resolved.json</a><span class="artifact-note">1548 bytes</span></li>
 <li>execution-record: <a href="rabies-method-sensitivity-panel.run.json">rabies-method-sensitivity-panel.run.json</a><span class="artifact-note">1977 bytes</span></li>
-<li>workflow-manifest: <a href="rabies-method-sensitivity.manifest.json">rabies-method-sensitivity.manifest.json</a><span class="artifact-note">6022 bytes</span></li>
+<li>workflow-manifest: <a href="rabies-method-sensitivity.manifest.json">rabies-method-sensitivity.manifest.json</a><span class="artifact-note">6748 bytes</span></li>
 <li>slurm-job-plan: <a href="slurm-job-plan.tsv">slurm-job-plan.tsv</a><span class="artifact-note">2240 bytes</span></li>
 <li>slurm-assumptions: <a href="slurm-estimation-assumptions.tsv">slurm-estimation-assumptions.tsv</a><span class="artifact-note">1334 bytes</span></li>
 <li>slurm-summary: <a href="slurm-planning-summary.json">slurm-planning-summary.json</a><span class="artifact-note">6834 bytes</span></li>
@@ -200,7 +206,7 @@
 <li>slurm-array-members: <a href="slurm-array-members.tsv">slurm-array-members.tsv</a><span class="artifact-note">1089 bytes</span></li>
 <li>slurm-array-strategy: <a href="slurm-array-strategy.json">slurm-array-strategy.json</a><span class="artifact-note">4177 bytes</span></li>
 <li>slurm-job-evidence-index: <a href="slurm-job-evidence.tsv">slurm-job-evidence.tsv</a><span class="artifact-note">1047 bytes</span></li>
-<li>slurm-job-evidence-summary: <a href="slurm-job-evidence-summary.json">slurm-job-evidence-summary.json</a><span class="artifact-note">9314 bytes</span></li>
+<li>slurm-job-evidence-summary: <a href="slurm-job-evidence-summary.json">slurm-job-evidence-summary.json</a><span class="artifact-note">9312 bytes</span></li>
 <li>slurm-storage-categories: <a href="slurm-storage-categories.tsv">slurm-storage-categories.tsv</a><span class="artifact-note">1187 bytes</span></li>
 <li>slurm-storage-variants: <a href="slurm-storage-variants.tsv">slurm-storage-variants.tsv</a><span class="artifact-note">518 bytes</span></li>
 <li>slurm-storage-summary: <a href="slurm-storage-report.json">slurm-storage-report.json</a><span class="artifact-note">6809 bytes</span></li>
@@ -223,10 +229,14 @@
 <li>slurm-job-status: <a href="slurm-job-status.tsv">slurm-job-status.tsv</a><span class="artifact-note">1413 bytes</span></li>
 <li>slurm-partition-status: <a href="slurm-partition-status.tsv">slurm-partition-status.tsv</a><span class="artifact-note">398 bytes</span></li>
 <li>slurm-workflow-status: <a href="slurm-workflow-status.json">slurm-workflow-status.json</a><span class="artifact-note">4558 bytes</span></li>
-<li>reproducibility-checks: <a href="reproducibility-checks.tsv">reproducibility-checks.tsv</a><span class="artifact-note">27771 bytes</span></li>
+<li>slurm-failure-recovery-jobs: <a href="slurm-failure-recovery-jobs.tsv">slurm-failure-recovery-jobs.tsv</a><span class="artifact-note">1376 bytes</span></li>
+<li>slurm-failure-recovery-partitions: <a href="slurm-failure-recovery-partitions.tsv">slurm-failure-recovery-partitions.tsv</a><span class="artifact-note">478 bytes</span></li>
+<li>slurm-failure-recovery-summary: <a href="slurm-failure-recovery-report.json">slurm-failure-recovery-report.json</a><span class="artifact-note">4484 bytes</span></li>
+<li>slurm-failure-recovery-report: <a href="slurm-failure-recovery-report.html">slurm-failure-recovery-report.html</a><span class="artifact-note">4191 bytes</span></li>
+<li>reproducibility-checks: <a href="reproducibility-checks.tsv">reproducibility-checks.tsv</a><span class="artifact-note">30664 bytes</span></li>
 <li>reproducibility-variant-audit: <a href="reproducibility-variants.tsv">reproducibility-variants.tsv</a><span class="artifact-note">524 bytes</span></li>
-<li>reproducibility-audit: <a href="reproducibility-audit.json">reproducibility-audit.json</a><span class="artifact-note">46626 bytes</span></li>
-<li>report-manifest: <a href="report-artifacts/rabies-method-sensitivity-report.manifest.json">report-artifacts/rabies-method-sensitivity-report.manifest.json</a><span class="artifact-note">5669 bytes</span></li>
+<li>reproducibility-audit: <a href="reproducibility-audit.json">reproducibility-audit.json</a><span class="artifact-note">51110 bytes</span></li>
+<li>report-manifest: <a href="report-artifacts/rabies-method-sensitivity-report.manifest.json">report-artifacts/rabies-method-sensitivity-report.manifest.json</a><span class="artifact-note">6511 bytes</span></li>
 </ul></section>
 <section><h2>workflow-summary</h2><pre>dataset: Rabies method-sensitivity panel
 variants: 4
@@ -257,9 +267,9 @@ unrooted_engine_sensitivity: changed
 claim: Before rooting, the FastTree versus IQ-TREE comparison changed several internal clade conclusions on this rabies panel.
 evidence: serious unrooted engine conflicts ranged up to 8 per variant, while stable shared clades per variant ranged from 2 to 2.
 caution: The engine-sensitive clades are a warning against over-reading fine internal structure from one compact panel, especially when approximate and likelihood engines disagree before rooting.</pre></section>
-<section><h2>reproducibility-audit</h2><pre>all passed: false
-top-level checks: 124
-failed top-level checks: 1
+<section><h2>reproducibility-audit</h2><pre>all passed: true
+top-level checks: 136
+failed top-level checks: 0
 failed variants: 0</pre></section>
 <section><h2>slurm-job-planning</h2><pre>planned jobs: 4
 maximum estimated memory MiB: 1536
@@ -273,14 +283,14 @@ partition scripts: 2
 total array jobs: 4</pre></section>
 <section><h2>slurm-job-evidence</h2><pre>job evidence packages: 4
 job evidence artifact files: 36
-job evidence total runtime seconds: 17.037225
+job evidence total runtime seconds: 17.324942
 job evidence total output bytes: 168260</pre></section>
 <section><h2>slurm-storage-estimate</h2><pre>estimated retained storage MiB: 2
 workflow outputs bytes: 161224
 log bytes: 900
 tree bytes: 7036
 posterior sample bytes: 0
-review artifact bytes: 1089142
+review artifact bytes: 1101231
 largest variant by retained bytes: ginsi-gap-threshold</pre></section>
 <section><h2>slurm-output-explosion-risk</h2><pre>overall risk status: low
 global issues: 0
@@ -311,6 +321,12 @@ completed jobs: 4
 failed jobs: 0
 pending jobs: 0
 stale jobs: 0</pre></section>
+<section><h2>slurm-failure-recovery</h2><pre>overall recovery status: clean
+rerunnable jobs: 0
+blocked jobs: 0
+recovery partitions: 0
+workflow state: succeeded
+active run state: absent</pre></section>
 <section><h2>artifacts</h2><pre>workflow summary: workflow-summary.tsv
 variant summary: variant-summary.tsv
 parallel execution summary: parallel-execution-summary.tsv
@@ -350,6 +366,10 @@ slurm output freshness summary: slurm-output-freshness.json
 slurm job status: slurm-job-status.tsv
 slurm partition status: slurm-partition-status.tsv
 slurm workflow status: slurm-workflow-status.json
+slurm failure recovery jobs: slurm-failure-recovery-jobs.tsv
+slurm failure recovery partitions: slurm-failure-recovery-partitions.tsv
+slurm failure recovery summary: slurm-failure-recovery-report.json
+slurm failure recovery report: slurm-failure-recovery-report.html
 reproducibility checks: reproducibility-checks.tsv
 reproducibility variant audit: reproducibility-variants.tsv
 reproducibility audit: reproducibility-audit.json</pre></section>

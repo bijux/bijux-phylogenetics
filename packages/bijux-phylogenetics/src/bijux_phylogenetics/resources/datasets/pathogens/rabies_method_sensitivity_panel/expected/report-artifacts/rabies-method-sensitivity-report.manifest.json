@@ -2,7 +2,7 @@
   "changed_clade_count": 8,
   "dataset_id": "rabies_method_sensitivity_panel",
   "execution_mode": "parallel",
-  "linked_artifact_count": 28,
+  "linked_artifact_count": 32,
   "linked_artifacts": {
     "changed_clades": {
       "byte_count": 1979,
@@ -22,7 +22,7 @@
     "execution_record": {
       "byte_count": 1977,
       "path": "../rabies-method-sensitivity-panel.run.json",
-      "sha256": "f5cf2d256510691691562e3e919051c2bd07c658c0225b98ea125d8d235349b3"
+      "sha256": "3f28c8b9b3f2583625a749ae1b4200c73ca5a73f3bfb52b79a76939ad99f7e92"
     },
     "parallel_summary": {
       "byte_count": 487,
@@ -54,20 +54,40 @@
       "path": "../slurm-estimation-assumptions.tsv",
       "sha256": "61d7325fdb62cd5bb661d407807e7c98c34dae95ceec9d2bb9ff3293d9a6e429"
     },
+    "slurm_failure_recovery_jobs": {
+      "byte_count": 1376,
+      "path": "../slurm-failure-recovery-jobs.tsv",
+      "sha256": "33105da5f22125f5e69637194702cef30a6d560e571557d0b2a40651be1f7851"
+    },
+    "slurm_failure_recovery_partitions": {
+      "byte_count": 478,
+      "path": "../slurm-failure-recovery-partitions.tsv",
+      "sha256": "49564b74b95394e58de996730cb9c2a5ba84d9e69477f91a6e27a30bac6ef2c8"
+    },
+    "slurm_failure_recovery_report": {
+      "byte_count": 4191,
+      "path": "../slurm-failure-recovery-report.html",
+      "sha256": "77b2ee59bf4a2376706dcd05317a8d1812b445fd8c3d46fe98e8a9eaa480e63b"
+    },
+    "slurm_failure_recovery_summary": {
+      "byte_count": 4484,
+      "path": "../slurm-failure-recovery-report.json",
+      "sha256": "7820b42d9448ea0d9081cb24f7c588bbc83dd23c6087bf8be0b32ff0311c56e3"
+    },
     "slurm_job_evidence_index": {
       "byte_count": 1047,
       "path": "../slurm-job-evidence.tsv",
-      "sha256": "c752e0fa1b0512661445cf9b1f4b0264b88423b64d0a35469443088739fef9a6"
+      "sha256": "82a87753758653f961a01ece52961bda6a02bcfaee0eaf7ce8c3b419282a00a6"
     },
     "slurm_job_evidence_summary": {
-      "byte_count": 9314,
+      "byte_count": 9312,
       "path": "../slurm-job-evidence-summary.json",
-      "sha256": "365a3565f9e353a8c20e9d1ce71354533dc7fbfcdc2267a6c1b39d4381d86844"
+      "sha256": "35f2fc686a1c43206d852071cecaffd3bcf5deca40728d47686d55f232d458a8"
     },
     "slurm_job_plan": {
       "byte_count": 2240,
       "path": "../slurm-job-plan.tsv",
-      "sha256": "e0e99ab32f4644c032122173d5fd6ee81cd7ea933be1706a5bbf699866f29ccc"
+      "sha256": "fb73d66c845ad53d1500ebe831e750e2bb8734163868d5ce8ff3fbc2c2b72fe5"
     },
     "slurm_job_status": {
       "byte_count": 1413,
@@ -117,7 +137,7 @@
     "slurm_summary": {
       "byte_count": 6834,
       "path": "../slurm-planning-summary.json",
-      "sha256": "6a8f04ad7f7bfa54ddde939bbbfd33ea5ae7a52be95aa2a613f6f47c3671ddf2"
+      "sha256": "3209284870566c05d706ce6017a6171a99e21fac208f295b0568d1815f014259"
     },
     "slurm_workflow_status": {
       "byte_count": 4558,
@@ -135,9 +155,9 @@
       "sha256": "94e0a7813ea68e816d4e6011ae6fe25b97eed6f6f0c955c7201abf429975d1ab"
     },
     "workflow_manifest": {
-      "byte_count": 6022,
+      "byte_count": 6748,
       "path": "../rabies-method-sensitivity.manifest.json",
-      "sha256": "9b2391912db5773a805f152dde6ca09dc484085441d397705e2729aaa592aaaf"
+      "sha256": "de99e06cc4cb9b1448b3689a49a1bde90e80af85901b69dc06bc1e5890a8fba9"
     },
     "workflow_summary": {
       "byte_count": 239,

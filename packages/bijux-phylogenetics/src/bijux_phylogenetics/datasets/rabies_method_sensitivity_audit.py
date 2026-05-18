@@ -49,6 +49,9 @@ _SLURM_OUTPUT_FRESHNESS_SUMMARY_FILENAME = "slurm-output-freshness.json"
 _SLURM_JOB_STATUS_FILENAME = "slurm-job-status.tsv"
 _SLURM_PARTITION_STATUS_FILENAME = "slurm-partition-status.tsv"
 _SLURM_WORKFLOW_STATUS_FILENAME = "slurm-workflow-status.json"
+_SLURM_FAILURE_RECOVERY_JOBS_FILENAME = "slurm-failure-recovery-jobs.tsv"
+_SLURM_FAILURE_RECOVERY_PARTITIONS_FILENAME = "slurm-failure-recovery-partitions.tsv"
+_SLURM_FAILURE_RECOVERY_SUMMARY_FILENAME = "slurm-failure-recovery-report.json"
 _TASK_LOGS_DIRECTORY = "parallel-logs"
 _VARIANTS_DIRECTORY = "variants"
 _EXPECTED_VARIANT_FILENAMES = (
@@ -165,6 +168,13 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     slurm_job_status_path = bundle_root / _SLURM_JOB_STATUS_FILENAME
     slurm_partition_status_path = bundle_root / _SLURM_PARTITION_STATUS_FILENAME
     slurm_workflow_status_path = bundle_root / _SLURM_WORKFLOW_STATUS_FILENAME
+    slurm_failure_recovery_jobs_path = bundle_root / _SLURM_FAILURE_RECOVERY_JOBS_FILENAME
+    slurm_failure_recovery_partitions_path = (
+        bundle_root / _SLURM_FAILURE_RECOVERY_PARTITIONS_FILENAME
+    )
+    slurm_failure_recovery_summary_path = (
+        bundle_root / _SLURM_FAILURE_RECOVERY_SUMMARY_FILENAME
+    )
     task_logs_root = bundle_root / _TASK_LOGS_DIRECTORY
     variants_root = bundle_root / _VARIANTS_DIRECTORY
 
@@ -203,6 +213,11 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     slurm_job_status_rows = _read_tsv_rows(slurm_job_status_path)
     slurm_partition_status_rows = _read_tsv_rows(slurm_partition_status_path)
     slurm_workflow_status = _load_json(slurm_workflow_status_path)
+    slurm_failure_recovery_job_rows = _read_tsv_rows(slurm_failure_recovery_jobs_path)
+    slurm_failure_recovery_partition_rows = _read_tsv_rows(
+        slurm_failure_recovery_partitions_path
+    )
+    slurm_failure_recovery_summary = _load_json(slurm_failure_recovery_summary_path)
 
     checks: list[RabiesMethodSensitivityReproducibilityCheckRow] = []
     variant_audit_rows: list[RabiesMethodSensitivityVariantAuditRow] = []
@@ -792,6 +807,52 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         expected=slurm_workflow_status["partition_count"],
         observed=len(slurm_partition_status_rows),
         detail="workflow status partition_count matches the number of partition-status rows",
+    )
+    slurm_failure_recovery_variant_ids = sorted(
+        {str(row["variant_id"]) for row in slurm_failure_recovery_job_rows}
+    )
+    add_check(
+        "slurm-failure-recovery:variant-coverage",
+        surface="slurm-failure-recovery",
+        condition=config_variant_ids == slurm_failure_recovery_variant_ids,
+        expected=config_variant_ids,
+        observed=slurm_failure_recovery_variant_ids,
+        detail="failure-recovery job rows cover the configured variant ids",
+    )
+    add_check(
+        "slurm-failure-recovery:partition-coverage",
+        surface="slurm-failure-recovery",
+        condition=int(slurm_failure_recovery_summary["partition_count"])
+        == len(slurm_failure_recovery_partition_rows),
+        expected=slurm_failure_recovery_summary["partition_count"],
+        observed=len(slurm_failure_recovery_partition_rows),
+        detail="failure-recovery summary partition_count matches the written partition rows",
+    )
+    observed_rerunnable_job_count = sum(
+        1 for row in slurm_failure_recovery_job_rows if str(row["rerunnable"]) == "true"
+    )
+    add_check(
+        "slurm-failure-recovery:rerunnable-count",
+        surface="slurm-failure-recovery",
+        condition=int(slurm_failure_recovery_summary["rerunnable_job_count"])
+        == observed_rerunnable_job_count,
+        expected=slurm_failure_recovery_summary["rerunnable_job_count"],
+        observed=observed_rerunnable_job_count,
+        detail="failure-recovery summary rerunnable_job_count matches the written job rows",
+    )
+    observed_failure_recovery_status = "clean"
+    if observed_rerunnable_job_count > 0:
+        observed_failure_recovery_status = "recovery_needed"
+    elif int(slurm_failure_recovery_summary["blocked_job_count"]) > 0:
+        observed_failure_recovery_status = "workflow_active"
+    add_check(
+        "slurm-failure-recovery:overall-status",
+        surface="slurm-failure-recovery",
+        condition=str(slurm_failure_recovery_summary["overall_recovery_status"])
+        == observed_failure_recovery_status,
+        expected=slurm_failure_recovery_summary["overall_recovery_status"],
+        observed=observed_failure_recovery_status,
+        detail="failure-recovery summary overall_recovery_status matches the written rerun decisions",
     )
     for variant_id in config_variant_ids:
         freshness_row = slurm_output_freshness_rows_by_variant.get(variant_id)

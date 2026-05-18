@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Rabies Slurm Storage Report</title>
+  <title>Rabies Slurm Failure Recovery Report</title>
   <style>
     :root {
       color-scheme: light;
@@ -101,51 +101,42 @@
 </head>
 <body>
   <main>
-    <h1>Rabies Slurm Storage Report</h1>
+    <h1>Rabies Slurm Failure Recovery Report</h1>
     <script id="bijux-report-manifest" type="application/json">{
+  "active_run_state": "absent",
+  "blocked_job_count": 0,
   "dataset_id": "rabies_method_sensitivity_panel",
-  "largest_variant_id": "ginsi-gap-threshold",
-  "largest_variant_total_byte_count": 295906,
-  "log_byte_count": 900,
-  "output_byte_count": 161224,
-  "posterior_sample_byte_count": 0,
-  "report_byte_count": 1101231,
-  "total_byte_count": 1270391,
-  "total_estimated_storage_mib": 2,
-  "tree_byte_count": 7036,
-  "variant_count": 4,
-  "workflow_prefix": "rabies-method-sensitivity-panel"
+  "failed_job_count": 0,
+  "job_count": 4,
+  "overall_recovery_status": "clean",
+  "pending_job_count": 0,
+  "recovery_partition_count": 0,
+  "rerunnable_job_count": 0,
+  "stale_job_count": 0,
+  "workflow_prefix": "rabies-method-sensitivity-panel",
+  "workflow_status": "succeeded"
 }</script>
 <section><h2>summary</h2><div class="summary-grid">
-<dl class="summary-card"><dt>estimated storage MiB</dt><dd>2</dd></dl>
-<dl class="summary-card"><dt>total files</dt><dd>131</dd></dl>
-<dl class="summary-card"><dt>workflow outputs bytes</dt><dd>161224</dd></dl>
-<dl class="summary-card"><dt>log bytes</dt><dd>900</dd></dl>
-<dl class="summary-card"><dt>tree bytes</dt><dd>7036</dd></dl>
-<dl class="summary-card"><dt>posterior bytes</dt><dd>0</dd></dl>
-<dl class="summary-card"><dt>report bytes</dt><dd>1101231</dd></dl>
+<dl class="summary-card"><dt>overall status</dt><dd>clean</dd></dl>
+<dl class="summary-card"><dt>rerunnable jobs</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>blocked jobs</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>failed jobs</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>stale jobs</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>recovery partitions</dt><dd>0</dd></dl>
 </div></section>
 <section><h2>artifacts</h2><ul class="artifact-list">
-<li>storage categories: <a href="slurm-storage-categories.tsv">slurm-storage-categories.tsv</a></li>
-<li>storage variants: <a href="slurm-storage-variants.tsv">slurm-storage-variants.tsv</a></li>
-<li>storage summary: <a href="slurm-storage-report.json">slurm-storage-report.json</a></li>
+<li>failure recovery jobs: <a href="slurm-failure-recovery-jobs.tsv">slurm-failure-recovery-jobs.tsv</a></li>
+<li>failure recovery partitions: <a href="slurm-failure-recovery-partitions.tsv">slurm-failure-recovery-partitions.tsv</a></li>
+<li>failure recovery summary: <a href="slurm-failure-recovery-report.json">slurm-failure-recovery-report.json</a></li>
 </ul></section>
-<section><h2>storage-summary</h2><pre>variant_count: 4
-total_file_count: 131
-total_byte_count: 1270391
-total_estimated_storage_mib: 2
-variant_scoped_byte_count: 1176430
-workflow_shared_byte_count: 93961</pre></section>
-<section><h2>storage-categories</h2><pre>outputs: 40 files, 161224 bytes, 1 MiB
-logs: 4 files, 900 bytes, 1 MiB
-trees: 16 files, 7036 bytes, 1 MiB
-posterior_samples: 0 files, 0 bytes, 0 MiB
-reports: 71 files, 1101231 bytes, 2 MiB</pre></section>
-<section><h2>largest-variant</h2><pre>variant_id: ginsi-gap-threshold
-total_file_count: 24
-total_byte_count: 295906
-estimated_storage_mib: 1</pre></section>
-<section><h2>posterior-samples</h2><pre>this governed workflow writes no posterior chains or posterior tree sets, so posterior_samples remains an explicit zero-valued storage category</pre></section>
+<section><h2>recovery-summary</h2><pre>overall_recovery_status: clean
+workflow_status: succeeded
+active_run_state: absent
+rerunnable_job_count: 0
+blocked_job_count: 0
+recovery_partition_count: 0</pre></section>
+<section><h2>rerunnable-jobs</h2><pre>none</pre></section>
+<section><h2>blocked-jobs</h2><pre>none</pre></section>
   </main>
 </body>
 </html>
