@@ -92,6 +92,9 @@ public_parameter_bounds <- function(case_payload) {
   if (identical(case_payload$model_name, "kappa") && !is.null(case_payload$kappa_bounds)) {
     return(as.numeric(unlist(case_payload$kappa_bounds)))
   }
+  if (identical(case_payload$model_name, "delta") && !is.null(case_payload$delta_bounds)) {
+    return(as.numeric(unlist(case_payload$delta_bounds)))
+  }
   if (identical(case_payload$model_name, "OU") && !is.null(case_payload$ou_bounds)) {
     return(as.numeric(unlist(case_payload$ou_bounds)))
   }
@@ -120,6 +123,10 @@ fitcontinuous_bounds <- function(case_payload) {
   if (identical(case_payload$model_name, "kappa") && !is.null(case_payload$kappa_bounds)) {
     bounds <- as.numeric(unlist(case_payload$kappa_bounds))
     return(list(kappa = bounds))
+  }
+  if (identical(case_payload$model_name, "delta") && !is.null(case_payload$delta_bounds)) {
+    bounds <- as.numeric(unlist(case_payload$delta_bounds))
+    return(list(delta = bounds))
   }
   if (identical(case_payload$model_name, "OU") && !is.null(case_payload$ou_bounds)) {
     bounds <- as.numeric(unlist(case_payload$ou_bounds))

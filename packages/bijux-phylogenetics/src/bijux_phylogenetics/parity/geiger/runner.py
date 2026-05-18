@@ -150,6 +150,9 @@ def _write_case_file(path: Path, case: GeigerParityCase) -> Path:
         "kappa_bounds": None
         if case.kappa_bounds is None
         else list(case.kappa_bounds),
+        "delta_bounds": None
+        if case.delta_bounds is None
+        else list(case.delta_bounds),
         "ou_bounds": None if case.ou_bounds is None else list(case.ou_bounds),
         "early_burst_bounds": None
         if case.early_burst_bounds is None
@@ -359,6 +362,9 @@ def _build_bijux_case_payload(
         kappa_bounds=(0.0, 3.0)
         if case.kappa_bounds is None
         else case.kappa_bounds,
+        delta_bounds=(0.0, 3.0)
+        if case.delta_bounds is None
+        else case.delta_bounds,
         ou_bounds=(0.0, 10.0) if case.ou_bounds is None else case.ou_bounds,
         early_burst_bounds=(0.0, 50.0)
         if case.early_burst_bounds is None
