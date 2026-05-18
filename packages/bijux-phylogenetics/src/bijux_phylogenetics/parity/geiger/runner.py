@@ -18,8 +18,6 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
 )
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
-from bijux_phylogenetics.core.metadata import load_taxon_table
-from bijux_phylogenetics.io.trees import load_tree
 
 from .registry import GeigerParityCase, list_geiger_parity_cases
 
@@ -591,12 +589,6 @@ def _build_bijux_discrete_case_payload(
     case: GeigerParityCase,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
     tree_path, traits_path = case.input_fixtures
-    tree = load_tree(tree_path)
-    table = load_taxon_table(traits_path, taxon_column=case.taxon_column)
-    rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
-    tree_tip_names = list(tree.tip_names)
-    tree_only_taxa = sorted(set(tree_tip_names) - set(rows_by_taxon))
-    extra_trait_taxa = sorted(set(rows_by_taxon) - set(tree_tip_names))
     report = fit_discrete_mk_model(
         tree_path,
         traits_path,
@@ -618,10 +610,10 @@ def _build_bijux_discrete_case_payload(
         else case.early_burst_bounds,
     )
     input_audit = report.input_audit
-    missing_value_taxa = sorted(
-        set(input_audit.pruned_missing_value_taxa) - set(tree_only_taxa)
+    missing_value_taxa = list(input_audit.pruned_missing_value_taxa)
+    excluded_taxa = sorted(
+        set(input_audit.missing_from_traits) | set(missing_value_taxa)
     )
-    excluded_taxa = sorted(set(tree_only_taxa) | set(missing_value_taxa))
     transform_fit = report.transform_fit
     summary = {
         "taxon_count": report.taxon_count,
@@ -642,8 +634,8 @@ def _build_bijux_discrete_case_payload(
         "excluded_taxon_count": len(excluded_taxa),
         "excluded_taxa": excluded_taxa,
         "missing_value_taxa": missing_value_taxa,
-        "missing_from_traits": tree_only_taxa,
-        "extra_trait_taxa": extra_trait_taxa,
+        "missing_from_traits": list(input_audit.missing_from_traits),
+        "extra_trait_taxa": list(input_audit.extra_trait_taxa),
         "missing_value_policy": _discrete_missing_value_policy(),
         "log_likelihood": report.log_likelihood,
         "parameter_count": report.parameter_count,

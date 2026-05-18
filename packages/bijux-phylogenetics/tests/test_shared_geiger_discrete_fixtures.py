@@ -374,6 +374,9 @@ def test_shared_geiger_discrete_fixture_catalog_handles_missing_sparse_and_misma
     assert any("overparameterized" in warning for warning in sparse_report.input_audit.warnings)
     assert len(mismatch_dataset.taxa) == 23
     assert mismatch_dataset.dropped_missing_taxa == ["Phy9"]
+    assert mismatch_dataset.alignment_report.dropped_tree_taxa == []
+    assert mismatch_dataset.alignment_report.dropped_trait_taxa == ["PhyExtra"]
+    assert mismatch_dataset.alignment_report.dropped_missing_value_taxa == ["Phy9"]
     assert "PhyExtra" in _read_taxa("geiger_discrete_mismatch_four_state_twenty_four_taxa")
     assert "Phy9" not in _read_taxa("geiger_discrete_mismatch_four_state_twenty_four_taxa")
 

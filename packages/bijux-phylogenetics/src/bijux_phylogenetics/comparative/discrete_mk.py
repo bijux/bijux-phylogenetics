@@ -55,6 +55,8 @@ class DiscreteMkInputAudit:
     maximum_root_to_tip_depth: float
     ultrametric_policy: str
     missing_value_policy: str
+    missing_from_traits: list[str]
+    extra_trait_taxa: list[str]
     pruned_missing_value_taxa: list[str]
     warnings: list[str]
 
@@ -1290,6 +1292,8 @@ def _build_discrete_mk_input_audit(
         maximum_root_to_tip_depth=ultrametric_summary.maximum_tip_depth,
         ultrametric_policy="accept-rooted-trees-and-report-ultrametricity",
         missing_value_policy="prune-overlapping-missing-values",
+        missing_from_traits=list(dataset.alignment_report.dropped_tree_taxa),
+        extra_trait_taxa=list(dataset.alignment_report.dropped_trait_taxa),
         pruned_missing_value_taxa=list(dataset.dropped_missing_taxa),
         warnings=warnings,
     )
