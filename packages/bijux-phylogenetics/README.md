@@ -425,6 +425,15 @@ blocked until every requested trait, metadata strip, and heatmap surface covers
 the tree taxa completely and the underlying caption, legend, and legibility
 audits all pass.
 
+For a journal-oriented ancestral-state figure package with explicit uncertainty,
+use `ancestral package`. It writes one SVG, PNG, and figure HTML surface plus
+one reviewer HTML audit, one node-uncertainty review ledger, and one manifest
+that blocks publication readiness until internal node states and their
+uncertainty remain visible on the figure itself. Continuous packages render
+estimate `+/-` standard-error labels on internal nodes, while discrete packages
+pair internal probability pies with top-state confidence labels so ambiguity is
+interpretable without leaving the figure surface.
+
 For a journal-oriented dated phylogeny package with visible uncertainty, use
 `report time-tree-package`. It materializes a retained posterior tree set,
 builds one maximum clade credibility time tree, renders one `time-tree.svg`
