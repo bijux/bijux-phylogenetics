@@ -283,6 +283,7 @@ bijux-phylogenetics report workflow-validation --out artifacts/workflow-validati
 bijux-phylogenetics report release-gate --out artifacts/level-1-release-gate.html --json
 bijux-phylogenetics report release-truth --test-report artifacts/pytest/full-suite.xml --real-engine-test-report artifacts/pytest/real-engine.xml --out artifacts/release-truth-report.html --json
 bijux-phylogenetics report supplementary-alignment-table --alignment alignment.fasta --filtered-alignment filtered-alignment.fasta --out artifacts/supplementary-alignment.tsv --json
+bijux-phylogenetics report supplementary-clade-support-table --tree tree.nwk --comparison-tree-set posterior-trees.nwk --out artifacts/supplementary-clade-support.tsv --json
 bijux-phylogenetics report supplementary-tree-table --tree tree.nwk --out artifacts/supplementary-tree.tsv --json
 bijux-phylogenetics report taxonomy --tree tree.nwk --synonym-table taxonomy.tsv --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --reported-taxa reviewer-table.tsv --out artifacts/taxonomy-report.html --json
 bijux-phylogenetics report supplementary-taxon-table --tree tree.nwk --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --filtered-alignment filtered-alignment.fasta --inference-tree inferred.nwk --reported-taxa reviewer-table.tsv --out artifacts/supplementary-taxa.tsv --json
@@ -441,6 +442,12 @@ For one reviewer-facing supplementary tree diagnostics ledger, use
 source, keeping topology shape, branch-length health, support-class counts,
 rootedness and root-confidence classification, ultrametricity, safety flags,
 and the merged warning ledger together on one reviewable surface.
+
+For one reviewer-facing supplementary clade-support ledger, use
+`report supplementary-clade-support-table`. It writes one TSV with one row per
+reference-tree clade, keeping descendant taxa, direct tree-label support,
+support class, source-tree ownership, and optional tree-set clade frequency
+mapping together on one reviewable surface.
 
 For one reviewer-facing supplementary taxon ledger, use
 `report supplementary-taxon-table`. It writes one TSV that keeps taxon IDs
