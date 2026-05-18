@@ -275,3 +275,40 @@ def test_diversification_medusa_cli_reports_explicit_exclusion(capsys) -> None:
     assert "stepwise branch-specific rate-shift search" in payload["errors"][0][
         "details"
     ]["missing_surfaces"]
+
+
+def test_diversification_bd_ms_cli_reports_explicit_exclusion(capsys) -> None:
+    exit_code = main(
+        [
+            "diversification",
+            "bd-ms",
+            str(fixture("example_tree.nwk")),
+            "--metadata",
+            str(fixture("example_sampling_fractions.tsv")),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert (
+        payload["errors"][0]["code"]
+        == "diversification_birth_death_explicitly_excluded"
+    )
+    assert (
+        payload["errors"][0]["details"]["failure_reason"]
+        == "geiger_birth_death_explicitly_excluded_this_round"
+    )
+    assert payload["errors"][0]["details"]["geiger_reference_surface"] == (
+        "geiger::bd.ms"
+    )
+    assert payload["errors"][0]["details"]["geiger_reference_arguments"] == [
+        "phy",
+        "time",
+        "n",
+        "missing",
+        "crown",
+        "epsilon",
+    ]
+    assert payload["errors"][0]["details"]["sampling_metadata_complete"] is True
