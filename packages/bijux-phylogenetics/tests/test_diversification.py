@@ -16,6 +16,7 @@ from bijux_phylogenetics.comparative import (
     inspect_diversification_time_tree,
     render_diversification_report,
     run_trait_dependent_diversification_analysis,
+    summarize_geiger_birth_death_exclusion,
     summarize_medusa_exclusion,
     validate_time_tree_for_diversification,
     write_clade_diversification_table,
@@ -210,6 +211,30 @@ def test_summarize_medusa_exclusion_reports_missing_shift_search_surface() -> No
     assert "explicitly excluded in this round" in report.exclusion_reason
 
 
+def test_summarize_geiger_birth_death_exclusion_reports_reference_contract_gap() -> (
+    None
+):
+    report = summarize_geiger_birth_death_exclusion(
+        fixture("example_tree.nwk"),
+        metadata_path=fixture("example_sampling_fractions.tsv"),
+    )
+
+    assert report.exclusion_code == "geiger_birth_death_explicitly_excluded_this_round"
+    assert report.geiger_reference_surface == "geiger::bd.ms"
+    assert report.geiger_reference_arguments == [
+        "phy",
+        "time",
+        "n",
+        "missing",
+        "crown",
+        "epsilon",
+    ]
+    assert report.owned_surface == "heuristic-yule-and-birth-death-diversification-summary"
+    assert report.validation.ultrametric is True
+    assert report.sampling_report is not None
+    assert "simulation-oriented surface" in report.exclusion_reason
+
+
 def test_write_diversification_methods_summary_text_writes_markdown(
     tmp_path: Path,
 ) -> None:
@@ -245,6 +270,12 @@ def test_estimate_diversification_rate_applies_sampling_correction() -> None:
     assert report.corrected_tip_count == 5.33333333333333
     assert report.birth_rate >= report.net_diversification_rate
     assert report.aic > 0.0
+    assert report.likelihood_kind == "heuristic-interval-log-likelihood"
+    assert any(
+        "geiger::bd.ms birth-death parity is explicitly excluded in this round"
+        in warning
+        for warning in report.warnings
+    )
 
 
 def test_compare_diversification_models_returns_aic_ranked_rows() -> None:
