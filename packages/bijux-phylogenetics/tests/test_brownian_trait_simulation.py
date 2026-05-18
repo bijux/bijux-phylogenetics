@@ -7,6 +7,8 @@ from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.simulation import (
     simulate_brownian_trait_collection,
     simulate_brownian_traits,
+    simulate_speciational_trait_collection,
+    simulate_speciational_traits,
     write_continuous_trait_collection_summary_table,
     write_continuous_trait_collection_table,
 )
@@ -130,3 +132,55 @@ def test_brownian_collection_writers_and_cli_emit_sigma_squared(
     assert payload["metrics"]["sigma_squared"] == 0.25
     assert payload["data"]["sigma_squared"] == 0.25
     assert output.read_text(encoding="utf-8").splitlines()[0] == "taxon\tvalue"
+
+
+def test_simulate_speciational_traits_equalizes_positive_branch_lengths() -> None:
+    report = simulate_speciational_traits(
+        fixture("example_tree_internal_long_branch.nwk"),
+        root_state=1.5,
+        sigma_squared=0.25,
+        seed=11,
+    )
+
+    assert report.model == "speciational"
+    assert report.sigma_squared == 0.25
+    node_value_by_taxon = {row.taxon: row.value for row in report.traits}
+    assert node_value_by_taxon["A"] != node_value_by_taxon["B"]
+    assert node_value_by_taxon["C"] != node_value_by_taxon["D"]
+
+
+def test_speciational_collection_uses_branch_count_not_branch_magnitude() -> None:
+    brownian_report = simulate_brownian_trait_collection(
+        fixture("example_tree_internal_long_branch.nwk"),
+        root_state=0.0,
+        sigma_squared=0.25,
+        replicates=64,
+        seed=11,
+    )
+    speciational_report = simulate_speciational_trait_collection(
+        fixture("example_tree_internal_long_branch.nwk"),
+        root_state=0.0,
+        sigma_squared=0.25,
+        replicates=64,
+        seed=11,
+    )
+
+    brownian_tip_sd = {
+        row.label: row.standard_deviation
+        for row in brownian_report.rows
+        if row.row_kind == "tip_distribution"
+    }
+    speciational_tip_sd = {
+        row.label: row.standard_deviation
+        for row in speciational_report.rows
+        if row.row_kind == "tip_distribution"
+    }
+
+    assert brownian_report.model == "brownian-motion"
+    assert speciational_report.model == "speciational"
+    assert brownian_tip_sd["A"] is not None
+    assert brownian_tip_sd["C"] is not None
+    assert speciational_tip_sd["A"] is not None
+    assert speciational_tip_sd["C"] is not None
+    assert brownian_tip_sd["A"] > brownian_tip_sd["C"]
+    assert abs(speciational_tip_sd["A"] - speciational_tip_sd["C"]) < 0.15
