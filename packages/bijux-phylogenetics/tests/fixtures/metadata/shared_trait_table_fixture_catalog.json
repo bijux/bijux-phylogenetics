@@ -589,6 +589,32 @@
       "notes": "Twenty-four-taxon governed comparative panel with BM-simulated strong signal, iid weak signal, and simulated binary and multistate discrete traits for live `phytools` method coverage."
     },
     {
+      "fixture_id": "geiger_continuous_model_panel_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_geiger_continuous_model_panel_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "ou_truth",
+        "early_burst_truth",
+        "trend_proxy",
+        "outlier_signal"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "geiger-fitcontinuous-ready",
+      "row_count": 24,
+      "feature_tags": [
+        "continuous-trait",
+        "ou-known-truth",
+        "early-burst-known-truth",
+        "trend-proxy",
+        "extreme-outlier",
+        "known-truth-simulation",
+        "twenty-plus-taxa",
+        "geiger-fitcontinuous"
+      ],
+      "notes": "Twenty-four-taxon geiger continuous panel with OU and early-burst known-truth simulations plus a directional trend proxy and one explicit outlier surface for governed `fitContinuous` parity."
+    },
+    {
       "fixture_id": "phytools_signal_panel_one_hundred_twenty_eight_taxa",
       "relative_path": "metadata/example_traits_phytools_signal_one_hundred_twenty_eight_taxa.tsv",
       "tree_fixture_id": "phytools_ultrametric_one_hundred_twenty_eight_taxa",
