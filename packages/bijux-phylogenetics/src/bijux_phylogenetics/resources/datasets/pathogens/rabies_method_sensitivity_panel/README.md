@@ -94,6 +94,15 @@ The governed expected bundle now also includes:
 - `slurm-planning-summary.json`: one machine-readable planning summary over
   job count, total core-hours, maximum memory, wallclock, scratch, and output
   estimates
+- `slurm-array-partitions.tsv`: one partition strategy that groups variants
+  into real Slurm arrays by dataset-size class, method group, and resource
+  class
+- `slurm-array-members.tsv`: one task-level ledger mapping each variant to its
+  array partition and array index
+- `slurm-array-strategy.json`: one machine-readable export of the array
+  partitioning contract
+- `slurm-arrays/*.sbatch`: one executable per-partition array script that runs
+  the governed CLI with one selected variant per Slurm array task
 - `reproducibility-checks.tsv`: one bundle-level audit ledger proving the
   current summary artifacts still match their manifests and current inputs
 - `reproducibility-variants.tsv`: one per-variant provenance ledger over

@@ -434,6 +434,13 @@ same planning contract for machine review. Those estimates are grounded in the
 current workflow footprint instead of placeholder job sizes, so the bundle
 surfaces the planned job count, total estimated core-hours, maximum estimated
 memory, maximum wallclock, and total scratch/output estimates directly.
+On top of that plan, the bundle now writes one real job-array partitioning
+strategy: `slurm-array-partitions.tsv` groups compatible jobs by dataset-size
+class, method group, and resource class, `slurm-array-members.tsv` maps each
+variant to its array index, `slurm-array-strategy.json` carries the structured
+partition contract, and `workflow/slurm-arrays/*.sbatch` contains executable
+per-partition scripts that call the repository CLI with one selected variant
+per array task.
 Its reviewer-facing HTML report is now intentionally compact: it surfaces one
 summary card set plus explicit links to the governed TSV and JSON ledgers
 instead of embedding those tables directly, and the bundle now includes
@@ -445,6 +452,8 @@ also report `report_linked_artifact_count`, `report_html_size_bytes`,
 `slurm_maximum_estimated_memory_mib`,
 `slurm_maximum_estimated_wallclock_minutes`,
 `slurm_total_estimated_scratch_mib`, `slurm_total_estimated_output_mib`,
+`slurm_array_partition_count`, `slurm_array_script_count`, and
+`slurm_array_largest_partition_size`,
 `reproducibility_passed`, `reproducibility_check_count`,
 `reproducibility_failed_check_count`, and
 `reproducibility_failed_variant_count`.
