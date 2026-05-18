@@ -12,6 +12,12 @@ from bijux_phylogenetics.core.alignment import (
     SequenceQualityRankingRow,
     SequenceUncertaintyProfile,
 )
+from bijux_phylogenetics.engines.iqtree_artifacts import (
+    IqtreeModelCandidate,
+    IqtreeModelSelectionSummary,
+    parse_iqtree_model_selection_summary,
+    resolve_iqtree_model_sidecar,
+)
 from bijux_phylogenetics.diagnostics.validation import (
     TreeForensicReport,
     TreeInspectionReport,
@@ -244,6 +250,38 @@ class SupplementaryCladeSupportTableResult:
     rows: list[SupplementaryCladeSupportRow]
 
 
+@dataclass(frozen=True, slots=True)
+class SupplementaryModelSelectionRow:
+    """One reviewer-facing row for one candidate substitution model."""
+
+    iqtree_report_source: str
+    model_sidecar_source: str | None
+    rank: int
+    model: str
+    log_likelihood: float
+    parameter_count: int | None
+    aic: float
+    aicc: float
+    bic: float
+    best_aic: bool
+    best_aicc: bool
+    best_bic: bool
+    selected_model: bool
+    selected_model_name: str
+    selected_criterion: str | None
+
+
+@dataclass(slots=True)
+class SupplementaryModelSelectionTableResult:
+    output_path: Path
+    row_count: int
+    selected_model: str
+    selected_criterion: str | None
+    candidate_count: int
+    columns: list[str]
+    rows: list[SupplementaryModelSelectionRow]
+
+
 def _row_lookup(table: TaxonTable) -> dict[str, dict[str, str]]:
     return {row[table.taxon_column]: row for row in table.rows}
 
@@ -417,6 +455,26 @@ def _clade_support_table_columns() -> list[str]:
         "frequency_method",
         "frequency_status",
         "frequency_explanation",
+    ]
+
+
+def _model_selection_table_columns() -> list[str]:
+    return [
+        "iqtree_report_source",
+        "model_sidecar_source",
+        "rank",
+        "model",
+        "log_likelihood",
+        "parameter_count",
+        "aic",
+        "aicc",
+        "bic",
+        "best_aic",
+        "best_aicc",
+        "best_bic",
+        "selected_model",
+        "selected_model_name",
+        "selected_criterion",
     ]
 
 
@@ -649,6 +707,32 @@ def _serialize_clade_support_row(
         "frequency_explanation": ""
         if row.frequency_explanation is None
         else row.frequency_explanation,
+    }
+
+
+def _serialize_model_selection_row(
+    row: SupplementaryModelSelectionRow,
+) -> dict[str, object]:
+    return {
+        "iqtree_report_source": row.iqtree_report_source,
+        "model_sidecar_source": ""
+        if row.model_sidecar_source is None
+        else row.model_sidecar_source,
+        "rank": row.rank,
+        "model": row.model,
+        "log_likelihood": row.log_likelihood,
+        "parameter_count": "" if row.parameter_count is None else row.parameter_count,
+        "aic": row.aic,
+        "aicc": row.aicc,
+        "bic": row.bic,
+        "best_aic": row.best_aic,
+        "best_aicc": row.best_aicc,
+        "best_bic": row.best_bic,
+        "selected_model": row.selected_model,
+        "selected_model_name": row.selected_model_name,
+        "selected_criterion": ""
+        if row.selected_criterion is None
+        else row.selected_criterion,
     }
 
 
@@ -1089,6 +1173,25 @@ def _write_clade_support_rows(
     return path
 
 
+def _write_model_selection_rows(
+    path: Path,
+    *,
+    columns: list[str],
+    rows: list[SupplementaryModelSelectionRow],
+) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=columns,
+            delimiter=_table_delimiter(path),
+        )
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(_serialize_model_selection_row(row))
+    return path
+
+
 def _build_taxon_rows(
     *,
     dataset_audit: DatasetAuditReport,
@@ -1346,6 +1449,88 @@ def write_supplementary_clade_support_table(
         frequency_unscored_clade_count=sum(
             1 for row in rows if row.frequency_status == "not-counted"
         ),
+        columns=columns,
+        rows=rows,
+    )
+
+
+def _resolve_model_sidecar_path(
+    iqtree_report_path: Path,
+    model_sidecar_path: Path | None,
+) -> Path | None:
+    if model_sidecar_path is not None:
+        return model_sidecar_path
+    return resolve_iqtree_model_sidecar(iqtree_report_path.with_suffix(""))
+
+
+def _build_model_selection_row(
+    *,
+    iqtree_report_path: Path,
+    model_sidecar_path: Path | None,
+    candidate: IqtreeModelCandidate,
+    summary: IqtreeModelSelectionSummary,
+) -> SupplementaryModelSelectionRow:
+    return SupplementaryModelSelectionRow(
+        iqtree_report_source=str(iqtree_report_path),
+        model_sidecar_source=(
+            None if model_sidecar_path is None else str(model_sidecar_path)
+        ),
+        rank=candidate.rank,
+        model=candidate.model,
+        log_likelihood=candidate.log_likelihood,
+        parameter_count=candidate.parameter_count,
+        aic=candidate.aic,
+        aicc=candidate.aicc,
+        bic=candidate.bic,
+        best_aic=candidate.model == summary.best_model_aic,
+        best_aicc=candidate.model == summary.best_model_aicc,
+        best_bic=candidate.model == summary.best_model_bic,
+        selected_model=candidate.model == summary.selected_model,
+        selected_model_name=summary.selected_model or candidate.model,
+        selected_criterion=summary.selected_criterion,
+    )
+
+
+def write_supplementary_model_selection_table(
+    path: Path,
+    *,
+    iqtree_report_path: Path,
+    model_sidecar_path: Path | None = None,
+) -> SupplementaryModelSelectionTableResult:
+    """Write one supplementary model-selection table from parsed IQ-TREE artifacts."""
+    resolved_sidecar_path = _resolve_model_sidecar_path(
+        iqtree_report_path,
+        model_sidecar_path,
+    )
+    summary = parse_iqtree_model_selection_summary(
+        iqtree_report_path=iqtree_report_path,
+        model_sidecar_path=resolved_sidecar_path,
+    )
+    if summary is None or summary.selected_model is None:
+        raise ValueError(
+            "iqtree model-selection artifacts do not expose a selected model"
+        )
+    if not summary.candidates:
+        raise ValueError(
+            "iqtree model-selection artifacts do not expose candidate model rows"
+        )
+    rows = [
+        _build_model_selection_row(
+            iqtree_report_path=iqtree_report_path,
+            model_sidecar_path=resolved_sidecar_path,
+            candidate=candidate,
+            summary=summary,
+        )
+        for candidate in summary.candidates
+    ]
+    columns = _model_selection_table_columns()
+    _write_model_selection_rows(path, columns=columns, rows=rows)
+    return SupplementaryModelSelectionTableResult(
+        output_path=path,
+        row_count=len(rows),
+        selected_model=summary.selected_model,
+        selected_criterion=summary.selected_criterion,
+        candidate_count=summary.candidate_count,
         columns=columns,
         rows=rows,
     )
