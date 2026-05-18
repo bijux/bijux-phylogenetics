@@ -56,7 +56,11 @@ class ContinuousCladeDisparityReport:
     analyzed_taxa: list[str]
     excluded_taxa: list[DisparityTaxonExclusion]
     distance_metric: str
+    method_formula: str
     root_age: float
+    root_disparity: float
+    minimum_clade_disparity: float
+    maximum_clade_disparity: float
     clade_rows: list[CladeDisparityRow]
     warnings: list[str]
     assumptions: list[str]
@@ -147,13 +151,61 @@ def summarize_continuous_clade_disparity(
         analyzed_taxa=dataset.analyzed_taxa,
         excluded_taxa=dataset.excluded_taxa,
         distance_metric="avg-squared-euclidean",
+        method_formula=(
+            "mean over all tip pairs of the squared Euclidean distance across the requested continuous trait matrix"
+        ),
         root_age=dataset.root_age,
+        root_disparity=clade_rows[0].disparity,
+        minimum_clade_disparity=min(row.disparity for row in clade_rows),
+        maximum_clade_disparity=max(row.disparity for row in clade_rows),
         clade_rows=clade_rows,
         warnings=dataset.warnings,
         assumptions=[
             "Clade disparity matches geiger avg.sq disparity, defined as the mean squared Euclidean distance across all trait-vector pairs inside each internal clade.",
             "Continuous disparity is computed after explicit tree-versus-trait alignment and pruning of overlapping taxa with missing or non-numeric values in any requested trait column.",
             "Internal clades are reported in ape-style preorder with the root first so downstream disparity-through-time summaries can match geiger node ordering.",
+        ],
+    )
+
+
+def write_continuous_clade_disparity_summary_table(
+    path: Path,
+    report: ContinuousCladeDisparityReport,
+) -> Path:
+    """Write one one-row summary ledger for continuous clade disparity."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "taxon_column",
+            "trait_columns",
+            "tree_taxon_count",
+            "analyzed_taxon_count",
+            "excluded_taxon_count",
+            "clade_count",
+            "distance_metric",
+            "method_formula",
+            "root_age",
+            "root_disparity",
+            "minimum_clade_disparity",
+            "maximum_clade_disparity",
+            "warning_count",
+        ],
+        rows=[
+            {
+                "taxon_column": report.taxon_column,
+                "trait_columns": "|".join(report.trait_columns),
+                "tree_taxon_count": report.tree_taxon_count,
+                "analyzed_taxon_count": report.analyzed_taxon_count,
+                "excluded_taxon_count": len(report.excluded_taxa),
+                "clade_count": len(report.clade_rows),
+                "distance_metric": report.distance_metric,
+                "method_formula": report.method_formula,
+                "root_age": report.root_age,
+                "root_disparity": report.root_disparity,
+                "minimum_clade_disparity": report.minimum_clade_disparity,
+                "maximum_clade_disparity": report.maximum_clade_disparity,
+                "warning_count": len(report.warnings),
+            }
         ],
     )
 
@@ -177,7 +229,7 @@ def summarize_disparity_through_time(
         trait_columns=trait_columns,
         taxon_column=taxon_column,
     )
-    root_disparity = clade_report.clade_rows[0].disparity
+    root_disparity = clade_report.root_disparity
     normalized_branching_times = sorted(
         (row.relative_branching_time for row in clade_report.clade_rows),
         reverse=True,
