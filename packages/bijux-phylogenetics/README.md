@@ -426,6 +426,14 @@ per-variant output directories. That audit ships as
 `reproducibility-checks.tsv`, `reproducibility-variants.tsv`, and
 `reproducibility-audit.json` so reviewers can verify that the current batch
 outputs still correspond to the declared inputs and settings.
+It now also writes one Slurm-ready planning surface over the same declared
+variants: `slurm-job-plan.tsv` records one estimated job per variant with
+suggested `sbatch` options, `slurm-estimation-assumptions.tsv` makes the
+resource-sizing rules explicit, and `slurm-planning-summary.json` carries the
+same planning contract for machine review. Those estimates are grounded in the
+current workflow footprint instead of placeholder job sizes, so the bundle
+surfaces the planned job count, total estimated core-hours, maximum estimated
+memory, maximum wallclock, and total scratch/output estimates directly.
 Its reviewer-facing HTML report is now intentionally compact: it surfaces one
 summary card set plus explicit links to the governed TSV and JSON ledgers
 instead of embedding those tables directly, and the bundle now includes
@@ -433,6 +441,10 @@ instead of embedding those tables directly, and the bundle now includes
 with linked-artifact checksums and byte counts. The JSON metrics for the demo
 also report `report_linked_artifact_count`, `report_html_size_bytes`,
 `report_linked_artifact_bytes`, `report_total_output_bytes`,
+`slurm_job_count`, `slurm_total_estimated_core_hours`,
+`slurm_maximum_estimated_memory_mib`,
+`slurm_maximum_estimated_wallclock_minutes`,
+`slurm_total_estimated_scratch_mib`, `slurm_total_estimated_output_mib`,
 `reproducibility_passed`, `reproducibility_check_count`,
 `reproducibility_failed_check_count`, and
 `reproducibility_failed_variant_count`.

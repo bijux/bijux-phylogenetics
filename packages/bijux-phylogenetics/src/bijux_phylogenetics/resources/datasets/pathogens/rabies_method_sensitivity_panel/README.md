@@ -86,6 +86,14 @@ The governed expected bundle now also includes:
   status, execution mode, and task log path
 - `rabies-method-sensitivity.manifest.json`: one workflow manifest describing
   the parallel batch surface and its reviewer-facing outputs
+- `slurm-job-plan.tsv`: one Slurm-ready per-variant job ledger with estimated
+  CPUs, memory, wallclock, scratch, output size, and suggested `sbatch`
+  options
+- `slurm-estimation-assumptions.tsv`: one explicit sizing contract for the
+  Slurm plan so reviewers can see why the planner reserved those resources
+- `slurm-planning-summary.json`: one machine-readable planning summary over
+  job count, total core-hours, maximum memory, wallclock, scratch, and output
+  estimates
 - `reproducibility-checks.tsv`: one bundle-level audit ledger proving the
   current summary artifacts still match their manifests and current inputs
 - `reproducibility-variants.tsv`: one per-variant provenance ledger over
