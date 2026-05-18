@@ -6,6 +6,17 @@ from pathlib import Path
 from bijux_phylogenetics.fixtures import get_shared_geiger_continuous_fixture
 
 
+FITCONTINUOUS_REFERENCE_MODEL_ORDER = (
+    "BM",
+    "white",
+    "lambda",
+    "kappa",
+    "delta",
+    "OU",
+    "EB",
+)
+
+
 @dataclass(frozen=True, slots=True)
 class GeigerParityCase:
     """One governed live `geiger` parity case."""
@@ -22,6 +33,7 @@ class GeigerParityCase:
     trait_name: str
     taxon_column: str | None = None
     optimizer_settings: dict[str, object] | None = None
+    candidate_model_names: tuple[str, ...] | None = None
     reference_control: dict[str, object] | None = None
     coarse_grid_point_count: int | None = None
     fine_grid_point_count: int | None = None
@@ -99,6 +111,18 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
     )
     early_burst_boundary_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+    comparison_brownian_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+    comparison_ou_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_ou_known_truth_twenty_four_taxa"
+    )
+    comparison_early_burst_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
+    )
+    comparison_white_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_white_noise_twenty_four_taxa"
     )
     return [
         GeigerParityCase(
@@ -992,5 +1016,165 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
             ),
             early_burst_bounds=(0.0, 10.0),
             field_tolerances={"aicc": 2e-4},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-model-comparison-brownian-review",
+            fixture_id=comparison_brownian_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model comparison)",
+            python_function_name="compare_fitcontinuous_model_ranking",
+            operation="compare-fitcontinuous-models",
+            model_name="model-comparison",
+            python_mode="fitcontinuous-model-ranking",
+            input_fixtures=(
+                comparison_brownian_fixture.tree_path,
+                comparison_brownian_fixture.traits_path,
+            ),
+            tolerance=0.2,
+            trait_name=comparison_brownian_fixture.trait_name,
+            taxon_column=comparison_brownian_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-ranked-model-comparison",
+                "candidate_models": list(FITCONTINUOUS_REFERENCE_MODEL_ORDER),
+                "bijux_comparison_surface": "compare_fitcontinuous_model_ranking",
+            },
+            candidate_model_names=FITCONTINUOUS_REFERENCE_MODEL_ORDER,
+            lambda_bounds=(0.0, 1.0),
+            kappa_bounds=(0.0, 3.0),
+            delta_bounds=(0.0, 3.0),
+            ou_bounds=(0.0, 10.0),
+            early_burst_bounds=(0.0, 50.0),
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "selected_model",
+                "comparable_model_count",
+                "noncomparable_model_count",
+                "runner_up_model",
+                "runner_up_aicc_delta",
+                "warning_count",
+                "optimizer_settings",
+            ),
+            field_tolerances={"runner_up_aicc_delta": 1e-2},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-model-comparison-ou-review",
+            fixture_id=comparison_ou_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model comparison)",
+            python_function_name="compare_fitcontinuous_model_ranking",
+            operation="compare-fitcontinuous-models",
+            model_name="model-comparison",
+            python_mode="fitcontinuous-model-ranking",
+            input_fixtures=(
+                comparison_ou_fixture.tree_path,
+                comparison_ou_fixture.traits_path,
+            ),
+            tolerance=0.2,
+            trait_name=comparison_ou_fixture.trait_name,
+            taxon_column=comparison_ou_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-ranked-model-comparison",
+                "candidate_models": list(FITCONTINUOUS_REFERENCE_MODEL_ORDER),
+                "bijux_comparison_surface": "compare_fitcontinuous_model_ranking",
+            },
+            candidate_model_names=FITCONTINUOUS_REFERENCE_MODEL_ORDER,
+            lambda_bounds=(0.0, 1.0),
+            kappa_bounds=(0.0, 3.0),
+            delta_bounds=(0.0, 3.0),
+            ou_bounds=(0.0, 10.0),
+            early_burst_bounds=(0.0, 50.0),
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "selected_model",
+                "comparable_model_count",
+                "noncomparable_model_count",
+                "runner_up_model",
+                "runner_up_aicc_delta",
+                "warning_count",
+                "optimizer_settings",
+            ),
+            field_tolerances={"runner_up_aicc_delta": 1e-2},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-model-comparison-early-burst-review",
+            fixture_id=comparison_early_burst_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model comparison)",
+            python_function_name="compare_fitcontinuous_model_ranking",
+            operation="compare-fitcontinuous-models",
+            model_name="model-comparison",
+            python_mode="fitcontinuous-model-ranking",
+            input_fixtures=(
+                comparison_early_burst_fixture.tree_path,
+                comparison_early_burst_fixture.traits_path,
+            ),
+            tolerance=0.2,
+            trait_name=comparison_early_burst_fixture.trait_name,
+            taxon_column=comparison_early_burst_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-ranked-model-comparison",
+                "candidate_models": list(FITCONTINUOUS_REFERENCE_MODEL_ORDER),
+                "bijux_comparison_surface": "compare_fitcontinuous_model_ranking",
+            },
+            candidate_model_names=FITCONTINUOUS_REFERENCE_MODEL_ORDER,
+            lambda_bounds=(0.0, 1.0),
+            kappa_bounds=(0.0, 3.0),
+            delta_bounds=(0.0, 3.0),
+            ou_bounds=(0.0, 10.0),
+            early_burst_bounds=(0.0, 50.0),
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "selected_model",
+                "comparable_model_count",
+                "noncomparable_model_count",
+                "runner_up_model",
+                "runner_up_aicc_delta",
+                "warning_count",
+                "optimizer_settings",
+            ),
+            field_tolerances={"runner_up_aicc_delta": 1e-2},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-model-comparison-white-review",
+            fixture_id=comparison_white_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model comparison)",
+            python_function_name="compare_fitcontinuous_model_ranking",
+            operation="compare-fitcontinuous-models",
+            model_name="model-comparison",
+            python_mode="fitcontinuous-model-ranking",
+            input_fixtures=(
+                comparison_white_fixture.tree_path,
+                comparison_white_fixture.traits_path,
+            ),
+            tolerance=0.2,
+            trait_name=comparison_white_fixture.trait_name,
+            taxon_column=comparison_white_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-ranked-model-comparison",
+                "candidate_models": list(FITCONTINUOUS_REFERENCE_MODEL_ORDER),
+                "bijux_comparison_surface": "compare_fitcontinuous_model_ranking",
+            },
+            candidate_model_names=FITCONTINUOUS_REFERENCE_MODEL_ORDER,
+            lambda_bounds=(0.0, 1.0),
+            kappa_bounds=(0.0, 3.0),
+            delta_bounds=(0.0, 3.0),
+            ou_bounds=(0.0, 10.0),
+            early_burst_bounds=(0.0, 50.0),
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "selected_model",
+                "comparable_model_count",
+                "noncomparable_model_count",
+                "runner_up_model",
+                "runner_up_aicc_delta",
+                "warning_count",
+                "optimizer_settings",
+            ),
+            field_tolerances={"runner_up_aicc_delta": 1e-2},
         ),
     ]

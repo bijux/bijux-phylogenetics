@@ -13,6 +13,7 @@ import tempfile
 
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     ContinuousModeSearchControls,
+    compare_fitcontinuous_model_ranking,
     fit_continuous_evolutionary_mode,
 )
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
@@ -144,6 +145,9 @@ def _write_case_file(path: Path, case: GeigerParityCase) -> Path:
         "trait_name": case.trait_name,
         "taxon_column": case.taxon_column,
         "optimizer_settings": case.optimizer_settings,
+        "candidate_model_names": None
+        if case.candidate_model_names is None
+        else list(case.candidate_model_names),
         "reference_control": case.reference_control,
         "coarse_grid_point_count": case.coarse_grid_point_count,
         "fine_grid_point_count": case.fine_grid_point_count,
@@ -182,8 +186,11 @@ def _load_rows_table(path: Path) -> list[dict[str, object]]:
                 if value is None or value == "":
                     parsed[key] = ""
                     continue
-                if key == "parameter":
+                if key in {"parameter", "model", "comparability_note"}:
                     parsed[key] = value
+                    continue
+                if value.lower() in {"true", "false"}:
+                    parsed[key] = value.lower() == "true"
                     continue
                 try:
                     parsed[key] = int(value)
@@ -253,18 +260,42 @@ def _row_mismatch_reason(
 ) -> str | None:
     if reference_rows is None or bijux_rows is None:
         return "rows_missing"
-    if len(reference_rows) != len(bijux_rows):
+    normalized_reference_rows = _normalized_rows(case, reference_rows)
+    normalized_bijux_rows = _normalized_rows(case, bijux_rows)
+    if len(normalized_reference_rows) != len(normalized_bijux_rows):
         return "row_count_mismatch"
-    for reference_row, bijux_row in zip(reference_rows, bijux_rows, strict=True):
-        if reference_row.get("parameter") != bijux_row.get("parameter"):
-            return "row_parameter_mismatch"
-        if not _isclose(
-            reference_row.get("value"),
-            bijux_row.get("value"),
-            tolerance=case.tolerance,
-        ):
-            return f"row_value_mismatch:{reference_row.get('parameter')}"
+    for reference_row, bijux_row in zip(
+        normalized_reference_rows,
+        normalized_bijux_rows,
+        strict=True,
+    ):
+        reference_id = reference_row.get("parameter", reference_row.get("model"))
+        bijux_id = bijux_row.get("parameter", bijux_row.get("model"))
+        if reference_id != bijux_id:
+            return "row_identifier_mismatch"
+        if set(reference_row) != set(bijux_row):
+            return "row_field_set_mismatch"
+        for key in reference_row:
+            if not _isclose(
+                reference_row.get(key),
+                bijux_row.get(key),
+                tolerance=case.tolerance,
+            ):
+                return f"row_field_mismatch:{reference_id}:{key}"
     return None
+
+
+def _normalized_rows(
+    case: GeigerParityCase,
+    rows: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    normalized = [dict(row) for row in rows]
+    if case.operation != "compare-fitcontinuous-models":
+        return normalized
+    for row in normalized:
+        row.pop("rank", None)
+    normalized.sort(key=lambda row: str(row.get("model", "")))
+    return normalized
 
 
 def _parameter_rows(summary: dict[str, object]) -> list[dict[str, object]]:
@@ -282,6 +313,42 @@ def _parameter_rows(summary: dict[str, object]) -> list[dict[str, object]]:
     }:
         rows.append({"parameter": parameter_name, "value": parameter_value})
     return rows
+
+
+def _comparison_rows(report) -> list[dict[str, object]]:
+    return [
+        {
+            "model": row.model,
+            "rank": "" if row.rank is None else row.rank,
+            "parameter_count": row.parameter_count,
+            "log_likelihood": row.log_likelihood,
+            "aic": row.aic,
+            "aicc": row.aicc,
+            "delta_aic": row.delta_aic,
+            "delta_aicc": row.delta_aicc,
+            "selected": row.selected,
+            "comparable": row.comparable,
+            "comparability_note": "" if row.comparability_note is None else row.comparability_note,
+        }
+        for row in report.rows
+    ]
+
+
+def _comparison_modes(
+    candidate_model_names: tuple[str, ...] | None,
+) -> tuple[str, ...] | None:
+    if candidate_model_names is None:
+        return None
+    mode_names = {
+        "BM": "brownian",
+        "white": "white-noise",
+        "lambda": "pagel-lambda",
+        "kappa": "pagel-kappa",
+        "delta": "pagel-delta",
+        "OU": "ornstein-uhlenbeck",
+        "EB": "early-burst",
+    }
+    return tuple(mode_names.get(model_name, model_name) for model_name in candidate_model_names)
 
 
 def _standard_error_policy() -> str:
@@ -354,6 +421,8 @@ def _bijux_optimizer_result(
 def _build_bijux_case_payload(
     case: GeigerParityCase,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
+    if case.operation == "compare-fitcontinuous-models":
+        return _build_bijux_model_comparison_payload(case)
     tree_path, traits_path = case.input_fixtures
     readiness = summarize_numeric_trait_readiness(
         tree_path,
@@ -448,8 +517,56 @@ def _build_bijux_case_payload(
     return summary, _parameter_rows(summary)
 
 
+def _build_bijux_model_comparison_payload(
+    case: GeigerParityCase,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    tree_path, traits_path = case.input_fixtures
+    report = compare_fitcontinuous_model_ranking(
+        tree_path,
+        traits_path,
+        trait=case.trait_name,
+        taxon_column=case.taxon_column,
+        modes=_comparison_modes(case.candidate_model_names),
+        lambda_bounds=(0.0, 1.0)
+        if case.lambda_bounds is None
+        else case.lambda_bounds,
+        kappa_bounds=(0.0, 3.0)
+        if case.kappa_bounds is None
+        else case.kappa_bounds,
+        delta_bounds=(0.0, 3.0)
+        if case.delta_bounds is None
+        else case.delta_bounds,
+        ou_bounds=(0.0, 10.0) if case.ou_bounds is None else case.ou_bounds,
+        early_burst_bounds=(0.0, 50.0)
+        if case.early_burst_bounds is None
+        else case.early_burst_bounds,
+    )
+    runner_up_rows = [
+        row
+        for row in report.rows
+        if row.model != report.better_model and row.comparable and row.rank is not None
+    ]
+    runner_up_row = runner_up_rows[0] if runner_up_rows else None
+    summary = {
+        "taxon_count": report.taxon_count,
+        "trait_name": report.trait,
+        "model_name": case.model_name,
+        "selected_model": report.better_model,
+        "model_ranking": [row.model for row in report.rows],
+        "comparable_model_count": sum(1 for row in report.rows if row.comparable),
+        "noncomparable_model_count": sum(1 for row in report.rows if not row.comparable),
+        "runner_up_model": None if runner_up_row is None else runner_up_row.model,
+        "runner_up_aicc_delta": (
+            math.nan if runner_up_row is None else runner_up_row.delta_aicc
+        ),
+        "warning_count": len(report.warnings),
+        "optimizer_settings": case.optimizer_settings,
+    }
+    return summary, _comparison_rows(report)
+
+
 def _write_rows_table(path: Path, rows: list[dict[str, object]]) -> None:
-    fieldnames = ["parameter", "value"]
+    fieldnames = list(rows[0].keys()) if rows else ["parameter", "value"]
     with path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames, delimiter="\t")
         writer.writeheader()
@@ -642,16 +759,17 @@ def run_geiger_parity_cases(
                         mismatch_reason = "reference_summary_missing"
                     else:
                         reference_summary = _load_json(summary_path)
+                        if rows_path.exists():
+                            reference_rows = _load_rows_table(rows_path)
                         mismatch_reason = _mismatch_reason(
                             case,
                             reference_summary=reference_summary,
                             bijux_summary=bijux_summary,
                         )
                         if mismatch_reason is None:
-                            if not rows_path.exists():
+                            if reference_rows is None:
                                 mismatch_reason = "reference_rows_missing"
                             else:
-                                reference_rows = _load_rows_table(rows_path)
                                 mismatch_reason = _row_mismatch_reason(
                                     case,
                                     reference_rows=reference_rows,

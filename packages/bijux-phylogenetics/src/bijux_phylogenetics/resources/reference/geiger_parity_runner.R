@@ -212,6 +212,38 @@ parameter_surface <- function(model_name, opt) {
   list(parameter_name = NULL, parameter_value = NULL)
 }
 
+public_mode_name <- function(model_name) {
+  if (identical(model_name, "BM")) {
+    return("brownian")
+  }
+  if (identical(model_name, "white")) {
+    return("white-noise")
+  }
+  if (identical(model_name, "lambda")) {
+    return("pagel-lambda")
+  }
+  if (identical(model_name, "kappa")) {
+    return("pagel-kappa")
+  }
+  if (identical(model_name, "delta")) {
+    return("pagel-delta")
+  }
+  if (identical(model_name, "OU")) {
+    return("ornstein-uhlenbeck")
+  }
+  if (identical(model_name, "EB")) {
+    return("early-burst")
+  }
+  stop(sprintf("unsupported fitContinuous model name: %s", model_name))
+}
+
+fitcontinuous_parameter_count <- function(model_name) {
+  if (identical(model_name, "BM") || identical(model_name, "white")) {
+    return(2)
+  }
+  3
+}
+
 build_fitcontinuous_payload <- function(tree, trait_values, excluded_taxa, case_payload) {
   fit <- do.call(
     geiger::fitContinuous,
@@ -289,6 +321,107 @@ build_fitcontinuous_payload <- function(tree, trait_values, excluded_taxa, case_
   list(summary = summary, rows = rows)
 }
 
+build_fitcontinuous_model_comparison_payload <- function(tree, trait_values, excluded_taxa, case_payload) {
+  candidate_model_names <- unname(unlist(case_payload$candidate_model_names))
+  fitted_rows <- lapply(candidate_model_names, function(model_name) {
+    model_case_payload <- case_payload
+    model_case_payload$model_name <- model_name
+    fit <- do.call(
+      geiger::fitContinuous,
+      list(
+        phy = tree,
+        dat = trait_values,
+        model = model_name,
+        bounds = fitcontinuous_bounds(model_case_payload),
+        control = fitcontinuous_control(model_case_payload)
+      )
+    )
+    opt <- fit$opt
+    parameter_count <- fitcontinuous_parameter_count(model_name)
+    log_likelihood <- if (is.null(opt$lnL)) NULL else as.numeric(opt$lnL)
+    aic <- if (!is.null(fit$aic)) {
+      as.numeric(fit$aic)
+    } else if (!is.null(opt$aic)) {
+      as.numeric(opt$aic)
+    } else if (!is.null(log_likelihood)) {
+      as.numeric((2 * parameter_count) - (2 * log_likelihood))
+    } else {
+      NULL
+    }
+    aicc <- if (!is.null(opt$aicc)) {
+      as.numeric(opt$aicc)
+    } else if (!is.null(aic)) {
+      fit_aicc(aic, length(trait_values), parameter_count)
+    } else {
+      NULL
+    }
+    list(
+      model = public_mode_name(model_name),
+      rank = NULL,
+      parameter_count = parameter_count,
+      log_likelihood = log_likelihood,
+      aic = aic,
+      aicc = aicc,
+      delta_aic = NULL,
+      delta_aicc = NULL,
+      selected = FALSE,
+      comparable = !is.null(aic) && !is.null(aicc),
+      comparability_note = if (is.null(aicc)) {
+        "sample size is too small to compute finite AICc for this parameter count"
+      } else {
+        ""
+      }
+    )
+  })
+  comparable_rows <- Filter(
+    f = function(row) isTRUE(row$comparable),
+    x = fitted_rows
+  )
+  if (length(comparable_rows) == 0) {
+    stop("no comparable fitContinuous model retained a finite AICc surface")
+  }
+  best_aic <- min(vapply(comparable_rows, function(row) row$aic, numeric(1)))
+  best_aicc <- min(vapply(comparable_rows, function(row) row$aicc, numeric(1)))
+  ranked_rows <- comparable_rows[order(
+    vapply(comparable_rows, function(row) row$aicc, numeric(1)),
+    vapply(comparable_rows, function(row) row$aic, numeric(1)),
+    vapply(comparable_rows, function(row) row$model, character(1))
+  )]
+  for (index in seq_along(ranked_rows)) {
+    ranked_rows[[index]]$rank <- index
+    ranked_rows[[index]]$delta_aic <- ranked_rows[[index]]$aic - best_aic
+    ranked_rows[[index]]$delta_aicc <- ranked_rows[[index]]$aicc - best_aicc
+    ranked_rows[[index]]$selected <- isTRUE(all.equal(
+      ranked_rows[[index]]$aicc,
+      best_aicc,
+      tolerance = 1e-12
+    ))
+  }
+  fitted_rows <- c(
+    ranked_rows,
+    Filter(
+      f = function(row) !isTRUE(row$comparable),
+      x = fitted_rows
+    )
+  )
+  selected_row <- ranked_rows[[1]]
+  runner_up_row <- if (length(ranked_rows) >= 2) ranked_rows[[2]] else NULL
+  summary <- list(
+    taxon_count = length(trait_values),
+    trait_name = case_payload$trait_name,
+    model_name = case_payload$model_name,
+    selected_model = selected_row$model,
+    model_ranking = json_array(vapply(fitted_rows, function(row) row$model, character(1))),
+    comparable_model_count = length(ranked_rows),
+    noncomparable_model_count = length(fitted_rows) - length(ranked_rows),
+    runner_up_model = if (is.null(runner_up_row)) NULL else runner_up_row$model,
+    runner_up_aicc_delta = if (is.null(runner_up_row)) NULL else runner_up_row$delta_aicc,
+    warning_count = if (length(candidate_model_names) > 3) 1 else 0,
+    optimizer_settings = case_payload$optimizer_settings
+  )
+  list(summary = summary, rows = fitted_rows)
+}
+
 result <- tryCatch(
   {
     input_fixtures <- unname(unlist(case_payload$input_fixtures))
@@ -323,7 +456,11 @@ result <- tryCatch(
     if (length(excluded_taxa) > 0) {
       tree <- ape::drop.tip(tree, excluded_taxa)
     }
-    payload <- build_fitcontinuous_payload(tree, trait_values, excluded_taxa, case_payload)
+    payload <- if (identical(case_payload$operation, "compare-fitcontinuous-models")) {
+      build_fitcontinuous_model_comparison_payload(tree, trait_values, excluded_taxa, case_payload)
+    } else {
+      build_fitcontinuous_payload(tree, trait_values, excluded_taxa, case_payload)
+    }
     payload$summary$missing_from_traits <- json_array(tree_only_taxa)
     payload$summary$missing_value_taxa <- json_array(missing_value_taxa)
     payload$summary$non_numeric_taxa <- json_array(non_numeric_taxa)
