@@ -1326,6 +1326,14 @@ cases always persist their case payload, structured summaries, parameter
 ledgers, and mismatch reason under `artifacts/geiger-parity-failures/` so the
 live parity lane stays reviewer-usable instead of collapsing into hidden
 manual reruns.
+The same shared fixture layer now also has a dedicated
+`tests/fixtures/metadata/shared_geiger_discrete_fixture_catalog.json` catalog
+for future `geiger::fitDiscrete(...)` work. That governed corpus keeps binary,
+three-state, four-state, and sparse six-state discrete surfaces under durable
+fixture ids, records explicit ER, SYM, and ARD transition-matrix metadata, and
+includes missing-state, constant-state, and tree-versus-table mismatch control
+panels so later `fitDiscrete` parity lanes do not fall back to one-off state
+tables or hand-entered rate matrices.
 
 `parity --reference-source phytools-live` is the governed live `phytools`
 execution harness. It uses the same checked-in `Rscript` orchestration model
