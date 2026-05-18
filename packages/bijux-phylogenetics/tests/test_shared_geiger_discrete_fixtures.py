@@ -38,6 +38,7 @@ def test_shared_geiger_discrete_fixture_catalog_covers_required_goal_cases() -> 
         "equal-rates-known-truth",
         "symmetric-known-truth",
         "all-rates-different-known-truth",
+        "weak-phylogenetic-signal-review",
         "rare-state-case",
         "missing-states",
         "constant-state-negative-case",
@@ -109,6 +110,58 @@ def test_shared_geiger_discrete_fixture_catalog_supports_er_sym_and_ard_fits() -
     assert ard_report.parameter_count == 12
     assert ard_report.input_audit.observed_states == ["east", "north", "south", "west"]
     assert ard_report.baseline_comparison is not None
+
+
+def test_shared_geiger_discrete_fixture_catalog_supports_lambda_transform_review() -> (
+    None
+):
+    strong_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_er_binary_twenty_four_taxa"
+    )
+    weak_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_lambda_weak_signal_twenty_four_taxa"
+    )
+    missing_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_lambda_missing_binary_twenty_four_taxa"
+    )
+
+    strong_report = fit_discrete_mk_model(
+        strong_fixture.tree_path,
+        strong_fixture.traits_path,
+        trait=strong_fixture.trait_name,
+        taxon_column=strong_fixture.taxon_column,
+        model="equal-rates",
+        transform="lambda",
+    )
+    weak_report = fit_discrete_mk_model(
+        weak_fixture.tree_path,
+        weak_fixture.traits_path,
+        trait=weak_fixture.trait_name,
+        taxon_column=weak_fixture.taxon_column,
+        model="equal-rates",
+        transform="lambda",
+    )
+    missing_report = fit_discrete_mk_model(
+        missing_fixture.tree_path,
+        missing_fixture.traits_path,
+        trait=missing_fixture.trait_name,
+        taxon_column=missing_fixture.taxon_column,
+        model="equal-rates",
+        transform="lambda",
+    )
+
+    assert strong_report.transform_fit is not None
+    assert strong_report.transform_fit.parameter_name == "lambda"
+    assert strong_report.parameter_count == 2
+    assert weak_report.transform_fit is not None
+    assert weak_report.transform_fit.parameter_value <= 1e-6
+    assert any(
+        warning.kind == "weak_phylogenetic_signal"
+        for warning in weak_report.transform_fit.warnings
+    )
+    assert missing_report.transform_fit is not None
+    assert missing_report.input_audit.pruned_missing_value_taxa == ["Phy10"]
+    assert missing_report.parameter_count == 2
 
 
 def test_shared_geiger_discrete_fixture_catalog_handles_missing_sparse_and_mismatch_cases() -> (

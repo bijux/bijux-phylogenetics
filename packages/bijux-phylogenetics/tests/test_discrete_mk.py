@@ -419,6 +419,67 @@ def test_fit_discrete_mk_model_matches_governed_geiger_er_binary_surface() -> No
     )
 
 
+def test_fit_discrete_mk_model_matches_governed_geiger_er_lambda_surface() -> None:
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_er_binary_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="equal-rates",
+        transform="lambda",
+    )
+
+    assert report.transform_fit is not None
+    assert report.parameter_count == 2
+    assert math.isclose(
+        report.log_likelihood,
+        -9.078105725221098,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        report.transform_fit.parameter_value,
+        1.0,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+
+
+def test_fit_discrete_mk_model_marks_governed_geiger_lambda_weak_signal_surface() -> (
+    None
+):
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_lambda_weak_signal_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="equal-rates",
+        transform="lambda",
+    )
+
+    assert report.transform_fit is not None
+    assert report.parameter_count == 2
+    assert report.transform_fit.parameter_value <= 1e-6
+    assert math.isclose(
+        report.log_likelihood,
+        -16.635532333438686,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert any(
+        warning.kind == "weak_phylogenetic_signal"
+        for warning in report.transform_fit.warnings
+    )
+
+
 def test_fit_discrete_mk_model_matches_governed_geiger_sym_three_state_surface() -> None:
     fixture_entry = get_shared_geiger_discrete_fixture(
         "geiger_discrete_sym_three_state_twenty_four_taxa"
