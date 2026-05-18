@@ -1314,6 +1314,7 @@ intentionally narrow for this harness goal: it currently covers
 `geiger::fitContinuous(model='BM')`,
 `geiger::fitContinuous(model='lambda')`,
 `geiger::fitContinuous(model='kappa')`,
+`geiger::fitContinuous(model='delta')`,
 `geiger::fitContinuous(model='OU')`, and
 `geiger::fitContinuous(model='EB')` over the four-taxon comparative smoke
 fixture plus the governed shared `geiger` continuous-trait fixtures. Those
@@ -1359,6 +1360,18 @@ owned Bijux side exposes this through
 `rescale_tree_pagel_kappa(...)`, which follow the
 `geiger::fitContinuous(model='kappa')` contract by transforming branch lengths
 directly rather than by reusing the Pagel-lambda covariance scaling surface.
+The delta lane now has three governed `fitContinuous(model='delta')` cases:
+a twenty-four-taxon strong-signal temporal-concentration review surface, a
+twenty-four-taxon weak-signal review surface that lands on the late-change
+upper boundary, and a twenty-four-taxon missing-value pruning review surface.
+Those cases govern transformed node-depth scaling, explicit delta bounds,
+sigma-squared-backed rate, root-state recovery, log-likelihood, AIC, AICc,
+and reviewer-facing upper-boundary warnings. The owned Bijux side exposes this
+through `fit_continuous_evolutionary_mode(mode='pagel-delta')` and
+`rescale_tree_pagel_delta(...)`, which follow the
+`geiger::fitContinuous(model='delta')` contract by raising each node-depth
+proportion to delta before recomputing branch lengths, rather than by applying
+an edge-wise power transform like Pagel kappa.
 The OU lane now has three governed cases with the same reviewer-facing rigor:
 the twenty-four-taxon OU known-truth recovery surface, a missing-value pruning
 review surface, and a lower-boundary review surface on the rooted
