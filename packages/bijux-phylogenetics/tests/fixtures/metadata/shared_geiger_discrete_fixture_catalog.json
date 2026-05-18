@@ -417,6 +417,115 @@
       "notes": "Binary time-sensitive delta surface reused as the governed missing-value pruning lane so discrete-delta parity proves overlap pruning without collapsing back to a boundary-only review surface."
     },
     {
+      "fixture_id": "geiger_discrete_early_burst_early_change_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match-with-interior-early-burst-optimum",
+      "geiger_reference_expectation": "fitdiscrete-transform-early-burst-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "early-change-discrete-transform-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_er_binary_twenty_four_taxa",
+        "transform": "early-burst",
+        "expected_signal_direction": "early-change"
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "er_binary_truth"
+      },
+      "notes": "Binary equal-rates surface reused as the governed discrete early-burst early-change lane because local `fitDiscrete(transform='EB')` supports a stable positive rate-change optimum while preserving row-level rate parity."
+    },
+    {
+      "fixture_id": "geiger_discrete_early_burst_weak_signal_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_transform_weak_signal",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match-with-weak-early-burst-signal",
+      "geiger_reference_expectation": "fitdiscrete-transform-early-burst-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "weak-phylogenetic-signal-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_transform_weak_signal_twenty_four_taxa",
+        "transform": "early-burst",
+        "expected_signal_direction": "weak-or-boundary-review"
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "er_binary_transform_weak_signal"
+      },
+      "notes": "Binary weak-signal surface reused as the governed discrete early-burst weak-identifiability lane so transformed `fitDiscrete(transform='EB')` parity includes one flat-review case instead of only stable interior optima."
+    },
+    {
+      "fixture_id": "geiger_discrete_early_burst_late_change_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_delta_time_sensitive",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match-with-interior-late-change-optimum",
+      "geiger_reference_expectation": "fitdiscrete-transform-early-burst-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "late-change-discrete-transform-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_delta_time_sensitive_twenty_four_taxa",
+        "transform": "early-burst",
+        "expected_signal_direction": "late-change"
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "er_binary_delta_time_sensitive"
+      },
+      "notes": "Binary time-sensitive surface reused as the governed discrete early-burst late-change lane because local `fitDiscrete(transform='EB')` supports a stable negative rate-change optimum on this trait instead of collapsing to the untransformed surface."
+    },
+    {
+      "fixture_id": "geiger_discrete_early_burst_missing_binary_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+      "trait_name": "er_binary_delta_time_sensitive",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "pruned-match-with-interior-late-change-optimum",
+      "geiger_reference_expectation": "fitdiscrete-transform-early-burst-ready-after-pruning",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "missing-states",
+        "missing-trait-values",
+        "late-change-discrete-transform-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_early_burst_late_change_twenty_four_taxa",
+        "transform": "early-burst",
+        "missing_taxa": ["Phy10"]
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+        "source_trait_name": "er_binary_delta_time_sensitive"
+      },
+      "notes": "Binary early-burst late-change surface reused as the governed missing-value pruning lane so discrete early-burst parity proves overlap pruning without dropping the signed late-change review contract."
+    },
+    {
       "fixture_id": "geiger_discrete_constant_negative_twenty_four_taxa",
       "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
       "trait_name": "constant_state",
