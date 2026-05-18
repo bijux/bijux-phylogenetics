@@ -453,6 +453,7 @@ from bijux_phylogenetics.comparative.discrete_evolution import (
     write_transition_summary_table,
 )
 from bijux_phylogenetics.comparative import (
+    build_diversification_figure_package,
     compare_diversification_models,
     compute_diversification_gamma_statistic,
     compute_lineage_through_time_curve,
@@ -2728,6 +2729,23 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the trait-dependent report as JSON."
     )
     _add_manifest_argument(diversification_trait)
+    diversification_package = diversification_subparsers.add_parser(
+        "package",
+        help="Build a publication-oriented diversification figure package.",
+    )
+    diversification_package.add_argument("tree", type=Path)
+    diversification_package.add_argument("--metadata", type=Path)
+    diversification_package.add_argument("--taxon-column")
+    diversification_package.add_argument("--sampling-column")
+    diversification_package.add_argument(
+        "--model", choices=("yule", "birth-death"), default="birth-death"
+    )
+    diversification_package.add_argument("--min-tip-count", type=int, default=2)
+    diversification_package.add_argument("--out-dir", required=True, type=Path)
+    diversification_package.add_argument(
+        "--json", action="store_true", help="Emit the package build result as JSON."
+    )
+    _add_manifest_argument(diversification_package)
     diversification_report = diversification_subparsers.add_parser(
         "report",
         help="Render an HTML diversification and macroevolution report.",
@@ -8097,6 +8115,67 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             ),
                         },
                         data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.diversification_command == "package":
+                inputs = [args.tree]
+                if args.metadata is not None:
+                    inputs.append(args.metadata)
+                result = build_diversification_figure_package(
+                    args.tree,
+                    out_dir=args.out_dir,
+                    metadata_path=args.metadata,
+                    taxon_column=args.taxon_column,
+                    sampling_column=args.sampling_column,
+                    min_tip_count=args.min_tip_count,
+                    model=args.model,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="diversification",
+                    inputs=inputs,
+                    outputs=[
+                        result.lineage_figure_path,
+                        result.clade_figure_path,
+                        result.model_figure_path,
+                        result.lineage_table_path,
+                        result.clade_table_path,
+                        result.model_table_path,
+                        result.legend_path,
+                        result.caption_path,
+                        result.review_path,
+                        result.manifest_path,
+                    ],
+                )
+                warnings = (
+                    []
+                    if result.sampling_report is None
+                    else list(result.sampling_report.warnings)
+                )
+                _print_result(
+                    build_command_result(
+                        command="diversification",
+                        inputs=inputs,
+                        outputs=outputs,
+                        warnings=warnings,
+                        metrics={
+                            "publication_ready": result.audit.publication_ready,
+                            "sampling_metadata_complete": (
+                                result.audit.sampling_metadata_complete
+                            ),
+                            "plotted_ltt_point_count": (
+                                result.audit.plotted_ltt_point_count
+                            ),
+                            "plotted_clade_count": result.audit.plotted_clade_count,
+                            "highlighted_outlier_count": (
+                                result.audit.highlighted_outlier_count
+                            ),
+                            "plotted_model_count": result.audit.plotted_model_count,
+                            "better_model": result.audit.better_model,
+                        },
+                        data=result.machine_manifest,
                     ),
                     json_output=args.json,
                 )
