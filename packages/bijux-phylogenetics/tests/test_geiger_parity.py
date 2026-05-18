@@ -25,6 +25,9 @@ from tests.support.geiger_fitcontinuous_kappa_reference import (
 from tests.support.geiger_fitcontinuous_lambda_reference import (
     GEIGER_FITCONTINUOUS_LAMBDA_REFERENCE_PAYLOADS,
 )
+from tests.support.geiger_fitcontinuous_model_comparison_reference import (
+    GEIGER_FITCONTINUOUS_MODEL_COMPARISON_REFERENCE_PAYLOADS,
+)
 from tests.support.geiger_fitcontinuous_ou_reference import (
     GEIGER_FITCONTINUOUS_OU_REFERENCE_PAYLOADS,
 )
@@ -60,6 +63,10 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
         "fitcontinuous-ou-bounded-control-review",
         "fitcontinuous-eb-early-burst-rate-recovery",
         "fitcontinuous-eb-lower-boundary-review",
+        "fitcontinuous-model-comparison-brownian-review",
+        "fitcontinuous-model-comparison-ou-review",
+        "fitcontinuous-model-comparison-early-burst-review",
+        "fitcontinuous-model-comparison-white-review",
     ]
     assert cases[0].function_name == "geiger::fitContinuous(model='BM')"
     assert cases[3].function_name == "geiger::fitContinuous(model='white')"
@@ -68,6 +75,7 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     assert cases[13].function_name == "geiger::fitContinuous(model='delta')"
     assert cases[16].function_name == "geiger::fitContinuous(model='OU')"
     assert cases[20].function_name == "geiger::fitContinuous(model='EB')"
+    assert cases[22].function_name == "geiger::fitContinuous(model comparison)"
     assert cases[1].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
     assert cases[2].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
     assert (
@@ -120,6 +128,18 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     assert (
         cases[21].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
     )
+    assert (
+        cases[22].fixture_id
+        == "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+    assert (
+        cases[23].fixture_id == "geiger_continuous_ou_known_truth_twenty_four_taxa"
+    )
+    assert (
+        cases[24].fixture_id
+        == "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
+    )
+    assert cases[25].fixture_id == "geiger_continuous_white_noise_twenty_four_taxa"
     assert cases[2].comparison_fields[:7] == (
         "taxon_count",
         "trait_name",
@@ -162,6 +182,17 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     assert "optimizer_settings" in cases[19].comparison_fields
     assert "aicc" in cases[20].comparison_fields
     assert "hit_lower_parameter_boundary" in cases[21].comparison_fields
+    assert cases[22].candidate_model_names == (
+        "BM",
+        "white",
+        "lambda",
+        "kappa",
+        "delta",
+        "OU",
+        "EB",
+    )
+    assert "selected_model" in cases[22].comparison_fields
+    assert "runner_up_aicc_delta" in cases[22].comparison_fields
     assert all(path.is_file() for case in cases for path in case.input_fixtures)
 
 
@@ -175,12 +206,12 @@ def test_run_geiger_parity_cases_reports_passes_against_fake_runner(
         failure_root=tmp_path / "geiger-parity-failures",
     )
 
-    assert report.case_count == 22
-    assert report.passed_case_count == 22
+    assert report.case_count == 26
+    assert report.passed_case_count == 26
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert report.all_passed is True
-    assert len(report.summary_rows) == 7
+    assert len(report.summary_rows) == 8
     observation = next(
         item
         for item in report.observations
@@ -213,10 +244,10 @@ def test_run_geiger_parity_cases_counts_skips_when_geiger_is_unavailable(
         failure_root=tmp_path / "geiger-parity-failures",
     )
 
-    assert report.case_count == 22
+    assert report.case_count == 26
     assert report.passed_case_count == 0
     assert report.failed_case_count == 0
-    assert report.skipped_case_count == 22
+    assert report.skipped_case_count == 26
     assert report.all_passed is False
     assert all(
         item.mismatch_reason == "geiger_package_unavailable"
@@ -650,6 +681,59 @@ def test_run_geiger_parity_cases_governs_early_burst_reference_payloads(
     ]
 
 
+def test_run_geiger_parity_cases_governs_model_comparison_reference_payloads(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads=GEIGER_FITCONTINUOUS_MODEL_COMPARISON_REFERENCE_PAYLOADS,
+    )
+
+    report = run_geiger_parity_cases(
+        case_ids=[
+            "fitcontinuous-model-comparison-brownian-review",
+            "fitcontinuous-model-comparison-ou-review",
+            "fitcontinuous-model-comparison-early-burst-review",
+            "fitcontinuous-model-comparison-white-review",
+        ],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    assert report.case_count == 4
+    assert report.passed_case_count == 4
+    brownian = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitcontinuous-model-comparison-brownian-review"
+    )
+    assert brownian.reference_summary is not None
+    assert brownian.reference_summary["selected_model"] == "brownian"
+    assert brownian.reference_summary["runner_up_model"] == "pagel-kappa"
+    assert brownian.reference_summary["warning_count"] == 1
+    assert brownian.reference_rows is not None
+    assert brownian.reference_rows[0]["model"] == "brownian"
+    assert brownian.reference_rows[0]["selected"] is True
+    assert brownian.reference_rows[-1]["model"] == "white-noise"
+    assert brownian.reference_rows[-1]["comparable"] is True
+    assert brownian.bijux_summary is not None
+    assert brownian.bijux_summary["model_ranking"][:3] == [
+        "brownian",
+        "pagel-kappa",
+        "ornstein-uhlenbeck",
+    ]
+    white = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitcontinuous-model-comparison-white-review"
+    )
+    assert white.reference_summary is not None
+    assert white.reference_summary["selected_model"] == "white-noise"
+    assert white.reference_summary["runner_up_model"] == "pagel-lambda"
+    assert white.bijux_summary is not None
+    assert white.bijux_summary["noncomparable_model_count"] == 0
+
+
 def test_run_geiger_parity_cases_persists_failure_artifacts_for_mismatches(
     tmp_path: Path,
 ) -> None:
@@ -708,7 +792,7 @@ def test_write_geiger_parity_tables_writes_summary_and_observations(
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 22
+    assert len(rows) == 26
     assert rows[0]["model_name"] in {
         "BM",
         "white",
@@ -717,6 +801,7 @@ def test_write_geiger_parity_tables_writes_summary_and_observations(
         "delta",
         "OU",
         "EB",
+        "model-comparison",
     }
     optimizer_settings = json.loads(rows[0]["optimizer_settings"])
     assert "reference_control_policy" in optimizer_settings

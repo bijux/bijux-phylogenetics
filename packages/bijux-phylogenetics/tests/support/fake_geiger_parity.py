@@ -32,8 +32,9 @@ def write_json(path: Path, payload: dict[str, object]) -> None:
 
 
 def write_rows_table(path: Path, rows: list[dict[str, object]]) -> None:
+    fieldnames = list(rows[0].keys()) if rows else ["parameter", "value"]
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=["parameter", "value"], delimiter="\\t")
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, delimiter="\\t")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -71,6 +72,10 @@ def parameter_rows(summary: dict[str, object]) -> list[dict[str, object]]:
     return rows
 
 
+def comparison_rows(summary: dict[str, object]) -> list[dict[str, object]]:
+    return [dict(row) for row in summary["rows"]]
+
+
 def standard_error_policy() -> str:
     return "fitcontinuous-standard-error-explicitly-excluded-this-round"
 
@@ -95,6 +100,7 @@ from pathlib import Path
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     ContinuousModeSearchControls,
+    compare_fitcontinuous_model_ranking,
     fit_continuous_evolutionary_mode,
 )
 
@@ -138,8 +144,8 @@ report = fit_continuous_evolutionary_mode(
     kappa_bounds=tuple(case_payload.get("kappa_bounds") or (0.0, 3.0)),
     delta_bounds=tuple(case_payload.get("delta_bounds") or (0.0, 3.0)),
     ou_bounds=tuple(case_payload.get("ou_bounds") or (0.0, 10.0)),
-    early_burst_bounds=tuple(case_payload.get("early_burst_bounds") or (0.0, 10.0)),
-)
+    early_burst_bounds=tuple(case_payload.get("early_burst_bounds") or (0.0, 50.0)),
+) if case_payload["operation"] != "compare-fitcontinuous-models" else None
 excluded_taxa = sorted(
     {
         *readiness.missing_from_traits,
@@ -147,44 +153,90 @@ excluded_taxa = sorted(
         *readiness.pruned_non_numeric_taxa,
     }
 )
-summary = {
-    "taxon_count": report.taxon_count,
-    "trait_name": report.trait,
-    "model_name": case_payload["model_name"],
-    "excluded_taxon_count": len(excluded_taxa),
-    "excluded_taxa": excluded_taxa,
-    "missing_value_taxa": list(readiness.pruned_missing_value_taxa),
-    "non_numeric_taxa": list(readiness.pruned_non_numeric_taxa),
-    "missing_from_traits": list(readiness.missing_from_traits),
-    "extra_trait_taxa": list(readiness.extra_trait_taxa),
-    "missing_value_policy": "__MISSING_VALUE_POLICY__",
-    "standard_error_policy": "__STANDARD_ERROR_POLICY__",
-    "parameter_bound_policy": (
-        "closed-form-without-parameter-bounds"
-        if case_payload["model_name"] in {"BM", "white"}
-        else "governed-bounded-grid-search"
-    ),
-    "hit_lower_parameter_boundary": (
-        False if report.optimizer_diagnostics is None else report.optimizer_diagnostics.hit_lower_boundary
-    ),
-    "hit_upper_parameter_boundary": (
-        False if report.optimizer_diagnostics is None else report.optimizer_diagnostics.hit_upper_boundary
-    ),
-    "identifiability_warning_kinds": [warning.kind for warning in report.identifiability_warnings],
-    "identifiability_warning_count": len(report.identifiability_warnings),
-    "root_state": report.root_state,
-    "rate": report.rate,
-    "log_likelihood": report.log_likelihood,
-    "aic": report.aic,
-    "aicc": report.aicc,
-    "parameter_name": report.parameter_name,
-    "parameter_value": report.parameter_value,
-    "optimizer_settings": case_payload["optimizer_settings"],
-    "optimizer_result": {
-        "convergence_code": 0,
-        "message": "fake geiger parity runner",
-    },
-}
+if case_payload["operation"] == "compare-fitcontinuous-models":
+    comparison = compare_fitcontinuous_model_ranking(
+        Path(tree_path),
+        Path(traits_path),
+        trait=case_payload["trait_name"],
+        taxon_column=case_payload["taxon_column"],
+        modes=tuple(
+            mode_lookup[model_name]
+            for model_name in case_payload["candidate_model_names"]
+        ),
+        lambda_bounds=tuple(case_payload.get("lambda_bounds") or (0.0, 1.0)),
+        kappa_bounds=tuple(case_payload.get("kappa_bounds") or (0.0, 3.0)),
+        delta_bounds=tuple(case_payload.get("delta_bounds") or (0.0, 3.0)),
+        ou_bounds=tuple(case_payload.get("ou_bounds") or (0.0, 10.0)),
+        early_burst_bounds=tuple(case_payload.get("early_burst_bounds") or (0.0, 50.0)),
+    )
+    summary = {
+        "taxon_count": comparison.taxon_count,
+        "trait_name": comparison.trait,
+        "model_name": case_payload["model_name"],
+        "selected_model": comparison.better_model,
+        "model_ranking": [row.model for row in comparison.rows],
+        "comparable_model_count": sum(1 for row in comparison.rows if row.comparable),
+        "noncomparable_model_count": sum(1 for row in comparison.rows if not row.comparable),
+        "runner_up_model": next((row.model for row in comparison.rows if row.rank == 2), None),
+        "runner_up_aicc_delta": next((row.delta_aicc for row in comparison.rows if row.rank == 2), None),
+        "warning_count": len(comparison.warnings),
+        "optimizer_settings": case_payload["optimizer_settings"],
+        "rows": [
+            {
+                "model": row.model,
+                "rank": "" if row.rank is None else row.rank,
+                "parameter_count": row.parameter_count,
+                "log_likelihood": row.log_likelihood,
+                "aic": row.aic,
+                "aicc": row.aicc,
+                "delta_aic": row.delta_aic,
+                "delta_aicc": row.delta_aicc,
+                "selected": row.selected,
+                "comparable": row.comparable,
+                "comparability_note": "" if row.comparability_note is None else row.comparability_note,
+            }
+            for row in comparison.rows
+        ],
+    }
+else:
+    summary = {
+        "taxon_count": report.taxon_count,
+        "trait_name": report.trait,
+        "model_name": case_payload["model_name"],
+        "excluded_taxon_count": len(excluded_taxa),
+        "excluded_taxa": excluded_taxa,
+        "missing_value_taxa": list(readiness.pruned_missing_value_taxa),
+        "non_numeric_taxa": list(readiness.pruned_non_numeric_taxa),
+        "missing_from_traits": list(readiness.missing_from_traits),
+        "extra_trait_taxa": list(readiness.extra_trait_taxa),
+        "missing_value_policy": "__MISSING_VALUE_POLICY__",
+        "standard_error_policy": "__STANDARD_ERROR_POLICY__",
+        "parameter_bound_policy": (
+            "closed-form-without-parameter-bounds"
+            if case_payload["model_name"] in {"BM", "white"}
+            else "governed-bounded-grid-search"
+        ),
+        "hit_lower_parameter_boundary": (
+            False if report.optimizer_diagnostics is None else report.optimizer_diagnostics.hit_lower_boundary
+        ),
+        "hit_upper_parameter_boundary": (
+            False if report.optimizer_diagnostics is None else report.optimizer_diagnostics.hit_upper_boundary
+        ),
+        "identifiability_warning_kinds": [warning.kind for warning in report.identifiability_warnings],
+        "identifiability_warning_count": len(report.identifiability_warnings),
+        "root_state": report.root_state,
+        "rate": report.rate,
+        "log_likelihood": report.log_likelihood,
+        "aic": report.aic,
+        "aicc": report.aicc,
+        "parameter_name": report.parameter_name,
+        "parameter_value": report.parameter_value,
+        "optimizer_settings": case_payload["optimizer_settings"],
+        "optimizer_result": {
+            "convergence_code": 0,
+            "message": "fake geiger parity runner",
+        },
+    }
 print(json.dumps(summary))
 '''
     command = [
@@ -208,6 +260,8 @@ print(json.dumps(summary))
     summary = json.loads(result.stdout)
     if case_payload["case_id"] in SUMMARY_OVERRIDES:
         summary.update(SUMMARY_OVERRIDES[case_payload["case_id"]])
+    if case_payload["operation"] == "compare-fitcontinuous-models":
+        return summary, comparison_rows(summary)
     return summary, parameter_rows(summary)
 
 
