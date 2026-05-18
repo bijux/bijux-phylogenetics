@@ -14,7 +14,6 @@ from bijux_phylogenetics.comparative.common import (
 from bijux_phylogenetics.comparative.models import (
     ComparativeModelComparisonRow,
     ComparativeResidualSummary,
-    OUIdentifiabilityWarning,
     _brownian_parameter_intervals,
     _build_residual_diagnostics,
     _comparison_row,
@@ -83,8 +82,16 @@ class ContinuousEvolutionaryModeFitReport:
     confidence_intervals: list[object]
     residual_diagnostics: ComparativeResidualSummary
     optimizer_diagnostics: ContinuousModeOptimizerDiagnostics | None
-    identifiability_warnings: list[OUIdentifiabilityWarning]
+    identifiability_warnings: list[EvolutionaryModeIdentifiabilityWarning]
     assumptions: list[str]
+
+
+@dataclass(slots=True)
+class EvolutionaryModeIdentifiabilityWarning:
+    """One identifiability or boundary warning on an evolutionary-mode fit."""
+
+    kind: str
+    message: str
 
 
 @dataclass(slots=True)
@@ -309,7 +316,7 @@ def _fit_evolutionary_mode_from_dataset(
         parameter_name = None
         parameter_value = None
         optimizer_diagnostics = None
-        identifiability_warnings: list[OUIdentifiabilityWarning] = []
+        identifiability_warnings: list[EvolutionaryModeIdentifiabilityWarning] = []
         assumptions = [
             "Brownian mode retains the original rooted branch lengths.",
             "Trait variance accumulates proportionally with shared branch length.",
@@ -347,9 +354,13 @@ def _fit_evolutionary_mode_from_dataset(
         covariance = search_result.covariance
         fit = _fit_intercept_only_model(dataset, covariance)
         optimizer_diagnostics = search_result.optimizer_diagnostics
-        identifiability_warnings = []
+        identifiability_warnings = _early_burst_identifiability_warnings_from_profile(
+            parameter_value,
+            search_result.profile,
+            early_burst_bounds,
+        )
         assumptions = [
-            "Early-burst mode follows the lecture-style tree rescaling before Brownian intercept fitting.",
+            "Early-burst mode follows the geiger-style branch-rescaling rule before Brownian intercept fitting.",
             "The rate-change parameter is selected by maximizing log likelihood over a governed bounded search grid.",
         ]
 
@@ -523,11 +534,11 @@ def _ou_identifiability_warnings_from_profile(
     dataset: ComparativeDataset,
     alpha: float,
     profile: list[tuple[float, float]],
-) -> list[OUIdentifiabilityWarning]:
-    warnings: list[OUIdentifiabilityWarning] = []
+) -> list[EvolutionaryModeIdentifiabilityWarning]:
+    warnings: list[EvolutionaryModeIdentifiabilityWarning] = []
     if len(dataset.taxa) < 5:
         warnings.append(
-            OUIdentifiabilityWarning(
+            EvolutionaryModeIdentifiabilityWarning(
                 kind="small_sample_size",
                 message="OU alpha is hard to identify with fewer than five taxa",
             )
@@ -545,7 +556,7 @@ def _ou_identifiability_warnings_from_profile(
         abs_tol=1e-9,
     ):
         warnings.append(
-            OUIdentifiabilityWarning(
+            EvolutionaryModeIdentifiabilityWarning(
                 kind="boundary_alpha",
                 message="best-supported OU alpha falls on the search boundary and may not be well identified",
             )
@@ -558,16 +569,65 @@ def _ou_identifiability_warnings_from_profile(
         ordered_log_likelihoods[0] - ordered_log_likelihoods[1] < 0.5
     ):
         warnings.append(
-            OUIdentifiabilityWarning(
+            EvolutionaryModeIdentifiabilityWarning(
                 kind="flat_likelihood",
                 message="OU likelihood surface is shallow across alpha values, so model choice may be unstable",
             )
         )
     if alpha < ordered_alphas[len(ordered_alphas) // 3]:
         warnings.append(
-            OUIdentifiabilityWarning(
+            EvolutionaryModeIdentifiabilityWarning(
                 kind="weak_pull_to_optimum",
                 message="best-supported OU alpha is weak and may be difficult to distinguish from Brownian motion",
+            )
+        )
+    return warnings
+
+
+def _early_burst_identifiability_warnings_from_profile(
+    rate_change: float,
+    profile: list[tuple[float, float]],
+    bounds: tuple[float, float],
+) -> list[EvolutionaryModeIdentifiabilityWarning]:
+    lower, upper = bounds
+    span = upper - lower
+    ordered_log_likelihoods = sorted(
+        (log_likelihood for _, log_likelihood in profile),
+        reverse=True,
+    )
+    warnings: list[EvolutionaryModeIdentifiabilityWarning] = []
+    boundary_tolerance = max(span / 160.0, 1e-9)
+    if math.isclose(
+        rate_change,
+        lower,
+        rel_tol=0.0,
+        abs_tol=boundary_tolerance,
+    ) or math.isclose(
+        rate_change,
+        upper,
+        rel_tol=0.0,
+        abs_tol=boundary_tolerance,
+    ):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="boundary_rate_change",
+                message="best-supported early-burst rate change falls on the search boundary and may not be well identified",
+            )
+        )
+    if len(ordered_log_likelihoods) > 1 and (
+        ordered_log_likelihoods[0] - ordered_log_likelihoods[1] < 0.5
+    ):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="flat_likelihood_profile",
+                message="early-burst likelihood stays shallow across rate-change values, so model choice may be unstable",
+            )
+        )
+    if rate_change <= lower + max(boundary_tolerance, 1e-6):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="brownian_like_rate_change",
+                message="best-supported early-burst rate change remains close to the zero-change boundary and may be difficult to distinguish from Brownian motion",
             )
         )
     return warnings
@@ -727,7 +787,8 @@ def _early_burst_branch_length(
     if math.isclose(rate_change, 0.0, rel_tol=0.0, abs_tol=1e-12):
         return max(0.0, (child_depth - parent_depth) * sigsq)
     transformed = (
-        math.exp(rate_change * child_depth) - math.exp(rate_change * parent_depth)
+        math.exp(-rate_change * parent_depth)
+        - math.exp(-rate_change * child_depth)
     ) / rate_change
     return max(0.0, transformed * sigsq)
 
