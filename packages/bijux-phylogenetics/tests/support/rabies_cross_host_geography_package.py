@@ -3,7 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import bijux_phylogenetics.datasets.rabies_host_geography as rabies_host_geography_api
 from bijux_phylogenetics.datasets import (
+    RabiesCrossHostGeographyPanelDemoResult,
     load_rabies_cross_host_geography_panel_dataset,
     run_rabies_cross_host_geography_panel_demo,
 )
@@ -23,6 +25,10 @@ def build_stub_rabies_cross_host_geography_package(
     resource_observations_path = workflow_root / "resource-observations.tsv"
     final_manifest_path = workflow_root / "rabies-cross-host-geography.manifest.json"
     scientific_findings_path = workflow_root / "scientific-findings.tsv"
+    alignment_path = workflow_root / "rabies-cross-host-geography-panel.aln"
+    trimmed_alignment_path = (
+        workflow_root / "rabies-cross-host-geography-panel.trimmed.aln"
+    )
     bootstrap_summary_path = (
         workflow_root / "bootstrap-review" / "bootstrap-review.summary.tsv"
     )
@@ -32,6 +38,10 @@ def build_stub_rabies_cross_host_geography_package(
     biogeography_report_path = (
         workflow_root / "biogeography" / "biogeography-report.html"
     )
+    biogeography_tree_figure_path = (
+        workflow_root / "biogeography" / "biogeography-tree.svg"
+    )
+    biogeography_map_path = workflow_root / "biogeography" / "biogeography-map.svg"
     conclusion_stability_report_path = (
         workflow_root
         / "conclusion-stability"
@@ -46,9 +56,19 @@ def build_stub_rabies_cross_host_geography_package(
             scientific_findings_path,
             "finding_id\tquestion\tclaim\tevidence\tcaution\tsource_artifact\n",
         ),
+        (
+            alignment_path,
+            ">taxon_a\nACGT\n>taxon_b\nACGT\n",
+        ),
+        (
+            trimmed_alignment_path,
+            ">taxon_a\nACGT\n>taxon_b\nACGT\n",
+        ),
         (bootstrap_summary_path, "metric\tvalue\n"),
         (comparative_report_path, "<html></html>\n"),
         (biogeography_report_path, "<html></html>\n"),
+        (biogeography_tree_figure_path, "<svg><text>tree</text></svg>\n"),
+        (biogeography_map_path, "<svg><text>map</text></svg>\n"),
         (conclusion_stability_report_path, "<html></html>\n"),
     ):
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -129,7 +149,10 @@ def build_stub_rabies_cross_host_geography_package(
         fake_workflow_bundle.biogeography_report_path,
     ):
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("metric\tvalue\n", encoding="utf-8")
+        if path == fake_workflow_bundle.tree_path:
+            path.write_text("(bat_chile_rv108:0.1,fox_canada_rv241:0.2)root;\n", encoding="utf-8")
+        else:
+            path.write_text("metric\tvalue\n", encoding="utf-8")
 
     monkeypatch.setattr(
         "bijux_phylogenetics.datasets.rabies_host_geography.run_rabies_cross_host_geography_panel_workflow",
@@ -143,9 +166,13 @@ def build_stub_rabies_cross_host_geography_package(
             resource_observations_path,
             final_manifest_path,
             scientific_findings_path,
+            alignment_path,
+            trimmed_alignment_path,
             bootstrap_summary_path,
             comparative_report_path,
             biogeography_report_path,
+            biogeography_tree_figure_path,
+            biogeography_map_path,
             conclusion_stability_report_path,
             fake_workflow_bundle.tree_path,
             fake_workflow_bundle.rooting_report_path,
@@ -159,7 +186,16 @@ def build_stub_rabies_cross_host_geography_package(
         ):
             path.parent.mkdir(parents=True, exist_ok=True)
             if not path.exists():
-                path.write_text("metric\tvalue\n", encoding="utf-8")
+                if path == fake_workflow_bundle.tree_path:
+                    path.write_text("(bat_chile_rv108:0.1,fox_canada_rv241:0.2)root;\n", encoding="utf-8")
+                elif path in {alignment_path, trimmed_alignment_path}:
+                    path.write_text(">taxon_a\nACGT\n>taxon_b\nACGT\n", encoding="utf-8")
+                elif path == biogeography_tree_figure_path:
+                    path.write_text("<svg><text>tree</text></svg>\n", encoding="utf-8")
+                elif path == biogeography_map_path:
+                    path.write_text("<svg><text>map</text></svg>\n", encoding="utf-8")
+                else:
+                    path.write_text("metric\tvalue\n", encoding="utf-8")
         return fake_workflow_bundle
 
     monkeypatch.setattr(
@@ -167,3 +203,93 @@ def build_stub_rabies_cross_host_geography_package(
         _fake_write_bundle,
     )
     return run_rabies_cross_host_geography_panel_demo(output_root)
+
+
+def _stub_workflow_config(dataset) -> SimpleNamespace:
+    return SimpleNamespace(
+        config_path=dataset.workflow_config_path,
+        workflow_prefix=dataset.workflow_prefix,
+        alignment_mode="mafft_auto",
+        trimming_mode="strictplus",
+        trim_gap_threshold=0.2,
+        bootstrap_consensus_threshold=0.5,
+        bootstrap_robust_support_threshold=0.8,
+        comparative_formula=dataset.comparative_formula,
+        comparative_response=dataset.comparative_response,
+        comparative_branch_length_floor=dataset.comparative_branch_length_floor,
+        timeout_seconds=dataset.timeout_seconds,
+        max_bootstrap_tree_count=dataset.max_bootstrap_tree_count,
+        max_report_table_rows=dataset.max_report_table_rows,
+        memory_warning_threshold_bytes=dataset.memory_warning_threshold_bytes,
+    )
+
+
+def refresh_stub_rabies_cross_host_geography_package(
+    result: RabiesCrossHostGeographyPanelDemoResult,
+) -> RabiesCrossHostGeographyPanelDemoResult:
+    """Rebuild package-control artifacts after mutating a stub rabies package."""
+
+    config = _stub_workflow_config(result.dataset)
+    short_answer = rabies_host_geography_api._build_flagship_answer_summary(  # noqa: SLF001
+        result.workflow_bundle
+    )
+    rabies_host_geography_api._write_overview(  # noqa: SLF001
+        result.overview_path,
+        dataset=result.dataset,
+        workflow_bundle=result.workflow_bundle,
+        config=config,
+        short_answer=short_answer,
+        artifact_inventory_path=result.artifact_inventory_path,
+        reproducibility_checklist_path=result.reproducibility_checklist_path,
+    )
+    rabies_host_geography_api._write_demo_overview_html(  # noqa: SLF001
+        result.overview_html_path,
+        dataset=result.dataset,
+        dataset_export=result.dataset_export,
+        workflow_bundle=result.workflow_bundle,
+        config=config,
+        short_answer=short_answer,
+        artifact_inventory_path=result.artifact_inventory_path,
+        reproducibility_checklist_path=result.reproducibility_checklist_path,
+    )
+    artifact_inventory_path, artifact_inventory_rows = (
+        rabies_host_geography_api._write_package_artifact_inventory(  # noqa: SLF001
+            result.artifact_inventory_path,
+            output_root=result.output_root,
+            dataset_export=result.dataset_export,
+            workflow_bundle=result.workflow_bundle,
+            overview_path=result.overview_path,
+            overview_html_path=result.overview_html_path,
+        )
+    )
+    reproducibility_checklist_path, checklist_rows = (
+        rabies_host_geography_api._write_package_reproducibility_checklist(  # noqa: SLF001
+            result.reproducibility_checklist_path,
+            workflow_bundle=result.workflow_bundle,
+            inventory_rows=artifact_inventory_rows,
+            artifact_inventory_path=artifact_inventory_path,
+        )
+    )
+    package_manifest_path = rabies_host_geography_api._write_demo_package_manifest(  # noqa: SLF001
+        result.package_manifest_path,
+        dataset=result.dataset,
+        dataset_export=result.dataset_export,
+        workflow_bundle=result.workflow_bundle,
+        config=config,
+        short_answer=short_answer,
+        artifact_inventory_path=artifact_inventory_path,
+        artifact_inventory_rows=artifact_inventory_rows,
+        reproducibility_checklist_path=reproducibility_checklist_path,
+        checklist_rows=checklist_rows,
+    )
+    return RabiesCrossHostGeographyPanelDemoResult(
+        output_root=result.output_root,
+        dataset=result.dataset,
+        dataset_export=result.dataset_export,
+        workflow_bundle=result.workflow_bundle,
+        overview_path=result.overview_path,
+        overview_html_path=result.overview_html_path,
+        artifact_inventory_path=artifact_inventory_path,
+        reproducibility_checklist_path=reproducibility_checklist_path,
+        package_manifest_path=package_manifest_path,
+    )
