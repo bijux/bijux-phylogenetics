@@ -32,6 +32,7 @@ from bijux_phylogenetics.reports import (
     write_supplementary_ancestral_state_table,
     write_supplementary_clade_support_table,
     write_supplementary_comparative_model_table,
+    write_supplementary_diversification_table,
     write_supplementary_model_selection_table,
     write_supplementary_taxon_table,
     write_supplementary_tree_diagnostics_table,
@@ -392,6 +393,29 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the table write result as JSON."
     )
     _add_manifest_argument(report_supplementary_ancestral_state_table)
+
+    report_supplementary_diversification_table = report_subparsers.add_parser(
+        "supplementary-diversification-table",
+        help="Write a supplementary diversification table with clade rates, model estimates, sampling correction, and warnings.",
+    )
+    report_supplementary_diversification_table.add_argument(
+        "--tree", required=True, type=Path
+    )
+    report_supplementary_diversification_table.add_argument("--metadata", type=Path)
+    report_supplementary_diversification_table.add_argument("--taxon-column")
+    report_supplementary_diversification_table.add_argument("--sampling-column")
+    report_supplementary_diversification_table.add_argument(
+        "--clade-model",
+        choices=("yule", "birth-death"),
+        default="birth-death",
+    )
+    report_supplementary_diversification_table.add_argument(
+        "--out", required=True, type=Path
+    )
+    report_supplementary_diversification_table.add_argument(
+        "--json", action="store_true", help="Emit the table write result as JSON."
+    )
+    _add_manifest_argument(report_supplementary_diversification_table)
 
     report_workflow_validation = report_subparsers.add_parser(
         "workflow-validation",
@@ -1215,6 +1239,50 @@ def run_report_command(args: Any) -> int:
                         "analysis_taxon_count": result.analysis_taxon_count,
                         "excluded_taxon_count": result.excluded_taxon_count,
                         "unstable_node_count": result.unstable_node_count,
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
+        return 0
+
+    if args.report_command == "supplementary-diversification-table":
+        inputs = [args.tree]
+        if args.metadata is not None:
+            inputs.append(args.metadata)
+        result = write_supplementary_diversification_table(
+            args.out,
+            tree_path=args.tree,
+            metadata_path=args.metadata,
+            taxon_column=args.taxon_column,
+            sampling_column=args.sampling_column,
+            clade_model=args.clade_model,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=inputs,
+            outputs=[result.output_path],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=inputs,
+                    outputs=outputs,
+                    warnings=[],
+                    metrics={
+                        "row_count": result.row_count,
+                        "better_model": result.better_model,
+                        "clade_model": result.clade_model,
+                        "high_clade_count": result.high_clade_count,
+                        "low_clade_count": result.low_clade_count,
+                        "warning_count": result.warning_count,
+                        "sampling_metadata_complete": (
+                            result.sampling_metadata_complete
+                        ),
                     },
                     data=result,
                 ),
