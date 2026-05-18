@@ -147,7 +147,7 @@ if case_payload["operation"] == "fit-discrete-mk":
         Path(traits_path),
         trait=case_payload["trait_name"],
         taxon_column=case_payload["taxon_column"],
-        model="equal-rates",
+        model=case_payload["python_mode"],
     )
     missing_value_taxa = sorted(
         set(report.input_audit.pruned_missing_value_taxa) - set(tree_only_taxa)

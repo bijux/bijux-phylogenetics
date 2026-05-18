@@ -37,6 +37,9 @@ from tests.support.geiger_fitcontinuous_white_reference import (
 from tests.support.geiger_fitdiscrete_er_reference import (
     GEIGER_FITDISCRETE_ER_REFERENCE_PAYLOADS,
 )
+from tests.support.geiger_fitdiscrete_sym_reference import (
+    GEIGER_FITDISCRETE_SYM_REFERENCE_PAYLOADS,
+)
 from tests.support.fake_geiger_parity import fake_geiger_rscript
 
 
@@ -73,6 +76,9 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
         "fitdiscrete-er-binary-twenty-four-taxa",
         "fitdiscrete-er-multistate-missing-twenty-four-taxa",
         "fitdiscrete-er-multistate-tip-intersection-review",
+        "fitdiscrete-sym-three-state-twenty-four-taxa",
+        "fitdiscrete-sym-four-state-twenty-four-taxa",
+        "fitdiscrete-sym-multistate-missing-twenty-four-taxa",
     ]
     assert cases[0].function_name == "geiger::fitContinuous(model='BM')"
     assert cases[3].function_name == "geiger::fitContinuous(model='white')"
@@ -83,6 +89,7 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     assert cases[20].function_name == "geiger::fitContinuous(model='EB')"
     assert cases[22].function_name == "geiger::fitContinuous(model comparison)"
     assert cases[26].function_name == "geiger::fitDiscrete(model='ER')"
+    assert cases[29].function_name == "geiger::fitDiscrete(model='SYM')"
     assert cases[1].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
     assert cases[2].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
     assert (
@@ -148,8 +155,17 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     )
     assert cases[25].fixture_id == "geiger_continuous_white_noise_twenty_four_taxa"
     assert cases[26].fixture_id == "geiger_discrete_er_binary_twenty_four_taxa"
-    assert cases[27].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
-    assert cases[28].fixture_id == "geiger_discrete_mismatch_four_state_twenty_four_taxa"
+    assert (
+        cases[27].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
+    )
+    assert (
+        cases[28].fixture_id == "geiger_discrete_mismatch_four_state_twenty_four_taxa"
+    )
+    assert cases[29].fixture_id == "geiger_discrete_sym_three_state_twenty_four_taxa"
+    assert cases[30].fixture_id == "geiger_discrete_sym_four_state_twenty_four_taxa"
+    assert (
+        cases[31].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
+    )
     assert cases[2].comparison_fields[:7] == (
         "taxon_count",
         "trait_name",
@@ -215,6 +231,8 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     assert cases[26].optimizer_settings["bijux_optimizer_name"] == (
         "golden-section-search"
     )
+    assert cases[29].optimizer_settings is not None
+    assert cases[29].optimizer_settings["bijux_optimizer_name"] == "nelder-mead"
     assert all(path.is_file() for case in cases for path in case.input_fixtures)
 
 
@@ -228,12 +246,12 @@ def test_run_geiger_parity_cases_reports_passes_against_fake_runner(
         failure_root=tmp_path / "geiger-parity-failures",
     )
 
-    assert report.case_count == 29
-    assert report.passed_case_count == 29
+    assert report.case_count == 32
+    assert report.passed_case_count == 32
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert report.all_passed is True
-    assert len(report.summary_rows) == 9
+    assert len(report.summary_rows) == 10
     observation = next(
         item
         for item in report.observations
@@ -266,10 +284,10 @@ def test_run_geiger_parity_cases_counts_skips_when_geiger_is_unavailable(
         failure_root=tmp_path / "geiger-parity-failures",
     )
 
-    assert report.case_count == 29
+    assert report.case_count == 32
     assert report.passed_case_count == 0
     assert report.failed_case_count == 0
-    assert report.skipped_case_count == 29
+    assert report.skipped_case_count == 32
     assert report.all_passed is False
     assert all(
         item.mismatch_reason == "geiger_package_unavailable"
@@ -825,6 +843,62 @@ def test_run_geiger_parity_cases_governs_fitdiscrete_er_reference_payloads(
     assert mismatch.bijux_summary["missing_value_taxa"] == []
 
 
+def test_run_geiger_parity_cases_governs_fitdiscrete_sym_reference_payloads(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads=GEIGER_FITDISCRETE_SYM_REFERENCE_PAYLOADS,
+    )
+
+    report = run_geiger_parity_cases(
+        case_ids=[
+            "fitdiscrete-sym-three-state-twenty-four-taxa",
+            "fitdiscrete-sym-four-state-twenty-four-taxa",
+            "fitdiscrete-sym-multistate-missing-twenty-four-taxa",
+        ],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    assert report.case_count == 3
+    assert report.passed_case_count == 3
+    three_state = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitdiscrete-sym-three-state-twenty-four-taxa"
+    )
+    assert three_state.reference_summary is not None
+    assert three_state.reference_summary["log_likelihood"] == -15.16327924942547
+    assert three_state.reference_rows is not None
+    assert three_state.reference_rows[0]["source_state"] == "central"
+    assert three_state.reference_rows[0]["target_state"] == "north"
+    assert three_state.reference_rows[0]["rate"] == 0.727456725972813
+    four_state = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitdiscrete-sym-four-state-twenty-four-taxa"
+    )
+    assert four_state.reference_summary is not None
+    assert four_state.reference_summary["observed_state_count"] == 4
+    assert four_state.reference_rows is not None
+    assert any(
+        row["source_state"] == "south"
+        and row["target_state"] == "west"
+        and row["rate"] == 4.57831457247917
+        for row in four_state.reference_rows
+    )
+    missing = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitdiscrete-sym-multistate-missing-twenty-four-taxa"
+    )
+    assert missing.reference_summary is not None
+    assert missing.reference_summary["missing_value_taxa"] == ["Phy14"]
+    assert missing.bijux_summary is not None
+    assert missing.bijux_summary["excluded_taxa"] == ["Phy14"]
+
+
 def test_run_geiger_parity_cases_persists_failure_artifacts_for_mismatches(
     tmp_path: Path,
 ) -> None:
@@ -883,7 +957,7 @@ def test_write_geiger_parity_tables_writes_summary_and_observations(
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 29
+    assert len(rows) == 32
     assert rows[0]["model_name"] in {
         "BM",
         "white",
