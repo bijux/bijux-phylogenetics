@@ -293,6 +293,7 @@ bijux-phylogenetics report supplementary-tree-table --tree tree.nwk --out artifa
 bijux-phylogenetics report tree-inference-methods-summary workflow.manifest.json --out artifacts/tree-inference-methods-summary.md --json
 bijux-phylogenetics report alignment-filtering-methods-summary alignment.fasta --profile moderate --group-table metadata.tsv --group-column region --out artifacts/alignment-filtering-methods-summary.md --json
 bijux-phylogenetics report ancestral-methods-summary tree.nwk traits.tsv --trait habitat --kind discrete --model equal-rates --out artifacts/ancestral-methods-summary.md --json
+bijux-phylogenetics report reviewer-audit-checklist artifacts/tree-report.manifest.json --out artifacts/reviewer-audit-checklist.tsv --json
 bijux-phylogenetics report tree-validation-methods-summary tree.nwk --out artifacts/tree-validation-methods-summary.md --json
 bijux-phylogenetics report taxonomy --tree tree.nwk --synonym-table taxonomy.tsv --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --reported-taxa reviewer-table.tsv --out artifacts/taxonomy-report.html --json
 bijux-phylogenetics report supplementary-taxon-table --tree tree.nwk --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --filtered-alignment filtered-alignment.fasta --inference-tree inferred.nwk --reported-taxa reviewer-table.tsv --out artifacts/supplementary-taxa.tsv --json
@@ -498,6 +499,13 @@ to the governed Bayesian inference review surfaces, `ancestral report`,
 warnings, invalid interpretations, exclusion boundaries, and unresolved model
 or topology uncertainty remain visible instead of being implied only by side
 tables or caveat prose elsewhere in the package.
+
+For one reviewer-facing audit checklist over a supported package manifest, use
+`report reviewer-audit-checklist`. It writes one TSV with pass, risk, and
+blocked items plus explicit evidence and artifact pointers so tree,
+comparative, ancestral, and alignment review packages expose one durable
+checklist for reproducibility and validity review rather than scattering that
+burden across HTML sections, methods text, and raw manifests alone.
 
 For one reviewer-facing supplementary clade-support ledger, use
 `report supplementary-clade-support-table`. It writes one TSV with one row per
