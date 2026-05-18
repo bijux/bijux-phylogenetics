@@ -34,6 +34,9 @@ from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.trait_tree_package import (
     build_annotated_trait_tree_package,
 )
+from bijux_phylogenetics.trees.uncertainty_package import (
+    build_tree_set_uncertainty_figure_package,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -1089,6 +1092,109 @@ def validate_biogeography_figure_reference_fixtures(
         ],
         limitations=[
             "biogeography publication readiness is governed through shared color ledgers, render counts, and exclusion audits rather than screenshot goldens",
+        ],
+    )
+
+
+def validate_tree_set_uncertainty_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
+    """Validate tree-set uncertainty figure fixtures for visible support and instability."""
+    root = _default_fixtures_root() if fixtures_root is None else fixtures_root
+    tree_set_path = _fixture(root, "trees", "example_tree_set_left.nwk")
+    temp_root = _temp_reference_dir("bijux-tree-set-uncertainty-reference")
+    temp_root.mkdir(parents=True, exist_ok=True)
+    single_topology_path = temp_root / "single-topology-tree-set.nwk"
+    repeated_tree = tree_set_path.read_text(encoding="utf-8").splitlines()[0]
+    single_topology_path.write_text(
+        "\n".join([repeated_tree, repeated_tree, repeated_tree]) + "\n",
+        encoding="utf-8",
+    )
+
+    multi_topology_package = build_tree_set_uncertainty_figure_package(
+        tree_set_path,
+        out_dir=temp_root / "multi-topology-package",
+    )
+    single_topology_package = build_tree_set_uncertainty_figure_package(
+        single_topology_path,
+        out_dir=temp_root / "single-topology-package",
+    )
+
+    fixtures = [
+        _check(
+            goal_id=231,
+            suite="tree-set-uncertainty-publication-reference",
+            name="multi_topology_tree_set_uncertainty_visible",
+            fixture_paths=[tree_set_path],
+            expected={
+                "publication_ready": True,
+                "support_labels_validated": True,
+                "unstable_taxa_visible": True,
+                "topology_clusters_visible": True,
+                "plotted_topology_cluster_count": 2,
+            },
+            observed={
+                "publication_ready": multi_topology_package.audit.publication_ready,
+                "support_labels_validated": (
+                    multi_topology_package.audit.support_labels_validated
+                ),
+                "unstable_taxa_visible": (
+                    multi_topology_package.audit.unstable_taxa_visible
+                ),
+                "topology_clusters_visible": (
+                    multi_topology_package.audit.topology_clusters_visible
+                ),
+                "plotted_topology_cluster_count": (
+                    multi_topology_package.audit.plotted_topology_cluster_count
+                ),
+            },
+            notes=[
+                "the governed multi-topology fixture must keep consensus support, unstable taxa, and topology clusters visible on the figure surfaces"
+            ],
+        ),
+        _check(
+            goal_id=231,
+            suite="tree-set-uncertainty-publication-reference",
+            name="single_topology_tree_set_keeps_empty_instability_panel",
+            fixture_paths=[single_topology_path],
+            expected={
+                "publication_ready": True,
+                "unstable_taxon_count": 0,
+                "plotted_unstable_taxon_count": 0,
+                "unstable_taxa_visible": True,
+                "plotted_topology_cluster_count": 1,
+            },
+            observed={
+                "publication_ready": single_topology_package.audit.publication_ready,
+                "unstable_taxon_count": (
+                    single_topology_package.audit.unstable_taxon_count
+                ),
+                "plotted_unstable_taxon_count": (
+                    single_topology_package.audit.plotted_unstable_taxon_count
+                ),
+                "unstable_taxa_visible": (
+                    single_topology_package.audit.unstable_taxa_visible
+                ),
+                "plotted_topology_cluster_count": (
+                    single_topology_package.audit.plotted_topology_cluster_count
+                ),
+            },
+            notes=[
+                "the package must keep the instability panel explicit even when all trees share one topology and no taxon changes placement"
+            ],
+        ),
+    ]
+    return _suite_report(
+        goal_id=231,
+        suite="tree-set-uncertainty-publication-reference",
+        reviewer_goal="Tree-set uncertainty figure fixtures",
+        fixtures=fixtures,
+        coverage_notes=[
+            "pins one governed multi-topology tree set where consensus support, unstable taxa, clade support, and topology clusters all remain visible on the publication package surface",
+            "proves that a single-topology tree set still emits an explicit empty instability panel instead of silently dropping that uncertainty surface",
+        ],
+        limitations=[
+            "tree-set publication readiness is governed through rendered support counts, plot-presence checks, and explicit empty-state review rather than screenshot goldens",
         ],
     )
 
