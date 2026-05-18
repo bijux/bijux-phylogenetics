@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from .validation import FastTreeSupportSummaryReport
+if TYPE_CHECKING:
+    from .validation import FastTreeSupportSummaryReport
 
 __all__ = [
     "FastTreeSupportHistogramRow",

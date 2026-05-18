@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from .validation import BootstrapSupportSummaryReport
+if TYPE_CHECKING:
+    from .validation import BootstrapSupportSummaryReport
 
 __all__ = [
     "BootstrapSupportHistogramRow",

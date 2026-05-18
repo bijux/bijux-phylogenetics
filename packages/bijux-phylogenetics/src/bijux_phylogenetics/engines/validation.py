@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.ancestral.common import node_descendant_taxa
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
     compare_support_values,
@@ -40,6 +39,15 @@ from bijux_phylogenetics.io.iqtree_support import (
 )
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.trees import load_tree_set
+from .support_summaries import (
+    BootstrapSupportNode,
+    BootstrapSupportSummaryReport,
+    FastTreeSupportNode,
+    FastTreeSupportSummaryReport,
+    ShAlrtSupportNode,
+    ShAlrtSupportSummaryReport,
+    WeakBackboneReport,
+)
 
 
 @dataclass(slots=True)
@@ -130,97 +138,6 @@ class BootstrapTreeSetValidationReport:
     expected_taxa: list[str]
     valid: bool
     issues: list[str]
-
-
-@dataclass(slots=True)
-class BootstrapSupportNode:
-    node: str
-    descendant_taxa: list[str]
-    support: float
-    support_fraction: float
-    is_backbone: bool
-
-
-@dataclass(slots=True)
-class BootstrapSupportSummaryReport:
-    tree_path: Path
-    internal_node_count: int
-    supported_node_count: int
-    minimum_support: float | None
-    maximum_support: float | None
-    median_support: float | None
-    weakly_supported_clade_count: int
-    support_histogram: dict[str, int]
-    nodes: list[BootstrapSupportNode]
-    warnings: list[str]
-
-
-@dataclass(slots=True)
-class FastTreeSupportNode:
-    node: str
-    descendant_taxa: list[str]
-    local_support: float
-    support_fraction: float
-    is_backbone: bool
-
-
-@dataclass(slots=True)
-class FastTreeSupportSummaryReport:
-    tree_path: Path
-    internal_node_count: int
-    annotated_node_count: int
-    minimum_local_support: float | None
-    maximum_local_support: float | None
-    median_local_support: float | None
-    weakly_supported_clade_count: int
-    support_histogram: dict[str, int]
-    approximate_method: bool
-    support_label_kind: str
-    support_scale: str
-    nodes: list[FastTreeSupportNode]
-    warnings: list[str]
-
-
-@dataclass(slots=True)
-class WeakBackboneReport:
-    tree_path: Path
-    threshold: float
-    evaluated_backbone_node_count: int
-    weak_backbone_node_count: int
-    weak_nodes: list[BootstrapSupportNode]
-    warnings: list[str]
-
-
-@dataclass(slots=True)
-class ShAlrtSupportNode:
-    node: str
-    descendant_taxa: list[str]
-    sh_alrt_support: float | None
-    sh_alrt_support_fraction: float | None
-    ufboot_support: float | None
-    ufboot_support_fraction: float | None
-    is_backbone: bool
-    sh_alrt_strong: bool
-    ufboot_strong: bool
-    conflicting_support_signal: bool
-    support_agreement: str
-
-
-@dataclass(slots=True)
-class ShAlrtSupportSummaryReport:
-    tree_path: Path
-    internal_node_count: int
-    annotated_node_count: int
-    fully_scored_node_count: int
-    minimum_sh_alrt_support: float | None
-    maximum_sh_alrt_support: float | None
-    minimum_ufboot_support: float | None
-    maximum_ufboot_support: float | None
-    weak_sh_alrt_clade_count: int
-    weak_ufboot_clade_count: int
-    conflicting_support_signal_count: int
-    nodes: list[ShAlrtSupportNode]
-    warnings: list[str]
 
 
 @dataclass(slots=True)
@@ -511,6 +428,8 @@ def compare_inferred_tree_to_taxon_metadata(
     taxon_column: str | None = None,
 ) -> MetadataClusteringReport:
     """Report whether metadata-defined biological groups cluster monophyletically in one inferred tree."""
+    from bijux_phylogenetics.ancestral.common import node_descendant_taxa
+
     tree = load_tree(tree_path)
     table = load_taxon_table(metadata_path, taxon_column=taxon_column)
     if group_column not in table.columns:
@@ -689,6 +608,8 @@ def summarize_bootstrap_support_distribution(
     weak_support_threshold: float = 70.0,
 ) -> BootstrapSupportSummaryReport:
     """Summarize internal-node support values and their distribution across one tree."""
+    from bijux_phylogenetics.ancestral.common import node_descendant_taxa
+
     tree = load_tree(tree_path)
     nodes: list[BootstrapSupportNode] = []
     warnings: list[str] = []
@@ -750,6 +671,8 @@ def summarize_fasttree_support_distribution(
     weak_support_threshold: float = 0.7,
 ) -> FastTreeSupportSummaryReport:
     """Summarize FastTree SH-like local support labels across one tree."""
+    from bijux_phylogenetics.ancestral.common import node_descendant_taxa
+
     tree = load_tree(tree_path)
     nodes: list[FastTreeSupportNode] = []
     warnings: list[str] = []
@@ -847,6 +770,8 @@ def summarize_sh_alrt_support_distribution(
     ufboot_strong_threshold: float = 95.0,
 ) -> ShAlrtSupportSummaryReport:
     """Summarize compound SH-aLRT/UFBoot branch labels across one tree."""
+    from bijux_phylogenetics.ancestral.common import node_descendant_taxa
+
     tree = load_tree(tree_path)
     nodes: list[ShAlrtSupportNode] = []
     warnings: list[str] = []
