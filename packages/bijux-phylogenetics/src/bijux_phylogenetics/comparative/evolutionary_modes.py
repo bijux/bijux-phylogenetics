@@ -35,6 +35,14 @@ ALLOWED_EVOLUTIONARY_MODES = {
     "early-burst",
 }
 
+EXCLUDED_GEIGER_TREND_MODE_ALIASES = {
+    "trend",
+    "mean-trend",
+    "mean_trend",
+    "rate-trend",
+    "rate_trend",
+}
+
 
 @dataclass(slots=True)
 class EvolutionaryModeBranchLengthRow:
@@ -248,6 +256,10 @@ def fit_continuous_evolutionary_mode(
     early_burst_bounds: tuple[float, float] = (0.0, 50.0),
 ) -> ContinuousEvolutionaryModeFitReport:
     """Fit a Brownian, white-noise, Pagel-lambda, Pagel-kappa, Pagel-delta, OU, or early-burst intercept-only trait model."""
+    if mode in EXCLUDED_GEIGER_TREND_MODE_ALIASES:
+        raise ComparativeMethodError(
+            "trend-mode parity is explicitly excluded in this round because geiger exposes distinct `rate_trend` and `mean_trend` likelihoods rather than one unambiguous `trend` contract"
+        )
     dataset = load_comparative_dataset(
         tree_path,
         traits_path,
