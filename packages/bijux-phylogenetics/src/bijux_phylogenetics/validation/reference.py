@@ -26,6 +26,9 @@ from bijux_phylogenetics.io.fasta import (
 )
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.package import build_tree_figure_package
+from bijux_phylogenetics.render.trait_tree_package import (
+    build_annotated_trait_tree_package,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -656,6 +659,119 @@ def validate_figure_reference_fixtures(
         ],
         limitations=[
             "the current suite audits figure correctness through stable render metadata instead of pixel-level visual comparison",
+        ],
+    )
+
+
+def validate_trait_tree_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
+    """Validate annotated trait tree publication fixtures for coverage and readability."""
+    root = _default_fixtures_root() if fixtures_root is None else fixtures_root
+    tree_path = _fixture(root, "trees", "example_tree_support_left.nwk")
+    metadata_path = _fixture(root, "metadata", "example_metadata.tsv")
+    traits_path = _fixture(root, "metadata", "example_traits_validate.tsv")
+    temp_root = _temp_reference_dir("bijux-trait-tree-reference")
+    temp_root.mkdir(parents=True, exist_ok=True)
+    incomplete_metadata_path = temp_root / "example_metadata_missing_location.tsv"
+    incomplete_metadata_path.write_text(
+        "\n".join(
+            [
+                "taxon\tspecies\tlocation",
+                "A\tAlpha species\tSweden",
+                "B\tBeta species\tNorway",
+                "C\tGamma species\t",
+                "D\tDelta species\tFinland",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    valid_package = build_annotated_trait_tree_package(
+        tree_path,
+        out_dir=temp_root / "valid-package",
+        metadata_path=metadata_path,
+        traits_path=traits_path,
+        label_column="species",
+        categorical_column="habitat",
+        continuous_column="height_cm",
+        metadata_strip_columns=["location"],
+        heatmap_columns=["height_cm"],
+    )
+    incomplete_package = build_annotated_trait_tree_package(
+        tree_path,
+        out_dir=temp_root / "incomplete-package",
+        metadata_path=incomplete_metadata_path,
+        traits_path=traits_path,
+        label_column="species",
+        categorical_column="habitat",
+        metadata_strip_columns=["location"],
+    )
+    incomplete_location_row = next(
+        row
+        for row in incomplete_package.coverage_rows
+        if row.surface == "location"
+    )
+
+    fixtures = [
+        _check(
+            goal_id=227,
+            suite="trait-tree-publication-reference",
+            name="complete_annotated_trait_tree",
+            fixture_paths=[tree_path, metadata_path, traits_path],
+            expected={
+                "publication_ready": True,
+                "required_surface_count": 5,
+                "complete_surface_count": 5,
+                "missing_surface_count": 0,
+                "caption_ready": True,
+                "legible": True,
+            },
+            observed={
+                "publication_ready": valid_package.audit.publication_ready,
+                "required_surface_count": valid_package.audit.required_surface_count,
+                "complete_surface_count": valid_package.audit.complete_surface_count,
+                "missing_surface_count": valid_package.audit.missing_surface_count,
+                "caption_ready": valid_package.audit.caption_ready,
+                "legible": valid_package.audit.legible,
+            },
+        ),
+        _check(
+            goal_id=227,
+            suite="trait-tree-publication-reference",
+            name="incomplete_metadata_strip_blocks_publication",
+            fixture_paths=[tree_path, incomplete_metadata_path, traits_path],
+            expected={
+                "publication_ready": False,
+                "missing_surface_count": 1,
+                "incomplete_surface": "location",
+                "location_complete": False,
+                "location_missing_taxa": ["C"],
+            },
+            observed={
+                "publication_ready": incomplete_package.audit.publication_ready,
+                "missing_surface_count": incomplete_package.audit.missing_surface_count,
+                "incomplete_surface": incomplete_location_row.surface,
+                "location_complete": incomplete_location_row.complete,
+                "location_missing_taxa": incomplete_location_row.missing_taxa,
+            },
+            notes=[
+                "publication readiness is intentionally blocked when one requested metadata strip omits a tree taxon"
+            ],
+        ),
+    ]
+    return _suite_report(
+        goal_id=227,
+        suite="trait-tree-publication-reference",
+        reviewer_goal="Annotated trait tree publication fixtures",
+        fixtures=fixtures,
+        coverage_notes=[
+            "pins a fully covered annotated trait tree package across labels, traits, metadata strips, and reviewer ledgers",
+            "proves that incomplete requested annotation surfaces block publication readiness instead of silently degrading the figure package",
+        ],
+        limitations=[
+            "trait-tree publication readiness is governed through render metadata and annotation ledgers rather than screenshot goldens",
         ],
     )
 
