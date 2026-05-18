@@ -17,6 +17,7 @@ from bijux_phylogenetics.comparative import (
     validate_time_tree_for_diversification,
     write_clade_diversification_table,
     write_diversification_gamma_statistic_table,
+    write_diversification_model_comparison_table,
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
@@ -234,11 +235,16 @@ def test_run_trait_dependent_diversification_analysis_reports_monophyly_and_poly
 def test_write_diversification_tables_and_report_outputs_files(tmp_path: Path) -> None:
     clade_path = tmp_path / "clades.tsv"
     gamma_path = tmp_path / "gamma-statistic.tsv"
+    models_path = tmp_path / "model-comparison.tsv"
     trait_path = tmp_path / "trait-dependent.tsv"
     html_path = tmp_path / "diversification-report.html"
 
     clades = detect_diversification_outlier_clades(fixture("example_tree.nwk"))
     gamma = compute_diversification_gamma_statistic(
+        fixture("example_tree.nwk"),
+        metadata_path=fixture("example_sampling_fractions.tsv"),
+    )
+    models = compare_diversification_models(
         fixture("example_tree.nwk"),
         metadata_path=fixture("example_sampling_fractions.tsv"),
     )
@@ -257,10 +263,12 @@ def test_write_diversification_tables_and_report_outputs_files(tmp_path: Path) -
 
     write_clade_diversification_table(clade_path, clades)
     write_diversification_gamma_statistic_table(gamma_path, gamma)
+    write_diversification_model_comparison_table(models_path, models)
     write_trait_dependent_diversification_table(trait_path, trait_report)
 
     assert "classification" in clade_path.read_text(encoding="utf-8")
     assert "gamma_statistic" in gamma_path.read_text(encoding="utf-8")
+    assert "better_model" in models_path.read_text(encoding="utf-8")
     assert "monophyletic" in trait_path.read_text(encoding="utf-8")
     assert "diversification-model-comparison" in html_path.read_text(encoding="utf-8")
     assert "diversification-gamma-statistic" in html_path.read_text(encoding="utf-8")

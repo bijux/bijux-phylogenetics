@@ -1029,6 +1029,41 @@ def write_diversification_gamma_statistic_table(
     )
 
 
+def write_diversification_model_comparison_table(
+    path: Path, report: DiversificationModelComparisonReport
+) -> Path:
+    """Export one deterministic diversification model-comparison ledger."""
+    rows = [
+        {
+            "model": row.model,
+            "parameter_count": str(row.parameter_count),
+            "log_likelihood": format(row.log_likelihood, ".15g"),
+            "aic": format(row.aic, ".15g"),
+            "sampling_fraction": format(row.sampling_fraction, ".15g"),
+            "net_diversification_rate": format(
+                row.net_diversification_rate, ".15g"
+            ),
+            "relative_extinction": format(row.relative_extinction, ".15g"),
+            "better_model": str(row.model == report.better_model).lower(),
+        }
+        for row in report.rows
+    ]
+    return write_taxon_rows(
+        path,
+        columns=[
+            "model",
+            "parameter_count",
+            "log_likelihood",
+            "aic",
+            "sampling_fraction",
+            "net_diversification_rate",
+            "relative_extinction",
+            "better_model",
+        ],
+        rows=rows,
+    )
+
+
 def write_trait_dependent_diversification_table(
     path: Path, report: TraitDependentDiversificationReport
 ) -> Path:

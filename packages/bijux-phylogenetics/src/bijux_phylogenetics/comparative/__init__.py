@@ -122,6 +122,7 @@ from .diversification import (
     validate_time_tree_for_diversification,
     write_clade_diversification_table,
     write_diversification_gamma_statistic_table,
+    write_diversification_model_comparison_table,
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
@@ -711,6 +712,7 @@ __all__ = [
     "write_discrete_mk_rate_table",
     "write_discrete_mk_summary_table",
     "write_diversification_gamma_statistic_table",
+    "write_diversification_model_comparison_table",
     "write_pgls_model_matrix_table",
     "write_brownian_covariance_table",
     "write_brownian_covariance_long_table",
