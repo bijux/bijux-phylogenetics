@@ -117,6 +117,15 @@ The governed expected bundle now also includes:
   input checksum and workflow-setting comparisons behind the freshness result
 - `slurm-output-freshness.json`: one machine-readable freshness summary over
   fresh jobs, stale jobs, and failed freshness checks
+- `slurm-merge-checks.tsv`: one batch-level ledger over the checks that decide
+  whether the distributed variant outputs are globally merge-ready
+- `slurm-merge-variants.tsv`: one per-variant merge ledger recording job
+  status, freshness status, evidence presence, and whether that variant was
+  included in the global merge
+- `slurm-merge-report.json`: one machine-readable summary over merge readiness,
+  merged variant count, failed merge checks, and the merged workflow totals
+- `slurm-merge-report.html`: one reviewer-facing summary of the global merge
+  decision with direct links back to the per-job evidence packages
 - `slurm-job-status.tsv`: one per-job ledger classifying planned jobs as
   completed, failed, pending, or stale from the real execution evidence
 - `slurm-partition-status.tsv`: one per-partition rollup of job-state counts

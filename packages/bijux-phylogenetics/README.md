@@ -463,6 +463,14 @@ summary for machine review. That means changed input files or changed declared
 settings no longer look like clean completed outputs: the freshness ledger and
 the resumable status ledger both mark those results as stale until the batch is
 rerun.
+Once those per-job ledgers exist, the bundle now also writes one global merge
+surface over the complete distributed run:
+`slurm-merge-checks.tsv` records the batch-level merge checks,
+`slurm-merge-variants.tsv` records each variant's merge eligibility and linked
+evidence package, `slurm-merge-report.json` carries the machine-readable merge
+decision, and `slurm-merge-report.html` gives reviewers one compact summary of
+whether the current completed outputs are actually ready to be merged into one
+coherent workflow result.
 Its reviewer-facing HTML report is now intentionally compact: it surfaces one
 summary card set plus explicit links to the governed TSV and JSON ledgers
 instead of embedding those tables directly, and the bundle now includes
