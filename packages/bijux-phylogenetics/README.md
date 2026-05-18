@@ -283,6 +283,7 @@ bijux-phylogenetics report workflow-validation --out artifacts/workflow-validati
 bijux-phylogenetics report release-gate --out artifacts/level-1-release-gate.html --json
 bijux-phylogenetics report release-truth --test-report artifacts/pytest/full-suite.xml --real-engine-test-report artifacts/pytest/real-engine.xml --out artifacts/release-truth-report.html --json
 bijux-phylogenetics report taxonomy --tree tree.nwk --synonym-table taxonomy.tsv --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --reported-taxa reviewer-table.tsv --out artifacts/taxonomy-report.html --json
+bijux-phylogenetics report supplementary-taxon-table --tree tree.nwk --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --filtered-alignment filtered-alignment.fasta --inference-tree inferred.nwk --reported-taxa reviewer-table.tsv --out artifacts/supplementary-taxa.tsv --json
 bijux-phylogenetics taxonomy synonyms tree.nwk --synonym-table synonyms.tsv --json
 bijux-phylogenetics taxonomy resolve-synonyms tree.nwk --synonym-table synonyms.tsv --out normalized-tree.nwk --mapping-out synonym-map.tsv --json
 bijux-phylogenetics taxonomy namespaces tree.nwk --json
@@ -425,6 +426,14 @@ reproducibility manifest. That artifact records the exact input files, any
 explicit filters, the model or analysis mode, the reviewer-facing settings,
 the generated figure surfaces, and the generated tables so downstream review
 does not depend on reverse-engineering package-specific JSON.
+
+For one reviewer-facing supplementary taxon ledger, use
+`report supplementary-taxon-table`. It writes one TSV that keeps taxon IDs
+across the tree, alignment, metadata, traits, tip dates, and calibrations
+together with prefixed metadata and trait values, explicit dataset inclusion
+status, dataset exclusion causes, workflow reporting loss, and the exact
+reason later workflow surfaces dropped a taxon from the final reviewer-facing
+set.
 
 For a journal-oriented annotated trait tree package, use
 `report trait-tree-package`. It builds on the figure package and adds one
