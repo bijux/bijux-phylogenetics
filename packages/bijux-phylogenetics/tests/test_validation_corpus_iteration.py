@@ -13,6 +13,7 @@ from bijux_phylogenetics.validation import (
     build_broken_benchmark_corpus,
     build_clean_benchmark_corpus,
     build_large_alignment_scaling_benchmark_dashboard,
+    build_large_tree_set_scaling_benchmark_dashboard,
     build_large_tree_scaling_benchmark_dashboard,
     build_memory_benchmark_dashboard,
     build_messy_benchmark_corpus,
@@ -149,6 +150,28 @@ def test_build_large_alignment_scaling_benchmark_dashboard_tracks_goal_222() -> 
     )
 
 
+def test_build_large_tree_set_scaling_benchmark_dashboard_tracks_goal_223() -> None:
+    report = build_large_tree_set_scaling_benchmark_dashboard(
+        replicates=1,
+        size_classes=[
+            ("trees-8-taxa-6", 8, 6),
+            ("trees-12-taxa-8", 12, 8),
+        ],
+    )
+
+    assert report.goal_id == 223
+    assert {workflow.workflow for workflow in report.workflows} == {
+        "tree-set-consensus",
+        "pairwise-rf-diversity",
+        "topology-clustering",
+        "uncertainty-summaries",
+    }
+    assert all(
+        [row.tree_count for row in workflow.observations] == [8, 12]
+        for workflow in report.workflows
+    )
+
+
 @pytest.mark.slow
 def test_build_method_accuracy_dashboard_summarizes_fixture_and_corpus_pass_rates() -> (
     None
@@ -219,6 +242,10 @@ def test_package_root_exports_validation_corpus_surfaces() -> None:
         is build_large_alignment_scaling_benchmark_dashboard
     )
     assert (
+        validation_api.build_large_tree_set_scaling_benchmark_dashboard
+        is build_large_tree_set_scaling_benchmark_dashboard
+    )
+    assert (
         validation_api.build_large_tree_scaling_benchmark_dashboard
         is build_large_tree_scaling_benchmark_dashboard
     )
@@ -275,3 +302,19 @@ def test_write_validation_corpus_json_serializes_large_alignment_scaling_dashboa
     text = path.read_text(encoding="utf-8")
     assert '"goal_id": 222' in text
     assert '"alignment-trimming"' in text
+
+
+def test_write_validation_corpus_json_serializes_large_tree_set_scaling_dashboard(
+    tmp_path: Path,
+) -> None:
+    path = write_validation_corpus_json(
+        tmp_path / "large-tree-set-scaling.json",
+        build_large_tree_set_scaling_benchmark_dashboard(
+            replicates=1,
+            size_classes=[("trees-8-taxa-6", 8, 6)],
+        ),
+    )
+
+    text = path.read_text(encoding="utf-8")
+    assert '"goal_id": 223' in text
+    assert '"pairwise-rf-diversity"' in text
