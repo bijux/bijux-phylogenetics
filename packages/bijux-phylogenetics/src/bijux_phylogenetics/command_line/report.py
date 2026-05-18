@@ -30,6 +30,7 @@ from bijux_phylogenetics.reports import (
     build_alignment_figure_package,
     write_supplementary_alignment_diagnostics_table,
     write_supplementary_clade_support_table,
+    write_supplementary_model_selection_table,
     write_supplementary_taxon_table,
     write_supplementary_tree_diagnostics_table,
 )
@@ -295,6 +296,22 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the table write result as JSON."
     )
     _add_manifest_argument(report_supplementary_clade_support_table)
+
+    report_supplementary_model_selection_table = report_subparsers.add_parser(
+        "supplementary-model-selection-table",
+        help="Write a supplementary model-selection table from parsed IQ-TREE report artifacts.",
+    )
+    report_supplementary_model_selection_table.add_argument(
+        "--iqtree-report", required=True, type=Path
+    )
+    report_supplementary_model_selection_table.add_argument("--model-sidecar", type=Path)
+    report_supplementary_model_selection_table.add_argument(
+        "--out", required=True, type=Path
+    )
+    report_supplementary_model_selection_table.add_argument(
+        "--json", action="store_true", help="Emit the table write result as JSON."
+    )
+    _add_manifest_argument(report_supplementary_model_selection_table)
 
     report_workflow_validation = report_subparsers.add_parser(
         "workflow-validation",
@@ -990,6 +1007,42 @@ def run_report_command(args: Any) -> int:
                         "frequency_partial_support_count": result.frequency_partial_support_count,
                         "frequency_absent_clade_count": result.frequency_absent_clade_count,
                         "frequency_unscored_clade_count": result.frequency_unscored_clade_count,
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
+        return 0
+
+    if args.report_command == "supplementary-model-selection-table":
+        result = write_supplementary_model_selection_table(
+            args.out,
+            iqtree_report_path=args.iqtree_report,
+            model_sidecar_path=args.model_sidecar,
+        )
+        inputs = [args.iqtree_report]
+        if args.model_sidecar is not None:
+            inputs.append(args.model_sidecar)
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=inputs,
+            outputs=[result.output_path],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=inputs,
+                    outputs=outputs,
+                    warnings=[],
+                    metrics={
+                        "row_count": result.row_count,
+                        "candidate_count": result.candidate_count,
+                        "selected_model": result.selected_model,
+                        "selected_criterion": result.selected_criterion,
                     },
                     data=result,
                 ),
