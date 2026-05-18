@@ -1481,6 +1481,17 @@ tree and table agree, and can write a machine-readable mismatch table for
 review. Dataset readiness preflight now consumes that same owned name-check
 report so reviewer-facing blockers and warnings come from one durable mismatch
 surface instead of ad hoc overlap logic.
+The same comparative layer now also exposes a governed
+`geiger::dtt` parity surface through
+`summarize_disparity_through_time(...)` and the `comparative dtt` command.
+That owned path computes geiger-style continuous clade disparity from the mean
+squared Euclidean distance across all tip-trait pairs inside each internal
+clade, carries those clade disparities into the same branching-time
+aggregation rule that geiger DTT uses, supports one-column and multivariate
+continuous trait matrices, writes curve, clade, exclusion, and optional
+time-bin ledgers, and renders an SVG review figure. The current parity scope
+is the observed DTT curve itself; simulated null envelopes and MDI-style
+simulation summaries are still intentionally out of scope for this round.
 The same governed discrete fixture layer now backs a live
 `geiger::fitDiscrete(model='ER')` parity lane. The current ER registry covers
 three reviewer-facing surfaces: a binary twenty-four-taxon known-truth panel,
