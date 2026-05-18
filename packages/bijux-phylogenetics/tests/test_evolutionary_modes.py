@@ -158,6 +158,71 @@ def test_fit_continuous_evolutionary_mode_supports_pagel_delta_weak_signal() -> 
     ]
 
 
+def test_fit_continuous_evolutionary_mode_supports_white_noise_baseline() -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_white_noise_twenty_four_taxa"
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="white-noise",
+        taxon_column=fixture.taxon_column,
+    )
+
+    assert fit.mode == "white-noise"
+    assert fit.parameter_name is None
+    assert fit.parameter_value is None
+    assert fit.optimizer_diagnostics is None
+    assert fit.aicc >= fit.aic
+    assert fit.identifiability_warnings[0].kind == "no_phylogenetic_correlation"
+    assert "identity covariance" in fit.assumptions[0]
+
+
+def test_fit_continuous_evolutionary_mode_white_noise_fits_high_signal_worse_than_brownian() -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+
+    brownian = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="brownian",
+        taxon_column=fixture.taxon_column,
+    )
+    white = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="white-noise",
+        taxon_column=fixture.taxon_column,
+    )
+
+    assert white.log_likelihood < brownian.log_likelihood
+    assert white.aic > brownian.aic
+
+
+def test_fit_continuous_evolutionary_mode_white_noise_handles_missing_values() -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_missing_values_twenty_four_taxa"
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="white-noise",
+        taxon_column=fixture.taxon_column,
+    )
+
+    assert fit.mode == "white-noise"
+    assert fit.taxon_count == 22
+    assert fit.optimizer_diagnostics is None
+    assert fit.identifiability_warnings[0].kind == "no_phylogenetic_correlation"
+
+
 def test_fit_continuous_evolutionary_mode_supports_early_burst() -> None:
     fit = fit_continuous_evolutionary_mode(
         EXAMPLE_TREE,
