@@ -145,6 +145,9 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.workflow_bundle.slurm_array_partitions_path.is_file()
     assert result.workflow_bundle.slurm_array_members_path.is_file()
     assert result.workflow_bundle.slurm_array_strategy_path.is_file()
+    assert result.workflow_bundle.slurm_output_freshness_path.is_file()
+    assert result.workflow_bundle.slurm_output_freshness_checks_path.is_file()
+    assert result.workflow_bundle.slurm_output_freshness_summary_path.is_file()
     assert result.workflow_bundle.slurm_job_status_path.is_file()
     assert result.workflow_bundle.slurm_partition_status_path.is_file()
     assert result.workflow_bundle.slurm_workflow_status_path.is_file()
@@ -158,6 +161,10 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.workflow_bundle.slurm_array_partition_count == 2
     assert result.workflow_bundle.slurm_array_script_count == 2
     assert result.workflow_bundle.slurm_array_largest_partition_size == 2
+    assert result.workflow_bundle.slurm_output_freshness_check_count > 0
+    assert result.workflow_bundle.slurm_output_freshness_failed_check_count == 0
+    assert result.workflow_bundle.slurm_fresh_output_job_count == 4
+    assert result.workflow_bundle.slurm_stale_output_job_count == 0
     assert result.workflow_bundle.slurm_completed_job_count == 4
     assert result.workflow_bundle.slurm_failed_job_count == 0
     assert result.workflow_bundle.slurm_pending_job_count == 0
