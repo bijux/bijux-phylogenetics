@@ -28,6 +28,7 @@ from bijux_phylogenetics.reports.service import (
 )
 from bijux_phylogenetics.reports import (
     build_alignment_figure_package,
+    write_alignment_filtering_methods_summary_text,
     write_tree_validation_methods_summary_text,
     write_supplementary_alignment_diagnostics_table,
     write_supplementary_ancestral_state_table,
@@ -205,6 +206,31 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the package build result as JSON."
     )
     _add_manifest_argument(report_alignment_package)
+
+    report_alignment_filtering_methods_summary = report_subparsers.add_parser(
+        "alignment-filtering-methods-summary",
+        help="Write reviewer-facing methods-summary text for profile-driven alignment filtering.",
+    )
+    report_alignment_filtering_methods_summary.add_argument("alignment", type=Path)
+    report_alignment_filtering_methods_summary.add_argument(
+        "--profile", required=True
+    )
+    report_alignment_filtering_methods_summary.add_argument(
+        "--group-table", type=Path
+    )
+    report_alignment_filtering_methods_summary.add_argument(
+        "--group-column",
+        dest="group_columns",
+        action="append",
+        default=None,
+    )
+    report_alignment_filtering_methods_summary.add_argument(
+        "--out", required=True, type=Path
+    )
+    report_alignment_filtering_methods_summary.add_argument(
+        "--json", action="store_true", help="Emit the methods-summary result as JSON."
+    )
+    _add_manifest_argument(report_alignment_filtering_methods_summary)
 
     report_dataset = report_subparsers.add_parser(
         "dataset", help="Render a tree plus table dataset HTML report."
@@ -812,6 +838,56 @@ def run_report_command(args: Any) -> int:
                         "alignment_length": result.alignment.alignment_length,
                         "quality_score": result.alignment_quality.quality_score,
                         "warning_count": len(result.alignment_forensic.warnings),
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
+        return 0
+
+    if args.report_command == "alignment-filtering-methods-summary":
+        result = write_alignment_filtering_methods_summary_text(
+            args.out,
+            alignment_path=args.alignment,
+            profile_name=args.profile,
+            group_table_path=args.group_table,
+            group_columns=args.group_columns,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=(
+                [args.alignment, args.group_table]
+                if args.group_table is not None
+                else [args.alignment]
+            ),
+            outputs=[result.output_path],
+        )
+        warnings = [
+            *(warning.message for warning in result.cleaning.signal_warnings),
+            *result.cleaning.warnings,
+            *result.cleaning.comparison.warnings,
+        ]
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=(
+                        [args.alignment, args.group_table]
+                        if args.group_table is not None
+                        else [args.alignment]
+                    ),
+                    outputs=outputs,
+                    warnings=warnings,
+                    metrics={
+                        "warning_count": result.warning_count,
+                        "removed_site_count": result.removed_site_count,
+                        "removed_sequence_count": result.removed_sequence_count,
+                        "retained_sequence_count": result.retained_sequence_count,
+                        "retained_alignment_length": result.retained_alignment_length,
+                        "profile_name": result.cleaning.profile.name,
                     },
                     data=result,
                 ),
