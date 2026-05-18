@@ -307,6 +307,7 @@ bijux-phylogenetics taxonomy stability --run tree=tree.nwk --run alignment=align
 bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative discrete-mk tree.nwk traits.tsv --trait habitat --taxon-column species --model equal-rates --summary-out artifacts/discrete-mk-summary.tsv --rates-out artifacts/discrete-mk-rates.tsv --json
+bijux-phylogenetics comparative discrete-mk tree.nwk traits.tsv --trait habitat --taxon-column species --model equal-rates --transform lambda --summary-out artifacts/discrete-mk-lambda-summary.tsv --rates-out artifacts/discrete-mk-lambda-rates.tsv --json
 bijux-phylogenetics comparative brownian tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative compare-models tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative model-comparison-package tree.nwk traits.tsv --trait height_cm --out-dir artifacts/model-comparison-package --json
@@ -923,12 +924,17 @@ clean and missing-value-pruned fixtures. The ARD surface now also matches the
 governed live `phytools::fitMk(model='ARD')` lane over binary and
 missing-value-pruned binary fixtures at full rate-row parity, and over clean
 and missing-value-pruned multistate fixtures at summary parity when the
-optimizer flags weakly identified boundary rates. The command reports
-log-likelihood, parameter count, AIC, AICc, one explicit missing-value
-pruning audit, one directed transition-rate ledger, overparameterization
-status, weak-identifiability warnings, optimizer diagnostics, and ER baseline
-comparison metrics instead of reducing the fit to one scalar alone. The same
-owned runtime is also reusable directly from Python through
+optimizer flags weakly identified boundary rates. The same owned surface now
+also supports `--transform lambda` for unordered ER, SYM, and ARD fits on
+ultrametric rooted trees, records the fitted Pagel-lambda value separately
+from the transition-rate parameters, and warns when the transformed
+branch-length support stays close to the zero-signal or untransformed
+boundary. The command reports log-likelihood, parameter count, AIC, AICc, one
+explicit missing-value pruning audit, one directed transition-rate ledger,
+overparameterization status, weak-identifiability warnings, optimizer
+diagnostics, and ER baseline comparison metrics instead of reducing the fit
+to one scalar alone. The same owned runtime is also reusable directly from
+Python through
 `fit_discrete_mk_model_from_dataset(...)` once one `AncestralDiscreteDataset`
 has already been loaded.
 
@@ -1456,6 +1462,21 @@ surfaces under durable fixture ids, explicit ER, SYM, and ARD
 transition-matrix metadata, and missing-state, constant-state, and
 tree-versus-table control panels so later discrete parity lanes do not fall
 back to one-off state tables or hand-entered rate matrices.
+The same governed discrete fixture layer now also backs a live
+`geiger::fitDiscrete(model='ER', transform='lambda')` parity lane. The
+current lambda registry covers three reviewer-facing surfaces: an equal-rates
+strong-signal review, a curated near-zero lambda weak-signal review, and a
+missing-value pruning review. Bijux exposes that owned side through
+`fit_discrete_mk_model(model='equal-rates', transform='lambda')`, reuses the
+same observed-root likelihood contract as the non-transformed ER lane, and
+records the fitted lambda parameter separately from the directed transition
+rates. The parity contract compares log-likelihood, information criteria,
+pruning behavior, transform identity, and the fitted lambda value against
+real local `geiger` output while still checking the directed rate rows on the
+transformed branch surface for the stable strong-signal and missing-value
+cases. The near-zero weak-signal review remains summary-level on the parity
+surface, because the raw ER rate can inflate sharply as lambda collapses
+toward zero even when the likelihood surface itself still agrees.
 The same live lane now also covers `geiger::fitDiscrete(model='SYM')` over
 three governed multistate surfaces: a three-state known-truth panel, a
 four-state known-truth panel, and a three-state missing-value pruning review
