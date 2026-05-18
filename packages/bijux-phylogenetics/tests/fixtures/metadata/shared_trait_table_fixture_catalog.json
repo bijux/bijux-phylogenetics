@@ -743,6 +743,99 @@
       "notes": "Twenty-four-taxon directional discrete comparative table with one missing binary state and one missing multistate observation so governed `phytools::fitMk(model='ARD')` parity proves explicit pruning before likelihood evaluation."
     },
     {
+      "fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "er_binary_truth",
+        "sym_three_state_truth",
+        "sym_four_state_truth",
+        "sym_six_state_truth",
+        "ard_binary_truth",
+        "ard_four_state_truth",
+        "constant_state"
+      ],
+      "validation_expectation": "discrete-ready",
+      "ape_reference_expectation": "geiger-fitdiscrete-ready",
+      "row_count": 24,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "three-state-discrete-trait",
+        "four-plus-state-discrete-trait",
+        "equal-rates-model",
+        "symmetric-discrete-model",
+        "all-rates-different-model",
+        "rare-state-case",
+        "constant-trait-negative-case",
+        "overparameterized-fit",
+        "known-truth-simulation",
+        "known-transition-matrix-metadata",
+        "twenty-plus-taxa",
+        "geiger-fitdiscrete"
+      ],
+      "notes": "Twenty-four-taxon geiger discrete panel with ER, SYM, and ARD review surfaces plus one constant-state blocker and one six-state sparse overparameterization stress case for governed `fitDiscrete` parity."
+    },
+    {
+      "fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_geiger_discrete_model_panel_missing_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "er_binary_truth",
+        "sym_three_state_truth",
+        "sym_four_state_truth",
+        "sym_six_state_truth",
+        "ard_binary_truth",
+        "ard_four_state_truth",
+        "constant_state"
+      ],
+      "validation_expectation": "missing-trait-values-present",
+      "ape_reference_expectation": "geiger-fitdiscrete-ready-after-pruning",
+      "row_count": 24,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "missing-trait-values",
+        "three-state-discrete-trait",
+        "four-plus-state-discrete-trait",
+        "twenty-plus-taxa",
+        "geiger-fitdiscrete"
+      ],
+      "notes": "Twenty-four-taxon geiger discrete panel with explicit missing ER, SYM, and ARD observations so `fitDiscrete` parity must prove pruning before any likelihood comparison."
+    },
+    {
+      "fixture_id": "geiger_discrete_model_panel_mismatch_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_geiger_discrete_model_panel_mismatch_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "er_binary_truth",
+        "sym_three_state_truth",
+        "sym_four_state_truth",
+        "sym_six_state_truth",
+        "ard_binary_truth",
+        "ard_four_state_truth",
+        "constant_state"
+      ],
+      "validation_expectation": "tip-intersection-required",
+      "ape_reference_expectation": "geiger-fitdiscrete-ready-after-tip-intersection",
+      "row_count": 24,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "three-state-discrete-trait",
+        "four-plus-state-discrete-trait",
+        "extra-taxa-not-in-tree",
+        "tree-taxa-missing-from-trait-table",
+        "tree-trait-taxon-mismatch",
+        "twenty-plus-taxa",
+        "geiger-fitdiscrete"
+      ],
+      "notes": "Twenty-four-taxon geiger discrete panel with one missing tree tip and one extra trait-only row so tree-versus-table mismatch stays governed before later `fitDiscrete` parity lanes consume it."
+    },
+    {
       "fixture_id": "phytools_signal_constant_twenty_four_taxa",
       "relative_path": "metadata/example_traits_phytools_signal_constant_twenty_four_taxa.tsv",
       "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
