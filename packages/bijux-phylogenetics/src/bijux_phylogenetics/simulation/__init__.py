@@ -722,6 +722,27 @@ def simulate_early_burst_traits(
     )
 
 
+def simulate_speciational_traits(
+    tree_path: Path,
+    *,
+    root_state: float = 0.0,
+    sigma: float | None = None,
+    sigma_squared: float | None = None,
+    seed: int = 1,
+) -> ContinuousTraitSimulationReport:
+    from .continuous import (
+        simulate_speciational_traits as simulate_speciational_traits_impl,
+    )
+
+    return simulate_speciational_traits_impl(
+        tree_path,
+        root_state=root_state,
+        sigma=sigma,
+        sigma_squared=sigma_squared,
+        seed=seed,
+    )
+
+
 def simulate_brownian_trait_collection(
     tree_path: Path,
     *,
@@ -736,6 +757,29 @@ def simulate_brownian_trait_collection(
     )
 
     return simulate_brownian_trait_collection_impl(
+        tree_path,
+        root_state=root_state,
+        sigma=sigma,
+        sigma_squared=sigma_squared,
+        replicates=replicates,
+        seed=seed,
+    )
+
+
+def simulate_speciational_trait_collection(
+    tree_path: Path,
+    *,
+    root_state: float = 0.0,
+    sigma: float | None = None,
+    sigma_squared: float | None = None,
+    replicates: int = 128,
+    seed: int = 1,
+) -> ContinuousTraitSimulationCollectionReport:
+    from .continuous import (
+        simulate_speciational_trait_collection as simulate_speciational_trait_collection_impl,
+    )
+
+    return simulate_speciational_trait_collection_impl(
         tree_path,
         root_state=root_state,
         sigma=sigma,

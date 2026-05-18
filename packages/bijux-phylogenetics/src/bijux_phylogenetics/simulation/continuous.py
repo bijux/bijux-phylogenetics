@@ -139,6 +139,43 @@ def simulate_early_burst_traits(
     )
 
 
+def simulate_speciational_traits(
+    tree_path: Path,
+    *,
+    root_state: float = 0.0,
+    sigma: float | None = None,
+    sigma_squared: float | None = None,
+    seed: int = 1,
+):
+    from . import _resolve_brownian_sigma_parameters, _simulate_brownian_node_values
+
+    sigma, sigma_squared = _resolve_brownian_sigma_parameters(
+        sigma=sigma,
+        sigma_squared=sigma_squared,
+    )
+    tree = _build_speciational_tree(load_tree(tree_path))
+    rng = random.Random(seed)  # nosec B311
+    node_values = _simulate_brownian_node_values(
+        tree,
+        root_state=root_state,
+        sigma=sigma,
+        rng=rng,
+    )
+    return _build_continuous_trait_simulation_report(
+        tree=tree,
+        tree_path=tree_path,
+        model="speciational",
+        seed=seed,
+        root_state=root_state,
+        sigma=sigma,
+        sigma_squared=sigma_squared,
+        alpha=None,
+        theta=None,
+        rate_change=None,
+        node_values=node_values,
+    )
+
+
 def _build_continuous_trait_simulation_report(
     *,
     tree: PhyloTree,
@@ -190,7 +227,19 @@ def _build_continuous_trait_simulation_report(
     )
 
 
-def _build_brownian_collection_summary_rows(simulations):
+def _build_speciational_tree(tree: PhyloTree) -> PhyloTree:
+    transformed_tree = tree.copy()
+    for _, child in transformed_tree.iter_edges():
+        branch_length = float(child.branch_length or 0.0)
+        if branch_length < 0.0:
+            raise ValueError(
+                "speciational simulation requires nonnegative branch lengths"
+            )
+        child.branch_length = 0.0 if branch_length == 0.0 else 1.0
+    return transformed_tree
+
+
+def _build_continuous_collection_summary_rows(simulations):
     from . import (
         ContinuousTraitSimulationSummaryRow,
         _mean,
@@ -291,7 +340,65 @@ def simulate_brownian_trait_collection(
         sigma=sigma,
         sigma_squared=sigma_squared,
         simulations=simulations,
-        rows=_build_brownian_collection_summary_rows(simulations),
+        rows=_build_continuous_collection_summary_rows(simulations),
+    )
+
+
+def simulate_speciational_trait_collection(
+    tree_path: Path,
+    *,
+    root_state: float = 0.0,
+    sigma: float | None = None,
+    sigma_squared: float | None = None,
+    replicates: int = 128,
+    seed: int = 1,
+):
+    from . import (
+        ContinuousTraitSimulationCollectionReport,
+        _resolve_brownian_sigma_parameters,
+        _simulate_brownian_node_values,
+    )
+
+    if replicates < 1:
+        raise ValueError(f"replicates must be at least 1, got {replicates}")
+    sigma, sigma_squared = _resolve_brownian_sigma_parameters(
+        sigma=sigma,
+        sigma_squared=sigma_squared,
+    )
+    tree = _build_speciational_tree(load_tree(tree_path))
+    simulations = [
+        _build_continuous_trait_simulation_report(
+            tree=tree,
+            tree_path=tree_path,
+            model="speciational",
+            seed=seed + index - 1,
+            root_state=root_state,
+            sigma=sigma,
+            sigma_squared=sigma_squared,
+            alpha=None,
+            theta=None,
+            rate_change=None,
+            node_values=_simulate_brownian_node_values(
+                tree,
+                root_state=root_state,
+                sigma=sigma,
+                rng=random.Random(seed + index - 1),  # nosec B311
+            ),
+        )
+        for index in range(1, replicates + 1)
+    ]
+    return ContinuousTraitSimulationCollectionReport(
+        model="speciational",
+        tree_path=tree_path,
+        tip_count=tree.tip_count,
+        branch_count=sum(1 for _ in tree.iter_edges()),
+        replicate_count=replicates,
+        seed=seed,
+        root_state=root_state,
+        sigma=sigma,
+        sigma_squared=sigma_squared,
+        simulations=simulations,
+        rows=_build_continuous_collection_summary_rows(simulations),
     )
 
 
