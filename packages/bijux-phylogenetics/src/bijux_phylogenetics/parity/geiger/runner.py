@@ -288,7 +288,7 @@ def _missing_value_policy() -> str:
 
 
 def _parameter_bound_policy(case: GeigerParityCase) -> str:
-    if case.python_mode == "brownian":
+    if case.python_mode in {"brownian", "white-noise"}:
         return "closed-form-without-parameter-bounds"
     return "governed-bounded-grid-search"
 
@@ -314,7 +314,7 @@ def _bijux_optimizer_result(
             "hit_lower_boundary": diagnostics.hit_lower_boundary,
             "hit_upper_boundary": diagnostics.hit_upper_boundary,
         }
-    if case.python_mode == "brownian":
+    if case.python_mode in {"brownian", "white-noise"}:
         return {
             "optimizer_name": "closed-form-profile-solution",
             "parameter_search": "none",

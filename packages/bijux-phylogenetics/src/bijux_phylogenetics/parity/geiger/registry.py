@@ -45,6 +45,15 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
     brownian_missing_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_missing_values_twenty_four_taxa"
     )
+    white_strong_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+    white_weak_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_white_noise_twenty_four_taxa"
+    )
+    white_missing_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_missing_values_twenty_four_taxa"
+    )
     lambda_strong_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_brownian_signal_twenty_four_taxa"
     )
@@ -186,6 +195,107 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "missing_from_traits",
                 "missing_value_policy",
                 "standard_error_policy",
+                "root_state",
+                "rate",
+                "log_likelihood",
+                "aic",
+                "aicc",
+            ),
+            field_tolerances={"aicc": 1e-5},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-white-strong-signal-review",
+            fixture_id=white_strong_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model='white')",
+            python_function_name="fit_continuous_evolutionary_mode",
+            operation="fit-continuous",
+            model_name="white",
+            python_mode="white-noise",
+            input_fixtures=(
+                white_strong_fixture.tree_path,
+                white_strong_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=white_strong_fixture.trait_name,
+            taxon_column=white_strong_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-default",
+                "bijux_optimizer_name": "closed-form-profile-solution",
+                "bijux_parameter_search": "none",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "root_state",
+                "rate",
+                "log_likelihood",
+                "aic",
+                "aicc",
+            ),
+            field_tolerances={"aicc": 1e-5},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-white-weak-signal-review",
+            fixture_id=white_weak_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model='white')",
+            python_function_name="fit_continuous_evolutionary_mode",
+            operation="fit-continuous",
+            model_name="white",
+            python_mode="white-noise",
+            input_fixtures=(
+                white_weak_fixture.tree_path,
+                white_weak_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=white_weak_fixture.trait_name,
+            taxon_column=white_weak_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-default",
+                "bijux_optimizer_name": "closed-form-profile-solution",
+                "bijux_parameter_search": "none",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "root_state",
+                "rate",
+                "log_likelihood",
+                "aic",
+                "aicc",
+            ),
+            field_tolerances={"aicc": 1e-5},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-white-missing-values-review",
+            fixture_id=white_missing_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model='white')",
+            python_function_name="fit_continuous_evolutionary_mode",
+            operation="fit-continuous",
+            model_name="white",
+            python_mode="white-noise",
+            input_fixtures=(
+                white_missing_fixture.tree_path,
+                white_missing_fixture.traits_path,
+            ),
+            tolerance=1e-6,
+            trait_name=white_missing_fixture.trait_name,
+            taxon_column=white_missing_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-default",
+                "bijux_optimizer_name": "closed-form-profile-solution",
+                "bijux_parameter_search": "none",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "non_numeric_taxa",
+                "missing_from_traits",
                 "root_state",
                 "rate",
                 "log_likelihood",
