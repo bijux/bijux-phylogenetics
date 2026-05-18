@@ -12,6 +12,9 @@ from bijux_phylogenetics.core.taxonomy import (
     build_taxon_mapping_conflict_report,
 )
 from bijux_phylogenetics.ancestral import build_ancestral_figure_package
+from bijux_phylogenetics.biogeography.report_package import (
+    build_biogeography_report_package,
+)
 from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
@@ -971,6 +974,121 @@ def validate_ancestral_figure_reference_fixtures(
         ],
         limitations=[
             "ancestral figure publication readiness is audited through render metadata and reviewer ledgers rather than screenshot goldens",
+        ],
+    )
+
+
+def validate_biogeography_figure_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
+    """Validate biogeography publication fixtures for visible states and transitions."""
+    root = _default_fixtures_root() if fixtures_root is None else fixtures_root
+    tree_path = _fixture(root, "trees", "example_tree.nwk")
+    traits_path = _fixture(root, "metadata", "example_traits_geography.tsv")
+    centroids_path = _fixture(
+        root,
+        "metadata",
+        "example_geographic_region_centroids.tsv",
+    )
+    temp_root = _temp_reference_dir("bijux-biogeography-figure-reference")
+    temp_root.mkdir(parents=True, exist_ok=True)
+    incomplete_centroids_path = temp_root / "example_geographic_region_centroids_missing_island.tsv"
+    incomplete_centroids_path.write_text(
+        "\n".join(
+            [
+                "region\tlatitude\tlongitude",
+                "north\t59.33\t18.07",
+                "south\t-33.45\t-70.66",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    complete_package = build_biogeography_report_package(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        centroids_path=centroids_path,
+        trait="region",
+        out_dir=temp_root / "complete-package",
+        model="ard",
+    )
+    blocked_package = build_biogeography_report_package(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        centroids_path=incomplete_centroids_path,
+        trait="region",
+        out_dir=temp_root / "blocked-package",
+        model="ard",
+    )
+
+    fixtures = [
+        _check(
+            goal_id=230,
+            suite="biogeography-figure-publication-reference",
+            name="visible_state_probabilities_and_transitions",
+            fixture_paths=[tree_path, traits_path, centroids_path],
+            expected={
+                "publication_ready": True,
+                "node_probabilities_visible": True,
+                "transitions_visible": True,
+                "map_state_colors_complete": True,
+                "rendered_internal_pie_count_matches": True,
+            },
+            observed={
+                "publication_ready": complete_package.audit.publication_ready,
+                "node_probabilities_visible": (
+                    complete_package.audit.node_probabilities_visible
+                ),
+                "transitions_visible": complete_package.audit.transitions_visible,
+                "map_state_colors_complete": (
+                    complete_package.audit.map_state_colors_complete
+                ),
+                "rendered_internal_pie_count_matches": (
+                    complete_package.audit.rendered_internal_pie_count
+                    == complete_package.audit.expected_internal_node_count
+                ),
+            },
+            notes=[
+                "the governed biogeography fixture must keep internal pies, probability labels, and visible transition lines on the publication surfaces"
+            ],
+        ),
+        _check(
+            goal_id=230,
+            suite="biogeography-figure-publication-reference",
+            name="missing_centroid_blocks_publication",
+            fixture_paths=[tree_path, traits_path, incomplete_centroids_path],
+            expected={
+                "publication_ready": False,
+                "map_state_colors_complete": False,
+                "has_exclusion_limitation": True,
+            },
+            observed={
+                "publication_ready": blocked_package.audit.publication_ready,
+                "map_state_colors_complete": (
+                    blocked_package.audit.map_state_colors_complete
+                ),
+                "has_exclusion_limitation": any(
+                    "excluded" in limitation.lower()
+                    for limitation in blocked_package.audit.limitations
+                ),
+            },
+            notes=[
+                "publication readiness stays blocked when one inferred region cannot be rendered on the geographic map"
+            ],
+        ),
+    ]
+    return _suite_report(
+        goal_id=230,
+        suite="biogeography-figure-publication-reference",
+        reviewer_goal="Biogeography figure publication fixtures",
+        fixtures=fixtures,
+        coverage_notes=[
+            "pins one governed biogeography figure package where the tree carries explicit node-probability pies and the map keeps shared state colors plus visible geographic transitions",
+            "proves that incomplete centroid coverage blocks publication readiness instead of silently degrading the map figure",
+        ],
+        limitations=[
+            "biogeography publication readiness is governed through shared color ledgers, render counts, and exclusion audits rather than screenshot goldens",
         ],
     )
 
