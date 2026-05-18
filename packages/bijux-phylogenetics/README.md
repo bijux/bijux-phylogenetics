@@ -1477,6 +1477,18 @@ transformed branch surface for the stable strong-signal and missing-value
 cases. The near-zero weak-signal review remains summary-level on the parity
 surface, because the raw ER rate can inflate sharply as lambda collapses
 toward zero even when the likelihood surface itself still agrees.
+The same owned surface now also supports
+`fit_discrete_mk_model(..., transform='kappa')` and a governed live
+`geiger::fitDiscrete(transform='kappa')` parity lane. That registry covers a
+branch-length-sensitive ER review, a near-zero weak-signal ER review, and a
+missing-value SYM review. For this discrete lane, Bijux now follows the
+local `geiger` kappa contract rather than the continuous-model one: kappa is
+searched within `[0, 1]`, the transformed tree is built by raising branch
+lengths directly to the fitted kappa value, and near-boundary kappa fits
+record explicit flattening or untransformed-branch warnings. The weak-signal
+kappa review remains summary-level on the parity surface because the
+likelihood surface still agrees even when the raw ER rate maximum becomes
+unstable near the zero-contrast boundary.
 The same live lane now also covers `geiger::fitDiscrete(model='SYM')` over
 three governed multistate surfaces: a three-state known-truth panel, a
 four-state known-truth panel, and a three-state missing-value pruning review
