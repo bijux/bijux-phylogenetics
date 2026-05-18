@@ -156,6 +156,15 @@ def run_render_command(args: Any) -> int:
                     "rendered_metadata_strip_count": result.rendered_metadata_strip_count,
                     "rendered_heatmap_column_count": result.rendered_heatmap_column_count,
                     "collapsed_clade_count": result.collapsed_clade_count,
+                    "figure_package_legible": None
+                    if package_result is None
+                    else package_result.legibility_audit.legible,
+                    "figure_package_legend_entry_count": 0
+                    if package_result is None
+                    else len(package_result.legend_entries),
+                    "figure_package_caption_ready": None
+                    if package_result is None
+                    else package_result.caption_draft.caption_ready,
                 },
                 data={
                     "render": result,
@@ -165,6 +174,15 @@ def run_render_command(args: Any) -> int:
                     "figure_package_audit": None
                     if package_result is None
                     else package_result.audit,
+                    "figure_package_legibility_audit": None
+                    if package_result is None
+                    else package_result.legibility_audit,
+                    "figure_package_caption_draft": None
+                    if package_result is None
+                    else package_result.caption_draft,
+                    "figure_package_legend_entries": None
+                    if package_result is None
+                    else package_result.legend_entries,
                     "support_audit": support_audit,
                 },
             ),
