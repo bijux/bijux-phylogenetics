@@ -1324,8 +1324,9 @@ shared fixtures live in
 cover twenty-four-taxon and one-hundred-twenty-eight-taxon ultrametric signal
 surfaces, a rooted non-ultrametric control tree, OU and early-burst
 known-truth traits, white-noise low-signal traits, missing-value pruning,
-constant-trait blockers, an explicit outlier surface, and one trend proxy for
-later `fitContinuous` model expansion. Failed or skipped
+constant-trait blockers, an explicit outlier surface, one trend proxy for
+later `fitContinuous` model expansion, and one governed per-taxon
+standard-error review surface. Failed or skipped
 cases always persist their case payload, structured summaries, parameter
 ledgers, and mismatch reason under `artifacts/geiger-parity-failures/` so the
 live parity lane stays reviewer-usable instead of collapsing into hidden
@@ -1353,6 +1354,13 @@ retains a directional trend-proxy surface, but the owned runtime does not claim
 falls through to the rate-trend path by partial matching. Bijux now rejects
 `trend`, `rate_trend`, and `mean_trend` requests explicitly instead of
 pretending one interpretation is canonical.
+Standard-error parity is also explicitly excluded in this round. Local
+`geiger::fitContinuous` does expose the top-level `SE=` surface, so the
+exclusion is explicit rather than silent: the owned Bijux continuous-mode fit
+rejects `standard_error_trait`, the shared fixture corpus now retains one
+governed per-taxon standard-error review surface for future parity work, and
+the live `geiger` lane reports the durable policy string
+`fitcontinuous-standard-error-explicitly-excluded-this-round`.
 The lambda lane now has three governed `fitContinuous(model='lambda')` cases:
 a twenty-four-taxon strong-signal review surface that lands on the Brownian
 upper boundary, a twenty-four-taxon weak-signal review surface that collapses

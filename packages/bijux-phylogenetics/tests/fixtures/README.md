@@ -120,7 +120,9 @@ lane hardcode recovery-panel paths. It covers twenty-four-taxon and one-
 hundred-twenty-eight-taxon ultrametric surfaces, a rooted non-ultrametric
 negative-control tree, Brownian, OU, and early-burst known-truth traits,
 white-noise low-signal traits, missing-value pruning, constant-trait blockers,
-one explicit outlier surface, and one trend proxy for future model expansion.
+one explicit outlier surface, one trend proxy for future model expansion, and
+one governed per-taxon standard-error review surface retained for future
+`fitContinuous(SE=...)` parity work.
 The same metadata corpus now also has one governed shared `geiger`
 discrete-trait catalog at
 `metadata/shared_geiger_discrete_fixture_catalog.json`. That catalog resolves
