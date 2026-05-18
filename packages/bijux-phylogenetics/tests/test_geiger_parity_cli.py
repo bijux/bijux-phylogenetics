@@ -38,8 +38,8 @@ def test_parity_cli_runs_live_geiger_harness_and_writes_tables(
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["metrics"]["reference_source"] == "geiger-live"
-    assert payload["metrics"]["case_count"] == 44
-    assert payload["metrics"]["function_count"] == 16
+    assert payload["metrics"]["case_count"] == 48
+    assert payload["metrics"]["function_count"] == 17
     assert payload["metrics"]["skipped_case_count"] == 0
     assert summary_path.exists()
     assert observation_path.exists()
@@ -207,6 +207,34 @@ def test_parity_cli_restricts_live_geiger_delta_discrete_cases(
     assert payload["metrics"]["case_count"] == 1
     observation = payload["data"]["report"]["observations"][0]
     assert observation["case_id"] == "fitdiscrete-delta-late-change-boundary-review"
+    assert observation["model_name"] == "ER"
+
+
+def test_parity_cli_restricts_live_geiger_early_burst_discrete_cases(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+
+    exit_code = main(
+        [
+            "parity",
+            "--reference-source",
+            "geiger-live",
+            "--geiger-rscript-executable",
+            str(rscript),
+            "--geiger-case",
+            "fitdiscrete-early-burst-early-change-review",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["case_count"] == 1
+    observation = payload["data"]["report"]["observations"][0]
+    assert observation["case_id"] == "fitdiscrete-early-burst-early-change-review"
     assert observation["model_name"] == "ER"
 
 

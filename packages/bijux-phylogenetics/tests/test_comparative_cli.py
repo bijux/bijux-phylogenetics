@@ -457,6 +457,36 @@ def test_comparative_discrete_mk_cli_reports_delta_transform_metrics(
     assert payload["metrics"]["transform_warning_count"] >= 0
 
 
+def test_comparative_discrete_mk_cli_reports_early_burst_transform_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(fixture("example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv")),
+            "--trait",
+            "er_binary_delta_time_sensitive",
+            "--taxon-column",
+            "taxon",
+            "--transform",
+            "early-burst",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["transform"] == "early-burst"
+    assert payload["metrics"]["parameter_count"] == 2
+    assert payload["metrics"]["transform_parameter_name"] == "a"
+    assert payload["metrics"]["transform_parameter_value"] < 0.0
+    assert payload["metrics"]["transform_function_evaluation_count"] == 26
+    assert payload["metrics"]["transform_warning_count"] >= 1
+
+
 def test_comparative_discrete_mk_cli_rejects_meristic_parity_claim(
     capsys,
 ) -> None:

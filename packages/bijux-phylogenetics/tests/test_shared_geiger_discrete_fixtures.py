@@ -266,6 +266,73 @@ def test_shared_geiger_discrete_fixture_catalog_supports_delta_transform_review(
     assert missing_report.parameter_count == 2
 
 
+def test_shared_geiger_discrete_fixture_catalog_supports_early_burst_review() -> (
+    None
+):
+    early_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_early_burst_early_change_twenty_four_taxa"
+    )
+    weak_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_early_burst_weak_signal_twenty_four_taxa"
+    )
+    late_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_early_burst_late_change_twenty_four_taxa"
+    )
+    missing_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_early_burst_missing_binary_twenty_four_taxa"
+    )
+
+    early_report = fit_discrete_mk_model(
+        early_fixture.tree_path,
+        early_fixture.traits_path,
+        trait=early_fixture.trait_name,
+        taxon_column=early_fixture.taxon_column,
+        model="equal-rates",
+        transform="early-burst",
+    )
+    weak_report = fit_discrete_mk_model(
+        weak_fixture.tree_path,
+        weak_fixture.traits_path,
+        trait=weak_fixture.trait_name,
+        taxon_column=weak_fixture.taxon_column,
+        model="equal-rates",
+        transform="early-burst",
+    )
+    late_report = fit_discrete_mk_model(
+        late_fixture.tree_path,
+        late_fixture.traits_path,
+        trait=late_fixture.trait_name,
+        taxon_column=late_fixture.taxon_column,
+        model="equal-rates",
+        transform="early-burst",
+    )
+    missing_report = fit_discrete_mk_model(
+        missing_fixture.tree_path,
+        missing_fixture.traits_path,
+        trait=missing_fixture.trait_name,
+        taxon_column=missing_fixture.taxon_column,
+        model="equal-rates",
+        transform="early-burst",
+    )
+
+    assert early_report.transform_fit is not None
+    assert early_report.transform_fit.parameter_name == "a"
+    assert early_report.transform_fit.parameter_value > 0.0
+    assert early_report.parameter_count == 2
+    assert weak_report.transform_fit is not None
+    assert weak_report.transform_fit.parameter_value == 0.0
+    assert any(
+        warning.kind == "brownian_like_rate_change"
+        for warning in weak_report.transform_fit.warnings
+    )
+    assert late_report.transform_fit is not None
+    assert late_report.transform_fit.parameter_value < 0.0
+    assert late_report.parameter_count == 2
+    assert missing_report.transform_fit is not None
+    assert missing_report.input_audit.pruned_missing_value_taxa == ["Phy10"]
+    assert missing_report.parameter_count == 2
+
+
 def test_shared_geiger_discrete_fixture_catalog_handles_missing_sparse_and_mismatch_cases() -> (
     None
 ):

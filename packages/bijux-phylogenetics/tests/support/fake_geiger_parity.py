@@ -154,6 +154,7 @@ if case_payload["operation"] == "fit-discrete-mk":
         lambda_bounds=tuple(case_payload.get("lambda_bounds") or (0.0, 1.0)),
         kappa_bounds=tuple(case_payload.get("kappa_bounds") or (0.0, 1.0)),
         delta_bounds=tuple(case_payload.get("delta_bounds") or (math.exp(-5.0), 3.0)),
+        early_burst_bounds=tuple(case_payload.get("early_burst_bounds") or (-10.0, 10.0)),
     )
     missing_value_taxa = sorted(
         set(report.input_audit.pruned_missing_value_taxa) - set(tree_only_taxa)
@@ -171,6 +172,7 @@ if case_payload["operation"] == "fit-discrete-mk":
                 "lambda": "pagel-lambda",
                 "kappa": "pagel-kappa",
                 "delta": "pagel-delta",
+                "early-burst": "early-burst",
             }.get(transform_fit.transform_name, transform_fit.transform_name)
         ),
         "observed_state_count": len(report.state_order),

@@ -709,6 +709,130 @@ def test_fit_discrete_mk_model_matches_governed_geiger_sym_delta_missing_surface
     )
 
 
+def test_fit_discrete_mk_model_matches_governed_geiger_er_early_burst_surface() -> (
+    None
+):
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_early_burst_early_change_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="equal-rates",
+        transform="early-burst",
+    )
+
+    assert report.transform_fit is not None
+    assert report.parameter_count == 2
+    assert report.transform_fit.parameter_name == "a"
+    assert math.isclose(
+        report.log_likelihood,
+        -8.532873913569691,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        report.transform_fit.parameter_value,
+        2.2291236000336485,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        _single_allowed_rate(report),
+        0.018860745234985883,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+
+
+def test_fit_discrete_mk_model_marks_governed_geiger_early_burst_weak_signal_surface() -> (
+    None
+):
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_early_burst_weak_signal_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="equal-rates",
+        transform="early-burst",
+    )
+
+    assert report.transform_fit is not None
+    assert report.parameter_count == 2
+    assert report.transform_fit.parameter_value == 0.0
+    assert math.isclose(
+        report.log_likelihood,
+        -16.635532333438686,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert any(
+        warning.kind == "brownian_like_rate_change"
+        for warning in report.transform_fit.warnings
+    )
+
+
+def test_fit_discrete_mk_model_reports_governed_geiger_early_burst_late_change_surface() -> (
+    None
+):
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_early_burst_late_change_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="equal-rates",
+        transform="early-burst",
+    )
+
+    assert report.transform_fit is not None
+    assert report.parameter_count == 2
+    assert report.transform_fit.parameter_value < 0.0
+    assert report.transform_baseline_comparison is not None
+    assert report.transform_baseline_comparison.preferred_transform_by_aic == (
+        "untransformed"
+    )
+    assert math.isfinite(report.log_likelihood)
+
+
+def test_fit_discrete_mk_model_reports_governed_geiger_early_burst_missing_surface() -> (
+    None
+):
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_early_burst_missing_binary_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="equal-rates",
+        transform="early-burst",
+    )
+
+    assert report.transform_fit is not None
+    assert report.parameter_count == 2
+    assert report.input_audit.pruned_missing_value_taxa == ["Phy10"]
+    assert report.transform_fit.parameter_value < 0.0
+    assert math.isclose(
+        report.log_likelihood,
+        -15.219263187720406,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+
+
 def test_fit_discrete_mk_model_matches_governed_geiger_sym_three_state_surface() -> None:
     fixture_entry = get_shared_geiger_discrete_fixture(
         "geiger_discrete_sym_three_state_twenty_four_taxa"

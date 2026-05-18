@@ -46,6 +46,9 @@ from tests.support.geiger_fitdiscrete_kappa_reference import (
 from tests.support.geiger_fitdiscrete_delta_reference import (
     GEIGER_FITDISCRETE_DELTA_REFERENCE_PAYLOADS,
 )
+from tests.support.geiger_fitdiscrete_early_burst_reference import (
+    GEIGER_FITDISCRETE_EARLY_BURST_REFERENCE_PAYLOADS,
+)
 from tests.support.geiger_fitdiscrete_ard_reference import (
     GEIGER_FITDISCRETE_ARD_REFERENCE_PAYLOADS,
 )
@@ -97,6 +100,10 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
         "fitdiscrete-delta-late-change-boundary-review",
         "fitdiscrete-delta-earliest-change-review",
         "fitdiscrete-delta-missing-values-review",
+        "fitdiscrete-early-burst-early-change-review",
+        "fitdiscrete-early-burst-weak-signal-review",
+        "fitdiscrete-early-burst-late-change-review",
+        "fitdiscrete-early-burst-missing-values-review",
         "fitdiscrete-sym-three-state-twenty-four-taxa",
         "fitdiscrete-sym-four-state-twenty-four-taxa",
         "fitdiscrete-sym-multistate-missing-twenty-four-taxa",
@@ -118,8 +125,9 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     assert cases[34].function_name == "geiger::fitDiscrete(model='SYM', transform='kappa')"
     assert cases[35].function_name == "geiger::fitDiscrete(model='ER', transform='delta')"
     assert cases[36].function_name == "geiger::fitDiscrete(model='SYM', transform='delta')"
-    assert cases[38].function_name == "geiger::fitDiscrete(model='SYM')"
-    assert cases[41].function_name == "geiger::fitDiscrete(model='ARD')"
+    assert cases[38].function_name == "geiger::fitDiscrete(model='ER', transform='EB')"
+    assert cases[42].function_name == "geiger::fitDiscrete(model='SYM')"
+    assert cases[45].function_name == "geiger::fitDiscrete(model='ARD')"
     assert cases[1].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
     assert cases[2].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
     assert (
@@ -211,16 +219,32 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     assert (
         cases[37].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
     )
-    assert cases[38].fixture_id == "geiger_discrete_sym_three_state_twenty_four_taxa"
     assert (
-        cases[39].fixture_id == "geiger_discrete_sym_four_state_twenty_four_taxa"
+        cases[38].fixture_id
+        == "geiger_discrete_early_burst_early_change_twenty_four_taxa"
     )
     assert (
-        cases[40].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
+        cases[39].fixture_id
+        == "geiger_discrete_early_burst_weak_signal_twenty_four_taxa"
     )
-    assert cases[41].fixture_id == "geiger_discrete_ard_binary_twenty_four_taxa"
-    assert cases[42].fixture_id == "geiger_discrete_ard_four_state_twenty_four_taxa"
-    assert cases[43].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
+    assert (
+        cases[40].fixture_id
+        == "geiger_discrete_early_burst_late_change_twenty_four_taxa"
+    )
+    assert (
+        cases[41].fixture_id
+        == "geiger_discrete_early_burst_missing_binary_twenty_four_taxa"
+    )
+    assert cases[42].fixture_id == "geiger_discrete_sym_three_state_twenty_four_taxa"
+    assert (
+        cases[43].fixture_id == "geiger_discrete_sym_four_state_twenty_four_taxa"
+    )
+    assert (
+        cases[44].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
+    )
+    assert cases[45].fixture_id == "geiger_discrete_ard_binary_twenty_four_taxa"
+    assert cases[46].fixture_id == "geiger_discrete_ard_four_state_twenty_four_taxa"
+    assert cases[47].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
     assert cases[2].comparison_fields[:7] == (
         "taxon_count",
         "trait_name",
@@ -299,9 +323,13 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
         "bounded-coarse-and-golden-search"
     )
     assert cases[38].optimizer_settings is not None
-    assert cases[38].optimizer_settings["bijux_optimizer_name"] == "nelder-mead"
-    assert cases[41].optimizer_settings is not None
-    assert cases[41].optimizer_settings["bijux_optimizer_name"] == "nelder-mead"
+    assert cases[38].optimizer_settings["bijux_optimizer_name"] == (
+        "bounded-coarse-and-golden-search"
+    )
+    assert cases[42].optimizer_settings is not None
+    assert cases[42].optimizer_settings["bijux_optimizer_name"] == "nelder-mead"
+    assert cases[45].optimizer_settings is not None
+    assert cases[45].optimizer_settings["bijux_optimizer_name"] == "nelder-mead"
     assert all(path.is_file() for case in cases for path in case.input_fixtures)
 
 
@@ -315,12 +343,12 @@ def test_run_geiger_parity_cases_reports_passes_against_fake_runner(
         failure_root=tmp_path / "geiger-parity-failures",
     )
 
-    assert report.case_count == 44
-    assert report.passed_case_count == 44
+    assert report.case_count == 48
+    assert report.passed_case_count == 48
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert report.all_passed is True
-    assert len(report.summary_rows) == 16
+    assert len(report.summary_rows) == 17
     observation = next(
         item
         for item in report.observations
@@ -353,10 +381,10 @@ def test_run_geiger_parity_cases_counts_skips_when_geiger_is_unavailable(
         failure_root=tmp_path / "geiger-parity-failures",
     )
 
-    assert report.case_count == 44
+    assert report.case_count == 48
     assert report.passed_case_count == 0
     assert report.failed_case_count == 0
-    assert report.skipped_case_count == 44
+    assert report.skipped_case_count == 48
     assert report.all_passed is False
     assert all(
         item.mismatch_reason == "geiger_package_unavailable"
@@ -1129,6 +1157,69 @@ def test_run_geiger_parity_cases_governs_fitdiscrete_delta_reference_payloads(
     assert missing.reference_summary["missing_value_taxa"] == ["Phy14"]
     assert missing.bijux_summary is not None
     assert missing.bijux_summary["excluded_taxa"] == ["Phy14"]
+
+
+def test_run_geiger_parity_cases_governs_fitdiscrete_early_burst_reference_payloads(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads=GEIGER_FITDISCRETE_EARLY_BURST_REFERENCE_PAYLOADS,
+    )
+
+    report = run_geiger_parity_cases(
+        case_ids=[
+            "fitdiscrete-early-burst-early-change-review",
+            "fitdiscrete-early-burst-weak-signal-review",
+            "fitdiscrete-early-burst-late-change-review",
+            "fitdiscrete-early-burst-missing-values-review",
+        ],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    assert report.case_count == 4
+    assert report.passed_case_count == 4
+    early = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitdiscrete-early-burst-early-change-review"
+    )
+    assert early.reference_summary is not None
+    assert early.reference_summary["transform_name"] == "early-burst"
+    assert early.reference_summary["parameter_value"] == 2.22884
+    assert early.reference_rows is not None
+    assert early.reference_rows[0]["rate"] == 0.01886852
+    assert early.bijux_summary is not None
+    assert early.bijux_summary["transform_name"] == "early-burst"
+    weak = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitdiscrete-early-burst-weak-signal-review"
+    )
+    assert weak.reference_summary is not None
+    assert weak.reference_summary["trait_name"] == "er_binary_transform_weak_signal"
+    assert weak.reference_summary["parameter_value"] > 9.0
+    assert weak.bijux_summary is not None
+    assert weak.bijux_summary["parameter_value"] == 0.0
+    late = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitdiscrete-early-burst-late-change-review"
+    )
+    assert late.reference_summary is not None
+    assert late.reference_summary["parameter_value"] < 0.0
+    assert late.bijux_summary is not None
+    assert late.bijux_summary["parameter_value"] < 0.0
+    missing = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitdiscrete-early-burst-missing-values-review"
+    )
+    assert missing.reference_summary is not None
+    assert missing.reference_summary["missing_value_taxa"] == ["Phy10"]
+    assert missing.bijux_summary is not None
+    assert missing.bijux_summary["excluded_taxa"] == ["Phy10"]
 
 
 def test_run_geiger_parity_cases_governs_fitdiscrete_ard_reference_payloads(
