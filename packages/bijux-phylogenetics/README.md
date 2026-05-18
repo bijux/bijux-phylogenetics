@@ -425,6 +425,15 @@ blocked until every requested trait, metadata strip, and heatmap surface covers
 the tree taxa completely and the underlying caption, legend, and legibility
 audits all pass.
 
+For a journal-oriented dated phylogeny package with visible uncertainty, use
+`report time-tree-package`. It materializes a retained posterior tree set,
+builds one maximum clade credibility time tree, renders one `time-tree.svg`
+with median node ages and 95% HPD whiskers on every internal node, writes one
+`node-age-intervals.tsv` ledger and one reviewer HTML summary, and keeps
+publication readiness blocked whenever intervals are missing, the dated tree is
+not ultrametric, or supplied tip-date or calibration evidence fails the
+time-tree readiness audit.
+
 `demo rabies-cross-host-geography-panel` is the repository's flagship public
 biological workflow surface. In addition to the dataset and workflow
 subdirectories, the demo now writes one reviewer-facing package layer at the
