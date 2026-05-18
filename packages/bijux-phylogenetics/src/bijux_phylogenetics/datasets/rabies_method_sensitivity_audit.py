@@ -28,6 +28,9 @@ _PARALLEL_SUMMARY_FILENAME = "parallel-execution-summary.tsv"
 _VARIANT_SUMMARY_FILENAME = "variant-summary.tsv"
 _SLURM_ARRAY_PARTITIONS_FILENAME = "slurm-array-partitions.tsv"
 _SLURM_ARRAY_MEMBERS_FILENAME = "slurm-array-members.tsv"
+_SLURM_JOB_EVIDENCE_DIRECTORY = "slurm-job-evidence"
+_SLURM_JOB_EVIDENCE_INDEX_FILENAME = "slurm-job-evidence.tsv"
+_SLURM_JOB_EVIDENCE_SUMMARY_FILENAME = "slurm-job-evidence-summary.json"
 _SLURM_OUTPUT_FRESHNESS_FILENAME = "slurm-output-freshness.tsv"
 _SLURM_OUTPUT_FRESHNESS_CHECKS_FILENAME = "slurm-output-freshness-checks.tsv"
 _SLURM_OUTPUT_FRESHNESS_SUMMARY_FILENAME = "slurm-output-freshness.json"
@@ -113,6 +116,11 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     variant_summary_path = bundle_root / _VARIANT_SUMMARY_FILENAME
     slurm_array_partitions_path = bundle_root / _SLURM_ARRAY_PARTITIONS_FILENAME
     slurm_array_members_path = bundle_root / _SLURM_ARRAY_MEMBERS_FILENAME
+    slurm_job_evidence_root = bundle_root / _SLURM_JOB_EVIDENCE_DIRECTORY
+    slurm_job_evidence_index_path = bundle_root / _SLURM_JOB_EVIDENCE_INDEX_FILENAME
+    slurm_job_evidence_summary_path = (
+        bundle_root / _SLURM_JOB_EVIDENCE_SUMMARY_FILENAME
+    )
     slurm_output_freshness_path = bundle_root / _SLURM_OUTPUT_FRESHNESS_FILENAME
     slurm_output_freshness_checks_path = (
         bundle_root / _SLURM_OUTPUT_FRESHNESS_CHECKS_FILENAME
@@ -133,6 +141,8 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     variant_rows = _read_tsv_rows(variant_summary_path)
     slurm_array_partition_rows = _read_tsv_rows(slurm_array_partitions_path)
     slurm_array_member_rows = _read_tsv_rows(slurm_array_members_path)
+    slurm_job_evidence_rows = _read_tsv_rows(slurm_job_evidence_index_path)
+    slurm_job_evidence_summary = _load_json(slurm_job_evidence_summary_path)
     slurm_output_freshness_rows = _read_tsv_rows(slurm_output_freshness_path)
     slurm_output_freshness_check_rows = _read_tsv_rows(
         slurm_output_freshness_checks_path
@@ -353,6 +363,38 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         observed=member_variant_ids,
         detail="array member rows cover the configured variant ids",
     )
+    slurm_job_evidence_variant_ids = sorted(
+        str(row["variant_id"]) for row in slurm_job_evidence_rows
+    )
+    add_check(
+        "slurm-job-evidence:job-coverage",
+        surface="slurm-job-evidence",
+        condition=config_variant_ids == slurm_job_evidence_variant_ids,
+        expected=config_variant_ids,
+        observed=slurm_job_evidence_variant_ids,
+        detail="job-evidence rows cover the configured variant ids",
+    )
+    add_check(
+        "slurm-job-evidence:job-count",
+        surface="slurm-job-evidence",
+        condition=int(slurm_job_evidence_summary["job_count"])
+        == len(slurm_job_evidence_rows),
+        expected=slurm_job_evidence_summary["job_count"],
+        observed=len(slurm_job_evidence_rows),
+        detail="job-evidence summary job_count matches the written job-evidence rows",
+    )
+    job_evidence_artifact_file_count = len(
+        [path for path in slurm_job_evidence_root.rglob("*") if path.is_file()]
+    )
+    add_check(
+        "slurm-job-evidence:artifact-file-count",
+        surface="slurm-job-evidence",
+        condition=int(slurm_job_evidence_summary["total_artifact_file_count"])
+        == job_evidence_artifact_file_count,
+        expected=slurm_job_evidence_summary["total_artifact_file_count"],
+        observed=job_evidence_artifact_file_count,
+        detail="job-evidence summary total_artifact_file_count matches the written evidence files",
+    )
     slurm_output_freshness_variant_ids = sorted(
         str(row["variant_id"]) for row in slurm_output_freshness_rows
     )
@@ -427,6 +469,9 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     slurm_output_freshness_rows_by_variant = {
         str(row["variant_id"]): row for row in slurm_output_freshness_rows
     }
+    slurm_job_evidence_rows_by_variant = {
+        str(row["variant_id"]): row for row in slurm_job_evidence_rows
+    }
     slurm_job_status_rows_by_variant = {
         str(row["variant_id"]): row for row in slurm_job_status_rows
     }
@@ -465,6 +510,7 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     )
     for variant_id in config_variant_ids:
         freshness_row = slurm_output_freshness_rows_by_variant.get(variant_id)
+        job_evidence_row = slurm_job_evidence_rows_by_variant.get(variant_id)
         job_status_row = slurm_job_status_rows_by_variant.get(variant_id)
         add_check(
             f"slurm-freshness:status-link:{variant_id}",
@@ -486,6 +532,43 @@ def audit_rabies_method_sensitivity_workflow_bundle(
                 else job_status_row["output_freshness_status"]
             ),
             detail="job-status rows expose the same output-freshness status as the freshness ledger",
+        )
+        add_check(
+            f"slurm-job-evidence:status-link:{variant_id}",
+            surface="slurm-job-evidence",
+            condition=(
+                job_evidence_row is not None
+                and job_status_row is not None
+                and str(job_evidence_row["status"])
+                == str(job_status_row["task_status"])
+            ),
+            expected=(
+                None if job_status_row is None else job_status_row["task_status"]
+            ),
+            observed=(
+                None if job_evidence_row is None else job_evidence_row["status"]
+            ),
+            detail="job-evidence rows expose the same terminal task status recorded in the job-status ledger",
+        )
+        if job_evidence_row is None:
+            continue
+        evidence_json_path = bundle_root / str(job_evidence_row["evidence_json_path"])
+        evidence_html_path = bundle_root / str(job_evidence_row["evidence_html_path"])
+        add_check(
+            f"slurm-job-evidence:json:{variant_id}",
+            surface="slurm-job-evidence",
+            condition=evidence_json_path.is_file(),
+            expected="file exists",
+            observed="present" if evidence_json_path.is_file() else "missing",
+            detail="job-evidence index references an existing JSON evidence package",
+        )
+        add_check(
+            f"slurm-job-evidence:html:{variant_id}",
+            surface="slurm-job-evidence",
+            condition=evidence_html_path.is_file(),
+            expected="file exists",
+            observed="present" if evidence_html_path.is_file() else "missing",
+            detail="job-evidence index references an existing HTML evidence package",
         )
 
     for variant_id in config_variant_ids:

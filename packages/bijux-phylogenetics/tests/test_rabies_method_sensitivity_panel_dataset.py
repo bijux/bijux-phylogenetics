@@ -63,7 +63,7 @@ def test_export_rabies_method_sensitivity_panel_dataset_copies_expected_outputs(
     assert result.config_path.is_file()
     assert result.sequences_path.is_file()
     assert result.metadata_path.is_file()
-    assert len(expected_files) == 89
+    assert len(expected_files) == 127
     assert Path("parallel-execution-summary.tsv") in expected_files
     assert Path("rabies-method-sensitivity-panel.run.json") in expected_files
     assert Path("rabies-method-sensitivity.manifest.json") in expected_files
@@ -73,6 +73,12 @@ def test_export_rabies_method_sensitivity_panel_dataset_copies_expected_outputs(
     assert Path("slurm-array-partitions.tsv") in expected_files
     assert Path("slurm-array-members.tsv") in expected_files
     assert Path("slurm-array-strategy.json") in expected_files
+    assert Path("slurm-job-evidence.tsv") in expected_files
+    assert Path("slurm-job-evidence-summary.json") in expected_files
+    assert (
+        Path("slurm-job-evidence/auto-gap-threshold/job-evidence.json")
+        in expected_files
+    )
     assert Path("slurm-output-freshness.tsv") in expected_files
     assert Path("slurm-output-freshness-checks.tsv") in expected_files
     assert Path("slurm-output-freshness.json") in expected_files
@@ -98,6 +104,7 @@ def test_export_rabies_method_sensitivity_panel_dataset_copies_expected_outputs(
     assert 'href="workflow-summary.tsv"' in report_html
     assert 'href="slurm-job-plan.tsv"' in report_html
     assert 'href="slurm-array-partitions.tsv"' in report_html
+    assert 'href="slurm-job-evidence-summary.json"' in report_html
     assert 'href="slurm-output-freshness.json"' in report_html
     assert 'href="slurm-workflow-status.json"' in report_html
     assert 'href="reproducibility-audit.json"' in report_html
@@ -328,7 +335,7 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     assert payload["metrics"]["reproducibility_check_count"] > 0
     assert payload["metrics"]["reproducibility_failed_check_count"] == 0
     assert payload["metrics"]["reproducibility_failed_variant_count"] == 0
-    assert payload["metrics"]["reference_output_count"] == 89
+    assert payload["metrics"]["reference_output_count"] == 127
     assert payload["data"]["dataset"]["dataset_id"] == "rabies_method_sensitivity_panel"
     assert payload["data"]["workflow_bundle"]["workflow_summary_path"] == str(
         output / "workflow" / "workflow-summary.tsv"

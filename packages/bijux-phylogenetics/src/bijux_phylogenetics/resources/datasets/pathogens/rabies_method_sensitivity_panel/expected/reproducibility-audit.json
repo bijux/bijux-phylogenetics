@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "bundle_root": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-refresh/workflow",
-  "check_count": 72,
+  "bundle_root": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-job-evidence-refresh/workflow",
+  "check_count": 92,
   "checks": [
     {
       "check_id": "input-checksum:sequences.fasta",
@@ -46,8 +46,8 @@
     {
       "check_id": "workflow-manifest:execution_record",
       "detail": "execution_record matches the checksum recorded in rabies-method-sensitivity.manifest.json",
-      "expected": "89418d99d6315d28a503086464dc735cc3ceef2b49c15b1d9fd15aafd5818458",
-      "observed": "89418d99d6315d28a503086464dc735cc3ceef2b49c15b1d9fd15aafd5818458",
+      "expected": "71a4de1012d5b640d30fd20a43ecb1e8f196b12dc1d751508bb721b165c51488",
+      "observed": "71a4de1012d5b640d30fd20a43ecb1e8f196b12dc1d751508bb721b165c51488",
       "status": "passed",
       "surface": "workflow-manifest"
     },
@@ -108,10 +108,34 @@
       "surface": "workflow-manifest"
     },
     {
+      "check_id": "workflow-manifest:slurm_job_evidence_index",
+      "detail": "slurm_job_evidence_index matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "baa336f3ca0b4651f44bee84fa0a1a25e5a73032da1a965d975a162e6b7a9315",
+      "observed": "baa336f3ca0b4651f44bee84fa0a1a25e5a73032da1a965d975a162e6b7a9315",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_job_evidence_root",
+      "detail": "slurm_job_evidence_root resolves to an existing directory",
+      "expected": "directory exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_job_evidence_summary",
+      "detail": "slurm_job_evidence_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "9b9cbc237022c88c6c5e94a8c7cdbf6db2127cdeec0b07f4fcc132cb1a552755",
+      "observed": "9b9cbc237022c88c6c5e94a8c7cdbf6db2127cdeec0b07f4fcc132cb1a552755",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
       "check_id": "workflow-manifest:slurm_job_plan",
       "detail": "slurm_job_plan matches the checksum recorded in rabies-method-sensitivity.manifest.json",
-      "expected": "043c0285270a6836f5f58d503cf6938eb78290566b42398e0634715774651623",
-      "observed": "043c0285270a6836f5f58d503cf6938eb78290566b42398e0634715774651623",
+      "expected": "b5ffb7d4fc88dd70963e2dabbc373ed26fa9e6fc65950ef1d70a0df81a83752e",
+      "observed": "b5ffb7d4fc88dd70963e2dabbc373ed26fa9e6fc65950ef1d70a0df81a83752e",
       "status": "passed",
       "surface": "workflow-manifest"
     },
@@ -158,8 +182,8 @@
     {
       "check_id": "workflow-manifest:slurm_summary",
       "detail": "slurm_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
-      "expected": "efb2ec473966f6e454b30b0a3f368e9cd1a43b2af54ce2f06ab0b6e5a6cff534",
-      "observed": "efb2ec473966f6e454b30b0a3f368e9cd1a43b2af54ce2f06ab0b6e5a6cff534",
+      "expected": "b276464bda15772df44f3afd421a331098dfdc3c80db9df654dfb3a5d6aa3120",
+      "observed": "b276464bda15772df44f3afd421a331098dfdc3c80db9df654dfb3a5d6aa3120",
       "status": "passed",
       "surface": "workflow-manifest"
     },
@@ -214,8 +238,8 @@
     {
       "check_id": "report-manifest:linked-artifact-count",
       "detail": "linked artifact count matches the linked_artifacts payload",
-      "expected": "22",
-      "observed": "22",
+      "expected": "24",
+      "observed": "24",
       "status": "passed",
       "surface": "report-manifest"
     },
@@ -246,8 +270,8 @@
     {
       "check_id": "report-manifest:execution_record",
       "detail": "execution_record matches the checksum recorded in the report manifest",
-      "expected": "89418d99d6315d28a503086464dc735cc3ceef2b49c15b1d9fd15aafd5818458",
-      "observed": "89418d99d6315d28a503086464dc735cc3ceef2b49c15b1d9fd15aafd5818458",
+      "expected": "71a4de1012d5b640d30fd20a43ecb1e8f196b12dc1d751508bb721b165c51488",
+      "observed": "71a4de1012d5b640d30fd20a43ecb1e8f196b12dc1d751508bb721b165c51488",
       "status": "passed",
       "surface": "report-manifest"
     },
@@ -300,10 +324,26 @@
       "surface": "report-manifest"
     },
     {
+      "check_id": "report-manifest:slurm_job_evidence_index",
+      "detail": "slurm_job_evidence_index matches the checksum recorded in the report manifest",
+      "expected": "baa336f3ca0b4651f44bee84fa0a1a25e5a73032da1a965d975a162e6b7a9315",
+      "observed": "baa336f3ca0b4651f44bee84fa0a1a25e5a73032da1a965d975a162e6b7a9315",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_job_evidence_summary",
+      "detail": "slurm_job_evidence_summary matches the checksum recorded in the report manifest",
+      "expected": "9b9cbc237022c88c6c5e94a8c7cdbf6db2127cdeec0b07f4fcc132cb1a552755",
+      "observed": "9b9cbc237022c88c6c5e94a8c7cdbf6db2127cdeec0b07f4fcc132cb1a552755",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
       "check_id": "report-manifest:slurm_job_plan",
       "detail": "slurm_job_plan matches the checksum recorded in the report manifest",
-      "expected": "043c0285270a6836f5f58d503cf6938eb78290566b42398e0634715774651623",
-      "observed": "043c0285270a6836f5f58d503cf6938eb78290566b42398e0634715774651623",
+      "expected": "b5ffb7d4fc88dd70963e2dabbc373ed26fa9e6fc65950ef1d70a0df81a83752e",
+      "observed": "b5ffb7d4fc88dd70963e2dabbc373ed26fa9e6fc65950ef1d70a0df81a83752e",
       "status": "passed",
       "surface": "report-manifest"
     },
@@ -350,8 +390,8 @@
     {
       "check_id": "report-manifest:slurm_summary",
       "detail": "slurm_summary matches the checksum recorded in the report manifest",
-      "expected": "efb2ec473966f6e454b30b0a3f368e9cd1a43b2af54ce2f06ab0b6e5a6cff534",
-      "observed": "efb2ec473966f6e454b30b0a3f368e9cd1a43b2af54ce2f06ab0b6e5a6cff534",
+      "expected": "b276464bda15772df44f3afd421a331098dfdc3c80db9df654dfb3a5d6aa3120",
+      "observed": "b276464bda15772df44f3afd421a331098dfdc3c80db9df654dfb3a5d6aa3120",
       "status": "passed",
       "surface": "report-manifest"
     },
@@ -382,8 +422,8 @@
     {
       "check_id": "report-manifest:workflow_manifest",
       "detail": "workflow_manifest matches the checksum recorded in the report manifest",
-      "expected": "74d4227ace86c315344f58eecd77a297ba2c3f4e9344f6aaf207a3f55bd3eb85",
-      "observed": "74d4227ace86c315344f58eecd77a297ba2c3f4e9344f6aaf207a3f55bd3eb85",
+      "expected": "78aadf6d630a1272012ba35bb9fdb1b7e28f7e1b8b2c4adea2830ea5bd21f27e",
+      "observed": "78aadf6d630a1272012ba35bb9fdb1b7e28f7e1b8b2c4adea2830ea5bd21f27e",
       "status": "passed",
       "surface": "report-manifest"
     },
@@ -466,6 +506,30 @@
       "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
       "status": "passed",
       "surface": "slurm-arrays"
+    },
+    {
+      "check_id": "slurm-job-evidence:job-coverage",
+      "detail": "job-evidence rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:job-count",
+      "detail": "job-evidence summary job_count matches the written job-evidence rows",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:artifact-file-count",
+      "detail": "job-evidence summary total_artifact_file_count matches the written evidence files",
+      "expected": "36",
+      "observed": "36",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
     },
     {
       "check_id": "slurm-freshness:job-coverage",
@@ -556,12 +620,60 @@
       "surface": "slurm-freshness"
     },
     {
+      "check_id": "slurm-job-evidence:status-link:auto-gap-threshold",
+      "detail": "job-evidence rows expose the same terminal task status recorded in the job-status ledger",
+      "expected": "succeeded",
+      "observed": "succeeded",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:json:auto-gap-threshold",
+      "detail": "job-evidence index references an existing JSON evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:html:auto-gap-threshold",
+      "detail": "job-evidence index references an existing HTML evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
       "check_id": "slurm-freshness:status-link:auto-gappyout",
       "detail": "job-status rows expose the same output-freshness status as the freshness ledger",
       "expected": "fresh",
       "observed": "fresh",
       "status": "passed",
       "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-job-evidence:status-link:auto-gappyout",
+      "detail": "job-evidence rows expose the same terminal task status recorded in the job-status ledger",
+      "expected": "succeeded",
+      "observed": "succeeded",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:json:auto-gappyout",
+      "detail": "job-evidence index references an existing JSON evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:html:auto-gappyout",
+      "detail": "job-evidence index references an existing HTML evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
     },
     {
       "check_id": "slurm-freshness:status-link:ginsi-gap-threshold",
@@ -572,20 +684,68 @@
       "surface": "slurm-freshness"
     },
     {
+      "check_id": "slurm-job-evidence:status-link:ginsi-gap-threshold",
+      "detail": "job-evidence rows expose the same terminal task status recorded in the job-status ledger",
+      "expected": "succeeded",
+      "observed": "succeeded",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:json:ginsi-gap-threshold",
+      "detail": "job-evidence index references an existing JSON evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:html:ginsi-gap-threshold",
+      "detail": "job-evidence index references an existing HTML evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
       "check_id": "slurm-freshness:status-link:ginsi-gappyout",
       "detail": "job-status rows expose the same output-freshness status as the freshness ledger",
       "expected": "fresh",
       "observed": "fresh",
       "status": "passed",
       "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-job-evidence:status-link:ginsi-gappyout",
+      "detail": "job-evidence rows expose the same terminal task status recorded in the job-status ledger",
+      "expected": "succeeded",
+      "observed": "succeeded",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:json:ginsi-gappyout",
+      "detail": "job-evidence index references an existing JSON evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:html:ginsi-gappyout",
+      "detail": "job-evidence index references an existing HTML evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
     }
   ],
-  "config_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-refresh/workflow/workflow-config.resolved.json",
+  "config_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-job-evidence-refresh/workflow/workflow-config.resolved.json",
   "dataset_id": "rabies_method_sensitivity_panel",
   "failed_check_count": 0,
   "failed_variant_count": 0,
   "metadata_path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/pathogens/rabies_method_sensitivity_panel/metadata.csv",
-  "report_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-refresh/workflow/report-artifacts/rabies-method-sensitivity-report.manifest.json",
+  "report_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-job-evidence-refresh/workflow/report-artifacts/rabies-method-sensitivity-report.manifest.json",
   "sequences_path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/pathogens/rabies_method_sensitivity_panel/sequences.fasta",
   "variant_count": 4,
   "variants": [
@@ -630,5 +790,5 @@
       "variant_id": "ginsi-gappyout"
     }
   ],
-  "workflow_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-refresh/workflow/rabies-method-sensitivity.manifest.json"
+  "workflow_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-job-evidence-refresh/workflow/rabies-method-sensitivity.manifest.json"
 }
