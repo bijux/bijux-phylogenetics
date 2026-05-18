@@ -123,12 +123,12 @@
       "/opt/homebrew/bin/FastTree",
       "-gtr",
       "-nt",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln"
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln"
     ],
     "iqtree_support": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln",
       "-st",
       "DNA",
       "-seed",
@@ -141,12 +141,12 @@
       "1000",
       "-wbt",
       "-pre",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/engine-comparison/engine-artifacts/ginsi-gap-threshold/bootstrap-support/bootstrap-support"
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/engine-comparison/engine-artifacts/ginsi-gap-threshold/bootstrap-support/bootstrap-support"
     ],
     "model_selection": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln",
       "-st",
       "DNA",
       "-seed",
@@ -156,14 +156,14 @@
       "-m",
       "MF",
       "-pre",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/engine-comparison/engine-artifacts/ginsi-gap-threshold/model-selection/model-selection"
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/engine-comparison/engine-artifacts/ginsi-gap-threshold/model-selection/model-selection"
     ],
     "trimming": [
       "/opt/homebrew/bin/trimal",
       "-in",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/ginsi-gap-threshold.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/ginsi-gap-threshold.aln",
       "-out",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln",
       "-gt",
       "0.100000"
     ]
@@ -296,13 +296,13 @@
     }
   },
   "runtimes": {
-    "alignment_seconds": 0.730297,
-    "fasttree_seconds": 0.104142,
-    "inference_seconds": 3.466754,
-    "iqtree_support_seconds": 0.714135,
-    "model_selection_seconds": 0.224097,
-    "total_seconds": 4.202877,
-    "trimming_seconds": 0.005826
+    "alignment_seconds": 0.738758,
+    "fasttree_seconds": 0.106317,
+    "inference_seconds": 3.483776,
+    "iqtree_support_seconds": 0.736358,
+    "model_selection_seconds": 0.270272,
+    "total_seconds": 4.247952,
+    "trimming_seconds": 0.025418
   },
   "script_path": "slurm-arrays/compact-mafft-ginsi-elevated.sbatch",
   "status": "succeeded",
@@ -333,7 +333,7 @@
 <dl class="summary-card"><dt>variant</dt><dd>ginsi-gap-threshold</dd></dl>
 <dl class="summary-card"><dt>status</dt><dd>succeeded</dd></dl>
 <dl class="summary-card"><dt>selected model</dt><dd>TPM2u+F+G4</dd></dl>
-<dl class="summary-card"><dt>runtime seconds</dt><dd>4.202877</dd></dl>
+<dl class="summary-card"><dt>runtime seconds</dt><dd>4.247952</dd></dl>
 <dl class="summary-card"><dt>output files</dt><dd>14</dd></dl>
 <dl class="summary-card"><dt>warnings</dt><dd>4</dd></dl>
 <dl class="summary-card"><dt>serious conflicts</dt><dd>8</dd></dl>
@@ -364,14 +364,14 @@ selected_model: TPM2u+F+G4
 alignment_length: 1353
 trimmed_alignment_length: 1353</pre></section>
 <section><h2>commands</h2><pre>alignment: /opt/homebrew/bin/mafft --globalpair --maxiterate 1000 /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/pathogens/rabies_method_sensitivity_panel/sequences.fasta
-trimming: /opt/homebrew/bin/trimal -in /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/ginsi-gap-threshold.aln -out /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln -gt 0.100000
-model_selection: /opt/homebrew/bin/iqtree2 -s /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln -st DNA -seed 1 -nt 1 -m MF -pre /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/engine-comparison/engine-artifacts/ginsi-gap-threshold/model-selection/model-selection
-iqtree_support: /opt/homebrew/bin/iqtree2 -s /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln -st DNA -seed 1 -nt 1 -m TPM2u+F+G4 -bb 1000 -wbt -pre /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/engine-comparison/engine-artifacts/ginsi-gap-threshold/bootstrap-support/bootstrap-support
-fasttree: /opt/homebrew/bin/FastTree -gtr -nt /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln</pre></section>
-<section><h2>runtime-and-findings</h2><pre>total_runtime_seconds: 4.202877
-model_selection_runtime_seconds: 0.224097
-iqtree_support_runtime_seconds: 0.714135
-fasttree_runtime_seconds: 0.104142
+trimming: /opt/homebrew/bin/trimal -in /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/ginsi-gap-threshold.aln -out /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln -gt 0.100000
+model_selection: /opt/homebrew/bin/iqtree2 -s /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln -st DNA -seed 1 -nt 1 -m MF -pre /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/engine-comparison/engine-artifacts/ginsi-gap-threshold/model-selection/model-selection
+iqtree_support: /opt/homebrew/bin/iqtree2 -s /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln -st DNA -seed 1 -nt 1 -m TPM2u+F+G4 -bb 1000 -wbt -pre /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/engine-comparison/engine-artifacts/ginsi-gap-threshold/bootstrap-support/bootstrap-support
+fasttree: /opt/homebrew/bin/FastTree -gtr -nt /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/ginsi-gap-threshold/ginsi-gap-threshold.trimmed.aln</pre></section>
+<section><h2>runtime-and-findings</h2><pre>total_runtime_seconds: 4.247952
+model_selection_runtime_seconds: 0.270272
+iqtree_support_runtime_seconds: 0.736358
+fasttree_runtime_seconds: 0.106317
 serious_conflict_count: 8
 rooted_engine_rf_distance: 0
 rooted_same_taxa_different_rooting: false</pre></section>

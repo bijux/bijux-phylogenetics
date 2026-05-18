@@ -1,5 +1,5 @@
 partition_id	array_index	variant_id	status	selected_model	total_runtime_seconds	output_file_count	output_byte_count	artifact_file_count	serious_conflict_count	rooted_engine_rf_distance	warning_count	evidence_json_path	evidence_html_path
-compact-mafft-auto-standard	0	auto-gap-threshold	succeeded	TPM2u+F+G4	4.311241	14	42065	9	8	0	4	slurm-job-evidence/auto-gap-threshold/job-evidence.json	slurm-job-evidence/auto-gap-threshold/job-evidence.html
-compact-mafft-auto-standard	1	auto-gappyout	succeeded	TPM2u+F+G4	4.275385	14	42065	9	8	0	4	slurm-job-evidence/auto-gappyout/job-evidence.json	slurm-job-evidence/auto-gappyout/job-evidence.html
-compact-mafft-ginsi-elevated	0	ginsi-gap-threshold	succeeded	TPM2u+F+G4	4.202877	14	42065	9	8	0	4	slurm-job-evidence/ginsi-gap-threshold/job-evidence.json	slurm-job-evidence/ginsi-gap-threshold/job-evidence.html
-compact-mafft-ginsi-elevated	1	ginsi-gappyout	succeeded	TPM2u+F+G4	4.349251	14	42065	9	8	0	4	slurm-job-evidence/ginsi-gappyout/job-evidence.json	slurm-job-evidence/ginsi-gappyout/job-evidence.html
+compact-mafft-auto-standard	0	auto-gap-threshold	succeeded	TPM2u+F+G4	4.249514	14	42065	9	8	0	4	slurm-job-evidence/auto-gap-threshold/job-evidence.json	slurm-job-evidence/auto-gap-threshold/job-evidence.html
+compact-mafft-auto-standard	1	auto-gappyout	succeeded	TPM2u+F+G4	4.367127	14	42065	9	8	0	4	slurm-job-evidence/auto-gappyout/job-evidence.json	slurm-job-evidence/auto-gappyout/job-evidence.html
+compact-mafft-ginsi-elevated	0	ginsi-gap-threshold	succeeded	TPM2u+F+G4	4.247952	14	42065	9	8	0	4	slurm-job-evidence/ginsi-gap-threshold/job-evidence.json	slurm-job-evidence/ginsi-gap-threshold/job-evidence.html
+compact-mafft-ginsi-elevated	1	ginsi-gappyout	succeeded	TPM2u+F+G4	4.33245	14	42065	9	8	0	4	slurm-job-evidence/ginsi-gappyout/job-evidence.json	slurm-job-evidence/ginsi-gappyout/job-evidence.html

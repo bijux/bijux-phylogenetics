@@ -86,7 +86,7 @@
       "lt50": 0
     },
     "supported_node_count": 6,
-    "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile",
+    "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile",
     "warnings": [
       "one or more internal nodes did not expose numeric support labels"
     ],
@@ -104,10 +104,10 @@
   "engine_name": "iqtree",
   "fasttree_support_summary": null,
   "input_checksums": {
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/auto-gappyout.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/auto-gappyout.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
   },
   "input_paths": [
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/auto-gappyout.trimmed.aln"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/auto-gappyout.trimmed.aln"
   ],
   "iqtree_summary": {
     "log_likelihood": -3945.2388,
@@ -192,7 +192,7 @@
     ]
   },
   "log_likelihood": -3945.2388,
-  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.manifest.json",
+  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.manifest.json",
   "model_selection_summary": {
     "best_model_aic": "7932.4776",
     "best_model_aicc": "7933.1718",
@@ -217,31 +217,31 @@
     "support histogram exported for reviewer-facing support distribution checks"
   ],
   "output_checksums": {
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.contree": "b2daf4c3fbaba44d62fe5ee2f1d4ac8147bafd3947d96f46c9921ac54667577e",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.iqtree": "ba93e68cb91998ad2c9fca63113274e557a8f703593627a10b6203d8b101ff75",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.log": "4301cbcafeaed8d650bd709a45457f0cc3b257b6fcea90b54475be242c92529c",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.low-support.tsv": "3c9d1d00f9023dbb6e5f8931d91ae26afc322f0fa54385f41b12290c8b814bb7",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.support-histogram.tsv": "7247f212495fc93cb528e03afabc8b802fd3299cc775368a6d6536f60b82b9e7",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.support.tsv": "fbb00f7eb709a09193f7e4a7f60bb9ac590641e6fe21fc24a47926dda8204070",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile": "07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.ufboot": "bdacadce517612202bc5d0131cd5382b39fa5e00747a77c3a94d60c7a4371d51"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.contree": "b2daf4c3fbaba44d62fe5ee2f1d4ac8147bafd3947d96f46c9921ac54667577e",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.iqtree": "36acb03a9acf7db41d98322919cb9ed25bdf2a40883697fbee747b872ae5a6f6",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.log": "f6d596c9af50891dfe71548dc86a69f823b7f9e8732e465df6e8c871aad783d9",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.low-support.tsv": "3c9d1d00f9023dbb6e5f8931d91ae26afc322f0fa54385f41b12290c8b814bb7",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.support-histogram.tsv": "7247f212495fc93cb528e03afabc8b802fd3299cc775368a6d6536f60b82b9e7",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.support.tsv": "fbb00f7eb709a09193f7e4a7f60bb9ac590641e6fe21fc24a47926dda8204070",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile": "07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.ufboot": "bdacadce517612202bc5d0131cd5382b39fa5e00747a77c3a94d60c7a4371d51"
   },
   "output_paths": {
-    "bootstrap_trees": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.ufboot",
-    "consensus_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.contree",
-    "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.log",
-    "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.iqtree",
-    "low_support_branches": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.low-support.tsv",
-    "support_histogram": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.support-histogram.tsv",
-    "support_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.support.tsv",
-    "support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile"
+    "bootstrap_trees": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.ufboot",
+    "consensus_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.contree",
+    "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.log",
+    "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.iqtree",
+    "low_support_branches": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.low-support.tsv",
+    "support_histogram": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.support-histogram.tsv",
+    "support_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.support.tsv",
+    "support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile"
   },
   "resumed": false,
   "run": {
     "command": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/auto-gappyout.trimmed.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/auto-gappyout.trimmed.aln",
       "-st",
       "DNA",
       "-seed",
@@ -254,22 +254,22 @@
       "1000",
       "-wbt",
       "-pre",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support"
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support"
     ],
-    "ended_at_utc": "2026-05-18T01:21:32Z",
+    "ended_at_utc": "2026-05-18T01:31:03Z",
     "engine_name": "iqtree",
     "executable": "/opt/homebrew/bin/iqtree2",
     "exit_code": 0,
     "output_paths": {
-      "bootstrap_trees": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.ufboot",
-      "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.log",
-      "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.iqtree",
-      "support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile"
+      "bootstrap_trees": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.ufboot",
+      "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.log",
+      "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.iqtree",
+      "support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile"
     },
-    "runtime_seconds": 0.729714,
-    "started_at_utc": "2026-05-18T01:21:31Z",
-    "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.stderr.log",
-    "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.stdout.log",
+    "runtime_seconds": 0.72679,
+    "started_at_utc": "2026-05-18T01:31:03Z",
+    "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.stderr.log",
+    "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.stdout.log",
     "timed_out": false,
     "timeout_seconds": null,
     "version": {
@@ -283,7 +283,7 @@
     },
     "warning_lines": [],
     "workflow": "bootstrap-support",
-    "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support"
+    "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support"
   },
   "selected_model": "TPM2u+F+G4",
   "sh_alrt_support_summary": null,
@@ -291,7 +291,7 @@
   "weak_backbone_report": {
     "evaluated_backbone_node_count": 3,
     "threshold": 70.0,
-    "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-34iivaa3/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile",
+    "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile",
     "warnings": [
       "one or more internal nodes did not expose numeric support labels"
     ],

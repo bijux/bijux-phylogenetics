@@ -1,0 +1,13 @@
+check_id	surface	status	expected	observed	detail
+variant-coverage:variant-summary	variant-coverage	passed	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	variant summary rows cover the configured variant ids
+variant-coverage:job-status	variant-coverage	passed	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	job-status rows cover the configured variant ids
+variant-coverage:freshness	variant-coverage	passed	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	freshness rows cover the configured variant ids
+variant-coverage:job-evidence	variant-coverage	passed	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	job-evidence rows cover the configured variant ids
+workflow-summary:variant-count	workflow-summary	passed	4	4	workflow summary variant_count matches the merged variant summary rows
+workflow-summary:stable-clades	workflow-summary	passed	2	2	workflow summary stable_clade_count matches the merged stable-clade ledger
+workflow-summary:changed-clades	workflow-summary	passed	8	8	workflow summary changed_clade_count matches the merged changed-clade ledger
+workflow-summary:preprocessing-change-pairs	workflow-summary	passed	0	0	workflow summary preprocessing_change_pair_count matches the merged preprocessing comparisons
+workflow-summary:rooted-engine-change-variants	workflow-summary	passed	0	0	workflow summary rooted_engine_change_variant_count matches merged variant summaries
+workflow-summary:serious-conflict-variants	workflow-summary	passed	4	4	workflow summary serious_conflict_variant_count matches merged variant summaries
+workflow-summary:maximum-serious-conflicts	workflow-summary	passed	8	8	workflow summary maximum_serious_conflict_count matches merged variant summaries
+merge-readiness:variant-count	merge-readiness	passed	4	4	every configured variant must be completed, fresh, and evidenced before the global merge is ready

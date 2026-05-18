@@ -31,6 +31,9 @@ _SLURM_ARRAY_MEMBERS_FILENAME = "slurm-array-members.tsv"
 _SLURM_JOB_EVIDENCE_DIRECTORY = "slurm-job-evidence"
 _SLURM_JOB_EVIDENCE_INDEX_FILENAME = "slurm-job-evidence.tsv"
 _SLURM_JOB_EVIDENCE_SUMMARY_FILENAME = "slurm-job-evidence-summary.json"
+_SLURM_MERGE_CHECKS_FILENAME = "slurm-merge-checks.tsv"
+_SLURM_MERGE_VARIANTS_FILENAME = "slurm-merge-variants.tsv"
+_SLURM_MERGE_SUMMARY_FILENAME = "slurm-merge-report.json"
 _SLURM_OUTPUT_FRESHNESS_FILENAME = "slurm-output-freshness.tsv"
 _SLURM_OUTPUT_FRESHNESS_CHECKS_FILENAME = "slurm-output-freshness-checks.tsv"
 _SLURM_OUTPUT_FRESHNESS_SUMMARY_FILENAME = "slurm-output-freshness.json"
@@ -121,6 +124,9 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     slurm_job_evidence_summary_path = (
         bundle_root / _SLURM_JOB_EVIDENCE_SUMMARY_FILENAME
     )
+    slurm_merge_checks_path = bundle_root / _SLURM_MERGE_CHECKS_FILENAME
+    slurm_merge_variants_path = bundle_root / _SLURM_MERGE_VARIANTS_FILENAME
+    slurm_merge_summary_path = bundle_root / _SLURM_MERGE_SUMMARY_FILENAME
     slurm_output_freshness_path = bundle_root / _SLURM_OUTPUT_FRESHNESS_FILENAME
     slurm_output_freshness_checks_path = (
         bundle_root / _SLURM_OUTPUT_FRESHNESS_CHECKS_FILENAME
@@ -143,6 +149,9 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     slurm_array_member_rows = _read_tsv_rows(slurm_array_members_path)
     slurm_job_evidence_rows = _read_tsv_rows(slurm_job_evidence_index_path)
     slurm_job_evidence_summary = _load_json(slurm_job_evidence_summary_path)
+    slurm_merge_check_rows = _read_tsv_rows(slurm_merge_checks_path)
+    slurm_merge_variant_rows = _read_tsv_rows(slurm_merge_variants_path)
+    slurm_merge_summary = _load_json(slurm_merge_summary_path)
     slurm_output_freshness_rows = _read_tsv_rows(slurm_output_freshness_path)
     slurm_output_freshness_check_rows = _read_tsv_rows(
         slurm_output_freshness_checks_path
@@ -395,6 +404,52 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         observed=job_evidence_artifact_file_count,
         detail="job-evidence summary total_artifact_file_count matches the written evidence files",
     )
+    slurm_merge_variant_ids = sorted(
+        str(row["variant_id"]) for row in slurm_merge_variant_rows
+    )
+    add_check(
+        "slurm-merge:job-coverage",
+        surface="slurm-merge",
+        condition=config_variant_ids == slurm_merge_variant_ids,
+        expected=config_variant_ids,
+        observed=slurm_merge_variant_ids,
+        detail="merge-variant rows cover the configured variant ids",
+    )
+    add_check(
+        "slurm-merge:check-count",
+        surface="slurm-merge",
+        condition=int(slurm_merge_summary["check_count"])
+        == len(slurm_merge_check_rows),
+        expected=slurm_merge_summary["check_count"],
+        observed=len(slurm_merge_check_rows),
+        detail="merge summary check_count matches the written merge checks",
+    )
+    merged_variant_count = sum(
+        1
+        for row in slurm_merge_variant_rows
+        if str(row["included_in_merge"]) == "true"
+    )
+    add_check(
+        "slurm-merge:merged-variant-count",
+        surface="slurm-merge",
+        condition=int(slurm_merge_summary["merged_variant_count"])
+        == merged_variant_count,
+        expected=slurm_merge_summary["merged_variant_count"],
+        observed=merged_variant_count,
+        detail="merge summary merged_variant_count matches the written merge-variant rows",
+    )
+    add_check(
+        "slurm-merge:merge-ready",
+        surface="slurm-merge",
+        condition=bool(slurm_merge_summary["merge_ready"]) == (
+            int(slurm_merge_summary["failed_check_count"]) == 0
+            and merged_variant_count == len(config_variant_ids)
+        ),
+        expected=int(slurm_merge_summary["failed_check_count"]) == 0
+        and merged_variant_count == len(config_variant_ids),
+        observed=slurm_merge_summary["merge_ready"],
+        detail="merge summary merge_ready matches the merge-check and merged-variant totals",
+    )
     slurm_output_freshness_variant_ids = sorted(
         str(row["variant_id"]) for row in slurm_output_freshness_rows
     )
@@ -472,6 +527,9 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     slurm_job_evidence_rows_by_variant = {
         str(row["variant_id"]): row for row in slurm_job_evidence_rows
     }
+    slurm_merge_rows_by_variant = {
+        str(row["variant_id"]): row for row in slurm_merge_variant_rows
+    }
     slurm_job_status_rows_by_variant = {
         str(row["variant_id"]): row for row in slurm_job_status_rows
     }
@@ -511,6 +569,7 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     for variant_id in config_variant_ids:
         freshness_row = slurm_output_freshness_rows_by_variant.get(variant_id)
         job_evidence_row = slurm_job_evidence_rows_by_variant.get(variant_id)
+        merge_row = slurm_merge_rows_by_variant.get(variant_id)
         job_status_row = slurm_job_status_rows_by_variant.get(variant_id)
         add_check(
             f"slurm-freshness:status-link:{variant_id}",
@@ -549,6 +608,35 @@ def audit_rabies_method_sensitivity_workflow_bundle(
                 None if job_evidence_row is None else job_evidence_row["status"]
             ),
             detail="job-evidence rows expose the same terminal task status recorded in the job-status ledger",
+        )
+        add_check(
+            f"slurm-merge:status-link:{variant_id}",
+            surface="slurm-merge",
+            condition=(
+                merge_row is not None
+                and job_status_row is not None
+                and str(merge_row["job_status"]) == str(job_status_row["status"])
+            ),
+            expected=None if job_status_row is None else job_status_row["status"],
+            observed=None if merge_row is None else merge_row["job_status"],
+            detail="merge-variant rows expose the same job status as the job-status ledger",
+        )
+        add_check(
+            f"slurm-merge:freshness-link:{variant_id}",
+            surface="slurm-merge",
+            condition=(
+                merge_row is not None
+                and freshness_row is not None
+                and str(merge_row["output_freshness_status"])
+                == str(freshness_row["freshness_status"])
+            ),
+            expected=(
+                None if freshness_row is None else freshness_row["freshness_status"]
+            ),
+            observed=(
+                None if merge_row is None else merge_row["output_freshness_status"]
+            ),
+            detail="merge-variant rows expose the same freshness status as the freshness ledger",
         )
         if job_evidence_row is None:
             continue

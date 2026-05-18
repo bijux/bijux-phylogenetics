@@ -1,0 +1,187 @@
+{
+  "bundle_root": ".",
+  "changed_clade_count": 8,
+  "check_count": 12,
+  "checks": [
+    {
+      "check_id": "variant-coverage:variant-summary",
+      "detail": "variant summary rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-coverage"
+    },
+    {
+      "check_id": "variant-coverage:job-status",
+      "detail": "job-status rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-coverage"
+    },
+    {
+      "check_id": "variant-coverage:freshness",
+      "detail": "freshness rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-coverage"
+    },
+    {
+      "check_id": "variant-coverage:job-evidence",
+      "detail": "job-evidence rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-coverage"
+    },
+    {
+      "check_id": "workflow-summary:variant-count",
+      "detail": "workflow summary variant_count matches the merged variant summary rows",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "workflow-summary"
+    },
+    {
+      "check_id": "workflow-summary:stable-clades",
+      "detail": "workflow summary stable_clade_count matches the merged stable-clade ledger",
+      "expected": "2",
+      "observed": "2",
+      "status": "passed",
+      "surface": "workflow-summary"
+    },
+    {
+      "check_id": "workflow-summary:changed-clades",
+      "detail": "workflow summary changed_clade_count matches the merged changed-clade ledger",
+      "expected": "8",
+      "observed": "8",
+      "status": "passed",
+      "surface": "workflow-summary"
+    },
+    {
+      "check_id": "workflow-summary:preprocessing-change-pairs",
+      "detail": "workflow summary preprocessing_change_pair_count matches the merged preprocessing comparisons",
+      "expected": "0",
+      "observed": "0",
+      "status": "passed",
+      "surface": "workflow-summary"
+    },
+    {
+      "check_id": "workflow-summary:rooted-engine-change-variants",
+      "detail": "workflow summary rooted_engine_change_variant_count matches merged variant summaries",
+      "expected": "0",
+      "observed": "0",
+      "status": "passed",
+      "surface": "workflow-summary"
+    },
+    {
+      "check_id": "workflow-summary:serious-conflict-variants",
+      "detail": "workflow summary serious_conflict_variant_count matches merged variant summaries",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "workflow-summary"
+    },
+    {
+      "check_id": "workflow-summary:maximum-serious-conflicts",
+      "detail": "workflow summary maximum_serious_conflict_count matches merged variant summaries",
+      "expected": "8",
+      "observed": "8",
+      "status": "passed",
+      "surface": "workflow-summary"
+    },
+    {
+      "check_id": "merge-readiness:variant-count",
+      "detail": "every configured variant must be completed, fresh, and evidenced before the global merge is ready",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "merge-readiness"
+    }
+  ],
+  "conclusion_count": 4,
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "expected_variant_count": 4,
+  "failed_check_count": 0,
+  "failed_variant_count": 0,
+  "maximum_serious_conflict_count": 8,
+  "merge_ready": true,
+  "merge_status": "merge-ready",
+  "mergeable_variant_count": 4,
+  "merged_variant_count": 4,
+  "preprocessing_comparison_count": 6,
+  "rooted_engine_change_variant_count": 0,
+  "selected_models": [
+    "TPM2u+F+G4"
+  ],
+  "serious_conflict_variant_count": 4,
+  "stable_clade_count": 2,
+  "variants": [
+    {
+      "evidence_html_path": "slurm-job-evidence/auto-gap-threshold/job-evidence.html",
+      "evidence_json_path": "slurm-job-evidence/auto-gap-threshold/job-evidence.json",
+      "evidence_status": "present",
+      "included_in_merge": true,
+      "issue_count": 0,
+      "issues": [],
+      "job_status": "completed",
+      "merge_status": "merged",
+      "output_freshness_status": "fresh",
+      "rooted_engine_rf_distance": 0,
+      "rooted_engine_same_taxa_different_rooting": false,
+      "selected_model": "TPM2u+F+G4",
+      "serious_conflict_count": 8,
+      "variant_id": "auto-gap-threshold"
+    },
+    {
+      "evidence_html_path": "slurm-job-evidence/ginsi-gap-threshold/job-evidence.html",
+      "evidence_json_path": "slurm-job-evidence/ginsi-gap-threshold/job-evidence.json",
+      "evidence_status": "present",
+      "included_in_merge": true,
+      "issue_count": 0,
+      "issues": [],
+      "job_status": "completed",
+      "merge_status": "merged",
+      "output_freshness_status": "fresh",
+      "rooted_engine_rf_distance": 0,
+      "rooted_engine_same_taxa_different_rooting": false,
+      "selected_model": "TPM2u+F+G4",
+      "serious_conflict_count": 8,
+      "variant_id": "ginsi-gap-threshold"
+    },
+    {
+      "evidence_html_path": "slurm-job-evidence/auto-gappyout/job-evidence.html",
+      "evidence_json_path": "slurm-job-evidence/auto-gappyout/job-evidence.json",
+      "evidence_status": "present",
+      "included_in_merge": true,
+      "issue_count": 0,
+      "issues": [],
+      "job_status": "completed",
+      "merge_status": "merged",
+      "output_freshness_status": "fresh",
+      "rooted_engine_rf_distance": 0,
+      "rooted_engine_same_taxa_different_rooting": false,
+      "selected_model": "TPM2u+F+G4",
+      "serious_conflict_count": 8,
+      "variant_id": "auto-gappyout"
+    },
+    {
+      "evidence_html_path": "slurm-job-evidence/ginsi-gappyout/job-evidence.html",
+      "evidence_json_path": "slurm-job-evidence/ginsi-gappyout/job-evidence.json",
+      "evidence_status": "present",
+      "included_in_merge": true,
+      "issue_count": 0,
+      "issues": [],
+      "job_status": "completed",
+      "merge_status": "merged",
+      "output_freshness_status": "fresh",
+      "rooted_engine_rf_distance": 0,
+      "rooted_engine_same_taxa_different_rooting": false,
+      "selected_model": "TPM2u+F+G4",
+      "serious_conflict_count": 8,
+      "variant_id": "ginsi-gappyout"
+    }
+  ],
+  "workflow_prefix": "rabies-method-sensitivity-panel"
+}
