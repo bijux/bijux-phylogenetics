@@ -33,8 +33,10 @@ def test_build_ancestral_figure_package_writes_publication_artifacts(
     assert result.figure_path.exists()
     assert result.figure_png_path.exists()
     assert result.figure_html_path.exists()
+    assert result.review_path.exists()
     assert result.node_table_path.exists()
     assert result.uncertainty_table_path.exists()
+    assert result.node_review_path.exists()
     assert result.legend_path.exists()
     assert result.model_description_path.exists()
     assert result.caption_path.exists()
@@ -43,6 +45,11 @@ def test_build_ancestral_figure_package_writes_publication_artifacts(
     assert "model" in result.model_description_path.read_text(encoding="utf-8").lower()
     assert result.figure_png_path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
     assert "<figure><svg" in result.figure_html_path.read_text(encoding="utf-8")
+    assert result.audit.publication_ready is True
+    assert result.audit.internal_state_visible is True
+    assert result.audit.uncertainty_visible is True
+    assert result.review_path.read_text(encoding="utf-8").count("Reviewer Summary") == 1
+    assert "uncertainty_label" in result.node_review_path.read_text(encoding="utf-8")
 
 
 def test_build_ancestral_figure_package_uses_discrete_probability_ledger(
@@ -62,3 +69,7 @@ def test_build_ancestral_figure_package_uses_discrete_probability_ledger(
     assert 'class="internal-pie-slice"' in result.figure_path.read_text(
         encoding="utf-8"
     )
+    assert result.audit.publication_ready is True
+    assert result.audit.rendered_internal_pie_count >= 1
+    assert result.audit.rendered_internal_annotation_count >= 1
+    assert result.node_review_path.exists()
