@@ -1471,6 +1471,16 @@ policy layered on top of the shared overlap report. Comparative readiness,
 ancestral dataset loading, and discrete Mk parity summaries now all consume
 that same alignment evidence so dropped-tip and dropped-row reporting stays
 consistent across the owned and governed surfaces.
+The same shared overlap policy now also exposes a first-class
+`geiger::name.check` parity surface through
+`check_tree_and_trait_taxon_names(...)` and the `traits name-check` command.
+That contract keeps exact case-sensitive taxon matching, reports
+`tree_not_data` and `data_not_tree` counts separately, rejects duplicate taxa
+through the shared table loader, returns a clean `OK`-style outcome when the
+tree and table agree, and can write a machine-readable mismatch table for
+review. Dataset readiness preflight now consumes that same owned name-check
+report so reviewer-facing blockers and warnings come from one durable mismatch
+surface instead of ad hoc overlap logic.
 The same governed discrete fixture layer now backs a live
 `geiger::fitDiscrete(model='ER')` parity lane. The current ER registry covers
 three reviewer-facing surfaces: a binary twenty-four-taxon known-truth panel,
