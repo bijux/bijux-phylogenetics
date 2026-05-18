@@ -1441,14 +1441,21 @@ compares those model-comparison rows by model identity and numeric fit surface
 rather than by derived whole-list ordering alone, because near-tied secondary
 ordering can shift at machine precision even when the selected model and the
 information-criterion surface still agree.
-The same shared fixture layer now also has a dedicated
-`tests/fixtures/metadata/shared_geiger_discrete_fixture_catalog.json` catalog
-for future `geiger::fitDiscrete(...)` work. That governed corpus keeps binary,
-three-state, four-state, and sparse six-state discrete surfaces under durable
-fixture ids, records explicit ER, SYM, and ARD transition-matrix metadata, and
-includes missing-state, constant-state, and tree-versus-table mismatch control
-panels so later `fitDiscrete` parity lanes do not fall back to one-off state
-tables or hand-entered rate matrices.
+The same governed discrete fixture layer now backs a live
+`geiger::fitDiscrete(model='ER')` parity lane. The current ER registry covers
+three reviewer-facing surfaces: a binary twenty-four-taxon known-truth panel,
+a three-state missing-value pruning review panel, and a four-state
+tree-versus-table tip-intersection review panel. Bijux exposes the owned side
+through `fit_discrete_mk_model(...)`, and that owned comparative Mk fit now
+uses the observed-root likelihood contract that local `geiger::fitDiscrete`
+applies by default instead of the flatter equal-root prior used by the
+ancestral reconstruction surface. The underlying governed catalog still lives
+in `tests/fixtures/metadata/shared_geiger_discrete_fixture_catalog.json`,
+keeping binary, three-state, four-state, and sparse six-state discrete
+surfaces under durable fixture ids, explicit ER, SYM, and ARD
+transition-matrix metadata, and missing-state, constant-state, and
+tree-versus-table control panels so later discrete parity lanes do not fall
+back to one-off state tables or hand-entered rate matrices.
 
 `parity --reference-source phytools-live` is the governed live `phytools`
 execution harness. It uses the same checked-in `Rscript` orchestration model
