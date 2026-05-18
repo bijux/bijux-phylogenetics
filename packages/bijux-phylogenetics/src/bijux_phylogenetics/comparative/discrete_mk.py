@@ -145,6 +145,7 @@ def fit_discrete_mk_model_from_dataset(
         model=resolved_model,
         state_ordering=state_ordering,
         allowed_transition_pairs=resolved_allowed_transition_pairs,
+        root_prior_mode="observed",
     )
     log_likelihood = _tree_log_likelihood(
         dataset.tree,
@@ -152,6 +153,7 @@ def fit_discrete_mk_model_from_dataset(
         state_order=state_order,
         rate_matrix=rate_matrix,
         root_prior=root_prior,
+        root_prior_mode="observed",
     )
     parameter_count = _parameter_count(
         len(state_order),
