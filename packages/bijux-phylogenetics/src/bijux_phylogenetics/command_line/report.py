@@ -28,6 +28,7 @@ from bijux_phylogenetics.reports.service import (
 )
 from bijux_phylogenetics.reports import (
     build_alignment_figure_package,
+    write_supplementary_alignment_diagnostics_table,
     write_supplementary_taxon_table,
 )
 from bijux_phylogenetics.reports.tree_package import build_tree_report_package
@@ -247,6 +248,22 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the table write result as JSON."
     )
     _add_manifest_argument(report_supplementary_taxon_table)
+
+    report_supplementary_alignment_table = report_subparsers.add_parser(
+        "supplementary-alignment-table",
+        help="Write a supplementary alignment diagnostics table with optional filtering status.",
+    )
+    report_supplementary_alignment_table.add_argument(
+        "--alignment", required=True, type=Path
+    )
+    report_supplementary_alignment_table.add_argument("--filtered-alignment", type=Path)
+    report_supplementary_alignment_table.add_argument(
+        "--out", required=True, type=Path
+    )
+    report_supplementary_alignment_table.add_argument(
+        "--json", action="store_true", help="Emit the table write result as JSON."
+    )
+    _add_manifest_argument(report_supplementary_alignment_table)
 
     report_workflow_validation = report_subparsers.add_parser(
         "workflow-validation",
@@ -832,6 +849,42 @@ def run_report_command(args: Any) -> int:
                         "reporting_dropped_count": result.reporting_dropped_count,
                         "metadata_column_count": result.metadata_column_count,
                         "trait_column_count": result.trait_column_count,
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
+        return 0
+
+    if args.report_command == "supplementary-alignment-table":
+        result = write_supplementary_alignment_diagnostics_table(
+            args.out,
+            alignment_path=args.alignment,
+            filtered_alignment_path=args.filtered_alignment,
+        )
+        inputs = [args.alignment]
+        if args.filtered_alignment is not None:
+            inputs.append(args.filtered_alignment)
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=inputs,
+            outputs=[result.output_path],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=inputs,
+                    outputs=outputs,
+                    warnings=[],
+                    metrics={
+                        "row_count": result.row_count,
+                        "retained_sequence_count": result.retained_sequence_count,
+                        "removed_sequence_count": result.removed_sequence_count,
+                        "filtered_only_sequence_count": result.filtered_only_sequence_count,
                     },
                     data=result,
                 ),
