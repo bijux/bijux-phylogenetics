@@ -6,7 +6,9 @@ from .alignment_package import (
     build_alignment_figure_package,
 )
 from .methods_summary import (
+    AlignmentFilteringMethodsSummaryTextResult,
     TreeValidationMethodsSummaryTextResult,
+    write_alignment_filtering_methods_summary_text,
     write_tree_validation_methods_summary_text,
 )
 from .supplementary_tables import (
@@ -52,6 +54,7 @@ from .tree_package import (
 __all__ = [
     "AlignmentFigureAudit",
     "AlignmentFigurePackageResult",
+    "AlignmentFilteringMethodsSummaryTextResult",
     "SupplementaryAlignmentDiagnosticsRow",
     "SupplementaryAlignmentDiagnosticsTableResult",
     "SupplementaryAncestralStateRow",
@@ -78,6 +81,7 @@ __all__ = [
     "build_tree_report_package",
     "summarize_tree_branch_statistics",
     "summarize_tree_support",
+    "write_alignment_filtering_methods_summary_text",
     "write_supplementary_alignment_diagnostics_table",
     "write_supplementary_ancestral_state_table",
     "write_supplementary_batch_summary_table",
