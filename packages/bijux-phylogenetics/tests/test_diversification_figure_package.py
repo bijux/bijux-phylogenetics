@@ -45,6 +45,7 @@ def test_build_diversification_figure_package_writes_publication_bundle(
     assert result.model_figure_path.exists()
     assert result.legend_path.exists()
     assert result.caption_path.exists()
+    assert result.methods_summary_path.exists()
     assert result.review_path.exists()
     assert result.manifest_path.exists()
     assert result.reproducibility_manifest_path.exists()
@@ -57,11 +58,19 @@ def test_build_diversification_figure_package_writes_publication_bundle(
     assert "Diversification model comparison" in result.model_figure_path.read_text(
         encoding="utf-8"
     )
+    assert "Diversification Analysis Methods Summary" in result.methods_summary_path.read_text(
+        encoding="utf-8"
+    )
     assert "publication_ready" in result.review_path.read_text(encoding="utf-8")
+    assert "Methods Summary" in result.review_path.read_text(encoding="utf-8")
     assert (
         result.machine_manifest["metrics"]["publication_ready"]
         == result.audit.publication_ready
     )
+    assert result.machine_manifest["outputs"]["methods_summary_path"].endswith(
+        "diversification-methods-summary.md"
+    )
+    assert result.machine_manifest["metrics"]["methods_summary_warning_count"] >= 0
     reproducibility = json.loads(
         result.reproducibility_manifest_path.read_text(encoding="utf-8")
     )

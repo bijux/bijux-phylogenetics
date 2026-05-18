@@ -15,14 +15,14 @@ from bijux_phylogenetics.render.reproducibility import (
 from .diversification import (
     CladeDiversificationObservation,
     CladeDiversificationScanReport,
+    DiversificationMethodReport,
     DiversificationModelComparisonReport,
     DiversificationModelComparisonRow,
+    DiversificationMethodsSummaryTextResult,
     LineageThroughTimeReport,
     SamplingFractionReport,
-    compare_diversification_models,
-    compute_lineage_through_time_curve,
-    detect_diversification_outlier_clades,
-    detect_incomplete_taxon_sampling_metadata,
+    build_diversification_method_report,
+    write_diversification_methods_summary_text,
     write_clade_diversification_table,
     write_diversification_model_comparison_table,
     write_lineage_through_time_table,
@@ -83,6 +83,7 @@ class DiversificationFigurePackageResult:
     model_table_path: Path
     legend_path: Path
     caption_path: Path
+    methods_summary_path: Path
     review_path: Path
     manifest_path: Path
     reproducibility_manifest_path: Path
@@ -90,6 +91,8 @@ class DiversificationFigurePackageResult:
     clade_report: CladeDiversificationScanReport
     model_report: DiversificationModelComparisonReport
     sampling_report: SamplingFractionReport | None
+    methods_report: DiversificationMethodReport
+    methods_summary: DiversificationMethodsSummaryTextResult
     legend_entries: list[DiversificationFigureLegendEntry]
     caption_draft: DiversificationFigureCaptionDraft
     audit: DiversificationFigureAudit
@@ -519,6 +522,8 @@ def _build_review_html(
     model_table_path: Path,
     legend_path: Path,
     caption_path: Path,
+    methods_summary_path: Path,
+    methods_summary_text: str,
     audit: DiversificationFigureAudit,
 ) -> str:
     figures = {
@@ -586,6 +591,10 @@ def _build_review_html(
             '    <section class="panel"><h2>Model Comparison</h2><div class="figure-shell">' + figures["models"] + "</div></section>",
             "  </section>",
             '  <section class="panel" style="margin-top: 20px;">',
+            "    <h2>Methods Summary</h2>",
+            f"    <pre>{escape(methods_summary_text)}</pre>",
+            "  </section>",
+            '  <section class="panel" style="margin-top: 20px;">',
             "    <h2>Linked Artifacts</h2>",
             "    <ul>",
             f'      <li><a href="{escape(lineage_table_path.name)}">{escape(lineage_table_path.name)}</a></li>',
@@ -593,6 +602,7 @@ def _build_review_html(
             f'      <li><a href="{escape(model_table_path.name)}">{escape(model_table_path.name)}</a></li>',
             f'      <li><a href="{escape(legend_path.name)}">{escape(legend_path.name)}</a></li>',
             f'      <li><a href="{escape(caption_path.name)}">{escape(caption_path.name)}</a></li>',
+            f'      <li><a href="{escape(methods_summary_path.name)}">{escape(methods_summary_path.name)}</a></li>',
             "    </ul>",
             "  </section>",
             "</main>",
@@ -622,32 +632,24 @@ def build_diversification_figure_package(
     model_table_path = out_dir / "diversification-model-comparison.tsv"
     legend_path = out_dir / "figure-legend.tsv"
     caption_path = out_dir / "figure-caption.md"
+    methods_summary_path = out_dir / "diversification-methods-summary.md"
     review_path = out_dir / "diversification-figure-review.html"
     manifest_path = out_dir / "diversification-figure-package.manifest.json"
     reproducibility_manifest_path = out_dir / "figure-reproducibility.manifest.json"
 
-    lineage_report = compute_lineage_through_time_curve(tree_path)
-    clade_report = detect_diversification_outlier_clades(
-        tree_path,
-        min_tip_count=min_tip_count,
-        model=model,
-    )
-    model_report = compare_diversification_models(
+    methods_report = build_diversification_method_report(
         tree_path,
         metadata_path=metadata_path,
         taxon_column=taxon_column,
         sampling_column=sampling_column,
+        estimate_model=model,
+        clade_model=model,
+        clade_min_tip_count=min_tip_count,
     )
-    sampling_report = (
-        detect_incomplete_taxon_sampling_metadata(
-            tree_path,
-            metadata_path,
-            taxon_column=taxon_column,
-            sampling_column=sampling_column,
-        )
-        if metadata_path is not None
-        else None
-    )
+    lineage_report = methods_report.lineage
+    clade_report = methods_report.clade_scan
+    model_report = methods_report.model_comparison
+    sampling_report = methods_report.sampling_report
 
     write_lineage_through_time_table(lineage_table_path, lineage_report)
     write_clade_diversification_table(clade_table_path, clade_report)
@@ -673,6 +675,10 @@ def build_diversification_figure_package(
         audit=audit,
     )
     _write_caption(caption_path, caption_draft)
+    methods_summary = write_diversification_methods_summary_text(
+        methods_summary_path,
+        methods_report,
+    )
     review_path.write_text(
         _build_review_html(
             lineage_figure_path=lineage_figure_path,
@@ -683,6 +689,8 @@ def build_diversification_figure_package(
             model_table_path=model_table_path,
             legend_path=legend_path,
             caption_path=caption_path,
+            methods_summary_path=methods_summary_path,
+            methods_summary_text=methods_summary.text,
             audit=audit,
         ),
         encoding="utf-8",
@@ -696,6 +704,7 @@ def build_diversification_figure_package(
         model_table_path,
         legend_path,
         caption_path,
+        methods_summary_path,
         review_path,
     ]
     reproducibility_manifest = write_figure_reproducibility_manifest(
@@ -737,6 +746,7 @@ def build_diversification_figure_package(
         linked_artifacts=[
             ("legend", legend_path),
             ("caption", caption_path),
+            ("methods_summary", methods_summary_path),
             ("review", review_path),
         ],
     )
@@ -757,6 +767,7 @@ def build_diversification_figure_package(
             "sampling_column": sampling_column,
             "min_tip_count": min_tip_count,
             "model": model,
+            "methods_summary_path": str(methods_summary_path),
         },
         "metrics": {
             "tip_count": lineage_report.tip_count,
@@ -768,6 +779,10 @@ def build_diversification_figure_package(
             "highlighted_outlier_count": audit.highlighted_outlier_count,
             "plotted_model_count": audit.plotted_model_count,
             "better_model": audit.better_model,
+            "methods_summary_warning_count": methods_summary.warning_count,
+        },
+        "outputs": {
+            "methods_summary_path": str(methods_summary_path),
         },
         "lineage_report": _json_ready(asdict(lineage_report)),
         "clade_report": _json_ready(asdict(clade_report)),
@@ -775,6 +790,7 @@ def build_diversification_figure_package(
         "sampling_report": None
         if sampling_report is None
         else _json_ready(asdict(sampling_report)),
+        "methods_summary": _json_ready(asdict(methods_summary)),
         "audit": _json_ready(asdict(audit)),
     }
     manifest_path.write_text(
@@ -791,6 +807,7 @@ def build_diversification_figure_package(
         model_table_path=model_table_path,
         legend_path=legend_path,
         caption_path=caption_path,
+        methods_summary_path=methods_summary_path,
         review_path=review_path,
         manifest_path=manifest_path,
         reproducibility_manifest_path=reproducibility_manifest_path,
@@ -798,6 +815,8 @@ def build_diversification_figure_package(
         clade_report=clade_report,
         model_report=model_report,
         sampling_report=sampling_report,
+        methods_report=methods_report,
+        methods_summary=methods_summary,
         legend_entries=legend_entries,
         caption_draft=caption_draft,
         audit=audit,
