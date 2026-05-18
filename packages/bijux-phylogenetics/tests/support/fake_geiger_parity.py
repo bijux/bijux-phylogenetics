@@ -98,6 +98,7 @@ from bijux_phylogenetics.comparative.evolutionary_modes import fit_continuous_ev
 case_payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
 mode_lookup = {
     "BM": "brownian",
+    "white": "white-noise",
     "lambda": "pagel-lambda",
     "kappa": "pagel-kappa",
     "delta": "pagel-delta",
@@ -144,7 +145,7 @@ summary = {
     "standard_error_policy": "__STANDARD_ERROR_POLICY__",
     "parameter_bound_policy": (
         "closed-form-without-parameter-bounds"
-        if case_payload["model_name"] == "BM"
+        if case_payload["model_name"] in {"BM", "white"}
         else "governed-bounded-grid-search"
     ),
     "hit_lower_parameter_boundary": (
