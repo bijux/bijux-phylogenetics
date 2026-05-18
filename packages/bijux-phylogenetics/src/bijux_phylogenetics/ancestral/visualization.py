@@ -55,6 +55,7 @@ def render_ancestral_state_visualization(
     layout: str = "phylogram",
     discrete_node_style: str = "labels",
     branch_coloring: str = "none",
+    publication_annotations: bool = False,
 ) -> AncestralVisualizationResult:
     """Render a governed ancestral-state visualization as SVG, PNG, or HTML."""
     output_format = out_path.suffix.lower().lstrip(".")
@@ -93,6 +94,7 @@ def render_ancestral_state_visualization(
             layout=layout,
             discrete_node_style=discrete_node_style,
             branch_coloring=branch_coloring,
+            publication_annotations=publication_annotations,
         )
 
     if output_format == "png":
@@ -106,6 +108,7 @@ def render_ancestral_state_visualization(
             layout=layout,
             discrete_node_style=discrete_node_style,
             branch_coloring=branch_coloring,
+            publication_annotations=publication_annotations,
         )
 
     return AncestralVisualizationResult(
@@ -148,6 +151,7 @@ def _render_ancestral_tree_svg(
     layout: str,
     discrete_node_style: str,
     branch_coloring: str,
+    publication_annotations: bool,
 ) -> TreeRenderResult:
     if isinstance(report, ContinuousAncestralReport):
         return _render_continuous_ancestral_tree_svg(
@@ -156,6 +160,7 @@ def _render_ancestral_tree_svg(
             svg_path=svg_path,
             layout=layout,
             branch_coloring=branch_coloring,
+            publication_annotations=publication_annotations,
         )
 
     return _render_discrete_ancestral_tree_svg(
@@ -165,6 +170,7 @@ def _render_ancestral_tree_svg(
         layout=layout,
         discrete_node_style=discrete_node_style,
         branch_coloring=branch_coloring,
+        publication_annotations=publication_annotations,
     )
 
 
@@ -175,13 +181,18 @@ def _render_continuous_ancestral_tree_svg(
     svg_path: Path,
     layout: str,
     branch_coloring: str,
+    publication_annotations: bool,
 ) -> TreeRenderResult:
     (
         continuous_traits,
         internal_annotations,
         internal_annotation_colors,
         branch_colors,
-    ) = _build_continuous_render_data(report, branch_coloring=branch_coloring)
+    ) = _build_continuous_render_data(
+        report,
+        branch_coloring=branch_coloring,
+        publication_annotations=publication_annotations,
+    )
     return render_tree_svg(
         analysis_tree_path,
         out_path=svg_path,
@@ -197,6 +208,7 @@ def _build_continuous_render_data(
     report: ContinuousAncestralReport,
     *,
     branch_coloring: str,
+    publication_annotations: bool,
 ) -> tuple[dict[str, float], dict[str, str], dict[str, str], dict[str, str]]:
     value_by_node = {estimate.node: estimate.estimate for estimate in report.estimates}
     minimum = min(value_by_node.values()) if value_by_node else 0.0
@@ -207,7 +219,11 @@ def _build_continuous_render_data(
         if estimate.is_tip and estimate.node_name is not None
     }
     internal_annotations = {
-        estimate.node: format(estimate.estimate, ".3g")
+        estimate.node: (
+            f"{format(estimate.estimate, '.3g')} +/-{format(estimate.standard_error, '.2g')}"
+            if publication_annotations
+            else format(estimate.estimate, ".3g")
+        )
         for estimate in report.estimates
         if not estimate.is_tip
     }
@@ -240,6 +256,7 @@ def _render_discrete_ancestral_tree_svg(
     layout: str,
     discrete_node_style: str,
     branch_coloring: str,
+    publication_annotations: bool,
 ) -> TreeRenderResult:
     (
         categorical_traits,
@@ -252,6 +269,7 @@ def _render_discrete_ancestral_tree_svg(
         report,
         discrete_node_style=discrete_node_style,
         branch_coloring=branch_coloring,
+        publication_annotations=publication_annotations,
     )
     return render_tree_svg(
         analysis_tree_path,
@@ -271,6 +289,7 @@ def _build_discrete_render_data(
     *,
     discrete_node_style: str,
     branch_coloring: str,
+    publication_annotations: bool,
 ) -> tuple[
     dict[str, str],
     dict[str, str],
@@ -280,19 +299,23 @@ def _build_discrete_render_data(
     dict[str, str],
 ]:
     palette = _categorical_palette(report.observed_states)
-    internal_annotations = (
-        {
-            estimate.node: (
+    internal_annotations = {
+        estimate.node: (
+            (
+                f"{estimate.most_likely_state} {format(estimate.confidence, '.2f')}"
+                if not estimate.ambiguous
+                else f"{'/'.join(estimate.state_set)} {format(estimate.confidence, '.2f')}"
+            )
+            if publication_annotations
+            else (
                 estimate.most_likely_state
                 if not estimate.ambiguous
                 else "/".join(estimate.state_set)
             )
-            for estimate in report.estimates
-            if not estimate.is_tip
-        }
-        if discrete_node_style == "labels"
-        else {}
-    )
+        )
+        for estimate in report.estimates
+        if not estimate.is_tip and (publication_annotations or discrete_node_style == "labels")
+    }
     internal_pies = (
         {
             estimate.node: {
@@ -381,6 +404,7 @@ def _write_ancestral_visualization_html(
     layout: str,
     discrete_node_style: str,
     branch_coloring: str,
+    publication_annotations: bool,
 ) -> None:
     svg_markup = svg_path.read_text(encoding="utf-8")
     title = f"Bijux Ancestral Visualization: {report.trait}"
@@ -396,6 +420,7 @@ def _write_ancestral_visualization_html(
     manifest["layout"] = layout
     manifest["branch_coloring"] = branch_coloring
     manifest["discrete_node_style"] = discrete_node_style
+    manifest["publication_annotations"] = publication_annotations
     manifest_script = json.dumps(manifest, indent=2, sort_keys=True).replace(
         "</", "<\\/"
     )
