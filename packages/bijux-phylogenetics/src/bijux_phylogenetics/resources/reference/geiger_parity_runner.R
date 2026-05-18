@@ -193,6 +193,65 @@ normalize_optimizer_result <- function(fit) {
   result
 }
 
+normalize_fitdiscrete_result <- function(fit) {
+  result <- list()
+  if (!is.null(fit$opt$method)) {
+    result$best_method <- as.character(fit$opt$method)
+  }
+  if (!is.null(fit$opt$k)) {
+    result$parameter_count <- as.integer(fit$opt$k)
+  }
+  if (is.matrix(fit$res) || is.data.frame(fit$res)) {
+    result$attempt_count <- nrow(fit$res)
+    convergence_codes <- as.integer(fit$res[, ncol(fit$res)])
+    result$converged_attempt_count <- sum(convergence_codes == 0, na.rm = TRUE)
+    if (length(convergence_codes) > 0) {
+      result$convergence_code <- convergence_codes[[1]]
+    }
+    result$best_log_likelihood <- max(as.numeric(fit$res[, 2]), na.rm = TRUE)
+  }
+  if (length(result) == 0) {
+    return(NULL)
+  }
+  result
+}
+
+decode_transition_parameter <- function(parameter_name, state_count) {
+  code <- substring(parameter_name, 2)
+  split_candidates <- seq.int(1, nchar(code) - 1)
+  for (split_index in split_candidates) {
+    left_index <- as.integer(substring(code, 1, split_index))
+    right_index <- as.integer(substring(code, split_index + 1, nchar(code)))
+    if (!is.na(left_index) &&
+        !is.na(right_index) &&
+        left_index >= 1 &&
+        left_index <= state_count &&
+        right_index >= 1 &&
+        right_index <= state_count) {
+      return(c(left_index, right_index))
+    }
+  }
+  stop(sprintf("could not decode fitDiscrete transition parameter '%s'", parameter_name))
+}
+
+fitdiscrete_rate_rows <- function(opt, state_levels) {
+  parameter_names <- grep("^q[0-9]+[0-9]+$", names(opt), value = TRUE)
+  rows <- lapply(parameter_names, function(parameter_name) {
+    decoded <- decode_transition_parameter(parameter_name, length(state_levels))
+    list(
+      source_state = state_levels[[decoded[[1]]]],
+      target_state = state_levels[[decoded[[2]]]],
+      transition_allowed = TRUE,
+      step_distance = 1,
+      rate = as.numeric(opt[[parameter_name]])
+    )
+  })
+  rows[order(
+    vapply(rows, function(row) row$source_state, character(1)),
+    vapply(rows, function(row) row$target_state, character(1))
+  )]
+}
+
 parameter_surface <- function(model_name, opt) {
   if (identical(model_name, "OU")) {
     return(list(parameter_name = "alpha", parameter_value = as.numeric(opt$alpha)))
@@ -422,6 +481,44 @@ build_fitcontinuous_model_comparison_payload <- function(tree, trait_values, exc
   list(summary = summary, rows = fitted_rows)
 }
 
+build_fitdiscrete_payload <- function(tree, trait_values, excluded_taxa, missing_value_taxa, missing_from_traits, extra_trait_taxa, case_payload) {
+  fit <- geiger::fitDiscrete(
+    phy = tree,
+    dat = trait_values,
+    model = case_payload$model_name
+  )
+  state_levels <- levels(trait_values)
+  observed_state_count <- length(state_levels)
+  state_counts <- vapply(
+    state_levels,
+    function(state) sum(as.character(trait_values) == state),
+    integer(1)
+  )
+  sparse_states <- names(state_counts[state_counts < 2])
+  summary <- list(
+    taxon_count = length(trait_values),
+    trait_name = case_payload$trait_name,
+    model_name = case_payload$model_name,
+    observed_state_count = observed_state_count,
+    state_order = json_array(state_levels),
+    excluded_taxon_count = length(excluded_taxa),
+    excluded_taxa = json_array(excluded_taxa),
+    missing_value_taxa = json_array(missing_value_taxa),
+    missing_from_traits = json_array(missing_from_traits),
+    extra_trait_taxa = json_array(extra_trait_taxa),
+    missing_value_policy = "prune-overlapping-missing-values",
+    log_likelihood = as.numeric(fit$opt$lnL),
+    parameter_count = as.integer(fit$opt$k),
+    aic = as.numeric(fit$opt$aic),
+    aicc = as.numeric(fit$opt$aicc),
+    sparse_states = json_array(unname(sparse_states)),
+    optimizer_settings = case_payload$optimizer_settings,
+    optimizer_result = normalize_fitdiscrete_result(fit)
+  )
+  rows <- fitdiscrete_rate_rows(fit$opt, state_levels)
+  list(summary = summary, rows = rows)
+}
+
 result <- tryCatch(
   {
     input_fixtures <- unname(unlist(case_payload$input_fixtures))
@@ -437,34 +534,57 @@ result <- tryCatch(
     )
     taxon_names <- trait_table[[case_payload$taxon_column]]
     raw_trait_column <- setNames(as.character(trait_table[[case_payload$trait_name]]), taxon_names)
-    raw_trait_values <- suppressWarnings(as.numeric(trait_table[[case_payload$trait_name]]))
-    trait_values <- stats::setNames(raw_trait_values, taxon_names)
     tree_only_taxa <- sort(setdiff(original_tree_tip_labels, taxon_names))
     extra_trait_taxa <- sort(setdiff(taxon_names, original_tree_tip_labels))
     overlapping_taxa <- intersect(original_tree_tip_labels, taxon_names)
-    empty_or_missing_values <- is.na(raw_trait_column[overlapping_taxa]) |
-      !nzchar(trimws(raw_trait_column[overlapping_taxa]))
-    missing_value_taxa <- sort(
-      overlapping_taxa[is.na(trait_values[overlapping_taxa]) & empty_or_missing_values]
-    )
-    non_numeric_taxa <- sort(
-      overlapping_taxa[is.na(trait_values[overlapping_taxa]) & !empty_or_missing_values]
-    )
-    kept_taxa <- names(trait_values)[!is.na(trait_values) & names(trait_values) %in% original_tree_tip_labels]
-    trait_values <- trait_values[kept_taxa]
-    excluded_taxa <- sort(unique(c(tree_only_taxa, missing_value_taxa, non_numeric_taxa)))
-    if (length(excluded_taxa) > 0) {
-      tree <- ape::drop.tip(tree, excluded_taxa)
-    }
-    payload <- if (identical(case_payload$operation, "compare-fitcontinuous-models")) {
-      build_fitcontinuous_model_comparison_payload(tree, trait_values, excluded_taxa, case_payload)
+    if (identical(case_payload$operation, "fit-discrete-mk")) {
+      trimmed_trait_values <- trimws(raw_trait_column[overlapping_taxa])
+      missing_value_taxa <- sort(
+        overlapping_taxa[is.na(raw_trait_column[overlapping_taxa]) | !nzchar(trimmed_trait_values)]
+      )
+      kept_taxa <- overlapping_taxa[!(overlapping_taxa %in% missing_value_taxa)]
+      trait_values <- stats::setNames(trimmed_trait_values[kept_taxa], kept_taxa)
+      excluded_taxa <- sort(unique(c(tree_only_taxa, missing_value_taxa)))
+      if (length(excluded_taxa) > 0) {
+        tree <- ape::drop.tip(tree, excluded_taxa)
+      }
+      trait_values <- factor(trait_values)
+      payload <- build_fitdiscrete_payload(
+        tree,
+        trait_values,
+        excluded_taxa,
+        missing_value_taxa,
+        tree_only_taxa,
+        extra_trait_taxa,
+        case_payload
+      )
     } else {
-      build_fitcontinuous_payload(tree, trait_values, excluded_taxa, case_payload)
+      raw_trait_values <- suppressWarnings(as.numeric(trait_table[[case_payload$trait_name]]))
+      trait_values <- stats::setNames(raw_trait_values, taxon_names)
+      empty_or_missing_values <- is.na(raw_trait_column[overlapping_taxa]) |
+        !nzchar(trimws(raw_trait_column[overlapping_taxa]))
+      missing_value_taxa <- sort(
+        overlapping_taxa[is.na(trait_values[overlapping_taxa]) & empty_or_missing_values]
+      )
+      non_numeric_taxa <- sort(
+        overlapping_taxa[is.na(trait_values[overlapping_taxa]) & !empty_or_missing_values]
+      )
+      kept_taxa <- names(trait_values)[!is.na(trait_values) & names(trait_values) %in% original_tree_tip_labels]
+      trait_values <- trait_values[kept_taxa]
+      excluded_taxa <- sort(unique(c(tree_only_taxa, missing_value_taxa, non_numeric_taxa)))
+      if (length(excluded_taxa) > 0) {
+        tree <- ape::drop.tip(tree, excluded_taxa)
+      }
+      payload <- if (identical(case_payload$operation, "compare-fitcontinuous-models")) {
+        build_fitcontinuous_model_comparison_payload(tree, trait_values, excluded_taxa, case_payload)
+      } else {
+        build_fitcontinuous_payload(tree, trait_values, excluded_taxa, case_payload)
+      }
+      payload$summary$missing_from_traits <- json_array(tree_only_taxa)
+      payload$summary$missing_value_taxa <- json_array(missing_value_taxa)
+      payload$summary$non_numeric_taxa <- json_array(non_numeric_taxa)
+      payload$summary$extra_trait_taxa <- json_array(extra_trait_taxa)
     }
-    payload$summary$missing_from_traits <- json_array(tree_only_taxa)
-    payload$summary$missing_value_taxa <- json_array(missing_value_taxa)
-    payload$summary$non_numeric_taxa <- json_array(non_numeric_taxa)
-    payload$summary$extra_trait_taxa <- json_array(extra_trait_taxa)
     write_payload(summary_path, payload$summary)
     write_table(rows_path, payload$rows)
     write_payload(

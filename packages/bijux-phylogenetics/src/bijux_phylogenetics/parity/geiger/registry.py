@@ -3,7 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.fixtures import get_shared_geiger_continuous_fixture
+from bijux_phylogenetics.fixtures import (
+    get_shared_geiger_continuous_fixture,
+    get_shared_geiger_discrete_fixture,
+)
 
 
 FITCONTINUOUS_REFERENCE_MODEL_ORDER = (
@@ -45,6 +48,7 @@ class GeigerParityCase:
     ou_bounds: tuple[float, float] | None = None
     early_burst_bounds: tuple[float, float] | None = None
     field_tolerances: dict[str, float] | None = None
+    row_field_tolerances: dict[str, float] | None = None
 
 
 def _package_root() -> Path:
@@ -123,6 +127,15 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
     )
     comparison_white_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_white_noise_twenty_four_taxa"
+    )
+    discrete_er_binary_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_er_binary_twenty_four_taxa"
+    )
+    discrete_er_missing_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_missing_three_state_twenty_four_taxa"
+    )
+    discrete_er_mismatch_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_mismatch_four_state_twenty_four_taxa"
     )
     return [
         GeigerParityCase(
@@ -1176,5 +1189,119 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "optimizer_settings",
             ),
             field_tolerances={"runner_up_aicc_delta": 1e-2},
+        ),
+        GeigerParityCase(
+            case_id="fitdiscrete-er-binary-twenty-four-taxa",
+            fixture_id=discrete_er_binary_fixture.fixture_id,
+            function_name="geiger::fitDiscrete(model='ER')",
+            python_function_name="fit_discrete_mk_model",
+            operation="fit-discrete-mk",
+            model_name="ER",
+            python_mode="equal-rates",
+            input_fixtures=(
+                discrete_er_binary_fixture.tree_path,
+                discrete_er_binary_fixture.traits_path,
+            ),
+            tolerance=1e-5,
+            trait_name=discrete_er_binary_fixture.trait_name,
+            taxon_column=discrete_er_binary_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitdiscrete-default",
+                "bijux_optimizer_name": "golden-section-search",
+                "bijux_rate_surface": "discrete-mk-er",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "observed_state_count",
+                "state_order",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "log_likelihood",
+                "parameter_count",
+                "aic",
+                "aicc",
+            ),
+            row_field_tolerances={"rate": 1e-5},
+        ),
+        GeigerParityCase(
+            case_id="fitdiscrete-er-multistate-missing-twenty-four-taxa",
+            fixture_id=discrete_er_missing_fixture.fixture_id,
+            function_name="geiger::fitDiscrete(model='ER')",
+            python_function_name="fit_discrete_mk_model",
+            operation="fit-discrete-mk",
+            model_name="ER",
+            python_mode="equal-rates",
+            input_fixtures=(
+                discrete_er_missing_fixture.tree_path,
+                discrete_er_missing_fixture.traits_path,
+            ),
+            tolerance=1e-5,
+            trait_name=discrete_er_missing_fixture.trait_name,
+            taxon_column=discrete_er_missing_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitdiscrete-default",
+                "bijux_optimizer_name": "golden-section-search",
+                "bijux_rate_surface": "discrete-mk-er",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "observed_state_count",
+                "state_order",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "log_likelihood",
+                "parameter_count",
+                "aic",
+                "aicc",
+            ),
+            row_field_tolerances={"rate": 1e-5},
+        ),
+        GeigerParityCase(
+            case_id="fitdiscrete-er-multistate-tip-intersection-review",
+            fixture_id=discrete_er_mismatch_fixture.fixture_id,
+            function_name="geiger::fitDiscrete(model='ER')",
+            python_function_name="fit_discrete_mk_model",
+            operation="fit-discrete-mk",
+            model_name="ER",
+            python_mode="equal-rates",
+            input_fixtures=(
+                discrete_er_mismatch_fixture.tree_path,
+                discrete_er_mismatch_fixture.traits_path,
+            ),
+            tolerance=1e-5,
+            trait_name=discrete_er_mismatch_fixture.trait_name,
+            taxon_column=discrete_er_mismatch_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitdiscrete-tip-intersection",
+                "bijux_optimizer_name": "golden-section-search",
+                "bijux_rate_surface": "discrete-mk-er",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "observed_state_count",
+                "state_order",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "log_likelihood",
+                "parameter_count",
+                "aic",
+                "aicc",
+            ),
+            row_field_tolerances={"rate": 1e-5},
         ),
     ]

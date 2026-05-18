@@ -16,7 +16,10 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
     compare_fitcontinuous_model_ranking,
     fit_continuous_evolutionary_mode,
 )
+from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
+from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.io.trees import load_tree
 
 from .registry import GeigerParityCase, list_geiger_parity_cases
 
@@ -186,7 +189,13 @@ def _load_rows_table(path: Path) -> list[dict[str, object]]:
                 if value is None or value == "":
                     parsed[key] = ""
                     continue
-                if key in {"parameter", "model", "comparability_note"}:
+                if key in {
+                    "parameter",
+                    "model",
+                    "comparability_note",
+                    "source_state",
+                    "target_state",
+                }:
                     parsed[key] = value
                     continue
                 if value.lower() in {"true", "false"}:
@@ -214,6 +223,12 @@ def _optional_payload_string(payload: dict[str, object], key: str) -> str | None
 def _field_tolerance(case: GeigerParityCase, key: str) -> float:
     if case.field_tolerances and key in case.field_tolerances:
         return case.field_tolerances[key]
+    return case.tolerance
+
+
+def _row_field_tolerance(case: GeigerParityCase, key: str) -> float:
+    if case.row_field_tolerances and key in case.row_field_tolerances:
+        return case.row_field_tolerances[key]
     return case.tolerance
 
 
@@ -279,7 +294,7 @@ def _row_mismatch_reason(
             if not _isclose(
                 reference_row.get(key),
                 bijux_row.get(key),
-                tolerance=case.tolerance,
+                tolerance=_row_field_tolerance(case, key),
             ):
                 return f"row_field_mismatch:{reference_id}:{key}"
     return None
@@ -291,6 +306,13 @@ def _normalized_rows(
 ) -> list[dict[str, object]]:
     normalized = [dict(row) for row in rows]
     if case.operation != "compare-fitcontinuous-models":
+        if case.operation == "fit-discrete-mk":
+            normalized.sort(
+                key=lambda row: (
+                    str(row.get("source_state", "")),
+                    str(row.get("target_state", "")),
+                )
+            )
         return normalized
     for row in normalized:
         row.pop("rank", None)
@@ -355,6 +377,10 @@ def _standard_error_policy() -> str:
     return "fitcontinuous-standard-error-explicitly-excluded-this-round"
 
 
+def _discrete_missing_value_policy() -> str:
+    return "prune-overlapping-missing-values"
+
+
 def _missing_value_policy() -> str:
     return "prune-tree-tip-overlap-with-missing-or-nonnumeric-trait-values"
 
@@ -369,6 +395,20 @@ def _bijux_optimizer_result(
     case: GeigerParityCase,
     report,
 ) -> dict[str, object]:
+    if case.operation == "fit-discrete-mk":
+        diagnostics = report.optimizer_diagnostics
+        return {
+            "optimizer_name": diagnostics.optimizer_name,
+            "parameter_count": diagnostics.parameter_count,
+            "initial_candidate_count": diagnostics.initial_candidate_count,
+            "best_initial_scale": diagnostics.best_initial_scale,
+            "converged": diagnostics.converged,
+            "iteration_count": diagnostics.iteration_count,
+            "function_evaluation_count": diagnostics.function_evaluation_count,
+            "simplex_shrink_count": diagnostics.simplex_shrink_count,
+            "hit_lower_parameter_bound": diagnostics.hit_lower_parameter_bound,
+            "hit_upper_parameter_bound": diagnostics.hit_upper_parameter_bound,
+        }
     if report.optimizer_diagnostics is not None:
         diagnostics = report.optimizer_diagnostics
         return {
@@ -421,6 +461,8 @@ def _bijux_optimizer_result(
 def _build_bijux_case_payload(
     case: GeigerParityCase,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
+    if case.operation == "fit-discrete-mk":
+        return _build_bijux_discrete_case_payload(case)
     if case.operation == "compare-fitcontinuous-models":
         return _build_bijux_model_comparison_payload(case)
     tree_path, traits_path = case.input_fixtures
@@ -515,6 +557,63 @@ def _build_bijux_case_payload(
         "optimizer_result": _bijux_optimizer_result(case, report),
     }
     return summary, _parameter_rows(summary)
+
+
+def _discrete_rate_rows(report) -> list[dict[str, object]]:
+    return [
+        {
+            "source_state": row.source_state,
+            "target_state": row.target_state,
+            "transition_allowed": row.transition_allowed,
+            "step_distance": row.step_distance,
+            "rate": row.rate,
+        }
+        for row in report.transition_rate_rows
+    ]
+
+
+def _build_bijux_discrete_case_payload(
+    case: GeigerParityCase,
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    tree_path, traits_path = case.input_fixtures
+    tree = load_tree(tree_path)
+    table = load_taxon_table(traits_path, taxon_column=case.taxon_column)
+    rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
+    tree_tip_names = list(tree.tip_names)
+    tree_only_taxa = sorted(set(tree_tip_names) - set(rows_by_taxon))
+    extra_trait_taxa = sorted(set(rows_by_taxon) - set(tree_tip_names))
+    report = fit_discrete_mk_model(
+        tree_path,
+        traits_path,
+        trait=case.trait_name,
+        taxon_column=case.taxon_column,
+        model=case.python_mode,
+    )
+    input_audit = report.input_audit
+    missing_value_taxa = sorted(
+        set(input_audit.pruned_missing_value_taxa) - set(tree_only_taxa)
+    )
+    excluded_taxa = sorted(set(tree_only_taxa) | set(missing_value_taxa))
+    summary = {
+        "taxon_count": report.taxon_count,
+        "trait_name": report.trait,
+        "model_name": case.model_name,
+        "observed_state_count": len(input_audit.observed_states),
+        "state_order": list(report.state_order),
+        "excluded_taxon_count": len(excluded_taxa),
+        "excluded_taxa": excluded_taxa,
+        "missing_value_taxa": missing_value_taxa,
+        "missing_from_traits": tree_only_taxa,
+        "extra_trait_taxa": extra_trait_taxa,
+        "missing_value_policy": _discrete_missing_value_policy(),
+        "log_likelihood": report.log_likelihood,
+        "parameter_count": report.parameter_count,
+        "aic": report.aic,
+        "aicc": report.aicc,
+        "optimizer_settings": case.optimizer_settings,
+        "optimizer_result": _bijux_optimizer_result(case, report),
+    }
+    return summary, _discrete_rate_rows(report)
 
 
 def _build_bijux_model_comparison_payload(
