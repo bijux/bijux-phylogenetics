@@ -16,6 +16,9 @@ from tests.support.geiger_fitcontinuous_brownian_reference import (
 from tests.support.geiger_fitcontinuous_early_burst_reference import (
     GEIGER_FITCONTINUOUS_EARLY_BURST_REFERENCE_PAYLOADS,
 )
+from tests.support.geiger_fitcontinuous_kappa_reference import (
+    GEIGER_FITCONTINUOUS_KAPPA_REFERENCE_PAYLOADS,
+)
 from tests.support.geiger_fitcontinuous_lambda_reference import (
     GEIGER_FITCONTINUOUS_LAMBDA_REFERENCE_PAYLOADS,
 )
@@ -35,6 +38,9 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
         "fitcontinuous-lambda-strong-signal-review",
         "fitcontinuous-lambda-weak-signal-review",
         "fitcontinuous-lambda-missing-values-review",
+        "fitcontinuous-kappa-strong-signal-review",
+        "fitcontinuous-kappa-weak-signal-review",
+        "fitcontinuous-kappa-missing-values-review",
         "fitcontinuous-ou-ou-parameter-recovery",
         "fitcontinuous-ou-missing-values-review",
         "fitcontinuous-ou-lower-boundary-review",
@@ -43,8 +49,9 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     ]
     assert cases[0].function_name == "geiger::fitContinuous(model='BM')"
     assert cases[3].function_name == "geiger::fitContinuous(model='lambda')"
-    assert cases[6].function_name == "geiger::fitContinuous(model='OU')"
-    assert cases[9].function_name == "geiger::fitContinuous(model='EB')"
+    assert cases[6].function_name == "geiger::fitContinuous(model='kappa')"
+    assert cases[9].function_name == "geiger::fitContinuous(model='OU')"
+    assert cases[12].function_name == "geiger::fitContinuous(model='EB')"
     assert cases[1].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
     assert cases[2].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
     assert (
@@ -57,20 +64,28 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     )
     assert (
         cases[6].fixture_id
-        == "geiger_continuous_ou_known_truth_twenty_four_taxa"
+        == "geiger_continuous_brownian_signal_twenty_four_taxa"
     )
+    assert cases[7].fixture_id == "geiger_continuous_white_noise_twenty_four_taxa"
     assert (
-        cases[7].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
-    )
-    assert (
-        cases[8].fixture_id
-        == "geiger_continuous_nonultrametric_control_twenty_four_taxa"
+        cases[8].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
     )
     assert (
         cases[9].fixture_id
+        == "geiger_continuous_ou_known_truth_twenty_four_taxa"
+    )
+    assert (
+        cases[10].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
+    )
+    assert (
+        cases[11].fixture_id
+        == "geiger_continuous_nonultrametric_control_twenty_four_taxa"
+    )
+    assert (
+        cases[12].fixture_id
         == "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
     )
-    assert cases[10].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
+    assert cases[13].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
     assert cases[2].comparison_fields[:7] == (
         "taxon_count",
         "trait_name",
@@ -87,12 +102,18 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     assert cases[6].optimizer_settings["bijux_optimizer_name"] == (
         "governed-two-stage-grid-search"
     )
+    assert cases[9].optimizer_settings["bijux_optimizer_name"] == (
+        "governed-two-stage-grid-search"
+    )
     assert "aicc" in cases[3].comparison_fields
     assert "hit_lower_parameter_boundary" in cases[4].comparison_fields
     assert "excluded_taxa" in cases[5].comparison_fields
-    assert "hit_lower_parameter_boundary" in cases[8].comparison_fields
-    assert "aicc" in cases[9].comparison_fields
-    assert "hit_lower_parameter_boundary" in cases[10].comparison_fields
+    assert "aicc" in cases[6].comparison_fields
+    assert "hit_lower_parameter_boundary" in cases[7].comparison_fields
+    assert "excluded_taxa" in cases[8].comparison_fields
+    assert "hit_lower_parameter_boundary" in cases[11].comparison_fields
+    assert "aicc" in cases[12].comparison_fields
+    assert "hit_lower_parameter_boundary" in cases[13].comparison_fields
     assert all(path.is_file() for case in cases for path in case.input_fixtures)
 
 
@@ -106,12 +127,12 @@ def test_run_geiger_parity_cases_reports_passes_against_fake_runner(
         failure_root=tmp_path / "geiger-parity-failures",
     )
 
-    assert report.case_count == 11
-    assert report.passed_case_count == 11
+    assert report.case_count == 14
+    assert report.passed_case_count == 14
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert report.all_passed is True
-    assert len(report.summary_rows) == 4
+    assert len(report.summary_rows) == 5
     observation = next(
         item
         for item in report.observations
@@ -144,10 +165,10 @@ def test_run_geiger_parity_cases_counts_skips_when_geiger_is_unavailable(
         failure_root=tmp_path / "geiger-parity-failures",
     )
 
-    assert report.case_count == 11
+    assert report.case_count == 14
     assert report.passed_case_count == 0
     assert report.failed_case_count == 0
-    assert report.skipped_case_count == 11
+    assert report.skipped_case_count == 14
     assert report.all_passed is False
     assert all(
         item.mismatch_reason == "geiger_package_unavailable"
@@ -301,6 +322,63 @@ def test_run_geiger_parity_cases_governs_lambda_reference_payloads(
     assert missing_values.bijux_summary["excluded_taxa"] == ["Phy10", "Phy14"]
 
 
+def test_run_geiger_parity_cases_governs_kappa_reference_payloads(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads=GEIGER_FITCONTINUOUS_KAPPA_REFERENCE_PAYLOADS,
+    )
+
+    report = run_geiger_parity_cases(
+        case_ids=[
+            "fitcontinuous-kappa-strong-signal-review",
+            "fitcontinuous-kappa-weak-signal-review",
+            "fitcontinuous-kappa-missing-values-review",
+        ],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    assert report.case_count == 3
+    assert report.passed_case_count == 3
+    strong = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitcontinuous-kappa-strong-signal-review"
+    )
+    assert strong.reference_summary is not None
+    assert strong.reference_summary["parameter_value"] > 1.0
+    assert strong.bijux_summary is not None
+    assert strong.bijux_summary["identifiability_warning_kinds"] == [
+        "flat_likelihood"
+    ]
+    weak = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitcontinuous-kappa-weak-signal-review"
+    )
+    assert weak.reference_summary is not None
+    assert weak.reference_summary["hit_lower_parameter_boundary"] is True
+    assert weak.bijux_summary is not None
+    assert weak.bijux_summary["parameter_value"] == 0.0
+    assert weak.bijux_summary["identifiability_warning_kinds"] == [
+        "boundary_kappa",
+        "flat_likelihood",
+        "punctuational_limit",
+    ]
+    missing_values = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitcontinuous-kappa-missing-values-review"
+    )
+    assert missing_values.reference_summary is not None
+    assert missing_values.reference_summary["missing_value_taxa"] == ["Phy10"]
+    assert missing_values.reference_summary["non_numeric_taxa"] == ["Phy14"]
+    assert missing_values.bijux_summary is not None
+    assert missing_values.bijux_summary["excluded_taxa"] == ["Phy10", "Phy14"]
+
+
 def test_run_geiger_parity_cases_governs_early_burst_reference_payloads(
     tmp_path: Path,
 ) -> None:
@@ -404,7 +482,7 @@ def test_write_geiger_parity_tables_writes_summary_and_observations(
     assert any("geiger::fitContinuous(model='OU')" in row for row in summary_rows[1:])
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 11
-    assert rows[0]["model_name"] in {"BM", "lambda", "OU", "EB"}
+    assert len(rows) == 14
+    assert rows[0]["model_name"] in {"BM", "lambda", "kappa", "OU", "EB"}
     optimizer_settings = json.loads(rows[0]["optimizer_settings"])
     assert "reference_control_policy" in optimizer_settings

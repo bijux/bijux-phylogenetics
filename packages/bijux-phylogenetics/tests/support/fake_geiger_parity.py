@@ -99,6 +99,7 @@ case_payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
 mode_lookup = {
     "BM": "brownian",
     "lambda": "pagel-lambda",
+    "kappa": "pagel-kappa",
     "OU": "ornstein-uhlenbeck",
     "EB": "early-burst",
 }
@@ -116,6 +117,7 @@ report = fit_continuous_evolutionary_mode(
     mode=mode_lookup[case_payload["model_name"]],
     taxon_column=case_payload["taxon_column"],
     lambda_bounds=tuple(case_payload.get("lambda_bounds") or (0.0, 1.0)),
+    kappa_bounds=tuple(case_payload.get("kappa_bounds") or (0.0, 3.0)),
     ou_bounds=(0.0, 10.0),
     early_burst_bounds=(0.0, 10.0),
 )
