@@ -2625,10 +2625,11 @@ def test_comparative_report_cli_can_export_full_review_package(
     assert exit_code == 0
     assert payload["metrics"]["taxon_count"] == 4
     assert payload["metrics"]["coefficient_count"] >= 2
-    assert payload["metrics"]["package_output_count"] == 11
+    assert payload["metrics"]["package_output_count"] == 12
     assert payload["data"]["output_dir"] == str(out_dir)
     assert (out_dir / "comparative-report.html").exists()
     assert (out_dir / "comparative-methods-summary.md").exists()
+    assert (out_dir / "reviewer-audit-checklist.tsv").exists()
     assert (out_dir / "comparative-summary.tsv").exists()
     assert (out_dir / "coefficient-table.tsv").exists()
     assert (out_dir / "residual-summary.tsv").exists()

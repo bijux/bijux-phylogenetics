@@ -38,6 +38,7 @@ def test_build_comparative_report_package_writes_html_and_ledgers(
 
     assert result.report_path.exists()
     assert result.methods_summary_path.exists()
+    assert result.reviewer_audit_checklist_path.exists()
     assert result.summary_table_path.exists()
     assert result.coefficient_table_path.exists()
     assert result.residual_table_path.exists()
@@ -53,6 +54,7 @@ def test_build_comparative_report_package_writes_html_and_ledgers(
     assert "Method Tier" in html
     assert "supported" in html
     assert "Methods Summary" in html
+    assert "Reviewer Audit Checklist" in html
     assert "Coefficient Table" in html
     assert "Residual Summary" in html
     assert "Phylogenetic Signal" in html
@@ -72,6 +74,9 @@ def test_build_comparative_report_package_writes_html_and_ledgers(
     interpretation_rows = result.interpretation_table_path.read_text(
         encoding="utf-8"
     ).splitlines()
+    checklist_rows = result.reviewer_audit_checklist_path.read_text(
+        encoding="utf-8"
+    ).splitlines()
     contrast_rows = result.contrast_table_path.read_text(encoding="utf-8").splitlines()
 
     assert summary_rows[0].startswith("response\tformula\tpredictor_count")
@@ -82,6 +87,8 @@ def test_build_comparative_report_package_writes_html_and_ledgers(
     assert signal_rows[0].startswith("trait\ttaxon_count\tblombergs_k")
     assert comparison_rows[0].startswith("model\tparameter_count\tlog_likelihood")
     assert interpretation_rows[0].startswith("topic\tclaim\tevidence\tcaution")
+    assert checklist_rows[0] == "section\tstatus\tsummary\tevidence\tartifact_paths"
+    assert any(line.startswith("model_selection\t") for line in checklist_rows[1:])
     assert contrast_rows[0].startswith("node\tleft_taxa\tright_taxa")
 
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
@@ -92,6 +99,10 @@ def test_build_comparative_report_package_writes_html_and_ledgers(
     assert manifest["outputs"]["methods_summary_path"].endswith(
         "comparative-methods-summary.md"
     )
+    assert manifest["outputs"]["reviewer_audit_checklist_path"].endswith(
+        "reviewer-audit-checklist.tsv"
+    )
+    assert len(manifest["reviewer_audit_checklist"]["items"]) == 5
     assert result.method_tier.tier == "supported"
 
 

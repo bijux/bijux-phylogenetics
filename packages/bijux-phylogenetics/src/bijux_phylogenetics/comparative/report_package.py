@@ -17,6 +17,10 @@ from bijux_phylogenetics.provenance.method_tiers import (
     MethodTierAssessment,
     comparative_report_method_tier,
 )
+from bijux_phylogenetics.reports.reviewer_audit import (
+    ReviewerAuditChecklist,
+    write_reviewer_audit_checklist,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,6 +102,7 @@ class ComparativeReportPackageResult:
     output_dir: Path
     report_path: Path
     methods_summary_path: Path
+    reviewer_audit_checklist_path: Path
     summary_table_path: Path
     coefficient_table_path: Path
     residual_table_path: Path
@@ -116,6 +121,7 @@ class ComparativeReportPackageResult:
     interpretation_rows: list[ComparativeInterpretationRow]
     audit_rows: list[ComparativeAuditTableRow]
     method_tier: MethodTierAssessment
+    reviewer_audit_checklist: ReviewerAuditChecklist
     machine_manifest: dict[str, object]
 
 
@@ -470,6 +476,21 @@ def _method_tier_note(method_tier: MethodTierAssessment) -> str:
     )
 
 
+def _reviewer_audit_table(checklist: ReviewerAuditChecklist) -> str:
+    return _table(
+        ["section", "status", "summary", "evidence"],
+        [
+            [
+                item.section,
+                item.status,
+                item.summary,
+                "; ".join(item.evidence),
+            ]
+            for item in checklist.items
+        ],
+    )
+
+
 def _write_comparative_report_html(
     *,
     path: Path,
@@ -481,6 +502,7 @@ def _write_comparative_report_html(
     signal_row: ComparativeSignalTableRow,
     interpretation_rows: list[ComparativeInterpretationRow],
     method_tier: MethodTierAssessment,
+    reviewer_audit_checklist: ReviewerAuditChecklist,
     manifest: dict[str, object],
 ) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -645,6 +667,10 @@ def _write_comparative_report_html(
       <section>
         <h2>Methods Summary</h2>
         <pre>{escape(methods_summary_text)}</pre>
+      </section>
+      <section>
+        <h2>Reviewer Audit Checklist</h2>
+        {_reviewer_audit_table(reviewer_audit_checklist)}
       </section>
       <section>
         <h2>Coefficient Table</h2>
@@ -833,6 +859,7 @@ def build_comparative_report_package(
 
     report_path = out_dir / "comparative-report.html"
     methods_summary_path = out_dir / "comparative-methods-summary.md"
+    reviewer_audit_checklist_path = out_dir / "reviewer-audit-checklist.tsv"
     summary_table_path = out_dir / "comparative-summary.tsv"
     coefficient_table_path = out_dir / "coefficient-table.tsv"
     residual_table_path = out_dir / "residual-summary.tsv"
@@ -867,6 +894,7 @@ def build_comparative_report_package(
         "outputs": {
             "report_path": str(report_path),
             "methods_summary_path": str(methods_summary_path),
+            "reviewer_audit_checklist_path": str(reviewer_audit_checklist_path),
             "summary_table_path": str(summary_table_path),
             "coefficient_table_path": str(coefficient_table_path),
             "residual_table_path": str(residual_table_path),
@@ -887,6 +915,11 @@ def build_comparative_report_package(
         "summary": asdict(summary_row),
         "limitations": report.snapshot.limitations,
     }
+    reviewer_audit_checklist = write_reviewer_audit_checklist(
+        reviewer_audit_checklist_path,
+        machine_manifest,
+    ).checklist
+    machine_manifest["reviewer_audit_checklist"] = asdict(reviewer_audit_checklist)
     manifest_path.write_text(
         json.dumps(machine_manifest, default=str, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -901,12 +934,14 @@ def build_comparative_report_package(
         signal_row=signal_row,
         interpretation_rows=interpretation_rows,
         method_tier=method_tier,
+        reviewer_audit_checklist=reviewer_audit_checklist,
         manifest=machine_manifest,
     )
     return ComparativeReportPackageResult(
         output_dir=out_dir,
         report_path=report_path,
         methods_summary_path=methods_summary_path,
+        reviewer_audit_checklist_path=reviewer_audit_checklist_path,
         summary_table_path=summary_table_path,
         coefficient_table_path=coefficient_table_path,
         residual_table_path=residual_table_path,
@@ -925,5 +960,6 @@ def build_comparative_report_package(
         interpretation_rows=interpretation_rows,
         audit_rows=audit_rows,
         method_tier=method_tier,
+        reviewer_audit_checklist=reviewer_audit_checklist,
         machine_manifest=machine_manifest,
     )

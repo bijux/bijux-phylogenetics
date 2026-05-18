@@ -4478,6 +4478,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         [
                             package_result.report_path,
                             package_result.methods_summary_path,
+                            package_result.reviewer_audit_checklist_path,
                             package_result.summary_table_path,
                             package_result.coefficient_table_path,
                             package_result.residual_table_path,
