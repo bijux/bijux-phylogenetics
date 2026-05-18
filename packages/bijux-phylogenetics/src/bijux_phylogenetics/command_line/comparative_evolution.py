@@ -85,7 +85,7 @@ def add_comparative_evolution_commands(comparative_subparsers: Any) -> None:
     comparative_discrete_mk.add_argument("--taxon-column")
     comparative_discrete_mk.add_argument(
         "--model",
-        choices=("equal-rates", "symmetric", "all-rates-different"),
+        choices=("equal-rates", "symmetric", "all-rates-different", "meristic"),
         default="equal-rates",
         help="Choose the discrete Mk rate-constraint surface to fit.",
     )
@@ -121,7 +121,7 @@ def add_comparative_evolution_commands(comparative_subparsers: Any) -> None:
     )
     comparative_correlated_traits.add_argument(
         "--binary-model",
-        choices=("equal-rates", "symmetric", "all-rates-different"),
+        choices=("equal-rates", "symmetric", "all-rates-different", "meristic"),
         default="all-rates-different",
         help="Discrete transition surface for binary-binary correlated-trait review.",
     )
@@ -247,7 +247,7 @@ def add_comparative_evolution_commands(comparative_subparsers: Any) -> None:
     comparative_regime_map.add_argument(
         "--reconstruction-model",
         default="fitch",
-        choices=("fitch", "equal-rates", "symmetric", "all-rates-different"),
+        choices=("fitch", "equal-rates", "symmetric", "all-rates-different", "meristic"),
     )
     comparative_regime_map.add_argument(
         "--state-ordering",

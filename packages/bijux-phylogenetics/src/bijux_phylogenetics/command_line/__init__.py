@@ -1440,7 +1440,7 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_discrete.add_argument("--taxon-column")
     ancestral_discrete.add_argument(
         "--model",
-        choices=("fitch", "equal-rates", "symmetric", "all-rates-different"),
+        choices=("fitch", "equal-rates", "symmetric", "all-rates-different", "meristic"),
         default="fitch",
     )
     ancestral_discrete.add_argument(
@@ -1451,7 +1451,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ancestral_discrete.add_argument(
         "--compare-model",
-        choices=("fitch", "equal-rates", "symmetric", "all-rates-different"),
+        choices=("fitch", "equal-rates", "symmetric", "all-rates-different", "meristic"),
         help="Optionally compare this reconstruction directly against another discrete model.",
     )
     ancestral_discrete.add_argument(
@@ -1570,7 +1570,7 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_root_sensitivity.add_argument("--taxon-column")
     ancestral_root_sensitivity.add_argument(
         "--model",
-        choices=("equal-rates", "symmetric", "all-rates-different"),
+        choices=("equal-rates", "symmetric", "all-rates-different", "meristic"),
         default="equal-rates",
     )
     ancestral_root_sensitivity.add_argument(
@@ -1598,7 +1598,7 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_ordered_discrete.add_argument("--taxon-column")
     ancestral_ordered_discrete.add_argument(
         "--model",
-        choices=("equal-rates", "symmetric", "all-rates-different"),
+        choices=("equal-rates", "symmetric", "all-rates-different", "meristic"),
         default="equal-rates",
     )
     ancestral_ordered_discrete.add_argument(
@@ -1624,7 +1624,7 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_irreversible_discrete.add_argument("--taxon-column")
     ancestral_irreversible_discrete.add_argument(
         "--model",
-        choices=("equal-rates", "symmetric", "all-rates-different"),
+        choices=("equal-rates", "symmetric", "all-rates-different", "meristic"),
         default="all-rates-different",
     )
     ancestral_irreversible_discrete.add_argument(
@@ -1652,7 +1652,7 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_transitions.add_argument("--taxon-column")
     ancestral_transitions.add_argument(
         "--model",
-        choices=("fitch", "equal-rates", "symmetric", "all-rates-different"),
+        choices=("fitch", "equal-rates", "symmetric", "all-rates-different", "meristic"),
         default="fitch",
     )
     ancestral_transitions.add_argument(
@@ -2302,7 +2302,7 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_model.add_argument("--taxon-column")
     discrete_model.add_argument(
         "--model",
-        choices=("equal-rates", "symmetric", "all-rates-different"),
+        choices=("equal-rates", "symmetric", "all-rates-different", "meristic"),
         default="equal-rates",
     )
     discrete_model.add_argument(
@@ -2335,12 +2335,12 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_compare.add_argument("--taxon-column")
     discrete_compare.add_argument(
         "--left-model",
-        choices=("equal-rates", "symmetric", "all-rates-different"),
+        choices=("equal-rates", "symmetric", "all-rates-different", "meristic"),
         default="equal-rates",
     )
     discrete_compare.add_argument(
         "--right-model",
-        choices=("equal-rates", "symmetric", "all-rates-different"),
+        choices=("equal-rates", "symmetric", "all-rates-different", "meristic"),
         default="all-rates-different",
     )
     discrete_compare.add_argument(
@@ -2370,7 +2370,7 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_stochastic.add_argument("--taxon-column")
     discrete_stochastic.add_argument(
         "--model",
-        choices=("equal-rates", "symmetric", "all-rates-different"),
+        choices=("equal-rates", "symmetric", "all-rates-different", "meristic"),
         default="equal-rates",
     )
     discrete_stochastic.add_argument(
@@ -2577,7 +2577,7 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_render.add_argument("--taxon-column")
     discrete_render.add_argument(
         "--model",
-        choices=("equal-rates", "symmetric", "all-rates-different"),
+        choices=("equal-rates", "symmetric", "all-rates-different", "meristic"),
         default="equal-rates",
     )
     discrete_render.add_argument(
@@ -2608,7 +2608,7 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_report.add_argument("--taxon-column")
     discrete_report.add_argument(
         "--model",
-        choices=("equal-rates", "symmetric", "all-rates-different"),
+        choices=("equal-rates", "symmetric", "all-rates-different", "meristic"),
         default="equal-rates",
     )
     discrete_report.add_argument(
@@ -2622,7 +2622,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
     )
     discrete_report.add_argument(
-        "--compare-model", choices=("equal-rates", "symmetric", "all-rates-different")
+        "--compare-model",
+        choices=("equal-rates", "symmetric", "all-rates-different", "meristic"),
     )
     discrete_report.add_argument("--out", required=True, type=Path)
     discrete_report.add_argument(
