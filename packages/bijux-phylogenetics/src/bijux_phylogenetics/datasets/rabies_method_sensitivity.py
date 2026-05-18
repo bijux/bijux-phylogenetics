@@ -37,6 +37,13 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity_audit import (
     write_rabies_method_sensitivity_reproducibility_checks_table,
     write_rabies_method_sensitivity_variant_audit_table,
 )
+from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm import (
+    RabiesMethodSensitivitySlurmPlanningReport,
+    build_rabies_method_sensitivity_slurm_planning_report,
+    write_rabies_method_sensitivity_slurm_assumptions_table,
+    write_rabies_method_sensitivity_slurm_job_plan_table,
+    write_rabies_method_sensitivity_slurm_summary_json,
+)
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError, PhylogeneticsError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment, validate_fasta_input
 from bijux_phylogenetics.io.newick import write_newick
@@ -180,6 +187,9 @@ class RabiesMethodSensitivityPanelWorkflowReport:
     """One governed method-sensitivity workflow run over the packaged rabies panel."""
 
     dataset: RabiesMethodSensitivityPanelDataset
+    iqtree_seed: int
+    iqtree_threads: int
+    bootstrap_replicates: int
     parallel_workers: int
     execution_mode: str
     task_records: tuple[RabiesMethodSensitivityTaskRecord, ...]
@@ -215,6 +225,15 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     config_path: Path
     manifest_path: Path
     report_manifest_path: Path
+    slurm_job_plan_path: Path
+    slurm_assumptions_path: Path
+    slurm_summary_path: Path
+    slurm_job_count: int
+    slurm_total_estimated_core_hours: float
+    slurm_maximum_estimated_memory_mib: int
+    slurm_maximum_estimated_wallclock_minutes: int
+    slurm_total_estimated_scratch_mib: int
+    slurm_total_estimated_output_mib: int
     reproducibility_checks_path: Path
     reproducibility_variant_audit_path: Path
     reproducibility_audit_path: Path
@@ -548,6 +567,9 @@ def run_rabies_method_sensitivity_panel_workflow(
         )
         report = RabiesMethodSensitivityPanelWorkflowReport(
             dataset=dataset,
+            iqtree_seed=resolved_seed,
+            iqtree_threads=resolved_threads,
+            bootstrap_replicates=resolved_bootstrap_replicates,
             parallel_workers=resolved_parallel_workers,
             execution_mode=execution_mode,
             task_records=task_records,
@@ -617,6 +639,23 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
     variants_root = _write_variant_outputs(
         output_root / "variants", report.variant_runs
     )
+    slurm_planning_report = build_rabies_method_sensitivity_slurm_planning_report(
+        report
+    )
+    slurm_job_plan_path = write_rabies_method_sensitivity_slurm_job_plan_table(
+        output_root / "slurm-job-plan.tsv",
+        slurm_planning_report,
+    )
+    slurm_assumptions_path = (
+        write_rabies_method_sensitivity_slurm_assumptions_table(
+            output_root / "slurm-estimation-assumptions.tsv",
+            slurm_planning_report,
+        )
+    )
+    slurm_summary_path = write_rabies_method_sensitivity_slurm_summary_json(
+        output_root / "slurm-planning-summary.json",
+        slurm_planning_report,
+    )
     manifest_path = _write_manifest(
         output_root / "rabies-method-sensitivity.manifest.json",
         report=report,
@@ -631,6 +670,9 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "config": config_path,
             "task_logs_root": task_logs_root,
             "variants_root": variants_root,
+            "slurm_job_plan": slurm_job_plan_path,
+            "slurm_assumptions": slurm_assumptions_path,
+            "slurm_summary": slurm_summary_path,
         },
     )
     report_manifest_path = _write_report_manifest(
@@ -648,6 +690,9 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "conclusion_summary": conclusion_summary_path,
             "config": config_path,
             "workflow_manifest": manifest_path,
+            "slurm_job_plan": slurm_job_plan_path,
+            "slurm_assumptions": slurm_assumptions_path,
+            "slurm_summary": slurm_summary_path,
         },
     )
     reproducibility_report = audit_rabies_method_sensitivity_workflow_bundle(
@@ -684,6 +729,9 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         config_path,
         manifest_path,
         report_manifest_path,
+        slurm_job_plan_path,
+        slurm_assumptions_path,
+        slurm_summary_path,
     )
     report_linked_artifact_count = len(report_linked_files)
     report_path = _write_report(
@@ -699,12 +747,16 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "conclusion_summary": conclusion_summary_path,
             "config": config_path,
             "workflow_manifest": manifest_path,
+            "slurm_job_plan": slurm_job_plan_path,
+            "slurm_assumptions": slurm_assumptions_path,
+            "slurm_summary": slurm_summary_path,
             "reproducibility_checks": reproducibility_checks_path,
             "reproducibility_variant_audit": reproducibility_variant_audit_path,
             "reproducibility_audit": reproducibility_audit_path,
         },
         report_manifest_path=report_manifest_path,
         reproducibility_report=reproducibility_report,
+        slurm_planning_report=slurm_planning_report,
     )
     report_html_size_bytes = report_path.stat().st_size
     report_linked_artifact_bytes = sum(
@@ -747,6 +799,25 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         config_path=config_path,
         manifest_path=manifest_path,
         report_manifest_path=report_manifest_path,
+        slurm_job_plan_path=slurm_job_plan_path,
+        slurm_assumptions_path=slurm_assumptions_path,
+        slurm_summary_path=slurm_summary_path,
+        slurm_job_count=slurm_planning_report.job_count,
+        slurm_total_estimated_core_hours=(
+            slurm_planning_report.total_estimated_core_hours
+        ),
+        slurm_maximum_estimated_memory_mib=(
+            slurm_planning_report.maximum_estimated_memory_mib
+        ),
+        slurm_maximum_estimated_wallclock_minutes=(
+            slurm_planning_report.maximum_estimated_wallclock_minutes
+        ),
+        slurm_total_estimated_scratch_mib=(
+            slurm_planning_report.total_estimated_scratch_mib
+        ),
+        slurm_total_estimated_output_mib=(
+            slurm_planning_report.total_estimated_output_mib
+        ),
         reproducibility_checks_path=reproducibility_checks_path,
         reproducibility_variant_audit_path=reproducibility_variant_audit_path,
         reproducibility_audit_path=reproducibility_audit_path,
@@ -1290,9 +1361,9 @@ def _write_resolved_config(
         "sequence_type": report.dataset.sequence_type,
         "workflow_prefix": report.dataset.workflow_prefix,
         "outgroup_taxa": list(report.dataset.outgroup_taxa),
-        "iqtree_seed": report.dataset.iqtree_seed,
-        "iqtree_threads": report.dataset.iqtree_threads,
-        "bootstrap_replicates": report.dataset.bootstrap_replicates,
+        "iqtree_seed": report.iqtree_seed,
+        "iqtree_threads": report.iqtree_threads,
+        "bootstrap_replicates": report.bootstrap_replicates,
         "parallel_workers": report.parallel_workers,
         "execution_mode": report.execution_mode,
         "input_checksums": {
@@ -1576,6 +1647,7 @@ def _write_report(
     bundle_paths: dict[str, Path],
     report_manifest_path: Path,
     reproducibility_report: RabiesMethodSensitivityReproducibilityAuditReport,
+    slurm_planning_report: RabiesMethodSensitivitySlurmPlanningReport,
 ) -> Path:
     variant_lines = [
         (
@@ -1633,6 +1705,34 @@ def _write_report(
             ),
         ),
         (
+            "slurm-job-planning",
+            "\n".join(
+                [
+                    f"planned jobs: {slurm_planning_report.job_count}",
+                    (
+                        "maximum estimated memory MiB: "
+                        f"{slurm_planning_report.maximum_estimated_memory_mib}"
+                    ),
+                    (
+                        "maximum estimated wallclock minutes: "
+                        f"{slurm_planning_report.maximum_estimated_wallclock_minutes}"
+                    ),
+                    (
+                        "total estimated core hours: "
+                        f"{_format_float(slurm_planning_report.total_estimated_core_hours)}"
+                    ),
+                    (
+                        "total estimated scratch MiB: "
+                        f"{slurm_planning_report.total_estimated_scratch_mib}"
+                    ),
+                    (
+                        "total estimated output MiB: "
+                        f"{slurm_planning_report.total_estimated_output_mib}"
+                    ),
+                ]
+            ),
+        ),
+        (
             "artifacts",
             "\n".join(
                 [
@@ -1645,6 +1745,12 @@ def _write_report(
                     f"method conclusions: {bundle_paths['conclusion_summary'].name}",
                     f"resolved config: {bundle_paths['config'].name}",
                     f"workflow manifest: {bundle_paths['workflow_manifest'].name}",
+                    f"slurm job plan: {bundle_paths['slurm_job_plan'].name}",
+                    (
+                        "slurm estimation assumptions: "
+                        f"{bundle_paths['slurm_assumptions'].name}"
+                    ),
+                    f"slurm planning summary: {bundle_paths['slurm_summary'].name}",
                     f"reproducibility checks: {bundle_paths['reproducibility_checks'].name}",
                     (
                         "reproducibility variant audit: "
@@ -1690,6 +1796,16 @@ def _write_report(
             "reproducibility_failed_variant_count": getattr(
                 reproducibility_report, "failed_variant_count"
             ),
+            "slurm_job_count": slurm_planning_report.job_count,
+            "slurm_total_estimated_core_hours": (
+                slurm_planning_report.total_estimated_core_hours
+            ),
+            "slurm_maximum_estimated_memory_mib": (
+                slurm_planning_report.maximum_estimated_memory_mib
+            ),
+            "slurm_maximum_estimated_wallclock_minutes": (
+                slurm_planning_report.maximum_estimated_wallclock_minutes
+            ),
         },
         summary_metrics=[
             ("variants", len(report.variant_runs)),
@@ -1697,7 +1813,18 @@ def _write_report(
             ("parallel workers", report.parallel_workers),
             ("stable clades", len(report.stable_clade_rows)),
             ("changed clades", len(report.changed_clade_rows)),
-            ("reproducibility passed", str(getattr(reproducibility_report, "all_passed")).lower()),
+            (
+                "slurm planned jobs",
+                slurm_planning_report.job_count,
+            ),
+            (
+                "slurm max memory MiB",
+                slurm_planning_report.maximum_estimated_memory_mib,
+            ),
+            (
+                "reproducibility passed",
+                str(getattr(reproducibility_report, "all_passed")).lower(),
+            ),
             (
                 "reproducibility checks",
                 getattr(reproducibility_report, "check_count"),
@@ -1742,8 +1869,17 @@ def _write_overview(
         f"- reproducibility checks: `{bundle.reproducibility_check_count}`",
         f"- failed reproducibility checks: `{bundle.reproducibility_failed_check_count}`",
         f"- failed reproducibility variants: `{bundle.reproducibility_failed_variant_count}`",
+        f"- slurm planned jobs: `{bundle.slurm_job_count}`",
+        f"- slurm total estimated core hours: `{_format_float(bundle.slurm_total_estimated_core_hours)}`",
+        f"- slurm max estimated memory MiB: `{bundle.slurm_maximum_estimated_memory_mib}`",
+        f"- slurm max estimated wallclock minutes: `{bundle.slurm_maximum_estimated_wallclock_minutes}`",
+        f"- slurm total estimated scratch MiB: `{bundle.slurm_total_estimated_scratch_mib}`",
+        f"- slurm total estimated output MiB: `{bundle.slurm_total_estimated_output_mib}`",
         f"- workflow manifest: `{bundle.manifest_path.name}`",
         f"- report manifest: `{bundle.report_manifest_path.relative_to(bundle.output_root).as_posix()}`",
+        f"- slurm job plan: `{bundle.slurm_job_plan_path.name}`",
+        f"- slurm assumptions: `{bundle.slurm_assumptions_path.name}`",
+        f"- slurm planning summary: `{bundle.slurm_summary_path.name}`",
         f"- reproducibility checks table: `{bundle.reproducibility_checks_path.name}`",
         f"- reproducibility variant audit: `{bundle.reproducibility_variant_audit_path.name}`",
         f"- reproducibility audit: `{bundle.reproducibility_audit_path.name}`",
