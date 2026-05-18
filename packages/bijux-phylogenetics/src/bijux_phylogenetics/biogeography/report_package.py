@@ -18,6 +18,16 @@ from bijux_phylogenetics.biogeography.migration_events import (
     summarize_geographic_migration_events,
     write_geographic_migration_event_table,
 )
+from bijux_phylogenetics.biogeography.publication import (
+    BiogeographyCaptionDraft,
+    BiogeographyPublicationAudit,
+    BiogeographyPublicationLegendEntry,
+    build_biogeography_caption_draft,
+    build_biogeography_publication_audit,
+    build_biogeography_publication_legend_entries,
+    write_biogeography_caption,
+    write_biogeography_publication_legend,
+)
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.comparative.discrete_evolution import (
     estimate_ancestral_geographic_states,
@@ -30,6 +40,9 @@ from bijux_phylogenetics.phylogeography.geographic_map import (
     summarize_discrete_region_map,
     write_geographic_map_line_table,
     write_geographic_map_marker_table,
+)
+from bijux_phylogenetics.phylogeography.region_styles import (
+    build_geographic_state_color_map,
 )
 from bijux_phylogenetics.render.svg import TreeRenderResult
 
@@ -64,6 +77,8 @@ class BiogeographyReportPackageResult:
     report_path: Path
     tree_figure_path: Path
     map_path: Path
+    legend_path: Path
+    caption_path: Path
     summary_table_path: Path
     region_count_table_path: Path
     node_table_path: Path
@@ -83,6 +98,9 @@ class BiogeographyReportPackageResult:
     limitations: list[str]
     warnings: list[str]
     machine_manifest: dict[str, object]
+    legend_entries: list[BiogeographyPublicationLegendEntry]
+    caption_draft: BiogeographyCaptionDraft
+    audit: BiogeographyPublicationAudit
 
 
 def _checksum(path: Path) -> str:
@@ -229,17 +247,27 @@ def build_biogeography_report_package(
         taxon_column=taxon_column,
         model=state_report.internal_model,
     )
+    state_colors = build_geographic_state_color_map(
+        [
+            *[row.most_likely_region for row in state_report.node_rows],
+            *[row.state_label for row in map_report.marker_rows],
+        ]
+    )
 
     tree_figure_path = out_dir / "ancestral-region-tree.svg"
+    legend_path = out_dir / "figure-legend.tsv"
+    caption_path = out_dir / "figure-caption.md"
     tree_render = render_tree_with_geographic_states(
         tree_path,
         reconstruction,
         out_path=tree_figure_path,
         layout="phylogram",
+        state_colors=state_colors,
     )
     map_path = render_geographic_map_html(
         map_report,
         out_path=out_dir / "geographic-region-map.html",
+        state_colors=state_colors,
     ).output_path
 
     summary_table_path = write_geographic_state_summary_table(
@@ -283,6 +311,24 @@ def build_biogeography_report_package(
         out_dir / "exclusions.tsv",
         exclusion_rows,
     )
+    legend_entries = build_biogeography_publication_legend_entries(
+        state_report=state_report,
+        map_report=map_report,
+    )
+    legend_path = write_biogeography_publication_legend(legend_path, legend_entries)
+    audit = build_biogeography_publication_audit(
+        state_report=state_report,
+        map_report=map_report,
+        tree_render=tree_render,
+        legend_entries=legend_entries,
+        exclusion_count=len(exclusion_rows),
+    )
+    caption_draft = build_biogeography_caption_draft(
+        state_report=state_report,
+        map_report=map_report,
+        audit=audit,
+    )
+    caption_path = write_biogeography_caption(caption_path, caption_draft)
 
     warnings = list(
         dict.fromkeys(
@@ -294,8 +340,10 @@ def build_biogeography_report_package(
         event_report=event_report,
         map_report=map_report,
         region_count_rows=region_count_rows,
+        audit=audit,
     )
     limitations.extend(warnings)
+    limitations.extend(audit.limitations)
     limitations = list(dict.fromkeys(limitations))
     report_path = out_dir / "biogeography-report.html"
     report_path.write_text(
@@ -308,6 +356,10 @@ def build_biogeography_report_package(
             region_count_rows=region_count_rows,
             reviewer_summary=reviewer_summary,
             limitations=limitations,
+            audit=audit,
+            caption_path=caption_path,
+            legend_path=legend_path,
+            legend_entries=legend_entries,
         ),
         encoding="utf-8",
     )
@@ -325,6 +377,8 @@ def build_biogeography_report_package(
         report_path=report_path,
         tree_figure_path=tree_figure_path,
         map_path=map_path,
+        legend_path=legend_path,
+        caption_path=caption_path,
         summary_table_path=summary_table_path,
         region_count_table_path=region_count_table_path,
         node_table_path=node_table_path,
@@ -334,6 +388,7 @@ def build_biogeography_report_package(
         map_line_table_path=map_line_table_path,
         exclusion_table_path=exclusion_table_path,
         warnings=warnings,
+        audit=audit,
     )
     manifest_path.write_text(
         json.dumps(machine_manifest, indent=2, sort_keys=True) + "\n",
@@ -344,6 +399,8 @@ def build_biogeography_report_package(
         report_path=report_path,
         tree_figure_path=tree_figure_path,
         map_path=map_path,
+        legend_path=legend_path,
+        caption_path=caption_path,
         summary_table_path=summary_table_path,
         region_count_table_path=region_count_table_path,
         node_table_path=node_table_path,
@@ -363,6 +420,9 @@ def build_biogeography_report_package(
         limitations=limitations,
         warnings=warnings,
         machine_manifest=machine_manifest,
+        legend_entries=legend_entries,
+        caption_draft=caption_draft,
+        audit=audit,
     )
 
 
@@ -419,12 +479,14 @@ def _reviewer_summary(
     event_report: GeographicMigrationEventReport,
     map_report: GeographicMapReport,
     region_count_rows: list[BiogeographyRegionCountRow],
+    audit: BiogeographyPublicationAudit,
 ) -> tuple[list[str], list[str]]:
     summary = [
         f"root region: {state_report.summary.root_region} ({state_report.summary.root_region_probability:.3f})",
         f"observed regions: {state_report.summary.observed_region_count}, analyzed taxa: {state_report.summary.analyzed_taxon_count}",
         f"changed branches: {state_report.summary.changed_branch_count}, strongly supported transitions: {state_report.summary.strongly_supported_transition_count}",
         f"migration events: {event_report.summary.event_count}, visible map lines: {map_report.summary.visible_line_count}",
+        f"publication ready: {'yes' if audit.publication_ready else 'no'}",
         (
             f"most sampled region: {region_count_rows[0].region}"
             if region_count_rows
@@ -460,6 +522,8 @@ def _build_machine_manifest(
     report_path: Path,
     tree_figure_path: Path,
     map_path: Path,
+    legend_path: Path,
+    caption_path: Path,
     summary_table_path: Path,
     region_count_table_path: Path,
     node_table_path: Path,
@@ -469,11 +533,14 @@ def _build_machine_manifest(
     map_line_table_path: Path,
     exclusion_table_path: Path,
     warnings: list[str],
+    audit: BiogeographyPublicationAudit,
 ) -> dict[str, object]:
     outputs = [
         report_path,
         tree_figure_path,
         map_path,
+        legend_path,
+        caption_path,
         summary_table_path,
         region_count_table_path,
         node_table_path,
@@ -511,6 +578,26 @@ def _build_machine_manifest(
             "excluded_record_count": len(exclusion_rows),
             "root_region": state_report.summary.root_region,
             "warning_count": len(warnings),
+            "publication_ready": audit.publication_ready,
+            "legend_entry_count": audit.legend_entry_count,
+            "rendered_internal_pie_count": audit.rendered_internal_pie_count,
+            "rendered_internal_probability_label_count": audit.rendered_internal_probability_label_count,
+        },
+        "audit": {
+            "publication_ready": audit.publication_ready,
+            "legend_complete": audit.legend_complete,
+            "caption_ready": audit.caption_ready,
+            "node_probabilities_visible": audit.node_probabilities_visible,
+            "transitions_visible": audit.transitions_visible,
+            "map_state_colors_complete": audit.map_state_colors_complete,
+            "rendered_internal_pie_count": audit.rendered_internal_pie_count,
+            "rendered_internal_probability_label_count": audit.rendered_internal_probability_label_count,
+            "expected_internal_node_count": audit.expected_internal_node_count,
+            "visible_transition_count": audit.visible_transition_count,
+            "state_color_count": audit.state_color_count,
+            "legend_entry_count": audit.legend_entry_count,
+            "reviewer_summary": audit.reviewer_summary,
+            "limitations": audit.limitations,
         },
         "warnings": warnings,
     }
@@ -526,6 +613,10 @@ def _build_report_html(
     region_count_rows: list[BiogeographyRegionCountRow],
     reviewer_summary: list[str],
     limitations: list[str],
+    audit: BiogeographyPublicationAudit,
+    caption_path: Path,
+    legend_path: Path,
+    legend_entries: list[BiogeographyPublicationLegendEntry],
 ) -> str:
     tree_svg = tree_figure_path.read_text(encoding="utf-8")
     return "\n".join(
@@ -569,6 +660,17 @@ def _build_report_html(
             '  <section class="panel">',
             "    <h2>Reviewer Summary</h2>",
             _list(reviewer_summary),
+            "  </section>",
+            '  <section class="grid" style="margin-top: 20px;">',
+            '    <section class="panel">',
+            "      <h2>Publication Audit</h2>",
+            _publication_audit_table(audit),
+            "    </section>",
+            '    <section class="panel">',
+            "      <h2>Figure Legend and Caption</h2>",
+            f'      <p>The publication legend is exported to <a href="{escape(legend_path.name)}">{escape(legend_path.name)}</a> and the caption draft to <a href="{escape(caption_path.name)}">{escape(caption_path.name)}</a>.</p>',
+            _legend_entry_table(legend_entries),
+            "    </section>",
             "  </section>",
             '  <section class="grid" style="margin-top: 20px;">',
             '    <section class="panel">',
@@ -688,6 +790,40 @@ def _event_table(report: GeographicMigrationEventReport) -> str:
                 f"{row.midpoint_depth:.6f}",
             ]
             for row in report.event_rows
+        ],
+    )
+
+
+def _publication_audit_table(audit: BiogeographyPublicationAudit) -> str:
+    return _table(
+        headers=["metric", "value"],
+        rows=[
+            ["publication_ready", str(audit.publication_ready).lower()],
+            ["legend_complete", str(audit.legend_complete).lower()],
+            ["caption_ready", str(audit.caption_ready).lower()],
+            ["node_probabilities_visible", str(audit.node_probabilities_visible).lower()],
+            ["transitions_visible", str(audit.transitions_visible).lower()],
+            ["map_state_colors_complete", str(audit.map_state_colors_complete).lower()],
+            [
+                "rendered_internal_pies",
+                f"{audit.rendered_internal_pie_count}/{audit.expected_internal_node_count}",
+            ],
+            [
+                "rendered_internal_probability_labels",
+                f"{audit.rendered_internal_probability_label_count}/{audit.expected_internal_node_count}",
+            ],
+            ["visible_transition_count", str(audit.visible_transition_count)],
+            ["state_color_count", str(audit.state_color_count)],
+        ],
+    )
+
+
+def _legend_entry_table(entries: list[BiogeographyPublicationLegendEntry]) -> str:
+    return _table(
+        headers=["surface", "label", "swatch", "detail"],
+        rows=[
+            [entry.surface, entry.label, entry.swatch, entry.detail]
+            for entry in entries
         ],
     )
 
