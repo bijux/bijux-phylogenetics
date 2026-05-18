@@ -517,6 +517,9 @@ def build_tree_figure_package(
         )
     )
 
+    tree = load_tree(tree_path)
+    labels = labels or {taxon: taxon for taxon in tree.tip_names}
+
     render = render_tree_svg(
         tree_path,
         out_path=figure_path,
@@ -532,8 +535,6 @@ def build_tree_figure_package(
         support_validation_warnings=support_audit.warnings,
     )
 
-    tree = load_tree(tree_path)
-    labels = labels or {}
     categorical_traits = categorical_traits or {}
     continuous_traits = continuous_traits or {}
     metadata_strips = metadata_strips or []

@@ -86,3 +86,21 @@ def test_build_tree_figure_package_flags_long_labels_against_publication_lane(
     assert any(
         "reserved label lane" in warning for warning in result.legibility_audit.warnings
     )
+
+
+def test_build_tree_figure_package_treats_taxon_names_as_default_labels(
+    tmp_path: Path,
+) -> None:
+    output_dir = tmp_path / "tree-publication-package"
+    result = build_tree_figure_package(
+        tree_fixture("example_tree.nwk"),
+        out_dir=output_dir,
+    )
+
+    label_coverage = next(
+        row for row in result.audit.annotation_coverage if row.surface == "labels"
+    )
+
+    assert label_coverage.aligned is True
+    assert label_coverage.covered_taxa == 4
+    assert label_coverage.missing_taxa == []
