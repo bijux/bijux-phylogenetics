@@ -30,6 +30,7 @@ class WorkflowScaleDecision:
 class WorkflowProductionScaleReadinessEntry:
     workflow: str
     evidence_source: str
+    scale_dimensions: list[str]
     tested_taxon_limit: int | None
     tested_site_limit: int | None
     tested_tree_limit: int | None
@@ -98,34 +99,64 @@ def _dimension_decision(
     return f"{label} tested to {observed}, below {required}"
 
 
+def _applicable_scale_dimensions(entry: WorkflowPracticalLimitEntry) -> tuple[str, ...]:
+    if entry.evidence_source == "large-tree-scaling":
+        return ("taxa",)
+    if entry.evidence_source == "large-alignment-scaling":
+        return ("taxa", "sites")
+    if entry.evidence_source == "large-tree-set-scaling":
+        return ("taxa", "tree_count", "posterior_size")
+    if entry.evidence_source == "stress-suite":
+        if entry.workflow in {
+            "large-alignment-inference",
+            "multi-locus-supermatrix",
+        }:
+            return ("taxa", "sites")
+        if entry.workflow == "posterior-tree-set-consensus":
+            return ("taxa", "tree_count", "posterior_size")
+        if entry.workflow in {
+            "comparative-trait-contrasts",
+            "tree-annotation-tables",
+        }:
+            return ("taxa",)
+    dimensions: list[str] = []
+    if entry.tested_taxon_limit is not None:
+        dimensions.append("taxa")
+    if entry.tested_site_limit is not None:
+        dimensions.append("sites")
+    if entry.tested_tree_limit is not None and entry.tested_tree_limit > 2:
+        dimensions.append("tree_count")
+    if entry.tested_posterior_size is not None and entry.tested_posterior_size > 2:
+        dimensions.append("posterior_size")
+    return tuple(dimensions)
+
+
 def _evaluate_scale(
     entry: WorkflowPracticalLimitEntry,
     threshold: ProductionScaleThreshold,
 ) -> WorkflowScaleDecision:
+    applicable_dimensions = set(_applicable_scale_dimensions(entry))
+    decisions = (
+        ("taxa", entry.tested_taxon_limit, threshold.minimum_taxa, "taxa"),
+        ("sites", entry.tested_site_limit, threshold.minimum_sites, "sites"),
+        (
+            "tree_count",
+            entry.tested_tree_limit,
+            threshold.minimum_tree_count,
+            "tree count",
+        ),
+        (
+            "posterior_size",
+            entry.tested_posterior_size,
+            threshold.minimum_posterior_size,
+            "posterior size",
+        ),
+    )
     limiting_dimensions = [
         reason
-        for reason in (
-            _dimension_decision(
-                observed=entry.tested_taxon_limit,
-                required=threshold.minimum_taxa,
-                label="taxa",
-            ),
-            _dimension_decision(
-                observed=entry.tested_site_limit,
-                required=threshold.minimum_sites,
-                label="sites",
-            ),
-            _dimension_decision(
-                observed=entry.tested_tree_limit,
-                required=threshold.minimum_tree_count,
-                label="tree count",
-            ),
-            _dimension_decision(
-                observed=entry.tested_posterior_size,
-                required=threshold.minimum_posterior_size,
-                label="posterior size",
-            ),
-        )
+        for dimension, observed, required, label in decisions
+        if dimension in applicable_dimensions
+        for reason in [_dimension_decision(observed=observed, required=required, label=label)]
         if reason is not None
     ]
     ready = not limiting_dimensions
@@ -172,11 +203,13 @@ def build_production_scale_readiness_report(
     )
     entries: list[WorkflowProductionScaleReadinessEntry] = []
     for entry in practical_limits.entries:
+        scale_dimensions = list(_applicable_scale_dimensions(entry))
         decisions = [_evaluate_scale(entry, threshold) for threshold in thresholds]
         entries.append(
             WorkflowProductionScaleReadinessEntry(
                 workflow=entry.workflow,
                 evidence_source=entry.evidence_source,
+                scale_dimensions=scale_dimensions,
                 tested_taxon_limit=entry.tested_taxon_limit,
                 tested_site_limit=entry.tested_site_limit,
                 tested_tree_limit=entry.tested_tree_limit,
