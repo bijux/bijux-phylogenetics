@@ -29,6 +29,10 @@ from bijux_phylogenetics.provenance.method_tiers import (
     MethodTierAssessment,
     tree_report_method_tier,
 )
+from bijux_phylogenetics.reports.methods_summary import (
+    TreeValidationMethodsSummaryTextResult,
+    write_tree_validation_methods_summary_text,
+)
 from bijux_phylogenetics.render.svg import (
     SupportLabelRenderAudit,
     TreeRenderResult,
@@ -72,6 +76,7 @@ class TreeReportPackageResult:
     output_dir: Path
     report_path: Path
     figure_path: Path
+    methods_summary_path: Path
     support_table_path: Path
     clade_table_path: Path
     branch_stats_path: Path
@@ -88,6 +93,7 @@ class TreeReportPackageResult:
     method_tier: MethodTierAssessment
     reviewer_summary: list[str]
     limitations: list[str]
+    methods_summary: TreeValidationMethodsSummaryTextResult
     machine_manifest: dict[str, object]
 
 
@@ -350,6 +356,7 @@ def _write_tree_report_html(
     path: Path,
     title: str,
     figure_svg: str,
+    methods_summary_text: str,
     reviewer_summary: list[str],
     limitations: list[str],
     support_rows: list[TreeSupportRow],
@@ -528,6 +535,10 @@ def _write_tree_report_html(
         </div>
       </section>
       <section>
+        <h2>Methods Summary</h2>
+        <pre>{escape(methods_summary_text)}</pre>
+      </section>
+      <section>
         <h2>Tree Image</h2>
         <div class="figure-frame">{figure_svg}</div>
       </section>
@@ -580,6 +591,7 @@ def build_tree_report_package(
     out_dir.mkdir(parents=True, exist_ok=True)
     report_path = out_dir / "tree-report.html"
     figure_path = out_dir / "tree-image.svg"
+    methods_summary_path = out_dir / "tree-validation-methods-summary.md"
     support_table_path = out_dir / "support-table.tsv"
     clade_table_path = out_dir / "clade-table.tsv"
     branch_stats_path = out_dir / "branch-stats.tsv"
@@ -601,6 +613,10 @@ def build_tree_report_package(
     support_rows = summarize_tree_support(clades)
     branch_lengths = analyze_branch_length_distribution(tree_path)
     branch_stats = summarize_tree_branch_statistics(branch_lengths)
+    methods_summary = write_tree_validation_methods_summary_text(
+        methods_summary_path,
+        tree_path=tree_path,
+    )
     method_tier = tree_report_method_tier()
     reviewer_summary, limitations = _reviewer_summary(
         inspection=inspection,
@@ -623,6 +639,7 @@ def build_tree_report_package(
         "outputs": {
             "report_path": str(report_path),
             "figure_path": str(figure_path),
+            "methods_summary_path": str(methods_summary_path),
             "support_table_path": str(support_table_path),
             "clade_table_path": str(clade_table_path),
             "branch_stats_path": str(branch_stats_path),
@@ -640,6 +657,7 @@ def build_tree_report_package(
         },
         "reviewer_summary": reviewer_summary,
         "limitations": limitations,
+        "methods_summary_text": methods_summary.text,
         "validation": asdict(validation),
         "inspection": asdict(inspection),
         "forensic": asdict(forensic),
@@ -653,6 +671,7 @@ def build_tree_report_package(
         path=report_path,
         title=title,
         figure_svg=figure_path.read_text(encoding="utf-8"),
+        methods_summary_text=methods_summary.text,
         reviewer_summary=reviewer_summary,
         limitations=limitations,
         support_rows=support_rows,
@@ -668,6 +687,7 @@ def build_tree_report_package(
         output_dir=out_dir,
         report_path=report_path,
         figure_path=figure_path,
+        methods_summary_path=methods_summary_path,
         support_table_path=support_table_path,
         clade_table_path=clade_table_path,
         branch_stats_path=branch_stats_path,
@@ -684,5 +704,6 @@ def build_tree_report_package(
         method_tier=method_tier,
         reviewer_summary=reviewer_summary,
         limitations=limitations,
+        methods_summary=methods_summary,
         machine_manifest=machine_manifest,
     )

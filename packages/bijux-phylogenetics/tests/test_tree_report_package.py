@@ -24,6 +24,7 @@ def test_build_tree_report_package_writes_html_svg_and_tsv_outputs(
 
     assert result.report_path.exists()
     assert result.figure_path.exists()
+    assert result.methods_summary_path.exists()
     assert result.support_table_path.exists()
     assert result.clade_table_path.exists()
     assert result.branch_stats_path.exists()
@@ -34,6 +35,7 @@ def test_build_tree_report_package_writes_html_svg_and_tsv_outputs(
     assert "Bijux Full Tree Report" in html
     assert "Method Tier" in html
     assert "advisory" in html
+    assert "Methods Summary" in html
     assert "<svg" in html
     assert "Support Table" in html
     assert "Clade Table" in html
@@ -49,6 +51,10 @@ def test_build_tree_report_package_writes_html_svg_and_tsv_outputs(
 
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
     assert manifest["report_kind"] == "tree_package"
+    assert manifest["outputs"]["methods_summary_path"].endswith(
+        "tree-validation-methods-summary.md"
+    )
+    assert "Tree Validation Methods Summary" in manifest["methods_summary_text"]
     assert manifest["metrics"]["supported_branch_count"] == 3
     assert result.method_tier.tier == "advisory"
 
