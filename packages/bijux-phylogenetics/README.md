@@ -1313,8 +1313,15 @@ observation TSV instead of relying on console scraping. The initial registry is
 intentionally narrow for this harness goal: it currently covers
 `geiger::fitContinuous(model='BM')`,
 `geiger::fitContinuous(model='OU')`, and
-`geiger::fitContinuous(model='EB')` over the four-taxon comparative reference
-fixture plus the governed continuous-mode recovery panel. Failed or skipped
+`geiger::fitContinuous(model='EB')` over the four-taxon comparative smoke
+fixture plus the governed shared `geiger` continuous-trait fixtures. Those
+shared fixtures live in
+`tests/fixtures/metadata/shared_geiger_continuous_fixture_catalog.json` and
+cover twenty-four-taxon and one-hundred-twenty-eight-taxon ultrametric signal
+surfaces, a rooted non-ultrametric control tree, OU and early-burst
+known-truth traits, white-noise low-signal traits, missing-value pruning,
+constant-trait blockers, an explicit outlier surface, and one trend proxy for
+later `fitContinuous` model expansion. Failed or skipped
 cases always persist their case payload, structured summaries, parameter
 ledgers, and mismatch reason under `artifacts/geiger-parity-failures/` so the
 live parity lane stays reviewer-usable instead of collapsing into hidden
