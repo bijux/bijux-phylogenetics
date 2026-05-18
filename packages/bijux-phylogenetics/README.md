@@ -447,6 +447,16 @@ pending, or stale from the execution record, task logs, running marker, and
 durable variant outputs; `slurm-partition-status.tsv` rolls those counts up by
 array partition; and `slurm-workflow-status.json` carries the same summary for
 machine review.
+It now also writes one retained-storage planning surface before scaling the
+same workflow up further: `slurm-storage-categories.tsv` breaks the current
+bundle into workflow outputs, canonical logs, tree artifacts, posterior
+samples, and reviewer-facing reports; `slurm-storage-variants.tsv` records the
+same retained footprint per variant; `slurm-storage-report.json` carries the
+machine-readable totals; and `slurm-storage-report.html` gives reviewers one
+compact summary of the expected retained storage burden. The posterior-sample
+category remains explicit even when it is zero, so the workflow does not hide
+the fact that this governed rabies surface currently emits no Bayesian chain
+or posterior tree outputs.
 It now also writes one per-job evidence surface for independent debugging:
 `slurm-job-evidence.tsv` indexes one provenance package per planned job,
 `slurm-job-evidence-summary.json` carries the workflow-wide summary, and

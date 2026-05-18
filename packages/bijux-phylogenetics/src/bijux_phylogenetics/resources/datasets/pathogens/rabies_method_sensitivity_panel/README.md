@@ -103,6 +103,15 @@ The governed expected bundle now also includes:
   array partition and array index
 - `slurm-array-strategy.json`: one machine-readable export of the array
   partitioning contract
+- `slurm-storage-categories.tsv`: one retained-storage ledger that separates
+  workflow outputs, canonical logs, tree artifacts, posterior samples, and
+  reviewer-facing reports
+- `slurm-storage-variants.tsv`: one per-variant retained-storage ledger over
+  those same categories
+- `slurm-storage-report.json`: one machine-readable storage summary over total
+  retained bytes, total retained MiB, category totals, and the largest variant
+- `slurm-storage-report.html`: one reviewer-facing summary of the retained
+  storage estimate before scaling the workflow further
 - `slurm-job-evidence.tsv`: one workflow-wide index over the per-job
   provenance packages written for each planned Slurm job
 - `slurm-job-evidence-summary.json`: one machine-readable summary over the
