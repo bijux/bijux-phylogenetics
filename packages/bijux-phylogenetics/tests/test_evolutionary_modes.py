@@ -163,6 +163,92 @@ def test_fit_continuous_evolutionary_mode_reports_ou_aicc_and_missing_value_cont
     ]
 
 
+def test_fit_continuous_evolutionary_mode_supports_pagel_lambda_strong_signal() -> (
+    None
+):
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="pagel-lambda",
+        taxon_column=fixture.taxon_column,
+    )
+
+    assert fit.mode == "pagel-lambda"
+    assert fit.parameter_name == "lambda"
+    assert fit.parameter_value is not None
+    assert math.isclose(fit.parameter_value, 1.0, abs_tol=1e-12)
+    assert fit.optimizer_diagnostics is not None
+    assert fit.optimizer_diagnostics.hit_lower_boundary is False
+    assert fit.optimizer_diagnostics.hit_upper_boundary is True
+    assert fit.aicc >= fit.aic
+    assert "phytools::phylosig" in fit.assumptions[1]
+    assert [warning.kind for warning in fit.identifiability_warnings] == [
+        "boundary_lambda",
+        "flat_likelihood",
+        "brownian_limit",
+    ]
+
+
+def test_fit_continuous_evolutionary_mode_supports_pagel_lambda_weak_signal() -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_white_noise_twenty_four_taxa"
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="pagel-lambda",
+        taxon_column=fixture.taxon_column,
+    )
+
+    assert fit.mode == "pagel-lambda"
+    assert fit.parameter_name == "lambda"
+    assert fit.parameter_value is not None
+    assert math.isclose(fit.parameter_value, 0.0, abs_tol=1e-12)
+    assert fit.optimizer_diagnostics is not None
+    assert fit.optimizer_diagnostics.hit_lower_boundary is True
+    assert fit.optimizer_diagnostics.hit_upper_boundary is False
+    assert [warning.kind for warning in fit.identifiability_warnings] == [
+        "boundary_lambda",
+        "flat_likelihood",
+        "weak_phylogenetic_signal",
+    ]
+
+
+def test_fit_continuous_evolutionary_mode_reports_pagel_lambda_missing_value_context() -> (
+    None
+):
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_missing_values_twenty_four_taxa"
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="pagel-lambda",
+        taxon_column=fixture.taxon_column,
+    )
+
+    assert fit.parameter_name == "lambda"
+    assert fit.parameter_value is not None
+    assert math.isclose(fit.parameter_value, 1.0, abs_tol=1e-12)
+    assert fit.aicc >= fit.aic
+    assert fit.optimizer_diagnostics is not None
+    assert fit.optimizer_diagnostics.hit_upper_boundary is True
+    assert [warning.kind for warning in fit.identifiability_warnings] == [
+        "boundary_lambda",
+        "flat_likelihood",
+        "brownian_limit",
+    ]
+
+
 def test_compare_continuous_evolutionary_modes_reports_likelihood_ratios() -> None:
     report = compare_continuous_evolutionary_modes(
         EXAMPLE_TREE,
