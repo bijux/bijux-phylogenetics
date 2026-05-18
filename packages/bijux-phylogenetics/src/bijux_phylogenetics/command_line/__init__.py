@@ -112,8 +112,11 @@ from bijux_phylogenetics.ancestral.visualization import (
 )
 from bijux_phylogenetics.parity import (
     run_ape_parity_cases,
+    run_geiger_parity_cases,
     write_ape_parity_observation_table,
     write_ape_parity_summary_table,
+    write_geiger_parity_observation_table,
+    write_geiger_parity_summary_table,
 )
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
@@ -3195,7 +3198,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parity.add_argument(
         "--reference-source",
-        choices=("checked-fixture", "ape-live", "phytools-live"),
+        choices=("checked-fixture", "ape-live", "phytools-live", "geiger-live"),
         default="checked-fixture",
         help="Choose the checked fixture parity suite or one of the live external execution harnesses.",
     )
@@ -3235,6 +3238,22 @@ def build_parser() -> argparse.ArgumentParser:
         "--phytools-failure-root",
         type=Path,
         help="Directory for reproducible live phytools mismatch and skip artifacts.",
+    )
+    parity.add_argument(
+        "--geiger-case",
+        action="append",
+        dest="geiger_cases",
+        help="Restrict the live geiger parity harness to one or more governed case ids.",
+    )
+    parity.add_argument(
+        "--geiger-rscript-executable",
+        default="Rscript",
+        help="Executable used to launch the live geiger parity runner.",
+    )
+    parity.add_argument(
+        "--geiger-failure-root",
+        type=Path,
+        help="Directory for reproducible live geiger mismatch and skip artifacts.",
     )
     parity.add_argument("--summary-out", type=Path)
     parity.add_argument("--observations-out", type=Path)
@@ -8964,7 +8983,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "parity":
-            if args.reference_source in {"ape-live", "phytools-live"} and args.extended:
+            if (
+                args.reference_source in {"ape-live", "phytools-live", "geiger-live"}
+                and args.extended
+            ):
                 raise ValueError(
                     "--extended is only supported for the checked fixture parity suite"
                 )
@@ -9034,6 +9056,55 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     output_paths.append(summary_path)
                 if args.observations_out is not None:
                     observation_path = write_phytools_parity_observation_table(
+                        args.observations_out,
+                        report,
+                    )
+                    output_paths.append(observation_path)
+                outputs = _finalize_outputs(
+                    args,
+                    command="parity",
+                    inputs=[],
+                    outputs=output_paths,
+                )
+                _print_result(
+                    build_command_result(
+                        command="parity",
+                        inputs=[],
+                        outputs=outputs,
+                        metrics={
+                            "all_passed": report.all_passed,
+                            "case_count": report.case_count,
+                            "function_count": len(report.summary_rows),
+                            "failed_case_count": report.failed_case_count,
+                            "skipped_case_count": report.skipped_case_count,
+                            "reference_source": args.reference_source,
+                        },
+                        data={
+                            "report": report,
+                            "summary_table": summary_path,
+                            "observation_table": observation_path,
+                        },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.reference_source == "geiger-live":
+                report = run_geiger_parity_cases(
+                    case_ids=args.geiger_cases,
+                    rscript_executable=args.geiger_rscript_executable,
+                    failure_root=args.geiger_failure_root,
+                )
+                output_paths: list[Path | str] = []
+                summary_path = None
+                observation_path = None
+                if args.summary_out is not None:
+                    summary_path = write_geiger_parity_summary_table(
+                        args.summary_out,
+                        report,
+                    )
+                    output_paths.append(summary_path)
+                if args.observations_out is not None:
+                    observation_path = write_geiger_parity_observation_table(
                         args.observations_out,
                         report,
                     )
