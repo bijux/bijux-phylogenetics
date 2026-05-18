@@ -63,6 +63,14 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_job_evidence i
     RabiesMethodSensitivitySlurmJobEvidenceReport,
     write_rabies_method_sensitivity_slurm_job_evidence_bundle,
 )
+from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_merge import (
+    RabiesMethodSensitivitySlurmMergeReport,
+    build_rabies_method_sensitivity_slurm_merge_report,
+    write_rabies_method_sensitivity_slurm_merge_checks_table,
+    write_rabies_method_sensitivity_slurm_merge_html_report,
+    write_rabies_method_sensitivity_slurm_merge_summary_json,
+    write_rabies_method_sensitivity_slurm_merge_variants_table,
+)
 from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_status import (
     RabiesMethodSensitivitySlurmStatusReport,
     build_rabies_method_sensitivity_slurm_status_report,
@@ -263,6 +271,10 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     slurm_job_evidence_root: Path
     slurm_job_evidence_index_path: Path
     slurm_job_evidence_summary_path: Path
+    slurm_merge_checks_path: Path
+    slurm_merge_variants_path: Path
+    slurm_merge_summary_path: Path
+    slurm_merge_report_path: Path
     slurm_job_count: int
     slurm_total_estimated_core_hours: float
     slurm_maximum_estimated_memory_mib: int
@@ -275,6 +287,10 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     slurm_job_evidence_file_count: int
     slurm_job_evidence_total_runtime_seconds: float
     slurm_job_evidence_total_output_byte_count: int
+    slurm_merge_status: str
+    slurm_merge_ready: bool
+    slurm_mergeable_variant_count: int
+    slurm_merge_failed_check_count: int
     slurm_output_freshness_path: Path
     slurm_output_freshness_checks_path: Path
     slurm_output_freshness_summary_path: Path
@@ -807,6 +823,25 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             / "rabies-method-sensitivity.manifest.json",
         )
     )
+    slurm_merge_report = build_rabies_method_sensitivity_slurm_merge_report(output_root)
+    slurm_merge_checks_path = write_rabies_method_sensitivity_slurm_merge_checks_table(
+        output_root / "slurm-merge-checks.tsv",
+        slurm_merge_report,
+    )
+    slurm_merge_variants_path = (
+        write_rabies_method_sensitivity_slurm_merge_variants_table(
+            output_root / "slurm-merge-variants.tsv",
+            slurm_merge_report,
+        )
+    )
+    slurm_merge_summary_path = write_rabies_method_sensitivity_slurm_merge_summary_json(
+        output_root / "slurm-merge-report.json",
+        slurm_merge_report,
+    )
+    slurm_merge_report_path = write_rabies_method_sensitivity_slurm_merge_html_report(
+        output_root / "slurm-merge-report.html",
+        slurm_merge_report,
+    )
     manifest_path = _write_manifest(
         output_root / "rabies-method-sensitivity.manifest.json",
         report=report,
@@ -832,6 +867,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_job_evidence_root": slurm_job_evidence_report.evidence_root,
             "slurm_job_evidence_index": slurm_job_evidence_report.index_path,
             "slurm_job_evidence_summary": slurm_job_evidence_report.summary_path,
+            "slurm_merge_checks": slurm_merge_checks_path,
+            "slurm_merge_variants": slurm_merge_variants_path,
+            "slurm_merge_summary": slurm_merge_summary_path,
+            "slurm_merge_report": slurm_merge_report_path,
             "slurm_output_freshness": slurm_output_freshness_path,
             "slurm_output_freshness_checks": slurm_output_freshness_checks_path,
             "slurm_output_freshness_summary": slurm_output_freshness_summary_path,
@@ -864,6 +903,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_array_strategy": slurm_array_strategy_path,
             "slurm_job_evidence_index": slurm_job_evidence_report.index_path,
             "slurm_job_evidence_summary": slurm_job_evidence_report.summary_path,
+            "slurm_merge_checks": slurm_merge_checks_path,
+            "slurm_merge_variants": slurm_merge_variants_path,
+            "slurm_merge_summary": slurm_merge_summary_path,
+            "slurm_merge_report": slurm_merge_report_path,
             "slurm_output_freshness": slurm_output_freshness_path,
             "slurm_output_freshness_checks": slurm_output_freshness_checks_path,
             "slurm_output_freshness_summary": slurm_output_freshness_summary_path,
@@ -915,6 +958,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_array_strategy_path,
         slurm_job_evidence_report.index_path,
         slurm_job_evidence_report.summary_path,
+        slurm_merge_checks_path,
+        slurm_merge_variants_path,
+        slurm_merge_summary_path,
+        slurm_merge_report_path,
         slurm_output_freshness_path,
         slurm_output_freshness_checks_path,
         slurm_output_freshness_summary_path,
@@ -945,6 +992,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_array_strategy": slurm_array_strategy_path,
             "slurm_job_evidence_index": slurm_job_evidence_report.index_path,
             "slurm_job_evidence_summary": slurm_job_evidence_report.summary_path,
+            "slurm_merge_checks": slurm_merge_checks_path,
+            "slurm_merge_variants": slurm_merge_variants_path,
+            "slurm_merge_summary": slurm_merge_summary_path,
+            "slurm_merge_report": slurm_merge_report_path,
             "slurm_output_freshness": slurm_output_freshness_path,
             "slurm_output_freshness_checks": slurm_output_freshness_checks_path,
             "slurm_output_freshness_summary": slurm_output_freshness_summary_path,
@@ -960,6 +1011,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_planning_report=slurm_planning_report,
         slurm_array_strategy_report=slurm_array_strategy_report,
         slurm_job_evidence_report=slurm_job_evidence_report,
+        slurm_merge_report=slurm_merge_report,
         slurm_output_freshness_report=slurm_output_freshness_report,
         slurm_status_report=slurm_status_report,
     )
@@ -1015,6 +1067,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_job_evidence_root=slurm_job_evidence_report.evidence_root,
         slurm_job_evidence_index_path=slurm_job_evidence_report.index_path,
         slurm_job_evidence_summary_path=slurm_job_evidence_report.summary_path,
+        slurm_merge_checks_path=slurm_merge_checks_path,
+        slurm_merge_variants_path=slurm_merge_variants_path,
+        slurm_merge_summary_path=slurm_merge_summary_path,
+        slurm_merge_report_path=slurm_merge_report_path,
         slurm_job_count=slurm_planning_report.job_count,
         slurm_total_estimated_core_hours=(
             slurm_planning_report.total_estimated_core_hours
@@ -1045,6 +1101,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_job_evidence_total_output_byte_count=(
             slurm_job_evidence_report.total_output_byte_count
         ),
+        slurm_merge_status=slurm_merge_report.merge_status,
+        slurm_merge_ready=slurm_merge_report.merge_ready,
+        slurm_mergeable_variant_count=slurm_merge_report.mergeable_variant_count,
+        slurm_merge_failed_check_count=slurm_merge_report.failed_check_count,
         slurm_output_freshness_path=slurm_output_freshness_path,
         slurm_output_freshness_checks_path=slurm_output_freshness_checks_path,
         slurm_output_freshness_summary_path=slurm_output_freshness_summary_path,
@@ -1926,6 +1986,7 @@ def _write_report(
     slurm_planning_report: RabiesMethodSensitivitySlurmPlanningReport,
     slurm_array_strategy_report: RabiesMethodSensitivitySlurmArrayStrategyReport,
     slurm_job_evidence_report: RabiesMethodSensitivitySlurmJobEvidenceReport,
+    slurm_merge_report: RabiesMethodSensitivitySlurmMergeReport,
     slurm_output_freshness_report: RabiesMethodSensitivitySlurmOutputFreshnessReport,
     slurm_status_report: RabiesMethodSensitivitySlurmStatusReport,
 ) -> Path:
@@ -2056,6 +2117,31 @@ def _write_report(
             ),
         ),
         (
+            "slurm-merge-report",
+            "\n".join(
+                [
+                    f"merge status: {slurm_merge_report.merge_status}",
+                    f"merge ready: {str(slurm_merge_report.merge_ready).lower()}",
+                    (
+                        "mergeable variants: "
+                        f"{slurm_merge_report.mergeable_variant_count}"
+                    ),
+                    (
+                        "failed merge checks: "
+                        f"{slurm_merge_report.failed_check_count}"
+                    ),
+                    (
+                        "merged stable clades: "
+                        f"{slurm_merge_report.stable_clade_count}"
+                    ),
+                    (
+                        "merged changed clades: "
+                        f"{slurm_merge_report.changed_clade_count}"
+                    ),
+                ]
+            ),
+        ),
+        (
             "slurm-output-freshness",
             "\n".join(
                 [
@@ -2133,6 +2219,22 @@ def _write_report(
                     (
                         "slurm job evidence summary: "
                         f"{bundle_paths['slurm_job_evidence_summary'].name}"
+                    ),
+                    (
+                        "slurm merge checks: "
+                        f"{bundle_paths['slurm_merge_checks'].name}"
+                    ),
+                    (
+                        "slurm merge variants: "
+                        f"{bundle_paths['slurm_merge_variants'].name}"
+                    ),
+                    (
+                        "slurm merge summary: "
+                        f"{bundle_paths['slurm_merge_summary'].name}"
+                    ),
+                    (
+                        "slurm merge report: "
+                        f"{bundle_paths['slurm_merge_report'].name}"
                     ),
                     (
                         "slurm output freshness: "
@@ -2226,6 +2328,14 @@ def _write_report(
             "slurm_job_evidence_total_output_byte_count": (
                 slurm_job_evidence_report.total_output_byte_count
             ),
+            "slurm_merge_status": slurm_merge_report.merge_status,
+            "slurm_merge_ready": slurm_merge_report.merge_ready,
+            "slurm_mergeable_variant_count": (
+                slurm_merge_report.mergeable_variant_count
+            ),
+            "slurm_merge_failed_check_count": (
+                slurm_merge_report.failed_check_count
+            ),
             "slurm_output_freshness_check_count": (
                 slurm_output_freshness_report.check_count
             ),
@@ -2265,6 +2375,14 @@ def _write_report(
             (
                 "slurm job evidence files",
                 slurm_job_evidence_report.total_artifact_file_count,
+            ),
+            (
+                "slurm merge ready",
+                str(slurm_merge_report.merge_ready).lower(),
+            ),
+            (
+                "slurm mergeable variants",
+                slurm_merge_report.mergeable_variant_count,
             ),
             (
                 "slurm fresh output jobs",
@@ -2342,6 +2460,10 @@ def _write_overview(
         f"- slurm job evidence files: `{bundle.slurm_job_evidence_file_count}`",
         f"- slurm job evidence runtime seconds: `{_format_float(bundle.slurm_job_evidence_total_runtime_seconds)}`",
         f"- slurm job evidence output bytes: `{bundle.slurm_job_evidence_total_output_byte_count}`",
+        f"- slurm merge status: `{bundle.slurm_merge_status}`",
+        f"- slurm merge ready: `{str(bundle.slurm_merge_ready).lower()}`",
+        f"- slurm mergeable variants: `{bundle.slurm_mergeable_variant_count}`",
+        f"- failed slurm merge checks: `{bundle.slurm_merge_failed_check_count}`",
         f"- slurm output freshness checks: `{bundle.slurm_output_freshness_check_count}`",
         f"- failed slurm output freshness checks: `{bundle.slurm_output_freshness_failed_check_count}`",
         f"- slurm fresh output jobs: `{bundle.slurm_fresh_output_job_count}`",
@@ -2361,6 +2483,10 @@ def _write_overview(
         f"- slurm job evidence root: `{bundle.slurm_job_evidence_root.name}/`",
         f"- slurm job evidence table: `{bundle.slurm_job_evidence_index_path.name}`",
         f"- slurm job evidence summary: `{bundle.slurm_job_evidence_summary_path.name}`",
+        f"- slurm merge checks: `{bundle.slurm_merge_checks_path.name}`",
+        f"- slurm merge variants: `{bundle.slurm_merge_variants_path.name}`",
+        f"- slurm merge summary: `{bundle.slurm_merge_summary_path.name}`",
+        f"- slurm merge report: `{bundle.slurm_merge_report_path.name}`",
         f"- slurm output freshness table: `{bundle.slurm_output_freshness_path.name}`",
         f"- slurm output freshness checks: `{bundle.slurm_output_freshness_checks_path.name}`",
         f"- slurm output freshness summary: `{bundle.slurm_output_freshness_summary_path.name}`",
