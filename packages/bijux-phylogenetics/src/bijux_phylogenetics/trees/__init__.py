@@ -110,6 +110,13 @@ from .uncertainty import (
     write_uncertainty_conclusion_table,
     write_unstable_clade_table,
 )
+from .uncertainty_methods import (
+    TreeSetUncertaintyMethodReport,
+    TreeSetUncertaintyMethodsSummaryTextResult,
+    build_tree_set_uncertainty_method_report,
+    build_tree_set_uncertainty_methods_summary_text,
+    write_tree_set_uncertainty_methods_summary_text,
+)
 
 __all__ = [
     "BootstrapPosteriorCladeComparison",
@@ -151,6 +158,8 @@ __all__ = [
     "TreeSetReport",
     "TreeSetScalingBenchmarkReport",
     "TreeSetStorageRiskReport",
+    "TreeSetUncertaintyMethodReport",
+    "TreeSetUncertaintyMethodsSummaryTextResult",
     "TreeSetThinningSensitivityReport",
     "TreeSetThinningSensitivityRow",
     "TreeSetWorkflowBudgetReport",
@@ -171,6 +180,8 @@ __all__ = [
     "assess_tree_set_storage_risk",
     "assess_tree_set_thinning_sensitivity",
     "benchmark_tree_set_uncertainty",
+    "build_tree_set_uncertainty_method_report",
+    "build_tree_set_uncertainty_methods_summary_text",
     "build_tree_set_budget_report",
     "build_tree_set_workflow_budget",
     "cluster_trees_by_topology",
@@ -210,6 +221,7 @@ __all__ = [
     "write_tree_distance_distribution_table",
     "write_tree_distance_matrix",
     "write_tree_shape_table",
+    "write_tree_set_uncertainty_methods_summary_text",
     "write_uncertainty_conclusion_table",
     "write_unstable_clade_table",
 ]
