@@ -441,13 +441,23 @@ def render_tree_with_geographic_states(
     *,
     out_path: Path,
     layout: str = "phylogram",
+    state_colors: dict[str, str] | None = None,
 ) -> TreeRenderResult:
     """Render tip and internal discrete states onto a tree SVG."""
-    palette = dict(
-        zip(sorted(report.observed_states), _DEFAULT_STATE_COLORS, strict=False)
+    palette = (
+        dict(state_colors)
+        if state_colors is not None
+        else dict(
+            zip(sorted(report.observed_states), _DEFAULT_STATE_COLORS, strict=False)
+        )
     )
+    internal_pies = {
+        estimate.node: dict(estimate.state_probabilities)
+        for estimate in report.estimates
+        if not estimate.is_tip
+    }
     internal_annotations = {
-        estimate.node: estimate.most_likely_state
+        estimate.node: f"{estimate.state_probabilities.get(estimate.most_likely_state, 0.0):.2f}"
         for estimate in report.estimates
         if not estimate.is_tip
     }
@@ -468,6 +478,8 @@ def render_tree_with_geographic_states(
         categorical_traits=categorical_traits,
         internal_annotations=internal_annotations,
         internal_annotation_colors=internal_annotation_colors,
+        internal_pies=internal_pies,
+        internal_pie_colors=palette,
     )
 
 

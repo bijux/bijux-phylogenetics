@@ -19,6 +19,10 @@ from bijux_phylogenetics.phylogeography.continuous_coordinates import (
     PhylogeographicCoordinateReport,
     summarize_continuous_phylogeography,
 )
+from bijux_phylogenetics.phylogeography.region_styles import (
+    build_geographic_state_color_map,
+    geographic_transition_support_colors,
+)
 
 _EARTH_RADIUS_KM = 6371.0088
 
@@ -371,11 +375,17 @@ def render_geographic_map_html(
     out_path: Path,
     width: int = 1200,
     height: int = 720,
+    state_colors: dict[str, str] | None = None,
 ) -> GeographicMapArtifact:
     """Render one self-contained HTML geographic map review artifact."""
     if out_path.suffix.lower() != ".html":
         raise ValueError("geographic map output must end in .html")
-    html = _build_map_html(report, width=width, height=height)
+    html = _build_map_html(
+        report,
+        width=width,
+        height=height,
+        state_colors=state_colors,
+    )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(html, encoding="utf-8")
     return GeographicMapArtifact(
@@ -920,9 +930,20 @@ def _build_map_html(
     *,
     width: int,
     height: int,
+    state_colors: dict[str, str] | None = None,
 ) -> str:
     summary = report.summary
-    svg = _build_map_svg(report, width=width, height=height)
+    state_colors = state_colors or build_geographic_state_color_map(
+        row.state_label for row in report.marker_rows
+    )
+    transition_colors = geographic_transition_support_colors()
+    svg = _build_map_svg(
+        report,
+        width=width,
+        height=height,
+        state_colors=state_colors,
+        transition_colors=transition_colors,
+    )
     warnings_markup = "".join(
         f"<li>{escape(warning)}</li>" for warning in report.warnings
     )
@@ -955,6 +976,11 @@ def _build_map_html(
             "    .metric:last-child { border-bottom: none; }",
             "    .label { color: #496559; }",
             "    ul { margin: 8px 0 0 18px; padding: 0; }",
+            "    .legend-block { margin-top: 16px; }",
+            "    .legend-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }",
+            "    .legend-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }",
+            "    .legend-swatch { width: 14px; height: 14px; border-radius: 999px; border: 1px solid rgba(22,49,39,0.22); flex: 0 0 auto; }",
+            "    .legend-line { width: 24px; height: 0; border-top-width: 3px; border-top-style: solid; flex: 0 0 auto; }",
             "    .map-shell { overflow: auto; }",
             "    svg { width: 100%; height: auto; display: block; }",
             "  </style>",
@@ -995,8 +1021,32 @@ def _build_map_html(
             '<div class="metric"><span class="label">warnings</span><strong>'
             + str(summary.warning_count)
             + "</strong></div>",
-            "<p><strong>Legend.</strong> Blue points are tips. Gold points are ancestral nodes. Red points are roots. Dark lines are visible map lines. Pale dashed lines are retained for context but excluded by the current depth filter.</p>",
+            "<p><strong>Legend.</strong> Geographic region colors are stable across the tree and map. Marker size still distinguishes tips, ancestral nodes, and the root. Transition line color follows support class, while pale dashed lines remain outside the active depth window.</p>",
             "<p><strong>Time filtering.</strong> When branch lengths represent dated depth, midpoint-depth filters can restrict the visible transition layer without refitting the reconstruction.</p>",
+            '<section class="legend-block">',
+            "  <strong>Region colors</strong>",
+            _legend_grid(
+                [
+                    _legend_row_html(
+                        swatch_color=color,
+                        label=label,
+                    )
+                    for label, color in state_colors.items()
+                ]
+            ),
+            "</section>",
+            '<section class="legend-block">',
+            "  <strong>Transition support</strong>",
+            _legend_grid(
+                [
+                    _legend_row_html(
+                        line_color=color,
+                        label=f"{label} support",
+                    )
+                    for label, color in transition_colors.items()
+                ]
+            ),
+            "</section>",
             "<ul>" + warnings_markup + "</ul>",
             "</section>",
             '<section class="panel map-shell">',
@@ -1015,6 +1065,8 @@ def _build_map_svg(
     *,
     width: int,
     height: int,
+    state_colors: dict[str, str],
+    transition_colors: dict[str, str],
 ) -> str:
     margin_left = 70.0
     margin_right = 28.0
@@ -1050,7 +1102,12 @@ def _build_map_svg(
     for row in report.line_rows:
         left_x, left_y = project(row.source_longitude, row.source_latitude)
         right_x, right_y = project(row.target_longitude, row.target_latitude)
-        stroke = "#0c5a74" if row.line_kind == "continuous_movement" else "#186b3d"
+        confidence_class = row.flag_codes[0] if row.flag_codes else ""
+        stroke = (
+            "#0c5a74"
+            if row.line_kind == "continuous_movement"
+            else transition_colors.get(confidence_class, "#186b3d")
+        )
         opacity = "0.88" if row.visible else "0.22"
         dasharray = "" if row.visible else "6 7"
         line_elements.append(
@@ -1072,16 +1129,19 @@ def _build_map_svg(
     marker_elements: list[str] = []
     for row in report.marker_rows:
         x, y = project(row.longitude, row.latitude)
-        fill = "#0f6090" if row.is_tip else "#bf8b1b"
+        fill = state_colors.get(row.state_label, "#0f6090")
         radius = 5.0 if row.is_tip else 7.0
+        stroke = "#ffffff"
+        stroke_width = 1.4
         if row.is_root:
-            fill = "#b3312d"
             radius = 8.0
+            stroke = "#17261f"
+            stroke_width = 2.1
         opacity = 0.95 if row.active_line_count or row.is_tip else 0.78
         marker_elements.append(
             "\n".join(
                 [
-                    f'<circle cx="{x}" cy="{y}" r="{radius}" fill="{fill}" stroke="#ffffff" stroke-width="1.4" opacity="{opacity}">',
+                    f'<circle cx="{x}" cy="{y}" r="{radius}" fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}" opacity="{opacity}">',
                     "<title>"
                     + escape(
                         f"{row.label}; lat={row.latitude}; lon={row.longitude}; state={row.state_label or 'continuous'}; confidence={row.confidence}; uncertainty_km={_format_optional_float(row.uncertainty_km)}"
@@ -1108,3 +1168,23 @@ def _format_optional_float(value: float | None) -> str:
     if value is None:
         return ""
     return str(stable_value(value))
+
+
+def _legend_row_html(
+    *,
+    label: str,
+    swatch_color: str | None = None,
+    line_color: str | None = None,
+) -> str:
+    icon = ""
+    if swatch_color is not None:
+        icon = f'<span class="legend-swatch" style="background:{escape(swatch_color)};"></span>'
+    elif line_color is not None:
+        icon = f'<span class="legend-line" style="border-top-color:{escape(line_color)};"></span>'
+    return f'<div class="legend-row">{icon}<span>{escape(label)}</span></div>'
+
+
+def _legend_grid(rows: list[str]) -> str:
+    if not rows:
+        return "<p>No legend entries.</p>"
+    return '<div class="legend-grid">' + "".join(rows) + "</div>"
