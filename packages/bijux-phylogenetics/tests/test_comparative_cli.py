@@ -2625,9 +2625,10 @@ def test_comparative_report_cli_can_export_full_review_package(
     assert exit_code == 0
     assert payload["metrics"]["taxon_count"] == 4
     assert payload["metrics"]["coefficient_count"] >= 2
-    assert payload["metrics"]["package_output_count"] == 10
+    assert payload["metrics"]["package_output_count"] == 11
     assert payload["data"]["output_dir"] == str(out_dir)
     assert (out_dir / "comparative-report.html").exists()
+    assert (out_dir / "comparative-methods-summary.md").exists()
     assert (out_dir / "comparative-summary.tsv").exists()
     assert (out_dir / "coefficient-table.tsv").exists()
     assert (out_dir / "residual-summary.tsv").exists()
@@ -2641,6 +2642,37 @@ def test_comparative_report_cli_can_export_full_review_package(
         (out_dir / "comparative-summary.tsv").read_text(encoding="utf-8").splitlines()
     )
     assert summary_rows[0].startswith("response\tformula\tpredictor_count")
+
+
+def test_comparative_report_cli_can_export_methods_summary_markdown(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "comparative-methods-summary.md"
+    exit_code = main(
+        [
+            "comparative",
+            "report",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-value",
+            "0.0",
+            "--methods-summary-out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["package_output_count"] == 1
+    assert output_path.exists()
+    text = output_path.read_text(encoding="utf-8")
+    assert "Comparative Analysis Methods Summary" in text
+    assert "- predictor terms: `predictor_one`" in text
 
 
 def test_comparative_influence_cli_reports_taxa(capsys) -> None:

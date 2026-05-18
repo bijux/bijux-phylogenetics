@@ -399,6 +399,7 @@ from bijux_phylogenetics.comparative.reporting import (
     compare_comparative_results_across_pruning,
     compare_comparative_results_across_trees,
     write_comparative_method_report,
+    write_comparative_methods_summary_text,
 )
 from bijux_phylogenetics.comparative.trait_imputation import (
     summarize_trait_imputation,
@@ -1312,6 +1313,11 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_report.add_argument("--formula")
     comparative_report.add_argument("--taxon-column")
     comparative_report.add_argument("--out", type=Path)
+    comparative_report.add_argument(
+        "--methods-summary-out",
+        type=Path,
+        help="Write reviewer-facing Markdown methods text for the comparative analysis.",
+    )
     comparative_report.add_argument(
         "--out-dir",
         type=Path,
@@ -4422,11 +4428,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     )
                 if args.out is not None:
                     write_comparative_method_report(args.out, report)
+                if args.methods_summary_out is not None:
+                    write_comparative_methods_summary_text(
+                        args.methods_summary_out, report
+                    )
                 output_paths: list[Path | str] = [args.out] if args.out else []
+                if args.methods_summary_out is not None:
+                    output_paths.append(args.methods_summary_out)
                 if package_result is not None:
                     output_paths.extend(
                         [
                             package_result.report_path,
+                            package_result.methods_summary_path,
                             package_result.summary_table_path,
                             package_result.coefficient_table_path,
                             package_result.residual_table_path,
@@ -4460,7 +4473,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "coefficient_count": len(
                                 report.snapshot.pgls_model.coefficients
                             ),
-                            "package_output_count": 0 if package_result is None else 10,
+                            "package_output_count": len(outputs),
                         },
                         data=report if package_result is None else package_result,
                     ),
