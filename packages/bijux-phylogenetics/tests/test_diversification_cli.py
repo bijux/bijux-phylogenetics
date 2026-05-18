@@ -246,3 +246,32 @@ def test_diversification_package_cli_writes_publication_bundle(
     assert (output_dir / "diversification-figure-review.html").exists()
     assert (output_dir / "diversification-figure-package.manifest.json").exists()
     assert (output_dir / "figure-reproducibility.manifest.json").exists()
+
+
+def test_diversification_medusa_cli_reports_explicit_exclusion(capsys) -> None:
+    exit_code = main(
+        [
+            "diversification",
+            "medusa",
+            str(fixture("example_tree.nwk")),
+            "--metadata",
+            str(fixture("example_sampling_fractions.tsv")),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == "diversification_medusa_explicitly_excluded"
+    assert (
+        payload["errors"][0]["details"]["failure_reason"]
+        == "geiger_medusa_explicitly_excluded_this_round"
+    )
+    assert payload["errors"][0]["details"]["sampling_metadata_complete"] is True
+    assert "descriptive clade diversification outlier scan" in payload["errors"][0][
+        "details"
+    ]["supported_surfaces"]
+    assert "stepwise branch-specific rate-shift search" in payload["errors"][0][
+        "details"
+    ]["missing_surfaces"]
