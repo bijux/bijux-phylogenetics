@@ -15,6 +15,11 @@ from .geiger_continuous import (
     get_shared_geiger_continuous_fixture,
     list_shared_geiger_continuous_fixtures,
 )
+from .geiger_discrete import (
+    SharedGeigerDiscreteFixture,
+    get_shared_geiger_discrete_fixture,
+    list_shared_geiger_discrete_fixtures,
+)
 from .dna_alignments import (
     SharedDnaAlignmentFixture,
     get_shared_dna_alignment_fixture,
@@ -41,6 +46,7 @@ __all__ = [
     "SharedDistanceMatrixFixture",
     "SharedDnaAlignmentFixture",
     "SharedGeigerContinuousFixture",
+    "SharedGeigerDiscreteFixture",
     "SharedPhytoolsComparativeFixture",
     "SharedTraitTableFixture",
     "SharedTreeFixture",
@@ -49,6 +55,7 @@ __all__ = [
     "get_shared_distance_matrix_fixture",
     "get_shared_dna_alignment_fixture",
     "get_shared_geiger_continuous_fixture",
+    "get_shared_geiger_discrete_fixture",
     "get_shared_phytools_comparative_fixture",
     "get_shared_trait_table_fixture",
     "get_shared_tree_fixture",
@@ -57,6 +64,7 @@ __all__ = [
     "list_shared_distance_matrix_fixtures",
     "list_shared_dna_alignment_fixtures",
     "list_shared_geiger_continuous_fixtures",
+    "list_shared_geiger_discrete_fixtures",
     "list_shared_phytools_comparative_fixtures",
     "list_shared_trait_table_fixtures",
     "list_shared_tree_fixtures",
