@@ -775,10 +775,11 @@
         "overparameterized-fit",
         "known-truth-simulation",
         "known-transition-matrix-metadata",
+        "weak-phylogenetic-signal-review",
         "twenty-plus-taxa",
         "geiger-fitdiscrete"
       ],
-      "notes": "Twenty-four-taxon geiger discrete panel with ER, SYM, and ARD review surfaces plus one constant-state blocker and one six-state sparse overparameterization stress case for governed `fitDiscrete` parity."
+      "notes": "Twenty-four-taxon geiger discrete panel with ER, SYM, and ARD review surfaces plus one weak discrete lambda review, one constant-state blocker, and one six-state sparse overparameterization stress case for governed `fitDiscrete` parity."
     },
     {
       "fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
@@ -815,6 +816,7 @@
       "taxon_column": "taxon",
       "primary_trait_columns": [
         "er_binary_truth",
+        "er_binary_lambda_weak_signal",
         "sym_three_state_truth",
         "sym_four_state_truth",
         "sym_six_state_truth",
