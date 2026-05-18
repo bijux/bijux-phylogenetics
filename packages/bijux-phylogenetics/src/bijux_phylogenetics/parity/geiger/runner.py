@@ -613,6 +613,9 @@ def _build_bijux_discrete_case_payload(
         delta_bounds=(math.exp(-5.0), 3.0)
         if case.delta_bounds is None
         else case.delta_bounds,
+        early_burst_bounds=(-10.0, 10.0)
+        if case.early_burst_bounds is None
+        else case.early_burst_bounds,
     )
     input_audit = report.input_audit
     missing_value_taxa = sorted(
@@ -631,6 +634,7 @@ def _build_bijux_discrete_case_payload(
                 "lambda": "pagel-lambda",
                 "kappa": "pagel-kappa",
                 "delta": "pagel-delta",
+                "early-burst": "early-burst",
             }.get(transform_fit.transform_name, transform_fit.transform_name)
         ),
         "observed_state_count": len(input_audit.observed_states),

@@ -482,11 +482,16 @@ build_fitcontinuous_model_comparison_payload <- function(tree, trait_values, exc
 }
 
 build_fitdiscrete_payload <- function(tree, trait_values, excluded_taxa, missing_value_taxa, missing_from_traits, extra_trait_taxa, case_payload) {
+  bounds <- list()
+  if (identical(case_payload$discrete_transform_name, "EB") && !is.null(case_payload$early_burst_bounds)) {
+    bounds <- list(a = as.numeric(unlist(case_payload$early_burst_bounds)))
+  }
   fit <- geiger::fitDiscrete(
     phy = tree,
     dat = trait_values,
     model = case_payload$model_name,
-    transform = if (is.null(case_payload$discrete_transform_name)) NULL else case_payload$discrete_transform_name
+    transform = if (is.null(case_payload$discrete_transform_name)) NULL else case_payload$discrete_transform_name,
+    bounds = bounds
   )
   state_levels <- levels(trait_values)
   observed_state_count <- length(state_levels)
@@ -496,7 +501,13 @@ build_fitdiscrete_payload <- function(tree, trait_values, excluded_taxa, missing
     integer(1)
   )
   sparse_states <- names(state_counts[state_counts < 2])
-  transform_name <- if (is.null(case_payload$discrete_transform_name)) NULL else paste0("pagel-", case_payload$discrete_transform_name)
+  transform_name <- if (is.null(case_payload$discrete_transform_name)) {
+    NULL
+  } else if (identical(case_payload$discrete_transform_name, "EB")) {
+    "early-burst"
+  } else {
+    paste0("pagel-", case_payload$discrete_transform_name)
+  }
   parameter_name <- NULL
   parameter_value <- NULL
   if (identical(case_payload$discrete_transform_name, "lambda")) {
@@ -508,6 +519,9 @@ build_fitdiscrete_payload <- function(tree, trait_values, excluded_taxa, missing
   } else if (identical(case_payload$discrete_transform_name, "delta")) {
     parameter_name <- "delta"
     parameter_value <- as.numeric(fit$opt$delta)
+  } else if (identical(case_payload$discrete_transform_name, "EB")) {
+    parameter_name <- "a"
+    parameter_value <- as.numeric(fit$opt$a)
   }
   summary <- list(
     taxon_count = length(trait_values),
