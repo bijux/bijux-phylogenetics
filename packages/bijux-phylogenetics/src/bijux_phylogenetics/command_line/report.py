@@ -30,6 +30,7 @@ from bijux_phylogenetics.reports import (
     build_alignment_figure_package,
     write_supplementary_alignment_diagnostics_table,
     write_supplementary_ancestral_state_table,
+    write_supplementary_batch_summary_table,
     write_supplementary_clade_support_table,
     write_supplementary_comparative_model_table,
     write_supplementary_diversification_table,
@@ -416,6 +417,21 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the table write result as JSON."
     )
     _add_manifest_argument(report_supplementary_diversification_table)
+
+    report_supplementary_batch_summary_table = report_subparsers.add_parser(
+        "supplementary-batch-summary-table",
+        help="Write a supplementary batch summary table from a written workflow bundle.",
+    )
+    report_supplementary_batch_summary_table.add_argument(
+        "--workflow-bundle-root", required=True, type=Path
+    )
+    report_supplementary_batch_summary_table.add_argument(
+        "--out", required=True, type=Path
+    )
+    report_supplementary_batch_summary_table.add_argument(
+        "--json", action="store_true", help="Emit the table write result as JSON."
+    )
+    _add_manifest_argument(report_supplementary_batch_summary_table)
 
     report_workflow_validation = report_subparsers.add_parser(
         "workflow-validation",
@@ -1283,6 +1299,40 @@ def run_report_command(args: Any) -> int:
                         "sampling_metadata_complete": (
                             result.sampling_metadata_complete
                         ),
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
+        return 0
+
+    if args.report_command == "supplementary-batch-summary-table":
+        result = write_supplementary_batch_summary_table(
+            args.out,
+            workflow_bundle_root=args.workflow_bundle_root,
+        )
+        inputs = [args.workflow_bundle_root]
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=inputs,
+            outputs=[result.output_path],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=inputs,
+                    outputs=outputs,
+                    warnings=[],
+                    metrics={
+                        "row_count": result.row_count,
+                        "dataset_row_count": result.dataset_row_count,
+                        "variant_row_count": result.variant_row_count,
+                        "workflow_status": result.workflow_status,
+                        "warning_count": result.warning_count,
                     },
                     data=result,
                 ),
