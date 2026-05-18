@@ -1123,6 +1123,20 @@ def _diversification_methods_summary_warnings(
     return _deduplicate_text(warnings)
 
 
+def _diversification_report_limitations(
+    report: DiversificationMethodReport,
+) -> list[str]:
+    limitations = [
+        "diversification rate, gamma-statistic, and clade outlier summaries depend on the supplied ultrametric tree and should not be treated as direct proof of diversification mechanism",
+        "model-ranking differences do not by themselves establish a biological process without checking sampling completeness, model adequacy, and tree uncertainty",
+        *report.validation.warnings,
+        *report.gamma_statistic.assumptions,
+        *report.primary_estimate.assumptions,
+        *_diversification_methods_summary_warnings(report),
+    ]
+    return _deduplicate_text(limitations)
+
+
 def build_diversification_methods_summary_text(
     report: DiversificationMethodReport,
 ) -> str:
@@ -1441,6 +1455,8 @@ def render_diversification_report(
                 json.dumps(report.trait_report, default=str, indent=2),
             )
         )
+    limitations = _diversification_report_limitations(report)
+    sections.append(("limitations", json.dumps(limitations, indent=2)))
     title = "Bijux Diversification Report"
     manifest = {
         "report_kind": "diversification",
@@ -1449,6 +1465,7 @@ def render_diversification_report(
         "traits_path": None if traits_path is None else str(traits_path),
         "trait": trait,
         "sections": [name for name, _value in sections],
+        "limitations": limitations,
         "outputs": {
             "methods_summary_path": None
             if methods_summary is None

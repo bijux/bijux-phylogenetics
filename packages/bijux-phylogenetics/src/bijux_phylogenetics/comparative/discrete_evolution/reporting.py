@@ -71,6 +71,19 @@ def _build_discrete_evolution_narrative(
     )
 
 
+def _report_limitations(
+    narrative: DiscreteEvolutionNarrative,
+    interpretation: BiogeographicInterpretationReport,
+) -> list[str]:
+    limitations = [
+        narrative.interpretation_boundary,
+        *narrative.caveats,
+        *interpretation.readiness_blockers,
+        *interpretation.caveats,
+    ]
+    return sorted(dict.fromkeys(item.strip() for item in limitations if item.strip()))
+
+
 
 def build_biogeographic_interpretation_report(
     tree_path: Path,
@@ -538,6 +551,7 @@ def render_discrete_state_evolution_report(
         state_ordering=state_ordering,
         ordered_states=ordered_states,
     )
+    limitations = _report_limitations(narrative, interpretation)
     sections = [
         (
             "discrete-state-summary",
@@ -555,6 +569,7 @@ def render_discrete_state_evolution_report(
             "discrete-state-render",
             json.dumps(asdict(render_result), default=str, indent=2, sort_keys=True),
         ),
+        ("limitations", json.dumps(limitations, indent=2, sort_keys=True)),
     ]
     if comparison is not None:
         sections.append(
@@ -575,6 +590,7 @@ def render_discrete_state_evolution_report(
         "state_ordering": report.state_ordering,
         "ordered_states": report.ordered_states,
         "caveat_count": len(narrative.caveats),
+        "limitations": limitations,
         "interpretation_sections": [
             "computed_results",
             "caveats",

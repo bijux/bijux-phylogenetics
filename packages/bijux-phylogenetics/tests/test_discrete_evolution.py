@@ -367,13 +367,17 @@ def test_write_node_probability_table_and_render_report_outputs_files(
     assert "state_probabilities" in table_path.read_text(encoding="utf-8")
     assert render_result.rendered_internal_annotation_count == 3
     assert render_result.rendered_internal_pie_count == 3
-    assert "discrete-state-evolution" in html_path.read_text(encoding="utf-8")
+    html = html_path.read_text(encoding="utf-8")
+    assert "discrete-state-evolution" in html
+    assert "limitations" in html
     assert report_result.report_kind == "discrete-state-evolution"
     assert (
         report_result.machine_manifest["likelihood_method"]
         == "deterministic-node-probability"
     )
     assert "biogeographic-interpretation" in report_result.machine_manifest["sections"]
+    assert "limitations" in report_result.machine_manifest["sections"]
+    assert report_result.machine_manifest["limitations"]
 
 
 def test_build_biogeographic_interpretation_report_separates_results_from_guidance() -> (

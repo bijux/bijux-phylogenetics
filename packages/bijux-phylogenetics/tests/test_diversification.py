@@ -320,8 +320,12 @@ def test_write_diversification_tables_and_report_outputs_files(tmp_path: Path) -
     assert "Diversification Analysis Methods Summary" in methods_summary_path.read_text(
         encoding="utf-8"
     )
-    assert "methods-summary-text" in html_path.read_text(encoding="utf-8")
-    assert "diversification-model-comparison" in html_path.read_text(encoding="utf-8")
-    assert "diversification-gamma-statistic" in html_path.read_text(encoding="utf-8")
+    html = html_path.read_text(encoding="utf-8")
+    assert "methods-summary-text" in html
+    assert "diversification-model-comparison" in html
+    assert "diversification-gamma-statistic" in html
+    assert "limitations" in html
     assert report.report_kind == "diversification"
     assert report.methods_summary_path == methods_summary_path
+    assert "limitations" in report.machine_manifest["sections"]
+    assert report.machine_manifest["limitations"]
