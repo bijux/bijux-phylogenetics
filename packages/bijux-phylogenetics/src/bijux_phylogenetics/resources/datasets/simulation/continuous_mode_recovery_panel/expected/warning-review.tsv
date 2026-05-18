@@ -1,14 +1,9 @@
-case_id	fitted_model	kind	message
-brownian-sigma-recovery	ornstein-uhlenbeck	flat_likelihood	OU likelihood surface is shallow across alpha values, so model choice may be unstable
-brownian-sigma-recovery	early-burst	boundary_rate_change	the supported early-burst rate-change interval reaches a search boundary, so the fitted rate-change parameter is weakly identified
-brownian-sigma-recovery	early-burst	brownian_like_rate_change	the early-burst fit remains close to the zero-change boundary and Brownian AICc remains competitive, so time-varying rate claims are weak
-brownian-sigma-recovery	early-burst	comparison_not_preferred	Brownian or OU remains preferred over early-burst by AICc on the analyzed taxon set
-ou-parameter-recovery	ornstein-uhlenbeck	flat_likelihood	OU likelihood surface is shallow across alpha values, so model choice may be unstable
-ou-parameter-recovery	early-burst	boundary_rate_change	the supported early-burst rate-change interval reaches a search boundary, so the fitted rate-change parameter is weakly identified
-ou-parameter-recovery	early-burst	brownian_like_rate_change	the early-burst fit remains close to the zero-change boundary and Brownian AICc remains competitive, so time-varying rate claims are weak
-early-burst-rate-recovery	ornstein-uhlenbeck	flat_likelihood	OU likelihood surface is shallow across alpha values, so model choice may be unstable
-early-burst-rate-recovery	early-burst	flat_likelihood_profile	the early-burst likelihood profile stays broad across much of the bounded search range, so rate-change estimates are weakly identified
-weak-ou-identifiability	ornstein-uhlenbeck	flat_likelihood	OU likelihood surface is shallow across alpha values, so model choice may be unstable
-weak-ou-identifiability	early-burst	boundary_rate_change	the supported early-burst rate-change interval reaches a search boundary, so the fitted rate-change parameter is weakly identified
-weak-ou-identifiability	early-burst	brownian_like_rate_change	the early-burst fit remains close to the zero-change boundary and Brownian AICc remains competitive, so time-varying rate claims are weak
-weak-ou-identifiability	early-burst	comparison_not_preferred	Brownian or OU remains preferred over early-burst by AICc on the analyzed taxon set
+case_id	recovery_engine	fitted_model	kind	message
+ou-parameter-recovery	bijux	ornstein-uhlenbeck	flat_likelihood	OU likelihood surface is shallow across alpha values, so model choice may be unstable
+ou-parameter-recovery	bijux	ornstein-uhlenbeck	weak_pull_to_optimum	best-supported OU alpha is weak and may be difficult to distinguish from Brownian motion
+early-burst-rate-recovery	bijux	early-burst	flat_likelihood_profile	early-burst likelihood stays shallow across rate-change values, so model choice may be unstable
+weak-ou-identifiability	bijux	ornstein-uhlenbeck	flat_likelihood	OU likelihood surface is shallow across alpha values, so model choice may be unstable
+weak-ou-identifiability	bijux	ornstein-uhlenbeck	weak_pull_to_optimum	best-supported OU alpha is weak and may be difficult to distinguish from Brownian motion
+lambda-transformed-branch-review	bijux	pagel-lambda	flat_likelihood	Pagel-lambda likelihood stays shallow across the bounded search, so the covariance scaling may be unstable
+kappa-transformed-branch-review	bijux	pagel-kappa	flat_likelihood	Pagel-kappa likelihood stays shallow across the bounded search, so branch-length transformation support may be unstable
+delta-transformed-branch-review	bijux	pagel-delta	flat_likelihood	Pagel-delta likelihood stays shallow across the bounded search, so temporal concentration support may be unstable
