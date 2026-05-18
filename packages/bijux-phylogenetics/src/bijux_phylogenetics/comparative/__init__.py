@@ -181,7 +181,9 @@ from .evolutionary_modes import (
     rescale_tree_early_burst,
     rescale_tree_ornstein_uhlenbeck,
     rescale_tree_pagel_delta,
+    rescale_tree_pagel_lambda,
     rescale_tree_pagel_kappa,
+    rescale_tree_white_noise,
     transform_tree_for_evolutionary_mode,
 )
 from .independent_contrasts import (
@@ -710,7 +712,9 @@ __all__ = [
     "rescale_tree_early_burst",
     "rescale_tree_ornstein_uhlenbeck",
     "rescale_tree_pagel_delta",
+    "rescale_tree_pagel_lambda",
     "rescale_tree_pagel_kappa",
+    "rescale_tree_white_noise",
     "transform_tree_for_evolutionary_mode",
     "run_comparative_sensitivity_analysis",
     "run_pgls_multiple_testing",
