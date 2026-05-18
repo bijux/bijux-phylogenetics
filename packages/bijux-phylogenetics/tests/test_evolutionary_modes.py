@@ -13,12 +13,14 @@ from bijux_phylogenetics.comparative import (
     fit_continuous_evolutionary_mode,
     rescale_tree_early_burst,
     rescale_tree_ornstein_uhlenbeck,
+    rescale_tree_pagel_kappa,
 )
 from bijux_phylogenetics.fixtures import get_shared_geiger_continuous_fixture
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures"
 EXAMPLE_TREE = FIXTURE_ROOT / "trees" / "example_tree.nwk"
+EXAMPLE_TREE_NEGATIVE = FIXTURE_ROOT / "trees" / "example_tree_negative_length.nwk"
 EXAMPLE_TRAITS = FIXTURE_ROOT / "metadata" / "example_traits_comparative.tsv"
 
 
@@ -58,9 +60,32 @@ def test_rescale_tree_early_burst_supports_negative_rate_change() -> None:
     assert report.transformed_total_branch_length > 0.0
 
 
+def test_rescale_tree_pagel_kappa_reports_deterministic_branch_lengths() -> None:
+    report = rescale_tree_pagel_kappa(EXAMPLE_TREE, kappa=0.5)
+
+    assert report.mode == "pagel-kappa"
+    assert report.parameter_name == "kappa"
+    assert report.tip_count == 4
+    assert math.isclose(report.parameter_value, 0.5)
+    assert math.isclose(report.transformed_total_branch_length, 2.290324084550388)
+    assert report.branch_rows[0].node == "A"
+    assert math.isclose(report.branch_rows[0].original_branch_length, 0.1)
+    assert math.isclose(
+        report.branch_rows[0].transformed_branch_length, 0.316227766016838
+    )
+
+
 def test_rescale_tree_ornstein_uhlenbeck_rejects_negative_alpha() -> None:
     with pytest.raises(ComparativeMethodError, match="OU alpha must be non-negative"):
         rescale_tree_ornstein_uhlenbeck(EXAMPLE_TREE, alpha=-0.5)
+
+
+def test_rescale_tree_pagel_kappa_rejects_negative_branch_lengths() -> None:
+    with pytest.raises(
+        ComparativeMethodError,
+        match="Pagel kappa cannot transform negative branch lengths",
+    ):
+        rescale_tree_pagel_kappa(EXAMPLE_TREE_NEGATIVE, kappa=0.5)
 
 
 def test_fit_continuous_evolutionary_mode_supports_early_burst() -> None:
@@ -83,6 +108,60 @@ def test_fit_continuous_evolutionary_mode_supports_early_burst() -> None:
         "boundary_rate_change",
         "flat_likelihood_profile",
         "brownian_like_rate_change",
+    ]
+
+
+def test_fit_continuous_evolutionary_mode_supports_pagel_kappa_strong_signal() -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="pagel-kappa",
+        taxon_column=fixture.taxon_column,
+    )
+
+    assert fit.mode == "pagel-kappa"
+    assert fit.parameter_name == "kappa"
+    assert fit.parameter_value is not None
+    assert 1.0 < fit.parameter_value < 1.5
+    assert fit.optimizer_diagnostics is not None
+    assert fit.optimizer_diagnostics.hit_lower_boundary is False
+    assert fit.optimizer_diagnostics.hit_upper_boundary is False
+    assert fit.aicc >= fit.aic
+    assert "branch-length power transformation" in fit.assumptions[0]
+    assert [warning.kind for warning in fit.identifiability_warnings] == [
+        "flat_likelihood"
+    ]
+
+
+def test_fit_continuous_evolutionary_mode_supports_pagel_kappa_weak_signal() -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_white_noise_twenty_four_taxa"
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="pagel-kappa",
+        taxon_column=fixture.taxon_column,
+    )
+
+    assert fit.mode == "pagel-kappa"
+    assert fit.parameter_name == "kappa"
+    assert fit.parameter_value is not None
+    assert math.isclose(fit.parameter_value, 0.0, abs_tol=1e-12)
+    assert fit.optimizer_diagnostics is not None
+    assert fit.optimizer_diagnostics.hit_lower_boundary is True
+    assert fit.optimizer_diagnostics.hit_upper_boundary is False
+    assert [warning.kind for warning in fit.identifiability_warnings] == [
+        "boundary_kappa",
+        "flat_likelihood",
+        "punctuational_limit",
     ]
 
 
