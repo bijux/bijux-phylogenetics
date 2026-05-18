@@ -331,8 +331,9 @@ bijux-phylogenetics discrete-evolution density-maps artifacts/geography-maps.jso
 bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait region --compare-model symmetric --out artifacts/geography-report.html
 bijux-phylogenetics diversification gamma-stat tree.nwk --metadata sampling.tsv --out artifacts/diversification-gamma-statistic.tsv --json
 bijux-phylogenetics diversification estimate tree.nwk --metadata sampling.tsv --model birth-death --json
+bijux-phylogenetics diversification methods-summary tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-methods-summary.md --json
 bijux-phylogenetics diversification package tree.nwk --metadata sampling.tsv --out-dir artifacts/diversification-figures --json
-bijux-phylogenetics diversification report tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-report.html
+bijux-phylogenetics diversification report tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-report.html --methods-summary-out artifacts/diversification-methods-summary.md --json
 bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --mode linsi --json
 bijux-phylogenetics adapter align coding-cds.fasta --out coding.aligned.fasta --mode linsi --codon-aware --json
 bijux-phylogenetics adapter trim aligned.fasta --out trimmed.fasta --mode automated1 --json
