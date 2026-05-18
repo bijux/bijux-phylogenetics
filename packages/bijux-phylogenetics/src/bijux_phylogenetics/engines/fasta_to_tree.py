@@ -305,6 +305,7 @@ def _final_output_paths(out_dir: Path, prefix: str) -> dict[str, Path]:
         "trimmed_alignment": root.with_suffix(".trimmed.aln"),
         "tree": root.with_suffix(".tree"),
         "log": root.with_suffix(".log"),
+        "methods_summary": root.with_suffix(".methods-summary.md"),
         "model_table": root.with_suffix(".model.tsv"),
         "support_table": root.with_suffix(".support.tsv"),
         "manifest": root.with_suffix(".manifest.json"),
@@ -783,6 +784,12 @@ def run_fasta_to_tree_workflow(
         round((ended_at - started_at).total_seconds(), 6),
     )
     write_fasta_to_tree_log(final_outputs["log"], report, root_dir=out_dir)
+    from bijux_phylogenetics.reports import write_tree_inference_methods_summary_text
+
+    write_tree_inference_methods_summary_text(
+        final_outputs["methods_summary"],
+        workflow_report=report,
+    )
     validation_output_checksums = (
         {}
         if prepared_input_path == input_path
@@ -886,6 +893,7 @@ def run_fasta_to_tree_workflow(
     report_output_checksums = build_file_checksums(
         [
             final_outputs["log"],
+            final_outputs["methods_summary"],
             final_outputs["model_table"],
             final_outputs["support_table"],
         ]
@@ -931,6 +939,7 @@ def run_fasta_to_tree_workflow(
             final_outputs["trimmed_alignment"],
             final_outputs["tree"],
             final_outputs["log"],
+            final_outputs["methods_summary"],
             final_outputs["model_table"],
             final_outputs["support_table"],
         ]
@@ -951,6 +960,7 @@ def run_fasta_to_tree_workflow(
                 final_outputs["trimmed_alignment"],
                 final_outputs["tree"],
                 final_outputs["log"],
+                final_outputs["methods_summary"],
                 final_outputs["model_table"],
                 final_outputs["support_table"],
                 report.manifest_path,
