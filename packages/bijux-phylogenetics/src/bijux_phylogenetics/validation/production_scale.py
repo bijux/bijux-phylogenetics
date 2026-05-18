@@ -191,7 +191,9 @@ def build_production_scale_readiness_report(
     scale_definitions: list[ProductionScaleThreshold] | None = None,
 ) -> ProductionScaleReadinessReport:
     """Classify which owned workflows are currently supported at small, medium, large, and HPC scale."""
-    thresholds = list(scale_definitions or _DEFAULT_SCALE_DEFINITIONS)
+    thresholds = list(
+        _DEFAULT_SCALE_DEFINITIONS if scale_definitions is None else scale_definitions
+    )
     if not thresholds:
         raise ValueError("scale_definitions must contain at least one scale threshold")
     practical_limits = benchmark_workflow_practical_limits(
