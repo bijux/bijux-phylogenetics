@@ -9,11 +9,13 @@ from bijux_phylogenetics.benchmark import (
     BenchmarkObservation,
     benchmark_alignment_site_scaling,
     benchmark_large_alignment_scaling,
+    benchmark_large_tree_set_scaling,
     benchmark_large_tree_scaling,
     benchmark_tree_comparison,
     benchmark_tree_set_consensus,
     benchmark_tree_validation,
     LargeAlignmentScalingWorkflowBenchmark,
+    LargeTreeSetScalingWorkflowBenchmark,
     LargeTreeScalingWorkflowBenchmark,
 )
 from bijux_phylogenetics.core.dataset import DatasetAuditReport, audit_dataset_inputs
@@ -168,6 +170,15 @@ class LargeAlignmentScalingBenchmarkDashboard:
 
     goal_id: int
     workflows: list[LargeAlignmentScalingWorkflowBenchmark]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class LargeTreeSetScalingBenchmarkDashboard:
+    """Goal 223 scaling summary for large-tree-set reviewer workflows."""
+
+    goal_id: int
+    workflows: list[LargeTreeSetScalingWorkflowBenchmark]
     limitations: list[str]
 
 
@@ -807,6 +818,23 @@ def build_large_alignment_scaling_benchmark_dashboard(
     )
     return LargeAlignmentScalingBenchmarkDashboard(
         goal_id=222,
+        workflows=report.workflows,
+        limitations=report.limitations,
+    )
+
+
+def build_large_tree_set_scaling_benchmark_dashboard(
+    *,
+    replicates: int = 1,
+    size_classes: list[tuple[str, int, int]] | None = None,
+) -> LargeTreeSetScalingBenchmarkDashboard:
+    """Summarize realistic large-tree-set scaling across posterior review workflows."""
+    report = benchmark_large_tree_set_scaling(
+        replicates=replicates,
+        size_classes=size_classes,
+    )
+    return LargeTreeSetScalingBenchmarkDashboard(
+        goal_id=223,
         workflows=report.workflows,
         limitations=report.limitations,
     )
