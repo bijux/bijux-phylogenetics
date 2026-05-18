@@ -441,6 +441,12 @@ variant to its array index, `slurm-array-strategy.json` carries the structured
 partition contract, and `workflow/slurm-arrays/*.sbatch` contains executable
 per-partition scripts that call the repository CLI with one selected variant
 per array task.
+The bundle also writes one resumable workflow-status surface:
+`slurm-job-status.tsv` classifies each planned job as completed, failed,
+pending, or stale from the execution record, task logs, running marker, and
+durable variant outputs; `slurm-partition-status.tsv` rolls those counts up by
+array partition; and `slurm-workflow-status.json` carries the same summary for
+machine review.
 Its reviewer-facing HTML report is now intentionally compact: it surfaces one
 summary card set plus explicit links to the governed TSV and JSON ledgers
 instead of embedding those tables directly, and the bundle now includes

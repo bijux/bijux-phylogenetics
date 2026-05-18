@@ -84,6 +84,8 @@ The governed expected bundle now also includes:
 
 - `parallel-execution-summary.tsv`: one stable ledger of per-variant execution
   status, execution mode, and task log path
+- `rabies-method-sensitivity-panel.run.json`: one workflow execution record
+  over selected variants, task status, execution mode, and worker count
 - `rabies-method-sensitivity.manifest.json`: one workflow manifest describing
   the parallel batch surface and its reviewer-facing outputs
 - `slurm-job-plan.tsv`: one Slurm-ready per-variant job ledger with estimated
@@ -101,6 +103,12 @@ The governed expected bundle now also includes:
   array partition and array index
 - `slurm-array-strategy.json`: one machine-readable export of the array
   partitioning contract
+- `slurm-job-status.tsv`: one per-job ledger classifying planned jobs as
+  completed, failed, pending, or stale from the real execution evidence
+- `slurm-partition-status.tsv`: one per-partition rollup of job-state counts
+  for resumable batch review
+- `slurm-workflow-status.json`: one machine-readable workflow-wide summary of
+  completed, failed, pending, and stale job counts
 - `slurm-arrays/*.sbatch`: one executable per-partition array script that runs
   the governed CLI with one selected variant per Slurm array task
 - `reproducibility-checks.tsv`: one bundle-level audit ledger proving the
