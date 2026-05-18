@@ -909,6 +909,10 @@ def run_demo_command(args: Any) -> int:
                 result.workflow_bundle.slurm_array_strategy_path,
                 result.workflow_bundle.slurm_job_evidence_index_path,
                 result.workflow_bundle.slurm_job_evidence_summary_path,
+                result.workflow_bundle.slurm_merge_checks_path,
+                result.workflow_bundle.slurm_merge_variants_path,
+                result.workflow_bundle.slurm_merge_summary_path,
+                result.workflow_bundle.slurm_merge_report_path,
                 result.workflow_bundle.slurm_output_freshness_path,
                 result.workflow_bundle.slurm_output_freshness_checks_path,
                 result.workflow_bundle.slurm_output_freshness_summary_path,
@@ -1001,6 +1005,18 @@ def run_demo_command(args: Any) -> int:
                         ),
                         "slurm_job_evidence_total_output_byte_count": (
                             result.workflow_bundle.slurm_job_evidence_total_output_byte_count
+                        ),
+                        "slurm_merge_status": (
+                            result.workflow_bundle.slurm_merge_status
+                        ),
+                        "slurm_merge_ready": (
+                            result.workflow_bundle.slurm_merge_ready
+                        ),
+                        "slurm_mergeable_variant_count": (
+                            result.workflow_bundle.slurm_mergeable_variant_count
+                        ),
+                        "slurm_merge_failed_check_count": (
+                            result.workflow_bundle.slurm_merge_failed_check_count
                         ),
                         "slurm_output_freshness_check_count": (
                             result.workflow_bundle.slurm_output_freshness_check_count
