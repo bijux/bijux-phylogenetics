@@ -1,5 +1,10 @@
 """High-level report services."""
 
+from .alignment_package import (
+    AlignmentFigureAudit,
+    AlignmentFigurePackageResult,
+    build_alignment_figure_package,
+)
 from .tree_package import (
     TreeBranchStatisticsRow,
     TreeReportPackageResult,
@@ -12,9 +17,12 @@ from .tree_package import (
 )
 
 __all__ = [
+    "AlignmentFigureAudit",
+    "AlignmentFigurePackageResult",
     "TreeBranchStatisticsRow",
     "TreeReportPackageResult",
     "TreeSupportRow",
+    "build_alignment_figure_package",
     "build_tree_report_package",
     "summarize_tree_branch_statistics",
     "summarize_tree_support",
