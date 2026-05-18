@@ -1096,6 +1096,7 @@ def run_report_command(args: Any) -> int:
                 result.review_path,
                 result.manifest_path,
                 result.reproducibility_manifest_path,
+                result.reviewer_audit_checklist_path,
             ],
         )
         if args.json:
@@ -1113,6 +1114,9 @@ def run_report_command(args: Any) -> int:
                         "heatmap_bin_count": result.audit.heatmap_bin_count,
                         "plotted_window_count": result.audit.plotted_window_count,
                         "plotted_sequence_count": result.audit.plotted_sequence_count,
+                        "reviewer_audit_item_count": len(
+                            result.reviewer_audit_checklist.items
+                        ),
                     },
                     data=result,
                 ),

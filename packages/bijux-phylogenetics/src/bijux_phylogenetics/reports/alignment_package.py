@@ -23,6 +23,11 @@ from bijux_phylogenetics.io.fasta import (
 from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
 )
+from bijux_phylogenetics.reports.reviewer_audit import (
+    build_reviewer_audit_checklist,
+    ReviewerAuditChecklist,
+    write_reviewer_audit_checklist,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -96,6 +101,7 @@ class AlignmentFigurePackageResult:
     review_path: Path
     manifest_path: Path
     reproducibility_manifest_path: Path
+    reviewer_audit_checklist_path: Path
     summary: AlignmentSummary
     forensic: AlignmentForensicReport
     windows: list[AlignmentWindowSummary]
@@ -103,6 +109,7 @@ class AlignmentFigurePackageResult:
     legend_entries: list[AlignmentFigureLegendEntry]
     caption_draft: AlignmentFigureCaptionDraft
     audit: AlignmentFigureAudit
+    reviewer_audit_checklist: ReviewerAuditChecklist
     machine_manifest: dict[str, object]
 
 
@@ -776,7 +783,9 @@ def _build_review_html(
     ranking_table_path: Path,
     legend_path: Path,
     caption_path: Path,
+    reviewer_audit_checklist_path: Path,
     audit: AlignmentFigureAudit,
+    reviewer_audit_checklist: ReviewerAuditChecklist,
 ) -> str:
     figures = {
         "heatmap": heatmap_figure_path.read_text(encoding="utf-8"),
@@ -800,6 +809,18 @@ def _build_review_html(
     )
     limitation_items = "".join(
         f"<li>{escape(item)}</li>" for item in audit.limitations
+    )
+    checklist_rows = "".join(
+        "<tr><td>"
+        + escape(item.section)
+        + "</td><td>"
+        + escape(item.status)
+        + "</td><td>"
+        + escape(item.summary)
+        + "</td><td>"
+        + escape("; ".join(item.evidence))
+        + "</td></tr>"
+        for item in reviewer_audit_checklist.items
     )
     return "\n".join(
         [
@@ -831,6 +852,12 @@ def _build_review_html(
             f"    <table><tbody>{audit_rows}</tbody></table>",
             "    <ul>" + limitation_items + "</ul>",
             "  </section>",
+            '  <section class="panel" style="margin-top: 20px;">',
+            "    <h2>Reviewer Audit Checklist</h2>",
+            "    <table><thead><tr><th>section</th><th>status</th><th>summary</th><th>evidence</th></tr></thead><tbody>"
+            + checklist_rows
+            + "</tbody></table>",
+            "  </section>",
             '  <section class="grid" style="margin-top: 20px;">',
             '    <section class="panel"><h2>Missingness Heatmap</h2><div class="figure-shell">' + figures["heatmap"] + "</div></section>",
             '    <section class="panel"><h2>Site-Quality Summary</h2><div class="figure-shell">' + figures["site_summary"] + "</div></section>",
@@ -844,6 +871,7 @@ def _build_review_html(
             f'      <li><a href="{escape(ranking_table_path.name)}">{escape(ranking_table_path.name)}</a></li>',
             f'      <li><a href="{escape(legend_path.name)}">{escape(legend_path.name)}</a></li>',
             f'      <li><a href="{escape(caption_path.name)}">{escape(caption_path.name)}</a></li>',
+            f'      <li><a href="{escape(reviewer_audit_checklist_path.name)}">{escape(reviewer_audit_checklist_path.name)}</a></li>',
             "    </ul>",
             "  </section>",
             "</main>",
@@ -875,6 +903,7 @@ def build_alignment_figure_package(
     review_path = out_dir / "alignment-quality-review.html"
     manifest_path = out_dir / "alignment-quality-package.manifest.json"
     reproducibility_manifest_path = out_dir / "figure-reproducibility.manifest.json"
+    reviewer_audit_checklist_path = out_dir / "reviewer-audit-checklist.tsv"
 
     summary = summarise_fasta(alignment_path)
     records = load_fasta_alignment(alignment_path)
@@ -928,20 +957,6 @@ def build_alignment_figure_package(
     )
     caption_draft = _build_caption_draft(summary=summary, audit=audit)
     _write_caption(caption_path, caption_draft)
-    review_path.write_text(
-        _build_review_html(
-            heatmap_figure_path=heatmap_figure_path,
-            site_summary_figure_path=site_summary_figure_path,
-            sequence_panel_figure_path=sequence_panel_figure_path,
-            heatmap_table_path=heatmap_table_path,
-            window_table_path=window_table_path,
-            ranking_table_path=ranking_table_path,
-            legend_path=legend_path,
-            caption_path=caption_path,
-            audit=audit,
-        ),
-        encoding="utf-8",
-    )
     artifact_paths = [
         heatmap_figure_path,
         site_summary_figure_path,
@@ -953,6 +968,55 @@ def build_alignment_figure_package(
         caption_path,
         review_path,
     ]
+    existing_artifact_paths = artifact_paths[:-1]
+    pre_review_manifest = {
+        "report_kind": "alignment_quality_figure_package",
+        "input_path": str(alignment_path),
+        "input_checksum": _checksum(alignment_path),
+        "output_paths": [str(path) for path in artifact_paths],
+        "output_checksums": {
+            str(path): _checksum(path) for path in existing_artifact_paths
+        },
+        "reproducibility_manifest_path": str(reproducibility_manifest_path),
+        "settings": {
+            "maximum_site_bins": maximum_site_bins,
+            "window_size": window_size,
+            "step_size": step_size,
+            "panel_row_limit": panel_row_limit,
+        },
+        "metrics": {
+            "sequence_count": summary.sequence_count,
+            "alignment_length": summary.alignment_length,
+            "quality_score": forensic.quality.quality_score,
+            "publication_ready": audit.publication_ready,
+            "heatmap_row_count": audit.heatmap_row_count,
+            "heatmap_bin_count": audit.heatmap_bin_count,
+            "plotted_window_count": audit.plotted_window_count,
+            "plotted_sequence_count": audit.plotted_sequence_count,
+        },
+        "alignment_summary": _json_ready(asdict(summary)),
+        "alignment_quality": _json_ready(asdict(forensic.quality)),
+        "alignment_readiness": _json_ready(asdict(forensic.readiness)),
+        "alignment_low_information": _json_ready(asdict(forensic.low_information)),
+        "audit": _json_ready(asdict(audit)),
+    }
+    reviewer_audit_checklist = build_reviewer_audit_checklist(pre_review_manifest)
+    review_path.write_text(
+        _build_review_html(
+            heatmap_figure_path=heatmap_figure_path,
+            site_summary_figure_path=site_summary_figure_path,
+            sequence_panel_figure_path=sequence_panel_figure_path,
+            heatmap_table_path=heatmap_table_path,
+            window_table_path=window_table_path,
+            ranking_table_path=ranking_table_path,
+            legend_path=legend_path,
+            caption_path=caption_path,
+            reviewer_audit_checklist_path=reviewer_audit_checklist_path,
+            audit=audit,
+            reviewer_audit_checklist=reviewer_audit_checklist,
+        ),
+        encoding="utf-8",
+    )
     reproducibility_manifest = write_figure_reproducibility_manifest(
         reproducibility_manifest_path,
         report_kind="alignment_quality_figure_package",
@@ -1019,6 +1083,36 @@ def build_alignment_figure_package(
         "alignment_low_information": _json_ready(asdict(forensic.low_information)),
         "audit": _json_ready(asdict(audit)),
     }
+    reviewer_audit_checklist = write_reviewer_audit_checklist(
+        reviewer_audit_checklist_path,
+        machine_manifest,
+    ).checklist
+    machine_manifest["output_paths"].append(str(reviewer_audit_checklist_path))
+    machine_manifest["output_checksums"][str(reviewer_audit_checklist_path)] = _checksum(
+        reviewer_audit_checklist_path
+    )
+    machine_manifest["reviewer_audit_checklist_path"] = str(
+        reviewer_audit_checklist_path
+    )
+    machine_manifest["reviewer_audit_checklist"] = _json_ready(
+        asdict(reviewer_audit_checklist)
+    )
+    review_path.write_text(
+        _build_review_html(
+            heatmap_figure_path=heatmap_figure_path,
+            site_summary_figure_path=site_summary_figure_path,
+            sequence_panel_figure_path=sequence_panel_figure_path,
+            heatmap_table_path=heatmap_table_path,
+            window_table_path=window_table_path,
+            ranking_table_path=ranking_table_path,
+            legend_path=legend_path,
+            caption_path=caption_path,
+            reviewer_audit_checklist_path=reviewer_audit_checklist_path,
+            audit=audit,
+            reviewer_audit_checklist=reviewer_audit_checklist,
+        ),
+        encoding="utf-8",
+    )
     manifest_path.write_text(
         json.dumps(machine_manifest, default=str, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -1036,6 +1130,7 @@ def build_alignment_figure_package(
         review_path=review_path,
         manifest_path=manifest_path,
         reproducibility_manifest_path=reproducibility_manifest_path,
+        reviewer_audit_checklist_path=reviewer_audit_checklist_path,
         summary=summary,
         forensic=forensic,
         windows=windows,
@@ -1043,5 +1138,6 @@ def build_alignment_figure_package(
         legend_entries=legend_entries,
         caption_draft=caption_draft,
         audit=audit,
+        reviewer_audit_checklist=reviewer_audit_checklist,
         machine_manifest=machine_manifest,
     )
