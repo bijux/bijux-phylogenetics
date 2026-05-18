@@ -610,12 +610,18 @@ def validate_figure_reference_fixtures(
                 "rendered_support_count": 2,
                 "table_consistent": True,
                 "scale_bar_valid": True,
+                "legend_complete": True,
+                "caption_ready": True,
+                "legible": True,
             },
             observed={
                 "support_validated": valid_figure.audit.support_audit.validated,
                 "rendered_support_count": valid_figure.render.rendered_support_count,
                 "table_consistent": valid_figure.audit.table_consistency.consistent,
                 "scale_bar_valid": valid_figure.audit.scale_bar_valid,
+                "legend_complete": valid_figure.audit.legend_audit.complete,
+                "caption_ready": valid_figure.caption_draft.caption_ready,
+                "legible": valid_figure.legibility_audit.legible,
             },
         ),
         _check(
@@ -627,6 +633,7 @@ def validate_figure_reference_fixtures(
                 "support_validated": False,
                 "rendered_support_count": 0,
                 "support_warning_count": 4,
+                "legend_complete": True,
             },
             observed={
                 "support_validated": invalid_figure.audit.support_audit.validated,
@@ -634,6 +641,7 @@ def validate_figure_reference_fixtures(
                 "support_warning_count": len(
                     invalid_figure.audit.support_audit.warnings
                 ),
+                "legend_complete": invalid_figure.audit.legend_audit.complete,
             },
         ),
     ]
