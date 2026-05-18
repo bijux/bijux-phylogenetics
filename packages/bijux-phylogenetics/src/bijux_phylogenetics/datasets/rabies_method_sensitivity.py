@@ -78,6 +78,14 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_status import 
     write_rabies_method_sensitivity_slurm_partition_status_table,
     write_rabies_method_sensitivity_slurm_status_json,
 )
+from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_storage import (
+    RabiesMethodSensitivitySlurmStorageReport,
+    build_rabies_method_sensitivity_slurm_storage_report,
+    write_rabies_method_sensitivity_slurm_storage_categories_table,
+    write_rabies_method_sensitivity_slurm_storage_html_report,
+    write_rabies_method_sensitivity_slurm_storage_summary_json,
+    write_rabies_method_sensitivity_slurm_storage_variants_table,
+)
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError, PhylogeneticsError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment, validate_fasta_input
 from bijux_phylogenetics.io.newick import write_newick
@@ -271,6 +279,10 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     slurm_job_evidence_root: Path
     slurm_job_evidence_index_path: Path
     slurm_job_evidence_summary_path: Path
+    slurm_storage_categories_path: Path
+    slurm_storage_variants_path: Path
+    slurm_storage_summary_path: Path
+    slurm_storage_report_path: Path
     slurm_merge_checks_path: Path
     slurm_merge_variants_path: Path
     slurm_merge_summary_path: Path
@@ -287,6 +299,13 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     slurm_job_evidence_file_count: int
     slurm_job_evidence_total_runtime_seconds: float
     slurm_job_evidence_total_output_byte_count: int
+    slurm_storage_total_estimated_mib: int
+    slurm_storage_output_byte_count: int
+    slurm_storage_log_byte_count: int
+    slurm_storage_tree_byte_count: int
+    slurm_storage_posterior_sample_byte_count: int
+    slurm_storage_report_byte_count: int
+    slurm_storage_largest_variant_id: str
     slurm_merge_status: str
     slurm_merge_ready: bool
     slurm_mergeable_variant_count: int
@@ -938,6 +957,33 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             reproducibility_report,
         )
     )
+    slurm_storage_report = build_rabies_method_sensitivity_slurm_storage_report(
+        output_root
+    )
+    slurm_storage_categories_path = (
+        write_rabies_method_sensitivity_slurm_storage_categories_table(
+            output_root / "slurm-storage-categories.tsv",
+            slurm_storage_report,
+        )
+    )
+    slurm_storage_variants_path = (
+        write_rabies_method_sensitivity_slurm_storage_variants_table(
+            output_root / "slurm-storage-variants.tsv",
+            slurm_storage_report,
+        )
+    )
+    slurm_storage_summary_path = (
+        write_rabies_method_sensitivity_slurm_storage_summary_json(
+            output_root / "slurm-storage-report.json",
+            slurm_storage_report,
+        )
+    )
+    slurm_storage_report_path = (
+        write_rabies_method_sensitivity_slurm_storage_html_report(
+            output_root / "slurm-storage-report.html",
+            slurm_storage_report,
+        )
+    )
     report_linked_files = (
         workflow_summary_path,
         variant_summary_path,
@@ -958,6 +1004,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_array_strategy_path,
         slurm_job_evidence_report.index_path,
         slurm_job_evidence_report.summary_path,
+        slurm_storage_categories_path,
+        slurm_storage_variants_path,
+        slurm_storage_summary_path,
+        slurm_storage_report_path,
         slurm_merge_checks_path,
         slurm_merge_variants_path,
         slurm_merge_summary_path,
@@ -992,6 +1042,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_array_strategy": slurm_array_strategy_path,
             "slurm_job_evidence_index": slurm_job_evidence_report.index_path,
             "slurm_job_evidence_summary": slurm_job_evidence_report.summary_path,
+            "slurm_storage_categories": slurm_storage_categories_path,
+            "slurm_storage_variants": slurm_storage_variants_path,
+            "slurm_storage_summary": slurm_storage_summary_path,
+            "slurm_storage_report": slurm_storage_report_path,
             "slurm_merge_checks": slurm_merge_checks_path,
             "slurm_merge_variants": slurm_merge_variants_path,
             "slurm_merge_summary": slurm_merge_summary_path,
@@ -1011,6 +1065,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_planning_report=slurm_planning_report,
         slurm_array_strategy_report=slurm_array_strategy_report,
         slurm_job_evidence_report=slurm_job_evidence_report,
+        slurm_storage_report=slurm_storage_report,
         slurm_merge_report=slurm_merge_report,
         slurm_output_freshness_report=slurm_output_freshness_report,
         slurm_status_report=slurm_status_report,
@@ -1067,6 +1122,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_job_evidence_root=slurm_job_evidence_report.evidence_root,
         slurm_job_evidence_index_path=slurm_job_evidence_report.index_path,
         slurm_job_evidence_summary_path=slurm_job_evidence_report.summary_path,
+        slurm_storage_categories_path=slurm_storage_categories_path,
+        slurm_storage_variants_path=slurm_storage_variants_path,
+        slurm_storage_summary_path=slurm_storage_summary_path,
+        slurm_storage_report_path=slurm_storage_report_path,
         slurm_merge_checks_path=slurm_merge_checks_path,
         slurm_merge_variants_path=slurm_merge_variants_path,
         slurm_merge_summary_path=slurm_merge_summary_path,
@@ -1101,6 +1160,17 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_job_evidence_total_output_byte_count=(
             slurm_job_evidence_report.total_output_byte_count
         ),
+        slurm_storage_total_estimated_mib=(
+            slurm_storage_report.total_estimated_storage_mib
+        ),
+        slurm_storage_output_byte_count=slurm_storage_report.output_byte_count,
+        slurm_storage_log_byte_count=slurm_storage_report.log_byte_count,
+        slurm_storage_tree_byte_count=slurm_storage_report.tree_byte_count,
+        slurm_storage_posterior_sample_byte_count=(
+            slurm_storage_report.posterior_sample_byte_count
+        ),
+        slurm_storage_report_byte_count=slurm_storage_report.report_byte_count,
+        slurm_storage_largest_variant_id=slurm_storage_report.largest_variant_id,
         slurm_merge_status=slurm_merge_report.merge_status,
         slurm_merge_ready=slurm_merge_report.merge_ready,
         slurm_mergeable_variant_count=slurm_merge_report.mergeable_variant_count,
@@ -1986,6 +2056,7 @@ def _write_report(
     slurm_planning_report: RabiesMethodSensitivitySlurmPlanningReport,
     slurm_array_strategy_report: RabiesMethodSensitivitySlurmArrayStrategyReport,
     slurm_job_evidence_report: RabiesMethodSensitivitySlurmJobEvidenceReport,
+    slurm_storage_report: RabiesMethodSensitivitySlurmStorageReport,
     slurm_merge_report: RabiesMethodSensitivitySlurmMergeReport,
     slurm_output_freshness_report: RabiesMethodSensitivitySlurmOutputFreshnessReport,
     slurm_status_report: RabiesMethodSensitivitySlurmStatusReport,
@@ -2117,6 +2188,32 @@ def _write_report(
             ),
         ),
         (
+            "slurm-storage-estimate",
+            "\n".join(
+                [
+                    (
+                        "estimated retained storage MiB: "
+                        f"{slurm_storage_report.total_estimated_storage_mib}"
+                    ),
+                    (
+                        "workflow outputs bytes: "
+                        f"{slurm_storage_report.output_byte_count}"
+                    ),
+                    f"log bytes: {slurm_storage_report.log_byte_count}",
+                    f"tree bytes: {slurm_storage_report.tree_byte_count}",
+                    (
+                        "posterior sample bytes: "
+                        f"{slurm_storage_report.posterior_sample_byte_count}"
+                    ),
+                    f"review artifact bytes: {slurm_storage_report.report_byte_count}",
+                    (
+                        "largest variant by retained bytes: "
+                        f"{slurm_storage_report.largest_variant_id}"
+                    ),
+                ]
+            ),
+        ),
+        (
             "slurm-merge-report",
             "\n".join(
                 [
@@ -2219,6 +2316,22 @@ def _write_report(
                     (
                         "slurm job evidence summary: "
                         f"{bundle_paths['slurm_job_evidence_summary'].name}"
+                    ),
+                    (
+                        "slurm storage categories: "
+                        f"{bundle_paths['slurm_storage_categories'].name}"
+                    ),
+                    (
+                        "slurm storage variants: "
+                        f"{bundle_paths['slurm_storage_variants'].name}"
+                    ),
+                    (
+                        "slurm storage summary: "
+                        f"{bundle_paths['slurm_storage_summary'].name}"
+                    ),
+                    (
+                        "slurm storage report: "
+                        f"{bundle_paths['slurm_storage_report'].name}"
                     ),
                     (
                         "slurm merge checks: "
@@ -2328,6 +2441,23 @@ def _write_report(
             "slurm_job_evidence_total_output_byte_count": (
                 slurm_job_evidence_report.total_output_byte_count
             ),
+            "slurm_storage_total_estimated_mib": (
+                slurm_storage_report.total_estimated_storage_mib
+            ),
+            "slurm_storage_output_byte_count": (
+                slurm_storage_report.output_byte_count
+            ),
+            "slurm_storage_log_byte_count": slurm_storage_report.log_byte_count,
+            "slurm_storage_tree_byte_count": slurm_storage_report.tree_byte_count,
+            "slurm_storage_posterior_sample_byte_count": (
+                slurm_storage_report.posterior_sample_byte_count
+            ),
+            "slurm_storage_report_byte_count": (
+                slurm_storage_report.report_byte_count
+            ),
+            "slurm_storage_largest_variant_id": (
+                slurm_storage_report.largest_variant_id
+            ),
             "slurm_merge_status": slurm_merge_report.merge_status,
             "slurm_merge_ready": slurm_merge_report.merge_ready,
             "slurm_mergeable_variant_count": (
@@ -2375,6 +2505,14 @@ def _write_report(
             (
                 "slurm job evidence files",
                 slurm_job_evidence_report.total_artifact_file_count,
+            ),
+            (
+                "slurm storage MiB",
+                slurm_storage_report.total_estimated_storage_mib,
+            ),
+            (
+                "slurm largest storage variant",
+                slurm_storage_report.largest_variant_id,
             ),
             (
                 "slurm merge ready",
@@ -2460,6 +2598,13 @@ def _write_overview(
         f"- slurm job evidence files: `{bundle.slurm_job_evidence_file_count}`",
         f"- slurm job evidence runtime seconds: `{_format_float(bundle.slurm_job_evidence_total_runtime_seconds)}`",
         f"- slurm job evidence output bytes: `{bundle.slurm_job_evidence_total_output_byte_count}`",
+        f"- slurm retained storage MiB: `{bundle.slurm_storage_total_estimated_mib}`",
+        f"- slurm workflow output bytes: `{bundle.slurm_storage_output_byte_count}`",
+        f"- slurm log bytes: `{bundle.slurm_storage_log_byte_count}`",
+        f"- slurm tree bytes: `{bundle.slurm_storage_tree_byte_count}`",
+        f"- slurm posterior sample bytes: `{bundle.slurm_storage_posterior_sample_byte_count}`",
+        f"- slurm review artifact bytes: `{bundle.slurm_storage_report_byte_count}`",
+        f"- slurm largest storage variant: `{bundle.slurm_storage_largest_variant_id}`",
         f"- slurm merge status: `{bundle.slurm_merge_status}`",
         f"- slurm merge ready: `{str(bundle.slurm_merge_ready).lower()}`",
         f"- slurm mergeable variants: `{bundle.slurm_mergeable_variant_count}`",
@@ -2483,6 +2628,10 @@ def _write_overview(
         f"- slurm job evidence root: `{bundle.slurm_job_evidence_root.name}/`",
         f"- slurm job evidence table: `{bundle.slurm_job_evidence_index_path.name}`",
         f"- slurm job evidence summary: `{bundle.slurm_job_evidence_summary_path.name}`",
+        f"- slurm storage categories: `{bundle.slurm_storage_categories_path.name}`",
+        f"- slurm storage variants: `{bundle.slurm_storage_variants_path.name}`",
+        f"- slurm storage summary: `{bundle.slurm_storage_summary_path.name}`",
+        f"- slurm storage report: `{bundle.slurm_storage_report_path.name}`",
         f"- slurm merge checks: `{bundle.slurm_merge_checks_path.name}`",
         f"- slurm merge variants: `{bundle.slurm_merge_variants_path.name}`",
         f"- slurm merge summary: `{bundle.slurm_merge_summary_path.name}`",

@@ -164,6 +164,10 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.workflow_bundle.slurm_job_evidence_root.is_dir()
     assert result.workflow_bundle.slurm_job_evidence_index_path.is_file()
     assert result.workflow_bundle.slurm_job_evidence_summary_path.is_file()
+    assert result.workflow_bundle.slurm_storage_categories_path.is_file()
+    assert result.workflow_bundle.slurm_storage_variants_path.is_file()
+    assert result.workflow_bundle.slurm_storage_summary_path.is_file()
+    assert result.workflow_bundle.slurm_storage_report_path.is_file()
     assert result.workflow_bundle.slurm_merge_checks_path.is_file()
     assert result.workflow_bundle.slurm_merge_variants_path.is_file()
     assert result.workflow_bundle.slurm_merge_summary_path.is_file()
@@ -187,6 +191,18 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.workflow_bundle.slurm_job_evidence_file_count > 0
     assert result.workflow_bundle.slurm_job_evidence_total_runtime_seconds > 0
     assert result.workflow_bundle.slurm_job_evidence_total_output_byte_count > 0
+    assert result.workflow_bundle.slurm_storage_total_estimated_mib > 0
+    assert result.workflow_bundle.slurm_storage_output_byte_count > 0
+    assert result.workflow_bundle.slurm_storage_log_byte_count > 0
+    assert result.workflow_bundle.slurm_storage_tree_byte_count > 0
+    assert result.workflow_bundle.slurm_storage_posterior_sample_byte_count == 0
+    assert result.workflow_bundle.slurm_storage_report_byte_count > 0
+    assert result.workflow_bundle.slurm_storage_largest_variant_id in {
+        "auto-gap-threshold",
+        "auto-gappyout",
+        "ginsi-gap-threshold",
+        "ginsi-gappyout",
+    }
     assert result.workflow_bundle.slurm_merge_status == "merge-ready"
     assert result.workflow_bundle.slurm_merge_ready is True
     assert result.workflow_bundle.slurm_mergeable_variant_count == 4
