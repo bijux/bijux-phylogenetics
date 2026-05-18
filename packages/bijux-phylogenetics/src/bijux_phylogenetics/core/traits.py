@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Sequence
 
 from bijux_phylogenetics.core.metadata import TaxonTable, load_taxon_table
+from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
+from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
 from bijux_phylogenetics.io.trees import load_tree
 
@@ -72,6 +75,37 @@ class TraitMissingValueReport:
     path: Path
     taxon_column: str
     missing_values: list[MissingTraitValue]
+
+
+@dataclass(slots=True)
+class TreeTraitAlignmentReport:
+    """Stable record of aligning one tree to one taxon-keyed trait table."""
+
+    tree_path: Path
+    traits_path: Path
+    taxon_column: str
+    original_tree_taxa: int
+    original_trait_taxa: int
+    aligned_taxa: list[str]
+    dropped_tree_taxa: list[str]
+    dropped_trait_taxa: list[str]
+    dropped_missing_value_taxa: list[str]
+    missing_value_calls: list[MissingTraitValue]
+    tree_drop_policy: str
+    trait_drop_policy: str
+    missing_value_policy: str
+
+
+@dataclass(slots=True)
+class TreeTraitAlignment:
+    """Pruned tree plus tree-ordered trait rows after explicit taxon alignment."""
+
+    tree_path: Path
+    traits_path: Path
+    taxon_column: str
+    tree: PhyloTree
+    rows: list[dict[str, str]]
+    report: TreeTraitAlignmentReport
 
 
 def load_tsv_summary(path: Path) -> TaxonTable:
@@ -159,14 +193,18 @@ def link_tree_to_traits(
     strict: bool = False,
 ) -> TraitLinkageReport:
     """Report how a traits table links against tree tips."""
-    tree = load_tree(tree_path)
-    table = load_taxon_table(traits_path, taxon_column=taxon_column)
-    tree_taxa = set(tree.tip_names)
-    trait_taxa = set(table.taxa)
-    missing_from_traits = sorted(tree_taxa - trait_taxa)
-    extra_trait_taxa = sorted(trait_taxa - tree_taxa)
+    alignment = align_tree_and_trait_table(
+        tree_path,
+        traits_path,
+        taxon_column=taxon_column,
+    )
+    report = alignment.report
+    missing_from_traits = report.dropped_tree_taxa
+    extra_trait_taxa = report.dropped_trait_taxa
 
     if strict and (missing_from_traits or extra_trait_taxa):
+        tree_taxa = sorted(set(report.aligned_taxa) | set(report.dropped_tree_taxa))
+        trait_taxa = sorted(set(report.aligned_taxa) | set(report.dropped_trait_taxa))
         raise MetadataJoinError(
             "trait linkage mismatch: "
             f"{len(missing_from_traits)} tree taxa missing from traits and "
@@ -174,7 +212,7 @@ def link_tree_to_traits(
             details={
                 "tree_path": str(tree_path),
                 "traits_path": str(traits_path),
-                "taxon_column": table.taxon_column,
+                "taxon_column": report.taxon_column,
                 "missing_from_traits": missing_from_traits,
                 "extra_trait_taxa": extra_trait_taxa,
                 "failure_reason": "tree_trait_taxon_mismatch",
@@ -199,15 +237,14 @@ def link_tree_to_traits(
             },
         )
 
-    usable_taxa = sorted(tree_taxa & trait_taxa)
     return TraitLinkageReport(
         tree_path=tree_path,
         traits_path=traits_path,
-        taxon_column=table.taxon_column,
-        tree_taxa=len(tree_taxa),
-        trait_taxa=len(trait_taxa),
-        linked_taxa=len(usable_taxa),
-        usable_taxa=usable_taxa,
+        taxon_column=report.taxon_column,
+        tree_taxa=report.original_tree_taxa,
+        trait_taxa=report.original_trait_taxa,
+        linked_taxa=len(report.aligned_taxa),
+        usable_taxa=list(report.aligned_taxa),
         missing_from_traits=missing_from_traits,
         extra_trait_taxa=extra_trait_taxa,
     )
@@ -239,19 +276,15 @@ def prune_traits_to_tree(
     taxon_column: str | None = None,
 ) -> tuple[list[dict[str, str]], TraitTablePruningReport]:
     """Prune a trait table to the taxa present in a tree while preserving tree tip order."""
-    tree = load_tree(tree_path)
+    alignment = align_tree_and_trait_table(
+        tree_path,
+        traits_path,
+        taxon_column=taxon_column,
+    )
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
-    rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
-    kept_rows = [
-        dict(rows_by_taxon[taxon]) for taxon in tree.tip_names if taxon in rows_by_taxon
-    ]
-    if not kept_rows:
-        raise MetadataJoinError(
-            "no overlapping taxa remain after trait pruning request"
-        )
-
-    kept_taxa = [row[table.taxon_column] for row in kept_rows]
-    removed_taxa = sorted(set(table.taxa) - set(kept_taxa))
+    kept_rows = [dict(row) for row in alignment.rows]
+    kept_taxa = list(alignment.report.aligned_taxa)
+    removed_taxa = list(alignment.report.dropped_trait_taxa)
     return kept_rows, TraitTablePruningReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -259,6 +292,86 @@ def prune_traits_to_tree(
         original_row_count=table.row_count,
         kept_taxa=kept_taxa,
         removed_taxa=removed_taxa,
+    )
+
+
+def align_tree_and_trait_table(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    taxon_column: str | None = None,
+    required_trait_columns: Sequence[str] = (),
+    drop_missing_for_columns: Sequence[str] = (),
+) -> TreeTraitAlignment:
+    """Align a tree and trait table over shared taxa while preserving tree tip order."""
+    tree = load_tree(tree_path)
+    table = load_taxon_table(traits_path, taxon_column=taxon_column)
+    for column in required_trait_columns:
+        if column not in table.columns:
+            raise MetadataJoinError(f"trait table does not contain column '{column}'")
+    for column in drop_missing_for_columns:
+        if column not in table.columns:
+            raise MetadataJoinError(f"trait table does not contain column '{column}'")
+
+    rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
+    tree_taxa = set(tree.tip_names)
+    trait_taxa = set(table.taxa)
+    dropped_tree_taxa = sorted(tree_taxa - trait_taxa)
+    dropped_trait_taxa = sorted(trait_taxa - tree_taxa)
+
+    missing_value_columns = tuple(
+        column for column in drop_missing_for_columns if column != table.taxon_column
+    )
+    missing_value_calls: list[MissingTraitValue] = []
+    dropped_missing_value_taxa: list[str] = []
+    aligned_rows: list[dict[str, str]] = []
+    aligned_taxa: list[str] = []
+
+    for taxon in tree.tip_names:
+        row = rows_by_taxon.get(taxon)
+        if row is None:
+            continue
+        missing_columns = [column for column in missing_value_columns if not row[column]]
+        if missing_columns:
+            dropped_missing_value_taxa.append(taxon)
+            missing_value_calls.extend(
+                MissingTraitValue(taxon=taxon, trait=column)
+                for column in missing_columns
+            )
+            continue
+        aligned_taxa.append(taxon)
+        aligned_rows.append(dict(row))
+
+    if not aligned_taxa:
+        raise MetadataJoinError("no overlapping taxa remain after trait alignment")
+
+    pruned_tree, _ = prune_tree_to_requested_taxa(tree_path, aligned_taxa)
+    report = TreeTraitAlignmentReport(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        taxon_column=table.taxon_column,
+        original_tree_taxa=len(tree.tip_names),
+        original_trait_taxa=table.row_count,
+        aligned_taxa=list(pruned_tree.tip_names),
+        dropped_tree_taxa=dropped_tree_taxa,
+        dropped_trait_taxa=dropped_trait_taxa,
+        dropped_missing_value_taxa=sorted(dropped_missing_value_taxa),
+        missing_value_calls=missing_value_calls,
+        tree_drop_policy="drop-tree-tips-absent-from-traits",
+        trait_drop_policy="drop-trait-rows-absent-from-tree",
+        missing_value_policy=(
+            "retain-overlapping-missing-values"
+            if not missing_value_columns
+            else "drop-overlapping-missing-values-for-requested-traits"
+        ),
+    )
+    return TreeTraitAlignment(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        taxon_column=table.taxon_column,
+        tree=pruned_tree,
+        rows=aligned_rows,
+        report=report,
     )
 
 
