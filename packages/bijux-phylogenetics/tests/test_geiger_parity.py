@@ -243,7 +243,7 @@ def test_run_geiger_parity_cases_governs_brownian_reference_payloads(
         "prune-tree-tip-overlap-with-missing-or-nonnumeric-trait-values"
     )
     assert missing_values.bijux_summary["standard_error_policy"] == (
-        "tip-standard-errors-not-supported"
+        "fitcontinuous-standard-error-explicitly-excluded-this-round"
     )
 
 
