@@ -453,6 +453,11 @@ def _build_caterpillar_tree(
     return PhyloTree(root=root, source_format="newick")
 
 
+def _interleaved_taxa(tip_count: int, *, prefix: str = "Taxon") -> list[str]:
+    taxa = [f"{prefix}{index}" for index in range(1, tip_count + 1)]
+    return [*taxa[::2], *taxa[1::2]]
+
+
 def _write_fasttree_streaming_fixture(path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -1083,9 +1088,9 @@ def benchmark_large_tree_scaling(
                 tmp_path / f"large-tree-balanced-{tip_count}.nwk",
                 _build_balanced_tree(tip_count, prefix="LargeTaxon"),
             )
-            comparison_tree_path = write_newick(
-                tmp_path / f"large-tree-caterpillar-{tip_count}.nwk",
-                _build_caterpillar_tree(tip_count, prefix="LargeTaxon"),
+            comparison_tree_path = _write_named_balanced_tree(
+                tmp_path / f"large-tree-permuted-balanced-{tip_count}.nwk",
+                _interleaved_taxa(tip_count, prefix="LargeTaxon"),
             )
             render_output_path = tmp_path / f"large-tree-render-{tip_count}.svg"
             report_output_path = tmp_path / f"large-tree-report-{tip_count}.html"
@@ -1143,7 +1148,7 @@ def benchmark_large_tree_scaling(
             scaling_axis="taxa",
             observations=comparison_observations,
             notes=[
-                "compares one balanced tree against one caterpillar tree across the same shared taxa",
+                "compares one balanced tree against one deterministically permuted balanced tree across the same shared taxa",
             ],
         ),
         LargeTreeScalingWorkflowBenchmark(

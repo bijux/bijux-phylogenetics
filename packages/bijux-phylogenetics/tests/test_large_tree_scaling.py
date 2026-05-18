@@ -1,12 +1,20 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
 import bijux_phylogenetics.benchmark as benchmark_api
-from bijux_phylogenetics.benchmark import benchmark_large_tree_scaling
+from bijux_phylogenetics.benchmark import (
+    _build_balanced_tree,
+    _interleaved_taxa,
+    _write_named_balanced_tree,
+    benchmark_large_tree_scaling,
+)
+from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.command_line import main
+from bijux_phylogenetics.io.newick import write_newick
 
 
 def _workflows_by_name(report):
@@ -68,3 +76,22 @@ def test_cli_benchmark_large_tree_scaling_reports_workflow_and_tip_metrics(
 
 def test_public_runtime_exports_large_tree_scaling_surface() -> None:
     assert benchmark_api.benchmark_large_tree_scaling is benchmark_large_tree_scaling
+
+
+@pytest.mark.slow
+def test_large_tree_scaling_comparison_shape_supports_2048_taxa(
+    tmp_path: Path,
+) -> None:
+    left_path = write_newick(
+        tmp_path / "large-tree-balanced-2048.nwk",
+        _build_balanced_tree(2048, prefix="LargeTaxon"),
+    )
+    right_path = _write_named_balanced_tree(
+        tmp_path / "large-tree-permuted-balanced-2048.nwk",
+        _interleaved_taxa(2048, prefix="LargeTaxon"),
+    )
+
+    report = compare_tree_paths(left_path, right_path)
+
+    assert len(report.shared_taxa) == 2048
+    assert report.robinson_foulds_distance > 0
