@@ -6072,8 +6072,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.figure_path,
                         result.figure_png_path,
                         result.figure_html_path,
+                        result.review_path,
                         result.node_table_path,
                         result.uncertainty_table_path,
+                        result.node_review_path,
                         result.legend_path,
                         result.model_description_path,
                         result.caption_path,
@@ -6087,7 +6089,22 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={
                             "output_dir": str(result.output_dir),
-                            "artifact_count": 9,
+                            "artifact_count": 11,
+                            "publication_ready": result.audit.publication_ready,
+                            "internal_state_visible": result.audit.internal_state_visible,
+                            "uncertainty_visible": result.audit.uncertainty_visible,
+                            "ambiguous_internal_node_count": (
+                                result.audit.ambiguous_internal_node_count
+                            ),
+                            "unstable_internal_node_count": (
+                                result.audit.unstable_internal_node_count
+                            ),
+                            "rendered_internal_annotation_count": (
+                                result.audit.rendered_internal_annotation_count
+                            ),
+                            "rendered_internal_pie_count": (
+                                result.audit.rendered_internal_pie_count
+                            ),
                         },
                         data=result,
                     ),
