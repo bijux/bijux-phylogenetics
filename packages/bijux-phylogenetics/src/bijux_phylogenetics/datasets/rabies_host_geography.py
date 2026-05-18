@@ -460,6 +460,8 @@ class RabiesCrossHostGeographyPanelDemoResult:
     workflow_bundle: RabiesCrossHostGeographyPanelWorkflowBundle
     overview_path: Path
     overview_html_path: Path
+    artifact_inventory_path: Path
+    reproducibility_checklist_path: Path
     package_manifest_path: Path
 
 
@@ -1430,12 +1432,18 @@ def run_rabies_cross_host_geography_panel_demo(
             workflow_report,
         )
     short_answer = _build_flagship_answer_summary(workflow_bundle)
+    artifact_inventory_path = output_root / "rabies-cross-host-geography-artifacts.tsv"
+    reproducibility_checklist_path = (
+        output_root / "rabies-cross-host-geography-reproducibility-checklist.tsv"
+    )
     overview_path = _write_overview(
         output_root / "overview.md",
         dataset=dataset,
         workflow_bundle=workflow_bundle,
         config=workflow_report.config,
         short_answer=short_answer,
+        artifact_inventory_path=artifact_inventory_path,
+        reproducibility_checklist_path=reproducibility_checklist_path,
     )
     overview_html_path = _write_demo_overview_html(
         output_root / "rabies-cross-host-geography-overview.html",
@@ -1444,6 +1452,24 @@ def run_rabies_cross_host_geography_panel_demo(
         workflow_bundle=workflow_bundle,
         config=workflow_report.config,
         short_answer=short_answer,
+        artifact_inventory_path=artifact_inventory_path,
+        reproducibility_checklist_path=reproducibility_checklist_path,
+    )
+    artifact_inventory_path, artifact_inventory_rows = _write_package_artifact_inventory(
+        artifact_inventory_path,
+        output_root=output_root,
+        dataset_export=dataset_export,
+        workflow_bundle=workflow_bundle,
+        overview_path=overview_path,
+        overview_html_path=overview_html_path,
+    )
+    reproducibility_checklist_path, checklist_rows = (
+        _write_package_reproducibility_checklist(
+            reproducibility_checklist_path,
+            workflow_bundle=workflow_bundle,
+            inventory_rows=artifact_inventory_rows,
+            artifact_inventory_path=artifact_inventory_path,
+        )
     )
     package_manifest_path = _write_demo_package_manifest(
         output_root / "rabies-cross-host-geography-package.manifest.json",
@@ -1452,6 +1478,10 @@ def run_rabies_cross_host_geography_panel_demo(
         workflow_bundle=workflow_bundle,
         config=workflow_report.config,
         short_answer=short_answer,
+        artifact_inventory_path=artifact_inventory_path,
+        artifact_inventory_rows=artifact_inventory_rows,
+        reproducibility_checklist_path=reproducibility_checklist_path,
+        checklist_rows=checklist_rows,
     )
     return RabiesCrossHostGeographyPanelDemoResult(
         output_root=output_root,
@@ -1460,6 +1490,8 @@ def run_rabies_cross_host_geography_panel_demo(
         workflow_bundle=workflow_bundle,
         overview_path=overview_path,
         overview_html_path=overview_html_path,
+        artifact_inventory_path=artifact_inventory_path,
+        reproducibility_checklist_path=reproducibility_checklist_path,
         package_manifest_path=package_manifest_path,
     )
 
@@ -2739,6 +2771,312 @@ def _write_resource_observation_table(
     return write_taxon_rows(path, columns=list(row.keys()), rows=[row])
 
 
+def _artifact_kind(path: Path) -> str:
+    suffix = path.suffix.lower()
+    if path.name.endswith(".manifest.json"):
+        return "manifest"
+    if suffix in {".html", ".htm"}:
+        return "report"
+    if suffix == ".md":
+        return "markdown"
+    if suffix == ".json":
+        return "json"
+    if suffix == ".tsv":
+        return "table"
+    if suffix == ".svg":
+        return "figure"
+    if suffix == ".log":
+        return "log"
+    if suffix in {".nwk", ".tree"}:
+        return "tree"
+    if suffix in {".aln", ".fasta"}:
+        return "alignment"
+    if suffix == ".csv":
+        return "metadata"
+    return "artifact"
+
+
+def _workflow_artifact_section(relative_path: Path) -> str:
+    parts = relative_path.parts
+    if len(parts) >= 2 and parts[1] in {
+        "bootstrap-review",
+        "engine-artifacts",
+        "biogeography",
+        "comparative",
+        "conclusion-stability",
+    }:
+        return parts[1]
+    return "workflow"
+
+
+def _relative_to_package_root(package_root: Path, path: Path) -> str:
+    return path.relative_to(package_root).as_posix()
+
+
+def _package_inventory_rows(
+    *,
+    output_root: Path,
+    dataset_export: RabiesCrossHostGeographyPanelExportResult,
+    workflow_bundle: RabiesCrossHostGeographyPanelWorkflowBundle,
+    overview_path: Path,
+    overview_html_path: Path,
+) -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+    dataset_paths = [
+        dataset_export.readme_path,
+        dataset_export.workflow_config_path,
+        dataset_export.sequences_path,
+        dataset_export.metadata_path,
+        dataset_export.centroids_path,
+        dataset_export.accession_table_path,
+    ]
+    for path in dataset_paths:
+        rows.append(
+            {
+                "section": "dataset",
+                "kind": _artifact_kind(path),
+                "relative_path": _relative_to_package_root(output_root, path),
+                "sha256": _checksum(path),
+                "size_bytes": str(path.stat().st_size),
+            }
+        )
+    workflow_paths = sorted(
+        path
+        for path in workflow_bundle.output_root.rglob("*")
+        if path.is_file()
+    )
+    for path in workflow_paths:
+        rows.append(
+            {
+                "section": _workflow_artifact_section(
+                    path.relative_to(workflow_bundle.output_root)
+                ),
+                "kind": _artifact_kind(path),
+                "relative_path": _relative_to_package_root(output_root, path),
+                "sha256": _checksum(path),
+                "size_bytes": str(path.stat().st_size),
+            }
+        )
+    for path in (overview_path, overview_html_path):
+        rows.append(
+            {
+                "section": "package",
+                "kind": _artifact_kind(path),
+                "relative_path": _relative_to_package_root(output_root, path),
+                "sha256": _checksum(path),
+                "size_bytes": str(path.stat().st_size),
+            }
+        )
+    return rows
+
+
+def _write_package_artifact_inventory(
+    path: Path,
+    *,
+    output_root: Path,
+    dataset_export: RabiesCrossHostGeographyPanelExportResult,
+    workflow_bundle: RabiesCrossHostGeographyPanelWorkflowBundle,
+    overview_path: Path,
+    overview_html_path: Path,
+) -> tuple[Path, list[dict[str, str]]]:
+    rows = _package_inventory_rows(
+        output_root=output_root,
+        dataset_export=dataset_export,
+        workflow_bundle=workflow_bundle,
+        overview_path=overview_path,
+        overview_html_path=overview_html_path,
+    )
+    return (
+        write_taxon_rows(
+            path,
+            columns=["section", "kind", "relative_path", "sha256", "size_bytes"],
+            rows=rows,
+        ),
+        rows,
+    )
+
+
+def _has_package_artifact(
+    inventory_rows: list[dict[str, str]],
+    relative_path: str,
+) -> bool:
+    return any(row["relative_path"] == relative_path for row in inventory_rows)
+
+
+def _package_inventory_counts(
+    inventory_rows: list[dict[str, str]],
+) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in inventory_rows:
+        section = row["section"]
+        counts[section] = counts.get(section, 0) + 1
+    return counts
+
+
+def _write_package_reproducibility_checklist(
+    path: Path,
+    *,
+    workflow_bundle: RabiesCrossHostGeographyPanelWorkflowBundle,
+    inventory_rows: list[dict[str, str]],
+    artifact_inventory_path: Path,
+) -> tuple[Path, list[dict[str, str]]]:
+    rows = [
+        {
+            "section": "inputs",
+            "check_id": "dataset-inputs-exported",
+            "status": (
+                "pass"
+                if all(
+                    _has_package_artifact(inventory_rows, relative_path)
+                    for relative_path in (
+                        "dataset/sequences.fasta",
+                        "dataset/metadata.csv",
+                        "dataset/region-centroids.csv",
+                        "dataset/source-accessions.tsv",
+                        "dataset/workflow-config.json",
+                    )
+                )
+                else "blocked"
+            ),
+            "summary": "raw sequences, metadata, centroids, accession ledger, and workflow config are exported together",
+            "evidence": "dataset export includes all package-level study inputs required to rerun the workflow",
+            "artifact_path": "dataset/workflow-config.json",
+        },
+        {
+            "section": "tree-inference",
+            "check_id": "tree-inference-evidence-exported",
+            "status": (
+                "pass"
+                if all(
+                    _has_package_artifact(inventory_rows, relative_path)
+                    for relative_path in (
+                        f"workflow/{workflow_bundle.tree_path.name}",
+                        f"workflow/{workflow_bundle.model_table_path.name}",
+                        f"workflow/{workflow_bundle.support_table_path.name}",
+                        f"workflow/{workflow_bundle.manifest_path.name}",
+                        f"workflow/{workflow_bundle.log_path.name}",
+                    )
+                )
+                else "blocked"
+            ),
+            "summary": "tree inference outputs, manifest, and engine log are preserved",
+            "evidence": "the package retains the rooted tree plus model, support, manifest, and log artifacts for the sequence-to-tree workflow",
+            "artifact_path": f"workflow/{workflow_bundle.manifest_path.name}",
+        },
+        {
+            "section": "uncertainty",
+            "check_id": "bootstrap-uncertainty-exported",
+            "status": (
+                "pass"
+                if all(
+                    _has_package_artifact(inventory_rows, relative_path)
+                    for relative_path in (
+                        "workflow/bootstrap-review/bootstrap-review.summary.tsv",
+                        "workflow/bootstrap-review/bootstrap-consensus.tree",
+                        "workflow/bootstrap-review/rooted-tree-vs-bootstrap-consensus.summary.tsv",
+                        "workflow/bootstrap-review/rooted-tree-vs-bootstrap-consensus.report.html",
+                    )
+                )
+                else "blocked"
+            ),
+            "summary": "bootstrap consensus and topology-conflict review artifacts are retained",
+            "evidence": (
+                "bootstrap review exported "
+                f"{workflow_bundle.bootstrap_tree_count} trees over "
+                f"{workflow_bundle.bootstrap_topology_count} rooted topologies"
+            ),
+            "artifact_path": "workflow/bootstrap-review/bootstrap-review.summary.tsv",
+        },
+        {
+            "section": "analysis",
+            "check_id": "downstream-analysis-exported",
+            "status": (
+                "pass"
+                if all(
+                    _has_package_artifact(inventory_rows, relative_path)
+                    for relative_path in (
+                        f"workflow/{workflow_bundle.host_switch_summary_path.name}",
+                        f"workflow/biogeography/{workflow_bundle.biogeography_report_path.name}",
+                        f"workflow/comparative/{workflow_bundle.comparative_report_path.name}",
+                        (
+                            "workflow/conclusion-stability/"
+                            f"{workflow_bundle.conclusion_stability_report_path.name}"
+                        ),
+                        f"workflow/{workflow_bundle.scientific_findings_path.name}",
+                    )
+                )
+                else "blocked"
+            ),
+            "summary": "host-switching, biogeography, comparative, stability, and findings surfaces are preserved together",
+            "evidence": (
+                "the package retains one integrated downstream evidence chain from "
+                "rooted tree to host/geography interpretation and stability review"
+            ),
+            "artifact_path": f"workflow/{workflow_bundle.scientific_findings_path.name}",
+        },
+        {
+            "section": "package",
+            "check_id": "package-navigation-exported",
+            "status": (
+                "pass"
+                if all(
+                    _has_package_artifact(inventory_rows, relative_path)
+                    for relative_path in (
+                        "overview.md",
+                        "rabies-cross-host-geography-overview.html",
+                    )
+                )
+                else "blocked"
+            ),
+            "summary": "reviewer overview surfaces are included with the package",
+            "evidence": (
+                "the package includes one markdown overview, one reviewer HTML overview, "
+                f"and one artifact inventory at {artifact_inventory_path.name}"
+            ),
+            "artifact_path": "rabies-cross-host-geography-overview.html",
+        },
+        {
+            "section": "limitations",
+            "check_id": "interpretation-risks-surfaced",
+            "status": (
+                "risk"
+                if (
+                    workflow_bundle.budget_warning_count > 0
+                    or workflow_bundle.conclusion_weak_count > 0
+                    or workflow_bundle.conclusion_unstable_count > 0
+                )
+                else "pass"
+            ),
+            "summary": "the package records interpretation limits and stability caveats",
+            "evidence": (
+                "budget warnings="
+                f"{workflow_bundle.budget_warning_count}; weak conclusions="
+                f"{workflow_bundle.conclusion_weak_count}; unstable conclusions="
+                f"{workflow_bundle.conclusion_unstable_count}"
+            ),
+            "artifact_path": (
+                "workflow/conclusion-stability/"
+                f"{workflow_bundle.conclusion_stability_report_path.name}"
+            ),
+        },
+    ]
+    return (
+        write_taxon_rows(
+            path,
+            columns=[
+                "section",
+                "check_id",
+                "status",
+                "summary",
+                "evidence",
+                "artifact_path",
+            ],
+            rows=rows,
+        ),
+        rows,
+    )
+
+
 def _write_overview(
     path: Path,
     *,
@@ -2746,6 +3084,8 @@ def _write_overview(
     workflow_bundle: RabiesCrossHostGeographyPanelWorkflowBundle,
     config: RabiesCrossHostGeographyPanelWorkflowConfig,
     short_answer: str,
+    artifact_inventory_path: Path,
+    reproducibility_checklist_path: Path,
 ) -> Path:
     lines = [
         "# Rabies Cross-Host Geography Demo",
@@ -2776,6 +3116,8 @@ def _write_overview(
             f"`conclusion-stability/{workflow_bundle.conclusion_stability_report_path.name}`"
         ),
         f"- final report: `{workflow_bundle.final_report_path.name}`",
+        f"- package artifact inventory: `{artifact_inventory_path.name}`",
+        f"- package reproducibility checklist: `{reproducibility_checklist_path.name}`",
         "- package overview html: `rabies-cross-host-geography-overview.html`",
         "- package manifest: `rabies-cross-host-geography-package.manifest.json`",
     ]
@@ -2803,6 +3145,8 @@ def _write_demo_overview_html(
     workflow_bundle: RabiesCrossHostGeographyPanelWorkflowBundle,
     config: RabiesCrossHostGeographyPanelWorkflowConfig,
     short_answer: str,
+    artifact_inventory_path: Path,
+    reproducibility_checklist_path: Path,
 ) -> Path:
     html = "\n".join(
         [
@@ -2849,6 +3193,8 @@ def _write_demo_overview_html(
                     f'workflow config: <a href="dataset/{dataset_export.workflow_config_path.name}">dataset/{dataset_export.workflow_config_path.name}</a>',
                     f'source accession ledger: <a href="dataset/{dataset_export.accession_table_path.name}">dataset/{dataset_export.accession_table_path.name}</a>',
                     f'final workflow manifest: <a href="workflow/{workflow_bundle.final_manifest_path.name}">workflow/{workflow_bundle.final_manifest_path.name}</a>',
+                    f'package artifact inventory: <a href="{artifact_inventory_path.name}">{artifact_inventory_path.name}</a>',
+                    f'package reproducibility checklist: <a href="{reproducibility_checklist_path.name}">{reproducibility_checklist_path.name}</a>',
                     f'package manifest: <a href="{path.name.replace("-overview.html", "-package.manifest.json")}">{path.name.replace("-overview.html", "-package.manifest.json")}</a>',
                 ]
             ),
@@ -2884,18 +3230,63 @@ def _write_demo_package_manifest(
     workflow_bundle: RabiesCrossHostGeographyPanelWorkflowBundle,
     config: RabiesCrossHostGeographyPanelWorkflowConfig,
     short_answer: str,
+    artifact_inventory_path: Path,
+    artifact_inventory_rows: list[dict[str, str]],
+    reproducibility_checklist_path: Path,
+    checklist_rows: list[dict[str, str]],
 ) -> Path:
+    inventory_counts = _package_inventory_counts(artifact_inventory_rows)
+    blocked_check_count = len(
+        [row for row in checklist_rows if row["status"] == "blocked"]
+    )
+    risk_check_count = len([row for row in checklist_rows if row["status"] == "risk"])
     payload = {
         "report_kind": "rabies_cross_host_geography_package",
         "dataset_id": dataset.dataset_id,
         "label": dataset.label,
         "biological_question": _FLAGSHIP_QUESTION,
         "short_answer": short_answer,
+        "package_files": {
+            "overview_markdown": {
+                "path": "overview.md",
+                "checksum": _checksum(path.parent / "overview.md"),
+            },
+            "overview_html": {
+                "path": "rabies-cross-host-geography-overview.html",
+                "checksum": _checksum(
+                    path.parent / "rabies-cross-host-geography-overview.html"
+                ),
+            },
+            "artifact_inventory": {
+                "path": artifact_inventory_path.name,
+                "checksum": _checksum(artifact_inventory_path),
+                "artifact_count": len(artifact_inventory_rows),
+                "section_counts": inventory_counts,
+            },
+            "reproducibility_checklist": {
+                "path": reproducibility_checklist_path.name,
+                "checksum": _checksum(reproducibility_checklist_path),
+                "item_count": len(checklist_rows),
+                "blocked_count": blocked_check_count,
+                "risk_count": risk_check_count,
+            },
+        },
         "config": {
             "path": f"dataset/{dataset_export.workflow_config_path.name}",
             "checksum": _checksum(dataset_export.workflow_config_path),
             "workflow_prefix": config.workflow_prefix,
+            "alignment_mode": config.alignment_mode,
+            "trimming_mode": config.trimming_mode,
+            "trim_gap_threshold": config.trim_gap_threshold,
+            "bootstrap_consensus_threshold": config.bootstrap_consensus_threshold,
+            "bootstrap_robust_support_threshold": (
+                config.bootstrap_robust_support_threshold
+            ),
             "comparative_formula": config.comparative_formula,
+            "comparative_response": config.comparative_response,
+            "comparative_branch_length_floor": (
+                config.comparative_branch_length_floor
+            ),
             "timeout_seconds": config.timeout_seconds,
             "max_bootstrap_tree_count": config.max_bootstrap_tree_count,
             "max_report_table_rows": config.max_report_table_rows,
@@ -2928,6 +3319,10 @@ def _write_demo_package_manifest(
                 "path": f"workflow/{workflow_bundle.final_report_path.name}",
                 "checksum": _checksum(workflow_bundle.final_report_path),
             },
+            "workflow_log": {
+                "path": f"workflow/{workflow_bundle.log_path.name}",
+                "checksum": _checksum(workflow_bundle.log_path),
+            },
             "workflow_summary": {
                 "path": f"workflow/{workflow_bundle.workflow_summary_path.name}",
                 "checksum": _checksum(workflow_bundle.workflow_summary_path),
@@ -2939,6 +3334,63 @@ def _write_demo_package_manifest(
             "final_manifest": {
                 "path": f"workflow/{workflow_bundle.final_manifest_path.name}",
                 "checksum": _checksum(workflow_bundle.final_manifest_path),
+            },
+            "rooted_tree": {
+                "path": f"workflow/{workflow_bundle.tree_path.name}",
+                "checksum": _checksum(workflow_bundle.tree_path),
+            },
+            "rooting_report": {
+                "path": f"workflow/{workflow_bundle.rooting_report_path.name}",
+                "checksum": _checksum(workflow_bundle.rooting_report_path),
+            },
+            "model_table": {
+                "path": f"workflow/{workflow_bundle.model_table_path.name}",
+                "checksum": _checksum(workflow_bundle.model_table_path),
+            },
+            "support_table": {
+                "path": f"workflow/{workflow_bundle.support_table_path.name}",
+                "checksum": _checksum(workflow_bundle.support_table_path),
+            },
+            "bootstrap_summary": {
+                "path": (
+                    "workflow/bootstrap-review/"
+                    f"{workflow_bundle.bootstrap_summary_path.name}"
+                ),
+                "checksum": _checksum(workflow_bundle.bootstrap_summary_path),
+            },
+            "bootstrap_tree_comparison_summary": {
+                "path": (
+                    "workflow/bootstrap-review/"
+                    f"{workflow_bundle.bootstrap_tree_comparison_summary_path.name}"
+                ),
+                "checksum": _checksum(
+                    workflow_bundle.bootstrap_tree_comparison_summary_path
+                ),
+            },
+            "host_switch_summary": {
+                "path": f"workflow/{workflow_bundle.host_switch_summary_path.name}",
+                "checksum": _checksum(workflow_bundle.host_switch_summary_path),
+            },
+            "biogeography_report": {
+                "path": (
+                    "workflow/biogeography/"
+                    f"{workflow_bundle.biogeography_report_path.name}"
+                ),
+                "checksum": _checksum(workflow_bundle.biogeography_report_path),
+            },
+            "comparative_report": {
+                "path": (
+                    "workflow/comparative/"
+                    f"{workflow_bundle.comparative_report_path.name}"
+                ),
+                "checksum": _checksum(workflow_bundle.comparative_report_path),
+            },
+            "conclusion_stability_report": {
+                "path": (
+                    "workflow/conclusion-stability/"
+                    f"{workflow_bundle.conclusion_stability_report_path.name}"
+                ),
+                "checksum": _checksum(workflow_bundle.conclusion_stability_report_path),
             },
             "scientific_findings": {
                 "path": f"workflow/{workflow_bundle.scientific_findings_path.name}",
@@ -2964,6 +3416,9 @@ def _write_demo_package_manifest(
             "comparative_selected_model": workflow_bundle.comparative_selected_model,
             "comparative_pgls_lambda": workflow_bundle.comparative_pgls_lambda,
             "comparative_pgls_r_squared": workflow_bundle.comparative_pgls_r_squared,
+            "comparative_branch_repair_count": (
+                workflow_bundle.comparative_branch_repair_count
+            ),
             "conclusion_stable_count": workflow_bundle.conclusion_stable_count,
             "conclusion_weak_count": workflow_bundle.conclusion_weak_count,
             "conclusion_unstable_count": workflow_bundle.conclusion_unstable_count,
