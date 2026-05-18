@@ -11,6 +11,7 @@ from bijux_phylogenetics.core.taxonomy import (
     build_taxon_audit_report,
     build_taxon_mapping_conflict_report,
 )
+from bijux_phylogenetics.ancestral import build_ancestral_figure_package
 from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
@@ -883,6 +884,93 @@ def validate_time_tree_reference_fixtures(
         ],
         limitations=[
             "time-tree publication readiness is governed through explicit interval ledgers, ultrametric checks, and readiness audits rather than screenshot goldens",
+        ],
+    )
+
+
+def validate_ancestral_figure_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
+    """Validate ancestral publication fixtures for visible and interpretable uncertainty."""
+    root = _default_fixtures_root() if fixtures_root is None else fixtures_root
+    tree_path = _fixture(root, "trees", "example_tree.nwk")
+    continuous_traits_path = _fixture(root, "metadata", "example_traits_comparative.tsv")
+    discrete_traits_path = _fixture(root, "metadata", "example_traits_geography.tsv")
+    temp_root = _temp_reference_dir("bijux-ancestral-figure-reference")
+    temp_root.mkdir(parents=True, exist_ok=True)
+
+    continuous_package = build_ancestral_figure_package(
+        tree_path=tree_path,
+        traits_path=continuous_traits_path,
+        trait="response",
+        reconstruction_kind="continuous",
+        out_dir=temp_root / "continuous-package",
+        model="brownian",
+    )
+    discrete_package = build_ancestral_figure_package(
+        tree_path=tree_path,
+        traits_path=discrete_traits_path,
+        trait="region",
+        reconstruction_kind="discrete",
+        out_dir=temp_root / "discrete-package",
+        model="equal-rates",
+    )
+
+    fixtures = [
+        _check(
+            goal_id=229,
+            suite="ancestral-figure-publication-reference",
+            name="continuous_intervals_visible",
+            fixture_paths=[tree_path, continuous_traits_path],
+            expected={
+                "publication_ready": True,
+                "internal_state_visible": True,
+                "uncertainty_visible": True,
+                "rendered_internal_annotation_count_matches": True,
+            },
+            observed={
+                "publication_ready": continuous_package.audit.publication_ready,
+                "internal_state_visible": continuous_package.audit.internal_state_visible,
+                "uncertainty_visible": continuous_package.audit.uncertainty_visible,
+                "rendered_internal_annotation_count_matches": (
+                    continuous_package.audit.rendered_internal_annotation_count
+                    == continuous_package.audit.internal_node_count
+                ),
+            },
+        ),
+        _check(
+            goal_id=229,
+            suite="ancestral-figure-publication-reference",
+            name="discrete_probabilities_interpretable",
+            fixture_paths=[tree_path, discrete_traits_path],
+            expected={
+                "publication_ready": True,
+                "internal_state_visible": True,
+                "uncertainty_visible": True,
+                "rendered_internal_pie_count_matches": True,
+            },
+            observed={
+                "publication_ready": discrete_package.audit.publication_ready,
+                "internal_state_visible": discrete_package.audit.internal_state_visible,
+                "uncertainty_visible": discrete_package.audit.uncertainty_visible,
+                "rendered_internal_pie_count_matches": (
+                    discrete_package.audit.rendered_internal_pie_count
+                    == discrete_package.audit.internal_node_count
+                ),
+            },
+        ),
+    ]
+    return _suite_report(
+        goal_id=229,
+        suite="ancestral-figure-publication-reference",
+        reviewer_goal="Ancestral figure publication fixtures",
+        fixtures=fixtures,
+        coverage_notes=[
+            "pins one continuous ancestral package where internal node labels carry explicit uncertainty and one discrete package where probability pies remain paired with readable confidence labels",
+            "keeps ancestral figure publication readiness tied to rendered uncertainty visibility rather than to file-count claims or off-figure tables alone",
+        ],
+        limitations=[
+            "ancestral figure publication readiness is audited through render metadata and reviewer ledgers rather than screenshot goldens",
         ],
     )
 
