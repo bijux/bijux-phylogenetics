@@ -127,6 +127,11 @@ from .reports import (
     render_ml_vs_bayesian_tree_report,
     render_time_tree_readiness_report,
 )
+from .time_tree_package import (
+    TimeTreeFigurePackageResult,
+    TimeTreePublicationAudit,
+    build_time_tree_figure_package,
+)
 from .uncertainty import (
     BayesianLimitationsTextResult,
     BayesianMethodsSummaryTextResult,
@@ -203,6 +208,8 @@ __all__ = [
     "PosteriorTreeSetThinningReport",
     "PosteriorUncertaintyFigurePackageResult",
     "SupplementaryBayesianDiagnosticsTableResult",
+    "TimeTreeFigurePackageResult",
+    "TimeTreePublicationAudit",
     "TimeTreeReadinessReport",
     "TimeTreeReadinessReportBuildResult",
     "assess_calibration_dominance",
@@ -241,6 +248,7 @@ __all__ = [
     "subsample_mrbayes_posterior_tree_set",
     "subsample_posterior_tree_set",
     "build_posterior_uncertainty_figure_package",
+    "build_time_tree_figure_package",
     "summarize_beast_log",
     "summarize_beast_posterior_topology_diversity",
     "summarize_beast_posterior_trees",
