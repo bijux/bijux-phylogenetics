@@ -293,6 +293,7 @@ bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --j
 bijux-phylogenetics comparative discrete-mk tree.nwk traits.tsv --trait habitat --taxon-column species --model equal-rates --summary-out artifacts/discrete-mk-summary.tsv --rates-out artifacts/discrete-mk-rates.tsv --json
 bijux-phylogenetics comparative brownian tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative compare-models tree.nwk traits.tsv --trait height_cm --json
+bijux-phylogenetics comparative model-comparison-package tree.nwk traits.tsv --trait height_cm --out-dir artifacts/model-comparison-package --json
 bijux-phylogenetics comparative pgls tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --json
 bijux-phylogenetics comparative pgls tree.nwk traits.tsv --formula "height_cm ~ body_mass * habitat" --json
 bijux-phylogenetics comparative phylogenetic-residuals tree.nwk traits.tsv --response brain_mass --predictor body_mass --summary-out artifacts/phylogenetic-residual-summary.tsv --residuals-out artifacts/phylogenetic-residuals.tsv --coefficients-out artifacts/phylogenetic-residual-coefficients.tsv --excluded-taxa-out artifacts/phylogenetic-residual-excluded.tsv --json
@@ -453,6 +454,17 @@ with median node ages and 95% HPD whiskers on every internal node, writes one
 publication readiness blocked whenever intervals are missing, the dated tree is
 not ultrametric, or supplied tip-date or calibration evidence fails the
 time-tree readiness audit.
+
+For a journal-oriented Brownian-versus-OU comparative review, use
+`comparative model-comparison-package`. It builds one explicit
+`model-comparison-criteria.svg`, `model-comparison-likelihood.svg`,
+`model-comparison-parameters.svg`, and `model-comparison-fit-summary.svg`
+surface, pairs them with machine-readable criteria, likelihood, parameter, and
+fit ledgers, and writes one reviewer HTML summary plus one manifest-backed
+audit. Publication readiness stays blocked whenever one candidate model loses a
+finite AICc value or the selected model remains within an AICc delta of `2.0`
+from the runner-up, but the full package still renders so ambiguous support is
+reviewed honestly instead of being collapsed into a forced winner.
 
 For a journal-oriented tree-set uncertainty figure bundle, use
 `tree-set package`. It builds one consensus tree plus one explicit
