@@ -30,6 +30,7 @@ from bijux_phylogenetics.reports import (
     build_alignment_figure_package,
     write_supplementary_alignment_diagnostics_table,
     write_supplementary_clade_support_table,
+    write_supplementary_comparative_model_table,
     write_supplementary_model_selection_table,
     write_supplementary_taxon_table,
     write_supplementary_tree_diagnostics_table,
@@ -313,6 +314,37 @@ def add_report_command(subparsers: Any) -> None:
     )
     _add_manifest_argument(report_supplementary_model_selection_table)
 
+    report_supplementary_comparative_model_table = report_subparsers.add_parser(
+        "supplementary-comparative-model-table",
+        help="Write a supplementary comparative-model table with coefficients, uncertainty, diagnostics, and exclusions.",
+    )
+    report_supplementary_comparative_model_table.add_argument(
+        "--tree", required=True, type=Path
+    )
+    report_supplementary_comparative_model_table.add_argument(
+        "--traits", required=True, type=Path
+    )
+    report_supplementary_comparative_model_table.add_argument(
+        "--formula",
+        dest="formulas",
+        action="append",
+        required=True,
+        help="Add one comparative candidate formula. Repeat for each candidate model.",
+    )
+    report_supplementary_comparative_model_table.add_argument("--taxon-column")
+    report_supplementary_comparative_model_table.add_argument(
+        "--lambda-value",
+        default="estimate",
+        help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
+    )
+    report_supplementary_comparative_model_table.add_argument(
+        "--out", required=True, type=Path
+    )
+    report_supplementary_comparative_model_table.add_argument(
+        "--json", action="store_true", help="Emit the table write result as JSON."
+    )
+    _add_manifest_argument(report_supplementary_comparative_model_table)
+
     report_workflow_validation = report_subparsers.add_parser(
         "workflow-validation",
         help="Render the Level 1 workflow validation fixture report.",
@@ -426,6 +458,14 @@ def add_report_command(subparsers: Any) -> None:
 
 
 def run_report_command(args: Any) -> int:
+    parsed_lambda_value: float | str
+    if getattr(args, "lambda_value", None) == "estimate":
+        parsed_lambda_value = "estimate"
+    elif getattr(args, "lambda_value", None) is None:
+        parsed_lambda_value = "estimate"
+    else:
+        parsed_lambda_value = float(args.lambda_value)
+
     if args.report_command == "tree":
         result = render_tree_report(tree_path=args.tree, out_path=args.out)
         outputs = _finalize_outputs(
@@ -1043,6 +1083,44 @@ def run_report_command(args: Any) -> int:
                         "candidate_count": result.candidate_count,
                         "selected_model": result.selected_model,
                         "selected_criterion": result.selected_criterion,
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
+        return 0
+
+    if args.report_command == "supplementary-comparative-model-table":
+        result = write_supplementary_comparative_model_table(
+            args.out,
+            tree_path=args.tree,
+            traits_path=args.traits,
+            formulas=list(args.formulas),
+            taxon_column=args.taxon_column,
+            lambda_value=parsed_lambda_value,
+        )
+        inputs = [args.tree, args.traits]
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=inputs,
+            outputs=[result.output_path],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=inputs,
+                    outputs=outputs,
+                    warnings=[],
+                    metrics={
+                        "row_count": result.row_count,
+                        "model_count": result.model_count,
+                        "selected_formula": result.selected_formula,
+                        "selected_criterion": result.selected_criterion,
+                        "excluded_taxon_count": result.excluded_taxon_count,
                     },
                     data=result,
                 ),
