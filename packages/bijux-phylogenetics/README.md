@@ -1313,6 +1313,7 @@ observation TSV instead of relying on console scraping. The initial registry is
 intentionally narrow for this harness goal: it currently covers
 `geiger::fitContinuous(model='BM')`,
 `geiger::fitContinuous(model='lambda')`,
+`geiger::fitContinuous(model='kappa')`,
 `geiger::fitContinuous(model='OU')`, and
 `geiger::fitContinuous(model='EB')` over the four-taxon comparative smoke
 fixture plus the governed shared `geiger` continuous-trait fixtures. Those
@@ -1346,6 +1347,18 @@ rather than reusing the repo's `phytools::phylosig`-style signal summary
 surface. That distinction matters because the parity lane compares full
 fit-likelihood, rate, and information-criterion behavior, not just one lambda
 estimate.
+The kappa lane now has three governed `fitContinuous(model='kappa')` cases:
+a twenty-four-taxon strong-signal transformed-branch review surface, a
+twenty-four-taxon weak-signal review surface that collapses to the lower
+punctuational boundary, and a twenty-four-taxon missing-value pruning review
+surface. Those cases govern direct branch-length power transformation,
+explicit kappa bounds, sigma-squared-backed rate, root-state recovery,
+log-likelihood, AIC, AICc, and reviewer-facing lower-boundary warnings. The
+owned Bijux side exposes this through
+`fit_continuous_evolutionary_mode(mode='pagel-kappa')` and
+`rescale_tree_pagel_kappa(...)`, which follow the
+`geiger::fitContinuous(model='kappa')` contract by transforming branch lengths
+directly rather than by reusing the Pagel-lambda covariance scaling surface.
 The OU lane now has three governed cases with the same reviewer-facing rigor:
 the twenty-four-taxon OU known-truth recovery surface, a missing-value pruning
 review surface, and a lower-boundary review surface on the rooted
