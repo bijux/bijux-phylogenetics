@@ -4,7 +4,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
 
-from bijux_phylogenetics.core.metadata import TaxonTable, load_taxon_table
+from bijux_phylogenetics.core.metadata import (
+    TaxonTable,
+    TableValue,
+    load_taxon_table,
+    write_taxon_rows,
+)
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
@@ -75,6 +80,33 @@ class TraitMissingValueReport:
     path: Path
     taxon_column: str
     missing_values: list[MissingTraitValue]
+
+
+@dataclass(slots=True)
+class TaxonNameMismatchRow:
+    """One taxon-name mismatch between a tree tip set and a trait table."""
+
+    mismatch_side: str
+    taxon: str
+    present_in_tree: bool
+    present_in_traits: bool
+
+
+@dataclass(slots=True)
+class TreeTraitNameCheckReport:
+    """Stable taxon-name mismatch report aligned to `geiger::name.check`."""
+
+    tree_path: Path
+    traits_path: Path
+    taxon_column: str
+    tree_taxa: int
+    trait_taxa: int
+    tree_not_data: list[str]
+    data_not_tree: list[str]
+    mismatch_rows: list[TaxonNameMismatchRow]
+    compatible: bool
+    reference_outcome: str
+    matching_policy: str
 
 
 @dataclass(slots=True)
@@ -182,6 +214,77 @@ def validate_traits_table(
         row_count=table.row_count,
         taxon_column=table.taxon_column,
         trait_columns=trait_columns,
+    )
+
+
+def check_tree_and_trait_taxon_names(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    taxon_column: str | None = None,
+) -> TreeTraitNameCheckReport:
+    """Report tree-versus-trait taxon mismatches with `geiger::name.check` semantics."""
+    tree = load_tree(tree_path)
+    table = load_taxon_table(traits_path, taxon_column=taxon_column)
+    trait_taxa = set(table.taxa)
+    tree_not_data = [taxon for taxon in tree.tip_names if taxon not in trait_taxa]
+    data_not_tree = [taxon for taxon in table.taxa if taxon not in set(tree.tip_names)]
+    mismatch_rows = [
+        TaxonNameMismatchRow(
+            mismatch_side="tree_not_data",
+            taxon=taxon,
+            present_in_tree=True,
+            present_in_traits=False,
+        )
+        for taxon in tree_not_data
+    ] + [
+        TaxonNameMismatchRow(
+            mismatch_side="data_not_tree",
+            taxon=taxon,
+            present_in_tree=False,
+            present_in_traits=True,
+        )
+        for taxon in data_not_tree
+    ]
+    compatible = not mismatch_rows
+    return TreeTraitNameCheckReport(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        taxon_column=table.taxon_column,
+        tree_taxa=len(tree.tip_names),
+        trait_taxa=table.row_count,
+        tree_not_data=tree_not_data,
+        data_not_tree=data_not_tree,
+        mismatch_rows=mismatch_rows,
+        compatible=compatible,
+        reference_outcome="OK" if compatible else "mismatch",
+        matching_policy="case-sensitive-exact-label-matching",
+    )
+
+
+def write_tree_trait_name_mismatch_table(
+    path: Path,
+    report: TreeTraitNameCheckReport,
+) -> Path:
+    """Write one machine-readable taxon-name mismatch table."""
+    rows: list[dict[str, TableValue]] = [
+        {
+            "mismatch_side": row.mismatch_side,
+            "taxon": row.taxon,
+            "present_in_tree": row.present_in_tree,
+            "present_in_traits": row.present_in_traits,
+        }
+        for row in report.mismatch_rows
+    ]
+    return write_taxon_rows(
+        path,
+        columns=[
+            "mismatch_side",
+            "taxon",
+            "present_in_tree",
+            "present_in_traits",
+        ],
+        rows=rows,
     )
 
 
