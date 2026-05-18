@@ -33,6 +33,7 @@ from bijux_phylogenetics.reports.service import (
 )
 from bijux_phylogenetics.reports import (
     build_alignment_figure_package,
+    write_reviewer_audit_checklist_from_manifest,
     write_alignment_filtering_methods_summary_text,
     write_tree_inference_methods_summary_text,
     write_tree_validation_methods_summary_text,
@@ -122,6 +123,17 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the package build result as JSON."
     )
     _add_manifest_argument(report_tree_package)
+
+    report_reviewer_audit_checklist = report_subparsers.add_parser(
+        "reviewer-audit-checklist",
+        help="Write a reviewer-facing audit checklist from a supported package manifest.",
+    )
+    report_reviewer_audit_checklist.add_argument("manifest", type=Path)
+    report_reviewer_audit_checklist.add_argument("--out", required=True, type=Path)
+    report_reviewer_audit_checklist.add_argument(
+        "--json", action="store_true", help="Emit the checklist result as JSON."
+    )
+    _add_manifest_argument(report_reviewer_audit_checklist)
 
     report_tree_validation_methods_summary = report_subparsers.add_parser(
         "tree-validation-methods-summary",
@@ -728,6 +740,45 @@ def run_report_command(args: Any) -> int:
             )
             return 0
         print(result.output_dir)
+        return 0
+
+    if args.report_command == "reviewer-audit-checklist":
+        result = write_reviewer_audit_checklist_from_manifest(args.out, args.manifest)
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=[args.manifest],
+            outputs=[result.output_path],
+        )
+        if args.json:
+            blocked_item_count = sum(
+                1 for item in result.checklist.items if item.status == "blocked"
+            )
+            risk_item_count = sum(
+                1 for item in result.checklist.items if item.status == "risk"
+            )
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=[args.manifest],
+                    outputs=outputs,
+                    warnings=[
+                        item.summary
+                        for item in result.checklist.items
+                        if item.status != "pass"
+                    ],
+                    metrics={
+                        "report_kind": result.checklist.report_kind,
+                        "item_count": len(result.checklist.items),
+                        "blocked_item_count": blocked_item_count,
+                        "risk_item_count": risk_item_count,
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
         return 0
 
     if args.report_command == "tree-validation-methods-summary":
