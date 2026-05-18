@@ -931,6 +931,10 @@ def run_demo_command(args: Any) -> int:
                 result.workflow_bundle.slurm_job_status_path,
                 result.workflow_bundle.slurm_partition_status_path,
                 result.workflow_bundle.slurm_workflow_status_path,
+                result.workflow_bundle.slurm_failure_recovery_jobs_path,
+                result.workflow_bundle.slurm_failure_recovery_partitions_path,
+                result.workflow_bundle.slurm_failure_recovery_summary_path,
+                result.workflow_bundle.slurm_failure_recovery_report_path,
                 result.workflow_bundle.reproducibility_checks_path,
                 result.workflow_bundle.reproducibility_variant_audit_path,
                 result.workflow_bundle.reproducibility_audit_path,
@@ -1107,6 +1111,18 @@ def run_demo_command(args: Any) -> int:
                         ),
                         "slurm_stale_job_count": (
                             result.workflow_bundle.slurm_stale_job_count
+                        ),
+                        "slurm_failure_recovery_status": (
+                            result.workflow_bundle.slurm_failure_recovery_status
+                        ),
+                        "slurm_failure_recovery_rerunnable_job_count": (
+                            result.workflow_bundle.slurm_failure_recovery_rerunnable_job_count
+                        ),
+                        "slurm_failure_recovery_blocked_job_count": (
+                            result.workflow_bundle.slurm_failure_recovery_blocked_job_count
+                        ),
+                        "slurm_failure_recovery_partition_count": (
+                            result.workflow_bundle.slurm_failure_recovery_partition_count
                         ),
                         "reproducibility_passed": (
                             result.workflow_bundle.reproducibility_passed
