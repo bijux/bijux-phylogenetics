@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import json
 from pathlib import Path
-from time import perf_counter
-import tracemalloc
 
 from bijux_phylogenetics.bayesian.beast import (
     assess_beast_burnin_sensitivity,
@@ -20,41 +18,13 @@ from bijux_phylogenetics.engines.common import (
     build_file_checksums,
     load_engine_manifest,
 )
-from bijux_phylogenetics.io.newick import write_newick
-from bijux_phylogenetics.render.svg import render_tree_svg
-from bijux_phylogenetics.trees import (
-    TreeSetProcessingSummary,
-    TreeSetWorkflowBudgetReport,
-    build_tree_set_budget_report,
-    build_tree_set_workflow_budget,
-    cluster_trees_by_topology,
-    compute_clade_frequency_table,
-    compute_consensus_tree,
-    detect_posterior_topology_multimodality,
-    detect_unstable_taxa,
-    enforce_tree_set_tree_budget,
-    load_tree_set,
-    summarize_clade_credibility_conflicts,
-    summarize_uncertainty_aware_conclusions,
-    write_topology_cluster_table,
-    write_uncertainty_conclusion_table,
+from bijux_phylogenetics.trees.uncertainty_package import (
+    TreeSetUncertaintyFigurePackageResult,
+    build_tree_set_uncertainty_figure_package,
 )
 
 
-@dataclass(slots=True)
-class PosteriorUncertaintyFigurePackageResult:
-    output_dir: Path
-    tree_count: int
-    processing: TreeSetProcessingSummary
-    budget_report: TreeSetWorkflowBudgetReport
-    consensus_tree_path: Path
-    consensus_figure_path: Path
-    clade_frequency_plot_path: Path
-    unstable_taxa_table_path: Path
-    topology_clusters_table_path: Path
-    uncertainty_conclusions_table_path: Path
-    conclusion_summary_path: Path
-    manifest_path: Path
+PosteriorUncertaintyFigurePackageResult = TreeSetUncertaintyFigurePackageResult
 
 
 @dataclass(slots=True)
@@ -103,147 +73,16 @@ def build_posterior_uncertainty_figure_package(
     max_report_table_rows: int | None = None,
     memory_warning_threshold_bytes: int | None = None,
 ) -> PosteriorUncertaintyFigurePackageResult:
-    """Build a publication-oriented posterior uncertainty package from one tree set."""
-    budget = build_tree_set_workflow_budget(
+    """Compatibility wrapper for the tree-owned uncertainty package surface."""
+    return build_tree_set_uncertainty_figure_package(
+        tree_set_path,
+        out_dir=out_dir,
+        layout=layout,
+        plot_row_limit=frequency_plot_limit,
         max_tree_count=max_tree_count,
         max_report_table_rows=max_report_table_rows,
         memory_warning_threshold_bytes=memory_warning_threshold_bytes,
     )
-    started = perf_counter()
-    started_tracing = tracemalloc.is_tracing()
-    if not started_tracing:
-        tracemalloc.start()
-    try:
-        summary = load_tree_set(tree_set_path)
-        enforce_tree_set_tree_budget(
-            tree_count=summary.tree_count,
-            budget=budget,
-            workflow_name="posterior uncertainty figure package",
-            source_path=tree_set_path,
-        )
-        out_dir.mkdir(parents=True, exist_ok=True)
-        consensus_tree, consensus = compute_consensus_tree(tree_set_path)
-        clade_frequencies = compute_clade_frequency_table(tree_set_path)
-        unstable_taxa = detect_unstable_taxa(tree_set_path)
-        clusters = cluster_trees_by_topology(tree_set_path)
-        multimodality = detect_posterior_topology_multimodality(tree_set_path)
-        conflicts = summarize_clade_credibility_conflicts(tree_set_path)
-        conclusions = summarize_uncertainty_aware_conclusions(tree_set_path)
-
-        consensus_tree_path = out_dir / "consensus-tree.nwk"
-        consensus_figure_path = out_dir / "consensus-tree.svg"
-        clade_frequency_plot_path = out_dir / "clade-frequency-plot.svg"
-        unstable_taxa_table_path = out_dir / "unstable-taxa.tsv"
-        topology_clusters_table_path = out_dir / "topology-clusters.tsv"
-        uncertainty_conclusions_table_path = out_dir / "uncertainty-conclusions.tsv"
-        conclusion_summary_path = out_dir / "uncertainty-summary.md"
-        manifest_path = out_dir / "uncertainty-package-manifest.json"
-
-        write_newick(consensus_tree_path, consensus_tree)
-        render_tree_svg(
-            consensus_tree_path,
-            out_path=consensus_figure_path,
-            layout=layout,
-            show_support_values=True,
-        )
-        _write_clade_frequency_plot(
-            clade_frequency_plot_path,
-            clade_frequencies=clade_frequencies,
-            limit=frequency_plot_limit,
-        )
-        write_taxon_rows(
-            unstable_taxa_table_path,
-            columns=[
-                "taxon",
-                "unique_placements",
-                "dominant_frequency",
-                "instability_score",
-                "placement_signatures",
-            ],
-            rows=[
-                {
-                    "taxon": row.taxon,
-                    "unique_placements": str(row.unique_placements),
-                    "dominant_frequency": format(row.dominant_frequency, ".15g"),
-                    "instability_score": format(row.instability_score, ".15g"),
-                    "placement_signatures": "; ".join(
-                        f"{placement.signature} ({format(placement.frequency, '.15g')})"
-                        for placement in row.placements
-                    ),
-                }
-                for row in unstable_taxa.taxa
-            ],
-        )
-        write_topology_cluster_table(topology_clusters_table_path, clusters)
-        write_uncertainty_conclusion_table(
-            uncertainty_conclusions_table_path, conclusions
-        )
-        conclusion_summary_path.write_text(
-            _uncertainty_summary_markdown(
-                consensus_newick=consensus.consensus_newick,
-                multimodality=multimodality,
-                conflicts=conflicts,
-                conclusions=conclusions,
-            ),
-            encoding="utf-8",
-        )
-        _current, peak = tracemalloc.get_traced_memory()
-        processing = TreeSetProcessingSummary(
-            runtime_seconds=round(perf_counter() - started, 6),
-            peak_memory_bytes=peak,
-            skipped_malformed_tree_count=summary.processing.skipped_malformed_tree_count,
-        )
-        budget_report = build_tree_set_budget_report(
-            budget=budget,
-            peak_memory_bytes=processing.peak_memory_bytes,
-        )
-        manifest_path.write_text(
-            json.dumps(
-                {
-                    "tree_set_path": str(tree_set_path),
-                    "layout": layout,
-                    "processing": asdict(processing),
-                    "budget": asdict(budget_report),
-                    "artifacts": {
-                        "consensus_tree": str(consensus_tree_path),
-                        "consensus_figure": str(consensus_figure_path),
-                        "clade_frequency_plot": str(clade_frequency_plot_path),
-                        "unstable_taxa_table": str(unstable_taxa_table_path),
-                        "topology_clusters_table": str(topology_clusters_table_path),
-                        "uncertainty_conclusions_table": str(
-                            uncertainty_conclusions_table_path
-                        ),
-                        "uncertainty_summary": str(conclusion_summary_path),
-                    },
-                    "consensus": asdict(consensus),
-                    "multimodality": asdict(multimodality),
-                    "clade_conflicts": asdict(conflicts),
-                    "conclusions": asdict(conclusions),
-                },
-                indent=2,
-                sort_keys=True,
-                default=str,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        return PosteriorUncertaintyFigurePackageResult(
-            output_dir=out_dir,
-            tree_count=summary.tree_count,
-            processing=processing,
-            budget_report=budget_report,
-            consensus_tree_path=consensus_tree_path,
-            consensus_figure_path=consensus_figure_path,
-            clade_frequency_plot_path=clade_frequency_plot_path,
-            unstable_taxa_table_path=unstable_taxa_table_path,
-            topology_clusters_table_path=topology_clusters_table_path,
-            uncertainty_conclusions_table_path=uncertainty_conclusions_table_path,
-            conclusion_summary_path=conclusion_summary_path,
-            manifest_path=manifest_path,
-        )
-    finally:
-        if not started_tracing:
-            tracemalloc.stop()
 
 
 def write_supplementary_bayesian_diagnostics_table(
@@ -698,63 +537,4 @@ def write_bayesian_limitations_text(
         title="Bayesian Analysis Limitations",
         warning_count=len(sorted(dict.fromkeys(limitations))),
         text=text,
-    )
-
-
-def _write_clade_frequency_plot(
-    path: Path,
-    *,
-    clade_frequencies,
-    limit: int,
-) -> Path:
-    top_rows = sorted(
-        clade_frequencies.clade_frequencies,
-        key=lambda row: (-row.frequency, row.clade),
-    )[: max(limit, 1)]
-    width = 900
-    height = 80 + 42 * max(len(top_rows), 1)
-    bar_left = 250
-    bar_width = 560
-    lines = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
-        '<rect width="100%" height="100%" fill="#f8fafc"/>',
-        '<text x="24" y="36" font-family="Avenir Next, Segoe UI, sans-serif" font-size="22" fill="#0f766e">Posterior Clade Frequencies</text>',
-    ]
-    for index, row in enumerate(top_rows):
-        y = 70 + index * 42
-        filled_width = round(bar_width * row.frequency, 3)
-        lines.extend(
-            [
-                f'<text x="24" y="{y + 18}" font-family="SFMono-Regular, Consolas, monospace" font-size="14" fill="#1f2937">{row.clade}</text>',
-                f'<rect x="{bar_left}" y="{y}" width="{bar_width}" height="22" rx="8" fill="#e2e8f0"/>',
-                f'<rect x="{bar_left}" y="{y}" width="{filled_width}" height="22" rx="8" fill="#0f766e"/>',
-                f'<text x="{bar_left + bar_width + 12}" y="{y + 17}" font-family="SFMono-Regular, Consolas, monospace" font-size="13" fill="#1f2937">{format(row.frequency, ".3f")}</text>',
-            ]
-        )
-    lines.append("</svg>")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return path
-
-
-def _uncertainty_summary_markdown(
-    *,
-    consensus_newick: str,
-    multimodality,
-    conflicts,
-    conclusions,
-) -> str:
-    robust = ", ".join(row.clade for row in conclusions.robust_clades) or "none"
-    uncertain = ", ".join(row.clade for row in conclusions.uncertain_clades) or "none"
-    conflicting = (
-        ", ".join(row.clade for row in conclusions.conflicting_clades) or "none"
-    )
-    return (
-        "# Posterior Uncertainty Summary\n\n"
-        f"- Consensus tree: `{consensus_newick}`\n"
-        f"- Topology modes detected: `{multimodality.mode_count}`\n"
-        f"- High-credibility clade conflicts: `{conflicts.conflict_count}`\n"
-        f"- Robust clades: `{robust}`\n"
-        f"- Uncertain clades: `{uncertain}`\n"
-        f"- Conflict-prone clades: `{conflicting}`\n"
     )
