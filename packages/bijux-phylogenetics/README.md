@@ -465,6 +465,16 @@ dominant retained categories, `slurm-output-explosion-report.json` carries the
 machine-readable summary, and `slurm-output-explosion-report.html` gives
 reviewers one compact explanation of whether current retained outputs, tree
 artifacts, posterior samples, or report files are starting to scale badly.
+Right after that, the same workflow now writes one tree-retention policy
+surface for deciding when multi-tree artifacts should be thinned or
+compressed safely: `slurm-tree-retention-checks.tsv` records the consistency
+checks behind the policy, `slurm-tree-retention-files.tsv` records one
+per-file retention decision, `slurm-tree-retention-policy.json` carries the
+machine-readable summary, and `slurm-tree-retention-policy.html` gives
+reviewers one compact explanation of whether any retained tree sets need
+interval thinning or gzip compression. The current governed rabies bundle has
+only single-tree outputs, so the policy explicitly records that thinning is
+not currently applicable.
 It now also writes one per-job evidence surface for independent debugging:
 `slurm-job-evidence.tsv` indexes one provenance package per planned job,
 `slurm-job-evidence-summary.json` carries the workflow-wide summary, and
@@ -509,6 +519,13 @@ also report `report_linked_artifact_count`, `report_html_size_bytes`,
 `slurm_output_explosion_global_issue_count`,
 `slurm_output_explosion_warning_variant_count`, and
 `slurm_output_explosion_high_risk_variant_count`,
+`slurm_tree_retention_status`,
+`slurm_tree_set_file_count`,
+`slurm_tree_posterior_sample_file_count`,
+`slurm_tree_thinning_recommended_file_count`,
+`slurm_tree_thinning_required_file_count`,
+`slurm_tree_compression_recommended_file_count`, and
+`slurm_tree_compression_required_file_count`,
 `slurm_output_freshness_check_count`,
 `slurm_output_freshness_failed_check_count`,
 `slurm_fresh_output_job_count`, and `slurm_stale_output_job_count`,

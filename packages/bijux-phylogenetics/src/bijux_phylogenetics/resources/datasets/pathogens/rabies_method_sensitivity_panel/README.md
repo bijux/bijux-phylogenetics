@@ -122,6 +122,17 @@ The governed expected bundle now also includes:
 - `slurm-output-explosion-report.html`: one reviewer-facing summary of whether
   retained outputs, tree files, posterior samples, or report artifacts are
   starting to scale badly
+- `slurm-tree-retention-checks.tsv`: one check-level ledger over the
+  consistency checks behind safe tree thinning and compression policy
+- `slurm-tree-retention-files.tsv`: one per-file retention ledger recording
+  tree count, thinning policy, compression policy, and the retained-tree
+  target for each tree-bearing file
+- `slurm-tree-retention-policy.json`: one machine-readable summary over
+  tree-set counts, thinning requirements, compression requirements, and the
+  current overall policy status
+- `slurm-tree-retention-policy.html`: one reviewer-facing summary of whether
+  any retained tree sets need interval thinning or gzip compression before the
+  workflow scales further
 - `slurm-job-evidence.tsv`: one workflow-wide index over the per-job
   provenance packages written for each planned Slurm job
 - `slurm-job-evidence-summary.json`: one machine-readable summary over the
