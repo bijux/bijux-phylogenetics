@@ -20,6 +20,9 @@ from bijux_phylogenetics.ancestral.service import write_ancestral_state_table
 from bijux_phylogenetics.ancestral.visualization import (
     render_ancestral_state_visualization,
 )
+from bijux_phylogenetics.render.reproducibility import (
+    write_figure_reproducibility_manifest,
+)
 
 
 @dataclass(slots=True)
@@ -55,6 +58,7 @@ class AncestralFigurePackageResult:
     model_description_path: Path
     caption_path: Path
     manifest_path: Path
+    reproducibility_manifest_path: Path
     audit: AncestralFigurePublicationAudit
     reconstruction: ContinuousAncestralReport | DiscreteAncestralReport
 
@@ -116,6 +120,7 @@ def build_ancestral_figure_package(
     model_description_path = out_dir / "model-description.md"
     caption_path = out_dir / "figure-caption.md"
     manifest_path = out_dir / "figure-manifest.json"
+    reproducibility_manifest_path = out_dir / "figure-reproducibility.manifest.json"
 
     figure_render = render_ancestral_state_visualization(
         tree_path,
@@ -176,6 +181,52 @@ def build_ancestral_figure_package(
         node_review_rows=node_review_rows,
         uncertainty_table_path=uncertainty_table_path,
     )
+    reproducibility_manifest = write_figure_reproducibility_manifest(
+        reproducibility_manifest_path,
+        report_kind="ancestral_figure_package",
+        input_files=[
+            ("tree", tree_path),
+            ("traits", traits_path),
+        ],
+        generated_figures=[
+            ("figure_svg", figure_path),
+            ("figure_png", figure_png_path),
+            ("figure_html", figure_html_path),
+        ],
+        generated_tables=[
+            ("node_states", node_table_path),
+            ("uncertainty", uncertainty_table_path),
+            ("node_review", node_review_path),
+        ],
+        filters=None,
+        model={
+            "kind": reconstruction_kind,
+            "name": model,
+            "alpha": alpha if reconstruction_kind == "continuous" else None,
+            "state_ordering": (
+                state_ordering if reconstruction_kind == "discrete" else None
+            ),
+            "ordered_states": (
+                ordered_states if reconstruction_kind == "discrete" else None
+            ),
+        },
+        settings={
+            "trait": trait,
+            "taxon_column": taxon_column,
+            "layout": layout,
+            "internal_node_count": audit.internal_node_count,
+            "rendered_internal_annotation_count": (
+                audit.rendered_internal_annotation_count
+            ),
+            "rendered_internal_pie_count": audit.rendered_internal_pie_count,
+        },
+        linked_artifacts=[
+            ("legend", legend_path),
+            ("model_description", model_description_path),
+            ("caption", caption_path),
+            ("review", review_path),
+        ],
+    )
     manifest_path.write_text(
         json.dumps(
             {
@@ -201,6 +252,7 @@ def build_ancestral_figure_package(
                     "legend": str(legend_path),
                     "model_description": str(model_description_path),
                     "caption": str(caption_path),
+                    "reproducibility_manifest": str(reproducibility_manifest_path),
                 },
                 "artifact_checksums": {
                     str(path): _sha256(path)
@@ -215,8 +267,14 @@ def build_ancestral_figure_package(
                         legend_path,
                         model_description_path,
                         caption_path,
+                        reproducibility_manifest_path,
                     )
                 },
+                "reproducibility_manifest_path": str(reproducibility_manifest_path),
+                "reproducibility_manifest_checksum": _sha256(
+                    reproducibility_manifest_path
+                ),
+                "reproducibility_manifest": reproducibility_manifest,
                 "audit": asdict(audit),
                 "report": asdict(report),
             },
@@ -240,6 +298,7 @@ def build_ancestral_figure_package(
         model_description_path=model_description_path,
         caption_path=caption_path,
         manifest_path=manifest_path,
+        reproducibility_manifest_path=reproducibility_manifest_path,
         audit=audit,
         reconstruction=report,
     )
