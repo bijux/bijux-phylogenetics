@@ -13,6 +13,7 @@ from bijux_phylogenetics.comparative import (
     fit_continuous_evolutionary_mode,
     rescale_tree_early_burst,
     rescale_tree_ornstein_uhlenbeck,
+    rescale_tree_pagel_delta,
     rescale_tree_pagel_kappa,
 )
 from bijux_phylogenetics.fixtures import get_shared_geiger_continuous_fixture
@@ -75,6 +76,21 @@ def test_rescale_tree_pagel_kappa_reports_deterministic_branch_lengths() -> None
     )
 
 
+def test_rescale_tree_pagel_delta_reports_deterministic_branch_lengths() -> None:
+    report = rescale_tree_pagel_delta(EXAMPLE_TREE, delta=0.5)
+
+    assert report.mode == "pagel-delta"
+    assert report.parameter_name == "delta"
+    assert report.tip_count == 4
+    assert math.isclose(report.parameter_value, 0.5)
+    assert math.isclose(report.transformed_total_branch_length, 0.781845944964795)
+    assert report.branch_rows[0].node == "A"
+    assert math.isclose(report.branch_rows[0].original_branch_length, 0.1)
+    assert math.isclose(
+        report.branch_rows[0].transformed_branch_length, 0.055051025721682
+    )
+
+
 def test_rescale_tree_ornstein_uhlenbeck_rejects_negative_alpha() -> None:
     with pytest.raises(ComparativeMethodError, match="OU alpha must be non-negative"):
         rescale_tree_ornstein_uhlenbeck(EXAMPLE_TREE, alpha=-0.5)
@@ -86,6 +102,60 @@ def test_rescale_tree_pagel_kappa_rejects_negative_branch_lengths() -> None:
         match="Pagel kappa cannot transform negative branch lengths",
     ):
         rescale_tree_pagel_kappa(EXAMPLE_TREE_NEGATIVE, kappa=0.5)
+
+
+def test_fit_continuous_evolutionary_mode_supports_pagel_delta_strong_signal() -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="pagel-delta",
+        taxon_column=fixture.taxon_column,
+    )
+
+    assert fit.mode == "pagel-delta"
+    assert fit.parameter_name == "delta"
+    assert fit.parameter_value is not None
+    assert 1.3 < fit.parameter_value < 1.7
+    assert fit.optimizer_diagnostics is not None
+    assert fit.optimizer_diagnostics.hit_lower_boundary is False
+    assert fit.optimizer_diagnostics.hit_upper_boundary is False
+    assert fit.aicc >= fit.aic
+    assert "depth transformation" in fit.assumptions[0]
+    assert [warning.kind for warning in fit.identifiability_warnings] == [
+        "flat_likelihood"
+    ]
+
+
+def test_fit_continuous_evolutionary_mode_supports_pagel_delta_weak_signal() -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_white_noise_twenty_four_taxa"
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="pagel-delta",
+        taxon_column=fixture.taxon_column,
+    )
+
+    assert fit.mode == "pagel-delta"
+    assert fit.parameter_name == "delta"
+    assert fit.parameter_value is not None
+    assert math.isclose(fit.parameter_value, 3.0, abs_tol=1e-12)
+    assert fit.optimizer_diagnostics is not None
+    assert fit.optimizer_diagnostics.hit_lower_boundary is False
+    assert fit.optimizer_diagnostics.hit_upper_boundary is True
+    assert [warning.kind for warning in fit.identifiability_warnings] == [
+        "boundary_delta",
+        "flat_likelihood",
+        "late_change_limit",
+    ]
 
 
 def test_fit_continuous_evolutionary_mode_supports_early_burst() -> None:
