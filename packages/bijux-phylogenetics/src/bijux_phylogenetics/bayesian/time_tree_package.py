@@ -439,7 +439,14 @@ def build_time_tree_figure_package(
     ]
     if readiness is not None:
         sections.append(
-            ("time-tree readiness", json.dumps(asdict(readiness), indent=2, sort_keys=True))
+            (
+                "time-tree readiness",
+                json.dumps(
+                    _json_ready(asdict(readiness)),
+                    indent=2,
+                    sort_keys=True,
+                ),
+            )
         )
     write_html_report(
         title=title,
@@ -451,7 +458,14 @@ def build_time_tree_figure_package(
             ("root_age", format(render.root_age, ".6g")),
             ("interval_complete", audit.interval_complete),
             ("ultrametric", audit.ultrametric),
-            ("readiness_decision", "not_supplied" if audit.readiness_decision is None else audit.readiness_decision),
+            (
+                "readiness_decision",
+                (
+                    "not_supplied"
+                    if audit.readiness_decision is None
+                    else audit.readiness_decision
+                ),
+            ),
         ],
         artifact_links=[
             ("time-tree figure", figure_path.name, "dated SVG with median ages and HPD intervals"),
