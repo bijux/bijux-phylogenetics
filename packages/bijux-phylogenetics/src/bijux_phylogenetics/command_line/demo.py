@@ -893,6 +893,7 @@ def run_demo_command(args: Any) -> int:
                 result.workflow_bundle.workflow_summary_path,
                 result.workflow_bundle.variant_summary_path,
                 result.workflow_bundle.parallel_summary_path,
+                result.workflow_bundle.execution_record_path,
                 result.workflow_bundle.preprocessing_comparison_path,
                 result.workflow_bundle.stable_clades_path,
                 result.workflow_bundle.changed_clades_path,
@@ -906,6 +907,9 @@ def run_demo_command(args: Any) -> int:
                 result.workflow_bundle.slurm_array_partitions_path,
                 result.workflow_bundle.slurm_array_members_path,
                 result.workflow_bundle.slurm_array_strategy_path,
+                result.workflow_bundle.slurm_job_status_path,
+                result.workflow_bundle.slurm_partition_status_path,
+                result.workflow_bundle.slurm_workflow_status_path,
                 result.workflow_bundle.reproducibility_checks_path,
                 result.workflow_bundle.reproducibility_variant_audit_path,
                 result.workflow_bundle.reproducibility_audit_path,
@@ -983,6 +987,18 @@ def run_demo_command(args: Any) -> int:
                         ),
                         "slurm_array_largest_partition_size": (
                             result.workflow_bundle.slurm_array_largest_partition_size
+                        ),
+                        "slurm_completed_job_count": (
+                            result.workflow_bundle.slurm_completed_job_count
+                        ),
+                        "slurm_failed_job_count": (
+                            result.workflow_bundle.slurm_failed_job_count
+                        ),
+                        "slurm_pending_job_count": (
+                            result.workflow_bundle.slurm_pending_job_count
+                        ),
+                        "slurm_stale_job_count": (
+                            result.workflow_bundle.slurm_stale_job_count
                         ),
                         "reproducibility_passed": (
                             result.workflow_bundle.reproducibility_passed

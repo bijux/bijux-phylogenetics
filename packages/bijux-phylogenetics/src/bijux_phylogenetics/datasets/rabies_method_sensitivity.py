@@ -52,6 +52,13 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_arrays import 
     write_rabies_method_sensitivity_slurm_array_partitions_table,
     write_rabies_method_sensitivity_slurm_array_strategy_json,
 )
+from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_status import (
+    RabiesMethodSensitivitySlurmStatusReport,
+    build_rabies_method_sensitivity_slurm_status_report,
+    write_rabies_method_sensitivity_slurm_job_status_table,
+    write_rabies_method_sensitivity_slurm_partition_status_table,
+    write_rabies_method_sensitivity_slurm_status_json,
+)
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError, PhylogeneticsError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment, validate_fasta_input
 from bijux_phylogenetics.io.newick import write_newick
@@ -251,6 +258,13 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     slurm_array_partition_count: int
     slurm_array_script_count: int
     slurm_array_largest_partition_size: int
+    slurm_job_status_path: Path
+    slurm_partition_status_path: Path
+    slurm_workflow_status_path: Path
+    slurm_completed_job_count: int
+    slurm_failed_job_count: int
+    slurm_pending_job_count: int
+    slurm_stale_job_count: int
     reproducibility_checks_path: Path
     reproducibility_variant_audit_path: Path
     reproducibility_audit_path: Path
@@ -711,6 +725,23 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             slurm_array_strategy_report,
         )
     )
+    slurm_status_report = build_rabies_method_sensitivity_slurm_status_report(
+        output_root
+    )
+    slurm_job_status_path = write_rabies_method_sensitivity_slurm_job_status_table(
+        output_root / "slurm-job-status.tsv",
+        slurm_status_report,
+    )
+    slurm_partition_status_path = (
+        write_rabies_method_sensitivity_slurm_partition_status_table(
+            output_root / "slurm-partition-status.tsv",
+            slurm_status_report,
+        )
+    )
+    slurm_workflow_status_path = write_rabies_method_sensitivity_slurm_status_json(
+        output_root / "slurm-workflow-status.json",
+        slurm_status_report,
+    )
     manifest_path = _write_manifest(
         output_root / "rabies-method-sensitivity.manifest.json",
         report=report,
@@ -733,6 +764,9 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_array_members": slurm_array_members_path,
             "slurm_array_strategy": slurm_array_strategy_path,
             "slurm_array_scripts_root": slurm_array_scripts_root,
+            "slurm_job_status": slurm_job_status_path,
+            "slurm_partition_status": slurm_partition_status_path,
+            "slurm_workflow_status": slurm_workflow_status_path,
         },
     )
     report_manifest_path = _write_report_manifest(
@@ -757,6 +791,9 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_array_partitions": slurm_array_partitions_path,
             "slurm_array_members": slurm_array_members_path,
             "slurm_array_strategy": slurm_array_strategy_path,
+            "slurm_job_status": slurm_job_status_path,
+            "slurm_partition_status": slurm_partition_status_path,
+            "slurm_workflow_status": slurm_workflow_status_path,
         },
     )
     reproducibility_report = audit_rabies_method_sensitivity_workflow_bundle(
@@ -800,6 +837,9 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_array_partitions_path,
         slurm_array_members_path,
         slurm_array_strategy_path,
+        slurm_job_status_path,
+        slurm_partition_status_path,
+        slurm_workflow_status_path,
     )
     report_linked_artifact_count = len(report_linked_files)
     report_path = _write_report(
@@ -822,6 +862,9 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_array_partitions": slurm_array_partitions_path,
             "slurm_array_members": slurm_array_members_path,
             "slurm_array_strategy": slurm_array_strategy_path,
+            "slurm_job_status": slurm_job_status_path,
+            "slurm_partition_status": slurm_partition_status_path,
+            "slurm_workflow_status": slurm_workflow_status_path,
             "reproducibility_checks": reproducibility_checks_path,
             "reproducibility_variant_audit": reproducibility_variant_audit_path,
             "reproducibility_audit": reproducibility_audit_path,
@@ -830,6 +873,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         reproducibility_report=reproducibility_report,
         slurm_planning_report=slurm_planning_report,
         slurm_array_strategy_report=slurm_array_strategy_report,
+        slurm_status_report=slurm_status_report,
     )
     report_html_size_bytes = report_path.stat().st_size
     report_linked_artifact_bytes = sum(
@@ -901,6 +945,13 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_array_largest_partition_size=(
             slurm_array_strategy_report.largest_partition_size
         ),
+        slurm_job_status_path=slurm_job_status_path,
+        slurm_partition_status_path=slurm_partition_status_path,
+        slurm_workflow_status_path=slurm_workflow_status_path,
+        slurm_completed_job_count=slurm_status_report.completed_job_count,
+        slurm_failed_job_count=slurm_status_report.failed_job_count,
+        slurm_pending_job_count=slurm_status_report.pending_job_count,
+        slurm_stale_job_count=slurm_status_report.stale_job_count,
         reproducibility_checks_path=reproducibility_checks_path,
         reproducibility_variant_audit_path=reproducibility_variant_audit_path,
         reproducibility_audit_path=reproducibility_audit_path,
@@ -1765,6 +1816,7 @@ def _write_report(
     reproducibility_report: RabiesMethodSensitivityReproducibilityAuditReport,
     slurm_planning_report: RabiesMethodSensitivitySlurmPlanningReport,
     slurm_array_strategy_report: RabiesMethodSensitivitySlurmArrayStrategyReport,
+    slurm_status_report: RabiesMethodSensitivitySlurmStatusReport,
 ) -> Path:
     variant_lines = [
         (
@@ -1873,6 +1925,19 @@ def _write_report(
             ),
         ),
         (
+            "slurm-workflow-status",
+            "\n".join(
+                [
+                    f"workflow status: {slurm_status_report.workflow_status}",
+                    f"active run state: {slurm_status_report.active_run_state}",
+                    f"completed jobs: {slurm_status_report.completed_job_count}",
+                    f"failed jobs: {slurm_status_report.failed_job_count}",
+                    f"pending jobs: {slurm_status_report.pending_job_count}",
+                    f"stale jobs: {slurm_status_report.stale_job_count}",
+                ]
+            ),
+        ),
+        (
             "artifacts",
             "\n".join(
                 [
@@ -1902,6 +1967,15 @@ def _write_report(
                     (
                         "slurm array strategy: "
                         f"{bundle_paths['slurm_array_strategy'].name}"
+                    ),
+                    f"slurm job status: {bundle_paths['slurm_job_status'].name}",
+                    (
+                        "slurm partition status: "
+                        f"{bundle_paths['slurm_partition_status'].name}"
+                    ),
+                    (
+                        "slurm workflow status: "
+                        f"{bundle_paths['slurm_workflow_status'].name}"
                     ),
                     f"reproducibility checks: {bundle_paths['reproducibility_checks'].name}",
                     (
@@ -1965,6 +2039,11 @@ def _write_report(
             "slurm_array_largest_partition_size": (
                 slurm_array_strategy_report.largest_partition_size
             ),
+            "slurm_completed_job_count": slurm_status_report.completed_job_count,
+            "slurm_failed_job_count": slurm_status_report.failed_job_count,
+            "slurm_pending_job_count": slurm_status_report.pending_job_count,
+            "slurm_stale_job_count": slurm_status_report.stale_job_count,
+            "slurm_active_run_state": slurm_status_report.active_run_state,
         },
         summary_metrics=[
             ("variants", len(report.variant_runs)),
@@ -1983,6 +2062,14 @@ def _write_report(
             (
                 "slurm array partitions",
                 slurm_array_strategy_report.partition_count,
+            ),
+            (
+                "slurm completed jobs",
+                slurm_status_report.completed_job_count,
+            ),
+            (
+                "slurm stale jobs",
+                slurm_status_report.stale_job_count,
             ),
             (
                 "reproducibility passed",
@@ -2041,6 +2128,10 @@ def _write_overview(
         f"- slurm array partitions: `{bundle.slurm_array_partition_count}`",
         f"- slurm array scripts: `{bundle.slurm_array_script_count}`",
         f"- slurm largest array partition: `{bundle.slurm_array_largest_partition_size}`",
+        f"- slurm completed jobs: `{bundle.slurm_completed_job_count}`",
+        f"- slurm failed jobs: `{bundle.slurm_failed_job_count}`",
+        f"- slurm pending jobs: `{bundle.slurm_pending_job_count}`",
+        f"- slurm stale jobs: `{bundle.slurm_stale_job_count}`",
         f"- workflow manifest: `{bundle.manifest_path.name}`",
         f"- report manifest: `{bundle.report_manifest_path.relative_to(bundle.output_root).as_posix()}`",
         f"- slurm job plan: `{bundle.slurm_job_plan_path.name}`",
@@ -2049,6 +2140,9 @@ def _write_overview(
         f"- slurm array partitions table: `{bundle.slurm_array_partitions_path.name}`",
         f"- slurm array members table: `{bundle.slurm_array_members_path.name}`",
         f"- slurm array strategy: `{bundle.slurm_array_strategy_path.name}`",
+        f"- slurm job status table: `{bundle.slurm_job_status_path.name}`",
+        f"- slurm partition status table: `{bundle.slurm_partition_status_path.name}`",
+        f"- slurm workflow status: `{bundle.slurm_workflow_status_path.name}`",
         f"- slurm array scripts: `{bundle.slurm_array_scripts_root.name}/`",
         f"- reproducibility checks table: `{bundle.reproducibility_checks_path.name}`",
         f"- reproducibility variant audit: `{bundle.reproducibility_variant_audit_path.name}`",

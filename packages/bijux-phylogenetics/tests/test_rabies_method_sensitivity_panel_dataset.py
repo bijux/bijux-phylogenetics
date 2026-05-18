@@ -140,6 +140,9 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.workflow_bundle.slurm_array_partitions_path.is_file()
     assert result.workflow_bundle.slurm_array_members_path.is_file()
     assert result.workflow_bundle.slurm_array_strategy_path.is_file()
+    assert result.workflow_bundle.slurm_job_status_path.is_file()
+    assert result.workflow_bundle.slurm_partition_status_path.is_file()
+    assert result.workflow_bundle.slurm_workflow_status_path.is_file()
     assert result.workflow_bundle.slurm_array_scripts_root.is_dir()
     assert result.workflow_bundle.slurm_job_count == 4
     assert result.workflow_bundle.slurm_total_estimated_core_hours > 0
@@ -150,6 +153,10 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.workflow_bundle.slurm_array_partition_count == 2
     assert result.workflow_bundle.slurm_array_script_count == 2
     assert result.workflow_bundle.slurm_array_largest_partition_size == 2
+    assert result.workflow_bundle.slurm_completed_job_count == 4
+    assert result.workflow_bundle.slurm_failed_job_count == 0
+    assert result.workflow_bundle.slurm_pending_job_count == 0
+    assert result.workflow_bundle.slurm_stale_job_count == 0
     assert result.workflow_bundle.reproducibility_checks_path.is_file()
     assert result.workflow_bundle.reproducibility_variant_audit_path.is_file()
     assert result.workflow_bundle.reproducibility_audit_path.is_file()
@@ -258,7 +265,7 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 25
+    assert payload["metrics"]["artifact_count"] == 29
     assert payload["metrics"]["taxon_count"] == 9
     assert payload["metrics"]["variant_count"] == 4
     assert payload["metrics"]["parallel_workers"] == 2
@@ -268,7 +275,7 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     assert payload["metrics"]["preprocessing_change_pair_count"] == 0
     assert payload["metrics"]["rooted_engine_change_variant_count"] == 0
     assert payload["metrics"]["serious_conflict_variant_count"] == 4
-    assert payload["metrics"]["report_linked_artifact_count"] == 16
+    assert payload["metrics"]["report_linked_artifact_count"] == 20
     assert payload["metrics"]["report_html_size_bytes"] > 0
     assert payload["metrics"]["report_linked_artifact_bytes"] > 0
     assert (
@@ -284,6 +291,10 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     assert payload["metrics"]["slurm_array_partition_count"] == 2
     assert payload["metrics"]["slurm_array_script_count"] == 2
     assert payload["metrics"]["slurm_array_largest_partition_size"] == 2
+    assert payload["metrics"]["slurm_completed_job_count"] == 4
+    assert payload["metrics"]["slurm_failed_job_count"] == 0
+    assert payload["metrics"]["slurm_pending_job_count"] == 0
+    assert payload["metrics"]["slurm_stale_job_count"] == 0
     assert payload["metrics"]["reproducibility_passed"] is True
     assert payload["metrics"]["reproducibility_check_count"] > 0
     assert payload["metrics"]["reproducibility_failed_check_count"] == 0
@@ -296,6 +307,9 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     assert payload["data"]["workflow_bundle"]["parallel_summary_path"] == str(
         output / "workflow" / "parallel-execution-summary.tsv"
     )
+    assert payload["data"]["workflow_bundle"]["execution_record_path"] == str(
+        output / "workflow" / "rabies-method-sensitivity-panel.run.json"
+    )
     assert payload["data"]["workflow_bundle"]["report_manifest_path"] == str(
         output
         / "workflow"
@@ -307,6 +321,12 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     )
     assert payload["data"]["workflow_bundle"]["slurm_array_partitions_path"] == str(
         output / "workflow" / "slurm-array-partitions.tsv"
+    )
+    assert payload["data"]["workflow_bundle"]["slurm_job_status_path"] == str(
+        output / "workflow" / "slurm-job-status.tsv"
+    )
+    assert payload["data"]["workflow_bundle"]["slurm_workflow_status_path"] == str(
+        output / "workflow" / "slurm-workflow-status.json"
     )
     assert payload["data"]["workflow_bundle"]["reproducibility_checks_path"] == str(
         output / "workflow" / "reproducibility-checks.tsv"
