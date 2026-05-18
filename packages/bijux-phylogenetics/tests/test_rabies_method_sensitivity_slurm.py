@@ -72,6 +72,9 @@ def test_build_rabies_method_sensitivity_slurm_planning_report_sizes_jobs(
     assert len(planning.assumptions) == 5
     auto_job, ginsi_job = planning.rows
     assert auto_job.variant_id == "auto-gap-threshold"
+    assert auto_job.dataset_size_class == "compact"
+    assert auto_job.method_group == "mafft-auto"
+    assert auto_job.resource_class == "standard"
     assert auto_job.estimated_cpus_per_task == 1
     assert auto_job.estimated_memory_mib == 1024
     assert auto_job.estimated_wallclock_minutes >= 20
@@ -80,6 +83,9 @@ def test_build_rabies_method_sensitivity_slurm_planning_report_sizes_jobs(
         auto_job.suggested_sbatch_options
     )
     assert ginsi_job.variant_id == "ginsi-gappyout"
+    assert ginsi_job.dataset_size_class == "compact"
+    assert ginsi_job.method_group == "mafft-ginsi"
+    assert ginsi_job.resource_class == "elevated"
     assert ginsi_job.estimated_cpus_per_task == 2
     assert ginsi_job.estimated_memory_mib > auto_job.estimated_memory_mib
     assert ginsi_job.estimated_wallclock_minutes > auto_job.estimated_wallclock_minutes
@@ -142,6 +148,8 @@ def test_write_rabies_method_sensitivity_slurm_artifacts(tmp_path: Path) -> None
 
     job_plan_text = job_plan_path.read_text(encoding="utf-8")
     assert "suggested_sbatch_options" in job_plan_text
+    assert "dataset_size_class" in job_plan_text
+    assert "resource_class" in job_plan_text
     assert "auto-gap-threshold" in job_plan_text
     assumptions_text = assumptions_path.read_text(encoding="utf-8")
     assert "observed-output-footprint" in assumptions_text

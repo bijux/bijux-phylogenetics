@@ -70,6 +70,10 @@ class RabiesMethodSensitivitySlurmJobPlanRow:
     dataset_id: str
     variant_id: str
     job_name: str
+    taxon_count: int
+    dataset_size_class: str
+    method_group: str
+    resource_class: str
     alignment_mode: str
     trimming_mode: str
     aligned_site_count: int
@@ -206,6 +210,10 @@ def write_rabies_method_sensitivity_slurm_job_plan_table(
             "dataset_id",
             "variant_id",
             "job_name",
+            "taxon_count",
+            "dataset_size_class",
+            "method_group",
+            "resource_class",
             "alignment_mode",
             "trimming_mode",
             "aligned_site_count",
@@ -231,6 +239,10 @@ def write_rabies_method_sensitivity_slurm_job_plan_table(
                 row.dataset_id,
                 row.variant_id,
                 row.job_name,
+                str(row.taxon_count),
+                row.dataset_size_class,
+                row.method_group,
+                row.resource_class,
                 row.alignment_mode,
                 row.trimming_mode,
                 str(row.aligned_site_count),
@@ -308,6 +320,8 @@ def _build_job_plan_row(
         iqtree_threads,
         2 if variant_run.config.alignment_mode == "ginsi" else 1,
     )
+    dataset_size_score = taxon_count * max(variant_run.trimmed_alignment_length, 1)
+    dataset_size_class = _classify_dataset_size(dataset_size_score)
     dataset_scale = max(
         1.0,
         (taxon_count * max(variant_run.trimmed_alignment_length, 1)) / 10000,
@@ -335,6 +349,11 @@ def _build_job_plan_row(
     estimated_memory_mib = max(
         _MINIMUM_MEMORY_MIB, _round_up(memory_request, quantum=256)
     )
+    resource_class = _classify_resource_class(
+        estimated_cpus_per_task=estimated_cpus_per_task,
+        estimated_memory_mib=estimated_memory_mib,
+        estimated_wallclock_minutes=estimated_wallclock_minutes,
+    )
     observed_output_bytes = _directory_bytes(task_record.output_root)
     estimated_output_mib = max(1, ceil(observed_output_bytes / _MEBIBYTE))
     scratch_request = 128 + ceil((observed_output_bytes * 64) / _MEBIBYTE) + ceil(
@@ -351,6 +370,10 @@ def _build_job_plan_row(
         dataset_id=dataset_id,
         variant_id=variant_run.config.variant_id,
         job_name=job_name,
+        taxon_count=taxon_count,
+        dataset_size_class=dataset_size_class,
+        method_group=_method_group_name(variant_run.config.alignment_mode),
+        resource_class=resource_class,
         alignment_mode=variant_run.config.alignment_mode,
         trimming_mode=variant_run.config.trimming_mode,
         aligned_site_count=variant_run.alignment_length,
@@ -394,6 +417,39 @@ def _format_float(value: float) -> str:
 def _format_slurm_time(minutes: int) -> str:
     hours, remaining_minutes = divmod(minutes, 60)
     return f"{hours:02d}:{remaining_minutes:02d}:00"
+
+
+def _classify_dataset_size(size_score: int) -> str:
+    if size_score <= 20_000:
+        return "compact"
+    if size_score <= 200_000:
+        return "moderate"
+    return "large"
+
+
+def _classify_resource_class(
+    *,
+    estimated_cpus_per_task: int,
+    estimated_memory_mib: int,
+    estimated_wallclock_minutes: int,
+) -> str:
+    if (
+        estimated_cpus_per_task <= 1
+        and estimated_memory_mib <= 1280
+        and estimated_wallclock_minutes <= 30
+    ):
+        return "standard"
+    if (
+        estimated_cpus_per_task <= 2
+        and estimated_memory_mib <= 2048
+        and estimated_wallclock_minutes <= 45
+    ):
+        return "elevated"
+    return "heavy"
+
+
+def _method_group_name(alignment_mode: str) -> str:
+    return f"mafft-{alignment_mode}"
 
 
 def _round_up(value: int, *, quantum: int) -> int:
