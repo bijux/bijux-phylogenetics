@@ -13,6 +13,12 @@
     "bat_chile_rv108"
   ],
   "parallel_workers": 2,
+  "selected_variant_ids": [
+    "auto-gap-threshold",
+    "ginsi-gap-threshold",
+    "auto-gappyout",
+    "ginsi-gappyout"
+  ],
   "sequence_type": "dna",
   "variants": [
     {

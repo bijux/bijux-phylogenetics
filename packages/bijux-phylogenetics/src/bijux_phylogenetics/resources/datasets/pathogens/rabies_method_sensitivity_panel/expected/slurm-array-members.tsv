@@ -1,0 +1,5 @@
+partition_id	array_index	variant_id	dataset_size_class	method_group	trimming_mode	resource_class	estimated_cpus_per_task	estimated_memory_mib	estimated_wallclock_minutes	estimated_core_hours	script_path	bundle_output_directory	task_log_path
+compact-mafft-auto-standard	0	auto-gap-threshold	compact	mafft-auto	gap-threshold	standard	1	1024	27	0.45	slurm-arrays/compact-mafft-auto-standard.sbatch	variants/auto-gap-threshold	parallel-logs/auto-gap-threshold.log
+compact-mafft-auto-standard	1	auto-gappyout	compact	mafft-auto	gappyout	standard	1	1280	27	0.45	slurm-arrays/compact-mafft-auto-standard.sbatch	variants/auto-gappyout	parallel-logs/auto-gappyout.log
+compact-mafft-ginsi-elevated	0	ginsi-gap-threshold	compact	mafft-ginsi	gap-threshold	elevated	2	1280	34	1.13	slurm-arrays/compact-mafft-ginsi-elevated.sbatch	variants/ginsi-gap-threshold	parallel-logs/ginsi-gap-threshold.log
+compact-mafft-ginsi-elevated	1	ginsi-gappyout	compact	mafft-ginsi	gappyout	elevated	2	1536	35	1.17	slurm-arrays/compact-mafft-ginsi-elevated.sbatch	variants/ginsi-gappyout	parallel-logs/ginsi-gappyout.log

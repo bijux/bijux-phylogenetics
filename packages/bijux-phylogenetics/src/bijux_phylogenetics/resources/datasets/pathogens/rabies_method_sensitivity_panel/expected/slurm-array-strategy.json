@@ -1,0 +1,120 @@
+{
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "largest_partition_size": 2,
+  "members": [
+    {
+      "array_index": 0,
+      "bundle_output_directory": "variants/auto-gap-threshold",
+      "dataset_size_class": "compact",
+      "estimated_core_hours": 0.45,
+      "estimated_cpus_per_task": 1,
+      "estimated_memory_mib": 1024,
+      "estimated_wallclock_minutes": 27,
+      "method_group": "mafft-auto",
+      "partition_id": "compact-mafft-auto-standard",
+      "resource_class": "standard",
+      "script_path": "slurm-arrays/compact-mafft-auto-standard.sbatch",
+      "task_log_path": "parallel-logs/auto-gap-threshold.log",
+      "trimming_mode": "gap-threshold",
+      "variant_id": "auto-gap-threshold"
+    },
+    {
+      "array_index": 1,
+      "bundle_output_directory": "variants/auto-gappyout",
+      "dataset_size_class": "compact",
+      "estimated_core_hours": 0.45,
+      "estimated_cpus_per_task": 1,
+      "estimated_memory_mib": 1280,
+      "estimated_wallclock_minutes": 27,
+      "method_group": "mafft-auto",
+      "partition_id": "compact-mafft-auto-standard",
+      "resource_class": "standard",
+      "script_path": "slurm-arrays/compact-mafft-auto-standard.sbatch",
+      "task_log_path": "parallel-logs/auto-gappyout.log",
+      "trimming_mode": "gappyout",
+      "variant_id": "auto-gappyout"
+    },
+    {
+      "array_index": 0,
+      "bundle_output_directory": "variants/ginsi-gap-threshold",
+      "dataset_size_class": "compact",
+      "estimated_core_hours": 1.13,
+      "estimated_cpus_per_task": 2,
+      "estimated_memory_mib": 1280,
+      "estimated_wallclock_minutes": 34,
+      "method_group": "mafft-ginsi",
+      "partition_id": "compact-mafft-ginsi-elevated",
+      "resource_class": "elevated",
+      "script_path": "slurm-arrays/compact-mafft-ginsi-elevated.sbatch",
+      "task_log_path": "parallel-logs/ginsi-gap-threshold.log",
+      "trimming_mode": "gap-threshold",
+      "variant_id": "ginsi-gap-threshold"
+    },
+    {
+      "array_index": 1,
+      "bundle_output_directory": "variants/ginsi-gappyout",
+      "dataset_size_class": "compact",
+      "estimated_core_hours": 1.17,
+      "estimated_cpus_per_task": 2,
+      "estimated_memory_mib": 1536,
+      "estimated_wallclock_minutes": 35,
+      "method_group": "mafft-ginsi",
+      "partition_id": "compact-mafft-ginsi-elevated",
+      "resource_class": "elevated",
+      "script_path": "slurm-arrays/compact-mafft-ginsi-elevated.sbatch",
+      "task_log_path": "parallel-logs/ginsi-gappyout.log",
+      "trimming_mode": "gappyout",
+      "variant_id": "ginsi-gappyout"
+    }
+  ],
+  "partition_count": 2,
+  "partitions": [
+    {
+      "array_spec": "0-1",
+      "dataset_size_class": "compact",
+      "job_count": 2,
+      "maximum_cpus_per_task": 1,
+      "maximum_memory_mib": 1280,
+      "maximum_wallclock_minutes": 27,
+      "method_group": "mafft-auto",
+      "partition_id": "compact-mafft-auto-standard",
+      "resource_class": "standard",
+      "script_path": "slurm-arrays/compact-mafft-auto-standard.sbatch",
+      "suggested_sbatch_command": "sbatch --array=0-1 slurm-arrays/compact-mafft-auto-standard.sbatch",
+      "total_estimated_core_hours": 0.9,
+      "trimming_modes": [
+        "gap-threshold",
+        "gappyout"
+      ],
+      "variant_ids": [
+        "auto-gap-threshold",
+        "auto-gappyout"
+      ]
+    },
+    {
+      "array_spec": "0-1",
+      "dataset_size_class": "compact",
+      "job_count": 2,
+      "maximum_cpus_per_task": 2,
+      "maximum_memory_mib": 1536,
+      "maximum_wallclock_minutes": 35,
+      "method_group": "mafft-ginsi",
+      "partition_id": "compact-mafft-ginsi-elevated",
+      "resource_class": "elevated",
+      "script_path": "slurm-arrays/compact-mafft-ginsi-elevated.sbatch",
+      "suggested_sbatch_command": "sbatch --array=0-1 slurm-arrays/compact-mafft-ginsi-elevated.sbatch",
+      "total_estimated_core_hours": 2.3,
+      "trimming_modes": [
+        "gap-threshold",
+        "gappyout"
+      ],
+      "variant_ids": [
+        "ginsi-gap-threshold",
+        "ginsi-gappyout"
+      ]
+    }
+  ],
+  "script_count": 2,
+  "total_job_count": 4,
+  "workflow_prefix": "rabies-method-sensitivity-panel"
+}
