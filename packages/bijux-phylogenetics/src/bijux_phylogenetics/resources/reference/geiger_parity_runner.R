@@ -1,0 +1,240 @@
+args <- commandArgs(trailingOnly = TRUE)
+
+if (length(args) != 2) {
+  stop("expected case-json path and output-root path")
+}
+
+case_path <- args[[1]]
+output_root <- args[[2]]
+dir.create(output_root, recursive = TRUE, showWarnings = FALSE)
+
+if (!requireNamespace("jsonlite", quietly = TRUE)) {
+  stop("jsonlite is required for geiger parity execution")
+}
+
+write_payload <- function(path, payload) {
+  writeLines(
+    jsonlite::toJSON(
+      payload,
+      auto_unbox = TRUE,
+      digits = 16,
+      null = "null",
+      pretty = TRUE
+    ),
+    con = path
+  )
+}
+
+write_table <- function(path, rows) {
+  if (length(rows) == 0) {
+    utils::write.table(
+      data.frame(parameter = character(), value = numeric()),
+      file = path,
+      sep = "\t",
+      quote = FALSE,
+      row.names = FALSE
+    )
+    return(invisible(NULL))
+  }
+  normalized_rows <- lapply(rows, function(row) {
+    as.data.frame(row, stringsAsFactors = FALSE)
+  })
+  utils::write.table(
+    do.call(rbind.data.frame, c(normalized_rows, list(stringsAsFactors = FALSE))),
+    file = path,
+    sep = "\t",
+    quote = FALSE,
+    row.names = FALSE
+  )
+}
+
+execution_path <- file.path(output_root, "reference-execution.json")
+summary_path <- file.path(output_root, "reference-summary.json")
+rows_path <- file.path(output_root, "reference-parameters.tsv")
+case_payload <- jsonlite::fromJSON(case_path)
+r_version <- as.character(getRversion())
+
+if (!requireNamespace("geiger", quietly = TRUE)) {
+  write_payload(
+    execution_path,
+    list(
+      status = "unavailable",
+      mismatch_reason = "geiger_package_unavailable",
+      r_version = r_version,
+      geiger_version = NULL
+    )
+  )
+  quit(save = "no", status = 0)
+}
+
+library(ape)
+library(geiger)
+
+fit_aicc <- function(aic, sample_size, parameter_count) {
+  denominator <- sample_size - parameter_count - 1
+  if (denominator <= 0) {
+    return(NULL)
+  }
+  aic + ((2 * parameter_count * (parameter_count + 1)) / denominator)
+}
+
+normalize_optimizer_result <- function(fit) {
+  if (is.null(fit$res)) {
+    return(NULL)
+  }
+  result <- list()
+  if (!is.null(fit$res$convergence)) {
+    result$convergence_code <- as.integer(fit$res$convergence)
+  }
+  if (!is.null(fit$res$message)) {
+    result$message <- as.character(fit$res$message)
+  }
+  if (!is.null(fit$res$counts)) {
+    counts <- unclass(fit$res$counts)
+    result$counts <- as.list(counts)
+  }
+  if (!is.null(fit$res$value)) {
+    result$objective_value <- as.numeric(fit$res$value)
+  }
+  if (length(result) == 0) {
+    return(NULL)
+  }
+  result
+}
+
+parameter_surface <- function(model_name, opt) {
+  if (identical(model_name, "OU")) {
+    return(list(parameter_name = "alpha", parameter_value = as.numeric(opt$alpha)))
+  }
+  if (identical(model_name, "EB")) {
+    return(list(parameter_name = "rate_change", parameter_value = as.numeric(opt$a)))
+  }
+  if (identical(model_name, "lambda")) {
+    return(list(parameter_name = "lambda", parameter_value = as.numeric(opt$lambda)))
+  }
+  if (identical(model_name, "kappa")) {
+    return(list(parameter_name = "kappa", parameter_value = as.numeric(opt$kappa)))
+  }
+  if (identical(model_name, "delta")) {
+    return(list(parameter_name = "delta", parameter_value = as.numeric(opt$delta)))
+  }
+  list(parameter_name = NULL, parameter_value = NULL)
+}
+
+build_fitcontinuous_payload <- function(tree, trait_values, excluded_taxa, case_payload) {
+  fit <- do.call(
+    geiger::fitContinuous,
+    list(
+      phy = tree,
+      dat = trait_values,
+      model = case_payload$model_name
+    )
+  )
+  opt <- fit$opt
+  parameter_surface_result <- parameter_surface(case_payload$model_name, opt)
+  parameter_count <- if (is.null(parameter_surface_result$parameter_name)) 2 else 3
+  log_likelihood <- if (is.null(opt$lnL)) NULL else as.numeric(opt$lnL)
+  aic <- if (!is.null(fit$aic)) {
+    as.numeric(fit$aic)
+  } else if (!is.null(opt$aic)) {
+    as.numeric(opt$aic)
+  } else if (!is.null(log_likelihood)) {
+    as.numeric((2 * parameter_count) - (2 * log_likelihood))
+  } else {
+    NULL
+  }
+  aicc <- if (!is.null(opt$aicc)) {
+    as.numeric(opt$aicc)
+  } else if (!is.null(aic)) {
+    fit_aicc(aic, length(trait_values), parameter_count)
+  } else {
+    NULL
+  }
+  summary <- list(
+    taxon_count = length(trait_values),
+    trait_name = case_payload$trait_name,
+    model_name = case_payload$model_name,
+    excluded_taxon_count = length(excluded_taxa),
+    excluded_taxa = unname(excluded_taxa),
+    root_state = if (is.null(opt$z0)) NULL else as.numeric(opt$z0),
+    rate = if (is.null(opt$sigsq)) NULL else as.numeric(opt$sigsq),
+    log_likelihood = log_likelihood,
+    aic = aic,
+    aicc = aicc,
+    parameter_name = parameter_surface_result$parameter_name,
+    parameter_value = parameter_surface_result$parameter_value,
+    optimizer_settings = case_payload$optimizer_settings,
+    optimizer_result = normalize_optimizer_result(fit)
+  )
+  rows <- Filter(
+    f = function(row) !is.null(row$value),
+    x = list(
+      list(parameter = "root_state", value = summary$root_state),
+      list(parameter = "rate", value = summary$rate),
+      list(parameter = "log_likelihood", value = summary$log_likelihood),
+      list(parameter = "aic", value = summary$aic),
+      list(parameter = "aicc", value = summary$aicc),
+      if (!is.null(summary$parameter_name)) {
+        list(parameter = summary$parameter_name, value = summary$parameter_value)
+      }
+    )
+  )
+  list(summary = summary, rows = rows)
+}
+
+result <- tryCatch(
+  {
+    input_fixtures <- unname(unlist(case_payload$input_fixtures))
+    tree <- ape::read.tree(input_fixtures[[1]])
+    traits_path <- input_fixtures[[2]]
+    trait_table <- utils::read.table(
+      traits_path,
+      header = TRUE,
+      sep = if (grepl("\\.csv$", traits_path, ignore.case = TRUE)) "," else "\t",
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )
+    taxon_names <- trait_table[[case_payload$taxon_column]]
+    raw_trait_values <- suppressWarnings(as.numeric(trait_table[[case_payload$trait_name]]))
+    trait_values <- stats::setNames(raw_trait_values, taxon_names)
+    kept_taxa <- names(trait_values)[
+      !is.na(trait_values) &
+        names(trait_values) %in% tree$tip.label
+    ]
+    trait_values <- trait_values[kept_taxa]
+    excluded_taxa <- sort(setdiff(tree$tip.label, kept_taxa))
+    if (length(excluded_taxa) > 0) {
+      tree <- ape::drop.tip(tree, excluded_taxa)
+    }
+    payload <- build_fitcontinuous_payload(tree, trait_values, excluded_taxa, case_payload)
+    write_payload(summary_path, payload$summary)
+    write_table(rows_path, payload$rows)
+    write_payload(
+      execution_path,
+      list(
+        status = "ok",
+        r_version = r_version,
+        geiger_version = as.character(packageVersion("geiger"))
+      )
+    )
+    TRUE
+  },
+  error = function(error) {
+    write_payload(
+      execution_path,
+      list(
+        status = "failed",
+        mismatch_reason = "reference_execution_failed",
+        error_type = class(error)[[1]],
+        message = conditionMessage(error),
+        r_version = r_version,
+        geiger_version = as.character(packageVersion("geiger"))
+      )
+    )
+    FALSE
+  }
+)
+
+if (!isTRUE(result)) {
+  quit(save = "no", status = 0)
+}
