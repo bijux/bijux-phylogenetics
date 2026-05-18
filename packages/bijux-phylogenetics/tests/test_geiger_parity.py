@@ -13,6 +13,9 @@ from bijux_phylogenetics.parity import (
 from tests.support.geiger_fitcontinuous_brownian_reference import (
     GEIGER_FITCONTINUOUS_BROWNIAN_REFERENCE_PAYLOADS,
 )
+from tests.support.geiger_fitcontinuous_early_burst_reference import (
+    GEIGER_FITCONTINUOUS_EARLY_BURST_REFERENCE_PAYLOADS,
+)
 from tests.support.geiger_fitcontinuous_ou_reference import (
     GEIGER_FITCONTINUOUS_OU_REFERENCE_PAYLOADS,
 )
@@ -30,6 +33,7 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
         "fitcontinuous-ou-missing-values-review",
         "fitcontinuous-ou-lower-boundary-review",
         "fitcontinuous-eb-early-burst-rate-recovery",
+        "fitcontinuous-eb-lower-boundary-review",
     ]
     assert cases[0].function_name == "geiger::fitContinuous(model='BM')"
     assert cases[3].function_name == "geiger::fitContinuous(model='OU')"
@@ -50,6 +54,7 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
         cases[6].fixture_id
         == "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
     )
+    assert cases[7].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
     assert cases[2].comparison_fields[:7] == (
         "taxon_count",
         "trait_name",
@@ -65,6 +70,8 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     )
     assert "aicc" in cases[3].comparison_fields
     assert "hit_lower_parameter_boundary" in cases[5].comparison_fields
+    assert "aicc" in cases[6].comparison_fields
+    assert "hit_lower_parameter_boundary" in cases[7].comparison_fields
     assert all(path.is_file() for case in cases for path in case.input_fixtures)
 
 
@@ -78,8 +85,8 @@ def test_run_geiger_parity_cases_reports_passes_against_fake_runner(
         failure_root=tmp_path / "geiger-parity-failures",
     )
 
-    assert report.case_count == 7
-    assert report.passed_case_count == 7
+    assert report.case_count == 8
+    assert report.passed_case_count == 8
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert report.all_passed is True
@@ -114,10 +121,10 @@ def test_run_geiger_parity_cases_counts_skips_when_geiger_is_unavailable(
         failure_root=tmp_path / "geiger-parity-failures",
     )
 
-    assert report.case_count == 7
+    assert report.case_count == 8
     assert report.passed_case_count == 0
     assert report.failed_case_count == 0
-    assert report.skipped_case_count == 7
+    assert report.skipped_case_count == 8
     assert report.all_passed is False
     assert all(
         item.mismatch_reason == "geiger_package_unavailable"
@@ -212,6 +219,53 @@ def test_run_geiger_parity_cases_governs_ou_reference_payloads(
     ]
 
 
+def test_run_geiger_parity_cases_governs_early_burst_reference_payloads(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads=GEIGER_FITCONTINUOUS_EARLY_BURST_REFERENCE_PAYLOADS,
+    )
+
+    report = run_geiger_parity_cases(
+        case_ids=[
+            "fitcontinuous-eb-early-burst-rate-recovery",
+            "fitcontinuous-eb-lower-boundary-review",
+        ],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    assert report.case_count == 2
+    assert report.passed_case_count == 2
+    recovery = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitcontinuous-eb-early-burst-rate-recovery"
+    )
+    assert recovery.reference_summary is not None
+    assert recovery.reference_summary["aicc"] < recovery.reference_summary["aic"] + 2.0
+    assert recovery.bijux_summary is not None
+    assert recovery.bijux_summary["parameter_value"] > 4.0
+    assert recovery.bijux_summary["identifiability_warning_kinds"] == [
+        "flat_likelihood_profile"
+    ]
+    lower_boundary = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitcontinuous-eb-lower-boundary-review"
+    )
+    assert lower_boundary.reference_summary is not None
+    assert lower_boundary.reference_summary["hit_lower_parameter_boundary"] is True
+    assert lower_boundary.bijux_summary is not None
+    assert lower_boundary.bijux_summary["hit_lower_parameter_boundary"] is True
+    assert lower_boundary.bijux_summary["identifiability_warning_kinds"] == [
+        "boundary_rate_change",
+        "flat_likelihood_profile",
+        "brownian_like_rate_change",
+    ]
+
+
 def test_run_geiger_parity_cases_persists_failure_artifacts_for_mismatches(
     tmp_path: Path,
 ) -> None:
@@ -268,7 +322,7 @@ def test_write_geiger_parity_tables_writes_summary_and_observations(
     assert any("geiger::fitContinuous(model='OU')" in row for row in summary_rows[1:])
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 7
+    assert len(rows) == 8
     assert rows[0]["model_name"] in {"BM", "OU", "EB"}
     optimizer_settings = json.loads(rows[0]["optimizer_settings"])
     assert "reference_control_policy" in optimizer_settings
