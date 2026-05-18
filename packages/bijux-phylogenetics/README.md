@@ -292,6 +292,7 @@ bijux-phylogenetics report supplementary-model-selection-table --iqtree-report r
 bijux-phylogenetics report supplementary-tree-table --tree tree.nwk --out artifacts/supplementary-tree.tsv --json
 bijux-phylogenetics report tree-inference-methods-summary workflow.manifest.json --out artifacts/tree-inference-methods-summary.md --json
 bijux-phylogenetics report alignment-filtering-methods-summary alignment.fasta --profile moderate --group-table metadata.tsv --group-column region --out artifacts/alignment-filtering-methods-summary.md --json
+bijux-phylogenetics report ancestral-methods-summary tree.nwk traits.tsv --trait habitat --kind discrete --model equal-rates --out artifacts/ancestral-methods-summary.md --json
 bijux-phylogenetics report tree-validation-methods-summary tree.nwk --out artifacts/tree-validation-methods-summary.md --json
 bijux-phylogenetics report taxonomy --tree tree.nwk --synonym-table taxonomy.tsv --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --reported-taxa reviewer-table.tsv --out artifacts/taxonomy-report.html --json
 bijux-phylogenetics report supplementary-taxon-table --tree tree.nwk --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --filtered-alignment filtered-alignment.fasta --inference-tree inferred.nwk --reported-taxa reviewer-table.tsv --out artifacts/supplementary-taxa.tsv --json
@@ -472,6 +473,13 @@ one governed `fasta-to-tree` workflow manifest, naming the alignment and
 trimming steps, the selected substitution model, the maximum-likelihood and
 bootstrap-support engine steps, the final tree handoff, and the workflow
 warnings that constrain interpretation.
+
+For one reviewer-facing ancestral-reconstruction methods summary, use
+`report ancestral-methods-summary`. It writes one Markdown summary over one
+continuous or discrete ancestral reconstruction, naming the analyzed trait or
+states, taxon pruning, reconstruction model and policy surface, node-level
+uncertainty contract, and interpretation risks that remain attached to the
+internal-node estimates.
 
 For one reviewer-facing supplementary clade-support ledger, use
 `report supplementary-clade-support-table`. It writes one TSV with one row per
