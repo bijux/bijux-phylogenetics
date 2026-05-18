@@ -562,6 +562,7 @@ from bijux_phylogenetics.simulation import (
     simulate_speciational_traits,
     simulate_protein_alignment,
     simulate_random_trees,
+    validate_geiger_sim_char_reference_examples,
     write_continuous_trait_table,
     write_correlated_continuous_trait_collection_summary_table,
     write_correlated_continuous_trait_collection_table,
@@ -3075,6 +3076,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the simulation report as JSON."
     )
     _add_manifest_argument(simulate_protein)
+    simulate_validate_sim_char_reference = simulate_subparsers.add_parser(
+        "validate-sim-char-reference",
+        help="Validate governed geiger::sim.char summary envelopes.",
+    )
+    simulate_validate_sim_char_reference.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the governed validation report as JSON.",
+    )
+    _add_manifest_argument(simulate_validate_sim_char_reference)
 
     benchmark = subparsers.add_parser(
         get_command_spec("benchmark").name, help=get_command_spec("benchmark").summary
@@ -8895,30 +8906,47 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
-            report = simulate_protein_alignment(
-                args.tree,
-                sequence_length=args.sequence_length,
-                substitution_rate=args.substitution_rate,
-                seed=args.seed,
-            )
-            output_path = write_simulated_alignment(args.out, report)
-            outputs = _finalize_outputs(
-                args, command="simulate", inputs=[args.tree], outputs=[output_path]
-            )
-            _print_result(
-                build_command_result(
-                    command="simulate",
-                    inputs=[args.tree],
-                    outputs=outputs,
-                    metrics={
-                        "tip_count": report.tip_count,
-                        "sequence_length": report.sequence_length,
-                    },
-                    data=report,
-                ),
-                json_output=args.json,
-            )
-            return 0
+            if args.simulate_command == "validate-sim-char-reference":
+                report = validate_geiger_sim_char_reference_examples()
+                _print_result(
+                    build_command_result(
+                        command="simulate",
+                        inputs=[],
+                        outputs=[],
+                        metrics={
+                            "case_count": report.case_count,
+                            "all_passed": report.all_passed,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.simulate_command == "alignment-protein":
+                report = simulate_protein_alignment(
+                    args.tree,
+                    sequence_length=args.sequence_length,
+                    substitution_rate=args.substitution_rate,
+                    seed=args.seed,
+                )
+                output_path = write_simulated_alignment(args.out, report)
+                outputs = _finalize_outputs(
+                    args, command="simulate", inputs=[args.tree], outputs=[output_path]
+                )
+                _print_result(
+                    build_command_result(
+                        command="simulate",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={
+                            "tip_count": report.tip_count,
+                            "sequence_length": report.sequence_length,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
         if args.command == "benchmark":
             if args.benchmark_command == "tree-validation":
                 report = benchmark_tree_validation(replicates=args.replicates)
