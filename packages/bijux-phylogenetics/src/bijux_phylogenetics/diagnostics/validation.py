@@ -26,6 +26,13 @@ from bijux_phylogenetics.runtime.errors import (
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.trees import summarize_tree_shape_from_tree
 
+LONG_BRANCH_OUTLIER_FACTOR = 3.0
+SHORT_BRANCH_OUTLIER_FACTOR = 0.1
+TREE_IMBALANCE_WARNING_THRESHOLD = 0.75
+STAR_LIKE_FRACTION_THRESHOLD = 0.75
+ROOT_BRANCH_LENGTH_IMBALANCE_THRESHOLD = 10.0
+ROOT_CHILD_BALANCE_RATIO_THRESHOLD = 0.1
+
 
 @dataclass(slots=True)
 class TreeIntegrityIssue:
@@ -432,7 +439,7 @@ def _root_state_confidence(tree: PhyloTree) -> RootStateConfidenceReport:
             )
         if len(child_tip_counts) == 2 and child_tip_counts[1] > 0:
             imbalance_ratio = child_tip_counts[0] / child_tip_counts[1]
-            if imbalance_ratio <= 0.1:
+            if imbalance_ratio <= ROOT_CHILD_BALANCE_RATIO_THRESHOLD:
                 suspicious_reasons.append(
                     "root creates an extreme basal imbalance between its two child clades"
                 )
@@ -444,7 +451,10 @@ def _root_state_confidence(tree: PhyloTree) -> RootStateConfidenceReport:
         if len(child_lengths) == 2:
             shorter = min(child_lengths)
             longer = max(child_lengths)
-            if shorter > 0 and longer / shorter >= 10.0:
+            if (
+                shorter > 0
+                and longer / shorter >= ROOT_BRANCH_LENGTH_IMBALANCE_THRESHOLD
+            ):
                 suspicious_reasons.append(
                     "one basal branch is more than ten times longer than its sister branch"
                 )
@@ -713,7 +723,9 @@ def _normalized_colless_imbalance(tree: PhyloTree) -> float | None:
     return round(raw_score / maximum, 15)
 
 
-def _unusually_imbalanced(tree: PhyloTree, *, threshold: float = 0.75) -> bool | None:
+def _unusually_imbalanced(
+    tree: PhyloTree, *, threshold: float = TREE_IMBALANCE_WARNING_THRESHOLD
+) -> bool | None:
     normalized = _normalized_colless_imbalance(tree)
     if normalized is None:
         return None
@@ -730,7 +742,9 @@ def _comb_like(tree: PhyloTree) -> bool:
     return _cherry_count(tree) == 1 and _max_depth(tree) == tree.tip_count - 1
 
 
-def _long_branch_taxa(tree: PhyloTree, *, factor: float = 3.0) -> list[str]:
+def _long_branch_taxa(
+    tree: PhyloTree, *, factor: float = LONG_BRANCH_OUTLIER_FACTOR
+) -> list[str]:
     terminal_lengths = [
         (name, length)
         for name, length in tree.terminal_branch_lengths()
@@ -746,8 +760,8 @@ def _long_branch_taxa(tree: PhyloTree, *, factor: float = 3.0) -> list[str]:
 def _branch_outliers(
     tree: PhyloTree,
     *,
-    long_factor: float = 3.0,
-    short_factor: float = 0.1,
+    long_factor: float = LONG_BRANCH_OUTLIER_FACTOR,
+    short_factor: float = SHORT_BRANCH_OUTLIER_FACTOR,
 ) -> tuple[list[BranchLengthOutlier], list[BranchLengthOutlier]]:
     positive_branches = [
         node
@@ -796,7 +810,7 @@ def _branch_outliers(
 
 
 def _star_like(tree: PhyloTree) -> bool:
-    threshold = max(4, math.ceil(tree.tip_count * 0.75))
+    threshold = max(4, math.ceil(tree.tip_count * STAR_LIKE_FRACTION_THRESHOLD))
     for node in tree.iter_nodes():
         leaf_children = sum(1 for child in node.children if child.is_leaf())
         if leaf_children == len(node.children) and leaf_children >= threshold:
