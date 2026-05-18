@@ -628,6 +628,7 @@ def run_large_alignment_inference(
         timeout_seconds=timeout_seconds,
         timed_out=False,
         exit_code=None,
+        failure_reason=None,
         failure_message=None,
     )
     write_incomplete_engine_run(incomplete_record)
