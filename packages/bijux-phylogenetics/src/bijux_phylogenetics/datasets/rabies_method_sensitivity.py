@@ -934,29 +934,6 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_workflow_status": slurm_workflow_status_path,
         },
     )
-    reproducibility_report = audit_rabies_method_sensitivity_workflow_bundle(
-        output_root,
-        sequences_path=report.dataset.sequences_path,
-        metadata_path=report.dataset.metadata_path,
-    )
-    reproducibility_checks_path = (
-        write_rabies_method_sensitivity_reproducibility_checks_table(
-            output_root / "reproducibility-checks.tsv",
-            reproducibility_report,
-        )
-    )
-    reproducibility_variant_audit_path = (
-        write_rabies_method_sensitivity_variant_audit_table(
-            output_root / "reproducibility-variants.tsv",
-            reproducibility_report,
-        )
-    )
-    reproducibility_audit_path = (
-        write_rabies_method_sensitivity_reproducibility_audit_json(
-            output_root / "reproducibility-audit.json",
-            reproducibility_report,
-        )
-    )
     slurm_storage_report = build_rabies_method_sensitivity_slurm_storage_report(
         output_root
     )
@@ -982,6 +959,29 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         write_rabies_method_sensitivity_slurm_storage_html_report(
             output_root / "slurm-storage-report.html",
             slurm_storage_report,
+        )
+    )
+    reproducibility_report = audit_rabies_method_sensitivity_workflow_bundle(
+        output_root,
+        sequences_path=report.dataset.sequences_path,
+        metadata_path=report.dataset.metadata_path,
+    )
+    reproducibility_checks_path = (
+        write_rabies_method_sensitivity_reproducibility_checks_table(
+            output_root / "reproducibility-checks.tsv",
+            reproducibility_report,
+        )
+    )
+    reproducibility_variant_audit_path = (
+        write_rabies_method_sensitivity_variant_audit_table(
+            output_root / "reproducibility-variants.tsv",
+            reproducibility_report,
+        )
+    )
+    reproducibility_audit_path = (
+        write_rabies_method_sensitivity_reproducibility_audit_json(
+            output_root / "reproducibility-audit.json",
+            reproducibility_report,
         )
     )
     report_linked_files = (

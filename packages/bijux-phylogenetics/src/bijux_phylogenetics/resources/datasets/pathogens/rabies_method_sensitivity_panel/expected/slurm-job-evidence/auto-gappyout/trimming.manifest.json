@@ -8,14 +8,14 @@
   "engine_name": "trimal",
   "fasttree_support_summary": null,
   "input_checksums": {
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/auto-gappyout.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/auto-gappyout.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
   },
   "input_paths": [
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/auto-gappyout.aln"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/auto-gappyout.aln"
   ],
   "iqtree_summary": null,
   "log_likelihood": null,
-  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/auto-gappyout.trimmed.aln.manifest.json",
+  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/auto-gappyout.trimmed.aln.manifest.json",
   "model_selection_summary": null,
   "notes": [
     "trimal trimming mode: gappyout",
@@ -24,32 +24,32 @@
     "trimmed alignment validated as nonempty equal-length FASTA"
   ],
   "output_checksums": {
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/auto-gappyout.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/auto-gappyout.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
   },
   "output_paths": {
-    "trimmed_alignment": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/auto-gappyout.trimmed.aln"
+    "trimmed_alignment": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/auto-gappyout.trimmed.aln"
   },
   "resumed": false,
   "run": {
     "command": [
       "/opt/homebrew/bin/trimal",
       "-in",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/auto-gappyout.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/auto-gappyout.aln",
       "-out",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/auto-gappyout.trimmed.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/auto-gappyout.trimmed.aln",
       "-gappyout"
     ],
-    "ended_at_utc": "2026-05-18T01:31:02Z",
+    "ended_at_utc": "2026-05-18T01:50:27Z",
     "engine_name": "trimal",
     "executable": "/opt/homebrew/bin/trimal",
     "exit_code": 0,
     "output_paths": {
-      "trimmed_alignment": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/auto-gappyout.trimmed.aln"
+      "trimmed_alignment": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/auto-gappyout.trimmed.aln"
     },
-    "runtime_seconds": 0.039303,
-    "started_at_utc": "2026-05-18T01:31:02Z",
-    "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/auto-gappyout.trimmed.aln.stderr.log",
-    "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout/auto-gappyout.trimmed.aln.stdout.log",
+    "runtime_seconds": 0.033944,
+    "started_at_utc": "2026-05-18T01:50:26Z",
+    "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/auto-gappyout.trimmed.aln.stderr.log",
+    "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout/auto-gappyout.trimmed.aln.stdout.log",
     "timed_out": false,
     "timeout_seconds": null,
     "version": {
@@ -63,7 +63,7 @@
     },
     "warning_lines": [],
     "workflow": "alignment-trimming",
-    "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-pcd7lh1v/variants/auto-gappyout"
+    "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-zzyyjg25/variants/auto-gappyout"
   },
   "selected_model": null,
   "sh_alrt_support_summary": null,

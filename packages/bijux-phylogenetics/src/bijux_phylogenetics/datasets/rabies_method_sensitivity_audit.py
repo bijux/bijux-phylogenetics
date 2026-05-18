@@ -31,6 +31,9 @@ _SLURM_ARRAY_MEMBERS_FILENAME = "slurm-array-members.tsv"
 _SLURM_JOB_EVIDENCE_DIRECTORY = "slurm-job-evidence"
 _SLURM_JOB_EVIDENCE_INDEX_FILENAME = "slurm-job-evidence.tsv"
 _SLURM_JOB_EVIDENCE_SUMMARY_FILENAME = "slurm-job-evidence-summary.json"
+_SLURM_STORAGE_CATEGORIES_FILENAME = "slurm-storage-categories.tsv"
+_SLURM_STORAGE_VARIANTS_FILENAME = "slurm-storage-variants.tsv"
+_SLURM_STORAGE_SUMMARY_FILENAME = "slurm-storage-report.json"
 _SLURM_MERGE_CHECKS_FILENAME = "slurm-merge-checks.tsv"
 _SLURM_MERGE_VARIANTS_FILENAME = "slurm-merge-variants.tsv"
 _SLURM_MERGE_SUMMARY_FILENAME = "slurm-merge-report.json"
@@ -124,6 +127,9 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     slurm_job_evidence_summary_path = (
         bundle_root / _SLURM_JOB_EVIDENCE_SUMMARY_FILENAME
     )
+    slurm_storage_categories_path = bundle_root / _SLURM_STORAGE_CATEGORIES_FILENAME
+    slurm_storage_variants_path = bundle_root / _SLURM_STORAGE_VARIANTS_FILENAME
+    slurm_storage_summary_path = bundle_root / _SLURM_STORAGE_SUMMARY_FILENAME
     slurm_merge_checks_path = bundle_root / _SLURM_MERGE_CHECKS_FILENAME
     slurm_merge_variants_path = bundle_root / _SLURM_MERGE_VARIANTS_FILENAME
     slurm_merge_summary_path = bundle_root / _SLURM_MERGE_SUMMARY_FILENAME
@@ -149,6 +155,9 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     slurm_array_member_rows = _read_tsv_rows(slurm_array_members_path)
     slurm_job_evidence_rows = _read_tsv_rows(slurm_job_evidence_index_path)
     slurm_job_evidence_summary = _load_json(slurm_job_evidence_summary_path)
+    slurm_storage_category_rows = _read_tsv_rows(slurm_storage_categories_path)
+    slurm_storage_variant_rows = _read_tsv_rows(slurm_storage_variants_path)
+    slurm_storage_summary = _load_json(slurm_storage_summary_path)
     slurm_merge_check_rows = _read_tsv_rows(slurm_merge_checks_path)
     slurm_merge_variant_rows = _read_tsv_rows(slurm_merge_variants_path)
     slurm_merge_summary = _load_json(slurm_merge_summary_path)
@@ -403,6 +412,69 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         expected=slurm_job_evidence_summary["total_artifact_file_count"],
         observed=job_evidence_artifact_file_count,
         detail="job-evidence summary total_artifact_file_count matches the written evidence files",
+    )
+    slurm_storage_category_ids = sorted(
+        str(row["category_id"]) for row in slurm_storage_category_rows
+    )
+    slurm_storage_variant_ids = sorted(
+        str(row["variant_id"]) for row in slurm_storage_variant_rows
+    )
+    add_check(
+        "slurm-storage:category-coverage",
+        surface="slurm-storage",
+        condition=slurm_storage_category_ids
+        == ["logs", "outputs", "posterior_samples", "reports", "trees"],
+        expected=["logs", "outputs", "posterior_samples", "reports", "trees"],
+        observed=slurm_storage_category_ids,
+        detail="storage category rows cover the explicit retained-storage categories",
+    )
+    add_check(
+        "slurm-storage:variant-coverage",
+        surface="slurm-storage",
+        condition=config_variant_ids == slurm_storage_variant_ids,
+        expected=config_variant_ids,
+        observed=slurm_storage_variant_ids,
+        detail="storage variant rows cover the configured variant ids",
+    )
+    storage_total_file_count = sum(
+        int(row["total_file_count"]) for row in slurm_storage_category_rows
+    )
+    storage_total_byte_count = sum(
+        int(row["total_byte_count"]) for row in slurm_storage_category_rows
+    )
+    add_check(
+        "slurm-storage:summary-totals",
+        surface="slurm-storage",
+        condition=int(slurm_storage_summary["total_file_count"])
+        == storage_total_file_count
+        and int(slurm_storage_summary["total_byte_count"]) == storage_total_byte_count,
+        expected=(
+            int(slurm_storage_summary["total_file_count"]),
+            int(slurm_storage_summary["total_byte_count"]),
+        ),
+        observed=(storage_total_file_count, storage_total_byte_count),
+        detail="storage summary totals match the written category ledger",
+    )
+    largest_storage_variant_row = max(
+        slurm_storage_variant_rows,
+        key=lambda row: (int(row["total_byte_count"]), str(row["variant_id"])),
+    )
+    add_check(
+        "slurm-storage:largest-variant",
+        surface="slurm-storage",
+        condition=str(slurm_storage_summary["largest_variant_id"])
+        == str(largest_storage_variant_row["variant_id"])
+        and int(slurm_storage_summary["largest_variant_total_byte_count"])
+        == int(largest_storage_variant_row["total_byte_count"]),
+        expected=(
+            str(slurm_storage_summary["largest_variant_id"]),
+            int(slurm_storage_summary["largest_variant_total_byte_count"]),
+        ),
+        observed=(
+            str(largest_storage_variant_row["variant_id"]),
+            int(largest_storage_variant_row["total_byte_count"]),
+        ),
+        detail="storage summary largest-variant fields match the written per-variant storage ledger",
     )
     slurm_merge_variant_ids = sorted(
         str(row["variant_id"]) for row in slurm_merge_variant_rows
