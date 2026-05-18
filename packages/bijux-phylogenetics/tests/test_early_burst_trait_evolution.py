@@ -50,8 +50,8 @@ def test_summarize_early_burst_trait_evolution_reports_comparison_context() -> N
     assert len(report.profile_rows) == 161
     assert [row.model for row in report.comparison_rows] == [
         "brownian",
-        "ornstein-uhlenbeck",
         "early-burst",
+        "ornstein-uhlenbeck",
     ]
     assert [warning.kind for warning in report.identifiability_warnings] == [
         "boundary_rate_change",

@@ -8,7 +8,7 @@ import pytest
 import bijux_phylogenetics.fixtures as fixtures_api
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.evolutionary_modes import (
-    compare_continuous_evolutionary_modes,
+    compare_fitcontinuous_model_ranking,
 )
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
@@ -110,28 +110,51 @@ def test_shared_geiger_continuous_fixture_catalog_includes_large_and_nonultramet
 def test_shared_geiger_continuous_fixture_catalog_supports_ou_and_early_burst_truth_cases() -> (
     None
 ):
+    brownian_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
     ou_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_ou_known_truth_twenty_four_taxa"
     )
     early_burst_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
     )
+    white_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_white_noise_twenty_four_taxa"
+    )
 
-    ou_comparison = compare_continuous_evolutionary_modes(
+    brownian_comparison = compare_fitcontinuous_model_ranking(
+        brownian_fixture.tree_path,
+        brownian_fixture.traits_path,
+        trait=brownian_fixture.trait_name,
+        taxon_column=brownian_fixture.taxon_column,
+    )
+    ou_comparison = compare_fitcontinuous_model_ranking(
         ou_fixture.tree_path,
         ou_fixture.traits_path,
         trait=ou_fixture.trait_name,
         taxon_column=ou_fixture.taxon_column,
     )
-    early_burst_comparison = compare_continuous_evolutionary_modes(
+    early_burst_comparison = compare_fitcontinuous_model_ranking(
         early_burst_fixture.tree_path,
         early_burst_fixture.traits_path,
         trait=early_burst_fixture.trait_name,
         taxon_column=early_burst_fixture.taxon_column,
     )
+    white_comparison = compare_fitcontinuous_model_ranking(
+        white_fixture.tree_path,
+        white_fixture.traits_path,
+        trait=white_fixture.trait_name,
+        taxon_column=white_fixture.taxon_column,
+    )
 
+    assert brownian_comparison.better_model == "brownian"
     assert ou_comparison.better_model == "ornstein-uhlenbeck"
     assert early_burst_comparison.better_model == "early-burst"
+    assert white_comparison.better_model == "white-noise"
+    assert len(brownian_comparison.rows) == 7
+    assert brownian_comparison.rows[0].rank == 1
+    assert brownian_comparison.rows[0].delta_aicc == 0.0
 
 
 def test_shared_geiger_continuous_fixture_catalog_supports_signal_strength_boundaries() -> (

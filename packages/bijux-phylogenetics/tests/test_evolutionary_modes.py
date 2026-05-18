@@ -11,6 +11,7 @@ from bijux_phylogenetics.ancestral import (
 from bijux_phylogenetics.comparative import (
     ContinuousModeSearchControls,
     compare_continuous_evolutionary_modes,
+    compare_fitcontinuous_model_ranking,
     fit_continuous_evolutionary_mode,
     rescale_tree_early_burst,
     rescale_tree_ornstein_uhlenbeck,
@@ -635,8 +636,8 @@ def test_compare_continuous_evolutionary_modes_reports_likelihood_ratios() -> No
     assert report.better_model == "brownian"
     assert [row.model for row in report.rows] == [
         "brownian",
-        "ornstein-uhlenbeck",
         "early-burst",
+        "ornstein-uhlenbeck",
     ]
     assert sum(1 for row in report.rows if row.selected) == 1
     assert [row.comparison_id for row in report.likelihood_ratio_tests] == [
@@ -646,6 +647,38 @@ def test_compare_continuous_evolutionary_modes_reports_likelihood_ratios() -> No
     ]
     assert all(row.degrees_of_freedom == 1 for row in report.likelihood_ratio_tests)
     assert all(row.statistic >= 0.0 for row in report.likelihood_ratio_tests)
+
+
+def test_compare_fitcontinuous_model_ranking_reports_ranked_all_model_surface() -> None:
+    report = compare_fitcontinuous_model_ranking(
+        EXAMPLE_TREE,
+        EXAMPLE_TRAITS,
+        trait="response",
+    )
+
+    assert report.better_model == "white-noise"
+    assert [row.model for row in report.rows] == [
+        "white-noise",
+        "brownian",
+        "early-burst",
+        "ornstein-uhlenbeck",
+        "pagel-delta",
+        "pagel-kappa",
+        "pagel-lambda",
+    ]
+    assert report.rows[0].rank == 1
+    assert report.rows[0].delta_aicc == 0.0
+    assert report.rows[1].rank == 2
+    assert report.rows[2].comparable is False
+    assert (
+        report.rows[2].comparability_note
+        == "sample size is too small to compute finite AICc for this parameter count"
+    )
+    assert any(
+        "likelihood-ratio tests remain reported only for the nested brownian/ornstein-uhlenbeck/early-burst subset"
+        in warning
+        for warning in report.warnings
+    )
 
 
 def test_reconstruct_continuous_evolutionary_mode_states_supports_early_burst() -> None:
