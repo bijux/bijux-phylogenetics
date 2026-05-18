@@ -216,6 +216,56 @@ def test_shared_geiger_discrete_fixture_catalog_supports_kappa_transform_review(
     assert missing_report.parameter_count == 4
 
 
+def test_shared_geiger_discrete_fixture_catalog_supports_delta_transform_review() -> (
+    None
+):
+    boundary_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_delta_late_change_binary_twenty_four_taxa"
+    )
+    time_sensitive_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_delta_time_sensitive_twenty_four_taxa"
+    )
+    missing_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_delta_missing_binary_twenty_four_taxa"
+    )
+
+    boundary_report = fit_discrete_mk_model(
+        boundary_fixture.tree_path,
+        boundary_fixture.traits_path,
+        trait=boundary_fixture.trait_name,
+        taxon_column=boundary_fixture.taxon_column,
+        model="equal-rates",
+        transform="delta",
+    )
+    time_sensitive_report = fit_discrete_mk_model(
+        time_sensitive_fixture.tree_path,
+        time_sensitive_fixture.traits_path,
+        trait=time_sensitive_fixture.trait_name,
+        taxon_column=time_sensitive_fixture.taxon_column,
+        model="equal-rates",
+        transform="delta",
+    )
+    missing_report = fit_discrete_mk_model(
+        missing_fixture.tree_path,
+        missing_fixture.traits_path,
+        trait=missing_fixture.trait_name,
+        taxon_column=missing_fixture.taxon_column,
+        model="equal-rates",
+        transform="delta",
+    )
+
+    assert boundary_report.transform_fit is not None
+    assert boundary_report.transform_fit.parameter_name == "delta"
+    assert boundary_report.parameter_count == 2
+    assert boundary_report.transform_baseline_comparison is not None
+    assert time_sensitive_report.transform_fit is not None
+    assert time_sensitive_report.transform_fit.parameter_value > 0.0
+    assert time_sensitive_report.transform_fit.parameter_value < 3.0
+    assert missing_report.transform_fit is not None
+    assert missing_report.input_audit.pruned_missing_value_taxa == ["Phy10"]
+    assert missing_report.parameter_count == 2
+
+
 def test_shared_geiger_discrete_fixture_catalog_handles_missing_sparse_and_mismatch_cases() -> (
     None
 ):

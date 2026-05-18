@@ -333,6 +333,90 @@
       "notes": "Three-state missing-value surface derived from the governed symmetric panel so `fitDiscrete(model='SYM', transform='kappa')` parity must prove explicit pruning before transformed multistate likelihood comparison."
     },
     {
+      "fixture_id": "geiger_discrete_delta_late_change_binary_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match-with-late-change-boundary-review",
+      "geiger_reference_expectation": "fitdiscrete-transform-delta-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "late-change-boundary-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_er_binary_twenty_four_taxa",
+        "transform": "delta",
+        "expected_signal_boundary": "late-change"
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "er_binary_truth"
+      },
+      "notes": "Binary equal-rates surface reused as the governed discrete-delta late-change boundary lane because local `fitDiscrete(transform='delta')` pushes this trait to the upper timing bound while still preserving stable row-level rate parity."
+    },
+    {
+      "fixture_id": "geiger_discrete_delta_time_sensitive_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_delta_time_sensitive",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match-with-interior-delta-optimum",
+      "geiger_reference_expectation": "fitdiscrete-transform-delta-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "time-sensitive-discrete-transform-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "states": ["0", "1"],
+        "matrix_shape": "2x2",
+        "parameterization": "equal-rates",
+        "transform_review_kind": "pagel-delta-time-sensitive",
+        "expected_signal_boundary": "interior"
+      },
+      "simulation_metadata": {
+        "model": "curated-delta-time-sensitive-review-surface",
+        "state_string_by_phy_index": "001001110100101111011111"
+      },
+      "notes": "Binary equal-rates surface curated on the governed twenty-four-taxon ultrametric tree so transformed `fitDiscrete(transform='delta')` parity includes one interior timing-sensitive review lane instead of only boundary estimates."
+    },
+    {
+      "fixture_id": "geiger_discrete_delta_missing_binary_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+      "trait_name": "er_binary_delta_time_sensitive",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "pruned-match-with-interior-delta-optimum",
+      "geiger_reference_expectation": "fitdiscrete-transform-delta-ready-after-pruning",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "missing-states",
+        "missing-trait-values",
+        "time-sensitive-discrete-transform-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_delta_time_sensitive_twenty_four_taxa",
+        "transform": "delta",
+        "missing_taxa": ["Phy10"]
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+        "source_trait_name": "er_binary_delta_time_sensitive"
+      },
+      "notes": "Binary time-sensitive delta surface reused as the governed missing-value pruning lane so discrete-delta parity proves overlap pruning without collapsing back to a boundary-only review surface."
+    },
+    {
       "fixture_id": "geiger_discrete_constant_negative_twenty_four_taxa",
       "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
       "trait_name": "constant_state",
