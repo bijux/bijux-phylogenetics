@@ -12,6 +12,7 @@ from bijux_phylogenetics.benchmark import (
 from bijux_phylogenetics.validation import (
     build_broken_benchmark_corpus,
     build_clean_benchmark_corpus,
+    build_large_alignment_scaling_benchmark_dashboard,
     build_large_tree_scaling_benchmark_dashboard,
     build_memory_benchmark_dashboard,
     build_messy_benchmark_corpus,
@@ -126,6 +127,28 @@ def test_build_large_tree_scaling_benchmark_dashboard_tracks_goal_221() -> None:
     )
 
 
+def test_build_large_alignment_scaling_benchmark_dashboard_tracks_goal_222() -> None:
+    report = build_large_alignment_scaling_benchmark_dashboard(
+        replicates=1,
+        size_classes=[
+            ("sequences-4-sites-16", 4, 16),
+            ("sequences-6-sites-24", 6, 24),
+        ],
+    )
+
+    assert report.goal_id == 222
+    assert {workflow.workflow for workflow in report.workflows} == {
+        "alignment-diagnostics",
+        "alignment-trimming",
+        "distance-analysis",
+        "alignment-readiness",
+    }
+    assert all(
+        [row.sequence_count for row in workflow.observations] == [4, 6]
+        for workflow in report.workflows
+    )
+
+
 @pytest.mark.slow
 def test_build_method_accuracy_dashboard_summarizes_fixture_and_corpus_pass_rates() -> (
     None
@@ -192,6 +215,10 @@ def test_validate_simulation_reproducibility_confirms_same_seed_repeatability() 
 def test_package_root_exports_validation_corpus_surfaces() -> None:
     assert validation_api.build_clean_benchmark_corpus is build_clean_benchmark_corpus
     assert (
+        validation_api.build_large_alignment_scaling_benchmark_dashboard
+        is build_large_alignment_scaling_benchmark_dashboard
+    )
+    assert (
         validation_api.build_large_tree_scaling_benchmark_dashboard
         is build_large_tree_scaling_benchmark_dashboard
     )
@@ -232,3 +259,19 @@ def test_write_validation_corpus_json_serializes_large_tree_scaling_dashboard(
     text = path.read_text(encoding="utf-8")
     assert '"goal_id": 221' in text
     assert '"tree-rendering"' in text
+
+
+def test_write_validation_corpus_json_serializes_large_alignment_scaling_dashboard(
+    tmp_path: Path,
+) -> None:
+    path = write_validation_corpus_json(
+        tmp_path / "large-alignment-scaling.json",
+        build_large_alignment_scaling_benchmark_dashboard(
+            replicates=1,
+            size_classes=[("sequences-4-sites-16", 4, 16)],
+        ),
+    )
+
+    text = path.read_text(encoding="utf-8")
+    assert '"goal_id": 222' in text
+    assert '"alignment-trimming"' in text
