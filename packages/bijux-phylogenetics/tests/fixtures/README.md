@@ -121,6 +121,17 @@ hundred-twenty-eight-taxon ultrametric surfaces, a rooted non-ultrametric
 negative-control tree, Brownian, OU, and early-burst known-truth traits,
 white-noise low-signal traits, missing-value pruning, constant-trait blockers,
 one explicit outlier surface, and one trend proxy for future model expansion.
+The same metadata corpus now also has one governed shared `geiger`
+discrete-trait catalog at
+`metadata/shared_geiger_discrete_fixture_catalog.json`. That catalog resolves
+future `fitDiscrete` review through durable fixture ids that point to shared
+trait-table and tree fixtures instead of letting live parity lanes hardcode ad
+hoc state tables. It covers ER binary known truth, SYM three-state and
+four-state known truth, ARD binary and four-state known truth, one sparse
+six-state overparameterization surface, missing-state pruning, one constant
+negative, and one tree-versus-table mismatch panel, and it records explicit
+transition-matrix metadata wherever the fixture reflects a governed simulation
+surface.
 
 The `expected/` directory now also carries benchmark-corpus regression
 snapshots used to pin stable dataset summaries across releases.
