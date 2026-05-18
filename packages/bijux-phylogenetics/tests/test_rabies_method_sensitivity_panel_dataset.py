@@ -182,6 +182,10 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.workflow_bundle.slurm_output_explosion_variants_path.is_file()
     assert result.workflow_bundle.slurm_output_explosion_summary_path.is_file()
     assert result.workflow_bundle.slurm_output_explosion_report_path.is_file()
+    assert result.workflow_bundle.slurm_tree_retention_checks_path.is_file()
+    assert result.workflow_bundle.slurm_tree_retention_files_path.is_file()
+    assert result.workflow_bundle.slurm_tree_retention_summary_path.is_file()
+    assert result.workflow_bundle.slurm_tree_retention_report_path.is_file()
     assert result.workflow_bundle.slurm_merge_checks_path.is_file()
     assert result.workflow_bundle.slurm_merge_variants_path.is_file()
     assert result.workflow_bundle.slurm_merge_summary_path.is_file()
@@ -221,6 +225,13 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.workflow_bundle.slurm_output_explosion_global_issue_count == 0
     assert result.workflow_bundle.slurm_output_explosion_warning_variant_count == 0
     assert result.workflow_bundle.slurm_output_explosion_high_risk_variant_count == 0
+    assert result.workflow_bundle.slurm_tree_retention_status == "no_action"
+    assert result.workflow_bundle.slurm_tree_set_file_count == 0
+    assert result.workflow_bundle.slurm_tree_posterior_sample_file_count == 0
+    assert result.workflow_bundle.slurm_tree_thinning_recommended_file_count == 0
+    assert result.workflow_bundle.slurm_tree_thinning_required_file_count == 0
+    assert result.workflow_bundle.slurm_tree_compression_recommended_file_count == 0
+    assert result.workflow_bundle.slurm_tree_compression_required_file_count == 0
     assert result.workflow_bundle.slurm_merge_status == "merge-ready"
     assert result.workflow_bundle.slurm_merge_ready is True
     assert result.workflow_bundle.slurm_mergeable_variant_count == 4

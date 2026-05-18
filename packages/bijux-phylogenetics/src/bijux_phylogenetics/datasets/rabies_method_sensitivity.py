@@ -86,6 +86,14 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_output_explosi
     write_rabies_method_sensitivity_slurm_output_explosion_summary_json,
     write_rabies_method_sensitivity_slurm_output_explosion_variants_table,
 )
+from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_tree_retention import (
+    RabiesMethodSensitivitySlurmTreeRetentionReport,
+    build_rabies_method_sensitivity_slurm_tree_retention_report,
+    write_rabies_method_sensitivity_slurm_tree_retention_checks_table,
+    write_rabies_method_sensitivity_slurm_tree_retention_files_table,
+    write_rabies_method_sensitivity_slurm_tree_retention_html_report,
+    write_rabies_method_sensitivity_slurm_tree_retention_summary_json,
+)
 from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_storage import (
     RabiesMethodSensitivitySlurmStorageReport,
     build_rabies_method_sensitivity_slurm_storage_report,
@@ -295,6 +303,10 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     slurm_output_explosion_variants_path: Path
     slurm_output_explosion_summary_path: Path
     slurm_output_explosion_report_path: Path
+    slurm_tree_retention_checks_path: Path
+    slurm_tree_retention_files_path: Path
+    slurm_tree_retention_summary_path: Path
+    slurm_tree_retention_report_path: Path
     slurm_merge_checks_path: Path
     slurm_merge_variants_path: Path
     slurm_merge_summary_path: Path
@@ -322,6 +334,13 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     slurm_output_explosion_global_issue_count: int
     slurm_output_explosion_warning_variant_count: int
     slurm_output_explosion_high_risk_variant_count: int
+    slurm_tree_retention_status: str
+    slurm_tree_set_file_count: int
+    slurm_tree_posterior_sample_file_count: int
+    slurm_tree_thinning_recommended_file_count: int
+    slurm_tree_thinning_required_file_count: int
+    slurm_tree_compression_recommended_file_count: int
+    slurm_tree_compression_required_file_count: int
     slurm_merge_status: str
     slurm_merge_ready: bool
     slurm_mergeable_variant_count: int
@@ -1004,6 +1023,33 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             slurm_output_explosion_report,
         )
     )
+    slurm_tree_retention_report = (
+        build_rabies_method_sensitivity_slurm_tree_retention_report(output_root)
+    )
+    slurm_tree_retention_checks_path = (
+        write_rabies_method_sensitivity_slurm_tree_retention_checks_table(
+            output_root / "slurm-tree-retention-checks.tsv",
+            slurm_tree_retention_report,
+        )
+    )
+    slurm_tree_retention_files_path = (
+        write_rabies_method_sensitivity_slurm_tree_retention_files_table(
+            output_root / "slurm-tree-retention-files.tsv",
+            slurm_tree_retention_report,
+        )
+    )
+    slurm_tree_retention_summary_path = (
+        write_rabies_method_sensitivity_slurm_tree_retention_summary_json(
+            output_root / "slurm-tree-retention-policy.json",
+            slurm_tree_retention_report,
+        )
+    )
+    slurm_tree_retention_report_path = (
+        write_rabies_method_sensitivity_slurm_tree_retention_html_report(
+            output_root / "slurm-tree-retention-policy.html",
+            slurm_tree_retention_report,
+        )
+    )
     reproducibility_report = audit_rabies_method_sensitivity_workflow_bundle(
         output_root,
         sequences_path=report.dataset.sequences_path,
@@ -1055,6 +1101,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_output_explosion_variants_path,
         slurm_output_explosion_summary_path,
         slurm_output_explosion_report_path,
+        slurm_tree_retention_checks_path,
+        slurm_tree_retention_files_path,
+        slurm_tree_retention_summary_path,
+        slurm_tree_retention_report_path,
         slurm_merge_checks_path,
         slurm_merge_variants_path,
         slurm_merge_summary_path,
@@ -1097,6 +1147,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_output_explosion_variants": slurm_output_explosion_variants_path,
             "slurm_output_explosion_summary": slurm_output_explosion_summary_path,
             "slurm_output_explosion_report": slurm_output_explosion_report_path,
+            "slurm_tree_retention_checks": slurm_tree_retention_checks_path,
+            "slurm_tree_retention_files": slurm_tree_retention_files_path,
+            "slurm_tree_retention_summary": slurm_tree_retention_summary_path,
+            "slurm_tree_retention_report": slurm_tree_retention_report_path,
             "slurm_merge_checks": slurm_merge_checks_path,
             "slurm_merge_variants": slurm_merge_variants_path,
             "slurm_merge_summary": slurm_merge_summary_path,
@@ -1118,6 +1172,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_job_evidence_report=slurm_job_evidence_report,
         slurm_storage_report=slurm_storage_report,
         slurm_output_explosion_report=slurm_output_explosion_report,
+        slurm_tree_retention_report=slurm_tree_retention_report,
         slurm_merge_report=slurm_merge_report,
         slurm_output_freshness_report=slurm_output_freshness_report,
         slurm_status_report=slurm_status_report,
@@ -1182,6 +1237,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_output_explosion_variants_path=slurm_output_explosion_variants_path,
         slurm_output_explosion_summary_path=slurm_output_explosion_summary_path,
         slurm_output_explosion_report_path=slurm_output_explosion_report_path,
+        slurm_tree_retention_checks_path=slurm_tree_retention_checks_path,
+        slurm_tree_retention_files_path=slurm_tree_retention_files_path,
+        slurm_tree_retention_summary_path=slurm_tree_retention_summary_path,
+        slurm_tree_retention_report_path=slurm_tree_retention_report_path,
         slurm_merge_checks_path=slurm_merge_checks_path,
         slurm_merge_variants_path=slurm_merge_variants_path,
         slurm_merge_summary_path=slurm_merge_summary_path,
@@ -1238,6 +1297,25 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         ),
         slurm_output_explosion_high_risk_variant_count=(
             slurm_output_explosion_report.high_risk_variant_count
+        ),
+        slurm_tree_retention_status=(
+            slurm_tree_retention_report.overall_policy_status
+        ),
+        slurm_tree_set_file_count=slurm_tree_retention_report.tree_set_file_count,
+        slurm_tree_posterior_sample_file_count=(
+            slurm_tree_retention_report.posterior_sample_file_count
+        ),
+        slurm_tree_thinning_recommended_file_count=(
+            slurm_tree_retention_report.thinning_recommended_file_count
+        ),
+        slurm_tree_thinning_required_file_count=(
+            slurm_tree_retention_report.thinning_required_file_count
+        ),
+        slurm_tree_compression_recommended_file_count=(
+            slurm_tree_retention_report.compression_recommended_file_count
+        ),
+        slurm_tree_compression_required_file_count=(
+            slurm_tree_retention_report.compression_required_file_count
         ),
         slurm_merge_status=slurm_merge_report.merge_status,
         slurm_merge_ready=slurm_merge_report.merge_ready,
@@ -2126,6 +2204,7 @@ def _write_report(
     slurm_job_evidence_report: RabiesMethodSensitivitySlurmJobEvidenceReport,
     slurm_storage_report: RabiesMethodSensitivitySlurmStorageReport,
     slurm_output_explosion_report: RabiesMethodSensitivitySlurmOutputExplosionReport,
+    slurm_tree_retention_report: RabiesMethodSensitivitySlurmTreeRetentionReport,
     slurm_merge_report: RabiesMethodSensitivitySlurmMergeReport,
     slurm_output_freshness_report: RabiesMethodSensitivitySlurmOutputFreshnessReport,
     slurm_status_report: RabiesMethodSensitivitySlurmStatusReport,
@@ -2314,6 +2393,37 @@ def _write_report(
             ),
         ),
         (
+            "slurm-tree-retention-policy",
+            "\n".join(
+                [
+                    (
+                        "overall policy status: "
+                        f"{slurm_tree_retention_report.overall_policy_status}"
+                    ),
+                    (
+                        "tree-set files: "
+                        f"{slurm_tree_retention_report.tree_set_file_count}"
+                    ),
+                    (
+                        "posterior sample files: "
+                        f"{slurm_tree_retention_report.posterior_sample_file_count}"
+                    ),
+                    (
+                        "thinning required files: "
+                        f"{slurm_tree_retention_report.thinning_required_file_count}"
+                    ),
+                    (
+                        "compression required files: "
+                        f"{slurm_tree_retention_report.compression_required_file_count}"
+                    ),
+                    (
+                        "largest tree set: "
+                        f"{slurm_tree_retention_report.largest_tree_set_path}"
+                    ),
+                ]
+            ),
+        ),
+        (
             "slurm-merge-report",
             "\n".join(
                 [
@@ -2448,6 +2558,22 @@ def _write_report(
                     (
                         "slurm output explosion report: "
                         f"{bundle_paths['slurm_output_explosion_report'].name}"
+                    ),
+                    (
+                        "slurm tree retention checks: "
+                        f"{bundle_paths['slurm_tree_retention_checks'].name}"
+                    ),
+                    (
+                        "slurm tree retention files: "
+                        f"{bundle_paths['slurm_tree_retention_files'].name}"
+                    ),
+                    (
+                        "slurm tree retention summary: "
+                        f"{bundle_paths['slurm_tree_retention_summary'].name}"
+                    ),
+                    (
+                        "slurm tree retention report: "
+                        f"{bundle_paths['slurm_tree_retention_report'].name}"
                     ),
                     (
                         "slurm merge checks: "
@@ -2586,6 +2712,27 @@ def _write_report(
             "slurm_output_explosion_high_risk_variant_count": (
                 slurm_output_explosion_report.high_risk_variant_count
             ),
+            "slurm_tree_retention_status": (
+                slurm_tree_retention_report.overall_policy_status
+            ),
+            "slurm_tree_set_file_count": (
+                slurm_tree_retention_report.tree_set_file_count
+            ),
+            "slurm_tree_posterior_sample_file_count": (
+                slurm_tree_retention_report.posterior_sample_file_count
+            ),
+            "slurm_tree_thinning_recommended_file_count": (
+                slurm_tree_retention_report.thinning_recommended_file_count
+            ),
+            "slurm_tree_thinning_required_file_count": (
+                slurm_tree_retention_report.thinning_required_file_count
+            ),
+            "slurm_tree_compression_recommended_file_count": (
+                slurm_tree_retention_report.compression_recommended_file_count
+            ),
+            "slurm_tree_compression_required_file_count": (
+                slurm_tree_retention_report.compression_required_file_count
+            ),
             "slurm_merge_status": slurm_merge_report.merge_status,
             "slurm_merge_ready": slurm_merge_report.merge_ready,
             "slurm_mergeable_variant_count": (
@@ -2649,6 +2796,14 @@ def _write_report(
             (
                 "slurm output explosion high-risk variants",
                 slurm_output_explosion_report.high_risk_variant_count,
+            ),
+            (
+                "slurm tree retention status",
+                slurm_tree_retention_report.overall_policy_status,
+            ),
+            (
+                "slurm tree-set files",
+                slurm_tree_retention_report.tree_set_file_count,
             ),
             (
                 "slurm merge ready",
@@ -2745,6 +2900,13 @@ def _write_overview(
         f"- slurm output explosion global issues: `{bundle.slurm_output_explosion_global_issue_count}`",
         f"- slurm output explosion warning variants: `{bundle.slurm_output_explosion_warning_variant_count}`",
         f"- slurm output explosion high-risk variants: `{bundle.slurm_output_explosion_high_risk_variant_count}`",
+        f"- slurm tree retention status: `{bundle.slurm_tree_retention_status}`",
+        f"- slurm tree-set files: `{bundle.slurm_tree_set_file_count}`",
+        f"- slurm posterior tree-sample files: `{bundle.slurm_tree_posterior_sample_file_count}`",
+        f"- slurm thinning recommendation files: `{bundle.slurm_tree_thinning_recommended_file_count}`",
+        f"- required slurm thinning files: `{bundle.slurm_tree_thinning_required_file_count}`",
+        f"- slurm compression recommendation files: `{bundle.slurm_tree_compression_recommended_file_count}`",
+        f"- required slurm compression files: `{bundle.slurm_tree_compression_required_file_count}`",
         f"- slurm merge status: `{bundle.slurm_merge_status}`",
         f"- slurm merge ready: `{str(bundle.slurm_merge_ready).lower()}`",
         f"- slurm mergeable variants: `{bundle.slurm_mergeable_variant_count}`",
@@ -2776,6 +2938,10 @@ def _write_overview(
         f"- slurm output explosion variants: `{bundle.slurm_output_explosion_variants_path.name}`",
         f"- slurm output explosion summary: `{bundle.slurm_output_explosion_summary_path.name}`",
         f"- slurm output explosion report: `{bundle.slurm_output_explosion_report_path.name}`",
+        f"- slurm tree retention checks: `{bundle.slurm_tree_retention_checks_path.name}`",
+        f"- slurm tree retention files: `{bundle.slurm_tree_retention_files_path.name}`",
+        f"- slurm tree retention summary: `{bundle.slurm_tree_retention_summary_path.name}`",
+        f"- slurm tree retention report: `{bundle.slurm_tree_retention_report_path.name}`",
         f"- slurm merge checks: `{bundle.slurm_merge_checks_path.name}`",
         f"- slurm merge variants: `{bundle.slurm_merge_variants_path.name}`",
         f"- slurm merge summary: `{bundle.slurm_merge_summary_path.name}`",
