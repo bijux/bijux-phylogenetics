@@ -891,6 +891,9 @@ def run_demo_command(args: Any) -> int:
                 result.workflow_bundle.config_path,
                 result.workflow_bundle.manifest_path,
                 result.workflow_bundle.report_manifest_path,
+                result.workflow_bundle.slurm_job_plan_path,
+                result.workflow_bundle.slurm_assumptions_path,
+                result.workflow_bundle.slurm_summary_path,
                 result.workflow_bundle.reproducibility_checks_path,
                 result.workflow_bundle.reproducibility_variant_audit_path,
                 result.workflow_bundle.reproducibility_audit_path,
@@ -943,6 +946,22 @@ def run_demo_command(args: Any) -> int:
                         ),
                         "report_total_output_bytes": (
                             result.workflow_bundle.report_total_output_bytes
+                        ),
+                        "slurm_job_count": result.workflow_bundle.slurm_job_count,
+                        "slurm_total_estimated_core_hours": (
+                            result.workflow_bundle.slurm_total_estimated_core_hours
+                        ),
+                        "slurm_maximum_estimated_memory_mib": (
+                            result.workflow_bundle.slurm_maximum_estimated_memory_mib
+                        ),
+                        "slurm_maximum_estimated_wallclock_minutes": (
+                            result.workflow_bundle.slurm_maximum_estimated_wallclock_minutes
+                        ),
+                        "slurm_total_estimated_scratch_mib": (
+                            result.workflow_bundle.slurm_total_estimated_scratch_mib
+                        ),
+                        "slurm_total_estimated_output_mib": (
+                            result.workflow_bundle.slurm_total_estimated_output_mib
                         ),
                         "reproducibility_passed": (
                             result.workflow_bundle.reproducibility_passed
