@@ -39,6 +39,12 @@ from .uncertainty import (
     write_topology_cluster_table,
     write_uncertainty_conclusion_table,
 )
+from .uncertainty_methods import (
+    TreeSetUncertaintyMethodReport,
+    TreeSetUncertaintyMethodsSummaryTextResult,
+    build_tree_set_uncertainty_method_report,
+    write_tree_set_uncertainty_methods_summary_text,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,10 +109,13 @@ class TreeSetUncertaintyFigurePackageResult:
     conclusion_summary_path: Path
     legend_path: Path
     caption_path: Path
+    methods_summary_path: Path
     review_path: Path
     manifest_path: Path
     reproducibility_manifest_path: Path
     consensus_render: TreeRenderResult
+    methods_report: TreeSetUncertaintyMethodReport
+    methods_summary: TreeSetUncertaintyMethodsSummaryTextResult
     legend_entries: list[TreeSetUncertaintyLegendEntry]
     caption_draft: TreeSetUncertaintyCaptionDraft
     audit: TreeSetUncertaintyPublicationAudit
@@ -458,6 +467,8 @@ def _build_review_html(
     summary_path: Path,
     caption_path: Path,
     legend_path: Path,
+    methods_summary_path: Path,
+    methods_summary_text: str,
     audit: TreeSetUncertaintyPublicationAudit,
 ) -> str:
     figures = {
@@ -520,6 +531,10 @@ def _build_review_html(
             '    <section class="panel"><h2>Topology Clusters</h2><div class="figure-shell">' + figures["topology_clusters"] + "</div></section>",
             "  </section>",
             '  <section class="panel" style="margin-top: 20px;">',
+            "    <h2>Methods Summary</h2>",
+            f"    <pre>{escape(methods_summary_text)}</pre>",
+            "  </section>",
+            '  <section class="panel" style="margin-top: 20px;">',
             "    <h2>Linked Artifacts</h2>",
             "    <ul>",
             f'      <li><a href="{escape(unstable_taxa_table_path.name)}">{escape(unstable_taxa_table_path.name)}</a></li>',
@@ -528,6 +543,7 @@ def _build_review_html(
             f'      <li><a href="{escape(summary_path.name)}">{escape(summary_path.name)}</a></li>',
             f'      <li><a href="{escape(legend_path.name)}">{escape(legend_path.name)}</a></li>',
             f'      <li><a href="{escape(caption_path.name)}">{escape(caption_path.name)}</a></li>',
+            f'      <li><a href="{escape(methods_summary_path.name)}">{escape(methods_summary_path.name)}</a></li>',
             "    </ul>",
             "  </section>",
             "</main>",
@@ -573,6 +589,7 @@ def build_tree_set_uncertainty_figure_package(
         multimodality = detect_posterior_topology_multimodality(tree_set_path)
         conflicts = summarize_clade_credibility_conflicts(tree_set_path)
         conclusions = summarize_uncertainty_aware_conclusions(tree_set_path)
+        methods_report = build_tree_set_uncertainty_method_report(tree_set_path)
 
         consensus_tree_path = out_dir / "consensus-tree.nwk"
         consensus_figure_path = out_dir / "consensus-tree.svg"
@@ -585,6 +602,7 @@ def build_tree_set_uncertainty_figure_package(
         conclusion_summary_path = out_dir / "uncertainty-summary.md"
         legend_path = out_dir / "figure-legend.tsv"
         caption_path = out_dir / "figure-caption.md"
+        methods_summary_path = out_dir / "tree-set-uncertainty-methods-summary.md"
         review_path = out_dir / "uncertainty-review.html"
         manifest_path = out_dir / "uncertainty-package-manifest.json"
         reproducibility_manifest_path = (
@@ -670,6 +688,10 @@ def build_tree_set_uncertainty_figure_package(
             audit=audit,
         )
         _write_caption(caption_path, caption_draft)
+        methods_summary = write_tree_set_uncertainty_methods_summary_text(
+            methods_summary_path,
+            methods_report,
+        )
         review_path.write_text(
             _build_review_html(
                 consensus_figure_path=consensus_figure_path,
@@ -682,6 +704,8 @@ def build_tree_set_uncertainty_figure_package(
                 summary_path=conclusion_summary_path,
                 caption_path=caption_path,
                 legend_path=legend_path,
+                methods_summary_path=methods_summary_path,
+                methods_summary_text=methods_summary.text,
                 audit=audit,
             ),
             encoding="utf-8",
@@ -708,6 +732,7 @@ def build_tree_set_uncertainty_figure_package(
             conclusion_summary_path,
             legend_path,
             caption_path,
+            methods_summary_path,
             review_path,
         ]
         reproducibility_manifest = write_figure_reproducibility_manifest(
@@ -765,6 +790,7 @@ def build_tree_set_uncertainty_figure_package(
                 ("consensus_tree_newick", consensus_tree_path),
                 ("uncertainty_summary", conclusion_summary_path),
                 ("caption", caption_path),
+                ("methods_summary", methods_summary_path),
                 ("review", review_path),
             ],
         )
@@ -787,7 +813,12 @@ def build_tree_set_uncertainty_figure_package(
             "multimodality": _json_ready(asdict(multimodality)),
             "clade_conflicts": _json_ready(asdict(conflicts)),
             "conclusions": _json_ready(asdict(conclusions)),
+            "methods_summary": _json_ready(asdict(methods_summary)),
             "audit": _json_ready(asdict(audit)),
+            "outputs": {"methods_summary_path": str(methods_summary_path)},
+            "metrics": {
+                "methods_summary_warning_count": methods_summary.warning_count
+            },
             "linked_artifact_count": len(artifact_paths),
         }
         manifest_path.write_text(
@@ -810,10 +841,13 @@ def build_tree_set_uncertainty_figure_package(
             conclusion_summary_path=conclusion_summary_path,
             legend_path=legend_path,
             caption_path=caption_path,
+            methods_summary_path=methods_summary_path,
             review_path=review_path,
             manifest_path=manifest_path,
             reproducibility_manifest_path=reproducibility_manifest_path,
             consensus_render=consensus_render,
+            methods_report=methods_report,
+            methods_summary=methods_summary,
             legend_entries=legend_entries,
             caption_draft=caption_draft,
             audit=audit,

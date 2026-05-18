@@ -33,6 +33,7 @@ def test_build_tree_set_uncertainty_figure_package_writes_publication_bundle(
     assert result.conclusion_summary_path.exists()
     assert result.legend_path.exists()
     assert result.caption_path.exists()
+    assert result.methods_summary_path.exists()
     assert result.review_path.exists()
     assert result.manifest_path.exists()
     assert result.reproducibility_manifest_path.exists()
@@ -48,11 +49,19 @@ def test_build_tree_set_uncertainty_figure_package_writes_publication_bundle(
     )
     assert manifest["report_kind"] == "tree_set_uncertainty_figure_package"
     assert manifest["audit"]["publication_ready"] is True
+    assert manifest["outputs"]["methods_summary_path"].endswith(
+        "tree-set-uncertainty-methods-summary.md"
+    )
+    assert manifest["metrics"]["methods_summary_warning_count"] >= 0
     assert manifest["reproducibility_manifest_path"] == str(
         result.reproducibility_manifest_path
     )
     assert reproducibility["report_kind"] == "tree_set_uncertainty_figure_package"
     assert reproducibility["generated_figures"][0]["label"] == "consensus_tree"
+    assert "Tree-Set Uncertainty Methods Summary" in result.methods_summary_path.read_text(
+        encoding="utf-8"
+    )
+    assert "Methods Summary" in result.review_path.read_text(encoding="utf-8")
 
 
 def test_build_tree_set_uncertainty_figure_package_keeps_empty_instability_panel_explicit(
