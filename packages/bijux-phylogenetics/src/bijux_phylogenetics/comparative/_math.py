@@ -140,9 +140,14 @@ def stable_covariance(
     matrix: list[list[float]], *, epsilon: float = 1e-8
 ) -> list[list[float]]:
     """Return a lightly regularized covariance matrix for numerical stability."""
+    diagonal_scale = max(
+        (abs(matrix[index][index]) for index in range(len(matrix))),
+        default=0.0,
+    )
+    stabilizer = max(1e-12, min(epsilon, diagonal_scale * 5e-8))
     stabilized = matrix_copy(matrix)
     for index in range(len(stabilized)):
-        stabilized[index][index] += epsilon
+        stabilized[index][index] += stabilizer
     return stabilized
 
 
