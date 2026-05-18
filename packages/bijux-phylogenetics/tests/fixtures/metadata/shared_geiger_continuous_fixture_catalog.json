@@ -134,11 +134,11 @@
       "simulation_metadata": {
         "model": "early-burst",
         "root_state": 0.0,
-        "sigma": 0.2,
-        "rate_change": 1.5,
+        "sigma": 0.4,
+        "rate_change": 5.0,
         "seed": 404
       },
-      "notes": "Twenty-four-taxon early-burst surface generated from the governed ultrametric tree with a seed that keeps early-burst preferred over BM and OU in the current Bijux recovery lane."
+      "notes": "Twenty-four-taxon early-burst surface generated from the governed ultrametric tree with a stronger deceleration profile that keeps early-burst preferred over BM and OU in both the Bijux and geiger recovery lanes."
     },
     {
       "fixture_id": "geiger_continuous_trend_proxy_twenty_four_taxa",

@@ -79,7 +79,36 @@ def test_fit_continuous_evolutionary_mode_supports_early_burst() -> None:
     assert fit.aic > 0.0
     assert fit.optimizer_diagnostics is not None
     assert fit.optimizer_diagnostics.optimizer_name == "governed-two-stage-grid-search"
-    assert fit.identifiability_warnings == []
+    assert [warning.kind for warning in fit.identifiability_warnings] == [
+        "boundary_rate_change",
+        "flat_likelihood_profile",
+        "brownian_like_rate_change",
+    ]
+
+
+def test_fit_continuous_evolutionary_mode_recovers_shared_early_burst_fixture() -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        mode="early-burst",
+        taxon_column=fixture.taxon_column,
+        early_burst_bounds=(0.0, 10.0),
+    )
+
+    assert fit.parameter_name == "rate_change"
+    assert fit.parameter_value is not None
+    assert 4.0 <= fit.parameter_value <= 5.0
+    assert fit.optimizer_diagnostics is not None
+    assert fit.optimizer_diagnostics.hit_lower_boundary is False
+    assert fit.optimizer_diagnostics.hit_upper_boundary is False
+    assert [warning.kind for warning in fit.identifiability_warnings] == [
+        "flat_likelihood_profile"
+    ]
 
 
 def test_fit_continuous_evolutionary_mode_reports_ou_identifiability_and_bounds() -> (
