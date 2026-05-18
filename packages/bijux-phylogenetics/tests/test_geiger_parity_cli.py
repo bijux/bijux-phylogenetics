@@ -38,8 +38,8 @@ def test_parity_cli_runs_live_geiger_harness_and_writes_tables(
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["metrics"]["reference_source"] == "geiger-live"
-    assert payload["metrics"]["case_count"] == 8
-    assert payload["metrics"]["function_count"] == 3
+    assert payload["metrics"]["case_count"] == 11
+    assert payload["metrics"]["function_count"] == 4
     assert payload["metrics"]["skipped_case_count"] == 0
     assert summary_path.exists()
     assert observation_path.exists()
@@ -56,7 +56,7 @@ def test_parity_cli_restricts_live_geiger_cases(tmp_path: Path, capsys) -> None:
             "--geiger-rscript-executable",
             str(rscript),
             "--geiger-case",
-            "fitcontinuous-eb-early-burst-rate-recovery",
+            "fitcontinuous-lambda-weak-signal-review",
             "--json",
         ]
     )
@@ -66,5 +66,5 @@ def test_parity_cli_restricts_live_geiger_cases(tmp_path: Path, capsys) -> None:
     assert payload["status"] == "ok"
     assert payload["metrics"]["case_count"] == 1
     observation = payload["data"]["report"]["observations"][0]
-    assert observation["case_id"] == "fitcontinuous-eb-early-burst-rate-recovery"
-    assert observation["model_name"] == "EB"
+    assert observation["case_id"] == "fitcontinuous-lambda-weak-signal-review"
+    assert observation["model_name"] == "lambda"
