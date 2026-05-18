@@ -1434,6 +1434,20 @@ negative `a` parameter and explicit bounded control. Those cases govern
 sigma-squared-backed rate, root-state recovery, log-likelihood, AIC, AICc,
 lower-boundary detection, and reviewer-facing weak-identifiability warnings
 when the fitted rate change collapses back toward the Brownian boundary.
+The same comparative owner package now also exposes a governed
+`geiger::rescale` parity surface instead of treating branch transformation as
+an internal side effect. Public wrappers now cover
+`rescale_tree_pagel_lambda(...)`, `rescale_tree_pagel_kappa(...)`,
+`rescale_tree_pagel_delta(...)`, `rescale_tree_early_burst(...)`, and
+`rescale_tree_white_noise(...)`, and the shared transform engine is the same
+one used by the owned continuous and discrete parity surfaces. The governed
+reference contract compares transformed branch lengths and Brownian covariance
+surfaces against local `geiger::rescale` on the same rooted example tree,
+including the no-phylogeny white transform. The early-burst rescale contract
+is explicit: the owned public wrapper keeps the positive `rate_change` scale,
+while local `geiger::rescale(model='EB')` exposes the equivalent negative `a`
+parameter, so parity compares those surfaces with the sign mapping stated
+rather than hidden.
 The live lane now also has a dedicated
 `geiger::fitContinuous(model comparison)` surface over the governed
 seven-model set `BM`, `white`, `lambda`, `kappa`, `delta`, `OU`, and `EB`.
