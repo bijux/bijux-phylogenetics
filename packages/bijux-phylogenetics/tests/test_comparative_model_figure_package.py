@@ -42,6 +42,7 @@ def test_build_comparative_model_figure_package_writes_publication_bundle(
     assert result.caption_path.exists()
     assert result.review_path.exists()
     assert result.manifest_path.exists()
+    assert result.reproducibility_manifest_path.exists()
     assert result.audit.publication_ready is True
     assert result.audit.criteria_surface_visible is True
     assert result.audit.likelihood_surface_visible is True
@@ -64,9 +65,17 @@ def test_build_comparative_model_figure_package_writes_publication_bundle(
     assert "Fit Summary" in html
 
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+    reproducibility = json.loads(
+        result.reproducibility_manifest_path.read_text(encoding="utf-8")
+    )
     assert manifest["report_kind"] == "comparative_model_figure_package"
     assert manifest["metrics"]["publication_ready"] is True
     assert manifest["metrics"]["selected_model"] == "brownian"
+    assert manifest["reproducibility_manifest_path"] == str(
+        result.reproducibility_manifest_path
+    )
+    assert reproducibility["report_kind"] == "comparative_model_figure_package"
+    assert reproducibility["model"]["name"] == "brownian"
 
 
 def test_build_comparative_model_figure_package_blocks_ambiguous_support(
@@ -95,3 +104,7 @@ def test_build_comparative_model_figure_package_blocks_ambiguous_support(
     )
     assert result.review_path.exists()
     assert result.manifest_path.exists()
+    reproducibility = json.loads(
+        result.reproducibility_manifest_path.read_text(encoding="utf-8")
+    )
+    assert reproducibility["model"]["name"] == "ou"

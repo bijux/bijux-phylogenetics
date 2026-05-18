@@ -15,6 +15,10 @@ from bijux_phylogenetics.render.svg import (
     audit_support_label_rendering,
     render_tree_svg,
 )
+from bijux_phylogenetics.render.reproducibility import (
+    FigureReproducibilityFilter,
+    write_figure_reproducibility_manifest,
+)
 
 from .tree_set import (
     TreeSetProcessingSummary,
@@ -101,6 +105,7 @@ class TreeSetUncertaintyFigurePackageResult:
     caption_path: Path
     review_path: Path
     manifest_path: Path
+    reproducibility_manifest_path: Path
     consensus_render: TreeRenderResult
     legend_entries: list[TreeSetUncertaintyLegendEntry]
     caption_draft: TreeSetUncertaintyCaptionDraft
@@ -582,6 +587,9 @@ def build_tree_set_uncertainty_figure_package(
         caption_path = out_dir / "figure-caption.md"
         review_path = out_dir / "uncertainty-review.html"
         manifest_path = out_dir / "uncertainty-package-manifest.json"
+        reproducibility_manifest_path = (
+            out_dir / "figure-reproducibility.manifest.json"
+        )
 
         write_newick(consensus_tree_path, consensus_tree)
         support_audit = audit_support_label_rendering(consensus_tree_path)
@@ -702,12 +710,75 @@ def build_tree_set_uncertainty_figure_package(
             caption_path,
             review_path,
         ]
+        reproducibility_manifest = write_figure_reproducibility_manifest(
+            reproducibility_manifest_path,
+            report_kind="tree_set_uncertainty_figure_package",
+            input_files=[("tree_set", tree_set_path)],
+            generated_figures=[
+                ("consensus_tree", consensus_figure_path),
+                ("clade_support", clade_support_plot_path),
+                ("unstable_taxa", unstable_taxa_plot_path),
+                ("topology_clusters", topology_clusters_plot_path),
+            ],
+            generated_tables=[
+                ("unstable_taxa", unstable_taxa_table_path),
+                ("topology_clusters", topology_clusters_table_path),
+                ("uncertainty_conclusions", uncertainty_conclusions_table_path),
+                ("legend", legend_path),
+            ],
+            filters=[
+                *(
+                    [
+                        FigureReproducibilityFilter(
+                            name="max_tree_count",
+                            value=str(max_tree_count),
+                            detail="enforced upper tree-count budget before uncertainty package processing",
+                        )
+                    ]
+                    if max_tree_count is not None
+                    else []
+                ),
+                *(
+                    [
+                        FigureReproducibilityFilter(
+                            name="max_report_table_rows",
+                            value=str(max_report_table_rows),
+                            detail="caps report-facing table volume after uncertainty analysis",
+                        )
+                    ]
+                    if max_report_table_rows is not None
+                    else []
+                ),
+            ]
+            or None,
+            model={
+                "kind": "tree_set_uncertainty",
+                "name": "consensus-plus-topology-analysis",
+            },
+            settings={
+                "layout": layout,
+                "plot_row_limit": plot_row_limit,
+                "tree_count": summary.tree_count,
+                "memory_warning_threshold_bytes": memory_warning_threshold_bytes,
+            },
+            linked_artifacts=[
+                ("consensus_tree_newick", consensus_tree_path),
+                ("uncertainty_summary", conclusion_summary_path),
+                ("caption", caption_path),
+                ("review", review_path),
+            ],
+        )
         machine_manifest = {
             "report_kind": "tree_set_uncertainty_figure_package",
             "source_path": str(tree_set_path),
             "input_checksums": {str(tree_set_path): _sha256(tree_set_path)},
             "output_paths": [str(path) for path in artifact_paths],
             "output_checksums": {str(path): _sha256(path) for path in artifact_paths},
+            "reproducibility_manifest_path": str(reproducibility_manifest_path),
+            "reproducibility_manifest_checksum": _sha256(
+                reproducibility_manifest_path
+            ),
+            "reproducibility_manifest": reproducibility_manifest,
             "layout": layout,
             "plot_row_limit": plot_row_limit,
             "processing": asdict(processing),
@@ -741,6 +812,7 @@ def build_tree_set_uncertainty_figure_package(
             caption_path=caption_path,
             review_path=review_path,
             manifest_path=manifest_path,
+            reproducibility_manifest_path=reproducibility_manifest_path,
             consensus_render=consensus_render,
             legend_entries=legend_entries,
             caption_draft=caption_draft,

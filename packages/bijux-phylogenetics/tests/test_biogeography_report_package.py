@@ -48,6 +48,7 @@ def test_build_biogeography_report_package_writes_review_bundle(
     assert result.map_line_table_path.exists()
     assert result.exclusion_table_path.exists()
     assert result.manifest_path.exists()
+    assert result.reproducibility_manifest_path.exists()
 
     assert "Bijux Biogeography Report" in result.report_path.read_text(encoding="utf-8")
     assert "Regional Transition Map Review" in result.map_path.read_text(
@@ -87,11 +88,19 @@ def test_build_biogeography_report_package_writes_review_bundle(
     )
 
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+    reproducibility = json.loads(
+        result.reproducibility_manifest_path.read_text(encoding="utf-8")
+    )
     assert manifest["report_kind"] == "biogeography_report_package"
     assert manifest["metrics"]["observed_region_count"] == 3
     assert manifest["metrics"]["event_count"] == 2
     assert manifest["metrics"]["visible_map_line_count"] >= 0
     assert manifest["audit"]["publication_ready"] is True
+    assert manifest["reproducibility_manifest_path"] == str(
+        result.reproducibility_manifest_path
+    )
+    assert reproducibility["report_kind"] == "biogeography_report_package"
+    assert reproducibility["model"]["name"] == "ard"
     assert result.audit.publication_ready is True
 
 

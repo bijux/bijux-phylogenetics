@@ -8,6 +8,9 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.render.reproducibility import (
+    write_figure_reproducibility_manifest,
+)
 
 from .models import (
     BrownianMotionFitReport,
@@ -132,6 +135,7 @@ class ComparativeModelFigurePackageResult:
     caption_path: Path
     review_path: Path
     manifest_path: Path
+    reproducibility_manifest_path: Path
     comparison_report: ComparativeModelComparisonReport
     brownian_report: BrownianMotionFitReport
     ou_report: OUTraitModelReport
@@ -852,6 +856,7 @@ def build_comparative_model_figure_package(
     caption_path = out_dir / "figure-caption.md"
     review_path = out_dir / "model-comparison-review.html"
     manifest_path = out_dir / "model-comparison-package.manifest.json"
+    reproducibility_manifest_path = out_dir / "figure-reproducibility.manifest.json"
 
     comparison_report = compare_brownian_and_ou_models(
         tree_path,
@@ -950,6 +955,43 @@ def build_comparative_model_figure_package(
         caption_path,
         review_path,
     ]
+    reproducibility_manifest = write_figure_reproducibility_manifest(
+        reproducibility_manifest_path,
+        report_kind="comparative_model_figure_package",
+        input_files=[
+            ("tree", tree_path),
+            ("traits", traits_path),
+        ],
+        generated_figures=[
+            ("information_criteria", criteria_figure_path),
+            ("likelihood", likelihood_figure_path),
+            ("parameter_intervals", parameter_figure_path),
+            ("fit_diagnostics", fit_figure_path),
+        ],
+        generated_tables=[
+            ("information_criteria", criteria_table_path),
+            ("likelihood", likelihood_table_path),
+            ("parameter_intervals", parameter_table_path),
+            ("fit_diagnostics", fit_table_path),
+        ],
+        filters=None,
+        model={
+            "kind": "comparative_model_comparison",
+            "name": comparison_report.better_model,
+            "candidate_models": [row.model for row in comparison_report.rows],
+            "aicc_delta": audit.aicc_delta,
+        },
+        settings={
+            "trait": trait,
+            "taxon_column": taxon_column,
+            "taxon_count": comparison_report.taxon_count,
+        },
+        linked_artifacts=[
+            ("legend", legend_path),
+            ("caption", caption_path),
+            ("review", review_path),
+        ],
+    )
     machine_manifest = {
         "report_kind": "comparative_model_figure_package",
         "input_paths": [str(tree_path), str(traits_path)],
@@ -959,6 +1001,11 @@ def build_comparative_model_figure_package(
         },
         "output_paths": [str(path) for path in artifact_paths],
         "output_checksums": {str(path): _checksum(path) for path in artifact_paths},
+        "reproducibility_manifest_path": str(reproducibility_manifest_path),
+        "reproducibility_manifest_checksum": _checksum(
+            reproducibility_manifest_path
+        ),
+        "reproducibility_manifest": reproducibility_manifest,
         "settings": {
             "trait": trait,
             "taxon_column": taxon_column,
@@ -1002,6 +1049,7 @@ def build_comparative_model_figure_package(
         caption_path=caption_path,
         review_path=review_path,
         manifest_path=manifest_path,
+        reproducibility_manifest_path=reproducibility_manifest_path,
         comparison_report=comparison_report,
         brownian_report=brownian_report,
         ou_report=ou_report,

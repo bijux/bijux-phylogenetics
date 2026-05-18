@@ -44,6 +44,9 @@ from bijux_phylogenetics.phylogeography.geographic_map import (
 from bijux_phylogenetics.phylogeography.region_styles import (
     build_geographic_state_color_map,
 )
+from bijux_phylogenetics.render.reproducibility import (
+    write_figure_reproducibility_manifest,
+)
 from bijux_phylogenetics.render.svg import TreeRenderResult
 
 
@@ -88,6 +91,7 @@ class BiogeographyReportPackageResult:
     map_line_table_path: Path
     exclusion_table_path: Path
     manifest_path: Path
+    reproducibility_manifest_path: Path
     state_report: GeographicStateModelReport
     event_report: GeographicMigrationEventReport
     map_report: GeographicMapReport
@@ -365,6 +369,48 @@ def build_biogeography_report_package(
     )
 
     manifest_path = out_dir / "biogeography-report.manifest.json"
+    reproducibility_manifest_path = out_dir / "figure-reproducibility.manifest.json"
+    reproducibility_manifest = write_figure_reproducibility_manifest(
+        reproducibility_manifest_path,
+        report_kind="biogeography_report_package",
+        input_files=[
+            ("tree", tree_path),
+            ("traits", traits_path),
+            ("centroids", centroids_path),
+        ],
+        generated_figures=[
+            ("ancestral_region_tree", tree_figure_path),
+            ("geographic_map", map_path),
+        ],
+        generated_tables=[
+            ("summary", summary_table_path),
+            ("region_counts", region_count_table_path),
+            ("ancestral_regions", node_table_path),
+            ("transition_matrix", transition_matrix_path),
+            ("event_table", event_table_path),
+            ("map_markers", map_marker_table_path),
+            ("map_lines", map_line_table_path),
+            ("exclusions", exclusion_table_path),
+            ("legend", legend_path),
+        ],
+        filters=None,
+        model={
+            "kind": "discrete_geography",
+            "name": model,
+            "trait": trait,
+            "internal_model": state_report.internal_model,
+        },
+        settings={
+            "taxon_column": taxon_column,
+            "region_column": region_column,
+            "latitude_column": latitude_column,
+            "longitude_column": longitude_column,
+        },
+        linked_artifacts=[
+            ("caption", caption_path),
+            ("review", report_path),
+        ],
+    )
     machine_manifest = _build_machine_manifest(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -389,6 +435,8 @@ def build_biogeography_report_package(
         exclusion_table_path=exclusion_table_path,
         warnings=warnings,
         audit=audit,
+        reproducibility_manifest_path=reproducibility_manifest_path,
+        reproducibility_manifest=reproducibility_manifest,
     )
     manifest_path.write_text(
         json.dumps(machine_manifest, indent=2, sort_keys=True) + "\n",
@@ -410,6 +458,7 @@ def build_biogeography_report_package(
         map_line_table_path=map_line_table_path,
         exclusion_table_path=exclusion_table_path,
         manifest_path=manifest_path,
+        reproducibility_manifest_path=reproducibility_manifest_path,
         state_report=state_report,
         event_report=event_report,
         map_report=map_report,
@@ -534,6 +583,8 @@ def _build_machine_manifest(
     exclusion_table_path: Path,
     warnings: list[str],
     audit: BiogeographyPublicationAudit,
+    reproducibility_manifest_path: Path,
+    reproducibility_manifest: dict[str, object],
 ) -> dict[str, object]:
     outputs = [
         report_path,
@@ -564,6 +615,11 @@ def _build_machine_manifest(
         },
         "output_paths": [str(path) for path in outputs],
         "output_checksums": {str(path): _checksum(path) for path in outputs},
+        "reproducibility_manifest_path": str(reproducibility_manifest_path),
+        "reproducibility_manifest_checksum": _checksum(
+            reproducibility_manifest_path
+        ),
+        "reproducibility_manifest": reproducibility_manifest,
         "metrics": {
             "analyzed_taxon_count": state_report.summary.analyzed_taxon_count,
             "observed_region_count": state_report.summary.observed_region_count,

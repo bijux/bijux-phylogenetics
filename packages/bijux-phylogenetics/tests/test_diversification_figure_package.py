@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from bijux_phylogenetics.comparative import build_diversification_figure_package
@@ -46,6 +47,7 @@ def test_build_diversification_figure_package_writes_publication_bundle(
     assert result.caption_path.exists()
     assert result.review_path.exists()
     assert result.manifest_path.exists()
+    assert result.reproducibility_manifest_path.exists()
     assert "Lineage-through-time curve" in result.lineage_figure_path.read_text(
         encoding="utf-8"
     )
@@ -60,6 +62,14 @@ def test_build_diversification_figure_package_writes_publication_bundle(
         result.machine_manifest["metrics"]["publication_ready"]
         == result.audit.publication_ready
     )
+    reproducibility = json.loads(
+        result.reproducibility_manifest_path.read_text(encoding="utf-8")
+    )
+    assert result.machine_manifest["reproducibility_manifest_path"] == str(
+        result.reproducibility_manifest_path
+    )
+    assert reproducibility["report_kind"] == "diversification_figure_package"
+    assert reproducibility["model"]["kind"] == "diversification"
 
 
 def test_build_diversification_figure_package_blocks_incomplete_sampling_metadata(

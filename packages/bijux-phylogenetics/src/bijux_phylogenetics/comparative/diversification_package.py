@@ -7,6 +7,10 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.render.reproducibility import (
+    FigureReproducibilityFilter,
+    write_figure_reproducibility_manifest,
+)
 
 from .diversification import (
     CladeDiversificationObservation,
@@ -81,6 +85,7 @@ class DiversificationFigurePackageResult:
     caption_path: Path
     review_path: Path
     manifest_path: Path
+    reproducibility_manifest_path: Path
     lineage_report: LineageThroughTimeReport
     clade_report: CladeDiversificationScanReport
     model_report: DiversificationModelComparisonReport
@@ -619,6 +624,7 @@ def build_diversification_figure_package(
     caption_path = out_dir / "figure-caption.md"
     review_path = out_dir / "diversification-figure-review.html"
     manifest_path = out_dir / "diversification-figure-package.manifest.json"
+    reproducibility_manifest_path = out_dir / "figure-reproducibility.manifest.json"
 
     lineage_report = compute_lineage_through_time_curve(tree_path)
     clade_report = detect_diversification_outlier_clades(
@@ -692,12 +698,59 @@ def build_diversification_figure_package(
         caption_path,
         review_path,
     ]
+    reproducibility_manifest = write_figure_reproducibility_manifest(
+        reproducibility_manifest_path,
+        report_kind="diversification_figure_package",
+        input_files=[
+            ("tree", tree_path),
+            *([("metadata", metadata_path)] if metadata_path is not None else []),
+        ],
+        generated_figures=[
+            ("lineage_through_time", lineage_figure_path),
+            ("clade_outliers", clade_figure_path),
+            ("model_comparison", model_figure_path),
+        ],
+        generated_tables=[
+            ("lineage_through_time", lineage_table_path),
+            ("clade_outliers", clade_table_path),
+            ("model_comparison", model_table_path),
+        ],
+        filters=[
+            FigureReproducibilityFilter(
+                name="min_tip_count",
+                value=str(min_tip_count),
+                detail="exclude clades smaller than the configured minimum tip count from outlier review",
+            )
+        ],
+        model={
+            "kind": "diversification",
+            "name": model,
+            "selected_model": model_report.better_model,
+            "candidate_models": [row.model for row in model_report.rows],
+        },
+        settings={
+            "taxon_column": taxon_column,
+            "sampling_column": sampling_column,
+            "metadata_path": None if metadata_path is None else str(metadata_path),
+            "tip_count": lineage_report.tip_count,
+        },
+        linked_artifacts=[
+            ("legend", legend_path),
+            ("caption", caption_path),
+            ("review", review_path),
+        ],
+    )
     machine_manifest = {
         "report_kind": "diversification_figure_package",
         "input_path": str(tree_path),
         "input_checksum": _checksum(tree_path),
         "output_paths": [str(path) for path in artifact_paths],
         "output_checksums": {str(path): _checksum(path) for path in artifact_paths},
+        "reproducibility_manifest_path": str(reproducibility_manifest_path),
+        "reproducibility_manifest_checksum": _checksum(
+            reproducibility_manifest_path
+        ),
+        "reproducibility_manifest": reproducibility_manifest,
         "settings": {
             "metadata_path": None if metadata_path is None else str(metadata_path),
             "taxon_column": taxon_column,
@@ -740,6 +793,7 @@ def build_diversification_figure_package(
         caption_path=caption_path,
         review_path=review_path,
         manifest_path=manifest_path,
+        reproducibility_manifest_path=reproducibility_manifest_path,
         lineage_report=lineage_report,
         clade_report=clade_report,
         model_report=model_report,

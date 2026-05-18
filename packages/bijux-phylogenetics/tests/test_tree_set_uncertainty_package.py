@@ -35,6 +35,7 @@ def test_build_tree_set_uncertainty_figure_package_writes_publication_bundle(
     assert result.caption_path.exists()
     assert result.review_path.exists()
     assert result.manifest_path.exists()
+    assert result.reproducibility_manifest_path.exists()
     assert result.audit.publication_ready is True
     assert result.audit.support_labels_validated is True
     assert result.audit.plotted_unstable_taxon_count > 0
@@ -42,8 +43,16 @@ def test_build_tree_set_uncertainty_figure_package_writes_publication_bundle(
     assert result.consensus_render.rendered_support_count > 0
 
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+    reproducibility = json.loads(
+        result.reproducibility_manifest_path.read_text(encoding="utf-8")
+    )
     assert manifest["report_kind"] == "tree_set_uncertainty_figure_package"
     assert manifest["audit"]["publication_ready"] is True
+    assert manifest["reproducibility_manifest_path"] == str(
+        result.reproducibility_manifest_path
+    )
+    assert reproducibility["report_kind"] == "tree_set_uncertainty_figure_package"
+    assert reproducibility["generated_figures"][0]["label"] == "consensus_tree"
 
 
 def test_build_tree_set_uncertainty_figure_package_keeps_empty_instability_panel_explicit(
