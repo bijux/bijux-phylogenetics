@@ -599,6 +599,9 @@
         "trend_proxy",
         "outlier_signal"
       ],
+      "standard_error_columns": [
+        "ou_truth_standard_error"
+      ],
       "validation_expectation": "clean-match",
       "ape_reference_expectation": "geiger-fitcontinuous-ready",
       "row_count": 24,
@@ -612,7 +615,7 @@
         "twenty-plus-taxa",
         "geiger-fitcontinuous"
       ],
-      "notes": "Twenty-four-taxon geiger continuous panel with OU and early-burst known-truth simulations plus a directional trend proxy and one explicit outlier surface for governed `fitContinuous` parity."
+      "notes": "Twenty-four-taxon geiger continuous panel with OU and early-burst known-truth simulations plus a directional trend proxy, one explicit outlier surface, and one governed per-taxon standard-error column for future `fitContinuous(SE=...)` review."
     },
     {
       "fixture_id": "phytools_signal_panel_one_hundred_twenty_eight_taxa",

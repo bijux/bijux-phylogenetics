@@ -14,6 +14,7 @@ class SharedTraitTableFixture:
     tree_fixture_id: str
     taxon_column: str
     primary_trait_columns: tuple[str, ...]
+    standard_error_columns: tuple[str, ...]
     validation_expectation: str
     ape_reference_expectation: str
     row_count: int
@@ -51,6 +52,7 @@ def list_shared_trait_table_fixtures() -> list[SharedTraitTableFixture]:
             tree_fixture_id=entry["tree_fixture_id"],
             taxon_column=entry["taxon_column"],
             primary_trait_columns=tuple(entry["primary_trait_columns"]),
+            standard_error_columns=tuple(entry.get("standard_error_columns", [])),
             validation_expectation=entry["validation_expectation"],
             ape_reference_expectation=entry["ape_reference_expectation"],
             row_count=entry["row_count"],

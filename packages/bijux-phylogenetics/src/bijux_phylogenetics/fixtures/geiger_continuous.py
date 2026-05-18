@@ -15,6 +15,7 @@ class SharedGeigerContinuousFixture:
     fixture_id: str
     trait_table_fixture_id: str
     trait_name: str
+    standard_error_trait_name: str | None
     taxon_column: str
     supported_model_names: tuple[str, ...]
     validation_expectation: str
@@ -68,6 +69,7 @@ def list_shared_geiger_continuous_fixtures() -> list[SharedGeigerContinuousFixtu
             fixture_id=entry["fixture_id"],
             trait_table_fixture_id=entry["trait_table_fixture_id"],
             trait_name=entry["trait_name"],
+            standard_error_trait_name=entry.get("standard_error_trait_name"),
             taxon_column=entry["taxon_column"],
             supported_model_names=tuple(entry["supported_model_names"]),
             validation_expectation=entry["validation_expectation"],
@@ -96,4 +98,3 @@ def get_shared_geiger_continuous_fixture(
     raise ValueError(
         f"unsupported shared geiger continuous fixture '{fixture_id}'; expected one of: {supported}"
     )
-

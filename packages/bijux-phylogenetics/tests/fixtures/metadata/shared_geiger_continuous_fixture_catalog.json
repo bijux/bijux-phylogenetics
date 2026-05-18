@@ -162,6 +162,32 @@
       "notes": "Directional proxy trait retained for future trend-model work on a governed twenty-four-taxon tree, but this round explicitly excludes geiger trend parity because geiger exposes distinct rate_trend and mean_trend likelihood contracts instead of one unambiguous trend model."
     },
     {
+      "fixture_id": "geiger_continuous_standard_error_review_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_continuous_model_panel_twenty_four_taxa",
+      "trait_name": "ou_truth",
+      "standard_error_trait_name": "ou_truth_standard_error",
+      "taxon_column": "taxon",
+      "supported_model_names": ["BM", "OU"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitcontinuous-standard-error-explicitly-excluded-this-round",
+      "feature_tags": [
+        "continuous-trait",
+        "trait-standard-error",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation"
+      ],
+      "simulation_metadata": {
+        "model": "ornstein-uhlenbeck",
+        "root_state": 0.0,
+        "sigma": 0.2,
+        "alpha": 0.5,
+        "theta": 1.0,
+        "seed": 101,
+        "standard_error_construction": "governed zero-and-positive per-tip review values"
+      },
+      "notes": "Per-taxon standard-error review surface on the governed twenty-four-taxon OU trait panel. The shared fixture is retained for future `fitContinuous(SE=...)` parity, but this round explicitly excludes measurement-error variance handling on the owned Bijux fit surface."
+    },
+    {
       "fixture_id": "geiger_continuous_missing_values_twenty_four_taxa",
       "trait_table_fixture_id": "phytools_signal_missing_twenty_four_taxa",
       "trait_name": "signal_strong",
