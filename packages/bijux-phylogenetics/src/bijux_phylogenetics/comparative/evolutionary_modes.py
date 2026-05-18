@@ -43,6 +43,10 @@ EXCLUDED_GEIGER_TREND_MODE_ALIASES = {
     "rate_trend",
 }
 
+EXCLUDED_GEIGER_STANDARD_ERROR_POLICY = (
+    "fitcontinuous-standard-error-explicitly-excluded-this-round"
+)
+
 
 @dataclass(slots=True)
 class EvolutionaryModeBranchLengthRow:
@@ -249,6 +253,7 @@ def fit_continuous_evolutionary_mode(
     trait: str,
     mode: str,
     taxon_column: str | None = None,
+    standard_error_trait: str | None = None,
     lambda_bounds: tuple[float, float] = (0.0, 1.0),
     kappa_bounds: tuple[float, float] = (0.0, 3.0),
     delta_bounds: tuple[float, float] = (0.0, 3.0),
@@ -256,6 +261,12 @@ def fit_continuous_evolutionary_mode(
     early_burst_bounds: tuple[float, float] = (0.0, 50.0),
 ) -> ContinuousEvolutionaryModeFitReport:
     """Fit a Brownian, white-noise, Pagel-lambda, Pagel-kappa, Pagel-delta, OU, or early-burst intercept-only trait model."""
+    if standard_error_trait is not None:
+        raise ComparativeMethodError(
+            "geiger::fitContinuous standard-error parity is explicitly excluded in this round; "
+            f"received standard_error_trait='{standard_error_trait}' while Bijux still lacks "
+            "measurement-error variance handling on the owned continuous-mode fit surface"
+        )
     if mode in EXCLUDED_GEIGER_TREND_MODE_ALIASES:
         raise ComparativeMethodError(
             "trend-mode parity is explicitly excluded in this round because geiger exposes distinct `rate_trend` and `mean_trend` likelihoods rather than one unambiguous `trend` contract"
@@ -286,6 +297,7 @@ def compare_continuous_evolutionary_modes(
     *,
     trait: str,
     taxon_column: str | None = None,
+    standard_error_trait: str | None = None,
     lambda_bounds: tuple[float, float] = (0.0, 1.0),
     kappa_bounds: tuple[float, float] = (0.0, 3.0),
     delta_bounds: tuple[float, float] = (0.0, 3.0),
@@ -293,6 +305,12 @@ def compare_continuous_evolutionary_modes(
     early_burst_bounds: tuple[float, float] = (0.0, 50.0),
 ) -> ContinuousEvolutionaryModeComparisonReport:
     """Compare Brownian, OU-rescaled, and early-burst-rescaled intercept-only fits."""
+    if standard_error_trait is not None:
+        raise ComparativeMethodError(
+            "geiger::fitContinuous standard-error parity is explicitly excluded in this round; "
+            f"received standard_error_trait='{standard_error_trait}' while Bijux still lacks "
+            "measurement-error variance handling on the owned continuous-mode comparison surface"
+        )
     dataset = load_comparative_dataset(
         tree_path,
         traits_path,
