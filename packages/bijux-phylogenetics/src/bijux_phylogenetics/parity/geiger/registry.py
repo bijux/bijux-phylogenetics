@@ -24,6 +24,7 @@ class GeigerParityCase:
     optimizer_settings: dict[str, object] | None = None
     comparison_fields: tuple[str, ...] = ()
     lambda_bounds: tuple[float, float] | None = None
+    kappa_bounds: tuple[float, float] | None = None
     ou_bounds: tuple[float, float] | None = None
     early_burst_bounds: tuple[float, float] | None = None
     field_tolerances: dict[str, float] | None = None
@@ -50,6 +51,15 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
         "geiger_continuous_white_noise_twenty_four_taxa"
     )
     lambda_missing_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_missing_values_twenty_four_taxa"
+    )
+    kappa_strong_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+    kappa_weak_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_white_noise_twenty_four_taxa"
+    )
+    kappa_missing_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_missing_values_twenty_four_taxa"
     )
     ou_missing_fixture = get_shared_geiger_continuous_fixture(
@@ -297,6 +307,131 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "parameter_value",
             ),
             lambda_bounds=(0.0, 1.0),
+            field_tolerances={"aicc": 2e-4},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-kappa-strong-signal-review",
+            fixture_id=kappa_strong_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model='kappa')",
+            python_function_name="fit_continuous_evolutionary_mode",
+            operation="fit-continuous",
+            model_name="kappa",
+            python_mode="pagel-kappa",
+            input_fixtures=(
+                kappa_strong_fixture.tree_path,
+                kappa_strong_fixture.traits_path,
+            ),
+            tolerance=0.05,
+            trait_name=kappa_strong_fixture.trait_name,
+            taxon_column=kappa_strong_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-bounded-grid-search",
+                "bijux_optimizer_name": "governed-two-stage-grid-search",
+                "bijux_coarse_grid_point_count": 81,
+                "bijux_fine_grid_point_count": 81,
+                "bijux_parameter_bounds": {"lower": 0.0, "upper": 3.0},
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "parameter_bound_policy",
+                "hit_lower_parameter_boundary",
+                "hit_upper_parameter_boundary",
+                "root_state",
+                "rate",
+                "log_likelihood",
+                "aic",
+                "aicc",
+                "parameter_name",
+                "parameter_value",
+            ),
+            kappa_bounds=(0.0, 3.0),
+            field_tolerances={"aicc": 2e-4},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-kappa-weak-signal-review",
+            fixture_id=kappa_weak_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model='kappa')",
+            python_function_name="fit_continuous_evolutionary_mode",
+            operation="fit-continuous",
+            model_name="kappa",
+            python_mode="pagel-kappa",
+            input_fixtures=(
+                kappa_weak_fixture.tree_path,
+                kappa_weak_fixture.traits_path,
+            ),
+            tolerance=0.05,
+            trait_name=kappa_weak_fixture.trait_name,
+            taxon_column=kappa_weak_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-bounded-grid-search",
+                "bijux_optimizer_name": "governed-two-stage-grid-search",
+                "bijux_coarse_grid_point_count": 81,
+                "bijux_fine_grid_point_count": 81,
+                "bijux_parameter_bounds": {"lower": 0.0, "upper": 3.0},
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "parameter_bound_policy",
+                "hit_lower_parameter_boundary",
+                "hit_upper_parameter_boundary",
+                "root_state",
+                "rate",
+                "log_likelihood",
+                "aic",
+                "aicc",
+                "parameter_name",
+                "parameter_value",
+            ),
+            kappa_bounds=(0.0, 3.0),
+            field_tolerances={"aicc": 2e-4},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-kappa-missing-values-review",
+            fixture_id=kappa_missing_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model='kappa')",
+            python_function_name="fit_continuous_evolutionary_mode",
+            operation="fit-continuous",
+            model_name="kappa",
+            python_mode="pagel-kappa",
+            input_fixtures=(
+                kappa_missing_fixture.tree_path,
+                kappa_missing_fixture.traits_path,
+            ),
+            tolerance=0.05,
+            trait_name=kappa_missing_fixture.trait_name,
+            taxon_column=kappa_missing_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-bounded-grid-search",
+                "bijux_optimizer_name": "governed-two-stage-grid-search",
+                "bijux_coarse_grid_point_count": 81,
+                "bijux_fine_grid_point_count": 81,
+                "bijux_parameter_bounds": {"lower": 0.0, "upper": 3.0},
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "non_numeric_taxa",
+                "missing_from_traits",
+                "parameter_bound_policy",
+                "hit_lower_parameter_boundary",
+                "hit_upper_parameter_boundary",
+                "root_state",
+                "rate",
+                "log_likelihood",
+                "aic",
+                "aicc",
+                "parameter_name",
+                "parameter_value",
+            ),
+            kappa_bounds=(0.0, 3.0),
             field_tolerances={"aicc": 2e-4},
         ),
         GeigerParityCase(
