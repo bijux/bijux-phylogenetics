@@ -148,15 +148,27 @@ if case_payload["operation"] == "fit-discrete-mk":
         trait=case_payload["trait_name"],
         taxon_column=case_payload["taxon_column"],
         model=case_payload["python_mode"],
+        transform=case_payload.get("discrete_transform_name"),
+        lambda_bounds=tuple(case_payload.get("lambda_bounds") or (0.0, 1.0)),
     )
     missing_value_taxa = sorted(
         set(report.input_audit.pruned_missing_value_taxa) - set(tree_only_taxa)
     )
     excluded_taxa = sorted(set(tree_only_taxa) | set(missing_value_taxa))
+    transform_fit = report.transform_fit
     summary = {
         "taxon_count": report.taxon_count,
         "trait_name": report.trait,
         "model_name": case_payload["model_name"],
+        "transform_name": (
+            None
+            if transform_fit is None
+            else (
+                "pagel-lambda"
+                if transform_fit.transform_name == "lambda"
+                else transform_fit.transform_name
+            )
+        ),
         "observed_state_count": len(report.state_order),
         "state_order": list(report.state_order),
         "excluded_taxon_count": len(excluded_taxa),
@@ -169,6 +181,8 @@ if case_payload["operation"] == "fit-discrete-mk":
         "parameter_count": report.parameter_count,
         "aic": report.aic,
         "aicc": report.aicc,
+        "parameter_name": None if transform_fit is None else transform_fit.parameter_name,
+        "parameter_value": None if transform_fit is None else transform_fit.parameter_value,
         "optimizer_settings": case_payload["optimizer_settings"],
         "optimizer_result": {
             "convergence_code": 0,

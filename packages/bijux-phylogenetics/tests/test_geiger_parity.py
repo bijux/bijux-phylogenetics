@@ -37,6 +37,9 @@ from tests.support.geiger_fitcontinuous_white_reference import (
 from tests.support.geiger_fitdiscrete_er_reference import (
     GEIGER_FITDISCRETE_ER_REFERENCE_PAYLOADS,
 )
+from tests.support.geiger_fitdiscrete_lambda_reference import (
+    GEIGER_FITDISCRETE_LAMBDA_REFERENCE_PAYLOADS,
+)
 from tests.support.geiger_fitdiscrete_ard_reference import (
     GEIGER_FITDISCRETE_ARD_REFERENCE_PAYLOADS,
 )
@@ -79,6 +82,9 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
         "fitdiscrete-er-binary-twenty-four-taxa",
         "fitdiscrete-er-multistate-missing-twenty-four-taxa",
         "fitdiscrete-er-multistate-tip-intersection-review",
+        "fitdiscrete-lambda-strong-signal-review",
+        "fitdiscrete-lambda-weak-signal-review",
+        "fitdiscrete-lambda-missing-values-review",
         "fitdiscrete-sym-three-state-twenty-four-taxa",
         "fitdiscrete-sym-four-state-twenty-four-taxa",
         "fitdiscrete-sym-multistate-missing-twenty-four-taxa",
@@ -95,8 +101,9 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     assert cases[20].function_name == "geiger::fitContinuous(model='EB')"
     assert cases[22].function_name == "geiger::fitContinuous(model comparison)"
     assert cases[26].function_name == "geiger::fitDiscrete(model='ER')"
-    assert cases[29].function_name == "geiger::fitDiscrete(model='SYM')"
-    assert cases[32].function_name == "geiger::fitDiscrete(model='ARD')"
+    assert cases[29].function_name == "geiger::fitDiscrete(model='ER', transform='lambda')"
+    assert cases[32].function_name == "geiger::fitDiscrete(model='SYM')"
+    assert cases[35].function_name == "geiger::fitDiscrete(model='ARD')"
     assert cases[1].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
     assert cases[2].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
     assert (
@@ -168,17 +175,24 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     assert (
         cases[28].fixture_id == "geiger_discrete_mismatch_four_state_twenty_four_taxa"
     )
-    assert cases[29].fixture_id == "geiger_discrete_sym_three_state_twenty_four_taxa"
-    assert cases[30].fixture_id == "geiger_discrete_sym_four_state_twenty_four_taxa"
+    assert cases[29].fixture_id == "geiger_discrete_er_binary_twenty_four_taxa"
+    assert cases[30].fixture_id == "geiger_discrete_lambda_weak_signal_twenty_four_taxa"
     assert (
-        cases[31].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
+        cases[31].fixture_id == "geiger_discrete_lambda_missing_binary_twenty_four_taxa"
     )
-    assert cases[32].fixture_id == "geiger_discrete_ard_binary_twenty_four_taxa"
+    assert cases[32].fixture_id == "geiger_discrete_sym_three_state_twenty_four_taxa"
     assert (
-        cases[33].fixture_id == "geiger_discrete_ard_four_state_twenty_four_taxa"
+        cases[33].fixture_id == "geiger_discrete_sym_four_state_twenty_four_taxa"
     )
     assert (
         cases[34].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
+    )
+    assert cases[35].fixture_id == "geiger_discrete_ard_binary_twenty_four_taxa"
+    assert (
+        cases[36].fixture_id == "geiger_discrete_ard_four_state_twenty_four_taxa"
+    )
+    assert (
+        cases[37].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
     )
     assert cases[2].comparison_fields[:7] == (
         "taxon_count",
@@ -246,9 +260,13 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
         "golden-section-search"
     )
     assert cases[29].optimizer_settings is not None
-    assert cases[29].optimizer_settings["bijux_optimizer_name"] == "nelder-mead"
+    assert cases[29].optimizer_settings["bijux_optimizer_name"] == (
+        "bounded-coarse-and-golden-search"
+    )
     assert cases[32].optimizer_settings is not None
     assert cases[32].optimizer_settings["bijux_optimizer_name"] == "nelder-mead"
+    assert cases[35].optimizer_settings is not None
+    assert cases[35].optimizer_settings["bijux_optimizer_name"] == "nelder-mead"
     assert all(path.is_file() for case in cases for path in case.input_fixtures)
 
 
@@ -262,12 +280,12 @@ def test_run_geiger_parity_cases_reports_passes_against_fake_runner(
         failure_root=tmp_path / "geiger-parity-failures",
     )
 
-    assert report.case_count == 35
-    assert report.passed_case_count == 35
+    assert report.case_count == 38
+    assert report.passed_case_count == 38
     assert report.failed_case_count == 0
     assert report.skipped_case_count == 0
     assert report.all_passed is True
-    assert len(report.summary_rows) == 11
+    assert len(report.summary_rows) == 12
     observation = next(
         item
         for item in report.observations
@@ -300,10 +318,10 @@ def test_run_geiger_parity_cases_counts_skips_when_geiger_is_unavailable(
         failure_root=tmp_path / "geiger-parity-failures",
     )
 
-    assert report.case_count == 35
+    assert report.case_count == 38
     assert report.passed_case_count == 0
     assert report.failed_case_count == 0
-    assert report.skipped_case_count == 35
+    assert report.skipped_case_count == 38
     assert report.all_passed is False
     assert all(
         item.mismatch_reason == "geiger_package_unavailable"
@@ -915,6 +933,61 @@ def test_run_geiger_parity_cases_governs_fitdiscrete_sym_reference_payloads(
     assert missing.bijux_summary["excluded_taxa"] == ["Phy14"]
 
 
+def test_run_geiger_parity_cases_governs_fitdiscrete_lambda_reference_payloads(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads=GEIGER_FITDISCRETE_LAMBDA_REFERENCE_PAYLOADS,
+    )
+
+    report = run_geiger_parity_cases(
+        case_ids=[
+            "fitdiscrete-lambda-strong-signal-review",
+            "fitdiscrete-lambda-weak-signal-review",
+            "fitdiscrete-lambda-missing-values-review",
+        ],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    assert report.case_count == 3
+    assert report.passed_case_count == 3
+    strong = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitdiscrete-lambda-strong-signal-review"
+    )
+    assert strong.reference_summary is not None
+    assert strong.reference_summary["transform_name"] == "pagel-lambda"
+    assert strong.reference_summary["parameter_value"] == 1
+    assert strong.reference_rows is not None
+    assert strong.reference_rows[0]["rate"] == 0.393523199371205
+    assert strong.bijux_summary is not None
+    assert strong.bijux_summary["transform_name"] == "pagel-lambda"
+    weak = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitdiscrete-lambda-weak-signal-review"
+    )
+    assert weak.reference_summary is not None
+    assert weak.reference_summary["trait_name"] == "er_binary_lambda_weak_signal"
+    assert weak.reference_summary["parameter_value"] < 1e-40
+    assert weak.reference_rows is not None
+    assert weak.reference_rows[0]["rate"] == 31.5169313693995
+    assert weak.bijux_summary is not None
+    assert weak.bijux_summary["parameter_value"] == 0.0
+    missing = next(
+        item
+        for item in report.observations
+        if item.case_id == "fitdiscrete-lambda-missing-values-review"
+    )
+    assert missing.reference_summary is not None
+    assert missing.reference_summary["missing_value_taxa"] == ["Phy10"]
+    assert missing.bijux_summary is not None
+    assert missing.bijux_summary["excluded_taxa"] == ["Phy10"]
+
+
 def test_run_geiger_parity_cases_governs_fitdiscrete_ard_reference_payloads(
     tmp_path: Path,
 ) -> None:
@@ -1038,7 +1111,7 @@ def test_write_geiger_parity_tables_writes_summary_and_observations(
     )
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 32
+    assert len(rows) == 38
     assert rows[0]["model_name"] in {
         "BM",
         "white",
