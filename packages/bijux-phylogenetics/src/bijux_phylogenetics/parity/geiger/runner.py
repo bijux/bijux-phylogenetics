@@ -144,6 +144,9 @@ def _write_case_file(path: Path, case: GeigerParityCase) -> Path:
         "taxon_column": case.taxon_column,
         "optimizer_settings": case.optimizer_settings,
         "comparison_fields": list(case.comparison_fields),
+        "lambda_bounds": None
+        if case.lambda_bounds is None
+        else list(case.lambda_bounds),
         "ou_bounds": None if case.ou_bounds is None else list(case.ou_bounds),
         "early_burst_bounds": None
         if case.early_burst_bounds is None
@@ -347,6 +350,9 @@ def _build_bijux_case_payload(
         trait=case.trait_name,
         mode=case.python_mode,
         taxon_column=case.taxon_column,
+        lambda_bounds=(0.0, 1.0)
+        if case.lambda_bounds is None
+        else case.lambda_bounds,
         ou_bounds=(0.0, 10.0) if case.ou_bounds is None else case.ou_bounds,
         early_burst_bounds=(0.0, 50.0)
         if case.early_burst_bounds is None

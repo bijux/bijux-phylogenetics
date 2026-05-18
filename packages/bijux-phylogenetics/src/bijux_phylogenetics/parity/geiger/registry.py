@@ -23,6 +23,7 @@ class GeigerParityCase:
     taxon_column: str | None = None
     optimizer_settings: dict[str, object] | None = None
     comparison_fields: tuple[str, ...] = ()
+    lambda_bounds: tuple[float, float] | None = None
     ou_bounds: tuple[float, float] | None = None
     early_burst_bounds: tuple[float, float] | None = None
     field_tolerances: dict[str, float] | None = None
@@ -40,6 +41,15 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
         "geiger_continuous_brownian_signal_twenty_four_taxa"
     )
     brownian_missing_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_missing_values_twenty_four_taxa"
+    )
+    lambda_strong_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+    lambda_weak_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_white_noise_twenty_four_taxa"
+    )
+    lambda_missing_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_missing_values_twenty_four_taxa"
     )
     ou_missing_fixture = get_shared_geiger_continuous_fixture(
@@ -163,6 +173,131 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "aicc",
             ),
             field_tolerances={"aicc": 1e-5},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-lambda-strong-signal-review",
+            fixture_id=lambda_strong_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model='lambda')",
+            python_function_name="fit_continuous_evolutionary_mode",
+            operation="fit-continuous",
+            model_name="lambda",
+            python_mode="pagel-lambda",
+            input_fixtures=(
+                lambda_strong_fixture.tree_path,
+                lambda_strong_fixture.traits_path,
+            ),
+            tolerance=0.05,
+            trait_name=lambda_strong_fixture.trait_name,
+            taxon_column=lambda_strong_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-bounded-grid-search",
+                "bijux_optimizer_name": "governed-two-stage-grid-search",
+                "bijux_coarse_grid_point_count": 81,
+                "bijux_fine_grid_point_count": 81,
+                "bijux_parameter_bounds": {"lower": 0.0, "upper": 1.0},
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "parameter_bound_policy",
+                "hit_lower_parameter_boundary",
+                "hit_upper_parameter_boundary",
+                "root_state",
+                "rate",
+                "log_likelihood",
+                "aic",
+                "aicc",
+                "parameter_name",
+                "parameter_value",
+            ),
+            lambda_bounds=(0.0, 1.0),
+            field_tolerances={"aicc": 2e-4},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-lambda-weak-signal-review",
+            fixture_id=lambda_weak_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model='lambda')",
+            python_function_name="fit_continuous_evolutionary_mode",
+            operation="fit-continuous",
+            model_name="lambda",
+            python_mode="pagel-lambda",
+            input_fixtures=(
+                lambda_weak_fixture.tree_path,
+                lambda_weak_fixture.traits_path,
+            ),
+            tolerance=0.05,
+            trait_name=lambda_weak_fixture.trait_name,
+            taxon_column=lambda_weak_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-bounded-grid-search",
+                "bijux_optimizer_name": "governed-two-stage-grid-search",
+                "bijux_coarse_grid_point_count": 81,
+                "bijux_fine_grid_point_count": 81,
+                "bijux_parameter_bounds": {"lower": 0.0, "upper": 1.0},
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "parameter_bound_policy",
+                "hit_lower_parameter_boundary",
+                "hit_upper_parameter_boundary",
+                "root_state",
+                "rate",
+                "log_likelihood",
+                "aic",
+                "aicc",
+                "parameter_name",
+                "parameter_value",
+            ),
+            lambda_bounds=(0.0, 1.0),
+            field_tolerances={"aicc": 2e-4},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-lambda-missing-values-review",
+            fixture_id=lambda_missing_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model='lambda')",
+            python_function_name="fit_continuous_evolutionary_mode",
+            operation="fit-continuous",
+            model_name="lambda",
+            python_mode="pagel-lambda",
+            input_fixtures=(
+                lambda_missing_fixture.tree_path,
+                lambda_missing_fixture.traits_path,
+            ),
+            tolerance=0.05,
+            trait_name=lambda_missing_fixture.trait_name,
+            taxon_column=lambda_missing_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-bounded-grid-search",
+                "bijux_optimizer_name": "governed-two-stage-grid-search",
+                "bijux_coarse_grid_point_count": 81,
+                "bijux_fine_grid_point_count": 81,
+                "bijux_parameter_bounds": {"lower": 0.0, "upper": 1.0},
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "non_numeric_taxa",
+                "missing_from_traits",
+                "parameter_bound_policy",
+                "hit_lower_parameter_boundary",
+                "hit_upper_parameter_boundary",
+                "root_state",
+                "rate",
+                "log_likelihood",
+                "aic",
+                "aicc",
+                "parameter_name",
+                "parameter_value",
+            ),
+            lambda_bounds=(0.0, 1.0),
+            field_tolerances={"aicc": 2e-4},
         ),
         GeigerParityCase(
             case_id="fitcontinuous-ou-ou-parameter-recovery",
