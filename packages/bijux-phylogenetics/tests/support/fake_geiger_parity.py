@@ -93,7 +93,10 @@ def build_reference_payload(case_payload: dict[str, object]) -> tuple[dict[str, 
 import json
 from pathlib import Path
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
-from bijux_phylogenetics.comparative.evolutionary_modes import fit_continuous_evolutionary_mode
+from bijux_phylogenetics.comparative.evolutionary_modes import (
+    ContinuousModeSearchControls,
+    fit_continuous_evolutionary_mode,
+)
 
 case_payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
 mode_lookup = {
@@ -118,11 +121,24 @@ report = fit_continuous_evolutionary_mode(
     trait=case_payload["trait_name"],
     mode=mode_lookup[case_payload["model_name"]],
     taxon_column=case_payload["taxon_column"],
+    search_controls=(
+        ContinuousModeSearchControls(
+            coarse_grid_point_count=case_payload.get("coarse_grid_point_count") or 81,
+            fine_grid_point_count=case_payload.get("fine_grid_point_count") or 81,
+            initial_parameter_value=case_payload.get("initial_parameter_value"),
+        )
+        if (
+            case_payload.get("coarse_grid_point_count") is not None
+            or case_payload.get("fine_grid_point_count") is not None
+            or case_payload.get("initial_parameter_value") is not None
+        )
+        else None
+    ),
     lambda_bounds=tuple(case_payload.get("lambda_bounds") or (0.0, 1.0)),
     kappa_bounds=tuple(case_payload.get("kappa_bounds") or (0.0, 3.0)),
     delta_bounds=tuple(case_payload.get("delta_bounds") or (0.0, 3.0)),
-    ou_bounds=(0.0, 10.0),
-    early_burst_bounds=(0.0, 10.0),
+    ou_bounds=tuple(case_payload.get("ou_bounds") or (0.0, 10.0)),
+    early_burst_bounds=tuple(case_payload.get("early_burst_bounds") or (0.0, 10.0)),
 )
 excluded_taxa = sorted(
     {
