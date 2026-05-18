@@ -15,11 +15,13 @@ from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.distance import build_distance_method_report
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.engines.large_alignment_inference import (
     run_large_alignment_inference,
 )
 from bijux_phylogenetics.io.fasta import build_alignment_quality_report
+from bijux_phylogenetics.io.fasta import summarize_alignment_readiness
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.render.svg import render_tree_svg
 from bijux_phylogenetics.simulation import (
@@ -29,6 +31,7 @@ from bijux_phylogenetics.simulation import (
     write_tree_set,
 )
 from bijux_phylogenetics.trees import compute_consensus_tree
+from bijux_phylogenetics.engines.workflows import run_alignment_trimming
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,6 +87,33 @@ class LargeTreeScalingBenchmarkReport:
     replicates: int
     tip_counts: list[int]
     workflows: list[LargeTreeScalingWorkflowBenchmark]
+    limitations: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class LargeAlignmentScalingObservation:
+    label: str
+    sequence_count: int
+    alignment_length: int
+    aligned_site_count: int
+    runtime_seconds: float
+    peak_memory_bytes: int
+
+
+@dataclass(slots=True)
+class LargeAlignmentScalingWorkflowBenchmark:
+    workflow: str
+    scaling_axis: str
+    observations: list[LargeAlignmentScalingObservation]
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class LargeAlignmentScalingBenchmarkReport:
+    replicates: int
+    sequence_counts: list[int]
+    alignment_lengths: list[int]
+    workflows: list[LargeAlignmentScalingWorkflowBenchmark]
     limitations: list[str]
 
 
@@ -167,6 +197,11 @@ _STRESS_TIER_CONFIGS: dict[str, _StressTierConfig] = {
 }
 
 _LARGE_TREE_SCALING_TIP_COUNTS: tuple[int, ...] = (256, 1024, 2048)
+_LARGE_ALIGNMENT_SCALING_CLASSES: tuple[tuple[str, int, int], ...] = (
+    ("sequences-256-sites-512", 256, 512),
+    ("sequences-512-sites-1024", 512, 1024),
+    ("sequences-1024-sites-2048", 1024, 2048),
+)
 
 
 def _measure(
@@ -186,6 +221,36 @@ def _measure(
     return BenchmarkObservation(
         label=label,
         item_count=item_count,
+        runtime_seconds=round(sum(runtimes) / len(runtimes), 15),
+        peak_memory_bytes=peak_memory,
+    )
+
+
+def _measure_large_alignment_observation(
+    label: str,
+    *,
+    sequence_count: int,
+    alignment_length: int,
+    replicates: int,
+    callback,
+) -> LargeAlignmentScalingObservation:
+    runtimes: list[float] = []
+    peak_memory = 0
+    aligned_site_count = sequence_count * alignment_length
+    for _ in range(replicates):
+        tracemalloc.start()
+        started = time.perf_counter()
+        callback()
+        elapsed = time.perf_counter() - started
+        _, peak = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
+        runtimes.append(elapsed)
+        peak_memory = max(peak_memory, peak)
+    return LargeAlignmentScalingObservation(
+        label=label,
+        sequence_count=sequence_count,
+        alignment_length=alignment_length,
+        aligned_site_count=aligned_site_count,
         runtime_seconds=round(sum(runtimes) / len(runtimes), 15),
         peak_memory_bytes=peak_memory,
     )
@@ -322,6 +387,48 @@ print(
     "warning: benchmark fixture reconstructs one deterministic balanced tree",
     file=sys.stderr,
 )
+""",
+        encoding="utf-8",
+    )
+    path.chmod(0o755)
+    return path
+
+
+def _write_trimal_benchmark_fixture(path: Path) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("trimAl v2.0 benchmark fixture")
+    raise SystemExit(0)
+
+input_path = Path(args[args.index("-in") + 1])
+output_path = Path(args[args.index("-out") + 1])
+records = []
+identifier = None
+sequence = []
+for raw_line in input_path.read_text(encoding="utf-8").splitlines():
+    line = raw_line.strip()
+    if not line:
+        continue
+    if line.startswith(">"):
+        if identifier is not None:
+            records.append((identifier, "".join(sequence)))
+        identifier = line[1:]
+        sequence = []
+    else:
+        sequence.append(line)
+if identifier is not None:
+    records.append((identifier, "".join(sequence)))
+
+trim_width = 4 if "-gappyout" in args else 2
+with output_path.open("w", encoding="utf-8") as handle:
+    for identifier, sequence in records:
+        handle.write(f">{identifier}\\n{sequence[:-trim_width]}\\n")
 """,
         encoding="utf-8",
     )
@@ -965,5 +1072,135 @@ def benchmark_large_tree_scaling(
         limitations=[
             "large-tree scaling numbers are local benchmark observations and should be re-run on target hardware before operational promises are made",
             "benchmarks use deterministic synthetic trees so they measure owned workflow cost without conflating external dataset quirks",
+        ],
+    )
+
+
+def benchmark_large_alignment_scaling(
+    *,
+    replicates: int = 1,
+    size_classes: list[tuple[str, int, int]] | None = None,
+) -> LargeAlignmentScalingBenchmarkReport:
+    """Benchmark large-alignment diagnostics, trimming, distance, and readiness."""
+    if replicates < 1:
+        raise ValueError(f"replicates must be at least 1, got {replicates}")
+    classes = list(size_classes or _LARGE_ALIGNMENT_SCALING_CLASSES)
+    if not classes:
+        raise ValueError("size_classes must contain at least one size class")
+    if any(sequence_count < 2 or alignment_length < 2 for _, sequence_count, alignment_length in classes):
+        raise ValueError("alignment size classes must use at least two sequences and two sites")
+
+    diagnostics_observations: list[LargeAlignmentScalingObservation] = []
+    trimming_observations: list[LargeAlignmentScalingObservation] = []
+    distance_observations: list[LargeAlignmentScalingObservation] = []
+    readiness_observations: list[LargeAlignmentScalingObservation] = []
+
+    with tempfile.TemporaryDirectory(prefix="bijux-large-alignment-scaling-") as tmpdir:
+        tmp_path = Path(tmpdir)
+        trimal_executable = _write_trimal_benchmark_fixture(
+            tmp_path / "trimal-benchmark-fixture"
+        )
+        for label, sequence_count, alignment_length in classes:
+            alignment_path = _write_large_alignment(
+                tmp_path / f"{label}.fasta",
+                sequence_count=sequence_count,
+                sequence_length=alignment_length,
+            )
+            trimmed_path = tmp_path / f"{label}.trimmed.fasta"
+
+            diagnostics_observations.append(
+                _measure_large_alignment_observation(
+                    label,
+                    sequence_count=sequence_count,
+                    alignment_length=alignment_length,
+                    replicates=replicates,
+                    callback=lambda path=alignment_path: build_alignment_quality_report(
+                        path
+                    ),
+                )
+            )
+            trimming_observations.append(
+                _measure_large_alignment_observation(
+                    label,
+                    sequence_count=sequence_count,
+                    alignment_length=alignment_length,
+                    replicates=replicates,
+                    callback=lambda path=alignment_path, out_path=trimmed_path: (
+                        run_alignment_trimming(
+                            path,
+                            out_path,
+                            executable=trimal_executable,
+                            mode="gap-threshold",
+                        )
+                    ),
+                )
+            )
+            distance_observations.append(
+                _measure_large_alignment_observation(
+                    label,
+                    sequence_count=sequence_count,
+                    alignment_length=alignment_length,
+                    replicates=replicates,
+                    callback=lambda path=alignment_path: build_distance_method_report(
+                        path,
+                        model="amino-acid-p-distance",
+                        bootstrap_replicates=5,
+                    ),
+                )
+            )
+            readiness_observations.append(
+                _measure_large_alignment_observation(
+                    label,
+                    sequence_count=sequence_count,
+                    alignment_length=alignment_length,
+                    replicates=replicates,
+                    callback=lambda path=alignment_path: summarize_alignment_readiness(
+                        path
+                    ),
+                )
+            )
+
+    workflows = [
+        LargeAlignmentScalingWorkflowBenchmark(
+            workflow="alignment-diagnostics",
+            scaling_axis="aligned_sites",
+            observations=diagnostics_observations,
+            notes=[
+                "measures the full owned alignment-quality report on aligned protein FASTA inputs",
+            ],
+        ),
+        LargeAlignmentScalingWorkflowBenchmark(
+            workflow="alignment-trimming",
+            scaling_axis="aligned_sites",
+            observations=trimming_observations,
+            notes=[
+                "runs the governed trimming workflow through a deterministic trimAl fixture so manifest and output validation costs are included",
+            ],
+        ),
+        LargeAlignmentScalingWorkflowBenchmark(
+            workflow="distance-analysis",
+            scaling_axis="aligned_sites",
+            observations=distance_observations,
+            notes=[
+                "builds the owned distance-method report with reduced bootstrap replicates so large-alignment scaling stays practical while still exercising matrix, tree, and maturity surfaces",
+            ],
+        ),
+        LargeAlignmentScalingWorkflowBenchmark(
+            workflow="alignment-readiness",
+            scaling_axis="aligned_sites",
+            observations=readiness_observations,
+            notes=[
+                "measures the reviewer-facing readiness summary used to decide whether large aligned inputs are suitable for downstream inference families",
+            ],
+        ),
+    ]
+    return LargeAlignmentScalingBenchmarkReport(
+        replicates=replicates,
+        sequence_counts=[sequence_count for _, sequence_count, _ in classes],
+        alignment_lengths=[alignment_length for _, _, alignment_length in classes],
+        workflows=workflows,
+        limitations=[
+            "large-alignment scaling numbers are local benchmark observations and should be re-run on target hardware before operational promises are made",
+            "distance-analysis uses five bootstrap replicates inside the benchmark so the report path is exercised without letting bootstrap resampling dominate the scaling suite",
         ],
     )
