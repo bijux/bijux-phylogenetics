@@ -98,6 +98,7 @@ from bijux_phylogenetics.comparative.evolutionary_modes import fit_continuous_ev
 case_payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
 mode_lookup = {
     "BM": "brownian",
+    "lambda": "pagel-lambda",
     "OU": "ornstein-uhlenbeck",
     "EB": "early-burst",
 }
@@ -114,6 +115,7 @@ report = fit_continuous_evolutionary_mode(
     trait=case_payload["trait_name"],
     mode=mode_lookup[case_payload["model_name"]],
     taxon_column=case_payload["taxon_column"],
+    lambda_bounds=tuple(case_payload.get("lambda_bounds") or (0.0, 1.0)),
     ou_bounds=(0.0, 10.0),
     early_burst_bounds=(0.0, 10.0),
 )
