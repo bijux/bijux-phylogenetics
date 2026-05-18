@@ -1503,6 +1503,19 @@ fixture rather than a row-level live parity claim, because both Bijux and
 local `geiger` agree on the broad boundary behavior there while the interior
 rate maximum is not stable enough to present as durable reviewer-facing
 pairwise-rate parity.
+The same owned surface now also supports
+`fit_discrete_mk_model(..., transform='early-burst')` and a governed live
+`geiger::fitDiscrete(transform='EB')` parity lane. This discrete lane follows
+the raw local `geiger` `a` parameter directly rather than the positive
+`rate_change` contract used by the owned continuous early-burst fit, because
+the branch-rescaling contract is the same but the reviewer-facing parameter
+surface is not. The registry covers one stable ER early-change review, one
+weak-signal review, one late-change review, and one missing-value late-change
+review. Only the stable early-change surface remains row-level live parity.
+The weak-signal and late-change review surfaces stay summary-level because
+local `geiger` and Bijux agree on the likelihood envelope, transform identity,
+and pruning behavior there while the fitted `a` and raw ER rate maxima remain
+flat enough to move between near-equivalent solutions.
 The same live lane now also covers `geiger::fitDiscrete(model='SYM')` over
 three governed multistate surfaces: a three-state known-truth panel, a
 four-state known-truth panel, and a three-state missing-value pruning review
