@@ -223,6 +223,27 @@ def test_fit_continuous_evolutionary_mode_white_noise_handles_missing_values() -
     assert fit.identifiability_warnings[0].kind == "no_phylogenetic_correlation"
 
 
+@pytest.mark.parametrize("mode", ["trend", "mean_trend", "rate_trend"])
+def test_fit_continuous_evolutionary_mode_explicitly_excludes_geiger_trend_aliases(
+    mode: str,
+) -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_trend_proxy_twenty_four_taxa"
+    )
+
+    with pytest.raises(
+        ComparativeMethodError,
+        match="trend-mode parity is explicitly excluded in this round",
+    ):
+        fit_continuous_evolutionary_mode(
+            fixture.tree_path,
+            fixture.traits_path,
+            trait=fixture.trait_name,
+            mode=mode,
+            taxon_column=fixture.taxon_column,
+        )
+
+
 def test_fit_continuous_evolutionary_mode_supports_early_burst() -> None:
     fit = fit_continuous_evolutionary_mode(
         EXAMPLE_TREE,
