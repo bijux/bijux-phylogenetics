@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from bijux_phylogenetics.biogeography.migration_events import (
@@ -88,6 +89,12 @@ def test_comparative_summary_and_manifest_schemas_match_live_output(
         package.manifest_path,
         "comparative_report_manifest_json",
     ).valid
+    manifest = json.loads(package.manifest_path.read_text(encoding="utf-8"))
+    assert package.methods_summary_path.exists()
+    assert (
+        manifest["outputs"]["methods_summary_path"]
+        == str(package.methods_summary_path)
+    )
 
 
 def test_geographic_event_schema_matches_live_output(tmp_path: Path) -> None:
