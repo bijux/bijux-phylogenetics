@@ -1331,6 +1331,14 @@ the four-taxon comparative example, a twenty-four-taxon sigma-recovery surface,
 and a twenty-four-taxon missing-value pruning surface that must prove explicit
 tip exclusion, missing-versus-nonnumeric classification, and the declared
 no-standard-error policy before likelihood comparison is treated as valid.
+The OU lane now has three governed cases with the same reviewer-facing rigor:
+the twenty-four-taxon OU known-truth recovery surface, a missing-value pruning
+review surface, and a lower-boundary review surface on the rooted
+non-ultrametric control tree. Those cases govern alpha, sigma-squared-backed
+rate, optimum-or-root parameterization, log-likelihood, AIC, AICc, declared
+parameter-bound policy, and explicit lower-boundary flags, and the Bijux side
+now records weak-identifiability and boundary warnings directly from the owned
+continuous-mode fit report instead of hiding them inside parity-only logic.
 The same shared fixture layer now also has a dedicated
 `tests/fixtures/metadata/shared_geiger_discrete_fixture_catalog.json` catalog
 for future `geiger::fitDiscrete(...)` work. That governed corpus keeps binary,
