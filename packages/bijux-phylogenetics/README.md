@@ -491,6 +491,14 @@ multimodality, and instability warnings that remain attached to the tree
 collection instead of collapsing the uncertainty review into a consensus tree
 alone.
 
+Reviewer-facing analysis HTML reports now keep one explicit limitations
+section in the durable report body and machine manifest. That contract applies
+to the governed Bayesian inference review surfaces, `ancestral report`,
+`comparative report`, `diversification report`, and `tree-set report`, so
+warnings, invalid interpretations, exclusion boundaries, and unresolved model
+or topology uncertainty remain visible instead of being implied only by side
+tables or caveat prose elsewhere in the package.
+
 For one reviewer-facing supplementary clade-support ledger, use
 `report supplementary-clade-support-table`. It writes one TSV with one row per
 reference-tree clade, keeping descendant taxa, direct tree-label support,
