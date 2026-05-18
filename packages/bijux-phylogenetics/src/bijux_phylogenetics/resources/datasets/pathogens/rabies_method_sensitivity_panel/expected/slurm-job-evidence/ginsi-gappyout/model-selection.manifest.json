@@ -10,10 +10,10 @@
   "engine_name": "iqtree",
   "fasttree_support_summary": null,
   "input_checksums": {
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
   },
   "input_paths": [
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln"
   ],
   "iqtree_summary": {
     "log_likelihood": -3945.2345,
@@ -24,7 +24,7 @@
     "support_values": []
   },
   "log_likelihood": -3945.2345,
-  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.manifest.json",
+  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.manifest.json",
   "model_selection_summary": {
     "best_model_aic": "TIM2+F+G4",
     "best_model_aicc": "TIM2+F+G4",
@@ -969,25 +969,25 @@
     "model-selection workflow exposed a parsable log-likelihood score"
   ],
   "output_checksums": {
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.iqtree": "d20495c8bfe7a761bbc05ccf80625c32e5cc0954d3926c0350e58babdf420685",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.log": "298db6832a762fd5ceaee7724c28bcfa9a0505979af9656b87ddd2bca5aa7dab",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.model-candidates.tsv": "72a260da691f9e5f28a72b7d3ee8391846895419852beae6b622b3a3bf0734fb",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.model.gz": "8724d318fd28918206bab042ff8445eba598f1c034d54c798d040222dc733a15",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.selected-model.txt": "83f15e8e7b4d36af68abb4efa0d72c8631518f540264c49447b4ff94816a91cd"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.iqtree": "9199787e8b17070a150c2c1250273c05acd38686bfadf0e99c379d9194fbf15e",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.log": "fe4698be96d473b45933e6a15159064cd6a1591f11ca833e7834a58765a372e6",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.model-candidates.tsv": "72a260da691f9e5f28a72b7d3ee8391846895419852beae6b622b3a3bf0734fb",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.model.gz": "1ac17d60f18572c69fe27980c55eb74e00059a4065aefa1c00fa9b56630543c4",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.selected-model.txt": "83f15e8e7b4d36af68abb4efa0d72c8631518f540264c49447b4ff94816a91cd"
   },
   "output_paths": {
-    "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.log",
-    "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.iqtree",
-    "model_candidates": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.model-candidates.tsv",
-    "model_selection_sidecar": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.model.gz",
-    "selected_model": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.selected-model.txt"
+    "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.log",
+    "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.iqtree",
+    "model_candidates": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.model-candidates.tsv",
+    "model_selection_sidecar": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.model.gz",
+    "selected_model": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.selected-model.txt"
   },
   "resumed": false,
   "run": {
     "command": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln",
       "-st",
       "DNA",
       "-seed",
@@ -997,20 +997,20 @@
       "-m",
       "MF",
       "-pre",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection"
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection"
     ],
-    "ended_at_utc": "2026-05-18T02:04:52Z",
+    "ended_at_utc": "2026-05-18T02:17:47Z",
     "engine_name": "iqtree",
     "executable": "/opt/homebrew/bin/iqtree2",
     "exit_code": 0,
     "output_paths": {
-      "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.log",
-      "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.iqtree"
+      "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.log",
+      "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.iqtree"
     },
-    "runtime_seconds": 0.266322,
-    "started_at_utc": "2026-05-18T02:04:51Z",
-    "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.stderr.log",
-    "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.stdout.log",
+    "runtime_seconds": 0.268985,
+    "started_at_utc": "2026-05-18T02:17:47Z",
+    "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.stderr.log",
+    "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection.stdout.log",
     "timed_out": false,
     "timeout_seconds": null,
     "version": {
@@ -1024,7 +1024,7 @@
     },
     "warning_lines": [],
     "workflow": "model-selection",
-    "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection"
+    "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection"
   },
   "selected_model": "TPM2u+F+G4",
   "sh_alrt_support_summary": null,

@@ -3,4 +3,4 @@ outputs	workflow outputs	40	0	40	161224	0	161224	1	Retained scientific outputs s
 logs	canonical logs	4	0	4	900	0	900	1	Canonical orchestration logs under parallel-logs. Copied task logs inside per-job evidence packages are counted under review artifacts to avoid double-counting the same execution record as canonical storage.
 trees	tree artifacts	16	0	16	7036	0	7036	1	Tree products such as rooted or unrooted Newick outputs and other retained tree-topology artifacts.
 posterior_samples	posterior samples	0	0	0	0	0	0	0	Bayesian posterior chains or sampled tree sets. This governed workflow does not currently emit them, but the category is kept explicit so zero remains an audited, reviewer-visible statement.
-reports	review artifacts	36	31	67	1007266	81862	1089128	2	Workflow-wide summaries, manifests, HTML reports, Slurm ledgers, evidence packages, and other reviewer-facing accountability artifacts.
+reports	review artifacts	36	31	67	1007276	81866	1089142	2	Workflow-wide summaries, manifests, HTML reports, Slurm ledgers, evidence packages, and other reviewer-facing accountability artifacts.

@@ -37,6 +37,9 @@ _SLURM_STORAGE_SUMMARY_FILENAME = "slurm-storage-report.json"
 _SLURM_OUTPUT_EXPLOSION_CHECKS_FILENAME = "slurm-output-explosion-checks.tsv"
 _SLURM_OUTPUT_EXPLOSION_VARIANTS_FILENAME = "slurm-output-explosion-variants.tsv"
 _SLURM_OUTPUT_EXPLOSION_SUMMARY_FILENAME = "slurm-output-explosion-report.json"
+_SLURM_TREE_RETENTION_CHECKS_FILENAME = "slurm-tree-retention-checks.tsv"
+_SLURM_TREE_RETENTION_FILES_FILENAME = "slurm-tree-retention-files.tsv"
+_SLURM_TREE_RETENTION_SUMMARY_FILENAME = "slurm-tree-retention-policy.json"
 _SLURM_MERGE_CHECKS_FILENAME = "slurm-merge-checks.tsv"
 _SLURM_MERGE_VARIANTS_FILENAME = "slurm-merge-variants.tsv"
 _SLURM_MERGE_SUMMARY_FILENAME = "slurm-merge-report.json"
@@ -142,6 +145,13 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     slurm_output_explosion_summary_path = (
         bundle_root / _SLURM_OUTPUT_EXPLOSION_SUMMARY_FILENAME
     )
+    slurm_tree_retention_checks_path = (
+        bundle_root / _SLURM_TREE_RETENTION_CHECKS_FILENAME
+    )
+    slurm_tree_retention_files_path = bundle_root / _SLURM_TREE_RETENTION_FILES_FILENAME
+    slurm_tree_retention_summary_path = (
+        bundle_root / _SLURM_TREE_RETENTION_SUMMARY_FILENAME
+    )
     slurm_merge_checks_path = bundle_root / _SLURM_MERGE_CHECKS_FILENAME
     slurm_merge_variants_path = bundle_root / _SLURM_MERGE_VARIANTS_FILENAME
     slurm_merge_summary_path = bundle_root / _SLURM_MERGE_SUMMARY_FILENAME
@@ -177,6 +187,9 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         slurm_output_explosion_variants_path
     )
     slurm_output_explosion_summary = _load_json(slurm_output_explosion_summary_path)
+    slurm_tree_retention_check_rows = _read_tsv_rows(slurm_tree_retention_checks_path)
+    slurm_tree_retention_file_rows = _read_tsv_rows(slurm_tree_retention_files_path)
+    slurm_tree_retention_summary = _load_json(slurm_tree_retention_summary_path)
     slurm_merge_check_rows = _read_tsv_rows(slurm_merge_checks_path)
     slurm_merge_variant_rows = _read_tsv_rows(slurm_merge_variants_path)
     slurm_merge_summary = _load_json(slurm_merge_summary_path)
@@ -562,6 +575,61 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         expected=slurm_output_explosion_summary["overall_risk_status"],
         observed=observed_overall_output_explosion_status,
         detail="output-explosion summary overall_risk_status matches the written risk counts",
+    )
+    slurm_tree_retention_variant_ids = sorted(
+        {str(row["variant_id"]) for row in slurm_tree_retention_file_rows}
+    )
+    add_check(
+        "slurm-tree-retention:variant-coverage",
+        surface="slurm-tree-retention",
+        condition=config_variant_ids == slurm_tree_retention_variant_ids,
+        expected=config_variant_ids,
+        observed=slurm_tree_retention_variant_ids,
+        detail="tree-retention file rows cover the configured variant ids",
+    )
+    add_check(
+        "slurm-tree-retention:check-count",
+        surface="slurm-tree-retention",
+        condition=int(slurm_tree_retention_summary["check_count"])
+        == len(slurm_tree_retention_check_rows),
+        expected=slurm_tree_retention_summary["check_count"],
+        observed=len(slurm_tree_retention_check_rows),
+        detail="tree-retention summary check_count matches the written check rows",
+    )
+    observed_tree_set_file_count = sum(
+        1 for row in slurm_tree_retention_file_rows if int(row["tree_count"]) > 1
+    )
+    add_check(
+        "slurm-tree-retention:tree-set-count",
+        surface="slurm-tree-retention",
+        condition=int(slurm_tree_retention_summary["tree_set_file_count"])
+        == observed_tree_set_file_count,
+        expected=slurm_tree_retention_summary["tree_set_file_count"],
+        observed=observed_tree_set_file_count,
+        detail="tree-retention summary tree_set_file_count matches the inspected file rows",
+    )
+    observed_tree_retention_status = "required"
+    if (
+        int(slurm_tree_retention_summary["failed_check_count"]) == 0
+        and int(slurm_tree_retention_summary["thinning_required_file_count"]) == 0
+        and int(slurm_tree_retention_summary["compression_required_file_count"]) == 0
+        and int(slurm_tree_retention_summary["thinning_recommended_file_count"]) == 0
+        and int(slurm_tree_retention_summary["compression_recommended_file_count"]) == 0
+    ):
+        observed_tree_retention_status = "no_action"
+    elif int(slurm_tree_retention_summary["failed_check_count"]) == 0 and (
+        int(slurm_tree_retention_summary["thinning_required_file_count"]) == 0
+        and int(slurm_tree_retention_summary["compression_required_file_count"]) == 0
+    ):
+        observed_tree_retention_status = "recommended"
+    add_check(
+        "slurm-tree-retention:overall-status",
+        surface="slurm-tree-retention",
+        condition=str(slurm_tree_retention_summary["overall_policy_status"])
+        == observed_tree_retention_status,
+        expected=slurm_tree_retention_summary["overall_policy_status"],
+        observed=observed_tree_retention_status,
+        detail="tree-retention summary overall_policy_status matches the written policy counts",
     )
     slurm_merge_variant_ids = sorted(
         str(row["variant_id"]) for row in slurm_merge_variant_rows

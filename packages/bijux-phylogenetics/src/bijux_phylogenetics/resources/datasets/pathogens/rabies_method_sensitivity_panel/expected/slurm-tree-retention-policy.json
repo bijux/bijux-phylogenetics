@@ -1,0 +1,358 @@
+{
+  "bundle_root": ".",
+  "check_count": 9,
+  "checks": [
+    {
+      "check_id": "storage:category-coverage",
+      "detail": "tree-retention policy reads the explicit storage-category surface",
+      "expected": "['logs', 'outputs', 'posterior_samples', 'reports', 'trees']",
+      "observed": "['logs', 'outputs', 'posterior_samples', 'reports', 'trees']",
+      "status": "passed",
+      "surface": "storage"
+    },
+    {
+      "check_id": "tree-files:variant-coverage",
+      "detail": "tree-bearing file rows cover every configured rabies workflow variant",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "tree-files"
+    },
+    {
+      "check_id": "storage:tree-file-count",
+      "detail": "storage tree file count matches the inspected tree-artifact files",
+      "expected": "16",
+      "observed": "16",
+      "status": "passed",
+      "surface": "storage"
+    },
+    {
+      "check_id": "storage:tree-byte-count",
+      "detail": "storage tree byte count matches the inspected tree-artifact files",
+      "expected": "7036",
+      "observed": "7036",
+      "status": "passed",
+      "surface": "storage"
+    },
+    {
+      "check_id": "storage:posterior-file-count",
+      "detail": "posterior-sample file count matches the inspected tree-bearing sample files",
+      "expected": "0",
+      "observed": "0",
+      "status": "passed",
+      "surface": "storage"
+    },
+    {
+      "check_id": "storage:posterior-byte-count",
+      "detail": "posterior-sample byte count matches the inspected tree-bearing sample files",
+      "expected": "0",
+      "observed": "0",
+      "status": "passed",
+      "surface": "storage"
+    },
+    {
+      "check_id": "output-explosion:tree-bytes",
+      "detail": "output-explosion tree bytes match the tree-retention inspection surface",
+      "expected": "7036",
+      "observed": "7036",
+      "status": "passed",
+      "surface": "output-explosion"
+    },
+    {
+      "check_id": "output-explosion:posterior-bytes",
+      "detail": "output-explosion posterior bytes match the tree-retention inspection surface",
+      "expected": "0",
+      "observed": "0",
+      "status": "passed",
+      "surface": "output-explosion"
+    },
+    {
+      "check_id": "policy-summary:overall-status",
+      "detail": "overall tree-retention status matches the file-level policy counts",
+      "expected": "no_action",
+      "observed": "no_action",
+      "status": "passed",
+      "surface": "policy-summary"
+    }
+  ],
+  "compression_recommended_file_count": 0,
+  "compression_required_file_count": 0,
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "failed_check_count": 0,
+  "file_count": 16,
+  "files": [
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 442,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/auto-gap-threshold/fasttree.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "auto-gap-threshold"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 442,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/auto-gap-threshold/iqtree-support.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "auto-gap-threshold"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 437,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/auto-gap-threshold/rooted-fasttree.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "auto-gap-threshold"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 438,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/auto-gap-threshold/rooted-iqtree-support.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "auto-gap-threshold"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 442,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/auto-gappyout/fasttree.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "auto-gappyout"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 442,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/auto-gappyout/iqtree-support.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "auto-gappyout"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 437,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/auto-gappyout/rooted-fasttree.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "auto-gappyout"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 438,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/auto-gappyout/rooted-iqtree-support.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "auto-gappyout"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 442,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/ginsi-gap-threshold/fasttree.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "ginsi-gap-threshold"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 442,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/ginsi-gap-threshold/iqtree-support.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "ginsi-gap-threshold"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 437,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/ginsi-gap-threshold/rooted-fasttree.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "ginsi-gap-threshold"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 438,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/ginsi-gap-threshold/rooted-iqtree-support.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "ginsi-gap-threshold"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 442,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/ginsi-gappyout/fasttree.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "ginsi-gappyout"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 442,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/ginsi-gappyout/iqtree-support.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "ginsi-gappyout"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 437,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/ginsi-gappyout/rooted-fasttree.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "ginsi-gappyout"
+    },
+    {
+      "artifact_scope": "tree_artifact",
+      "byte_count": 438,
+      "compression_policy": "keep_plain",
+      "issue_count": 1,
+      "issues": [
+        "single-tree artifact should be kept in full without thinning"
+      ],
+      "recommended_suffix": "",
+      "relative_path": "variants/ginsi-gappyout/rooted-iqtree-support.nwk",
+      "retained_tree_count": 1,
+      "thinning_interval": 1,
+      "thinning_policy": "not_applicable",
+      "tree_count": 1,
+      "variant_id": "ginsi-gappyout"
+    }
+  ],
+  "global_issue_count": 2,
+  "global_issues": [
+    "no retained multi-tree artifacts were found, so thinning is not currently applicable",
+    "no retained posterior tree samples were found, so compression remains a forward-looking policy"
+  ],
+  "largest_tree_set_path": "variants/ginsi-gappyout/iqtree-support.nwk",
+  "largest_tree_set_tree_count": 1,
+  "overall_policy_status": "no_action",
+  "posterior_sample_file_count": 0,
+  "thinning_recommended_file_count": 0,
+  "thinning_required_file_count": 0,
+  "total_tree_byte_count": 7036,
+  "total_tree_count": 16,
+  "tree_artifact_file_count": 16,
+  "tree_set_file_count": 0,
+  "variant_count": 4,
+  "workflow_prefix": "rabies-method-sensitivity-panel"
+}

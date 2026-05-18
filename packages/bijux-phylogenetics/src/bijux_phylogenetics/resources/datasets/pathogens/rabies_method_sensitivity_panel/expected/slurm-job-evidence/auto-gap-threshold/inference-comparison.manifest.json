@@ -5,12 +5,12 @@
       "/opt/homebrew/bin/FastTree",
       "-gtr",
       "-nt",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
     ],
     "iqtree_support": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
       "-st",
       "DNA",
       "-seed",
@@ -23,12 +23,12 @@
       "1000",
       "-wbt",
       "-pre",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support"
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support"
     ],
     "model_selection": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
       "-st",
       "DNA",
       "-seed",
@@ -38,7 +38,7 @@
       "-m",
       "MF",
       "-pre",
-      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection"
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection"
     ]
   },
   "comparison_report": {
@@ -47,11 +47,11 @@
         "branch_score_distance": 0.059545716976719495,
         "left_only_split_count": 0,
         "left_only_taxa": [],
-        "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+        "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
         "missing_length_split_count": 0,
         "right_only_split_count": 0,
         "right_only_taxa": [],
-        "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+        "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
         "same_taxon_set": true,
         "shared_split_count": 15,
         "shared_taxa": [
@@ -191,9 +191,9 @@
         "taxon_overlap_policy": "prune-to-shared"
       },
       "left_only_taxa": [],
-      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
       "right_only_taxa": [],
-      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
       "same_taxon_set": true,
       "shared_splits": [
         {
@@ -231,14 +231,14 @@
         "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
         "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025"
       ],
-      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
       "lost_clades": [
         "bat_chile_rv108|bat_chile_rv50",
         "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
         "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
         "bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021"
       ],
-      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
     },
     "clades": {
       "clade_rows": [
@@ -249,12 +249,12 @@
             {
               "present": true,
               "support": 1.0,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
             },
             {
               "present": false,
               "support": null,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
             }
           ],
           "present_in_all_trees": false,
@@ -267,12 +267,12 @@
             {
               "present": true,
               "support": 0.999,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
             },
             {
               "present": true,
               "support": 100.0,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
             }
           ],
           "present_in_all_trees": true,
@@ -285,12 +285,12 @@
             {
               "present": true,
               "support": 0.87,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
             },
             {
               "present": true,
               "support": 84.0,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
             }
           ],
           "present_in_all_trees": true,
@@ -303,12 +303,12 @@
             {
               "present": true,
               "support": 1.0,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
             },
             {
               "present": false,
               "support": null,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
             }
           ],
           "present_in_all_trees": false,
@@ -321,12 +321,12 @@
             {
               "present": false,
               "support": null,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
             },
             {
               "present": true,
               "support": 92.0,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
             }
           ],
           "present_in_all_trees": false,
@@ -339,12 +339,12 @@
             {
               "present": true,
               "support": 0.997,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
             },
             {
               "present": false,
               "support": null,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
             }
           ],
           "present_in_all_trees": false,
@@ -357,12 +357,12 @@
             {
               "present": false,
               "support": null,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
             },
             {
               "present": true,
               "support": 99.0,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
             }
           ],
           "present_in_all_trees": false,
@@ -375,12 +375,12 @@
             {
               "present": true,
               "support": 0.968,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
             },
             {
               "present": false,
               "support": null,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
             }
           ],
           "present_in_all_trees": false,
@@ -393,12 +393,12 @@
             {
               "present": false,
               "support": null,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
             },
             {
               "present": true,
               "support": 100.0,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
             }
           ],
           "present_in_all_trees": false,
@@ -411,12 +411,12 @@
             {
               "present": false,
               "support": null,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
             },
             {
               "present": true,
               "support": 100.0,
-              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
             }
           ],
           "present_in_all_trees": false,
@@ -449,15 +449,15 @@
         "red_fox_russia_4092_20_2025"
       ],
       "tree_paths": [
-        "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
-        "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+        "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+        "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
       ],
       "tree_summaries": [
         {
           "clade_count": 6,
           "excluded_taxa": [],
           "support_clade_count": 6,
-          "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+          "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
           "unique_clades": [
             "bat_chile_rv108|bat_chile_rv50",
             "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
@@ -469,7 +469,7 @@
           "clade_count": 6,
           "excluded_taxa": [],
           "support_clade_count": 6,
-          "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+          "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
           "unique_clades": [
             "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
             "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
@@ -480,10 +480,10 @@
       ]
     },
     "input_checksums": {
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk": "0e11e0785b1a2a577da5e43b7ed4b3ec44ef7a4fc3f75cfb8727d1a9dd4795b6",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk": "07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e"
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk": "0e11e0785b1a2a577da5e43b7ed4b3ec44ef7a4fc3f75cfb8727d1a9dd4795b6",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk": "07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e"
     },
-    "output_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.html",
+    "output_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.html",
     "support": {
       "conflicting_clades": [
         {
@@ -599,8 +599,8 @@
           "support_strength": "strong"
         }
       ],
-      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
-      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
       "shared_clades": [
         {
           "left_support": 0.999,
@@ -639,13 +639,13 @@
     "topology": {
       "left_informative_clades": 6,
       "left_only_taxa": [],
-      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
       "left_unrooted_splits": 6,
       "normalized_robinson_foulds": 0.6666666666666666,
       "rf_mode": "rooted",
       "right_informative_clades": 6,
       "right_only_taxa": [],
-      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
       "right_unrooted_splits": 6,
       "robinson_foulds_distance": 8,
       "rooted_normalized_robinson_foulds": 0.6666666666666666,
@@ -921,19 +921,19 @@
       "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025"
     }
   ],
-  "ended_at_utc": "2026-05-18T02:04:50Z",
-  "engine_artifact_dir": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold",
+  "ended_at_utc": "2026-05-18T02:17:45Z",
+  "engine_artifact_dir": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold",
   "engine_comparison": {
     "branch_lengths": {
       "branch_score": {
         "branch_score_distance": 0.059545716976719495,
         "left_only_split_count": 0,
         "left_only_taxa": [],
-        "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+        "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
         "missing_length_split_count": 0,
         "right_only_split_count": 0,
         "right_only_taxa": [],
-        "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+        "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
         "same_taxon_set": true,
         "shared_split_count": 15,
         "shared_taxa": [
@@ -1073,9 +1073,9 @@
         "taxon_overlap_policy": "prune-to-shared"
       },
       "left_only_taxa": [],
-      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
       "right_only_taxa": [],
-      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
       "same_taxon_set": true,
       "shared_splits": [
         {
@@ -1109,14 +1109,14 @@
     "comparison_kind": "engine",
     "left_engine_name": "FastTree",
     "left_label": "FastTree",
-    "left_manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.manifest.json",
+    "left_manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.manifest.json",
     "left_selected_model": null,
-    "left_tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+    "left_tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
     "right_engine_name": "iqtree",
     "right_label": "IQ-TREE",
-    "right_manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.manifest.json",
+    "right_manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.manifest.json",
     "right_selected_model": "TPM2u+F+G4",
-    "right_tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+    "right_tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
     "support": {
       "conflicting_clades": [
         {
@@ -1232,8 +1232,8 @@
           "support_strength": "strong"
         }
       ],
-      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
-      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
       "shared_clades": [
         {
           "left_support": 0.999,
@@ -1272,13 +1272,13 @@
     "topology": {
       "left_informative_clades": 6,
       "left_only_taxa": [],
-      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
       "left_unrooted_splits": 6,
       "normalized_robinson_foulds": 0.6666666666666666,
       "rf_mode": "rooted",
       "right_informative_clades": 6,
       "right_only_taxa": [],
-      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
       "right_unrooted_splits": 6,
       "robinson_foulds_distance": 8,
       "rooted_normalized_robinson_foulds": 0.6666666666666666,
@@ -1403,7 +1403,7 @@
       },
       "support_label_kind": "sh-like-local-support",
       "support_scale": "proportion-0-to-1",
-      "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+      "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
       "warnings": [
         "one or more internal nodes did not expose parsable FastTree local support labels",
         "FastTree is an approximately maximum-likelihood workflow and its SH-like local support values should be reviewed as approximate evidence"
@@ -1411,14 +1411,14 @@
       "weakly_supported_clade_count": 0
     },
     "input_checksums": {
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
     },
     "input_paths": [
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
     ],
     "iqtree_summary": null,
     "log_likelihood": null,
-    "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.manifest.json",
+    "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.manifest.json",
     "model_selection_summary": null,
     "notes": [
       "fast approximate tree validated as parseable Newick output",
@@ -1429,16 +1429,16 @@
       "FastTree local support histogram exported for reviewer-facing distribution checks"
     ],
     "output_checksums": {
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk": "0e11e0785b1a2a577da5e43b7ed4b3ec44ef7a4fc3f75cfb8727d1a9dd4795b6",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.low-support.tsv": "07b6c95e7f5bbacfedde24c98d0e1056fa5b204e2a4cfbd5109a676f15f2c1f5",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.support-histogram.tsv": "21830eca94e176b070526a35b6c9633a4682460be48dc4dac56f4f421b668dd5",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.support.tsv": "dd102e30b7586bd89a8450144144c1a09094c0f8954f9a097372eb71c5eca416"
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk": "0e11e0785b1a2a577da5e43b7ed4b3ec44ef7a4fc3f75cfb8727d1a9dd4795b6",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.low-support.tsv": "07b6c95e7f5bbacfedde24c98d0e1056fa5b204e2a4cfbd5109a676f15f2c1f5",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.support-histogram.tsv": "21830eca94e176b070526a35b6c9633a4682460be48dc4dac56f4f421b668dd5",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.support.tsv": "dd102e30b7586bd89a8450144144c1a09094c0f8954f9a097372eb71c5eca416"
     },
     "output_paths": {
-      "low_support_branches": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.low-support.tsv",
-      "support_histogram": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.support-histogram.tsv",
-      "support_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.support.tsv",
-      "tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk"
+      "low_support_branches": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.low-support.tsv",
+      "support_histogram": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.support-histogram.tsv",
+      "support_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.support.tsv",
+      "tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk"
     },
     "resumed": false,
     "run": {
@@ -1446,19 +1446,19 @@
         "/opt/homebrew/bin/FastTree",
         "-gtr",
         "-nt",
-        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
+        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
       ],
-      "ended_at_utc": "2026-05-18T02:04:50Z",
+      "ended_at_utc": "2026-05-18T02:17:45Z",
       "engine_name": "FastTree",
       "executable": "/opt/homebrew/bin/FastTree",
       "exit_code": 0,
       "output_paths": {
-        "tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk"
+        "tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk"
       },
-      "runtime_seconds": 0.10613,
-      "started_at_utc": "2026-05-18T02:04:50Z",
-      "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.stderr.log",
-      "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+      "runtime_seconds": 0.104893,
+      "started_at_utc": "2026-05-18T02:17:45Z",
+      "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.stderr.log",
+      "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -1472,7 +1472,7 @@
       },
       "warning_lines": [],
       "workflow": "fast-approximate-tree",
-      "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree"
+      "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree"
     },
     "selected_model": null,
     "sh_alrt_support_summary": null,
@@ -1481,9 +1481,9 @@
     "workflow": "fast-approximate-tree"
   },
   "input_checksums": {
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
   },
-  "input_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
+  "input_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
   "iqtree_seed": 1,
   "iqtree_support_workflow": {
     "bootstrap_support_summary": {
@@ -1573,7 +1573,7 @@
         "lt50": 0
       },
       "supported_node_count": 6,
-      "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+      "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
       "warnings": [
         "one or more internal nodes did not expose numeric support labels"
       ],
@@ -1591,10 +1591,10 @@
     "engine_name": "iqtree",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
     },
     "input_paths": [
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
     ],
     "iqtree_summary": {
       "log_likelihood": -3945.2388,
@@ -1679,7 +1679,7 @@
       ]
     },
     "log_likelihood": -3945.2388,
-    "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.manifest.json",
+    "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.manifest.json",
     "model_selection_summary": {
       "best_model_aic": "7932.4776",
       "best_model_aicc": "7933.1718",
@@ -1704,31 +1704,31 @@
       "support histogram exported for reviewer-facing support distribution checks"
     ],
     "output_checksums": {
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.contree": "b2daf4c3fbaba44d62fe5ee2f1d4ac8147bafd3947d96f46c9921ac54667577e",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.iqtree": "2f601acb19e3dec1904a1587c15dcca464e6acc8bf85d00159139deea2eb2663",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.log": "88468cab951cf331ac24fd90d5e4395c3977d74fcb10ad3be6b710ea19cfc101",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.low-support.tsv": "3c9d1d00f9023dbb6e5f8931d91ae26afc322f0fa54385f41b12290c8b814bb7",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.support-histogram.tsv": "7247f212495fc93cb528e03afabc8b802fd3299cc775368a6d6536f60b82b9e7",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.support.tsv": "fbb00f7eb709a09193f7e4a7f60bb9ac590641e6fe21fc24a47926dda8204070",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile": "07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.ufboot": "bdacadce517612202bc5d0131cd5382b39fa5e00747a77c3a94d60c7a4371d51"
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.contree": "b2daf4c3fbaba44d62fe5ee2f1d4ac8147bafd3947d96f46c9921ac54667577e",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.iqtree": "a76cba13fb0fe5ee6f1efbaeac5881a0500bc550c5410ba88defc454a0e9e814",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.log": "8aa34a083f02e0c18e6f6beae6715c228142e2ce53b3588861b34b0915b1e55f",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.low-support.tsv": "3c9d1d00f9023dbb6e5f8931d91ae26afc322f0fa54385f41b12290c8b814bb7",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.support-histogram.tsv": "7247f212495fc93cb528e03afabc8b802fd3299cc775368a6d6536f60b82b9e7",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.support.tsv": "fbb00f7eb709a09193f7e4a7f60bb9ac590641e6fe21fc24a47926dda8204070",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile": "07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.ufboot": "bdacadce517612202bc5d0131cd5382b39fa5e00747a77c3a94d60c7a4371d51"
     },
     "output_paths": {
-      "bootstrap_trees": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.ufboot",
-      "consensus_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.contree",
-      "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.log",
-      "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.iqtree",
-      "low_support_branches": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.low-support.tsv",
-      "support_histogram": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.support-histogram.tsv",
-      "support_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.support.tsv",
-      "support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile"
+      "bootstrap_trees": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.ufboot",
+      "consensus_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.contree",
+      "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.log",
+      "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.iqtree",
+      "low_support_branches": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.low-support.tsv",
+      "support_histogram": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.support-histogram.tsv",
+      "support_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.support.tsv",
+      "support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/iqtree2",
         "-s",
-        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
+        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
         "-st",
         "DNA",
         "-seed",
@@ -1741,22 +1741,22 @@
         "1000",
         "-wbt",
         "-pre",
-        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support"
+        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support"
       ],
-      "ended_at_utc": "2026-05-18T02:04:48Z",
+      "ended_at_utc": "2026-05-18T02:17:43Z",
       "engine_name": "iqtree",
       "executable": "/opt/homebrew/bin/iqtree2",
       "exit_code": 0,
       "output_paths": {
-        "bootstrap_trees": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.ufboot",
-        "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.log",
-        "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.iqtree",
-        "support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile"
+        "bootstrap_trees": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.ufboot",
+        "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.log",
+        "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.iqtree",
+        "support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile"
       },
-      "runtime_seconds": 0.719689,
-      "started_at_utc": "2026-05-18T02:04:47Z",
-      "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.stderr.log",
-      "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.stdout.log",
+      "runtime_seconds": 0.725602,
+      "started_at_utc": "2026-05-18T02:17:43Z",
+      "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.stderr.log",
+      "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -1770,7 +1770,7 @@
       },
       "warning_lines": [],
       "workflow": "bootstrap-support",
-      "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support"
+      "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support"
     },
     "selected_model": "TPM2u+F+G4",
     "sh_alrt_support_summary": null,
@@ -1778,7 +1778,7 @@
     "weak_backbone_report": {
       "evaluated_backbone_node_count": 3,
       "threshold": 70.0,
-      "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+      "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
       "warnings": [
         "one or more internal nodes did not expose numeric support labels"
       ],
@@ -1788,7 +1788,7 @@
     "workflow": "bootstrap-support"
   },
   "iqtree_threads": 1,
-  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.manifest.json",
+  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.manifest.json",
   "model_selection_workflow": {
     "bootstrap_support_summary": null,
     "config": {
@@ -1801,10 +1801,10 @@
     "engine_name": "iqtree",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
     },
     "input_paths": [
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
     ],
     "iqtree_summary": {
       "log_likelihood": -3945.2345,
@@ -1815,7 +1815,7 @@
       "support_values": []
     },
     "log_likelihood": -3945.2345,
-    "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.manifest.json",
+    "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.manifest.json",
     "model_selection_summary": {
       "best_model_aic": "TIM2+F+G4",
       "best_model_aicc": "TIM2+F+G4",
@@ -2760,25 +2760,25 @@
       "model-selection workflow exposed a parsable log-likelihood score"
     ],
     "output_checksums": {
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.iqtree": "686c080a2a2804b958fd30c3617b20469ad199101035927e6f932d9764418429",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.log": "e44acf2fee5c59e8ba477d7e0d60aa7992609b27509f71547be98850df932140",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.model-candidates.tsv": "72a260da691f9e5f28a72b7d3ee8391846895419852beae6b622b3a3bf0734fb",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.model.gz": "90099a16f33640769b69e38f8d759138f84dad3aca1efd369c780731767fcda6",
-      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.selected-model.txt": "83f15e8e7b4d36af68abb4efa0d72c8631518f540264c49447b4ff94816a91cd"
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.iqtree": "751305cf35c5fd5ba2a9cbb8815a82e4663bad57b997ede1cac560e1373b29c3",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.log": "26b7a8c4eb7530bdb38a12d5c847ed2cfe900ff569ecf4ade72308e5c1fa6007",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.model-candidates.tsv": "72a260da691f9e5f28a72b7d3ee8391846895419852beae6b622b3a3bf0734fb",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.model.gz": "991ae971ab8a4336a50bb9fff0c254db6a6fd6f8877be55068e1a676f00d530e",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.selected-model.txt": "83f15e8e7b4d36af68abb4efa0d72c8631518f540264c49447b4ff94816a91cd"
     },
     "output_paths": {
-      "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.log",
-      "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.iqtree",
-      "model_candidates": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.model-candidates.tsv",
-      "model_selection_sidecar": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.model.gz",
-      "selected_model": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.selected-model.txt"
+      "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.log",
+      "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.iqtree",
+      "model_candidates": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.model-candidates.tsv",
+      "model_selection_sidecar": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.model.gz",
+      "selected_model": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.selected-model.txt"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/iqtree2",
         "-s",
-        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
+        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
         "-st",
         "DNA",
         "-seed",
@@ -2788,20 +2788,20 @@
         "-m",
         "MF",
         "-pre",
-        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection"
+        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection"
       ],
-      "ended_at_utc": "2026-05-18T02:04:47Z",
+      "ended_at_utc": "2026-05-18T02:17:42Z",
       "engine_name": "iqtree",
       "executable": "/opt/homebrew/bin/iqtree2",
       "exit_code": 0,
       "output_paths": {
-        "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.log",
-        "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.iqtree"
+        "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.log",
+        "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.iqtree"
       },
-      "runtime_seconds": 0.297359,
-      "started_at_utc": "2026-05-18T02:04:46Z",
-      "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.stderr.log",
-      "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.stdout.log",
+      "runtime_seconds": 0.247325,
+      "started_at_utc": "2026-05-18T02:17:42Z",
+      "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.stderr.log",
+      "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -2815,7 +2815,7 @@
       },
       "warning_lines": [],
       "workflow": "model-selection",
-      "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection"
+      "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection"
     },
     "selected_model": "TPM2u+F+G4",
     "sh_alrt_support_summary": null,
@@ -2834,34 +2834,34 @@
     "iqtree threads: 1",
     "ultrafast bootstrap replicates: 1000"
   ],
-  "out_dir": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison",
+  "out_dir": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison",
   "output_checksums": {
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.html": "f8f1a17d625b90519d7e0ed2f28b733ebf4c8ff3a7179ee277d1891269c48f0e",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.tsv": "f769b731d4f51d1124fee13b6cd7498e57b88ca67a14c152ba2118b1183f1ba5",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.conclusions.tsv": "5d3bbe3638e32946dfeacf72e8ee667ed0f2ffe0b5fd44c90d78121b32a59d5e",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.conflicting-clades.tsv": "f84ad8972d76103c2381662e1ccfdbc3c28540197038296fcd82665bc2f386f2",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk": "0e11e0785b1a2a577da5e43b7ed4b3ec44ef7a4fc3f75cfb8727d1a9dd4795b6",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk": "07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.shared-clades.tsv": "e31182b4fccc6827b951f63471a886f1620cf0766b26ed9d98ca3cd78a2e2a9b",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.stability-summary.tsv": "c7811c0846687032b73a77e125e3ea280aedcb876ad96cfc44fa0e848cfac021",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.support-weighted-conflicts.tsv": "3bb2a2a9f86d95864d5989dab6ca5d36fd889ba178d9fd1278d87970732d9c4f",
-    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.taxon-influence.tsv": "824f5441da0ac9e75a6876574275cb1c864afe1c51d02ff3a0e57b306abcf958"
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.html": "f9a4176cacfcb43a5c64b81fd3744be6d2c09070c796c64ff8fedff7f18b2be5",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.tsv": "f769b731d4f51d1124fee13b6cd7498e57b88ca67a14c152ba2118b1183f1ba5",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.conclusions.tsv": "5d3bbe3638e32946dfeacf72e8ee667ed0f2ffe0b5fd44c90d78121b32a59d5e",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.conflicting-clades.tsv": "f84ad8972d76103c2381662e1ccfdbc3c28540197038296fcd82665bc2f386f2",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk": "0e11e0785b1a2a577da5e43b7ed4b3ec44ef7a4fc3f75cfb8727d1a9dd4795b6",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk": "07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.shared-clades.tsv": "e31182b4fccc6827b951f63471a886f1620cf0766b26ed9d98ca3cd78a2e2a9b",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.stability-summary.tsv": "c7811c0846687032b73a77e125e3ea280aedcb876ad96cfc44fa0e848cfac021",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.support-weighted-conflicts.tsv": "3bb2a2a9f86d95864d5989dab6ca5d36fd889ba178d9fd1278d87970732d9c4f",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.taxon-influence.tsv": "824f5441da0ac9e75a6876574275cb1c864afe1c51d02ff3a0e57b306abcf958"
   },
   "output_paths": {
-    "comparison_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.html",
-    "comparison_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.tsv",
-    "conclusion_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.conclusions.tsv",
-    "conflicting_clades": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.conflicting-clades.tsv",
-    "fasttree_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
-    "iqtree_support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
-    "manifest": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.manifest.json",
-    "shared_clades": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.shared-clades.tsv",
-    "stability_summary": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.stability-summary.tsv",
-    "support_weighted_conflicts": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.support-weighted-conflicts.tsv",
-    "taxon_influence": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.taxon-influence.tsv"
+    "comparison_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.html",
+    "comparison_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.tsv",
+    "conclusion_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.conclusions.tsv",
+    "conflicting_clades": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.conflicting-clades.tsv",
+    "fasttree_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+    "iqtree_support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+    "manifest": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.manifest.json",
+    "shared_clades": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.shared-clades.tsv",
+    "stability_summary": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.stability-summary.tsv",
+    "support_weighted_conflicts": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.support-weighted-conflicts.tsv",
+    "taxon_influence": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.taxon-influence.tsv"
   },
   "prefix": "auto-gap-threshold",
-  "runtime_seconds": 3.410597,
+  "runtime_seconds": 3.461398,
   "selected_model": "TPM2u+F+G4",
   "sequence_type": "dna",
   "shared_clade_rows": [
@@ -2888,11 +2888,11 @@
       "support_fraction_delta": 0.030000000000000027
     }
   ],
-  "started_at_utc": "2026-05-18T02:04:46Z",
+  "started_at_utc": "2026-05-18T02:17:42Z",
   "step_manifests": {
-    "fasttree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.manifest.json",
-    "iqtree_support": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.manifest.json",
-    "model_selection": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.manifest.json"
+    "fasttree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.manifest.json",
+    "iqtree_support": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.manifest.json",
+    "model_selection": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.manifest.json"
   },
   "taxon_influence_report": {
     "baseline_support": {
@@ -3010,8 +3010,8 @@
           "support_strength": "strong"
         }
       ],
-      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
-      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
       "shared_clades": [
         {
           "left_support": 0.999,
@@ -3050,13 +3050,13 @@
     "baseline_topology": {
       "left_informative_clades": 6,
       "left_only_taxa": [],
-      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
       "left_unrooted_splits": 6,
       "normalized_robinson_foulds": 0.6666666666666666,
       "rf_mode": "rooted",
       "right_informative_clades": 6,
       "right_only_taxa": [],
-      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
       "right_unrooted_splits": 6,
       "robinson_foulds_distance": 8,
       "rooted_normalized_robinson_foulds": 0.6666666666666666,
@@ -3080,8 +3080,8 @@
       "unrooted_normalized_robinson_foulds": 0.0,
       "unrooted_robinson_foulds_distance": 0
     },
-    "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
-    "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-ne9xwbtp/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+    "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+    "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-d3fb6uo2/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
     "rows": [
       {
         "baseline_conflicting_clades": 8,

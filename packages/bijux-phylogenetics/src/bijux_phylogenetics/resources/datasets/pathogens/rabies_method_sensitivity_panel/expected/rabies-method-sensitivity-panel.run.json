@@ -1,6 +1,6 @@
 {
   "dataset_id": "rabies_method_sensitivity_panel",
-  "ended_at_utc": "2026-05-18T02:04:55Z",
+  "ended_at_utc": "2026-05-18T02:17:50Z",
   "execution_mode": "parallel",
   "failed_variants": [],
   "parallel_workers": 2,
@@ -10,7 +10,7 @@
     "auto-gappyout",
     "ginsi-gappyout"
   ],
-  "started_at_utc": "2026-05-18T02:04:45Z",
+  "started_at_utc": "2026-05-18T02:17:40Z",
   "status": "succeeded",
   "successful_variants": [
     "auto-gap-threshold",
