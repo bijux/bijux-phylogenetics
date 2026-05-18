@@ -290,6 +290,7 @@ bijux-phylogenetics report supplementary-comparative-model-table --tree tree.nwk
 bijux-phylogenetics report supplementary-diversification-table --tree tree.nwk --metadata metadata.tsv --clade-model birth-death --out artifacts/supplementary-diversification.tsv --json
 bijux-phylogenetics report supplementary-model-selection-table --iqtree-report run.iqtree --model-sidecar run.model --out artifacts/supplementary-model-selection.tsv --json
 bijux-phylogenetics report supplementary-tree-table --tree tree.nwk --out artifacts/supplementary-tree.tsv --json
+bijux-phylogenetics report alignment-filtering-methods-summary alignment.fasta --profile moderate --group-table metadata.tsv --group-column region --out artifacts/alignment-filtering-methods-summary.md --json
 bijux-phylogenetics report tree-validation-methods-summary tree.nwk --out artifacts/tree-validation-methods-summary.md --json
 bijux-phylogenetics report taxonomy --tree tree.nwk --synonym-table taxonomy.tsv --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --reported-taxa reviewer-table.tsv --out artifacts/taxonomy-report.html --json
 bijux-phylogenetics report supplementary-taxon-table --tree tree.nwk --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --filtered-alignment filtered-alignment.fasta --inference-tree inferred.nwk --reported-taxa reviewer-table.tsv --out artifacts/supplementary-taxa.tsv --json
@@ -455,6 +456,13 @@ the tree validation, inspection, and forensic safety surfaces, naming the
 checks that ran, the governing numeric thresholds, the repair-required labels
 or exclusion conditions, and the downstream analyses that remain allowed or
 blocked.
+
+For one reviewer-facing alignment-filtering methods summary, use
+`report alignment-filtering-methods-summary`. It writes one Markdown summary
+over one profile-driven filtering pass, naming the selected cleaning profile,
+removed site and sequence reasons, retained alignment dimensions, signal-loss
+warnings, and optional metadata or trait group-retention skew on one
+reviewable surface.
 
 For one reviewer-facing supplementary clade-support ledger, use
 `report supplementary-clade-support-table`. It writes one TSV with one row per
