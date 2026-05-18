@@ -43,12 +43,16 @@ def test_load_continuous_dataset_prunes_missing_taxa_and_warns_on_small_sample()
         trait="value",
     )
     assert dataset.taxa == ["A", "B", "C"]
-    assert dataset.dropped_missing_taxa == ["D"]
+    assert dataset.dropped_missing_taxa == []
     assert dataset.dropped_non_numeric_taxa == []
     assert dataset.warnings == [
         "continuous trait reconstruction is using only 3 taxa; results may be unstable",
-        "one or more taxa were excluded because the continuous trait value was missing",
+        "one or more tree taxa were excluded because they were absent from the trait table",
+        "one or more trait rows were excluded because their taxa were absent from the tree",
     ]
+    assert dataset.alignment_report.dropped_tree_taxa == ["D"]
+    assert dataset.alignment_report.dropped_trait_taxa == ["E"]
+    assert dataset.alignment_report.dropped_missing_value_taxa == []
 
 
 def test_load_continuous_dataset_prunes_nonnumeric_taxa_explicitly() -> None:
@@ -61,6 +65,7 @@ def test_load_continuous_dataset_prunes_nonnumeric_taxa_explicitly() -> None:
     assert dataset.dropped_missing_taxa == ["B"]
     assert dataset.dropped_non_numeric_taxa == ["C"]
     assert dataset.warnings == [
+        "one or more trait rows were excluded because their taxa were absent from the tree",
         "one or more taxa were excluded because the continuous trait value was missing",
         "one or more taxa were excluded because the continuous trait value was not numeric",
     ]
