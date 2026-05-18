@@ -17,6 +17,7 @@ from bijux_phylogenetics.core.metadata import (
     load_taxon_table,
 )
 from bijux_phylogenetics.core.traits import (
+    check_tree_and_trait_taxon_names,
     detect_unusable_trait_columns,
     link_tree_to_traits,
 )
@@ -764,6 +765,7 @@ def summarize_dataset_readiness(
     tree_taxa = set(load_tree(tree_path).tip_names)
     metadata_table = load_taxon_table(metadata_path)
     metadata_taxa = set(metadata_table.taxa)
+    trait_name_check = check_tree_and_trait_taxon_names(tree_path, traits_path)
     traits_linkage = link_tree_to_traits(tree_path, traits_path)
     unusable_trait_columns = detect_unusable_trait_columns(
         traits_path,
@@ -782,7 +784,7 @@ def summarize_dataset_readiness(
     metadata_only_taxa = sorted(metadata_taxa - tree_taxa)
     if missing_metadata_taxa:
         blockers.append("metadata table is missing one or more tree taxa")
-    if traits_linkage.missing_from_traits:
+    if trait_name_check.tree_not_data:
         blockers.append("trait table is missing one or more tree taxa")
     if unusable_trait_columns:
         blockers.append("one or more trait columns exceed the missingness threshold")
@@ -792,7 +794,7 @@ def summarize_dataset_readiness(
         )
     if metadata_only_taxa:
         warnings.append("metadata table contains taxa absent from the tree")
-    if traits_linkage.extra_trait_taxa:
+    if trait_name_check.data_not_tree:
         warnings.append("trait table contains taxa absent from the tree")
 
     return DatasetReadinessSummary(
@@ -802,9 +804,9 @@ def summarize_dataset_readiness(
         tree_taxa=tree_validation.tip_count,
         analysis_taxa=analysis_taxa,
         missing_metadata_taxa=missing_metadata_taxa,
-        missing_trait_taxa=traits_linkage.missing_from_traits,
+        missing_trait_taxa=trait_name_check.tree_not_data,
         metadata_only_taxa=metadata_only_taxa,
-        trait_only_taxa=traits_linkage.extra_trait_taxa,
+        trait_only_taxa=trait_name_check.data_not_tree,
         metadata_column_completeness=metadata.column_completeness,
         unusable_trait_columns=[column.name for column in unusable_trait_columns],
         ready_for_comparative_analysis=not blockers,
