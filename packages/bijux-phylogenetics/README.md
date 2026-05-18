@@ -1428,6 +1428,19 @@ negative `a` parameter and explicit bounded control. Those cases govern
 sigma-squared-backed rate, root-state recovery, log-likelihood, AIC, AICc,
 lower-boundary detection, and reviewer-facing weak-identifiability warnings
 when the fitted rate change collapses back toward the Brownian boundary.
+The live lane now also has a dedicated
+`geiger::fitContinuous(model comparison)` surface over the governed
+seven-model set `BM`, `white`, `lambda`, `kappa`, `delta`, `OU`, and `EB`.
+Bijux exposes the owned side through `compare_fitcontinuous_model_ranking(...)`
+while the live reference runner executes the same bounded model set per
+fixture and records one full row per candidate model with AIC, AICc, deltas,
+selected-model flags, and comparability notes. The governed comparison cases
+cover Brownian truth, OU truth, early-burst truth, and white-noise truth on
+the shared twenty-four-taxon fixtures. The parity contract intentionally
+compares those model-comparison rows by model identity and numeric fit surface
+rather than by derived whole-list ordering alone, because near-tied secondary
+ordering can shift at machine precision even when the selected model and the
+information-criterion surface still agree.
 The same shared fixture layer now also has a dedicated
 `tests/fixtures/metadata/shared_geiger_discrete_fixture_catalog.json` catalog
 for future `geiger::fitDiscrete(...)` work. That governed corpus keeps binary,
