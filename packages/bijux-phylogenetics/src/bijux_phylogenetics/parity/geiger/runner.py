@@ -12,6 +12,7 @@ import subprocess  # nosec B404 - parity helpers invoke repository-owned referen
 import tempfile
 
 from bijux_phylogenetics.comparative.evolutionary_modes import (
+    ContinuousModeSearchControls,
     fit_continuous_evolutionary_mode,
 )
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
@@ -143,6 +144,10 @@ def _write_case_file(path: Path, case: GeigerParityCase) -> Path:
         "trait_name": case.trait_name,
         "taxon_column": case.taxon_column,
         "optimizer_settings": case.optimizer_settings,
+        "reference_control": case.reference_control,
+        "coarse_grid_point_count": case.coarse_grid_point_count,
+        "fine_grid_point_count": case.fine_grid_point_count,
+        "initial_parameter_value": case.initial_parameter_value,
         "comparison_fields": list(case.comparison_fields),
         "lambda_bounds": None
         if case.lambda_bounds is None
@@ -301,9 +306,15 @@ def _bijux_optimizer_result(
         diagnostics = report.optimizer_diagnostics
         return {
             "optimizer_name": diagnostics.optimizer_name,
+            "parameter_search_strategy": diagnostics.parameter_search_strategy,
             "converged": diagnostics.converged,
             "lower_bound": diagnostics.lower_bound,
             "upper_bound": diagnostics.upper_bound,
+            "starting_parameter_policy": diagnostics.starting_parameter_policy,
+            "starting_parameter_value": diagnostics.starting_parameter_value,
+            "starting_parameter_log_likelihood": (
+                diagnostics.starting_parameter_log_likelihood
+            ),
             "coarse_grid_point_count": diagnostics.coarse_grid_point_count,
             "fine_grid_point_count": diagnostics.fine_grid_point_count,
             "function_evaluation_count": diagnostics.function_evaluation_count,
@@ -350,12 +361,32 @@ def _build_bijux_case_payload(
         trait=case.trait_name,
         taxon_column=case.taxon_column,
     )
+    search_controls = None
+    if (
+        case.coarse_grid_point_count is not None
+        or case.fine_grid_point_count is not None
+        or case.initial_parameter_value is not None
+    ):
+        search_controls = ContinuousModeSearchControls(
+            coarse_grid_point_count=(
+                81
+                if case.coarse_grid_point_count is None
+                else case.coarse_grid_point_count
+            ),
+            fine_grid_point_count=(
+                81
+                if case.fine_grid_point_count is None
+                else case.fine_grid_point_count
+            ),
+            initial_parameter_value=case.initial_parameter_value,
+        )
     report = fit_continuous_evolutionary_mode(
         tree_path,
         traits_path,
         trait=case.trait_name,
         mode=case.python_mode,
         taxon_column=case.taxon_column,
+        search_controls=search_controls,
         lambda_bounds=(0.0, 1.0)
         if case.lambda_bounds is None
         else case.lambda_bounds,

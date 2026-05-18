@@ -142,6 +142,13 @@ fitcontinuous_bounds <- function(case_payload) {
   list()
 }
 
+fitcontinuous_control <- function(case_payload) {
+  if (is.null(case_payload$reference_control)) {
+    return(list())
+  }
+  case_payload$reference_control
+}
+
 normalize_optimizer_result <- function(fit) {
   result <- list()
   if (!is.null(fit$opt$method)) {
@@ -212,7 +219,8 @@ build_fitcontinuous_payload <- function(tree, trait_values, excluded_taxa, case_
       phy = tree,
       dat = trait_values,
       model = case_payload$model_name,
-      bounds = fitcontinuous_bounds(case_payload)
+      bounds = fitcontinuous_bounds(case_payload),
+      control = fitcontinuous_control(case_payload)
     )
   )
   opt <- fit$opt
