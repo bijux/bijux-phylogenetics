@@ -1098,3 +1098,34 @@ def test_ancestral_discrete_cli_rejects_ordered_fitch_model(capsys) -> None:
         "ordered ancestral discrete reconstruction requires a likelihood model"
         in captured.err
     )
+
+
+def test_ancestral_discrete_cli_rejects_meristic_parity_claim(capsys) -> None:
+    try:
+        main(
+            [
+                "ancestral",
+                "report",
+                str(fixture("example_tree.nwk")),
+                str(fixture("example_traits_geography.tsv")),
+                "--trait",
+                "region",
+                "--kind",
+                "discrete",
+                "--model",
+                "meristic",
+                "--state-ordering",
+                "ordered",
+                "--ordered-states",
+                "north,south,island",
+                "--out",
+                "ignored.html",
+            ]
+        )
+    except SystemExit as error:
+        assert error.code == 2
+    captured = capsys.readouterr()
+    assert "explicitly excluded this round" in captured.err
+    assert "ordered-state Mk support is not claimed as meristic parity" in (
+        captured.err
+    )

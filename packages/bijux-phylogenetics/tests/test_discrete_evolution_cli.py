@@ -146,6 +146,32 @@ def test_discrete_evolution_model_cli_accepts_symmetric_ordered_states(capsys) -
     assert payload["metrics"]["state_ordering"] == "ordered"
 
 
+def test_discrete_evolution_model_cli_rejects_meristic_parity_claim(capsys) -> None:
+    try:
+        main(
+            [
+                "discrete-evolution",
+                "model",
+                str(fixture("example_tree.nwk")),
+                str(fixture("example_traits_geography.tsv")),
+                "--trait",
+                "region",
+                "--model",
+                "meristic",
+                "--state-ordering",
+                "ordered",
+                "--ordered-states",
+                "north,south,island",
+                "--json",
+            ]
+        )
+    except SystemExit as error:
+        assert error.code == 2
+    captured = capsys.readouterr()
+    assert "explicitly excluded this round" in captured.err
+    assert "integer-state meristic contract" in captured.err
+
+
 def test_discrete_evolution_render_and_report_cli_write_svg_and_html(
     tmp_path: Path, capsys
 ) -> None:

@@ -362,6 +362,34 @@ def test_comparative_discrete_mk_cli_reports_symmetric_baseline_metrics(
     assert payload["metrics"]["delta_aic"] > 0.0
 
 
+def test_comparative_discrete_mk_cli_rejects_meristic_parity_claim(
+    capsys,
+) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        main(
+            [
+                "comparative",
+                "discrete-mk",
+                str(fixture("example_tree.nwk")),
+                str(fixture("example_traits_geography.tsv")),
+                "--trait",
+                "region",
+                "--taxon-column",
+                "taxon",
+                "--model",
+                "meristic",
+                "--json",
+            ]
+        )
+
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert "explicitly excluded this round" in captured.err
+    assert "ordered-state Mk support is not claimed as meristic parity" in (
+        captured.err
+    )
+
+
 @pytest.mark.slow
 def test_comparative_discrete_mk_cli_reports_ard_boundary_metrics(
     capsys,
@@ -465,6 +493,34 @@ def test_comparative_correlated_traits_cli_reports_coupling_metrics(capsys) -> N
         payload["metrics"]["association_measure_value"], 0.8871275993361114
     )
     assert payload["metrics"]["better_model"] == "correlated"
+
+
+def test_comparative_correlated_traits_cli_rejects_meristic_parity_claim(
+    capsys,
+) -> None:
+    try:
+        main(
+            [
+                "comparative",
+                "correlated-traits",
+                str(fixture("example_tree_eight_taxa.nwk")),
+                str(fixture("example_traits_correlated_binary_missing.tsv")),
+                "--left-trait",
+                "trait_left",
+                "--right-trait",
+                "trait_right",
+                "--analysis-kind",
+                "binary",
+                "--binary-model",
+                "meristic",
+                "--json",
+            ]
+        )
+    except SystemExit as error:
+        assert error.code == 2
+    captured = capsys.readouterr()
+    assert "explicitly excluded this round" in captured.err
+    assert "integer-state meristic contract" in captured.err
 
 
 def test_comparative_correlated_traits_cli_writes_review_ledgers(
