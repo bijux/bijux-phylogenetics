@@ -495,6 +495,9 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
         assert report.output_paths["trimmed_alignment"].name.endswith(".trimmed.aln")
         assert report.output_paths["tree"].suffix == ".tree"
         assert report.output_paths["log"].suffix == ".log"
+        assert report.output_paths["methods_summary"].name.endswith(
+            ".methods-summary.md"
+        )
         assert report.output_paths["model_table"].name.endswith(".model.tsv")
         assert report.output_paths["support_table"].name.endswith(".support.tsv")
         assert report.output_paths["manifest"].name.endswith(".manifest.json")
@@ -518,10 +521,15 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
         assert model_rows[0]["model_consistent"] == "true"
         assert support_rows[0]["support"] == "95"
         log_text = report.output_paths["log"].read_text(encoding="utf-8")
+        methods_text = report.output_paths["methods_summary"].read_text(
+            encoding="utf-8"
+        )
         assert "selected_model:" in log_text
         assert "iqtree random seed: 1" in log_text
         assert "iqtree threads: 1" in log_text
         assert "warning: iqtree fixture bootstrap" in log_text
+        assert "Tree Inference Methods Summary" in methods_text
+        assert "- selected substitution model:" in methods_text
         model_text = report.output_paths["model_table"].read_text(encoding="utf-8")
         assert "engine-artifacts/" in model_text
         assert str(report.out_dir) not in model_text
@@ -533,6 +541,9 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
         assert workflow_manifest["iqtree_seed"] == 1
         assert workflow_manifest["bootstrap_replicates"] == 1000
         assert workflow_manifest["config"]["iqtree_threads"] == 1
+        assert workflow_manifest["output_paths"]["methods_summary"].endswith(
+            ".methods-summary.md"
+        )
         assert "alignment" in workflow_manifest["commands"]
         assert "iqtree_model_selection" in workflow_manifest["engine_versions"]
         assert report.run_manifest_path == report.output_paths["run_manifest"]
