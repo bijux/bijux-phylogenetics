@@ -118,6 +118,7 @@ from bijux_phylogenetics.parity import (
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
     benchmark_large_alignment_scaling,
+    benchmark_large_tree_set_scaling,
     benchmark_large_tree_scaling,
     benchmark_large_dataset_stress_suite,
     benchmark_tree_comparison,
@@ -3027,6 +3028,29 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the benchmark report as JSON."
     )
     _add_manifest_argument(benchmark_large_alignment)
+    benchmark_large_tree_set = benchmark_subparsers.add_parser(
+        "large-tree-set-scaling",
+        help="Benchmark large-tree-set consensus, RF diversity, clustering, and uncertainty summaries.",
+    )
+    benchmark_large_tree_set.add_argument("--replicates", type=int, default=1)
+    benchmark_large_tree_set.add_argument(
+        "--tree-count",
+        action="append",
+        dest="tree_counts",
+        type=int,
+        help="Add one posterior tree count to benchmark. Repeat to benchmark multiple size classes.",
+    )
+    benchmark_large_tree_set.add_argument(
+        "--tip-count",
+        action="append",
+        dest="tip_counts",
+        type=int,
+        help="Add one taxon count to benchmark. Repeat to benchmark multiple size classes.",
+    )
+    benchmark_large_tree_set.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(benchmark_large_tree_set)
     benchmark_alignment = benchmark_subparsers.add_parser(
         "alignment-diagnostics",
         help="Benchmark alignment diagnostics across increasing sequence counts.",
@@ -8505,6 +8529,27 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     replicates=args.replicates,
                     size_classes=classes,
                 )
+            elif args.benchmark_command == "large-tree-set-scaling":
+                classes = None
+                if args.tree_counts is not None or args.tip_counts is not None:
+                    tree_counts = args.tree_counts or []
+                    tip_counts = args.tip_counts or []
+                    if len(tree_counts) != len(tip_counts):
+                        raise ValueError(
+                            "large-tree-set-scaling requires the same number of --tree-count and --tip-count values"
+                        )
+                    classes = [
+                        (f"trees-{tree_count}-taxa-{tip_count}", tree_count, tip_count)
+                        for tree_count, tip_count in zip(
+                            tree_counts,
+                            tip_counts,
+                            strict=True,
+                        )
+                    ]
+                report = benchmark_large_tree_set_scaling(
+                    replicates=args.replicates,
+                    size_classes=classes,
+                )
             elif args.benchmark_command == "stress-suite":
                 report = benchmark_large_dataset_stress_suite(tier=args.tier)
             else:
@@ -8528,6 +8573,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 metrics["workflow_count"] = len(report.workflows)
                 if hasattr(report, "tip_counts"):
                     metrics["max_tip_count"] = max(report.tip_counts)
+                if hasattr(report, "tree_counts"):
+                    metrics["max_tree_count"] = max(report.tree_counts)
                 if hasattr(report, "alignment_lengths"):
                     metrics["max_alignment_length"] = max(report.alignment_lengths)
                     metrics["max_sequence_count"] = max(report.sequence_counts)
