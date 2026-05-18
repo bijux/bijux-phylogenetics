@@ -313,6 +313,7 @@ bijux-phylogenetics comparative phylogenetic-anova tree.nwk traits.tsv --respons
 bijux-phylogenetics comparative covariance-audit tree.nwk traits.tsv --analysis pgls --formula "height_cm ~ body_mass + habitat" --summary-out artifacts/covariance-audit-summary.tsv --candidates-out artifacts/covariance-audit-candidates.tsv --excluded-taxa-out artifacts/covariance-audit-excluded.tsv --json
 bijux-phylogenetics comparative multiple-testing tree.nwk traits.tsv --responses height_cm range_km --predictors body_mass log_range --json
 bijux-phylogenetics comparative report tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --out artifacts/comparative-report.html --json
+bijux-phylogenetics comparative report tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --methods-summary-out artifacts/comparative-methods-summary.md --json
 bijux-phylogenetics comparative compare-trees tree-a.nwk tree-b.nwk traits.tsv --response height_cm --predictors body_mass log_range --json
 bijux-phylogenetics ancestral continuous tree.nwk traits.tsv --trait height_cm --model brownian --json
 bijux-phylogenetics ancestral continuous tree.nwk traits.tsv --trait height_cm --model brownian --estimator anc-ml --json
