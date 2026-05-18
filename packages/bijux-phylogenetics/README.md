@@ -1461,6 +1461,16 @@ compares those model-comparison rows by model identity and numeric fit surface
 rather than by derived whole-list ordering alone, because near-tied secondary
 ordering can shift at machine precision even when the selected model and the
 information-criterion surface still agree.
+The same geiger-style fit surfaces now share one explicit tree and trait
+alignment contract instead of rebuilding taxon overlap independently in each
+loader. The owned side exposes that through
+`align_tree_and_trait_table(...)`, which matches `geiger::treedata` on shared
+taxon intersection, dropped tree-only tips, dropped trait-only rows, and final
+tree-tip ordering, while keeping missing-value pruning as a second explicit
+policy layered on top of the shared overlap report. Comparative readiness,
+ancestral dataset loading, and discrete Mk parity summaries now all consume
+that same alignment evidence so dropped-tip and dropped-row reporting stays
+consistent across the owned and governed surfaces.
 The same governed discrete fixture layer now backs a live
 `geiger::fitDiscrete(model='ER')` parity lane. The current ER registry covers
 three reviewer-facing surfaces: a binary twenty-four-taxon known-truth panel,
