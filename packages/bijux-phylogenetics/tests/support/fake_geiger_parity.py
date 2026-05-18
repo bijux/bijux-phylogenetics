@@ -136,6 +136,19 @@ summary = {
     "extra_trait_taxa": list(readiness.extra_trait_taxa),
     "missing_value_policy": "__MISSING_VALUE_POLICY__",
     "standard_error_policy": "__STANDARD_ERROR_POLICY__",
+    "parameter_bound_policy": (
+        "closed-form-without-parameter-bounds"
+        if case_payload["model_name"] == "BM"
+        else "governed-bounded-grid-search"
+    ),
+    "hit_lower_parameter_boundary": (
+        False if report.optimizer_diagnostics is None else report.optimizer_diagnostics.hit_lower_boundary
+    ),
+    "hit_upper_parameter_boundary": (
+        False if report.optimizer_diagnostics is None else report.optimizer_diagnostics.hit_upper_boundary
+    ),
+    "identifiability_warning_kinds": [warning.kind for warning in report.identifiability_warnings],
+    "identifiability_warning_count": len(report.identifiability_warnings),
     "root_state": report.root_state,
     "rate": report.rate,
     "log_likelihood": report.log_likelihood,
