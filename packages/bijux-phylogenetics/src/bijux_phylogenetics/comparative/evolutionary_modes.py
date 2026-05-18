@@ -116,8 +116,12 @@ class ContinuousModeOptimizerDiagnostics:
     """Optimizer diagnostics for one governed evolutionary-mode parameter search."""
 
     optimizer_name: str
+    parameter_search_strategy: str
     lower_bound: float
     upper_bound: float
+    starting_parameter_policy: str
+    starting_parameter_value: float
+    starting_parameter_log_likelihood: float
     coarse_grid_point_count: int
     fine_grid_point_count: int
     function_evaluation_count: int
@@ -128,6 +132,15 @@ class ContinuousModeOptimizerDiagnostics:
     converged: bool
     hit_lower_boundary: bool
     hit_upper_boundary: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ContinuousModeSearchControls:
+    """User-visible bounded-search controls for parameterized continuous-mode fits."""
+
+    coarse_grid_point_count: int = 81
+    fine_grid_point_count: int = 81
+    initial_parameter_value: float | None = None
 
 
 @dataclass(slots=True)
@@ -254,6 +267,7 @@ def fit_continuous_evolutionary_mode(
     mode: str,
     taxon_column: str | None = None,
     standard_error_trait: str | None = None,
+    search_controls: ContinuousModeSearchControls | None = None,
     lambda_bounds: tuple[float, float] = (0.0, 1.0),
     kappa_bounds: tuple[float, float] = (0.0, 3.0),
     delta_bounds: tuple[float, float] = (0.0, 3.0),
@@ -283,6 +297,7 @@ def fit_continuous_evolutionary_mode(
     return _fit_evolutionary_mode_from_dataset(
         dataset,
         mode=mode,
+        search_controls=search_controls,
         lambda_bounds=lambda_bounds,
         kappa_bounds=kappa_bounds,
         delta_bounds=delta_bounds,
@@ -377,6 +392,7 @@ def _fit_evolutionary_mode_from_dataset(
     dataset: ComparativeDataset,
     *,
     mode: str,
+    search_controls: ContinuousModeSearchControls | None = None,
     lambda_bounds: tuple[float, float],
     kappa_bounds: tuple[float, float],
     delta_bounds: tuple[float, float],
@@ -388,6 +404,11 @@ def _fit_evolutionary_mode_from_dataset(
             "unsupported evolutionary mode; expected one of: "
             + ", ".join(sorted(ALLOWED_EVOLUTIONARY_MODES))
         )
+
+    if mode in {"brownian", "white-noise"}:
+        _reject_nonparameterized_search_controls(mode, search_controls)
+    else:
+        search_controls = _normalized_search_controls(search_controls)
 
     if mode == "brownian":
         transformed_tree = _clone_tree(dataset.tree)
@@ -425,6 +446,7 @@ def _fit_evolutionary_mode_from_dataset(
         search_result = _best_pagel_lambda_fit(
             dataset,
             bounds=lambda_bounds,
+            search_controls=search_controls,
         )
         parameter_value = search_result.parameter_value
         transformed_tree = search_result.transformed_tree
@@ -446,6 +468,7 @@ def _fit_evolutionary_mode_from_dataset(
             dataset,
             mode=mode,
             bounds=kappa_bounds,
+            search_controls=search_controls,
         )
         parameter_value = search_result.parameter_value
         transformed_tree = search_result.transformed_tree
@@ -467,6 +490,7 @@ def _fit_evolutionary_mode_from_dataset(
             dataset,
             mode=mode,
             bounds=delta_bounds,
+            search_controls=search_controls,
         )
         parameter_value = search_result.parameter_value
         transformed_tree = search_result.transformed_tree
@@ -488,6 +512,7 @@ def _fit_evolutionary_mode_from_dataset(
             dataset,
             mode=mode,
             bounds=ou_bounds,
+            search_controls=search_controls,
         )
         parameter_value = search_result.parameter_value
         transformed_tree = search_result.transformed_tree
@@ -509,6 +534,7 @@ def _fit_evolutionary_mode_from_dataset(
             dataset,
             mode=mode,
             bounds=early_burst_bounds,
+            search_controls=search_controls,
         )
         parameter_value = search_result.parameter_value
         transformed_tree = search_result.transformed_tree
@@ -578,11 +604,69 @@ def _fit_evolutionary_mode_from_dataset(
     )
 
 
+def _reject_nonparameterized_search_controls(
+    mode: str,
+    search_controls: ContinuousModeSearchControls | None,
+) -> None:
+    if search_controls is None:
+        return
+    raise ComparativeMethodError(
+        f"{mode} mode does not expose bounded parameter-search controls because it uses a closed-form profile solution"
+    )
+
+
+def _normalized_search_controls(
+    search_controls: ContinuousModeSearchControls | None,
+) -> ContinuousModeSearchControls:
+    controls = (
+        ContinuousModeSearchControls()
+        if search_controls is None
+        else search_controls
+    )
+    if controls.coarse_grid_point_count < 2:
+        raise ComparativeMethodError(
+            "coarse_grid_point_count must be at least 2 for bounded parameter search"
+        )
+    if controls.fine_grid_point_count < 2:
+        raise ComparativeMethodError(
+            "fine_grid_point_count must be at least 2 for bounded parameter search"
+        )
+    return controls
+
+
+def _ordered_coarse_candidates(
+    coarse_candidates: list[float],
+    *,
+    lower: float,
+    upper: float,
+    initial_parameter_value: float | None,
+) -> tuple[list[float], str, float]:
+    if initial_parameter_value is None:
+        return coarse_candidates, "lower-bound-first-evaluation", coarse_candidates[0]
+    if initial_parameter_value < lower or initial_parameter_value > upper:
+        raise ComparativeMethodError(
+            "initial_parameter_value must fall within the declared bounded search interval"
+        )
+    ordered = [initial_parameter_value]
+    ordered.extend(
+        candidate
+        for candidate in coarse_candidates
+        if not math.isclose(
+            candidate,
+            initial_parameter_value,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+    )
+    return ordered, "user-provided-first-evaluation", initial_parameter_value
+
+
 def _best_transformed_mode_fit(
     dataset: ComparativeDataset,
     *,
     mode: str,
     bounds: tuple[float, float],
+    search_controls: ContinuousModeSearchControls,
 ) -> _TransformedModeSearchResult:
     lower, upper = bounds
     if upper <= lower:
@@ -590,18 +674,26 @@ def _best_transformed_mode_fit(
     if mode == "ornstein-uhlenbeck":
         lower = max(lower, 1e-6)
 
-    coarse = _linspace(lower, upper, 81)
-    best_parameter = coarse[0]
+    coarse = _linspace(lower, upper, search_controls.coarse_grid_point_count)
+    coarse_candidates, starting_parameter_policy, starting_parameter_value = (
+        _ordered_coarse_candidates(
+            coarse,
+            lower=lower,
+            upper=upper,
+            initial_parameter_value=search_controls.initial_parameter_value,
+        )
+    )
+    best_parameter = coarse_candidates[0]
     best_tree = _transform_tree(dataset.tree, mode=mode, parameter_value=best_parameter)
     best_covariance = stable_covariance(
         build_brownian_covariance_matrix(best_tree, dataset.taxa)
     )
     best_fit = _fit_intercept_only_model(dataset, best_covariance)
-    best_index = 0
+    starting_parameter_log_likelihood = best_fit.log_likelihood
     profile: list[tuple[float, float]] = [(best_parameter, best_fit.log_likelihood)]
     coarse_best_parameter = best_parameter
     coarse_best_log_likelihood = best_fit.log_likelihood
-    for index, candidate in enumerate(coarse[1:], start=1):
+    for candidate in coarse_candidates[1:]:
         transformed_tree = _transform_tree(
             dataset.tree,
             mode=mode,
@@ -617,14 +709,20 @@ def _best_transformed_mode_fit(
             best_tree = transformed_tree
             best_covariance = covariance
             best_fit = fit
-            best_index = index
             coarse_best_parameter = candidate
             coarse_best_log_likelihood = fit.log_likelihood
 
-    left = coarse[max(0, best_index - 1)]
-    right = coarse[min(len(coarse) - 1, best_index + 1)]
-    fine_candidates = _linspace(left, right, 81)
-    for candidate in _linspace(left, right, 81):
+    ordered_coarse = sorted(
+        {round(candidate, 12): candidate for candidate in coarse_candidates}.values()
+    )
+    best_index = min(
+        range(len(ordered_coarse)),
+        key=lambda index: abs(ordered_coarse[index] - best_parameter),
+    )
+    left = ordered_coarse[max(0, best_index - 1)]
+    right = ordered_coarse[min(len(ordered_coarse) - 1, best_index + 1)]
+    fine_candidates = _linspace(left, right, search_controls.fine_grid_point_count)
+    for candidate in fine_candidates:
         if math.isclose(candidate, best_parameter, rel_tol=0.0, abs_tol=1e-12):
             continue
         transformed_tree = _transform_tree(
@@ -648,8 +746,14 @@ def _best_transformed_mode_fit(
     tolerance = max(abs(fine_step) / 2.0, 1e-9)
     diagnostics = ContinuousModeOptimizerDiagnostics(
         optimizer_name="governed-two-stage-grid-search",
+        parameter_search_strategy="bounded-two-stage-grid-search",
         lower_bound=_stable_value(lower),
         upper_bound=_stable_value(upper),
+        starting_parameter_policy=starting_parameter_policy,
+        starting_parameter_value=_stable_value(starting_parameter_value),
+        starting_parameter_log_likelihood=_stable_value(
+            starting_parameter_log_likelihood
+        ),
         coarse_grid_point_count=len(coarse),
         fine_grid_point_count=len(fine_candidates),
         function_evaluation_count=len(profile),
@@ -688,6 +792,7 @@ def _best_pagel_lambda_fit(
     dataset: ComparativeDataset,
     *,
     bounds: tuple[float, float],
+    search_controls: ContinuousModeSearchControls,
 ) -> _TransformedModeSearchResult:
     lower, upper = bounds
     if lower < 0.0 or upper > 1.0 or upper <= lower:
@@ -695,8 +800,16 @@ def _best_pagel_lambda_fit(
             "Pagel-lambda bounds must be strictly increasing within [0, 1]"
         )
 
-    coarse = _linspace(lower, upper, 81)
-    best_parameter = coarse[0]
+    coarse = _linspace(lower, upper, search_controls.coarse_grid_point_count)
+    coarse_candidates, starting_parameter_policy, starting_parameter_value = (
+        _ordered_coarse_candidates(
+            coarse,
+            lower=lower,
+            upper=upper,
+            initial_parameter_value=search_controls.initial_parameter_value,
+        )
+    )
+    best_parameter = coarse_candidates[0]
     best_tree = _transform_tree(
         dataset.tree,
         mode="pagel-lambda",
@@ -707,11 +820,11 @@ def _best_pagel_lambda_fit(
         best_parameter,
     )
     best_fit = _fit_intercept_only_model(dataset, best_covariance)
-    best_index = 0
+    starting_parameter_log_likelihood = best_fit.log_likelihood
     profile: list[tuple[float, float]] = [(best_parameter, best_fit.log_likelihood)]
     coarse_best_parameter = best_parameter
     coarse_best_log_likelihood = best_fit.log_likelihood
-    for index, candidate in enumerate(coarse[1:], start=1):
+    for candidate in coarse_candidates[1:]:
         transformed_tree = _transform_tree(
             dataset.tree,
             mode="pagel-lambda",
@@ -728,13 +841,19 @@ def _best_pagel_lambda_fit(
             best_tree = transformed_tree
             best_covariance = covariance
             best_fit = fit
-            best_index = index
             coarse_best_parameter = candidate
             coarse_best_log_likelihood = fit.log_likelihood
 
-    left = coarse[max(0, best_index - 1)]
-    right = coarse[min(len(coarse) - 1, best_index + 1)]
-    fine_candidates = _linspace(left, right, 81)
+    ordered_coarse = sorted(
+        {round(candidate, 12): candidate for candidate in coarse_candidates}.values()
+    )
+    best_index = min(
+        range(len(ordered_coarse)),
+        key=lambda index: abs(ordered_coarse[index] - best_parameter),
+    )
+    left = ordered_coarse[max(0, best_index - 1)]
+    right = ordered_coarse[min(len(ordered_coarse) - 1, best_index + 1)]
+    fine_candidates = _linspace(left, right, search_controls.fine_grid_point_count)
     for candidate in fine_candidates:
         if math.isclose(candidate, best_parameter, rel_tol=0.0, abs_tol=1e-12):
             continue
@@ -761,8 +880,14 @@ def _best_pagel_lambda_fit(
     tolerance = max(abs(fine_step) / 2.0, 1e-9)
     diagnostics = ContinuousModeOptimizerDiagnostics(
         optimizer_name="governed-two-stage-grid-search",
+        parameter_search_strategy="bounded-two-stage-grid-search",
         lower_bound=_stable_value(lower),
         upper_bound=_stable_value(upper),
+        starting_parameter_policy=starting_parameter_policy,
+        starting_parameter_value=_stable_value(starting_parameter_value),
+        starting_parameter_log_likelihood=_stable_value(
+            starting_parameter_log_likelihood
+        ),
         coarse_grid_point_count=len(coarse),
         fine_grid_point_count=len(fine_candidates),
         function_evaluation_count=len(profile),
