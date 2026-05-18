@@ -414,6 +414,13 @@ For reviewer-facing scale checks on owned alignment workflows, use
 trimAl-backed workflow cost, distance-report cost, and inference-readiness
 review stay visible before larger production claims are made.
 
+For governed continuous `fitContinuous` recovery review, use
+`demo continuous-mode-recovery-panel`. It reruns a deterministic seven-case
+panel across two rooted trees, writes Bijux-versus-stored-`geiger`
+parameter-recovery ledgers, records execution and warning review rows, and
+keeps weak-identifiability transformed-model cases explicit instead of forcing
+them into binary pass-or-fail claims.
+
 For reviewer-facing scale checks on posterior and bootstrap tree-set review,
 use `benchmark large-tree-set-scaling`. It benchmarks
 `tree-set-consensus`, `pairwise-rf-diversity`, `topology-clustering`, and
