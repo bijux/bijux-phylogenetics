@@ -491,6 +491,15 @@ summary for machine review. That means changed input files or changed declared
 settings no longer look like clean completed outputs: the freshness ledger and
 the resumable status ledger both mark those results as stale until the batch is
 rerun.
+The same governed bundle now also writes one failure-recovery surface over
+those status and freshness ledgers: `slurm-failure-recovery-jobs.tsv` records
+one rerun decision per planned job, `slurm-failure-recovery-partitions.tsv`
+rolls that up by array partition, `slurm-failure-recovery-report.json` carries
+the machine-readable recovery summary, and
+`slurm-failure-recovery-report.html` gives reviewers one compact explanation of
+which jobs are rerunnable, which ones are merely blocked by a still-live
+workflow, and which likely failure cause was inferred from the governed task
+logs and status evidence.
 Once those per-job ledgers exist, the bundle now also writes one global merge
 surface over the complete distributed run:
 `slurm-merge-checks.tsv` records the batch-level merge checks,
@@ -529,6 +538,10 @@ also report `report_linked_artifact_count`, `report_html_size_bytes`,
 `slurm_output_freshness_check_count`,
 `slurm_output_freshness_failed_check_count`,
 `slurm_fresh_output_job_count`, and `slurm_stale_output_job_count`,
+`slurm_failure_recovery_status`,
+`slurm_failure_recovery_rerunnable_job_count`,
+`slurm_failure_recovery_blocked_job_count`, and
+`slurm_failure_recovery_partition_count`,
 `reproducibility_passed`, `reproducibility_check_count`,
 `reproducibility_failed_check_count`, and
 `reproducibility_failed_variant_count`.

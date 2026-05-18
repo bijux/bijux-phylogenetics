@@ -147,6 +147,15 @@ The governed expected bundle now also includes:
   input checksum and workflow-setting comparisons behind the freshness result
 - `slurm-output-freshness.json`: one machine-readable freshness summary over
   fresh jobs, stale jobs, and failed freshness checks
+- `slurm-failure-recovery-jobs.tsv`: one per-job recovery ledger over rerun
+  eligibility, likely failure cause, and the next concrete recovery action
+- `slurm-failure-recovery-partitions.tsv`: one partition-level recovery rollup
+  over rerunnable jobs, blocked jobs, and recommended rerun scope
+- `slurm-failure-recovery-report.json`: one machine-readable recovery summary
+  over rerunnable jobs, blocked jobs, workflow state, and recovery partitions
+- `slurm-failure-recovery-report.html`: one reviewer-facing summary of which
+  jobs should be rerun, which ones are waiting on a live workflow, and the
+  likely failure causes inferred from the governed task logs
 - `slurm-merge-checks.tsv`: one batch-level ledger over the checks that decide
   whether the distributed variant outputs are globally merge-ready
 - `slurm-merge-variants.tsv`: one per-variant merge ledger recording job
