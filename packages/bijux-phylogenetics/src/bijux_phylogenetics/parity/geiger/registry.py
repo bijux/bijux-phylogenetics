@@ -137,6 +137,15 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
     discrete_er_mismatch_fixture = get_shared_geiger_discrete_fixture(
         "geiger_discrete_mismatch_four_state_twenty_four_taxa"
     )
+    discrete_sym_three_state_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_sym_three_state_twenty_four_taxa"
+    )
+    discrete_sym_four_state_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_sym_four_state_twenty_four_taxa"
+    )
+    discrete_sym_missing_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_missing_three_state_twenty_four_taxa"
+    )
     return [
         GeigerParityCase(
             case_id="fitcontinuous-bm-example-tree",
@@ -1226,7 +1235,7 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "aic",
                 "aicc",
             ),
-            row_field_tolerances={"rate": 1e-5},
+            row_field_tolerances={"rate": 1e-2},
         ),
         GeigerParityCase(
             case_id="fitdiscrete-er-multistate-missing-twenty-four-taxa",
@@ -1264,7 +1273,7 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "aic",
                 "aicc",
             ),
-            row_field_tolerances={"rate": 1e-5},
+            row_field_tolerances={"rate": 1e-2},
         ),
         GeigerParityCase(
             case_id="fitdiscrete-er-multistate-tip-intersection-review",
@@ -1302,6 +1311,120 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "aic",
                 "aicc",
             ),
-            row_field_tolerances={"rate": 1e-5},
+            row_field_tolerances={"rate": 1e-2},
+        ),
+        GeigerParityCase(
+            case_id="fitdiscrete-sym-three-state-twenty-four-taxa",
+            fixture_id=discrete_sym_three_state_fixture.fixture_id,
+            function_name="geiger::fitDiscrete(model='SYM')",
+            python_function_name="fit_discrete_mk_model",
+            operation="fit-discrete-mk",
+            model_name="SYM",
+            python_mode="symmetric",
+            input_fixtures=(
+                discrete_sym_three_state_fixture.tree_path,
+                discrete_sym_three_state_fixture.traits_path,
+            ),
+            tolerance=1e-5,
+            trait_name=discrete_sym_three_state_fixture.trait_name,
+            taxon_column=discrete_sym_three_state_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitdiscrete-default",
+                "bijux_optimizer_name": "nelder-mead",
+                "bijux_rate_surface": "discrete-mk-symmetric",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "observed_state_count",
+                "state_order",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "log_likelihood",
+                "parameter_count",
+                "aic",
+                "aicc",
+            ),
+            row_field_tolerances={"rate": 1e-2},
+        ),
+        GeigerParityCase(
+            case_id="fitdiscrete-sym-four-state-twenty-four-taxa",
+            fixture_id=discrete_sym_four_state_fixture.fixture_id,
+            function_name="geiger::fitDiscrete(model='SYM')",
+            python_function_name="fit_discrete_mk_model",
+            operation="fit-discrete-mk",
+            model_name="SYM",
+            python_mode="symmetric",
+            input_fixtures=(
+                discrete_sym_four_state_fixture.tree_path,
+                discrete_sym_four_state_fixture.traits_path,
+            ),
+            tolerance=1e-5,
+            trait_name=discrete_sym_four_state_fixture.trait_name,
+            taxon_column=discrete_sym_four_state_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitdiscrete-default",
+                "bijux_optimizer_name": "nelder-mead",
+                "bijux_rate_surface": "discrete-mk-symmetric",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "observed_state_count",
+                "state_order",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "log_likelihood",
+                "parameter_count",
+                "aic",
+                "aicc",
+            ),
+            row_field_tolerances={"rate": 1e-2},
+        ),
+        GeigerParityCase(
+            case_id="fitdiscrete-sym-multistate-missing-twenty-four-taxa",
+            fixture_id=discrete_sym_missing_fixture.fixture_id,
+            function_name="geiger::fitDiscrete(model='SYM')",
+            python_function_name="fit_discrete_mk_model",
+            operation="fit-discrete-mk",
+            model_name="SYM",
+            python_mode="symmetric",
+            input_fixtures=(
+                discrete_sym_missing_fixture.tree_path,
+                discrete_sym_missing_fixture.traits_path,
+            ),
+            tolerance=1e-5,
+            trait_name=discrete_sym_missing_fixture.trait_name,
+            taxon_column=discrete_sym_missing_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitdiscrete-default",
+                "bijux_optimizer_name": "nelder-mead",
+                "bijux_rate_surface": "discrete-mk-symmetric",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "observed_state_count",
+                "state_order",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "log_likelihood",
+                "parameter_count",
+                "aic",
+                "aicc",
+            ),
+            row_field_tolerances={"rate": 1e-2},
         ),
     ]

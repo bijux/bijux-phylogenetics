@@ -284,8 +284,8 @@ def _row_mismatch_reason(
         normalized_bijux_rows,
         strict=True,
     ):
-        reference_id = reference_row.get("parameter", reference_row.get("model"))
-        bijux_id = bijux_row.get("parameter", bijux_row.get("model"))
+        reference_id = _row_identifier(reference_row)
+        bijux_id = _row_identifier(bijux_row)
         if reference_id != bijux_id:
             return "row_identifier_mismatch"
         if set(reference_row) != set(bijux_row):
@@ -297,6 +297,17 @@ def _row_mismatch_reason(
                 tolerance=_row_field_tolerance(case, key),
             ):
                 return f"row_field_mismatch:{reference_id}:{key}"
+    return None
+
+
+def _row_identifier(row: dict[str, object]) -> object:
+    identifier = row.get("parameter", row.get("model"))
+    if identifier is not None:
+        return identifier
+    source_state = row.get("source_state")
+    target_state = row.get("target_state")
+    if source_state is not None and target_state is not None:
+        return f"{source_state}->{target_state}"
     return None
 
 
