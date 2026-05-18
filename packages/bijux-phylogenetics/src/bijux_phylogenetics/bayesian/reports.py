@@ -145,6 +145,68 @@ def _method_tier_section(method_tier: MethodTierAssessment) -> tuple[str, str]:
     return ("method-tier", "\n".join(lines))
 
 
+def _deduplicate_limitations(limitations: list[str]) -> list[str]:
+    normalized = []
+    for item in limitations:
+        text = item if isinstance(item, str) else json.dumps(item, sort_keys=True)
+        text = text.strip()
+        if text:
+            normalized.append(text)
+    return sorted(dict.fromkeys(normalized))
+
+
+def _posterior_report_limitations(convergence_warnings: list[str]) -> list[str]:
+    limitations = [
+        "posterior clade support summarizes sampled trees under the fitted Bayesian model and should not be treated as direct proof of clade truth",
+        "consensus and clade-frequency summaries can hide minority topologies, so interpretation should remain tied to convergence and tree-set dispersion checks",
+        *convergence_warnings,
+    ]
+    return _deduplicate_limitations(limitations)
+
+
+def _calibration_audit_limitations(
+    *,
+    invalid_calibration_count: int,
+    impossible_constraint_count: int,
+    invalid_tip_count: int,
+) -> list[str]:
+    limitations = [
+        "calibration and tip-date audits validate compatibility of the supplied constraints with the current tree and do not by themselves justify any dated-tree model choice",
+        "a passing audit does not guarantee that downstream divergence-time estimates are robust to alternative calibrations, clock models, or taxon sampling decisions",
+    ]
+    if invalid_calibration_count:
+        limitations.append(
+            f"{invalid_calibration_count} calibration rows remain invalid and must be corrected before dated-tree interpretation is trusted"
+        )
+    if impossible_constraint_count:
+        limitations.append(
+            f"{impossible_constraint_count} impossible calibration constraints still conflict with the current topology"
+        )
+    if invalid_tip_count:
+        limitations.append(
+            f"{invalid_tip_count} tip-date rows remain invalid or mismatched to the current tree"
+        )
+    return _deduplicate_limitations(limitations)
+
+
+def _run_comparison_limitations(warnings: list[str]) -> list[str]:
+    limitations = [
+        "agreement between independent Bayesian runs only supports stability under the supplied model and priors and does not validate overall model adequacy",
+        "parameter or topology differences across runs should block strong posterior interpretation until chain mixing, burn-in choice, and run configuration are reconciled",
+        *warnings,
+    ]
+    return _deduplicate_limitations(limitations)
+
+
+def _ml_vs_bayesian_limitations(warnings: list[str]) -> list[str]:
+    limitations = [
+        "agreement or disagreement between maximum-likelihood and Bayesian summaries does not identify which inference framework is correct without external model checking",
+        "topology and branch-length differences between ML and Bayesian trees should not be overinterpreted as biological rate shifts or timing evidence without checking model and taxon assumptions",
+        *warnings,
+    ]
+    return _deduplicate_limitations(limitations)
+
+
 def render_bayesian_posterior_report(
     *,
     posterior_tree_path: Path,
@@ -171,6 +233,7 @@ def render_bayesian_posterior_report(
     )
     title = "Bijux Bayesian Posterior Report"
     method_tier = bayesian_report_method_tier("bayesian-posterior")
+    limitations = _posterior_report_limitations(convergence.warnings)
     sections = [
         _method_tier_section(method_tier),
         (
@@ -197,6 +260,7 @@ def render_bayesian_posterior_report(
                 asdict(clade_frequencies), default=str, indent=2, sort_keys=True
             ),
         ),
+        ("limitations", json.dumps(limitations, indent=2)),
     ]
     machine_manifest = {
         "report_kind": "bayesian-posterior",
@@ -206,6 +270,7 @@ def render_bayesian_posterior_report(
         "filtered_tree_set_path": str(posterior_summary.filtered_tree_set_path),
         "kept_tree_count": posterior_summary.kept_tree_count,
         "warning_count": len(convergence.warnings),
+        "limitations": limitations,
         "sections": [name for name, _ in sections],
     }
     write_html_report(
@@ -254,6 +319,11 @@ def render_calibration_audit_report(
     )
     title = "Bijux Calibration Audit Report"
     method_tier = bayesian_report_method_tier("calibration-audit")
+    limitations = _calibration_audit_limitations(
+        invalid_calibration_count=calibration_report.invalid_calibration_count,
+        impossible_constraint_count=len(impossible.issues),
+        invalid_tip_count=0 if tip_dates is None else tip_dates.invalid_tip_count,
+    )
     sections = [
         _method_tier_section(method_tier),
         (
@@ -274,6 +344,7 @@ def render_calibration_audit_report(
                 json.dumps(asdict(tip_dates), default=str, indent=2, sort_keys=True),
             )
         )
+    sections.append(("limitations", json.dumps(limitations, indent=2)))
     warning_count = len(impossible.issues) + (
         0 if tip_dates is None else len(tip_dates.issues)
     )
@@ -285,6 +356,7 @@ def render_calibration_audit_report(
         "tip_dates_path": None if tip_dates_path is None else str(tip_dates_path),
         "invalid_calibration_count": calibration_report.invalid_calibration_count,
         "warning_count": warning_count,
+        "limitations": limitations,
         "sections": [name for name, _ in sections],
     }
     write_html_report(
@@ -333,6 +405,7 @@ def render_bayesian_run_comparison_report(
     )
     title = "Bijux Bayesian Run Comparison Report"
     method_tier = bayesian_report_method_tier("bayesian-run-comparison")
+    limitations = _run_comparison_limitations(comparison.warnings)
     sections = [
         _method_tier_section(method_tier),
         (
@@ -374,6 +447,7 @@ def render_bayesian_run_comparison_report(
                 sort_keys=True,
             ),
         ),
+        ("limitations", json.dumps(limitations, indent=2)),
     ]
     machine_manifest = {
         "report_kind": "bayesian-run-comparison",
@@ -384,6 +458,7 @@ def render_bayesian_run_comparison_report(
         "right_trace_path": str(right_trace_path),
         "trace_kind": trace_kind,
         "warning_count": len(comparison.warnings),
+        "limitations": limitations,
         "sections": [name for name, _ in sections],
     }
     write_html_report(
@@ -618,6 +693,11 @@ def render_bayesian_diagnostics_report(
         else str(resolved_analysis_xml_path),
         "chain_count": len(log_paths),
         "warning_count": warning_count,
+        "limitations": [
+            line.removeprefix("- ").strip()
+            for line in limitations_summary.text.splitlines()
+            if line.startswith("- ")
+        ],
         "sections": [name for name, _ in sections],
     }
     write_html_report(
@@ -690,6 +770,7 @@ def render_ml_vs_bayesian_tree_report(
     )
     title = "Bijux ML Versus Bayesian Tree Report"
     method_tier = bayesian_report_method_tier("ml-vs-bayesian-tree")
+    limitations = _ml_vs_bayesian_limitations(comparison.warnings)
     sections = [
         _method_tier_section(method_tier),
         (
@@ -708,6 +789,7 @@ def render_ml_vs_bayesian_tree_report(
                 asdict(comparison.branch_lengths), default=str, indent=2, sort_keys=True
             ),
         ),
+        ("limitations", json.dumps(limitations, indent=2)),
     ]
     machine_manifest = {
         "report_kind": "ml-vs-bayesian-tree",
@@ -715,6 +797,7 @@ def render_ml_vs_bayesian_tree_report(
         "ml_tree_path": str(ml_tree_path),
         "posterior_tree_path": str(posterior_tree_path),
         "warning_count": len(comparison.warnings),
+        "limitations": limitations,
         "sections": [name for name, _ in sections],
     }
     write_html_report(
@@ -820,6 +903,7 @@ def render_time_tree_readiness_report(
         "tree_path": str(tree_path),
         "decision": readiness.decision,
         "warning_count": warning_count,
+        "limitations": sorted(dict.fromkeys(limitations)),
         "sections": [name for name, _ in sections],
     }
     write_html_report(

@@ -914,3 +914,5 @@ def test_render_bayesian_posterior_report_writes_consensus_and_convergence_secti
     assert "posterior-summary" in html
     assert "convergence" in html
     assert "clade-frequencies" in html
+    assert "limitations" in html
+    assert "limitations" in report.machine_manifest["sections"]

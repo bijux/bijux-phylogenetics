@@ -24,6 +24,7 @@ from bijux_phylogenetics.bayesian.posterior import (
 )
 from bijux_phylogenetics.bayesian.reports import (
     render_bayesian_run_comparison_report,
+    render_ml_vs_bayesian_tree_report,
     render_time_tree_readiness_report,
 )
 from bijux_phylogenetics.bayesian.uncertainty import (
@@ -357,6 +358,28 @@ def test_render_bayesian_run_comparison_report_writes_tree_and_trace_sections(
     assert "run-comparison" in html
     assert "tree-comparison" in html
     assert "parameter-differences" in html
+    assert "limitations" in html
+    assert "limitations" in report.machine_manifest["sections"]
+
+
+def test_render_ml_vs_bayesian_tree_report_includes_limitations(
+    tmp_path: Path,
+) -> None:
+    output_path = tmp_path / "ml-vs-bayesian-report.html"
+
+    report = render_ml_vs_bayesian_tree_report(
+        ml_tree_path=fixture("trees/example_tree.nwk"),
+        posterior_tree_path=fixture("trees/example_tree_set_right.nwk"),
+        out_path=output_path,
+        burnin_fraction=0.0,
+    )
+
+    html = output_path.read_text(encoding="utf-8")
+    assert report.output_path == output_path
+    assert report.warning_count >= 1
+    assert "ml-versus-bayesian-summary" in html
+    assert "limitations" in html
+    assert "limitations" in report.machine_manifest["sections"]
 
 
 def test_build_posterior_uncertainty_figure_package_writes_consensus_plot_and_tables(

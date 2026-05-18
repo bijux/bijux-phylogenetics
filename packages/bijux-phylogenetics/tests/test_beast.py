@@ -1497,6 +1497,8 @@ def test_render_calibration_audit_report_includes_calibration_and_tip_date_secti
     assert "fossil-calibrations" in html
     assert "impossible-constraints" in html
     assert "tip-dates" in html
+    assert "limitations" in html
+    assert "limitations" in report.machine_manifest["sections"]
 
 
 def test_build_bayesian_evidence_package_bundles_inputs_outputs_and_reports(
