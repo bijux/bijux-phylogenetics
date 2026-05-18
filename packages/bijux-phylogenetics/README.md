@@ -447,6 +447,13 @@ pending, or stale from the execution record, task logs, running marker, and
 durable variant outputs; `slurm-partition-status.tsv` rolls those counts up by
 array partition; and `slurm-workflow-status.json` carries the same summary for
 machine review.
+It now also writes one per-job evidence surface for independent debugging:
+`slurm-job-evidence.tsv` indexes one provenance package per planned job,
+`slurm-job-evidence-summary.json` carries the workflow-wide summary, and
+`workflow/slurm-job-evidence/<variant_id>/` stores one local task log copy,
+step manifests, a machine-readable evidence JSON, and a reviewer-facing HTML
+summary for that specific job. That package is meant to be sufficient to debug
+one failed or suspicious job without reopening the whole batch history first.
 On top of that, the same bundle now writes one stale-output invalidation
 surface: `slurm-output-freshness.tsv` records whether each planned job still
 matches the current packaged inputs and output-affecting workflow settings,
@@ -469,6 +476,9 @@ also report `report_linked_artifact_count`, `report_html_size_bytes`,
 `slurm_total_estimated_scratch_mib`, `slurm_total_estimated_output_mib`,
 `slurm_array_partition_count`, `slurm_array_script_count`, and
 `slurm_array_largest_partition_size`,
+`slurm_job_evidence_file_count`,
+`slurm_job_evidence_total_runtime_seconds`, and
+`slurm_job_evidence_total_output_byte_count`,
 `slurm_output_freshness_check_count`,
 `slurm_output_freshness_failed_check_count`,
 `slurm_fresh_output_job_count`, and `slurm_stale_output_job_count`,

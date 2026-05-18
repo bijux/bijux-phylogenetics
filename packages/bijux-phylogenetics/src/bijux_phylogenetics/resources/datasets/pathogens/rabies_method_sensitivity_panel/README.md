@@ -103,6 +103,13 @@ The governed expected bundle now also includes:
   array partition and array index
 - `slurm-array-strategy.json`: one machine-readable export of the array
   partitioning contract
+- `slurm-job-evidence.tsv`: one workflow-wide index over the per-job
+  provenance packages written for each planned Slurm job
+- `slurm-job-evidence-summary.json`: one machine-readable summary over the
+  complete per-job evidence surface
+- `slurm-job-evidence/<variant_id>/`: one self-contained debugging package for
+  that job, including a copied task log, copied step manifests, one evidence
+  JSON, and one reviewer-facing HTML summary
 - `slurm-output-freshness.tsv`: one per-job stale-output ledger proving
   whether each planned job still matches the current packaged inputs and
   output-affecting settings
