@@ -26,6 +26,7 @@ from bijux_phylogenetics.reports.service import (
     render_tree_report,
     render_workflow_validation_report,
 )
+from bijux_phylogenetics.reports import build_alignment_figure_package
 from bijux_phylogenetics.reports.tree_package import build_tree_report_package
 from bijux_phylogenetics.runtime.results import build_command_result
 
@@ -163,6 +164,21 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the report build result as JSON."
     )
     _add_manifest_argument(report_alignment)
+
+    report_alignment_package = report_subparsers.add_parser(
+        "alignment-package",
+        help="Build a publication-oriented alignment quality figure package.",
+    )
+    report_alignment_package.add_argument("alignment", type=Path)
+    report_alignment_package.add_argument("--out-dir", required=True, type=Path)
+    report_alignment_package.add_argument("--maximum-site-bins", type=int, default=120)
+    report_alignment_package.add_argument("--window-size", type=int, default=30)
+    report_alignment_package.add_argument("--step-size", type=int, default=10)
+    report_alignment_package.add_argument("--panel-row-limit", type=int, default=12)
+    report_alignment_package.add_argument(
+        "--json", action="store_true", help="Emit the package build result as JSON."
+    )
+    _add_manifest_argument(report_alignment_package)
 
     report_dataset = report_subparsers.add_parser(
         "dataset", help="Render a tree plus table dataset HTML report."
@@ -534,6 +550,56 @@ def run_report_command(args: Any) -> int:
             )
             return 0
         print(result.output_path)
+        return 0
+
+    if args.report_command == "alignment-package":
+        result = build_alignment_figure_package(
+            args.alignment,
+            out_dir=args.out_dir,
+            maximum_site_bins=args.maximum_site_bins,
+            window_size=args.window_size,
+            step_size=args.step_size,
+            panel_row_limit=args.panel_row_limit,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=[args.alignment],
+            outputs=[
+                result.heatmap_figure_path,
+                result.site_summary_figure_path,
+                result.sequence_panel_figure_path,
+                result.heatmap_table_path,
+                result.window_table_path,
+                result.ranking_table_path,
+                result.legend_path,
+                result.caption_path,
+                result.review_path,
+                result.manifest_path,
+            ],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=[args.alignment],
+                    outputs=outputs,
+                    warnings=result.audit.limitations,
+                    metrics={
+                        "publication_ready": result.audit.publication_ready,
+                        "quality_score": result.audit.quality_score,
+                        "suspicious_alignment": result.audit.suspicious_alignment,
+                        "heatmap_row_count": result.audit.heatmap_row_count,
+                        "heatmap_bin_count": result.audit.heatmap_bin_count,
+                        "plotted_window_count": result.audit.plotted_window_count,
+                        "plotted_sequence_count": result.audit.plotted_sequence_count,
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_dir)
         return 0
 
     if args.report_command == "dataset":
