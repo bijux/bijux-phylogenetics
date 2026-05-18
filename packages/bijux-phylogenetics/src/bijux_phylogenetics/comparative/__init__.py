@@ -178,6 +178,7 @@ from .evolutionary_modes import (
     fit_continuous_evolutionary_mode,
     rescale_tree_early_burst,
     rescale_tree_ornstein_uhlenbeck,
+    rescale_tree_pagel_delta,
     rescale_tree_pagel_kappa,
     transform_tree_for_evolutionary_mode,
 )
@@ -704,6 +705,7 @@ __all__ = [
     "summarize_phylogenetic_logistic",
     "rescale_tree_early_burst",
     "rescale_tree_ornstein_uhlenbeck",
+    "rescale_tree_pagel_delta",
     "rescale_tree_pagel_kappa",
     "transform_tree_for_evolutionary_mode",
     "run_comparative_sensitivity_analysis",

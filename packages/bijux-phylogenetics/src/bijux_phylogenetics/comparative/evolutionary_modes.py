@@ -29,6 +29,7 @@ ALLOWED_EVOLUTIONARY_MODES = {
     "brownian",
     "pagel-lambda",
     "pagel-kappa",
+    "pagel-delta",
     "ornstein-uhlenbeck",
     "early-burst",
 }
@@ -200,6 +201,22 @@ def rescale_tree_pagel_kappa(
     )
 
 
+def rescale_tree_pagel_delta(
+    tree_path: Path,
+    *,
+    delta: float,
+) -> ComparativeTreeRescalingReport:
+    """Apply the geiger-style Pagel-delta depth rescaling to a rooted tree."""
+    return _build_tree_rescaling_report(
+        load_tree(tree_path),
+        tree_path,
+        mode="pagel-delta",
+        parameter_name="delta",
+        parameter_value=delta,
+        sigsq=1.0,
+    )
+
+
 def transform_tree_for_evolutionary_mode(
     tree: PhyloTree,
     *,
@@ -225,10 +242,11 @@ def fit_continuous_evolutionary_mode(
     taxon_column: str | None = None,
     lambda_bounds: tuple[float, float] = (0.0, 1.0),
     kappa_bounds: tuple[float, float] = (0.0, 3.0),
+    delta_bounds: tuple[float, float] = (0.0, 3.0),
     ou_bounds: tuple[float, float] = (0.0, 10.0),
     early_burst_bounds: tuple[float, float] = (0.0, 50.0),
 ) -> ContinuousEvolutionaryModeFitReport:
-    """Fit a Brownian, Pagel-lambda, Pagel-kappa, OU, or early-burst intercept-only trait model."""
+    """Fit a Brownian, Pagel-lambda, Pagel-kappa, Pagel-delta, OU, or early-burst intercept-only trait model."""
     dataset = load_comparative_dataset(
         tree_path,
         traits_path,
@@ -243,6 +261,7 @@ def fit_continuous_evolutionary_mode(
         mode=mode,
         lambda_bounds=lambda_bounds,
         kappa_bounds=kappa_bounds,
+        delta_bounds=delta_bounds,
         ou_bounds=ou_bounds,
         early_burst_bounds=early_burst_bounds,
     )
@@ -256,6 +275,7 @@ def compare_continuous_evolutionary_modes(
     taxon_column: str | None = None,
     lambda_bounds: tuple[float, float] = (0.0, 1.0),
     kappa_bounds: tuple[float, float] = (0.0, 3.0),
+    delta_bounds: tuple[float, float] = (0.0, 3.0),
     ou_bounds: tuple[float, float] = (0.0, 10.0),
     early_burst_bounds: tuple[float, float] = (0.0, 50.0),
 ) -> ContinuousEvolutionaryModeComparisonReport:
@@ -275,6 +295,7 @@ def compare_continuous_evolutionary_modes(
             mode=mode,
             lambda_bounds=lambda_bounds,
             kappa_bounds=kappa_bounds,
+            delta_bounds=delta_bounds,
             ou_bounds=ou_bounds,
             early_burst_bounds=early_burst_bounds,
         )
@@ -327,6 +348,7 @@ def _fit_evolutionary_mode_from_dataset(
     mode: str,
     lambda_bounds: tuple[float, float],
     kappa_bounds: tuple[float, float],
+    delta_bounds: tuple[float, float],
     ou_bounds: tuple[float, float],
     early_burst_bounds: tuple[float, float],
 ) -> ContinuousEvolutionaryModeFitReport:
@@ -390,6 +412,27 @@ def _fit_evolutionary_mode_from_dataset(
         assumptions = [
             "Pagel-kappa mode follows the geiger-style branch-length power transformation, raising each branch length to kappa before Brownian intercept fitting.",
             "The fitted covariance comes from the transformed branch-length tree rather than from a topology-only change count surface.",
+        ]
+    elif mode == "pagel-delta":
+        parameter_name = "delta"
+        search_result = _best_transformed_mode_fit(
+            dataset,
+            mode=mode,
+            bounds=delta_bounds,
+        )
+        parameter_value = search_result.parameter_value
+        transformed_tree = search_result.transformed_tree
+        covariance = search_result.covariance
+        fit = _fit_intercept_only_model(dataset, covariance)
+        optimizer_diagnostics = search_result.optimizer_diagnostics
+        identifiability_warnings = _delta_identifiability_warnings_from_profile(
+            parameter_value,
+            search_result.profile,
+            delta_bounds,
+        )
+        assumptions = [
+            "Pagel-delta mode follows the geiger-style depth transformation, raising each node depth proportion to delta before recomputing branch lengths.",
+            "The fitted covariance comes from the transformed depth-scaled tree rather than from an edge-wise power transform.",
         ]
     elif mode == "ornstein-uhlenbeck":
         parameter_name = "alpha"
@@ -931,6 +974,62 @@ def _kappa_identifiability_warnings_from_profile(
     return warnings
 
 
+def _delta_identifiability_warnings_from_profile(
+    delta_value: float,
+    profile: list[tuple[float, float]],
+    bounds: tuple[float, float],
+) -> list[EvolutionaryModeIdentifiabilityWarning]:
+    lower, upper = bounds
+    span = upper - lower
+    ordered_log_likelihoods = sorted(
+        (log_likelihood for _, log_likelihood in profile),
+        reverse=True,
+    )
+    warnings: list[EvolutionaryModeIdentifiabilityWarning] = []
+    boundary_tolerance = max(span / 160.0, 1e-9)
+    if math.isclose(
+        delta_value,
+        lower,
+        rel_tol=0.0,
+        abs_tol=boundary_tolerance,
+    ) or math.isclose(
+        delta_value,
+        upper,
+        rel_tol=0.0,
+        abs_tol=boundary_tolerance,
+    ):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="boundary_delta",
+                message="best-supported Pagel delta falls on the search boundary and may not be well identified",
+            )
+        )
+    if len(ordered_log_likelihoods) > 1 and (
+        ordered_log_likelihoods[0] - ordered_log_likelihoods[1] < 0.5
+    ):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="flat_likelihood",
+                message="Pagel-delta likelihood stays shallow across the bounded search, so temporal concentration support may be unstable",
+            )
+        )
+    if delta_value <= lower + max(boundary_tolerance, 1e-6):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="early_change_limit",
+                message="best-supported Pagel delta remains close to the earliest-change boundary and may be difficult to distinguish from an extreme root-concentrated surface",
+            )
+        )
+    if delta_value >= upper - max(boundary_tolerance, 1e-6):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="late_change_limit",
+                message="best-supported Pagel delta remains close to the late-change boundary and may be difficult to distinguish from an extreme tip-concentrated surface",
+            )
+        )
+    return warnings
+
+
 def _build_tree_rescaling_report(
     tree: PhyloTree,
     tree_path: Path,
@@ -977,9 +1076,10 @@ def _transform_tree(
         "early-burst",
         "pagel-lambda",
         "pagel-kappa",
+        "pagel-delta",
     }:
         raise ComparativeMethodError(
-            "tree transformation mode must be 'ornstein-uhlenbeck', 'early-burst', 'pagel-lambda', or 'pagel-kappa'"
+            "tree transformation mode must be 'ornstein-uhlenbeck', 'early-burst', 'pagel-lambda', 'pagel-kappa', or 'pagel-delta'"
         )
     if mode == "ornstein-uhlenbeck" and parameter_value < 0.0:
         raise ComparativeMethodError("OU alpha must be non-negative")
@@ -987,6 +1087,8 @@ def _transform_tree(
         raise ComparativeMethodError("Pagel lambda must lie within [0, 1]")
     if mode == "pagel-kappa" and parameter_value < 0.0:
         raise ComparativeMethodError("Pagel kappa must be non-negative")
+    if mode == "pagel-delta" and parameter_value < 0.0:
+        raise ComparativeMethodError("Pagel delta must be non-negative")
     cloned_root = _clone_node(tree.root)
     if mode == "pagel-lambda":
         def visit_pagel_lambda(node: TreeNode, depth: float) -> None:
@@ -1017,6 +1119,30 @@ def _transform_tree(
                 visit_pagel_kappa(child)
 
         visit_pagel_kappa(cloned_root)
+        return PhyloTree(
+            root=cloned_root,
+            source_format=tree.source_format,
+            rooted=tree.rooted,
+        )
+    if mode == "pagel-delta":
+        total_depth = _max_tip_depth(tree.root, depth=0.0)
+
+        def visit_pagel_delta(node: TreeNode, depth: float, transformed_depth: float) -> None:
+            for child in node.children:
+                original_length = float(child.branch_length or 0.0)
+                child_depth = depth + original_length
+                transformed_child_depth = _delta_transformed_depth(
+                    child_depth,
+                    total_depth=total_depth,
+                    delta=parameter_value,
+                )
+                child.branch_length = max(
+                    0.0,
+                    transformed_child_depth - transformed_depth,
+                )
+                visit_pagel_delta(child, child_depth, transformed_child_depth)
+
+        visit_pagel_delta(cloned_root, 0.0, 0.0)
         return PhyloTree(
             root=cloned_root,
             source_format=tree.source_format,
@@ -1146,6 +1272,31 @@ def _kappa_branch_length(branch_length: float, *, kappa: float) -> float:
     if not math.isfinite(transformed) or transformed < 0.0:
         raise ComparativeMethodError(
             "Pagel kappa produced an invalid transformed branch length"
+        )
+    return transformed
+
+
+def _delta_transformed_depth(
+    depth: float,
+    *,
+    total_depth: float,
+    delta: float,
+) -> float:
+    if delta < 0.0:
+        raise ComparativeMethodError("Pagel delta must be non-negative")
+    if depth < 0.0 or total_depth < 0.0:
+        raise ComparativeMethodError(
+            "Pagel delta cannot transform negative node depths"
+        )
+    if math.isclose(depth, 0.0, rel_tol=0.0, abs_tol=1e-12):
+        return 0.0
+    if math.isclose(total_depth, 0.0, rel_tol=0.0, abs_tol=1e-12):
+        return 0.0
+    proportion = depth / total_depth
+    transformed = total_depth * math.pow(proportion, delta)
+    if not math.isfinite(transformed) or transformed < 0.0:
+        raise ComparativeMethodError(
+            "Pagel delta produced an invalid transformed node depth"
         )
     return transformed
 
