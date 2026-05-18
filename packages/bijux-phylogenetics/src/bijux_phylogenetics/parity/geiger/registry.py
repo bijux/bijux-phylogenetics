@@ -146,6 +146,15 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
     discrete_sym_missing_fixture = get_shared_geiger_discrete_fixture(
         "geiger_discrete_missing_three_state_twenty_four_taxa"
     )
+    discrete_ard_binary_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_ard_binary_twenty_four_taxa"
+    )
+    discrete_ard_four_state_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_ard_four_state_twenty_four_taxa"
+    )
+    discrete_ard_missing_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_missing_three_state_twenty_four_taxa"
+    )
     return [
         GeigerParityCase(
             case_id="fitcontinuous-bm-example-tree",
@@ -1426,5 +1435,119 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "aicc",
             ),
             row_field_tolerances={"rate": 1e-2},
+        ),
+        GeigerParityCase(
+            case_id="fitdiscrete-ard-binary-twenty-four-taxa",
+            fixture_id=discrete_ard_binary_fixture.fixture_id,
+            function_name="geiger::fitDiscrete(model='ARD')",
+            python_function_name="fit_discrete_mk_model",
+            operation="fit-discrete-mk",
+            model_name="ARD",
+            python_mode="all-rates-different",
+            input_fixtures=(
+                discrete_ard_binary_fixture.tree_path,
+                discrete_ard_binary_fixture.traits_path,
+            ),
+            tolerance=1e-5,
+            trait_name=discrete_ard_binary_fixture.trait_name,
+            taxon_column=discrete_ard_binary_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitdiscrete-default",
+                "bijux_optimizer_name": "nelder-mead",
+                "bijux_rate_surface": "discrete-mk-all-rates-different",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "observed_state_count",
+                "state_order",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "log_likelihood",
+                "parameter_count",
+                "aic",
+                "aicc",
+            ),
+            row_field_tolerances={"rate": 1e-4},
+        ),
+        GeigerParityCase(
+            case_id="fitdiscrete-ard-four-state-weak-identification-review",
+            fixture_id=discrete_ard_four_state_fixture.fixture_id,
+            function_name="geiger::fitDiscrete(model='ARD')",
+            python_function_name="fit_discrete_mk_model",
+            operation="fit-discrete-mk",
+            model_name="ARD",
+            python_mode="all-rates-different",
+            input_fixtures=(
+                discrete_ard_four_state_fixture.tree_path,
+                discrete_ard_four_state_fixture.traits_path,
+            ),
+            tolerance=5e-2,
+            trait_name=discrete_ard_four_state_fixture.trait_name,
+            taxon_column=discrete_ard_four_state_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitdiscrete-default",
+                "bijux_optimizer_name": "nelder-mead",
+                "bijux_rate_surface": "discrete-mk-all-rates-different",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "observed_state_count",
+                "state_order",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "log_likelihood",
+                "parameter_count",
+                "aic",
+                "aicc",
+            ),
+            row_field_tolerances={"rate": 6e-1},
+        ),
+        GeigerParityCase(
+            case_id="fitdiscrete-ard-multistate-missing-twenty-four-taxa",
+            fixture_id=discrete_ard_missing_fixture.fixture_id,
+            function_name="geiger::fitDiscrete(model='ARD')",
+            python_function_name="fit_discrete_mk_model",
+            operation="fit-discrete-mk",
+            model_name="ARD",
+            python_mode="all-rates-different",
+            input_fixtures=(
+                discrete_ard_missing_fixture.tree_path,
+                discrete_ard_missing_fixture.traits_path,
+            ),
+            tolerance=1e-4,
+            trait_name=discrete_ard_missing_fixture.trait_name,
+            taxon_column=discrete_ard_missing_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitdiscrete-default",
+                "bijux_optimizer_name": "nelder-mead",
+                "bijux_rate_surface": "discrete-mk-all-rates-different",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "observed_state_count",
+                "state_order",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "log_likelihood",
+                "parameter_count",
+                "aic",
+                "aicc",
+            ),
+            row_field_tolerances={"rate": 1e-4},
         ),
     ]
