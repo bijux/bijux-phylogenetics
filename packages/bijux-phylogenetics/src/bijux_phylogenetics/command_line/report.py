@@ -28,6 +28,7 @@ from bijux_phylogenetics.reports.service import (
 )
 from bijux_phylogenetics.reports import (
     build_alignment_figure_package,
+    write_tree_validation_methods_summary_text,
     write_supplementary_alignment_diagnostics_table,
     write_supplementary_ancestral_state_table,
     write_supplementary_batch_summary_table,
@@ -114,6 +115,20 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the package build result as JSON."
     )
     _add_manifest_argument(report_tree_package)
+
+    report_tree_validation_methods_summary = report_subparsers.add_parser(
+        "tree-validation-methods-summary",
+        help="Write reviewer-facing methods-summary text for tree validation.",
+    )
+    report_tree_validation_methods_summary.add_argument("tree", type=Path)
+    report_tree_validation_methods_summary.add_argument("--source-format")
+    report_tree_validation_methods_summary.add_argument(
+        "--out", required=True, type=Path
+    )
+    report_tree_validation_methods_summary.add_argument(
+        "--json", action="store_true", help="Emit the methods-summary result as JSON."
+    )
+    _add_manifest_argument(report_tree_validation_methods_summary)
 
     report_trait_tree_package = report_subparsers.add_parser(
         "trait-tree-package",
@@ -587,6 +602,7 @@ def run_report_command(args: Any) -> int:
             outputs=[
                 result.report_path,
                 result.figure_path,
+                result.methods_summary_path,
                 result.support_table_path,
                 result.clade_table_path,
                 result.branch_stats_path,
@@ -607,6 +623,7 @@ def run_report_command(args: Any) -> int:
                         ),
                         "rendered_support_count": result.figure.rendered_support_count,
                         "long_outlier_count": result.branch_stats.long_outlier_count,
+                        "methods_warning_count": result.methods_summary.warning_count,
                         **method_tier_metrics(result.method_tier),
                     },
                     data=result,
@@ -615,6 +632,39 @@ def run_report_command(args: Any) -> int:
             )
             return 0
         print(result.output_dir)
+        return 0
+
+    if args.report_command == "tree-validation-methods-summary":
+        result = write_tree_validation_methods_summary_text(
+            args.out,
+            tree_path=args.tree,
+            source_format=args.source_format,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=[args.tree],
+            outputs=[result.output_path],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=[args.tree],
+                    outputs=outputs,
+                    warnings=result.forensic.warnings,
+                    metrics={
+                        "warning_count": result.warning_count,
+                        "blocked_context_count": result.blocked_context_count,
+                        "repair_item_count": result.repair_item_count,
+                        "validity_decision": result.validation.validity_decision,
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
         return 0
 
     if args.report_command == "trait-tree-package":
