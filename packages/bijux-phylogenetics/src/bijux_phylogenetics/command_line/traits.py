@@ -9,10 +9,12 @@ from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.traits import (
+    check_tree_and_trait_taxon_names,
     detect_missing_trait_values,
     link_tree_to_traits,
     prune_traits_to_tree,
     validate_traits_table,
+    write_tree_trait_name_mismatch_table,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
 
@@ -54,6 +56,18 @@ def add_traits_commands(subparsers: Any) -> None:
     )
     _add_manifest_argument(traits_link)
 
+    traits_name_check = traits_subparsers.add_parser(
+        "name-check", help="Report tree-versus-trait taxon mismatches."
+    )
+    traits_name_check.add_argument("tree", type=Path)
+    traits_name_check.add_argument("table", type=Path)
+    traits_name_check.add_argument("--taxon-column")
+    traits_name_check.add_argument("--out", type=Path)
+    traits_name_check.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
+    _add_manifest_argument(traits_name_check)
+
     traits_prune = traits_subparsers.add_parser(
         "prune", help="Prune a traits table to tree taxa."
     )
@@ -94,6 +108,36 @@ def run_traits_command(args: Any) -> int:
                 inputs=[args.table],
                 outputs=outputs,
                 metrics={"missing_value_count": len(report.missing_values)},
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+    if args.traits_command == "name-check":
+        report = check_tree_and_trait_taxon_names(
+            args.tree,
+            args.table,
+            taxon_column=args.taxon_column,
+        )
+        declared_outputs: list[Path] = []
+        if args.out is not None:
+            declared_outputs.append(write_tree_trait_name_mismatch_table(args.out, report))
+        outputs = _finalize_outputs(
+            args,
+            command="traits",
+            inputs=[args.tree, args.table],
+            outputs=declared_outputs,
+        )
+        _print_result(
+            build_command_result(
+                command="traits",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
+                metrics={
+                    "tree_not_data_count": len(report.tree_not_data),
+                    "data_not_tree_count": len(report.data_not_tree),
+                    "compatible": report.compatible,
+                },
                 data=report,
             ),
             json_output=args.json,
