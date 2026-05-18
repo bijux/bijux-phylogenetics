@@ -284,6 +284,7 @@ bijux-phylogenetics report release-gate --out artifacts/level-1-release-gate.htm
 bijux-phylogenetics report release-truth --test-report artifacts/pytest/full-suite.xml --real-engine-test-report artifacts/pytest/real-engine.xml --out artifacts/release-truth-report.html --json
 bijux-phylogenetics report supplementary-alignment-table --alignment alignment.fasta --filtered-alignment filtered-alignment.fasta --out artifacts/supplementary-alignment.tsv --json
 bijux-phylogenetics report supplementary-ancestral-state-table --tree tree.nwk --traits traits.tsv --trait habitat --reconstruction-kind discrete --model equal-rates --out artifacts/supplementary-ancestral-states.tsv --json
+bijux-phylogenetics report supplementary-batch-summary-table --workflow-bundle-root workflow/ --out artifacts/supplementary-batch-summary.tsv --json
 bijux-phylogenetics report supplementary-clade-support-table --tree tree.nwk --comparison-tree-set posterior-trees.nwk --out artifacts/supplementary-clade-support.tsv --json
 bijux-phylogenetics report supplementary-comparative-model-table --tree tree.nwk --traits traits.tsv --formula 'response ~ predictor_one' --formula 'response ~ predictor_one + predictor_two' --lambda-value 0.0 --out artifacts/supplementary-comparative-model.tsv --json
 bijux-phylogenetics report supplementary-diversification-table --tree tree.nwk --metadata metadata.tsv --clade-model birth-death --out artifacts/supplementary-diversification.tsv --json
@@ -470,6 +471,13 @@ For one reviewer-facing supplementary ancestral-state ledger, use
 per internal node across one continuous or discrete ancestral reconstruction,
 keeping descendant taxa, model settings, uncertainty, instability flags, and
 the shared warning and exclusion context together on one reviewable surface.
+
+For one reviewer-facing supplementary batch ledger, use
+`report supplementary-batch-summary-table`. It reads one written workflow
+bundle and writes one TSV with one dataset row plus one row per variant,
+keeping task status, output freshness, recovery action, merge state,
+reproducibility outcome, output references, and batch warnings together on
+one reviewable surface.
 
 For one reviewer-facing supplementary diversification ledger, use
 `report supplementary-diversification-table`. It writes one TSV with one row
