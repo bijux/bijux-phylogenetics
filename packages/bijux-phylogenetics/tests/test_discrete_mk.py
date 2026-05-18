@@ -442,6 +442,134 @@ def test_fit_discrete_mk_model_matches_governed_geiger_sym_three_state_surface()
     )
 
 
+def test_fit_discrete_mk_model_matches_governed_geiger_ard_binary_surface() -> None:
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_ard_binary_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="all-rates-different",
+    )
+    rate_lookup = _allowed_rate_lookup(report)
+
+    assert report.optimizer_diagnostics.optimizer_name == "nelder-mead"
+    assert math.isclose(
+        report.log_likelihood,
+        -10.750446676724945,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        rate_lookup[("0", "1")],
+        1.3142787012012467,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        rate_lookup[("1", "0")],
+        2.824830939872932,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+
+
+def test_fit_discrete_mk_model_matches_governed_geiger_ard_missing_surface() -> None:
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_missing_three_state_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="all-rates-different",
+    )
+    rate_lookup = _allowed_rate_lookup(report)
+
+    assert report.taxon_count == 23
+    assert report.input_audit.pruned_missing_value_taxa == ["Phy14"]
+    assert report.optimizer_diagnostics.converged is True
+    assert report.optimizer_diagnostics.hit_lower_parameter_bound is False
+    assert math.isclose(
+        report.log_likelihood,
+        -14.31297558479869,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        rate_lookup[("central", "north")],
+        0.58934415590246,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        rate_lookup[("central", "south")],
+        2.3728847457672133,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        rate_lookup[("south", "north")],
+        0.8075051753472205,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+
+
+@pytest.mark.slow
+def test_fit_discrete_mk_model_marks_governed_geiger_ard_four_state_review_surface(
+) -> None:
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_ard_four_state_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="all-rates-different",
+    )
+    rate_lookup = _allowed_rate_lookup(report)
+
+    assert report.parameter_count == 12
+    assert report.baseline_comparison is not None
+    assert report.baseline_comparison.preferred_model_by_aic == "equal-rates"
+    assert report.optimizer_diagnostics.converged is False
+    assert report.optimizer_diagnostics.hit_lower_parameter_bound is True
+    assert report.optimizer_diagnostics.hit_upper_parameter_bound is False
+    assert any(
+        "weakly identified" in warning for warning in report.input_audit.warnings
+    )
+    assert any(
+        "equal-rates baseline remains preferred" in warning
+        for warning in report.input_audit.warnings
+    )
+    assert math.isclose(
+        rate_lookup[("east", "north")],
+        0.3807734820867481,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        rate_lookup[("south", "east")],
+        1.996892420461163,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        rate_lookup[("west", "south")],
+        7.648584079856097,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+
+
 @pytest.mark.slow
 def test_fit_discrete_mk_model_recovers_binary_ard_known_truth(
     tmp_path: Path,
