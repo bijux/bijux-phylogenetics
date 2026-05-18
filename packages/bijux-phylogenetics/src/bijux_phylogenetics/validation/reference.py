@@ -34,6 +34,9 @@ from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.trait_tree_package import (
     build_annotated_trait_tree_package,
 )
+from bijux_phylogenetics.reports.alignment_package import (
+    build_alignment_figure_package,
+)
 from bijux_phylogenetics.trees.uncertainty_package import (
     build_tree_set_uncertainty_figure_package,
 )
@@ -1195,6 +1198,100 @@ def validate_tree_set_uncertainty_reference_fixtures(
         ],
         limitations=[
             "tree-set publication readiness is governed through rendered support counts, plot-presence checks, and explicit empty-state review rather than screenshot goldens",
+        ],
+    )
+
+
+def validate_alignment_figure_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
+    """Validate alignment figure fixtures for visible quality surfaces and blocked suspicious cases."""
+    root = _default_fixtures_root() if fixtures_root is None else fixtures_root
+    clean_alignment = _fixture(root, "alignments", "example_alignment.fasta")
+    missing_alignment = _fixture(
+        root, "alignments", "example_alignment_missingness.fasta"
+    )
+    temp_root = _temp_reference_dir("bijux-alignment-figure-reference")
+    temp_root.mkdir(parents=True, exist_ok=True)
+
+    clean_package = build_alignment_figure_package(
+        clean_alignment,
+        out_dir=temp_root / "clean-alignment-package",
+    )
+    missing_package = build_alignment_figure_package(
+        missing_alignment,
+        out_dir=temp_root / "missingness-alignment-package",
+    )
+
+    fixtures = [
+        _check(
+            goal_id=232,
+            suite="alignment-figure-publication-reference",
+            name="clean_alignment_quality_figures_ready",
+            fixture_paths=[clean_alignment],
+            expected={
+                "publication_ready": True,
+                "heatmap_visible": True,
+                "site_summary_visible": True,
+                "sequence_panel_visible": True,
+                "heatmap_bin_count": 8,
+                "plotted_window_count": 1,
+                "plotted_sequence_count": 4,
+            },
+            observed={
+                "publication_ready": clean_package.audit.publication_ready,
+                "heatmap_visible": clean_package.audit.heatmap_visible,
+                "site_summary_visible": clean_package.audit.site_summary_visible,
+                "sequence_panel_visible": clean_package.audit.sequence_panel_visible,
+                "heatmap_bin_count": clean_package.audit.heatmap_bin_count,
+                "plotted_window_count": clean_package.audit.plotted_window_count,
+                "plotted_sequence_count": clean_package.audit.plotted_sequence_count,
+            },
+            notes=[
+                "the clean alignment fixture must keep the missingness heatmap, site-quality summary, and sequence-quality panel all visible on reviewer surfaces"
+            ],
+        ),
+        _check(
+            goal_id=232,
+            suite="alignment-figure-publication-reference",
+            name="missingness_alignment_quality_figures_blocked",
+            fixture_paths=[missing_alignment],
+            expected={
+                "publication_ready": False,
+                "suspicious_alignment": True,
+                "heatmap_visible": True,
+                "site_summary_visible": True,
+                "sequence_panel_visible": True,
+                "heatmap_bin_count": 6,
+                "plotted_window_count": 1,
+                "plotted_sequence_count": 3,
+            },
+            observed={
+                "publication_ready": missing_package.audit.publication_ready,
+                "suspicious_alignment": missing_package.audit.suspicious_alignment,
+                "heatmap_visible": missing_package.audit.heatmap_visible,
+                "site_summary_visible": missing_package.audit.site_summary_visible,
+                "sequence_panel_visible": missing_package.audit.sequence_panel_visible,
+                "heatmap_bin_count": missing_package.audit.heatmap_bin_count,
+                "plotted_window_count": missing_package.audit.plotted_window_count,
+                "plotted_sequence_count": missing_package.audit.plotted_sequence_count,
+            },
+            notes=[
+                "publication readiness remains blocked for the missingness-heavy fixture even though all three figure surfaces still render for review"
+            ],
+        ),
+    ]
+    return _suite_report(
+        goal_id=232,
+        suite="alignment-figure-publication-reference",
+        reviewer_goal="Alignment quality figure publication fixtures",
+        fixtures=fixtures,
+        coverage_notes=[
+            "pins one clean alignment figure package where missingness, site windows, and sequence burden all remain visible and publication-ready",
+            "proves that suspicious alignments still render the full figure package while the publication audit remains blocked instead of silently claiming readiness",
+        ],
+        limitations=[
+            "alignment figure publication readiness is governed through visible figure-surface counts, suspicious-alignment review, and machine-readable audits rather than screenshot goldens",
         ],
     )
 
