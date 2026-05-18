@@ -1578,7 +1578,7 @@ def benchmark_workflow_practical_limits(
     """Report the largest governed workflow classes currently exercised in benchmark and stress lanes."""
     if replicates < 1:
         raise ValueError(f"replicates must be at least 1, got {replicates}")
-    tiers = list(stress_tiers or ["heavy"])
+    tiers = ["heavy"] if stress_tiers is None else list(stress_tiers)
     if not tiers:
         raise ValueError("stress_tiers must contain at least one governed tier")
 
