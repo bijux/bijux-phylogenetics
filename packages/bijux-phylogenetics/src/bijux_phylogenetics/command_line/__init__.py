@@ -467,6 +467,7 @@ from bijux_phylogenetics.comparative import (
     estimate_diversification_rate,
     render_diversification_report,
     run_trait_dependent_diversification_analysis,
+    summarize_medusa_exclusion,
     write_diversification_methods_summary_text,
     write_clade_diversification_table,
     write_diversification_gamma_statistic_table,
@@ -500,6 +501,7 @@ from bijux_phylogenetics.engines import (
     run_sh_alrt_support_estimation,
 )
 from bijux_phylogenetics.runtime.errors import (
+    DiversificationAnalysisError,
     EngineUnavailableError,
     PhylogeneticsError,
 )
@@ -2809,6 +2811,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the methods summary metrics as JSON."
     )
     _add_manifest_argument(diversification_methods_summary)
+    diversification_medusa = diversification_subparsers.add_parser(
+        "medusa",
+        help="Explain the explicit exclusion boundary for geiger::medusa parity.",
+    )
+    diversification_medusa.add_argument("tree", type=Path)
+    diversification_medusa.add_argument("--metadata", type=Path)
+    diversification_medusa.add_argument("--taxon-column")
+    diversification_medusa.add_argument("--sampling-column")
+    diversification_medusa.add_argument(
+        "--json", action="store_true", help="Emit the MEDUSA exclusion as JSON."
+    )
+    _add_manifest_argument(diversification_medusa)
 
     add_distance_commands(subparsers)
     add_tree_set_commands(subparsers)
@@ -8319,6 +8333,30 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.diversification_command == "medusa":
+                report = summarize_medusa_exclusion(
+                    args.tree,
+                    metadata_path=args.metadata,
+                    taxon_column=args.taxon_column,
+                    sampling_column=args.sampling_column,
+                )
+                raise DiversificationAnalysisError(
+                    report.exclusion_reason,
+                    code="diversification_medusa_explicitly_excluded",
+                    details={
+                        "failure_reason": report.exclusion_code,
+                        "supported_surfaces": report.supported_surfaces,
+                        "missing_surfaces": report.missing_surfaces,
+                        "tip_count": report.validation.tip_count,
+                        "rooted": report.validation.rooted,
+                        "ultrametric": report.validation.ultrametric,
+                        "sampling_metadata_complete": (
+                            None
+                            if report.sampling_report is None
+                            else report.sampling_report.complete
+                        ),
+                    },
+                )
             inputs = [args.tree]
             if args.metadata is not None:
                 inputs.append(args.metadata)
