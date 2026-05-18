@@ -434,6 +434,15 @@ estimate `+/-` standard-error labels on internal nodes, while discrete packages
 pair internal probability pies with top-state confidence labels so ambiguity is
 interpretable without leaving the figure surface.
 
+For a journal-oriented discrete biogeography figure bundle, use
+`biogeography report`. The package now keeps the ancestral-region tree, the
+geographic transition map, a machine-readable `figure-legend.tsv`, and a
+structured `figure-caption.md` together under one manifest-backed audit.
+Publication readiness stays blocked until the tree renders one probability pie
+and one probability label per internal node, the map retains visible
+transition-support lines, and every inferred region remains represented through
+the shared tree-and-map state palette.
+
 For a journal-oriented dated phylogeny package with visible uncertainty, use
 `report time-tree-package`. It materializes a retained posterior tree set,
 builds one maximum clade credibility time tree, renders one `time-tree.svg`
