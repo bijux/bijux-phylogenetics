@@ -364,6 +364,7 @@ bijux-phylogenetics benchmark tree-comparison --replicates 3 --json
 bijux-phylogenetics benchmark large-tree-scaling --replicates 1 --tip-count 512 --tip-count 1024 --json
 bijux-phylogenetics benchmark large-alignment-scaling --replicates 1 --sequence-count 256 --alignment-length 512 --sequence-count 512 --alignment-length 1024 --json
 bijux-phylogenetics benchmark large-tree-set-scaling --replicates 1 --tree-count 128 --tip-count 48 --tree-count 256 --tip-count 64 --json
+bijux-phylogenetics benchmark workflow-practical-limits --replicates 1 --stress-tier heavy --json
 bijux-phylogenetics diagnose assumptions tree.nwk --metadata metadata.tsv --json
 bijux-phylogenetics alignment translate coding.fasta --out translated.fasta --codon-validation-out artifacts/codon-validation.tsv --excluded-sequences-out artifacts/translation-exclusions.tsv
 bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json
@@ -391,6 +392,13 @@ use `benchmark large-tree-set-scaling`. It benchmarks
 `uncertainty-summaries` on governed large tree-set classes so consensus cost,
 pairwise RF aggregation, topology-mode collapse, and uncertainty-summary review
 stay visible before larger production claims are made.
+
+For one governed summary of the largest workflow classes the repository
+currently exercises, use `benchmark workflow-practical-limits`. It aggregates
+the tested maxima from the large-tree, large-alignment, large-tree-set, and
+stress-suite lanes so reviewer-facing limits for taxa, aligned sites, tree
+count, and posterior size stay explicit instead of being inferred from
+individual benchmark tables.
 
 `demo rabies-cross-host-geography-panel` is the repository's flagship public
 biological workflow surface. In addition to the dataset and workflow
