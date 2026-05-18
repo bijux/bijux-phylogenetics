@@ -117,6 +117,7 @@ from bijux_phylogenetics.parity import (
 )
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
+    benchmark_large_tree_scaling,
     benchmark_large_dataset_stress_suite,
     benchmark_tree_comparison,
     benchmark_tree_validation,
@@ -2986,6 +2987,22 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the benchmark report as JSON."
     )
     _add_manifest_argument(benchmark_compare)
+    benchmark_large_tree = benchmark_subparsers.add_parser(
+        "large-tree-scaling",
+        help="Benchmark large-tree validation, comparison, rendering, and reporting.",
+    )
+    benchmark_large_tree.add_argument("--replicates", type=int, default=1)
+    benchmark_large_tree.add_argument(
+        "--tip-count",
+        action="append",
+        dest="tip_counts",
+        type=int,
+        help="Add one governed tree size to benchmark. Repeat to benchmark multiple sizes.",
+    )
+    benchmark_large_tree.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(benchmark_large_tree)
     benchmark_alignment = benchmark_subparsers.add_parser(
         "alignment-diagnostics",
         help="Benchmark alignment diagnostics across increasing sequence counts.",
@@ -8434,6 +8451,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 report = benchmark_tree_validation(replicates=args.replicates)
             elif args.benchmark_command == "tree-comparison":
                 report = benchmark_tree_comparison(replicates=args.replicates)
+            elif args.benchmark_command == "large-tree-scaling":
+                report = benchmark_large_tree_scaling(
+                    replicates=args.replicates,
+                    tip_counts=args.tip_counts,
+                )
             elif args.benchmark_command == "stress-suite":
                 report = benchmark_large_dataset_stress_suite(tier=args.tier)
             else:
@@ -8443,12 +8465,19 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
             outputs = _finalize_outputs(args, command="benchmark", inputs=[])
             metrics = {
-                "observation_count": len(report.observations),
+                "observation_count": (
+                    len(report.observations)
+                    if hasattr(report, "observations")
+                    else sum(len(row.observations) for row in report.workflows)
+                ),
             }
             if hasattr(report, "replicates"):
                 metrics["replicates"] = report.replicates
             if hasattr(report, "tier"):
                 metrics["tier"] = report.tier
+            if hasattr(report, "workflows"):
+                metrics["workflow_count"] = len(report.workflows)
+                metrics["max_tip_count"] = max(report.tip_counts)
             _print_result(
                 build_command_result(
                     command="benchmark",
