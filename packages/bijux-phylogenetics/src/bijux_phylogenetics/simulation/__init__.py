@@ -1082,3 +1082,11 @@ def write_simulated_alignment(path: Path, report: AlignmentSimulationReport) -> 
     from .alignment import write_simulated_alignment as write_simulated_alignment_impl
 
     return write_simulated_alignment_impl(path, report)
+
+
+def validate_geiger_sim_char_reference_examples():
+    from .geiger_sim_char_reference import (
+        validate_geiger_sim_char_reference_examples as validate_geiger_sim_char_reference_examples_impl,
+    )
+
+    return validate_geiger_sim_char_reference_examples_impl()
