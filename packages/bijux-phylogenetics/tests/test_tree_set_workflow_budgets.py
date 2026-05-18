@@ -63,8 +63,11 @@ def test_render_tree_uncertainty_report_truncates_budgeted_sections(
     assert report.processing.runtime_seconds >= 0.0
     assert report.artifact_root.is_dir()
     assert report.artifact_manifest_path.is_file()
+    assert report.methods_summary_path.is_file()
+    assert report.methods_summary_warning_count >= 0
     assert "clade-frequencies" in report.budget_report.truncated_section_names
     assert 'href="tree-set-report.artifacts/clade-frequencies.tsv"' in html
+    assert "methods-summary-text" in html
     assert "preview_rows" in html
     assert "&quot;rows&quot;: [" not in html
     assert report.machine_manifest["budget"]["truncated_section_names"]
@@ -94,6 +97,7 @@ def test_render_tree_uncertainty_report_scales_to_large_tree_sets(
     assert report.tree_count == 1200
     assert report.linked_artifact_count >= 10
     assert report.processing.peak_memory_bytes >= 0
+    assert report.methods_summary_path.is_file()
     assert report.html_size_bytes > 0
     assert report.linked_artifact_bytes > 0
     assert report.total_output_bytes >= report.html_size_bytes
@@ -169,6 +173,10 @@ def test_cli_tree_set_report_reports_output_size_metrics(
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["linked_artifact_count"] >= 10
+    assert payload["data"]["methods_summary_path"].endswith(
+        "tree-set-uncertainty-methods-summary.md"
+    )
+    assert payload["data"]["methods_summary_warning_count"] >= 0
     assert payload["metrics"]["html_size_bytes"] > 0
     assert payload["metrics"]["linked_artifact_bytes"] > 0
     assert (

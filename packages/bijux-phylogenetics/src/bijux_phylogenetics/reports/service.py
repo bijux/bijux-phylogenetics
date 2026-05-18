@@ -114,7 +114,11 @@ from bijux_phylogenetics.trees import (
     write_consensus_tree,
     write_topology_cluster_table,
     write_tree_distance_distribution_table,
+    write_tree_set_uncertainty_methods_summary_text,
     write_unstable_clade_table,
+)
+from bijux_phylogenetics.trees.uncertainty_methods import (
+    build_tree_set_uncertainty_method_report,
 )
 
 
@@ -183,6 +187,8 @@ class TreeUncertaintyReportBuildResult:
     rooted_topology_count: int
     processing: TreeSetProcessingSummary
     budget_report: TreeSetWorkflowBudgetReport
+    methods_summary_path: Path
+    methods_summary_warning_count: int
     linked_artifact_count: int
     html_size_bytes: int
     linked_artifact_bytes: int
@@ -1505,6 +1511,7 @@ def render_tree_uncertainty_report(
             workflow_name="tree uncertainty report",
             source_path=tree_set_path,
         )
+        methods_report = build_tree_set_uncertainty_method_report(tree_set_path)
         consensus_tree, consensus = compute_consensus_tree(tree_set_path)
         clade_frequencies = compute_clade_frequency_table(tree_set_path)
         clusters = cluster_trees_by_topology(tree_set_path)
@@ -1538,6 +1545,10 @@ def render_tree_uncertainty_report(
         title = "Bijux Tree Uncertainty Report"
         truncated_sections: list[str] = []
         artifact_root = out_path.parent / f"{out_path.stem}.artifacts"
+        methods_summary_result = write_tree_set_uncertainty_methods_summary_text(
+            artifact_root / "tree-set-uncertainty-methods-summary.md",
+            methods_report,
+        )
         preview_limit = 5
         clade_frequency_rows, clade_frequency_truncated = _truncate_report_rows(
             [asdict(row) for row in clade_frequencies.clade_frequencies],
@@ -1627,6 +1638,7 @@ def render_tree_uncertainty_report(
             "tree_set_summary": _write_json_artifact(
                 artifact_root / "tree-set-summary.json", asdict(summary)
             ),
+            "methods_summary": methods_summary_result.output_path,
             "consensus_tree": write_consensus_tree(
                 artifact_root / "consensus-tree.nwk", consensus_tree
             ),
@@ -1698,6 +1710,10 @@ def render_tree_uncertainty_report(
             ),
         }
         sections = [
+            _section(
+                "methods-summary-text",
+                artifact_paths["methods_summary"].read_text(encoding="utf-8"),
+            ),
             _section("tree-set-summary", asdict(summary)),
             _section(
                 "consensus-tree",
@@ -2037,6 +2053,10 @@ def render_tree_uncertainty_report(
             "report_mode": "scaled-summary" if scaled_report_mode else "full-review",
             "artifact_root": str(artifact_root),
             "linked_artifact_count": len(artifact_paths),
+            "methods_summary_path": artifact_paths["methods_summary"]
+            .relative_to(out_path.parent)
+            .as_posix(),
+            "methods_summary_warning_count": methods_summary_result.warning_count,
             "linked_artifacts": {
                 name: {
                     "path": path.relative_to(out_path.parent).as_posix(),
@@ -2151,6 +2171,8 @@ def render_tree_uncertainty_report(
             rooted_topology_count=summary.rooted_topology_count,
             processing=processing,
             budget_report=budget_report,
+            methods_summary_path=artifact_paths["methods_summary"],
+            methods_summary_warning_count=methods_summary_result.warning_count,
             linked_artifact_count=len(artifact_paths) + 1,
             html_size_bytes=html_size_bytes,
             linked_artifact_bytes=linked_artifact_bytes,
