@@ -64,6 +64,13 @@ from .reference import (
     write_core_workflow_validation_json,
     write_level_one_release_gate_json,
 )
+from .production_scale import (
+    ProductionScaleReadinessReport,
+    ProductionScaleThreshold,
+    WorkflowProductionScaleReadinessEntry,
+    WorkflowScaleDecision,
+    build_production_scale_readiness_report,
+)
 from .release_truth import (
     PytestSessionAggregate,
     PytestSessionSummary,
@@ -93,6 +100,8 @@ __all__ = [
     "MethodLimitationRegistry",
     "PytestSessionAggregate",
     "PytestSessionSummary",
+    "ProductionScaleReadinessReport",
+    "ProductionScaleThreshold",
     "ReferenceFixtureCheck",
     "ReferenceValidationSuiteReport",
     "RegressionDatasetCaseResult",
@@ -106,6 +115,8 @@ __all__ = [
     "SimulationReproducibilityCase",
     "SimulationReproducibilityReport",
     "WorkflowPracticalLimitDashboard",
+    "WorkflowProductionScaleReadinessEntry",
+    "WorkflowScaleDecision",
     "WorkflowMaturityClassification",
     "aggregate_pytest_junit_reports",
     "build_broken_benchmark_corpus",
@@ -120,6 +131,7 @@ __all__ = [
     "build_messy_benchmark_corpus",
     "build_method_accuracy_dashboard",
     "build_method_limitation_registry",
+    "build_production_scale_readiness_report",
     "build_regression_dataset_corpus",
     "build_release_truth_report",
     "build_runtime_benchmark_dashboard",
