@@ -49,6 +49,9 @@ from bijux_phylogenetics.comparative.models import (
     run_comparative_sensitivity_analysis,
     validate_comparative_reference_examples,
 )
+from bijux_phylogenetics.comparative.model_comparison_package import (
+    build_comparative_model_figure_package,
+)
 from bijux_phylogenetics.comparative.ou_trait_evolution import (
     summarize_ou_trait_evolution,
     write_ou_trait_evolution_exclusion_table,
@@ -398,6 +401,20 @@ def add_comparative_evolution_commands(comparative_subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the model comparison as JSON."
     )
     _add_manifest_argument(comparative_compare_models)
+
+    comparative_model_package = comparative_subparsers.add_parser(
+        "model-comparison-package",
+        help="Build a publication-oriented Brownian versus OU model-comparison figure package.",
+    )
+    comparative_model_package.add_argument("tree", type=Path)
+    comparative_model_package.add_argument("table", type=Path)
+    comparative_model_package.add_argument("--trait", required=True)
+    comparative_model_package.add_argument("--taxon-column")
+    comparative_model_package.add_argument("--out-dir", required=True, type=Path)
+    comparative_model_package.add_argument(
+        "--json", action="store_true", help="Emit the package build result as JSON."
+    )
+    _add_manifest_argument(comparative_model_package)
 
     comparative_validate_reference = comparative_subparsers.add_parser(
         "validate-reference",
@@ -901,6 +918,55 @@ def run_comparative_evolution_command(
                     "model_count": len(report.rows),
                 },
                 data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.comparative_command == "model-comparison-package":
+        result = build_comparative_model_figure_package(
+            args.tree,
+            args.table,
+            trait=args.trait,
+            out_dir=args.out_dir,
+            taxon_column=args.taxon_column,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="comparative",
+            inputs=[args.tree, args.table],
+            outputs=[
+                result.criteria_figure_path,
+                result.likelihood_figure_path,
+                result.parameter_figure_path,
+                result.fit_figure_path,
+                result.criteria_table_path,
+                result.likelihood_table_path,
+                result.parameter_table_path,
+                result.fit_table_path,
+                result.legend_path,
+                result.caption_path,
+                result.review_path,
+                result.manifest_path,
+            ],
+        )
+        _print_result(
+            build_command_result(
+                command="comparative",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
+                metrics={
+                    "output_dir": str(result.output_dir),
+                    "artifact_count": 12,
+                    "publication_ready": result.audit.publication_ready,
+                    "selected_model": result.audit.selected_model,
+                    "support_distinct": result.audit.support_distinct,
+                    "aicc_delta": result.audit.aicc_delta,
+                    "plotted_model_count": result.audit.plotted_model_count,
+                    "rendered_parameter_count": result.audit.rendered_parameter_count,
+                    "rendered_fit_row_count": result.audit.rendered_fit_row_count,
+                },
+                data=result,
             ),
             json_output=args.json,
         )
