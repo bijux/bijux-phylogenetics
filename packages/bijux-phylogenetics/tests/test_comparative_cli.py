@@ -372,7 +372,7 @@ def test_comparative_discrete_mk_cli_reports_lambda_transform_metrics(
             str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
             str(fixture("example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv")),
             "--trait",
-            "er_binary_lambda_weak_signal",
+            "er_binary_transform_weak_signal",
             "--taxon-column",
             "taxon",
             "--transform",
@@ -388,6 +388,41 @@ def test_comparative_discrete_mk_cli_reports_lambda_transform_metrics(
     assert payload["metrics"]["parameter_count"] == 2
     assert payload["metrics"]["transform_parameter_name"] == "lambda"
     assert payload["metrics"]["transform_parameter_value"] == 0.0
+    assert payload["metrics"]["transform_function_evaluation_count"] == 26
+    assert payload["metrics"]["transform_warning_count"] >= 1
+
+
+def test_comparative_discrete_mk_cli_reports_kappa_transform_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(fixture("example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv")),
+            "--trait",
+            "er_binary_truth",
+            "--taxon-column",
+            "taxon",
+            "--transform",
+            "kappa",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["transform"] == "kappa"
+    assert payload["metrics"]["parameter_count"] == 2
+    assert payload["metrics"]["transform_parameter_name"] == "kappa"
+    assert math.isclose(
+        payload["metrics"]["transform_parameter_value"],
+        0.9011763252454394,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
     assert payload["metrics"]["transform_function_evaluation_count"] == 26
     assert payload["metrics"]["transform_warning_count"] >= 1
 

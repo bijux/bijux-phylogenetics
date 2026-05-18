@@ -91,7 +91,7 @@ def add_comparative_evolution_commands(comparative_subparsers: Any) -> None:
     )
     comparative_discrete_mk.add_argument(
         "--transform",
-        choices=("lambda",),
+        choices=("lambda", "kappa"),
         help="Apply one governed branch-length transform before fitting the discrete Mk surface.",
     )
     comparative_discrete_mk.add_argument(
