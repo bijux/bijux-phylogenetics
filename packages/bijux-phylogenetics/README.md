@@ -1312,6 +1312,7 @@ artifact root for every governed case, and writes one summary TSV plus one
 observation TSV instead of relying on console scraping. The initial registry is
 intentionally narrow for this harness goal: it currently covers
 `geiger::fitContinuous(model='BM')`,
+`geiger::fitContinuous(model='white')`,
 `geiger::fitContinuous(model='lambda')`,
 `geiger::fitContinuous(model='kappa')`,
 `geiger::fitContinuous(model='delta')`,
@@ -1334,6 +1335,17 @@ the four-taxon comparative example, a twenty-four-taxon sigma-recovery surface,
 and a twenty-four-taxon missing-value pruning surface that must prove explicit
 tip exclusion, missing-versus-nonnumeric classification, and the declared
 no-standard-error policy before likelihood comparison is treated as valid.
+The white lane now has three governed `fitContinuous(model='white')` cases:
+a twenty-four-taxon strong-signal review surface that should fit worse than a
+Brownian covariance model, a twenty-four-taxon weak-signal review surface where
+independent variance is a plausible baseline, and a twenty-four-taxon
+missing-value pruning review surface. Those cases govern the identity-covariance
+owner fit, explicit no-phylogenetic-correlation warnings, closed-form
+root-state and variance recovery, log-likelihood, AIC, AICc, and the declared
+missing-value exclusion contract. The owned Bijux side exposes this through
+`fit_continuous_evolutionary_mode(mode='white-noise')` so the live parity lane
+compares a real repository-owned independent baseline instead of an ad hoc
+reference-only shortcut.
 The lambda lane now has three governed `fitContinuous(model='lambda')` cases:
 a twenty-four-taxon strong-signal review surface that lands on the Brownian
 upper boundary, a twenty-four-taxon weak-signal review surface that collapses
