@@ -7,6 +7,7 @@ from pathlib import Path
 from bijux_phylogenetics.comparative.common import (
     ComparativeDataset,
     build_brownian_covariance_matrix,
+    lambda_transform_covariance,
     load_comparative_dataset,
     node_signature,
     stable_covariance,
@@ -26,6 +27,7 @@ from bijux_phylogenetics.io.trees import load_tree
 
 ALLOWED_EVOLUTIONARY_MODES = {
     "brownian",
+    "pagel-lambda",
     "ornstein-uhlenbeck",
     "early-burst",
 }
@@ -204,10 +206,11 @@ def fit_continuous_evolutionary_mode(
     trait: str,
     mode: str,
     taxon_column: str | None = None,
+    lambda_bounds: tuple[float, float] = (0.0, 1.0),
     ou_bounds: tuple[float, float] = (0.0, 10.0),
     early_burst_bounds: tuple[float, float] = (0.0, 50.0),
 ) -> ContinuousEvolutionaryModeFitReport:
-    """Fit a Brownian, OU-rescaled, or early-burst-rescaled intercept-only trait model."""
+    """Fit a Brownian, Pagel-lambda, OU, or early-burst intercept-only trait model."""
     dataset = load_comparative_dataset(
         tree_path,
         traits_path,
@@ -220,6 +223,7 @@ def fit_continuous_evolutionary_mode(
     return _fit_evolutionary_mode_from_dataset(
         dataset,
         mode=mode,
+        lambda_bounds=lambda_bounds,
         ou_bounds=ou_bounds,
         early_burst_bounds=early_burst_bounds,
     )
@@ -231,6 +235,7 @@ def compare_continuous_evolutionary_modes(
     *,
     trait: str,
     taxon_column: str | None = None,
+    lambda_bounds: tuple[float, float] = (0.0, 1.0),
     ou_bounds: tuple[float, float] = (0.0, 10.0),
     early_burst_bounds: tuple[float, float] = (0.0, 50.0),
 ) -> ContinuousEvolutionaryModeComparisonReport:
@@ -248,6 +253,7 @@ def compare_continuous_evolutionary_modes(
         _fit_evolutionary_mode_from_dataset(
             dataset,
             mode=mode,
+            lambda_bounds=lambda_bounds,
             ou_bounds=ou_bounds,
             early_burst_bounds=early_burst_bounds,
         )
@@ -298,6 +304,7 @@ def _fit_evolutionary_mode_from_dataset(
     dataset: ComparativeDataset,
     *,
     mode: str,
+    lambda_bounds: tuple[float, float],
     ou_bounds: tuple[float, float],
     early_burst_bounds: tuple[float, float],
 ) -> ContinuousEvolutionaryModeFitReport:
@@ -320,6 +327,26 @@ def _fit_evolutionary_mode_from_dataset(
         assumptions = [
             "Brownian mode retains the original rooted branch lengths.",
             "Trait variance accumulates proportionally with shared branch length.",
+        ]
+    elif mode == "pagel-lambda":
+        parameter_name = "lambda"
+        search_result = _best_pagel_lambda_fit(
+            dataset,
+            bounds=lambda_bounds,
+        )
+        parameter_value = search_result.parameter_value
+        transformed_tree = search_result.transformed_tree
+        covariance = search_result.covariance
+        fit = _fit_intercept_only_model(dataset, covariance)
+        optimizer_diagnostics = search_result.optimizer_diagnostics
+        identifiability_warnings = _lambda_identifiability_warnings_from_profile(
+            parameter_value,
+            search_result.profile,
+            lambda_bounds,
+        )
+        assumptions = [
+            "Pagel-lambda mode follows the geiger-style covariance transformation, scaling shared covariance while keeping each tip variance fixed.",
+            "Unlike phytools::phylosig-style signal summaries, this mode keeps the full fitContinuous surface visible with root state, sigma-squared-backed rate, AIC, and AICc.",
         ]
     elif mode == "ornstein-uhlenbeck":
         parameter_name = "alpha"
@@ -523,6 +550,122 @@ def _best_transformed_mode_fit(
     )
 
 
+def _best_pagel_lambda_fit(
+    dataset: ComparativeDataset,
+    *,
+    bounds: tuple[float, float],
+) -> _TransformedModeSearchResult:
+    lower, upper = bounds
+    if lower < 0.0 or upper > 1.0 or upper <= lower:
+        raise ComparativeMethodError(
+            "Pagel-lambda bounds must be strictly increasing within [0, 1]"
+        )
+
+    coarse = _linspace(lower, upper, 81)
+    best_parameter = coarse[0]
+    best_tree = _transform_tree(
+        dataset.tree,
+        mode="pagel-lambda",
+        parameter_value=best_parameter,
+    )
+    best_covariance = lambda_transform_covariance(
+        dataset.covariance_matrix,
+        best_parameter,
+    )
+    best_fit = _fit_intercept_only_model(dataset, best_covariance)
+    best_index = 0
+    profile: list[tuple[float, float]] = [(best_parameter, best_fit.log_likelihood)]
+    coarse_best_parameter = best_parameter
+    coarse_best_log_likelihood = best_fit.log_likelihood
+    for index, candidate in enumerate(coarse[1:], start=1):
+        transformed_tree = _transform_tree(
+            dataset.tree,
+            mode="pagel-lambda",
+            parameter_value=candidate,
+        )
+        covariance = lambda_transform_covariance(
+            dataset.covariance_matrix,
+            candidate,
+        )
+        fit = _fit_intercept_only_model(dataset, covariance)
+        profile.append((candidate, fit.log_likelihood))
+        if fit.log_likelihood > best_fit.log_likelihood:
+            best_parameter = candidate
+            best_tree = transformed_tree
+            best_covariance = covariance
+            best_fit = fit
+            best_index = index
+            coarse_best_parameter = candidate
+            coarse_best_log_likelihood = fit.log_likelihood
+
+    left = coarse[max(0, best_index - 1)]
+    right = coarse[min(len(coarse) - 1, best_index + 1)]
+    fine_candidates = _linspace(left, right, 81)
+    for candidate in fine_candidates:
+        if math.isclose(candidate, best_parameter, rel_tol=0.0, abs_tol=1e-12):
+            continue
+        transformed_tree = _transform_tree(
+            dataset.tree,
+            mode="pagel-lambda",
+            parameter_value=candidate,
+        )
+        covariance = lambda_transform_covariance(
+            dataset.covariance_matrix,
+            candidate,
+        )
+        fit = _fit_intercept_only_model(dataset, covariance)
+        profile.append((candidate, fit.log_likelihood))
+        if fit.log_likelihood > best_fit.log_likelihood:
+            best_parameter = candidate
+            best_tree = transformed_tree
+            best_covariance = covariance
+            best_fit = fit
+
+    fine_step = 0.0
+    if len(fine_candidates) > 1:
+        fine_step = fine_candidates[1] - fine_candidates[0]
+    tolerance = max(abs(fine_step) / 2.0, 1e-9)
+    diagnostics = ContinuousModeOptimizerDiagnostics(
+        optimizer_name="governed-two-stage-grid-search",
+        lower_bound=_stable_value(lower),
+        upper_bound=_stable_value(upper),
+        coarse_grid_point_count=len(coarse),
+        fine_grid_point_count=len(fine_candidates),
+        function_evaluation_count=len(profile),
+        coarse_best_parameter=_stable_value(coarse_best_parameter),
+        coarse_best_log_likelihood=_stable_value(coarse_best_log_likelihood),
+        fine_search_start=_stable_value(left),
+        fine_search_stop=_stable_value(right),
+        converged=True,
+        hit_lower_boundary=math.isclose(
+            best_parameter,
+            lower,
+            rel_tol=0.0,
+            abs_tol=tolerance,
+        ),
+        hit_upper_boundary=math.isclose(
+            best_parameter,
+            upper,
+            rel_tol=0.0,
+            abs_tol=tolerance,
+        ),
+    )
+    normalized_profile = sorted(
+        {
+            round(parameter, 12): (parameter, log_likelihood)
+            for parameter, log_likelihood in profile
+        }.values(),
+        key=lambda item: item[0],
+    )
+    return _TransformedModeSearchResult(
+        parameter_value=best_parameter,
+        transformed_tree=best_tree,
+        covariance=best_covariance,
+        optimizer_diagnostics=diagnostics,
+        profile=normalized_profile,
+    )
+
+
 def _linspace(start: float, stop: float, count: int) -> list[float]:
     if count < 2:
         return [start]
@@ -633,6 +776,62 @@ def _early_burst_identifiability_warnings_from_profile(
     return warnings
 
 
+def _lambda_identifiability_warnings_from_profile(
+    lambda_value: float,
+    profile: list[tuple[float, float]],
+    bounds: tuple[float, float],
+) -> list[EvolutionaryModeIdentifiabilityWarning]:
+    lower, upper = bounds
+    span = upper - lower
+    ordered_log_likelihoods = sorted(
+        (log_likelihood for _, log_likelihood in profile),
+        reverse=True,
+    )
+    warnings: list[EvolutionaryModeIdentifiabilityWarning] = []
+    boundary_tolerance = max(span / 160.0, 1e-9)
+    if math.isclose(
+        lambda_value,
+        lower,
+        rel_tol=0.0,
+        abs_tol=boundary_tolerance,
+    ) or math.isclose(
+        lambda_value,
+        upper,
+        rel_tol=0.0,
+        abs_tol=boundary_tolerance,
+    ):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="boundary_lambda",
+                message="best-supported Pagel lambda falls on the search boundary and may not be well identified",
+            )
+        )
+    if len(ordered_log_likelihoods) > 1 and (
+        ordered_log_likelihoods[0] - ordered_log_likelihoods[1] < 0.5
+    ):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="flat_likelihood",
+                message="Pagel-lambda likelihood stays shallow across the bounded search, so the covariance scaling may be unstable",
+            )
+        )
+    if lambda_value <= lower + max(boundary_tolerance, 1e-6):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="weak_phylogenetic_signal",
+                message="best-supported Pagel lambda remains close to the zero-signal boundary and may be difficult to distinguish from a star-like covariance surface",
+            )
+        )
+    if lambda_value >= upper - max(boundary_tolerance, 1e-6):
+        warnings.append(
+            EvolutionaryModeIdentifiabilityWarning(
+                kind="brownian_limit",
+                message="best-supported Pagel lambda remains close to the Brownian boundary and may be difficult to distinguish from an untransformed covariance surface",
+            )
+        )
+    return warnings
+
+
 def _build_tree_rescaling_report(
     tree: PhyloTree,
     tree_path: Path,
@@ -674,13 +873,34 @@ def _transform_tree(
     parameter_value: float,
     sigsq: float = 1.0,
 ) -> PhyloTree:
-    if mode not in {"ornstein-uhlenbeck", "early-burst"}:
+    if mode not in {"ornstein-uhlenbeck", "early-burst", "pagel-lambda"}:
         raise ComparativeMethodError(
-            "tree transformation mode must be 'ornstein-uhlenbeck' or 'early-burst'"
+            "tree transformation mode must be 'ornstein-uhlenbeck', 'early-burst', or 'pagel-lambda'"
         )
     if mode == "ornstein-uhlenbeck" and parameter_value < 0.0:
         raise ComparativeMethodError("OU alpha must be non-negative")
+    if mode == "pagel-lambda" and not 0.0 <= parameter_value <= 1.0:
+        raise ComparativeMethodError("Pagel lambda must lie within [0, 1]")
     cloned_root = _clone_node(tree.root)
+    if mode == "pagel-lambda":
+        def visit_pagel_lambda(node: TreeNode, depth: float) -> None:
+            for child in node.children:
+                original_length = float(child.branch_length or 0.0)
+                if child.is_leaf():
+                    child.branch_length = original_length + (
+                        (1.0 - parameter_value) * depth
+                    )
+                else:
+                    child.branch_length = original_length * parameter_value
+                visit_pagel_lambda(child, depth + original_length)
+
+        visit_pagel_lambda(cloned_root, 0.0)
+        return PhyloTree(
+            root=cloned_root,
+            source_format=tree.source_format,
+            rooted=tree.rooted,
+        )
+
     total_depth = _max_tip_depth(tree.root, depth=0.0)
 
     def visit(node: TreeNode, depth: float) -> None:
