@@ -1228,6 +1228,7 @@ leave-one-taxon-out sensitivity:
 uv run bijux-phylogenetics parity --json
 uv run bijux-phylogenetics parity --extended --json
 uv run bijux-phylogenetics parity --reference-source ape-live --json
+uv run bijux-phylogenetics parity --reference-source geiger-live --json
 uv run bijux-phylogenetics comparative validate-reference --json
 uv run bijux-phylogenetics comparative maturity tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --lambda-value 1.0 --json
 uv run bijux-phylogenetics comparative pgls tree.nwk traits.tsv --formula "height_cm ~ log(body_mass) + habitat" --json
@@ -1300,6 +1301,24 @@ same owned matrix now also feeds
 do not have to reparse one FASTA file separately for composition,
 segregating-site, nucleotide-distance, aligned coding diagnostics, and
 aligned translation inspection.
+
+`parity --reference-source geiger-live` is the governed live `geiger`
+execution harness for the owned continuous-mode fit surfaces. It launches the
+checked-in `Rscript` runner through the same live parity contract as the `ape`
+and `phytools` lanes, records the R version, `geiger` version, Bijux version,
+Bijux commit, function name, fixture id, model name, invoked optimizer
+settings, tolerance, pass or fail state, mismatch reason, and reproducible
+artifact root for every governed case, and writes one summary TSV plus one
+observation TSV instead of relying on console scraping. The initial registry is
+intentionally narrow for this harness goal: it currently covers
+`geiger::fitContinuous(model='BM')`,
+`geiger::fitContinuous(model='OU')`, and
+`geiger::fitContinuous(model='EB')` over the four-taxon comparative reference
+fixture plus the governed continuous-mode recovery panel. Failed or skipped
+cases always persist their case payload, structured summaries, parameter
+ledgers, and mismatch reason under `artifacts/geiger-parity-failures/` so the
+live parity lane stays reviewer-usable instead of collapsing into hidden
+manual reruns.
 
 `parity --reference-source phytools-live` is the governed live `phytools`
 execution harness. It uses the same checked-in `Rscript` orchestration model
