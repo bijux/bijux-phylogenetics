@@ -124,7 +124,12 @@ class ComparativeModelComparisonRow:
     log_likelihood: float
     aic: float
     aicc: float
-    selected: bool
+    delta_aic: float | None = None
+    delta_aicc: float | None = None
+    rank: int | None = None
+    comparable: bool = True
+    comparability_note: str | None = None
+    selected: bool = False
 
 
 @dataclass(slots=True)
@@ -137,6 +142,7 @@ class ComparativeModelComparisonReport:
     taxon_count: int
     rows: list[ComparativeModelComparisonRow]
     better_model: str
+    warnings: list[str]
 
 
 @dataclass(slots=True)
@@ -426,6 +432,7 @@ def compare_brownian_and_ou_models(
         taxon_count=n,
         rows=rows,
         better_model=better_model,
+        warnings=[],
     )
 
 
@@ -1232,6 +1239,11 @@ def _comparison_row(
         log_likelihood=log_likelihood,
         aic=aic,
         aicc=aicc,
+        delta_aic=None,
+        delta_aicc=None,
+        rank=None,
+        comparable=True,
+        comparability_note=None,
         selected=False,
     )
 
