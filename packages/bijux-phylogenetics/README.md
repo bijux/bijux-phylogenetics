@@ -447,6 +447,15 @@ pending, or stale from the execution record, task logs, running marker, and
 durable variant outputs; `slurm-partition-status.tsv` rolls those counts up by
 array partition; and `slurm-workflow-status.json` carries the same summary for
 machine review.
+On top of that, the same bundle now writes one stale-output invalidation
+surface: `slurm-output-freshness.tsv` records whether each planned job still
+matches the current packaged inputs and output-affecting workflow settings,
+`slurm-output-freshness-checks.tsv` exposes the exact checksum and setting
+checks behind that verdict, and `slurm-output-freshness.json` carries the same
+summary for machine review. That means changed input files or changed declared
+settings no longer look like clean completed outputs: the freshness ledger and
+the resumable status ledger both mark those results as stale until the batch is
+rerun.
 Its reviewer-facing HTML report is now intentionally compact: it surfaces one
 summary card set plus explicit links to the governed TSV and JSON ledgers
 instead of embedding those tables directly, and the bundle now includes
@@ -460,6 +469,9 @@ also report `report_linked_artifact_count`, `report_html_size_bytes`,
 `slurm_total_estimated_scratch_mib`, `slurm_total_estimated_output_mib`,
 `slurm_array_partition_count`, `slurm_array_script_count`, and
 `slurm_array_largest_partition_size`,
+`slurm_output_freshness_check_count`,
+`slurm_output_freshness_failed_check_count`,
+`slurm_fresh_output_job_count`, and `slurm_stale_output_job_count`,
 `reproducibility_passed`, `reproducibility_check_count`,
 `reproducibility_failed_check_count`, and
 `reproducibility_failed_variant_count`.

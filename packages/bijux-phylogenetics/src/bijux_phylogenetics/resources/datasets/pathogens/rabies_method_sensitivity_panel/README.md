@@ -103,6 +103,13 @@ The governed expected bundle now also includes:
   array partition and array index
 - `slurm-array-strategy.json`: one machine-readable export of the array
   partitioning contract
+- `slurm-output-freshness.tsv`: one per-job stale-output ledger proving
+  whether each planned job still matches the current packaged inputs and
+  output-affecting settings
+- `slurm-output-freshness-checks.tsv`: one check-level ledger over the exact
+  input checksum and workflow-setting comparisons behind the freshness result
+- `slurm-output-freshness.json`: one machine-readable freshness summary over
+  fresh jobs, stale jobs, and failed freshness checks
 - `slurm-job-status.tsv`: one per-job ledger classifying planned jobs as
   completed, failed, pending, or stale from the real execution evidence
 - `slurm-partition-status.tsv`: one per-partition rollup of job-state counts
