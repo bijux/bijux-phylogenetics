@@ -59,6 +59,10 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_freshness impo
     write_rabies_method_sensitivity_slurm_output_freshness_json,
     write_rabies_method_sensitivity_slurm_output_freshness_table,
 )
+from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_job_evidence import (
+    RabiesMethodSensitivitySlurmJobEvidenceReport,
+    write_rabies_method_sensitivity_slurm_job_evidence_bundle,
+)
 from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_status import (
     RabiesMethodSensitivitySlurmStatusReport,
     build_rabies_method_sensitivity_slurm_status_report,
@@ -256,6 +260,9 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     slurm_array_members_path: Path
     slurm_array_strategy_path: Path
     slurm_array_scripts_root: Path
+    slurm_job_evidence_root: Path
+    slurm_job_evidence_index_path: Path
+    slurm_job_evidence_summary_path: Path
     slurm_job_count: int
     slurm_total_estimated_core_hours: float
     slurm_maximum_estimated_memory_mib: int
@@ -265,6 +272,9 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     slurm_array_partition_count: int
     slurm_array_script_count: int
     slurm_array_largest_partition_size: int
+    slurm_job_evidence_file_count: int
+    slurm_job_evidence_total_runtime_seconds: float
+    slurm_job_evidence_total_output_byte_count: int
     slurm_output_freshness_path: Path
     slurm_output_freshness_checks_path: Path
     slurm_output_freshness_summary_path: Path
@@ -781,6 +791,22 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         output_root / "slurm-workflow-status.json",
         slurm_status_report,
     )
+    slurm_job_evidence_report = (
+        write_rabies_method_sensitivity_slurm_job_evidence_bundle(
+            output_root / "slurm-job-evidence",
+            bundle_root=output_root,
+            dataset_id=report.dataset.dataset_id,
+            workflow_prefix=report.dataset.workflow_prefix,
+            execution_mode=report.execution_mode,
+            parallel_workers=report.parallel_workers,
+            task_records=report.task_records,
+            variant_runs=report.variant_runs,
+            array_strategy_report=slurm_array_strategy_report,
+            execution_record_path=execution_record_path,
+            workflow_manifest_path=output_root
+            / "rabies-method-sensitivity.manifest.json",
+        )
+    )
     manifest_path = _write_manifest(
         output_root / "rabies-method-sensitivity.manifest.json",
         report=report,
@@ -803,6 +829,9 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_array_members": slurm_array_members_path,
             "slurm_array_strategy": slurm_array_strategy_path,
             "slurm_array_scripts_root": slurm_array_scripts_root,
+            "slurm_job_evidence_root": slurm_job_evidence_report.evidence_root,
+            "slurm_job_evidence_index": slurm_job_evidence_report.index_path,
+            "slurm_job_evidence_summary": slurm_job_evidence_report.summary_path,
             "slurm_output_freshness": slurm_output_freshness_path,
             "slurm_output_freshness_checks": slurm_output_freshness_checks_path,
             "slurm_output_freshness_summary": slurm_output_freshness_summary_path,
@@ -833,6 +862,8 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_array_partitions": slurm_array_partitions_path,
             "slurm_array_members": slurm_array_members_path,
             "slurm_array_strategy": slurm_array_strategy_path,
+            "slurm_job_evidence_index": slurm_job_evidence_report.index_path,
+            "slurm_job_evidence_summary": slurm_job_evidence_report.summary_path,
             "slurm_output_freshness": slurm_output_freshness_path,
             "slurm_output_freshness_checks": slurm_output_freshness_checks_path,
             "slurm_output_freshness_summary": slurm_output_freshness_summary_path,
@@ -882,6 +913,8 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_array_partitions_path,
         slurm_array_members_path,
         slurm_array_strategy_path,
+        slurm_job_evidence_report.index_path,
+        slurm_job_evidence_report.summary_path,
         slurm_output_freshness_path,
         slurm_output_freshness_checks_path,
         slurm_output_freshness_summary_path,
@@ -910,6 +943,8 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_array_partitions": slurm_array_partitions_path,
             "slurm_array_members": slurm_array_members_path,
             "slurm_array_strategy": slurm_array_strategy_path,
+            "slurm_job_evidence_index": slurm_job_evidence_report.index_path,
+            "slurm_job_evidence_summary": slurm_job_evidence_report.summary_path,
             "slurm_output_freshness": slurm_output_freshness_path,
             "slurm_output_freshness_checks": slurm_output_freshness_checks_path,
             "slurm_output_freshness_summary": slurm_output_freshness_summary_path,
@@ -924,6 +959,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         reproducibility_report=reproducibility_report,
         slurm_planning_report=slurm_planning_report,
         slurm_array_strategy_report=slurm_array_strategy_report,
+        slurm_job_evidence_report=slurm_job_evidence_report,
         slurm_output_freshness_report=slurm_output_freshness_report,
         slurm_status_report=slurm_status_report,
     )
@@ -976,6 +1012,9 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_array_members_path=slurm_array_members_path,
         slurm_array_strategy_path=slurm_array_strategy_path,
         slurm_array_scripts_root=slurm_array_scripts_root,
+        slurm_job_evidence_root=slurm_job_evidence_report.evidence_root,
+        slurm_job_evidence_index_path=slurm_job_evidence_report.index_path,
+        slurm_job_evidence_summary_path=slurm_job_evidence_report.summary_path,
         slurm_job_count=slurm_planning_report.job_count,
         slurm_total_estimated_core_hours=(
             slurm_planning_report.total_estimated_core_hours
@@ -996,6 +1035,15 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_array_script_count=slurm_array_strategy_report.script_count,
         slurm_array_largest_partition_size=(
             slurm_array_strategy_report.largest_partition_size
+        ),
+        slurm_job_evidence_file_count=(
+            slurm_job_evidence_report.total_artifact_file_count
+        ),
+        slurm_job_evidence_total_runtime_seconds=(
+            slurm_job_evidence_report.total_runtime_seconds
+        ),
+        slurm_job_evidence_total_output_byte_count=(
+            slurm_job_evidence_report.total_output_byte_count
         ),
         slurm_output_freshness_path=slurm_output_freshness_path,
         slurm_output_freshness_checks_path=slurm_output_freshness_checks_path,
@@ -1877,6 +1925,7 @@ def _write_report(
     reproducibility_report: RabiesMethodSensitivityReproducibilityAuditReport,
     slurm_planning_report: RabiesMethodSensitivitySlurmPlanningReport,
     slurm_array_strategy_report: RabiesMethodSensitivitySlurmArrayStrategyReport,
+    slurm_job_evidence_report: RabiesMethodSensitivitySlurmJobEvidenceReport,
     slurm_output_freshness_report: RabiesMethodSensitivitySlurmOutputFreshnessReport,
     slurm_status_report: RabiesMethodSensitivitySlurmStatusReport,
 ) -> Path:
@@ -1987,6 +2036,26 @@ def _write_report(
             ),
         ),
         (
+            "slurm-job-evidence",
+            "\n".join(
+                [
+                    f"job evidence packages: {slurm_job_evidence_report.job_count}",
+                    (
+                        "job evidence artifact files: "
+                        f"{slurm_job_evidence_report.total_artifact_file_count}"
+                    ),
+                    (
+                        "job evidence total runtime seconds: "
+                        f"{_format_float(slurm_job_evidence_report.total_runtime_seconds)}"
+                    ),
+                    (
+                        "job evidence total output bytes: "
+                        f"{slurm_job_evidence_report.total_output_byte_count}"
+                    ),
+                ]
+            ),
+        ),
+        (
             "slurm-output-freshness",
             "\n".join(
                 [
@@ -2056,6 +2125,14 @@ def _write_report(
                     (
                         "slurm array strategy: "
                         f"{bundle_paths['slurm_array_strategy'].name}"
+                    ),
+                    (
+                        "slurm job evidence index: "
+                        f"{bundle_paths['slurm_job_evidence_index'].name}"
+                    ),
+                    (
+                        "slurm job evidence summary: "
+                        f"{bundle_paths['slurm_job_evidence_summary'].name}"
                     ),
                     (
                         "slurm output freshness: "
@@ -2140,6 +2217,15 @@ def _write_report(
             "slurm_array_largest_partition_size": (
                 slurm_array_strategy_report.largest_partition_size
             ),
+            "slurm_job_evidence_file_count": (
+                slurm_job_evidence_report.total_artifact_file_count
+            ),
+            "slurm_job_evidence_total_runtime_seconds": (
+                slurm_job_evidence_report.total_runtime_seconds
+            ),
+            "slurm_job_evidence_total_output_byte_count": (
+                slurm_job_evidence_report.total_output_byte_count
+            ),
             "slurm_output_freshness_check_count": (
                 slurm_output_freshness_report.check_count
             ),
@@ -2175,6 +2261,10 @@ def _write_report(
             (
                 "slurm array partitions",
                 slurm_array_strategy_report.partition_count,
+            ),
+            (
+                "slurm job evidence files",
+                slurm_job_evidence_report.total_artifact_file_count,
             ),
             (
                 "slurm fresh output jobs",
@@ -2249,6 +2339,9 @@ def _write_overview(
         f"- slurm array partitions: `{bundle.slurm_array_partition_count}`",
         f"- slurm array scripts: `{bundle.slurm_array_script_count}`",
         f"- slurm largest array partition: `{bundle.slurm_array_largest_partition_size}`",
+        f"- slurm job evidence files: `{bundle.slurm_job_evidence_file_count}`",
+        f"- slurm job evidence runtime seconds: `{_format_float(bundle.slurm_job_evidence_total_runtime_seconds)}`",
+        f"- slurm job evidence output bytes: `{bundle.slurm_job_evidence_total_output_byte_count}`",
         f"- slurm output freshness checks: `{bundle.slurm_output_freshness_check_count}`",
         f"- failed slurm output freshness checks: `{bundle.slurm_output_freshness_failed_check_count}`",
         f"- slurm fresh output jobs: `{bundle.slurm_fresh_output_job_count}`",
@@ -2265,6 +2358,9 @@ def _write_overview(
         f"- slurm array partitions table: `{bundle.slurm_array_partitions_path.name}`",
         f"- slurm array members table: `{bundle.slurm_array_members_path.name}`",
         f"- slurm array strategy: `{bundle.slurm_array_strategy_path.name}`",
+        f"- slurm job evidence root: `{bundle.slurm_job_evidence_root.name}/`",
+        f"- slurm job evidence table: `{bundle.slurm_job_evidence_index_path.name}`",
+        f"- slurm job evidence summary: `{bundle.slurm_job_evidence_summary_path.name}`",
         f"- slurm output freshness table: `{bundle.slurm_output_freshness_path.name}`",
         f"- slurm output freshness checks: `{bundle.slurm_output_freshness_checks_path.name}`",
         f"- slurm output freshness summary: `{bundle.slurm_output_freshness_summary_path.name}`",

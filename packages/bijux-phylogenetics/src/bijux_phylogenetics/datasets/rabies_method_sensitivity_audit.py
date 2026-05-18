@@ -196,7 +196,12 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         for key, value in dict(workflow_manifest.get("output_checksums", {})).items()
     }
     for key, output_path in sorted(manifest_output_paths.items()):
-        if key in {"task_logs_root", "variants_root", "slurm_array_scripts_root"}:
+        if key in {
+            "task_logs_root",
+            "variants_root",
+            "slurm_array_scripts_root",
+            "slurm_job_evidence_root",
+        }:
             add_check(
                 f"workflow-manifest:{key}",
                 surface="workflow-manifest",
