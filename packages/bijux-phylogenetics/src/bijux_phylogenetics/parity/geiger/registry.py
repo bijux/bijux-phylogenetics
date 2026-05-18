@@ -42,7 +42,9 @@ class GeigerParityCase:
     fine_grid_point_count: int | None = None
     initial_parameter_value: float | None = None
     comparison_fields: tuple[str, ...] = ()
+    row_comparison_policy: str = "full"
     lambda_bounds: tuple[float, float] | None = None
+    discrete_transform_name: str | None = None
     kappa_bounds: tuple[float, float] | None = None
     delta_bounds: tuple[float, float] | None = None
     ou_bounds: tuple[float, float] | None = None
@@ -130,6 +132,12 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
     )
     discrete_er_binary_fixture = get_shared_geiger_discrete_fixture(
         "geiger_discrete_er_binary_twenty_four_taxa"
+    )
+    discrete_lambda_weak_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_lambda_weak_signal_twenty_four_taxa"
+    )
+    discrete_lambda_missing_fixture = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_lambda_missing_binary_twenty_four_taxa"
     )
     discrete_er_missing_fixture = get_shared_geiger_discrete_fixture(
         "geiger_discrete_missing_three_state_twenty_four_taxa"
@@ -1320,6 +1328,142 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "aic",
                 "aicc",
             ),
+            row_field_tolerances={"rate": 1e-2},
+        ),
+        GeigerParityCase(
+            case_id="fitdiscrete-lambda-strong-signal-review",
+            fixture_id=discrete_er_binary_fixture.fixture_id,
+            function_name="geiger::fitDiscrete(model='ER', transform='lambda')",
+            python_function_name="fit_discrete_mk_model",
+            operation="fit-discrete-mk",
+            model_name="ER",
+            python_mode="equal-rates",
+            input_fixtures=(
+                discrete_er_binary_fixture.tree_path,
+                discrete_er_binary_fixture.traits_path,
+            ),
+            tolerance=1e-5,
+            trait_name=discrete_er_binary_fixture.trait_name,
+            taxon_column=discrete_er_binary_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitdiscrete-default",
+                "bijux_optimizer_name": "bounded-coarse-and-golden-search",
+                "bijux_rate_surface": "discrete-mk-er",
+                "bijux_transform_surface": "discrete-mk-lambda",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "transform_name",
+                "observed_state_count",
+                "state_order",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "log_likelihood",
+                "parameter_count",
+                "aic",
+                "aicc",
+                "parameter_name",
+                "parameter_value",
+            ),
+            lambda_bounds=(0.0, 1.0),
+            discrete_transform_name="lambda",
+            field_tolerances={"parameter_value": 1e-4},
+            row_field_tolerances={"rate": 1e-2},
+        ),
+        GeigerParityCase(
+            case_id="fitdiscrete-lambda-weak-signal-review",
+            fixture_id=discrete_lambda_weak_fixture.fixture_id,
+            function_name="geiger::fitDiscrete(model='ER', transform='lambda')",
+            python_function_name="fit_discrete_mk_model",
+            operation="fit-discrete-mk",
+            model_name="ER",
+            python_mode="equal-rates",
+            input_fixtures=(
+                discrete_lambda_weak_fixture.tree_path,
+                discrete_lambda_weak_fixture.traits_path,
+            ),
+            tolerance=1e-5,
+            trait_name=discrete_lambda_weak_fixture.trait_name,
+            taxon_column=discrete_lambda_weak_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitdiscrete-default",
+                "bijux_optimizer_name": "bounded-coarse-and-golden-search",
+                "bijux_rate_surface": "discrete-mk-er",
+                "bijux_transform_surface": "discrete-mk-lambda",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "transform_name",
+                "observed_state_count",
+                "state_order",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "log_likelihood",
+                "parameter_count",
+                "aic",
+                "aicc",
+                "parameter_name",
+                "parameter_value",
+            ),
+            lambda_bounds=(0.0, 1.0),
+            discrete_transform_name="lambda",
+            row_comparison_policy="summary-only",
+            field_tolerances={"parameter_value": 1e-4},
+            row_field_tolerances={"rate": 1e-2},
+        ),
+        GeigerParityCase(
+            case_id="fitdiscrete-lambda-missing-values-review",
+            fixture_id=discrete_lambda_missing_fixture.fixture_id,
+            function_name="geiger::fitDiscrete(model='ER', transform='lambda')",
+            python_function_name="fit_discrete_mk_model",
+            operation="fit-discrete-mk",
+            model_name="ER",
+            python_mode="equal-rates",
+            input_fixtures=(
+                discrete_lambda_missing_fixture.tree_path,
+                discrete_lambda_missing_fixture.traits_path,
+            ),
+            tolerance=1e-5,
+            trait_name=discrete_lambda_missing_fixture.trait_name,
+            taxon_column=discrete_lambda_missing_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitdiscrete-default",
+                "bijux_optimizer_name": "bounded-coarse-and-golden-search",
+                "bijux_rate_surface": "discrete-mk-er",
+                "bijux_transform_surface": "discrete-mk-lambda",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "transform_name",
+                "observed_state_count",
+                "state_order",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "log_likelihood",
+                "parameter_count",
+                "aic",
+                "aicc",
+                "parameter_name",
+                "parameter_value",
+            ),
+            lambda_bounds=(0.0, 1.0),
+            discrete_transform_name="lambda",
+            field_tolerances={"parameter_value": 1e-4},
             row_field_tolerances={"rate": 1e-2},
         ),
         GeigerParityCase(

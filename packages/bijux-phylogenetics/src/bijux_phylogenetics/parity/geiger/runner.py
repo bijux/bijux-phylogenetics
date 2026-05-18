@@ -156,9 +156,11 @@ def _write_case_file(path: Path, case: GeigerParityCase) -> Path:
         "fine_grid_point_count": case.fine_grid_point_count,
         "initial_parameter_value": case.initial_parameter_value,
         "comparison_fields": list(case.comparison_fields),
+        "row_comparison_policy": case.row_comparison_policy,
         "lambda_bounds": None
         if case.lambda_bounds is None
         else list(case.lambda_bounds),
+        "discrete_transform_name": case.discrete_transform_name,
         "kappa_bounds": None
         if case.kappa_bounds is None
         else list(case.kappa_bounds),
@@ -273,6 +275,8 @@ def _row_mismatch_reason(
     reference_rows: list[dict[str, object]] | None,
     bijux_rows: list[dict[str, object]] | None,
 ) -> str | None:
+    if case.row_comparison_policy == "summary-only":
+        return None
     if reference_rows is None or bijux_rows is None:
         return "rows_missing"
     normalized_reference_rows = _normalized_rows(case, reference_rows)
@@ -599,16 +603,30 @@ def _build_bijux_discrete_case_payload(
         trait=case.trait_name,
         taxon_column=case.taxon_column,
         model=case.python_mode,
+        transform=case.discrete_transform_name,
+        lambda_bounds=(0.0, 1.0)
+        if case.lambda_bounds is None
+        else case.lambda_bounds,
     )
     input_audit = report.input_audit
     missing_value_taxa = sorted(
         set(input_audit.pruned_missing_value_taxa) - set(tree_only_taxa)
     )
     excluded_taxa = sorted(set(tree_only_taxa) | set(missing_value_taxa))
+    transform_fit = report.transform_fit
     summary = {
         "taxon_count": report.taxon_count,
         "trait_name": report.trait,
         "model_name": case.model_name,
+        "transform_name": (
+            None
+            if transform_fit is None
+            else (
+                "pagel-lambda"
+                if transform_fit.transform_name == "lambda"
+                else transform_fit.transform_name
+            )
+        ),
         "observed_state_count": len(input_audit.observed_states),
         "state_order": list(report.state_order),
         "excluded_taxon_count": len(excluded_taxa),
@@ -621,6 +639,10 @@ def _build_bijux_discrete_case_payload(
         "parameter_count": report.parameter_count,
         "aic": report.aic,
         "aicc": report.aicc,
+        "parameter_name": None if transform_fit is None else transform_fit.parameter_name,
+        "parameter_value": (
+            None if transform_fit is None else transform_fit.parameter_value
+        ),
         "optimizer_settings": case.optimizer_settings,
         "optimizer_result": _bijux_optimizer_result(case, report),
     }

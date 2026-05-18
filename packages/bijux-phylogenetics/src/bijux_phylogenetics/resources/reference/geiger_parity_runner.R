@@ -485,7 +485,8 @@ build_fitdiscrete_payload <- function(tree, trait_values, excluded_taxa, missing
   fit <- geiger::fitDiscrete(
     phy = tree,
     dat = trait_values,
-    model = case_payload$model_name
+    model = case_payload$model_name,
+    transform = if (is.null(case_payload$discrete_transform_name)) NULL else case_payload$discrete_transform_name
   )
   state_levels <- levels(trait_values)
   observed_state_count <- length(state_levels)
@@ -495,10 +496,18 @@ build_fitdiscrete_payload <- function(tree, trait_values, excluded_taxa, missing
     integer(1)
   )
   sparse_states <- names(state_counts[state_counts < 2])
+  transform_name <- if (is.null(case_payload$discrete_transform_name)) NULL else paste0("pagel-", case_payload$discrete_transform_name)
+  parameter_name <- NULL
+  parameter_value <- NULL
+  if (identical(case_payload$discrete_transform_name, "lambda")) {
+    parameter_name <- "lambda"
+    parameter_value <- as.numeric(fit$opt$lambda)
+  }
   summary <- list(
     taxon_count = length(trait_values),
     trait_name = case_payload$trait_name,
     model_name = case_payload$model_name,
+    transform_name = transform_name,
     observed_state_count = observed_state_count,
     state_order = json_array(state_levels),
     excluded_taxon_count = length(excluded_taxa),
@@ -511,6 +520,8 @@ build_fitdiscrete_payload <- function(tree, trait_values, excluded_taxa, missing
     parameter_count = as.integer(fit$opt$k),
     aic = as.numeric(fit$opt$aic),
     aicc = as.numeric(fit$opt$aicc),
+    parameter_name = parameter_name,
+    parameter_value = parameter_value,
     sparse_states = json_array(unname(sparse_states)),
     optimizer_settings = case_payload$optimizer_settings,
     optimizer_result = normalize_fitdiscrete_result(fit)
