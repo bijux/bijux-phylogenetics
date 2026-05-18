@@ -239,6 +239,20 @@ class MedusaExclusionReport:
     warnings: list[str]
 
 
+@dataclass(slots=True)
+class GeigerBirthDeathExclusionReport:
+    tree_path: Path
+    metadata_path: Path | None
+    validation: TimeTreeValidationReport
+    sampling_report: SamplingFractionReport | None
+    geiger_reference_surface: str
+    geiger_reference_arguments: list[str]
+    owned_surface: str
+    exclusion_code: str
+    exclusion_reason: str
+    warnings: list[str]
+
+
 def _node_depths(tree: PhyloTree) -> dict[str, float]:
     depths: dict[str, float] = {node_signature(tree.root): 0.0}
 
@@ -325,6 +339,17 @@ def _medusa_exclusion_reason() -> str:
         "shift-count model-growth selection, or branch-placement ranking; existing "
         "clade diversification summaries are descriptive reviews and are not claimed "
         "as MEDUSA-equivalent rate-shift detection"
+    )
+
+
+def _geiger_birth_death_exclusion_reason() -> str:
+    return (
+        "geiger::bd.ms birth-death parity is explicitly excluded in this round "
+        "because local geiger exposes bd.ms as a simulation-oriented surface with "
+        "arguments `phy`, `time`, `n`, `missing`, `crown`, and `epsilon`, while "
+        "bijux currently reports heuristic Yule and birth-death diversification "
+        "summaries rather than one optimized geiger-matched diversification "
+        "likelihood contract"
     )
 
 
@@ -823,8 +848,10 @@ def estimate_diversification_rate(
     assumptions = [
         "tree is treated as a rooted ultrametric crown tree",
         "rates are estimated from extant tip counts and crown age only",
+        _geiger_birth_death_exclusion_reason(),
     ]
     warnings = list(validation.warnings)
+    warnings.append(_geiger_birth_death_exclusion_reason())
     if sampling_report is not None:
         warnings.extend(sampling_report.warnings)
         if sampling_report.sampling_fraction is None:
@@ -1313,6 +1340,44 @@ def summarize_medusa_exclusion(
         supported_surfaces=_medusa_supported_surfaces(),
         missing_surfaces=_medusa_missing_surfaces(),
         exclusion_code="geiger_medusa_explicitly_excluded_this_round",
+        exclusion_reason=exclusion_reason,
+        warnings=_deduplicate_text(warnings),
+    )
+
+
+def summarize_geiger_birth_death_exclusion(
+    tree_path: Path,
+    *,
+    metadata_path: Path | None = None,
+    taxon_column: str | None = None,
+    sampling_column: str | None = None,
+) -> GeigerBirthDeathExclusionReport:
+    """Explain why current diversification summaries do not claim geiger bd.ms parity."""
+    validation = validate_time_tree_for_diversification(tree_path)
+    sampling_report = (
+        None
+        if metadata_path is None
+        else detect_incomplete_taxon_sampling_metadata(
+            tree_path,
+            metadata_path,
+            taxon_column=taxon_column,
+            sampling_column=sampling_column,
+        )
+    )
+    exclusion_reason = _geiger_birth_death_exclusion_reason()
+    warnings = list(validation.warnings)
+    if sampling_report is not None:
+        warnings.extend(sampling_report.warnings)
+    warnings.append(exclusion_reason)
+    return GeigerBirthDeathExclusionReport(
+        tree_path=tree_path,
+        metadata_path=metadata_path,
+        validation=validation,
+        sampling_report=sampling_report,
+        geiger_reference_surface="geiger::bd.ms",
+        geiger_reference_arguments=["phy", "time", "n", "missing", "crown", "epsilon"],
+        owned_surface="heuristic-yule-and-birth-death-diversification-summary",
+        exclusion_code="geiger_birth_death_explicitly_excluded_this_round",
         exclusion_reason=exclusion_reason,
         warnings=_deduplicate_text(warnings),
     )
