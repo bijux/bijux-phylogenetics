@@ -336,7 +336,7 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 42
+    assert payload["metrics"]["artifact_count"] == 46
     assert payload["metrics"]["taxon_count"] == 9
     assert payload["metrics"]["variant_count"] == 4
     assert payload["metrics"]["parallel_workers"] == 2
@@ -346,7 +346,7 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     assert payload["metrics"]["preprocessing_change_pair_count"] == 0
     assert payload["metrics"]["rooted_engine_change_variant_count"] == 0
     assert payload["metrics"]["serious_conflict_variant_count"] == 4
-    assert payload["metrics"]["report_linked_artifact_count"] == 33
+    assert payload["metrics"]["report_linked_artifact_count"] == 37
     assert payload["metrics"]["report_html_size_bytes"] > 0
     assert payload["metrics"]["report_linked_artifact_bytes"] > 0
     assert (
@@ -377,6 +377,10 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
         "ginsi-gap-threshold",
         "ginsi-gappyout",
     }
+    assert payload["metrics"]["slurm_output_explosion_status"] == "low"
+    assert payload["metrics"]["slurm_output_explosion_global_issue_count"] == 0
+    assert payload["metrics"]["slurm_output_explosion_warning_variant_count"] == 0
+    assert payload["metrics"]["slurm_output_explosion_high_risk_variant_count"] == 0
     assert payload["metrics"]["slurm_merge_status"] == "merge-ready"
     assert payload["metrics"]["slurm_merge_ready"] is True
     assert payload["metrics"]["slurm_mergeable_variant_count"] == 4
@@ -427,6 +431,12 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     )
     assert payload["data"]["workflow_bundle"]["slurm_storage_report_path"] == str(
         output / "workflow" / "slurm-storage-report.html"
+    )
+    assert payload["data"]["workflow_bundle"]["slurm_output_explosion_summary_path"] == str(
+        output / "workflow" / "slurm-output-explosion-report.json"
+    )
+    assert payload["data"]["workflow_bundle"]["slurm_output_explosion_report_path"] == str(
+        output / "workflow" / "slurm-output-explosion-report.html"
     )
     assert payload["data"]["workflow_bundle"]["slurm_merge_summary_path"] == str(
         output / "workflow" / "slurm-merge-report.json"

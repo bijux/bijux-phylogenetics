@@ -913,6 +913,10 @@ def run_demo_command(args: Any) -> int:
                 result.workflow_bundle.slurm_storage_variants_path,
                 result.workflow_bundle.slurm_storage_summary_path,
                 result.workflow_bundle.slurm_storage_report_path,
+                result.workflow_bundle.slurm_output_explosion_checks_path,
+                result.workflow_bundle.slurm_output_explosion_variants_path,
+                result.workflow_bundle.slurm_output_explosion_summary_path,
+                result.workflow_bundle.slurm_output_explosion_report_path,
                 result.workflow_bundle.slurm_merge_checks_path,
                 result.workflow_bundle.slurm_merge_variants_path,
                 result.workflow_bundle.slurm_merge_summary_path,
@@ -1030,6 +1034,18 @@ def run_demo_command(args: Any) -> int:
                         ),
                         "slurm_storage_largest_variant_id": (
                             result.workflow_bundle.slurm_storage_largest_variant_id
+                        ),
+                        "slurm_output_explosion_status": (
+                            result.workflow_bundle.slurm_output_explosion_status
+                        ),
+                        "slurm_output_explosion_global_issue_count": (
+                            result.workflow_bundle.slurm_output_explosion_global_issue_count
+                        ),
+                        "slurm_output_explosion_warning_variant_count": (
+                            result.workflow_bundle.slurm_output_explosion_warning_variant_count
+                        ),
+                        "slurm_output_explosion_high_risk_variant_count": (
+                            result.workflow_bundle.slurm_output_explosion_high_risk_variant_count
                         ),
                         "slurm_merge_status": (
                             result.workflow_bundle.slurm_merge_status
