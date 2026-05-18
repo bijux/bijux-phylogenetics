@@ -25,6 +25,7 @@ from bijux_phylogenetics.io.fasta import (
     summarise_fasta,
 )
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.bayesian import build_time_tree_figure_package
 from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.trait_tree_package import (
     build_annotated_trait_tree_package,
@@ -772,6 +773,116 @@ def validate_trait_tree_reference_fixtures(
         ],
         limitations=[
             "trait-tree publication readiness is governed through render metadata and annotation ledgers rather than screenshot goldens",
+        ],
+    )
+
+
+def validate_time_tree_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
+    """Validate time-tree publication fixtures for visible uncertainty and readiness."""
+    root = _default_fixtures_root() if fixtures_root is None else fixtures_root
+    posterior_tree_path = _fixture(root, "metadata", "beast2_strict_yule_posterior.trees")
+    metadata_path = _fixture(root, "metadata", "example_metadata.tsv")
+    tip_dates_path = _fixture(root, "metadata", "example_tip_dates.tsv")
+    invalid_tip_dates_path = _fixture(root, "metadata", "example_tip_dates_invalid.tsv")
+    temp_root = _temp_reference_dir("bijux-time-tree-reference")
+    temp_root.mkdir(parents=True, exist_ok=True)
+
+    valid_package = build_time_tree_figure_package(
+        posterior_tree_path,
+        out_dir=temp_root / "valid-package",
+        source_format="beast",
+        burnin_fraction=0.25,
+        metadata_path=metadata_path,
+        label_column="species",
+        tip_dates_path=tip_dates_path,
+        title="Rabies time tree",
+    )
+    blocked_package = build_time_tree_figure_package(
+        posterior_tree_path,
+        out_dir=temp_root / "blocked-package",
+        source_format="beast",
+        burnin_fraction=0.25,
+        metadata_path=metadata_path,
+        label_column="species",
+        tip_dates_path=invalid_tip_dates_path,
+        title="Rabies time tree",
+    )
+
+    fixtures = [
+        _check(
+            goal_id=228,
+            suite="time-tree-publication-reference",
+            name="visible_uncertainty_time_tree",
+            fixture_paths=[
+                posterior_tree_path,
+                metadata_path,
+                tip_dates_path,
+            ],
+            expected={
+                "publication_ready": True,
+                "readiness_decision": "ready",
+                "interval_complete": True,
+                "ultrametric": True,
+                "rendered_interval_count_matches": True,
+            },
+            observed={
+                "publication_ready": valid_package.audit.publication_ready,
+                "readiness_decision": valid_package.audit.readiness_decision,
+                "interval_complete": valid_package.audit.interval_complete,
+                "ultrametric": valid_package.audit.ultrametric,
+                "rendered_interval_count_matches": (
+                    valid_package.render.rendered_interval_count
+                    == valid_package.audit.expected_interval_count
+                ),
+            },
+            notes=[
+                "the governed BEAST fixture must render visible node-age labels and HPD intervals for every internal node"
+            ],
+        ),
+        _check(
+            goal_id=228,
+            suite="time-tree-publication-reference",
+            name="invalid_tip_dates_block_publication",
+            fixture_paths=[
+                posterior_tree_path,
+                metadata_path,
+                invalid_tip_dates_path,
+            ],
+            expected={
+                "publication_ready": False,
+                "readiness_decision": "blocked",
+                "interval_complete": True,
+                "ultrametric": True,
+                "has_tip_date_limitation": True,
+            },
+            observed={
+                "publication_ready": blocked_package.audit.publication_ready,
+                "readiness_decision": blocked_package.audit.readiness_decision,
+                "interval_complete": blocked_package.audit.interval_complete,
+                "ultrametric": blocked_package.audit.ultrametric,
+                "has_tip_date_limitation": any(
+                    "tip-date" in limitation.lower()
+                    for limitation in blocked_package.audit.limitations
+                ),
+            },
+            notes=[
+                "publication readiness remains blocked when the time calibration evidence is invalid even if uncertainty intervals still render"
+            ],
+        ),
+    ]
+    return _suite_report(
+        goal_id=228,
+        suite="time-tree-publication-reference",
+        reviewer_goal="Time-tree publication fixtures",
+        fixtures=fixtures,
+        coverage_notes=[
+            "pins one governed BEAST posterior fixture where dated uncertainty stays visible through node-age labels, HPD intervals, and reviewer-facing package outputs",
+            "proves that publication readiness is blocked when time-tree readiness evidence is invalid instead of silently treating a visually rendered figure as review-complete",
+        ],
+        limitations=[
+            "time-tree publication readiness is governed through explicit interval ledgers, ultrametric checks, and readiness audits rather than screenshot goldens",
         ],
     )
 
