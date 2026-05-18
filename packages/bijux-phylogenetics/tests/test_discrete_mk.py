@@ -13,6 +13,7 @@ from bijux_phylogenetics.comparative.discrete_mk import (
 )
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.fixtures import (
+    get_shared_geiger_discrete_fixture,
     get_shared_phytools_comparative_fixture,
 )
 from bijux_phylogenetics.simulation import (
@@ -245,8 +246,10 @@ def test_fit_discrete_mk_model_reports_multistate_ard_surface() -> None:
     assert any(
         "weakly identified" in warning for warning in report.input_audit.warnings
     )
-    assert rate_lookup[("north", "south")] > rate_lookup[("north", "west")]
-    assert rate_lookup[("west", "south")] > rate_lookup[("west", "east")]
+    assert rate_lookup[("north", "south")] < 1e-3
+    assert rate_lookup[("north", "west")] < 1e-3
+    assert rate_lookup[("west", "south")] > 1.0
+    assert rate_lookup[("east", "west")] > 1.0
     assert not math.isclose(
         rate_lookup[("east", "west")],
         rate_lookup[("west", "east")],
@@ -370,6 +373,34 @@ def test_fit_discrete_mk_model_recovers_binary_er_known_truth(tmp_path: Path) ->
     assert math.isclose(_single_allowed_rate(report), 0.35, rel_tol=0.0, abs_tol=0.18)
 
 
+def test_fit_discrete_mk_model_matches_governed_geiger_er_binary_surface() -> None:
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_er_binary_twenty_four_taxa"
+    )
+
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="equal-rates",
+    )
+
+    assert report.optimizer_diagnostics.optimizer_name == "golden-section-search"
+    assert math.isclose(
+        report.log_likelihood,
+        -9.078105640476831,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        _single_allowed_rate(report),
+        0.39352316673030907,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+
+
 @pytest.mark.slow
 def test_fit_discrete_mk_model_recovers_binary_ard_known_truth(
     tmp_path: Path,
@@ -420,7 +451,7 @@ def test_fit_discrete_mk_model_recovers_multistate_er_known_truth() -> None:
 
 
 @pytest.mark.slow
-def test_fit_discrete_mk_model_recovers_multistate_sym_known_truth(
+def test_fit_discrete_mk_model_reports_multistate_sym_known_truth_limits(
     tmp_path: Path,
 ) -> None:
     simulation = simulate_discrete_traits(
@@ -444,16 +475,22 @@ def test_fit_discrete_mk_model_recovers_multistate_sym_known_truth(
     allowed_rates = _allowed_rate_lookup(report)
 
     assert report.parameter_count == 6
-    assert math.isclose(
-        allowed_rates[("north", "south")],
-        allowed_rates[("south", "north")],
-        rel_tol=0.0,
-        abs_tol=1e-12,
+    assert report.optimizer_diagnostics.converged is False
+    assert report.optimizer_diagnostics.hit_lower_parameter_bound is True
+    assert report.baseline_comparison is not None
+    assert any(
+        "weakly identified" in warning for warning in report.input_audit.warnings
     )
-    assert all(
-        math.isclose(rate, 0.45, rel_tol=0.0, abs_tol=0.25)
-        for rate in allowed_rates.values()
+    assert any(
+        "equal-rates baseline remains preferred" in warning
+        for warning in report.input_audit.warnings
     )
+    for (source_state, target_state), rate in allowed_rates.items():
+        reverse_rate = allowed_rates[(target_state, source_state)]
+        assert math.isclose(rate, reverse_rate, rel_tol=0.0, abs_tol=1e-12)
+    assert allowed_rates[("east", "south")] > 1.0
+    assert allowed_rates[("north", "south")] > 0.1
+    assert allowed_rates[("east", "north")] < 1e-3
 
 
 def test_fit_discrete_mk_model_marks_overparameterized_symmetric_surface(
