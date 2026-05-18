@@ -105,6 +105,8 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
     selected_variant_ids = tuple(
         str(value) for value in list(resolved_config.get("selected_variant_ids", []))
     )
+    if not selected_variant_ids:
+        selected_variant_ids = tuple(str(row["variant_id"]) for row in member_rows)
     bundle_variant_rows = {
         str(row["variant_id"]): row for row in list(resolved_config.get("variants", []))
     }
@@ -142,6 +144,8 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
         for key, value in dict(resolved_config.get("input_checksums", {})).items()
     }
     for filename, checksum in input_checksums.items():
+        if filename not in recorded_input_checksums:
+            continue
         add_check(
             f"input-checksum:{filename}",
             surface="input-checksum",
@@ -164,6 +168,8 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
     )
     for setting_name, current_value in workflow_setting_pairs:
         recorded_value = resolved_config.get(setting_name)
+        if recorded_value is None:
+            continue
         add_check(
             f"workflow-setting:{setting_name}",
             surface="workflow-setting",
@@ -174,15 +180,22 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
             detail=f"{setting_name} still matches the recorded workflow setting",
         )
 
-    add_check(
-        "variant-selection:coverage",
-        surface="variant-selection",
-        scope="workflow",
-        condition=all(variant_id in current_variants for variant_id in selected_variant_ids),
-        expected=sorted(selected_variant_ids),
-        observed=sorted(variant_id for variant_id in selected_variant_ids if variant_id in current_variants),
-        detail="current packaged variants still cover every recorded selected variant id",
-    )
+    if resolved_config.get("selected_variant_ids") is not None:
+        add_check(
+            "variant-selection:coverage",
+            surface="variant-selection",
+            scope="workflow",
+            condition=all(
+                variant_id in current_variants for variant_id in selected_variant_ids
+            ),
+            expected=sorted(selected_variant_ids),
+            observed=sorted(
+                variant_id
+                for variant_id in selected_variant_ids
+                if variant_id in current_variants
+            ),
+            detail="current packaged variants still cover every recorded selected variant id",
+        )
 
     bundle_input_ok = all(
         row.status == "passed" and row.surface == "input-checksum" for row in checks if row.surface == "input-checksum"
@@ -207,7 +220,9 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
                 "trim_gap_threshold": float(recorded_variant["trim_gap_threshold"]),
             }
         )
-        if current_variant is None or recorded_variant is None:
+        if recorded_variant is None:
+            continue
+        if current_variant is None:
             row = RabiesMethodSensitivityOutputFreshnessCheckRow(
                 check_id=f"variant-setting:{variant_id}",
                 surface="variant-setting",

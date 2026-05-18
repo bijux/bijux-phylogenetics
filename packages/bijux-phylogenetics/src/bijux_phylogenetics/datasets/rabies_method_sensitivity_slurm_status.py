@@ -10,6 +10,10 @@ from bijux_phylogenetics.engines.common import (
     engine_active_marker_path,
     load_active_engine_run,
 )
+from .rabies_method_sensitivity_slurm_freshness import (
+    RabiesMethodSensitivitySlurmOutputFreshnessRow,
+    build_rabies_method_sensitivity_slurm_output_freshness_report,
+)
 
 __all__ = [
     "RabiesMethodSensitivitySlurmJobStatusRow",
@@ -48,6 +52,8 @@ class RabiesMethodSensitivitySlurmJobStatusRow:
     missing_required_file_count: int
     missing_required_files: tuple[str, ...]
     detail: str
+    output_freshness_status: str
+    output_freshness_reason_codes: tuple[str, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,12 +88,18 @@ class RabiesMethodSensitivitySlurmStatusReport:
     failed_job_count: int
     pending_job_count: int
     stale_job_count: int
+    output_freshness_check_count: int
+    failed_output_freshness_check_count: int
+    fresh_output_job_count: int
+    stale_output_job_count: int
     partitions: tuple[RabiesMethodSensitivitySlurmPartitionStatusRow, ...]
     jobs: tuple[RabiesMethodSensitivitySlurmJobStatusRow, ...]
 
 
 def build_rabies_method_sensitivity_slurm_status_report(
     bundle_root: Path,
+    *,
+    dataset: object | None = None,
 ) -> RabiesMethodSensitivitySlurmStatusReport:
     """Classify planned rabies workflow jobs by real completion state."""
     bundle_root = bundle_root.resolve()
@@ -104,6 +116,13 @@ def build_rabies_method_sensitivity_slurm_status_report(
 
     partition_rows = _read_tsv_rows(bundle_root / _SLURM_ARRAY_PARTITIONS_FILENAME)
     member_rows = _read_tsv_rows(bundle_root / _SLURM_ARRAY_MEMBERS_FILENAME)
+    freshness_report = build_rabies_method_sensitivity_slurm_output_freshness_report(
+        bundle_root,
+        dataset=dataset,
+    )
+    freshness_rows_by_variant = {
+        row.variant_id: row for row in freshness_report.jobs
+    }
     execution_task_rows = {
         str(row["variant_id"]): row
         for row in list(execution_record.get("task_records", []))
@@ -119,6 +138,7 @@ def build_rabies_method_sensitivity_slurm_status_report(
                 else None
             ),
             active_run_state=active_run_state,
+            freshness_row=freshness_rows_by_variant.get(str(member_row["variant_id"])),
         )
         for member_row in member_rows
     )
@@ -146,6 +166,10 @@ def build_rabies_method_sensitivity_slurm_status_report(
         failed_job_count=sum(1 for row in job_rows if row.status == "failed"),
         pending_job_count=sum(1 for row in job_rows if row.status == "pending"),
         stale_job_count=sum(1 for row in job_rows if row.status == "stale"),
+        output_freshness_check_count=freshness_report.check_count,
+        failed_output_freshness_check_count=freshness_report.failed_check_count,
+        fresh_output_job_count=freshness_report.fresh_job_count,
+        stale_output_job_count=freshness_report.stale_job_count,
         partitions=partition_status_rows,
         jobs=job_rows,
     )
@@ -174,6 +198,8 @@ def write_rabies_method_sensitivity_slurm_job_status_table(
             "missing_required_file_count",
             "missing_required_files",
             "detail",
+            "output_freshness_status",
+            "output_freshness_reason_codes",
         ),
         rows=[
             {
@@ -192,6 +218,10 @@ def write_rabies_method_sensitivity_slurm_job_status_table(
                 "missing_required_file_count": row.missing_required_file_count,
                 "missing_required_files": ",".join(row.missing_required_files),
                 "detail": row.detail,
+                "output_freshness_status": row.output_freshness_status,
+                "output_freshness_reason_codes": ",".join(
+                    row.output_freshness_reason_codes
+                ),
             }
             for row in report.jobs
         ],
@@ -263,6 +293,7 @@ def _build_job_status_row(
     execution_task_row: dict[str, object] | None,
     workflow_status: str | None,
     active_run_state: str,
+    freshness_row: RabiesMethodSensitivitySlurmOutputFreshnessRow | None,
 ) -> RabiesMethodSensitivitySlurmJobStatusRow:
     variant_id = str(member_row["variant_id"])
     task_log_path = bundle_root / str(member_row["task_log_path"])
@@ -322,6 +353,14 @@ def _build_job_status_row(
         status = "stale"
         evidence_class = "failed-workflow-gap"
         detail = "the workflow ended in failure before this job reached a terminal record"
+    if (
+        freshness_row is not None
+        and freshness_row.freshness_status == "stale"
+        and status == "completed"
+    ):
+        status = "stale"
+        evidence_class = "stale-output-drift"
+        detail = freshness_row.stale_reason_detail
 
     return RabiesMethodSensitivitySlurmJobStatusRow(
         partition_id=str(member_row["partition_id"]),
@@ -343,6 +382,12 @@ def _build_job_status_row(
         missing_required_file_count=len(missing_required_files),
         missing_required_files=missing_required_files,
         detail=detail,
+        output_freshness_status=(
+            "unknown" if freshness_row is None else freshness_row.freshness_status
+        ),
+        output_freshness_reason_codes=(
+            () if freshness_row is None else freshness_row.stale_reason_codes
+        ),
     )
 
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from dataclasses import replace
 from pathlib import Path
 
 from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_status import (
@@ -9,6 +10,9 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_status import 
     write_rabies_method_sensitivity_slurm_job_status_table,
     write_rabies_method_sensitivity_slurm_partition_status_table,
     write_rabies_method_sensitivity_slurm_status_json,
+)
+from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
+    load_rabies_method_sensitivity_panel_dataset,
 )
 from bijux_phylogenetics.engines.common import (
     EngineActiveRunRecord,
@@ -378,6 +382,32 @@ def test_build_rabies_method_sensitivity_slurm_status_report_marks_partial_outpu
     assert report.jobs[0].missing_required_file_count > 0
 
 
+def test_build_rabies_method_sensitivity_slurm_status_report_marks_completed_jobs_stale_when_settings_drift() -> (
+    None
+):
+    dataset = load_rabies_method_sensitivity_panel_dataset()
+    changed_variant = replace(
+        dataset.variants[0],
+        trim_gap_threshold=dataset.variants[0].trim_gap_threshold + 0.05,
+    )
+    drifted_dataset = replace(
+        dataset,
+        variants=(changed_variant, *dataset.variants[1:]),
+    )
+
+    report = build_rabies_method_sensitivity_slurm_status_report(
+        dataset.reference_output_root,
+        dataset=drifted_dataset,
+    )
+
+    stale_rows = [row for row in report.jobs if row.status == "stale"]
+    assert [row.variant_id for row in stale_rows] == [dataset.variants[0].variant_id]
+    assert stale_rows[0].evidence_class == "stale-output-drift"
+    assert stale_rows[0].output_freshness_status == "stale"
+    assert report.stale_job_count == 1
+    assert report.stale_output_job_count == 1
+
+
 def test_write_rabies_method_sensitivity_slurm_status_artifacts(tmp_path: Path) -> None:
     root = tmp_path / "workflow"
     _write_bundle_scaffold(
@@ -437,9 +467,11 @@ def test_write_rabies_method_sensitivity_slurm_status_artifacts(tmp_path: Path) 
     )
 
     assert "missing_required_file_count" in job_status_path.read_text(encoding="utf-8")
+    assert "output_freshness_status" in job_status_path.read_text(encoding="utf-8")
     assert "overall_status" in partition_status_path.read_text(encoding="utf-8")
     payload = json.loads(workflow_status_path.read_text(encoding="utf-8"))
     assert payload["bundle_root"] == "."
     assert payload["execution_record_path"] == "rabies-method-sensitivity-panel.run.json"
     assert payload["completed_job_count"] == 1
+    assert payload["fresh_output_job_count"] == 1
     assert payload["jobs"][0]["status"] == "completed"
