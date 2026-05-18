@@ -42,8 +42,14 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
     brownian_missing_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_missing_values_twenty_four_taxa"
     )
+    ou_missing_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_missing_values_twenty_four_taxa"
+    )
     ou_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_ou_known_truth_twenty_four_taxa"
+    )
+    ou_lower_boundary_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_nonultrametric_control_twenty_four_taxa"
     )
     early_burst_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
@@ -182,10 +188,93 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "rate",
                 "log_likelihood",
                 "aic",
+                "aicc",
                 "parameter_name",
                 "parameter_value",
             ),
             ou_bounds=(0.0, 10.0),
+            field_tolerances={"aicc": 2e-4},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-ou-missing-values-review",
+            fixture_id=ou_missing_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model='OU')",
+            python_function_name="fit_continuous_evolutionary_mode",
+            operation="fit-continuous",
+            model_name="OU",
+            python_mode="ornstein-uhlenbeck",
+            input_fixtures=(ou_missing_fixture.tree_path, ou_missing_fixture.traits_path),
+            tolerance=0.75,
+            trait_name=ou_missing_fixture.trait_name,
+            taxon_column=ou_missing_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-default",
+                "bijux_optimizer_name": "governed-two-stage-grid-search",
+                "bijux_coarse_grid_point_count": 81,
+                "bijux_fine_grid_point_count": 81,
+                "bijux_parameter_bounds": {"lower": 0.0, "upper": 10.0},
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "non_numeric_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "standard_error_policy",
+                "root_state",
+                "rate",
+                "log_likelihood",
+                "aic",
+                "aicc",
+                "parameter_name",
+                "parameter_value",
+            ),
+            ou_bounds=(0.0, 10.0),
+            field_tolerances={"aicc": 2e-4},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-ou-lower-boundary-review",
+            fixture_id=ou_lower_boundary_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model='OU')",
+            python_function_name="fit_continuous_evolutionary_mode",
+            operation="fit-continuous",
+            model_name="OU",
+            python_mode="ornstein-uhlenbeck",
+            input_fixtures=(
+                ou_lower_boundary_fixture.tree_path,
+                ou_lower_boundary_fixture.traits_path,
+            ),
+            tolerance=0.75,
+            trait_name=ou_lower_boundary_fixture.trait_name,
+            taxon_column=ou_lower_boundary_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-default",
+                "bijux_optimizer_name": "governed-two-stage-grid-search",
+                "bijux_coarse_grid_point_count": 81,
+                "bijux_fine_grid_point_count": 81,
+                "bijux_parameter_bounds": {"lower": 0.0, "upper": 10.0},
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "parameter_bound_policy",
+                "hit_lower_parameter_boundary",
+                "hit_upper_parameter_boundary",
+                "root_state",
+                "rate",
+                "log_likelihood",
+                "aic",
+                "aicc",
+                "parameter_name",
+                "parameter_value",
+            ),
+            ou_bounds=(0.0, 10.0),
+            field_tolerances={"aicc": 2e-4},
         ),
         GeigerParityCase(
             case_id="fitcontinuous-eb-early-burst-rate-recovery",

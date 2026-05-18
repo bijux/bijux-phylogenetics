@@ -278,7 +278,33 @@ def _missing_value_policy() -> str:
     return "prune-tree-tip-overlap-with-missing-or-nonnumeric-trait-values"
 
 
-def _bijux_optimizer_result(case: GeigerParityCase) -> dict[str, object]:
+def _parameter_bound_policy(case: GeigerParityCase) -> str:
+    if case.python_mode == "brownian":
+        return "closed-form-without-parameter-bounds"
+    return "governed-bounded-grid-search"
+
+
+def _bijux_optimizer_result(
+    case: GeigerParityCase,
+    report,
+) -> dict[str, object]:
+    if report.optimizer_diagnostics is not None:
+        diagnostics = report.optimizer_diagnostics
+        return {
+            "optimizer_name": diagnostics.optimizer_name,
+            "converged": diagnostics.converged,
+            "lower_bound": diagnostics.lower_bound,
+            "upper_bound": diagnostics.upper_bound,
+            "coarse_grid_point_count": diagnostics.coarse_grid_point_count,
+            "fine_grid_point_count": diagnostics.fine_grid_point_count,
+            "function_evaluation_count": diagnostics.function_evaluation_count,
+            "coarse_best_parameter": diagnostics.coarse_best_parameter,
+            "coarse_best_log_likelihood": diagnostics.coarse_best_log_likelihood,
+            "fine_search_start": diagnostics.fine_search_start,
+            "fine_search_stop": diagnostics.fine_search_stop,
+            "hit_lower_boundary": diagnostics.hit_lower_boundary,
+            "hit_upper_boundary": diagnostics.hit_upper_boundary,
+        }
     if case.python_mode == "brownian":
         return {
             "optimizer_name": "closed-form-profile-solution",
@@ -345,6 +371,21 @@ def _build_bijux_case_payload(
         "extra_trait_taxa": list(readiness.extra_trait_taxa),
         "missing_value_policy": _missing_value_policy(),
         "standard_error_policy": _standard_error_policy(),
+        "parameter_bound_policy": _parameter_bound_policy(case),
+        "hit_lower_parameter_boundary": (
+            False
+            if report.optimizer_diagnostics is None
+            else report.optimizer_diagnostics.hit_lower_boundary
+        ),
+        "hit_upper_parameter_boundary": (
+            False
+            if report.optimizer_diagnostics is None
+            else report.optimizer_diagnostics.hit_upper_boundary
+        ),
+        "identifiability_warning_kinds": [
+            warning.kind for warning in report.identifiability_warnings
+        ],
+        "identifiability_warning_count": len(report.identifiability_warnings),
         "root_state": report.root_state,
         "rate": report.rate,
         "log_likelihood": report.log_likelihood,
@@ -353,7 +394,7 @@ def _build_bijux_case_payload(
         "parameter_name": report.parameter_name,
         "parameter_value": report.parameter_value,
         "optimizer_settings": case.optimizer_settings,
-        "optimizer_result": _bijux_optimizer_result(case),
+        "optimizer_result": _bijux_optimizer_result(case, report),
     }
     return summary, _parameter_rows(summary)
 

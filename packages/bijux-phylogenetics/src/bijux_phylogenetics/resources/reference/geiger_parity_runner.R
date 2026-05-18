@@ -85,6 +85,27 @@ json_array <- function(values) {
   as.list(unname(values))
 }
 
+parameter_bounds <- function(case_payload) {
+  if (identical(case_payload$model_name, "OU") && !is.null(case_payload$ou_bounds)) {
+    return(as.numeric(unlist(case_payload$ou_bounds)))
+  }
+  if (identical(case_payload$model_name, "EB") && !is.null(case_payload$early_burst_bounds)) {
+    return(as.numeric(unlist(case_payload$early_burst_bounds)))
+  }
+  NULL
+}
+
+hit_parameter_boundary <- function(value, bounds) {
+  if (is.null(value) || is.null(bounds) || length(bounds) != 2) {
+    return(list(hit_lower = FALSE, hit_upper = FALSE))
+  }
+  tolerance <- max(1e-9, abs(bounds[[2]] - bounds[[1]]) * 1e-6)
+  list(
+    hit_lower = isTRUE(all.equal(as.numeric(value), bounds[[1]], tolerance = tolerance)),
+    hit_upper = isTRUE(all.equal(as.numeric(value), bounds[[2]], tolerance = tolerance))
+  )
+}
+
 normalize_optimizer_result <- function(fit) {
   result <- list()
   if (!is.null(fit$opt$method)) {
@@ -159,6 +180,11 @@ build_fitcontinuous_payload <- function(tree, trait_values, excluded_taxa, case_
   )
   opt <- fit$opt
   parameter_surface_result <- parameter_surface(case_payload$model_name, opt)
+  bounds <- parameter_bounds(case_payload)
+  boundary_hits <- hit_parameter_boundary(
+    parameter_surface_result$parameter_value,
+    bounds
+  )
   parameter_count <- if (is.null(parameter_surface_result$parameter_name)) 2 else 3
   log_likelihood <- if (is.null(opt$lnL)) NULL else as.numeric(opt$lnL)
   aic <- if (!is.null(fit$aic)) {
@@ -190,6 +216,13 @@ build_fitcontinuous_payload <- function(tree, trait_values, excluded_taxa, case_
     aicc = aicc,
     missing_value_policy = "prune-tree-tip-overlap-with-missing-or-nonnumeric-trait-values",
     standard_error_policy = "tip-standard-errors-not-supported",
+    parameter_bound_policy = if (is.null(bounds)) {
+      "reference-default-without-explicit-bounds"
+    } else {
+      "governed-bounded-grid-search"
+    },
+    hit_lower_parameter_boundary = boundary_hits$hit_lower,
+    hit_upper_parameter_boundary = boundary_hits$hit_upper,
     parameter_name = parameter_surface_result$parameter_name,
     parameter_value = parameter_surface_result$parameter_value,
     optimizer_settings = case_payload$optimizer_settings,
