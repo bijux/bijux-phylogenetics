@@ -8,10 +8,12 @@ from pathlib import Path
 from bijux_phylogenetics.benchmark import (
     BenchmarkObservation,
     benchmark_alignment_site_scaling,
+    benchmark_large_alignment_scaling,
     benchmark_large_tree_scaling,
     benchmark_tree_comparison,
     benchmark_tree_set_consensus,
     benchmark_tree_validation,
+    LargeAlignmentScalingWorkflowBenchmark,
     LargeTreeScalingWorkflowBenchmark,
 )
 from bijux_phylogenetics.core.dataset import DatasetAuditReport, audit_dataset_inputs
@@ -157,6 +159,15 @@ class LargeTreeScalingBenchmarkDashboard:
 
     goal_id: int
     workflows: list[LargeTreeScalingWorkflowBenchmark]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class LargeAlignmentScalingBenchmarkDashboard:
+    """Goal 222 scaling summary for large-alignment reviewer workflows."""
+
+    goal_id: int
+    workflows: list[LargeAlignmentScalingWorkflowBenchmark]
     limitations: list[str]
 
 
@@ -779,6 +790,23 @@ def build_large_tree_scaling_benchmark_dashboard(
     )
     return LargeTreeScalingBenchmarkDashboard(
         goal_id=221,
+        workflows=report.workflows,
+        limitations=report.limitations,
+    )
+
+
+def build_large_alignment_scaling_benchmark_dashboard(
+    *,
+    replicates: int = 1,
+    size_classes: list[tuple[str, int, int]] | None = None,
+) -> LargeAlignmentScalingBenchmarkDashboard:
+    """Summarize realistic large-alignment scaling across review workflows."""
+    report = benchmark_large_alignment_scaling(
+        replicates=replicates,
+        size_classes=size_classes,
+    )
+    return LargeAlignmentScalingBenchmarkDashboard(
+        goal_id=222,
         workflows=report.workflows,
         limitations=report.limitations,
     )
