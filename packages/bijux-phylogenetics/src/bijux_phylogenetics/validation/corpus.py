@@ -11,12 +11,14 @@ from bijux_phylogenetics.benchmark import (
     benchmark_large_alignment_scaling,
     benchmark_large_tree_set_scaling,
     benchmark_large_tree_scaling,
+    benchmark_workflow_practical_limits,
     benchmark_tree_comparison,
     benchmark_tree_set_consensus,
     benchmark_tree_validation,
     LargeAlignmentScalingWorkflowBenchmark,
     LargeTreeSetScalingWorkflowBenchmark,
     LargeTreeScalingWorkflowBenchmark,
+    WorkflowPracticalLimitEntry,
 )
 from bijux_phylogenetics.core.dataset import DatasetAuditReport, audit_dataset_inputs
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
@@ -179,6 +181,15 @@ class LargeTreeSetScalingBenchmarkDashboard:
 
     goal_id: int
     workflows: list[LargeTreeSetScalingWorkflowBenchmark]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class WorkflowPracticalLimitDashboard:
+    """Goal 224 tested practical limits for governed workflow surfaces."""
+
+    goal_id: int
+    entries: list[WorkflowPracticalLimitEntry]
     limitations: list[str]
 
 
@@ -836,6 +847,29 @@ def build_large_tree_set_scaling_benchmark_dashboard(
     return LargeTreeSetScalingBenchmarkDashboard(
         goal_id=223,
         workflows=report.workflows,
+        limitations=report.limitations,
+    )
+
+
+def build_workflow_practical_limit_dashboard(
+    *,
+    replicates: int = 1,
+    tree_tip_counts: list[int] | None = None,
+    alignment_size_classes: list[tuple[str, int, int]] | None = None,
+    tree_set_size_classes: list[tuple[str, int, int]] | None = None,
+    stress_tiers: list[str] | None = None,
+) -> WorkflowPracticalLimitDashboard:
+    """Summarize the largest governed workflow classes currently exercised in benchmark and stress lanes."""
+    report = benchmark_workflow_practical_limits(
+        replicates=replicates,
+        tree_tip_counts=tree_tip_counts,
+        alignment_size_classes=alignment_size_classes,
+        tree_set_size_classes=tree_set_size_classes,
+        stress_tiers=stress_tiers,
+    )
+    return WorkflowPracticalLimitDashboard(
+        goal_id=224,
+        entries=report.entries,
         limitations=report.limitations,
     )
 
