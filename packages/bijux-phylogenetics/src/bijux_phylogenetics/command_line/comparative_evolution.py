@@ -90,6 +90,11 @@ def add_comparative_evolution_commands(comparative_subparsers: Any) -> None:
         help="Choose the discrete Mk rate-constraint surface to fit.",
     )
     comparative_discrete_mk.add_argument(
+        "--transform",
+        choices=("lambda",),
+        help="Apply one governed branch-length transform before fitting the discrete Mk surface.",
+    )
+    comparative_discrete_mk.add_argument(
         "--summary-out",
         type=Path,
         help="Write one discrete Mk fit summary ledger as TSV or CSV.",
@@ -454,6 +459,7 @@ def run_comparative_evolution_command(
             trait=args.trait,
             taxon_column=args.taxon_column,
             model=args.model,
+            transform=args.transform,
         )
         outputs: list[Path | str] = []
         if args.summary_out:
@@ -475,6 +481,11 @@ def run_comparative_evolution_command(
                 metrics={
                     "taxon_count": report.taxon_count,
                     "model": report.model,
+                    "transform": (
+                        None
+                        if report.transform_fit is None
+                        else report.transform_fit.transform_name
+                    ),
                     "observed_state_count": len(report.input_audit.observed_states),
                     "sparse_state_count": len(report.input_audit.sparse_states),
                     "pruned_missing_value_taxon_count": len(
@@ -497,6 +508,24 @@ def run_comparative_evolution_command(
                     ),
                     "optimizer_hit_upper_parameter_bound": (
                         report.optimizer_diagnostics.hit_upper_parameter_bound
+                    ),
+                    "transform_parameter_name": (
+                        None
+                        if report.transform_fit is None
+                        else report.transform_fit.parameter_name
+                    ),
+                    "transform_parameter_value": (
+                        None
+                        if report.transform_fit is None
+                        else report.transform_fit.parameter_value
+                    ),
+                    "transform_function_evaluation_count": (
+                        None
+                        if report.transform_fit is None
+                        else report.transform_fit.function_evaluation_count
+                    ),
+                    "transform_warning_count": (
+                        0 if report.transform_fit is None else len(report.transform_fit.warnings)
                     ),
                     "overparameterized": report.overparameterized,
                     "transition_rate_count": len(report.transition_rate_rows),
