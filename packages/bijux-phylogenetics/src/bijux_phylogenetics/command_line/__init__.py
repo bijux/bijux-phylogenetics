@@ -6768,6 +6768,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.report_path,
                         result.tree_figure_path,
                         result.map_path,
+                        result.legend_path,
+                        result.caption_path,
                         result.summary_table_path,
                         result.region_count_table_path,
                         result.node_table_path,
@@ -6789,7 +6791,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "report_kind": "biogeography-report-package",
                             "model": result.state_report.model,
                             "output_dir": str(result.output_dir),
-                            "artifact_count": 12,
+                            "artifact_count": 14,
                             "observed_region_count": (
                                 result.state_report.summary.observed_region_count
                             ),
@@ -6799,6 +6801,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "event_count": result.event_report.summary.event_count,
                             "visible_map_line_count": (
                                 result.map_report.summary.visible_line_count
+                            ),
+                            "publication_ready": result.audit.publication_ready,
+                            "legend_entry_count": result.audit.legend_entry_count,
+                            "caption_ready": result.audit.caption_ready,
+                            "rendered_internal_pie_count": (
+                                result.audit.rendered_internal_pie_count
                             ),
                         },
                         data=result,
