@@ -54,6 +54,9 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
     early_burst_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
     )
+    early_burst_boundary_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
     return [
         GeigerParityCase(
             case_id="fitcontinuous-bm-example-tree",
@@ -174,7 +177,7 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
             trait_name=ou_fixture.trait_name,
             taxon_column=ou_fixture.taxon_column,
             optimizer_settings={
-                "reference_control_policy": "fitcontinuous-default",
+                "reference_control_policy": "fitcontinuous-bounded-grid-search",
                 "bijux_optimizer_name": "governed-two-stage-grid-search",
                 "bijux_coarse_grid_point_count": 81,
                 "bijux_fine_grid_point_count": 81,
@@ -292,7 +295,7 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
             trait_name=early_burst_fixture.trait_name,
             taxon_column=early_burst_fixture.taxon_column,
             optimizer_settings={
-                "reference_control_policy": "fitcontinuous-default",
+                "reference_control_policy": "fitcontinuous-bounded-grid-search",
                 "bijux_optimizer_name": "governed-two-stage-grid-search",
                 "bijux_coarse_grid_point_count": 81,
                 "bijux_fine_grid_point_count": 81,
@@ -302,13 +305,58 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "taxon_count",
                 "trait_name",
                 "model_name",
+                "parameter_bound_policy",
+                "hit_lower_parameter_boundary",
+                "hit_upper_parameter_boundary",
                 "root_state",
                 "rate",
                 "log_likelihood",
                 "aic",
+                "aicc",
                 "parameter_name",
                 "parameter_value",
             ),
             early_burst_bounds=(0.0, 10.0),
+            field_tolerances={"aicc": 2e-4},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-eb-lower-boundary-review",
+            fixture_id=early_burst_boundary_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model='EB')",
+            python_function_name="fit_continuous_evolutionary_mode",
+            operation="fit-continuous",
+            model_name="EB",
+            python_mode="early-burst",
+            input_fixtures=(
+                early_burst_boundary_fixture.tree_path,
+                early_burst_boundary_fixture.traits_path,
+            ),
+            tolerance=0.5,
+            trait_name=early_burst_boundary_fixture.trait_name,
+            taxon_column=early_burst_boundary_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-bounded-grid-search",
+                "bijux_optimizer_name": "governed-two-stage-grid-search",
+                "bijux_coarse_grid_point_count": 81,
+                "bijux_fine_grid_point_count": 81,
+                "bijux_parameter_bounds": {"lower": 0.0, "upper": 10.0},
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "parameter_bound_policy",
+                "hit_lower_parameter_boundary",
+                "hit_upper_parameter_boundary",
+                "root_state",
+                "rate",
+                "log_likelihood",
+                "aic",
+                "aicc",
+                "parameter_name",
+                "parameter_value",
+            ),
+            early_burst_bounds=(0.0, 10.0),
+            field_tolerances={"aicc": 2e-4},
         ),
     ]

@@ -85,7 +85,7 @@ json_array <- function(values) {
   as.list(unname(values))
 }
 
-parameter_bounds <- function(case_payload) {
+public_parameter_bounds <- function(case_payload) {
   if (identical(case_payload$model_name, "OU") && !is.null(case_payload$ou_bounds)) {
     return(as.numeric(unlist(case_payload$ou_bounds)))
   }
@@ -104,6 +104,21 @@ hit_parameter_boundary <- function(value, bounds) {
     hit_lower = isTRUE(all.equal(as.numeric(value), bounds[[1]], tolerance = tolerance)),
     hit_upper = isTRUE(all.equal(as.numeric(value), bounds[[2]], tolerance = tolerance))
   )
+}
+
+fitcontinuous_bounds <- function(case_payload) {
+  if (identical(case_payload$model_name, "OU") && !is.null(case_payload$ou_bounds)) {
+    bounds <- as.numeric(unlist(case_payload$ou_bounds))
+    return(list(alpha = bounds))
+  }
+  if (identical(case_payload$model_name, "EB") && !is.null(case_payload$early_burst_bounds)) {
+    public_bounds <- sort(as.numeric(unlist(case_payload$early_burst_bounds)))
+    lower_public <- public_bounds[[1]]
+    upper_public <- public_bounds[[2]]
+    upper_a <- if (lower_public <= 0) -1e-06 else -lower_public
+    return(list(a = c(-upper_public, upper_a)))
+  }
+  list()
 }
 
 normalize_optimizer_result <- function(fit) {
@@ -155,7 +170,7 @@ parameter_surface <- function(model_name, opt) {
     return(list(parameter_name = "alpha", parameter_value = as.numeric(opt$alpha)))
   }
   if (identical(model_name, "EB")) {
-    return(list(parameter_name = "rate_change", parameter_value = as.numeric(opt$a)))
+    return(list(parameter_name = "rate_change", parameter_value = -as.numeric(opt$a)))
   }
   if (identical(model_name, "lambda")) {
     return(list(parameter_name = "lambda", parameter_value = as.numeric(opt$lambda)))
@@ -175,12 +190,13 @@ build_fitcontinuous_payload <- function(tree, trait_values, excluded_taxa, case_
     list(
       phy = tree,
       dat = trait_values,
-      model = case_payload$model_name
+      model = case_payload$model_name,
+      bounds = fitcontinuous_bounds(case_payload)
     )
   )
   opt <- fit$opt
   parameter_surface_result <- parameter_surface(case_payload$model_name, opt)
-  bounds <- parameter_bounds(case_payload)
+  bounds <- public_parameter_bounds(case_payload)
   boundary_hits <- hit_parameter_boundary(
     parameter_surface_result$parameter_value,
     bounds
