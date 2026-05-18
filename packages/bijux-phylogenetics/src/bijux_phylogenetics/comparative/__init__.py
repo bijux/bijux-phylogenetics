@@ -126,6 +126,13 @@ from .diversification import (
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
+from .diversification_package import (
+    DiversificationFigureAudit,
+    DiversificationFigureCaptionDraft,
+    DiversificationFigureLegendEntry,
+    DiversificationFigurePackageResult,
+    build_diversification_figure_package,
+)
 from .discrete_mk import (
     DiscreteMkFitReport,
     DiscreteMkInputAudit,
@@ -453,6 +460,10 @@ __all__ = [
     "CorrelatedTraitEvolutionReport",
     "CorrelatedTraitExclusion",
     "CorrelatedTraitObservationRow",
+    "DiversificationFigureAudit",
+    "DiversificationFigureCaptionDraft",
+    "DiversificationFigureLegendEntry",
+    "DiversificationFigurePackageResult",
     "DiversificationGammaStatisticReport",
     "DiversificationModelComparisonReport",
     "DiversificationModelComparisonRow",
@@ -603,6 +614,7 @@ __all__ = [
     "TraitDependentDiversificationReport",
     "TraitDependentDiversificationState",
     "compare_brownian_and_ou_models",
+    "build_diversification_figure_package",
     "analyze_comparative_residual_clades",
     "analyze_comparative_clade_stability",
     "compare_diversification_models",
