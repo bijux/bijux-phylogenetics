@@ -2710,7 +2710,7 @@ def test_tree_set_uncertainty_cli_surfaces_modes_conflicts_and_package(
     )
     package_payload = json.loads(capsys.readouterr().out)
     assert package_exit == 0
-    assert package_payload["metrics"]["artifact_count"] == 13
+    assert package_payload["metrics"]["artifact_count"] == 14
     assert package_payload["metrics"]["publication_ready"] is True
     assert package_payload["metrics"]["support_labels_validated"] is True
     assert (package_dir / "consensus-tree.svg").exists()

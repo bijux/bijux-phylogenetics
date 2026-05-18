@@ -868,6 +868,7 @@ def run_tree_set_command(args: Any) -> int:
                 report.caption_path,
                 report.review_path,
                 report.manifest_path,
+                report.reproducibility_manifest_path,
             ],
         )
         _print_result(
@@ -877,7 +878,7 @@ def run_tree_set_command(args: Any) -> int:
                 outputs=outputs,
                 warnings=report.budget_report.warning_messages,
                 metrics={
-                    "artifact_count": 13,
+                    "artifact_count": 14,
                     "tree_count": report.tree_count,
                     "runtime_seconds": report.processing.runtime_seconds,
                     "peak_memory_bytes": report.processing.peak_memory_bytes,

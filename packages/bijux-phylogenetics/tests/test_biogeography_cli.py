@@ -410,7 +410,7 @@ def test_biogeography_report_cli_can_export_full_review_package(
 
     assert exit_code == 0
     assert payload["metrics"]["report_kind"] == "biogeography-report-package"
-    assert payload["metrics"]["artifact_count"] == 14
+    assert payload["metrics"]["artifact_count"] == 15
     assert payload["metrics"]["event_count"] == 2
     assert payload["metrics"]["publication_ready"] is True
     assert payload["metrics"]["caption_ready"] is True
@@ -429,3 +429,4 @@ def test_biogeography_report_cli_can_export_full_review_package(
     assert (out_dir / "map-lines.tsv").exists()
     assert (out_dir / "exclusions.tsv").exists()
     assert (out_dir / "biogeography-report.manifest.json").exists()
+    assert (out_dir / "figure-reproducibility.manifest.json").exists()

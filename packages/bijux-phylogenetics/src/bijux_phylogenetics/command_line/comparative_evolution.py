@@ -948,6 +948,7 @@ def run_comparative_evolution_command(
                 result.caption_path,
                 result.review_path,
                 result.manifest_path,
+                result.reproducibility_manifest_path,
             ],
         )
         _print_result(
@@ -957,7 +958,7 @@ def run_comparative_evolution_command(
                 outputs=outputs,
                 metrics={
                     "output_dir": str(result.output_dir),
-                    "artifact_count": 12,
+                    "artifact_count": 13,
                     "publication_ready": result.audit.publication_ready,
                     "selected_model": result.audit.selected_model,
                     "support_distinct": result.audit.support_distinct,

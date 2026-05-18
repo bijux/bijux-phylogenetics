@@ -432,6 +432,7 @@ def run_report_command(args: Any) -> int:
                 result.coverage_path,
                 result.summary_path,
                 result.manifest_path,
+                result.reproducibility_manifest_path,
             ],
         )
         if args.json:
@@ -495,6 +496,7 @@ def run_report_command(args: Any) -> int:
                 result.caption_path,
                 result.review_path,
                 result.manifest_path,
+                result.reproducibility_manifest_path,
             ],
         )
         if args.json:
@@ -576,6 +578,7 @@ def run_report_command(args: Any) -> int:
                 result.caption_path,
                 result.review_path,
                 result.manifest_path,
+                result.reproducibility_manifest_path,
             ],
         )
         if args.json:

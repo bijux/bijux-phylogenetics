@@ -199,9 +199,10 @@ def test_diversification_package_cli_writes_publication_bundle(
     assert payload["metrics"]["highlighted_outlier_count"] == 2
     assert payload["metrics"]["plotted_model_count"] == 2
     assert payload["metrics"]["better_model"] in {"yule", "birth-death"}
-    assert len(payload["outputs"]) == 10
+    assert len(payload["outputs"]) == 11
     assert (output_dir / "lineage-through-time.svg").exists()
     assert (output_dir / "clade-diversification-outliers.svg").exists()
     assert (output_dir / "diversification-model-comparison.svg").exists()
     assert (output_dir / "diversification-figure-review.html").exists()
     assert (output_dir / "diversification-figure-package.manifest.json").exists()
+    assert (output_dir / "figure-reproducibility.manifest.json").exists()

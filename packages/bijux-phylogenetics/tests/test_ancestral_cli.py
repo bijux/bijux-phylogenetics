@@ -1058,11 +1058,12 @@ def test_ancestral_package_cli_writes_publication_bundle(
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert payload["metrics"]["artifact_count"] == 11
+    assert payload["metrics"]["artifact_count"] == 12
     assert payload["metrics"]["publication_ready"] is True
     assert payload["metrics"]["internal_state_visible"] is True
     assert payload["metrics"]["uncertainty_visible"] is True
     assert (output_dir / "figure-manifest.json").exists()
+    assert (output_dir / "figure-reproducibility.manifest.json").exists()
     assert (output_dir / "ancestral-figure.png").exists()
     assert (output_dir / "ancestral-figure.html").exists()
     assert (output_dir / "ancestral-figure-review.html").exists()

@@ -83,13 +83,14 @@ def test_comparative_model_comparison_package_cli_writes_review_bundle(
     assert payload["metrics"]["plotted_model_count"] == 2
     assert payload["metrics"]["rendered_parameter_count"] == 5
     assert payload["metrics"]["rendered_fit_row_count"] == 2
-    assert len(payload["outputs"]) == 12
+    assert len(payload["outputs"]) == 13
     assert (output_dir / "model-comparison-criteria.svg").exists()
     assert (output_dir / "model-comparison-likelihood.svg").exists()
     assert (output_dir / "model-comparison-parameters.svg").exists()
     assert (output_dir / "model-comparison-fit-summary.svg").exists()
     assert (output_dir / "model-comparison-review.html").exists()
     assert (output_dir / "model-comparison-package.manifest.json").exists()
+    assert (output_dir / "figure-reproducibility.manifest.json").exists()
 
 
 def test_comparative_validate_reference_cli_reports_pass(capsys) -> None:

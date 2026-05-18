@@ -34,9 +34,10 @@ def test_cli_report_alignment_package_writes_review_directory(
     assert payload["metrics"]["heatmap_bin_count"] == 8
     assert payload["metrics"]["plotted_window_count"] == 1
     assert payload["metrics"]["plotted_sequence_count"] == 4
-    assert len(payload["outputs"]) == 10
+    assert len(payload["outputs"]) == 11
     assert (output_dir / "alignment-missingness-heatmap.svg").exists()
     assert (output_dir / "alignment-site-quality-summary.svg").exists()
     assert (output_dir / "alignment-sequence-quality-panel.svg").exists()
     assert (output_dir / "alignment-quality-review.html").exists()
     assert (output_dir / "alignment-quality-package.manifest.json").exists()
+    assert (output_dir / "figure-reproducibility.manifest.json").exists()

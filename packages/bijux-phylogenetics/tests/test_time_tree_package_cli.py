@@ -56,3 +56,4 @@ def test_cli_report_time_tree_package_writes_publication_review_bundle(
     assert (output_dir / "time-tree-review.html").exists()
     assert (output_dir / "node-age-intervals.tsv").exists()
     assert (output_dir / "figure-caption.md").exists()
+    assert (output_dir / "figure-reproducibility.manifest.json").exists()

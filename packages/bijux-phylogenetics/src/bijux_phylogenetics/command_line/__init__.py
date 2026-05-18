@@ -6098,6 +6098,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.model_description_path,
                         result.caption_path,
                         result.manifest_path,
+                        result.reproducibility_manifest_path,
                     ],
                 )
                 _print_result(
@@ -6107,7 +6108,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={
                             "output_dir": str(result.output_dir),
-                            "artifact_count": 11,
+                            "artifact_count": 12,
                             "publication_ready": result.audit.publication_ready,
                             "internal_state_visible": result.audit.internal_state_visible,
                             "uncertainty_visible": result.audit.uncertainty_visible,
@@ -6797,6 +6798,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.map_line_table_path,
                         result.exclusion_table_path,
                         result.manifest_path,
+                        result.reproducibility_manifest_path,
                     ],
                 )
                 _print_result(
@@ -6809,7 +6811,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "report_kind": "biogeography-report-package",
                             "model": result.state_report.model,
                             "output_dir": str(result.output_dir),
-                            "artifact_count": 14,
+                            "artifact_count": 15,
                             "observed_region_count": (
                                 result.state_report.summary.observed_region_count
                             ),
@@ -8147,6 +8149,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.caption_path,
                         result.review_path,
                         result.manifest_path,
+                        result.reproducibility_manifest_path,
                     ],
                 )
                 warnings = (

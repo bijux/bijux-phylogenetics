@@ -61,3 +61,4 @@ def test_cli_report_trait_tree_package_writes_publication_review_bundle(
     assert (output_dir / "annotated-trait-tree-review.html").exists()
     assert (output_dir / "annotation-coverage.tsv").exists()
     assert (output_dir / "annotation-surface-summary.tsv").exists()
+    assert (output_dir / "annotated-trait-tree-reproducibility.manifest.json").exists()
