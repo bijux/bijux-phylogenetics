@@ -86,6 +86,11 @@ from .ordered_discrete import (
     write_ordered_discrete_transition_table,
 )
 from .package import AncestralFigurePackageResult, build_ancestral_figure_package
+from .methods_summary import (
+    AncestralMethodsSummaryTextResult,
+    build_ancestral_methods_summary_text,
+    write_ancestral_methods_summary_text,
+)
 from .report_package import (
     AncestralContinuousChangeBranchRow,
     AncestralContinuousChangeCountRow,
@@ -197,6 +202,7 @@ __all__ = [
     "AncestralContinuousChangeBranchRow",
     "AncestralContinuousChangeCountRow",
     "AncestralFigurePackageResult",
+    "AncestralMethodsSummaryTextResult",
     "AncestralReportPackageResult",
     "AncestralSensitivityReport",
     "AncestralSensitivitySummary",
@@ -250,6 +256,7 @@ __all__ = [
     "RootSensitivityReport",
     "RootSensitivitySummary",
     "build_ancestral_figure_package",
+    "build_ancestral_methods_summary_text",
     "build_ancestral_report_package",
     "build_ancestral_sensitivity_report",
     "build_continuous_ancestral_confidence_rows",
@@ -268,6 +275,7 @@ __all__ = [
     "render_ancestral_state_report",
     "render_ancestral_state_tree",
     "render_ancestral_state_visualization",
+    "write_ancestral_methods_summary_text",
     "validate_discrete_ancestral_reference_examples",
     "summarize_irreversible_discrete_reconstruction",
     "summarize_irreversible_discrete_report",
