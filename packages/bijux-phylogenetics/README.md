@@ -452,6 +452,17 @@ publication readiness blocked whenever intervals are missing, the dated tree is
 not ultrametric, or supplied tip-date or calibration evidence fails the
 time-tree readiness audit.
 
+For a journal-oriented tree-set uncertainty figure bundle, use
+`tree-set package`. It builds one consensus tree plus one explicit
+`consensus-tree.svg`, `clade-support-plot.svg`, `unstable-taxa-plot.svg`, and
+`topology-clusters-plot.svg` surface, then pairs those figures with
+`figure-legend.tsv`, `figure-caption.md`, `uncertainty-review.html`, and a
+manifest-backed publication audit. Publication readiness stays blocked until
+the consensus support labels are rendered through the support-scale audit, the
+instability panel remains explicit even when no unstable taxa are detected, and
+the topology-cluster panel keeps alternative rooted modes visible instead of
+burying them in tables alone.
+
 `demo rabies-cross-host-geography-panel` is the repository's flagship public
 biological workflow surface. In addition to the dataset and workflow
 subdirectories, the demo now writes one reviewer-facing package layer at the
