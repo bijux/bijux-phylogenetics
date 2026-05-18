@@ -121,6 +121,7 @@ from bijux_phylogenetics.benchmark import (
     benchmark_large_tree_set_scaling,
     benchmark_large_tree_scaling,
     benchmark_large_dataset_stress_suite,
+    benchmark_workflow_practical_limits,
     benchmark_tree_comparison,
     benchmark_tree_validation,
 )
@@ -3051,6 +3052,57 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the benchmark report as JSON."
     )
     _add_manifest_argument(benchmark_large_tree_set)
+    benchmark_practical_limits = benchmark_subparsers.add_parser(
+        "workflow-practical-limits",
+        help="Report the largest governed workflow classes currently exercised in benchmark and stress lanes.",
+    )
+    benchmark_practical_limits.add_argument("--replicates", type=int, default=1)
+    benchmark_practical_limits.add_argument(
+        "--tree-tip-count",
+        action="append",
+        dest="tree_tip_counts",
+        type=int,
+        help="Add one large-tree taxon count. Repeat to override the governed tree-size classes.",
+    )
+    benchmark_practical_limits.add_argument(
+        "--sequence-count",
+        action="append",
+        dest="sequence_counts",
+        type=int,
+        help="Add one sequence count for the large-alignment classes. Repeat alongside --alignment-length.",
+    )
+    benchmark_practical_limits.add_argument(
+        "--alignment-length",
+        action="append",
+        dest="alignment_lengths",
+        type=int,
+        help="Add one aligned-site count for the large-alignment classes. Repeat alongside --sequence-count.",
+    )
+    benchmark_practical_limits.add_argument(
+        "--posterior-tree-count",
+        action="append",
+        dest="posterior_tree_counts",
+        type=int,
+        help="Add one posterior tree count for the tree-set classes. Repeat alongside --tree-set-tip-count.",
+    )
+    benchmark_practical_limits.add_argument(
+        "--tree-set-tip-count",
+        action="append",
+        dest="tree_set_tip_counts",
+        type=int,
+        help="Add one taxon count for the tree-set classes. Repeat alongside --posterior-tree-count.",
+    )
+    benchmark_practical_limits.add_argument(
+        "--stress-tier",
+        action="append",
+        dest="stress_tiers",
+        choices=("small", "heavy"),
+        help="Include one governed stress tier. Repeat to aggregate multiple tiers.",
+    )
+    benchmark_practical_limits.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(benchmark_practical_limits)
     benchmark_alignment = benchmark_subparsers.add_parser(
         "alignment-diagnostics",
         help="Benchmark alignment diagnostics across increasing sequence counts.",
@@ -8550,6 +8602,60 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     replicates=args.replicates,
                     size_classes=classes,
                 )
+            elif args.benchmark_command == "workflow-practical-limits":
+                alignment_classes = None
+                if (
+                    args.sequence_counts is not None
+                    or args.alignment_lengths is not None
+                ):
+                    sequence_counts = args.sequence_counts or []
+                    alignment_lengths = args.alignment_lengths or []
+                    if len(sequence_counts) != len(alignment_lengths):
+                        raise ValueError(
+                            "workflow-practical-limits requires the same number of --sequence-count and --alignment-length values"
+                        )
+                    alignment_classes = [
+                        (
+                            f"sequences-{sequence_count}-sites-{alignment_length}",
+                            sequence_count,
+                            alignment_length,
+                        )
+                        for sequence_count, alignment_length in zip(
+                            sequence_counts,
+                            alignment_lengths,
+                            strict=True,
+                        )
+                    ]
+                tree_set_classes = None
+                if (
+                    args.posterior_tree_counts is not None
+                    or args.tree_set_tip_counts is not None
+                ):
+                    posterior_tree_counts = args.posterior_tree_counts or []
+                    tree_set_tip_counts = args.tree_set_tip_counts or []
+                    if len(posterior_tree_counts) != len(tree_set_tip_counts):
+                        raise ValueError(
+                            "workflow-practical-limits requires the same number of --posterior-tree-count and --tree-set-tip-count values"
+                        )
+                    tree_set_classes = [
+                        (
+                            f"trees-{tree_count}-taxa-{tip_count}",
+                            tree_count,
+                            tip_count,
+                        )
+                        for tree_count, tip_count in zip(
+                            posterior_tree_counts,
+                            tree_set_tip_counts,
+                            strict=True,
+                        )
+                    ]
+                report = benchmark_workflow_practical_limits(
+                    replicates=args.replicates,
+                    tree_tip_counts=args.tree_tip_counts,
+                    alignment_size_classes=alignment_classes,
+                    tree_set_size_classes=tree_set_classes,
+                    stress_tiers=args.stress_tiers,
+                )
             elif args.benchmark_command == "stress-suite":
                 report = benchmark_large_dataset_stress_suite(tier=args.tier)
             else:
@@ -8558,17 +8664,24 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     sequence_length=args.sequence_length,
                 )
             outputs = _finalize_outputs(args, command="benchmark", inputs=[])
-            metrics = {
-                "observation_count": (
-                    len(report.observations)
-                    if hasattr(report, "observations")
-                    else sum(len(row.observations) for row in report.workflows)
-                ),
-            }
+            if hasattr(report, "entries"):
+                metrics = {
+                    "entry_count": len(report.entries),
+                }
+            else:
+                metrics = {
+                    "observation_count": (
+                        len(report.observations)
+                        if hasattr(report, "observations")
+                        else sum(len(row.observations) for row in report.workflows)
+                    ),
+                }
             if hasattr(report, "replicates"):
                 metrics["replicates"] = report.replicates
             if hasattr(report, "tier"):
                 metrics["tier"] = report.tier
+            if hasattr(report, "stress_tiers"):
+                metrics["stress_tier_count"] = len(report.stress_tiers)
             if hasattr(report, "workflows"):
                 metrics["workflow_count"] = len(report.workflows)
                 if hasattr(report, "tip_counts"):
@@ -8578,6 +8691,36 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 if hasattr(report, "alignment_lengths"):
                     metrics["max_alignment_length"] = max(report.alignment_lengths)
                     metrics["max_sequence_count"] = max(report.sequence_counts)
+            if hasattr(report, "entries"):
+                metrics["workflow_count"] = len(report.entries)
+                taxon_limits = [
+                    row.tested_taxon_limit
+                    for row in report.entries
+                    if row.tested_taxon_limit is not None
+                ]
+                site_limits = [
+                    row.tested_site_limit
+                    for row in report.entries
+                    if row.tested_site_limit is not None
+                ]
+                tree_limits = [
+                    row.tested_tree_limit
+                    for row in report.entries
+                    if row.tested_tree_limit is not None
+                ]
+                posterior_limits = [
+                    row.tested_posterior_size
+                    for row in report.entries
+                    if row.tested_posterior_size is not None
+                ]
+                if taxon_limits:
+                    metrics["max_taxon_limit"] = max(taxon_limits)
+                if site_limits:
+                    metrics["max_site_limit"] = max(site_limits)
+                if tree_limits:
+                    metrics["max_tree_limit"] = max(tree_limits)
+                if posterior_limits:
+                    metrics["max_posterior_size"] = max(posterior_limits)
             _print_result(
                 build_command_result(
                     command="benchmark",
