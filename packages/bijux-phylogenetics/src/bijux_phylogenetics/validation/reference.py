@@ -1338,6 +1338,8 @@ def validate_diversification_figure_reference_fixtures(
                 "highlighted_outlier_count": 2,
                 "plotted_model_count": 2,
                 "better_model": "yule",
+                "methods_summary_present": True,
+                "methods_summary_warning_count": 1,
             },
             observed={
                 "publication_ready": complete_package.audit.publication_ready,
@@ -1353,9 +1355,14 @@ def validate_diversification_figure_reference_fixtures(
                 ),
                 "plotted_model_count": complete_package.audit.plotted_model_count,
                 "better_model": complete_package.audit.better_model,
+                "methods_summary_present": complete_package.methods_summary_path.exists(),
+                "methods_summary_warning_count": (
+                    complete_package.methods_summary.warning_count
+                ),
             },
             notes=[
-                "the clean diversification fixture must keep the lineage-through-time curve, clade-rate outlier panel, and model-comparison surface all visible while remaining sampling-complete"
+                "the clean diversification fixture must keep the lineage-through-time curve, clade-rate outlier panel, and model-comparison surface all visible while remaining sampling-complete",
+                "the publication bundle must also materialize a diversification methods summary instead of leaving the reviewer-facing package to figures and ledgers alone",
             ],
         ),
         _check(
@@ -1370,6 +1377,8 @@ def validate_diversification_figure_reference_fixtures(
                 "clade_outlier_surface_visible": True,
                 "model_comparison_visible": True,
                 "better_model": "yule",
+                "methods_summary_present": True,
+                "methods_summary_warning_count": 3,
             },
             observed={
                 "publication_ready": blocked_package.audit.publication_ready,
@@ -1384,9 +1393,14 @@ def validate_diversification_figure_reference_fixtures(
                     blocked_package.audit.model_comparison_visible
                 ),
                 "better_model": blocked_package.audit.better_model,
+                "methods_summary_present": blocked_package.methods_summary_path.exists(),
+                "methods_summary_warning_count": (
+                    blocked_package.methods_summary.warning_count
+                ),
             },
             notes=[
-                "publication readiness remains blocked when sampling metadata is incomplete even though the full diversification figure package still renders for review"
+                "publication readiness remains blocked when sampling metadata is incomplete even though the full diversification figure package still renders for review",
+                "the blocked lane still has to keep the methods summary artifact, so reviewer-facing caveats remain explicit instead of disappearing with readiness",
             ],
         ),
     ]

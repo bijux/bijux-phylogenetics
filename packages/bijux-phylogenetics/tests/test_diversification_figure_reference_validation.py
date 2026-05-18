@@ -26,6 +26,12 @@ def test_validate_diversification_figure_reference_fixtures_governs_publication_
         == "yule"
     )
     assert (
+        observed["sampling_complete_diversification_figures_ready"].observed[
+            "methods_summary_present"
+        ]
+        is True
+    )
+    assert (
         observed["incomplete_sampling_blocks_diversification_readiness"].observed[
             "publication_ready"
         ]
@@ -36,4 +42,10 @@ def test_validate_diversification_figure_reference_fixtures_governs_publication_
             "sampling_metadata_complete"
         ]
         is False
+    )
+    assert (
+        observed["incomplete_sampling_blocks_diversification_readiness"].observed[
+            "methods_summary_present"
+        ]
+        is True
     )
