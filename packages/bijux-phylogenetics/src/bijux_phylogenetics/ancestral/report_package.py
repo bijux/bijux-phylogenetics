@@ -30,6 +30,10 @@ from bijux_phylogenetics.ancestral.discrete import (
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
 )
+from bijux_phylogenetics.ancestral.methods_summary import (
+    AncestralMethodsSummaryTextResult,
+    write_ancestral_methods_summary_text,
+)
 from bijux_phylogenetics.ancestral.service import (
     render_ancestral_state_report,
     write_ancestral_state_table,
@@ -77,6 +81,7 @@ class AncestralContinuousChangeCountRow:
 class AncestralReportPackageResult:
     output_dir: Path
     report_path: Path
+    methods_summary_path: Path
     figure_path: Path
     figure_png_path: Path
     figure_html_path: Path
@@ -89,6 +94,7 @@ class AncestralReportPackageResult:
     manifest_path: Path
     reconstruction_kind: str
     model: str
+    methods_summary: AncestralMethodsSummaryTextResult
     summary: ContinuousAncestralSummary | DiscreteAncestralSummary
     reconstruction: ContinuousAncestralReport | DiscreteAncestralReport
     figure: AncestralVisualizationResult
@@ -264,6 +270,7 @@ def _write_package_html(
     path: Path,
     title: str,
     figure_svg: str,
+    methods_summary_text: str,
     reconstruction_kind: str,
     model: str,
     summary: ContinuousAncestralSummary | DiscreteAncestralSummary,
@@ -412,6 +419,10 @@ def _write_package_html(
         <div class="note">
           Continuous packages preserve branch-change direction counts. Discrete packages preserve inferred state-transition counts.
         </div>
+      </section>
+      <section>
+        <h2>Methods Summary</h2>
+        <pre>{escape(methods_summary_text)}</pre>
       </section>
       <section>
         <h2>Tree Visualization</h2>
@@ -669,6 +680,7 @@ def build_ancestral_report_package(
 ) -> AncestralReportPackageResult:
     out_dir.mkdir(parents=True, exist_ok=True)
     report_path = out_dir / "ancestral-report.html"
+    methods_summary_path = out_dir / "ancestral-methods-summary.md"
     figure_path = out_dir / "ancestral-figure.svg"
     figure_png_path = out_dir / "ancestral-figure.png"
     figure_html_path = out_dir / "ancestral-figure.html"
@@ -754,6 +766,11 @@ def build_ancestral_report_package(
             transition_report,
         )
 
+    methods_summary = write_ancestral_methods_summary_text(
+        methods_summary_path,
+        reconstruction_kind=reconstruction_kind,
+        reconstruction=reconstruction,
+    )
     write_ancestral_state_table(node_table_path, reconstruction)
     report_result = render_ancestral_state_report(
         tree_path=tree_path,
@@ -832,6 +849,7 @@ def build_ancestral_report_package(
         },
         "outputs": {
             "report_path": str(report_path),
+            "methods_summary_path": str(methods_summary_path),
             "figure_path": str(figure_path),
             "figure_png_path": str(figure_png_path),
             "figure_html_path": str(figure_html_path),
@@ -846,6 +864,7 @@ def build_ancestral_report_package(
             "analyzed_taxon_count": summary.analyzed_taxon_count,
             "excluded_taxon_count": summary.excluded_taxon_count,
             "warning_count": summary.warning_count,
+            "methods_summary_warning_count": methods_summary.warning_count,
             "transition_count_row_count": len(count_payload),
             "transition_branch_row_count": len(branch_payload),
         },
@@ -859,6 +878,7 @@ def build_ancestral_report_package(
         path=report_path,
         title=f"Bijux Ancestral Reconstruction Report: {trait}",
         figure_svg=figure_path.read_text(encoding="utf-8"),
+        methods_summary_text=methods_summary.text,
         reconstruction_kind=reconstruction_kind,
         model=model,
         summary=summary,
@@ -873,6 +893,7 @@ def build_ancestral_report_package(
     return AncestralReportPackageResult(
         output_dir=out_dir,
         report_path=report_path,
+        methods_summary_path=methods_summary_path,
         figure_path=figure_path,
         figure_png_path=figure_png_path,
         figure_html_path=figure_html_path,
@@ -885,6 +906,7 @@ def build_ancestral_report_package(
         manifest_path=manifest_path,
         reconstruction_kind=reconstruction_kind,
         model=model,
+        methods_summary=methods_summary,
         summary=summary,
         reconstruction=reconstruction,
         figure=figure,

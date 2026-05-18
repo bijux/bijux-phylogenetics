@@ -33,6 +33,7 @@ def test_build_continuous_ancestral_report_package_writes_review_bundle(
     )
 
     assert result.report_path.exists()
+    assert result.methods_summary_path.exists()
     assert result.figure_path.exists()
     assert result.figure_png_path.exists()
     assert result.figure_html_path.exists()
@@ -47,8 +48,12 @@ def test_build_continuous_ancestral_report_package_writes_review_bundle(
 
     html = result.report_path.read_text(encoding="utf-8")
     assert "Bijux Ancestral Reconstruction Report" in html
+    assert "Methods Summary" in html
     assert "Tree Visualization" in html
     assert "Transition Review" in html
+    methods_summary_text = result.methods_summary_path.read_text(encoding="utf-8")
+    assert "Ancestral Reconstruction Methods Summary" in methods_summary_text
+    assert "- continuous model: `brownian`" in methods_summary_text
 
     summary_rows = result.summary_table_path.read_text(encoding="utf-8").splitlines()
     node_rows = result.node_table_path.read_text(encoding="utf-8").splitlines()
@@ -62,7 +67,7 @@ def test_build_continuous_ancestral_report_package_writes_review_bundle(
         encoding="utf-8"
     ).splitlines()
 
-    assert summary_rows[0].startswith("trait\ttaxon_column\tmodel\talpha")
+    assert summary_rows[0].startswith("trait\ttaxon_column\tmodel\testimator\talpha")
     assert node_rows[0].startswith("node\tnode_name\tis_tip\tdescendant_taxa")
     assert uncertainty_rows[0].startswith(
         "node\tnode_name\tdescendant_taxa\testimate\tstandard_error"
@@ -78,6 +83,9 @@ def test_build_continuous_ancestral_report_package_writes_review_bundle(
     assert manifest["report_kind"] == "ancestral_report_package"
     assert manifest["reconstruction_kind"] == "continuous"
     assert manifest["metrics"]["analyzed_taxon_count"] == 4
+    assert manifest["outputs"]["methods_summary_path"].endswith(
+        "ancestral-methods-summary.md"
+    )
 
 
 def test_build_discrete_ancestral_report_package_writes_probabilities_and_transitions(
@@ -93,6 +101,7 @@ def test_build_discrete_ancestral_report_package_writes_probabilities_and_transi
     )
 
     assert result.report_path.exists()
+    assert result.methods_summary_path.exists()
     assert result.figure_path.exists()
     assert result.transition_report is not None
 
@@ -114,6 +123,9 @@ def test_build_discrete_ancestral_report_package_writes_probabilities_and_transi
     assert transition_count_rows[0].startswith("transition\tsource_state\ttarget_state")
     assert transition_branch_rows[0].startswith(
         "parent_node\tchild_node\tchild_descendant_taxa"
+    )
+    assert "- discrete model: `equal-rates`" in result.methods_summary_path.read_text(
+        encoding="utf-8"
     )
     assert 'class="internal-pie-slice"' in result.figure_path.read_text(
         encoding="utf-8"
