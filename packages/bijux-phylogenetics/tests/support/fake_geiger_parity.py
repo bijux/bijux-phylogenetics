@@ -10,10 +10,11 @@ def fake_geiger_rscript(
     *,
     geiger_available: bool = True,
     summary_overrides: dict[str, dict[str, object]] | None = None,
+    reference_payloads: dict[str, dict[str, object]] | None = None,
 ) -> Path:
     summary_payload = repr(summary_overrides or {})
-    return write_executable(
-        path,
+    reference_payload_repr = repr(reference_payloads or {})
+    script = (
         """#!/usr/bin/env python3
 import csv
 import json
@@ -23,6 +24,7 @@ import sys
 from pathlib import Path
 
 SUMMARY_OVERRIDES = __SUMMARY_OVERRIDES__
+REFERENCE_PAYLOADS = __REFERENCE_PAYLOADS__
 
 
 def write_json(path: Path, payload: dict[str, object]) -> None:
@@ -69,7 +71,19 @@ def parameter_rows(summary: dict[str, object]) -> list[dict[str, object]]:
     return rows
 
 
+def standard_error_policy() -> str:
+    return "tip-standard-errors-not-supported"
+
+
+def missing_value_policy() -> str:
+    return "prune-tree-tip-overlap-with-missing-or-nonnumeric-trait-values"
+
+
 def build_reference_payload(case_payload: dict[str, object]) -> tuple[dict[str, object], list[dict[str, object]]]:
+    if case_payload["case_id"] in REFERENCE_PAYLOADS:
+        summary = dict(REFERENCE_PAYLOADS[case_payload["case_id"]]["summary"])
+        rows = [dict(row) for row in REFERENCE_PAYLOADS[case_payload["case_id"]]["rows"]]
+        return summary, rows
     package_root = find_package_root()
     repo_python = find_repo_python(package_root)
     payload_path = package_root / "artifacts" / "fake-geiger-case.json"
@@ -78,6 +92,7 @@ def build_reference_payload(case_payload: dict[str, object]) -> tuple[dict[str, 
     inline_script = '''
 import json
 from pathlib import Path
+from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.evolutionary_modes import fit_continuous_evolutionary_mode
 
 case_payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
@@ -87,6 +102,12 @@ mode_lookup = {
     "EB": "early-burst",
 }
 tree_path, traits_path = case_payload["input_fixtures"]
+readiness = summarize_numeric_trait_readiness(
+    Path(tree_path),
+    Path(traits_path),
+    trait=case_payload["trait_name"],
+    taxon_column=case_payload["taxon_column"],
+)
 report = fit_continuous_evolutionary_mode(
     Path(tree_path),
     Path(traits_path),
@@ -96,10 +117,25 @@ report = fit_continuous_evolutionary_mode(
     ou_bounds=(0.0, 10.0),
     early_burst_bounds=(0.0, 10.0),
 )
+excluded_taxa = sorted(
+    {
+        *readiness.missing_from_traits,
+        *readiness.pruned_missing_value_taxa,
+        *readiness.pruned_non_numeric_taxa,
+    }
+)
 summary = {
     "taxon_count": report.taxon_count,
     "trait_name": report.trait,
     "model_name": case_payload["model_name"],
+    "excluded_taxon_count": len(excluded_taxa),
+    "excluded_taxa": excluded_taxa,
+    "missing_value_taxa": list(readiness.pruned_missing_value_taxa),
+    "non_numeric_taxa": list(readiness.pruned_non_numeric_taxa),
+    "missing_from_traits": list(readiness.missing_from_traits),
+    "extra_trait_taxa": list(readiness.extra_trait_taxa),
+    "missing_value_policy": "__MISSING_VALUE_POLICY__",
+    "standard_error_policy": "__STANDARD_ERROR_POLICY__",
     "root_state": report.root_state,
     "rate": report.rate,
     "log_likelihood": report.log_likelihood,
@@ -118,7 +154,10 @@ print(json.dumps(summary))
     command = [
         str(repo_python),
         "-c",
-        inline_script.replace("__PAYLOAD_PATH__", repr(str(payload_path))),
+        inline_script
+        .replace("__PAYLOAD_PATH__", repr(str(payload_path)))
+        .replace("__MISSING_VALUE_POLICY__", missing_value_policy())
+        .replace("__STANDARD_ERROR_POLICY__", standard_error_policy()),
     ]
     env = dict(os.environ)
     env["PYTHONPATH"] = str(package_root / "src")
@@ -175,5 +214,10 @@ if __name__ == "__main__":
     raise SystemExit(main())
 """
         .replace("__GEIGER_AVAILABLE__", "True" if geiger_available else "False")
-        .replace("__SUMMARY_OVERRIDES__", summary_payload),
+        .replace("__SUMMARY_OVERRIDES__", summary_payload)
+        .replace("__REFERENCE_PAYLOADS__", reference_payload_repr)
+    )
+    return write_executable(
+        path,
+        script,
     )
