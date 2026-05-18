@@ -502,6 +502,9 @@ build_fitdiscrete_payload <- function(tree, trait_values, excluded_taxa, missing
   if (identical(case_payload$discrete_transform_name, "lambda")) {
     parameter_name <- "lambda"
     parameter_value <- as.numeric(fit$opt$lambda)
+  } else if (identical(case_payload$discrete_transform_name, "kappa")) {
+    parameter_name <- "kappa"
+    parameter_value <- as.numeric(fit$opt$kappa)
   }
   summary <- list(
     taxon_count = length(trait_values),

@@ -150,6 +150,7 @@ if case_payload["operation"] == "fit-discrete-mk":
         model=case_payload["python_mode"],
         transform=case_payload.get("discrete_transform_name"),
         lambda_bounds=tuple(case_payload.get("lambda_bounds") or (0.0, 1.0)),
+        kappa_bounds=tuple(case_payload.get("kappa_bounds") or (0.0, 1.0)),
     )
     missing_value_taxa = sorted(
         set(report.input_audit.pruned_missing_value_taxa) - set(tree_only_taxa)
@@ -163,11 +164,10 @@ if case_payload["operation"] == "fit-discrete-mk":
         "transform_name": (
             None
             if transform_fit is None
-            else (
-                "pagel-lambda"
-                if transform_fit.transform_name == "lambda"
-                else transform_fit.transform_name
-            )
+            else {
+                "lambda": "pagel-lambda",
+                "kappa": "pagel-kappa",
+            }.get(transform_fit.transform_name, transform_fit.transform_name)
         ),
         "observed_state_count": len(report.state_order),
         "state_order": list(report.state_order),
