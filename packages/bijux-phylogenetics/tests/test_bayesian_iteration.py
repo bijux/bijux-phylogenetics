@@ -369,13 +369,16 @@ def test_build_posterior_uncertainty_figure_package_writes_consensus_plot_and_ta
 
     assert result.consensus_tree_path.exists()
     assert result.consensus_figure_path.exists()
-    assert result.clade_frequency_plot_path.exists()
+    assert result.clade_support_plot_path.exists()
+    assert result.unstable_taxa_plot_path.exists()
+    assert result.topology_clusters_plot_path.exists()
     assert result.unstable_taxa_table_path.exists()
     assert result.topology_clusters_table_path.exists()
     assert result.uncertainty_conclusions_table_path.exists()
     assert result.conclusion_summary_path.exists()
+    assert result.review_path.exists()
     summary = result.conclusion_summary_path.read_text(encoding="utf-8")
-    assert "Posterior Uncertainty Summary" in summary
+    assert "Tree-Set Uncertainty Summary" in summary
     assert "Conflict-prone clades" in summary
 
 

@@ -147,6 +147,8 @@ def test_cli_tree_set_package_reports_budget_warning_metrics(
     assert exit_code == 0
     assert payload["metrics"]["budget_warning_count"] >= 1
     assert payload["metrics"]["runtime_seconds"] >= 0.0
+    assert payload["metrics"]["publication_ready"] is True
+    assert (output_dir / "uncertainty-review.html").is_file()
 
 
 def test_cli_tree_set_report_reports_output_size_metrics(

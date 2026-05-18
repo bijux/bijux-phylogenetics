@@ -2710,9 +2710,16 @@ def test_tree_set_uncertainty_cli_surfaces_modes_conflicts_and_package(
     )
     package_payload = json.loads(capsys.readouterr().out)
     assert package_exit == 0
-    assert package_payload["metrics"]["artifact_count"] == 7
+    assert package_payload["metrics"]["artifact_count"] == 13
+    assert package_payload["metrics"]["publication_ready"] is True
+    assert package_payload["metrics"]["support_labels_validated"] is True
     assert (package_dir / "consensus-tree.svg").exists()
-    assert (package_dir / "clade-frequency-plot.svg").exists()
+    assert (package_dir / "clade-support-plot.svg").exists()
+    assert (package_dir / "unstable-taxa-plot.svg").exists()
+    assert (package_dir / "topology-clusters-plot.svg").exists()
+    assert (package_dir / "figure-legend.tsv").exists()
+    assert (package_dir / "figure-caption.md").exists()
+    assert (package_dir / "uncertainty-review.html").exists()
 
 
 def test_adapter_bayesian_uncertainty_cli_writes_table_and_methods_text(
