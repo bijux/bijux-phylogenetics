@@ -286,6 +286,7 @@ bijux-phylogenetics report supplementary-alignment-table --alignment alignment.f
 bijux-phylogenetics report supplementary-ancestral-state-table --tree tree.nwk --traits traits.tsv --trait habitat --reconstruction-kind discrete --model equal-rates --out artifacts/supplementary-ancestral-states.tsv --json
 bijux-phylogenetics report supplementary-clade-support-table --tree tree.nwk --comparison-tree-set posterior-trees.nwk --out artifacts/supplementary-clade-support.tsv --json
 bijux-phylogenetics report supplementary-comparative-model-table --tree tree.nwk --traits traits.tsv --formula 'response ~ predictor_one' --formula 'response ~ predictor_one + predictor_two' --lambda-value 0.0 --out artifacts/supplementary-comparative-model.tsv --json
+bijux-phylogenetics report supplementary-diversification-table --tree tree.nwk --metadata metadata.tsv --clade-model birth-death --out artifacts/supplementary-diversification.tsv --json
 bijux-phylogenetics report supplementary-model-selection-table --iqtree-report run.iqtree --model-sidecar run.model --out artifacts/supplementary-model-selection.tsv --json
 bijux-phylogenetics report supplementary-tree-table --tree tree.nwk --out artifacts/supplementary-tree.tsv --json
 bijux-phylogenetics report taxonomy --tree tree.nwk --synonym-table taxonomy.tsv --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --reported-taxa reviewer-table.tsv --out artifacts/taxonomy-report.html --json
@@ -469,6 +470,12 @@ For one reviewer-facing supplementary ancestral-state ledger, use
 per internal node across one continuous or discrete ancestral reconstruction,
 keeping descendant taxa, model settings, uncertainty, instability flags, and
 the shared warning and exclusion context together on one reviewable surface.
+
+For one reviewer-facing supplementary diversification ledger, use
+`report supplementary-diversification-table`. It writes one TSV with one row
+per scanned clade, repeating the tree-wide Yule and birth-death estimates and
+the actual sampling-correction evidence so clade-rate outliers, model ranking,
+and sampling warnings stay on one reviewable surface.
 
 For one reviewer-facing supplementary taxon ledger, use
 `report supplementary-taxon-table`. It writes one TSV that keeps taxon IDs
