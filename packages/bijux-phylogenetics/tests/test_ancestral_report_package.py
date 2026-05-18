@@ -34,6 +34,7 @@ def test_build_continuous_ancestral_report_package_writes_review_bundle(
 
     assert result.report_path.exists()
     assert result.methods_summary_path.exists()
+    assert result.reviewer_audit_checklist_path.exists()
     assert result.figure_path.exists()
     assert result.figure_png_path.exists()
     assert result.figure_html_path.exists()
@@ -49,6 +50,7 @@ def test_build_continuous_ancestral_report_package_writes_review_bundle(
     html = result.report_path.read_text(encoding="utf-8")
     assert "Bijux Ancestral Reconstruction Report" in html
     assert "Methods Summary" in html
+    assert "Reviewer Audit Checklist" in html
     assert "Tree Visualization" in html
     assert "Transition Review" in html
     methods_summary_text = result.methods_summary_path.read_text(encoding="utf-8")
@@ -66,6 +68,9 @@ def test_build_continuous_ancestral_report_package_writes_review_bundle(
     transition_branch_rows = result.transition_branch_table_path.read_text(
         encoding="utf-8"
     ).splitlines()
+    checklist_rows = result.reviewer_audit_checklist_path.read_text(
+        encoding="utf-8"
+    ).splitlines()
 
     assert summary_rows[0].startswith("trait\ttaxon_column\tmodel\testimator\talpha")
     assert node_rows[0].startswith("node\tnode_name\tis_tip\tdescendant_taxa")
@@ -78,6 +83,8 @@ def test_build_continuous_ancestral_report_package_writes_review_bundle(
     assert transition_branch_rows[0].startswith(
         "parent_node\tchild_node\tchild_descendant_taxa"
     )
+    assert checklist_rows[0] == "section\tstatus\tsummary\tevidence\tartifact_paths"
+    assert any(line.startswith("uncertainty_surface\t") for line in checklist_rows[1:])
 
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
     assert manifest["report_kind"] == "ancestral_report_package"
@@ -86,6 +93,10 @@ def test_build_continuous_ancestral_report_package_writes_review_bundle(
     assert manifest["outputs"]["methods_summary_path"].endswith(
         "ancestral-methods-summary.md"
     )
+    assert manifest["outputs"]["reviewer_audit_checklist_path"].endswith(
+        "reviewer-audit-checklist.tsv"
+    )
+    assert len(manifest["reviewer_audit_checklist"]["items"]) == 5
 
 
 def test_build_discrete_ancestral_report_package_writes_probabilities_and_transitions(
@@ -102,6 +113,7 @@ def test_build_discrete_ancestral_report_package_writes_probabilities_and_transi
 
     assert result.report_path.exists()
     assert result.methods_summary_path.exists()
+    assert result.reviewer_audit_checklist_path.exists()
     assert result.figure_path.exists()
     assert result.transition_report is not None
 

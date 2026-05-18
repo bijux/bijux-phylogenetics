@@ -52,6 +52,10 @@ from bijux_phylogenetics.ancestral.visualization import (
     render_ancestral_state_visualization,
 )
 from bijux_phylogenetics.io.newick import loads_newick
+from bijux_phylogenetics.reports.reviewer_audit import (
+    ReviewerAuditChecklist,
+    write_reviewer_audit_checklist,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,6 +86,7 @@ class AncestralReportPackageResult:
     output_dir: Path
     report_path: Path
     methods_summary_path: Path
+    reviewer_audit_checklist_path: Path
     figure_path: Path
     figure_png_path: Path
     figure_html_path: Path
@@ -104,6 +109,7 @@ class AncestralReportPackageResult:
     transition_branch_rows: list[AncestralContinuousChangeBranchRow]
     transition_report: AncestralTransitionReport | None
     exclusions: list[ContinuousAncestralExclusion | DiscreteAncestralExclusion]
+    reviewer_audit_checklist: ReviewerAuditChecklist
     machine_manifest: dict[str, object]
 
 
@@ -265,6 +271,26 @@ def _list(items: list[str]) -> str:
     return "<ul>" + "".join(f"<li>{escape(item)}</li>" for item in items) + "</ul>"
 
 
+def _reviewer_audit_table(checklist: ReviewerAuditChecklist) -> str:
+    rows = []
+    for item in checklist.items:
+        rows.append(
+            "<tr>"
+            f"<td>{escape(item.section)}</td>"
+            f"<td>{escape(item.status)}</td>"
+            f"<td>{escape(item.summary)}</td>"
+            f"<td>{escape('; '.join(item.evidence))}</td>"
+            "</tr>"
+        )
+    return (
+        "<table><thead><tr>"
+        "<th>section</th><th>status</th><th>summary</th><th>evidence</th>"
+        "</tr></thead><tbody>"
+        + "".join(rows)
+        + "</tbody></table>"
+    )
+
+
 def _write_package_html(
     *,
     path: Path,
@@ -280,6 +306,7 @@ def _write_package_html(
     transition_count_rows: list[list[str]],
     transition_branch_rows: list[list[str]],
     limitations: list[str],
+    reviewer_audit_checklist: ReviewerAuditChecklist,
     manifest: dict[str, object],
 ) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -423,6 +450,10 @@ def _write_package_html(
       <section>
         <h2>Methods Summary</h2>
         <pre>{escape(methods_summary_text)}</pre>
+      </section>
+      <section>
+        <h2>Reviewer Audit Checklist</h2>
+        {_reviewer_audit_table(reviewer_audit_checklist)}
       </section>
       <section>
         <h2>Tree Visualization</h2>
@@ -681,6 +712,7 @@ def build_ancestral_report_package(
     out_dir.mkdir(parents=True, exist_ok=True)
     report_path = out_dir / "ancestral-report.html"
     methods_summary_path = out_dir / "ancestral-methods-summary.md"
+    reviewer_audit_checklist_path = out_dir / "reviewer-audit-checklist.tsv"
     figure_path = out_dir / "ancestral-figure.svg"
     figure_png_path = out_dir / "ancestral-figure.png"
     figure_html_path = out_dir / "ancestral-figure.html"
@@ -850,6 +882,7 @@ def build_ancestral_report_package(
         "outputs": {
             "report_path": str(report_path),
             "methods_summary_path": str(methods_summary_path),
+            "reviewer_audit_checklist_path": str(reviewer_audit_checklist_path),
             "figure_path": str(figure_path),
             "figure_png_path": str(figure_png_path),
             "figure_html_path": str(figure_html_path),
@@ -870,6 +903,11 @@ def build_ancestral_report_package(
         },
         "machine_report_manifest": report_result.machine_manifest,
     }
+    reviewer_audit_checklist = write_reviewer_audit_checklist(
+        reviewer_audit_checklist_path,
+        machine_manifest,
+    ).checklist
+    machine_manifest["reviewer_audit_checklist"] = asdict(reviewer_audit_checklist)
     manifest_path.write_text(
         json.dumps(machine_manifest, default=str, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -888,12 +926,14 @@ def build_ancestral_report_package(
         transition_count_rows=count_payload,
         transition_branch_rows=branch_payload,
         limitations=_limitations(reconstruction_kind, reconstruction),
+        reviewer_audit_checklist=reviewer_audit_checklist,
         manifest=machine_manifest,
     )
     return AncestralReportPackageResult(
         output_dir=out_dir,
         report_path=report_path,
         methods_summary_path=methods_summary_path,
+        reviewer_audit_checklist_path=reviewer_audit_checklist_path,
         figure_path=figure_path,
         figure_png_path=figure_png_path,
         figure_html_path=figure_html_path,
@@ -916,5 +956,6 @@ def build_ancestral_report_package(
         transition_branch_rows=transition_branch_rows,
         transition_report=transition_report,
         exclusions=exclusions,
+        reviewer_audit_checklist=reviewer_audit_checklist,
         machine_manifest=machine_manifest,
     )

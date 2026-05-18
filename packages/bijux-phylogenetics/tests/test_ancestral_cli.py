@@ -999,11 +999,12 @@ def test_ancestral_report_cli_can_export_full_review_package(
     assert exit_code == 0
     assert payload["metrics"]["report_kind"] == "ancestral-report-package"
     assert payload["metrics"]["reconstruction_kind"] == "discrete"
-    assert payload["metrics"]["artifact_count"] == 12
+    assert payload["metrics"]["artifact_count"] == 13
     assert payload["metrics"]["methods_summary_warning_count"] >= 0
     assert output_dir.exists()
     assert (output_dir / "ancestral-report.html").exists()
     assert (output_dir / "ancestral-methods-summary.md").exists()
+    assert (output_dir / "reviewer-audit-checklist.tsv").exists()
     assert (output_dir / "ancestral-figure.svg").exists()
     assert (output_dir / "summary.tsv").exists()
     assert (output_dir / "node-table.tsv").exists()
