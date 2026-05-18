@@ -1085,6 +1085,7 @@ def _fit_discrete_mk_model(
     model: str,
     state_ordering: str,
     allowed_transition_pairs: set[tuple[int, int]],
+    root_prior_mode: str = "equal",
 ) -> tuple[numpy.ndarray, numpy.ndarray, DiscreteOptimizerDiagnostics]:
     parameter_count = _parameter_count(
         len(state_order),
@@ -1096,37 +1097,50 @@ def _fit_discrete_mk_model(
         raise ValueError(
             "discrete ancestral reconstruction requires at least one allowed transition"
         )
-    initial_candidates = _build_discrete_initial_candidates(
-        parameter_count=parameter_count,
-        model=model,
-    )
-    best_log_parameters: numpy.ndarray | None = None
-    best_log_likelihood = float("-inf")
-    best_run: _DiscreteOptimizationRun | None = None
-    for initial_scale, initial in initial_candidates:
-        run = _optimize_log_parameters(
+    if parameter_count == 1:
+        best_run = _optimize_single_log_parameter(
             tree,
             states_by_taxon,
             state_order=state_order,
             model=model,
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
-            initial_log_parameters=initial,
-            initial_scale=initial_scale,
+            root_prior_mode=root_prior_mode,
         )
-        if run.log_likelihood > best_log_likelihood:
-            best_run = run
-            best_log_parameters = run.log_parameters
-            best_log_likelihood = run.log_likelihood
-    if best_log_parameters is None or best_run is None:
-        raise RuntimeError(
-            "discrete ancestral optimization did not produce rate parameters"
+        best_log_parameters = best_run.log_parameters
+        best_log_likelihood = best_run.log_likelihood
+    else:
+        initial_candidates = _build_discrete_initial_candidates(
+            parameter_count=parameter_count,
+            model=model,
         )
-    if parameter_count > 1:
+        best_log_parameters: numpy.ndarray | None = None
+        best_log_likelihood = float("-inf")
+        best_run: _DiscreteOptimizationRun | None = None
+        for initial_scale, initial in initial_candidates:
+            run = _optimize_log_parameters(
+                tree,
+                states_by_taxon,
+                state_order=state_order,
+                model=model,
+                state_ordering=state_ordering,
+                allowed_transition_pairs=allowed_transition_pairs,
+                root_prior_mode=root_prior_mode,
+                initial_log_parameters=initial,
+                initial_scale=initial_scale,
+            )
+            if run.log_likelihood > best_log_likelihood:
+                best_run = run
+                best_log_parameters = run.log_parameters
+                best_log_likelihood = run.log_likelihood
+        if best_log_parameters is None or best_run is None:
+            raise RuntimeError(
+                "discrete ancestral optimization did not produce rate parameters"
+            )
         # Plateau regularization is only intended to tame multi-parameter ridges
         # where several rate vectors induce effectively identical likelihood.
         # Applying it to identified one-parameter fits moves the estimate away
-        # from the live `ape` maximum without improving stability.
+        # from live reference maxima without improving stability.
         best_log_parameters = _regularize_plateau_log_parameters(
             tree,
             states_by_taxon,
@@ -1134,6 +1148,7 @@ def _fit_discrete_mk_model(
             model=model,
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
+            root_prior_mode=root_prior_mode,
             log_parameters=best_log_parameters,
             reference_log_likelihood=best_log_likelihood,
         )
@@ -1149,9 +1164,9 @@ def _fit_discrete_mk_model(
         rate_matrix,
         root_prior,
         DiscreteOptimizerDiagnostics(
-            optimizer_name="nelder-mead",
+            optimizer_name=best_run.optimizer_name,
             parameter_count=parameter_count,
-            initial_candidate_count=len(initial_candidates),
+            initial_candidate_count=best_run.initial_candidate_count,
             best_initial_scale=best_run.initial_scale,
             converged=best_run.converged,
             iteration_count=best_run.iteration_count,
@@ -1211,6 +1226,8 @@ def _build_discrete_initial_candidates(
 class _DiscreteOptimizationRun:
     log_parameters: numpy.ndarray
     log_likelihood: float
+    optimizer_name: str
+    initial_candidate_count: int
     initial_scale: float
     converged: bool
     iteration_count: int
@@ -1226,6 +1243,7 @@ def _optimize_log_parameters(
     model: str,
     state_ordering: str,
     allowed_transition_pairs: set[tuple[int, int]],
+    root_prior_mode: str,
     initial_log_parameters: numpy.ndarray,
     initial_scale: float,
 ) -> _DiscreteOptimizationRun:
@@ -1254,6 +1272,7 @@ def _optimize_log_parameters(
             model=model,
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
+            root_prior_mode=root_prior_mode,
             log_parameters=vertex,
         )
         for vertex in simplex
@@ -1294,6 +1313,7 @@ def _optimize_log_parameters(
             model=model,
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
+            root_prior_mode=root_prior_mode,
             log_parameters=reflected,
         )
         function_evaluation_count += 1
@@ -1314,6 +1334,7 @@ def _optimize_log_parameters(
                 model=model,
                 state_ordering=state_ordering,
                 allowed_transition_pairs=allowed_transition_pairs,
+                root_prior_mode=root_prior_mode,
                 log_parameters=expanded,
             )
             function_evaluation_count += 1
@@ -1343,6 +1364,7 @@ def _optimize_log_parameters(
             model=model,
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
+            root_prior_mode=root_prior_mode,
             log_parameters=contracted,
         )
         function_evaluation_count += 1
@@ -1369,6 +1391,7 @@ def _optimize_log_parameters(
                     model=model,
                     state_ordering=state_ordering,
                     allowed_transition_pairs=allowed_transition_pairs,
+                    root_prior_mode=root_prior_mode,
                     log_parameters=shrunk,
                 )
             )
@@ -1379,11 +1402,83 @@ def _optimize_log_parameters(
     return _DiscreteOptimizationRun(
         log_parameters=simplex[best_index],
         log_likelihood=scores[best_index],
+        optimizer_name="nelder-mead",
+        initial_candidate_count=len(simplex),
         initial_scale=initial_scale,
         converged=converged,
         iteration_count=iteration_count,
         function_evaluation_count=function_evaluation_count,
         simplex_shrink_count=simplex_shrink_count,
+    )
+
+
+def _optimize_single_log_parameter(
+    tree,
+    states_by_taxon: dict[str, str],
+    *,
+    state_order: list[str],
+    model: str,
+    state_ordering: str,
+    allowed_transition_pairs: set[tuple[int, int]],
+    root_prior_mode: str,
+) -> _DiscreteOptimizationRun:
+    lower = _DISCRETE_LOG_PARAMETER_LOWER_BOUND
+    upper = _DISCRETE_LOG_PARAMETER_UPPER_BOUND
+    phi = (math.sqrt(5.0) - 1.0) / 2.0
+    left = upper - phi * (upper - lower)
+    right = lower + phi * (upper - lower)
+
+    def evaluate(parameter: float) -> float:
+        return _evaluate_log_likelihood(
+            tree,
+            states_by_taxon,
+            state_order=state_order,
+            model=model,
+            state_ordering=state_ordering,
+            allowed_transition_pairs=allowed_transition_pairs,
+            root_prior_mode=root_prior_mode,
+            log_parameters=numpy.array([parameter], dtype=float),
+        )
+
+    left_score = evaluate(left)
+    right_score = evaluate(right)
+    function_evaluation_count = 2
+    converged = False
+    iteration_count = 0
+    for current_iteration in range(1, 401):
+        iteration_count = current_iteration
+        if abs(upper - lower) < 1e-9:
+            converged = True
+            break
+        if left_score > right_score:
+            upper = right
+            right = left
+            right_score = left_score
+            left = upper - phi * (upper - lower)
+            left_score = evaluate(left)
+        else:
+            lower = left
+            left = right
+            left_score = right_score
+            right = lower + phi * (upper - lower)
+            right_score = evaluate(right)
+        function_evaluation_count += 1
+    if left_score >= right_score:
+        best_parameter = left
+        best_log_likelihood = left_score
+    else:
+        best_parameter = right
+        best_log_likelihood = right_score
+    return _DiscreteOptimizationRun(
+        log_parameters=numpy.array([best_parameter], dtype=float),
+        log_likelihood=best_log_likelihood,
+        optimizer_name="golden-section-search",
+        initial_candidate_count=1,
+        initial_scale=float(math.exp(best_parameter)),
+        converged=converged,
+        iteration_count=iteration_count,
+        function_evaluation_count=function_evaluation_count,
+        simplex_shrink_count=0,
     )
 
 
@@ -1395,6 +1490,7 @@ def _evaluate_log_likelihood(
     model: str,
     state_ordering: str,
     allowed_transition_pairs: set[tuple[int, int]],
+    root_prior_mode: str,
     log_parameters: numpy.ndarray,
 ) -> float:
     rate_matrix = _rate_matrix_from_log_parameters(
@@ -1409,7 +1505,10 @@ def _evaluate_log_likelihood(
         states_by_taxon,
         state_order=state_order,
         rate_matrix=rate_matrix,
-        root_prior=_uniform_root_prior(len(state_order)),
+        root_prior=None
+        if root_prior_mode == "observed"
+        else _uniform_root_prior(len(state_order)),
+        root_prior_mode=root_prior_mode,
     )
 
 
@@ -1421,6 +1520,7 @@ def _regularize_plateau_log_parameters(
     model: str,
     state_ordering: str,
     allowed_transition_pairs: set[tuple[int, int]],
+    root_prior_mode: str,
     log_parameters: numpy.ndarray,
     reference_log_likelihood: float,
 ) -> numpy.ndarray:
@@ -1436,6 +1536,7 @@ def _regularize_plateau_log_parameters(
             model=model,
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
+            root_prior_mode=root_prior_mode,
             log_parameters=regularized,
         )
         if current_reference_log_likelihood < (
@@ -1455,6 +1556,7 @@ def _regularize_plateau_log_parameters(
                 model=model,
                 state_ordering=state_ordering,
                 allowed_transition_pairs=allowed_transition_pairs,
+                root_prior_mode=root_prior_mode,
                 log_parameters=candidate,
             )
             if (
@@ -1710,7 +1812,8 @@ def _tree_log_likelihood(
     *,
     state_order: list[str],
     rate_matrix: numpy.ndarray,
-    root_prior: numpy.ndarray,
+    root_prior: numpy.ndarray | None,
+    root_prior_mode: str = "given",
 ) -> float:
     state_index = {state: index for index, state in enumerate(state_order)}
     transition_cache: dict[float, numpy.ndarray] = {}
@@ -1741,6 +1844,16 @@ def _tree_log_likelihood(
         return partial, log_scale + math.log(scale)
 
     root_partial, subtree_log_scale = visit(tree.root)
+    if root_prior_mode == "observed":
+        observed_root_total = float(root_partial.sum())
+        if observed_root_total <= 0.0:
+            return float("-inf")
+        root_scale = float((root_partial @ root_partial) / observed_root_total)
+        if root_scale <= 0.0:
+            return float("-inf")
+        return subtree_log_scale + math.log(root_scale)
+    if root_prior is None:
+        raise ValueError("root_prior is required unless root_prior_mode is 'observed'")
     root_weight = root_prior * root_partial
     root_scale = float(root_weight.sum())
     if root_scale <= 0.0:
