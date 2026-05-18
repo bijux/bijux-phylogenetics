@@ -12,6 +12,7 @@ from bijux_phylogenetics.benchmark import (
 from bijux_phylogenetics.validation import (
     build_broken_benchmark_corpus,
     build_clean_benchmark_corpus,
+    build_large_tree_scaling_benchmark_dashboard,
     build_memory_benchmark_dashboard,
     build_messy_benchmark_corpus,
     build_method_accuracy_dashboard,
@@ -106,6 +107,25 @@ def test_benchmark_tree_set_consensus_reports_tree_count_scaling() -> None:
     assert [row.item_count for row in report.observations] == [4, 8]
 
 
+def test_build_large_tree_scaling_benchmark_dashboard_tracks_goal_221() -> None:
+    report = build_large_tree_scaling_benchmark_dashboard(
+        replicates=1,
+        tip_counts=[8, 16],
+    )
+
+    assert report.goal_id == 221
+    assert {workflow.workflow for workflow in report.workflows} == {
+        "tree-validation",
+        "tree-comparison",
+        "tree-rendering",
+        "tree-reporting",
+    }
+    assert all(
+        [row.item_count for row in workflow.observations] == [8, 16]
+        for workflow in report.workflows
+    )
+
+
 @pytest.mark.slow
 def test_build_method_accuracy_dashboard_summarizes_fixture_and_corpus_pass_rates() -> (
     None
@@ -172,6 +192,10 @@ def test_validate_simulation_reproducibility_confirms_same_seed_repeatability() 
 def test_package_root_exports_validation_corpus_surfaces() -> None:
     assert validation_api.build_clean_benchmark_corpus is build_clean_benchmark_corpus
     assert (
+        validation_api.build_large_tree_scaling_benchmark_dashboard
+        is build_large_tree_scaling_benchmark_dashboard
+    )
+    assert (
         validation_api.build_method_limitation_registry
         is build_method_limitation_registry
     )
@@ -192,3 +216,19 @@ def test_write_validation_corpus_json_serializes_report_payloads(
     text = path.read_text(encoding="utf-8")
     assert '"goal_id": 242' in text
     assert '"corpus": "clean-benchmark-corpus"' in text
+
+
+def test_write_validation_corpus_json_serializes_large_tree_scaling_dashboard(
+    tmp_path: Path,
+) -> None:
+    path = write_validation_corpus_json(
+        tmp_path / "large-tree-scaling.json",
+        build_large_tree_scaling_benchmark_dashboard(
+            replicates=1,
+            tip_counts=[8],
+        ),
+    )
+
+    text = path.read_text(encoding="utf-8")
+    assert '"goal_id": 221' in text
+    assert '"tree-rendering"' in text
