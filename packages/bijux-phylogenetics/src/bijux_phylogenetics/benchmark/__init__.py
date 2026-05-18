@@ -21,6 +21,7 @@ from bijux_phylogenetics.engines.large_alignment_inference import (
 )
 from bijux_phylogenetics.io.fasta import build_alignment_quality_report
 from bijux_phylogenetics.io.newick import write_newick
+from bijux_phylogenetics.render.svg import render_tree_svg
 from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
     simulate_dna_alignment,
@@ -68,6 +69,22 @@ class TreeSetConsensusBenchmarkReport:
     replicates: int
     tip_count: int
     observations: list[BenchmarkObservation]
+
+
+@dataclass(slots=True)
+class LargeTreeScalingWorkflowBenchmark:
+    workflow: str
+    scaling_axis: str
+    observations: list[BenchmarkObservation]
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class LargeTreeScalingBenchmarkReport:
+    replicates: int
+    tip_counts: list[int]
+    workflows: list[LargeTreeScalingWorkflowBenchmark]
+    limitations: list[str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -148,6 +165,8 @@ _STRESS_TIER_CONFIGS: dict[str, _StressTierConfig] = {
         table_tip_count=1024,
     ),
 }
+
+_LARGE_TREE_SCALING_TIP_COUNTS: tuple[int, ...] = (256, 1024, 2048)
 
 
 def _measure(
@@ -828,4 +847,123 @@ def benchmark_tree_set_consensus(
         replicates=replicates,
         tip_count=tip_count,
         observations=observations,
+    )
+
+
+def benchmark_large_tree_scaling(
+    *,
+    replicates: int = 1,
+    tip_counts: list[int] | None = None,
+) -> LargeTreeScalingBenchmarkReport:
+    """Benchmark large-tree validation, comparison, rendering, and reporting."""
+    if replicates < 1:
+        raise ValueError(f"replicates must be at least 1, got {replicates}")
+    counts = list(tip_counts or _LARGE_TREE_SCALING_TIP_COUNTS)
+    if not counts:
+        raise ValueError("tip_counts must contain at least one taxon count")
+    if any(count < 2 for count in counts):
+        raise ValueError("tip_counts must all be at least 2")
+
+    validation_observations: list[BenchmarkObservation] = []
+    comparison_observations: list[BenchmarkObservation] = []
+    rendering_observations: list[BenchmarkObservation] = []
+    reporting_observations: list[BenchmarkObservation] = []
+
+    from bijux_phylogenetics.reports.service import render_tree_report
+
+    with tempfile.TemporaryDirectory(prefix="bijux-large-tree-scaling-") as tmpdir:
+        tmp_path = Path(tmpdir)
+        for tip_count in counts:
+            balanced_tree_path = write_newick(
+                tmp_path / f"large-tree-balanced-{tip_count}.nwk",
+                _build_balanced_tree(tip_count, prefix="LargeTaxon"),
+            )
+            comparison_tree_path = write_newick(
+                tmp_path / f"large-tree-caterpillar-{tip_count}.nwk",
+                _build_caterpillar_tree(tip_count, prefix="LargeTaxon"),
+            )
+            render_output_path = tmp_path / f"large-tree-render-{tip_count}.svg"
+            report_output_path = tmp_path / f"large-tree-report-{tip_count}.html"
+
+            validation_observations.append(
+                _measure(
+                    f"taxa-{tip_count}",
+                    tip_count,
+                    replicates=replicates,
+                    callback=lambda path=balanced_tree_path: validate_tree_path(path),
+                )
+            )
+            comparison_observations.append(
+                _measure(
+                    f"taxa-{tip_count}",
+                    tip_count,
+                    replicates=replicates,
+                    callback=lambda left=balanced_tree_path, right=comparison_tree_path: (
+                        compare_tree_paths(left, right)
+                    ),
+                )
+            )
+            rendering_observations.append(
+                _measure(
+                    f"taxa-{tip_count}",
+                    tip_count,
+                    replicates=replicates,
+                    callback=lambda path=balanced_tree_path, out_path=render_output_path: (
+                        render_tree_svg(path, out_path=out_path)
+                    ),
+                )
+            )
+            reporting_observations.append(
+                _measure(
+                    f"taxa-{tip_count}",
+                    tip_count,
+                    replicates=replicates,
+                    callback=lambda path=balanced_tree_path, out_path=report_output_path: (
+                        render_tree_report(tree_path=path, out_path=out_path)
+                    ),
+                )
+            )
+
+    workflows = [
+        LargeTreeScalingWorkflowBenchmark(
+            workflow="tree-validation",
+            scaling_axis="taxa",
+            observations=validation_observations,
+            notes=[
+                "measures full structural validation on deterministic balanced trees",
+            ],
+        ),
+        LargeTreeScalingWorkflowBenchmark(
+            workflow="tree-comparison",
+            scaling_axis="taxa",
+            observations=comparison_observations,
+            notes=[
+                "compares one balanced tree against one caterpillar tree across the same shared taxa",
+            ],
+        ),
+        LargeTreeScalingWorkflowBenchmark(
+            workflow="tree-rendering",
+            scaling_axis="taxa",
+            observations=rendering_observations,
+            notes=[
+                "renders reviewer-facing SVG output with tip labels for each governed tree size",
+            ],
+        ),
+        LargeTreeScalingWorkflowBenchmark(
+            workflow="tree-reporting",
+            scaling_axis="taxa",
+            observations=reporting_observations,
+            notes=[
+                "builds the full HTML tree report, including validation, inspection, forensic review, and machine manifest output",
+            ],
+        ),
+    ]
+    return LargeTreeScalingBenchmarkReport(
+        replicates=replicates,
+        tip_counts=counts,
+        workflows=workflows,
+        limitations=[
+            "large-tree scaling numbers are local benchmark observations and should be re-run on target hardware before operational promises are made",
+            "benchmarks use deterministic synthetic trees so they measure owned workflow cost without conflating external dataset quirks",
+        ],
     )
