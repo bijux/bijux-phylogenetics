@@ -30,7 +30,13 @@ from bijux_phylogenetics.simulation import (
     write_simulated_alignment,
     write_tree_set,
 )
+from bijux_phylogenetics.trees import cluster_trees_by_topology
 from bijux_phylogenetics.trees import compute_consensus_tree
+from bijux_phylogenetics.trees import detect_unstable_clades
+from bijux_phylogenetics.trees import detect_unstable_taxa
+from bijux_phylogenetics.trees import load_tree_set
+from bijux_phylogenetics.trees import summarize_posterior_topology_diversity
+from bijux_phylogenetics.trees import summarize_uncertainty_aware_conclusions
 from bijux_phylogenetics.engines.workflows import run_alignment_trimming
 
 
@@ -114,6 +120,33 @@ class LargeAlignmentScalingBenchmarkReport:
     sequence_counts: list[int]
     alignment_lengths: list[int]
     workflows: list[LargeAlignmentScalingWorkflowBenchmark]
+    limitations: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class LargeTreeSetScalingObservation:
+    label: str
+    tree_count: int
+    tip_count: int
+    pair_count: int
+    runtime_seconds: float
+    peak_memory_bytes: int
+
+
+@dataclass(slots=True)
+class LargeTreeSetScalingWorkflowBenchmark:
+    workflow: str
+    scaling_axis: str
+    observations: list[LargeTreeSetScalingObservation]
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class LargeTreeSetScalingBenchmarkReport:
+    replicates: int
+    tree_counts: list[int]
+    tip_counts: list[int]
+    workflows: list[LargeTreeSetScalingWorkflowBenchmark]
     limitations: list[str]
 
 
@@ -202,6 +235,11 @@ _LARGE_ALIGNMENT_SCALING_CLASSES: tuple[tuple[str, int, int], ...] = (
     ("sequences-512-sites-1024", 512, 1024),
     ("sequences-1024-sites-2048", 1024, 2048),
 )
+_LARGE_TREE_SET_SCALING_CLASSES: tuple[tuple[str, int, int], ...] = (
+    ("trees-128-taxa-48", 128, 48),
+    ("trees-256-taxa-64", 256, 64),
+    ("trees-384-taxa-96", 384, 96),
+)
 
 
 def _measure(
@@ -251,6 +289,36 @@ def _measure_large_alignment_observation(
         sequence_count=sequence_count,
         alignment_length=alignment_length,
         aligned_site_count=aligned_site_count,
+        runtime_seconds=round(sum(runtimes) / len(runtimes), 15),
+        peak_memory_bytes=peak_memory,
+    )
+
+
+def _measure_large_tree_set_observation(
+    label: str,
+    *,
+    tree_count: int,
+    tip_count: int,
+    replicates: int,
+    callback,
+) -> LargeTreeSetScalingObservation:
+    runtimes: list[float] = []
+    peak_memory = 0
+    pair_count = tree_count * max(tree_count - 1, 0) // 2
+    for _ in range(replicates):
+        tracemalloc.start()
+        started = time.perf_counter()
+        callback()
+        elapsed = time.perf_counter() - started
+        _, peak = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
+        runtimes.append(elapsed)
+        peak_memory = max(peak_memory, peak)
+    return LargeTreeSetScalingObservation(
+        label=label,
+        tree_count=tree_count,
+        tip_count=tip_count,
+        pair_count=pair_count,
         runtime_seconds=round(sum(runtimes) / len(runtimes), 15),
         peak_memory_bytes=peak_memory,
     )
@@ -1202,5 +1270,133 @@ def benchmark_large_alignment_scaling(
         limitations=[
             "large-alignment scaling numbers are local benchmark observations and should be re-run on target hardware before operational promises are made",
             "distance-analysis uses five bootstrap replicates inside the benchmark so the report path is exercised without letting bootstrap resampling dominate the scaling suite",
+        ],
+    )
+
+
+def _benchmark_tree_set_uncertainty_summary_workflow(path: Path) -> None:
+    load_tree_set(path)
+    detect_unstable_taxa(path)
+    detect_unstable_clades(path)
+    summarize_uncertainty_aware_conclusions(path)
+
+
+def benchmark_large_tree_set_scaling(
+    *,
+    replicates: int = 1,
+    size_classes: list[tuple[str, int, int]] | None = None,
+) -> LargeTreeSetScalingBenchmarkReport:
+    """Benchmark large-tree-set consensus, RF diversity, clustering, and uncertainty summaries."""
+    if replicates < 1:
+        raise ValueError(f"replicates must be at least 1, got {replicates}")
+    classes = list(size_classes or _LARGE_TREE_SET_SCALING_CLASSES)
+    if not classes:
+        raise ValueError("size_classes must contain at least one tree-set size class")
+    if any(
+        tree_count < 2 or tip_count < 2
+        for _, tree_count, tip_count in classes
+    ):
+        raise ValueError(
+            "tree-set size classes must use at least two trees and two taxa"
+        )
+
+    consensus_observations: list[LargeTreeSetScalingObservation] = []
+    rf_observations: list[LargeTreeSetScalingObservation] = []
+    clustering_observations: list[LargeTreeSetScalingObservation] = []
+    uncertainty_observations: list[LargeTreeSetScalingObservation] = []
+
+    with tempfile.TemporaryDirectory(prefix="bijux-large-tree-set-scaling-") as tmpdir:
+        tmp_path = Path(tmpdir)
+        for index, (label, tree_count, tip_count) in enumerate(classes):
+            trees, _ = simulate_birth_death_trees(
+                tree_count=tree_count,
+                tip_count=tip_count,
+                seed=1_000 + index,
+            )
+            tree_set_path = write_tree_set(tmp_path / f"{label}.trees", trees)
+
+            consensus_observations.append(
+                _measure_large_tree_set_observation(
+                    label,
+                    tree_count=tree_count,
+                    tip_count=tip_count,
+                    replicates=replicates,
+                    callback=lambda path=tree_set_path: compute_consensus_tree(path),
+                )
+            )
+            rf_observations.append(
+                _measure_large_tree_set_observation(
+                    label,
+                    tree_count=tree_count,
+                    tip_count=tip_count,
+                    replicates=replicates,
+                    callback=lambda path=tree_set_path: (
+                        summarize_posterior_topology_diversity(path)
+                    ),
+                )
+            )
+            clustering_observations.append(
+                _measure_large_tree_set_observation(
+                    label,
+                    tree_count=tree_count,
+                    tip_count=tip_count,
+                    replicates=replicates,
+                    callback=lambda path=tree_set_path: cluster_trees_by_topology(path),
+                )
+            )
+            uncertainty_observations.append(
+                _measure_large_tree_set_observation(
+                    label,
+                    tree_count=tree_count,
+                    tip_count=tip_count,
+                    replicates=replicates,
+                    callback=lambda path=tree_set_path: (
+                        _benchmark_tree_set_uncertainty_summary_workflow(path)
+                    ),
+                )
+            )
+
+    workflows = [
+        LargeTreeSetScalingWorkflowBenchmark(
+            workflow="tree-set-consensus",
+            scaling_axis="posterior_samples",
+            observations=consensus_observations,
+            notes=[
+                "computes the owned consensus-tree summary from one simulated posterior tree set at each governed sample and taxon class",
+            ],
+        ),
+        LargeTreeSetScalingWorkflowBenchmark(
+            workflow="pairwise-rf-diversity",
+            scaling_axis="posterior_samples",
+            observations=rf_observations,
+            notes=[
+                "measures the posterior topology diversity workflow, including pairwise RF-distance aggregation across every retained tree pair",
+            ],
+        ),
+        LargeTreeSetScalingWorkflowBenchmark(
+            workflow="topology-clustering",
+            scaling_axis="posterior_samples",
+            observations=clustering_observations,
+            notes=[
+                "clusters identical rooted topologies so reviewers can see whether large posterior sets collapse into a few dominant modes",
+            ],
+        ),
+        LargeTreeSetScalingWorkflowBenchmark(
+            workflow="uncertainty-summaries",
+            scaling_axis="posterior_samples",
+            observations=uncertainty_observations,
+            notes=[
+                "runs the full uncertainty-summary path, including unstable taxa, unstable clades, and reviewer-facing conclusion summaries",
+            ],
+        ),
+    ]
+    return LargeTreeSetScalingBenchmarkReport(
+        replicates=replicates,
+        tree_counts=[tree_count for _, tree_count, _ in classes],
+        tip_counts=[tip_count for _, _, tip_count in classes],
+        workflows=workflows,
+        limitations=[
+            "large-tree-set scaling numbers are local benchmark observations and should be re-run on target hardware before operational promises are made",
+            "tree-set classes increase posterior sample count and taxon count together so consensus, clustering, RF diversity, and uncertainty summaries are measured across reviewer-relevant large posterior workloads",
         ],
     )
