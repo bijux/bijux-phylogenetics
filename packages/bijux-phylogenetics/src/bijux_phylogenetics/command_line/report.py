@@ -33,6 +33,7 @@ from bijux_phylogenetics.reports.service import (
 )
 from bijux_phylogenetics.reports import (
     build_alignment_figure_package,
+    write_publication_package_comparison_report,
     write_publication_package_revalidation_report,
     write_reviewer_audit_checklist_from_manifest,
     write_alignment_filtering_methods_summary_text,
@@ -148,6 +149,20 @@ def add_report_command(subparsers: Any) -> None:
         help="Emit the revalidation result as JSON.",
     )
     _add_manifest_argument(report_package_revalidation)
+
+    report_package_comparison = report_subparsers.add_parser(
+        "package-comparison",
+        help="Compare two stored publication package versions for the same governed study.",
+    )
+    report_package_comparison.add_argument("left_manifest", type=Path)
+    report_package_comparison.add_argument("right_manifest", type=Path)
+    report_package_comparison.add_argument("--out-dir", required=True, type=Path)
+    report_package_comparison.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the comparison result as JSON.",
+    )
+    _add_manifest_argument(report_package_comparison)
 
     report_tree_validation_methods_summary = report_subparsers.add_parser(
         "tree-validation-methods-summary",
@@ -836,6 +851,65 @@ def run_report_command(args: Any) -> int:
                         ),
                         "overall_revalidation_status": (
                             result.overall_revalidation_status
+                        ),
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_root)
+        return 0
+
+    if args.report_command == "package-comparison":
+        result = write_publication_package_comparison_report(
+            args.out_dir,
+            args.left_manifest,
+            args.right_manifest,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=[args.left_manifest, args.right_manifest],
+            outputs=[
+                result.artifact_table_path,
+                result.check_table_path,
+                result.summary_path,
+                result.report_path,
+            ],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=[args.left_manifest, args.right_manifest],
+                    outputs=outputs,
+                    warnings=[
+                        row.summary for row in result.check_rows if row.status != "pass"
+                    ],
+                    metrics={
+                        "report_kind": result.report_kind,
+                        "dataset_id": result.dataset_id,
+                        "artifact_row_count": len(result.artifact_rows),
+                        "check_row_count": len(result.check_rows),
+                        "same_artifact_count": result.same_artifact_count,
+                        "changed_artifact_count": result.changed_artifact_count,
+                        "left_only_artifact_count": result.left_only_artifact_count,
+                        "right_only_artifact_count": result.right_only_artifact_count,
+                        "config_difference_count": result.config_difference_count,
+                        "sequence_left_only_count": result.sequence_left_only_count,
+                        "sequence_right_only_count": result.sequence_right_only_count,
+                        "accession_left_only_count": result.accession_left_only_count,
+                        "accession_right_only_count": result.accession_right_only_count,
+                        "alignment_difference_count": result.alignment_difference_count,
+                        "figure_or_report_difference_count": (
+                            result.figure_or_report_difference_count
+                        ),
+                        "scientific_finding_difference_count": (
+                            result.scientific_finding_difference_count
+                        ),
+                        "overall_comparison_status": (
+                            result.overall_comparison_status
                         ),
                     },
                     data=result,
