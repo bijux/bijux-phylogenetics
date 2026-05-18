@@ -37,6 +37,7 @@ def test_build_comparative_report_package_writes_html_and_ledgers(
     )
 
     assert result.report_path.exists()
+    assert result.methods_summary_path.exists()
     assert result.summary_table_path.exists()
     assert result.coefficient_table_path.exists()
     assert result.residual_table_path.exists()
@@ -51,6 +52,7 @@ def test_build_comparative_report_package_writes_html_and_ledgers(
     assert "Bijux Comparative Analysis Report" in html
     assert "Method Tier" in html
     assert "supported" in html
+    assert "Methods Summary" in html
     assert "Coefficient Table" in html
     assert "Residual Summary" in html
     assert "Phylogenetic Signal" in html
@@ -58,6 +60,7 @@ def test_build_comparative_report_package_writes_html_and_ledgers(
     assert "Biological Interpretation" in html
 
     summary_rows = result.summary_table_path.read_text(encoding="utf-8").splitlines()
+    methods_summary = result.methods_summary_path.read_text(encoding="utf-8")
     coefficient_rows = result.coefficient_table_path.read_text(
         encoding="utf-8"
     ).splitlines()
@@ -72,6 +75,8 @@ def test_build_comparative_report_package_writes_html_and_ledgers(
     contrast_rows = result.contrast_table_path.read_text(encoding="utf-8").splitlines()
 
     assert summary_rows[0].startswith("response\tformula\tpredictor_count")
+    assert "Comparative Analysis Methods Summary" in methods_summary
+    assert "- predictor terms: `predictor_one`" in methods_summary
     assert coefficient_rows[0].startswith("term\testimate\tstandard_error")
     assert residual_rows[0].startswith("analysis\tresidual_variance")
     assert signal_rows[0].startswith("trait\ttaxon_count\tblombergs_k")
@@ -83,6 +88,10 @@ def test_build_comparative_report_package_writes_html_and_ledgers(
     assert manifest["report_kind"] == "comparative_package"
     assert manifest["metrics"]["analysis_taxa"] == 4
     assert manifest["metrics"]["selected_model"] in {"brownian", "ou"}
+    assert manifest["metrics"]["methods_summary_warning_count"] >= 0
+    assert manifest["outputs"]["methods_summary_path"].endswith(
+        "comparative-methods-summary.md"
+    )
     assert result.method_tier.tier == "supported"
 
 

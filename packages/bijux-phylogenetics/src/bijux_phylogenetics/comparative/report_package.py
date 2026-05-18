@@ -9,7 +9,9 @@ from pathlib import Path
 
 from bijux_phylogenetics.comparative.reporting import (
     ComparativeMethodReport,
+    ComparativeMethodsSummaryTextResult,
     build_comparative_method_report,
+    write_comparative_methods_summary_text,
 )
 from bijux_phylogenetics.provenance.method_tiers import (
     MethodTierAssessment,
@@ -95,6 +97,7 @@ class ComparativeAuditTableRow:
 class ComparativeReportPackageResult:
     output_dir: Path
     report_path: Path
+    methods_summary_path: Path
     summary_table_path: Path
     coefficient_table_path: Path
     residual_table_path: Path
@@ -105,6 +108,7 @@ class ComparativeReportPackageResult:
     contrast_table_path: Path
     manifest_path: Path
     report: ComparativeMethodReport
+    methods_summary: ComparativeMethodsSummaryTextResult
     summary_row: ComparativeAnalysisSummaryRow
     coefficient_rows: list[ComparativeCoefficientTableRow]
     residual_rows: list[ComparativeResidualTableRow]
@@ -470,6 +474,7 @@ def _write_comparative_report_html(
     *,
     path: Path,
     report: ComparativeMethodReport,
+    methods_summary_text: str,
     summary_row: ComparativeAnalysisSummaryRow,
     coefficient_rows: list[ComparativeCoefficientTableRow],
     residual_rows: list[ComparativeResidualTableRow],
@@ -636,6 +641,10 @@ def _write_comparative_report_html(
         <div class="note">
           Comparative coefficients remain associational. Review residual diagnostics, phylogenetic signal, and model-comparison tables before treating direction or significance as robust.
         </div>
+      </section>
+      <section>
+        <h2>Methods Summary</h2>
+        <pre>{escape(methods_summary_text)}</pre>
       </section>
       <section>
         <h2>Coefficient Table</h2>
@@ -823,6 +832,7 @@ def build_comparative_report_package(
     method_tier = comparative_report_method_tier()
 
     report_path = out_dir / "comparative-report.html"
+    methods_summary_path = out_dir / "comparative-methods-summary.md"
     summary_table_path = out_dir / "comparative-summary.tsv"
     coefficient_table_path = out_dir / "coefficient-table.tsv"
     residual_table_path = out_dir / "residual-summary.tsv"
@@ -833,6 +843,9 @@ def build_comparative_report_package(
     contrast_table_path = out_dir / "contrast-table.tsv"
     manifest_path = out_dir / "comparative-report.manifest.json"
 
+    methods_summary = write_comparative_methods_summary_text(
+        methods_summary_path, report
+    )
     write_comparative_summary_table(summary_table_path, summary_row)
     write_comparative_coefficient_table(coefficient_table_path, coefficient_rows)
     write_comparative_residual_table(residual_table_path, residual_rows)
@@ -853,6 +866,7 @@ def build_comparative_report_package(
         },
         "outputs": {
             "report_path": str(report_path),
+            "methods_summary_path": str(methods_summary_path),
             "summary_table_path": str(summary_table_path),
             "coefficient_table_path": str(coefficient_table_path),
             "residual_table_path": str(residual_table_path),
@@ -868,6 +882,7 @@ def build_comparative_report_package(
             "coefficient_count": len(coefficient_rows),
             "contrast_count": signal_row.independent_contrast_count,
             "limitation_count": len(report.snapshot.limitations),
+            "methods_summary_warning_count": methods_summary.warning_count,
         },
         "summary": asdict(summary_row),
         "limitations": report.snapshot.limitations,
@@ -879,6 +894,7 @@ def build_comparative_report_package(
     _write_comparative_report_html(
         path=report_path,
         report=report,
+        methods_summary_text=methods_summary.text,
         summary_row=summary_row,
         coefficient_rows=coefficient_rows,
         residual_rows=residual_rows,
@@ -890,6 +906,7 @@ def build_comparative_report_package(
     return ComparativeReportPackageResult(
         output_dir=out_dir,
         report_path=report_path,
+        methods_summary_path=methods_summary_path,
         summary_table_path=summary_table_path,
         coefficient_table_path=coefficient_table_path,
         residual_table_path=residual_table_path,
@@ -900,6 +917,7 @@ def build_comparative_report_package(
         contrast_table_path=contrast_table_path,
         manifest_path=manifest_path,
         report=report,
+        methods_summary=methods_summary,
         summary_row=summary_row,
         coefficient_rows=coefficient_rows,
         residual_rows=residual_rows,
