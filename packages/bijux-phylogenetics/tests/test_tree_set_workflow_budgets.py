@@ -150,9 +150,12 @@ def test_cli_tree_set_package_reports_budget_warning_metrics(
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["budget_warning_count"] >= 1
+    assert payload["metrics"]["methods_summary_warning_count"] >= 0
     assert payload["metrics"]["runtime_seconds"] >= 0.0
     assert payload["metrics"]["publication_ready"] is True
+    assert payload["metrics"]["artifact_count"] == 15
     assert (output_dir / "uncertainty-review.html").is_file()
+    assert (output_dir / "tree-set-uncertainty-methods-summary.md").is_file()
 
 
 def test_cli_tree_set_report_reports_output_size_metrics(
@@ -173,6 +176,7 @@ def test_cli_tree_set_report_reports_output_size_metrics(
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["linked_artifact_count"] >= 10
+    assert payload["metrics"]["methods_summary_warning_count"] >= 0
     assert payload["data"]["methods_summary_path"].endswith(
         "tree-set-uncertainty-methods-summary.md"
     )

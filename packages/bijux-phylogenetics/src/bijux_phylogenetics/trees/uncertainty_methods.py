@@ -43,6 +43,7 @@ class TreeSetUncertaintyMethodsSummaryTextResult:
     output_path: Path
     title: str
     warning_count: int
+    warnings: tuple[str, ...]
     topology_cluster_count: int
     unstable_taxon_count: int
     text: str
@@ -162,12 +163,14 @@ def write_tree_set_uncertainty_methods_summary_text(
 ) -> TreeSetUncertaintyMethodsSummaryTextResult:
     """Write reviewer-facing Markdown methods text for one tree-set uncertainty analysis."""
     text = build_tree_set_uncertainty_methods_summary_text(report)
+    warnings = _tree_set_uncertainty_methods_summary_warnings(report)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
     return TreeSetUncertaintyMethodsSummaryTextResult(
         output_path=path,
         title="Tree-Set Uncertainty Methods Summary",
-        warning_count=len(_tree_set_uncertainty_methods_summary_warnings(report)),
+        warning_count=len(warnings),
+        warnings=tuple(warnings),
         topology_cluster_count=len(report.topology_clusters.clusters),
         unstable_taxon_count=len(report.unstable_taxa.taxa),
         text=text,

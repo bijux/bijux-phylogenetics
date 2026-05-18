@@ -14,6 +14,7 @@ from bijux_phylogenetics.trees.uncertainty_package import (
 )
 from bijux_phylogenetics.trees import (
     analyze_tree_set_branch_lengths,
+    build_tree_set_uncertainty_method_report,
     cluster_trees_by_topology,
     compare_posterior_topological_diversity,
     compare_posterior_tree_sets,
@@ -40,6 +41,7 @@ from bijux_phylogenetics.trees import (
     write_tree_distance_distribution_table,
     write_tree_distance_matrix,
     write_tree_shape_table,
+    write_tree_set_uncertainty_methods_summary_text,
 )
 
 
@@ -296,6 +298,17 @@ def add_tree_set_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the conclusion summary as JSON."
     )
     _add_manifest_argument(tree_set_summary)
+
+    tree_set_methods_summary = tree_set_subparsers.add_parser(
+        "methods-summary",
+        help="Write reviewer-facing Markdown methods text for one tree-set uncertainty analysis.",
+    )
+    tree_set_methods_summary.add_argument("tree_set", type=Path)
+    tree_set_methods_summary.add_argument("--out", required=True, type=Path)
+    tree_set_methods_summary.add_argument(
+        "--json", action="store_true", help="Emit the methods-summary result as JSON."
+    )
+    _add_manifest_argument(tree_set_methods_summary)
 
     tree_set_package = tree_set_subparsers.add_parser(
         "package",
@@ -841,6 +854,37 @@ def run_tree_set_command(args: Any) -> int:
         )
         return 0
 
+    if args.tree_set_command == "methods-summary":
+        report = build_tree_set_uncertainty_method_report(args.tree_set)
+        result = write_tree_set_uncertainty_methods_summary_text(args.out, report)
+        outputs = _finalize_outputs(
+            args,
+            command="tree-set",
+            inputs=[args.tree_set],
+            outputs=[result.output_path],
+        )
+        _print_result(
+            build_command_result(
+                command="tree-set",
+                inputs=[args.tree_set],
+                outputs=outputs,
+                warnings=list(result.warnings),
+                metrics={
+                    "warning_count": result.warning_count,
+                    "tree_count": result.report.summary.tree_count,
+                    "rooted_topology_count": (
+                        result.report.summary.rooted_topology_count
+                    ),
+                    "topology_cluster_count": result.topology_cluster_count,
+                    "unstable_taxon_count": result.unstable_taxon_count,
+                    "multimodal": result.report.multimodality.multimodal,
+                },
+                data=result,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
     if args.tree_set_command == "package":
         report = build_tree_set_uncertainty_figure_package(
             args.tree_set,
@@ -866,6 +910,7 @@ def run_tree_set_command(args: Any) -> int:
                 report.conclusion_summary_path,
                 report.legend_path,
                 report.caption_path,
+                report.methods_summary_path,
                 report.review_path,
                 report.manifest_path,
                 report.reproducibility_manifest_path,
@@ -878,7 +923,7 @@ def run_tree_set_command(args: Any) -> int:
                 outputs=outputs,
                 warnings=report.budget_report.warning_messages,
                 metrics={
-                    "artifact_count": 14,
+                    "artifact_count": 15,
                     "tree_count": report.tree_count,
                     "runtime_seconds": report.processing.runtime_seconds,
                     "peak_memory_bytes": report.processing.peak_memory_bytes,
@@ -890,6 +935,9 @@ def run_tree_set_command(args: Any) -> int:
                     ),
                     "plotted_topology_cluster_count": (
                         report.audit.plotted_topology_cluster_count
+                    ),
+                    "methods_summary_warning_count": (
+                        report.methods_summary.warning_count
                     ),
                 },
                 data=report,
@@ -922,6 +970,7 @@ def run_tree_set_command(args: Any) -> int:
                 "runtime_seconds": report.processing.runtime_seconds,
                 "peak_memory_bytes": report.processing.peak_memory_bytes,
                 "budget_warning_count": len(report.budget_report.warning_messages),
+                "methods_summary_warning_count": report.methods_summary_warning_count,
                 "section_count": len(report.machine_manifest["sections"]),
                 "linked_artifact_count": report.linked_artifact_count,
                 "html_size_bytes": report.html_size_bytes,
