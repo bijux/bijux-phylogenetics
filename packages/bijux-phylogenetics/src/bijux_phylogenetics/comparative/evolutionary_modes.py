@@ -7,7 +7,6 @@ from pathlib import Path
 from bijux_phylogenetics.comparative.common import (
     ComparativeDataset,
     build_brownian_covariance_matrix,
-    lambda_transform_covariance,
     load_comparative_dataset,
     node_signature,
     stable_covariance,
@@ -72,7 +71,7 @@ class EvolutionaryModeBranchLengthRow:
 
 @dataclass(slots=True)
 class ComparativeTreeRescalingReport:
-    """Canonical summary of one OU or early-burst tree-rescaling surface."""
+    """Canonical summary of one shared geiger-style tree-rescaling surface."""
 
     tree_path: Path
     mode: str
@@ -222,6 +221,22 @@ def rescale_tree_early_burst(
     )
 
 
+def rescale_tree_pagel_lambda(
+    tree_path: Path,
+    *,
+    lambda_value: float,
+) -> ComparativeTreeRescalingReport:
+    """Apply the geiger-style Pagel-lambda rescaling to a rooted tree."""
+    return _build_tree_rescaling_report(
+        load_tree(tree_path),
+        tree_path,
+        mode="pagel-lambda",
+        parameter_name="lambda",
+        parameter_value=lambda_value,
+        sigsq=1.0,
+    )
+
+
 def rescale_tree_pagel_kappa(
     tree_path: Path,
     *,
@@ -251,6 +266,22 @@ def rescale_tree_pagel_delta(
         parameter_name="delta",
         parameter_value=delta,
         sigsq=1.0,
+    )
+
+
+def rescale_tree_white_noise(
+    tree_path: Path,
+    *,
+    sigsq: float = 1.0,
+) -> ComparativeTreeRescalingReport:
+    """Apply the geiger-style white no-phylogeny tree rescaling."""
+    return _build_tree_rescaling_report(
+        load_tree(tree_path),
+        tree_path,
+        mode="white-noise",
+        parameter_name="sigsq",
+        parameter_value=sigsq,
+        sigsq=sigsq,
     )
 
 
@@ -611,8 +642,15 @@ def _fit_evolutionary_mode_from_dataset(
             "Trait variance accumulates proportionally with shared branch length.",
         ]
     elif mode == "white-noise":
-        transformed_tree = _clone_tree(dataset.tree)
-        covariance = _identity_covariance_matrix(len(dataset.taxa))
+        transformed_tree = _transform_tree(
+            dataset.tree,
+            mode="white-noise",
+            parameter_value=1.0,
+            sigsq=1.0,
+        )
+        covariance = stable_covariance(
+            build_brownian_covariance_matrix(transformed_tree, dataset.taxa)
+        )
         fit = _fit_intercept_only_model(dataset, covariance)
         parameter_name = None
         parameter_value = None
@@ -1001,9 +1039,8 @@ def _best_pagel_lambda_fit(
         mode="pagel-lambda",
         parameter_value=best_parameter,
     )
-    best_covariance = lambda_transform_covariance(
-        dataset.covariance_matrix,
-        best_parameter,
+    best_covariance = stable_covariance(
+        build_brownian_covariance_matrix(best_tree, dataset.taxa)
     )
     best_fit = _fit_intercept_only_model(dataset, best_covariance)
     starting_parameter_log_likelihood = best_fit.log_likelihood
@@ -1016,9 +1053,8 @@ def _best_pagel_lambda_fit(
             mode="pagel-lambda",
             parameter_value=candidate,
         )
-        covariance = lambda_transform_covariance(
-            dataset.covariance_matrix,
-            candidate,
+        covariance = stable_covariance(
+            build_brownian_covariance_matrix(transformed_tree, dataset.taxa)
         )
         fit = _fit_intercept_only_model(dataset, covariance)
         profile.append((candidate, fit.log_likelihood))
@@ -1048,9 +1084,8 @@ def _best_pagel_lambda_fit(
             mode="pagel-lambda",
             parameter_value=candidate,
         )
-        covariance = lambda_transform_covariance(
-            dataset.covariance_matrix,
-            candidate,
+        covariance = stable_covariance(
+            build_brownian_covariance_matrix(transformed_tree, dataset.taxa)
         )
         fit = _fit_intercept_only_model(dataset, covariance)
         profile.append((candidate, fit.log_likelihood))
@@ -1436,10 +1471,12 @@ def _transform_tree(
         "pagel-lambda",
         "pagel-kappa",
         "pagel-delta",
+        "white-noise",
     }:
         raise ComparativeMethodError(
-            "tree transformation mode must be 'ornstein-uhlenbeck', 'early-burst', 'pagel-lambda', 'pagel-kappa', or 'pagel-delta'"
+            "tree transformation mode must be 'ornstein-uhlenbeck', 'early-burst', 'pagel-lambda', 'pagel-kappa', 'pagel-delta', or 'white-noise'"
         )
+    _reject_negative_transform_branch_lengths(tree, mode=mode)
     if mode == "ornstein-uhlenbeck" and parameter_value < 0.0:
         raise ComparativeMethodError("OU alpha must be non-negative")
     if mode == "pagel-lambda" and not 0.0 <= parameter_value <= 1.0:
@@ -1448,6 +1485,8 @@ def _transform_tree(
         raise ComparativeMethodError("Pagel kappa must be non-negative")
     if mode == "pagel-delta" and parameter_value < 0.0:
         raise ComparativeMethodError("Pagel delta must be non-negative")
+    if mode == "white-noise" and sigsq < 0.0:
+        raise ComparativeMethodError("White-noise sigsq must be non-negative")
     cloned_root = _clone_node(tree.root)
     if mode == "pagel-lambda":
         def visit_pagel_lambda(node: TreeNode, depth: float) -> None:
@@ -1502,6 +1541,18 @@ def _transform_tree(
                 visit_pagel_delta(child, child_depth, transformed_child_depth)
 
         visit_pagel_delta(cloned_root, 0.0, 0.0)
+        return PhyloTree(
+            root=cloned_root,
+            source_format=tree.source_format,
+            rooted=tree.rooted,
+        )
+    if mode == "white-noise":
+        def visit_white(node: TreeNode) -> None:
+            for child in node.children:
+                child.branch_length = sigsq if child.is_leaf() else 0.0
+                visit_white(child)
+
+        visit_white(cloned_root)
         return PhyloTree(
             root=cloned_root,
             source_format=tree.source_format,
@@ -1665,6 +1716,26 @@ def _identity_covariance_matrix(size: int) -> list[list[float]]:
         [1.0 if row_index == column_index else 0.0 for column_index in range(size)]
         for row_index in range(size)
     ]
+
+
+def _reject_negative_transform_branch_lengths(tree: PhyloTree, *, mode: str) -> None:
+    message_map = {
+        "pagel-lambda": "Pagel lambda cannot transform negative branch lengths",
+        "pagel-kappa": "Pagel kappa cannot transform negative branch lengths",
+        "pagel-delta": "Pagel delta cannot transform negative branch lengths",
+        "early-burst": "Early-burst rescaling cannot transform negative branch lengths",
+        "white-noise": "White-noise rescaling cannot transform negative branch lengths",
+        "ornstein-uhlenbeck": "OU rescaling cannot transform negative branch lengths",
+    }
+
+    def visit(node: TreeNode) -> None:
+        for child in node.children:
+            branch_length = float(child.branch_length or 0.0)
+            if branch_length < 0.0:
+                raise ComparativeMethodError(message_map[mode])
+            visit(child)
+
+    visit(tree.root)
 
 
 def _likelihood_ratio_test(
