@@ -16,7 +16,9 @@ from bijux_phylogenetics.comparative import (
     rescale_tree_early_burst,
     rescale_tree_ornstein_uhlenbeck,
     rescale_tree_pagel_delta,
+    rescale_tree_pagel_lambda,
     rescale_tree_pagel_kappa,
+    rescale_tree_white_noise,
 )
 from bijux_phylogenetics.fixtures import get_shared_geiger_continuous_fixture
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
@@ -63,6 +65,21 @@ def test_rescale_tree_early_burst_supports_negative_rate_change() -> None:
     assert report.transformed_total_branch_length > 0.0
 
 
+def test_rescale_tree_pagel_lambda_reports_deterministic_branch_lengths() -> None:
+    report = rescale_tree_pagel_lambda(EXAMPLE_TREE, lambda_value=0.5)
+
+    assert report.mode == "pagel-lambda"
+    assert report.parameter_name == "lambda"
+    assert report.tip_count == 4
+    assert math.isclose(report.parameter_value, 0.5)
+    assert math.isclose(report.transformed_total_branch_length, 1.05)
+    assert report.branch_rows[0].node == "A"
+    assert math.isclose(report.branch_rows[0].original_branch_length, 0.1)
+    assert math.isclose(
+        report.branch_rows[0].transformed_branch_length, 0.2
+    )
+
+
 def test_rescale_tree_pagel_kappa_reports_deterministic_branch_lengths() -> None:
     report = rescale_tree_pagel_kappa(EXAMPLE_TREE, kappa=0.5)
 
@@ -93,9 +110,32 @@ def test_rescale_tree_pagel_delta_reports_deterministic_branch_lengths() -> None
     )
 
 
+def test_rescale_tree_white_noise_reports_deterministic_branch_lengths() -> None:
+    report = rescale_tree_white_noise(EXAMPLE_TREE, sigsq=2.5)
+
+    assert report.mode == "white-noise"
+    assert report.parameter_name == "sigsq"
+    assert report.tip_count == 4
+    assert math.isclose(report.parameter_value, 2.5)
+    assert math.isclose(report.transformed_total_branch_length, 10.0)
+    assert report.branch_rows[0].node == "A"
+    assert math.isclose(report.branch_rows[0].original_branch_length, 0.1)
+    assert math.isclose(
+        report.branch_rows[0].transformed_branch_length, 2.5
+    )
+
+
 def test_rescale_tree_ornstein_uhlenbeck_rejects_negative_alpha() -> None:
     with pytest.raises(ComparativeMethodError, match="OU alpha must be non-negative"):
         rescale_tree_ornstein_uhlenbeck(EXAMPLE_TREE, alpha=-0.5)
+
+
+def test_rescale_tree_pagel_lambda_rejects_negative_branch_lengths() -> None:
+    with pytest.raises(
+        ComparativeMethodError,
+        match="Pagel lambda cannot transform negative branch lengths",
+    ):
+        rescale_tree_pagel_lambda(EXAMPLE_TREE_NEGATIVE, lambda_value=0.5)
 
 
 def test_rescale_tree_pagel_kappa_rejects_negative_branch_lengths() -> None:
@@ -104,6 +144,38 @@ def test_rescale_tree_pagel_kappa_rejects_negative_branch_lengths() -> None:
         match="Pagel kappa cannot transform negative branch lengths",
     ):
         rescale_tree_pagel_kappa(EXAMPLE_TREE_NEGATIVE, kappa=0.5)
+
+
+def test_rescale_tree_pagel_delta_rejects_negative_branch_lengths() -> None:
+    with pytest.raises(
+        ComparativeMethodError,
+        match="Pagel delta cannot transform negative branch lengths",
+    ):
+        rescale_tree_pagel_delta(EXAMPLE_TREE_NEGATIVE, delta=0.5)
+
+
+def test_rescale_tree_early_burst_rejects_negative_branch_lengths() -> None:
+    with pytest.raises(
+        ComparativeMethodError,
+        match="Early-burst rescaling cannot transform negative branch lengths",
+    ):
+        rescale_tree_early_burst(EXAMPLE_TREE_NEGATIVE, rate_change=-2.0)
+
+
+def test_rescale_tree_white_noise_rejects_negative_branch_lengths() -> None:
+    with pytest.raises(
+        ComparativeMethodError,
+        match="White-noise rescaling cannot transform negative branch lengths",
+    ):
+        rescale_tree_white_noise(EXAMPLE_TREE_NEGATIVE, sigsq=1.0)
+
+
+def test_rescale_tree_white_noise_rejects_negative_sigsq() -> None:
+    with pytest.raises(
+        ComparativeMethodError,
+        match="White-noise sigsq must be non-negative",
+    ):
+        rescale_tree_white_noise(EXAMPLE_TREE, sigsq=-1.0)
 
 
 def test_fit_continuous_evolutionary_mode_supports_pagel_delta_strong_signal() -> None:
