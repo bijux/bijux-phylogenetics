@@ -39,6 +39,9 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
     brownian_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_brownian_signal_twenty_four_taxa"
     )
+    brownian_missing_fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_missing_values_twenty_four_taxa"
+    )
     ou_fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_ou_known_truth_twenty_four_taxa"
     )
@@ -70,6 +73,9 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "taxon_count",
                 "trait_name",
                 "model_name",
+                "excluded_taxon_count",
+                "missing_value_policy",
+                "standard_error_policy",
                 "root_state",
                 "rate",
                 "log_likelihood",
@@ -99,11 +105,55 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "taxon_count",
                 "trait_name",
                 "model_name",
+                "excluded_taxon_count",
+                "missing_value_policy",
+                "standard_error_policy",
                 "root_state",
                 "rate",
                 "log_likelihood",
                 "aic",
+                "aicc",
             ),
+            field_tolerances={"aicc": 1e-5},
+        ),
+        GeigerParityCase(
+            case_id="fitcontinuous-bm-missing-values-review",
+            fixture_id=brownian_missing_fixture.fixture_id,
+            function_name="geiger::fitContinuous(model='BM')",
+            python_function_name="fit_continuous_evolutionary_mode",
+            operation="fit-continuous",
+            model_name="BM",
+            python_mode="brownian",
+            input_fixtures=(
+                brownian_missing_fixture.tree_path,
+                brownian_missing_fixture.traits_path,
+            ),
+            tolerance=0.2,
+            trait_name=brownian_missing_fixture.trait_name,
+            taxon_column=brownian_missing_fixture.taxon_column,
+            optimizer_settings={
+                "reference_control_policy": "fitcontinuous-default",
+                "bijux_optimizer_name": "closed-form-profile-solution",
+                "bijux_parameter_search": "none",
+            },
+            comparison_fields=(
+                "taxon_count",
+                "trait_name",
+                "model_name",
+                "excluded_taxon_count",
+                "excluded_taxa",
+                "missing_value_taxa",
+                "non_numeric_taxa",
+                "missing_from_traits",
+                "missing_value_policy",
+                "standard_error_policy",
+                "root_state",
+                "rate",
+                "log_likelihood",
+                "aic",
+                "aicc",
+            ),
+            field_tolerances={"aicc": 1e-5},
         ),
         GeigerParityCase(
             case_id="fitcontinuous-ou-ou-parameter-recovery",
