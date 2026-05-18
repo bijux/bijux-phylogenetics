@@ -21,6 +21,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 SUMMARY_OVERRIDES = __SUMMARY_OVERRIDES__
@@ -76,8 +77,16 @@ def comparison_rows(summary: dict[str, object]) -> list[dict[str, object]]:
     return [dict(row) for row in summary["rows"]]
 
 
+def rate_rows(summary: dict[str, object]) -> list[dict[str, object]]:
+    return [dict(row) for row in summary["rows"]]
+
+
 def standard_error_policy() -> str:
     return "fitcontinuous-standard-error-explicitly-excluded-this-round"
+
+
+def discrete_missing_value_policy() -> str:
+    return "prune-overlapping-missing-values"
 
 
 def missing_value_policy() -> str:
@@ -91,12 +100,24 @@ def build_reference_payload(case_payload: dict[str, object]) -> tuple[dict[str, 
         return summary, rows
     package_root = find_package_root()
     repo_python = find_repo_python(package_root)
-    payload_path = package_root / "artifacts" / "fake-geiger-case.json"
-    payload_path.parent.mkdir(parents=True, exist_ok=True)
-    payload_path.write_text(json.dumps(case_payload), encoding="utf-8")
+    payload_root = package_root / "artifacts" / "fake-geiger-cases"
+    payload_root.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        "w",
+        encoding="utf-8",
+        suffix=".json",
+        prefix="case-",
+        dir=payload_root,
+        delete=False,
+    ) as handle:
+        handle.write(json.dumps(case_payload))
+        payload_path = Path(handle.name)
     inline_script = '''
 import json
 from pathlib import Path
+from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     ContinuousModeSearchControls,
@@ -115,45 +136,56 @@ mode_lookup = {
     "EB": "early-burst",
 }
 tree_path, traits_path = case_payload["input_fixtures"]
-readiness = summarize_numeric_trait_readiness(
-    Path(tree_path),
-    Path(traits_path),
-    trait=case_payload["trait_name"],
-    taxon_column=case_payload["taxon_column"],
-)
-report = fit_continuous_evolutionary_mode(
-    Path(tree_path),
-    Path(traits_path),
-    trait=case_payload["trait_name"],
-    mode=mode_lookup[case_payload["model_name"]],
-    taxon_column=case_payload["taxon_column"],
-    search_controls=(
-        ContinuousModeSearchControls(
-            coarse_grid_point_count=case_payload.get("coarse_grid_point_count") or 81,
-            fine_grid_point_count=case_payload.get("fine_grid_point_count") or 81,
-            initial_parameter_value=case_payload.get("initial_parameter_value"),
-        )
-        if (
-            case_payload.get("coarse_grid_point_count") is not None
-            or case_payload.get("fine_grid_point_count") is not None
-            or case_payload.get("initial_parameter_value") is not None
-        )
-        else None
-    ),
-    lambda_bounds=tuple(case_payload.get("lambda_bounds") or (0.0, 1.0)),
-    kappa_bounds=tuple(case_payload.get("kappa_bounds") or (0.0, 3.0)),
-    delta_bounds=tuple(case_payload.get("delta_bounds") or (0.0, 3.0)),
-    ou_bounds=tuple(case_payload.get("ou_bounds") or (0.0, 10.0)),
-    early_burst_bounds=tuple(case_payload.get("early_burst_bounds") or (0.0, 50.0)),
-) if case_payload["operation"] != "compare-fitcontinuous-models" else None
-excluded_taxa = sorted(
-    {
-        *readiness.missing_from_traits,
-        *readiness.pruned_missing_value_taxa,
-        *readiness.pruned_non_numeric_taxa,
+if case_payload["operation"] == "fit-discrete-mk":
+    tree = load_tree(Path(tree_path))
+    table = load_taxon_table(Path(traits_path), taxon_column=case_payload["taxon_column"])
+    rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
+    tree_only_taxa = sorted(set(tree.tip_names) - set(rows_by_taxon))
+    extra_trait_taxa = sorted(set(rows_by_taxon) - set(tree.tip_names))
+    report = fit_discrete_mk_model(
+        Path(tree_path),
+        Path(traits_path),
+        trait=case_payload["trait_name"],
+        taxon_column=case_payload["taxon_column"],
+        model="equal-rates",
+    )
+    missing_value_taxa = sorted(
+        set(report.input_audit.pruned_missing_value_taxa) - set(tree_only_taxa)
+    )
+    excluded_taxa = sorted(set(tree_only_taxa) | set(missing_value_taxa))
+    summary = {
+        "taxon_count": report.taxon_count,
+        "trait_name": report.trait,
+        "model_name": case_payload["model_name"],
+        "observed_state_count": len(report.state_order),
+        "state_order": list(report.state_order),
+        "excluded_taxon_count": len(excluded_taxa),
+        "excluded_taxa": excluded_taxa,
+        "missing_value_taxa": missing_value_taxa,
+        "missing_from_traits": tree_only_taxa,
+        "extra_trait_taxa": extra_trait_taxa,
+        "missing_value_policy": "__DISCRETE_MISSING_VALUE_POLICY__",
+        "log_likelihood": report.log_likelihood,
+        "parameter_count": report.parameter_count,
+        "aic": report.aic,
+        "aicc": report.aicc,
+        "optimizer_settings": case_payload["optimizer_settings"],
+        "optimizer_result": {
+            "convergence_code": 0,
+            "message": "fake geiger parity runner",
+        },
+        "rows": [
+            {
+                "source_state": row.source_state,
+                "target_state": row.target_state,
+                "transition_allowed": row.transition_allowed,
+                "step_distance": row.step_distance,
+                "rate": row.rate,
+            }
+            for row in report.transition_rate_rows
+        ],
     }
-)
-if case_payload["operation"] == "compare-fitcontinuous-models":
+elif case_payload["operation"] == "compare-fitcontinuous-models":
     comparison = compare_fitcontinuous_model_ranking(
         Path(tree_path),
         Path(traits_path),
@@ -199,6 +231,44 @@ if case_payload["operation"] == "compare-fitcontinuous-models":
         ],
     }
 else:
+    readiness = summarize_numeric_trait_readiness(
+        Path(tree_path),
+        Path(traits_path),
+        trait=case_payload["trait_name"],
+        taxon_column=case_payload["taxon_column"],
+    )
+    report = fit_continuous_evolutionary_mode(
+        Path(tree_path),
+        Path(traits_path),
+        trait=case_payload["trait_name"],
+        mode=mode_lookup[case_payload["model_name"]],
+        taxon_column=case_payload["taxon_column"],
+        search_controls=(
+            ContinuousModeSearchControls(
+                coarse_grid_point_count=case_payload.get("coarse_grid_point_count") or 81,
+                fine_grid_point_count=case_payload.get("fine_grid_point_count") or 81,
+                initial_parameter_value=case_payload.get("initial_parameter_value"),
+            )
+            if (
+                case_payload.get("coarse_grid_point_count") is not None
+                or case_payload.get("fine_grid_point_count") is not None
+                or case_payload.get("initial_parameter_value") is not None
+            )
+            else None
+        ),
+        lambda_bounds=tuple(case_payload.get("lambda_bounds") or (0.0, 1.0)),
+        kappa_bounds=tuple(case_payload.get("kappa_bounds") or (0.0, 3.0)),
+        delta_bounds=tuple(case_payload.get("delta_bounds") or (0.0, 3.0)),
+        ou_bounds=tuple(case_payload.get("ou_bounds") or (0.0, 10.0)),
+        early_burst_bounds=tuple(case_payload.get("early_burst_bounds") or (0.0, 50.0)),
+    )
+    excluded_taxa = sorted(
+        {
+            *readiness.missing_from_traits,
+            *readiness.pruned_missing_value_taxa,
+            *readiness.pruned_non_numeric_taxa,
+        }
+    )
     summary = {
         "taxon_count": report.taxon_count,
         "trait_name": report.trait,
@@ -244,24 +314,30 @@ print(json.dumps(summary))
         "-c",
         inline_script
         .replace("__PAYLOAD_PATH__", repr(str(payload_path)))
+        .replace("__DISCRETE_MISSING_VALUE_POLICY__", discrete_missing_value_policy())
         .replace("__MISSING_VALUE_POLICY__", missing_value_policy())
         .replace("__STANDARD_ERROR_POLICY__", standard_error_policy()),
     ]
     env = dict(os.environ)
     env["PYTHONPATH"] = str(package_root / "src")
-    result = subprocess.run(
-        command,
-        check=True,
-        capture_output=True,
-        text=True,
-        cwd=str(package_root),
-        env=env,
-    )
+    try:
+        result = subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=True,
+            cwd=str(package_root),
+            env=env,
+        )
+    finally:
+        payload_path.unlink(missing_ok=True)
     summary = json.loads(result.stdout)
     if case_payload["case_id"] in SUMMARY_OVERRIDES:
         summary.update(SUMMARY_OVERRIDES[case_payload["case_id"]])
     if case_payload["operation"] == "compare-fitcontinuous-models":
         return summary, comparison_rows(summary)
+    if case_payload["operation"] == "fit-discrete-mk":
+        return summary, rate_rows(summary)
     return summary, parameter_rows(summary)
 
 
