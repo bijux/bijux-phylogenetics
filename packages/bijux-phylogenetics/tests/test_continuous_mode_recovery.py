@@ -6,28 +6,31 @@ import pytest
 
 import bijux_phylogenetics.comparative.continuous_mode_recovery as continuous_mode_recovery_api
 from bijux_phylogenetics.comparative.continuous_mode_recovery import (
-    ContinuousModeRecoveryScenario,
+    geiger_fitcontinuous_recovery_reference_payload,
     run_continuous_mode_recovery,
+    write_continuous_mode_recovery_execution_table,
     write_continuous_mode_recovery_model_choice_table,
+    write_continuous_mode_recovery_parameter_comparison_table,
     write_continuous_mode_recovery_parameter_table,
     write_continuous_mode_recovery_summary_table,
     write_continuous_mode_recovery_warning_table,
+    write_geiger_fitcontinuous_recovery_reference_payload_table,
 )
-
-_REFERENCE_TREE = (
-    "((((A:0.8,B:0.4):0.7,(C:0.6,D:0.3):0.5):1.2,"
-    "((E:0.7,F:0.35):0.8,(G:0.5,H:0.25):0.9):1.0):0.6,"
-    "((I:0.9,J:0.45):0.6,(K:0.55,L:0.2):1.1):0.85);"
+from bijux_phylogenetics.datasets.continuous_mode_recovery import (
+    load_continuous_mode_recovery_panel_dataset,
+    run_continuous_mode_recovery_panel_workflow,
 )
 
 
 @pytest.mark.slow
-def test_run_continuous_mode_recovery_validates_strong_and_weak_cases(
+def test_run_continuous_mode_recovery_governs_packaged_bijux_and_geiger_review_cases(
     tmp_path: Path,
 ) -> None:
-    tree_path = _write_reference_tree(tmp_path)
+    dataset = load_continuous_mode_recovery_panel_dataset()
+    workflow_report = run_continuous_mode_recovery_panel_workflow()
+    scenarios = [case.scenario for case in workflow_report.recovery_report.case_reports]
 
-    report = run_continuous_mode_recovery(tree_path, _scenarios())
+    report = run_continuous_mode_recovery(dataset.default_tree_path, scenarios, artifacts_root=tmp_path / "artifacts")
 
     case_by_id = {case.scenario.case_id: case for case in report.case_reports}
     assert set(case_by_id) == {
@@ -35,30 +38,53 @@ def test_run_continuous_mode_recovery_validates_strong_and_weak_cases(
         "ou-parameter-recovery",
         "early-burst-rate-recovery",
         "weak-ou-identifiability",
+        "lambda-transformed-branch-review",
+        "kappa-transformed-branch-review",
+        "delta-transformed-branch-review",
     }
     assert case_by_id["brownian-sigma-recovery"].selected_model == "brownian"
-    assert case_by_id["ou-parameter-recovery"].selected_model == ("ornstein-uhlenbeck")
+    assert case_by_id["brownian-sigma-recovery"].geiger_selected_model == "brownian"
+    assert case_by_id["ou-parameter-recovery"].selected_model == "ornstein-uhlenbeck"
+    assert case_by_id["ou-parameter-recovery"].geiger_selected_model == "brownian"
     assert case_by_id["early-burst-rate-recovery"].selected_model == "early-burst"
+    assert case_by_id["early-burst-rate-recovery"].geiger_selected_model == "early-burst"
     assert case_by_id["weak-ou-identifiability"].selected_model == "brownian"
-    assert case_by_id["weak-ou-identifiability"].expected_warning_kinds_present is True
-    assert all(
-        row.within_tolerance
-        for case_id in (
-            "brownian-sigma-recovery",
-            "ou-parameter-recovery",
-            "early-burst-rate-recovery",
-        )
-        for row in case_by_id[case_id].parameter_rows
+    assert case_by_id["weak-ou-identifiability"].geiger_selected_model == "brownian"
+    assert case_by_id["lambda-transformed-branch-review"].selected_model == (
+        "ornstein-uhlenbeck"
+    )
+    assert case_by_id["lambda-transformed-branch-review"].geiger_selected_model == (
+        "ornstein-uhlenbeck"
+    )
+    assert case_by_id["kappa-transformed-branch-review"].selected_model == (
+        "pagel-kappa"
+    )
+    assert case_by_id["kappa-transformed-branch-review"].geiger_selected_model == (
+        "pagel-kappa"
+    )
+    assert case_by_id["delta-transformed-branch-review"].selected_model == (
+        "pagel-kappa"
+    )
+    assert case_by_id["delta-transformed-branch-review"].geiger_selected_model == (
+        "pagel-kappa"
     )
     assert case_by_id["weak-ou-identifiability"].parameter_rows == []
+    assert case_by_id["weak-ou-identifiability"].expected_warning_kinds_present is True
+    assert case_by_id["lambda-transformed-branch-review"].expected_warning_kinds_present is True
+    assert case_by_id["kappa-transformed-branch-review"].expected_warning_kinds_present is True
+    assert case_by_id["delta-transformed-branch-review"].expected_warning_kinds_present is True
+    assert all(
+        row.case_id != "weak-ou-identifiability"
+        for row in case_by_id["weak-ou-identifiability"].parameter_comparison_rows
+    )
+    assert case_by_id["brownian-sigma-recovery"].traits_path is not None
 
 
 @pytest.mark.slow
-def test_continuous_mode_recovery_writers_emit_review_ledgers(
+def test_continuous_mode_recovery_writers_emit_paired_benchmark_ledgers(
     tmp_path: Path,
 ) -> None:
-    tree_path = _write_reference_tree(tmp_path)
-    report = run_continuous_mode_recovery(tree_path, _scenarios())
+    report = run_continuous_mode_recovery_panel_workflow().recovery_report
 
     summary_path = write_continuous_mode_recovery_summary_table(
         tmp_path / "summary.tsv",
@@ -68,44 +94,98 @@ def test_continuous_mode_recovery_writers_emit_review_ledgers(
         tmp_path / "parameter-recovery.tsv",
         report,
     )
+    parameter_comparison_path = write_continuous_mode_recovery_parameter_comparison_table(
+        tmp_path / "parameter-comparison.tsv",
+        report,
+    )
     model_choice_path = write_continuous_mode_recovery_model_choice_table(
         tmp_path / "model-choice.tsv",
+        report,
+    )
+    execution_path = write_continuous_mode_recovery_execution_table(
+        tmp_path / "execution-review.tsv",
         report,
     )
     warning_path = write_continuous_mode_recovery_warning_table(
         tmp_path / "warning-review.tsv",
         report,
     )
+    geiger_payload_path = write_geiger_fitcontinuous_recovery_reference_payload_table(
+        tmp_path / "geiger-reference.tsv",
+        report,
+    )
 
     summary_rows = summary_path.read_text(encoding="utf-8").splitlines()
     parameter_rows = parameter_path.read_text(encoding="utf-8").splitlines()
+    parameter_comparison_rows = parameter_comparison_path.read_text(
+        encoding="utf-8"
+    ).splitlines()
     model_choice_rows = model_choice_path.read_text(encoding="utf-8").splitlines()
+    execution_rows = execution_path.read_text(encoding="utf-8").splitlines()
     warning_rows = warning_path.read_text(encoding="utf-8").splitlines()
+    geiger_payload_rows = geiger_payload_path.read_text(encoding="utf-8").splitlines()
 
-    assert summary_rows[0].startswith("case_id\tlabel\tgenerating_model")
+    assert summary_rows[0].startswith("case_id\tlabel\ttree_path\tgenerating_model")
     assert any(
-        row.startswith("weak-ou-identifiability\tWeak OU identifiability review\t")
+        row.startswith("lambda-transformed-branch-review\t")
         for row in summary_rows[1:]
     )
-    assert parameter_rows[0].startswith("case_id\tgenerating_model\tfitted_model")
+    assert parameter_rows[0].startswith(
+        "case_id\tgenerating_model\trecovery_engine\tfitted_model"
+    )
     assert any(
         row.startswith(
-            "early-burst-rate-recovery\tearly-burst\tearly-burst\trate_change\t"
+            "ou-parameter-recovery\tornstein-uhlenbeck\tgeiger\tornstein-uhlenbeck\t"
         )
         for row in parameter_rows[1:]
     )
-    assert model_choice_rows[0].startswith("case_id\tgenerating_model")
+    assert parameter_comparison_rows[0].startswith(
+        "case_id\tgenerating_model\tparameter\ttrue_value"
+    )
     assert any(
         row.startswith(
-            "ou-parameter-recovery\tornstein-uhlenbeck\tornstein-uhlenbeck\tornstein-uhlenbeck\t"
+            "early-burst-rate-recovery\tearly-burst\trate_change\t"
+        )
+        for row in parameter_comparison_rows[1:]
+    )
+    assert model_choice_rows[0].startswith(
+        "case_id\tgenerating_model\trecovery_engine\texpected_selected_model"
+    )
+    assert any(
+        row.startswith(
+            "delta-transformed-branch-review\tpagel-delta\tgeiger\t\tpagel-kappa\t"
         )
         for row in model_choice_rows[1:]
     )
-    assert warning_rows[0] == "case_id\tfitted_model\tkind\tmessage"
+    assert execution_rows[0].startswith(
+        "case_id\trecovery_engine\toperation\tfitted_model"
+    )
     assert any(
-        row.startswith("weak-ou-identifiability\tornstein-uhlenbeck\tflat_likelihood\t")
+        row.startswith(
+            "kappa-transformed-branch-review\tgeiger\tmodel-comparison\tcandidate-set\tok\tpagel-kappa\t"
+        )
+        for row in execution_rows[1:]
+    )
+    assert warning_rows[0] == "case_id\trecovery_engine\tfitted_model\tkind\tmessage"
+    assert any(
+        row.startswith(
+            "weak-ou-identifiability\tbijux\tornstein-uhlenbeck\tflat_likelihood\t"
+        )
         for row in warning_rows[1:]
     )
+    assert geiger_payload_rows[0] == "case_id\tfit_summary_json\tcomparison_summary_json"
+    assert any(
+        row.startswith("brownian-sigma-recovery\t")
+        for row in geiger_payload_rows[1:]
+    )
+
+
+def test_geiger_fitcontinuous_recovery_reference_payload_exposes_governed_case_summary() -> None:
+    payload = geiger_fitcontinuous_recovery_reference_payload(
+        "brownian-sigma-recovery"
+    )
+    assert payload["fit_summary"]["model_name"] == "BM"
+    assert payload["comparison_summary"]["selected_model"] == "brownian"
 
 
 def test_public_runtime_exports_include_continuous_mode_recovery_surface() -> None:
@@ -122,75 +202,26 @@ def test_public_runtime_exports_include_continuous_mode_recovery_surface() -> No
         is write_continuous_mode_recovery_parameter_table
     )
     assert (
+        continuous_mode_recovery_api.write_continuous_mode_recovery_parameter_comparison_table
+        is write_continuous_mode_recovery_parameter_comparison_table
+    )
+    assert (
         continuous_mode_recovery_api.write_continuous_mode_recovery_model_choice_table
         is write_continuous_mode_recovery_model_choice_table
+    )
+    assert (
+        continuous_mode_recovery_api.write_continuous_mode_recovery_execution_table
+        is write_continuous_mode_recovery_execution_table
     )
     assert (
         continuous_mode_recovery_api.write_continuous_mode_recovery_warning_table
         is write_continuous_mode_recovery_warning_table
     )
-
-
-def _write_reference_tree(tmp_path: Path) -> Path:
-    tree_path = tmp_path / "reference-tree.nwk"
-    tree_path.write_text(_REFERENCE_TREE, encoding="utf-8")
-    return tree_path
-
-
-def _scenarios() -> list[ContinuousModeRecoveryScenario]:
-    return [
-        ContinuousModeRecoveryScenario(
-            case_id="brownian-sigma-recovery",
-            label="Brownian sigma recovery",
-            generating_model="brownian",
-            expected_selected_model="brownian",
-            root_state=2.5,
-            sigma=0.8,
-            seed=18,
-            parameter_tolerances={"sigma_squared": 0.1},
-            notes="Brownian simulation should recover sigma squared and remain preferred by AICc.",
-        ),
-        ContinuousModeRecoveryScenario(
-            case_id="ou-parameter-recovery",
-            label="OU parameter recovery",
-            generating_model="ornstein-uhlenbeck",
-            expected_selected_model="ornstein-uhlenbeck",
-            root_state=2.0,
-            sigma=0.7,
-            alpha=1.0,
-            theta=2.8,
-            seed=2,
-            parameter_tolerances={
-                "alpha": 0.6,
-                "sigma_squared": 0.25,
-                "theta": 0.5,
-            },
-            notes="OU simulation should recover alpha, sigma squared, and theta while remaining preferred by AICc.",
-        ),
-        ContinuousModeRecoveryScenario(
-            case_id="early-burst-rate-recovery",
-            label="Early-burst rate recovery",
-            generating_model="early-burst",
-            expected_selected_model="early-burst",
-            root_state=3.0,
-            sigma=0.8,
-            rate_change=4.0,
-            seed=4,
-            early_burst_bounds=(0.0, 10.0),
-            parameter_tolerances={"rate_change": 0.25},
-            notes="Early-burst simulation should recover a positive rate-change parameter and remain preferred by AICc.",
-        ),
-        ContinuousModeRecoveryScenario(
-            case_id="weak-ou-identifiability",
-            label="Weak OU identifiability review",
-            generating_model="ornstein-uhlenbeck",
-            expected_selected_model="brownian",
-            root_state=2.0,
-            sigma=0.3,
-            alpha=0.05,
-            theta=2.1,
-            seed=17,
-            expected_warning_kinds=["flat_likelihood"],
-            notes="Weak OU pull should trigger identifiability warnings and stay close to Brownian support.",
-        ),
-    ]
+    assert (
+        continuous_mode_recovery_api.geiger_fitcontinuous_recovery_reference_payload
+        is geiger_fitcontinuous_recovery_reference_payload
+    )
+    assert (
+        continuous_mode_recovery_api.write_geiger_fitcontinuous_recovery_reference_payload_table
+        is write_geiger_fitcontinuous_recovery_reference_payload_table
+    )
