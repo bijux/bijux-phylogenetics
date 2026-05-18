@@ -437,6 +437,21 @@ def test_discrete_reconstruction_supports_ordered_state_models() -> None:
     )
 
 
+def test_discrete_reconstruction_rejects_meristic_parity_claim() -> None:
+    with pytest.raises(ValueError) as excinfo:
+        reconstruct_discrete_ancestral_states(
+            fixture("example_tree.nwk"),
+            fixture("example_traits_geography.tsv"),
+            trait="region",
+            model="meristic",
+            state_ordering="ordered",
+            ordered_states=["north", "south", "island"],
+        )
+
+    assert "explicitly excluded this round" in str(excinfo.value)
+    assert "integer-state meristic contract" in str(excinfo.value)
+
+
 @pytest.mark.slow
 def test_discrete_reconstruction_reports_rerooting_method_assumption_limits() -> None:
     fixed_root_report = reconstruct_discrete_ancestral_states(
