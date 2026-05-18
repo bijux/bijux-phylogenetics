@@ -1,7 +1,7 @@
 {
   "all_passed": true,
   "bundle_root": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-refresh/workflow",
-  "check_count": 58,
+  "check_count": 72,
   "checks": [
     {
       "check_id": "input-checksum:sequences.fasta",
@@ -46,8 +46,8 @@
     {
       "check_id": "workflow-manifest:execution_record",
       "detail": "execution_record matches the checksum recorded in rabies-method-sensitivity.manifest.json",
-      "expected": "b4ff6c88077daf1ae48da8dccb101c7e9e788b472aca984d8aab706bd3016ba8",
-      "observed": "b4ff6c88077daf1ae48da8dccb101c7e9e788b472aca984d8aab706bd3016ba8",
+      "expected": "89418d99d6315d28a503086464dc735cc3ceef2b49c15b1d9fd15aafd5818458",
+      "observed": "89418d99d6315d28a503086464dc735cc3ceef2b49c15b1d9fd15aafd5818458",
       "status": "passed",
       "surface": "workflow-manifest"
     },
@@ -110,16 +110,40 @@
     {
       "check_id": "workflow-manifest:slurm_job_plan",
       "detail": "slurm_job_plan matches the checksum recorded in rabies-method-sensitivity.manifest.json",
-      "expected": "1dfaccc181e3264ef3ca27a54b7e6f38ecad5cf4993e8c9ca92f5fd5061bc051",
-      "observed": "1dfaccc181e3264ef3ca27a54b7e6f38ecad5cf4993e8c9ca92f5fd5061bc051",
+      "expected": "043c0285270a6836f5f58d503cf6938eb78290566b42398e0634715774651623",
+      "observed": "043c0285270a6836f5f58d503cf6938eb78290566b42398e0634715774651623",
       "status": "passed",
       "surface": "workflow-manifest"
     },
     {
       "check_id": "workflow-manifest:slurm_job_status",
       "detail": "slurm_job_status matches the checksum recorded in rabies-method-sensitivity.manifest.json",
-      "expected": "21cbe38627e6aa31501e64c0b6ef0193f3e4258e904dd3619975c6bbfcfafd97",
-      "observed": "21cbe38627e6aa31501e64c0b6ef0193f3e4258e904dd3619975c6bbfcfafd97",
+      "expected": "128eee130aae2eaff3ec30736a42b7d4bc8deb0b49a0471d959ddf8e7d435f2e",
+      "observed": "128eee130aae2eaff3ec30736a42b7d4bc8deb0b49a0471d959ddf8e7d435f2e",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_output_freshness",
+      "detail": "slurm_output_freshness matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "47c214cf8b436240edf1ab86da6c83108714ffd292002abfcb8b627ae4a2c7b0",
+      "observed": "47c214cf8b436240edf1ab86da6c83108714ffd292002abfcb8b627ae4a2c7b0",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_output_freshness_checks",
+      "detail": "slurm_output_freshness_checks matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "f72eb610ef9d348c24ee1fe3ac0d97e8a173522b16e62d2175fb0b30cf16c035",
+      "observed": "f72eb610ef9d348c24ee1fe3ac0d97e8a173522b16e62d2175fb0b30cf16c035",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_output_freshness_summary",
+      "detail": "slurm_output_freshness_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "d8f2aef922a124c11b6c000f46e9f09c3777abf94d72f0aa0267cdfee38b564b",
+      "observed": "d8f2aef922a124c11b6c000f46e9f09c3777abf94d72f0aa0267cdfee38b564b",
       "status": "passed",
       "surface": "workflow-manifest"
     },
@@ -134,16 +158,16 @@
     {
       "check_id": "workflow-manifest:slurm_summary",
       "detail": "slurm_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
-      "expected": "f190195723d4afa109d27a1652faa344678bccbae9b0344b1bb7b5512f438c68",
-      "observed": "f190195723d4afa109d27a1652faa344678bccbae9b0344b1bb7b5512f438c68",
+      "expected": "efb2ec473966f6e454b30b0a3f368e9cd1a43b2af54ce2f06ab0b6e5a6cff534",
+      "observed": "efb2ec473966f6e454b30b0a3f368e9cd1a43b2af54ce2f06ab0b6e5a6cff534",
       "status": "passed",
       "surface": "workflow-manifest"
     },
     {
       "check_id": "workflow-manifest:slurm_workflow_status",
       "detail": "slurm_workflow_status matches the checksum recorded in rabies-method-sensitivity.manifest.json",
-      "expected": "72dd0af4f92a10859fc48f465645dab68c6e6e3cf9073f8c320f7c1debad4dc5",
-      "observed": "72dd0af4f92a10859fc48f465645dab68c6e6e3cf9073f8c320f7c1debad4dc5",
+      "expected": "b383a4c37121032736cdd2fbbaf6665aafce472fa19a91c0e6d271a86602c4b7",
+      "observed": "b383a4c37121032736cdd2fbbaf6665aafce472fa19a91c0e6d271a86602c4b7",
       "status": "passed",
       "surface": "workflow-manifest"
     },
@@ -190,8 +214,8 @@
     {
       "check_id": "report-manifest:linked-artifact-count",
       "detail": "linked artifact count matches the linked_artifacts payload",
-      "expected": "19",
-      "observed": "19",
+      "expected": "22",
+      "observed": "22",
       "status": "passed",
       "surface": "report-manifest"
     },
@@ -222,8 +246,8 @@
     {
       "check_id": "report-manifest:execution_record",
       "detail": "execution_record matches the checksum recorded in the report manifest",
-      "expected": "b4ff6c88077daf1ae48da8dccb101c7e9e788b472aca984d8aab706bd3016ba8",
-      "observed": "b4ff6c88077daf1ae48da8dccb101c7e9e788b472aca984d8aab706bd3016ba8",
+      "expected": "89418d99d6315d28a503086464dc735cc3ceef2b49c15b1d9fd15aafd5818458",
+      "observed": "89418d99d6315d28a503086464dc735cc3ceef2b49c15b1d9fd15aafd5818458",
       "status": "passed",
       "surface": "report-manifest"
     },
@@ -278,16 +302,40 @@
     {
       "check_id": "report-manifest:slurm_job_plan",
       "detail": "slurm_job_plan matches the checksum recorded in the report manifest",
-      "expected": "1dfaccc181e3264ef3ca27a54b7e6f38ecad5cf4993e8c9ca92f5fd5061bc051",
-      "observed": "1dfaccc181e3264ef3ca27a54b7e6f38ecad5cf4993e8c9ca92f5fd5061bc051",
+      "expected": "043c0285270a6836f5f58d503cf6938eb78290566b42398e0634715774651623",
+      "observed": "043c0285270a6836f5f58d503cf6938eb78290566b42398e0634715774651623",
       "status": "passed",
       "surface": "report-manifest"
     },
     {
       "check_id": "report-manifest:slurm_job_status",
       "detail": "slurm_job_status matches the checksum recorded in the report manifest",
-      "expected": "21cbe38627e6aa31501e64c0b6ef0193f3e4258e904dd3619975c6bbfcfafd97",
-      "observed": "21cbe38627e6aa31501e64c0b6ef0193f3e4258e904dd3619975c6bbfcfafd97",
+      "expected": "128eee130aae2eaff3ec30736a42b7d4bc8deb0b49a0471d959ddf8e7d435f2e",
+      "observed": "128eee130aae2eaff3ec30736a42b7d4bc8deb0b49a0471d959ddf8e7d435f2e",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_output_freshness",
+      "detail": "slurm_output_freshness matches the checksum recorded in the report manifest",
+      "expected": "47c214cf8b436240edf1ab86da6c83108714ffd292002abfcb8b627ae4a2c7b0",
+      "observed": "47c214cf8b436240edf1ab86da6c83108714ffd292002abfcb8b627ae4a2c7b0",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_output_freshness_checks",
+      "detail": "slurm_output_freshness_checks matches the checksum recorded in the report manifest",
+      "expected": "f72eb610ef9d348c24ee1fe3ac0d97e8a173522b16e62d2175fb0b30cf16c035",
+      "observed": "f72eb610ef9d348c24ee1fe3ac0d97e8a173522b16e62d2175fb0b30cf16c035",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_output_freshness_summary",
+      "detail": "slurm_output_freshness_summary matches the checksum recorded in the report manifest",
+      "expected": "d8f2aef922a124c11b6c000f46e9f09c3777abf94d72f0aa0267cdfee38b564b",
+      "observed": "d8f2aef922a124c11b6c000f46e9f09c3777abf94d72f0aa0267cdfee38b564b",
       "status": "passed",
       "surface": "report-manifest"
     },
@@ -302,16 +350,16 @@
     {
       "check_id": "report-manifest:slurm_summary",
       "detail": "slurm_summary matches the checksum recorded in the report manifest",
-      "expected": "f190195723d4afa109d27a1652faa344678bccbae9b0344b1bb7b5512f438c68",
-      "observed": "f190195723d4afa109d27a1652faa344678bccbae9b0344b1bb7b5512f438c68",
+      "expected": "efb2ec473966f6e454b30b0a3f368e9cd1a43b2af54ce2f06ab0b6e5a6cff534",
+      "observed": "efb2ec473966f6e454b30b0a3f368e9cd1a43b2af54ce2f06ab0b6e5a6cff534",
       "status": "passed",
       "surface": "report-manifest"
     },
     {
       "check_id": "report-manifest:slurm_workflow_status",
       "detail": "slurm_workflow_status matches the checksum recorded in the report manifest",
-      "expected": "72dd0af4f92a10859fc48f465645dab68c6e6e3cf9073f8c320f7c1debad4dc5",
-      "observed": "72dd0af4f92a10859fc48f465645dab68c6e6e3cf9073f8c320f7c1debad4dc5",
+      "expected": "b383a4c37121032736cdd2fbbaf6665aafce472fa19a91c0e6d271a86602c4b7",
+      "observed": "b383a4c37121032736cdd2fbbaf6665aafce472fa19a91c0e6d271a86602c4b7",
       "status": "passed",
       "surface": "report-manifest"
     },
@@ -334,8 +382,8 @@
     {
       "check_id": "report-manifest:workflow_manifest",
       "detail": "workflow_manifest matches the checksum recorded in the report manifest",
-      "expected": "d6530f823df75ae4b08509b0ab16e25f52f939365b21d0d0b556708a4e27c4e2",
-      "observed": "d6530f823df75ae4b08509b0ab16e25f52f939365b21d0d0b556708a4e27c4e2",
+      "expected": "74d4227ace86c315344f58eecd77a297ba2c3f4e9344f6aaf207a3f55bd3eb85",
+      "observed": "74d4227ace86c315344f58eecd77a297ba2c3f4e9344f6aaf207a3f55bd3eb85",
       "status": "passed",
       "surface": "report-manifest"
     },
@@ -420,6 +468,38 @@
       "surface": "slurm-arrays"
     },
     {
+      "check_id": "slurm-freshness:job-coverage",
+      "detail": "output-freshness rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-freshness:check-count",
+      "detail": "output-freshness summary check_count matches the written check rows",
+      "expected": "12",
+      "observed": "12",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-freshness:job-count",
+      "detail": "output-freshness summary job counts match the written per-job ledger",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-freshness:all-outputs-fresh",
+      "detail": "output-freshness summary all_outputs_fresh matches the written checks and per-job statuses",
+      "expected": "True",
+      "observed": "True",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
       "check_id": "slurm-arrays:script:compact-mafft-auto-standard.sbatch",
       "detail": "array partition table references an existing sbatch script",
       "expected": "script file exists",
@@ -466,6 +546,38 @@
       "observed": "2",
       "status": "passed",
       "surface": "slurm-status"
+    },
+    {
+      "check_id": "slurm-freshness:status-link:auto-gap-threshold",
+      "detail": "job-status rows expose the same output-freshness status as the freshness ledger",
+      "expected": "fresh",
+      "observed": "fresh",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-freshness:status-link:auto-gappyout",
+      "detail": "job-status rows expose the same output-freshness status as the freshness ledger",
+      "expected": "fresh",
+      "observed": "fresh",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-freshness:status-link:ginsi-gap-threshold",
+      "detail": "job-status rows expose the same output-freshness status as the freshness ledger",
+      "expected": "fresh",
+      "observed": "fresh",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-freshness:status-link:ginsi-gappyout",
+      "detail": "job-status rows expose the same output-freshness status as the freshness ledger",
+      "expected": "fresh",
+      "observed": "fresh",
+      "status": "passed",
+      "surface": "slurm-freshness"
     }
   ],
   "config_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-refresh/workflow/workflow-config.resolved.json",

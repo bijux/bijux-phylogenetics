@@ -28,6 +28,9 @@ _PARALLEL_SUMMARY_FILENAME = "parallel-execution-summary.tsv"
 _VARIANT_SUMMARY_FILENAME = "variant-summary.tsv"
 _SLURM_ARRAY_PARTITIONS_FILENAME = "slurm-array-partitions.tsv"
 _SLURM_ARRAY_MEMBERS_FILENAME = "slurm-array-members.tsv"
+_SLURM_OUTPUT_FRESHNESS_FILENAME = "slurm-output-freshness.tsv"
+_SLURM_OUTPUT_FRESHNESS_CHECKS_FILENAME = "slurm-output-freshness-checks.tsv"
+_SLURM_OUTPUT_FRESHNESS_SUMMARY_FILENAME = "slurm-output-freshness.json"
 _SLURM_JOB_STATUS_FILENAME = "slurm-job-status.tsv"
 _SLURM_PARTITION_STATUS_FILENAME = "slurm-partition-status.tsv"
 _SLURM_WORKFLOW_STATUS_FILENAME = "slurm-workflow-status.json"
@@ -110,6 +113,13 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     variant_summary_path = bundle_root / _VARIANT_SUMMARY_FILENAME
     slurm_array_partitions_path = bundle_root / _SLURM_ARRAY_PARTITIONS_FILENAME
     slurm_array_members_path = bundle_root / _SLURM_ARRAY_MEMBERS_FILENAME
+    slurm_output_freshness_path = bundle_root / _SLURM_OUTPUT_FRESHNESS_FILENAME
+    slurm_output_freshness_checks_path = (
+        bundle_root / _SLURM_OUTPUT_FRESHNESS_CHECKS_FILENAME
+    )
+    slurm_output_freshness_summary_path = (
+        bundle_root / _SLURM_OUTPUT_FRESHNESS_SUMMARY_FILENAME
+    )
     slurm_job_status_path = bundle_root / _SLURM_JOB_STATUS_FILENAME
     slurm_partition_status_path = bundle_root / _SLURM_PARTITION_STATUS_FILENAME
     slurm_workflow_status_path = bundle_root / _SLURM_WORKFLOW_STATUS_FILENAME
@@ -123,6 +133,13 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     variant_rows = _read_tsv_rows(variant_summary_path)
     slurm_array_partition_rows = _read_tsv_rows(slurm_array_partitions_path)
     slurm_array_member_rows = _read_tsv_rows(slurm_array_members_path)
+    slurm_output_freshness_rows = _read_tsv_rows(slurm_output_freshness_path)
+    slurm_output_freshness_check_rows = _read_tsv_rows(
+        slurm_output_freshness_checks_path
+    )
+    slurm_output_freshness_summary = _load_json(
+        slurm_output_freshness_summary_path
+    )
     slurm_job_status_rows = _read_tsv_rows(slurm_job_status_path)
     slurm_partition_status_rows = _read_tsv_rows(slurm_partition_status_path)
     slurm_workflow_status = _load_json(slurm_workflow_status_path)
@@ -331,6 +348,61 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         observed=member_variant_ids,
         detail="array member rows cover the configured variant ids",
     )
+    slurm_output_freshness_variant_ids = sorted(
+        str(row["variant_id"]) for row in slurm_output_freshness_rows
+    )
+    add_check(
+        "slurm-freshness:job-coverage",
+        surface="slurm-freshness",
+        condition=config_variant_ids == slurm_output_freshness_variant_ids,
+        expected=config_variant_ids,
+        observed=slurm_output_freshness_variant_ids,
+        detail="output-freshness rows cover the configured variant ids",
+    )
+    freshness_failed_check_count = sum(
+        1
+        for row in slurm_output_freshness_check_rows
+        if str(row["status"]) == "failed"
+    )
+    freshness_stale_job_count = sum(
+        1
+        for row in slurm_output_freshness_rows
+        if str(row["freshness_status"]) == "stale"
+    )
+    add_check(
+        "slurm-freshness:check-count",
+        surface="slurm-freshness",
+        condition=int(slurm_output_freshness_summary["check_count"])
+        == len(slurm_output_freshness_check_rows),
+        expected=slurm_output_freshness_summary["check_count"],
+        observed=len(slurm_output_freshness_check_rows),
+        detail="output-freshness summary check_count matches the written check rows",
+    )
+    add_check(
+        "slurm-freshness:job-count",
+        surface="slurm-freshness",
+        condition=(
+            int(slurm_output_freshness_summary["fresh_job_count"])
+            + int(slurm_output_freshness_summary["stale_job_count"])
+        )
+        == len(slurm_output_freshness_rows),
+        expected=len(slurm_output_freshness_rows),
+        observed=(
+            int(slurm_output_freshness_summary["fresh_job_count"])
+            + int(slurm_output_freshness_summary["stale_job_count"])
+        ),
+        detail="output-freshness summary job counts match the written per-job ledger",
+    )
+    add_check(
+        "slurm-freshness:all-outputs-fresh",
+        surface="slurm-freshness",
+        condition=bool(slurm_output_freshness_summary["all_outputs_fresh"]) == (
+            freshness_failed_check_count == 0 and freshness_stale_job_count == 0
+        ),
+        expected=freshness_failed_check_count == 0 and freshness_stale_job_count == 0,
+        observed=slurm_output_freshness_summary["all_outputs_fresh"],
+        detail="output-freshness summary all_outputs_fresh matches the written checks and per-job statuses",
+    )
     for script_path_text in sorted(slurm_script_paths):
         script_path = bundle_root / script_path_text
         add_check(
@@ -347,6 +419,12 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     slurm_partition_status_ids = sorted(
         str(row["partition_id"]) for row in slurm_partition_status_rows
     )
+    slurm_output_freshness_rows_by_variant = {
+        str(row["variant_id"]): row for row in slurm_output_freshness_rows
+    }
+    slurm_job_status_rows_by_variant = {
+        str(row["variant_id"]): row for row in slurm_job_status_rows
+    }
     add_check(
         "slurm-status:job-coverage",
         surface="slurm-status",
@@ -380,6 +458,30 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         observed=len(slurm_partition_status_rows),
         detail="workflow status partition_count matches the number of partition-status rows",
     )
+    for variant_id in config_variant_ids:
+        freshness_row = slurm_output_freshness_rows_by_variant.get(variant_id)
+        job_status_row = slurm_job_status_rows_by_variant.get(variant_id)
+        add_check(
+            f"slurm-freshness:status-link:{variant_id}",
+            surface="slurm-freshness",
+            condition=(
+                freshness_row is not None
+                and job_status_row is not None
+                and str(freshness_row["freshness_status"])
+                == str(job_status_row["output_freshness_status"])
+            ),
+            expected=(
+                None
+                if freshness_row is None
+                else freshness_row["freshness_status"]
+            ),
+            observed=(
+                None
+                if job_status_row is None
+                else job_status_row["output_freshness_status"]
+            ),
+            detail="job-status rows expose the same output-freshness status as the freshness ledger",
+        )
 
     for variant_id in config_variant_ids:
         config_row = config_variants[variant_id]

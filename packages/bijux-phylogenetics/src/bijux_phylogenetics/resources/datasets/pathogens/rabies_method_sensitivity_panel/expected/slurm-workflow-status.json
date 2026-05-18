@@ -6,6 +6,8 @@
   "dataset_id": "rabies_method_sensitivity_panel",
   "execution_record_path": "rabies-method-sensitivity-panel.run.json",
   "failed_job_count": 0,
+  "failed_output_freshness_check_count": 0,
+  "fresh_output_job_count": 4,
   "job_count": 4,
   "jobs": [
     {
@@ -17,6 +19,8 @@
       "missing_required_files": [],
       "output_byte_count": 42065,
       "output_file_count": 14,
+      "output_freshness_reason_codes": [],
+      "output_freshness_status": "fresh",
       "output_root": "variants/auto-gap-threshold",
       "partition_id": "compact-mafft-auto-standard",
       "script_path": "slurm-arrays/compact-mafft-auto-standard.sbatch",
@@ -34,6 +38,8 @@
       "missing_required_files": [],
       "output_byte_count": 42065,
       "output_file_count": 14,
+      "output_freshness_reason_codes": [],
+      "output_freshness_status": "fresh",
       "output_root": "variants/auto-gappyout",
       "partition_id": "compact-mafft-auto-standard",
       "script_path": "slurm-arrays/compact-mafft-auto-standard.sbatch",
@@ -51,6 +57,8 @@
       "missing_required_files": [],
       "output_byte_count": 42065,
       "output_file_count": 14,
+      "output_freshness_reason_codes": [],
+      "output_freshness_status": "fresh",
       "output_root": "variants/ginsi-gap-threshold",
       "partition_id": "compact-mafft-ginsi-elevated",
       "script_path": "slurm-arrays/compact-mafft-ginsi-elevated.sbatch",
@@ -68,6 +76,8 @@
       "missing_required_files": [],
       "output_byte_count": 42065,
       "output_file_count": 14,
+      "output_freshness_reason_codes": [],
+      "output_freshness_status": "fresh",
       "output_root": "variants/ginsi-gappyout",
       "partition_id": "compact-mafft-ginsi-elevated",
       "script_path": "slurm-arrays/compact-mafft-ginsi-elevated.sbatch",
@@ -77,6 +87,7 @@
       "variant_id": "ginsi-gappyout"
     }
   ],
+  "output_freshness_check_count": 12,
   "partition_count": 2,
   "partitions": [
     {
@@ -110,6 +121,7 @@
   ],
   "pending_job_count": 0,
   "stale_job_count": 0,
+  "stale_output_job_count": 0,
   "workflow_prefix": "rabies-method-sensitivity-panel",
   "workflow_status": "succeeded"
 }

@@ -1,0 +1,5 @@
+partition_id	array_index	variant_id	freshness_status	inputs_match	workflow_settings_match	variant_settings_match	stale_reason_count	stale_reason_codes	stale_reason_detail
+compact-mafft-auto-standard	0	auto-gap-threshold	fresh	true	true	true	0		current inputs and output-affecting settings still match the bundle
+compact-mafft-auto-standard	1	auto-gappyout	fresh	true	true	true	0		current inputs and output-affecting settings still match the bundle
+compact-mafft-ginsi-elevated	0	ginsi-gap-threshold	fresh	true	true	true	0		current inputs and output-affecting settings still match the bundle
+compact-mafft-ginsi-elevated	1	ginsi-gappyout	fresh	true	true	true	0		current inputs and output-affecting settings still match the bundle
