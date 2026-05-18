@@ -26,6 +26,8 @@ _REPORT_MANIFEST_FILENAME = (
 _CONFIG_FILENAME = "workflow-config.resolved.json"
 _PARALLEL_SUMMARY_FILENAME = "parallel-execution-summary.tsv"
 _VARIANT_SUMMARY_FILENAME = "variant-summary.tsv"
+_SLURM_ARRAY_PARTITIONS_FILENAME = "slurm-array-partitions.tsv"
+_SLURM_ARRAY_MEMBERS_FILENAME = "slurm-array-members.tsv"
 _TASK_LOGS_DIRECTORY = "parallel-logs"
 _VARIANTS_DIRECTORY = "variants"
 _EXPECTED_VARIANT_FILENAMES = (
@@ -103,6 +105,8 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     config_path = bundle_root / _CONFIG_FILENAME
     parallel_summary_path = bundle_root / _PARALLEL_SUMMARY_FILENAME
     variant_summary_path = bundle_root / _VARIANT_SUMMARY_FILENAME
+    slurm_array_partitions_path = bundle_root / _SLURM_ARRAY_PARTITIONS_FILENAME
+    slurm_array_members_path = bundle_root / _SLURM_ARRAY_MEMBERS_FILENAME
     task_logs_root = bundle_root / _TASK_LOGS_DIRECTORY
     variants_root = bundle_root / _VARIANTS_DIRECTORY
 
@@ -111,6 +115,8 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     resolved_config = _load_json(config_path)
     parallel_rows = _read_tsv_rows(parallel_summary_path)
     variant_rows = _read_tsv_rows(variant_summary_path)
+    slurm_array_partition_rows = _read_tsv_rows(slurm_array_partitions_path)
+    slurm_array_member_rows = _read_tsv_rows(slurm_array_members_path)
 
     checks: list[RabiesMethodSensitivityReproducibilityCheckRow] = []
     variant_audit_rows: list[RabiesMethodSensitivityVariantAuditRow] = []
@@ -164,7 +170,7 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         for key, value in dict(workflow_manifest.get("output_checksums", {})).items()
     }
     for key, output_path in sorted(manifest_output_paths.items()):
-        if key in {"task_logs_root", "variants_root"}:
+        if key in {"task_logs_root", "variants_root", "slurm_array_scripts_root"}:
             add_check(
                 f"workflow-manifest:{key}",
                 surface="workflow-manifest",
@@ -290,6 +296,42 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         observed=len(variant_rows),
         detail="variant summary row count matches the configured variant count",
     )
+    slurm_partition_ids = {
+        str(row["partition_id"]) for row in slurm_array_partition_rows
+    }
+    slurm_script_paths = {
+        str(row["script_path"]) for row in slurm_array_partition_rows
+    }
+    member_partition_ids = {
+        str(row["partition_id"]) for row in slurm_array_member_rows
+    }
+    member_variant_ids = sorted(str(row["variant_id"]) for row in slurm_array_member_rows)
+    add_check(
+        "slurm-arrays:partition-coverage",
+        surface="slurm-arrays",
+        condition=bool(slurm_partition_ids) and slurm_partition_ids == member_partition_ids,
+        expected=sorted(slurm_partition_ids),
+        observed=sorted(member_partition_ids),
+        detail="array member rows cover the same partition ids as the partition summary",
+    )
+    add_check(
+        "slurm-arrays:member-coverage",
+        surface="slurm-arrays",
+        condition=config_variant_ids == member_variant_ids,
+        expected=config_variant_ids,
+        observed=member_variant_ids,
+        detail="array member rows cover the configured variant ids",
+    )
+    for script_path_text in sorted(slurm_script_paths):
+        script_path = bundle_root / script_path_text
+        add_check(
+            f"slurm-arrays:script:{Path(script_path_text).name}",
+            surface="slurm-arrays",
+            condition=script_path.is_file(),
+            expected="script file exists",
+            observed="present" if script_path.is_file() else "missing",
+            detail="array partition table references an existing sbatch script",
+        )
 
     for variant_id in config_variant_ids:
         config_row = config_variants[variant_id]

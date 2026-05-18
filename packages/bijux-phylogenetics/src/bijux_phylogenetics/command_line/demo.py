@@ -182,6 +182,12 @@ def add_demo_command(subparsers: Any) -> None:
         help="Number of isolated variant workers to run in parallel. Defaults to the packaged workflow config.",
     )
     demo_rabies_method_sensitivity.add_argument(
+        "--variant-id",
+        action="append",
+        dest="variant_ids",
+        help="Restrict the workflow to one declared variant id. Repeat to preserve a specific subset order.",
+    )
+    demo_rabies_method_sensitivity.add_argument(
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_rabies_method_sensitivity)
@@ -871,6 +877,9 @@ def run_demo_command(args: Any) -> int:
             iqtree_threads=args.iqtree_threads,
             bootstrap_replicates=args.bootstrap_replicates,
             parallel_workers=args.parallel_workers,
+            variant_ids=(
+                tuple(args.variant_ids) if getattr(args, "variant_ids", None) else None
+            ),
         )
         outputs = _finalize_outputs(
             args,
@@ -894,6 +903,9 @@ def run_demo_command(args: Any) -> int:
                 result.workflow_bundle.slurm_job_plan_path,
                 result.workflow_bundle.slurm_assumptions_path,
                 result.workflow_bundle.slurm_summary_path,
+                result.workflow_bundle.slurm_array_partitions_path,
+                result.workflow_bundle.slurm_array_members_path,
+                result.workflow_bundle.slurm_array_strategy_path,
                 result.workflow_bundle.reproducibility_checks_path,
                 result.workflow_bundle.reproducibility_variant_audit_path,
                 result.workflow_bundle.reproducibility_audit_path,
@@ -962,6 +974,15 @@ def run_demo_command(args: Any) -> int:
                         ),
                         "slurm_total_estimated_output_mib": (
                             result.workflow_bundle.slurm_total_estimated_output_mib
+                        ),
+                        "slurm_array_partition_count": (
+                            result.workflow_bundle.slurm_array_partition_count
+                        ),
+                        "slurm_array_script_count": (
+                            result.workflow_bundle.slurm_array_script_count
+                        ),
+                        "slurm_array_largest_partition_size": (
+                            result.workflow_bundle.slurm_array_largest_partition_size
                         ),
                         "reproducibility_passed": (
                             result.workflow_bundle.reproducibility_passed
