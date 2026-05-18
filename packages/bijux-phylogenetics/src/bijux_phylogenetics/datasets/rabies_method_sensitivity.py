@@ -195,6 +195,7 @@ class RabiesMethodSensitivityPanelWorkflowReport:
     """One governed method-sensitivity workflow run over the packaged rabies panel."""
 
     dataset: RabiesMethodSensitivityPanelDataset
+    execution_record_path: Path
     iqtree_seed: int
     iqtree_threads: int
     bootstrap_replicates: int
@@ -221,6 +222,7 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     preprocessing_change_pair_count: int
     rooted_engine_change_variant_count: int
     serious_conflict_variant_count: int
+    execution_record_path: Path
     parallel_workers: int
     execution_mode: str
     workflow_summary_path: Path
@@ -586,6 +588,7 @@ def run_rabies_method_sensitivity_panel_workflow(
         )
         report = RabiesMethodSensitivityPanelWorkflowReport(
             dataset=dataset,
+            execution_record_path=execution_record_path,
             iqtree_seed=resolved_seed,
             iqtree_threads=resolved_threads,
             bootstrap_replicates=resolved_bootstrap_replicates,
@@ -654,6 +657,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         output_root / "workflow-config.resolved.json",
         report,
     )
+    execution_record_path = _copy_output(
+        report.execution_record_path,
+        output_root / report.execution_record_path.name,
+    )
     task_logs_root = _copy_task_logs(output_root / "parallel-logs", report.task_records)
     variants_root = _write_variant_outputs(
         output_root / "variants", report.variant_runs
@@ -716,6 +723,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "changed_clades": changed_clades_path,
             "conclusion_summary": conclusion_summary_path,
             "config": config_path,
+            "execution_record": execution_record_path,
             "task_logs_root": task_logs_root,
             "variants_root": variants_root,
             "slurm_job_plan": slurm_job_plan_path,
@@ -741,6 +749,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "changed_clades": changed_clades_path,
             "conclusion_summary": conclusion_summary_path,
             "config": config_path,
+            "execution_record": execution_record_path,
             "workflow_manifest": manifest_path,
             "slurm_job_plan": slurm_job_plan_path,
             "slurm_assumptions": slurm_assumptions_path,
@@ -782,6 +791,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         changed_clades_path,
         conclusion_summary_path,
         config_path,
+        execution_record_path,
         manifest_path,
         report_manifest_path,
         slurm_job_plan_path,
@@ -804,6 +814,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "changed_clades": changed_clades_path,
             "conclusion_summary": conclusion_summary_path,
             "config": config_path,
+            "execution_record": execution_record_path,
             "workflow_manifest": manifest_path,
             "slurm_job_plan": slurm_job_plan_path,
             "slurm_assumptions": slurm_assumptions_path,
@@ -849,6 +860,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         preprocessing_change_pair_count=preprocessing_change_pair_count,
         rooted_engine_change_variant_count=rooted_engine_change_variant_count,
         serious_conflict_variant_count=serious_conflict_variant_count,
+        execution_record_path=execution_record_path,
         parallel_workers=report.parallel_workers,
         execution_mode=report.execution_mode,
         workflow_summary_path=workflow_summary_path,

@@ -131,6 +131,7 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.workflow_bundle.workflow_summary_path.is_file()
     assert result.workflow_bundle.variant_summary_path.is_file()
     assert result.workflow_bundle.parallel_summary_path.is_file()
+    assert result.workflow_bundle.execution_record_path.is_file()
     assert result.workflow_bundle.manifest_path.is_file()
     assert result.workflow_bundle.report_manifest_path.is_file()
     assert result.workflow_bundle.slurm_job_plan_path.is_file()
