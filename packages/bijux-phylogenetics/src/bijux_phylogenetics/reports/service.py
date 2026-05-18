@@ -189,6 +189,7 @@ class TreeUncertaintyReportBuildResult:
     budget_report: TreeSetWorkflowBudgetReport
     methods_summary_path: Path
     methods_summary_warning_count: int
+    limitations: list[str]
     linked_artifact_count: int
     html_size_bytes: int
     linked_artifact_bytes: int
@@ -1549,6 +1550,20 @@ def render_tree_uncertainty_report(
             artifact_root / "tree-set-uncertainty-methods-summary.md",
             methods_report,
         )
+        limitations = sorted(
+            dict.fromkeys(
+                [
+                    "consensus support and topology summaries describe the supplied tree set and should not be treated as direct proof of one true history",
+                    "alternative rooted modes, unstable taxa, and conflict-prone clades must remain part of interpretation instead of being collapsed into the consensus tree alone",
+                    *methods_summary_result.warnings,
+                    *(
+                        [scaled_report_note["reason"]]
+                        if scaled_report_mode
+                        else []
+                    ),
+                ]
+            )
+        )
         preview_limit = 5
         clade_frequency_rows, clade_frequency_truncated = _truncate_report_rows(
             [asdict(row) for row in clade_frequencies.clade_frequencies],
@@ -1714,6 +1729,7 @@ def render_tree_uncertainty_report(
                 "methods-summary-text",
                 artifact_paths["methods_summary"].read_text(encoding="utf-8"),
             ),
+            _section("limitations", limitations),
             _section("tree-set-summary", asdict(summary)),
             _section(
                 "consensus-tree",
@@ -2057,6 +2073,7 @@ def render_tree_uncertainty_report(
             .relative_to(out_path.parent)
             .as_posix(),
             "methods_summary_warning_count": methods_summary_result.warning_count,
+            "limitations": limitations,
             "linked_artifacts": {
                 name: {
                     "path": path.relative_to(out_path.parent).as_posix(),
@@ -2173,6 +2190,7 @@ def render_tree_uncertainty_report(
             budget_report=budget_report,
             methods_summary_path=artifact_paths["methods_summary"],
             methods_summary_warning_count=methods_summary_result.warning_count,
+            limitations=limitations,
             linked_artifact_count=len(artifact_paths) + 1,
             html_size_bytes=html_size_bytes,
             linked_artifact_bytes=linked_artifact_bytes,

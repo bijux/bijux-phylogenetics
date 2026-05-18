@@ -112,3 +112,5 @@ def test_render_tree_uncertainty_report_includes_new_iteration_sections(
     assert "thinning-sensitivity" in html
     assert "consensus-threshold-sensitivity" in html
     assert "maturity-gate" in html
+    assert "limitations" in html
+    assert report.machine_manifest["limitations"]

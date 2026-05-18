@@ -68,9 +68,11 @@ def test_render_tree_uncertainty_report_truncates_budgeted_sections(
     assert "clade-frequencies" in report.budget_report.truncated_section_names
     assert 'href="tree-set-report.artifacts/clade-frequencies.tsv"' in html
     assert "methods-summary-text" in html
+    assert "limitations" in html
     assert "preview_rows" in html
     assert "&quot;rows&quot;: [" not in html
     assert report.machine_manifest["budget"]["truncated_section_names"]
+    assert report.machine_manifest["limitations"]
     assert (
         report.machine_manifest["linked_artifact_count"] == report.linked_artifact_count
     )
@@ -104,6 +106,7 @@ def test_render_tree_uncertainty_report_scales_to_large_tree_sets(
     assert (report.artifact_root / "clade-frequencies.tsv").is_file()
     assert (report.artifact_root / "tree-uncertainty.manifest.json").is_file()
     assert 'href="large-tree-set-report.artifacts/clade-frequencies.tsv"' in html
+    assert "limitations" in html
     assert report.machine_manifest["html_size_bytes"] == report.html_size_bytes
     assert report.machine_manifest["total_output_bytes"] == report.total_output_bytes
 
@@ -181,6 +184,7 @@ def test_cli_tree_set_report_reports_output_size_metrics(
         "tree-set-uncertainty-methods-summary.md"
     )
     assert payload["data"]["methods_summary_warning_count"] >= 0
+    assert payload["data"]["limitations"]
     assert payload["metrics"]["html_size_bytes"] > 0
     assert payload["metrics"]["linked_artifact_bytes"] > 0
     assert (
