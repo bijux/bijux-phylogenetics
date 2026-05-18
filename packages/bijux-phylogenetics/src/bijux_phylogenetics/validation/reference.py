@@ -34,7 +34,10 @@ from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.trait_tree_package import (
     build_annotated_trait_tree_package,
 )
-from bijux_phylogenetics.comparative import build_diversification_figure_package
+from bijux_phylogenetics.comparative import (
+    build_comparative_model_figure_package,
+    build_diversification_figure_package,
+)
 from bijux_phylogenetics.reports.alignment_package import (
     build_alignment_figure_package,
 )
@@ -1398,6 +1401,132 @@ def validate_diversification_figure_reference_fixtures(
         ],
         limitations=[
             "diversification figure publication readiness is governed through rendered surface counts, sampling-metadata completeness, and machine-readable audits rather than screenshot goldens",
+        ],
+    )
+
+
+def validate_comparative_model_figure_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
+    """Validate comparative model-comparison figure fixtures for decisive and ambiguous support lanes."""
+    root = _default_fixtures_root() if fixtures_root is None else fixtures_root
+    positive_tree = _fixture(
+        root, "trees", "example_tree_phytools_ultrametric_twenty_four_taxa.nwk"
+    )
+    positive_traits = _fixture(
+        root, "metadata", "example_traits_phytools_signal_twenty_four_taxa.tsv"
+    )
+    ambiguous_tree = _fixture(
+        root,
+        "trees",
+        "example_tree_phytools_ultrametric_one_hundred_twenty_eight_taxa.nwk",
+    )
+    ambiguous_traits = _fixture(
+        root, "metadata", "example_traits_phytools_signal_one_hundred_twenty_eight_taxa.tsv"
+    )
+    temp_root = _temp_reference_dir("bijux-comparative-model-figure-reference")
+    temp_root.mkdir(parents=True, exist_ok=True)
+
+    positive_package = build_comparative_model_figure_package(
+        positive_tree,
+        positive_traits,
+        trait="signal_strong",
+        out_dir=temp_root / "signal-strong-model-package",
+    )
+    ambiguous_package = build_comparative_model_figure_package(
+        ambiguous_tree,
+        ambiguous_traits,
+        trait="signal_strong",
+        out_dir=temp_root / "signal-strong-ambiguous-model-package",
+    )
+
+    fixtures = [
+        _check(
+            goal_id=234,
+            suite="comparative-model-figure-reference",
+            name="signal_strong_twenty_four_taxa_model_figures_ready",
+            fixture_paths=[positive_tree, positive_traits],
+            expected={
+                "publication_ready": True,
+                "selected_model": "brownian",
+                "support_distinct": True,
+                "finite_aicc_model_count": 2,
+                "plotted_model_count": 2,
+                "rendered_parameter_count": 5,
+                "rendered_fit_row_count": 2,
+                "aicc_delta": 2.364966153428469,
+            },
+            observed={
+                "publication_ready": positive_package.audit.publication_ready,
+                "selected_model": positive_package.audit.selected_model,
+                "support_distinct": positive_package.audit.support_distinct,
+                "finite_aicc_model_count": (
+                    positive_package.audit.finite_aicc_model_count
+                ),
+                "plotted_model_count": positive_package.audit.plotted_model_count,
+                "rendered_parameter_count": (
+                    positive_package.audit.rendered_parameter_count
+                ),
+                "rendered_fit_row_count": (
+                    positive_package.audit.rendered_fit_row_count
+                ),
+                "aicc_delta": positive_package.audit.aicc_delta,
+            },
+            notes=[
+                "the clean comparative fixture must keep information criteria, likelihood, parameters, and fit diagnostics all explicit while remaining publication-ready"
+            ],
+        ),
+        _check(
+            goal_id=234,
+            suite="comparative-model-figure-reference",
+            name="signal_strong_one_hundred_twenty_eight_taxa_support_ambiguous",
+            fixture_paths=[ambiguous_tree, ambiguous_traits],
+            expected={
+                "publication_ready": False,
+                "selected_model": "ou",
+                "support_distinct": False,
+                "finite_aicc_model_count": 2,
+                "criteria_surface_visible": True,
+                "likelihood_surface_visible": True,
+                "parameter_surface_visible": True,
+                "fit_surface_visible": True,
+                "aicc_delta": 0.15281003486796862,
+            },
+            observed={
+                "publication_ready": ambiguous_package.audit.publication_ready,
+                "selected_model": ambiguous_package.audit.selected_model,
+                "support_distinct": ambiguous_package.audit.support_distinct,
+                "finite_aicc_model_count": (
+                    ambiguous_package.audit.finite_aicc_model_count
+                ),
+                "criteria_surface_visible": (
+                    ambiguous_package.audit.criteria_surface_visible
+                ),
+                "likelihood_surface_visible": (
+                    ambiguous_package.audit.likelihood_surface_visible
+                ),
+                "parameter_surface_visible": (
+                    ambiguous_package.audit.parameter_surface_visible
+                ),
+                "fit_surface_visible": ambiguous_package.audit.fit_surface_visible,
+                "aicc_delta": ambiguous_package.audit.aicc_delta,
+            },
+            notes=[
+                "publication readiness remains blocked when the model-support gap is too small even though the full comparative model package still renders for review"
+            ],
+        ),
+    ]
+    return _suite_report(
+        goal_id=234,
+        suite="comparative-model-figure-reference",
+        reviewer_goal="Comparative model-comparison publication fixtures",
+        fixtures=fixtures,
+        coverage_notes=[
+            "pins one clean comparative model package where information criteria, likelihood, parameters, and fit diagnostics all remain publication-ready",
+            "proves that weak AICc separation still allows full figure rendering while keeping publication readiness blocked instead of silently claiming a decisive winner",
+        ],
+        limitations=[
+            "comparative model figure publication readiness is governed through rendered surface counts, finite information criteria, and explicit AICc support thresholds rather than screenshot goldens",
         ],
     )
 
