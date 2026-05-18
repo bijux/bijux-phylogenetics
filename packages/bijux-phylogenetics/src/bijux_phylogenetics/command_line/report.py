@@ -26,7 +26,10 @@ from bijux_phylogenetics.reports.service import (
     render_tree_report,
     render_workflow_validation_report,
 )
-from bijux_phylogenetics.reports import build_alignment_figure_package
+from bijux_phylogenetics.reports import (
+    build_alignment_figure_package,
+    write_supplementary_taxon_table,
+)
 from bijux_phylogenetics.reports.tree_package import build_tree_report_package
 from bijux_phylogenetics.runtime.results import build_command_result
 
@@ -223,6 +226,27 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the report build result as JSON."
     )
     _add_manifest_argument(report_taxonomy)
+
+    report_supplementary_taxon_table = report_subparsers.add_parser(
+        "supplementary-taxon-table",
+        help="Write a supplementary taxon table with IDs, metadata, traits, and exclusion evidence.",
+    )
+    report_supplementary_taxon_table.add_argument("--tree", required=True, type=Path)
+    report_supplementary_taxon_table.add_argument(
+        "--metadata", required=True, type=Path
+    )
+    report_supplementary_taxon_table.add_argument("--traits", required=True, type=Path)
+    report_supplementary_taxon_table.add_argument("--alignment", type=Path)
+    report_supplementary_taxon_table.add_argument("--filtered-alignment", type=Path)
+    report_supplementary_taxon_table.add_argument("--inference-tree", type=Path)
+    report_supplementary_taxon_table.add_argument("--reported-taxa", type=Path)
+    report_supplementary_taxon_table.add_argument("--tip-dates", type=Path)
+    report_supplementary_taxon_table.add_argument("--calibrations", type=Path)
+    report_supplementary_taxon_table.add_argument("--out", required=True, type=Path)
+    report_supplementary_taxon_table.add_argument(
+        "--json", action="store_true", help="Emit the table write result as JSON."
+    )
+    _add_manifest_argument(report_supplementary_taxon_table)
 
     report_workflow_validation = report_subparsers.add_parser(
         "workflow-validation",
@@ -752,6 +776,62 @@ def run_report_command(args: Any) -> int:
                         "unstable_taxa": 0
                         if result.taxon_stability is None
                         else len(result.taxon_stability.unstable_taxa),
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
+        return 0
+
+    if args.report_command == "supplementary-taxon-table":
+        result = write_supplementary_taxon_table(
+            args.out,
+            tree_path=args.tree,
+            metadata_path=args.metadata,
+            traits_path=args.traits,
+            alignment_path=args.alignment,
+            filtered_alignment_path=args.filtered_alignment,
+            inference_tree_path=args.inference_tree,
+            reported_taxa_path=args.reported_taxa,
+            tip_dates_path=args.tip_dates,
+            calibration_path=args.calibrations,
+        )
+        inputs = [args.tree, args.metadata, args.traits]
+        if args.alignment is not None:
+            inputs.append(args.alignment)
+        if args.filtered_alignment is not None:
+            inputs.append(args.filtered_alignment)
+        if args.inference_tree is not None:
+            inputs.append(args.inference_tree)
+        if args.reported_taxa is not None:
+            inputs.append(args.reported_taxa)
+        if args.tip_dates is not None:
+            inputs.append(args.tip_dates)
+        if args.calibrations is not None:
+            inputs.append(args.calibrations)
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=inputs,
+            outputs=[result.output_path],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=inputs,
+                    outputs=outputs,
+                    warnings=[],
+                    metrics={
+                        "row_count": result.row_count,
+                        "analysis_included_count": result.analysis_included_count,
+                        "analysis_excluded_count": result.analysis_excluded_count,
+                        "reporting_retained_count": result.reporting_retained_count,
+                        "reporting_dropped_count": result.reporting_dropped_count,
+                        "metadata_column_count": result.metadata_column_count,
+                        "trait_column_count": result.trait_column_count,
                     },
                     data=result,
                 ),
