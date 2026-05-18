@@ -1714,6 +1714,21 @@ for downstream recovery work. The live `fastBM` lane now covers governed
 low-variance, root-shift high-variance, and six-taxon Brownian cases. It
 compares distribution summaries and tip-covariance rows against real
 `phytools::fastBM` without claiming exact cross-language draws.
+The same owned simulation layer now also exposes
+`simulate_speciational_traits(...)` and
+`simulate_speciational_trait_collection(...)` for the narrower
+`geiger::sim.char(model='speciational')` contract, where every positive branch
+contributes one Brownian step regardless of branch-length magnitude while
+zero-length branches remain zero. The governed `geiger::sim.char` envelope now
+covers three local reference cases on the fixed rooted non-ultrametric control
+tree: one Brownian case, one speciational case, and one asymmetric binary
+discrete rate-matrix case. Bijux exposes that review surface through
+`validate_geiger_sim_char_reference_examples()` and
+`simulate validate-sim-char-reference`, and the contract is explicit about its
+scope: it compares tip-distribution, tip-covariance, and tip-state-frequency
+summary envelopes against stored local `geiger::sim.char` outputs, keeps the
+true generating parameters in the report, uses fixed seeds, and does not claim
+exact cross-language random draws.
 The same owned simulation surface now also exposes
 `simulate_correlated_brownian_trait_collection(...)` for two or more
 continuous traits on one fixed tree from one explicit evolutionary covariance
