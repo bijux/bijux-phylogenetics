@@ -18,6 +18,7 @@ def fake_geiger_rscript(
         """#!/usr/bin/env python3
 import csv
 import json
+import math
 import os
 import subprocess
 import sys
@@ -114,6 +115,7 @@ def build_reference_payload(case_payload: dict[str, object]) -> tuple[dict[str, 
         payload_path = Path(handle.name)
     inline_script = '''
 import json
+import math
 from pathlib import Path
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.io.trees import load_tree
@@ -151,6 +153,7 @@ if case_payload["operation"] == "fit-discrete-mk":
         transform=case_payload.get("discrete_transform_name"),
         lambda_bounds=tuple(case_payload.get("lambda_bounds") or (0.0, 1.0)),
         kappa_bounds=tuple(case_payload.get("kappa_bounds") or (0.0, 1.0)),
+        delta_bounds=tuple(case_payload.get("delta_bounds") or (math.exp(-5.0), 3.0)),
     )
     missing_value_taxa = sorted(
         set(report.input_audit.pruned_missing_value_taxa) - set(tree_only_taxa)
@@ -167,6 +170,7 @@ if case_payload["operation"] == "fit-discrete-mk":
             else {
                 "lambda": "pagel-lambda",
                 "kappa": "pagel-kappa",
+                "delta": "pagel-delta",
             }.get(transform_fit.transform_name, transform_fit.transform_name)
         ),
         "observed_state_count": len(report.state_order),
