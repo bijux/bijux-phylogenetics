@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.comparative import (
+    build_diversification_method_report,
+    build_diversification_methods_summary_text,
     compare_diversification_models,
     compute_diversification_gamma_statistic,
     compute_lineage_through_time_curve,
@@ -17,6 +19,7 @@ from bijux_phylogenetics.comparative import (
     validate_time_tree_for_diversification,
     write_clade_diversification_table,
     write_diversification_gamma_statistic_table,
+    write_diversification_methods_summary_text,
     write_diversification_model_comparison_table,
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
@@ -170,6 +173,47 @@ def test_detect_incomplete_taxon_sampling_metadata_reports_missing_and_invalid_r
     ]
 
 
+def test_build_diversification_methods_summary_text_reports_sampling_models_and_trait_caveats() -> (
+    None
+):
+    report = build_diversification_method_report(
+        fixture("example_tree.nwk"),
+        metadata_path=fixture("example_sampling_fractions_incomplete.tsv"),
+        traits_path=fixture("example_traits_diversification_polyphyletic.tsv"),
+        trait="habitat",
+    )
+
+    text = build_diversification_methods_summary_text(report)
+
+    assert "Diversification Analysis Methods Summary" in text
+    assert "- primary reported rate model: `birth-death`" in text
+    assert "- better-supported model by AIC: `yule`" in text
+    assert "- sampling metadata complete: `no`" in text
+    assert "- observed trait states reviewed: `2`" in text
+    assert "- warning details:" in text
+
+
+def test_write_diversification_methods_summary_text_writes_markdown(
+    tmp_path: Path,
+) -> None:
+    output_path = tmp_path / "diversification-methods-summary.md"
+    report = build_diversification_method_report(
+        fixture("example_tree.nwk"),
+        metadata_path=fixture("example_sampling_fractions.tsv"),
+        traits_path=fixture("example_traits_diversification.tsv"),
+        trait="habitat",
+    )
+
+    result = write_diversification_methods_summary_text(output_path, report)
+
+    assert result.output_path == output_path
+    assert result.better_model == "yule"
+    assert result.sampling_metadata_complete is True
+    assert result.clade_observation_count == 3
+    assert "- compared candidate models: `yule`, `birth-death`" in result.text
+    assert output_path.read_text(encoding="utf-8") == result.text
+
+
 def test_estimate_diversification_rate_applies_sampling_correction() -> None:
     report = estimate_diversification_rate(
         fixture("example_tree.nwk"),
@@ -238,6 +282,7 @@ def test_write_diversification_tables_and_report_outputs_files(tmp_path: Path) -
     models_path = tmp_path / "model-comparison.tsv"
     trait_path = tmp_path / "trait-dependent.tsv"
     html_path = tmp_path / "diversification-report.html"
+    methods_summary_path = tmp_path / "diversification-methods-summary.md"
 
     clades = detect_diversification_outlier_clades(fixture("example_tree.nwk"))
     gamma = compute_diversification_gamma_statistic(
@@ -259,6 +304,7 @@ def test_write_diversification_tables_and_report_outputs_files(tmp_path: Path) -
         metadata_path=fixture("example_sampling_fractions.tsv"),
         traits_path=fixture("example_traits_diversification.tsv"),
         trait="habitat",
+        methods_summary_path=methods_summary_path,
     )
 
     write_clade_diversification_table(clade_path, clades)
@@ -270,6 +316,12 @@ def test_write_diversification_tables_and_report_outputs_files(tmp_path: Path) -
     assert "gamma_statistic" in gamma_path.read_text(encoding="utf-8")
     assert "better_model" in models_path.read_text(encoding="utf-8")
     assert "monophyletic" in trait_path.read_text(encoding="utf-8")
+    assert methods_summary_path.exists()
+    assert "Diversification Analysis Methods Summary" in methods_summary_path.read_text(
+        encoding="utf-8"
+    )
+    assert "methods-summary-text" in html_path.read_text(encoding="utf-8")
     assert "diversification-model-comparison" in html_path.read_text(encoding="utf-8")
     assert "diversification-gamma-statistic" in html_path.read_text(encoding="utf-8")
     assert report.report_kind == "diversification"
+    assert report.methods_summary_path == methods_summary_path
