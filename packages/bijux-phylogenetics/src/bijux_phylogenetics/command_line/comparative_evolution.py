@@ -32,8 +32,10 @@ from bijux_phylogenetics.comparative.correlated_trait_evolution import (
 )
 from bijux_phylogenetics.comparative.disparity_through_time import (
     render_disparity_through_time_svg,
+    summarize_continuous_clade_disparity,
     summarize_disparity_through_time,
     write_continuous_clade_disparity_table,
+    write_continuous_clade_disparity_summary_table,
     write_disparity_through_time_bin_table,
     write_disparity_through_time_curve_table,
     write_disparity_through_time_exclusion_table,
@@ -456,6 +458,40 @@ def add_comparative_evolution_commands(comparative_subparsers: Any) -> None:
         help="Emit the disparity-through-time report as JSON.",
     )
     _add_manifest_argument(comparative_dtt)
+
+    comparative_disparity = comparative_subparsers.add_parser(
+        "disparity",
+        help="Summarize geiger-style continuous clade disparity for one rooted tree.",
+    )
+    comparative_disparity.add_argument("tree", type=Path)
+    comparative_disparity.add_argument("table", type=Path)
+    comparative_disparity.add_argument(
+        "--traits",
+        required=True,
+        help="Comma-delimited continuous trait columns used as the disparity matrix.",
+    )
+    comparative_disparity.add_argument("--taxon-column")
+    comparative_disparity.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one clade disparity summary ledger as TSV or CSV.",
+    )
+    comparative_disparity.add_argument(
+        "--clades-out",
+        type=Path,
+        help="Write one internal-clade disparity ledger as TSV or CSV.",
+    )
+    comparative_disparity.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write one excluded-taxa ledger for clade disparity as TSV or CSV.",
+    )
+    comparative_disparity.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the clade disparity report as JSON.",
+    )
+    _add_manifest_argument(comparative_disparity)
 
     comparative_compare_models = comparative_subparsers.add_parser(
         "compare-models",
@@ -1035,6 +1071,49 @@ def run_comparative_evolution_command(
                     "root_disparity": report.root_disparity,
                     "relative_scaling_applied": report.relative_scaling_applied,
                     "rendered_point_count": rendered_point_count,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.comparative_command == "disparity":
+        report = summarize_continuous_clade_disparity(
+            args.tree,
+            args.table,
+            trait_columns=_split_csv_values(args.traits),
+            taxon_column=args.taxon_column,
+        )
+        if args.summary_out:
+            write_continuous_clade_disparity_summary_table(args.summary_out, report)
+        if args.clades_out:
+            write_continuous_clade_disparity_table(args.clades_out, report)
+        if args.excluded_taxa_out:
+            write_disparity_through_time_exclusion_table(
+                args.excluded_taxa_out,
+                report,
+            )
+        outputs = _finalize_outputs(
+            args,
+            command="comparative",
+            inputs=[args.tree, args.table],
+        )
+        _print_result(
+            build_command_result(
+                command="comparative",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
+                warnings=report.warnings,
+                metrics={
+                    "tree_taxon_count": report.tree_taxon_count,
+                    "analyzed_taxon_count": report.analyzed_taxon_count,
+                    "excluded_taxon_count": len(report.excluded_taxa),
+                    "trait_column_count": len(report.trait_columns),
+                    "clade_count": len(report.clade_rows),
+                    "root_disparity": report.root_disparity,
+                    "minimum_clade_disparity": report.minimum_clade_disparity,
+                    "maximum_clade_disparity": report.maximum_clade_disparity,
                 },
                 data=report,
             ),
