@@ -147,7 +147,7 @@
       "taxon_column": "taxon",
       "supported_model_names": ["trend"],
       "validation_expectation": "clean-match",
-      "geiger_reference_expectation": "fitcontinuous-ready",
+      "geiger_reference_expectation": "fitcontinuous-trend-explicitly-excluded-this-round",
       "feature_tags": [
         "continuous-trait",
         "trend-proxy",
@@ -159,7 +159,7 @@
         "source_trait_fixture": "phytools_signal_panel_twenty_four_taxa",
         "source_trait_name": "signal_weak"
       },
-      "notes": "Directional proxy trait used to exercise future trend-model parity on a governed twenty-four-taxon tree before a dedicated trend simulator is added upstream."
+      "notes": "Directional proxy trait retained for future trend-model work on a governed twenty-four-taxon tree, but this round explicitly excludes geiger trend parity because geiger exposes distinct rate_trend and mean_trend likelihood contracts instead of one unambiguous trend model."
     },
     {
       "fixture_id": "geiger_continuous_missing_values_twenty_four_taxa",
