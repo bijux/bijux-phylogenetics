@@ -3,11 +3,17 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
+from bijux_phylogenetics.command_line.arguments import (
+    _add_manifest_argument,
+    _split_csv_values,
+)
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.provenance.method_tiers import method_tier_metrics
+from bijux_phylogenetics.render.trait_tree_package import (
+    build_annotated_trait_tree_package,
+)
 from bijux_phylogenetics.reports.service import (
     render_alignment_report,
     render_dataset_report,
@@ -95,6 +101,29 @@ def add_report_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the package build result as JSON."
     )
     _add_manifest_argument(report_tree_package)
+
+    report_trait_tree_package = report_subparsers.add_parser(
+        "trait-tree-package",
+        help="Build a publication-oriented annotated trait tree package with coverage and reviewer audits.",
+    )
+    report_trait_tree_package.add_argument("tree", type=Path)
+    report_trait_tree_package.add_argument("--metadata", type=Path)
+    report_trait_tree_package.add_argument("--traits", type=Path)
+    report_trait_tree_package.add_argument("--taxon-column")
+    report_trait_tree_package.add_argument("--label-column")
+    report_trait_tree_package.add_argument("--categorical-column")
+    report_trait_tree_package.add_argument("--continuous-column")
+    report_trait_tree_package.add_argument("--metadata-strip-columns")
+    report_trait_tree_package.add_argument("--heatmap-columns")
+    report_trait_tree_package.add_argument(
+        "--layout", choices=("cladogram", "phylogram", "circular"), default="phylogram"
+    )
+    report_trait_tree_package.add_argument("--support-labels", action="store_true")
+    report_trait_tree_package.add_argument("--out-dir", required=True, type=Path)
+    report_trait_tree_package.add_argument(
+        "--json", action="store_true", help="Emit the package build result as JSON."
+    )
+    _add_manifest_argument(report_trait_tree_package)
 
     report_alignment = report_subparsers.add_parser(
         "alignment", help="Render an alignment-only HTML diagnostic report."
@@ -317,6 +346,65 @@ def run_report_command(args: Any) -> int:
                         "rendered_support_count": result.figure.rendered_support_count,
                         "long_outlier_count": result.branch_stats.long_outlier_count,
                         **method_tier_metrics(result.method_tier),
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_dir)
+        return 0
+
+    if args.report_command == "trait-tree-package":
+        result = build_annotated_trait_tree_package(
+            args.tree,
+            out_dir=args.out_dir,
+            metadata_path=args.metadata,
+            traits_path=args.traits,
+            taxon_column=args.taxon_column,
+            label_column=args.label_column,
+            categorical_column=args.categorical_column,
+            continuous_column=args.continuous_column,
+            metadata_strip_columns=_split_csv_values(args.metadata_strip_columns),
+            heatmap_columns=_split_csv_values(args.heatmap_columns),
+            layout=args.layout,
+            show_support_values=args.support_labels,
+        )
+        inputs = [args.tree]
+        if args.metadata is not None:
+            inputs.append(args.metadata)
+        if args.traits is not None:
+            inputs.append(args.traits)
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=inputs,
+            outputs=[
+                result.review_path,
+                result.figure_package.figure_path,
+                result.figure_package.caption_path,
+                result.figure_package.legend_path,
+                result.coverage_path,
+                result.summary_path,
+                result.manifest_path,
+            ],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=inputs,
+                    outputs=outputs,
+                    warnings=result.audit.limitations,
+                    metrics={
+                        "publication_ready": result.audit.publication_ready,
+                        "required_surface_count": result.audit.required_surface_count,
+                        "complete_surface_count": result.audit.complete_surface_count,
+                        "missing_surface_count": result.audit.missing_surface_count,
+                        "visible_tip_count": result.figure_package.render.visible_tip_count,
+                        "legend_entry_count": result.audit.legend_entry_count,
+                        "caption_ready": result.audit.caption_ready,
+                        "legible": result.audit.legible,
                     },
                     data=result,
                 ),
