@@ -771,6 +771,8 @@ def run_demo_command(args: Any) -> int:
                 result.workflow_bundle.final_manifest_path,
                 result.overview_path,
                 result.overview_html_path,
+                result.artifact_inventory_path,
+                result.reproducibility_checklist_path,
                 result.package_manifest_path,
             ],
         )
@@ -855,6 +857,24 @@ def run_demo_command(args: Any) -> int:
                         "config_check_count": result.workflow_bundle.config_check_count,
                         "scientific_finding_count": (
                             result.workflow_bundle.scientific_finding_count
+                        ),
+                        "package_artifact_count": (
+                            sum(
+                                1
+                                for _ in result.artifact_inventory_path.open(
+                                    "r", encoding="utf-8"
+                                )
+                            )
+                            - 1
+                        ),
+                        "package_checklist_item_count": (
+                            sum(
+                                1
+                                for _ in result.reproducibility_checklist_path.open(
+                                    "r", encoding="utf-8"
+                                )
+                            )
+                            - 1
                         ),
                         "reference_output_count": expected_output_count,
                     },
