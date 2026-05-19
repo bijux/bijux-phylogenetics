@@ -96,7 +96,7 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
     bundle_root = bundle_root.resolve()
     resolved_config = _load_json(bundle_root / _CONFIG_FILENAME)
     if dataset is None:
-        from .rabies_method_sensitivity import (
+        from ..config import (
             load_rabies_method_sensitivity_panel_dataset,
         )
 
