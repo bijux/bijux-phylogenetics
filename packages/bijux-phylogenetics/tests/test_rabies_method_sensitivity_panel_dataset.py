@@ -8,6 +8,7 @@ import pytest
 
 from bijux_phylogenetics.command_line import main
 import bijux_phylogenetics.datasets.rabies_method_sensitivity as rabies_method_sensitivity
+import bijux_phylogenetics.datasets.rabies_method_sensitivity.workflow as rabies_method_sensitivity_workflow
 from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     export_rabies_method_sensitivity_panel_dataset,
     load_rabies_method_sensitivity_panel_dataset,
@@ -302,27 +303,27 @@ def test_run_rabies_method_sensitivity_panel_workflow_writes_execution_record(
 ) -> None:
     dataset = _build_stub_dataset(variant_count=1, parallel_workers=1)
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "load_rabies_method_sensitivity_panel_dataset",
         lambda: dataset,
     )
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "_run_variant_workflow",
         lambda **_: object(),
     )
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "_build_preprocessing_comparison_rows",
         lambda _: [],
     )
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "_aggregate_clades",
         lambda *_args, **_kwargs: [],
     )
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "_build_conclusion_rows",
         lambda **_: [],
     )

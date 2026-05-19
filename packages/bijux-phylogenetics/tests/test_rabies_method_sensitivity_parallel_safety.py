@@ -9,6 +9,7 @@ import time
 import pytest
 
 import bijux_phylogenetics.datasets.rabies_method_sensitivity as rabies_method_sensitivity
+import bijux_phylogenetics.datasets.rabies_method_sensitivity.workflow as rabies_method_sensitivity_workflow
 from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     load_rabies_method_sensitivity_panel_dataset,
     run_rabies_method_sensitivity_panel_workflow,
@@ -32,7 +33,7 @@ def test_run_rabies_method_sensitivity_panel_workflow_rejects_concurrent_reuse_o
 ) -> None:
     dataset = _build_stub_dataset(variant_count=1, parallel_workers=1)
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "load_rabies_method_sensitivity_panel_dataset",
         lambda: dataset,
     )
@@ -44,7 +45,7 @@ def test_run_rabies_method_sensitivity_panel_workflow_rejects_concurrent_reuse_o
         )
 
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "_run_variant_workflow",
         slow_failure,
     )
@@ -86,7 +87,7 @@ def test_run_rabies_method_sensitivity_panel_workflow_allows_parallel_distinct_o
 ) -> None:
     dataset = _build_stub_dataset(variant_count=1, parallel_workers=1)
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "load_rabies_method_sensitivity_panel_dataset",
         lambda: dataset,
     )
@@ -96,22 +97,22 @@ def test_run_rabies_method_sensitivity_panel_workflow_allows_parallel_distinct_o
         return object()
 
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "_run_variant_workflow",
         slow_success,
     )
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "_build_preprocessing_comparison_rows",
         lambda _: [],
     )
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "_aggregate_clades",
         lambda *_args, **_kwargs: [],
     )
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "_build_conclusion_rows",
         lambda **_: [],
     )
@@ -149,7 +150,7 @@ def test_run_rabies_method_sensitivity_panel_workflow_preserves_successful_outpu
 ) -> None:
     dataset = _build_stub_dataset(variant_count=2, parallel_workers=2)
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "load_rabies_method_sensitivity_panel_dataset",
         lambda: dataset,
     )
@@ -167,7 +168,7 @@ def test_run_rabies_method_sensitivity_panel_workflow_preserves_successful_outpu
         )
 
     monkeypatch.setattr(
-        rabies_method_sensitivity,
+        rabies_method_sensitivity_workflow,
         "_run_variant_workflow",
         mixed_outcomes,
     )
