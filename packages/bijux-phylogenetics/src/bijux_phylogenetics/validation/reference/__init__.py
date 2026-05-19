@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 import json
 from pathlib import Path
-import tempfile
 
 from bijux_phylogenetics.core.dataset import audit_dataset_inputs
 from bijux_phylogenetics.core.taxon_workflows import build_taxon_workflow_loss_report
@@ -48,187 +47,24 @@ from bijux_phylogenetics.trees import (
     build_tree_set_uncertainty_method_report,
     write_tree_set_uncertainty_methods_summary_text,
 )
-
-
-@dataclass(frozen=True, slots=True)
-class ReferenceFixtureCheck:
-    """Observed-versus-expected validation for one checked-in reference fixture."""
-
-    goal_id: int
-    suite: str
-    name: str
-    fixture_paths: list[Path]
-    passed: bool
-    expected: dict[str, object]
-    observed: dict[str, object]
-    notes: list[str]
-
-
-@dataclass(slots=True)
-class ReferenceValidationSuiteReport:
-    """One reviewer-facing suite of reference validations."""
-
-    goal_id: int
-    suite: str
-    reviewer_goal: str
-    passed: bool
-    fixture_count: int
-    passed_fixture_count: int
-    failed_fixture_count: int
-    fixtures: list[ReferenceFixtureCheck]
-    coverage_notes: list[str]
-    limitations: list[str]
-
-
-@dataclass(slots=True)
-class CoreWorkflowValidationRow:
-    """One Level 1 workflow with fixture coverage and trust notes."""
-
-    workflow: str
-    fixture_suite_names: list[str]
-    fixture_count: int
-    expected_outputs: list[str]
-    limitations: list[str]
-    passed: bool
-    notes: list[str]
-
-
-@dataclass(frozen=True, slots=True)
-class CoreWorkflowFailureCase:
-    """Known workflow failure or warning case with expected behavior."""
-
-    workflow: str
-    fixture_name: str
-    outcome_kind: str
-    observed_code: str
-    observed_summary: str
-    passed: bool
-
-
-@dataclass(frozen=True, slots=True)
-class WorkflowMaturityClassification:
-    """Reviewer-facing maturity label for one core workflow."""
-
-    workflow: str
-    maturity: str
-    rationale: list[str]
-    outstanding_risks: list[str]
-
-
-@dataclass(slots=True)
-class CoreWorkflowValidationReport:
-    """Aggregate validation report for the Level 1 trust surface."""
-
-    suites: list[ReferenceValidationSuiteReport]
-    workflows: list[CoreWorkflowValidationRow]
-    failure_gallery: list[CoreWorkflowFailureCase]
-    maturity_classifications: list[WorkflowMaturityClassification]
-    total_fixture_count: int
-    passed_fixture_count: int
-    failed_fixture_count: int
-    limitations: list[str]
-
-
-@dataclass(slots=True)
-class LevelOneReleaseGateDecision:
-    """Gate decision for whether the example Level 1 workflow is review-ready."""
-
-    decision: str
-    rationale: list[str]
-    retained_taxa: list[str]
-    excluded_taxa: list[str]
-    blocked_analyses: list[str]
-    allowed_analyses: list[str]
-    reviewer_visible_warnings: list[str]
-
-
-@dataclass(slots=True)
-class LevelOneReleaseGateReport:
-    """Integrated release gate built around the checked-in workflow fixtures."""
-
-    fixtures_root: Path
-    validation: CoreWorkflowValidationReport
-    dataset_readiness_decision: str
-    dataset_blockers: list[str]
-    dataset_warnings: list[str]
-    exclusion_causes: dict[str, list[str]]
-    taxon_first_loss_stage: dict[str, str | None]
-    gate: LevelOneReleaseGateDecision
-
-
-def _default_fixtures_root() -> Path:
-    return Path(__file__).resolve().parents[3] / "tests" / "fixtures"
-
-
-def _fixture(root: Path, *parts: str) -> Path:
-    return root.joinpath(*parts)
-
-
-def _normalize(value: object) -> object:
-    if isinstance(value, Path):
-        return str(value)
-    if isinstance(value, dict):
-        return {str(key): _normalize(item) for key, item in value.items()}
-    if isinstance(value, list):
-        return [_normalize(item) for item in value]
-    return value
-
-
-def _check(
-    *,
-    goal_id: int,
-    suite: str,
-    name: str,
-    fixture_paths: list[Path],
-    expected: dict[str, object],
-    observed: dict[str, object],
-    notes: list[str] | None = None,
-) -> ReferenceFixtureCheck:
-    normalized_expected = _normalize(expected)
-    normalized_observed = _normalize(observed)
-    return ReferenceFixtureCheck(
-        goal_id=goal_id,
-        suite=suite,
-        name=name,
-        fixture_paths=fixture_paths,
-        passed=normalized_expected == normalized_observed,
-        expected=normalized_expected,
-        observed=normalized_observed,
-        notes=[] if notes is None else list(notes),
-    )
-
-
-def _suite_report(
-    *,
-    goal_id: int,
-    suite: str,
-    reviewer_goal: str,
-    fixtures: list[ReferenceFixtureCheck],
-    coverage_notes: list[str],
-    limitations: list[str],
-) -> ReferenceValidationSuiteReport:
-    passed_fixture_count = sum(1 for fixture in fixtures if fixture.passed)
-    failed_fixture_count = len(fixtures) - passed_fixture_count
-    return ReferenceValidationSuiteReport(
-        goal_id=goal_id,
-        suite=suite,
-        reviewer_goal=reviewer_goal,
-        passed=failed_fixture_count == 0,
-        fixture_count=len(fixtures),
-        passed_fixture_count=passed_fixture_count,
-        failed_fixture_count=failed_fixture_count,
-        fixtures=fixtures,
-        coverage_notes=coverage_notes,
-        limitations=limitations,
-    )
-
-
-def _error_observation(error: Exception) -> dict[str, object]:
-    return {
-        "error_type": type(error).__name__,
-        "error_code": getattr(error, "code", "unknown"),
-        "message": str(error),
-    }
+from .models import (
+    CoreWorkflowFailureCase,
+    CoreWorkflowValidationReport,
+    CoreWorkflowValidationRow,
+    LevelOneReleaseGateDecision,
+    LevelOneReleaseGateReport,
+    ReferenceFixtureCheck,
+    ReferenceValidationSuiteReport,
+    WorkflowMaturityClassification,
+)
+from .shared import (
+    check as _check,
+    default_fixtures_root as _default_fixtures_root,
+    error_observation as _error_observation,
+    fixture as _fixture,
+    suite_report as _suite_report,
+    temp_reference_dir as _temp_reference_dir,
+)
 
 
 def validate_tree_reference_fixtures(
@@ -2169,13 +2005,6 @@ def write_core_workflow_validation_json(
         encoding="utf-8",
     )
     return path
-
-
-def _temp_reference_dir(name: str) -> Path:
-    """Return a deterministic temporary directory for reference checks."""
-    return Path(tempfile.gettempdir()) / name
-
-
 def write_level_one_release_gate_json(
     path: Path,
     *,
