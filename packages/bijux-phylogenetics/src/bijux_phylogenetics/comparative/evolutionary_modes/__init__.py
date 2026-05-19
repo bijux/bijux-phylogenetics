@@ -12,7 +12,6 @@ from bijux_phylogenetics.comparative.common import (
     ComparativeDataset,
     build_brownian_covariance_matrix,
     load_comparative_dataset,
-    node_signature,
     stable_covariance,
 )
 from bijux_phylogenetics.comparative.information_criteria import (
@@ -39,6 +38,19 @@ from bijux_phylogenetics.comparative.evolutionary_modes.models import (
     EvolutionaryModeIdentifiabilityWarning,
     LikelihoodRatioTestResult,
 )
+from bijux_phylogenetics.comparative.evolutionary_modes.numeric import stable_float
+from bijux_phylogenetics.comparative.evolutionary_modes.tree_transforms import (
+    clone_tree as _clone_tree,
+    identity_covariance_matrix as _identity_covariance_matrix,
+    rescale_tree_early_burst,
+    rescale_tree_ornstein_uhlenbeck,
+    rescale_tree_pagel_delta,
+    rescale_tree_pagel_kappa,
+    rescale_tree_pagel_lambda,
+    rescale_tree_white_noise,
+    transform_tree as _transform_tree,
+    transform_tree_for_evolutionary_mode,
+)
 from bijux_phylogenetics.comparative.models import (
     ComparativeModelComparisonRow,
     _brownian_parameter_intervals,
@@ -49,7 +61,6 @@ from bijux_phylogenetics.comparative.models import (
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.io.newick import dumps_newick
-from bijux_phylogenetics.io.trees import load_tree
 
 
 @dataclass(slots=True)
@@ -59,120 +70,6 @@ class _TransformedModeSearchResult:
     covariance: list[list[float]]
     optimizer_diagnostics: ContinuousModeOptimizerDiagnostics
     profile: list[tuple[float, float]]
-
-
-def rescale_tree_ornstein_uhlenbeck(
-    tree_path: Path,
-    *,
-    alpha: float,
-    sigsq: float = 1.0,
-) -> ComparativeTreeRescalingReport:
-    """Apply the geiger-style OU branch rescaling to a rooted tree."""
-    return _build_tree_rescaling_report(
-        load_tree(tree_path),
-        tree_path,
-        mode="ornstein-uhlenbeck",
-        parameter_name="alpha",
-        parameter_value=alpha,
-        sigsq=sigsq,
-    )
-
-
-def rescale_tree_early_burst(
-    tree_path: Path,
-    *,
-    rate_change: float,
-    sigsq: float = 1.0,
-) -> ComparativeTreeRescalingReport:
-    """Apply the geiger-style early-burst branch rescaling to a rooted tree."""
-    return _build_tree_rescaling_report(
-        load_tree(tree_path),
-        tree_path,
-        mode="early-burst",
-        parameter_name="rate_change",
-        parameter_value=rate_change,
-        sigsq=sigsq,
-    )
-
-
-def rescale_tree_pagel_lambda(
-    tree_path: Path,
-    *,
-    lambda_value: float,
-) -> ComparativeTreeRescalingReport:
-    """Apply the geiger-style Pagel-lambda rescaling to a rooted tree."""
-    return _build_tree_rescaling_report(
-        load_tree(tree_path),
-        tree_path,
-        mode="pagel-lambda",
-        parameter_name="lambda",
-        parameter_value=lambda_value,
-        sigsq=1.0,
-    )
-
-
-def rescale_tree_pagel_kappa(
-    tree_path: Path,
-    *,
-    kappa: float,
-) -> ComparativeTreeRescalingReport:
-    """Apply the geiger-style Pagel-kappa branch-length rescaling to a rooted tree."""
-    return _build_tree_rescaling_report(
-        load_tree(tree_path),
-        tree_path,
-        mode="pagel-kappa",
-        parameter_name="kappa",
-        parameter_value=kappa,
-        sigsq=1.0,
-    )
-
-
-def rescale_tree_pagel_delta(
-    tree_path: Path,
-    *,
-    delta: float,
-) -> ComparativeTreeRescalingReport:
-    """Apply the geiger-style Pagel-delta depth rescaling to a rooted tree."""
-    return _build_tree_rescaling_report(
-        load_tree(tree_path),
-        tree_path,
-        mode="pagel-delta",
-        parameter_name="delta",
-        parameter_value=delta,
-        sigsq=1.0,
-    )
-
-
-def rescale_tree_white_noise(
-    tree_path: Path,
-    *,
-    sigsq: float = 1.0,
-) -> ComparativeTreeRescalingReport:
-    """Apply the geiger-style white no-phylogeny tree rescaling."""
-    return _build_tree_rescaling_report(
-        load_tree(tree_path),
-        tree_path,
-        mode="white-noise",
-        parameter_name="sigsq",
-        parameter_value=sigsq,
-        sigsq=sigsq,
-    )
-
-
-def transform_tree_for_evolutionary_mode(
-    tree: PhyloTree,
-    *,
-    mode: str,
-    parameter_value: float,
-    sigsq: float = 1.0,
-) -> PhyloTree:
-    """Transform an in-memory tree under a governed continuous-mode branch rule."""
-    return _transform_tree(
-        tree,
-        mode=mode,
-        parameter_value=parameter_value,
-        sigsq=sigsq,
-    )
 
 
 def fit_continuous_evolutionary_mode(
@@ -638,8 +535,8 @@ def _fit_evolutionary_mode_from_dataset(
         optimizer_diagnostics = search_result.optimizer_diagnostics
         optimizer_profile_rows = [
             ContinuousModeOptimizerProfileRow(
-                parameter_value=_stable_value(parameter),
-                log_likelihood=_stable_value(log_likelihood),
+                parameter_value=stable_float(parameter),
+                log_likelihood=stable_float(log_likelihood),
             )
             for parameter, log_likelihood in search_result.profile
         ]
@@ -667,8 +564,8 @@ def _fit_evolutionary_mode_from_dataset(
         optimizer_diagnostics = search_result.optimizer_diagnostics
         optimizer_profile_rows = [
             ContinuousModeOptimizerProfileRow(
-                parameter_value=_stable_value(parameter),
-                log_likelihood=_stable_value(log_likelihood),
+                parameter_value=stable_float(parameter),
+                log_likelihood=stable_float(log_likelihood),
             )
             for parameter, log_likelihood in search_result.profile
         ]
@@ -696,8 +593,8 @@ def _fit_evolutionary_mode_from_dataset(
         optimizer_diagnostics = search_result.optimizer_diagnostics
         optimizer_profile_rows = [
             ContinuousModeOptimizerProfileRow(
-                parameter_value=_stable_value(parameter),
-                log_likelihood=_stable_value(log_likelihood),
+                parameter_value=stable_float(parameter),
+                log_likelihood=stable_float(log_likelihood),
             )
             for parameter, log_likelihood in search_result.profile
         ]
@@ -725,8 +622,8 @@ def _fit_evolutionary_mode_from_dataset(
         optimizer_diagnostics = search_result.optimizer_diagnostics
         optimizer_profile_rows = [
             ContinuousModeOptimizerProfileRow(
-                parameter_value=_stable_value(parameter),
-                log_likelihood=_stable_value(log_likelihood),
+                parameter_value=stable_float(parameter),
+                log_likelihood=stable_float(log_likelihood),
             )
             for parameter, log_likelihood in search_result.profile
         ]
@@ -754,8 +651,8 @@ def _fit_evolutionary_mode_from_dataset(
         optimizer_diagnostics = search_result.optimizer_diagnostics
         optimizer_profile_rows = [
             ContinuousModeOptimizerProfileRow(
-                parameter_value=_stable_value(parameter),
-                log_likelihood=_stable_value(log_likelihood),
+                parameter_value=stable_float(parameter),
+                log_likelihood=stable_float(log_likelihood),
             )
             for parameter, log_likelihood in search_result.profile
         ]
@@ -810,18 +707,18 @@ def _fit_evolutionary_mode_from_dataset(
         taxa=list(dataset.taxa),
         mode=mode,
         parameter_name=parameter_name,
-        parameter_value=_stable_value(parameter_value)
+        parameter_value=stable_float(parameter_value)
         if parameter_value is not None
         else None,
-        root_state=_stable_value(fit.theta),
-        rate=_stable_value(fit.sigma_squared),
-        log_likelihood=_stable_value(fit.log_likelihood),
-        aic=_stable_value(row.aic),
-        aicc=_stable_value(row.aicc),
+        root_state=stable_float(fit.theta),
+        rate=stable_float(fit.sigma_squared),
+        log_likelihood=stable_float(fit.log_likelihood),
+        aic=stable_float(row.aic),
+        aicc=stable_float(row.aicc),
         likelihood_constant_policy=CONTINUOUS_GAUSSIAN_LIKELIHOOD_CONSTANT_POLICY,
         likelihood_comparison_policy=CONTINUOUS_GAUSSIAN_LIKELIHOOD_COMPARISON_POLICY,
-        fitted_values=[_stable_value(value) for value in fit.fitted_values],
-        residuals=[_stable_value(value) for value in fit.residuals],
+        fitted_values=[stable_float(value) for value in fit.fitted_values],
+        residuals=[stable_float(value) for value in fit.residuals],
         transformed_tree_newick=dumps_newick(transformed_tree),
         confidence_intervals=intervals,
         residual_diagnostics=residual_diagnostics,
@@ -900,27 +797,27 @@ def _best_transformed_mode_fit(
     diagnostics = ContinuousModeOptimizerDiagnostics(
         optimizer_name="governed-two-stage-grid-search",
         parameter_search_strategy="bounded-two-stage-grid-search",
-        lower_bound=_stable_value(search_result.diagnostics.lower_bound),
-        upper_bound=_stable_value(search_result.diagnostics.upper_bound),
+        lower_bound=stable_float(search_result.diagnostics.lower_bound),
+        upper_bound=stable_float(search_result.diagnostics.upper_bound),
         starting_parameter_policy=search_result.diagnostics.starting_parameter_policy,
-        starting_parameter_value=_stable_value(
+        starting_parameter_value=stable_float(
             search_result.diagnostics.starting_parameter_value
         ),
-        starting_parameter_log_likelihood=_stable_value(
+        starting_parameter_log_likelihood=stable_float(
             search_result.diagnostics.starting_parameter_objective_value
         ),
         coarse_grid_point_count=search_result.diagnostics.coarse_grid_point_count,
         fine_grid_point_count=search_result.diagnostics.fine_grid_point_count,
         refinement_start_count=search_result.diagnostics.refinement_start_count,
         function_evaluation_count=search_result.diagnostics.function_evaluation_count,
-        coarse_best_parameter=_stable_value(
+        coarse_best_parameter=stable_float(
             search_result.diagnostics.coarse_best_parameter
         ),
-        coarse_best_log_likelihood=_stable_value(
+        coarse_best_log_likelihood=stable_float(
             search_result.diagnostics.coarse_best_objective_value
         ),
-        fine_search_start=_stable_value(search_result.diagnostics.fine_search_start),
-        fine_search_stop=_stable_value(search_result.diagnostics.fine_search_stop),
+        fine_search_start=stable_float(search_result.diagnostics.fine_search_start),
+        fine_search_stop=stable_float(search_result.diagnostics.fine_search_stop),
         converged=search_result.diagnostics.converged,
         hit_lower_boundary=search_result.diagnostics.hit_lower_boundary,
         hit_upper_boundary=search_result.diagnostics.hit_upper_boundary,
@@ -969,27 +866,27 @@ def _best_pagel_lambda_fit(
     diagnostics = ContinuousModeOptimizerDiagnostics(
         optimizer_name="governed-two-stage-grid-search",
         parameter_search_strategy="bounded-two-stage-grid-search",
-        lower_bound=_stable_value(search_result.diagnostics.lower_bound),
-        upper_bound=_stable_value(search_result.diagnostics.upper_bound),
+        lower_bound=stable_float(search_result.diagnostics.lower_bound),
+        upper_bound=stable_float(search_result.diagnostics.upper_bound),
         starting_parameter_policy=search_result.diagnostics.starting_parameter_policy,
-        starting_parameter_value=_stable_value(
+        starting_parameter_value=stable_float(
             search_result.diagnostics.starting_parameter_value
         ),
-        starting_parameter_log_likelihood=_stable_value(
+        starting_parameter_log_likelihood=stable_float(
             search_result.diagnostics.starting_parameter_objective_value
         ),
         coarse_grid_point_count=search_result.diagnostics.coarse_grid_point_count,
         fine_grid_point_count=search_result.diagnostics.fine_grid_point_count,
         refinement_start_count=search_result.diagnostics.refinement_start_count,
         function_evaluation_count=search_result.diagnostics.function_evaluation_count,
-        coarse_best_parameter=_stable_value(
+        coarse_best_parameter=stable_float(
             search_result.diagnostics.coarse_best_parameter
         ),
-        coarse_best_log_likelihood=_stable_value(
+        coarse_best_log_likelihood=stable_float(
             search_result.diagnostics.coarse_best_objective_value
         ),
-        fine_search_start=_stable_value(search_result.diagnostics.fine_search_start),
-        fine_search_stop=_stable_value(search_result.diagnostics.fine_search_stop),
+        fine_search_start=stable_float(search_result.diagnostics.fine_search_start),
+        fine_search_stop=stable_float(search_result.diagnostics.fine_search_stop),
         converged=search_result.diagnostics.converged,
         hit_lower_boundary=search_result.diagnostics.hit_lower_boundary,
         hit_upper_boundary=search_result.diagnostics.hit_upper_boundary,
@@ -1341,9 +1238,9 @@ def _continuous_boundary_assessment(
     )
     return ContinuousModeBoundaryAssessment(
         affected_parameter=parameter_name,
-        parameter_value=_stable_value(parameter_value),
-        lower_bound=_stable_value(lower_bound),
-        upper_bound=_stable_value(upper_bound),
+        parameter_value=stable_float(parameter_value),
+        lower_bound=stable_float(lower_bound),
+        upper_bound=stable_float(upper_bound),
         hit_lower_boundary=hit_lower_boundary,
         hit_upper_boundary=hit_upper_boundary,
         near_lower_boundary=near_lower_boundary,
@@ -1376,320 +1273,6 @@ def _boundary_limit_warning_kinds() -> set[str]:
     }
 
 
-def _build_tree_rescaling_report(
-    tree: PhyloTree,
-    tree_path: Path,
-    *,
-    mode: str,
-    parameter_name: str,
-    parameter_value: float,
-    sigsq: float,
-) -> ComparativeTreeRescalingReport:
-    transformed_tree = _transform_tree(
-        tree,
-        mode=mode,
-        parameter_value=parameter_value,
-        sigsq=sigsq,
-    )
-    branch_rows = _branch_length_rows(
-        original_tree=tree,
-        transformed_tree=transformed_tree,
-    )
-    return ComparativeTreeRescalingReport(
-        tree_path=tree_path,
-        mode=mode,
-        parameter_name=parameter_name,
-        parameter_value=_stable_value(parameter_value),
-        tip_count=tree.tip_count,
-        original_total_branch_length=_stable_value(tree.total_branch_length()),
-        transformed_total_branch_length=_stable_value(
-            transformed_tree.total_branch_length()
-        ),
-        transformed_tree_newick=dumps_newick(transformed_tree),
-        branch_rows=branch_rows,
-    )
-
-
-def _transform_tree(
-    tree: PhyloTree,
-    *,
-    mode: str,
-    parameter_value: float,
-    sigsq: float = 1.0,
-) -> PhyloTree:
-    if mode not in {
-        "ornstein-uhlenbeck",
-        "early-burst",
-        "pagel-lambda",
-        "pagel-kappa",
-        "pagel-delta",
-        "white-noise",
-    }:
-        raise ComparativeMethodError(
-            "tree transformation mode must be 'ornstein-uhlenbeck', 'early-burst', 'pagel-lambda', 'pagel-kappa', 'pagel-delta', or 'white-noise'"
-        )
-    _reject_negative_transform_branch_lengths(tree, mode=mode)
-    if mode == "ornstein-uhlenbeck" and parameter_value < 0.0:
-        raise ComparativeMethodError("OU alpha must be non-negative")
-    if mode == "pagel-lambda" and not 0.0 <= parameter_value <= 1.0:
-        raise ComparativeMethodError("Pagel lambda must lie within [0, 1]")
-    if mode == "pagel-kappa" and parameter_value < 0.0:
-        raise ComparativeMethodError("Pagel kappa must be non-negative")
-    if mode == "pagel-delta" and parameter_value < 0.0:
-        raise ComparativeMethodError("Pagel delta must be non-negative")
-    if mode == "white-noise" and sigsq < 0.0:
-        raise ComparativeMethodError("White-noise sigsq must be non-negative")
-    cloned_root = _clone_node(tree.root)
-    if mode == "pagel-lambda":
-        def visit_pagel_lambda(node: TreeNode, depth: float) -> None:
-            for child in node.children:
-                original_length = float(child.branch_length or 0.0)
-                if child.is_leaf():
-                    child.branch_length = original_length + (
-                        (1.0 - parameter_value) * depth
-                    )
-                else:
-                    child.branch_length = original_length * parameter_value
-                visit_pagel_lambda(child, depth + original_length)
-
-        visit_pagel_lambda(cloned_root, 0.0)
-        return PhyloTree(
-            root=cloned_root,
-            source_format=tree.source_format,
-            rooted=tree.rooted,
-        )
-    if mode == "pagel-kappa":
-        def visit_pagel_kappa(node: TreeNode) -> None:
-            for child in node.children:
-                original_length = float(child.branch_length or 0.0)
-                child.branch_length = _kappa_branch_length(
-                    original_length,
-                    kappa=parameter_value,
-                )
-                visit_pagel_kappa(child)
-
-        visit_pagel_kappa(cloned_root)
-        return PhyloTree(
-            root=cloned_root,
-            source_format=tree.source_format,
-            rooted=tree.rooted,
-        )
-    if mode == "pagel-delta":
-        total_depth = _max_tip_depth(tree.root, depth=0.0)
-
-        def visit_pagel_delta(node: TreeNode, depth: float, transformed_depth: float) -> None:
-            for child in node.children:
-                original_length = float(child.branch_length or 0.0)
-                child_depth = depth + original_length
-                transformed_child_depth = _delta_transformed_depth(
-                    child_depth,
-                    total_depth=total_depth,
-                    delta=parameter_value,
-                )
-                child.branch_length = max(
-                    0.0,
-                    transformed_child_depth - transformed_depth,
-                )
-                visit_pagel_delta(child, child_depth, transformed_child_depth)
-
-        visit_pagel_delta(cloned_root, 0.0, 0.0)
-        return PhyloTree(
-            root=cloned_root,
-            source_format=tree.source_format,
-            rooted=tree.rooted,
-        )
-    if mode == "white-noise":
-        def visit_white(node: TreeNode) -> None:
-            for child in node.children:
-                child.branch_length = sigsq if child.is_leaf() else 0.0
-                visit_white(child)
-
-        visit_white(cloned_root)
-        return PhyloTree(
-            root=cloned_root,
-            source_format=tree.source_format,
-            rooted=tree.rooted,
-        )
-
-    total_depth = _max_tip_depth(tree.root, depth=0.0)
-
-    def visit(node: TreeNode, depth: float) -> None:
-        for child in node.children:
-            original_length = float(child.branch_length or 0.0)
-            child_depth = depth + original_length
-            if mode == "ornstein-uhlenbeck":
-                child.branch_length = _ou_branch_length(
-                    parent_depth=depth,
-                    child_depth=child_depth,
-                    total_depth=total_depth,
-                    alpha=parameter_value,
-                    sigsq=sigsq,
-                )
-            else:
-                child.branch_length = _early_burst_branch_length(
-                    parent_depth=depth,
-                    child_depth=child_depth,
-                    rate_change=parameter_value,
-                    sigsq=sigsq,
-                )
-            visit(child, child_depth)
-
-    visit(cloned_root, 0.0)
-    return PhyloTree(
-        root=cloned_root,
-        source_format=tree.source_format,
-        rooted=tree.rooted,
-    )
-
-
-def _branch_length_rows(
-    *,
-    original_tree: PhyloTree,
-    transformed_tree: PhyloTree,
-) -> list[EvolutionaryModeBranchLengthRow]:
-    original_rows = _tree_branch_lookup(original_tree)
-    transformed_rows = _tree_branch_lookup(transformed_tree)
-    rows: list[EvolutionaryModeBranchLengthRow] = []
-    for node_id in sorted(original_rows):
-        original = original_rows[node_id]
-        transformed = transformed_rows[node_id]
-        rows.append(
-            EvolutionaryModeBranchLengthRow(
-                node=node_id,
-                descendant_taxa=list(original["descendant_taxa"]),
-                original_branch_length=_stable_value(original["branch_length"]),
-                transformed_branch_length=_stable_value(transformed["branch_length"]),
-                parent_depth=_stable_value(original["parent_depth"]),
-                child_depth=_stable_value(original["child_depth"]),
-            )
-        )
-    return rows
-
-
-def _tree_branch_lookup(tree: PhyloTree) -> dict[str, dict[str, object]]:
-    rows: dict[str, dict[str, object]] = {}
-
-    def visit(node: TreeNode, depth: float) -> None:
-        for child in node.children:
-            branch_length = float(child.branch_length or 0.0)
-            child_depth = depth + branch_length
-            branch_id = node_signature(child)
-            rows[branch_id] = {
-                "branch_length": branch_length,
-                "parent_depth": depth,
-                "child_depth": child_depth,
-                "descendant_taxa": _descendant_taxa(child),
-            }
-            visit(child, child_depth)
-
-    visit(tree.root, 0.0)
-    return rows
-
-
-def _ou_branch_length(
-    *,
-    parent_depth: float,
-    child_depth: float,
-    total_depth: float,
-    alpha: float,
-    sigsq: float,
-) -> float:
-    if alpha <= 0.0:
-        raise ComparativeMethodError("OU alpha must be positive")
-
-    def _term(depth: float) -> float:
-        return (
-            (1.0 / (2.0 * alpha))
-            * math.exp(-2.0 * alpha * (total_depth - depth))
-            * (1.0 - math.exp(-2.0 * alpha * depth))
-        )
-
-    return max(0.0, (_term(child_depth) - _term(parent_depth)) * sigsq)
-
-
-def _early_burst_branch_length(
-    *,
-    parent_depth: float,
-    child_depth: float,
-    rate_change: float,
-    sigsq: float,
-) -> float:
-    if math.isclose(rate_change, 0.0, rel_tol=0.0, abs_tol=1e-12):
-        return max(0.0, (child_depth - parent_depth) * sigsq)
-    transformed = (
-        math.exp(-rate_change * parent_depth)
-        - math.exp(-rate_change * child_depth)
-    ) / rate_change
-    return max(0.0, transformed * sigsq)
-
-
-def _kappa_branch_length(branch_length: float, *, kappa: float) -> float:
-    if kappa < 0.0:
-        raise ComparativeMethodError("Pagel kappa must be non-negative")
-    if branch_length < 0.0:
-        raise ComparativeMethodError(
-            "Pagel kappa cannot transform negative branch lengths"
-        )
-    transformed = math.pow(branch_length, kappa)
-    if not math.isfinite(transformed) or transformed < 0.0:
-        raise ComparativeMethodError(
-            "Pagel kappa produced an invalid transformed branch length"
-        )
-    return transformed
-
-
-def _delta_transformed_depth(
-    depth: float,
-    *,
-    total_depth: float,
-    delta: float,
-) -> float:
-    if delta < 0.0:
-        raise ComparativeMethodError("Pagel delta must be non-negative")
-    if depth < 0.0 or total_depth < 0.0:
-        raise ComparativeMethodError(
-            "Pagel delta cannot transform negative node depths"
-        )
-    if math.isclose(depth, 0.0, rel_tol=0.0, abs_tol=1e-12):
-        return 0.0
-    if math.isclose(total_depth, 0.0, rel_tol=0.0, abs_tol=1e-12):
-        return 0.0
-    proportion = depth / total_depth
-    transformed = total_depth * math.pow(proportion, delta)
-    if not math.isfinite(transformed) or transformed < 0.0:
-        raise ComparativeMethodError(
-            "Pagel delta produced an invalid transformed node depth"
-        )
-    return transformed
-
-
-def _identity_covariance_matrix(size: int) -> list[list[float]]:
-    return [
-        [1.0 if row_index == column_index else 0.0 for column_index in range(size)]
-        for row_index in range(size)
-    ]
-
-
-def _reject_negative_transform_branch_lengths(tree: PhyloTree, *, mode: str) -> None:
-    message_map = {
-        "pagel-lambda": "Pagel lambda cannot transform negative branch lengths",
-        "pagel-kappa": "Pagel kappa cannot transform negative branch lengths",
-        "pagel-delta": "Pagel delta cannot transform negative branch lengths",
-        "early-burst": "Early-burst rescaling cannot transform negative branch lengths",
-        "white-noise": "White-noise rescaling cannot transform negative branch lengths",
-        "ornstein-uhlenbeck": "OU rescaling cannot transform negative branch lengths",
-    }
-
-    def visit(node: TreeNode) -> None:
-        for child in node.children:
-            branch_length = float(child.branch_length or 0.0)
-            if branch_length < 0.0:
-                raise ComparativeMethodError(message_map[mode])
-            visit(child)
-
-    visit(tree.root)
-
-
 def _likelihood_ratio_test(
     *,
     comparison_id: str,
@@ -1701,50 +1284,7 @@ def _likelihood_ratio_test(
         comparison_id=comparison_id,
         left_mode=left_fit.mode,
         right_mode=right_fit.mode,
-        statistic=_stable_value(statistic),
+        statistic=stable_float(statistic),
         degrees_of_freedom=1,
-        p_value=_stable_value(math.erfc(math.sqrt(statistic / 2.0))),
+        p_value=stable_float(math.erfc(math.sqrt(statistic / 2.0))),
     )
-
-
-def _clone_node(node: TreeNode) -> TreeNode:
-    return TreeNode(
-        name=node.name,
-        branch_length=node.branch_length,
-        children=[_clone_node(child) for child in node.children],
-    )
-
-
-def _clone_tree(tree: PhyloTree) -> PhyloTree:
-    return PhyloTree(
-        root=_clone_node(tree.root),
-        source_format=tree.source_format,
-        rooted=tree.rooted,
-    )
-
-
-def _max_tip_depth(node: TreeNode, *, depth: float) -> float:
-    if node.is_leaf():
-        return depth
-    return max(
-        _max_tip_depth(
-            child,
-            depth=depth + float(child.branch_length or 0.0),
-        )
-        for child in node.children
-    )
-
-
-def _descendant_taxa(node: TreeNode) -> list[str]:
-    if node.is_leaf():
-        return [node.name] if node.name is not None else []
-    taxa: list[str] = []
-    for child in node.children:
-        taxa.extend(_descendant_taxa(child))
-    return sorted(taxa)
-
-
-def _stable_value(value: float | None) -> float:
-    if value is None:
-        raise ValueError("expected a float value")
-    return float(format(round(float(value), 15), ".15g"))
