@@ -1,12 +1,19 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
+from bijux_phylogenetics.command_line.arguments import (
+    _add_manifest_argument,
+    _add_preflight_executable_arguments,
+)
 from bijux_phylogenetics.command_line.output import _print_result
+from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.engines import (
     export_workflow_result_bundle,
     inspect_external_engine_preflight,
+    list_external_engine_workflows,
     replay_workflow_manifest,
     require_preflight_workflow,
     run_phylo_workflow_config,
@@ -14,6 +21,72 @@ from bijux_phylogenetics.engines import (
 )
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 from bijux_phylogenetics.runtime.results import build_command_result
+
+
+def add_phylo_commands(subparsers: Any) -> None:
+    phylo = subparsers.add_parser(
+        get_command_spec("phylo").name,
+        help=get_command_spec("phylo").summary,
+    )
+    phylo_subparsers = phylo.add_subparsers(dest="phylo_command", required=True)
+
+    phylo_preflight = phylo_subparsers.add_parser(
+        "preflight",
+        help="Inspect external engine availability, version support, and workflow readiness.",
+    )
+    phylo_preflight.add_argument(
+        "--workflow",
+        choices=list_external_engine_workflows(),
+        help="Require one selected external-engine workflow to be runnable in the current environment.",
+    )
+    _add_preflight_executable_arguments(phylo_preflight)
+    phylo_preflight.add_argument(
+        "--json", action="store_true", help="Emit the preflight report as JSON."
+    )
+    _add_manifest_argument(phylo_preflight)
+
+    phylo_run = phylo_subparsers.add_parser(
+        "run",
+        help="Run one governed workflow from one YAML or JSON config file and export a validated result bundle.",
+    )
+    phylo_run.add_argument("config_path", type=Path)
+    phylo_run.add_argument(
+        "--json", action="store_true", help="Emit the config-run report as JSON."
+    )
+    _add_manifest_argument(phylo_run)
+
+    phylo_replay = phylo_subparsers.add_parser(
+        "replay",
+        help="Rerun one governed phylogenetics workflow from its manifest and compare the replayed outputs.",
+    )
+    phylo_replay.add_argument("manifest_path", type=Path)
+    phylo_replay.add_argument("--out-dir", type=Path)
+    _add_preflight_executable_arguments(phylo_replay)
+    phylo_replay.add_argument(
+        "--json", action="store_true", help="Emit the replay report as JSON."
+    )
+    _add_manifest_argument(phylo_replay)
+
+    phylo_bundle = phylo_subparsers.add_parser(
+        "bundle",
+        help="Export one portable workflow-result bundle from a governed workflow manifest.",
+    )
+    phylo_bundle.add_argument("manifest_path", type=Path)
+    phylo_bundle.add_argument("--out-dir", required=True, type=Path)
+    phylo_bundle.add_argument(
+        "--json", action="store_true", help="Emit the bundle report as JSON."
+    )
+    _add_manifest_argument(phylo_bundle)
+
+    phylo_validate_bundle = phylo_subparsers.add_parser(
+        "validate-bundle",
+        help="Validate one workflow-result bundle for checksum integrity and required workflow contents.",
+    )
+    phylo_validate_bundle.add_argument("bundle_root", type=Path)
+    phylo_validate_bundle.add_argument(
+        "--json", action="store_true", help="Emit the validation report as JSON."
+    )
+    _add_manifest_argument(phylo_validate_bundle)
 
 
 def run_phylo_command(args: Any) -> int:
