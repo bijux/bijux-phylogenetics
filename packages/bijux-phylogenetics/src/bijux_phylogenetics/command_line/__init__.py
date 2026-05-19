@@ -244,6 +244,14 @@ from bijux_phylogenetics.command_line.ancestral import (
     add_ancestral_commands,
     run_ancestral_command,
 )
+from bijux_phylogenetics.command_line.host_association import (
+    add_host_association_commands,
+    run_host_association_command,
+)
+from bijux_phylogenetics.command_line.ecological_niche import (
+    add_ecological_niche_commands,
+    run_ecological_niche_command,
+)
 from bijux_phylogenetics.command_line.compare import (
     add_compare_command,
     run_compare_command,
@@ -491,16 +499,6 @@ from bijux_phylogenetics.comparative import (
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
-from bijux_phylogenetics.ecological_niche import (
-    summarize_niche_transitions,
-    write_niche_state_node_table,
-    write_niche_transition_branch_table,
-    write_niche_transition_clade_table,
-    write_niche_transition_count_table,
-    write_niche_transition_exclusion_table,
-    write_niche_transition_rate_table,
-    write_niche_transition_summary_table,
-)
 from bijux_phylogenetics.engines import (
     list_external_engine_workflows,
     list_mafft_alignment_modes,
@@ -521,16 +519,6 @@ from bijux_phylogenetics.runtime.errors import (
     DiversificationAnalysisError,
     EngineUnavailableError,
     PhylogeneticsError,
-)
-from bijux_phylogenetics.host_association import (
-    summarize_host_switching,
-    write_host_state_node_table,
-    write_host_switch_branch_table,
-    write_host_switch_count_table,
-    write_host_switch_exclusion_table,
-    write_host_switch_fit_table,
-    write_host_switch_summary_table,
-    write_unsupported_host_switch_claim_table,
 )
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
@@ -1545,79 +1533,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_ancestral_commands(subparsers)
 
     add_biogeography_commands(subparsers)
-    host_association = subparsers.add_parser(
-        get_command_spec("host-association").name,
-        help=get_command_spec("host-association").summary,
-    )
-    host_association_subparsers = host_association.add_subparsers(
-        dest="host_association_command",
-        required=True,
-    )
-    host_association_switches = host_association_subparsers.add_parser(
-        "switches",
-        help="Reconstruct host states, count host switches, and compare constrained host-transition models.",
-    )
-    host_association_switches.add_argument("tree", type=Path)
-    host_association_switches.add_argument("table", type=Path)
-    host_association_switches.add_argument("--trait", required=True)
-    host_association_switches.add_argument("--taxon-column")
-    host_association_switches.add_argument(
-        "--model",
-        choices=("er", "sym", "ard"),
-        default="ard",
-    )
-    host_association_switches.add_argument(
-        "--constraints",
-        type=Path,
-        help="Optional host-transition constraint ledger with source_host and target_host columns.",
-    )
-    host_association_switches.add_argument("--summary-out", type=Path)
-    host_association_switches.add_argument("--nodes-out", type=Path)
-    host_association_switches.add_argument("--branches-out", type=Path)
-    host_association_switches.add_argument("--counts-out", type=Path)
-    host_association_switches.add_argument("--fits-out", type=Path)
-    host_association_switches.add_argument("--unsupported-out", type=Path)
-    host_association_switches.add_argument("--exclusions-out", type=Path)
-    host_association_switches.add_argument(
-        "--json",
-        action="store_true",
-        help="Emit the host-association review as JSON.",
-    )
-    _add_manifest_argument(host_association_switches)
-    ecological_niche = subparsers.add_parser(
-        get_command_spec("ecological-niche").name,
-        help=get_command_spec("ecological-niche").summary,
-    )
-    ecological_niche_subparsers = ecological_niche.add_subparsers(
-        dest="ecological_niche_command",
-        required=True,
-    )
-    ecological_niche_transitions = ecological_niche_subparsers.add_parser(
-        "transitions",
-        help="Fit ecological niche transitions, reconstruct ancestral niches, and rank clade-specific shift burden.",
-    )
-    ecological_niche_transitions.add_argument("tree", type=Path)
-    ecological_niche_transitions.add_argument("table", type=Path)
-    ecological_niche_transitions.add_argument("--trait", required=True)
-    ecological_niche_transitions.add_argument("--taxon-column")
-    ecological_niche_transitions.add_argument(
-        "--model",
-        choices=("er", "sym", "ard"),
-        default="er",
-    )
-    ecological_niche_transitions.add_argument("--summary-out", type=Path)
-    ecological_niche_transitions.add_argument("--nodes-out", type=Path)
-    ecological_niche_transitions.add_argument("--rates-out", type=Path)
-    ecological_niche_transitions.add_argument("--branches-out", type=Path)
-    ecological_niche_transitions.add_argument("--counts-out", type=Path)
-    ecological_niche_transitions.add_argument("--clades-out", type=Path)
-    ecological_niche_transitions.add_argument("--exclusions-out", type=Path)
-    ecological_niche_transitions.add_argument(
-        "--json",
-        action="store_true",
-        help="Emit the ecological-niche review as JSON.",
-    )
-    _add_manifest_argument(ecological_niche_transitions)
+    add_host_association_commands(subparsers)
+    add_ecological_niche_commands(subparsers)
     add_phylogeography_commands(subparsers)
 
     discrete_evolution = subparsers.add_parser(
@@ -3855,203 +3772,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return run_ancestral_command(args, parser=parser)
         if args.command == "biogeography":
             return run_biogeography_command(args)
-        if (
-            args.command == "host-association"
-            and args.host_association_command == "switches"
-        ):
-            report = summarize_host_switching(
-                args.tree,
-                args.table,
-                trait=args.trait,
-                taxon_column=args.taxon_column,
-                model=args.model,
-                constraint_path=args.constraints,
-            )
-            outputs: list[Path | str] = []
-            if args.summary_out is not None:
-                outputs.append(
-                    write_host_switch_summary_table(
-                        args.summary_out,
-                        report,
-                    )
-                )
-            if args.nodes_out is not None:
-                outputs.append(
-                    write_host_state_node_table(
-                        args.nodes_out,
-                        report,
-                    )
-                )
-            if args.branches_out is not None:
-                outputs.append(
-                    write_host_switch_branch_table(
-                        args.branches_out,
-                        report,
-                    )
-                )
-            if args.counts_out is not None:
-                outputs.append(
-                    write_host_switch_count_table(
-                        args.counts_out,
-                        report,
-                    )
-                )
-            if args.fits_out is not None:
-                outputs.append(
-                    write_host_switch_fit_table(
-                        args.fits_out,
-                        report,
-                    )
-                )
-            if args.unsupported_out is not None:
-                outputs.append(
-                    write_unsupported_host_switch_claim_table(
-                        args.unsupported_out,
-                        report,
-                    )
-                )
-            if args.exclusions_out is not None:
-                outputs.append(
-                    write_host_switch_exclusion_table(
-                        args.exclusions_out,
-                        report,
-                    )
-                )
-            inputs = [args.tree, args.table]
-            if args.constraints is not None:
-                inputs.append(args.constraints)
-            outputs = _finalize_outputs(
-                args,
-                command="host-association",
-                inputs=inputs,
-                outputs=outputs,
-            )
-            _print_result(
-                build_command_result(
-                    command="host-association",
-                    inputs=inputs,
-                    outputs=outputs,
-                    warnings=report.warnings,
-                    metrics={
-                        "model": report.model,
-                        "analysis_constraint_mode": (
-                            report.summary.analysis_constraint_mode
-                        ),
-                        "observed_host_count": report.summary.observed_host_count,
-                        "host_switch_count": report.summary.host_switch_count,
-                        "certain_host_switch_count": (
-                            report.summary.certain_host_switch_count
-                        ),
-                        "uncertain_host_switch_count": (
-                            report.summary.uncertain_host_switch_count
-                        ),
-                        "preferred_constraint": (report.summary.preferred_constraint),
-                        "unsupported_switch_claim_count": (
-                            report.summary.unsupported_switch_claim_count
-                        ),
-                        "excluded_taxon_count": (report.summary.excluded_taxon_count),
-                    },
-                    data=report,
-                ),
-                json_output=args.json,
-            )
-            return 0
-        if (
-            args.command == "ecological-niche"
-            and args.ecological_niche_command == "transitions"
-        ):
-            report = summarize_niche_transitions(
-                args.tree,
-                args.table,
-                trait=args.trait,
-                taxon_column=args.taxon_column,
-                model=args.model,
-            )
-            outputs: list[Path | str] = []
-            if args.summary_out is not None:
-                outputs.append(
-                    write_niche_transition_summary_table(
-                        args.summary_out,
-                        report,
-                    )
-                )
-            if args.nodes_out is not None:
-                outputs.append(
-                    write_niche_state_node_table(
-                        args.nodes_out,
-                        report,
-                    )
-                )
-            if args.rates_out is not None:
-                outputs.append(
-                    write_niche_transition_rate_table(
-                        args.rates_out,
-                        report,
-                    )
-                )
-            if args.branches_out is not None:
-                outputs.append(
-                    write_niche_transition_branch_table(
-                        args.branches_out,
-                        report,
-                    )
-                )
-            if args.counts_out is not None:
-                outputs.append(
-                    write_niche_transition_count_table(
-                        args.counts_out,
-                        report,
-                    )
-                )
-            if args.clades_out is not None:
-                outputs.append(
-                    write_niche_transition_clade_table(
-                        args.clades_out,
-                        report,
-                    )
-                )
-            if args.exclusions_out is not None:
-                outputs.append(
-                    write_niche_transition_exclusion_table(
-                        args.exclusions_out,
-                        report,
-                    )
-                )
-            outputs = _finalize_outputs(
-                args,
-                command="ecological-niche",
-                inputs=[args.tree, args.table],
-                outputs=outputs,
-            )
-            _print_result(
-                build_command_result(
-                    command="ecological-niche",
-                    inputs=[args.tree, args.table],
-                    outputs=outputs,
-                    warnings=report.warnings,
-                    metrics={
-                        "model": report.model,
-                        "observed_niche_count": report.summary.observed_niche_count,
-                        "transition_rate_row_count": (
-                            report.summary.transition_rate_row_count
-                        ),
-                        "changed_branch_count": (report.summary.changed_branch_count),
-                        "certain_transition_count": (
-                            report.summary.certain_transition_count
-                        ),
-                        "uncertain_transition_count": (
-                            report.summary.uncertain_transition_count
-                        ),
-                        "repeated_shift_clade_count": (
-                            report.summary.repeated_shift_clade_count
-                        ),
-                        "excluded_taxon_count": (report.summary.excluded_taxon_count),
-                    },
-                    data=report,
-                ),
-                json_output=args.json,
-            )
-            return 0
+        if args.command == "host-association":
+            return run_host_association_command(args)
+        if args.command == "ecological-niche":
+            return run_ecological_niche_command(args)
         if args.command == "phylogeography":
             return run_phylogeography_command(args)
         if args.command == "discrete-evolution":
