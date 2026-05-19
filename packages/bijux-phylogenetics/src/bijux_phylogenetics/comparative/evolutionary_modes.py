@@ -108,6 +108,7 @@ class ContinuousEvolutionaryModeFitReport:
     confidence_intervals: list[object]
     residual_diagnostics: ComparativeResidualSummary
     optimizer_diagnostics: ContinuousModeOptimizerDiagnostics | None
+    optimizer_profile_rows: list[ContinuousModeOptimizerProfileRow] | None
     identifiability_warnings: list[EvolutionaryModeIdentifiabilityWarning]
     assumptions: list[str]
 
@@ -141,6 +142,14 @@ class ContinuousModeOptimizerDiagnostics:
     converged: bool
     hit_lower_boundary: bool
     hit_upper_boundary: bool
+
+
+@dataclass(slots=True)
+class ContinuousModeOptimizerProfileRow:
+    """One evaluated point on a governed single-parameter optimizer surface."""
+
+    parameter_value: float
+    log_likelihood: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -636,6 +645,7 @@ def _fit_evolutionary_mode_from_dataset(
         parameter_name = None
         parameter_value = None
         optimizer_diagnostics = None
+        optimizer_profile_rows = None
         identifiability_warnings: list[EvolutionaryModeIdentifiabilityWarning] = []
         assumptions = [
             "Brownian mode retains the original rooted branch lengths.",
@@ -655,6 +665,7 @@ def _fit_evolutionary_mode_from_dataset(
         parameter_name = None
         parameter_value = None
         optimizer_diagnostics = None
+        optimizer_profile_rows = None
         identifiability_warnings = [
             EvolutionaryModeIdentifiabilityWarning(
                 kind="no_phylogenetic_correlation",
@@ -677,6 +688,13 @@ def _fit_evolutionary_mode_from_dataset(
         covariance = search_result.covariance
         fit = _fit_intercept_only_model(dataset, covariance)
         optimizer_diagnostics = search_result.optimizer_diagnostics
+        optimizer_profile_rows = [
+            ContinuousModeOptimizerProfileRow(
+                parameter_value=_stable_value(parameter),
+                log_likelihood=_stable_value(log_likelihood),
+            )
+            for parameter, log_likelihood in search_result.profile
+        ]
         identifiability_warnings = _lambda_identifiability_warnings_from_profile(
             parameter_value,
             search_result.profile,
@@ -699,6 +717,13 @@ def _fit_evolutionary_mode_from_dataset(
         covariance = search_result.covariance
         fit = _fit_intercept_only_model(dataset, covariance)
         optimizer_diagnostics = search_result.optimizer_diagnostics
+        optimizer_profile_rows = [
+            ContinuousModeOptimizerProfileRow(
+                parameter_value=_stable_value(parameter),
+                log_likelihood=_stable_value(log_likelihood),
+            )
+            for parameter, log_likelihood in search_result.profile
+        ]
         identifiability_warnings = _kappa_identifiability_warnings_from_profile(
             parameter_value,
             search_result.profile,
@@ -721,6 +746,13 @@ def _fit_evolutionary_mode_from_dataset(
         covariance = search_result.covariance
         fit = _fit_intercept_only_model(dataset, covariance)
         optimizer_diagnostics = search_result.optimizer_diagnostics
+        optimizer_profile_rows = [
+            ContinuousModeOptimizerProfileRow(
+                parameter_value=_stable_value(parameter),
+                log_likelihood=_stable_value(log_likelihood),
+            )
+            for parameter, log_likelihood in search_result.profile
+        ]
         identifiability_warnings = _delta_identifiability_warnings_from_profile(
             parameter_value,
             search_result.profile,
@@ -743,6 +775,13 @@ def _fit_evolutionary_mode_from_dataset(
         covariance = search_result.covariance
         fit = _fit_intercept_only_model(dataset, covariance)
         optimizer_diagnostics = search_result.optimizer_diagnostics
+        optimizer_profile_rows = [
+            ContinuousModeOptimizerProfileRow(
+                parameter_value=_stable_value(parameter),
+                log_likelihood=_stable_value(log_likelihood),
+            )
+            for parameter, log_likelihood in search_result.profile
+        ]
         identifiability_warnings = _ou_identifiability_warnings_from_profile(
             dataset,
             parameter_value,
@@ -765,6 +804,13 @@ def _fit_evolutionary_mode_from_dataset(
         covariance = search_result.covariance
         fit = _fit_intercept_only_model(dataset, covariance)
         optimizer_diagnostics = search_result.optimizer_diagnostics
+        optimizer_profile_rows = [
+            ContinuousModeOptimizerProfileRow(
+                parameter_value=_stable_value(parameter),
+                log_likelihood=_stable_value(log_likelihood),
+            )
+            for parameter, log_likelihood in search_result.profile
+        ]
         identifiability_warnings = _early_burst_identifiability_warnings_from_profile(
             parameter_value,
             search_result.profile,
@@ -823,6 +869,7 @@ def _fit_evolutionary_mode_from_dataset(
         confidence_intervals=intervals,
         residual_diagnostics=residual_diagnostics,
         optimizer_diagnostics=optimizer_diagnostics,
+        optimizer_profile_rows=optimizer_profile_rows,
         identifiability_warnings=identifiability_warnings,
         assumptions=assumptions,
     )
