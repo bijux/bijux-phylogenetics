@@ -3,7 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 import random
 
+from bijux_phylogenetics.comparative.evolutionary_modes import (
+    transform_tree_for_evolutionary_mode,
+)
 from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.io.trees import load_tree
 
 
@@ -173,14 +177,18 @@ def _simulate_rate_matrix_state_trajectory(
 
 
 def _simulate_discrete_history_once(
-    tree_path: Path,
+    tree: PhyloTree,
     *,
+    tree_path: Path,
     model: str,
     states: tuple[str, ...],
     rate_rows: list,
     transition_rate: float | None,
     fixed_root_state: str | None,
     root_state_probabilities: dict[str, float],
+    transform_name: str | None,
+    transform_parameter_name: str | None,
+    transform_parameter_value: float | None,
     seed: int,
 ):
     from bijux_phylogenetics.ancestral.common import (
@@ -196,7 +204,6 @@ def _simulate_discrete_history_once(
         _tip_values_from_node_map,
     )
 
-    tree = load_tree(tree_path)
     rng = random.Random(seed)  # nosec B311
     node_values: dict[str, str] = {}
     branch_histories: list[SimulatedDiscreteBranchHistory] = []
@@ -265,6 +272,92 @@ def _simulate_discrete_history_once(
         ],
         branch_histories=branch_histories,
         rate_rows=list(rate_rows),
+        transform_name=transform_name,
+        transform_parameter_name=transform_parameter_name,
+        transform_parameter_value=transform_parameter_value,
+    )
+
+
+def _resolve_discrete_history_transform_name(transform: str | None) -> str | None:
+    if transform is None:
+        return None
+    aliases = {
+        "lambda": "lambda",
+        "pagel-lambda": "lambda",
+        "kappa": "kappa",
+        "pagel-kappa": "kappa",
+        "delta": "delta",
+        "pagel-delta": "delta",
+        "EB": "early-burst",
+        "early-burst": "early-burst",
+    }
+    resolved = aliases.get(transform)
+    if resolved is None:
+        raise ValueError(
+            "unsupported discrete-history transform; expected one of: lambda, kappa, delta, early-burst"
+        )
+    return resolved
+
+
+def _validate_discrete_history_transform_request(
+    *,
+    transform: str | None,
+    transform_parameter_value: float | None,
+) -> None:
+    if transform is None:
+        if transform_parameter_value is not None:
+            raise ValueError(
+                "transform_parameter_value requires a discrete-history transform"
+            )
+        return
+    if transform_parameter_value is None:
+        raise ValueError(
+            "transform_parameter_value is required when a discrete-history transform is supplied"
+        )
+    if transform == "lambda" and not 0.0 <= transform_parameter_value <= 1.0:
+        raise ValueError("lambda transform_parameter_value must lie within [0, 1]")
+    if transform == "kappa" and not 0.0 <= transform_parameter_value <= 1.0:
+        raise ValueError("kappa transform_parameter_value must lie within [0, 1]")
+    if transform == "delta" and transform_parameter_value <= 0.0:
+        raise ValueError("delta transform_parameter_value must be positive")
+
+
+def _discrete_history_transform_mode_name(transform: str) -> str:
+    if transform == "lambda":
+        return "pagel-lambda"
+    if transform == "kappa":
+        return "pagel-kappa"
+    if transform == "delta":
+        return "pagel-delta"
+    if transform == "early-burst":
+        return "early-burst"
+    raise ValueError(
+        "unsupported discrete-history transform; expected one of: lambda, kappa, delta, early-burst"
+    )
+
+
+def _discrete_history_transform_parameter_name(transform: str) -> str:
+    if transform == "early-burst":
+        return "a"
+    return transform
+
+
+def _transform_discrete_history_tree(
+    tree: PhyloTree,
+    *,
+    transform: str,
+    transform_parameter_value: float,
+) -> PhyloTree:
+    parameter_value = (
+        -transform_parameter_value
+        if transform == "early-burst"
+        else transform_parameter_value
+    )
+    return transform_tree_for_evolutionary_mode(
+        tree,
+        mode=_discrete_history_transform_mode_name(transform),
+        parameter_value=parameter_value,
+        sigsq=1.0,
     )
 
 
@@ -360,6 +453,8 @@ def simulate_discrete_histories(
     rate_rows: list,
     root_state: str | None = None,
     root_state_probabilities: dict[str, float] | None = None,
+    transform: str | None = None,
+    transform_parameter_value: float | None = None,
     replicates: int = 1,
     seed: int = 1,
 ):
@@ -372,6 +467,11 @@ def simulate_discrete_histories(
     if replicates < 1:
         raise ValueError(f"replicates must be at least 1, got {replicates}")
     normalized_states = _normalize_discrete_states(states)
+    resolved_transform = _resolve_discrete_history_transform_name(transform)
+    _validate_discrete_history_transform_request(
+        transform=resolved_transform,
+        transform_parameter_value=transform_parameter_value,
+    )
     normalized_rates = _normalize_rate_rows(
         states=normalized_states,
         rate_rows=rate_rows,
@@ -381,20 +481,38 @@ def simulate_discrete_histories(
         root_state=root_state,
         root_state_probabilities=root_state_probabilities,
     )
+    base_tree = load_tree(tree_path)
+    working_tree = (
+        base_tree
+        if resolved_transform is None
+        else _transform_discrete_history_tree(
+            base_tree,
+            transform=resolved_transform,
+            transform_parameter_value=float(transform_parameter_value),
+        )
+    )
+    transform_parameter_name = (
+        None
+        if resolved_transform is None
+        else _discrete_history_transform_parameter_name(resolved_transform)
+    )
     simulations = [
         _simulate_discrete_history_once(
-            tree_path,
+            working_tree,
             model="rate-matrix-discrete-history",
+            tree_path=tree_path,
             states=normalized_states,
             rate_rows=normalized_rates,
             transition_rate=None,
             fixed_root_state=root_state,
             root_state_probabilities=normalized_root_probabilities,
+            transform_name=resolved_transform,
+            transform_parameter_name=transform_parameter_name,
+            transform_parameter_value=transform_parameter_value,
             seed=seed + index - 1,
         )
         for index in range(1, replicates + 1)
     ]
-    tree = load_tree(tree_path)
     (
         mean_total_transition_count,
         lower_95_total_transition_count,
@@ -407,8 +525,8 @@ def simulate_discrete_histories(
     return DiscreteHistorySimulationCollectionReport(
         model="rate-matrix-discrete-history",
         tree_path=tree_path,
-        tip_count=tree.tip_count,
-        branch_count=sum(1 for _ in tree.iter_nodes()) - 1,
+        tip_count=base_tree.tip_count,
+        branch_count=sum(1 for _ in base_tree.iter_nodes()) - 1,
         replicate_count=replicates,
         seed=seed,
         states=list(normalized_states),
@@ -420,6 +538,9 @@ def simulate_discrete_histories(
         lower_95_total_transition_count=lower_95_total_transition_count,
         upper_95_total_transition_count=upper_95_total_transition_count,
         rows=rows,
+        transform_name=resolved_transform,
+        transform_parameter_name=transform_parameter_name,
+        transform_parameter_value=transform_parameter_value,
     )
 
 

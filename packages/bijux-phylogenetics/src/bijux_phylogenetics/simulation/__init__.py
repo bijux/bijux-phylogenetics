@@ -217,6 +217,9 @@ class DiscreteTraitSimulationReport:
     node_states: list[SimulatedDiscreteNode]
     branch_histories: list[SimulatedDiscreteBranchHistory]
     rate_rows: list[DiscreteHistoryRateRow] = field(default_factory=list)
+    transform_name: str | None = None
+    transform_parameter_name: str | None = None
+    transform_parameter_value: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -246,6 +249,9 @@ class DiscreteHistorySimulationCollectionReport:
     lower_95_total_transition_count: float
     upper_95_total_transition_count: float
     rows: list[DiscreteHistorySummaryRow]
+    transform_name: str | None = None
+    transform_parameter_name: str | None = None
+    transform_parameter_value: float | None = None
 
 
 @dataclass(slots=True)
@@ -607,6 +613,8 @@ def simulate_discrete_histories(
     rate_rows: list[DiscreteHistoryRateRow],
     root_state: str | None = None,
     root_state_probabilities: dict[str, float] | None = None,
+    transform: str | None = None,
+    transform_parameter_value: float | None = None,
     replicates: int = 1,
     seed: int = 1,
 ) -> DiscreteHistorySimulationCollectionReport:
@@ -620,6 +628,8 @@ def simulate_discrete_histories(
         rate_rows=rate_rows,
         root_state=root_state,
         root_state_probabilities=root_state_probabilities,
+        transform=transform,
+        transform_parameter_value=transform_parameter_value,
         replicates=replicates,
         seed=seed,
     )
