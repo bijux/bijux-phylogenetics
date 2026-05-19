@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import csv
-from dataclasses import dataclass
 from pathlib import Path
 import shutil
 
 from bijux_phylogenetics.comparative.discrete_mode_recovery import (
-    DiscreteModeRecoveryReport,
     DiscreteModeRecoveryScenario,
     run_discrete_mode_recovery,
     write_discrete_mode_recovery_execution_table,
@@ -19,125 +17,18 @@ from bijux_phylogenetics.comparative.discrete_mode_recovery import (
     write_discrete_mode_recovery_warning_table,
     write_geiger_fitdiscrete_recovery_reference_payload_table,
 )
-from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.simulation import DiscreteHistoryRateRow, write_discrete_trait_table
+from bijux_phylogenetics.simulation import (
+    DiscreteHistoryRateRow,
+    write_discrete_trait_table,
+)
 
-_DATASET_ID = "discrete_mode_recovery_panel"
-_DATASET_LABEL = "Discrete trait-model recovery panel"
-_DEFAULT_TREE_FILE = "trees/reference-tree-twelve-taxa.nwk"
-
-
-@dataclass(slots=True)
-class DiscreteModeRecoveryPanelDataset:
-    """Packaged deterministic recovery panel with stable and review discrete cases."""
-
-    dataset_id: str
-    label: str
-    dataset_root: Path
-    default_tree_path: Path
-    reference_tree_paths: list[Path]
-    simulation_cases_path: Path
-    reference_output_root: Path
-    taxon_count: int
-    tree_count: int
-    case_count: int
-    source_summary: str
-
-
-@dataclass(slots=True)
-class DiscreteModeRecoveryPanelExportResult:
-    """Materialized copy of the packaged discrete-mode recovery panel."""
-
-    output_root: Path
-    readme_path: Path
-    default_tree_path: Path
-    reference_tree_root: Path
-    simulation_cases_path: Path
-    expected_output_root: Path
-
-
-@dataclass(slots=True)
-class DiscreteModeRecoveryPanelWorkflowReport:
-    """One recovery workflow run over the packaged discrete-mode panel."""
-
-    dataset: DiscreteModeRecoveryPanelDataset
-    recovery_report: DiscreteModeRecoveryReport
-
-
-@dataclass(slots=True)
-class DiscreteModeRecoveryPanelWorkflowBundle:
-    """Written reviewer-facing outputs for the packaged discrete-mode panel."""
-
-    output_root: Path
-    selection_review_case_count: int
-    selection_match_count: int
-    geiger_selection_match_count: int
-    parameter_pass_count: int
-    governed_parameter_row_count: int
-    parameter_row_count: int
-    parameter_comparison_row_count: int
-    parameter_closer_to_truth_count_bijux: int
-    parameter_closer_to_truth_count_geiger: int
-    rate_pass_count: int
-    governed_rate_row_count: int
-    rate_row_count: int
-    governed_rate_comparison_row_count: int
-    rate_comparison_row_count: int
-    rate_closer_to_truth_count_bijux: int
-    rate_closer_to_truth_count_geiger: int
-    expected_warning_case_count: int
-    expected_warning_present_count: int
-    workflow_summary_path: Path
-    recovery_summary_path: Path
-    parameter_recovery_path: Path
-    parameter_comparison_path: Path
-    rate_recovery_path: Path
-    rate_comparison_path: Path
-    model_choice_path: Path
-    execution_review_path: Path
-    warning_review_path: Path
-    geiger_reference_path: Path
-    simulated_traits_root: Path
-
-
-@dataclass(slots=True)
-class DiscreteModeRecoveryPanelDemoResult:
-    """Dataset export plus recovery workflow outputs for the public demo."""
-
-    output_root: Path
-    dataset: DiscreteModeRecoveryPanelDataset
-    dataset_export: DiscreteModeRecoveryPanelExportResult
-    workflow_bundle: DiscreteModeRecoveryPanelWorkflowBundle
-    overview_path: Path
-
-
-def load_discrete_mode_recovery_panel_dataset() -> DiscreteModeRecoveryPanelDataset:
-    """Expose the packaged discrete-mode recovery panel as a first-class surface."""
-    dataset_root = _resource_root()
-    default_tree_path = dataset_root / _DEFAULT_TREE_FILE
-    reference_tree_paths = sorted((dataset_root / "trees").glob("*.nwk"))
-    simulation_cases_path = dataset_root / "simulation-cases.tsv"
-    taxon_count = max(load_tree(path).tip_count for path in reference_tree_paths)
-    case_count = len(_load_scenarios(simulation_cases_path, dataset_root))
-    return DiscreteModeRecoveryPanelDataset(
-        dataset_id=_DATASET_ID,
-        label=_DATASET_LABEL,
-        dataset_root=dataset_root,
-        default_tree_path=default_tree_path,
-        reference_tree_paths=reference_tree_paths,
-        simulation_cases_path=simulation_cases_path,
-        reference_output_root=dataset_root / "expected",
-        taxon_count=taxon_count,
-        tree_count=len(reference_tree_paths),
-        case_count=case_count,
-        source_summary=(
-            "Deterministic discrete-trait recovery panel with one governed "
-            "twelve-taxon overparameterized ARD failure tree plus one governed "
-            "twenty-four-taxon rooted review tree for stable ER and SYM "
-            "selection cases and one weak-identification ARD review surface "
-            "compared against stored local geiger references."
-        ),
-    )
+from .models import (
+    DiscreteModeRecoveryPanelDemoResult,
+    DiscreteModeRecoveryPanelExportResult,
+    DiscreteModeRecoveryPanelWorkflowBundle,
+    DiscreteModeRecoveryPanelWorkflowReport,
+)
+from .panel import DEFAULT_TREE_FILE, load_discrete_mode_recovery_panel_dataset
 
 
 def export_discrete_mode_recovery_panel_dataset(
@@ -163,7 +54,7 @@ def export_discrete_mode_recovery_panel_dataset(
     return DiscreteModeRecoveryPanelExportResult(
         output_root=destination,
         readme_path=Path(readme_path),
-        default_tree_path=reference_tree_root / Path(_DEFAULT_TREE_FILE).name,
+        default_tree_path=reference_tree_root / Path(DEFAULT_TREE_FILE).name,
         reference_tree_root=reference_tree_root,
         simulation_cases_path=Path(simulation_cases_path),
         expected_output_root=expected_output_root,
@@ -528,7 +419,9 @@ def _load_scenarios(
                 label=row["label"],
                 generating_model=row["generating_model"],
                 expected_selected_model=(
-                    None if not row["expected_selected_model"] else row["expected_selected_model"]
+                    None
+                    if not row["expected_selected_model"]
+                    else row["expected_selected_model"]
                 ),
                 states=_split_items(row["states"]),
                 rate_rows=_parse_rate_rows(row["rate_rows"]),
@@ -613,13 +506,3 @@ def _split_items(value: str) -> list[str]:
     if not value:
         return []
     return [item for item in value.split(",") if item]
-
-
-def _resource_root() -> Path:
-    return (
-        Path(__file__).resolve().parent.parent
-        / "resources"
-        / "datasets"
-        / "simulation"
-        / _DATASET_ID
-    )
