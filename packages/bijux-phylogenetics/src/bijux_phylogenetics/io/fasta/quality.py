@@ -1,31 +1,31 @@
 from __future__ import annotations
 
-from ._shared import (
+from pathlib import Path
+
+from bijux_phylogenetics.core.alignment import (
+    AlignmentRecord,
     AlignmentAmbiguousColumnReport,
     AlignmentForensicReport,
     AlignmentLowInformationReport,
     AlignmentMethodReadiness,
+    AlignmentMissingDataConcentration,
     AlignmentQualityReport,
     AlignmentReadinessReport,
+    AlignmentSummary,
     AlignmentSuspiciousRegion,
     AlignmentWindowSummary,
+    AmbiguousAlignmentColumn,
     DuplicateSequencePolicyAction,
     DuplicateSequencePolicyReport,
-    Path,
     SequenceQualityRankingReport,
     SequenceQualityRankingRow,
-    _LOW_INFORMATION_FRACTION_THRESHOLD,
-    _LOW_INFORMATION_SITE_THRESHOLD,
-    _alignment_quality_components,
-    _alignment_quality_score,
-    _alignment_suspicion_reasons,
-    _assess_alignment_low_information_from_summary,
-    _build_ambiguous_alignment_column_report_from_summary,
-    _detect_over_aligned_regions_from_windows,
+)
+
+from .core import (
+    _GAP_CHARACTERS,
     _detect_sequence_length_outlier_rows,
-    _detect_under_aligned_regions_from_windows,
-    _summarize_alignment_windows_from_records,
-    _summarize_missing_data_concentration,
+    _is_ambiguity_character,
+    _is_explicit_missing,
     _validate_fraction_threshold,
     infer_alignment_alphabet,
     load_fasta_alignment,
@@ -47,6 +47,340 @@ from .records import (
     summarise_fasta,
     summarise_records_as_alignment_summary,
 )
+
+_LOW_INFORMATION_SITE_THRESHOLD = 1
+_LOW_INFORMATION_FRACTION_THRESHOLD = 0.0
+
+
+def _summarize_alignment_windows_from_records(
+    summary: AlignmentSummary,
+    records: list[AlignmentRecord],
+    *,
+    window_size: int,
+    step_size: int,
+) -> list[AlignmentWindowSummary]:
+    windows: list[AlignmentWindowSummary] = []
+    for start_index in range(0, summary.alignment_length, step_size):
+        end_index = min(start_index + window_size, summary.alignment_length)
+        if end_index <= start_index:
+            continue
+        columns = list(
+            zip(
+                *(record.sequence[start_index:end_index] for record in records),
+                strict=True,
+            )
+        )
+        if not columns:
+            continue
+
+        gap_count = 0
+        missing_count = 0
+        ambiguity_count = 0
+        variable_sites = 0
+        disagreement_fractions: list[float] = []
+        comparable_sites = 0
+        total_residues = len(records) * len(columns)
+        alphabet = summary.inferred_alphabet
+        for column in columns:
+            gap_count += sum(1 for residue in column if residue in _GAP_CHARACTERS)
+            missing_count += sum(
+                1 for residue in column if _is_explicit_missing(residue)
+            )
+            ambiguity_count += sum(
+                1
+                for residue in column
+                if _is_ambiguity_character(residue, alphabet=alphabet)
+            )
+            comparable = [
+                residue.upper()
+                for residue in column
+                if residue not in _GAP_CHARACTERS
+                and not _is_explicit_missing(residue)
+                and not _is_ambiguity_character(residue, alphabet=alphabet)
+            ]
+            if comparable:
+                comparable_sites += len(comparable)
+                state_counts = {
+                    state: comparable.count(state) for state in set(comparable)
+                }
+                if len(state_counts) > 1:
+                    variable_sites += 1
+                disagreement_fractions.append(
+                    1.0 - (max(state_counts.values()) / len(comparable))
+                )
+            else:
+                disagreement_fractions.append(0.0)
+
+        windows.append(
+            AlignmentWindowSummary(
+                start=start_index + 1,
+                end=end_index,
+                site_count=len(columns),
+                gap_fraction=round(gap_count / total_residues, 15),
+                missing_fraction=round(missing_count / total_residues, 15),
+                ambiguity_fraction=round(ambiguity_count / total_residues, 15),
+                variable_fraction=round(variable_sites / len(columns), 15),
+                disagreement_fraction=round(
+                    sum(disagreement_fractions) / len(disagreement_fractions),
+                    15,
+                ),
+                comparable_fraction=round(comparable_sites / total_residues, 15),
+            )
+        )
+        if end_index == summary.alignment_length:
+            break
+    return windows
+
+
+def _detect_over_aligned_regions_from_windows(
+    windows: list[AlignmentWindowSummary],
+) -> list[AlignmentSuspiciousRegion]:
+    regions: list[AlignmentSuspiciousRegion] = []
+    for window in windows:
+        uncertainty_fraction = (
+            window.gap_fraction + window.missing_fraction + window.ambiguity_fraction
+        )
+        if uncertainty_fraction >= 0.4 and window.variable_fraction <= 0.2:
+            regions.append(
+                AlignmentSuspiciousRegion(
+                    start=window.start,
+                    end=window.end,
+                    kind="over_aligned",
+                    score=round(uncertainty_fraction - window.variable_fraction, 15),
+                    note="gap- or ambiguity-heavy window with little residual variability; review for aggressive or artifactual alignment",
+                )
+            )
+    return regions
+
+
+def _detect_under_aligned_regions_from_windows(
+    windows: list[AlignmentWindowSummary],
+) -> list[AlignmentSuspiciousRegion]:
+    regions: list[AlignmentSuspiciousRegion] = []
+    for window in windows:
+        if window.variable_fraction >= 0.7 and window.disagreement_fraction >= 0.35:
+            regions.append(
+                AlignmentSuspiciousRegion(
+                    start=window.start,
+                    end=window.end,
+                    kind="under_aligned",
+                    score=round(
+                        window.variable_fraction + window.disagreement_fraction,
+                        15,
+                    ),
+                    note="high local mismatch and disagreement suggest the region may require realignment or masking",
+                )
+            )
+    return regions
+
+
+def _assess_alignment_low_information_from_summary(
+    summary: AlignmentSummary,
+    *,
+    minimum_informative_sites: int,
+    minimum_informative_fraction: float,
+) -> AlignmentLowInformationReport:
+    informative_fraction = (
+        0.0
+        if summary.alignment_length == 0
+        else round(
+            summary.parsimony_informative_site_count / summary.alignment_length,
+            15,
+        )
+    )
+    reasons: list[str] = []
+    if (
+        summary.parsimony_informative_site_count < minimum_informative_sites
+        and summary.variable_site_count == 0
+    ):
+        reasons.append(
+            "alignment has fewer parsimony-informative sites than the minimum threshold for defensible inference"
+        )
+    if (
+        summary.variable_site_count == 0
+        and informative_fraction < minimum_informative_fraction
+    ):
+        reasons.append(
+            "alignment has a very low parsimony-informative-site fraction and may not support stable inference"
+        )
+    return AlignmentLowInformationReport(
+        sequence_count=summary.sequence_count,
+        alignment_length=summary.alignment_length,
+        parsimony_informative_site_count=summary.parsimony_informative_site_count,
+        parsimony_informative_fraction=informative_fraction,
+        threshold_site_count=minimum_informative_sites,
+        threshold_fraction=minimum_informative_fraction,
+        low_information=bool(reasons),
+        reasons=reasons,
+    )
+
+
+def _build_ambiguous_alignment_column_report_from_summary(
+    path: Path,
+    summary: AlignmentSummary,
+    *,
+    threshold: float,
+) -> AlignmentAmbiguousColumnReport:
+    uncertainty_by_position = {
+        row.position: row for row in summary.per_site_uncertainty
+    }
+    rows: list[AmbiguousAlignmentColumn] = []
+    for position in range(1, summary.alignment_length + 1):
+        uncertainty = uncertainty_by_position[position]
+        ambiguity_burden = (
+            uncertainty.ambiguity_fraction
+            + uncertainty.missing_fraction
+            + uncertainty.gap_fraction
+        )
+        if ambiguity_burden < threshold:
+            continue
+        rows.append(
+            AmbiguousAlignmentColumn(
+                position=position,
+                ambiguity_fraction=uncertainty.ambiguity_fraction,
+                missing_fraction=uncertainty.missing_fraction,
+                gap_fraction=uncertainty.gap_fraction,
+                comparable_fraction=round(max(0.0, 1.0 - ambiguity_burden), 15),
+                note="column is dominated by ambiguity, missing data, or gaps and should be reviewed for masking",
+            )
+        )
+    warnings = (
+        [
+            "alignment contains ambiguity-heavy columns that may be unsuitable for inference without masking"
+        ]
+        if rows
+        else []
+    )
+    return AlignmentAmbiguousColumnReport(
+        path=path,
+        threshold=threshold,
+        rows=rows,
+        warnings=warnings,
+    )
+
+
+def _alignment_quality_components(summary: AlignmentSummary) -> dict[str, float]:
+    informative_density = (
+        0.0
+        if summary.alignment_length == 0
+        else summary.parsimony_informative_site_count / summary.alignment_length
+    )
+    return {
+        "missingness": round(
+            max(0.0, 1.0 - min(summary.missing_data_fraction, 1.0)),
+            15,
+        ),
+        "gap_burden": round(max(0.0, 1.0 - min(summary.gap_fraction, 1.0)), 15),
+        "composition_outliers": round(
+            max(
+                0.0,
+                1.0
+                - min(
+                    len(summary.composition_outliers) / max(summary.sequence_count, 1),
+                    1.0,
+                ),
+            ),
+            15,
+        ),
+        "duplicates": round(
+            max(
+                0.0,
+                1.0
+                - min(
+                    len(summary.duplicate_sequence_groups)
+                    / max(summary.sequence_count, 1),
+                    1.0,
+                ),
+            ),
+            15,
+        ),
+        "informative_density": round(min(informative_density / 0.2, 1.0), 15),
+    }
+
+
+def _alignment_quality_score(components: dict[str, float]) -> float:
+    return round(sum(components.values()) / max(len(components), 1) * 100.0, 3)
+
+
+def _summarize_missing_data_concentration(
+    summary: AlignmentSummary,
+    *,
+    threshold: float = 0.5,
+) -> AlignmentMissingDataConcentration:
+    concentrated_columns = [
+        row.position
+        for row in summary.per_site_missingness
+        if row.missing_fraction >= threshold
+    ]
+    longest_run = 0
+    longest_start: int | None = None
+    longest_end: int | None = None
+    current_run = 0
+    current_start: int | None = None
+    previous_position: int | None = None
+    for position in concentrated_columns:
+        if previous_position is None or position != previous_position + 1:
+            current_run = 1
+            current_start = position
+        else:
+            current_run += 1
+        if current_run > longest_run:
+            longest_run = current_run
+            longest_start = current_start
+            longest_end = position
+        previous_position = position
+    maximum_missing_fraction = max(
+        (row.missing_fraction for row in summary.per_site_missingness),
+        default=0.0,
+    )
+    maximum_missing_positions = [
+        row.position
+        for row in summary.per_site_missingness
+        if row.missing_fraction == maximum_missing_fraction
+    ]
+    return AlignmentMissingDataConcentration(
+        threshold=threshold,
+        concentrated_column_count=len(concentrated_columns),
+        concentrated_column_fraction=(
+            0.0
+            if summary.alignment_length == 0
+            else len(concentrated_columns) / summary.alignment_length
+        ),
+        longest_concentrated_run=longest_run,
+        longest_concentrated_run_start=longest_start,
+        longest_concentrated_run_end=longest_end,
+        maximum_missing_fraction=maximum_missing_fraction,
+        maximum_missing_positions=maximum_missing_positions,
+    )
+
+
+def _alignment_suspicion_reasons(
+    *,
+    low_information: AlignmentLowInformationReport,
+    missing_data_concentration: AlignmentMissingDataConcentration,
+    ambiguous_column_count: int,
+    over_aligned_count: int,
+    under_aligned_count: int,
+    invalid_character_count: int,
+) -> list[str]:
+    reasons: list[str] = []
+    if low_information.low_information:
+        reasons.append("alignment has low information content for defensible inference")
+    if missing_data_concentration.longest_concentrated_run >= 2:
+        reasons.append("alignment concentrates missing data into adjacent columns")
+    elif missing_data_concentration.concentrated_column_count > 0:
+        reasons.append("alignment contains one or more highly missing columns")
+    if ambiguous_column_count > 0:
+        reasons.append("alignment contains ambiguity-heavy columns")
+    if over_aligned_count > 0:
+        reasons.append("alignment contains suspiciously over-aligned windows")
+    if under_aligned_count > 0:
+        reasons.append("alignment contains suspiciously under-aligned windows")
+    if invalid_character_count > 0:
+        reasons.append(
+            "alignment contains invalid characters for the inferred alphabet"
+        )
+    return reasons
 
 def summarize_alignment_windows(
     path: Path,
