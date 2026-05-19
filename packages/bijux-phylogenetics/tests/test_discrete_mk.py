@@ -10,6 +10,7 @@ from bijux_phylogenetics.ancestral.common import load_discrete_dataset
 from bijux_phylogenetics.comparative.discrete_mk import (
     fit_discrete_mk_model,
     fit_discrete_mk_model_from_dataset,
+    write_discrete_mk_summary_table,
 )
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.fixtures import (
@@ -447,6 +448,16 @@ def test_fit_discrete_mk_model_matches_governed_geiger_er_lambda_surface() -> No
         rel_tol=0.0,
         abs_tol=1e-6,
     )
+    assert report.transform_fit.starting_parameter_policy == (
+        "lower-bound-first-evaluation"
+    )
+    assert math.isclose(
+        report.transform_fit.starting_parameter_value,
+        0.0,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert report.transform_fit.refinement_start_count == 1
 
 
 def test_fit_discrete_mk_model_marks_governed_geiger_lambda_weak_signal_surface() -> (
@@ -478,6 +489,31 @@ def test_fit_discrete_mk_model_marks_governed_geiger_lambda_weak_signal_surface(
         warning.kind == "weak_phylogenetic_signal"
         for warning in report.transform_fit.warnings
     )
+
+
+def test_write_discrete_mk_summary_table_reports_shared_transform_search_audit(
+    tmp_path: Path,
+) -> None:
+    fixture_entry = get_shared_geiger_discrete_fixture(
+        "geiger_discrete_er_binary_twenty_four_taxa"
+    )
+    report = fit_discrete_mk_model(
+        fixture_entry.tree_path,
+        fixture_entry.traits_path,
+        trait=fixture_entry.trait_name,
+        taxon_column=fixture_entry.taxon_column,
+        model="equal-rates",
+        transform="lambda",
+    )
+
+    output_path = tmp_path / "discrete-summary.tsv"
+    write_discrete_mk_summary_table(output_path, report)
+    lines = output_path.read_text(encoding="utf-8").strip().splitlines()
+
+    assert "transform_starting_parameter_policy" in lines[0]
+    assert "transform_refinement_start_count" in lines[0]
+    assert "lower-bound-first-evaluation" in lines[1]
+    assert "\t1\t" in lines[1]
 
 
 def test_fit_discrete_mk_model_matches_governed_geiger_er_kappa_surface() -> None:

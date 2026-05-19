@@ -22,6 +22,10 @@ from bijux_phylogenetics.ancestral.discrete import (
     _resolve_state_order,
     _tree_log_likelihood,
 )
+from bijux_phylogenetics.comparative.bounded_search import (
+    BoundedSearchControls,
+    run_bounded_maximization,
+)
 from bijux_phylogenetics.comparative.common import tip_root_depths
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     transform_tree_for_evolutionary_mode,
@@ -32,6 +36,7 @@ from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depth
 
 _DISCRETE_TRANSFORM_COARSE_GRID_POINT_COUNT = 9
 _DISCRETE_TRANSFORM_FINE_GRID_POINT_COUNT = 17
+_DISCRETE_TRANSFORM_REFINEMENT_START_COUNT = 1
 _DISCRETE_DELTA_LOWER_BOUND = math.exp(-5.0)
 _DISCRETE_DELTA_UPPER_BOUND = 3.0
 _DISCRETE_EARLY_BURST_LOWER_BOUND = -10.0
@@ -86,8 +91,12 @@ class DiscreteMkTransformFit:
     parameter_value: float
     lower_bound: float
     upper_bound: float
+    starting_parameter_policy: str
+    starting_parameter_value: float
+    starting_parameter_log_likelihood: float
     coarse_grid_point_count: int
     fine_grid_point_count: int
+    refinement_start_count: int
     function_evaluation_count: int
     hit_lower_parameter_boundary: bool
     hit_upper_parameter_boundary: bool
@@ -423,8 +432,12 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
             "transform_parameter_value",
             "transform_lower_bound",
             "transform_upper_bound",
+            "transform_starting_parameter_policy",
+            "transform_starting_parameter_value",
+            "transform_starting_parameter_log_likelihood",
             "transform_coarse_grid_point_count",
             "transform_fine_grid_point_count",
+            "transform_refinement_start_count",
             "transform_function_evaluation_count",
             "transform_hit_lower_parameter_boundary",
             "transform_hit_upper_parameter_boundary",
@@ -490,6 +503,21 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
                     if transform_fit is None
                     else format(transform_fit.upper_bound, ".15g")
                 ),
+                "transform_starting_parameter_policy": (
+                    ""
+                    if transform_fit is None
+                    else transform_fit.starting_parameter_policy
+                ),
+                "transform_starting_parameter_value": (
+                    ""
+                    if transform_fit is None
+                    else format(transform_fit.starting_parameter_value, ".15g")
+                ),
+                "transform_starting_parameter_log_likelihood": (
+                    ""
+                    if transform_fit is None
+                    else format(transform_fit.starting_parameter_log_likelihood, ".15g")
+                ),
                 "transform_coarse_grid_point_count": (
                     ""
                     if transform_fit is None
@@ -499,6 +527,11 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
                     ""
                     if transform_fit is None
                     else str(transform_fit.fine_grid_point_count)
+                ),
+                "transform_refinement_start_count": (
+                    ""
+                    if transform_fit is None
+                    else str(transform_fit.refinement_start_count)
                 ),
                 "transform_function_evaluation_count": (
                     ""
@@ -843,173 +876,37 @@ def _fit_discrete_mk_parameterized_transform_surface(
     list[DiscreteMkTransformWarning],
 ]:
     lower, upper = bounds
-    candidate_cache: dict[
-        float, tuple[PhyloTree, object, object, DiscreteOptimizerDiagnostics, float]
-    ] = {}
-
-    def evaluate(
-        parameter_value: float,
-    ) -> tuple[PhyloTree, object, object, DiscreteOptimizerDiagnostics, float]:
-        cache_key = _transform_cache_key(parameter_value)
-        cached = candidate_cache.get(cache_key)
-        if cached is not None:
-            return cached
-        candidate = _evaluate_discrete_mk_transform_candidate(
+    search_result = run_bounded_maximization(
+        lower_bound=lower,
+        upper_bound=upper,
+        controls=BoundedSearchControls(
+            coarse_grid_point_count=_DISCRETE_TRANSFORM_COARSE_GRID_POINT_COUNT,
+            fine_grid_point_count=_DISCRETE_TRANSFORM_FINE_GRID_POINT_COUNT,
+            refinement_start_count=_DISCRETE_TRANSFORM_REFINEMENT_START_COUNT,
+        ),
+        evaluate=lambda parameter_value: _evaluate_discrete_mk_transform_search_candidate(
             dataset,
             model=model,
             transform=transform,
             state_ordering=state_ordering,
             state_order=state_order,
             allowed_transition_pairs=allowed_transition_pairs,
-            parameter_value=cache_key,
-        )
-        candidate_cache[cache_key] = candidate
-        return candidate
-
-    coarse_candidates = _grid_values(
-        lower,
-        upper,
-        point_count=_DISCRETE_TRANSFORM_COARSE_GRID_POINT_COUNT,
+            parameter_value=parameter_value,
+        ),
+        optimizer_name="governed-two-stage-grid-search",
+        parameter_search_strategy="bounded-two-stage-grid-search",
     )
-    coarse_rows: list[tuple[float, float]] = []
-    best_fit: tuple[
-        float, PhyloTree, object, object, DiscreteOptimizerDiagnostics, float
-    ] | None = None
-    for parameter_value in coarse_candidates:
-        (
-            transformed_tree,
-            rate_matrix,
-            root_prior,
-            optimizer_diagnostics,
-            log_likelihood,
-        ) = evaluate(parameter_value)
-        coarse_rows.append((parameter_value, log_likelihood))
-        if best_fit is None or log_likelihood > best_fit[-1]:
-            best_fit = (
-                parameter_value,
-                transformed_tree,
-                rate_matrix,
-                root_prior,
-                optimizer_diagnostics,
-                log_likelihood,
-            )
-    assert best_fit is not None
-    best_coarse_index = max(
-        range(len(coarse_rows)),
-        key=lambda index: coarse_rows[index][1],
+    transformed_tree, rate_matrix, root_prior, optimizer_diagnostics = (
+        search_result.payload
     )
-    fine_lower, fine_upper = _transform_search_bracket(
-        coarse_candidates=coarse_candidates,
-        best_index=best_coarse_index,
-        lower=lower,
-        upper=upper,
-    )
-    profile_rows: list[tuple[float, float]] = list(coarse_rows)
-    if not math.isclose(fine_lower, fine_upper, rel_tol=0.0, abs_tol=1e-15):
-        phi = (math.sqrt(5.0) - 1.0) / 2.0
-        left = fine_upper - phi * (fine_upper - fine_lower)
-        right = fine_lower + phi * (fine_upper - fine_lower)
-        (
-            left_tree,
-            left_rate_matrix,
-            left_root_prior,
-            left_optimizer_diagnostics,
-            left_score,
-        ) = evaluate(left)
-        profile_rows.append((left, left_score))
-        if left_score > best_fit[-1]:
-            best_fit = (
-                left,
-                left_tree,
-                left_rate_matrix,
-                left_root_prior,
-                left_optimizer_diagnostics,
-                left_score,
-            )
-        (
-            right_tree,
-            right_rate_matrix,
-            right_root_prior,
-            right_optimizer_diagnostics,
-            right_score,
-        ) = evaluate(right)
-        profile_rows.append((right, right_score))
-        if right_score > best_fit[-1]:
-            best_fit = (
-                right,
-                right_tree,
-                right_rate_matrix,
-                right_root_prior,
-                right_optimizer_diagnostics,
-                right_score,
-            )
-        for _ in range(max(_DISCRETE_TRANSFORM_FINE_GRID_POINT_COUNT - 2, 0)):
-            if abs(fine_upper - fine_lower) < 1e-6:
-                break
-            if left_score > right_score:
-                fine_upper = right
-                right = left
-                right_tree = left_tree
-                right_rate_matrix = left_rate_matrix
-                right_root_prior = left_root_prior
-                right_optimizer_diagnostics = left_optimizer_diagnostics
-                right_score = left_score
-                left = fine_upper - phi * (fine_upper - fine_lower)
-                (
-                    left_tree,
-                    left_rate_matrix,
-                    left_root_prior,
-                    left_optimizer_diagnostics,
-                    left_score,
-                ) = evaluate(left)
-                profile_rows.append((left, left_score))
-                if left_score > best_fit[-1]:
-                    best_fit = (
-                        left,
-                        left_tree,
-                        left_rate_matrix,
-                        left_root_prior,
-                        left_optimizer_diagnostics,
-                        left_score,
-                    )
-            else:
-                fine_lower = left
-                left = right
-                left_tree = right_tree
-                left_rate_matrix = right_rate_matrix
-                left_root_prior = right_root_prior
-                left_optimizer_diagnostics = right_optimizer_diagnostics
-                left_score = right_score
-                right = fine_lower + phi * (fine_upper - fine_lower)
-                (
-                    right_tree,
-                    right_rate_matrix,
-                    right_root_prior,
-                    right_optimizer_diagnostics,
-                    right_score,
-                ) = evaluate(right)
-                profile_rows.append((right, right_score))
-                if right_score > best_fit[-1]:
-                    best_fit = (
-                        right,
-                        right_tree,
-                        right_rate_matrix,
-                        right_root_prior,
-                        right_optimizer_diagnostics,
-                        right_score,
-                    )
-    (
-        best_parameter_value,
-        transformed_tree,
-        rate_matrix,
-        root_prior,
-        optimizer_diagnostics,
-        _,
-    ) = best_fit
+    best_parameter_value = search_result.parameter_value
     transform_warning_rows = _discrete_transform_warning_rows(
         transform=transform,
         parameter_value=best_parameter_value,
-        profile=profile_rows,
+        profile=[
+            (row.parameter_value, row.objective_value)
+            for row in search_result.profile_rows
+        ],
         bounds=bounds,
     )
     transformed_ultrametric = summarize_ultrametric_tip_depths(
@@ -1022,24 +919,24 @@ def _fit_discrete_mk_parameterized_transform_surface(
         parameter_value=best_parameter_value,
         lower_bound=lower,
         upper_bound=upper,
-        coarse_grid_point_count=_DISCRETE_TRANSFORM_COARSE_GRID_POINT_COUNT,
-        fine_grid_point_count=_DISCRETE_TRANSFORM_FINE_GRID_POINT_COUNT,
-        function_evaluation_count=len(candidate_cache),
-        hit_lower_parameter_boundary=best_parameter_value
-        <= lower + max((upper - lower) / 160.0, 1e-6),
-        hit_upper_parameter_boundary=best_parameter_value
-        >= upper - max((upper - lower) / 160.0, 1e-6),
+        starting_parameter_policy=search_result.diagnostics.starting_parameter_policy,
+        starting_parameter_value=search_result.diagnostics.starting_parameter_value,
+        starting_parameter_log_likelihood=search_result.diagnostics.starting_parameter_objective_value,
+        coarse_grid_point_count=search_result.diagnostics.coarse_grid_point_count,
+        fine_grid_point_count=search_result.diagnostics.fine_grid_point_count,
+        refinement_start_count=search_result.diagnostics.refinement_start_count,
+        function_evaluation_count=search_result.diagnostics.function_evaluation_count,
+        hit_lower_parameter_boundary=search_result.diagnostics.hit_lower_boundary,
+        hit_upper_parameter_boundary=search_result.diagnostics.hit_upper_boundary,
         transformed_tree_is_ultrametric=transformed_ultrametric.ultrametric,
         transformed_tree_minimum_tip_depth=transformed_ultrametric.minimum_tip_depth,
         transformed_tree_maximum_tip_depth=transformed_ultrametric.maximum_tip_depth,
         profile_rows=[
             DiscreteMkTransformProfileRow(
-                transform_parameter_value=transform_parameter_value,
-                log_likelihood=log_likelihood,
+                transform_parameter_value=row.parameter_value,
+                log_likelihood=row.objective_value,
             )
-            for transform_parameter_value, log_likelihood in sorted(
-                {row[0]: row[1] for row in profile_rows}.items()
-            )
+            for row in search_result.profile_rows
         ],
         warnings=transform_warning_rows,
     )
@@ -1063,6 +960,7 @@ def _evaluate_discrete_mk_transform_candidate(
     allowed_transition_pairs: set[tuple[int, int]],
     parameter_value: float,
 ) -> tuple[object, object, object, DiscreteOptimizerDiagnostics, float]:
+    parameter_value = _transform_cache_key(parameter_value)
     transformed_tree = _transform_discrete_mk_tree(
         dataset.tree,
         transform=transform,
@@ -1092,6 +990,39 @@ def _evaluate_discrete_mk_transform_candidate(
         optimizer_diagnostics,
         log_likelihood,
     )
+
+
+def _evaluate_discrete_mk_transform_search_candidate(
+    dataset: AncestralDiscreteDataset,
+    *,
+    model: str,
+    transform: str,
+    state_ordering: str,
+    state_order: list[str],
+    allowed_transition_pairs: set[tuple[int, int]],
+    parameter_value: float,
+) -> tuple[tuple[PhyloTree, object, object, DiscreteOptimizerDiagnostics], float]:
+    (
+        transformed_tree,
+        rate_matrix,
+        root_prior,
+        optimizer_diagnostics,
+        log_likelihood,
+    ) = _evaluate_discrete_mk_transform_candidate(
+        dataset,
+        model=model,
+        transform=transform,
+        state_ordering=state_ordering,
+        state_order=state_order,
+        allowed_transition_pairs=allowed_transition_pairs,
+        parameter_value=parameter_value,
+    )
+    return (
+        transformed_tree,
+        rate_matrix,
+        root_prior,
+        optimizer_diagnostics,
+    ), log_likelihood
 
 
 def _discrete_transform_mode_name(transform: str) -> str:
@@ -1133,27 +1064,6 @@ def _transform_discrete_mk_tree(
 
 def _transform_cache_key(parameter_value: float) -> float:
     return float(format(parameter_value, ".15g"))
-
-
-def _grid_values(lower: float, upper: float, *, point_count: int) -> list[float]:
-    if point_count < 2:
-        return [lower]
-    step = (upper - lower) / (point_count - 1)
-    return [lower + (step * index) for index in range(point_count)]
-
-
-def _transform_search_bracket(
-    *,
-    coarse_candidates: list[float],
-    best_index: int,
-    lower: float,
-    upper: float,
-) -> tuple[float, float]:
-    if best_index <= 0:
-        return lower, coarse_candidates[1]
-    if best_index >= len(coarse_candidates) - 1:
-        return coarse_candidates[-2], upper
-    return coarse_candidates[best_index - 1], coarse_candidates[best_index + 1]
 
 
 def _discrete_transform_warning_rows(
