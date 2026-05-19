@@ -4,21 +4,19 @@ from pathlib import Path
 from typing import Any
 
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
-from bijux_phylogenetics.command_line.output import _print_result
+from bijux_phylogenetics.command_line.demo.introductory_panels import (
+    add_introductory_demo_commands,
+    run_introductory_demo_command,
+)
 from bijux_phylogenetics.command_line.registry import get_command_spec
-from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.benchmark import (
     run_real_dataset_macroevolution_benchmark_demo,
 )
-from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.datasets import (
-    run_avian_reproductive_trait_demo,
     run_catarrhine_mitogenome_five_locus_panel_demo,
-    run_central_european_seashore_flora_demo,
     run_gnathostome_ortholog_protein_benchmark_demo,
     run_influenza_a_ha_reference_demo,
     run_pleistocene_bear_cytb_fragment_demo,
-    run_primate_comparative_demo,
     run_rabies_cross_host_geography_panel_demo,
     run_rabies_cross_host_panel_demo,
     run_rabies_geographic_transition_panel_demo,
@@ -36,7 +34,12 @@ from bijux_phylogenetics.datasets.data_quality_stress import (
 from bijux_phylogenetics.datasets.known_answer_reference import (
     run_known_answer_reference_demo,
 )
-from bijux_phylogenetics.runtime.results import build_command_result
+from bijux_phylogenetics.command_line.demo.shared import (
+    count_expected_output_entries,
+    count_expected_output_files,
+    emit_demo_result,
+    resolve_demo_runner,
+)
 
 
 def add_demo_command(subparsers: Any) -> None:
@@ -44,41 +47,7 @@ def add_demo_command(subparsers: Any) -> None:
         get_command_spec("demo").name, help=get_command_spec("demo").summary
     )
     demo_subparsers = demo.add_subparsers(dest="demo_command", required=True)
-    demo_run = demo_subparsers.add_parser(
-        "run", help="Run the repository capability demo workflow."
-    )
-    demo_run.add_argument("--out", required=True, type=Path)
-    demo_run.add_argument(
-        "--json", action="store_true", help="Emit the demo result as JSON."
-    )
-    _add_manifest_argument(demo_run)
-    demo_primate = demo_subparsers.add_parser(
-        "primate-comparative",
-        help="Materialize the packaged primate dataset and comparative workflow outputs.",
-    )
-    demo_primate.add_argument("--out", required=True, type=Path)
-    demo_primate.add_argument(
-        "--json", action="store_true", help="Emit the demo result as JSON."
-    )
-    _add_manifest_argument(demo_primate)
-    demo_birds = demo_subparsers.add_parser(
-        "avian-reproductive-traits",
-        help="Materialize the packaged avian reproductive dataset and workflow outputs.",
-    )
-    demo_birds.add_argument("--out", required=True, type=Path)
-    demo_birds.add_argument(
-        "--json", action="store_true", help="Emit the demo result as JSON."
-    )
-    _add_manifest_argument(demo_birds)
-    demo_plants = demo_subparsers.add_parser(
-        "central-european-seashore-flora",
-        help="Materialize the packaged Central European plant dataset and workflow outputs.",
-    )
-    demo_plants.add_argument("--out", required=True, type=Path)
-    demo_plants.add_argument(
-        "--json", action="store_true", help="Emit the demo result as JSON."
-    )
-    _add_manifest_argument(demo_plants)
+    add_introductory_demo_commands(demo_subparsers)
     demo_real_dataset_benchmark = demo_subparsers.add_parser(
         "real-dataset-macroevolution",
         help="Materialize the packaged Central European plant dataset together with the governed real-dataset macroevolution benchmark bundle.",
@@ -260,222 +229,43 @@ def add_demo_command(subparsers: Any) -> None:
 
 
 def run_demo_command(args: Any) -> int:
-    if args.demo_command == "run":
-        result = run_capability_demo(args.out)
-        outputs = _finalize_outputs(
-            args,
-            command="demo",
-            inputs=[],
-            outputs=[
-                result.tree_report,
-                result.dataset_report,
-                result.phylo_inputs_report,
-                result.comparison_report,
-                result.capability_summary,
-            ],
-        )
-        if args.json:
-            _print_result(
-                build_command_result(
-                    command="demo",
-                    inputs=[],
-                    outputs=outputs,
-                    metrics={"artifact_count": 5},
-                    data=result,
-                ),
-                json_output=True,
-            )
-            return 0
-        print(result.output_root)
-        return 0
-
-    if args.demo_command == "primate-comparative":
-        result = run_primate_comparative_demo(args.out)
-        outputs = _finalize_outputs(
-            args,
-            command="demo",
-            inputs=[],
-            outputs=[
-                result.dataset_export.readme_path,
-                result.dataset_export.tree_path,
-                result.dataset_export.traits_path,
-                result.workflow_bundle.summary_path,
-                result.workflow_bundle.pgls_lambda_profile_path,
-                result.workflow_bundle.brownian_summary_path,
-                result.workflow_bundle.ou_summary_path,
-                result.workflow_bundle.signal_summary_path,
-                result.workflow_bundle.signal_permutations_path,
-                result.workflow_bundle.continuous_ancestral_summary_path,
-                result.workflow_bundle.continuous_ancestral_uncertainty_path,
-                result.workflow_bundle.discrete_ancestral_summary_path,
-                result.workflow_bundle.discrete_ancestral_probability_path,
-                result.overview_path,
-            ],
-        )
-        if args.json:
-            expected_output_count = len(
-                list(result.dataset_export.expected_output_root.glob("*"))
-            )
-            _print_result(
-                build_command_result(
-                    command="demo",
-                    inputs=[],
-                    outputs=outputs,
-                    metrics={
-                        "artifact_count": len(outputs),
-                        "dataset_taxon_count": result.dataset.taxon_count,
-                        "reference_output_count": expected_output_count,
-                    },
-                    data=result,
-                ),
-                json_output=True,
-            )
-            return 0
-        print(result.output_root)
-        return 0
-
-    if args.demo_command == "avian-reproductive-traits":
-        result = run_avian_reproductive_trait_demo(args.out)
-        outputs = _finalize_outputs(
-            args,
-            command="demo",
-            inputs=[],
-            outputs=[
-                result.dataset_export.readme_path,
-                result.dataset_export.tree_path,
-                result.dataset_export.traits_path,
-                result.workflow_bundle.summary_path,
-                result.workflow_bundle.pgls_lambda_profile_path,
-                result.workflow_bundle.brownian_summary_path,
-                result.workflow_bundle.ou_summary_path,
-                result.workflow_bundle.signal_summary_path,
-                result.workflow_bundle.signal_permutations_path,
-                result.workflow_bundle.continuous_ancestral_summary_path,
-                result.workflow_bundle.continuous_ancestral_uncertainty_path,
-                result.workflow_bundle.discrete_ancestral_summary_path,
-                result.workflow_bundle.discrete_ancestral_probability_path,
-                result.workflow_bundle.clade_summary_path,
-                result.workflow_bundle.clade_rows_path,
-                result.overview_path,
-            ],
-        )
-        if args.json:
-            expected_output_count = len(
-                list(result.dataset_export.expected_output_root.glob("*"))
-            )
-            _print_result(
-                build_command_result(
-                    command="demo",
-                    inputs=[],
-                    outputs=outputs,
-                    metrics={
-                        "artifact_count": len(outputs),
-                        "dataset_taxon_count": result.dataset.taxon_count,
-                        "reference_output_count": expected_output_count,
-                    },
-                    data=result,
-                ),
-                json_output=True,
-            )
-            return 0
-        print(result.output_root)
-        return 0
-
-    if args.demo_command == "central-european-seashore-flora":
-        result = run_central_european_seashore_flora_demo(args.out)
-        outputs = _finalize_outputs(
-            args,
-            command="demo",
-            inputs=[],
-            outputs=[
-                result.dataset_export.readme_path,
-                result.dataset_export.tree_path,
-                result.dataset_export.traits_path,
-                result.workflow_bundle.summary_path,
-                result.workflow_bundle.pgls_lambda_profile_path,
-                result.workflow_bundle.brownian_summary_path,
-                result.workflow_bundle.ou_summary_path,
-                result.workflow_bundle.signal_summary_path,
-                result.workflow_bundle.signal_permutations_path,
-                result.workflow_bundle.continuous_ancestral_summary_path,
-                result.workflow_bundle.continuous_ancestral_uncertainty_path,
-                result.workflow_bundle.discrete_ancestral_summary_path,
-                result.workflow_bundle.discrete_ancestral_probability_path,
-                result.workflow_bundle.clade_summary_path,
-                result.workflow_bundle.clade_rows_path,
-                result.overview_path,
-            ],
-        )
-        if args.json:
-            expected_output_count = len(
-                list(result.dataset_export.expected_output_root.glob("*"))
-            )
-            _print_result(
-                build_command_result(
-                    command="demo",
-                    inputs=[],
-                    outputs=outputs,
-                    metrics={
-                        "artifact_count": len(outputs),
-                        "dataset_taxon_count": result.dataset.taxon_count,
-                        "reference_output_count": expected_output_count,
-                    },
-                    data=result,
-                ),
-                json_output=True,
-            )
-            return 0
-        print(result.output_root)
-        return 0
+    introductory_exit_code = run_introductory_demo_command(args)
+    if introductory_exit_code is not None:
+        return introductory_exit_code
 
     if args.demo_command == "real-dataset-macroevolution":
-        result = run_real_dataset_macroevolution_benchmark_demo(args.out)
-        outputs = _finalize_outputs(
+        result = resolve_demo_runner(
+            "run_real_dataset_macroevolution_benchmark_demo"
+        )(args.out)
+        outputs = [
+            result.dataset_export.readme_path,
+            result.dataset_export.tree_path,
+            result.dataset_export.traits_path,
+            result.benchmark_bundle.review_traits_path,
+            result.benchmark_bundle.summary_path,
+            result.benchmark_bundle.model_table_path,
+            result.benchmark_bundle.alignment_review_path,
+            result.benchmark_bundle.parity_table_path,
+            result.benchmark_bundle.geiger_reference_path,
+            result.overview_path,
+        ]
+        return emit_demo_result(
             args,
-            command="demo",
-            inputs=[],
-            outputs=[
-                result.dataset_export.readme_path,
-                result.dataset_export.tree_path,
-                result.dataset_export.traits_path,
-                result.benchmark_bundle.review_traits_path,
-                result.benchmark_bundle.summary_path,
-                result.benchmark_bundle.model_table_path,
-                result.benchmark_bundle.alignment_review_path,
-                result.benchmark_bundle.parity_table_path,
-                result.benchmark_bundle.geiger_reference_path,
-                result.overview_path,
-            ],
-        )
-        if args.json:
-            expected_output_count = len(
-                [
-                    path
-                    for path in result.dataset_export.expected_output_root.rglob("*")
-                    if path.is_file()
-                ]
-            )
-            _print_result(
-                build_command_result(
-                    command="demo",
-                    inputs=[],
-                    outputs=outputs,
-                    metrics={
-                        "artifact_count": len(outputs),
-                        "dataset_taxon_count": result.dataset.taxon_count,
-                        "summary_row_count": 4,
-                        "native_model_row_count": 8,
-                        "alignment_review_row_count": 2,
-                        "parity_row_count": 10,
-                        "reference_output_count": expected_output_count,
-                    },
-                    data=result,
+            outputs=outputs,
+            metrics={
+                "artifact_count": len(outputs),
+                "dataset_taxon_count": result.dataset.taxon_count,
+                "summary_row_count": 4,
+                "native_model_row_count": 8,
+                "alignment_review_row_count": 2,
+                "parity_row_count": 10,
+                "reference_output_count": count_expected_output_files(
+                    result.dataset_export.expected_output_root
                 ),
-                json_output=True,
-            )
-            return 0
-        print(result.output_root)
-        return 0
+            },
+            data=result,
+            output_root=result.output_root,
+        )
 
     if args.demo_command == "influenza-a-ha-reference-panel":
         result = run_influenza_a_ha_reference_demo(
