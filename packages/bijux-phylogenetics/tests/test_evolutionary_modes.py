@@ -1052,6 +1052,38 @@ def test_compare_fitcontinuous_model_ranking_reports_ranked_all_model_surface() 
     )
 
 
+def test_compare_fitcontinuous_model_ranking_records_model_confidence_surface() -> None:
+    report = compare_fitcontinuous_model_ranking(
+        EXAMPLE_TREE,
+        EXAMPLE_TRAITS,
+        trait="response",
+    )
+
+    comparable_rows = [row for row in report.rows if row.comparable]
+    noncomparable_rows = [row for row in report.rows if not row.comparable]
+
+    assert report.model_confidence_weight_basis == "AICc"
+    assert report.model_confidence_delta_threshold == 2.0
+    assert comparable_rows
+    assert math.isclose(
+        sum(row.akaike_weight or 0.0 for row in comparable_rows),
+        1.0,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert all(row.akaike_weight is not None for row in comparable_rows)
+    assert all(row.within_delta_aic_threshold is not None for row in comparable_rows)
+    assert all(row.within_delta_aicc_threshold is not None for row in comparable_rows)
+    assert all(row.akaike_weight is None for row in noncomparable_rows)
+    assert all(row.within_delta_aic_threshold is None for row in noncomparable_rows)
+    assert all(row.within_delta_aicc_threshold is None for row in noncomparable_rows)
+    assert report.selected_model_akaike_weight == report.rows[0].akaike_weight
+    assert report.models_within_delta_aicc_threshold == [
+        row.model for row in comparable_rows if row.within_delta_aicc_threshold
+    ]
+    assert "model confidence" in report.uncertainty_language
+
+
 def test_reconstruct_continuous_evolutionary_mode_states_supports_early_burst() -> None:
     report = reconstruct_continuous_evolutionary_mode_states(
         EXAMPLE_TREE,
