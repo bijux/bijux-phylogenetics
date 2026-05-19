@@ -27,6 +27,7 @@ class AncestralContinuousDataset:
     taxa: list[str]
     values_by_taxon: dict[str, float]
     alignment_report: TreeTraitAlignmentReport
+    missing_from_traits_taxa: list[str]
     dropped_missing_taxa: list[str]
     dropped_non_numeric_taxa: list[str]
     warnings: list[str]
@@ -106,6 +107,7 @@ def load_continuous_dataset(
     )
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     kept_taxa: list[str] = []
+    missing_from_traits_taxa = sorted(alignment.report.dropped_tree_taxa)
     dropped_missing_taxa = list(alignment.report.dropped_missing_value_taxa)
     dropped_non_numeric_taxa: list[str] = []
     values_by_taxon: dict[str, float] = {}
@@ -159,6 +161,7 @@ def load_continuous_dataset(
         taxa=pruned_tree.tip_names,
         values_by_taxon=values_by_taxon,
         alignment_report=alignment.report,
+        missing_from_traits_taxa=missing_from_traits_taxa,
         dropped_missing_taxa=sorted(dropped_missing_taxa),
         dropped_non_numeric_taxa=sorted(dropped_non_numeric_taxa),
         warnings=warnings,

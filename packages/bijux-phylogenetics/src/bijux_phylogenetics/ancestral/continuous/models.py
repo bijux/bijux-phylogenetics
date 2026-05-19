@@ -72,6 +72,7 @@ class ContinuousAncestralReport:
     alpha: float
     taxon_count: int
     analysis_tree_newick: str
+    missing_from_traits_taxa: list[str]
     dropped_missing_taxa: list[str]
     dropped_non_numeric_taxa: list[str]
     warnings: list[str]

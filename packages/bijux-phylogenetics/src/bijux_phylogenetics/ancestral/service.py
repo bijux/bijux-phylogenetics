@@ -11,8 +11,10 @@ from bijux_phylogenetics.ancestral.common import (
 )
 from bijux_phylogenetics.ancestral.continuous import (
     ContinuousAncestralReport,
-    _reconstruct_continuous_from_dataset,
     reconstruct_continuous_ancestral_states,
+)
+from bijux_phylogenetics.ancestral.continuous.reconstruction import (
+    _reconstruct_continuous_from_dataset,
 )
 from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralReport,

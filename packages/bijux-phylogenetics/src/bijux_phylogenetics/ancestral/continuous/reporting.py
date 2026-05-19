@@ -35,9 +35,11 @@ def summarize_continuous_ancestral_report(
         estimator=report.estimator,
         alpha=report.alpha,
         analyzed_taxon_count=report.taxon_count,
-        excluded_taxon_count=len(report.dropped_missing_taxa)
+        excluded_taxon_count=len(report.missing_from_traits_taxa)
+        + len(report.dropped_missing_taxa)
         + len(report.dropped_non_numeric_taxa),
-        missing_tip_taxon_count=len(report.dropped_missing_taxa),
+        missing_tip_taxon_count=len(report.missing_from_traits_taxa)
+        + len(report.dropped_missing_taxa),
         non_numeric_tip_taxon_count=len(report.dropped_non_numeric_taxa),
         internal_node_count=len(internal_estimates),
         unstable_node_count=len(report.unstable_nodes),
@@ -110,7 +112,7 @@ def continuous_ancestral_exclusions(
             taxon=taxon,
             reason="missing_trait_value",
         )
-        for taxon in report.dropped_missing_taxa
+        for taxon in report.missing_from_traits_taxa + report.dropped_missing_taxa
     ]
     rows.extend(
         ContinuousAncestralExclusion(
