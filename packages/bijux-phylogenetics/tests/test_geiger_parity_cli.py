@@ -144,6 +144,38 @@ def test_parity_cli_writes_geiger_parameterization_registry_for_single_case(
     )
 
 
+def test_parity_cli_writes_geiger_likelihood_policy_table_for_single_case(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    policy_path = tmp_path / "geiger-likelihood-policy.tsv"
+
+    exit_code = main(
+        [
+            "parity",
+            "--reference-source",
+            "geiger-live",
+            "--geiger-rscript-executable",
+            str(rscript),
+            "--geiger-case",
+            "fitcontinuous-bm-example-tree",
+            "--likelihood-policy-out",
+            str(policy_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert policy_path.exists()
+    assert payload["data"]["likelihood_policy_table"] == str(policy_path)
+    row = payload["data"]["report"]["likelihood_policy_rows"][0]
+    assert row["case_id"] == "fitcontinuous-bm-example-tree"
+    assert row["case_level_raw_log_likelihood_comparable"] is True
+
+
 def test_parity_cli_restricts_live_geiger_discrete_cases(
     tmp_path: Path,
     capsys,
