@@ -1370,6 +1370,14 @@ row-level AIC/AICc comparison surface, checks that `AIC = 2k - 2logLik`
 wherever a raw likelihood is supposed to be directly comparable, and keeps the
 owned ranking guard explicit: `compare_fitcontinuous_model_ranking(...)` now
 refuses to rank candidate modes if their likelihood-constant policies differ.
+The same report now also carries a governed model-confidence table plus an
+optional `--model-confidence-out` TSV. That table derives Akaike weights from
+comparable delta AICc rows only, records delta AIC and delta AICc threshold
+membership under one shared `2.0`-unit policy, keeps non-comparable models on
+blank weight cells instead of pretending they received support, and preserves
+the selected-model uncertainty class when the stored reference and owned
+surfaces agree only up to confidence class rather than identical rounded
+weight wording.
 The same report now also carries a governed boundary-warning registry plus an
 optional `--boundary-warning-out` TSV. That table records the affected
 parameter, declared lower and upper bounds, explicit boundary hits,
@@ -1509,7 +1517,11 @@ the shared twenty-four-taxon fixtures. The parity contract intentionally
 compares those model-comparison rows by model identity and numeric fit surface
 rather than by derived whole-list ordering alone, because near-tied secondary
 ordering can shift at machine precision even when the selected model and the
-information-criterion surface still agree.
+information-criterion surface still agree. The owned comparison report now also
+records Akaike weights, lists the models that remain within the governed delta
+threshold on both AIC and AICc, withholds weights from non-comparable models,
+and emits explicit uncertainty language instead of reducing the result to one
+bare selected-model name.
 The same geiger-style fit surfaces now share one explicit tree and trait
 alignment contract instead of rebuilding taxon overlap independently in each
 loader. The owned side exposes that through
