@@ -49,6 +49,7 @@ from .tree_inference import (
     summarize_distance_bootstrap_support,
     write_distance_bootstrap_support,
 )
+from .validation import validate_distance_reference_examples
 
 
 def compare_distance_models(
@@ -199,8 +200,6 @@ def assess_distance_method_maturity(
     validate_bundle: bool = False,
 ) -> DistanceMethodMaturityGateReport:
     """Evaluate whether distance-analysis surfaces are available and validated for one alignment."""
-    from . import validate_distance_reference_examples
-
     method_policy = _require_supported_distance_tree_method(method)
     reference_validation = validate_distance_reference_examples()
     quality = inspect_distance_matrix_quality(
@@ -341,8 +340,6 @@ def build_distance_method_report(
     bootstrap_seed: int = 1,
 ) -> DistanceMethodReport:
     """Build a structured distance-method report that can back JSON or HTML renderers."""
-    from . import validate_distance_reference_examples
-
     method_policy = _require_supported_distance_tree_method(method)
     matrix = compute_pairwise_genetic_distance_matrix(
         path,
@@ -450,8 +447,6 @@ def write_distance_reproducibility_bundle(
     seed: int = 1,
 ) -> DistanceReproducibilityBundleReport:
     """Write a reproducibility bundle for one distance analysis."""
-    from . import validate_distance_reference_examples
-
     method_policy = _require_supported_distance_tree_method(method)
     out_dir.mkdir(parents=True, exist_ok=True)
     bundled_alignment_path = out_dir / "input-alignment.fasta"
