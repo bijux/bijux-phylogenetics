@@ -12,9 +12,11 @@ from bijux_phylogenetics.ancestral.common import (
 from bijux_phylogenetics.ancestral.discrete import (
     _resolve_discrete_model_name,
     DiscreteAncestralReport,
-    _resolve_root_prior,
-    _resolve_state_order,
     reconstruct_discrete_ancestral_states,
+)
+from bijux_phylogenetics.ancestral.discrete.policy import (
+    resolve_root_prior as _resolve_root_prior,
+    resolve_state_order as _resolve_state_order,
 )
 
 
