@@ -271,6 +271,12 @@ def test_fit_continuous_evolutionary_mode_supports_pagel_delta_weak_signal() -> 
         "flat_likelihood",
         "late_change_limit",
     ]
+    assert fit.boundary_assessment is not None
+    assert fit.boundary_assessment.affected_parameter == "delta"
+    assert fit.boundary_assessment.hit_upper_boundary is True
+    assert fit.boundary_assessment.near_upper_boundary is True
+    assert fit.boundary_assessment.flat_likelihood_near_boundary is True
+    assert fit.boundary_assessment.stable_conclusion_supported is False
 
 
 def test_fit_continuous_evolutionary_mode_supports_white_noise_baseline() -> None:
@@ -671,6 +677,32 @@ def test_compare_fitcontinuous_model_ranking_records_likelihood_policy() -> None
     assert report.noncomparable_likelihood_models == []
 
 
+def test_compare_fitcontinuous_model_ranking_withholds_stable_conclusion_for_boundary_dominated_selection(
+) -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_white_noise_twenty_four_taxa"
+    )
+
+    report = compare_fitcontinuous_model_ranking(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        taxon_column=fixture.taxon_column,
+        modes=("pagel-lambda",),
+    )
+
+    assert report.better_model == "pagel-lambda"
+    assert report.selected_model_boundary_assessment is not None
+    assert report.selected_model_boundary_assessment.affected_parameter == "lambda"
+    assert report.selected_model_boundary_assessment.hit_lower_boundary is True
+    assert report.selected_model_boundary_assessment.boundary_dominates_interpretation is True
+    assert report.stable_conclusion_supported is False
+    assert any(
+        "stable conclusion support is withheld" in warning
+        for warning in report.warnings
+    )
+
+
 @pytest.mark.parametrize("mode", ["trend", "mean_trend", "rate_trend"])
 def test_fit_continuous_evolutionary_mode_explicitly_excludes_geiger_trend_aliases(
     mode: str,
@@ -713,6 +745,12 @@ def test_fit_continuous_evolutionary_mode_supports_early_burst() -> None:
         "flat_likelihood_profile",
         "brownian_like_rate_change",
     ]
+    assert fit.boundary_assessment is not None
+    assert fit.boundary_assessment.affected_parameter == "rate_change"
+    assert fit.boundary_assessment.hit_lower_boundary is True
+    assert fit.boundary_assessment.near_lower_boundary is True
+    assert fit.boundary_assessment.flat_likelihood_near_boundary is True
+    assert fit.boundary_assessment.stable_conclusion_supported is False
 
 
 def test_fit_continuous_evolutionary_mode_supports_pagel_kappa_strong_signal() -> None:
@@ -767,6 +805,12 @@ def test_fit_continuous_evolutionary_mode_supports_pagel_kappa_weak_signal() -> 
         "flat_likelihood",
         "punctuational_limit",
     ]
+    assert fit.boundary_assessment is not None
+    assert fit.boundary_assessment.affected_parameter == "kappa"
+    assert fit.boundary_assessment.hit_lower_boundary is True
+    assert fit.boundary_assessment.near_lower_boundary is True
+    assert fit.boundary_assessment.flat_likelihood_near_boundary is True
+    assert fit.boundary_assessment.stable_conclusion_supported is False
 
 
 def test_fit_continuous_evolutionary_mode_recovers_shared_early_burst_fixture() -> None:
@@ -792,6 +836,10 @@ def test_fit_continuous_evolutionary_mode_recovers_shared_early_burst_fixture() 
     assert [warning.kind for warning in fit.identifiability_warnings] == [
         "flat_likelihood_profile"
     ]
+    assert fit.boundary_assessment is not None
+    assert fit.boundary_assessment.affected_parameter == "rate_change"
+    assert fit.boundary_assessment.boundary_dominates_interpretation is False
+    assert fit.boundary_assessment.stable_conclusion_supported is True
 
 
 def test_fit_continuous_evolutionary_mode_reports_ou_identifiability_and_bounds() -> (
@@ -820,6 +868,12 @@ def test_fit_continuous_evolutionary_mode_reports_ou_identifiability_and_bounds(
         "flat_likelihood",
         "weak_pull_to_optimum",
     ]
+    assert fit.boundary_assessment is not None
+    assert fit.boundary_assessment.affected_parameter == "alpha"
+    assert fit.boundary_assessment.hit_lower_boundary is True
+    assert fit.boundary_assessment.near_lower_boundary is True
+    assert fit.boundary_assessment.flat_likelihood_near_boundary is True
+    assert fit.boundary_assessment.stable_conclusion_supported is False
 
 
 def test_fit_continuous_evolutionary_mode_reports_ou_aicc_and_missing_value_context() -> (
@@ -875,6 +929,11 @@ def test_fit_continuous_evolutionary_mode_supports_pagel_lambda_strong_signal() 
         "flat_likelihood",
         "brownian_limit",
     ]
+    assert fit.boundary_assessment is not None
+    assert fit.boundary_assessment.affected_parameter == "lambda"
+    assert fit.boundary_assessment.hit_upper_boundary is True
+    assert fit.boundary_assessment.near_upper_boundary is True
+    assert fit.boundary_assessment.boundary_dominates_interpretation is True
 
 
 def test_fit_continuous_evolutionary_mode_supports_pagel_lambda_weak_signal() -> None:
@@ -902,6 +961,12 @@ def test_fit_continuous_evolutionary_mode_supports_pagel_lambda_weak_signal() ->
         "flat_likelihood",
         "weak_phylogenetic_signal",
     ]
+    assert fit.boundary_assessment is not None
+    assert fit.boundary_assessment.affected_parameter == "lambda"
+    assert fit.boundary_assessment.hit_lower_boundary is True
+    assert fit.boundary_assessment.near_lower_boundary is True
+    assert fit.boundary_assessment.flat_likelihood_near_boundary is True
+    assert fit.boundary_assessment.stable_conclusion_supported is False
 
 
 def test_fit_continuous_evolutionary_mode_reports_pagel_lambda_missing_value_context() -> (
