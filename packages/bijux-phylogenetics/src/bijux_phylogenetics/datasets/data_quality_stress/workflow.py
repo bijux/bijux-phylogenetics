@@ -42,6 +42,15 @@ from bijux_phylogenetics.io.fasta.records import (
     validate_fasta_input,
 )
 from bijux_phylogenetics.io.newick import write_newick
+from .panel import (
+    load_catarrhine_data_quality_stress_panel_dataset as load_packaged_catarrhine_data_quality_stress_panel_dataset,
+)
+from .traits import (
+    detect_missing_traits,
+    load_permissive_trait_rows,
+    resolve_duplicate_traits,
+    selected_trait_rows,
+)
 
 _DATASET_ID = "catarrhine_data_quality_stress_panel"
 _DATASET_LABEL = "Catarrhine data quality stress panel"
@@ -219,42 +228,7 @@ def load_catarrhine_data_quality_stress_panel_dataset() -> (
     CatarrhineDataQualityStressPanelDataset
 ):
     """Expose the packaged catarrhine stress panel as a first-class dataset surface."""
-    dataset_root = _resource_root()
-    raw_root = dataset_root / "raw"
-    raw_alignment_path = raw_root / _RAW_ALIGNMENT_NAME
-    raw_sequence_input_path = raw_root / _RAW_SEQUENCE_INPUT_NAME
-    raw_coding_sequences_path = raw_root / _RAW_CODING_SEQUENCE_NAME
-    raw_tree_path = raw_root / _RAW_TREE_NAME
-    raw_traits_path = raw_root / _RAW_TRAITS_NAME
-    raw_trait_mismatch_path = raw_root / _RAW_TRAIT_MISMATCH_NAME
-    taxon_count = validate_fasta_input(
-        raw_alignment_path, sequence_type=_SEQUENCE_TYPE
-    ).summary.sequence_count
-    raw_trait_row_count = len(_load_permissive_trait_rows(raw_traits_path))
-    return CatarrhineDataQualityStressPanelDataset(
-        dataset_id=_DATASET_ID,
-        label=_DATASET_LABEL,
-        dataset_root=dataset_root,
-        readme_path=dataset_root / "README.md",
-        raw_alignment_path=raw_alignment_path,
-        raw_tree_path=raw_tree_path,
-        raw_traits_path=raw_traits_path,
-        raw_sequence_input_path=raw_sequence_input_path,
-        raw_coding_sequences_path=raw_coding_sequences_path,
-        raw_trait_mismatch_path=raw_trait_mismatch_path,
-        reference_output_root=dataset_root / "expected",
-        taxon_count=taxon_count,
-        raw_trait_row_count=raw_trait_row_count,
-        required_traits=_WORKFLOW_REQUIRED_TRAITS,
-        sequence_type=_SEQUENCE_TYPE,
-        source_summary=(
-            "Real catarrhine mitochondrial sequence and topology material packaged "
-            "with deliberate data-quality defects so duplicate FASTA identifiers, "
-            "illegal or empty sequences, coding frame and stop-codon failures, "
-            "trait duplication, tree-trait mismatch, sequence outliers, and "
-            "branch-length pathologies remain visible and reviewable."
-        ),
-    )
+    return load_packaged_catarrhine_data_quality_stress_panel_dataset()
 
 
 def export_catarrhine_data_quality_stress_panel_dataset(
@@ -383,11 +357,11 @@ def run_catarrhine_data_quality_stress_panel_workflow(
         allow_negative_branch_lengths=True,
     )
 
-    raw_trait_rows = _load_permissive_trait_rows(dataset.raw_traits_path)
-    trait_duplicates = _resolve_duplicate_traits(raw_trait_rows)
+    raw_trait_rows = load_permissive_trait_rows(dataset.raw_traits_path)
+    trait_duplicates = resolve_duplicate_traits(raw_trait_rows)
     duplicate_lookup = {row.taxon: row for row in trait_duplicates}
-    selected_trait_rows = _selected_trait_rows(raw_trait_rows)
-    missing_traits = _detect_missing_traits(
+    cleaned_trait_candidates = selected_trait_rows(raw_trait_rows)
+    missing_traits = detect_missing_traits(
         raw_trait_rows,
         required_traits=set(dataset.required_traits),
         duplicate_lookup=duplicate_lookup,
@@ -413,7 +387,7 @@ def run_catarrhine_data_quality_stress_panel_workflow(
 
     cleaned_trait_rows = [
         dict(row)
-        for row in selected_trait_rows
+        for row in cleaned_trait_candidates
         if row["taxon"] not in excluded_taxa
         and all(row[trait] for trait in dataset.required_traits)
     ]
@@ -670,101 +644,6 @@ def run_catarrhine_data_quality_stress_panel_demo(
 def _copy_output(source: Path, destination: Path) -> Path:
     destination.parent.mkdir(parents=True, exist_ok=True)
     return Path(shutil.copy2(source, destination))
-
-
-def _load_permissive_trait_rows(path: Path) -> list[dict[str, str]]:
-    with path.open("r", encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle)
-        if not reader.fieldnames:
-            raise ValueError(f"trait table has no header row: {path}")
-        columns = [column.strip() for column in reader.fieldnames]
-        return [
-            {column: str(row.get(column, "")).strip() for column in columns}
-            for row in reader
-        ]
-
-
-def _selected_trait_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
-    grouped: dict[str, list[tuple[int, dict[str, str]]]] = {}
-    for index, row in enumerate(rows, start=2):
-        grouped.setdefault(row["taxon"], []).append((index, row))
-    selected: list[tuple[int, dict[str, str]]] = []
-    for entries in grouped.values():
-        selected.append(_select_trait_row(entries))
-    return [dict(row) for _, row in sorted(selected, key=lambda item: item[0])]
-
-
-def _resolve_duplicate_traits(
-    rows: list[dict[str, str]],
-) -> list[TraitDuplicateResolution]:
-    grouped: dict[str, list[tuple[int, dict[str, str]]]] = {}
-    for index, row in enumerate(rows, start=2):
-        grouped.setdefault(row["taxon"], []).append((index, row))
-    resolutions: list[TraitDuplicateResolution] = []
-    for taxon, entries in sorted(grouped.items()):
-        if len(entries) < 2:
-            continue
-        selected_row_number, selected_row = _select_trait_row(entries)
-        resolutions.append(
-            TraitDuplicateResolution(
-                taxon=taxon,
-                occurrence_count=len(entries),
-                selected_row_number=selected_row_number,
-                selected_non_missing_field_count=_non_missing_field_count(selected_row),
-                discarded_row_numbers=[
-                    row_number
-                    for row_number, _ in entries
-                    if row_number != selected_row_number
-                ],
-                selected_reason="highest_non_missing_field_count_then_first_row",
-            )
-        )
-    return resolutions
-
-
-def _select_trait_row(
-    entries: list[tuple[int, dict[str, str]]],
-) -> tuple[int, dict[str, str]]:
-    return max(
-        entries,
-        key=lambda item: (_non_missing_field_count(item[1]), -item[0]),
-    )
-
-
-def _non_missing_field_count(row: dict[str, str]) -> int:
-    return sum(1 for key, value in row.items() if key != "taxon" and value)
-
-
-def _detect_missing_traits(
-    rows: list[dict[str, str]],
-    *,
-    required_traits: set[str],
-    duplicate_lookup: dict[str, TraitDuplicateResolution],
-) -> list[TraitMissingObservation]:
-    observations: list[TraitMissingObservation] = []
-    for row_number, row in enumerate(rows, start=2):
-        for trait, value in row.items():
-            if trait == "taxon" or value:
-                continue
-            required_for_analysis = trait in required_traits
-            if row["taxon"] in duplicate_lookup and (
-                row_number != duplicate_lookup[row["taxon"]].selected_row_number
-            ):
-                action = "dropped_duplicate_row"
-            elif required_for_analysis:
-                action = "drop_taxon_from_cleaned_traits"
-            else:
-                action = "preserve_nonrequired_missingness"
-            observations.append(
-                TraitMissingObservation(
-                    taxon=row["taxon"],
-                    row_number=row_number,
-                    trait=trait,
-                    required_for_analysis=required_for_analysis,
-                    action=action,
-                )
-            )
-    return observations
 
 
 def _apply_branch_length_floor(root: TreeNode, *, floor: float) -> list[str]:

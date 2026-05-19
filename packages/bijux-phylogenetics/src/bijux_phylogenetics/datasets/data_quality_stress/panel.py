@@ -5,6 +5,7 @@ from pathlib import Path
 from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 
 from .models import CatarrhineDataQualityStressPanelDataset
+from .traits import load_permissive_trait_rows
 
 DATASET_ID = "catarrhine_data_quality_stress_panel"
 DATASET_LABEL = "Catarrhine data quality stress panel"
@@ -34,7 +35,7 @@ def load_catarrhine_data_quality_stress_panel_dataset() -> (
     taxon_count = validate_fasta_input(
         raw_alignment_path, sequence_type=SEQUENCE_TYPE
     ).summary.sequence_count
-    raw_trait_row_count = len(_load_permissive_trait_rows(raw_traits_path))
+    raw_trait_row_count = len(load_permissive_trait_rows(raw_traits_path))
     return CatarrhineDataQualityStressPanelDataset(
         dataset_id=DATASET_ID,
         label=DATASET_LABEL,
@@ -69,9 +70,3 @@ def _resource_root() -> Path:
         / "stress"
         / DATASET_ID
     )
-
-
-def _load_permissive_trait_rows(path: Path) -> list[dict[str, str]]:
-    from .workflow import _load_permissive_trait_rows as _load_workflow_trait_rows
-
-    return _load_workflow_trait_rows(path)
