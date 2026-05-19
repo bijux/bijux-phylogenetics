@@ -378,6 +378,7 @@ bijux-phylogenetics demo rabies-method-sensitivity-panel --out artifacts/rabies-
 bijux-phylogenetics demo rabies-cross-host-geography-panel --out artifacts/rabies-cross-host-geography-panel --config src/bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json --json
 bijux-phylogenetics demo catarrhine-data-quality-stress-panel --out artifacts/catarrhine-data-quality-stress-panel --json
 bijux-phylogenetics demo known-answer-reference-panel --out artifacts/known-answer-reference-panel --json
+bijux-phylogenetics demo real-dataset-macroevolution --out artifacts/real-dataset-macroevolution --json
 bijux-phylogenetics simulate tree-birth-death --tree-count 5 --tip-count 16 --out simulated.trees
 bijux-phylogenetics simulate tree-random --tree-count 64 --tip-count 12 --out simulated-random.trees --record-table-out artifacts/random-tree-records.tsv --envelope-table-out artifacts/random-tree-envelope.tsv --json
 bijux-phylogenetics simulate tree-coalescent --tree-count 64 --tip-count 12 --out simulated-coalescent.trees --record-table-out artifacts/coalescent-tree-records.tsv --envelope-table-out artifacts/coalescent-tree-envelope.tsv --json
@@ -389,6 +390,7 @@ bijux-phylogenetics benchmark large-tree-scaling --replicates 1 --tip-count 512 
 bijux-phylogenetics benchmark large-alignment-scaling --replicates 1 --sequence-count 256 --alignment-length 512 --sequence-count 512 --alignment-length 1024 --json
 bijux-phylogenetics benchmark large-tree-set-scaling --replicates 1 --tree-count 128 --tip-count 48 --tree-count 256 --tip-count 64 --json
 bijux-phylogenetics benchmark large-tree-model-fitting --tier small --json
+bijux-phylogenetics benchmark real-dataset-macroevolution --json
 bijux-phylogenetics benchmark workflow-practical-limits --replicates 1 --stress-tier heavy --json
 bijux-phylogenetics report production-scale-readiness --replicates 1 --tree-tip-count 512 --tree-tip-count 1024 --sequence-count 256 --alignment-length 512 --sequence-count 512 --alignment-length 1024 --posterior-tree-count 128 --tree-set-tip-count 48 --posterior-tree-count 256 --tree-set-tip-count 64 --stress-tier heavy --out artifacts/production-scale-readiness.html --json
 bijux-phylogenetics report alignment-package alignment.fasta --out-dir artifacts/alignment-quality-package --json
@@ -431,6 +433,22 @@ one 512-taxon Brownian continuous-fit review case so 500-plus-taxon fitting is
 still exercised on a real owned surface even when transformed-branch optimizers
 are materially slower, and it keeps slowdown explicit through threshold-review
 rows instead of silently treating the larger surface as proven.
+
+For governed real-data macroevolution review, use
+`benchmark real-dataset-macroevolution` or the release-style bundle command
+`demo real-dataset-macroevolution`. This benchmark runs on the published
+Central European seashore flora subset from Dryad (`10.5061/dryad.0st06f0`),
+compares a continuous `seed_mass` model table across Brownian, white-noise,
+Pagel-lambda, OU, and early-burst against stored local `geiger` references,
+compares a discrete `lifeform` model table across ER, SYM, and ARD against
+stored local `geiger` references, records data provenance, and writes both a
+model-table parity ledger and a governed missing-and-mismatched-taxon review
+ledger. The benchmark is intentionally cautious: the selected OU surface
+remains near the lower alpha boundary, so continuous interpretation is
+reported as a weak covariance-shape preference rather than strong
+adaptive-process proof, and the sparse five-state discrete surface is reported
+with selection-level agreement to `geiger` without pretending that SYM and ARD
+row scores are clean owned-reference parity on this real dataset.
 
 For reviewer-facing scale checks on posterior and bootstrap tree-set review,
 use `benchmark large-tree-set-scaling`. It benchmarks
