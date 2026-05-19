@@ -4,12 +4,19 @@ from dataclasses import dataclass
 import math
 from pathlib import Path
 
+from bijux_phylogenetics.comparative.bounded_search import (
+    BoundedSearchControls,
+    run_bounded_maximization,
+)
 from bijux_phylogenetics.comparative.common import (
     ComparativeDataset,
     build_brownian_covariance_matrix,
     load_comparative_dataset,
     node_signature,
     stable_covariance,
+)
+from bijux_phylogenetics.comparative.information_criteria import (
+    rank_model_comparison_rows,
 )
 from bijux_phylogenetics.comparative.models import (
     ComparativeModelComparisonRow,
@@ -149,6 +156,7 @@ class ContinuousModeOptimizerDiagnostics:
     starting_parameter_log_likelihood: float
     coarse_grid_point_count: int
     fine_grid_point_count: int
+    refinement_start_count: int
     function_evaluation_count: int
     coarse_best_parameter: float
     coarse_best_log_likelihood: float
@@ -174,6 +182,7 @@ class ContinuousModeSearchControls:
     coarse_grid_point_count: int = 81
     fine_grid_point_count: int = 81
     initial_parameter_value: float | None = None
+    refinement_start_count: int = 3
 
 
 @dataclass(slots=True)
@@ -547,7 +556,10 @@ def _compare_selected_continuous_modes(
             "no continuous evolutionary mode remained comparable for the requested dataset"
         )
     likelihood_constant_policy, noncomparable_likelihood_models = (
-        _enforce_shared_likelihood_constant_policy(rows)
+        rank_model_comparison_rows(
+            rows,
+            delta_threshold=FITCONTINUOUS_MODEL_CONFIDENCE_DELTA_THRESHOLD,
+        )
     )
     if noncomparable_likelihood_models:
         blocked_models = ", ".join(noncomparable_likelihood_models)
@@ -555,7 +567,6 @@ def _compare_selected_continuous_modes(
             "continuous-mode ranking excluded models with incompatible likelihood "
             f"constant policies: {blocked_models}"
         )
-    _rank_comparison_rows(rows)
     selected_rows = [row for row in rows if row.selected]
     if not selected_rows:
         if noncomparable_likelihood_models:
@@ -670,59 +681,6 @@ def _mode_parameter_count(mode: str) -> int:
     return 3
 
 
-def _rank_comparison_rows(rows: list[ComparativeModelComparisonRow]) -> None:
-    comparable_rows = [
-        row
-        for row in rows
-        if row.comparable and math.isfinite(row.aic) and math.isfinite(row.aicc)
-    ]
-    if not comparable_rows:
-        return
-    best_aic = min(row.aic for row in comparable_rows)
-    best_aicc = min(row.aicc for row in comparable_rows)
-    ranked_rows = sorted(
-        comparable_rows,
-        key=lambda row: (row.aicc, row.aic, row.model),
-    )
-    for rank, row in enumerate(ranked_rows, start=1):
-        row.rank = rank
-        row.delta_aic = row.aic - best_aic
-        row.delta_aicc = row.aicc - best_aicc
-        row.selected = math.isclose(
-            row.aicc,
-            best_aicc,
-            rel_tol=0.0,
-            abs_tol=1e-12,
-        )
-    raw_weights = [math.exp(-0.5 * row.delta_aicc) for row in ranked_rows]
-    weight_total = sum(raw_weights)
-    for row, raw_weight in zip(ranked_rows, raw_weights, strict=True):
-        row.akaike_weight = raw_weight / weight_total if weight_total else 0.0
-        row.within_delta_aic_threshold = (
-            row.delta_aic <= FITCONTINUOUS_MODEL_CONFIDENCE_DELTA_THRESHOLD
-        )
-        row.within_delta_aicc_threshold = (
-            row.delta_aicc <= FITCONTINUOUS_MODEL_CONFIDENCE_DELTA_THRESHOLD
-        )
-    for row in rows:
-        if row in comparable_rows:
-            continue
-        row.rank = None
-        row.delta_aic = math.inf
-        row.delta_aicc = math.inf
-        row.selected = False
-        row.akaike_weight = None
-        row.within_delta_aic_threshold = None
-        row.within_delta_aicc_threshold = None
-    rows.sort(
-        key=lambda row: (
-            row.rank is None,
-            math.inf if row.rank is None else row.rank,
-            row.model,
-        )
-    )
-
-
 def _selected_model_akaike_weight(
     rows: list[ComparativeModelComparisonRow],
 ) -> float | None:
@@ -790,38 +748,6 @@ def _model_confidence_uncertainty_language(
         f"{selected_row.akaike_weight:.3f} and no runner-up remains within "
         f"{threshold:.1f} AICc units"
     )
-
-
-def _enforce_shared_likelihood_constant_policy(
-    rows: list[ComparativeModelComparisonRow],
-) -> tuple[str | None, list[str]]:
-    comparable_rows = [
-        row
-        for row in rows
-        if row.comparable and math.isfinite(row.aic) and math.isfinite(row.aicc)
-    ]
-    if not comparable_rows:
-        return None, []
-    shared_policy = comparable_rows[0].likelihood_constant_policy
-    if shared_policy is None:
-        blocked_models = [row.model for row in comparable_rows]
-        for row in comparable_rows:
-            row.comparable = False
-            row.comparability_note = (
-                "likelihood constant policy is missing, so AIC and AICc ranking is blocked"
-            )
-        return None, blocked_models
-    policies = {row.likelihood_constant_policy for row in comparable_rows}
-    if len(policies) > 1:
-        blocked_models = [row.model for row in comparable_rows]
-        for row in comparable_rows:
-            row.comparable = False
-            row.comparability_note = (
-                "likelihood constant policy differs across candidate models, so AIC and "
-                "AICc ranking is blocked for the full comparison surface"
-            )
-        return None, blocked_models
-    return shared_policy, []
 
 
 def _fit_evolutionary_mode_from_dataset(
@@ -1122,34 +1048,11 @@ def _normalized_search_controls(
         raise ComparativeMethodError(
             "fine_grid_point_count must be at least 2 for bounded parameter search"
         )
-    return controls
-
-
-def _ordered_coarse_candidates(
-    coarse_candidates: list[float],
-    *,
-    lower: float,
-    upper: float,
-    initial_parameter_value: float | None,
-) -> tuple[list[float], str, float]:
-    if initial_parameter_value is None:
-        return coarse_candidates, "lower-bound-first-evaluation", coarse_candidates[0]
-    if initial_parameter_value < lower or initial_parameter_value > upper:
+    if controls.refinement_start_count < 1:
         raise ComparativeMethodError(
-            "initial_parameter_value must fall within the declared bounded search interval"
+            "refinement_start_count must be at least 1 for bounded parameter search"
         )
-    ordered = [initial_parameter_value]
-    ordered.extend(
-        candidate
-        for candidate in coarse_candidates
-        if not math.isclose(
-            candidate,
-            initial_parameter_value,
-            rel_tol=0.0,
-            abs_tol=1e-12,
-        )
-    )
-    return ordered, "user-provided-first-evaluation", initial_parameter_value
+    return controls
 
 
 def _best_transformed_mode_fit(
@@ -1164,118 +1067,61 @@ def _best_transformed_mode_fit(
         raise ComparativeMethodError("parameter bounds must be strictly increasing")
     if mode == "ornstein-uhlenbeck":
         lower = max(lower, 1e-6)
-
-    coarse = _linspace(lower, upper, search_controls.coarse_grid_point_count)
-    coarse_candidates, starting_parameter_policy, starting_parameter_value = (
-        _ordered_coarse_candidates(
-            coarse,
-            lower=lower,
-            upper=upper,
+    search_result = run_bounded_maximization(
+        lower_bound=lower,
+        upper_bound=upper,
+        controls=BoundedSearchControls(
+            coarse_grid_point_count=search_controls.coarse_grid_point_count,
+            fine_grid_point_count=search_controls.fine_grid_point_count,
             initial_parameter_value=search_controls.initial_parameter_value,
-        )
-    )
-    best_parameter = coarse_candidates[0]
-    best_tree = _transform_tree(dataset.tree, mode=mode, parameter_value=best_parameter)
-    best_covariance = stable_covariance(
-        build_brownian_covariance_matrix(best_tree, dataset.taxa)
-    )
-    best_fit = _fit_intercept_only_model(dataset, best_covariance)
-    starting_parameter_log_likelihood = best_fit.log_likelihood
-    profile: list[tuple[float, float]] = [(best_parameter, best_fit.log_likelihood)]
-    coarse_best_parameter = best_parameter
-    coarse_best_log_likelihood = best_fit.log_likelihood
-    for candidate in coarse_candidates[1:]:
-        transformed_tree = _transform_tree(
-            dataset.tree,
+            refinement_start_count=search_controls.refinement_start_count,
+        ),
+        evaluate=lambda parameter_value: _evaluate_transformed_mode_candidate(
+            dataset,
             mode=mode,
-            parameter_value=candidate,
-        )
-        covariance = stable_covariance(
-            build_brownian_covariance_matrix(transformed_tree, dataset.taxa)
-        )
-        fit = _fit_intercept_only_model(dataset, covariance)
-        profile.append((candidate, fit.log_likelihood))
-        if fit.log_likelihood > best_fit.log_likelihood:
-            best_parameter = candidate
-            best_tree = transformed_tree
-            best_covariance = covariance
-            best_fit = fit
-            coarse_best_parameter = candidate
-            coarse_best_log_likelihood = fit.log_likelihood
-
-    ordered_coarse = sorted(
-        {round(candidate, 12): candidate for candidate in coarse_candidates}.values()
+            parameter_value=parameter_value,
+        ),
+        optimizer_name="governed-multi-start-grid-search",
+        parameter_search_strategy="bounded-coarse-grid-with-multi-start-golden-section-refinement",
     )
-    best_index = min(
-        range(len(ordered_coarse)),
-        key=lambda index: abs(ordered_coarse[index] - best_parameter),
-    )
-    left = ordered_coarse[max(0, best_index - 1)]
-    right = ordered_coarse[min(len(ordered_coarse) - 1, best_index + 1)]
-    fine_candidates = _linspace(left, right, search_controls.fine_grid_point_count)
-    for candidate in fine_candidates:
-        if math.isclose(candidate, best_parameter, rel_tol=0.0, abs_tol=1e-12):
-            continue
-        transformed_tree = _transform_tree(
-            dataset.tree,
-            mode=mode,
-            parameter_value=candidate,
-        )
-        covariance = stable_covariance(
-            build_brownian_covariance_matrix(transformed_tree, dataset.taxa)
-        )
-        fit = _fit_intercept_only_model(dataset, covariance)
-        profile.append((candidate, fit.log_likelihood))
-        if fit.log_likelihood > best_fit.log_likelihood:
-            best_parameter = candidate
-            best_tree = transformed_tree
-            best_covariance = covariance
-            best_fit = fit
-    fine_step = 0.0
-    if len(fine_candidates) > 1:
-        fine_step = fine_candidates[1] - fine_candidates[0]
-    tolerance = max(abs(fine_step) / 2.0, 1e-9)
+    best_tree, best_covariance = search_result.payload
     diagnostics = ContinuousModeOptimizerDiagnostics(
         optimizer_name="governed-two-stage-grid-search",
         parameter_search_strategy="bounded-two-stage-grid-search",
-        lower_bound=_stable_value(lower),
-        upper_bound=_stable_value(upper),
-        starting_parameter_policy=starting_parameter_policy,
-        starting_parameter_value=_stable_value(starting_parameter_value),
+        lower_bound=_stable_value(search_result.diagnostics.lower_bound),
+        upper_bound=_stable_value(search_result.diagnostics.upper_bound),
+        starting_parameter_policy=search_result.diagnostics.starting_parameter_policy,
+        starting_parameter_value=_stable_value(
+            search_result.diagnostics.starting_parameter_value
+        ),
         starting_parameter_log_likelihood=_stable_value(
-            starting_parameter_log_likelihood
+            search_result.diagnostics.starting_parameter_objective_value
         ),
-        coarse_grid_point_count=len(coarse),
-        fine_grid_point_count=len(fine_candidates),
-        function_evaluation_count=len(profile),
-        coarse_best_parameter=_stable_value(coarse_best_parameter),
-        coarse_best_log_likelihood=_stable_value(coarse_best_log_likelihood),
-        fine_search_start=_stable_value(left),
-        fine_search_stop=_stable_value(right),
-        converged=True,
-        hit_lower_boundary=math.isclose(
-            best_parameter,
-            lower,
-            rel_tol=0.0,
-            abs_tol=tolerance,
+        coarse_grid_point_count=search_result.diagnostics.coarse_grid_point_count,
+        fine_grid_point_count=search_result.diagnostics.fine_grid_point_count,
+        refinement_start_count=search_result.diagnostics.refinement_start_count,
+        function_evaluation_count=search_result.diagnostics.function_evaluation_count,
+        coarse_best_parameter=_stable_value(
+            search_result.diagnostics.coarse_best_parameter
         ),
-        hit_upper_boundary=math.isclose(
-            best_parameter,
-            upper,
-            rel_tol=0.0,
-            abs_tol=tolerance,
+        coarse_best_log_likelihood=_stable_value(
+            search_result.diagnostics.coarse_best_objective_value
         ),
-    )
-    normalized_profile = sorted(
-        {round(parameter, 12): (parameter, log_likelihood) for parameter, log_likelihood in profile}.values(),
-        key=lambda item: item[0],
+        fine_search_start=_stable_value(search_result.diagnostics.fine_search_start),
+        fine_search_stop=_stable_value(search_result.diagnostics.fine_search_stop),
+        converged=search_result.diagnostics.converged,
+        hit_lower_boundary=search_result.diagnostics.hit_lower_boundary,
+        hit_upper_boundary=search_result.diagnostics.hit_upper_boundary,
     )
     return _TransformedModeSearchResult(
-        parameter_value=best_parameter,
+        parameter_value=search_result.parameter_value,
         transformed_tree=best_tree,
         covariance=best_covariance,
         optimizer_diagnostics=diagnostics,
-        profile=normalized_profile,
+        profile=[
+            (row.parameter_value, row.objective_value)
+            for row in search_result.profile_rows
+        ],
     )
 
 
@@ -1290,134 +1136,80 @@ def _best_pagel_lambda_fit(
         raise ComparativeMethodError(
             "Pagel-lambda bounds must be strictly increasing within [0, 1]"
         )
-
-    coarse = _linspace(lower, upper, search_controls.coarse_grid_point_count)
-    coarse_candidates, starting_parameter_policy, starting_parameter_value = (
-        _ordered_coarse_candidates(
-            coarse,
-            lower=lower,
-            upper=upper,
+    search_result = run_bounded_maximization(
+        lower_bound=lower,
+        upper_bound=upper,
+        controls=BoundedSearchControls(
+            coarse_grid_point_count=search_controls.coarse_grid_point_count,
+            fine_grid_point_count=search_controls.fine_grid_point_count,
             initial_parameter_value=search_controls.initial_parameter_value,
-        )
-    )
-    best_parameter = coarse_candidates[0]
-    best_tree = _transform_tree(
-        dataset.tree,
-        mode="pagel-lambda",
-        parameter_value=best_parameter,
-    )
-    best_covariance = stable_covariance(
-        build_brownian_covariance_matrix(best_tree, dataset.taxa)
-    )
-    best_fit = _fit_intercept_only_model(dataset, best_covariance)
-    starting_parameter_log_likelihood = best_fit.log_likelihood
-    profile: list[tuple[float, float]] = [(best_parameter, best_fit.log_likelihood)]
-    coarse_best_parameter = best_parameter
-    coarse_best_log_likelihood = best_fit.log_likelihood
-    for candidate in coarse_candidates[1:]:
-        transformed_tree = _transform_tree(
-            dataset.tree,
+            refinement_start_count=search_controls.refinement_start_count,
+        ),
+        evaluate=lambda parameter_value: _evaluate_transformed_mode_candidate(
+            dataset,
             mode="pagel-lambda",
-            parameter_value=candidate,
-        )
-        covariance = stable_covariance(
-            build_brownian_covariance_matrix(transformed_tree, dataset.taxa)
-        )
-        fit = _fit_intercept_only_model(dataset, covariance)
-        profile.append((candidate, fit.log_likelihood))
-        if fit.log_likelihood > best_fit.log_likelihood:
-            best_parameter = candidate
-            best_tree = transformed_tree
-            best_covariance = covariance
-            best_fit = fit
-            coarse_best_parameter = candidate
-            coarse_best_log_likelihood = fit.log_likelihood
-
-    ordered_coarse = sorted(
-        {round(candidate, 12): candidate for candidate in coarse_candidates}.values()
+            parameter_value=parameter_value,
+        ),
+        optimizer_name="governed-multi-start-grid-search",
+        parameter_search_strategy="bounded-coarse-grid-with-multi-start-golden-section-refinement",
     )
-    best_index = min(
-        range(len(ordered_coarse)),
-        key=lambda index: abs(ordered_coarse[index] - best_parameter),
-    )
-    left = ordered_coarse[max(0, best_index - 1)]
-    right = ordered_coarse[min(len(ordered_coarse) - 1, best_index + 1)]
-    fine_candidates = _linspace(left, right, search_controls.fine_grid_point_count)
-    for candidate in fine_candidates:
-        if math.isclose(candidate, best_parameter, rel_tol=0.0, abs_tol=1e-12):
-            continue
-        transformed_tree = _transform_tree(
-            dataset.tree,
-            mode="pagel-lambda",
-            parameter_value=candidate,
-        )
-        covariance = stable_covariance(
-            build_brownian_covariance_matrix(transformed_tree, dataset.taxa)
-        )
-        fit = _fit_intercept_only_model(dataset, covariance)
-        profile.append((candidate, fit.log_likelihood))
-        if fit.log_likelihood > best_fit.log_likelihood:
-            best_parameter = candidate
-            best_tree = transformed_tree
-            best_covariance = covariance
-            best_fit = fit
-
-    fine_step = 0.0
-    if len(fine_candidates) > 1:
-        fine_step = fine_candidates[1] - fine_candidates[0]
-    tolerance = max(abs(fine_step) / 2.0, 1e-9)
+    best_tree, best_covariance = search_result.payload
     diagnostics = ContinuousModeOptimizerDiagnostics(
         optimizer_name="governed-two-stage-grid-search",
         parameter_search_strategy="bounded-two-stage-grid-search",
-        lower_bound=_stable_value(lower),
-        upper_bound=_stable_value(upper),
-        starting_parameter_policy=starting_parameter_policy,
-        starting_parameter_value=_stable_value(starting_parameter_value),
+        lower_bound=_stable_value(search_result.diagnostics.lower_bound),
+        upper_bound=_stable_value(search_result.diagnostics.upper_bound),
+        starting_parameter_policy=search_result.diagnostics.starting_parameter_policy,
+        starting_parameter_value=_stable_value(
+            search_result.diagnostics.starting_parameter_value
+        ),
         starting_parameter_log_likelihood=_stable_value(
-            starting_parameter_log_likelihood
+            search_result.diagnostics.starting_parameter_objective_value
         ),
-        coarse_grid_point_count=len(coarse),
-        fine_grid_point_count=len(fine_candidates),
-        function_evaluation_count=len(profile),
-        coarse_best_parameter=_stable_value(coarse_best_parameter),
-        coarse_best_log_likelihood=_stable_value(coarse_best_log_likelihood),
-        fine_search_start=_stable_value(left),
-        fine_search_stop=_stable_value(right),
-        converged=True,
-        hit_lower_boundary=math.isclose(
-            best_parameter,
-            lower,
-            rel_tol=0.0,
-            abs_tol=tolerance,
+        coarse_grid_point_count=search_result.diagnostics.coarse_grid_point_count,
+        fine_grid_point_count=search_result.diagnostics.fine_grid_point_count,
+        refinement_start_count=search_result.diagnostics.refinement_start_count,
+        function_evaluation_count=search_result.diagnostics.function_evaluation_count,
+        coarse_best_parameter=_stable_value(
+            search_result.diagnostics.coarse_best_parameter
         ),
-        hit_upper_boundary=math.isclose(
-            best_parameter,
-            upper,
-            rel_tol=0.0,
-            abs_tol=tolerance,
+        coarse_best_log_likelihood=_stable_value(
+            search_result.diagnostics.coarse_best_objective_value
         ),
-    )
-    normalized_profile = sorted(
-        {
-            round(parameter, 12): (parameter, log_likelihood)
-            for parameter, log_likelihood in profile
-        }.values(),
-        key=lambda item: item[0],
+        fine_search_start=_stable_value(search_result.diagnostics.fine_search_start),
+        fine_search_stop=_stable_value(search_result.diagnostics.fine_search_stop),
+        converged=search_result.diagnostics.converged,
+        hit_lower_boundary=search_result.diagnostics.hit_lower_boundary,
+        hit_upper_boundary=search_result.diagnostics.hit_upper_boundary,
     )
     return _TransformedModeSearchResult(
-        parameter_value=best_parameter,
+        parameter_value=search_result.parameter_value,
         transformed_tree=best_tree,
         covariance=best_covariance,
         optimizer_diagnostics=diagnostics,
-        profile=normalized_profile,
+        profile=[
+            (row.parameter_value, row.objective_value)
+            for row in search_result.profile_rows
+        ],
     )
 
 
-def _linspace(start: float, stop: float, count: int) -> list[float]:
-    if count < 2:
-        return [start]
-    step = (stop - start) / float(count - 1)
-    return [start + (step * index) for index in range(count)]
+def _evaluate_transformed_mode_candidate(
+    dataset: ComparativeDataset,
+    *,
+    mode: str,
+    parameter_value: float,
+) -> tuple[tuple[PhyloTree, list[list[float]]], float]:
+    transformed_tree = _transform_tree(
+        dataset.tree,
+        mode=mode,
+        parameter_value=parameter_value,
+    )
+    covariance = stable_covariance(
+        build_brownian_covariance_matrix(transformed_tree, dataset.taxa)
+    )
+    fit = _fit_intercept_only_model(dataset, covariance)
+    return (transformed_tree, covariance), fit.log_likelihood
 
 
 def _ou_identifiability_warnings_from_profile(
@@ -1464,7 +1256,9 @@ def _ou_identifiability_warnings_from_profile(
                 message="OU likelihood surface is shallow across alpha values, so model choice may be unstable",
             )
         )
-    if alpha < ordered_alphas[len(ordered_alphas) // 3]:
+    alpha_span = ordered_alphas[-1] - ordered_alphas[0]
+    weak_pull_threshold = ordered_alphas[0] + (alpha_span / 3.0)
+    if alpha <= weak_pull_threshold:
         warnings.append(
             EvolutionaryModeIdentifiabilityWarning(
                 kind="weak_pull_to_optimum",
