@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import csv
-from dataclasses import dataclass
-from pathlib import Path
 import shutil
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from bijux_phylogenetics.ancestral.continuous import (
@@ -23,6 +22,12 @@ from bijux_phylogenetics.comparative.brownian_trait_evolution import (
     summarize_brownian_trait_evolution,
     write_brownian_trait_evolution_summary_table,
 )
+from bijux_phylogenetics.comparative.discrete_evolution import (
+    DiscreteStateEvolutionReport,
+    estimate_ancestral_geographic_states,
+    write_node_state_probability_table,
+    write_transition_summary_table,
+)
 from bijux_phylogenetics.comparative.ou_trait_evolution import (
     OUTraitEvolutionSummaryReport,
     summarize_ou_trait_evolution,
@@ -33,13 +38,7 @@ from bijux_phylogenetics.compare.topology import (
     compare_tree_paths,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.comparative.discrete_evolution import (
-    DiscreteStateEvolutionReport,
-    estimate_ancestral_geographic_states,
-    write_node_state_probability_table,
-    write_transition_summary_table,
-)
-from bijux_phylogenetics.distance import DistanceTreeBuildReport, build_distance_tree
+from bijux_phylogenetics.distance import build_distance_tree
 from bijux_phylogenetics.host_association import (
     HostSwitchingReport,
     summarize_host_switching,
@@ -47,426 +46,26 @@ from bijux_phylogenetics.host_association import (
     write_host_switch_branch_table,
     write_host_switch_summary_table,
 )
-from bijux_phylogenetics.io.fasta import load_fasta_alignment
-from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
-from bijux_phylogenetics.io.trees import load_tree
 
-_DATASET_ID = "known_answer_reference_panel"
-_DATASET_LABEL = "Known-answer simulation reference panel"
-_SEQUENCE_TYPE = "dna"
-_DISTANCE_METHOD = "neighbor-joining"
-_DISTANCE_MODEL = "p-distance"
-_CONTINUOUS_TRAIT = "value"
-_DISCRETE_TRAIT = "state"
-
-
-@dataclass(slots=True)
-class KnownAnswerContinuousNodeTruth:
-    """One true continuous node value stored with the packaged simulation panel."""
-
-    node: str
-    node_name: str | None
-    is_tip: bool
-    descendant_taxa: list[str]
-    true_value: float
-
-
-@dataclass(slots=True)
-class KnownAnswerDiscreteNodeTruth:
-    """One true discrete node state stored with the packaged simulation panel."""
-
-    node: str
-    node_name: str | None
-    is_tip: bool
-    descendant_taxa: list[str]
-    true_state: str
-
-
-@dataclass(slots=True)
-class KnownAnswerTransitionTruth:
-    """One true simulated branch-change row stored with the packaged panel."""
-
-    parent_node: str
-    child_node: str
-    branch_length: float
-    source_state: str
-    target_state: str
-    changed: bool
-    event_count: int
-
-
-@dataclass(slots=True)
-class KnownAnswerRecoveryThreshold:
-    """One declared pass or fail threshold for the known-answer suite."""
-
-    metric: str
-    comparator: str
-    threshold: str
-    rationale: str
-
-
-@dataclass(slots=True)
-class KnownAnswerParameterRecoveryRow:
-    """One recovered continuous parameter compared directly against truth."""
-
-    parameter: str
-    true_value: float
-    estimated_value: float
-    absolute_error: float
-    relative_error: float
-    interpretation: str
-
-
-@dataclass(slots=True)
-class KnownAnswerContinuousNodeRecoveryRow:
-    """One internal-node continuous ancestral estimate compared against truth."""
-
-    node: str
-    descendant_taxa: list[str]
-    true_value: float
-    estimated_value: float
-    absolute_error: float
-    standard_error: float
-    lower_95_interval: float
-    upper_95_interval: float
-    confidence: float
-
-
-@dataclass(slots=True)
-class KnownAnswerDiscreteNodeRecoveryRow:
-    """One internal-node discrete ancestral estimate compared against truth."""
-
-    node: str
-    descendant_taxa: list[str]
-    true_state: str
-    estimated_state: str
-    true_state_probability: float
-    confidence: float
-    correct: bool
-    ambiguous: bool
-
-
-@dataclass(slots=True)
-class KnownAnswerTransitionRecoveryRow:
-    """One branchwise transition recovery row compared against stored truth."""
-
-    parent_node: str
-    child_node: str
-    true_transition: str
-    estimated_transition: str
-    true_changed: bool
-    estimated_changed: bool
-    true_event_count: int
-    estimated_event_count: int
-    correct: bool
-
-
-@dataclass(slots=True)
-class KnownAnswerThresholdEvaluationRow:
-    """One evaluated known-answer threshold against observed recovery metrics."""
-
-    metric: str
-    comparator: str
-    threshold: str
-    observed_value: str
-    passed: bool
-    rationale: str
-
-
-@dataclass(slots=True)
-class KnownAnswerReferenceDataset:
-    """Packaged deterministic simulation panel with stored truth artifacts."""
-
-    dataset_id: str
-    label: str
-    dataset_root: Path
-    true_tree_path: Path
-    alignment_path: Path
-    continuous_traits_path: Path
-    ou_traits_path: Path
-    discrete_traits_path: Path
-    host_traits_path: Path
-    geographic_traits_path: Path
-    true_parameters_path: Path
-    true_continuous_nodes_path: Path
-    true_ou_nodes_path: Path
-    true_discrete_nodes_path: Path
-    true_host_nodes_path: Path
-    true_geographic_nodes_path: Path
-    true_host_switch_events_path: Path
-    true_geographic_transition_events_path: Path
-    recovery_thresholds_path: Path
-    reference_output_root: Path
-    taxon_count: int
-    sequence_length: int
-    sequence_type: str
-    distance_method: str
-    distance_model: str
-    source_summary: str
-
-
-@dataclass(slots=True)
-class KnownAnswerReferenceExportResult:
-    """Materialized copy of the packaged simulation dataset."""
-
-    output_root: Path
-    readme_path: Path
-    true_tree_path: Path
-    alignment_path: Path
-    continuous_traits_path: Path
-    ou_traits_path: Path
-    discrete_traits_path: Path
-    host_traits_path: Path
-    geographic_traits_path: Path
-    true_parameters_path: Path
-    true_continuous_nodes_path: Path
-    true_ou_nodes_path: Path
-    true_discrete_nodes_path: Path
-    true_host_nodes_path: Path
-    true_geographic_nodes_path: Path
-    true_host_switch_events_path: Path
-    true_geographic_transition_events_path: Path
-    recovery_thresholds_path: Path
-    expected_output_root: Path
-
-
-@dataclass(slots=True)
-class KnownAnswerReferenceWorkflowReport:
-    """Recovery workflow run over the packaged known-answer simulation panel."""
-
-    dataset: KnownAnswerReferenceDataset
-    distance_tree_build: DistanceTreeBuildReport
-    distance_tree_newick: str
-    tree_recovery: TreeComparisonReport
-    brownian_fit: BrownianTraitEvolutionSummaryReport
-    ou_fit: OUTraitEvolutionSummaryReport
-    continuous_ancestral: ContinuousAncestralReport
-    discrete_ancestral: DiscreteAncestralReport
-    host_switching: HostSwitchingReport
-    geographic_states: DiscreteStateEvolutionReport
-    parameter_recovery_rows: list[KnownAnswerParameterRecoveryRow]
-    continuous_node_recovery_rows: list[KnownAnswerContinuousNodeRecoveryRow]
-    discrete_node_recovery_rows: list[KnownAnswerDiscreteNodeRecoveryRow]
-    host_node_recovery_rows: list[KnownAnswerDiscreteNodeRecoveryRow]
-    host_event_recovery_rows: list[KnownAnswerTransitionRecoveryRow]
-    geographic_node_recovery_rows: list[KnownAnswerDiscreteNodeRecoveryRow]
-    geographic_event_recovery_rows: list[KnownAnswerTransitionRecoveryRow]
-    threshold_evaluation_rows: list[KnownAnswerThresholdEvaluationRow]
-
-
-@dataclass(slots=True)
-class KnownAnswerReferenceWorkflowBundle:
-    """Written recovery outputs for the packaged known-answer simulation panel."""
-
-    output_root: Path
-    rooted_topology_equal: bool
-    same_unrooted_topology: bool
-    same_taxa_different_rooting: bool
-    robinson_foulds_distance: int
-    continuous_internal_node_mean_absolute_error: float
-    discrete_internal_node_accuracy: float
-    discrete_mean_true_state_probability: float
-    host_internal_node_accuracy: float
-    host_event_accuracy: float
-    geographic_internal_node_accuracy: float
-    geographic_event_accuracy: float
-    parameter_row_count: int
-    threshold_pass_count: int
-    threshold_row_count: int
-    workflow_summary_path: Path
-    distance_tree_path: Path
-    tree_recovery_path: Path
-    parameter_recovery_path: Path
-    brownian_fit_summary_path: Path
-    ou_fit_summary_path: Path
-    continuous_ancestral_summary_path: Path
-    continuous_ancestral_uncertainty_path: Path
-    continuous_node_recovery_path: Path
-    discrete_ancestral_summary_path: Path
-    discrete_ancestral_probability_path: Path
-    discrete_node_recovery_path: Path
-    host_switch_summary_path: Path
-    host_state_nodes_path: Path
-    host_switch_branches_path: Path
-    host_node_recovery_path: Path
-    host_event_recovery_path: Path
-    geographic_ancestral_summary_path: Path
-    geographic_state_probability_path: Path
-    geographic_transition_summary_path: Path
-    geographic_node_recovery_path: Path
-    geographic_event_recovery_path: Path
-    threshold_evaluation_path: Path
-
-
-@dataclass(slots=True)
-class KnownAnswerReferenceDemoResult:
-    """Dataset export plus recovery workflow outputs for the public simulation demo."""
-
-    output_root: Path
-    dataset: KnownAnswerReferenceDataset
-    dataset_export: KnownAnswerReferenceExportResult
-    workflow_bundle: KnownAnswerReferenceWorkflowBundle
-    overview_path: Path
-
-
-def load_known_answer_reference_dataset() -> KnownAnswerReferenceDataset:
-    """Expose the packaged deterministic simulation panel as a first-class surface."""
-    dataset_root = _resource_root()
-    true_tree_path = dataset_root / "true-tree.nwk"
-    alignment_path = dataset_root / "simulated-alignment.fasta"
-    continuous_traits_path = dataset_root / "continuous-traits.tsv"
-    ou_traits_path = dataset_root / "ou-traits.tsv"
-    discrete_traits_path = dataset_root / "discrete-traits.tsv"
-    host_traits_path = dataset_root / "host-traits.tsv"
-    geographic_traits_path = dataset_root / "geographic-traits.tsv"
-    true_parameters_path = dataset_root / "true-parameters.tsv"
-    true_continuous_nodes_path = dataset_root / "true-continuous-nodes.tsv"
-    true_ou_nodes_path = dataset_root / "true-ou-nodes.tsv"
-    true_discrete_nodes_path = dataset_root / "true-discrete-nodes.tsv"
-    true_host_nodes_path = dataset_root / "true-host-nodes.tsv"
-    true_geographic_nodes_path = dataset_root / "true-geographic-nodes.tsv"
-    true_host_switch_events_path = dataset_root / "true-host-switch-events.tsv"
-    true_geographic_transition_events_path = (
-        dataset_root / "true-geographic-transition-events.tsv"
-    )
-    recovery_thresholds_path = dataset_root / "recovery-thresholds.tsv"
-    validate_fasta_input(alignment_path, sequence_type=_SEQUENCE_TYPE)
-    records = load_fasta_alignment(alignment_path)
-    tree = load_tree(true_tree_path)
-    return KnownAnswerReferenceDataset(
-        dataset_id=_DATASET_ID,
-        label=_DATASET_LABEL,
-        dataset_root=dataset_root,
-        true_tree_path=true_tree_path,
-        alignment_path=alignment_path,
-        continuous_traits_path=continuous_traits_path,
-        ou_traits_path=ou_traits_path,
-        discrete_traits_path=discrete_traits_path,
-        host_traits_path=host_traits_path,
-        geographic_traits_path=geographic_traits_path,
-        true_parameters_path=true_parameters_path,
-        true_continuous_nodes_path=true_continuous_nodes_path,
-        true_ou_nodes_path=true_ou_nodes_path,
-        true_discrete_nodes_path=true_discrete_nodes_path,
-        true_host_nodes_path=true_host_nodes_path,
-        true_geographic_nodes_path=true_geographic_nodes_path,
-        true_host_switch_events_path=true_host_switch_events_path,
-        true_geographic_transition_events_path=true_geographic_transition_events_path,
-        recovery_thresholds_path=recovery_thresholds_path,
-        reference_output_root=dataset_root / "expected",
-        taxon_count=tree.tip_count,
-        sequence_length=len(records[0].sequence),
-        sequence_type=_SEQUENCE_TYPE,
-        distance_method=_DISTANCE_METHOD,
-        distance_model=_DISTANCE_MODEL,
-        source_summary=(
-            "Deterministic owned simulation panel with one birth-death tree, one "
-            "JC-like DNA alignment, one Brownian continuous trait, one OU "
-            "continuous trait, one generic discrete trait, one host-state trait, "
-            "and one geographic-state trait, packaged with node-level truth, "
-            "branch-event truth, and explicit recovery thresholds."
-        ),
-    )
-
-
-def export_known_answer_reference_dataset(
-    destination: Path,
-) -> KnownAnswerReferenceExportResult:
-    """Copy the packaged known-answer simulation dataset and reference outputs."""
-    dataset = load_known_answer_reference_dataset()
-    if destination.exists():
-        shutil.rmtree(destination)
-    destination.mkdir(parents=True, exist_ok=True)
-    readme_path = shutil.copy2(
-        dataset.dataset_root / "README.md", destination / "README.md"
-    )
-    true_tree_path = shutil.copy2(dataset.true_tree_path, destination / "true-tree.nwk")
-    alignment_path = shutil.copy2(
-        dataset.alignment_path,
-        destination / "simulated-alignment.fasta",
-    )
-    continuous_traits_path = shutil.copy2(
-        dataset.continuous_traits_path,
-        destination / "continuous-traits.tsv",
-    )
-    ou_traits_path = shutil.copy2(
-        dataset.ou_traits_path,
-        destination / "ou-traits.tsv",
-    )
-    discrete_traits_path = shutil.copy2(
-        dataset.discrete_traits_path,
-        destination / "discrete-traits.tsv",
-    )
-    host_traits_path = shutil.copy2(
-        dataset.host_traits_path,
-        destination / "host-traits.tsv",
-    )
-    geographic_traits_path = shutil.copy2(
-        dataset.geographic_traits_path,
-        destination / "geographic-traits.tsv",
-    )
-    true_parameters_path = shutil.copy2(
-        dataset.true_parameters_path,
-        destination / "true-parameters.tsv",
-    )
-    true_continuous_nodes_path = shutil.copy2(
-        dataset.true_continuous_nodes_path,
-        destination / "true-continuous-nodes.tsv",
-    )
-    true_ou_nodes_path = shutil.copy2(
-        dataset.true_ou_nodes_path,
-        destination / "true-ou-nodes.tsv",
-    )
-    true_discrete_nodes_path = shutil.copy2(
-        dataset.true_discrete_nodes_path,
-        destination / "true-discrete-nodes.tsv",
-    )
-    true_host_nodes_path = shutil.copy2(
-        dataset.true_host_nodes_path,
-        destination / "true-host-nodes.tsv",
-    )
-    true_geographic_nodes_path = shutil.copy2(
-        dataset.true_geographic_nodes_path,
-        destination / "true-geographic-nodes.tsv",
-    )
-    true_host_switch_events_path = shutil.copy2(
-        dataset.true_host_switch_events_path,
-        destination / "true-host-switch-events.tsv",
-    )
-    true_geographic_transition_events_path = shutil.copy2(
-        dataset.true_geographic_transition_events_path,
-        destination / "true-geographic-transition-events.tsv",
-    )
-    recovery_thresholds_path = shutil.copy2(
-        dataset.recovery_thresholds_path,
-        destination / "recovery-thresholds.tsv",
-    )
-    expected_output_root = destination / "expected"
-    shutil.copytree(dataset.reference_output_root, expected_output_root)
-    return KnownAnswerReferenceExportResult(
-        output_root=destination,
-        readme_path=Path(readme_path),
-        true_tree_path=Path(true_tree_path),
-        alignment_path=Path(alignment_path),
-        continuous_traits_path=Path(continuous_traits_path),
-        ou_traits_path=Path(ou_traits_path),
-        discrete_traits_path=Path(discrete_traits_path),
-        host_traits_path=Path(host_traits_path),
-        geographic_traits_path=Path(geographic_traits_path),
-        true_parameters_path=Path(true_parameters_path),
-        true_continuous_nodes_path=Path(true_continuous_nodes_path),
-        true_ou_nodes_path=Path(true_ou_nodes_path),
-        true_discrete_nodes_path=Path(true_discrete_nodes_path),
-        true_host_nodes_path=Path(true_host_nodes_path),
-        true_geographic_nodes_path=Path(true_geographic_nodes_path),
-        true_host_switch_events_path=Path(true_host_switch_events_path),
-        true_geographic_transition_events_path=Path(
-            true_geographic_transition_events_path
-        ),
-        recovery_thresholds_path=Path(recovery_thresholds_path),
-        expected_output_root=expected_output_root,
-    )
+from .export import export_known_answer_reference_dataset
+from .models import (
+    CONTINUOUS_TRAIT,
+    DISCRETE_TRAIT,
+    KnownAnswerContinuousNodeRecoveryRow,
+    KnownAnswerContinuousNodeTruth,
+    KnownAnswerDiscreteNodeRecoveryRow,
+    KnownAnswerDiscreteNodeTruth,
+    KnownAnswerParameterRecoveryRow,
+    KnownAnswerRecoveryThreshold,
+    KnownAnswerReferenceDemoResult,
+    KnownAnswerReferenceWorkflowBundle,
+    KnownAnswerReferenceWorkflowReport,
+    KnownAnswerThresholdEvaluationRow,
+    KnownAnswerTransitionRecoveryRow,
+    KnownAnswerTransitionTruth,
+)
+from .panel import load_known_answer_reference_dataset
 
 
 def run_known_answer_reference_workflow() -> KnownAnswerReferenceWorkflowReport:
@@ -499,23 +98,23 @@ def run_known_answer_reference_workflow() -> KnownAnswerReferenceWorkflowReport:
     brownian_fit = summarize_brownian_trait_evolution(
         dataset.true_tree_path,
         dataset.continuous_traits_path,
-        trait=_CONTINUOUS_TRAIT,
+        trait=CONTINUOUS_TRAIT,
     )
     ou_fit = summarize_ou_trait_evolution(
         dataset.true_tree_path,
         dataset.ou_traits_path,
-        trait=_CONTINUOUS_TRAIT,
+        trait=CONTINUOUS_TRAIT,
     )
     continuous_ancestral = reconstruct_continuous_ancestral_states(
         dataset.true_tree_path,
         dataset.continuous_traits_path,
-        trait=_CONTINUOUS_TRAIT,
+        trait=CONTINUOUS_TRAIT,
         model="brownian",
     )
     discrete_ancestral = reconstruct_discrete_ancestral_states(
         dataset.true_tree_path,
         dataset.discrete_traits_path,
-        trait=_DISCRETE_TRAIT,
+        trait=DISCRETE_TRAIT,
         model="equal-rates",
     )
     host_switching = summarize_host_switching(
@@ -1616,13 +1215,3 @@ def _format_observed_value(value: bool | float) -> str:
     if isinstance(value, bool):
         return str(value).lower()
     return _format_number(value)
-
-
-def _resource_root() -> Path:
-    return (
-        Path(__file__).resolve().parent.parent
-        / "resources"
-        / "datasets"
-        / "simulation"
-        / _DATASET_ID
-    )
