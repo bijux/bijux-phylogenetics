@@ -10,10 +10,8 @@ from .models import (
 from .demo import run_continuous_mode_recovery_panel_demo
 from .export import export_continuous_mode_recovery_panel_dataset
 from .panel import load_continuous_mode_recovery_panel_dataset
-from .workflow import (
-    run_continuous_mode_recovery_panel_workflow,
-    write_continuous_mode_recovery_panel_workflow_bundle,
-)
+from .bundle import write_continuous_mode_recovery_panel_workflow_bundle
+from .workflow import run_continuous_mode_recovery_panel_workflow
 
 __all__ = [
     "ContinuousModeRecoveryPanelDataset",
