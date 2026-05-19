@@ -61,3 +61,20 @@ The packaged workflow reruns the following reviewer-facing recovery surfaces:
 The `expected/` directory contains the governed recovery ledgers regenerated
 from the owned runtime surface. These files are used as exact packaged
 references for the dataset tests and the public demo surface.
+
+The governed expected bundle contains:
+
+- `workflow-summary.tsv`: one integrated recovery metrics row for the panel
+- `recovered-distance-tree.nwk`: the tree rebuilt from the simulated alignment
+- `tree-recovery.tsv`: topology recovery metrics against the true tree
+- `parameter-recovery.tsv`: continuous truth-versus-estimate parameter ledger
+- `brownian-fit-summary.tsv` and `ou-fit-summary.tsv`: continuous model-fit summaries on the true tree
+- `continuous-ancestral-summary.tsv` and `continuous-ancestral-uncertainty.tsv`: continuous ancestral reconstruction summaries
+- `continuous-node-recovery.tsv`: continuous internal-node truth-versus-estimate ledger
+- `discrete-ancestral-summary.tsv` and `discrete-ancestral-probabilities.tsv`: generic discrete ancestral summaries
+- `discrete-node-recovery.tsv`: generic discrete internal-node recovery ledger
+- `host-switch-summary.tsv`, `host-state-nodes.tsv`, and `host-switch-branches.tsv`: host-state recovery and branch-change review outputs
+- `host-node-recovery.tsv` and `host-event-recovery.tsv`: host-state truth-versus-estimate ledgers
+- `geographic-ancestral-summary.tsv`, `geographic-state-probabilities.tsv`, and `geographic-transition-summary.tsv`: geographic-state recovery outputs
+- `geographic-node-recovery.tsv` and `geographic-event-recovery.tsv`: geographic truth-versus-estimate ledgers
+- `recovery-threshold-evaluation.tsv`: declared threshold evaluation ledger for the full recovery suite

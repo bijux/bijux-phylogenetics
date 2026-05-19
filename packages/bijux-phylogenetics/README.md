@@ -440,6 +440,18 @@ transform-parameter recovery, and transform-parameter comparison ledgers,
 records execution and warning review rows, and keeps review-only ARD cases
 explicit instead of flattening weak identification into success claims.
 
+For governed owned known-answer recovery review, use
+`demo known-answer-reference-panel`. It materializes the packaged simulation
+dataset, rebuilds the distance tree, reruns the continuous and discrete
+recovery surfaces on stored truth artifacts, and writes explicit recovery
+ledgers for parameters, internal nodes, branch events, and declared threshold
+checks. The same panel is exposed as a typed Python surface under
+`bijux_phylogenetics.datasets.known_answer_reference` through
+`load_known_answer_reference_dataset()`,
+`run_known_answer_reference_workflow()`,
+`write_known_answer_reference_workflow_bundle(...)`, and
+`run_known_answer_reference_demo(...)`.
+
 For governed large-tree macroevolution fitting review, use
 `benchmark large-tree-model-fitting`. The small tier runs one 100-taxon
 Pagel-lambda fit and one 100-taxon binary discrete ER fit, records owned
