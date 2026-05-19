@@ -6,6 +6,9 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.command_line import main
+from bijux_phylogenetics.parity.geiger.generated_report import (
+    GeneratedGeigerParityReport,
+)
 from tests.support.fake_geiger_parity import fake_geiger_rscript
 
 pytestmark = pytest.mark.slow
@@ -436,3 +439,76 @@ def test_parity_cli_restricts_live_geiger_ard_discrete_cases(
     observation = payload["data"]["report"]["observations"][0]
     assert observation["case_id"] == "fitdiscrete-ard-binary-twenty-four-taxa"
     assert observation["model_name"] == "ARD"
+
+
+def test_parity_cli_writes_generated_geiger_report(
+    tmp_path: Path,
+    capsys,
+    monkeypatch,
+) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    markdown_path = tmp_path / "geiger-parity-report.md"
+    json_path = tmp_path / "geiger-parity-report.json"
+
+    monkeypatch.setattr(
+        "bijux_phylogenetics.command_line.build_generated_geiger_parity_report",
+        lambda parity_report: GeneratedGeigerParityReport(
+            generated_at_utc="2026-05-19T00:00:00+00:00",
+            goal_start=251,
+            goal_end=289,
+            r_version="R version 4.4.1",
+            geiger_version="2.0.11",
+            live_case_count=1,
+            live_passed_case_count=1,
+            live_failed_case_count=0,
+            live_skipped_case_count=0,
+            all_live_cases_passed=True,
+            live_function_summary_rows=[
+                {
+                    "function_name": "geiger::fitContinuous(model='lambda')",
+                    "case_count": 1,
+                    "passed_case_count": 1,
+                    "failed_case_count": 0,
+                    "skipped_case_count": 0,
+                }
+            ],
+            covered_models=["geiger::fitContinuous(model='lambda')"],
+            excluded_models=[],
+            optimizer_mismatch_categories=[],
+            tolerance_rules=[],
+            boundary_warning_summaries=[],
+            simulation_recovery_rows=[],
+            benchmark_rows=[],
+            sim_char_case_count=3,
+            sim_char_all_passed=True,
+            goal_coverage_rows=[],
+            limitations=[],
+        ),
+    )
+
+    exit_code = main(
+        [
+            "parity",
+            "--reference-source",
+            "geiger-live",
+            "--geiger-rscript-executable",
+            str(rscript),
+            "--geiger-case",
+            "fitcontinuous-lambda-weak-signal-review",
+            "--generated-report-out",
+            str(markdown_path),
+            "--generated-report-json-out",
+            str(json_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["generated_report_written"] is True
+    assert markdown_path.exists()
+    assert json_path.exists()
+    assert payload["data"]["generated_report_markdown"] == str(markdown_path)
+    assert payload["data"]["generated_report_json"] == str(json_path)
+    assert payload["data"]["generated_report"]["goal_end"] == 289
