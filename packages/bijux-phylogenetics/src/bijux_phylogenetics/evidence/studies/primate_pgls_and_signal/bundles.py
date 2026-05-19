@@ -37,6 +37,11 @@ from .runtime import (
     transformed_tree_reports_for_repo,
 )
 
+__all__ = [
+    "build_primate_pgls_signal_bundle",
+    "build_primate_pgls_signal_bundles",
+]
+
 
 def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, object]:
     r_results = load_r_reference_results(repo_root)
