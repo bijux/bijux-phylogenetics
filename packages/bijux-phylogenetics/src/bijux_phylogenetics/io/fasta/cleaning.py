@@ -1,43 +1,215 @@
 from __future__ import annotations
 
-from ._shared import (
+from pathlib import Path
+
+from bijux_phylogenetics.core.alignment import (
     AlignmentCleaningReport,
     AlignmentComparisonReport,
     AlignmentCompositionShift,
     AlignmentFilterProfile,
+    AlignmentGroupRetention,
     AlignmentRecord,
     AlignmentSummary,
+    AlignmentSignalWarning,
     AlignmentTrimReport,
     DuplicateSequenceGroup,
     NearDuplicateSequencePair,
     PairwiseSequenceIdentity,
-    Path,
     RemovedAlignmentSequence,
     SequenceCompositionOutlier,
     SequenceIdentityMatrix,
     TrimmedAlignmentColumn,
-    _ALIGNMENT_FILTER_PROFILES,
+)
+from bijux_phylogenetics.core.metadata import load_taxon_table
+
+from .core import (
     _GAP_CHARACTERS,
-    _composition_for_comparison,
-    _detect_composition_outlier_sequences_records,
-    _detect_identical_duplicate_sequences_records,
-    _detect_near_duplicate_sequences_records,
-    _expand_removed_positions_to_groups,
-    _group_retention_after_cleaning,
     _is_explicit_missing,
-    _pairwise_identity,
-    _signal_warnings_for_cleaning,
-    _trim_columns,
     _validate_fraction_threshold,
     load_fasta_alignment,
 )
-
 from .records import (
+    _detect_composition_outlier_sequences_records,
+    _detect_identical_duplicate_sequences_records,
+    _detect_near_duplicate_sequences_records,
+    _pairwise_identity,
     detect_sequences_with_excessive_missing_data,
     detect_sites_with_excessive_missing_data,
     summarise_fasta,
     summarise_records_as_alignment_summary,
 )
+
+_ALIGNMENT_FILTER_PROFILES: dict[str, AlignmentFilterProfile] = {
+    "conservative": AlignmentFilterProfile(
+        name="conservative",
+        remove_all_gap_sites=True,
+        remove_all_missing_sites=True,
+        site_missingness_threshold=0.8,
+        sequence_missingness_threshold=0.6,
+        preserve_codon_structure=False,
+        note="retain most data while removing only the most uncertainty-heavy sites and sequences",
+    ),
+    "moderate": AlignmentFilterProfile(
+        name="moderate",
+        remove_all_gap_sites=True,
+        remove_all_missing_sites=True,
+        site_missingness_threshold=0.5,
+        sequence_missingness_threshold=0.4,
+        preserve_codon_structure=False,
+        note="balanced trimming for routine phylogenetic alignment cleaning",
+    ),
+    "aggressive": AlignmentFilterProfile(
+        name="aggressive",
+        remove_all_gap_sites=True,
+        remove_all_missing_sites=True,
+        site_missingness_threshold=0.3,
+        sequence_missingness_threshold=0.25,
+        preserve_codon_structure=False,
+        note="remove strongly uncertainty-heavy sites and weak sequences even at the cost of data loss",
+    ),
+    "coding-safe": AlignmentFilterProfile(
+        name="coding-safe",
+        remove_all_gap_sites=True,
+        remove_all_missing_sites=True,
+        site_missingness_threshold=0.5,
+        sequence_missingness_threshold=0.35,
+        preserve_codon_structure=True,
+        note="trim codon-aligned nucleotide data while preserving codon phase by removing full codons together",
+    ),
+    "phylogenomics-scale": AlignmentFilterProfile(
+        name="phylogenomics-scale",
+        remove_all_gap_sites=True,
+        remove_all_missing_sites=True,
+        site_missingness_threshold=0.7,
+        sequence_missingness_threshold=0.7,
+        preserve_codon_structure=False,
+        note="favor taxon retention for large concatenated matrices while removing empty or highly degraded regions",
+    ),
+}
+
+
+def _trim_columns(
+    records: list[AlignmentRecord],
+    *,
+    keep_positions: list[int],
+) -> list[AlignmentRecord]:
+    return [
+        AlignmentRecord(
+            identifier=record.identifier,
+            sequence="".join(record.sequence[index] for index in keep_positions),
+        )
+        for record in records
+    ]
+
+
+def _expand_removed_positions_to_groups(
+    removed_positions: set[int],
+    *,
+    alignment_length: int,
+    group_size: int,
+) -> set[int]:
+    if group_size <= 1:
+        return set(removed_positions)
+    expanded: set[int] = set()
+    for position in removed_positions:
+        group_start = ((position - 1) // group_size) * group_size + 1
+        for grouped_position in range(
+            group_start,
+            min(group_start + group_size, alignment_length + 1),
+        ):
+            expanded.add(grouped_position)
+    return expanded
+
+
+def _composition_for_comparison(summary: AlignmentSummary) -> dict[str, float]:
+    if summary.nucleotide_composition:
+        return summary.nucleotide_composition
+    return summary.amino_acid_composition
+
+
+def _signal_warnings_for_cleaning(
+    original: AlignmentSummary,
+    cleaned: AlignmentSummary,
+) -> list[AlignmentSignalWarning]:
+    warnings: list[AlignmentSignalWarning] = []
+    if original.parsimony_informative_site_count > 0:
+        retained_fraction = (
+            cleaned.parsimony_informative_site_count
+            / original.parsimony_informative_site_count
+        )
+        if retained_fraction < 0.5:
+            warnings.append(
+                AlignmentSignalWarning(
+                    code="informative-site-loss",
+                    message="cleaning retained less than half of the original parsimony-informative sites",
+                )
+            )
+    if cleaned.sequence_count < max(2, original.sequence_count // 2):
+        warnings.append(
+            AlignmentSignalWarning(
+                code="taxon-coverage-loss",
+                message="cleaning removed more than half of the original taxa",
+            )
+        )
+    if cleaned.variable_site_count == 0 and original.variable_site_count > 0:
+        warnings.append(
+            AlignmentSignalWarning(
+                code="variable-site-collapse",
+                message="cleaning removed all variable sites from the alignment",
+            )
+        )
+    return warnings
+
+
+def _group_retention_after_cleaning(
+    original_taxa: list[str],
+    retained_taxa: list[str],
+    *,
+    table_path: Path | None,
+    group_columns: list[str] | None,
+) -> list[AlignmentGroupRetention]:
+    if table_path is None or not group_columns:
+        return []
+    table = load_taxon_table(table_path)
+    rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
+    original_taxa_set = set(original_taxa)
+    retained_taxa_set = set(retained_taxa)
+    reports: list[AlignmentGroupRetention] = []
+    for column in group_columns:
+        if column not in table.columns:
+            raise ValueError(f"group column '{column}' is not present in {table_path}")
+        values = sorted(
+            {
+                rows_by_taxon[taxon][column]
+                for taxon in original_taxa
+                if taxon in rows_by_taxon and rows_by_taxon[taxon][column]
+            }
+        )
+        for value in values:
+            original_count = sum(
+                1
+                for taxon in original_taxa_set
+                if taxon in rows_by_taxon and rows_by_taxon[taxon][column] == value
+            )
+            retained_count = sum(
+                1
+                for taxon in retained_taxa_set
+                if taxon in rows_by_taxon and rows_by_taxon[taxon][column] == value
+            )
+            removed_count = original_count - retained_count
+            reports.append(
+                AlignmentGroupRetention(
+                    column=column,
+                    value=value,
+                    original_count=original_count,
+                    retained_count=retained_count,
+                    removed_count=removed_count,
+                    removed_fraction=0.0
+                    if original_count == 0
+                    else round(removed_count / original_count, 15),
+                )
+            )
+    return reports
 
 def list_alignment_filter_profiles() -> list[AlignmentFilterProfile]:
     """Return the supported named alignment-cleaning profiles."""
