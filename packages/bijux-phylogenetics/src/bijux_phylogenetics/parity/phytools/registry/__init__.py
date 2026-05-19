@@ -1,124 +1,43 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
-
-from bijux_phylogenetics.fixtures import get_shared_phytools_comparative_fixture
 from bijux_phylogenetics.simulation import DiscreteHistoryRateRow
 
-@dataclass(frozen=True, slots=True)
-class PhytoolsParityCase:
-    """One governed live `phytools` parity case."""
-
-    case_id: str
-    fixture_id: str
-    function_name: str
-    python_function_name: str
-    operation: str
-    input_fixtures: tuple[Path, ...]
-    tolerance: float
-    trait_name: str
-    taxon_column: str | None = None
-    discrete_model: str | None = None
-    root_prior_mode: str = "equal"
-    permutation_count: int | None = None
-    permutation_seed: int | None = None
-    stochastic_map_replicate_count: int | None = None
-    stochastic_map_seed: int | None = None
-    density_resolution: int | None = None
-    focal_state: str | None = None
-    simulation_states: tuple[str, ...] | None = None
-    simulation_rate_rows: tuple[DiscreteHistoryRateRow, ...] | None = None
-    simulation_root_state: str | None = None
-    simulation_root_state_probabilities: dict[str, float] | None = None
-    simulation_replicate_count: int | None = None
-    simulation_seed: int | None = None
-    continuous_root_state: float | None = None
-    continuous_sigma_squared: float | None = None
-    continuous_replicate_count: int | None = None
-    continuous_seed: int | None = None
-    continuous_trait_names: tuple[str, ...] | None = None
-    continuous_root_states: tuple[float, ...] | None = None
-    continuous_covariance_matrix: tuple[tuple[float, ...], ...] | None = None
-    comparative_formula: str | None = None
-    comparative_predictors: tuple[str, ...] | None = None
-    comparative_lambda_value: float | None = None
-    field_tolerances: dict[str, float] | None = None
-    row_field_tolerances: dict[str, float] | None = None
-    compare_rows: bool = True
-
-
-def _package_root() -> Path:
-    return Path(__file__).resolve().parents[4]
+from .fixtures import build_phytools_registry_fixture_catalog
+from .models import PhytoolsParityCase
 
 
 def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
     """Return the governed live `phytools` parity cases."""
-    simulation_tree_fixture = (
-        _package_root() / "tests" / "fixtures" / "trees" / "example_tree.nwk"
+    fixture_catalog = build_phytools_registry_fixture_catalog()
+    simulation_tree_fixture = fixture_catalog.simulation_tree_fixture
+    simulation_six_taxa_tree_fixture = fixture_catalog.simulation_six_taxa_tree_fixture
+    strong_signal_fixture = fixture_catalog.strong_signal_fixture
+    nonultrametric_signal_fixture = fixture_catalog.nonultrametric_signal_fixture
+    weak_signal_fixture = fixture_catalog.weak_signal_fixture
+    missing_signal_fixture = fixture_catalog.missing_signal_fixture
+    pgls_continuous_fixture = fixture_catalog.pgls_continuous_fixture
+    pgls_categorical_fixture = fixture_catalog.pgls_categorical_fixture
+    pgls_interaction_fixture = fixture_catalog.pgls_interaction_fixture
+    phyl_resid_brownian_fixture = fixture_catalog.phyl_resid_brownian_fixture
+    phyl_resid_lambda_fixture = fixture_catalog.phyl_resid_lambda_fixture
+    phyl_resid_lambda_missing_fixture = (
+        fixture_catalog.phyl_resid_lambda_missing_fixture
     )
-    simulation_six_taxa_tree_fixture = (
-        _package_root() / "tests" / "fixtures" / "trees" / "example_tree_six_taxa.nwk"
+    phyl_anova_fixture = fixture_catalog.phyl_anova_fixture
+    phyl_anova_missing_fixture = fixture_catalog.phyl_anova_missing_fixture
+    binary_discrete_fixture = fixture_catalog.binary_discrete_fixture
+    multistate_discrete_fixture = fixture_catalog.multistate_discrete_fixture
+    binary_discrete_missing_fixture = fixture_catalog.binary_discrete_missing_fixture
+    multistate_discrete_missing_fixture = (
+        fixture_catalog.multistate_discrete_missing_fixture
     )
-    strong_signal_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_continuous_strong_signal_twenty_four_taxa"
+    ard_binary_discrete_fixture = fixture_catalog.ard_binary_discrete_fixture
+    ard_multistate_discrete_fixture = fixture_catalog.ard_multistate_discrete_fixture
+    ard_binary_discrete_missing_fixture = (
+        fixture_catalog.ard_binary_discrete_missing_fixture
     )
-    nonultrametric_signal_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_continuous_strong_signal_non_ultrametric_twenty_four_taxa"
-    )
-    weak_signal_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_continuous_weak_signal_twenty_four_taxa"
-    )
-    missing_signal_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_continuous_missing_values_twenty_four_taxa"
-    )
-    pgls_continuous_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_pgls_brownian_continuous_four_taxa"
-    )
-    pgls_categorical_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_pgls_brownian_categorical_eight_taxa"
-    )
-    pgls_interaction_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_pgls_brownian_interaction_eight_taxa"
-    )
-    phyl_resid_brownian_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_phyl_resid_bm_allometry_six_taxa"
-    )
-    phyl_resid_lambda_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_phyl_resid_lambda_allometry_six_taxa"
-    )
-    phyl_resid_lambda_missing_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_phyl_resid_lambda_missing_six_taxa"
-    )
-    phyl_anova_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_phyl_anova_group_effect_six_taxa"
-    )
-    phyl_anova_missing_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_phyl_anova_group_effect_missing_six_taxa"
-    )
-    binary_discrete_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_discrete_binary_twenty_four_taxa"
-    )
-    multistate_discrete_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_discrete_multistate_twenty_four_taxa"
-    )
-    binary_discrete_missing_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_discrete_binary_missing_twenty_four_taxa"
-    )
-    multistate_discrete_missing_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_discrete_multistate_missing_twenty_four_taxa"
-    )
-    ard_binary_discrete_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_discrete_ard_binary_twenty_four_taxa"
-    )
-    ard_multistate_discrete_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_discrete_ard_multistate_twenty_four_taxa"
-    )
-    ard_binary_discrete_missing_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_discrete_ard_binary_missing_twenty_four_taxa"
-    )
-    ard_multistate_discrete_missing_fixture = get_shared_phytools_comparative_fixture(
-        "phytools_discrete_ard_multistate_missing_twenty_four_taxa"
+    ard_multistate_discrete_missing_fixture = (
+        fixture_catalog.ard_multistate_discrete_missing_fixture
     )
     return [
         PhytoolsParityCase(
