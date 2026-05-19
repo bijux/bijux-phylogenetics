@@ -1,7 +1,7 @@
 # ruff: noqa: F401
 from __future__ import annotations
 
-from ._shared import (
+from .core import (
     AlignmentRecord as AlignmentRecord,
     detect_fasta_sequence_type as detect_fasta_sequence_type,
     infer_alignment_alphabet as infer_alignment_alphabet,
