@@ -456,7 +456,30 @@ def _load_scenarios(
                 root_state=row["root_state"],
                 seed=int(row["seed"]),
                 tree_path=dataset_root / row["tree_file"],
+                transform=_optional_string(row.get("transform", "")),
+                transform_parameter_value=_optional_float(
+                    row.get("transform_parameter_value", "")
+                ),
                 rate_tolerance=_optional_float(row["rate_tolerance"]),
+                parameter_tolerances=_parse_parameter_tolerances(
+                    row.get("parameter_tolerances", "")
+                ),
+                lambda_bounds=_parse_bounds(
+                    row.get("lambda_bounds", ""),
+                    default=(0.0, 1.0),
+                ),
+                kappa_bounds=_parse_bounds(
+                    row.get("kappa_bounds", ""),
+                    default=(0.0, 1.0),
+                ),
+                delta_bounds=_parse_bounds(
+                    row.get("delta_bounds", ""),
+                    default=(0.006737947, 3.0),
+                ),
+                early_burst_bounds=_parse_bounds(
+                    row.get("early_burst_bounds", ""),
+                    default=(-10.0, 10.0),
+                ),
                 expected_overparameterized=(row["expected_overparameterized"] == "true"),
                 expected_warning_kinds=_split_items(row["expected_warning_kinds"]),
                 notes=row["notes"],
@@ -482,6 +505,29 @@ def _parse_rate_rows(value: str) -> list[DiscreteHistoryRateRow]:
 
 def _optional_float(value: str) -> float | None:
     return None if not value else float(value)
+
+
+def _optional_string(value: str) -> str | None:
+    return None if not value else value
+
+
+def _parse_parameter_tolerances(value: str) -> dict[str, float]:
+    tolerances: dict[str, float] = {}
+    for item in _split_items(value):
+        parameter, tolerance = item.split("=")
+        tolerances[parameter] = float(tolerance)
+    return tolerances
+
+
+def _parse_bounds(
+    value: str,
+    *,
+    default: tuple[float, float],
+) -> tuple[float, float]:
+    if not value:
+        return default
+    left, right = value.split(":")
+    return (float(left), float(right))
 
 
 def _split_items(value: str) -> list[str]:

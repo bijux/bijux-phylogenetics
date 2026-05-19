@@ -31,6 +31,10 @@ def test_load_discrete_mode_recovery_panel_dataset_exposes_packaged_surface() ->
     assert len(dataset.reference_tree_paths) == 2
     assert dataset.simulation_cases_path.is_file()
     assert dataset.reference_output_root.is_dir()
+    header = dataset.simulation_cases_path.read_text(encoding="utf-8").splitlines()[0]
+    assert "transform" in header.split("\t")
+    assert "transform_parameter_value" in header.split("\t")
+    assert "parameter_tolerances" in header.split("\t")
 
 
 @pytest.mark.slow
