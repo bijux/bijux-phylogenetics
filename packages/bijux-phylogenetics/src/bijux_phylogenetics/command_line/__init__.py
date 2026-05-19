@@ -111,6 +111,7 @@ from bijux_phylogenetics.ancestral.visualization import (
     render_ancestral_state_visualization,
 )
 from bijux_phylogenetics.parity import (
+    build_generated_geiger_parity_report,
     run_ape_parity_cases,
     run_geiger_parity_cases,
     write_ape_parity_observation_table,
@@ -122,6 +123,8 @@ from bijux_phylogenetics.parity import (
     write_geiger_optimizer_triage_table,
     write_geiger_parity_summary_table,
     write_geiger_parameterization_registry_table,
+    write_generated_geiger_parity_report_json,
+    write_generated_geiger_parity_report_markdown,
 )
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
@@ -3347,6 +3350,8 @@ def build_parser() -> argparse.ArgumentParser:
     parity.add_argument("--likelihood-policy-out", type=Path)
     parity.add_argument("--model-confidence-out", type=Path)
     parity.add_argument("--parameterization-registry-out", type=Path)
+    parity.add_argument("--generated-report-out", type=Path)
+    parity.add_argument("--generated-report-json-out", type=Path)
     parity.add_argument(
         "--json", action="store_true", help="Emit the parity report as JSON."
     )
@@ -9318,6 +9323,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 likelihood_policy_path = None
                 model_confidence_path = None
                 parameterization_registry_path = None
+                generated_report_path = None
+                generated_report_json_path = None
                 if args.summary_out is not None:
                     summary_path = write_geiger_parity_summary_table(
                         args.summary_out,
@@ -9362,6 +9369,26 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         )
                     )
                     output_paths.append(parameterization_registry_path)
+                generated_report = None
+                if (
+                    args.generated_report_out is not None
+                    or args.generated_report_json_out is not None
+                ):
+                    generated_report = build_generated_geiger_parity_report(
+                        parity_report=report,
+                    )
+                if args.generated_report_out is not None:
+                    generated_report_path = write_generated_geiger_parity_report_markdown(
+                        args.generated_report_out,
+                        generated_report,
+                    )
+                    output_paths.append(generated_report_path)
+                if args.generated_report_json_out is not None:
+                    generated_report_json_path = write_generated_geiger_parity_report_json(
+                        args.generated_report_json_out,
+                        generated_report,
+                    )
+                    output_paths.append(generated_report_json_path)
                 outputs = _finalize_outputs(
                     args,
                     command="parity",
@@ -9385,6 +9412,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "model_confidence_row_count": len(
                                 report.model_confidence_rows
                             ),
+                            "generated_report_written": generated_report_path
+                            is not None
+                            or generated_report_json_path is not None,
                             "reference_source": args.reference_source,
                         },
                         data={
@@ -9398,6 +9428,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "parameterization_registry_table": (
                                 parameterization_registry_path
                             ),
+                            "generated_report_markdown": generated_report_path,
+                            "generated_report_json": generated_report_json_path,
+                            "generated_report": generated_report,
                         },
                     ),
                     json_output=args.json,
