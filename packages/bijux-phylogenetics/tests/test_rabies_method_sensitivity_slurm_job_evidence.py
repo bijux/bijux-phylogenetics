@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 import bijux_phylogenetics.datasets.rabies_method_sensitivity as rabies_method_sensitivity
+import bijux_phylogenetics.datasets.rabies_method_sensitivity.bundle as rabies_method_sensitivity_bundle
 from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     run_rabies_method_sensitivity_panel_workflow,
 )
@@ -30,15 +31,15 @@ def test_write_rabies_method_sensitivity_panel_workflow_bundle_writes_job_eviden
     )
     bundle_root = tmp_path / "workflow"
     bundle_root.mkdir(parents=True, exist_ok=True)
-    rabies_method_sensitivity._copy_output(
+    rabies_method_sensitivity_bundle._copy_output(
         report.execution_record_path,
         bundle_root / report.execution_record_path.name,
     )
-    rabies_method_sensitivity._copy_task_logs(
+    rabies_method_sensitivity_bundle._copy_task_logs(
         bundle_root / "parallel-logs",
         report.task_records,
     )
-    rabies_method_sensitivity._write_variant_outputs(
+    rabies_method_sensitivity_bundle._write_variant_outputs(
         bundle_root / "variants",
         report.variant_runs,
     )
