@@ -12,7 +12,9 @@ import subprocess  # nosec B404 - parity helpers invoke repository-owned referen
 import tempfile
 
 from bijux_phylogenetics.comparative.evolutionary_modes import (
+    CONTINUOUS_GAUSSIAN_LIKELIHOOD_CONSTANT_POLICY,
     ContinuousModeSearchControls,
+    FITCONTINUOUS_MODEL_RANKING_POLICY,
     compare_fitcontinuous_model_ranking,
     fit_continuous_evolutionary_mode,
 )
@@ -22,6 +24,10 @@ from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readi
 from .optimizer_triage import (
     GeigerOptimizerTriageRow,
     build_geiger_optimizer_triage_rows,
+)
+from .likelihood_policy import (
+    GeigerLikelihoodPolicyRow,
+    build_geiger_likelihood_policy_rows,
 )
 from .parameterization_registry import (
     GeigerParameterizationRegistryRow,
@@ -75,6 +81,7 @@ class GeigerParityReport:
 
     observations: list[GeigerParityObservation]
     optimizer_triage_rows: list[GeigerOptimizerTriageRow]
+    likelihood_policy_rows: list[GeigerLikelihoodPolicyRow]
     parameterization_registry_rows: list[GeigerParameterizationRegistryRow]
     summary_rows: list[GeigerParitySummaryRow]
     case_count: int
@@ -373,6 +380,11 @@ def _comparison_rows(report) -> list[dict[str, object]]:
             "delta_aicc": row.delta_aicc,
             "selected": row.selected,
             "comparable": row.comparable,
+            "likelihood_constant_policy": (
+                ""
+                if row.likelihood_constant_policy is None
+                else row.likelihood_constant_policy
+            ),
             "comparability_note": "" if row.comparability_note is None else row.comparability_note,
         }
         for row in report.rows
@@ -586,6 +598,8 @@ def _build_bijux_case_payload(
         "log_likelihood": report.log_likelihood,
         "aic": report.aic,
         "aicc": report.aicc,
+        "likelihood_constant_policy": report.likelihood_constant_policy,
+        "likelihood_comparison_policy": report.likelihood_comparison_policy,
         "parameter_name": report.parameter_name,
         "parameter_value": report.parameter_value,
         "optimizer_settings": case.optimizer_settings,
@@ -741,6 +755,13 @@ def _build_bijux_model_comparison_payload(
             math.nan if runner_up_row is None else runner_up_row.delta_aicc
         ),
         "warning_count": len(report.warnings),
+        "likelihood_constant_policy": (
+            report.likelihood_constant_policy
+            if report.likelihood_constant_policy is not None
+            else CONTINUOUS_GAUSSIAN_LIKELIHOOD_CONSTANT_POLICY
+        ),
+        "likelihood_comparison_policy": FITCONTINUOUS_MODEL_RANKING_POLICY,
+        "noncomparable_likelihood_models": list(report.noncomparable_likelihood_models),
         "optimizer_settings": case.optimizer_settings,
     }
     return summary, _comparison_rows(report)
@@ -1018,6 +1039,7 @@ def run_geiger_parity_cases(
     return GeigerParityReport(
         observations=observations,
         optimizer_triage_rows=build_geiger_optimizer_triage_rows(observations),
+        likelihood_policy_rows=build_geiger_likelihood_policy_rows(observations),
         parameterization_registry_rows=build_geiger_parameterization_registry_rows(
             observations
         ),

@@ -1,5 +1,9 @@
 """Governed `geiger` parity surfaces."""
 
+from .likelihood_policy import (
+    GeigerLikelihoodPolicyRow,
+    write_geiger_likelihood_policy_table,
+)
 from .optimizer_triage import (
     GeigerOptimizerTriageRow,
     write_geiger_optimizer_triage_table,
@@ -24,11 +28,13 @@ __all__ = [
     "GeigerParityReport",
     "GeigerParitySummaryRow",
     "GeigerOptimizerTriageRow",
+    "GeigerLikelihoodPolicyRow",
     "GeigerParameterizationRegistryRow",
     "list_geiger_parity_cases",
     "run_geiger_parity_cases",
     "write_geiger_parity_observation_table",
     "write_geiger_parity_summary_table",
     "write_geiger_optimizer_triage_table",
+    "write_geiger_likelihood_policy_table",
     "write_geiger_parameterization_registry_table",
 ]

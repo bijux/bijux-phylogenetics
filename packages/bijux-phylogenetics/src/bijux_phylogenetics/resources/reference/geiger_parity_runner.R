@@ -384,6 +384,8 @@ build_fitcontinuous_payload <- function(tree, trait_values, excluded_taxa, case_
     log_likelihood = log_likelihood,
     aic = aic,
     aicc = aicc,
+    likelihood_constant_policy = "full-gaussian-loglikelihood-includes-normalizing-constant",
+    likelihood_comparison_policy = "raw-loglikelihood-and-derived-aic-are-directly-comparable-when-the-shared-gaussian-constant-policy-matches",
     missing_value_policy = "prune-tree-tip-overlap-with-missing-or-nonnumeric-trait-values",
     standard_error_policy = "fitcontinuous-standard-error-explicitly-excluded-this-round",
     parameter_bound_policy = if (is.null(bounds)) {
@@ -459,6 +461,7 @@ build_fitcontinuous_model_comparison_payload <- function(tree, trait_values, exc
       delta_aicc = NULL,
       selected = FALSE,
       comparable = !is.null(aic) && !is.null(aicc),
+      likelihood_constant_policy = "full-gaussian-loglikelihood-includes-normalizing-constant",
       comparability_note = if (is.null(aicc)) {
         "sample size is too small to compute finite AICc for this parameter count"
       } else {
@@ -510,6 +513,9 @@ build_fitcontinuous_model_comparison_payload <- function(tree, trait_values, exc
     runner_up_model = if (is.null(runner_up_row)) NULL else runner_up_row$model,
     runner_up_aicc_delta = if (is.null(runner_up_row)) NULL else runner_up_row$delta_aicc,
     warning_count = if (length(candidate_model_names) > 3) 1 else 0,
+    likelihood_constant_policy = "full-gaussian-loglikelihood-includes-normalizing-constant",
+    likelihood_comparison_policy = "relative-aic-and-aicc-ranking-is-permitted-only-when-all-candidate-modes-share-one-gaussian-likelihood-constant-policy",
+    noncomparable_likelihood_models = json_array(character(0)),
     optimizer_settings = case_payload$optimizer_settings
   )
   list(summary = summary, rows = fitted_rows)
