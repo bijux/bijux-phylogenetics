@@ -1,192 +1,63 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
-
-from bijux_phylogenetics.fixtures import (
-    get_shared_geiger_continuous_fixture,
-    get_shared_geiger_discrete_fixture,
-)
-
-
-FITCONTINUOUS_REFERENCE_MODEL_ORDER = (
-    "BM",
-    "white",
-    "lambda",
-    "kappa",
-    "delta",
-    "OU",
-    "EB",
-)
-
-
-@dataclass(frozen=True, slots=True)
-class GeigerParityCase:
-    """One governed live `geiger` parity case."""
-
-    case_id: str
-    fixture_id: str
-    function_name: str
-    python_function_name: str
-    operation: str
-    model_name: str
-    python_mode: str
-    input_fixtures: tuple[Path, ...]
-    tolerance: float
-    trait_name: str
-    taxon_column: str | None = None
-    optimizer_settings: dict[str, object] | None = None
-    candidate_model_names: tuple[str, ...] | None = None
-    reference_control: dict[str, object] | None = None
-    coarse_grid_point_count: int | None = None
-    fine_grid_point_count: int | None = None
-    initial_parameter_value: float | None = None
-    comparison_fields: tuple[str, ...] = ()
-    row_comparison_policy: str = "full"
-    lambda_bounds: tuple[float, float] | None = None
-    discrete_transform_name: str | None = None
-    kappa_bounds: tuple[float, float] | None = None
-    delta_bounds: tuple[float, float] | None = None
-    ou_bounds: tuple[float, float] | None = None
-    early_burst_bounds: tuple[float, float] | None = None
-    field_tolerances: dict[str, float] | None = None
-    row_field_tolerances: dict[str, float] | None = None
-
-
-def _package_root() -> Path:
-    return Path(__file__).resolve().parents[5]
+from .fixtures import build_geiger_registry_fixture_catalog
+from .models import FITCONTINUOUS_REFERENCE_MODEL_ORDER, GeigerParityCase
 
 
 def list_geiger_parity_cases() -> list[GeigerParityCase]:
     """Return the governed live `geiger` parity cases."""
-    package_root = _package_root()
-    tests_root = package_root / "tests" / "fixtures"
-    brownian_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    fixture_catalog = build_geiger_registry_fixture_catalog()
+    tests_root = fixture_catalog.tests_root
+    brownian_fixture = fixture_catalog.brownian_fixture
+    brownian_missing_fixture = fixture_catalog.brownian_missing_fixture
+    white_strong_fixture = fixture_catalog.white_strong_fixture
+    white_weak_fixture = fixture_catalog.white_weak_fixture
+    white_missing_fixture = fixture_catalog.white_missing_fixture
+    lambda_strong_fixture = fixture_catalog.lambda_strong_fixture
+    lambda_weak_fixture = fixture_catalog.lambda_weak_fixture
+    lambda_missing_fixture = fixture_catalog.lambda_missing_fixture
+    kappa_strong_fixture = fixture_catalog.kappa_strong_fixture
+    kappa_weak_fixture = fixture_catalog.kappa_weak_fixture
+    kappa_missing_fixture = fixture_catalog.kappa_missing_fixture
+    delta_strong_fixture = fixture_catalog.delta_strong_fixture
+    delta_weak_fixture = fixture_catalog.delta_weak_fixture
+    delta_missing_fixture = fixture_catalog.delta_missing_fixture
+    ou_missing_fixture = fixture_catalog.ou_missing_fixture
+    ou_fixture = fixture_catalog.ou_fixture
+    ou_lower_boundary_fixture = fixture_catalog.ou_lower_boundary_fixture
+    early_burst_fixture = fixture_catalog.early_burst_fixture
+    early_burst_boundary_fixture = fixture_catalog.early_burst_boundary_fixture
+    comparison_brownian_fixture = fixture_catalog.comparison_brownian_fixture
+    comparison_ou_fixture = fixture_catalog.comparison_ou_fixture
+    comparison_early_burst_fixture = fixture_catalog.comparison_early_burst_fixture
+    comparison_white_fixture = fixture_catalog.comparison_white_fixture
+    discrete_er_binary_fixture = fixture_catalog.discrete_er_binary_fixture
+    discrete_transform_weak_fixture = fixture_catalog.discrete_transform_weak_fixture
+    discrete_lambda_missing_fixture = fixture_catalog.discrete_lambda_missing_fixture
+    discrete_kappa_strong_fixture = fixture_catalog.discrete_kappa_strong_fixture
+    discrete_kappa_weak_fixture = fixture_catalog.discrete_kappa_weak_fixture
+    discrete_kappa_missing_fixture = fixture_catalog.discrete_kappa_missing_fixture
+    discrete_delta_boundary_fixture = fixture_catalog.discrete_delta_boundary_fixture
+    discrete_early_burst_early_fixture = (
+        fixture_catalog.discrete_early_burst_early_fixture
     )
-    brownian_missing_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_missing_values_twenty_four_taxa"
+    discrete_early_burst_weak_fixture = (
+        fixture_catalog.discrete_early_burst_weak_fixture
     )
-    white_strong_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    discrete_early_burst_late_fixture = (
+        fixture_catalog.discrete_early_burst_late_fixture
     )
-    white_weak_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_white_noise_twenty_four_taxa"
+    discrete_early_burst_missing_fixture = (
+        fixture_catalog.discrete_early_burst_missing_fixture
     )
-    white_missing_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_missing_values_twenty_four_taxa"
-    )
-    lambda_strong_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_brownian_signal_twenty_four_taxa"
-    )
-    lambda_weak_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_white_noise_twenty_four_taxa"
-    )
-    lambda_missing_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_missing_values_twenty_four_taxa"
-    )
-    kappa_strong_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_brownian_signal_twenty_four_taxa"
-    )
-    kappa_weak_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_white_noise_twenty_four_taxa"
-    )
-    kappa_missing_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_missing_values_twenty_four_taxa"
-    )
-    delta_strong_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_brownian_signal_twenty_four_taxa"
-    )
-    delta_weak_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_white_noise_twenty_four_taxa"
-    )
-    delta_missing_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_missing_values_twenty_four_taxa"
-    )
-    ou_missing_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_missing_values_twenty_four_taxa"
-    )
-    ou_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_ou_known_truth_twenty_four_taxa"
-    )
-    ou_lower_boundary_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_nonultrametric_control_twenty_four_taxa"
-    )
-    early_burst_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
-    )
-    early_burst_boundary_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_brownian_signal_twenty_four_taxa"
-    )
-    comparison_brownian_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_brownian_signal_twenty_four_taxa"
-    )
-    comparison_ou_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_ou_known_truth_twenty_four_taxa"
-    )
-    comparison_early_burst_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
-    )
-    comparison_white_fixture = get_shared_geiger_continuous_fixture(
-        "geiger_continuous_white_noise_twenty_four_taxa"
-    )
-    discrete_er_binary_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_er_binary_twenty_four_taxa"
-    )
-    discrete_transform_weak_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_transform_weak_signal_twenty_four_taxa"
-    )
-    discrete_lambda_missing_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_lambda_missing_binary_twenty_four_taxa"
-    )
-    discrete_kappa_strong_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_kappa_branch_sensitive_twenty_four_taxa"
-    )
-    discrete_kappa_weak_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_kappa_weak_signal_twenty_four_taxa"
-    )
-    discrete_kappa_missing_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_kappa_missing_three_state_twenty_four_taxa"
-    )
-    discrete_delta_boundary_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_delta_late_change_binary_twenty_four_taxa"
-    )
-    discrete_early_burst_early_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_early_burst_early_change_twenty_four_taxa"
-    )
-    discrete_early_burst_weak_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_early_burst_weak_signal_twenty_four_taxa"
-    )
-    discrete_early_burst_late_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_early_burst_late_change_twenty_four_taxa"
-    )
-    discrete_early_burst_missing_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_early_burst_missing_binary_twenty_four_taxa"
-    )
-    discrete_er_missing_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_missing_three_state_twenty_four_taxa"
-    )
-    discrete_er_mismatch_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_mismatch_four_state_twenty_four_taxa"
-    )
-    discrete_sym_three_state_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_sym_three_state_twenty_four_taxa"
-    )
-    discrete_sym_four_state_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_sym_four_state_twenty_four_taxa"
-    )
-    discrete_sym_missing_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_missing_three_state_twenty_four_taxa"
-    )
-    discrete_ard_binary_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_ard_binary_twenty_four_taxa"
-    )
-    discrete_ard_four_state_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_ard_four_state_twenty_four_taxa"
-    )
-    discrete_ard_missing_fixture = get_shared_geiger_discrete_fixture(
-        "geiger_discrete_missing_three_state_twenty_four_taxa"
-    )
+    discrete_er_missing_fixture = fixture_catalog.discrete_er_missing_fixture
+    discrete_er_mismatch_fixture = fixture_catalog.discrete_er_mismatch_fixture
+    discrete_sym_three_state_fixture = fixture_catalog.discrete_sym_three_state_fixture
+    discrete_sym_four_state_fixture = fixture_catalog.discrete_sym_four_state_fixture
+    discrete_sym_missing_fixture = fixture_catalog.discrete_sym_missing_fixture
+    discrete_ard_binary_fixture = fixture_catalog.discrete_ard_binary_fixture
+    discrete_ard_four_state_fixture = fixture_catalog.discrete_ard_four_state_fixture
+    discrete_ard_missing_fixture = fixture_catalog.discrete_ard_missing_fixture
     return [
         GeigerParityCase(
             case_id="fitcontinuous-bm-example-tree",
