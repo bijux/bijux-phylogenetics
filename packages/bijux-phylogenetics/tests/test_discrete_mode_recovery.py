@@ -10,6 +10,8 @@ from bijux_phylogenetics.comparative.discrete_mode_recovery import (
     run_discrete_mode_recovery,
     write_discrete_mode_recovery_execution_table,
     write_discrete_mode_recovery_model_choice_table,
+    write_discrete_mode_recovery_parameter_comparison_table,
+    write_discrete_mode_recovery_parameter_table,
     write_discrete_mode_recovery_rate_comparison_table,
     write_discrete_mode_recovery_rate_table,
     write_discrete_mode_recovery_summary_table,
@@ -89,6 +91,14 @@ def test_discrete_mode_recovery_writers_emit_paired_benchmark_ledgers(
         tmp_path / "summary.tsv",
         report,
     )
+    parameter_path = write_discrete_mode_recovery_parameter_table(
+        tmp_path / "parameter-recovery.tsv",
+        report,
+    )
+    parameter_comparison_path = write_discrete_mode_recovery_parameter_comparison_table(
+        tmp_path / "parameter-comparison.tsv",
+        report,
+    )
     rate_path = write_discrete_mode_recovery_rate_table(
         tmp_path / "rate-recovery.tsv",
         report,
@@ -115,6 +125,10 @@ def test_discrete_mode_recovery_writers_emit_paired_benchmark_ledgers(
     )
 
     summary_rows = summary_path.read_text(encoding="utf-8").splitlines()
+    parameter_rows = parameter_path.read_text(encoding="utf-8").splitlines()
+    parameter_comparison_rows = parameter_comparison_path.read_text(
+        encoding="utf-8"
+    ).splitlines()
     rate_rows = rate_path.read_text(encoding="utf-8").splitlines()
     rate_comparison_rows = rate_comparison_path.read_text(encoding="utf-8").splitlines()
     model_choice_rows = model_choice_path.read_text(encoding="utf-8").splitlines()
@@ -127,33 +141,39 @@ def test_discrete_mode_recovery_writers_emit_paired_benchmark_ledgers(
         row.startswith("ard-three-state-weak-identification-review\t")
         for row in summary_rows[1:]
     )
+    assert parameter_rows[0].startswith(
+        "case_id\tgenerating_model\ttransform\trecovery_engine\tfitted_model"
+    )
+    assert parameter_comparison_rows[0].startswith(
+        "case_id\tgenerating_model\ttransform\tparameter\ttrue_value"
+    )
     assert rate_rows[0].startswith(
-        "case_id\tgenerating_model\trecovery_engine\tfitted_model"
+        "case_id\tgenerating_model\ttransform\trecovery_engine\tfitted_model"
     )
     assert any(
         row.startswith(
-            "sym-three-state-rate-recovery\tsymmetric\tgeiger\tall-rates-different\t"
+            "sym-three-state-rate-recovery\tsymmetric\t\tgeiger\tall-rates-different\t"
         )
         or row.startswith(
-            "sym-three-state-rate-recovery\tsymmetric\tgeiger\tsymmetric\t"
+            "sym-three-state-rate-recovery\tsymmetric\t\tgeiger\tsymmetric\t"
         )
         for row in rate_rows[1:]
     )
     assert rate_comparison_rows[0].startswith(
-        "case_id\tgenerating_model\tsource_state\ttarget_state\ttrue_rate"
+        "case_id\tgenerating_model\ttransform\tsource_state\ttarget_state\ttrue_rate"
     )
     assert any(
         row.startswith(
-            "er-three-state-rate-recovery\tequal-rates\tcentral\tnorth\t"
+            "er-three-state-rate-recovery\tequal-rates\t\tcentral\tnorth\t"
         )
         for row in rate_comparison_rows[1:]
     )
     assert model_choice_rows[0].startswith(
-        "case_id\tgenerating_model\trecovery_engine\texpected_selected_model"
+        "case_id\tgenerating_model\ttransform\trecovery_engine\texpected_selected_model"
     )
     assert any(
         row.startswith(
-            "ard-five-state-overparameterized-review\tall-rates-different\tgeiger\t\t"
+            "ard-five-state-overparameterized-review\tall-rates-different\t\tgeiger\t\t"
         )
         for row in model_choice_rows[1:]
     )
@@ -212,6 +232,14 @@ def test_public_runtime_exports_include_discrete_mode_recovery_surface() -> None
     assert (
         discrete_mode_recovery_api.write_discrete_mode_recovery_model_choice_table
         is write_discrete_mode_recovery_model_choice_table
+    )
+    assert (
+        discrete_mode_recovery_api.write_discrete_mode_recovery_parameter_table
+        is write_discrete_mode_recovery_parameter_table
+    )
+    assert (
+        discrete_mode_recovery_api.write_discrete_mode_recovery_parameter_comparison_table
+        is write_discrete_mode_recovery_parameter_comparison_table
     )
     assert (
         discrete_mode_recovery_api.write_discrete_mode_recovery_execution_table
