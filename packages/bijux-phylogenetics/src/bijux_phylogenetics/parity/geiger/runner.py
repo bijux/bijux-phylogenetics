@@ -25,6 +25,10 @@ from .optimizer_triage import (
     GeigerOptimizerTriageRow,
     build_geiger_optimizer_triage_rows,
 )
+from .boundary_warning_registry import (
+    GeigerBoundaryWarningRow,
+    build_geiger_boundary_warning_rows,
+)
 from .likelihood_policy import (
     GeigerLikelihoodPolicyRow,
     build_geiger_likelihood_policy_rows,
@@ -81,6 +85,7 @@ class GeigerParityReport:
 
     observations: list[GeigerParityObservation]
     optimizer_triage_rows: list[GeigerOptimizerTriageRow]
+    boundary_warning_rows: list[GeigerBoundaryWarningRow]
     likelihood_policy_rows: list[GeigerLikelihoodPolicyRow]
     parameterization_registry_rows: list[GeigerParameterizationRegistryRow]
     summary_rows: list[GeigerParitySummaryRow]
@@ -1039,6 +1044,7 @@ def run_geiger_parity_cases(
     return GeigerParityReport(
         observations=observations,
         optimizer_triage_rows=build_geiger_optimizer_triage_rows(observations),
+        boundary_warning_rows=build_geiger_boundary_warning_rows(observations),
         likelihood_policy_rows=build_geiger_likelihood_policy_rows(observations),
         parameterization_registry_rows=build_geiger_parameterization_registry_rows(
             observations

@@ -1,5 +1,9 @@
 """Governed `geiger` parity surfaces."""
 
+from .boundary_warning_registry import (
+    GeigerBoundaryWarningRow,
+    write_geiger_boundary_warning_table,
+)
 from .likelihood_policy import (
     GeigerLikelihoodPolicyRow,
     write_geiger_likelihood_policy_table,
@@ -28,6 +32,7 @@ __all__ = [
     "GeigerParityReport",
     "GeigerParitySummaryRow",
     "GeigerOptimizerTriageRow",
+    "GeigerBoundaryWarningRow",
     "GeigerLikelihoodPolicyRow",
     "GeigerParameterizationRegistryRow",
     "list_geiger_parity_cases",
@@ -35,6 +40,7 @@ __all__ = [
     "write_geiger_parity_observation_table",
     "write_geiger_parity_summary_table",
     "write_geiger_optimizer_triage_table",
+    "write_geiger_boundary_warning_table",
     "write_geiger_likelihood_policy_table",
     "write_geiger_parameterization_registry_table",
 ]
