@@ -45,7 +45,7 @@ from .matrix import (
     _load_alignment_for_model,
     compute_pairwise_genetic_distance_matrix,
 )
-from . import (
+from .quality import (
     assess_distance_method_assumptions_from_genetic_distance_matrix,
     inspect_distance_matrix_quality,
 )
