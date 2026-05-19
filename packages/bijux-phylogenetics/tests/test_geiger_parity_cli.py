@@ -110,6 +110,40 @@ def test_parity_cli_writes_geiger_optimizer_triage_table_for_single_case(
     assert triage_row["mismatch_type"] == "no_algorithm_mismatch"
 
 
+def test_parity_cli_writes_geiger_parameterization_registry_for_single_case(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    registry_path = tmp_path / "geiger-parameterization-registry.tsv"
+
+    exit_code = main(
+        [
+            "parity",
+            "--reference-source",
+            "geiger-live",
+            "--geiger-rscript-executable",
+            str(rscript),
+            "--geiger-case",
+            "fitcontinuous-eb-early-burst-rate-recovery",
+            "--parameterization-registry-out",
+            str(registry_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert registry_path.exists()
+    assert payload["data"]["parameterization_registry_table"] == str(registry_path)
+    registry_row = payload["data"]["report"]["parameterization_registry_rows"][0]
+    assert registry_row["case_id"] == "fitcontinuous-eb-early-burst-rate-recovery"
+    assert registry_row["expected_divergence_kind"] == (
+        "continuous-early-burst-sign-and-bound-convention"
+    )
+
+
 def test_parity_cli_restricts_live_geiger_discrete_cases(
     tmp_path: Path,
     capsys,
