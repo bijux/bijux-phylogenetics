@@ -9,7 +9,9 @@ from bijux_phylogenetics.ancestral.common import (
     node_descendant_taxa,
     node_signature,
 )
-from bijux_phylogenetics.ancestral.discrete import _resolve_discrete_model_name
+from bijux_phylogenetics.ancestral.discrete.policy import (
+    resolve_discrete_model_name as _resolve_discrete_model_name,
+)
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.core.traits import load_tsv_summary
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
