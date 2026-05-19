@@ -1273,6 +1273,7 @@ uv run bijux-phylogenetics parity --json
 uv run bijux-phylogenetics parity --extended --json
 uv run bijux-phylogenetics parity --reference-source ape-live --json
 uv run bijux-phylogenetics parity --reference-source geiger-live --json
+uv run bijux-phylogenetics parity --reference-source geiger-live --generated-report-out artifacts/geiger-parity-report.md --generated-report-json-out artifacts/geiger-parity-report.json --json
 uv run bijux-phylogenetics comparative validate-reference --json
 uv run bijux-phylogenetics comparative maturity tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --lambda-value 1.0 --json
 uv run bijux-phylogenetics comparative pgls tree.nwk traits.tsv --formula "height_cm ~ log(body_mass) + habitat" --json
@@ -1416,6 +1417,18 @@ surfaces still support a stable conclusion. Boundary-dominated cases such as
 lambda at `0` or `1`, alpha near `0`, and EB, kappa, or delta fits that
 collapse onto a limit surface now stay explicit instead of being narrated as
 stable parameter recovery.
+The same live run can now also generate one governed parity report with
+`--generated-report-out` and `--generated-report-json-out`. That generated
+report is not a hand-maintained checklist. It is built from the live geiger
+parity observations plus governed artifact-backed summaries for the explicit
+exclusion lanes, the `sim.char` envelope validator, the continuous and
+discrete simulation-recovery panels, and the large-tree and real-dataset
+macroevolution benchmarks. The generated Markdown and JSON surfaces report the
+goal-tranche inventory for goals `251` through `289`, live pass or fail or skip
+counts, R and `geiger` versions, covered and excluded models, optimizer
+mismatch categories, tolerance rules, model-boundary warning summaries, and
+simulation-recovery counts without hiding boundary-dominated or review-only
+surfaces behind blanket success language.
 The owned Brownian and white-noise fits also now store that Gaussian
 normalizing-constant policy directly in the fit result object, and the governed
 tests pin both lanes against analytical known-answer likelihood calculations.
