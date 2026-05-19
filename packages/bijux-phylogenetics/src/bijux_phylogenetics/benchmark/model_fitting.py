@@ -17,6 +17,7 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
     fit_continuous_evolutionary_mode,
     transform_tree_for_evolutionary_mode,
 )
+from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.io.trees import load_tree
@@ -98,6 +99,15 @@ class LargeTreeModelFittingBenchmarkReport:
     too_slow_case_count: int
     unstable_case_count: int
     limitations: list[str]
+
+
+@dataclass(slots=True)
+class LargeTreeModelFittingBenchmarkBundle:
+    """Written artifact bundle for one governed large-tree model-fitting benchmark tier."""
+
+    output_root: Path
+    summary_path: Path
+    observation_table_path: Path
 
 
 @dataclass(frozen=True, slots=True)
@@ -224,6 +234,116 @@ def benchmark_large_tree_model_fitting(
             "runtime and peak memory record the owned bijux fit in the active Python process; stored geiger references provide fit-surface comparison rather than same-process memory parity",
             "continuous optimizer_iteration_count records governed profile-evaluation steps because the owned fitcontinuous surface uses bounded one-parameter profile search rather than a separate iterative optimizer counter",
         "the heavy tier adds one 512-taxon Brownian fit and records threshold review explicitly when that case exceeds the governed runtime or memory budget instead of implying broad large-tree optimizer parity",
+        ],
+    )
+
+
+def write_large_tree_model_fitting_bundle(
+    output_root: Path,
+    *,
+    tier: str = "small",
+) -> LargeTreeModelFittingBenchmarkBundle:
+    """Write a governed large-tree benchmark bundle for one tier."""
+    if output_root.exists():
+        for path in sorted(output_root.rglob("*"), reverse=True):
+            if path.is_file():
+                path.unlink()
+            elif path.is_dir():
+                path.rmdir()
+    output_root.mkdir(parents=True, exist_ok=True)
+    report = benchmark_large_tree_model_fitting(tier=tier)
+    summary_path = write_large_tree_model_fitting_summary_table(
+        output_root / "summary.tsv",
+        report,
+    )
+    observation_table_path = write_large_tree_model_fitting_observation_table(
+        output_root / "observations.tsv",
+        report,
+    )
+    return LargeTreeModelFittingBenchmarkBundle(
+        output_root=output_root,
+        summary_path=summary_path,
+        observation_table_path=observation_table_path,
+    )
+
+
+def write_large_tree_model_fitting_summary_table(
+    path: Path,
+    report: LargeTreeModelFittingBenchmarkReport,
+) -> Path:
+    """Write the stable benchmark summary counts for one governed tier."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "tier",
+            "case_count",
+            "geiger_match_case_count",
+            "threshold_pass_case_count",
+            "too_slow_case_count",
+            "unstable_case_count",
+            "limitations",
+        ],
+        rows=[
+            {
+                "tier": report.tier,
+                "case_count": report.case_count,
+                "geiger_match_case_count": report.geiger_match_case_count,
+                "threshold_pass_case_count": report.threshold_pass_case_count,
+                "too_slow_case_count": report.too_slow_case_count,
+                "unstable_case_count": report.unstable_case_count,
+                "limitations": " | ".join(report.limitations),
+            }
+        ],
+    )
+
+
+def write_large_tree_model_fitting_observation_table(
+    path: Path,
+    report: LargeTreeModelFittingBenchmarkReport,
+) -> Path:
+    """Write one stable observation row per governed large-tree benchmark case."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "case_id",
+            "tier",
+            "trait_kind",
+            "fit_surface",
+            "taxon_count",
+            "status",
+            "converged",
+            "stable_conclusion_supported",
+            "unstable_review",
+            "too_slow_review",
+            "performance_threshold_passed",
+            "matches_geiger_reference",
+            "geiger_reference_available",
+            "notes",
+        ],
+        rows=[
+            {
+                "case_id": row.case_id,
+                "tier": row.tier,
+                "trait_kind": row.trait_kind,
+                "fit_surface": row.fit_surface,
+                "taxon_count": row.taxon_count,
+                "status": row.status,
+                "converged": _format_optional_bool(row.converged),
+                "stable_conclusion_supported": _format_optional_bool(
+                    row.stable_conclusion_supported
+                ),
+                "unstable_review": row.unstable_review,
+                "too_slow_review": row.too_slow_review,
+                "performance_threshold_passed": _format_optional_bool(
+                    row.performance_threshold_passed
+                ),
+                "matches_geiger_reference": _format_optional_bool(
+                    row.matches_geiger_reference
+                ),
+                "geiger_reference_available": row.geiger_reference_available,
+                "notes": " | ".join(row.notes),
+            }
+            for row in report.observations
         ],
     )
 
@@ -1050,6 +1170,12 @@ def _optional_string(value: object) -> str | None:
     if isinstance(value, str):
         return value
     return None
+
+
+def _format_optional_bool(value: bool | None) -> str:
+    if value is None:
+        return ""
+    return "True" if value else "False"
 
 
 def _benchmark_taxa(count: int) -> list[str]:

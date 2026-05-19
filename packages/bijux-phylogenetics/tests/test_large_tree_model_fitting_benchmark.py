@@ -1,13 +1,20 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 import bijux_phylogenetics.benchmark as benchmark_api
 from bijux_phylogenetics.benchmark.model_fitting import (
+    LargeTreeModelFittingBenchmarkBundle,
     LargeTreeModelFittingThreshold,
     _case_definitions_for_tier,
     _evaluate_threshold,
     benchmark_large_tree_model_fitting,
+    write_large_tree_model_fitting_bundle,
+)
+from tests.support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
 )
 
 
@@ -86,3 +93,30 @@ def test_public_runtime_exports_include_large_tree_model_fitting_benchmark() -> 
         benchmark_api.benchmark_large_tree_model_fitting
         is benchmark_large_tree_model_fitting
     )
+    assert (
+        benchmark_api.write_large_tree_model_fitting_bundle
+        is write_large_tree_model_fitting_bundle
+    )
+
+
+@pytest.mark.slow
+def test_write_large_tree_model_fitting_bundle_matches_expected_outputs(
+    tmp_path: Path,
+) -> None:
+    bundle = write_large_tree_model_fitting_bundle(tmp_path / "large-tree-benchmark")
+
+    assert isinstance(bundle, LargeTreeModelFittingBenchmarkBundle)
+    expected_root = (
+        Path(__file__).resolve().parents[1]
+        / "src"
+        / "bijux_phylogenetics"
+        / "resources"
+        / "benchmarks"
+        / "large_tree_model_fitting"
+        / "expected"
+    )
+    generated = {
+        Path("summary.tsv"): bundle.summary_path,
+        Path("observations.tsv"): bundle.observation_table_path,
+    }
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
