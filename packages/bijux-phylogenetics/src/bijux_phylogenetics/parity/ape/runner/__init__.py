@@ -32,17 +32,19 @@ from bijux_phylogenetics.distance import build_tree_from_imported_distance_matri
 from bijux_phylogenetics.io.newick import dumps_newick, load_newick_tree_set
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.trees import (
-    compute_clade_frequency_table,
     compute_consensus_tree,
-    compute_reference_tree_clade_support,
     compute_strict_consensus_tree,
 )
 from ..registry import ApeParityCase, _selected_cases, _write_case_file
-from .models import ApeParityObservation, ApeParityReport, ApeParitySummaryRow
+from .models import (
+    ApeParityObservation,
+    ApeParityReport,
+    ApeParitySummaryRow as ApeParitySummaryRow,
+)
 from .reporting import (
     build_ape_parity_report,
-    write_ape_parity_observation_table,
-    write_ape_parity_summary_table,
+    write_ape_parity_observation_table as write_ape_parity_observation_table,
+    write_ape_parity_summary_table as write_ape_parity_summary_table,
 )
 from .comparative_payloads import (
     _build_bijux_brownian_covariance_rows,
@@ -76,10 +78,8 @@ from .tree_payloads import (
     _build_bijux_tree_structure,
     _build_bijux_tree_tip_distance_rows,
     _build_bijux_unroot_structure,
-    _inspect_tree_set_rooted_flags,
     _materialize_reference_input,
     _sort_parity_rows,
-    _tree_structure_payload,
 )
 from .runtime import (
     ape_runner_path as _ape_runner_path,

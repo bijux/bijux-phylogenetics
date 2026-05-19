@@ -3,10 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 
-from bijux_phylogenetics.compare.structural_parity import (
-    compare_tree_sets_structurally,
-    compare_tree_structurally,
-)
 from bijux_phylogenetics.compare.topology_distance import (
     compare_topology_distance_trees,
 )
@@ -24,7 +20,6 @@ from bijux_phylogenetics.core.topology import (
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.tree_distance import compute_tree_tip_distance_matrix
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
-from bijux_phylogenetics.distance import build_tree_from_imported_distance_matrix
 from bijux_phylogenetics.io.newick import (
     dumps_newick,
     load_newick_tree_set,
@@ -455,4 +450,3 @@ def _build_bijux_topology_distance_rows(
         }
         for row in report.split_rows
     ]
-
