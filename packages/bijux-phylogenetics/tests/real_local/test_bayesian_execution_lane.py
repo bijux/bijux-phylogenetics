@@ -5,13 +5,19 @@ import subprocess
 
 import pytest
 
-from bijux_phylogenetics.bayesian.beast import (
-    parse_beast_posterior_tree_samples,
-    prepare_beast_time_tree_analysis,
+from bijux_phylogenetics.bayesian.beast.execution import (
     run_beast_posterior_inference,
+)
+from bijux_phylogenetics.bayesian.beast.logs import (
     summarize_beast_log,
+)
+from bijux_phylogenetics.bayesian.beast.posterior_trees import (
+    parse_beast_posterior_tree_samples,
     summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
+)
+from bijux_phylogenetics.bayesian.beast.xml_analysis import (
+    prepare_beast_time_tree_analysis,
 )
 from bijux_phylogenetics.bayesian.mrbayes import (
     parse_mrbayes_consensus_tree,

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.bayesian.beast import (
-    prepare_beast_time_tree_analysis,
+from bijux_phylogenetics.bayesian.beast.execution import (
     run_beast_posterior_inference,
+)
+from bijux_phylogenetics.bayesian.beast.xml_analysis import (
+    prepare_beast_time_tree_analysis,
 )
 from bijux_phylogenetics.bayesian.mrbayes import (
     prepare_mrbayes_analysis,
