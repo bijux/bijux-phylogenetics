@@ -413,6 +413,7 @@ def write_stochastic_map_collection(
     path: Path, report: StochasticMapCollectionReport
 ) -> Path:
     """Write one stochastic-map collection as JSON."""
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
