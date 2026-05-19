@@ -110,6 +110,39 @@ def test_parity_cli_writes_geiger_optimizer_triage_table_for_single_case(
     assert triage_row["mismatch_type"] == "no_algorithm_mismatch"
 
 
+def test_parity_cli_writes_geiger_boundary_warning_table_for_single_case(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    boundary_path = tmp_path / "geiger-boundary-warning.tsv"
+
+    exit_code = main(
+        [
+            "parity",
+            "--reference-source",
+            "geiger-live",
+            "--geiger-rscript-executable",
+            str(rscript),
+            "--geiger-case",
+            "fitcontinuous-lambda-weak-signal-review",
+            "--boundary-warning-out",
+            str(boundary_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert boundary_path.exists()
+    assert payload["data"]["boundary_warning_table"] == str(boundary_path)
+    row = payload["data"]["report"]["boundary_warning_rows"][0]
+    assert row["case_id"] == "fitcontinuous-lambda-weak-signal-review"
+    assert row["reference_hit_lower_boundary"] is True
+    assert row["bijux_stable_conclusion_supported"] is False
+
+
 def test_parity_cli_writes_geiger_parameterization_registry_for_single_case(
     tmp_path: Path,
     capsys,
