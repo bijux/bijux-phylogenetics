@@ -1354,6 +1354,15 @@ as no algorithm mismatch, same-likelihood-different-parameters,
 different-likelihood-same-parameters, boundary-solution review, or another
 explicit review class instead of treating every failure as an owned bug or
 waiving every mismatch away as optimizer noise.
+The same report now also carries a governed parameterization registry plus an
+optional `--parameterization-registry-out` TSV. That registry records the
+reference and Bijux surface contracts, raw and canonical parameter names,
+parameter conversions, bounds conversions, root-state and variance
+parameterization notes, the current direct log-likelihood comparison policy, and
+any expected divergence with explicit reproducible evidence. The current
+accepted divergence is the continuous early-burst sign-and-bound convention:
+raw `geiger` uses `a`, Bijux exposes `rate_change`, and the raw `geiger` bound
+surface excludes exact zero even after sign conversion.
 The BM lane now has three governed cases instead of one generic smoke check:
 the four-taxon comparative example, a twenty-four-taxon sigma-recovery surface,
 and a twenty-four-taxon missing-value pruning surface that must prove explicit
