@@ -13,8 +13,6 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteModelBaselineComparison,
     DiscreteOptimizerDiagnostics,
     DiscreteTransitionRateRow,
-    _detect_discrete_overparameterization,
-    _resolve_discrete_model_name,
 )
 from bijux_phylogenetics.ancestral.discrete.likelihood import (
     build_transition_rate_rows as _build_transition_rate_rows,
@@ -23,8 +21,12 @@ from bijux_phylogenetics.ancestral.discrete.likelihood import (
 )
 from bijux_phylogenetics.ancestral.discrete.policy import (
     parameter_count as _parameter_count,
+    resolve_discrete_model_name as _resolve_discrete_model_name,
     resolve_allowed_transition_pairs as _resolve_allowed_transition_pairs,
     resolve_state_order as _resolve_state_order,
+)
+from bijux_phylogenetics.ancestral.discrete.reconstruction import (
+    _detect_discrete_overparameterization,
 )
 from bijux_phylogenetics.comparative.bounded_search import (
     BoundedSearchControls,

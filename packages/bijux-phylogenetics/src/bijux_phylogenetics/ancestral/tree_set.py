@@ -19,8 +19,10 @@ from bijux_phylogenetics.ancestral.continuous import (
     reconstruct_continuous_ancestral_states,
 )
 from bijux_phylogenetics.ancestral.discrete import (
-    _resolve_discrete_model_name,
     reconstruct_discrete_ancestral_states,
+)
+from bijux_phylogenetics.ancestral.discrete.policy import (
+    resolve_discrete_model_name as _resolve_discrete_model_name,
 )
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.core.tree import PhyloTree

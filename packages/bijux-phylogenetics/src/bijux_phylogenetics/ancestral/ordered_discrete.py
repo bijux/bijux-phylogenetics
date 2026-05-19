@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import write_ancestral_rows
-from bijux_phylogenetics.ancestral.discrete import (
-    _resolve_discrete_model_name,
-    reconstruct_discrete_ancestral_states,
+from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
+from bijux_phylogenetics.ancestral.discrete.policy import (
+    resolve_discrete_model_name as _resolve_discrete_model_name,
 )
 
 
