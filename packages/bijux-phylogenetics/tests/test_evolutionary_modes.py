@@ -2,11 +2,23 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+import bijux_phylogenetics.comparative.evolutionary_modes as evolutionary_modes_module
 from bijux_phylogenetics.ancestral import (
     reconstruct_continuous_evolutionary_mode_states,
+)
+from bijux_phylogenetics.comparative._math import (
+    invert_matrix,
+    log_determinant,
+    quadratic_form,
+)
+from bijux_phylogenetics.comparative.common import (
+    build_brownian_covariance_matrix,
+    load_comparative_dataset,
+    stable_covariance,
 )
 from bijux_phylogenetics.comparative import (
     ContinuousModeSearchControls,
@@ -20,6 +32,7 @@ from bijux_phylogenetics.comparative import (
     rescale_tree_pagel_kappa,
     rescale_tree_white_noise,
 )
+from bijux_phylogenetics.comparative.models import ComparativeResidualSummary
 from bijux_phylogenetics.fixtures import get_shared_geiger_continuous_fixture
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
@@ -27,6 +40,34 @@ FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures"
 EXAMPLE_TREE = FIXTURE_ROOT / "trees" / "example_tree.nwk"
 EXAMPLE_TREE_NEGATIVE = FIXTURE_ROOT / "trees" / "example_tree_negative_length.nwk"
 EXAMPLE_TRAITS = FIXTURE_ROOT / "metadata" / "example_traits_comparative.tsv"
+
+
+def _analytical_gaussian_intercept_fit(
+    trait_values: list[float],
+    covariance: list[list[float]],
+) -> tuple[float, float, float]:
+    inverse_covariance = invert_matrix(covariance)
+    ones = [1.0] * len(trait_values)
+    denominator = quadratic_form(ones, inverse_covariance)
+    theta = (
+        sum(
+            ones[row_index]
+            * sum(
+                inverse_covariance[row_index][column_index] * trait_values[column_index]
+                for column_index in range(len(trait_values))
+            )
+            for row_index in range(len(trait_values))
+        )
+        / denominator
+    )
+    residuals = [value - theta for value in trait_values]
+    sigma_squared = quadratic_form(residuals, inverse_covariance) / len(trait_values)
+    log_likelihood = -0.5 * (
+        len(trait_values) * math.log(2.0 * math.pi * sigma_squared)
+        + log_determinant(covariance)
+        + len(trait_values)
+    )
+    return theta, sigma_squared, log_likelihood
 
 
 def test_rescale_tree_ornstein_uhlenbeck_reports_deterministic_branch_lengths() -> None:
@@ -278,6 +319,98 @@ def test_fit_continuous_evolutionary_mode_white_noise_fits_high_signal_worse_tha
     assert white.aic > brownian.aic
 
 
+def test_fit_continuous_evolutionary_mode_brownian_log_likelihood_matches_analytical_known_answer(
+) -> None:
+    dataset = load_comparative_dataset(
+        EXAMPLE_TREE,
+        EXAMPLE_TRAITS,
+        trait="response",
+        taxon_column="taxon",
+        minimum_taxa=3,
+        require_rooted=True,
+        require_binary=False,
+    )
+    covariance = stable_covariance(
+        build_brownian_covariance_matrix(dataset.tree, dataset.taxa)
+    )
+    theta, sigma_squared, log_likelihood = _analytical_gaussian_intercept_fit(
+        dataset.trait_values,
+        covariance,
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        EXAMPLE_TREE,
+        EXAMPLE_TRAITS,
+        trait="response",
+        mode="brownian",
+        taxon_column="taxon",
+    )
+
+    assert fit.likelihood_constant_policy == (
+        "full-gaussian-loglikelihood-includes-normalizing-constant"
+    )
+    assert fit.likelihood_comparison_policy == (
+        "raw-loglikelihood-and-derived-aic-are-directly-comparable-when-the-shared-gaussian-constant-policy-matches"
+    )
+    assert math.isclose(fit.root_state, theta, rel_tol=0.0, abs_tol=1e-12)
+    assert math.isclose(fit.rate, sigma_squared, rel_tol=0.0, abs_tol=1e-12)
+    assert math.isclose(
+        fit.log_likelihood,
+        log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_fit_continuous_evolutionary_mode_white_noise_log_likelihood_matches_analytical_known_answer(
+) -> None:
+    dataset = load_comparative_dataset(
+        EXAMPLE_TREE,
+        EXAMPLE_TRAITS,
+        trait="response",
+        taxon_column="taxon",
+        minimum_taxa=3,
+        require_rooted=True,
+        require_binary=False,
+    )
+    identity_covariance = stable_covariance(
+        [
+            [
+                1.0 if row_index == column_index else 0.0
+                for column_index in range(len(dataset.taxa))
+            ]
+            for row_index in range(len(dataset.taxa))
+        ]
+    )
+    theta, sigma_squared, log_likelihood = _analytical_gaussian_intercept_fit(
+        dataset.trait_values,
+        identity_covariance,
+    )
+
+    fit = fit_continuous_evolutionary_mode(
+        EXAMPLE_TREE,
+        EXAMPLE_TRAITS,
+        trait="response",
+        mode="white-noise",
+        taxon_column="taxon",
+    )
+
+    assert fit.likelihood_constant_policy == (
+        "full-gaussian-loglikelihood-includes-normalizing-constant"
+    )
+    assert fit.likelihood_comparison_policy == (
+        "raw-loglikelihood-and-derived-aic-are-directly-comparable-when-the-shared-gaussian-constant-policy-matches"
+    )
+    assert math.isclose(fit.root_state, theta, rel_tol=0.0, abs_tol=1e-12)
+    assert math.isclose(fit.rate, sigma_squared, rel_tol=0.0, abs_tol=1e-12)
+    assert math.isclose(
+        fit.log_likelihood,
+        log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
 def test_fit_continuous_evolutionary_mode_white_noise_handles_missing_values() -> None:
     fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_missing_values_twenty_four_taxa"
@@ -435,6 +568,107 @@ def test_compare_continuous_evolutionary_modes_explicitly_excludes_standard_erro
             taxon_column=fixture.taxon_column,
             standard_error_trait=fixture.standard_error_trait_name,
         )
+
+
+def test_compare_fitcontinuous_model_ranking_blocks_mixed_likelihood_constant_policies(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_load_dataset(*args, **kwargs):
+        return SimpleNamespace(
+            tree_path=EXAMPLE_TREE,
+            traits_path=EXAMPLE_TRAITS,
+            trait="response",
+            taxon_column="taxon",
+            taxa=["A", "B", "C", "D"],
+            readiness=SimpleNamespace(tree_taxa=4),
+        )
+
+    def fake_fit(dataset, *, mode, **kwargs):
+        policy = (
+            "full-gaussian-loglikelihood-includes-normalizing-constant"
+            if mode == "brownian"
+            else "shifted-gaussian-loglikelihood-without-normalizing-constant"
+        )
+        return evolutionary_modes_module.ContinuousEvolutionaryModeFitReport(
+            tree_path=EXAMPLE_TREE,
+            traits_path=EXAMPLE_TRAITS,
+            taxon_column="taxon",
+            trait="response",
+            taxon_count=4,
+            taxa=["A", "B", "C", "D"],
+            mode=mode,
+            parameter_name=None,
+            parameter_value=None,
+            root_state=0.0,
+            rate=1.0,
+            log_likelihood=-4.0 if mode == "brownian" else -3.0,
+            aic=12.0 if mode == "brownian" else 10.0,
+            aicc=24.0 if mode == "brownian" else 22.0,
+            likelihood_constant_policy=policy,
+            likelihood_comparison_policy="synthetic-test-policy",
+            fitted_values=[0.0, 0.0, 0.0, 0.0],
+            residuals=[0.0, 0.0, 0.0, 0.0],
+            transformed_tree_newick="(A:1,B:1,C:1,D:1);",
+            confidence_intervals=[],
+            residual_diagnostics=ComparativeResidualSummary(
+                residual_mean=0.0,
+                residual_variance=0.0,
+                residual_skewness=0.0,
+                max_abs_standardized_residual=0.0,
+                phylogenetic_residual_lambda=0.0,
+                outlier_taxa=[],
+                warnings=[],
+            ),
+            optimizer_diagnostics=None,
+            optimizer_profile_rows=None,
+            identifiability_warnings=[],
+            assumptions=[],
+        )
+
+    monkeypatch.setattr(
+        evolutionary_modes_module,
+        "load_comparative_dataset",
+        fake_load_dataset,
+    )
+    monkeypatch.setattr(
+        evolutionary_modes_module,
+        "_fit_evolutionary_mode_from_dataset",
+        fake_fit,
+    )
+
+    with pytest.raises(
+        ComparativeMethodError,
+        match="mixed likelihood constant policies prevent ranking incompatible continuous-mode models",
+    ):
+        compare_fitcontinuous_model_ranking(
+            EXAMPLE_TREE,
+            EXAMPLE_TRAITS,
+            trait="response",
+            taxon_column="taxon",
+            modes=("brownian", "white-noise"),
+        )
+
+
+def test_compare_fitcontinuous_model_ranking_records_likelihood_policy() -> None:
+    fixture = get_shared_geiger_continuous_fixture(
+        "geiger_continuous_brownian_signal_twenty_four_taxa"
+    )
+
+    report = compare_fitcontinuous_model_ranking(
+        fixture.tree_path,
+        fixture.traits_path,
+        trait=fixture.trait_name,
+        taxon_column=fixture.taxon_column,
+        modes=("brownian", "white-noise"),
+    )
+
+    assert report.likelihood_constant_policy == (
+        "full-gaussian-loglikelihood-includes-normalizing-constant"
+    )
+    assert report.likelihood_comparison_policy == (
+        "relative-aic-and-aicc-ranking-is-permitted-only-when-all-candidate-modes-share-one-gaussian-likelihood-constant-policy"
+    )
+    assert report.noncomparable_likelihood_models == []
 
 
 @pytest.mark.parametrize("mode", ["trend", "mean_trend", "rate_trend"])
