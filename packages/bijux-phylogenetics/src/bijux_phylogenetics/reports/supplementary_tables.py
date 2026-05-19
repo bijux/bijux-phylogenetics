@@ -73,13 +73,13 @@ from bijux_phylogenetics.core.taxon_workflows import (
     TaxonWorkflowLossRow,
     build_taxon_workflow_loss_report,
 )
-from bijux_phylogenetics.io.fasta import (
+from bijux_phylogenetics.io.fasta.cleaning import compare_alignment_summaries
+from bijux_phylogenetics.io.fasta.quality import (
     assess_alignment_low_information,
     build_alignment_quality_report,
     build_sequence_quality_ranking,
-    compare_alignment_summaries,
-    summarise_fasta,
 )
+from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.reports.tree_package import (
     TreeBranchStatisticsRow,
     TreeSupportRow,

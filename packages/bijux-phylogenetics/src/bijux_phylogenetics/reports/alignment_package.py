@@ -14,12 +14,12 @@ from bijux_phylogenetics.core.alignment import (
     SequenceQualityRankingRow,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.io.fasta import (
+from bijux_phylogenetics.io.fasta._shared import load_fasta_alignment
+from bijux_phylogenetics.io.fasta.quality import (
     build_alignment_forensic_report,
-    load_fasta_alignment,
-    summarise_fasta,
     summarize_alignment_windows,
 )
+from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
 )

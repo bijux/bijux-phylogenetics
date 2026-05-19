@@ -60,19 +60,20 @@ from bijux_phylogenetics.distance import (
     build_tree_from_imported_distance_matrix,
     inspect_imported_distance_matrix_quality,
 )
-from bijux_phylogenetics.io.fasta import (
+from bijux_phylogenetics.io.fasta.cleaning import (
+    compute_pairwise_sequence_identity_matrix,
+    list_alignment_filter_profiles,
+)
+from bijux_phylogenetics.io.fasta.coding import inspect_coding_alignment
+from bijux_phylogenetics.io.fasta.quality import (
     assess_alignment_low_information,
     build_alignment_forensic_report,
     build_alignment_quality_report,
     build_ambiguous_alignment_column_report,
     build_duplicate_sequence_policy_report,
     build_sequence_quality_ranking,
-    compute_pairwise_sequence_identity_matrix,
-    inspect_coding_alignment,
-    link_alignment_to_tree,
-    list_alignment_filter_profiles,
-    summarise_fasta,
 )
+from bijux_phylogenetics.io.fasta.records import link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.validation import (
     CoreWorkflowValidationReport,

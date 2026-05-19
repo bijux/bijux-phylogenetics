@@ -19,7 +19,7 @@ from bijux_phylogenetics.diagnostics.validation import (
     validate_tree_path,
 )
 from bijux_phylogenetics.engines.common import load_engine_manifest
-from bijux_phylogenetics.io.fasta import clean_alignment_with_profile
+from bijux_phylogenetics.io.fasta.cleaning import clean_alignment_with_profile
 
 
 @dataclass(slots=True)

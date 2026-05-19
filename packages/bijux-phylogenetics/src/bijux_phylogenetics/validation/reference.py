@@ -19,15 +19,15 @@ from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
 )
-from bijux_phylogenetics.io.fasta import (
+from bijux_phylogenetics.io.fasta.quality import (
     assess_alignment_low_information,
     build_alignment_forensic_report,
     build_alignment_quality_report,
     build_ambiguous_alignment_column_report,
     build_duplicate_sequence_policy_report,
     build_sequence_quality_ranking,
-    summarise_fasta,
 )
+from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.bayesian import build_time_tree_figure_package
 from bijux_phylogenetics.render.package import build_tree_figure_package

@@ -4,10 +4,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
-from bijux_phylogenetics.io.fasta import (
-    summarize_alignment_readiness,
-    validate_fasta_input,
-)
+from bijux_phylogenetics.io.fasta.quality import summarize_alignment_readiness
+from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 
 
 @dataclass(slots=True)
