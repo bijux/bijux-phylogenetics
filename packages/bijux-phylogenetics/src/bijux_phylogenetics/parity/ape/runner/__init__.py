@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import csv
-from dataclasses import asdict, dataclass, replace
-from importlib import metadata
+from dataclasses import asdict, replace
 import json
 import math
-import os
 from pathlib import Path
 import re
 import shutil
@@ -88,103 +86,15 @@ from bijux_phylogenetics.trees import (
     compute_strict_consensus_tree,
 )
 from ..registry import ApeParityCase, _selected_cases, _write_case_file
-
-
-@dataclass(frozen=True, slots=True)
-class ApeParityObservation:
-    """One live parity comparison between Bijux and `ape`."""
-
-    case_id: str
-    fixture_kind: str
-    fixture_id: str
-    function_name: str
-    python_function_name: str
-    input_fixture: Path
-    tolerance: float
-    r_version: str | None
-    ape_version: str | None
-    bijux_version: str
-    bijux_commit: str | None
-    status: str
-    passed: bool
-    mismatch_reason: str | None
-    reproducible_artifact_root: Path | None
-    reference_summary: dict[str, object] | None
-    bijux_summary: dict[str, object] | None
-    reference_error: dict[str, object] | None
-    bijux_error: dict[str, object] | None
-
-
-@dataclass(frozen=True, slots=True)
-class ApeParitySummaryRow:
-    """One function-level summary across governed `ape` parity cases."""
-
-    function_name: str
-    case_count: int
-    passed_case_count: int
-    failed_case_count: int
-    skipped_case_count: int
-
-
-@dataclass(slots=True)
-class ApeParityReport:
-    """Aggregate report for governed live `ape` parity cases."""
-
-    observations: list[ApeParityObservation]
-    summary_rows: list[ApeParitySummaryRow]
-    case_count: int
-    passed_case_count: int
-    failed_case_count: int
-    skipped_case_count: int
-    all_passed: bool
-    limitations: list[str]
-
-
-def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[7]
-
-
-def _ape_runner_path() -> Path:
-    return (
-        Path(__file__).resolve().parents[3]
-        / "resources"
-        / "reference"
-        / "ape_parity_runner.R"
-    )
-
-
-def _failure_root() -> Path:
-    return _repository_root() / "artifacts" / "ape-parity-failures"
-
-
-def _reference_environment() -> dict[str, str]:
-    environment = dict(os.environ)
-    r_library = _repository_root() / "artifacts" / "r-lib"
-    if "R_LIBS_USER" not in environment and r_library.is_dir():
-        environment["R_LIBS_USER"] = str(r_library)
-    return environment
-
-
-def _bijux_version() -> str:
-    try:
-        return metadata.version("bijux-phylogenetics")
-    except metadata.PackageNotFoundError:
-        return "0.1.0"
-
-
-def _bijux_commit() -> str | None:
-    # Fixed repository git metadata probe.
-    result = subprocess.run(  # nosec
-        ["git", "rev-parse", "--short", "HEAD"],
-        capture_output=True,
-        check=False,
-        cwd=_repository_root(),
-        text=True,
-    )
-    if result.returncode != 0:
-        return None
-    commit = result.stdout.strip()
-    return commit or None
+from .models import ApeParityObservation, ApeParityReport, ApeParitySummaryRow
+from .runtime import (
+    ape_runner_path as _ape_runner_path,
+    bijux_commit as _bijux_commit,
+    bijux_version as _bijux_version,
+    failure_root as _failure_root,
+    reference_environment as _reference_environment,
+    repository_root as _repository_root,
+)
 
 
 def _node_kind_order(node_kind: str) -> int:
