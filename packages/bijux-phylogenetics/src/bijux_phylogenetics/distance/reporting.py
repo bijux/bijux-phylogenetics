@@ -30,12 +30,11 @@ from .models import (
     DistanceReproducibilityBundleReport,
     GapHandlingMode,
 )
-from . import (
-    assess_distance_method_assumptions,
+from .matrix import (
     compute_pairwise_genetic_distance_matrix,
-    inspect_distance_matrix_quality,
     write_genetic_distance_matrix,
 )
+from . import assess_distance_method_assumptions, inspect_distance_matrix_quality
 from .shared import (
     _allowed_models_for_alphabet,
     _file_sha256,
