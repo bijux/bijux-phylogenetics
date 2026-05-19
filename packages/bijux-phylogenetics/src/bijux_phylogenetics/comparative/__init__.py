@@ -144,6 +144,10 @@ from .disparity_through_time import (
 from .diversification import (
     CladeDiversificationObservation,
     CladeDiversificationScanReport,
+    DiversificationFigureAudit,
+    DiversificationFigureCaptionDraft,
+    DiversificationFigureLegendEntry,
+    DiversificationFigurePackageResult,
     DiversificationGammaStatisticReport,
     GeigerBirthDeathExclusionReport,
     DiversificationMethodReport,
@@ -162,6 +166,7 @@ from .diversification import (
     TraitDependentDiversificationState,
     build_diversification_method_report,
     build_diversification_methods_summary_text,
+    build_diversification_figure_package,
     compare_diversification_models,
     compute_diversification_gamma_statistic,
     compute_lineage_through_time_curve,
@@ -180,13 +185,6 @@ from .diversification import (
     write_diversification_model_comparison_table,
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
-)
-from .diversification_package import (
-    DiversificationFigureAudit,
-    DiversificationFigureCaptionDraft,
-    DiversificationFigureLegendEntry,
-    DiversificationFigurePackageResult,
-    build_diversification_figure_package,
 )
 from .model_comparison_package import (
     ComparativeModelCriteriaRow,

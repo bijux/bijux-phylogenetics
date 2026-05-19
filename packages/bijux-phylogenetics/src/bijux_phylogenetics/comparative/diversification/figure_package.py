@@ -12,7 +12,9 @@ from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
 )
 
-from .diversification import (
+from .clades import write_clade_diversification_table
+from .lineage import write_lineage_through_time_table
+from .models import (
     CladeDiversificationObservation,
     CladeDiversificationScanReport,
     DiversificationMethodReport,
@@ -21,11 +23,11 @@ from .diversification import (
     DiversificationMethodsSummaryTextResult,
     LineageThroughTimeReport,
     SamplingFractionReport,
+)
+from .reporting import (
     build_diversification_method_report,
     write_diversification_methods_summary_text,
-    write_clade_diversification_table,
     write_diversification_model_comparison_table,
-    write_lineage_through_time_table,
 )
 
 
