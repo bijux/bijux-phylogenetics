@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import csv
-from dataclasses import asdict, dataclass
-from importlib import metadata
+from dataclasses import asdict
 import json
 import math
-import os
 from pathlib import Path
 import subprocess  # nosec B404 - parity helpers invoke repository-owned reference commands
 import tempfile
@@ -48,104 +46,19 @@ from bijux_phylogenetics.simulation import (
     simulate_discrete_histories,
 )
 from ..registry import PhytoolsParityCase, list_phytools_parity_cases
-
-
-@dataclass(frozen=True, slots=True)
-class PhytoolsParityObservation:
-    """One live parity comparison between Bijux and `phytools`."""
-
-    case_id: str
-    fixture_id: str
-    function_name: str
-    python_function_name: str
-    input_fixtures: tuple[Path, ...]
-    tolerance: float
-    r_version: str | None
-    phytools_version: str | None
-    bijux_version: str
-    bijux_commit: str | None
-    status: str
-    passed: bool
-    mismatch_reason: str | None
-    reproducible_artifact_root: Path | None
-    reference_summary: dict[str, object] | None
-    bijux_summary: dict[str, object] | None
-    reference_rows: list[dict[str, object]] | None
-    bijux_rows: list[dict[str, object]] | None
-    reference_error: dict[str, object] | None
-    bijux_error: dict[str, object] | None
-
-
-@dataclass(frozen=True, slots=True)
-class PhytoolsParitySummaryRow:
-    """One function-level summary across governed `phytools` parity cases."""
-
-    function_name: str
-    case_count: int
-    passed_case_count: int
-    failed_case_count: int
-    skipped_case_count: int
-
-
-@dataclass(slots=True)
-class PhytoolsParityReport:
-    """Aggregate report for governed live `phytools` parity cases."""
-
-    observations: list[PhytoolsParityObservation]
-    summary_rows: list[PhytoolsParitySummaryRow]
-    case_count: int
-    passed_case_count: int
-    failed_case_count: int
-    skipped_case_count: int
-    all_passed: bool
-    limitations: list[str]
-
-
-def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[6]
-
-
-def _phytools_runner_path() -> Path:
-    return (
-        Path(__file__).resolve().parents[2]
-        / "resources"
-        / "reference"
-        / "phytools_parity_runner.R"
-    )
-
-
-def _failure_root() -> Path:
-    return _repository_root() / "artifacts" / "phytools-parity-failures"
-
-
-def _reference_environment() -> dict[str, str]:
-    environment = dict(os.environ)
-    r_library = _repository_root() / "artifacts" / "r-lib"
-    if "R_LIBS_USER" not in environment and r_library.is_dir():
-        environment["R_LIBS_USER"] = str(r_library)
-    return environment
-
-
-def _bijux_version() -> str:
-    try:
-        return metadata.version("bijux-phylogenetics")
-    except metadata.PackageNotFoundError:
-        return "0.1.0"
-
-
-def _bijux_commit() -> str | None:
-    # Fixed repository git metadata probe.
-    result = subprocess.run(  # nosec
-        ["git", "rev-parse", "--short", "HEAD"],
-        capture_output=True,
-        check=False,
-        cwd=_repository_root(),
-        text=True,
-    )
-    if result.returncode != 0:
-        return None
-    commit = result.stdout.strip()
-    return commit or None
+from .models import (
+    PhytoolsParityObservation,
+    PhytoolsParityReport,
+    PhytoolsParitySummaryRow,
+)
+from .runtime import (
+    bijux_commit as _bijux_commit,
+    bijux_version as _bijux_version,
+    failure_root as _failure_root,
+    phytools_runner_path as _phytools_runner_path,
+    reference_environment as _reference_environment,
+    repository_root as _repository_root,
+)
 
 
 def _optional_payload_string(payload: dict[str, object], key: str) -> str | None:
