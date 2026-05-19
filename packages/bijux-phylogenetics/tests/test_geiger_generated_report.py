@@ -7,6 +7,8 @@ from bijux_phylogenetics.parity.geiger.boundary_warning_registry import (
     GeigerBoundaryWarningRow,
 )
 from bijux_phylogenetics.parity.geiger.generated_report import (
+    _load_large_tree_benchmark_summary,
+    _load_real_dataset_benchmark_summary,
     build_generated_geiger_parity_report,
     write_generated_geiger_parity_report_json,
     write_generated_geiger_parity_report_markdown,
@@ -341,3 +343,28 @@ def test_build_generated_geiger_parity_report_aggregates_live_and_artifact_evide
     assert "## Simulation Recovery" in markdown_text
     assert json_payload["goal_start"] == 251
     assert json_payload["sim_char_all_passed"] is True
+
+
+def test_load_large_tree_benchmark_summary_reads_packaged_artifact() -> None:
+    summary = _load_large_tree_benchmark_summary()
+
+    assert summary == {
+        "case_count": 2,
+        "geiger_match_case_count": 2,
+        "threshold_pass_case_count": 2,
+        "too_slow_case_count": 0,
+        "unstable_case_count": 0,
+    }
+
+
+def test_load_real_dataset_benchmark_summary_reads_packaged_artifact() -> None:
+    summary = _load_real_dataset_benchmark_summary()
+
+    assert summary == {
+        "summary_row_count": 4,
+        "model_row_count": 8,
+        "alignment_review_row_count": 2,
+        "parity_row_count": 10,
+        "selection_match_count": 2,
+        "unstable_review_count": 1,
+    }
