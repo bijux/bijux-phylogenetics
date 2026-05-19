@@ -138,7 +138,6 @@ from bijux_phylogenetics.trees import (
     write_bootstrap_tree_set_artifacts,
 )
 
-from .bundle import _format_number
 from .models import (
     _ALIGNMENT_MODE,
     _BOOTSTRAP_CONSENSUS_THRESHOLD,
@@ -172,6 +171,7 @@ from .models import (
     RabiesCrossHostGeographyPanelWorkflowConfig,
     RabiesWorkflowConfigAuditRow,
 )
+from .shared import _format_number
 
 def load_rabies_cross_host_geography_panel_dataset(
     config_path: Path | None = None,
@@ -689,4 +689,3 @@ def _read_observed_groups(
             if region_group:
                 region_groups.add(region_group)
     return host_groups, region_groups
-

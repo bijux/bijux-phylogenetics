@@ -138,14 +138,11 @@ from bijux_phylogenetics.trees import (
     write_bootstrap_tree_set_artifacts,
 )
 
-from .bundle import (
-    _checksum,
-    _html_list,
-    write_rabies_cross_host_geography_panel_workflow_bundle,
-)
+from .bundle import write_rabies_cross_host_geography_panel_workflow_bundle
 from .config import export_rabies_cross_host_geography_panel_dataset, load_rabies_cross_host_geography_panel_dataset
 from .models import _FLAGSHIP_QUESTION
 from .models import *
+from .shared import _checksum, _html_list
 from .workflow import run_rabies_cross_host_geography_panel_workflow
 
 def run_rabies_cross_host_geography_panel_demo(
