@@ -573,6 +573,10 @@ def _tolerance_rules() -> list[GeigerToleranceRuleRow]:
         notes: list[str] = []
         if row_policy == "summary-only":
             notes.append("Rows are not claimed as row-level parity for this surface.")
+        if "fitdiscrete-lambda-weak-signal-review" in case_ids:
+            notes.append(
+                "The weak lambda review compares the stable likelihood, AIC, AICc, and pruning surface rather than the nondeterministic plateau lambda value from live geiger."
+            )
         if field_overrides_json != "{}":
             notes.append("Summary fields use governed per-field tolerances.")
         if row_overrides_json != "{}":
@@ -662,7 +666,12 @@ def _goal_coverage_rows(
         }
     )
 
-    def live_row(function_name: str, goal_id: int) -> GeigerGoalCoverageRow:
+    def live_row(
+        function_name: str,
+        goal_id: int,
+        *,
+        notes: list[str] | None = None,
+    ) -> GeigerGoalCoverageRow:
         row = summary_by_function[function_name]
         return GeigerGoalCoverageRow(
             goal_id=goal_id,
@@ -673,7 +682,7 @@ def _goal_coverage_rows(
             passed_case_count=row.passed_case_count,
             failed_case_count=row.failed_case_count,
             skipped_case_count=row.skipped_case_count,
-            notes=[],
+            notes=[] if notes is None else notes,
         )
 
     def aggregate_live_row(
@@ -811,7 +820,13 @@ def _goal_coverage_rows(
                 "Meristic parity is excluded rather than being mislabeled as generic ordered-state Mk."
             ],
         ),
-        live_row("geiger::fitDiscrete(model='ER', transform='lambda')", 269),
+        live_row(
+            "geiger::fitDiscrete(model='ER', transform='lambda')",
+            269,
+            notes=[
+                "The weak-signal lambda review is governed by objective-surface agreement because live geiger returns nondeterministic plateau lambda values while Bijux resolves the same flat surface to the lower boundary."
+            ],
+        ),
         aggregate_live_row(
             goal_id=270,
             surface="geiger::fitDiscrete(transform='kappa')",
