@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import csv
 from pathlib import Path
 import shutil
 
 from bijux_phylogenetics.comparative.discrete_mode_recovery import (
-    DiscreteModeRecoveryScenario,
     run_discrete_mode_recovery,
     write_discrete_mode_recovery_execution_table,
     write_discrete_mode_recovery_model_choice_table,
@@ -17,10 +15,7 @@ from bijux_phylogenetics.comparative.discrete_mode_recovery import (
     write_discrete_mode_recovery_warning_table,
     write_geiger_fitdiscrete_recovery_reference_payload_table,
 )
-from bijux_phylogenetics.simulation import (
-    DiscreteHistoryRateRow,
-    write_discrete_trait_table,
-)
+from bijux_phylogenetics.simulation import write_discrete_trait_table
 
 from .models import (
     DiscreteModeRecoveryPanelDemoResult,
@@ -29,6 +24,7 @@ from .models import (
     DiscreteModeRecoveryPanelWorkflowReport,
 )
 from .panel import DEFAULT_TREE_FILE, load_discrete_mode_recovery_panel_dataset
+from .scenarios import load_discrete_mode_recovery_panel_scenarios
 
 
 def export_discrete_mode_recovery_panel_dataset(
@@ -64,10 +60,9 @@ def export_discrete_mode_recovery_panel_dataset(
 def run_discrete_mode_recovery_panel_workflow() -> DiscreteModeRecoveryPanelWorkflowReport:
     """Run the governed recovery workflow over the packaged discrete-mode panel."""
     dataset = load_discrete_mode_recovery_panel_dataset()
-    scenarios = _load_scenarios(dataset.simulation_cases_path, dataset.dataset_root)
     recovery_report = run_discrete_mode_recovery(
         dataset.default_tree_path,
-        scenarios,
+        load_discrete_mode_recovery_panel_scenarios(dataset),
     )
     return DiscreteModeRecoveryPanelWorkflowReport(
         dataset=dataset,
@@ -405,104 +400,3 @@ def _write_overview(
     ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
-
-
-def _load_scenarios(
-    path: Path,
-    dataset_root: Path,
-) -> list[DiscreteModeRecoveryScenario]:
-    with path.open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, delimiter="\t")
-        return [
-            DiscreteModeRecoveryScenario(
-                case_id=row["case_id"],
-                label=row["label"],
-                generating_model=row["generating_model"],
-                expected_selected_model=(
-                    None
-                    if not row["expected_selected_model"]
-                    else row["expected_selected_model"]
-                ),
-                states=_split_items(row["states"]),
-                rate_rows=_parse_rate_rows(row["rate_rows"]),
-                root_state=row["root_state"],
-                seed=int(row["seed"]),
-                tree_path=dataset_root / row["tree_file"],
-                transform=_optional_string(row.get("transform", "")),
-                transform_parameter_value=_optional_float(
-                    row.get("transform_parameter_value", "")
-                ),
-                rate_tolerance=_optional_float(row["rate_tolerance"]),
-                parameter_tolerances=_parse_parameter_tolerances(
-                    row.get("parameter_tolerances", "")
-                ),
-                lambda_bounds=_parse_bounds(
-                    row.get("lambda_bounds", ""),
-                    default=(0.0, 1.0),
-                ),
-                kappa_bounds=_parse_bounds(
-                    row.get("kappa_bounds", ""),
-                    default=(0.0, 1.0),
-                ),
-                delta_bounds=_parse_bounds(
-                    row.get("delta_bounds", ""),
-                    default=(0.006737947, 3.0),
-                ),
-                early_burst_bounds=_parse_bounds(
-                    row.get("early_burst_bounds", ""),
-                    default=(-10.0, 10.0),
-                ),
-                expected_overparameterized=(row["expected_overparameterized"] == "true"),
-                expected_warning_kinds=_split_items(row["expected_warning_kinds"]),
-                notes=row["notes"],
-            )
-            for row in reader
-        ]
-
-
-def _parse_rate_rows(value: str) -> list[DiscreteHistoryRateRow]:
-    rows: list[DiscreteHistoryRateRow] = []
-    for item in (entry for entry in value.split(";") if entry):
-        pair, rate_text = item.split("=")
-        source_state, target_state = pair.split(">")
-        rows.append(
-            DiscreteHistoryRateRow(
-                source_state=source_state,
-                target_state=target_state,
-                rate=float(rate_text),
-            )
-        )
-    return rows
-
-
-def _optional_float(value: str) -> float | None:
-    return None if not value else float(value)
-
-
-def _optional_string(value: str) -> str | None:
-    return None if not value else value
-
-
-def _parse_parameter_tolerances(value: str) -> dict[str, float]:
-    tolerances: dict[str, float] = {}
-    for item in _split_items(value):
-        parameter, tolerance = item.split("=")
-        tolerances[parameter] = float(tolerance)
-    return tolerances
-
-
-def _parse_bounds(
-    value: str,
-    *,
-    default: tuple[float, float],
-) -> tuple[float, float]:
-    if not value:
-        return default
-    left, right = value.split(":")
-    return (float(left), float(right))
-
-
-def _split_items(value: str) -> list[str]:
-    if not value:
-        return []
-    return [item for item in value.split(",") if item]

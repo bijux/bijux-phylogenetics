@@ -5,6 +5,7 @@ from pathlib import Path
 from bijux_phylogenetics.io.trees import load_tree
 
 from .models import DiscreteModeRecoveryPanelDataset
+from .scenarios import count_discrete_mode_recovery_panel_scenarios
 
 DATASET_ID = "discrete_mode_recovery_panel"
 DATASET_LABEL = "Discrete trait-model recovery panel"
@@ -18,7 +19,6 @@ def load_discrete_mode_recovery_panel_dataset() -> DiscreteModeRecoveryPanelData
     reference_tree_paths = sorted((dataset_root / "trees").glob("*.nwk"))
     simulation_cases_path = dataset_root / "simulation-cases.tsv"
     taxon_count = max(load_tree(path).tip_count for path in reference_tree_paths)
-    case_count = len(_load_scenarios(simulation_cases_path, dataset_root))
     return DiscreteModeRecoveryPanelDataset(
         dataset_id=DATASET_ID,
         label=DATASET_LABEL,
@@ -29,7 +29,10 @@ def load_discrete_mode_recovery_panel_dataset() -> DiscreteModeRecoveryPanelData
         reference_output_root=dataset_root / "expected",
         taxon_count=taxon_count,
         tree_count=len(reference_tree_paths),
-        case_count=case_count,
+        case_count=count_discrete_mode_recovery_panel_scenarios(
+            simulation_cases_path,
+            dataset_root,
+        ),
         source_summary=(
             "Deterministic discrete-trait recovery panel with one governed "
             "twelve-taxon overparameterized ARD failure tree plus one governed "
@@ -48,9 +51,3 @@ def _resource_root() -> Path:
         / "simulation"
         / DATASET_ID
     )
-
-
-def _load_scenarios(path: Path, dataset_root: Path) -> list[object]:
-    from .workflow import _load_scenarios as _load_workflow_scenarios
-
-    return _load_workflow_scenarios(path, dataset_root)
