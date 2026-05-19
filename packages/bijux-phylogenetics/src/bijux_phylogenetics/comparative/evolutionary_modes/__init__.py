@@ -11,7 +11,12 @@ from bijux_phylogenetics.comparative.evolutionary_modes.fitting import (
     fit_evolutionary_mode_from_dataset as _fit_evolutionary_mode_from_dataset,
 )
 from bijux_phylogenetics.comparative.evolutionary_modes.models import (
+    CONTINUOUS_GAUSSIAN_LIKELIHOOD_COMPARISON_POLICY,
+    CONTINUOUS_GAUSSIAN_LIKELIHOOD_CONSTANT_POLICY,
+    FITCONTINUOUS_MODEL_CONFIDENCE_DELTA_THRESHOLD,
+    FITCONTINUOUS_MODEL_CONFIDENCE_WEIGHT_BASIS,
     FITCONTINUOUS_MODEL_COMPARISON_ORDER,
+    FITCONTINUOUS_MODEL_RANKING_POLICY,
     ComparativeTreeRescalingReport,
     ContinuousEvolutionaryModeComparisonReport,
     ContinuousEvolutionaryModeFitReport,
@@ -34,6 +39,11 @@ from bijux_phylogenetics.comparative.evolutionary_modes.tree_transforms import (
 )
 
 __all__ = [
+    "CONTINUOUS_GAUSSIAN_LIKELIHOOD_COMPARISON_POLICY",
+    "CONTINUOUS_GAUSSIAN_LIKELIHOOD_CONSTANT_POLICY",
+    "FITCONTINUOUS_MODEL_CONFIDENCE_DELTA_THRESHOLD",
+    "FITCONTINUOUS_MODEL_CONFIDENCE_WEIGHT_BASIS",
+    "FITCONTINUOUS_MODEL_RANKING_POLICY",
     "ComparativeTreeRescalingReport",
     "ContinuousEvolutionaryModeComparisonReport",
     "ContinuousEvolutionaryModeFitReport",
