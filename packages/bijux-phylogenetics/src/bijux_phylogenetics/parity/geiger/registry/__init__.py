@@ -54,7 +54,7 @@ class GeigerParityCase:
 
 
 def _package_root() -> Path:
-    return Path(__file__).resolve().parents[4]
+    return Path(__file__).resolve().parents[5]
 
 
 def list_geiger_parity_cases() -> list[GeigerParityCase]:
