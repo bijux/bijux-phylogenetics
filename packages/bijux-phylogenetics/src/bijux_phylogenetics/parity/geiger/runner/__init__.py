@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import csv
-from dataclasses import asdict, dataclass
-from importlib import metadata
+from dataclasses import asdict
 import json
 import math
-import os
 from pathlib import Path
 import shutil
 import subprocess  # nosec B404 - parity helpers invoke repository-owned reference commands
@@ -21,185 +19,30 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 
-from ..optimizer_triage import (
-    GeigerOptimizerTriageRow,
-    build_geiger_optimizer_triage_rows,
+from ..optimizer_triage import build_geiger_optimizer_triage_rows
+from ..boundary_warning_registry import build_geiger_boundary_warning_rows
+from ..likelihood_policy import build_geiger_likelihood_policy_rows
+from ..model_confidence import build_geiger_model_confidence_rows
+from ..parameterization_registry import build_geiger_parameterization_registry_rows
+from ..registry import (
+    GeigerParityCase,
+    list_geiger_parity_cases as list_geiger_parity_cases,
 )
-from ..boundary_warning_registry import (
-    GeigerBoundaryWarningRow,
-    build_geiger_boundary_warning_rows,
+from .models import (
+    GeigerParityObservation,
+    GeigerParityReport,
+    GeigerParitySummaryRow,
 )
-from ..likelihood_policy import (
-    GeigerLikelihoodPolicyRow,
-    build_geiger_likelihood_policy_rows,
+from .runtime import (
+    bijux_commit as _bijux_commit,
+    bijux_version as _bijux_version,
+    failure_root as _failure_root,
+    geiger_runner_path as _geiger_runner_path,
+    reference_environment as _reference_environment,
+    repository_root as _repository_root,
+    selected_cases as _selected_cases,
+    write_case_file as _write_case_file,
 )
-from ..model_confidence import (
-    GeigerModelConfidenceRow,
-    build_geiger_model_confidence_rows,
-)
-from ..parameterization_registry import (
-    GeigerParameterizationRegistryRow,
-    build_geiger_parameterization_registry_rows,
-)
-from ..registry import GeigerParityCase, list_geiger_parity_cases
-
-
-@dataclass(frozen=True, slots=True)
-class GeigerParityObservation:
-    """One live parity comparison between Bijux and `geiger`."""
-
-    case_id: str
-    fixture_id: str
-    function_name: str
-    python_function_name: str
-    input_fixtures: tuple[Path, ...]
-    model_name: str
-    optimizer_settings: dict[str, object] | None
-    tolerance: float
-    r_version: str | None
-    geiger_version: str | None
-    bijux_version: str
-    bijux_commit: str | None
-    status: str
-    passed: bool
-    mismatch_reason: str | None
-    reproducible_artifact_root: Path | None
-    reference_summary: dict[str, object] | None
-    bijux_summary: dict[str, object] | None
-    reference_rows: list[dict[str, object]] | None
-    bijux_rows: list[dict[str, object]] | None
-    reference_error: dict[str, object] | None
-    bijux_error: dict[str, object] | None
-
-
-@dataclass(frozen=True, slots=True)
-class GeigerParitySummaryRow:
-    """One function-level summary across governed `geiger` parity cases."""
-
-    function_name: str
-    case_count: int
-    passed_case_count: int
-    failed_case_count: int
-    skipped_case_count: int
-
-
-@dataclass(slots=True)
-class GeigerParityReport:
-    """Aggregate report for governed live `geiger` parity cases."""
-
-    observations: list[GeigerParityObservation]
-    optimizer_triage_rows: list[GeigerOptimizerTriageRow]
-    boundary_warning_rows: list[GeigerBoundaryWarningRow]
-    likelihood_policy_rows: list[GeigerLikelihoodPolicyRow]
-    model_confidence_rows: list[GeigerModelConfidenceRow]
-    parameterization_registry_rows: list[GeigerParameterizationRegistryRow]
-    summary_rows: list[GeigerParitySummaryRow]
-    case_count: int
-    passed_case_count: int
-    failed_case_count: int
-    skipped_case_count: int
-    all_passed: bool
-    limitations: list[str]
-
-
-def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[6]
-
-
-def _geiger_runner_path() -> Path:
-    return (
-        Path(__file__).resolve().parents[2]
-        / "resources"
-        / "reference"
-        / "geiger_parity_runner.R"
-    )
-
-
-def _failure_root() -> Path:
-    return _repository_root() / "artifacts" / "geiger-parity-failures"
-
-
-def _reference_environment() -> dict[str, str]:
-    environment = dict(os.environ)
-    r_library = _repository_root() / "artifacts" / "r-lib"
-    if "R_LIBS_USER" not in environment and r_library.is_dir():
-        environment["R_LIBS_USER"] = str(r_library)
-    return environment
-
-
-def _bijux_version() -> str:
-    try:
-        return metadata.version("bijux-phylogenetics")
-    except metadata.PackageNotFoundError:
-        return "0.1.0"
-
-
-def _bijux_commit() -> str | None:
-    result = subprocess.run(  # nosec
-        ["git", "rev-parse", "--short", "HEAD"],
-        capture_output=True,
-        check=False,
-        cwd=_repository_root(),
-        text=True,
-    )
-    if result.returncode != 0:
-        return None
-    commit = result.stdout.strip()
-    return commit or None
-
-
-def _selected_cases(case_ids: list[str] | None) -> list[GeigerParityCase]:
-    registry = {case.case_id: case for case in list_geiger_parity_cases()}
-    if case_ids is None:
-        return list(registry.values())
-    missing = [case_id for case_id in case_ids if case_id not in registry]
-    if missing:
-        missing_text = ", ".join(sorted(missing))
-        raise ValueError(f"unknown geiger parity case id(s): {missing_text}")
-    return [registry[case_id] for case_id in case_ids]
-
-
-def _write_case_file(path: Path, case: GeigerParityCase) -> Path:
-    payload = {
-        "case_id": case.case_id,
-        "fixture_id": case.fixture_id,
-        "function_name": case.function_name,
-        "python_function_name": case.python_function_name,
-        "operation": case.operation,
-        "model_name": case.model_name,
-        "python_mode": case.python_mode,
-        "input_fixtures": [str(item) for item in case.input_fixtures],
-        "tolerance": case.tolerance,
-        "trait_name": case.trait_name,
-        "taxon_column": case.taxon_column,
-        "optimizer_settings": case.optimizer_settings,
-        "candidate_model_names": None
-        if case.candidate_model_names is None
-        else list(case.candidate_model_names),
-        "reference_control": case.reference_control,
-        "coarse_grid_point_count": case.coarse_grid_point_count,
-        "fine_grid_point_count": case.fine_grid_point_count,
-        "initial_parameter_value": case.initial_parameter_value,
-        "comparison_fields": list(case.comparison_fields),
-        "row_comparison_policy": case.row_comparison_policy,
-        "lambda_bounds": None
-        if case.lambda_bounds is None
-        else list(case.lambda_bounds),
-        "discrete_transform_name": case.discrete_transform_name,
-        "kappa_bounds": None
-        if case.kappa_bounds is None
-        else list(case.kappa_bounds),
-        "delta_bounds": None
-        if case.delta_bounds is None
-        else list(case.delta_bounds),
-        "ou_bounds": None if case.ou_bounds is None else list(case.ou_bounds),
-        "early_burst_bounds": None
-        if case.early_burst_bounds is None
-        else list(case.early_burst_bounds),
-        "field_tolerances": case.field_tolerances,
-    }
-    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    return path
 
 
 def _load_json(path: Path) -> dict[str, object]:
