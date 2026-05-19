@@ -424,6 +424,13 @@ parameter-recovery ledgers, records execution and warning review rows, and
 keeps weak-identifiability transformed-model cases explicit instead of forcing
 them into binary pass-or-fail claims.
 
+For governed discrete `fitDiscrete` recovery review, use
+`demo discrete-mode-recovery-panel`. It reruns the packaged discrete Mk panel,
+writes recovery summaries plus rate-recovery, rate-comparison,
+transform-parameter recovery, and transform-parameter comparison ledgers,
+records execution and warning review rows, and keeps review-only ARD cases
+explicit instead of flattening weak identification into success claims.
+
 For governed large-tree macroevolution fitting review, use
 `benchmark large-tree-model-fitting`. The small tier runs one 100-taxon
 Pagel-lambda fit and one 100-taxon binary discrete ER fit, records owned
@@ -1846,12 +1853,14 @@ one three-state ARD weak-identification review, and one five-state
 overparameterized ARD failure review across the governed twelve-taxon and
 twenty-four-taxon trees. Bijux exposes that benchmark through
 `run_discrete_mode_recovery_panel_workflow()` and
-`demo discrete-mode-recovery-panel`, writes paired rate-recovery and
-model-choice ledgers, compares Bijux truth error against stored local
-`geiger` truth error, and keeps the scientific boundary explicit: the ARD
+`demo discrete-mode-recovery-panel`, writes paired rate-recovery,
+rate-comparison, model-choice, and transform-parameter ledgers, compares
+Bijux truth error against stored local `geiger` truth error wherever the panel
+defines that truth, and keeps the scientific boundary explicit: the ARD
 surfaces are review cases and are not counted as successful recovery when the
-information-criterion surface prefers simpler models or when fitted state pairs
-drop out entirely.
+information-criterion surface prefers simpler models, when fitted state pairs
+drop out entirely, or when transform-bearing cases are not part of the
+governed panel.
 The same owned simulation surface now also exposes
 `simulate_correlated_brownian_trait_collection(...)` for two or more
 continuous traits on one fixed tree from one explicit evolutionary covariance
