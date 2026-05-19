@@ -4315,6 +4315,46 @@ def test_cli_simulate_discrete_history_writes_truth_outputs(
     assert "row_kind\tlabel\tmean_value" in summary_path.read_text(encoding="utf-8")
 
 
+def test_cli_simulate_transformed_discrete_history_reports_transform_metrics(
+    tmp_path: Path, capsys
+) -> None:
+    tip_path = tmp_path / "history-tips.tsv"
+    exit_code = main(
+        [
+            "simulate",
+            "history-discrete",
+            str(fixture("example_tree.nwk")),
+            "--states",
+            "0",
+            "1",
+            "--rate",
+            "0->1=0.05",
+            "--rate",
+            "1->0=0.02",
+            "--root-state",
+            "0",
+            "--transform",
+            "kappa",
+            "--transform-parameter-value",
+            "0.5",
+            "--replicates",
+            "2",
+            "--seed",
+            "11",
+            "--out",
+            str(tip_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["replicate_count"] == 2
+    assert payload["metrics"]["transform_name"] == "kappa"
+    assert payload["metrics"]["transform_parameter_value"] == 0.5
+    assert payload["data"]["transform_name"] == "kappa"
+    assert payload["data"]["simulations"][0]["transform_parameter_name"] == "kappa"
+
+
 def test_cli_simulate_dna_alignment_writes_fasta(tmp_path: Path, capsys) -> None:
     output_path = tmp_path / "simulated.fasta"
     exit_code = main(

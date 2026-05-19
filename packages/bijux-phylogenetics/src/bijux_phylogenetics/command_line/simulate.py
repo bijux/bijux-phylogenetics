@@ -243,6 +243,16 @@ def add_simulate_command(subparsers: Any) -> None:
         default=[],
         help="One STATE=PROBABILITY entry. Repeat to define the root prior.",
     )
+    simulate_history_discrete.add_argument(
+        "--transform",
+        choices=("lambda", "kappa", "delta", "early-burst"),
+        help="Optional discrete branch-length transform applied before history simulation.",
+    )
+    simulate_history_discrete.add_argument(
+        "--transform-parameter-value",
+        type=float,
+        help="Transform parameter value used for the discrete branch-length transform.",
+    )
     simulate_history_discrete.add_argument("--replicates", type=int, default=1)
     simulate_history_discrete.add_argument("--seed", type=int, default=1)
     simulate_history_discrete.add_argument(
@@ -636,6 +646,8 @@ def run_simulate_command(args: Any, *, parser: Any) -> int:
             rate_rows=_parse_rate_rows(args.rate),
             root_state=args.root_state,
             root_state_probabilities=(root_probability_rows or None),
+            transform=args.transform,
+            transform_parameter_value=args.transform_parameter_value,
             replicates=args.replicates,
             seed=args.seed,
         )
@@ -677,6 +689,8 @@ def run_simulate_command(args: Any, *, parser: Any) -> int:
                     "replicate_count": report.replicate_count,
                     "state_count": len(report.states),
                     "mean_total_transition_count": report.mean_total_transition_count,
+                    "transform_name": report.transform_name,
+                    "transform_parameter_value": report.transform_parameter_value,
                 },
                 data=report,
             ),
