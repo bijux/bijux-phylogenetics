@@ -17,8 +17,9 @@ from bijux_phylogenetics.comparative.discrete_mk import (
     DiscreteMkFitReport,
     fit_discrete_mk_model_from_dataset,
 )
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
-from ..core import _resolve_state_order, AncestralReconstructionError
+from ..transition_engine import _resolve_state_order
 from .models import (
     StochasticMapBranchHistory,
     StochasticMapCollectionReport,
