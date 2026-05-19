@@ -143,6 +143,39 @@ def test_parity_cli_writes_geiger_boundary_warning_table_for_single_case(
     assert row["bijux_stable_conclusion_supported"] is False
 
 
+def test_parity_cli_writes_geiger_model_confidence_table_for_single_case(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    confidence_path = tmp_path / "geiger-model-confidence.tsv"
+
+    exit_code = main(
+        [
+            "parity",
+            "--reference-source",
+            "geiger-live",
+            "--geiger-rscript-executable",
+            str(rscript),
+            "--geiger-case",
+            "fitcontinuous-model-comparison-brownian-review",
+            "--model-confidence-out",
+            str(confidence_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert confidence_path.exists()
+    assert payload["data"]["model_confidence_table"] == str(confidence_path)
+    row = payload["data"]["report"]["model_confidence_rows"][0]
+    assert row["case_id"] == "fitcontinuous-model-comparison-brownian-review"
+    assert row["weight_basis"] == "AICc"
+    assert row["reference_best_model"] == "brownian"
+
+
 def test_parity_cli_writes_geiger_parameterization_registry_for_single_case(
     tmp_path: Path,
     capsys,
