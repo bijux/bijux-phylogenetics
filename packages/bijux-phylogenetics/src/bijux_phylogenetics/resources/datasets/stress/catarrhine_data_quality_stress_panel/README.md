@@ -2,6 +2,14 @@
 
 This packaged dataset is a governed stress surface for dirty phylogenetic inputs.
 
+The packaged Python surface lives under
+`bijux_phylogenetics.datasets.data_quality_stress` and is intentionally split
+by ownership: `panel` exposes dataset metadata, `traits` owns permissive raw
+trait parsing and duplicate or missing-value review, `cleanup` owns sequence,
+tree, and comparative-subset repair policy, `export` copies the packaged raw
+panel, `bundle` writes the reviewer-facing ledgers, and `demo` materializes
+the full review bundle.
+
 It combines three deliberately different provenance layers:
 
 - a real catarrhine mitochondrial supermatrix derived from the packaged multi-locus catarrhine panel

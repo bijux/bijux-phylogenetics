@@ -969,6 +969,18 @@ through `duplicate_sequence_identifier_count`,
 `coding_internal_stop_count`, `raw_trait_missing_from_traits_count`,
 `raw_trait_extra_taxon_count`, and `tree_negative_branch_count`.
 
+The same packaged panel is available as a typed Python surface under
+`bijux_phylogenetics.datasets.data_quality_stress`. Use
+`load_catarrhine_data_quality_stress_panel_dataset()` to inspect the packaged
+dirty-input panel, `export_catarrhine_data_quality_stress_panel_dataset(...)`
+to materialize that panel without rerunning the workflow,
+`run_catarrhine_data_quality_stress_panel_workflow()` to rerun the governed
+cleanup report in memory,
+`write_catarrhine_data_quality_stress_panel_workflow_bundle(...)` to emit the
+reviewer-facing ledgers, or
+`run_catarrhine_data_quality_stress_panel_demo(...)` to materialize the
+dataset copy plus the workflow outputs in one call.
+
 `comparative signal` keeps its input policy explicit in JSON output: rooted
 trees are accepted whether or not they are ultrametric, overlapping missing
 trait values are pruned and reported, permutation rows are reproducible from
