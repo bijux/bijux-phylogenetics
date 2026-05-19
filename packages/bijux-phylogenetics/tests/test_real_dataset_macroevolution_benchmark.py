@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 import bijux_phylogenetics.benchmark as benchmark_api
 from bijux_phylogenetics.benchmark.real_dataset_macroevolution import (
     benchmark_real_dataset_macroevolution,
     run_real_dataset_macroevolution_benchmark_demo,
+    write_real_dataset_macroevolution_bundle,
+)
+from tests.support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
 )
 
 
@@ -86,3 +92,34 @@ def test_public_runtime_exports_include_real_dataset_macroevolution_benchmark() 
         benchmark_api.run_real_dataset_macroevolution_benchmark_demo
         is run_real_dataset_macroevolution_benchmark_demo
     )
+    assert (
+        benchmark_api.write_real_dataset_macroevolution_bundle
+        is write_real_dataset_macroevolution_bundle
+    )
+
+
+@pytest.mark.slow
+def test_write_real_dataset_macroevolution_bundle_matches_expected_outputs(
+    tmp_path: Path,
+) -> None:
+    bundle = write_real_dataset_macroevolution_bundle(
+        tmp_path / "real-dataset-macroevolution"
+    )
+
+    expected_root = (
+        Path(__file__).resolve().parents[1]
+        / "src"
+        / "bijux_phylogenetics"
+        / "resources"
+        / "benchmarks"
+        / "real_dataset_macroevolution"
+        / "expected"
+    )
+    generated = {
+        Path("benchmark-summary.tsv"): bundle.summary_path,
+        Path("model-table.tsv"): bundle.model_table_path,
+        Path("alignment-review.tsv"): bundle.alignment_review_path,
+        Path("geiger-parity.tsv"): bundle.parity_table_path,
+        Path("geiger-reference.tsv"): bundle.geiger_reference_path,
+    }
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
