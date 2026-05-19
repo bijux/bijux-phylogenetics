@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import csv
 import shutil
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -66,21 +65,36 @@ from .models import (
     KnownAnswerTransitionTruth,
 )
 from .panel import load_known_answer_reference_dataset
+from .policy import (
+    evaluate_threshold,
+    format_number,
+    format_observed_value,
+    format_transition,
+    mean,
+    transition_recovery_match,
+)
+from .truth import (
+    load_recovery_thresholds,
+    load_true_continuous_nodes,
+    load_true_discrete_nodes,
+    load_true_parameter_map,
+    load_true_transition_rows,
+)
 
 
 def run_known_answer_reference_workflow() -> KnownAnswerReferenceWorkflowReport:
     """Run the governed recovery workflow over the packaged known-answer panel."""
     dataset = load_known_answer_reference_dataset()
-    true_parameters = _load_true_parameter_map(dataset.true_parameters_path)
-    continuous_truth = _load_true_continuous_nodes(dataset.true_continuous_nodes_path)
-    discrete_truth = _load_true_discrete_nodes(dataset.true_discrete_nodes_path)
-    host_truth = _load_true_discrete_nodes(dataset.true_host_nodes_path)
-    geographic_truth = _load_true_discrete_nodes(dataset.true_geographic_nodes_path)
-    host_event_truth = _load_true_transition_rows(dataset.true_host_switch_events_path)
-    geographic_event_truth = _load_true_transition_rows(
+    true_parameters = load_true_parameter_map(dataset.true_parameters_path)
+    continuous_truth = load_true_continuous_nodes(dataset.true_continuous_nodes_path)
+    discrete_truth = load_true_discrete_nodes(dataset.true_discrete_nodes_path)
+    host_truth = load_true_discrete_nodes(dataset.true_host_nodes_path)
+    geographic_truth = load_true_discrete_nodes(dataset.true_geographic_nodes_path)
+    host_event_truth = load_true_transition_rows(dataset.true_host_switch_events_path)
+    geographic_event_truth = load_true_transition_rows(
         dataset.true_geographic_transition_events_path
     )
-    thresholds = _load_recovery_thresholds(dataset.recovery_thresholds_path)
+    thresholds = load_recovery_thresholds(dataset.recovery_thresholds_path)
 
     distance_tree, distance_tree_build = build_distance_tree(
         dataset.alignment_path,
@@ -199,25 +213,25 @@ def write_known_answer_reference_workflow_bundle(
         shutil.rmtree(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
 
-    continuous_mae = _mean(
+    continuous_mae = mean(
         row.absolute_error for row in report.continuous_node_recovery_rows
     )
-    discrete_accuracy = _mean(
+    discrete_accuracy = mean(
         1.0 if row.correct else 0.0 for row in report.discrete_node_recovery_rows
     )
-    discrete_mean_true_probability = _mean(
+    discrete_mean_true_probability = mean(
         row.true_state_probability for row in report.discrete_node_recovery_rows
     )
-    host_node_accuracy = _mean(
+    host_node_accuracy = mean(
         1.0 if row.correct else 0.0 for row in report.host_node_recovery_rows
     )
-    host_event_accuracy = _mean(
+    host_event_accuracy = mean(
         1.0 if row.correct else 0.0 for row in report.host_event_recovery_rows
     )
-    geographic_node_accuracy = _mean(
+    geographic_node_accuracy = mean(
         1.0 if row.correct else 0.0 for row in report.geographic_node_recovery_rows
     )
-    geographic_event_accuracy = _mean(
+    geographic_event_accuracy = mean(
         1.0 if row.correct else 0.0 for row in report.geographic_event_recovery_rows
     )
     workflow_summary_path = _write_workflow_summary_table(
@@ -570,8 +584,8 @@ def _build_host_event_recovery_rows(
         KnownAnswerTransitionRecoveryRow(
             parent_node=row.parent_node,
             child_node=row.child_node,
-            true_transition=_format_transition(row.source_state, row.target_state),
-            estimated_transition=_format_transition(
+            true_transition=format_transition(row.source_state, row.target_state),
+            estimated_transition=format_transition(
                 inferred_by_branch[
                     (row.parent_node, row.child_node)
                 ].parent_most_likely_host,
@@ -587,7 +601,7 @@ def _build_host_event_recovery_rows(
             estimated_event_count=1
             if inferred_by_branch[(row.parent_node, row.child_node)].changed
             else 0,
-            correct=_transition_recovery_match(
+            correct=transition_recovery_match(
                 true_changed=row.changed,
                 estimated_changed=inferred_by_branch[
                     (row.parent_node, row.child_node)
@@ -623,8 +637,8 @@ def _build_transition_recovery_rows(
         KnownAnswerTransitionRecoveryRow(
             parent_node=row.parent_node,
             child_node=row.child_node,
-            true_transition=_format_transition(row.source_state, row.target_state),
-            estimated_transition=_format_transition(
+            true_transition=format_transition(row.source_state, row.target_state),
+            estimated_transition=format_transition(
                 inferred_by_branch[(row.parent_node, row.child_node)].source_state,
                 inferred_by_branch[(row.parent_node, row.child_node)].target_state,
             ),
@@ -636,7 +650,7 @@ def _build_transition_recovery_rows(
             estimated_event_count=1
             if inferred_by_branch[(row.parent_node, row.child_node)].changed
             else 0,
-            correct=_transition_recovery_match(
+            correct=transition_recovery_match(
                 true_changed=row.changed,
                 estimated_changed=inferred_by_branch[
                     (row.parent_node, row.child_node)
@@ -684,26 +698,26 @@ def _build_threshold_evaluation_rows(
         "ou_sigma_squared_absolute_error": parameter_by_name[
             "ou_sigma_squared"
         ].absolute_error,
-        "discrete_internal_node_accuracy": _mean(
+        "discrete_internal_node_accuracy": mean(
             1.0 if row.correct else 0.0 for row in discrete_node_recovery_rows
         ),
-        "host_internal_node_accuracy": _mean(
+        "host_internal_node_accuracy": mean(
             1.0 if row.correct else 0.0 for row in host_node_recovery_rows
         ),
-        "host_event_accuracy": _mean(
+        "host_event_accuracy": mean(
             1.0 if row.correct else 0.0 for row in host_event_recovery_rows
         ),
-        "geographic_internal_node_accuracy": _mean(
+        "geographic_internal_node_accuracy": mean(
             1.0 if row.correct else 0.0 for row in geographic_node_recovery_rows
         ),
-        "geographic_event_accuracy": _mean(
+        "geographic_event_accuracy": mean(
             1.0 if row.correct else 0.0 for row in geographic_event_recovery_rows
         ),
     }
     rows: list[KnownAnswerThresholdEvaluationRow] = []
     for threshold in thresholds:
         observed_value = metric_values[threshold.metric]
-        passed = _evaluate_threshold(
+        passed = evaluate_threshold(
             comparator=threshold.comparator,
             threshold=threshold.threshold,
             observed_value=observed_value,
@@ -713,7 +727,7 @@ def _build_threshold_evaluation_rows(
                 metric=threshold.metric,
                 comparator=threshold.comparator,
                 threshold=threshold.threshold,
-                observed_value=_format_observed_value(observed_value),
+                observed_value=format_observed_value(observed_value),
                 passed=passed,
                 rationale=threshold.rationale,
             )
@@ -772,18 +786,18 @@ def _write_workflow_summary_table(
                 str(report.tree_recovery.same_unrooted_topology).lower(),
                 str(report.tree_recovery.same_taxa_different_rooting).lower(),
                 str(report.tree_recovery.robinson_foulds_distance),
-                _format_number(report.parameter_recovery_rows[0].absolute_error),
-                _format_number(report.parameter_recovery_rows[1].absolute_error),
-                _format_number(report.parameter_recovery_rows[2].absolute_error),
-                _format_number(report.parameter_recovery_rows[3].absolute_error),
-                _format_number(report.parameter_recovery_rows[4].absolute_error),
-                _format_number(continuous_mae),
-                _format_number(discrete_accuracy),
-                _format_number(discrete_mean_true_probability),
-                _format_number(host_node_accuracy),
-                _format_number(host_event_accuracy),
-                _format_number(geographic_node_accuracy),
-                _format_number(geographic_event_accuracy),
+                format_number(report.parameter_recovery_rows[0].absolute_error),
+                format_number(report.parameter_recovery_rows[1].absolute_error),
+                format_number(report.parameter_recovery_rows[2].absolute_error),
+                format_number(report.parameter_recovery_rows[3].absolute_error),
+                format_number(report.parameter_recovery_rows[4].absolute_error),
+                format_number(continuous_mae),
+                format_number(discrete_accuracy),
+                format_number(discrete_mean_true_probability),
+                format_number(host_node_accuracy),
+                format_number(host_event_accuracy),
+                format_number(geographic_node_accuracy),
+                format_number(geographic_event_accuracy),
                 str(sum(1 for row in report.threshold_evaluation_rows if row.passed)),
                 str(len(report.threshold_evaluation_rows)),
             ]
@@ -839,13 +853,13 @@ def _write_tree_recovery_table(
                 "unrooted_robinson_foulds_distance": str(
                     topology.unrooted_robinson_foulds_distance
                 ),
-                "normalized_robinson_foulds": _format_number(
+                "normalized_robinson_foulds": format_number(
                     topology.normalized_robinson_foulds
                 ),
-                "rooted_normalized_robinson_foulds": _format_number(
+                "rooted_normalized_robinson_foulds": format_number(
                     topology.rooted_normalized_robinson_foulds
                 ),
-                "unrooted_normalized_robinson_foulds": _format_number(
+                "unrooted_normalized_robinson_foulds": format_number(
                     topology.unrooted_normalized_robinson_foulds
                 ),
             }
@@ -870,10 +884,10 @@ def _write_parameter_recovery_table(
         rows=[
             {
                 "parameter": row.parameter,
-                "true_value": _format_number(row.true_value),
-                "estimated_value": _format_number(row.estimated_value),
-                "absolute_error": _format_number(row.absolute_error),
-                "relative_error": _format_number(row.relative_error),
+                "true_value": format_number(row.true_value),
+                "estimated_value": format_number(row.estimated_value),
+                "absolute_error": format_number(row.absolute_error),
+                "relative_error": format_number(row.relative_error),
                 "interpretation": row.interpretation,
             }
             for row in rows
@@ -902,13 +916,13 @@ def _write_continuous_node_recovery_table(
             {
                 "node": row.node,
                 "descendant_taxa": ",".join(row.descendant_taxa),
-                "true_value": _format_number(row.true_value),
-                "estimated_value": _format_number(row.estimated_value),
-                "absolute_error": _format_number(row.absolute_error),
-                "standard_error": _format_number(row.standard_error),
-                "lower_95_interval": _format_number(row.lower_95_interval),
-                "upper_95_interval": _format_number(row.upper_95_interval),
-                "confidence": _format_number(row.confidence),
+                "true_value": format_number(row.true_value),
+                "estimated_value": format_number(row.estimated_value),
+                "absolute_error": format_number(row.absolute_error),
+                "standard_error": format_number(row.standard_error),
+                "lower_95_interval": format_number(row.lower_95_interval),
+                "upper_95_interval": format_number(row.upper_95_interval),
+                "confidence": format_number(row.confidence),
             }
             for row in rows
         ],
@@ -937,8 +951,8 @@ def _write_discrete_node_recovery_table(
                 "descendant_taxa": ",".join(row.descendant_taxa),
                 "true_state": row.true_state,
                 "estimated_state": row.estimated_state,
-                "true_state_probability": _format_number(row.true_state_probability),
-                "confidence": _format_number(row.confidence),
+                "true_state_probability": format_number(row.true_state_probability),
+                "confidence": format_number(row.confidence),
                 "correct": str(row.correct).lower(),
                 "ambiguous": str(row.ambiguous).lower(),
             }
@@ -1010,7 +1024,7 @@ def _write_geographic_summary_table(
                     report.transition_summary.strongly_supported_transition_count
                 ),
                 "root_state": root_estimate.most_likely_state,
-                "root_confidence": _format_number(
+                "root_confidence": format_number(
                     max(root_estimate.state_probabilities.values())
                 ),
                 "warning_count": str(len(report.warnings)),
@@ -1060,12 +1074,12 @@ def _write_overview(
         f"- alignment length: `{report.dataset.sequence_length}`",
         f"- distance recovery preserves rooted topology: `{str(bundle.rooted_topology_equal).lower()}`",
         f"- distance recovery preserves unrooted topology: `{str(bundle.same_unrooted_topology).lower()}`",
-        f"- continuous internal-node mean absolute error: `{_format_number(bundle.continuous_internal_node_mean_absolute_error)}`",
-        f"- discrete internal-node accuracy: `{_format_number(bundle.discrete_internal_node_accuracy)}`",
-        f"- host internal-node accuracy: `{_format_number(bundle.host_internal_node_accuracy)}`",
-        f"- host event accuracy: `{_format_number(bundle.host_event_accuracy)}`",
-        f"- geographic internal-node accuracy: `{_format_number(bundle.geographic_internal_node_accuracy)}`",
-        f"- geographic event accuracy: `{_format_number(bundle.geographic_event_accuracy)}`",
+        f"- continuous internal-node mean absolute error: `{format_number(bundle.continuous_internal_node_mean_absolute_error)}`",
+        f"- discrete internal-node accuracy: `{format_number(bundle.discrete_internal_node_accuracy)}`",
+        f"- host internal-node accuracy: `{format_number(bundle.host_internal_node_accuracy)}`",
+        f"- host event accuracy: `{format_number(bundle.host_event_accuracy)}`",
+        f"- geographic internal-node accuracy: `{format_number(bundle.geographic_internal_node_accuracy)}`",
+        f"- geographic event accuracy: `{format_number(bundle.geographic_event_accuracy)}`",
         f"- threshold passes: `{bundle.threshold_pass_count}/{bundle.threshold_row_count}`",
         "",
         "Generated outputs:",
@@ -1084,134 +1098,3 @@ def _write_overview(
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
 
-
-def _load_true_parameter_map(path: Path) -> dict[str, str]:
-    with path.open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, delimiter="\t")
-        return {row["parameter"]: row["value"] for row in reader}
-
-
-def _load_true_continuous_nodes(path: Path) -> list[KnownAnswerContinuousNodeTruth]:
-    with path.open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, delimiter="\t")
-        return [
-            KnownAnswerContinuousNodeTruth(
-                node=row["node"],
-                node_name=row["node_name"] or None,
-                is_tip=row["is_tip"].strip().lower() == "true",
-                descendant_taxa=_split_descendant_taxa(row["descendant_taxa"]),
-                true_value=float(row["true_value"]),
-            )
-            for row in reader
-        ]
-
-
-def _load_true_discrete_nodes(path: Path) -> list[KnownAnswerDiscreteNodeTruth]:
-    with path.open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, delimiter="\t")
-        return [
-            KnownAnswerDiscreteNodeTruth(
-                node=row["node"],
-                node_name=row["node_name"] or None,
-                is_tip=row["is_tip"].strip().lower() == "true",
-                descendant_taxa=_split_descendant_taxa(row["descendant_taxa"]),
-                true_state=row["true_state"],
-            )
-            for row in reader
-        ]
-
-
-def _load_true_transition_rows(path: Path) -> list[KnownAnswerTransitionTruth]:
-    with path.open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, delimiter="\t")
-        return [
-            KnownAnswerTransitionTruth(
-                parent_node=row["parent_node"],
-                child_node=row["child_node"],
-                branch_length=float(row["branch_length"]),
-                source_state=row["source_state"],
-                target_state=row["target_state"],
-                changed=row["changed"].strip().lower() == "true",
-                event_count=int(row["event_count"]),
-            )
-            for row in reader
-        ]
-
-
-def _load_recovery_thresholds(path: Path) -> list[KnownAnswerRecoveryThreshold]:
-    with path.open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, delimiter="\t")
-        return [
-            KnownAnswerRecoveryThreshold(
-                metric=row["metric"],
-                comparator=row["comparator"],
-                threshold=row["threshold"],
-                rationale=row["rationale"],
-            )
-            for row in reader
-        ]
-
-
-def _split_descendant_taxa(value: str) -> list[str]:
-    if not value:
-        return []
-    return value.split(",")
-
-
-def _transition_recovery_match(
-    *,
-    true_changed: bool,
-    estimated_changed: bool,
-    true_source: str,
-    true_target: str,
-    estimated_source: str,
-    estimated_target: str,
-    true_event_count: int,
-    estimated_event_count: int,
-) -> bool:
-    return (
-        true_changed == estimated_changed
-        and true_source == estimated_source
-        and true_target == estimated_target
-        and true_event_count == estimated_event_count
-    )
-
-
-def _format_transition(source_state: str, target_state: str) -> str:
-    return f"{source_state}->{target_state}"
-
-
-def _evaluate_threshold(
-    *,
-    comparator: str,
-    threshold: str,
-    observed_value: bool | float,
-) -> bool:
-    if comparator == "==":
-        if isinstance(observed_value, bool):
-            return observed_value is (threshold.strip().lower() == "true")
-        return float(observed_value) == float(threshold)
-    threshold_value = float(threshold)
-    numeric_observed = float(observed_value)
-    if comparator == "<=":
-        return numeric_observed <= threshold_value
-    if comparator == ">=":
-        return numeric_observed >= threshold_value
-    raise ValueError(f"unsupported threshold comparator '{comparator}'")
-
-
-def _mean(values) -> float:
-    materialized = list(values)
-    if not materialized:
-        return 0.0
-    return sum(materialized) / len(materialized)
-
-
-def _format_number(value: float) -> str:
-    return format(value, ".15g")
-
-
-def _format_observed_value(value: bool | float) -> str:
-    if isinstance(value, bool):
-        return str(value).lower()
-    return _format_number(value)
