@@ -1363,6 +1363,16 @@ any expected divergence with explicit reproducible evidence. The current
 accepted divergence is the continuous early-burst sign-and-bound convention:
 raw `geiger` uses `a`, Bijux exposes `rate_change`, and the raw `geiger` bound
 surface excludes exact zero even after sign conversion.
+The same report now also carries a governed likelihood-constant policy table
+plus an optional `--likelihood-policy-out` TSV. That table records whether a
+case has one directly comparable raw `logLik` surface or only a ranked
+row-level AIC/AICc comparison surface, checks that `AIC = 2k - 2logLik`
+wherever a raw likelihood is supposed to be directly comparable, and keeps the
+owned ranking guard explicit: `compare_fitcontinuous_model_ranking(...)` now
+refuses to rank candidate modes if their likelihood-constant policies differ.
+The owned Brownian and white-noise fits also now store that Gaussian
+normalizing-constant policy directly in the fit result object, and the governed
+tests pin both lanes against analytical known-answer likelihood calculations.
 The BM lane now has three governed cases instead of one generic smoke check:
 the four-taxon comparative example, a twenty-four-taxon sigma-recovery surface,
 and a twenty-four-taxon missing-value pruning surface that must prove explicit
