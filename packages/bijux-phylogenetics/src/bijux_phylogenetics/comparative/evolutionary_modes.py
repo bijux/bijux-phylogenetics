@@ -56,6 +56,16 @@ FITCONTINUOUS_MODEL_COMPARISON_ORDER = (
     "early-burst",
 )
 
+CONTINUOUS_GAUSSIAN_LIKELIHOOD_CONSTANT_POLICY = (
+    "full-gaussian-loglikelihood-includes-normalizing-constant"
+)
+CONTINUOUS_GAUSSIAN_LIKELIHOOD_COMPARISON_POLICY = (
+    "raw-loglikelihood-and-derived-aic-are-directly-comparable-when-the-shared-gaussian-constant-policy-matches"
+)
+FITCONTINUOUS_MODEL_RANKING_POLICY = (
+    "relative-aic-and-aicc-ranking-is-permitted-only-when-all-candidate-modes-share-one-gaussian-likelihood-constant-policy"
+)
+
 
 @dataclass(slots=True)
 class EvolutionaryModeBranchLengthRow:
@@ -102,6 +112,8 @@ class ContinuousEvolutionaryModeFitReport:
     log_likelihood: float
     aic: float
     aicc: float
+    likelihood_constant_policy: str
+    likelihood_comparison_policy: str
     fitted_values: list[float]
     residuals: list[float]
     transformed_tree_newick: str
@@ -192,6 +204,9 @@ class ContinuousEvolutionaryModeComparisonReport:
     taxon_count: int
     rows: list[ComparativeModelComparisonRow]
     better_model: str
+    likelihood_constant_policy: str | None
+    likelihood_comparison_policy: str
+    noncomparable_likelihood_models: list[str]
     likelihood_ratio_tests: list[LikelihoodRatioTestResult]
     warnings: list[str]
 
@@ -487,6 +502,7 @@ def _compare_selected_continuous_modes(
             _mode_parameter_count(fit.mode),
             fit.log_likelihood,
             fit.taxon_count,
+            likelihood_constant_policy=fit.likelihood_constant_policy,
         )
         if not math.isfinite(row.aicc):
             row.comparable = False
@@ -501,9 +517,22 @@ def _compare_selected_continuous_modes(
         raise ComparativeMethodError(
             "no continuous evolutionary mode remained comparable for the requested dataset"
         )
+    likelihood_constant_policy, noncomparable_likelihood_models = (
+        _enforce_shared_likelihood_constant_policy(rows)
+    )
+    if noncomparable_likelihood_models:
+        blocked_models = ", ".join(noncomparable_likelihood_models)
+        comparison_warnings.append(
+            "continuous-mode ranking excluded models with incompatible likelihood "
+            f"constant policies: {blocked_models}"
+        )
     _rank_comparison_rows(rows)
     selected_rows = [row for row in rows if row.selected]
     if not selected_rows:
+        if noncomparable_likelihood_models:
+            raise ComparativeMethodError(
+                "mixed likelihood constant policies prevent ranking incompatible continuous-mode models"
+            )
         raise ComparativeMethodError(
             "no finite AICc model remained available for continuous-mode comparison"
         )
@@ -544,6 +573,9 @@ def _compare_selected_continuous_modes(
         taxon_count=dataset.readiness.tree_taxa,
         rows=rows,
         better_model=better_model,
+        likelihood_constant_policy=likelihood_constant_policy,
+        likelihood_comparison_policy=FITCONTINUOUS_MODEL_RANKING_POLICY,
+        noncomparable_likelihood_models=noncomparable_likelihood_models,
         likelihood_ratio_tests=likelihood_ratio_tests,
         warnings=comparison_warnings,
     )
@@ -612,6 +644,38 @@ def _rank_comparison_rows(rows: list[ComparativeModelComparisonRow]) -> None:
             row.model,
         )
     )
+
+
+def _enforce_shared_likelihood_constant_policy(
+    rows: list[ComparativeModelComparisonRow],
+) -> tuple[str | None, list[str]]:
+    comparable_rows = [
+        row
+        for row in rows
+        if row.comparable and math.isfinite(row.aic) and math.isfinite(row.aicc)
+    ]
+    if not comparable_rows:
+        return None, []
+    shared_policy = comparable_rows[0].likelihood_constant_policy
+    if shared_policy is None:
+        blocked_models = [row.model for row in comparable_rows]
+        for row in comparable_rows:
+            row.comparable = False
+            row.comparability_note = (
+                "likelihood constant policy is missing, so AIC and AICc ranking is blocked"
+            )
+        return None, blocked_models
+    policies = {row.likelihood_constant_policy for row in comparable_rows}
+    if len(policies) > 1:
+        blocked_models = [row.model for row in comparable_rows]
+        for row in comparable_rows:
+            row.comparable = False
+            row.comparability_note = (
+                "likelihood constant policy differs across candidate models, so AIC and "
+                "AICc ranking is blocked for the full comparison surface"
+            )
+        return None, blocked_models
+    return shared_policy, []
 
 
 def _fit_evolutionary_mode_from_dataset(
@@ -826,6 +890,7 @@ def _fit_evolutionary_mode_from_dataset(
         2 if parameter_value is None else 3,
         fit.log_likelihood,
         len(dataset.taxa),
+        likelihood_constant_policy=CONTINUOUS_GAUSSIAN_LIKELIHOOD_CONSTANT_POLICY,
     )
     intervals = _brownian_parameter_intervals(
         fit.theta,
@@ -863,6 +928,8 @@ def _fit_evolutionary_mode_from_dataset(
         log_likelihood=_stable_value(fit.log_likelihood),
         aic=_stable_value(row.aic),
         aicc=_stable_value(row.aicc),
+        likelihood_constant_policy=CONTINUOUS_GAUSSIAN_LIKELIHOOD_CONSTANT_POLICY,
+        likelihood_comparison_policy=CONTINUOUS_GAUSSIAN_LIKELIHOOD_COMPARISON_POLICY,
         fitted_values=[_stable_value(value) for value in fit.fitted_values],
         residuals=[_stable_value(value) for value in fit.residuals],
         transformed_tree_newick=dumps_newick(transformed_tree),

@@ -130,6 +130,7 @@ class ComparativeModelComparisonRow:
     comparable: bool = True
     comparability_note: str | None = None
     selected: bool = False
+    likelihood_constant_policy: str | None = None
 
 
 @dataclass(slots=True)
@@ -1223,7 +1224,12 @@ def _estimate_lambda_for_values(
 
 
 def _comparison_row(
-    model: str, parameter_count: int, log_likelihood: float, sample_size: int
+    model: str,
+    parameter_count: int,
+    log_likelihood: float,
+    sample_size: int,
+    *,
+    likelihood_constant_policy: str | None = None,
 ) -> ComparativeModelComparisonRow:
     aic = (2.0 * parameter_count) - (2.0 * log_likelihood)
     if sample_size <= parameter_count + 1:
@@ -1245,6 +1251,7 @@ def _comparison_row(
         comparable=True,
         comparability_note=None,
         selected=False,
+        likelihood_constant_policy=likelihood_constant_policy,
     )
 
 
