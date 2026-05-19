@@ -1,38 +1,47 @@
 from __future__ import annotations
 
-from ._shared import (
+from collections import Counter
+from pathlib import Path
+from statistics import median
+
+from bijux_phylogenetics.core.alignment import (
     AlignmentAlphabet,
     AlignmentLinkageReport,
     AlignmentRecord,
     AlignmentSequenceKindReport,
     AlignmentSummary,
-    AlignmentTaxonMismatchError,
-    Counter,
+    DuplicateSequenceGroup,
     FastaDuplicateIdentifier,
     FastaIdentifierRepair,
     FastaInputSummary,
     FastaInputValidationReport,
     FastaRemovedRecord,
     FastaRepairReport,
-    InvalidAlignmentError,
-    Path,
+    NearDuplicateSequencePair,
+    SequenceCompositionOutlier,
     SequenceLengthOutlier,
     SequenceMissingness,
     SequenceUncertaintyProfile,
     SiteMissingness,
     SiteUncertaintyProfile,
+)
+from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.runtime.errors import (
+    AlignmentTaxonMismatchError,
+    InvalidAlignmentError,
+)
+
+from .core import (
     _GAP_CHARACTERS,
     _build_fasta_input_summary_from_scan,
     _build_fasta_sequence_type_report,
-    _collect_near_duplicate_sequences_for_summary,
     _compatible_raw_sequence_types,
-    _detect_composition_outlier_sequences_records,
-    _detect_identical_duplicate_sequences_records,
     _detect_sequence_length_outlier_rows,
     _is_ambiguity_character,
     _is_explicit_missing,
     _is_missing_like,
     _normalize_fasta_identifier,
+    _robust_z_score,
     _scan_raw_fasta,
     _validate_fraction_threshold,
     compute_amino_acid_composition,
@@ -44,9 +53,154 @@ from ._shared import (
     infer_alignment_alphabet,
     load_fasta_alignment,
     load_permissive_fasta_records,
-    load_tree,
-    median,
 )
+
+_MAX_DEFAULT_NEAR_DUPLICATE_SEQUENCE_COUNT = 256
+
+
+def _detect_composition_outlier_sequences_records(
+    records: list[AlignmentRecord],
+    *,
+    deviation_threshold: float = 0.25,
+) -> list[SequenceCompositionOutlier]:
+    alphabet = infer_alignment_alphabet(records)
+    if alphabet in {"dna", "rna"}:
+        per_sequence_gc = [
+            row
+            for row in compute_per_sequence_gc_content(records, alphabet=alphabet)
+            if row.gc_fraction is not None
+        ]
+        if len(per_sequence_gc) < 2:
+            return []
+        gc_values = [
+            float(row.gc_fraction)
+            for row in per_sequence_gc
+            if row.gc_fraction is not None
+        ]
+        baseline = median(gc_values)
+        return sorted(
+            [
+                SequenceCompositionOutlier(
+                    identifier=row.identifier,
+                    deviation=round(abs(float(row.gc_fraction) - baseline), 15),
+                    robust_z_score=None
+                    if row.gc_fraction is None
+                    else _robust_z_score(float(row.gc_fraction), gc_values),
+                )
+                for row in per_sequence_gc
+                if row.gc_fraction is not None
+                and (
+                    abs(float(row.gc_fraction) - baseline) > deviation_threshold
+                    or abs(_robust_z_score(float(row.gc_fraction), gc_values) or 0.0)
+                    >= 3.5
+                )
+            ],
+            key=lambda item: (-item.deviation, item.identifier),
+        )
+
+    if alphabet == "protein":
+        profile = compute_amino_acid_composition(records, alphabet=alphabet)
+        deviations_by_identifier: dict[str, float] = {}
+        for record in records:
+            sequence_profile = compute_amino_acid_composition([record], alphabet=alphabet)
+            deviation = sum(
+                abs(sequence_profile.get(key, 0.0) - profile.get(key, 0.0))
+                for key in set(sequence_profile) | set(profile)
+            )
+            deviations_by_identifier[record.identifier] = round(deviation, 15)
+        deviation_values = list(deviations_by_identifier.values())
+        outliers: list[SequenceCompositionOutlier] = []
+        for record in records:
+            deviation = deviations_by_identifier[record.identifier]
+            robust_z_score = _robust_z_score(deviation, deviation_values)
+            if deviation > deviation_threshold or abs(robust_z_score or 0.0) >= 3.5:
+                outliers.append(
+                    SequenceCompositionOutlier(
+                        identifier=record.identifier,
+                        deviation=deviation,
+                        robust_z_score=robust_z_score,
+                    )
+                )
+        return sorted(outliers, key=lambda item: (-item.deviation, item.identifier))
+    return []
+
+
+def _detect_identical_duplicate_sequences_records(
+    records: list[AlignmentRecord],
+) -> list[DuplicateSequenceGroup]:
+    grouped: dict[str, list[str]] = {}
+    for record in records:
+        grouped.setdefault(record.sequence, []).append(record.identifier)
+    return [
+        DuplicateSequenceGroup(identifiers=sorted(identifiers), sequence=sequence)
+        for sequence, identifiers in sorted(grouped.items())
+        if len(identifiers) > 1
+    ]
+
+
+def _pairwise_identity(left: str, right: str) -> tuple[float, int]:
+    comparable_pairs = [
+        (left_residue, right_residue)
+        for left_residue, right_residue in zip(left, right, strict=True)
+        if left_residue not in _GAP_CHARACTERS
+        and right_residue not in _GAP_CHARACTERS
+        and not _is_explicit_missing(left_residue)
+        and not _is_explicit_missing(right_residue)
+    ]
+    if not comparable_pairs:
+        return 0.0, 0
+    matches = sum(
+        1
+        for left_residue, right_residue in comparable_pairs
+        if left_residue.upper() == right_residue.upper()
+    )
+    comparable_sites = len(comparable_pairs)
+    return round(matches / comparable_sites, 15), comparable_sites
+
+
+def _detect_near_duplicate_sequences_records(
+    records: list[AlignmentRecord],
+    *,
+    identity_threshold: float,
+) -> list[NearDuplicateSequencePair]:
+    near_duplicates: list[NearDuplicateSequencePair] = []
+    for index, left in enumerate(records):
+        for right in records[index + 1 :]:
+            identity, comparable_sites = _pairwise_identity(
+                left.sequence,
+                right.sequence,
+            )
+            if (
+                comparable_sites > 0
+                and identity >= identity_threshold
+                and left.sequence != right.sequence
+            ):
+                near_duplicates.append(
+                    NearDuplicateSequencePair(
+                        left_identifier=left.identifier,
+                        right_identifier=right.identifier,
+                        identity=identity,
+                        comparable_sites=comparable_sites,
+                    )
+                )
+    return near_duplicates
+
+
+def _collect_near_duplicate_sequences_for_summary(
+    records: list[AlignmentRecord],
+    *,
+    identity_threshold: float,
+) -> tuple[list[NearDuplicateSequencePair], bool]:
+    if len(records) > _MAX_DEFAULT_NEAR_DUPLICATE_SEQUENCE_COUNT:
+        return [], False
+    return (
+        _detect_near_duplicate_sequences_records(
+            records,
+            identity_threshold=identity_threshold,
+        ),
+        True,
+    )
+
 
 def classify_alignment_sequences(path: Path) -> AlignmentSequenceKindReport:
     """Classify whether a FASTA input already behaves like an aligned dataset."""
