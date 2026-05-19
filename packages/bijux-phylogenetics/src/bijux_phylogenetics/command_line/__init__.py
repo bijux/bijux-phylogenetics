@@ -126,6 +126,7 @@ from bijux_phylogenetics.parity import (
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
     benchmark_large_alignment_scaling,
+    benchmark_real_dataset_macroevolution,
     benchmark_large_tree_model_fitting,
     benchmark_large_tree_set_scaling,
     benchmark_large_tree_scaling,
@@ -3268,6 +3269,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the benchmark report as JSON."
     )
     _add_manifest_argument(benchmark_large_tree_model)
+    benchmark_real_dataset = benchmark_subparsers.add_parser(
+        "real-dataset-macroevolution",
+        help="Benchmark continuous and discrete macroevolution model fitting on the published Central European seashore flora dataset against stored local geiger references.",
+    )
+    benchmark_real_dataset.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(benchmark_real_dataset)
 
     parity = subparsers.add_parser(
         get_command_spec("parity").name, help=get_command_spec("parity").summary
@@ -9086,6 +9095,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 report = benchmark_large_dataset_stress_suite(tier=args.tier)
             elif args.benchmark_command == "large-tree-model-fitting":
                 report = benchmark_large_tree_model_fitting(tier=args.tier)
+            elif args.benchmark_command == "real-dataset-macroevolution":
+                report = benchmark_real_dataset_macroevolution()
             else:
                 report = benchmark_alignment_diagnostics(
                     replicates=args.replicates,
@@ -9095,6 +9106,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             if hasattr(report, "entries"):
                 metrics = {
                     "entry_count": len(report.entries),
+                }
+            elif hasattr(report, "summary_rows"):
+                metrics = {
+                    "summary_row_count": len(report.summary_rows),
+                    "model_row_count": len(report.model_rows),
+                    "alignment_review_row_count": len(report.alignment_review_rows),
+                    "parity_row_count": len(report.parity_rows),
                 }
             else:
                 metrics = {

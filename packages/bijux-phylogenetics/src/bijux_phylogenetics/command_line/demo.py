@@ -7,6 +7,9 @@ from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
+from bijux_phylogenetics.benchmark import (
+    run_real_dataset_macroevolution_benchmark_demo,
+)
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.datasets import (
     run_avian_reproductive_trait_demo,
@@ -76,6 +79,15 @@ def add_demo_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_plants)
+    demo_real_dataset_benchmark = demo_subparsers.add_parser(
+        "real-dataset-macroevolution",
+        help="Materialize the packaged Central European plant dataset together with the governed real-dataset macroevolution benchmark bundle.",
+    )
+    demo_real_dataset_benchmark.add_argument("--out", required=True, type=Path)
+    demo_real_dataset_benchmark.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
+    _add_manifest_argument(demo_real_dataset_benchmark)
     demo_viruses = demo_subparsers.add_parser(
         "influenza-a-ha-reference-panel",
         help="Materialize the packaged influenza A HA dataset and rerun the sequence-to-tree workflow outputs.",
@@ -406,6 +418,55 @@ def run_demo_command(args: Any) -> int:
                     metrics={
                         "artifact_count": len(outputs),
                         "dataset_taxon_count": result.dataset.taxon_count,
+                        "reference_output_count": expected_output_count,
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_root)
+        return 0
+
+    if args.demo_command == "real-dataset-macroevolution":
+        result = run_real_dataset_macroevolution_benchmark_demo(args.out)
+        outputs = _finalize_outputs(
+            args,
+            command="demo",
+            inputs=[],
+            outputs=[
+                result.dataset_export.readme_path,
+                result.dataset_export.tree_path,
+                result.dataset_export.traits_path,
+                result.benchmark_bundle.review_traits_path,
+                result.benchmark_bundle.summary_path,
+                result.benchmark_bundle.model_table_path,
+                result.benchmark_bundle.alignment_review_path,
+                result.benchmark_bundle.parity_table_path,
+                result.benchmark_bundle.geiger_reference_path,
+                result.overview_path,
+            ],
+        )
+        if args.json:
+            expected_output_count = len(
+                [
+                    path
+                    for path in result.dataset_export.expected_output_root.rglob("*")
+                    if path.is_file()
+                ]
+            )
+            _print_result(
+                build_command_result(
+                    command="demo",
+                    inputs=[],
+                    outputs=outputs,
+                    metrics={
+                        "artifact_count": len(outputs),
+                        "dataset_taxon_count": result.dataset.taxon_count,
+                        "summary_row_count": 4,
+                        "native_model_row_count": 8,
+                        "alignment_review_row_count": 2,
+                        "parity_row_count": 10,
                         "reference_output_count": expected_output_count,
                     },
                     data=result,
