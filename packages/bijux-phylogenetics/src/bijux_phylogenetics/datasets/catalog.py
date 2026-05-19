@@ -109,6 +109,13 @@ def list_public_dataset_surfaces() -> list[PublicDatasetSurface]:
             summary="Deterministic simulation-recovery panel for Brownian, OU, and early-burst comparative fits.",
         ),
         PublicDatasetSurface(
+            dataset_id="discrete_mode_recovery_panel",
+            label="Discrete-mode recovery panel",
+            demo_command="discrete-mode-recovery-panel",
+            category="reference",
+            summary="Deterministic simulation-recovery panel for ER, SYM, and governed ARD comparative discrete Mk fits.",
+        ),
+        PublicDatasetSurface(
             dataset_id="known_answer_reference_panel",
             label="Known-answer reference panel",
             demo_command="known-answer-reference-panel",
