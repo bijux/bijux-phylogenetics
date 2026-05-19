@@ -6,7 +6,7 @@ from typing import Any
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.io.fasta import link_alignment_to_tree
+from bijux_phylogenetics.io.fasta.records import link_alignment_to_tree
 from bijux_phylogenetics.runtime.results import build_command_result
 
 

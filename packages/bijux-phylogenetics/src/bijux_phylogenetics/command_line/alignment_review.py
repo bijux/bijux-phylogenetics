@@ -6,35 +6,43 @@ from typing import Any
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.io.fasta import (
+from bijux_phylogenetics.io.fasta._shared import (
+    detect_fasta_sequence_type,
+    detect_invalid_alignment_characters,
+    infer_alignment_alphabet,
+    load_fasta_alignment,
+    write_fasta_alignment,
+)
+from bijux_phylogenetics.io.fasta.cleaning import (
+    detect_composition_outlier_sequences,
+    detect_identical_duplicate_sequences,
+    detect_near_duplicate_sequences,
+    list_alignment_filter_profiles,
+)
+from bijux_phylogenetics.io.fasta.matrix import (
+    compute_alignment_base_frequency_report,
+    compute_alignment_segregating_site_report,
+    write_alignment_base_frequency_table,
+    write_alignment_segregating_site_table,
+)
+from bijux_phylogenetics.io.fasta.quality import (
     assess_alignment_low_information,
     build_alignment_forensic_report,
     build_alignment_quality_report,
     build_ambiguous_alignment_column_report,
     build_duplicate_sequence_policy_report,
     build_sequence_quality_ranking,
-    classify_alignment_sequences,
-    compute_alignment_base_frequency_report,
-    compute_alignment_segregating_site_report,
-    detect_composition_outlier_sequences,
-    detect_fasta_sequence_type,
-    detect_identical_duplicate_sequences,
-    detect_invalid_alignment_characters,
-    detect_near_duplicate_sequences,
     detect_over_aligned_regions,
-    detect_sequence_length_outliers,
     detect_under_aligned_regions,
-    infer_alignment_alphabet,
-    list_alignment_filter_profiles,
-    load_fasta_alignment,
-    repair_fasta_input,
-    summarise_fasta,
     summarize_alignment_readiness,
     summarize_alignment_windows,
+)
+from bijux_phylogenetics.io.fasta.records import (
+    classify_alignment_sequences,
+    detect_sequence_length_outliers,
+    repair_fasta_input,
+    summarise_fasta,
     validate_fasta_input,
-    write_alignment_base_frequency_table,
-    write_alignment_segregating_site_table,
-    write_fasta_alignment,
 )
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.runtime.results import build_command_result

@@ -22,16 +22,16 @@ from bijux_phylogenetics.core.partitions import (
     parse_locus_partitions,
     write_partition_summary_table,
 )
-from bijux_phylogenetics.io.fasta import (
+from bijux_phylogenetics.io.fasta._shared import write_fasta_alignment
+from bijux_phylogenetics.io.fasta.cleaning import (
     clean_alignment_with_profile,
     compare_alignment_versions,
     compute_pairwise_sequence_identity_matrix,
     list_alignment_filter_profiles,
-    summarise_fasta,
     trim_alignment,
-    write_fasta_alignment,
     write_sequence_identity_matrix,
 )
+from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.runtime.results import build_command_result
 
 
