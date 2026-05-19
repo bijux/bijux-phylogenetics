@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 from dataclasses import asdict
-import hashlib
 import json
 from pathlib import Path
 from time import perf_counter
@@ -27,7 +26,6 @@ from bijux_phylogenetics.core.taxonomy import build_taxon_audit_report
 from bijux_phylogenetics.core.traits import detect_missing_trait_values
 from bijux_phylogenetics.diagnostics.validation import (
     TreeInspectionReport,
-    TreeValidationReport,
     _load_tree,
     forensic_tree_path,
     inspect_tree_path,
@@ -93,6 +91,25 @@ from bijux_phylogenetics.trees import (
 from bijux_phylogenetics.trees.uncertainty_methods import (
     build_tree_set_uncertainty_method_report,
 )
+from .artifacts import (
+    preview_report_rows as _preview_report_rows,
+    report_sidecar_path as _report_sidecar_path,
+    section as _section,
+    truncate_report_rows as _truncate_report_rows,
+    write_json_artifact as _write_json_artifact,
+    write_machine_manifest as _write_machine_manifest,
+    write_tabular_artifact as _write_tabular_artifact,
+)
+from .ledger import (
+    build_input_ledger as _build_input_ledger,
+    serialize_input_ledger as _serialize_input_ledger,
+    sha256 as _sha256,
+)
+from .linkage import (
+    annotate_tree_against_table,
+    summarise_alignment_path,
+    write_annotation_report,
+)
 from .models import (
     AlignmentReportBuildResult,
     DistanceReportBuildResult,
@@ -107,262 +124,11 @@ from .models import (
     TreeUncertaintyReportBuildResult,
     WorkflowValidationReportBuildResult,
 )
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def _dataset_surface_taxa_count(path: Path, role: str) -> int:
-    if role in {"tree", "inference_tree"}:
-        return _load_tree(path).tip_count
-    if role in {"alignment", "filtered_alignment"}:
-        return summarise_fasta(path).sequence_count
-    if role in {"metadata", "traits", "tip_dates", "reported_taxa"}:
-        return load_taxon_table(path).row_count
-    if role == "synonym_table":
-        delimiter = "," if path.suffix.lower() == ".csv" else "\t"
-        with path.open(encoding="utf-8", newline="") as handle:
-            reader = csv.DictReader(handle, delimiter=delimiter)
-            return sum(1 for _ in reader)
-    if role == "calibrations":
-        delimiter = "," if path.suffix.lower() == ".csv" else "\t"
-        with path.open(encoding="utf-8", newline="") as handle:
-            reader = csv.DictReader(handle, delimiter=delimiter)
-            return sum(1 for _ in reader)
-    raise ValueError(f"unsupported dataset ledger role: {role}")
-
-
-def _build_input_ledger(
-    entries: list[tuple[Path, str, list[str]]],
-) -> list[ReportInputLedgerEntry]:
-    return [
-        ReportInputLedgerEntry(
-            path=path,
-            role=role,
-            checksum=_sha256(path),
-            taxa_count=_dataset_surface_taxa_count(path, role),
-            usage=usage,
-        )
-        for path, role, usage in entries
-    ]
-
-
-def _serialize_input_ledger(
-    entries: list[ReportInputLedgerEntry],
-) -> list[dict[str, object]]:
-    return [
-        {
-            "path": str(entry.path),
-            "role": entry.role,
-            "checksum": entry.checksum,
-            "taxa_count": entry.taxa_count,
-            "usage": entry.usage,
-        }
-        for entry in entries
-    ]
-
-
-def summarise_alignment_path(path: Path) -> AlignmentSummary:
-    """Expose FASTA alignment summary for external callers."""
-    return summarise_fasta(path)
-
-
-def annotate_tree_against_table(
-    tree_path: Path,
-    table_path: Path,
-    *,
-    taxon_column: str | None = None,
-) -> TableLinkageReport:
-    """Summarise how a TSV table links against tree tips."""
-    tree = _load_tree(tree_path)
-    table = load_taxon_table(table_path, taxon_column=taxon_column)
-    join = join_table_to_taxa(tree.tip_names, table_path, taxon_column=taxon_column)
-    annotated_taxa = [row.taxon for row in join.joined_rows if row.matched]
-    return TableLinkageReport(
-        tree_path=tree_path,
-        table_path=table_path,
-        tree_taxa=tree.tip_count,
-        table_rows=table.row_count,
-        linked_taxa=len(annotated_taxa),
-        missing_from_table=join.missing_from_metadata,
-        extra_table_entries=join.extra_metadata_taxa,
-        index_column=table.index_column,
-        annotated_taxa=annotated_taxa,
-        joined_rows=join.joined_rows,
-    )
-
-
-def write_annotation_report(path: Path, report: TableLinkageReport) -> Path:
-    """Write a linkage report to a deterministic JSON artifact."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-    return path
-
-
-def _section(name: str, payload: object) -> tuple[str, str]:
-    return name, json.dumps(payload, default=str, indent=2, sort_keys=True)
-
-
-def _truncate_report_rows(
-    rows: list[object],
-    *,
-    limit: int | None,
-    section_name: str,
-    truncated_sections: list[str],
-) -> tuple[list[object], int]:
-    if limit is None or len(rows) <= limit:
-        return rows, 0
-    truncated_sections.append(section_name)
-    return rows[:limit], len(rows) - limit
-
-
-def _preview_report_rows(rows: list[object], *, limit: int = 5) -> list[object]:
-    if limit <= 0:
-        return []
-    return rows[:limit]
-
-
-def _write_json_artifact(path: Path, payload: object) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(payload, default=str, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-    return path
-
-
-def _write_tabular_artifact(path: Path, rows: list[dict[str, object]]) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fieldnames: list[str] = []
-    for row in rows:
-        for key in row:
-            if key not in fieldnames:
-                fieldnames.append(key)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames, delimiter="\t")
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(
-                {
-                    key: json.dumps(value, sort_keys=True)
-                    if isinstance(value, (dict, list))
-                    else value
-                    for key, value in row.items()
-                }
-            )
-    return path
-
-
-def _write_machine_manifest(path: Path, payload: dict[str, object]) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(payload, default=str, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-    return path
-
-
-def _build_machine_manifest(
-    *,
-    report_kind: str,
-    title: str,
-    input_paths: list[Path],
-    sections: list[tuple[str, str]],
-    inspection: TreeInspectionReport,
-) -> dict[str, object]:
-    return {
-        "report_kind": report_kind,
-        "title": title,
-        "input_paths": [str(path) for path in input_paths],
-        "input_checksums": {str(path): _sha256(path) for path in input_paths},
-        "sections": [name for name, _ in sections],
-        "metrics": {
-            "tip_count": inspection.tip_count,
-            "node_count": inspection.node_count,
-            "clade_count": inspection.clade_count,
-        },
-    }
-
-
-def _report_sidecar_path(out_path: Path) -> Path:
-    return out_path.with_suffix(".json")
-
-
-def _report_summary_and_limitations(
-    *,
-    report_kind: str,
-    validation: TreeValidationReport,
-    inspection: TreeInspectionReport,
-    forensic: TreeForensicReport,
-    dataset_audit: DatasetAuditReport | None = None,
-    alignment_forensic: AlignmentForensicReport | None = None,
-) -> tuple[list[str], list[str]]:
-    summary = [
-        f"tree validity decision: {validation.validity_decision}",
-        f"tree quality score: {inspection.tree_quality_score}",
-        (
-            "tree is currently safe for publication-oriented use"
-            if forensic.safe_for_publication
-            else "tree still carries publication-facing risks that should be reviewed"
-        ),
-    ]
-    limitations = list(forensic.warnings)
-    if report_kind == "dataset" and dataset_audit is not None:
-        summary.append(
-            f"dataset readiness decision: {dataset_audit.readiness_decision}"
-        )
-        summary.append(
-            f"blocked analyses: {len(dataset_audit.blocked_analyses)}, risky analyses: "
-            f"{sum(1 for row in dataset_audit.analysis_decisions if row.decision == 'risky')}"
-        )
-        limitations.extend(
-            finding.message
-            for finding in dataset_audit.findings
-            if finding.severity in {"warning", "blocker"}
-        )
-    if report_kind == "phylo-inputs" and alignment_forensic is not None:
-        safe_methods = sum(
-            1
-            for flag in (
-                alignment_forensic.safe_for_distance_analysis,
-                alignment_forensic.safe_for_maximum_likelihood,
-                alignment_forensic.safe_for_bayesian_inference,
-                alignment_forensic.safe_for_coding_analysis,
-                alignment_forensic.safe_for_publication,
-            )
-            if flag
-        )
-        summary.append(f"alignment safe-for flags passed: {safe_methods}/5")
-        summary.append(
-            "alignment suspicious diagnostics: flagged"
-            if alignment_forensic.quality.suspicious_alignment
-            else "alignment suspicious diagnostics: clear"
-        )
-        limitations.extend(alignment_forensic.limitations)
-    if inspection.mixed_support_scales:
-        limitations.append(
-            "support labels originate from mixed scales and should be interpreted only after normalization audit"
-        )
-    return summary, sorted(set(limitations))
-
-
-def distance_method_limitations() -> list[str]:
-    """Explain why distance-based tree building is approximate."""
-    return [
-        "distance methods collapse site-by-site sequence evidence into pairwise summaries before tree building",
-        "different evolutionary histories can yield similar pairwise distances, so topology is not uniquely identified by the matrix alone",
-        "UPGMA additionally assumes an ultrametric clock-like process and can misplace taxa when rates vary across lineages",
-        "Neighbor-Joining is often useful for quick structure, but it is still a summary approximation rather than a full likelihood inference",
-        "BIONJ is explicitly excluded for this round, so governed distance-tree workflows are limited to Neighbor-Joining and UPGMA",
-    ]
+from .summary import (
+    build_machine_manifest as _build_machine_manifest,
+    distance_method_limitations,
+    report_summary_and_limitations as _report_summary_and_limitations,
+)
 
 
 def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
