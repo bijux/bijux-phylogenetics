@@ -23,6 +23,10 @@ from .optimizer_triage import (
     GeigerOptimizerTriageRow,
     build_geiger_optimizer_triage_rows,
 )
+from .parameterization_registry import (
+    GeigerParameterizationRegistryRow,
+    build_geiger_parameterization_registry_rows,
+)
 from .registry import GeigerParityCase, list_geiger_parity_cases
 
 
@@ -71,6 +75,7 @@ class GeigerParityReport:
 
     observations: list[GeigerParityObservation]
     optimizer_triage_rows: list[GeigerOptimizerTriageRow]
+    parameterization_registry_rows: list[GeigerParameterizationRegistryRow]
     summary_rows: list[GeigerParitySummaryRow]
     case_count: int
     passed_case_count: int
@@ -1013,6 +1018,9 @@ def run_geiger_parity_cases(
     return GeigerParityReport(
         observations=observations,
         optimizer_triage_rows=build_geiger_optimizer_triage_rows(observations),
+        parameterization_registry_rows=build_geiger_parameterization_registry_rows(
+            observations
+        ),
         summary_rows=_summary_rows(observations),
         case_count=case_count,
         passed_case_count=passed_case_count,
