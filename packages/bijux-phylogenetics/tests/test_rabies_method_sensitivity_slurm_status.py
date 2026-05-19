@@ -5,7 +5,7 @@ import os
 from dataclasses import replace
 from pathlib import Path
 
-from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_status import (
+from bijux_phylogenetics.datasets.rabies_method_sensitivity.slurm.status import (
     build_rabies_method_sensitivity_slurm_status_report,
     write_rabies_method_sensitivity_slurm_job_status_table,
     write_rabies_method_sensitivity_slurm_partition_status_table,

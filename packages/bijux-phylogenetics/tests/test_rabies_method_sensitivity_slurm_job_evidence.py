@@ -9,13 +9,13 @@ import bijux_phylogenetics.datasets.rabies_method_sensitivity as rabies_method_s
 from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     run_rabies_method_sensitivity_panel_workflow,
 )
-from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm import (
+from bijux_phylogenetics.datasets.rabies_method_sensitivity.slurm import (
     build_rabies_method_sensitivity_slurm_planning_report,
 )
-from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_arrays import (
+from bijux_phylogenetics.datasets.rabies_method_sensitivity.slurm.arrays import (
     build_rabies_method_sensitivity_slurm_array_strategy_report,
 )
-from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_job_evidence import (
+from bijux_phylogenetics.datasets.rabies_method_sensitivity.slurm.job_evidence import (
     write_rabies_method_sensitivity_slurm_job_evidence_bundle,
 )
 

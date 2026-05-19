@@ -170,7 +170,7 @@ from .rabies_method_sensitivity import (
     run_rabies_method_sensitivity_panel_workflow,
     write_rabies_method_sensitivity_panel_workflow_bundle,
 )
-from .rabies_method_sensitivity_audit import (
+from .rabies_method_sensitivity.audit import (
     RabiesMethodSensitivityReproducibilityAuditReport,
     RabiesMethodSensitivityReproducibilityCheckRow,
     RabiesMethodSensitivityVariantAuditRow,
@@ -179,7 +179,7 @@ from .rabies_method_sensitivity_audit import (
     write_rabies_method_sensitivity_reproducibility_checks_table,
     write_rabies_method_sensitivity_variant_audit_table,
 )
-from .rabies_method_sensitivity_slurm import (
+from .rabies_method_sensitivity.slurm import (
     RabiesMethodSensitivitySlurmAssumptionRow,
     RabiesMethodSensitivitySlurmJobPlanRow,
     RabiesMethodSensitivitySlurmPlanningReport,
@@ -188,7 +188,7 @@ from .rabies_method_sensitivity_slurm import (
     write_rabies_method_sensitivity_slurm_job_plan_table,
     write_rabies_method_sensitivity_slurm_summary_json,
 )
-from .rabies_method_sensitivity_slurm_arrays import (
+from .rabies_method_sensitivity.slurm import (
     RabiesMethodSensitivitySlurmArrayMemberRow,
     RabiesMethodSensitivitySlurmArrayPartitionRow,
     RabiesMethodSensitivitySlurmArrayStrategyReport,
@@ -198,7 +198,7 @@ from .rabies_method_sensitivity_slurm_arrays import (
     write_rabies_method_sensitivity_slurm_array_partitions_table,
     write_rabies_method_sensitivity_slurm_array_strategy_json,
 )
-from .rabies_method_sensitivity_slurm_freshness import (
+from .rabies_method_sensitivity.slurm import (
     RabiesMethodSensitivityOutputFreshnessCheckRow,
     RabiesMethodSensitivitySlurmOutputFreshnessReport,
     RabiesMethodSensitivitySlurmOutputFreshnessRow,
@@ -207,7 +207,7 @@ from .rabies_method_sensitivity_slurm_freshness import (
     write_rabies_method_sensitivity_slurm_output_freshness_json,
     write_rabies_method_sensitivity_slurm_output_freshness_table,
 )
-from .rabies_method_sensitivity_slurm_failure_recovery import (
+from .rabies_method_sensitivity.slurm import (
     RabiesMethodSensitivitySlurmFailureRecoveryJobRow,
     RabiesMethodSensitivitySlurmFailureRecoveryPartitionRow,
     RabiesMethodSensitivitySlurmFailureRecoveryReport,
@@ -217,14 +217,14 @@ from .rabies_method_sensitivity_slurm_failure_recovery import (
     write_rabies_method_sensitivity_slurm_failure_recovery_partitions_table,
     write_rabies_method_sensitivity_slurm_failure_recovery_summary_json,
 )
-from .rabies_method_sensitivity_slurm_job_evidence import (
+from .rabies_method_sensitivity.slurm import (
     RabiesMethodSensitivitySlurmJobEvidenceReport,
     RabiesMethodSensitivitySlurmJobEvidenceRow,
     write_rabies_method_sensitivity_slurm_job_evidence_bundle,
     write_rabies_method_sensitivity_slurm_job_evidence_summary_json,
     write_rabies_method_sensitivity_slurm_job_evidence_table,
 )
-from .rabies_method_sensitivity_slurm_merge import (
+from .rabies_method_sensitivity.slurm import (
     RabiesMethodSensitivitySlurmMergeCheckRow,
     RabiesMethodSensitivitySlurmMergeReport,
     RabiesMethodSensitivitySlurmMergeVariantRow,
@@ -234,7 +234,7 @@ from .rabies_method_sensitivity_slurm_merge import (
     write_rabies_method_sensitivity_slurm_merge_summary_json,
     write_rabies_method_sensitivity_slurm_merge_variants_table,
 )
-from .rabies_method_sensitivity_slurm_status import (
+from .rabies_method_sensitivity.slurm import (
     RabiesMethodSensitivitySlurmJobStatusRow,
     RabiesMethodSensitivitySlurmPartitionStatusRow,
     RabiesMethodSensitivitySlurmStatusReport,
@@ -243,7 +243,7 @@ from .rabies_method_sensitivity_slurm_status import (
     write_rabies_method_sensitivity_slurm_partition_status_table,
     write_rabies_method_sensitivity_slurm_status_json,
 )
-from .rabies_method_sensitivity_slurm_output_explosion import (
+from .rabies_method_sensitivity.slurm import (
     RabiesMethodSensitivitySlurmOutputExplosionCheckRow,
     RabiesMethodSensitivitySlurmOutputExplosionReport,
     RabiesMethodSensitivitySlurmOutputExplosionVariantRow,
@@ -253,7 +253,7 @@ from .rabies_method_sensitivity_slurm_output_explosion import (
     write_rabies_method_sensitivity_slurm_output_explosion_summary_json,
     write_rabies_method_sensitivity_slurm_output_explosion_variants_table,
 )
-from .rabies_method_sensitivity_slurm_tree_retention import (
+from .rabies_method_sensitivity.slurm import (
     RabiesMethodSensitivitySlurmTreeRetentionCheckRow,
     RabiesMethodSensitivitySlurmTreeRetentionFileRow,
     RabiesMethodSensitivitySlurmTreeRetentionReport,
@@ -263,7 +263,7 @@ from .rabies_method_sensitivity_slurm_tree_retention import (
     write_rabies_method_sensitivity_slurm_tree_retention_html_report,
     write_rabies_method_sensitivity_slurm_tree_retention_summary_json,
 )
-from .rabies_method_sensitivity_slurm_storage import (
+from .rabies_method_sensitivity.slurm import (
     RabiesMethodSensitivitySlurmStorageAssumptionRow,
     RabiesMethodSensitivitySlurmStorageCategoryRow,
     RabiesMethodSensitivitySlurmStorageReport,

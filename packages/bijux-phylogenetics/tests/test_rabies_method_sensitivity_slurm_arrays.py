@@ -4,10 +4,10 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
-from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm import (
+from bijux_phylogenetics.datasets.rabies_method_sensitivity.slurm import (
     build_rabies_method_sensitivity_slurm_planning_report,
 )
-from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_arrays import (
+from bijux_phylogenetics.datasets.rabies_method_sensitivity.slurm.arrays import (
     build_rabies_method_sensitivity_slurm_array_strategy_report,
     write_rabies_method_sensitivity_slurm_array_members_table,
     write_rabies_method_sensitivity_slurm_array_partition_scripts,

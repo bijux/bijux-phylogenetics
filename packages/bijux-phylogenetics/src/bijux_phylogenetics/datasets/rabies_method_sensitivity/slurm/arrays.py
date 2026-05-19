@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass
 import json
 from pathlib import Path
 
-from .rabies_method_sensitivity_slurm import (
+from .planning import (
     RabiesMethodSensitivitySlurmJobPlanRow,
     RabiesMethodSensitivitySlurmPlanningReport,
 )

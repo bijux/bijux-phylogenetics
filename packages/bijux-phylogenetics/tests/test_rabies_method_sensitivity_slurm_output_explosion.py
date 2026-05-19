@@ -4,7 +4,7 @@ import csv
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_output_explosion import (
+from bijux_phylogenetics.datasets.rabies_method_sensitivity.slurm.output_explosion import (
     build_rabies_method_sensitivity_slurm_output_explosion_report,
     write_rabies_method_sensitivity_slurm_output_explosion_checks_table,
     write_rabies_method_sensitivity_slurm_output_explosion_html_report,

@@ -4,7 +4,7 @@ import csv
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_tree_retention import (
+from bijux_phylogenetics.datasets.rabies_method_sensitivity.slurm.tree_retention import (
     build_rabies_method_sensitivity_slurm_tree_retention_report,
     write_rabies_method_sensitivity_slurm_tree_retention_checks_table,
     write_rabies_method_sensitivity_slurm_tree_retention_files_table,

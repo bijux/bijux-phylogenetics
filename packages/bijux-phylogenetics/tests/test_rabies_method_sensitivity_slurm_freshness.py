@@ -7,7 +7,7 @@ from pathlib import Path
 from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     load_rabies_method_sensitivity_panel_dataset,
 )
-from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_freshness import (
+from bijux_phylogenetics.datasets.rabies_method_sensitivity.slurm.freshness import (
     build_rabies_method_sensitivity_slurm_output_freshness_report,
     write_rabies_method_sensitivity_slurm_output_freshness_checks_table,
     write_rabies_method_sensitivity_slurm_output_freshness_json,

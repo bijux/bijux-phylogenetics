@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.datasets.rabies_method_sensitivity_slurm_storage import (
+from bijux_phylogenetics.datasets.rabies_method_sensitivity.slurm.storage import (
     build_rabies_method_sensitivity_slurm_storage_report,
     write_rabies_method_sensitivity_slurm_storage_categories_table,
     write_rabies_method_sensitivity_slurm_storage_html_report,

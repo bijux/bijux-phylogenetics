@@ -11,7 +11,7 @@ from typing import Protocol
 
 from bijux_phylogenetics.render.html import write_html_report
 
-from .rabies_method_sensitivity_slurm_arrays import (
+from .arrays import (
     RabiesMethodSensitivitySlurmArrayStrategyReport,
 )
 
