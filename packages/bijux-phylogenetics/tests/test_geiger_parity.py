@@ -8,7 +8,11 @@ from bijux_phylogenetics.parity import (
     list_geiger_parity_cases,
     run_geiger_parity_cases,
     write_geiger_parity_observation_table,
+    write_geiger_optimizer_triage_table,
     write_geiger_parity_summary_table,
+)
+from tests.support.geiger_optimizer_triage_reference import (
+    geiger_optimizer_triage_reference_payloads,
 )
 from tests.support.geiger_fitcontinuous_brownian_reference import (
     GEIGER_FITCONTINUOUS_BROWNIAN_REFERENCE_PAYLOADS,
@@ -1324,6 +1328,101 @@ def test_run_geiger_parity_cases_persists_failure_artifacts_for_mismatches(
     assert stored_summary["root_state"] == 999.0
 
 
+def test_run_geiger_parity_cases_triages_same_likelihood_different_parameters(
+    tmp_path: Path,
+) -> None:
+    reference_payloads = geiger_optimizer_triage_reference_payloads()
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads={
+            "fitcontinuous-lambda-strong-signal-review": reference_payloads[
+                "same_likelihood_different_parameters"
+            ]
+        },
+    )
+
+    report = run_geiger_parity_cases(
+        case_ids=["fitcontinuous-lambda-strong-signal-review"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    triage_row = report.optimizer_triage_rows[0]
+    assert triage_row.mismatch_type == "same_likelihood_different_parameters"
+    assert triage_row.same_likelihood_within_tolerance is True
+    assert triage_row.same_parameter_surface_within_tolerance is False
+    assert triage_row.parameter_surface_comparable is True
+
+
+def test_run_geiger_parity_cases_triages_different_likelihood_same_parameters(
+    tmp_path: Path,
+) -> None:
+    reference_payloads = geiger_optimizer_triage_reference_payloads()
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads={
+            "fitcontinuous-lambda-strong-signal-review": reference_payloads[
+                "different_likelihood_same_parameters"
+            ]
+        },
+    )
+
+    report = run_geiger_parity_cases(
+        case_ids=["fitcontinuous-lambda-strong-signal-review"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    triage_row = report.optimizer_triage_rows[0]
+    assert triage_row.mismatch_type == "different_likelihood_same_parameters"
+    assert triage_row.same_likelihood_within_tolerance is False
+    assert triage_row.same_parameter_surface_within_tolerance is True
+    assert triage_row.parameter_surface_comparable is True
+
+
+def test_run_geiger_parity_cases_triages_boundary_solution_review(
+    tmp_path: Path,
+) -> None:
+    reference_payloads = geiger_optimizer_triage_reference_payloads()
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads={
+            "fitcontinuous-lambda-strong-signal-review": reference_payloads[
+                "boundary_solution_review"
+            ]
+        },
+    )
+
+    report = run_geiger_parity_cases(
+        case_ids=["fitcontinuous-lambda-strong-signal-review"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    triage_row = report.optimizer_triage_rows[0]
+    assert triage_row.mismatch_type == "boundary_solution_review"
+    assert triage_row.boundary_solution_detected is True
+    assert triage_row.reference_boundary_detected is True
+
+
+def test_write_geiger_optimizer_triage_table_writes_rows(tmp_path: Path) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    report = run_geiger_parity_cases(
+        case_ids=["fitcontinuous-lambda-weak-signal-review"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+    triage_path = tmp_path / "geiger-optimizer-triage.tsv"
+
+    write_geiger_optimizer_triage_table(triage_path, report)
+
+    with triage_path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle, delimiter="\t"))
+    assert len(rows) == 1
+    assert rows[0]["case_id"] == "fitcontinuous-lambda-weak-signal-review"
+    assert rows[0]["mismatch_type"] == "no_algorithm_mismatch"
+
+
 def test_write_geiger_parity_tables_writes_summary_and_observations(
     tmp_path: Path,
 ) -> None:
@@ -1334,9 +1433,11 @@ def test_write_geiger_parity_tables_writes_summary_and_observations(
     )
     summary_path = tmp_path / "geiger-parity-summary.tsv"
     observation_path = tmp_path / "geiger-parity-observations.tsv"
+    triage_path = tmp_path / "geiger-optimizer-triage.tsv"
 
     write_geiger_parity_summary_table(summary_path, report)
     write_geiger_parity_observation_table(observation_path, report)
+    write_geiger_optimizer_triage_table(triage_path, report)
 
     summary_rows = summary_path.read_text(encoding="utf-8").splitlines()
     assert summary_rows[0].startswith("function_name\tcase_count")
@@ -1359,3 +1460,10 @@ def test_write_geiger_parity_tables_writes_summary_and_observations(
     }
     optimizer_settings = json.loads(rows[0]["optimizer_settings"])
     assert "reference_control_policy" in optimizer_settings
+    with triage_path.open(encoding="utf-8", newline="") as handle:
+        triage_rows = list(csv.DictReader(handle, delimiter="\t"))
+    assert len(triage_rows) == len(rows)
+    assert triage_rows[0]["mismatch_type"] in {
+        "no_algorithm_mismatch",
+        "parameter_surface_not_applicable",
+    }

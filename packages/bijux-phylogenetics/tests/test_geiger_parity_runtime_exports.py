@@ -5,6 +5,7 @@ from bijux_phylogenetics.parity import (
     list_geiger_parity_cases,
     run_geiger_parity_cases,
     write_geiger_parity_observation_table,
+    write_geiger_optimizer_triage_table,
     write_geiger_parity_summary_table,
 )
 
@@ -19,4 +20,8 @@ def test_public_runtime_exports_include_geiger_parity_surface() -> None:
     assert (
         parity_api.write_geiger_parity_observation_table
         is write_geiger_parity_observation_table
+    )
+    assert (
+        parity_api.write_geiger_optimizer_triage_table
+        is write_geiger_optimizer_triage_table
     )
