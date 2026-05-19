@@ -25,6 +25,28 @@ _RNA_CHARACTERS = set("ACGUNRYSWKMBDHVacgunryswkmbdhv")
 _NUCLEOTIDE_GC_CHARACTERS = {"G", "C", "g", "c"}
 _DNA_CANONICAL = ("A", "C", "G", "T")
 _RNA_CANONICAL = ("A", "C", "G", "U")
+_PROTEIN_CANONICAL = (
+    "A",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "K",
+    "L",
+    "M",
+    "N",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "V",
+    "W",
+    "Y",
+)
 _PROTEIN_CHARACTERS = set("ABCDEFGHIKLMNPQRSTVWXYZabcdefghiklmnpqrstvwxyz*")
 _DNA_CHARACTERS_UPPER = {character.upper() for character in _DNA_CHARACTERS}
 _RNA_CHARACTERS_UPPER = {character.upper() for character in _RNA_CHARACTERS}
