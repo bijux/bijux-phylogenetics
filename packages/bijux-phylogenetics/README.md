@@ -1736,6 +1736,20 @@ scope: it compares tip-distribution, tip-covariance, and tip-state-frequency
 summary envelopes against stored local `geiger::sim.char` outputs, keeps the
 true generating parameters in the report, uses fixed seeds, and does not claim
 exact cross-language random draws.
+The same governed simulation stack now also exposes one packaged
+`discrete_mode_recovery_panel` benchmark over explicit discrete Mk truth
+matrices and stored local `geiger::fitDiscrete` references. It covers one
+stable three-state ER recovery case, one stable three-state SYM recovery case,
+one three-state ARD weak-identification review, and one five-state
+overparameterized ARD failure review across the governed twelve-taxon and
+twenty-four-taxon trees. Bijux exposes that benchmark through
+`run_discrete_mode_recovery_panel_workflow()` and
+`demo discrete-mode-recovery-panel`, writes paired rate-recovery and
+model-choice ledgers, compares Bijux truth error against stored local
+`geiger` truth error, and keeps the scientific boundary explicit: the ARD
+surfaces are review cases and are not counted as successful recovery when the
+information-criterion surface prefers simpler models or when fitted state pairs
+drop out entirely.
 The same owned simulation surface now also exposes
 `simulate_correlated_brownian_trait_collection(...)` for two or more
 continuous traits on one fixed tree from one explicit evolutionary covariance
