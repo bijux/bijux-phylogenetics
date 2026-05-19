@@ -21,7 +21,7 @@ from bijux_phylogenetics.io.iqtree_support import (
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
-from .tree_set import (
+from ..tree_set import (
     CladeFrequencyReport,
     ConsensusTreeReport,
     TreeSetProcessingSummary,
