@@ -297,6 +297,11 @@ from bijux_phylogenetics.command_line.tree_inspection import (
     run_inspect_command,
     run_validate_command,
 )
+from bijux_phylogenetics.command_line.tree_normalization import (
+    add_tree_normalization_commands,
+    run_normalize_command,
+    run_normalize_taxa_command,
+)
 from bijux_phylogenetics.command_line.topology import (
     add_topology_commands,
     run_topology_command,
@@ -438,10 +443,6 @@ from bijux_phylogenetics.comparative.trait_outliers import (
     write_trait_outlier_taxon_table,
 )
 from bijux_phylogenetics.core.environment import inspect_environment
-from bijux_phylogenetics.core.taxonomy import (
-    normalize_tree_taxa,
-    write_taxon_mapping,
-)
 from bijux_phylogenetics.engines import (
     list_external_engine_workflows,
     list_mafft_alignment_modes,
@@ -459,8 +460,6 @@ from bijux_phylogenetics.engines import (
     run_sh_alrt_support_estimation,
 )
 from bijux_phylogenetics.runtime.errors import EngineUnavailableError, PhylogeneticsError
-from bijux_phylogenetics.io.newick import write_newick
-from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylogeography import (
     render_coordinate_movement_visualization,
     render_geographic_map_html,
@@ -1479,32 +1478,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     add_tree_inspection_commands(subparsers)
 
-    normalize = subparsers.add_parser(
-        get_command_spec("normalize").name, help=get_command_spec("normalize").summary
-    )
-    normalize.add_argument("tree", type=Path)
-    normalize.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
-    normalize.add_argument("--out", required=True, type=Path)
-    normalize.add_argument(
-        "--json", action="store_true", help="Emit the normalization result as JSON."
-    )
-    _add_manifest_argument(normalize)
-
-    normalize_taxa = subparsers.add_parser(
-        get_command_spec("normalize-taxa").name,
-        help=get_command_spec("normalize-taxa").summary,
-    )
-    normalize_taxa.add_argument("tree", type=Path)
-    normalize_taxa.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
-    normalize_taxa.add_argument(
-        "--policy", choices=("spaces-to-underscores",), required=True
-    )
-    normalize_taxa.add_argument("--out", required=True, type=Path)
-    normalize_taxa.add_argument("--mapping-out", type=Path)
-    normalize_taxa.add_argument(
-        "--json", action="store_true", help="Emit the normalization result as JSON."
-    )
-    _add_manifest_argument(normalize_taxa)
+    add_tree_normalization_commands(subparsers)
 
     add_taxonomy_commands(subparsers)
 
@@ -3056,56 +3030,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "inspect":
             return run_inspect_command(args)
         if args.command == "normalize":
-            tree = load_tree(args.tree, source_format=args.format)
-            output_path = write_newick(args.out, tree)
-            outputs = _finalize_outputs(
-                args, command="normalize", inputs=[args.tree], outputs=[output_path]
-            )
-            if args.json:
-                _print_result(
-                    build_command_result(
-                        command="normalize",
-                        inputs=[args.tree],
-                        outputs=outputs,
-                        metrics={"tip_count": tree.tip_count},
-                        data={
-                            "source_format": tree.source_format,
-                            "output_format": "newick",
-                        },
-                    ),
-                    json_output=True,
-                )
-            else:
-                print(output_path)
-            return 0
+            return run_normalize_command(args)
         if args.command == "normalize-taxa":
-            tree = load_tree(args.tree, source_format=args.format)
-            normalized_tree, report = normalize_tree_taxa(tree, policy=args.policy)
-            output_path = write_newick(args.out, normalized_tree)
-            mapping_path = args.mapping_out or args.out.with_suffix(
-                f"{args.out.suffix}.mapping.tsv"
-            )
-            write_taxon_mapping(mapping_path, report.renamed_taxa)
-            outputs = _finalize_outputs(
-                args,
-                command="normalize-taxa",
-                inputs=[args.tree],
-                outputs=[output_path, mapping_path],
-            )
-            if args.json:
-                _print_result(
-                    build_command_result(
-                        command="normalize-taxa",
-                        inputs=[args.tree],
-                        outputs=outputs,
-                        metrics={"renamed_taxa": len(report.renamed_taxa)},
-                        data=report,
-                    ),
-                    json_output=True,
-                )
-            else:
-                print(output_path)
-            return 0
+            return run_normalize_taxa_command(args)
         if args.command == "taxonomy":
             return run_taxonomy_command(args)
         if args.command == "topology":
