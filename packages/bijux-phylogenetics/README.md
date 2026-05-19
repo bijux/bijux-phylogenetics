@@ -1345,7 +1345,15 @@ standard-error review surface. Failed or skipped
 cases always persist their case payload, structured summaries, parameter
 ledgers, and mismatch reason under `artifacts/geiger-parity-failures/` so the
 live parity lane stays reviewer-usable instead of collapsing into hidden
-manual reruns.
+manual reruns. The same live report now also emits governed optimizer-disagreement
+triage rows and an optional `--optimizer-triage-out` TSV. That triage keeps the
+stored optimizer settings visible, records objective deltas, parameter-surface
+agreement, boundary hits, trace row counts, local-optimum counts where the
+owned or reference surface exposes a parameter trace, and classifies each case
+as no algorithm mismatch, same-likelihood-different-parameters,
+different-likelihood-same-parameters, boundary-solution review, or another
+explicit review class instead of treating every failure as an owned bug or
+waiving every mismatch away as optimizer noise.
 The BM lane now has three governed cases instead of one generic smoke check:
 the four-taxon comparative example, a twenty-four-taxon sigma-recovery surface,
 and a twenty-four-taxon missing-value pruning surface that must prove explicit
