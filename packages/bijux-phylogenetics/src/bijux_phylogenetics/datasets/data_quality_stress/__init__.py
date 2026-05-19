@@ -10,9 +10,9 @@ from .models import (
     TraitDuplicateResolution,
     TraitMissingObservation,
 )
+from .export import export_catarrhine_data_quality_stress_panel_dataset
 from .panel import load_catarrhine_data_quality_stress_panel_dataset
 from .workflow import (
-    export_catarrhine_data_quality_stress_panel_dataset,
     run_catarrhine_data_quality_stress_panel_demo,
     run_catarrhine_data_quality_stress_panel_workflow,
     write_catarrhine_data_quality_stress_panel_workflow_bundle,

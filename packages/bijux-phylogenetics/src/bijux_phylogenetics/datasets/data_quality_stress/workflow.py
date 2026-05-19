@@ -7,6 +7,7 @@ import shutil
 from tempfile import TemporaryDirectory
 
 from .cleanup import build_catarrhine_data_quality_stress_panel_workflow_report
+from .export import export_catarrhine_data_quality_stress_panel_dataset
 from bijux_phylogenetics.core.alignment import (
     AlignmentRecord,
     CodingSequencePreparationReport,
@@ -230,57 +231,6 @@ def load_catarrhine_data_quality_stress_panel_dataset() -> (
 ):
     """Expose the packaged catarrhine stress panel as a first-class dataset surface."""
     return load_packaged_catarrhine_data_quality_stress_panel_dataset()
-
-
-def export_catarrhine_data_quality_stress_panel_dataset(
-    destination: Path,
-) -> CatarrhineDataQualityStressPanelExportResult:
-    """Copy the packaged raw stress inputs and governed expected outputs."""
-    dataset = load_catarrhine_data_quality_stress_panel_dataset()
-    if destination.exists():
-        shutil.rmtree(destination)
-    destination.mkdir(parents=True, exist_ok=True)
-    readme_path = Path(shutil.copy2(dataset.readme_path, destination / "README.md"))
-    raw_root = destination / "raw"
-    raw_root.mkdir(parents=True, exist_ok=True)
-    raw_alignment_path = Path(
-        shutil.copy2(dataset.raw_alignment_path, raw_root / _RAW_ALIGNMENT_NAME)
-    )
-    raw_sequence_input_path = Path(
-        shutil.copy2(
-            dataset.raw_sequence_input_path,
-            raw_root / _RAW_SEQUENCE_INPUT_NAME,
-        )
-    )
-    raw_coding_sequences_path = Path(
-        shutil.copy2(
-            dataset.raw_coding_sequences_path,
-            raw_root / _RAW_CODING_SEQUENCE_NAME,
-        )
-    )
-    raw_tree_path = Path(shutil.copy2(dataset.raw_tree_path, raw_root / _RAW_TREE_NAME))
-    raw_traits_path = Path(
-        shutil.copy2(dataset.raw_traits_path, raw_root / _RAW_TRAITS_NAME)
-    )
-    raw_trait_mismatch_path = Path(
-        shutil.copy2(
-            dataset.raw_trait_mismatch_path,
-            raw_root / _RAW_TRAIT_MISMATCH_NAME,
-        )
-    )
-    expected_output_root = destination / "expected"
-    shutil.copytree(dataset.reference_output_root, expected_output_root)
-    return CatarrhineDataQualityStressPanelExportResult(
-        output_root=destination,
-        readme_path=readme_path,
-        raw_alignment_path=raw_alignment_path,
-        raw_tree_path=raw_tree_path,
-        raw_traits_path=raw_traits_path,
-        raw_sequence_input_path=raw_sequence_input_path,
-        raw_coding_sequences_path=raw_coding_sequences_path,
-        raw_trait_mismatch_path=raw_trait_mismatch_path,
-        expected_output_root=expected_output_root,
-    )
 
 
 def run_catarrhine_data_quality_stress_panel_workflow(
