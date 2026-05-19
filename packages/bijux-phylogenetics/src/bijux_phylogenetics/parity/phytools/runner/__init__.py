@@ -47,7 +47,7 @@ from bijux_phylogenetics.simulation import (
     simulate_correlated_brownian_trait_collection,
     simulate_discrete_histories,
 )
-from .registry import PhytoolsParityCase, list_phytools_parity_cases
+from ..registry import PhytoolsParityCase, list_phytools_parity_cases
 
 
 @dataclass(frozen=True, slots=True)
