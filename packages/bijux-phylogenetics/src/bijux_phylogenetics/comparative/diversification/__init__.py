@@ -43,13 +43,17 @@ from .rates import (
     geiger_birth_death_exclusion_reason as _geiger_birth_death_exclusion_reason,
 )
 from .sampling import detect_incomplete_taxon_sampling_metadata
+from .clades import (
+    detect_diversification_outlier_clades,
+    write_clade_diversification_table,
+)
 from .trees import (
-    descendant_taxa as _descendant_taxa,
-    find_smallest_covering_node as _find_smallest_covering_node,
     inspect_diversification_time_tree,
-    node_age as _node_age,
-    node_depths as _node_depths,
     validate_time_tree_for_diversification,
+)
+from .traits import (
+    run_trait_dependent_diversification_analysis,
+    write_trait_dependent_diversification_table,
 )
 
 
@@ -101,151 +105,6 @@ def _medusa_exclusion_reason() -> str:
         "shift-count model-growth selection, or branch-placement ranking; existing "
         "clade diversification summaries are descriptive reviews and are not claimed "
         "as MEDUSA-equivalent rate-shift detection"
-    )
-
-
-def detect_diversification_outlier_clades(
-    tree_path: Path,
-    *,
-    min_tip_count: int = 2,
-    model: str = "birth-death",
-) -> CladeDiversificationScanReport:
-    """Flag clades whose diversification rate is high or low relative to the tree-wide baseline."""
-    global_report = estimate_diversification_rate(tree_path, model=model)
-    tree = load_tree(tree_path)
-    depths = _node_depths(tree)
-    observations: list[CladeDiversificationObservation] = []
-    raw_rows: list[tuple[TreeNode, list[str], float, float]] = []
-    for node in tree.iter_nodes():
-        if node.is_leaf():
-            continue
-        descendant_taxa = _descendant_taxa(node)
-        if len(descendant_taxa) < min_tip_count:
-            continue
-        crown_age = _node_age(tree, depths, node)
-        if crown_age <= 0.0:
-            continue
-        diversification_rate = float(
-            format(math.log(len(descendant_taxa)) / crown_age, ".15g")
-        )
-        raw_rows.append((node, descendant_taxa, crown_age, diversification_rate))
-    rates = [row[3] for row in raw_rows]
-    mean_rate = sum(rates) / max(len(rates), 1)
-    variance = sum((rate - mean_rate) ** 2 for rate in rates) / max(len(rates), 1)
-    standard_deviation = math.sqrt(variance)
-    for node, descendant_taxa, crown_age, diversification_rate in raw_rows:
-        z_score = (
-            float(
-                format((diversification_rate - mean_rate) / standard_deviation, ".15g")
-            )
-            if standard_deviation > 0.0
-            else 0.0
-        )
-        if z_score >= 1.0:
-            classification = "high"
-        elif z_score <= -1.0:
-            classification = "low"
-        else:
-            classification = "baseline"
-        observations.append(
-            CladeDiversificationObservation(
-                node=node_signature(node),
-                node_name=node.name,
-                descendant_taxa=descendant_taxa,
-                tip_count=len(descendant_taxa),
-                crown_age=crown_age,
-                diversification_rate=diversification_rate,
-                z_score=z_score,
-                classification=classification,
-            )
-        )
-    high = [row for row in observations if row.classification == "high"]
-    low = [row for row in observations if row.classification == "low"]
-    return CladeDiversificationScanReport(
-        tree_path=tree_path,
-        model=model,
-        global_rate=global_report.net_diversification_rate,
-        observations=observations,
-        high_diversification_clades=high,
-        low_diversification_clades=low,
-        warnings=list(global_report.warnings),
-    )
-
-
-def run_trait_dependent_diversification_analysis(
-    tree_path: Path,
-    traits_path: Path,
-    *,
-    trait: str,
-    taxon_column: str | None = None,
-) -> TraitDependentDiversificationReport:
-    """Summarize simple state-linked diversification rates when trait states form interpretable clades."""
-    validate_time_tree_for_diversification(tree_path)
-    tree = load_tree(tree_path)
-    table = load_taxon_table(traits_path, taxon_column=taxon_column)
-    if trait not in table.columns:
-        raise DiversificationAnalysisError(
-            f"trait table does not contain column '{trait}'"
-        )
-    tree_taxa = set(tree.tip_names)
-    rows_by_taxon = {
-        row[table.taxon_column]: row
-        for row in table.rows
-        if row[table.taxon_column] in tree_taxa and row[trait].strip()
-    }
-    observed_states = sorted({row[trait].strip() for row in rows_by_taxon.values()})
-    depths = _node_depths(tree)
-    states: list[TraitDependentDiversificationState] = []
-    warnings: list[str] = []
-    for state in observed_states:
-        taxa = sorted(
-            taxon for taxon, row in rows_by_taxon.items() if row[trait].strip() == state
-        )
-        state_warnings: list[str] = []
-        if len(taxa) < 2:
-            state_warnings.append("state is represented by fewer than two taxa")
-            states.append(
-                TraitDependentDiversificationState(
-                    state=state,
-                    taxon_count=len(taxa),
-                    taxa=taxa,
-                    monophyletic=False,
-                    crown_age=None,
-                    diversification_rate=None,
-                    warnings=state_warnings,
-                )
-            )
-            continue
-        covering_node, descendant_taxa = _find_smallest_covering_node(tree, set(taxa))
-        monophyletic = descendant_taxa == taxa
-        crown_age = _node_age(tree, depths, covering_node)
-        diversification_rate = (
-            float(format(math.log(len(taxa)) / crown_age, ".15g"))
-            if monophyletic and crown_age > 0.0
-            else None
-        )
-        if not monophyletic:
-            state_warnings.append("state taxa are not monophyletic in the input tree")
-        states.append(
-            TraitDependentDiversificationState(
-                state=state,
-                taxon_count=len(taxa),
-                taxa=taxa,
-                monophyletic=monophyletic,
-                crown_age=crown_age if monophyletic else None,
-                diversification_rate=diversification_rate,
-                warnings=state_warnings,
-            )
-        )
-        warnings.extend(state_warnings)
-    return TraitDependentDiversificationReport(
-        tree_path=tree_path,
-        traits_path=traits_path,
-        taxon_column=table.taxon_column,
-        trait=trait,
-        observed_states=observed_states,
-        states=states,
-        warnings=sorted(set(warnings)),
     )
 
 
@@ -575,39 +434,6 @@ def write_diversification_methods_summary_text(
     )
 
 
-def write_clade_diversification_table(
-    path: Path, report: CladeDiversificationScanReport
-) -> Path:
-    """Export clade diversification summaries as a deterministic TSV."""
-    rows = [
-        {
-            "node": row.node,
-            "node_name": row.node_name or "",
-            "descendant_taxa": ",".join(row.descendant_taxa),
-            "tip_count": str(row.tip_count),
-            "crown_age": format(row.crown_age, ".15g"),
-            "diversification_rate": format(row.diversification_rate, ".15g"),
-            "z_score": format(row.z_score, ".15g"),
-            "classification": row.classification,
-        }
-        for row in report.observations
-    ]
-    return write_taxon_rows(
-        path,
-        columns=[
-            "node",
-            "node_name",
-            "descendant_taxa",
-            "tip_count",
-            "crown_age",
-            "diversification_rate",
-            "z_score",
-            "classification",
-        ],
-        rows=rows,
-    )
-
-
 def write_diversification_gamma_statistic_table(
     path: Path, report: DiversificationGammaStatisticReport
 ) -> Path:
@@ -687,37 +513,6 @@ def write_diversification_model_comparison_table(
     )
 
 
-def write_trait_dependent_diversification_table(
-    path: Path, report: TraitDependentDiversificationReport
-) -> Path:
-    """Export state-linked diversification summaries as a deterministic TSV."""
-    rows = [
-        {
-            "state": row.state,
-            "taxon_count": str(row.taxon_count),
-            "taxa": ",".join(row.taxa),
-            "monophyletic": str(row.monophyletic).lower(),
-            "crown_age": "" if row.crown_age is None else format(row.crown_age, ".15g"),
-            "diversification_rate": ""
-            if row.diversification_rate is None
-            else format(row.diversification_rate, ".15g"),
-            "warnings": "; ".join(row.warnings),
-        }
-        for row in report.states
-    ]
-    return write_taxon_rows(
-        path,
-        columns=[
-            "state",
-            "taxon_count",
-            "taxa",
-            "monophyletic",
-            "crown_age",
-            "diversification_rate",
-            "warnings",
-        ],
-        rows=rows,
-    )
 
 
 def render_diversification_report(
