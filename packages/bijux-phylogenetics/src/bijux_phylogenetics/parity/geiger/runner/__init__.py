@@ -21,27 +21,27 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 
-from .optimizer_triage import (
+from ..optimizer_triage import (
     GeigerOptimizerTriageRow,
     build_geiger_optimizer_triage_rows,
 )
-from .boundary_warning_registry import (
+from ..boundary_warning_registry import (
     GeigerBoundaryWarningRow,
     build_geiger_boundary_warning_rows,
 )
-from .likelihood_policy import (
+from ..likelihood_policy import (
     GeigerLikelihoodPolicyRow,
     build_geiger_likelihood_policy_rows,
 )
-from .model_confidence import (
+from ..model_confidence import (
     GeigerModelConfidenceRow,
     build_geiger_model_confidence_rows,
 )
-from .parameterization_registry import (
+from ..parameterization_registry import (
     GeigerParameterizationRegistryRow,
     build_geiger_parameterization_registry_rows,
 )
-from .registry import GeigerParityCase, list_geiger_parity_cases
+from ..registry import GeigerParityCase, list_geiger_parity_cases
 
 
 @dataclass(frozen=True, slots=True)
