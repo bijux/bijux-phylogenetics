@@ -1,89 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
 from pathlib import Path
 
 from bijux_phylogenetics.core.ultrametric import APE_ULTRAMETRIC_TOLERANCE
-from bijux_phylogenetics.fixtures import (
-    get_shared_distance_matrix_fixture,
-    get_shared_dna_alignment_fixture,
-    get_shared_trait_table_fixture,
-    get_shared_tree_fixture,
-    get_shared_tree_set_fixture,
-    get_shared_tree_simulation_fixture,
-)
-
-@dataclass(frozen=True, slots=True)
-class ApeParityCase:
-    """One governed live `ape` parity case."""
-
-    case_id: str
-    fixture_kind: str
-    fixture_id: str
-    function_name: str
-    python_function_name: str
-    operation: str
-    input_fixture: Path
-    tolerance: float
-    expected_status: str = "ok"
-    pairwise_deletion: bool | None = None
-    distance_model: str | None = None
-    genetic_code_id: int | None = None
-    outgroup_taxa: tuple[str, ...] = ()
-    excluded_taxa: tuple[str, ...] = ()
-    requested_taxa: tuple[str, ...] = ()
-    node_id: int | None = None
-    mrca_taxa: tuple[str, ...] = ()
-    monophyly_reroot: bool | None = None
-    ultrametric_option: int | None = None
-    rf_mode: str | None = None
-    consensus_method: str | None = None
-    reference_tree_path: Path | None = None
-    ancestral_model: str | None = None
-    trait_fixture_id: str | None = None
-    trait_table_path: Path | None = None
-    trait_name: str | None = None
-    trait_taxon_column: str | None = None
-    transition_rate_tolerance: float | None = None
-
-
-def _package_root() -> Path:
-    return Path(__file__).resolve().parents[4]
-
-
-def _fixtures_root() -> Path:
-    return _package_root() / "tests" / "fixtures"
+from .fixtures import ApeParityFixtureResolver
+from .models import ApeParityCase
 
 
 def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCase]:
     """Return the governed live `ape` parity cases."""
-    root = _fixtures_root() if fixtures_root is None else fixtures_root
-
-    def fixture_path(fixture_kind: str, fixture_id: str) -> Path:
-        if fixture_kind == "tree":
-            fixture = get_shared_tree_fixture(fixture_id)
-        elif fixture_kind == "tree-set":
-            fixture = get_shared_tree_set_fixture(fixture_id)
-        elif fixture_kind == "dna-alignment":
-            fixture = get_shared_dna_alignment_fixture(fixture_id)
-        elif fixture_kind == "distance-matrix":
-            fixture = get_shared_distance_matrix_fixture(fixture_id)
-        elif fixture_kind == "simulation":
-            fixture = get_shared_tree_simulation_fixture(fixture_id)
-        else:
-            raise ValueError(f"unsupported ape parity fixture kind '{fixture_kind}'")
-        if fixtures_root is None:
-            return fixture.path
-        if fixture_kind == "simulation":
-            return root / "metadata" / "shared_tree_simulation_fixture_catalog.json"
-        return root / fixture.relative_path
-
-    def trait_path(fixture_id: str) -> Path:
-        fixture = get_shared_trait_table_fixture(fixture_id)
-        if fixtures_root is None:
-            return fixture.path
-        return root / fixture.relative_path
+    resolver = ApeParityFixtureResolver(fixtures_root)
 
     return [
         ApeParityCase(
@@ -93,7 +20,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::read.tree",
             python_function_name="load_tree+extract_tree_clades",
             operation="read-tree-structure",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -103,7 +30,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::read.tree",
             python_function_name="load_tree+extract_tree_clades",
             operation="read-tree-structure",
-            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            input_fixture=resolver.fixture_path("tree", "unrooted_branch_length_tree"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -113,7 +40,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::read.tree",
             python_function_name="load_tree+extract_tree_clades",
             operation="read-tree-structure",
-            input_fixture=fixture_path("tree", "internal_node_labels"),
+            input_fixture=resolver.fixture_path("tree", "internal_node_labels"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -123,7 +50,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::read.tree",
             python_function_name="load_tree+extract_tree_clades",
             operation="read-tree-structure",
-            input_fixture=fixture_path("tree", "branch_support_labels"),
+            input_fixture=resolver.fixture_path("tree", "branch_support_labels"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -133,7 +60,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::read.tree",
             python_function_name="load_tree+extract_tree_clades",
             operation="read-tree-structure",
-            input_fixture=fixture_path("tree", "quoted_taxon_labels"),
+            input_fixture=resolver.fixture_path("tree", "quoted_taxon_labels"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -143,7 +70,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::read.tree",
             python_function_name="extract_tree_set_clades",
             operation="read-tree-set-structure",
-            input_fixture=fixture_path("tree-set", "basic_newick_tree_set"),
+            input_fixture=resolver.fixture_path("tree-set", "basic_newick_tree_set"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -153,7 +80,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::read.tree",
             python_function_name="load_tree",
             operation="read-tree-structure",
-            input_fixture=fixture_path("tree", "malformed_unbalanced_parentheses"),
+            input_fixture=resolver.fixture_path("tree", "malformed_unbalanced_parentheses"),
             tolerance=0.0,
             expected_status="parse-error",
         ),
@@ -164,7 +91,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::write.tree",
             python_function_name="write_newick+ape::read.tree",
             operation="write-tree-structure",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -174,7 +101,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::write.tree",
             python_function_name="write_newick+ape::read.tree",
             operation="write-tree-structure",
-            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            input_fixture=resolver.fixture_path("tree", "unrooted_branch_length_tree"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -184,7 +111,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::write.tree",
             python_function_name="write_newick+ape::read.tree",
             operation="write-tree-structure",
-            input_fixture=fixture_path("tree", "internal_node_labels"),
+            input_fixture=resolver.fixture_path("tree", "internal_node_labels"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -194,7 +121,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::write.tree",
             python_function_name="write_newick+ape::read.tree",
             operation="write-tree-structure",
-            input_fixture=fixture_path("tree", "branch_support_labels"),
+            input_fixture=resolver.fixture_path("tree", "branch_support_labels"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -204,7 +131,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::write.tree",
             python_function_name="write_newick+ape::read.tree",
             operation="write-tree-structure",
-            input_fixture=fixture_path("tree", "quoted_taxon_labels"),
+            input_fixture=resolver.fixture_path("tree", "quoted_taxon_labels"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -214,7 +141,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::write.tree",
             python_function_name="write_newick_tree_set+ape::read.tree",
             operation="write-tree-set-structure",
-            input_fixture=fixture_path("tree-set", "basic_newick_tree_set"),
+            input_fixture=resolver.fixture_path("tree-set", "basic_newick_tree_set"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -224,7 +151,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::consensus",
             python_function_name="compute_consensus_tree+compute_clade_frequency_table",
             operation="tree-consensus",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "tree-set", "consensus_conflicting_four_taxon_tree_set"
             ),
             tolerance=1e-12,
@@ -237,7 +164,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::consensus",
             python_function_name="compute_strict_consensus_tree+compute_clade_frequency_table",
             operation="tree-consensus",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "tree-set", "consensus_conflicting_four_taxon_tree_set"
             ),
             tolerance=1e-12,
@@ -250,7 +177,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::consensus",
             python_function_name="compute_consensus_tree+compute_clade_frequency_table",
             operation="tree-consensus",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "tree-set", "consensus_posterior_six_taxon_tree_set"
             ),
             tolerance=1e-12,
@@ -263,7 +190,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::consensus",
             python_function_name="compute_consensus_tree",
             operation="tree-consensus",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "tree-set", "consensus_mismatched_taxon_tree_set"
             ),
             tolerance=0.0,
@@ -277,10 +204,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::prop.clades",
             python_function_name="compute_reference_tree_clade_support",
             operation="tree-clade-support",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "tree-set", "prop_clades_duplicate_conflict_tree_set"
             ),
-            reference_tree_path=fixture_path("tree", "balanced_rooted_ultrametric"),
+            reference_tree_path=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -290,8 +217,8 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::prop.clades",
             python_function_name="compute_reference_tree_clade_support",
             operation="tree-clade-support",
-            input_fixture=fixture_path("tree-set", "prop_clades_absent_clade_tree_set"),
-            reference_tree_path=fixture_path("tree", "cross_pairing_rooted_four_taxon"),
+            input_fixture=resolver.fixture_path("tree-set", "prop_clades_absent_clade_tree_set"),
+            reference_tree_path=resolver.fixture_path("tree", "cross_pairing_rooted_four_taxon"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -301,8 +228,8 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::prop.clades",
             python_function_name="compute_reference_tree_clade_support",
             operation="tree-clade-support",
-            input_fixture=fixture_path("tree-set", "prop_clades_child_order_tree_set"),
-            reference_tree_path=fixture_path("tree", "branch_support_labels"),
+            input_fixture=resolver.fixture_path("tree-set", "prop_clades_child_order_tree_set"),
+            reference_tree_path=resolver.fixture_path("tree", "branch_support_labels"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -312,10 +239,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::prop.clades",
             python_function_name="compute_reference_tree_clade_support",
             operation="tree-clade-support",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "tree-set", "prop_clades_posterior_six_taxon_tree_set"
             ),
-            reference_tree_path=fixture_path("tree", "balanced_rooted_six_taxon"),
+            reference_tree_path=resolver.fixture_path("tree", "balanced_rooted_six_taxon"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -325,10 +252,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::prop.clades",
             python_function_name="compute_reference_tree_clade_support",
             operation="tree-clade-support",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "tree-set", "prop_clades_mismatched_taxon_tree_set"
             ),
-            reference_tree_path=fixture_path("tree", "balanced_rooted_ultrametric"),
+            reference_tree_path=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
             expected_status="prop-clades-error",
         ),
@@ -339,7 +266,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::root",
             python_function_name="root_tree_on_outgroup",
             operation="root-tree-outgroup",
-            input_fixture=fixture_path("tree", "outgroup_rootable_unrooted"),
+            input_fixture=resolver.fixture_path("tree", "outgroup_rootable_unrooted"),
             tolerance=1e-12,
             outgroup_taxa=("D",),
         ),
@@ -350,7 +277,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::root",
             python_function_name="root_tree_on_outgroup",
             operation="root-tree-outgroup",
-            input_fixture=fixture_path("tree", "outgroup_rootable_unrooted"),
+            input_fixture=resolver.fixture_path("tree", "outgroup_rootable_unrooted"),
             tolerance=1e-12,
             outgroup_taxa=("C", "D"),
         ),
@@ -361,7 +288,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::root",
             python_function_name="root_tree_on_outgroup",
             operation="root-tree-outgroup",
-            input_fixture=fixture_path("tree", "outgroup_rooted_on_d"),
+            input_fixture=resolver.fixture_path("tree", "outgroup_rooted_on_d"),
             tolerance=1e-12,
             outgroup_taxa=("D",),
         ),
@@ -372,7 +299,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::root",
             python_function_name="root_tree_on_outgroup",
             operation="root-tree-outgroup",
-            input_fixture=fixture_path("tree", "outgroup_rootable_unrooted"),
+            input_fixture=resolver.fixture_path("tree", "outgroup_rootable_unrooted"),
             tolerance=0.0,
             expected_status="rooting-error",
             outgroup_taxa=("Z",),
@@ -384,7 +311,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::root",
             python_function_name="root_tree_on_outgroup",
             operation="root-tree-outgroup",
-            input_fixture=fixture_path("tree", "outgroup_rootable_unrooted"),
+            input_fixture=resolver.fixture_path("tree", "outgroup_rootable_unrooted"),
             tolerance=0.0,
             expected_status="rooting-error",
             outgroup_taxa=("B", "D"),
@@ -396,7 +323,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::unroot",
             python_function_name="unroot_tree",
             operation="unroot-tree",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -406,7 +333,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::unroot",
             python_function_name="unroot_tree",
             operation="unroot-tree",
-            input_fixture=fixture_path("tree", "outgroup_rootable_unrooted"),
+            input_fixture=resolver.fixture_path("tree", "outgroup_rootable_unrooted"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -416,7 +343,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::unroot",
             python_function_name="unroot_tree",
             operation="unroot-tree",
-            input_fixture=fixture_path("tree", "outgroup_rooted_on_d"),
+            input_fixture=resolver.fixture_path("tree", "outgroup_rooted_on_d"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -426,7 +353,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::unroot",
             python_function_name="unroot_tree",
             operation="unroot-tree",
-            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            input_fixture=resolver.fixture_path("tree", "unrooted_branch_length_tree"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -436,7 +363,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::unroot",
             python_function_name="unroot_tree",
             operation="unroot-tree",
-            input_fixture=fixture_path("tree", "malformed_unbalanced_parentheses"),
+            input_fixture=resolver.fixture_path("tree", "malformed_unbalanced_parentheses"),
             tolerance=0.0,
             expected_status="parse-error",
         ),
@@ -447,7 +374,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::drop.tip",
             python_function_name="drop_tree_taxa",
             operation="drop-tree-taxa",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
             excluded_taxa=("D",),
         ),
@@ -458,7 +385,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::drop.tip",
             python_function_name="drop_tree_taxa",
             operation="drop-tree-taxa",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
             excluded_taxa=("B", "D"),
         ),
@@ -469,7 +396,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::drop.tip",
             python_function_name="drop_tree_taxa",
             operation="drop-tree-taxa",
-            input_fixture=fixture_path("tree", "outgroup_rooted_on_d"),
+            input_fixture=resolver.fixture_path("tree", "outgroup_rooted_on_d"),
             tolerance=1e-12,
             excluded_taxa=("D",),
         ),
@@ -480,7 +407,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::drop.tip",
             python_function_name="drop_tree_taxa",
             operation="drop-tree-taxa",
-            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            input_fixture=resolver.fixture_path("tree", "unrooted_branch_length_tree"),
             tolerance=1e-12,
             excluded_taxa=("D",),
         ),
@@ -491,7 +418,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::drop.tip",
             python_function_name="drop_tree_taxa",
             operation="drop-tree-taxa",
-            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            input_fixture=resolver.fixture_path("tree", "unrooted_branch_length_tree"),
             tolerance=1e-12,
             excluded_taxa=("C", "D"),
         ),
@@ -502,7 +429,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::drop.tip",
             python_function_name="drop_tree_taxa",
             operation="drop-tree-taxa",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
             excluded_taxa=("Z",),
         ),
@@ -513,7 +440,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::keep.tip",
             python_function_name="prune_tree_to_requested_taxa",
             operation="keep-tree-taxa",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
             requested_taxa=("A", "C"),
         ),
@@ -524,7 +451,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::keep.tip",
             python_function_name="prune_tree_to_requested_taxa",
             operation="keep-tree-taxa",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
             requested_taxa=("C", "A"),
         ),
@@ -535,7 +462,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::keep.tip",
             python_function_name="prune_tree_to_requested_taxa",
             operation="keep-tree-taxa",
-            input_fixture=fixture_path("tree", "outgroup_rooted_on_d"),
+            input_fixture=resolver.fixture_path("tree", "outgroup_rooted_on_d"),
             tolerance=1e-12,
             requested_taxa=("A", "B", "C"),
         ),
@@ -546,7 +473,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::keep.tip",
             python_function_name="prune_tree_to_requested_taxa",
             operation="keep-tree-taxa",
-            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            input_fixture=resolver.fixture_path("tree", "unrooted_branch_length_tree"),
             tolerance=1e-12,
             requested_taxa=("A", "B", "C"),
         ),
@@ -557,7 +484,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::keep.tip",
             python_function_name="prune_tree_to_requested_taxa",
             operation="keep-tree-taxa",
-            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            input_fixture=resolver.fixture_path("tree", "unrooted_branch_length_tree"),
             tolerance=1e-12,
             requested_taxa=("A", "B"),
         ),
@@ -568,7 +495,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::extract.clade",
             python_function_name="extract_tree_clade_by_node_id",
             operation="extract-tree-clade",
-            input_fixture=fixture_path("tree", "internal_node_labels"),
+            input_fixture=resolver.fixture_path("tree", "internal_node_labels"),
             tolerance=1e-12,
             node_id=5,
         ),
@@ -579,7 +506,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::extract.clade",
             python_function_name="extract_tree_clade_by_node_id",
             operation="extract-tree-clade",
-            input_fixture=fixture_path("tree", "internal_node_labels"),
+            input_fixture=resolver.fixture_path("tree", "internal_node_labels"),
             tolerance=1e-12,
             node_id=6,
         ),
@@ -590,7 +517,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::extract.clade",
             python_function_name="extract_tree_clade_by_node_id",
             operation="extract-tree-clade",
-            input_fixture=fixture_path("tree", "internal_node_labels"),
+            input_fixture=resolver.fixture_path("tree", "internal_node_labels"),
             tolerance=1e-12,
             node_id=7,
         ),
@@ -601,7 +528,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::extract.clade",
             python_function_name="extract_tree_clade_by_node_id",
             operation="extract-tree-clade",
-            input_fixture=fixture_path("tree", "internal_node_labels"),
+            input_fixture=resolver.fixture_path("tree", "internal_node_labels"),
             tolerance=0.0,
             node_id=1,
             expected_status="clade-extraction-error",
@@ -613,7 +540,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::extract.clade",
             python_function_name="extract_tree_clade_by_node_id",
             operation="extract-tree-clade",
-            input_fixture=fixture_path("tree", "internal_node_labels"),
+            input_fixture=resolver.fixture_path("tree", "internal_node_labels"),
             tolerance=0.0,
             node_id=8,
             expected_status="clade-extraction-error",
@@ -625,7 +552,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::getMRCA",
             python_function_name="find_tree_mrca",
             operation="get-tree-mrca",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
             mrca_taxa=("A", "B"),
         ),
@@ -636,7 +563,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::getMRCA",
             python_function_name="find_tree_mrca",
             operation="get-tree-mrca",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
             mrca_taxa=("A", "B", "C", "D"),
         ),
@@ -647,7 +574,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::getMRCA",
             python_function_name="find_tree_mrca",
             operation="get-tree-mrca",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
             mrca_taxa=("A", "A", "B"),
         ),
@@ -658,7 +585,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::getMRCA",
             python_function_name="find_tree_mrca",
             operation="get-tree-mrca",
-            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
             tolerance=0.0,
             mrca_taxa=("A", "B", "C"),
         ),
@@ -669,7 +596,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::getMRCA",
             python_function_name="find_tree_mrca",
             operation="get-tree-mrca",
-            input_fixture=fixture_path("tree", "rooted_polytomy"),
+            input_fixture=resolver.fixture_path("tree", "rooted_polytomy"),
             tolerance=0.0,
             mrca_taxa=("A", "B", "C"),
         ),
@@ -680,7 +607,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::getMRCA",
             python_function_name="find_tree_mrca",
             operation="get-tree-mrca",
-            input_fixture=fixture_path("tree", "outgroup_rooted_on_d"),
+            input_fixture=resolver.fixture_path("tree", "outgroup_rooted_on_d"),
             tolerance=0.0,
             mrca_taxa=("A", "B", "C"),
         ),
@@ -691,7 +618,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::getMRCA",
             python_function_name="find_tree_mrca",
             operation="get-tree-mrca",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
             mrca_taxa=("A", "Z"),
             expected_status="mrca-error",
@@ -703,7 +630,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.monophyletic",
             python_function_name="assess_tree_monophyly",
             operation="assess-tree-monophyly",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
             requested_taxa=("A", "B"),
             monophyly_reroot=False,
@@ -715,7 +642,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.monophyletic",
             python_function_name="assess_tree_monophyly",
             operation="assess-tree-monophyly",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
             requested_taxa=("A", "B", "C"),
             monophyly_reroot=False,
@@ -727,7 +654,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.monophyletic",
             python_function_name="assess_tree_monophyly",
             operation="assess-tree-monophyly",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
             requested_taxa=("A", "B", "C"),
             monophyly_reroot=True,
@@ -739,7 +666,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.monophyletic",
             python_function_name="assess_tree_monophyly",
             operation="assess-tree-monophyly",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
             requested_taxa=("A", "B", "C", "D"),
             monophyly_reroot=False,
@@ -751,7 +678,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.monophyletic",
             python_function_name="assess_tree_monophyly",
             operation="assess-tree-monophyly",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=0.0,
             requested_taxa=("A", "Z"),
             monophyly_reroot=False,
@@ -763,7 +690,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.monophyletic",
             python_function_name="assess_tree_monophyly",
             operation="assess-tree-monophyly",
-            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            input_fixture=resolver.fixture_path("tree", "unrooted_branch_length_tree"),
             tolerance=0.0,
             requested_taxa=("A", "B"),
             monophyly_reroot=True,
@@ -775,7 +702,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.monophyletic",
             python_function_name="assess_tree_monophyly",
             operation="assess-tree-monophyly",
-            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            input_fixture=resolver.fixture_path("tree", "unrooted_branch_length_tree"),
             tolerance=0.0,
             requested_taxa=("A", "B", "C"),
             monophyly_reroot=True,
@@ -787,7 +714,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.monophyletic",
             python_function_name="assess_tree_monophyly",
             operation="assess-tree-monophyly",
-            input_fixture=fixture_path("tree", "outgroup_rooted_on_d"),
+            input_fixture=resolver.fixture_path("tree", "outgroup_rooted_on_d"),
             tolerance=0.0,
             requested_taxa=("A", "B", "C"),
             monophyly_reroot=False,
@@ -799,7 +726,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.monophyletic",
             python_function_name="assess_tree_monophyly",
             operation="assess-tree-monophyly",
-            input_fixture=fixture_path("tree", "rooted_polytomy"),
+            input_fixture=resolver.fixture_path("tree", "rooted_polytomy"),
             tolerance=0.0,
             requested_taxa=("A", "B", "C"),
             monophyly_reroot=False,
@@ -811,7 +738,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.monophyletic",
             python_function_name="assess_tree_monophyly",
             operation="assess-tree-monophyly",
-            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            input_fixture=resolver.fixture_path("tree", "unrooted_branch_length_tree"),
             tolerance=0.0,
             requested_taxa=("Z",),
             monophyly_reroot=True,
@@ -824,7 +751,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::cophenetic.phylo",
             python_function_name="compute_tree_tip_distance_matrix",
             operation="tree-tip-distance",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -834,7 +761,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::cophenetic.phylo",
             python_function_name="compute_tree_tip_distance_matrix",
             operation="tree-tip-distance",
-            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            input_fixture=resolver.fixture_path("tree", "unrooted_branch_length_tree"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -844,7 +771,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.topo",
             python_function_name="compare_topology_distance",
             operation="tree-topology-distance",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "tree-set",
                 "topology_distance_identical_rooted_pair",
             ),
@@ -858,7 +785,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.topo",
             python_function_name="compare_topology_distance",
             operation="tree-topology-distance",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "tree-set",
                 "topology_distance_rooted_child_order_pair",
             ),
@@ -872,7 +799,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.topo",
             python_function_name="compare_topology_distance",
             operation="tree-topology-distance",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "tree-set",
                 "topology_distance_rooted_conflict_pair",
             ),
@@ -886,7 +813,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.topo",
             python_function_name="compare_topology_distance",
             operation="tree-topology-distance",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "tree-set",
                 "topology_distance_rooted_polytomy_pair",
             ),
@@ -900,7 +827,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.topo",
             python_function_name="compare_topology_distance",
             operation="tree-topology-distance",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "tree-set",
                 "topology_distance_unrooted_conflict_pair",
             ),
@@ -914,7 +841,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.topo",
             python_function_name="compare_topology_distance",
             operation="tree-topology-distance",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "tree-set",
                 "topology_distance_large_rooted_pair",
             ),
@@ -928,7 +855,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::vcv.phylo",
             python_function_name="summarize_brownian_covariance",
             operation="tree-brownian-covariance",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -938,7 +865,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::vcv.phylo",
             python_function_name="summarize_brownian_covariance",
             operation="tree-brownian-covariance",
-            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -948,7 +875,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::vcv.phylo",
             python_function_name="summarize_brownian_covariance",
             operation="tree-brownian-covariance",
-            input_fixture=fixture_path("tree", "unrooted_branch_length_tree"),
+            input_fixture=resolver.fixture_path("tree", "unrooted_branch_length_tree"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -958,7 +885,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::vcv.phylo",
             python_function_name="summarize_brownian_covariance",
             operation="tree-brownian-covariance",
-            input_fixture=fixture_path("tree", "zero_branch_lengths"),
+            input_fixture=resolver.fixture_path("tree", "zero_branch_lengths"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -968,10 +895,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_continuous_ancestral_states",
             operation="tree-continuous-ancestral-states",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
             trait_fixture_id="ace_continuous_balanced",
-            trait_table_path=trait_path("ace_continuous_balanced"),
+            trait_table_path=resolver.trait_path("ace_continuous_balanced"),
             trait_name="response",
             trait_taxon_column="taxon",
         ),
@@ -982,10 +909,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_continuous_ancestral_states",
             operation="tree-continuous-ancestral-states",
-            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
             tolerance=1e-12,
             trait_fixture_id="ace_continuous_pectinate",
-            trait_table_path=trait_path("ace_continuous_pectinate"),
+            trait_table_path=resolver.trait_path("ace_continuous_pectinate"),
             trait_name="response",
             trait_taxon_column="taxon",
         ),
@@ -996,10 +923,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_continuous_ancestral_states",
             operation="tree-continuous-ancestral-states",
-            input_fixture=fixture_path("tree", "balanced_rooted_six_taxon"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_six_taxon"),
             tolerance=1e-12,
             trait_fixture_id="ace_continuous_six_taxon",
-            trait_table_path=trait_path("ace_continuous_six_taxon"),
+            trait_table_path=resolver.trait_path("ace_continuous_six_taxon"),
             trait_name="response_growth",
             trait_taxon_column="taxon",
         ),
@@ -1010,10 +937,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_continuous_ancestral_states",
             operation="tree-continuous-ancestral-states",
-            input_fixture=fixture_path("tree", "balanced_rooted_six_taxon"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_six_taxon"),
             tolerance=1e-12,
             trait_fixture_id="ace_continuous_missing_values",
-            trait_table_path=trait_path("ace_continuous_missing_values"),
+            trait_table_path=resolver.trait_path("ace_continuous_missing_values"),
             trait_name="response_growth",
             trait_taxon_column="taxon",
         ),
@@ -1024,10 +951,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=5e-5,
             trait_fixture_id="binary_discrete_match",
-            trait_table_path=trait_path("binary_discrete_match"),
+            trait_table_path=resolver.trait_path("binary_discrete_match"),
             trait_name="presence",
             trait_taxon_column="taxon",
             ancestral_model="equal-rates",
@@ -1039,10 +966,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=5e-5,
             trait_fixture_id="multistate_discrete_match",
-            trait_table_path=trait_path("multistate_discrete_match"),
+            trait_table_path=resolver.trait_path("multistate_discrete_match"),
             trait_name="region",
             trait_taxon_column="taxon",
             ancestral_model="equal-rates",
@@ -1054,10 +981,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
             tolerance=5e-5,
             trait_fixture_id="multistate_discrete_match",
-            trait_table_path=trait_path("multistate_discrete_match"),
+            trait_table_path=resolver.trait_path("multistate_discrete_match"),
             trait_name="region",
             trait_taxon_column="taxon",
             ancestral_model="equal-rates",
@@ -1069,10 +996,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=5e-5,
             trait_fixture_id="missing_trait_values",
-            trait_table_path=trait_path("missing_trait_values"),
+            trait_table_path=resolver.trait_path("missing_trait_values"),
             trait_name="habitat",
             trait_taxon_column="taxon",
             ancestral_model="equal-rates",
@@ -1084,10 +1011,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=5e-5,
             trait_fixture_id="ace_discrete_sym_balanced",
-            trait_table_path=trait_path("ace_discrete_sym_balanced"),
+            trait_table_path=resolver.trait_path("ace_discrete_sym_balanced"),
             trait_name="region",
             trait_taxon_column="taxon",
             ancestral_model="symmetric",
@@ -1100,10 +1027,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
             tolerance=5e-5,
             trait_fixture_id="ace_discrete_sym_pectinate",
-            trait_table_path=trait_path("ace_discrete_sym_pectinate"),
+            trait_table_path=resolver.trait_path("ace_discrete_sym_pectinate"),
             trait_name="region",
             trait_taxon_column="taxon",
             ancestral_model="symmetric",
@@ -1116,10 +1043,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=fixture_path("tree", "balanced_rooted_six_taxon"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_six_taxon"),
             tolerance=5e-5,
             trait_fixture_id="ace_discrete_sym_six_taxon",
-            trait_table_path=trait_path("ace_discrete_sym_six_taxon"),
+            trait_table_path=resolver.trait_path("ace_discrete_sym_six_taxon"),
             trait_name="region",
             trait_taxon_column="taxon",
             ancestral_model="symmetric",
@@ -1132,10 +1059,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=fixture_path("tree", "balanced_rooted_six_taxon"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_six_taxon"),
             tolerance=5e-5,
             trait_fixture_id="ace_discrete_sym_missing_values",
-            trait_table_path=trait_path("ace_discrete_sym_missing_values"),
+            trait_table_path=resolver.trait_path("ace_discrete_sym_missing_values"),
             trait_name="region",
             trait_taxon_column="taxon",
             ancestral_model="symmetric",
@@ -1148,10 +1075,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=5e-5,
             trait_fixture_id="ace_discrete_ard_binary_balanced",
-            trait_table_path=trait_path("ace_discrete_ard_binary_balanced"),
+            trait_table_path=resolver.trait_path("ace_discrete_ard_binary_balanced"),
             trait_name="habitat",
             trait_taxon_column="taxon",
             ancestral_model="all-rates-different",
@@ -1164,10 +1091,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
             tolerance=5e-5,
             trait_fixture_id="ace_discrete_ard_pectinate",
-            trait_table_path=trait_path("ace_discrete_ard_pectinate"),
+            trait_table_path=resolver.trait_path("ace_discrete_ard_pectinate"),
             trait_name="region",
             trait_taxon_column="taxon",
             ancestral_model="all-rates-different",
@@ -1180,10 +1107,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=fixture_path("tree", "balanced_rooted_six_taxon"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_six_taxon"),
             tolerance=5e-5,
             trait_fixture_id="ace_discrete_ard_six_taxon",
-            trait_table_path=trait_path("ace_discrete_ard_six_taxon"),
+            trait_table_path=resolver.trait_path("ace_discrete_ard_six_taxon"),
             trait_name="region",
             trait_taxon_column="taxon",
             ancestral_model="all-rates-different",
@@ -1196,10 +1123,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=fixture_path("tree", "balanced_rooted_six_taxon"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_six_taxon"),
             tolerance=5e-5,
             trait_fixture_id="ace_discrete_ard_missing_values",
-            trait_table_path=trait_path("ace_discrete_ard_missing_values"),
+            trait_table_path=resolver.trait_path("ace_discrete_ard_missing_values"),
             trait_name="region",
             trait_taxon_column="taxon",
             ancestral_model="all-rates-different",
@@ -1212,10 +1139,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::pic",
             python_function_name="compute_phylogenetic_independent_contrasts",
             operation="tree-independent-contrasts",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
             trait_fixture_id="pic_continuous_balanced",
-            trait_table_path=trait_path("pic_continuous_balanced"),
+            trait_table_path=resolver.trait_path("pic_continuous_balanced"),
             trait_name="response",
             trait_taxon_column="taxon",
         ),
@@ -1226,10 +1153,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::pic",
             python_function_name="compute_phylogenetic_independent_contrasts",
             operation="tree-independent-contrasts",
-            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
             tolerance=1e-12,
             trait_fixture_id="pic_continuous_pectinate",
-            trait_table_path=trait_path("pic_continuous_pectinate"),
+            trait_table_path=resolver.trait_path("pic_continuous_pectinate"),
             trait_name="response",
             trait_taxon_column="taxon",
         ),
@@ -1240,10 +1167,10 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::pic",
             python_function_name="compute_phylogenetic_independent_contrasts",
             operation="tree-independent-contrasts",
-            input_fixture=fixture_path("tree", "balanced_rooted_six_taxon"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_six_taxon"),
             tolerance=1e-12,
             trait_fixture_id="pic_continuous_six_taxon",
-            trait_table_path=trait_path("pic_continuous_six_taxon"),
+            trait_table_path=resolver.trait_path("pic_continuous_six_taxon"),
             trait_name="response_growth",
             trait_taxon_column="taxon",
         ),
@@ -1254,7 +1181,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::node.depth.edgelength",
             python_function_name="compute_tree_node_depths",
             operation="tree-node-depth",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1264,7 +1191,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::node.depth.edgelength",
             python_function_name="compute_tree_node_depths",
             operation="tree-node-depth",
-            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1274,7 +1201,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::node.depth.edgelength",
             python_function_name="compute_tree_node_depths",
             operation="tree-node-depth",
-            input_fixture=fixture_path("tree", "zero_branch_lengths"),
+            input_fixture=resolver.fixture_path("tree", "zero_branch_lengths"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1284,7 +1211,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::node.depth.edgelength",
             python_function_name="compute_tree_node_depths",
             operation="tree-node-depth",
-            input_fixture=fixture_path("tree", "outgroup_rooted_on_d"),
+            input_fixture=resolver.fixture_path("tree", "outgroup_rooted_on_d"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1294,7 +1221,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::branching.times",
             python_function_name="compute_tree_branching_times",
             operation="tree-branching-times",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1304,7 +1231,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::branching.times",
             python_function_name="compute_tree_branching_times",
             operation="tree-branching-times",
-            input_fixture=fixture_path("tree", "internal_node_labels"),
+            input_fixture=resolver.fixture_path("tree", "internal_node_labels"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1314,7 +1241,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::branching.times",
             python_function_name="compute_tree_branching_times",
             operation="tree-branching-times",
-            input_fixture=fixture_path("tree", "larger_binary_tree"),
+            input_fixture=resolver.fixture_path("tree", "larger_binary_tree"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1324,7 +1251,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::branching.times",
             python_function_name="compute_tree_branching_times",
             operation="tree-branching-times",
-            input_fixture=fixture_path("tree", "ultrametric_zero_internal_branch"),
+            input_fixture=resolver.fixture_path("tree", "ultrametric_zero_internal_branch"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1334,7 +1261,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::gammaStat",
             python_function_name="compute_diversification_gamma_statistic",
             operation="tree-diversification-gamma-statistic",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1344,7 +1271,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::gammaStat",
             python_function_name="compute_diversification_gamma_statistic",
             operation="tree-diversification-gamma-statistic",
-            input_fixture=fixture_path("tree", "internal_node_labels"),
+            input_fixture=resolver.fixture_path("tree", "internal_node_labels"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1354,7 +1281,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::gammaStat",
             python_function_name="compute_diversification_gamma_statistic",
             operation="tree-diversification-gamma-statistic",
-            input_fixture=fixture_path("tree", "larger_binary_tree"),
+            input_fixture=resolver.fixture_path("tree", "larger_binary_tree"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1364,7 +1291,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::gammaStat",
             python_function_name="compute_diversification_gamma_statistic",
             operation="tree-diversification-gamma-statistic",
-            input_fixture=fixture_path("tree", "ultrametric_zero_internal_branch"),
+            input_fixture=resolver.fixture_path("tree", "ultrametric_zero_internal_branch"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1374,7 +1301,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::rtree",
             python_function_name="simulate_random_trees",
             operation="tree-simulation-envelope",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "simulation", "rtree_rooted_six_taxon_uniform_64"
             ),
             tolerance=1.5,
@@ -1386,7 +1313,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::rtree",
             python_function_name="simulate_random_trees",
             operation="tree-simulation-envelope",
-            input_fixture=fixture_path(
+            input_fixture=resolver.fixture_path(
                 "simulation", "rtree_rooted_twelve_taxon_uniform_128"
             ),
             tolerance=2.0,
@@ -1398,7 +1325,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::rcoal",
             python_function_name="simulate_coalescent_trees",
             operation="tree-simulation-envelope",
-            input_fixture=fixture_path("simulation", "rcoal_rooted_six_taxon_64"),
+            input_fixture=resolver.fixture_path("simulation", "rcoal_rooted_six_taxon_64"),
             tolerance=2.2,
         ),
         ApeParityCase(
@@ -1408,7 +1335,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::rcoal",
             python_function_name="simulate_coalescent_trees",
             operation="tree-simulation-envelope",
-            input_fixture=fixture_path("simulation", "rcoal_rooted_twelve_taxon_128"),
+            input_fixture=resolver.fixture_path("simulation", "rcoal_rooted_twelve_taxon_128"),
             tolerance=3.0,
         ),
         ApeParityCase(
@@ -1418,7 +1345,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.ultrametric",
             python_function_name="assess_tree_ultrametricity",
             operation="tree-ultrametricity",
-            input_fixture=fixture_path("tree", "balanced_rooted_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
             tolerance=APE_ULTRAMETRIC_TOLERANCE,
             ultrametric_option=1,
         ),
@@ -1429,7 +1356,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.ultrametric",
             python_function_name="assess_tree_ultrametricity",
             operation="tree-ultrametricity",
-            input_fixture=fixture_path("tree", "near_ultrametric_branch_jitter"),
+            input_fixture=resolver.fixture_path("tree", "near_ultrametric_branch_jitter"),
             tolerance=APE_ULTRAMETRIC_TOLERANCE,
             ultrametric_option=1,
         ),
@@ -1440,7 +1367,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.ultrametric",
             python_function_name="assess_tree_ultrametricity",
             operation="tree-ultrametricity",
-            input_fixture=fixture_path("tree", "near_ultrametric_branch_jitter"),
+            input_fixture=resolver.fixture_path("tree", "near_ultrametric_branch_jitter"),
             tolerance=1e-12,
             ultrametric_option=1,
         ),
@@ -1451,7 +1378,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::is.ultrametric",
             python_function_name="assess_tree_ultrametricity",
             operation="tree-ultrametricity",
-            input_fixture=fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
             tolerance=APE_ULTRAMETRIC_TOLERANCE,
             ultrametric_option=1,
         ),
@@ -1462,7 +1389,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::nj",
             python_function_name="build_tree_from_imported_distance_matrix",
             operation="distance-matrix-neighbor-joining",
-            input_fixture=fixture_path("distance-matrix", "analytical_three_taxon"),
+            input_fixture=resolver.fixture_path("distance-matrix", "analytical_three_taxon"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1472,7 +1399,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::nj",
             python_function_name="build_tree_from_imported_distance_matrix",
             operation="distance-matrix-neighbor-joining",
-            input_fixture=fixture_path("distance-matrix", "ultrametric_four_taxon"),
+            input_fixture=resolver.fixture_path("distance-matrix", "ultrametric_four_taxon"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1482,7 +1409,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::nj",
             python_function_name="build_tree_from_imported_distance_matrix",
             operation="distance-matrix-neighbor-joining",
-            input_fixture=fixture_path("distance-matrix", "nonultrametric_four_taxon"),
+            input_fixture=resolver.fixture_path("distance-matrix", "nonultrametric_four_taxon"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1492,7 +1419,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::as.DNAbin",
             python_function_name="load_dna_bin_alignment",
             operation="dna-dnabin-structure",
-            input_fixture=fixture_path("dna-alignment", "clean_aligned_dna"),
+            input_fixture=resolver.fixture_path("dna-alignment", "clean_aligned_dna"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -1502,7 +1429,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::as.DNAbin",
             python_function_name="load_dna_bin_alignment",
             operation="dna-dnabin-structure",
-            input_fixture=fixture_path("dna-alignment", "lowercase_aligned_dna"),
+            input_fixture=resolver.fixture_path("dna-alignment", "lowercase_aligned_dna"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -1512,7 +1439,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::as.DNAbin",
             python_function_name="load_dna_bin_alignment",
             operation="dna-dnabin-structure",
-            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -1522,7 +1449,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::as.DNAbin",
             python_function_name="load_dna_bin_alignment",
             operation="dna-dnabin-structure",
-            input_fixture=fixture_path("dna-alignment", "dna_with_ambiguity"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_ambiguity"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -1532,7 +1459,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::base.freq",
             python_function_name="load_fasta_alignment+ape-style-base-frequency",
             operation="dna-base-frequency",
-            input_fixture=fixture_path("dna-alignment", "lowercase_aligned_dna"),
+            input_fixture=resolver.fixture_path("dna-alignment", "lowercase_aligned_dna"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1542,7 +1469,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::base.freq",
             python_function_name="load_fasta_alignment+ape-style-base-frequency",
             operation="dna-base-frequency",
-            input_fixture=fixture_path("dna-alignment", "dna_with_ambiguity"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_ambiguity"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1552,7 +1479,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::base.freq",
             python_function_name="compute_alignment_base_frequency_report",
             operation="dna-base-frequency",
-            input_fixture=fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1562,7 +1489,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::base.freq",
             python_function_name="compute_alignment_base_frequency_report",
             operation="dna-base-frequency",
-            input_fixture=fixture_path("dna-alignment", "all_gap_missing_alignment"),
+            input_fixture=resolver.fixture_path("dna-alignment", "all_gap_missing_alignment"),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -1572,7 +1499,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::seg.sites",
             python_function_name="compute_alignment_segregating_site_report",
             operation="dna-segregating-sites",
-            input_fixture=fixture_path("dna-alignment", "lowercase_aligned_dna"),
+            input_fixture=resolver.fixture_path("dna-alignment", "lowercase_aligned_dna"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -1582,7 +1509,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::seg.sites",
             python_function_name="compute_alignment_segregating_site_report",
             operation="dna-segregating-sites",
-            input_fixture=fixture_path("dna-alignment", "invariant_aligned_dna"),
+            input_fixture=resolver.fixture_path("dna-alignment", "invariant_aligned_dna"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -1592,7 +1519,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::seg.sites",
             python_function_name="compute_alignment_segregating_site_report",
             operation="dna-segregating-sites",
-            input_fixture=fixture_path("dna-alignment", "one_variable_site_alignment"),
+            input_fixture=resolver.fixture_path("dna-alignment", "one_variable_site_alignment"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -1602,7 +1529,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::seg.sites",
             python_function_name="compute_alignment_segregating_site_report",
             operation="dna-segregating-sites",
-            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -1612,7 +1539,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::seg.sites",
             python_function_name="compute_alignment_segregating_site_report",
             operation="dna-segregating-sites",
-            input_fixture=fixture_path("dna-alignment", "dna_with_ambiguity"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_ambiguity"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -1622,7 +1549,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::seg.sites",
             python_function_name="compute_alignment_segregating_site_report",
             operation="dna-segregating-sites",
-            input_fixture=fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -1632,7 +1559,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::seg.sites",
             python_function_name="compute_alignment_segregating_site_report",
             operation="dna-segregating-sites",
-            input_fixture=fixture_path("dna-alignment", "all_gap_missing_alignment"),
+            input_fixture=resolver.fixture_path("dna-alignment", "all_gap_missing_alignment"),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -1642,7 +1569,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "clean_aligned_dna"),
+            input_fixture=resolver.fixture_path("dna-alignment", "clean_aligned_dna"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="raw",
@@ -1654,7 +1581,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="raw",
@@ -1666,7 +1593,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="raw",
@@ -1678,7 +1605,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_ambiguity"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_ambiguity"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="raw",
@@ -1690,7 +1617,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "identical_sequences"),
+            input_fixture=resolver.fixture_path("dna-alignment", "identical_sequences"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="raw",
@@ -1702,7 +1629,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "high_divergence_sequences"),
+            input_fixture=resolver.fixture_path("dna-alignment", "high_divergence_sequences"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="raw",
@@ -1714,7 +1641,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="raw",
@@ -1726,7 +1653,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "unequal_length_invalid_input"),
+            input_fixture=resolver.fixture_path("dna-alignment", "unequal_length_invalid_input"),
             tolerance=0.0,
             pairwise_deletion=False,
             distance_model="raw",
@@ -1739,7 +1666,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "clean_aligned_dna"),
+            input_fixture=resolver.fixture_path("dna-alignment", "clean_aligned_dna"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="jc69",
@@ -1751,7 +1678,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="jc69",
@@ -1763,7 +1690,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="jc69",
@@ -1775,7 +1702,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_ambiguity"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_ambiguity"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="jc69",
@@ -1787,7 +1714,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "identical_sequences"),
+            input_fixture=resolver.fixture_path("dna-alignment", "identical_sequences"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="jc69",
@@ -1799,7 +1726,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "high_divergence_sequences"),
+            input_fixture=resolver.fixture_path("dna-alignment", "high_divergence_sequences"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="jc69",
@@ -1811,7 +1738,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="jc69",
@@ -1823,7 +1750,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "unequal_length_invalid_input"),
+            input_fixture=resolver.fixture_path("dna-alignment", "unequal_length_invalid_input"),
             tolerance=0.0,
             pairwise_deletion=False,
             distance_model="jc69",
@@ -1836,7 +1763,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "clean_aligned_dna"),
+            input_fixture=resolver.fixture_path("dna-alignment", "clean_aligned_dna"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="k80",
@@ -1848,7 +1775,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="k80",
@@ -1860,7 +1787,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="k80",
@@ -1872,7 +1799,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_ambiguity"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_ambiguity"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="k80",
@@ -1884,7 +1811,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "identical_sequences"),
+            input_fixture=resolver.fixture_path("dna-alignment", "identical_sequences"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="k80",
@@ -1896,7 +1823,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "high_divergence_sequences"),
+            input_fixture=resolver.fixture_path("dna-alignment", "high_divergence_sequences"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="k80",
@@ -1908,7 +1835,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="k80",
@@ -1920,7 +1847,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "unequal_length_invalid_input"),
+            input_fixture=resolver.fixture_path("dna-alignment", "unequal_length_invalid_input"),
             tolerance=0.0,
             pairwise_deletion=False,
             distance_model="k80",
@@ -1933,7 +1860,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "clean_aligned_dna"),
+            input_fixture=resolver.fixture_path("dna-alignment", "clean_aligned_dna"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="f81",
@@ -1945,7 +1872,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="f81",
@@ -1957,7 +1884,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="f81",
@@ -1969,7 +1896,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_ambiguity"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_ambiguity"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="f81",
@@ -1981,7 +1908,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "identical_sequences"),
+            input_fixture=resolver.fixture_path("dna-alignment", "identical_sequences"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="f81",
@@ -1993,7 +1920,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "high_divergence_sequences"),
+            input_fixture=resolver.fixture_path("dna-alignment", "high_divergence_sequences"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="f81",
@@ -2005,7 +1932,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="f81",
@@ -2017,7 +1944,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "unequal_length_invalid_input"),
+            input_fixture=resolver.fixture_path("dna-alignment", "unequal_length_invalid_input"),
             tolerance=0.0,
             pairwise_deletion=False,
             distance_model="f81",
@@ -2030,7 +1957,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "clean_aligned_dna"),
+            input_fixture=resolver.fixture_path("dna-alignment", "clean_aligned_dna"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="tn93",
@@ -2042,7 +1969,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="tn93",
@@ -2054,7 +1981,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_gaps"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_gaps"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="tn93",
@@ -2066,7 +1993,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_ambiguity"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_ambiguity"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="tn93",
@@ -2078,7 +2005,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "identical_sequences"),
+            input_fixture=resolver.fixture_path("dna-alignment", "identical_sequences"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="tn93",
@@ -2090,7 +2017,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "high_divergence_sequences"),
+            input_fixture=resolver.fixture_path("dna-alignment", "high_divergence_sequences"),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="tn93",
@@ -2102,7 +2029,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="tn93",
@@ -2114,7 +2041,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=fixture_path("dna-alignment", "unequal_length_invalid_input"),
+            input_fixture=resolver.fixture_path("dna-alignment", "unequal_length_invalid_input"),
             tolerance=0.0,
             pairwise_deletion=False,
             distance_model="tn93",
@@ -2127,7 +2054,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::trans",
             python_function_name="translate_coding_alignment",
             operation="dna-translation",
-            input_fixture=fixture_path("dna-alignment", "coding_valid_reading_frame"),
+            input_fixture=resolver.fixture_path("dna-alignment", "coding_valid_reading_frame"),
             tolerance=0.0,
             genetic_code_id=1,
         ),
@@ -2138,7 +2065,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::trans",
             python_function_name="translate_coding_alignment",
             operation="dna-translation",
-            input_fixture=fixture_path("dna-alignment", "coding_ambiguous_codon"),
+            input_fixture=resolver.fixture_path("dna-alignment", "coding_ambiguous_codon"),
             tolerance=0.0,
             genetic_code_id=1,
         ),
@@ -2149,7 +2076,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::trans",
             python_function_name="translate_coding_alignment",
             operation="dna-translation",
-            input_fixture=fixture_path("dna-alignment", "coding_internal_stop"),
+            input_fixture=resolver.fixture_path("dna-alignment", "coding_internal_stop"),
             tolerance=0.0,
             genetic_code_id=1,
         ),
@@ -2160,7 +2087,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::trans",
             python_function_name="translate_coding_alignment",
             operation="dna-translation",
-            input_fixture=fixture_path("dna-alignment", "coding_terminal_stop"),
+            input_fixture=resolver.fixture_path("dna-alignment", "coding_terminal_stop"),
             tolerance=0.0,
             genetic_code_id=1,
         ),
@@ -2171,7 +2098,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::trans",
             python_function_name="translate_coding_alignment",
             operation="dna-translation",
-            input_fixture=fixture_path("dna-alignment", "coding_frame_error"),
+            input_fixture=resolver.fixture_path("dna-alignment", "coding_frame_error"),
             tolerance=0.0,
             genetic_code_id=1,
         ),
@@ -2182,7 +2109,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
             function_name="ape::trans",
             python_function_name="translate_coding_alignment",
             operation="dna-translation",
-            input_fixture=fixture_path("dna-alignment", "coding_mitochondrial_triplet"),
+            input_fixture=resolver.fixture_path("dna-alignment", "coding_mitochondrial_triplet"),
             tolerance=0.0,
             genetic_code_id=2,
         ),
@@ -2261,5 +2188,4 @@ def _write_case_file(path: Path, case: ApeParityCase) -> Path:
         encoding="utf-8",
     )
     return path
-
 
