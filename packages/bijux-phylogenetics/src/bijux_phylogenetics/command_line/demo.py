@@ -24,6 +24,9 @@ from bijux_phylogenetics.datasets import (
 from bijux_phylogenetics.datasets.continuous_mode_recovery import (
     run_continuous_mode_recovery_panel_demo,
 )
+from bijux_phylogenetics.datasets.discrete_mode_recovery import (
+    run_discrete_mode_recovery_panel_demo,
+)
 from bijux_phylogenetics.datasets.data_quality_stress import (
     run_catarrhine_data_quality_stress_panel_demo,
 )
@@ -224,6 +227,15 @@ def add_demo_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_continuous_mode_recovery)
+    demo_discrete_mode_recovery = demo_subparsers.add_parser(
+        "discrete-mode-recovery-panel",
+        help="Materialize the packaged discrete-trait recovery dataset and rerun the governed simulation-recovery outputs.",
+    )
+    demo_discrete_mode_recovery.add_argument("--out", required=True, type=Path)
+    demo_discrete_mode_recovery.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
+    _add_manifest_argument(demo_discrete_mode_recovery)
     demo_known_answer = demo_subparsers.add_parser(
         "known-answer-reference-panel",
         help="Materialize the packaged known-answer simulation dataset and rerun the governed recovery outputs.",
@@ -1396,6 +1408,87 @@ def run_demo_command(args: Any) -> int:
                         ),
                         "parameter_closer_to_truth_count_geiger": (
                             result.workflow_bundle.parameter_closer_to_truth_count_geiger
+                        ),
+                        "expected_warning_case_count": (
+                            result.workflow_bundle.expected_warning_case_count
+                        ),
+                        "expected_warning_present_count": (
+                            result.workflow_bundle.expected_warning_present_count
+                        ),
+                        "reference_output_count": expected_output_count,
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_root)
+        return 0
+
+    if args.demo_command == "discrete-mode-recovery-panel":
+        result = run_discrete_mode_recovery_panel_demo(args.out)
+        outputs = _finalize_outputs(
+            args,
+            command="demo",
+            inputs=[],
+            outputs=[
+                result.dataset_export.readme_path,
+                result.dataset_export.default_tree_path,
+                result.dataset_export.simulation_cases_path,
+                result.workflow_bundle.workflow_summary_path,
+                result.workflow_bundle.recovery_summary_path,
+                result.workflow_bundle.rate_recovery_path,
+                result.workflow_bundle.rate_comparison_path,
+                result.workflow_bundle.model_choice_path,
+                result.workflow_bundle.execution_review_path,
+                result.workflow_bundle.warning_review_path,
+                result.workflow_bundle.geiger_reference_path,
+                result.overview_path,
+            ],
+        )
+        if args.json:
+            expected_output_count = len(
+                [
+                    path
+                    for path in result.dataset_export.expected_output_root.rglob("*")
+                    if path.is_file()
+                ]
+            )
+            _print_result(
+                build_command_result(
+                    command="demo",
+                    inputs=[],
+                    outputs=outputs,
+                    metrics={
+                        "artifact_count": len(outputs),
+                        "taxon_count": result.dataset.taxon_count,
+                        "tree_count": result.dataset.tree_count,
+                        "case_count": result.dataset.case_count,
+                        "selection_review_case_count": (
+                            result.workflow_bundle.selection_review_case_count
+                        ),
+                        "selection_match_count": (
+                            result.workflow_bundle.selection_match_count
+                        ),
+                        "geiger_selection_match_count": (
+                            result.workflow_bundle.geiger_selection_match_count
+                        ),
+                        "rate_pass_count": result.workflow_bundle.rate_pass_count,
+                        "governed_rate_row_count": (
+                            result.workflow_bundle.governed_rate_row_count
+                        ),
+                        "rate_row_count": result.workflow_bundle.rate_row_count,
+                        "governed_rate_comparison_row_count": (
+                            result.workflow_bundle.governed_rate_comparison_row_count
+                        ),
+                        "rate_comparison_row_count": (
+                            result.workflow_bundle.rate_comparison_row_count
+                        ),
+                        "rate_closer_to_truth_count_bijux": (
+                            result.workflow_bundle.rate_closer_to_truth_count_bijux
+                        ),
+                        "rate_closer_to_truth_count_geiger": (
+                            result.workflow_bundle.rate_closer_to_truth_count_geiger
                         ),
                         "expected_warning_case_count": (
                             result.workflow_bundle.expected_warning_case_count
