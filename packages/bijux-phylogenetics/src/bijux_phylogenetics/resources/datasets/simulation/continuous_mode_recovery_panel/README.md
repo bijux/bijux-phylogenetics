@@ -9,6 +9,18 @@ The panel contains:
 - `simulation-cases.tsv`: deterministic case definitions, including seeds, true parameters, declared recovery tolerances, expected model-choice outcomes, and expected warning kinds.
 - `expected/`: governed reviewer-facing outputs regenerated from the packaged trees and case table, including Bijux-versus-`geiger` parameter comparisons and the stored `geiger` summary ledger used by the benchmark.
 
+The governed `expected/` bundle contains these reviewer-facing artifacts:
+
+- `workflow-summary.tsv`: one package-level metrics row for the panel.
+- `recovery-summary.tsv`: one recovery summary row per governed case.
+- `parameter-recovery.tsv`: one truth-versus-fit parameter row per engine and parameter.
+- `parameter-comparison.tsv`: one paired Bijux-versus-`geiger` comparison row per governed parameter.
+- `model-choice.tsv`: candidate-model ranking rows for both recovery engines.
+- `execution-review.tsv`: fit and model-comparison execution status rows.
+- `warning-review.tsv`: governed identifiability and boundary-warning rows.
+- `geiger-reference.tsv`: stored local `geiger` reference summaries keyed by case.
+- `simulated-traits/`: one deterministic simulated trait table per governed case.
+
 The cases cover:
 
 - Brownian sigma-squared recovery.

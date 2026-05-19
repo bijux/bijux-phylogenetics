@@ -424,6 +424,15 @@ parameter-recovery ledgers, records execution and warning review rows, and
 keeps weak-identifiability transformed-model cases explicit instead of forcing
 them into binary pass-or-fail claims.
 
+The same packaged panel is available as a typed Python surface under
+`bijux_phylogenetics.datasets.continuous_mode_recovery`. Use
+`load_continuous_mode_recovery_panel_dataset()` to inspect the packaged trees
+and case table, `run_continuous_mode_recovery_panel_workflow()` to rerun the
+governed recovery report in memory,
+`write_continuous_mode_recovery_panel_workflow_bundle(...)` to emit the
+reviewer-facing ledgers, or `run_continuous_mode_recovery_panel_demo(...)` to
+materialize the dataset copy plus the workflow outputs in one call.
+
 For governed discrete `fitDiscrete` recovery review, use
 `demo discrete-mode-recovery-panel`. It reruns the packaged discrete Mk panel,
 writes recovery summaries plus rate-recovery, rate-comparison,
