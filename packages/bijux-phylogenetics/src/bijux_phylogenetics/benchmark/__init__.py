@@ -6,6 +6,13 @@ import tempfile
 import time
 import tracemalloc
 
+from .model_fitting import (
+    LargeTreeModelFittingBenchmarkReport as LargeTreeModelFittingBenchmarkReport,
+    LargeTreeModelFittingObservation as LargeTreeModelFittingObservation,
+    LargeTreeModelFittingThreshold as LargeTreeModelFittingThreshold,
+    benchmark_large_tree_model_fitting as benchmark_large_tree_model_fitting,
+)
+
 from bijux_phylogenetics.trees import analyze_branch_length_distribution
 from bijux_phylogenetics.trees import extract_tree_clades
 from bijux_phylogenetics.comparative.signal import (
