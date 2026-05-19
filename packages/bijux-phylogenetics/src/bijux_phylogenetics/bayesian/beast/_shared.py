@@ -37,8 +37,8 @@ from bijux_phylogenetics.engines.common import (
     resolve_engine_executable,
     validate_timeout_seconds,
 )
-from bijux_phylogenetics.engines.workflows import (
-    EngineWorkflowReport,
+from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
+from bijux_phylogenetics.engines.workflows.state import (
     _ensure_inference_ready_alignment,
     _persist_workflow_report,
     _record_output_validation_failure,
