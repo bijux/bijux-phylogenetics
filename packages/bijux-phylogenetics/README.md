@@ -340,6 +340,23 @@ bijux-phylogenetics diversification medusa tree.nwk --metadata sampling.tsv --js
 bijux-phylogenetics diversification methods-summary tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-methods-summary.md --json
 bijux-phylogenetics diversification package tree.nwk --metadata sampling.tsv --out-dir artifacts/diversification-figures --json
 bijux-phylogenetics diversification report tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-report.html --methods-summary-out artifacts/diversification-methods-summary.md --json
+```
+
+The same diversification surface is available as a typed Python package under
+`bijux_phylogenetics.comparative.diversification`. Use
+`validate_time_tree_for_diversification()` and
+`detect_incomplete_taxon_sampling_metadata()` for the rooted-ultrametric and
+sampling contracts, `compute_lineage_through_time_curve()`,
+`compute_diversification_gamma_statistic()`, and
+`estimate_diversification_rate()` for the core analytical lanes,
+`build_diversification_method_report()` and
+`render_diversification_report()` for reviewer-facing summaries, and
+`build_diversification_figure_package()` for the publication-style SVG bundle.
+The package is intentionally split by ownership into `trees`, `sampling`,
+`lineage`, `rates`, `clades`, `traits`, `reporting`, and `figure_package`
+modules instead of one flat diversification grab-bag.
+
+```bash
 bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --mode linsi --json
 bijux-phylogenetics adapter align coding-cds.fasta --out coding.aligned.fasta --mode linsi --codon-aware --json
 bijux-phylogenetics adapter trim aligned.fasta --out trimmed.fasta --mode automated1 --json
