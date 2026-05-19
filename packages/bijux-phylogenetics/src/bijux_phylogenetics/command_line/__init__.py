@@ -116,6 +116,7 @@ from bijux_phylogenetics.parity import (
     write_ape_parity_observation_table,
     write_ape_parity_summary_table,
     write_geiger_boundary_warning_table,
+    write_geiger_model_confidence_table,
     write_geiger_parity_observation_table,
     write_geiger_likelihood_policy_table,
     write_geiger_optimizer_triage_table,
@@ -3320,6 +3321,7 @@ def build_parser() -> argparse.ArgumentParser:
     parity.add_argument("--optimizer-triage-out", type=Path)
     parity.add_argument("--boundary-warning-out", type=Path)
     parity.add_argument("--likelihood-policy-out", type=Path)
+    parity.add_argument("--model-confidence-out", type=Path)
     parity.add_argument("--parameterization-registry-out", type=Path)
     parity.add_argument(
         "--json", action="store_true", help="Emit the parity report as JSON."
@@ -9259,6 +9261,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 optimizer_triage_path = None
                 boundary_warning_path = None
                 likelihood_policy_path = None
+                model_confidence_path = None
                 parameterization_registry_path = None
                 if args.summary_out is not None:
                     summary_path = write_geiger_parity_summary_table(
@@ -9290,6 +9293,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         report,
                     )
                     output_paths.append(likelihood_policy_path)
+                if args.model_confidence_out is not None:
+                    model_confidence_path = write_geiger_model_confidence_table(
+                        args.model_confidence_out,
+                        report,
+                    )
+                    output_paths.append(model_confidence_path)
                 if args.parameterization_registry_out is not None:
                     parameterization_registry_path = (
                         write_geiger_parameterization_registry_table(
@@ -9318,6 +9327,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "boundary_warning_row_count": len(
                                 report.boundary_warning_rows
                             ),
+                            "model_confidence_row_count": len(
+                                report.model_confidence_rows
+                            ),
                             "reference_source": args.reference_source,
                         },
                         data={
@@ -9327,6 +9339,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "optimizer_triage_table": optimizer_triage_path,
                             "boundary_warning_table": boundary_warning_path,
                             "likelihood_policy_table": likelihood_policy_path,
+                            "model_confidence_table": model_confidence_path,
                             "parameterization_registry_table": (
                                 parameterization_registry_path
                             ),
