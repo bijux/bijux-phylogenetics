@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import csv
-from dataclasses import dataclass
 from pathlib import Path
 import shutil
 
 from bijux_phylogenetics.comparative.continuous_mode_recovery import (
     ContinuousModeRecoveryReport,
-    ContinuousModeRecoveryScenario,
     run_continuous_mode_recovery,
     write_continuous_mode_recovery_execution_table,
     write_continuous_mode_recovery_model_choice_table,
@@ -17,145 +14,31 @@ from bijux_phylogenetics.comparative.continuous_mode_recovery import (
     write_continuous_mode_recovery_warning_table,
     write_geiger_fitcontinuous_recovery_reference_payload_table,
 )
-from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.simulation import write_continuous_trait_table
 
-_DATASET_ID = "continuous_mode_recovery_panel"
-_DATASET_LABEL = "Continuous trait-model recovery panel"
-_DEFAULT_TREE_FILE = "trees/reference-tree-twelve-taxa.nwk"
+from .export import export_continuous_mode_recovery_panel_dataset
+from .models import (
+    ContinuousModeRecoveryPanelDataset,
+    ContinuousModeRecoveryPanelDemoResult,
+    ContinuousModeRecoveryPanelExportResult,
+    ContinuousModeRecoveryPanelWorkflowBundle,
+    ContinuousModeRecoveryPanelWorkflowReport,
+)
+from .panel import load_continuous_mode_recovery_panel_dataset
+from .scenarios import load_continuous_mode_recovery_panel_scenarios
 
-
-@dataclass(slots=True)
-class ContinuousModeRecoveryPanelDataset:
-    """Packaged deterministic recovery panel with governed strong and weak cases."""
-
-    dataset_id: str
-    label: str
-    dataset_root: Path
-    default_tree_path: Path
-    reference_tree_paths: list[Path]
-    simulation_cases_path: Path
-    reference_output_root: Path
-    taxon_count: int
-    tree_count: int
-    case_count: int
-    source_summary: str
-
-
-@dataclass(slots=True)
-class ContinuousModeRecoveryPanelExportResult:
-    """Materialized copy of the packaged continuous-mode recovery panel."""
-
-    output_root: Path
-    readme_path: Path
-    default_tree_path: Path
-    reference_tree_root: Path
-    simulation_cases_path: Path
-    expected_output_root: Path
-
-
-@dataclass(slots=True)
-class ContinuousModeRecoveryPanelWorkflowReport:
-    """One recovery workflow run over the packaged continuous-mode panel."""
-
-    dataset: ContinuousModeRecoveryPanelDataset
-    recovery_report: ContinuousModeRecoveryReport
-
-
-@dataclass(slots=True)
-class ContinuousModeRecoveryPanelWorkflowBundle:
-    """Written reviewer-facing outputs for the packaged continuous-mode panel."""
-
-    output_root: Path
-    selection_review_case_count: int
-    selection_match_count: int
-    geiger_selection_match_count: int
-    parameter_pass_count: int
-    parameter_row_count: int
-    parameter_comparison_row_count: int
-    parameter_closer_to_truth_count_bijux: int
-    parameter_closer_to_truth_count_geiger: int
-    expected_warning_case_count: int
-    expected_warning_present_count: int
-    workflow_summary_path: Path
-    recovery_summary_path: Path
-    parameter_recovery_path: Path
-    parameter_comparison_path: Path
-    model_choice_path: Path
-    execution_review_path: Path
-    warning_review_path: Path
-    geiger_reference_path: Path
-    simulated_traits_root: Path
-
-
-@dataclass(slots=True)
-class ContinuousModeRecoveryPanelDemoResult:
-    """Dataset export plus recovery workflow outputs for the public demo."""
-
-    output_root: Path
-    dataset: ContinuousModeRecoveryPanelDataset
-    dataset_export: ContinuousModeRecoveryPanelExportResult
-    workflow_bundle: ContinuousModeRecoveryPanelWorkflowBundle
-    overview_path: Path
-
-
-def load_continuous_mode_recovery_panel_dataset() -> ContinuousModeRecoveryPanelDataset:
-    """Expose the packaged continuous-mode recovery panel as a first-class surface."""
-    dataset_root = _resource_root()
-    default_tree_path = dataset_root / _DEFAULT_TREE_FILE
-    reference_tree_paths = sorted((dataset_root / "trees").glob("*.nwk"))
-    simulation_cases_path = dataset_root / "simulation-cases.tsv"
-    taxon_count = max(load_tree(path).tip_count for path in reference_tree_paths)
-    case_count = len(_load_scenarios(simulation_cases_path, dataset_root))
-    return ContinuousModeRecoveryPanelDataset(
-        dataset_id=_DATASET_ID,
-        label=_DATASET_LABEL,
-        dataset_root=dataset_root,
-        default_tree_path=default_tree_path,
-        reference_tree_paths=reference_tree_paths,
-        simulation_cases_path=simulation_cases_path,
-        reference_output_root=dataset_root / "expected",
-        taxon_count=taxon_count,
-        tree_count=len(reference_tree_paths),
-        case_count=case_count,
-        source_summary=(
-            "Deterministic continuous-trait recovery panel with one governed "
-            "twelve-taxon review tree for BM, OU, EB, and weak-OU identifiability, "
-            "plus one governed twenty-four-taxon ultrametric review tree for "
-            "Pagel-lambda, Pagel-kappa, and Pagel-delta transformed-branch "
-            "recovery comparisons against stored local geiger references."
-        ),
-    )
-
-
-def export_continuous_mode_recovery_panel_dataset(
-    destination: Path,
-) -> ContinuousModeRecoveryPanelExportResult:
-    """Copy the packaged continuous-mode recovery panel and reference outputs."""
-    dataset = load_continuous_mode_recovery_panel_dataset()
-    if destination.exists():
-        shutil.rmtree(destination)
-    destination.mkdir(parents=True, exist_ok=True)
-    readme_path = shutil.copy2(
-        dataset.dataset_root / "README.md",
-        destination / "README.md",
-    )
-    reference_tree_root = destination / "trees"
-    shutil.copytree(dataset.dataset_root / "trees", reference_tree_root)
-    simulation_cases_path = shutil.copy2(
-        dataset.simulation_cases_path,
-        destination / "simulation-cases.tsv",
-    )
-    expected_output_root = destination / "expected"
-    shutil.copytree(dataset.reference_output_root, expected_output_root)
-    return ContinuousModeRecoveryPanelExportResult(
-        output_root=destination,
-        readme_path=Path(readme_path),
-        default_tree_path=reference_tree_root / Path(_DEFAULT_TREE_FILE).name,
-        reference_tree_root=reference_tree_root,
-        simulation_cases_path=Path(simulation_cases_path),
-        expected_output_root=expected_output_root,
-    )
+__all__ = [
+    "ContinuousModeRecoveryPanelDataset",
+    "ContinuousModeRecoveryPanelDemoResult",
+    "ContinuousModeRecoveryPanelExportResult",
+    "ContinuousModeRecoveryPanelWorkflowBundle",
+    "ContinuousModeRecoveryPanelWorkflowReport",
+    "export_continuous_mode_recovery_panel_dataset",
+    "load_continuous_mode_recovery_panel_dataset",
+    "run_continuous_mode_recovery_panel_demo",
+    "run_continuous_mode_recovery_panel_workflow",
+    "write_continuous_mode_recovery_panel_workflow_bundle",
+]
 
 
 def run_continuous_mode_recovery_panel_workflow() -> (
@@ -163,10 +46,9 @@ def run_continuous_mode_recovery_panel_workflow() -> (
 ):
     """Run the governed recovery workflow over the packaged continuous-mode panel."""
     dataset = load_continuous_mode_recovery_panel_dataset()
-    scenarios = _load_scenarios(dataset.simulation_cases_path, dataset.dataset_root)
     recovery_report = run_continuous_mode_recovery(
         dataset.default_tree_path,
-        scenarios,
+        load_continuous_mode_recovery_panel_scenarios(dataset),
     )
     return ContinuousModeRecoveryPanelWorkflowReport(
         dataset=dataset,
@@ -421,82 +303,3 @@ def _write_overview(
     ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
-
-
-def _load_scenarios(
-    path: Path,
-    dataset_root: Path,
-) -> list[ContinuousModeRecoveryScenario]:
-    with path.open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, delimiter="\t")
-        return [
-            ContinuousModeRecoveryScenario(
-                case_id=row["case_id"],
-                label=row["label"],
-                generating_model=row["generating_model"],
-                expected_selected_model=(
-                    None if not row["expected_selected_model"] else row["expected_selected_model"]
-                ),
-                root_state=float(row["root_state"]),
-                sigma=float(row["sigma"]),
-                seed=int(row["seed"]),
-                tree_path=dataset_root / row["tree_file"],
-                alpha=_optional_float(row["alpha"]),
-                theta=_optional_float(row["theta"]),
-                rate_change=_optional_float(row["rate_change"]),
-                lambda_value=_optional_float(row["lambda_value"]),
-                kappa=_optional_float(row["kappa"]),
-                delta=_optional_float(row["delta"]),
-                candidate_modes=tuple(
-                    item for item in row["candidate_modes"].split(",") if item
-                ),
-                lambda_bounds=(float(row["lambda_lower"]), float(row["lambda_upper"])),
-                kappa_bounds=(float(row["kappa_lower"]), float(row["kappa_upper"])),
-                delta_bounds=(float(row["delta_lower"]), float(row["delta_upper"])),
-                ou_bounds=(float(row["ou_lower"]), float(row["ou_upper"])),
-                early_burst_bounds=(
-                    float(row["early_burst_lower"]),
-                    float(row["early_burst_upper"]),
-                ),
-                parameter_tolerances=_build_parameter_tolerances(row),
-                expected_warning_kinds=_split_items(row["expected_warning_kinds"]),
-                notes=row["notes"],
-            )
-            for row in reader
-        ]
-
-
-def _build_parameter_tolerances(row: dict[str, str]) -> dict[str, float]:
-    tolerances: dict[str, float] = {}
-    for field_name, parameter_name in (
-        ("sigma_squared_tolerance", "sigma_squared"),
-        ("alpha_tolerance", "alpha"),
-        ("theta_tolerance", "theta"),
-        ("rate_change_tolerance", "rate_change"),
-        ("lambda_tolerance", "lambda"),
-        ("kappa_tolerance", "kappa"),
-        ("delta_tolerance", "delta"),
-    ):
-        if row[field_name]:
-            tolerances[parameter_name] = float(row[field_name])
-    return tolerances
-
-
-def _optional_float(value: str) -> float | None:
-    return None if not value else float(value)
-
-
-def _split_items(value: str) -> list[str]:
-    if not value:
-        return []
-    return [item for item in value.split(",") if item]
-
-
-def _resource_root() -> Path:
-    return (
-        Path(__file__).resolve().parent.parent
-        / "resources"
-        / "datasets"
-        / "simulation"
-        / _DATASET_ID
-    )
