@@ -1423,7 +1423,10 @@ report is not a hand-maintained checklist. It is built from the live geiger
 parity observations plus governed artifact-backed summaries for the explicit
 exclusion lanes, the `sim.char` envelope validator, the continuous and
 discrete simulation-recovery panels, and the large-tree and real-dataset
-macroevolution benchmarks. The generated Markdown and JSON surfaces report the
+macroevolution benchmarks. The benchmark rows are now loaded from packaged
+governed benchmark bundles under `resources/benchmarks/` rather than rerunning
+those slower benchmark surfaces inline during report generation. The generated
+Markdown and JSON surfaces report the
 goal-tranche inventory for goals `251` through `289`, live pass or fail or skip
 counts, R and `geiger` versions, covered and excluded models, optimizer
 mismatch categories, tolerance rules, model-boundary warning summaries, and
