@@ -123,6 +123,7 @@ class ContinuousEvolutionaryModeFitReport:
     optimizer_profile_rows: list[ContinuousModeOptimizerProfileRow] | None
     identifiability_warnings: list[EvolutionaryModeIdentifiabilityWarning]
     assumptions: list[str]
+    boundary_assessment: ContinuousModeBoundaryAssessment | None = None
 
 
 @dataclass(slots=True)
@@ -174,6 +175,24 @@ class ContinuousModeSearchControls:
 
 
 @dataclass(slots=True)
+class ContinuousModeBoundaryAssessment:
+    """Boundary-focused interpretation surface for one parameterized fitContinuous fit."""
+
+    affected_parameter: str
+    parameter_value: float
+    lower_bound: float
+    upper_bound: float
+    hit_lower_boundary: bool
+    hit_upper_boundary: bool
+    near_lower_boundary: bool
+    near_upper_boundary: bool
+    flat_likelihood_near_boundary: bool
+    boundary_warning_kinds: list[str]
+    boundary_dominates_interpretation: bool
+    stable_conclusion_supported: bool
+
+
+@dataclass(slots=True)
 class _TransformedModeSearchResult:
     parameter_value: float
     transformed_tree: PhyloTree
@@ -209,6 +228,8 @@ class ContinuousEvolutionaryModeComparisonReport:
     noncomparable_likelihood_models: list[str]
     likelihood_ratio_tests: list[LikelihoodRatioTestResult]
     warnings: list[str]
+    selected_model_boundary_assessment: ContinuousModeBoundaryAssessment | None = None
+    stable_conclusion_supported: bool = True
 
 
 def rescale_tree_ornstein_uhlenbeck(
@@ -566,6 +587,21 @@ def _compare_selected_continuous_modes(
         comparison_warnings.append(
             f"multiple models remain tied at the selected AICc boundary: {tied_models}"
         )
+    selected_model_boundary_assessment = (
+        None if better_model not in fits else fits[better_model].boundary_assessment
+    )
+    stable_conclusion_supported = True
+    if (
+        selected_model_boundary_assessment is not None
+        and selected_model_boundary_assessment.boundary_dominates_interpretation
+    ):
+        stable_conclusion_supported = False
+        comparison_warnings.append(
+            "selected continuous-mode fit remains boundary dominated on "
+            f"{selected_model_boundary_assessment.affected_parameter}; stable "
+            "conclusion support is withheld until the bounded parameter surface is "
+            "reviewed directly"
+        )
     return ContinuousEvolutionaryModeComparisonReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -578,6 +614,8 @@ def _compare_selected_continuous_modes(
         noncomparable_likelihood_models=noncomparable_likelihood_models,
         likelihood_ratio_tests=likelihood_ratio_tests,
         warnings=comparison_warnings,
+        selected_model_boundary_assessment=selected_model_boundary_assessment,
+        stable_conclusion_supported=stable_conclusion_supported,
     )
 
 
@@ -911,6 +949,12 @@ def _fit_evolutionary_mode_from_dataset(
         fit.residuals,
         fit.sigma_squared,
     )
+    boundary_assessment = _continuous_boundary_assessment(
+        parameter_name=parameter_name,
+        parameter_value=parameter_value,
+        optimizer_diagnostics=optimizer_diagnostics,
+        identifiability_warnings=identifiability_warnings,
+    )
     return ContinuousEvolutionaryModeFitReport(
         tree_path=dataset.tree_path,
         traits_path=dataset.traits_path,
@@ -939,6 +983,7 @@ def _fit_evolutionary_mode_from_dataset(
         optimizer_profile_rows=optimizer_profile_rows,
         identifiability_warnings=identifiability_warnings,
         assumptions=assumptions,
+        boundary_assessment=boundary_assessment,
     )
 
 
@@ -1536,6 +1581,85 @@ def _delta_identifiability_warnings_from_profile(
             )
         )
     return warnings
+
+
+def _continuous_boundary_assessment(
+    *,
+    parameter_name: str | None,
+    parameter_value: float | None,
+    optimizer_diagnostics: ContinuousModeOptimizerDiagnostics | None,
+    identifiability_warnings: list[EvolutionaryModeIdentifiabilityWarning],
+) -> ContinuousModeBoundaryAssessment | None:
+    if (
+        parameter_name is None
+        or parameter_value is None
+        or optimizer_diagnostics is None
+    ):
+        return None
+    lower_bound = optimizer_diagnostics.lower_bound
+    upper_bound = optimizer_diagnostics.upper_bound
+    near_boundary_tolerance = max((upper_bound - lower_bound) / 20.0, 1e-6)
+    warning_kinds = [warning.kind for warning in identifiability_warnings]
+    boundary_warning_kinds = [
+        kind for kind in warning_kinds if _is_boundary_warning_kind(kind)
+    ]
+    hit_lower_boundary = optimizer_diagnostics.hit_lower_boundary
+    hit_upper_boundary = optimizer_diagnostics.hit_upper_boundary
+    near_lower_boundary = hit_lower_boundary or (
+        parameter_value <= lower_bound + near_boundary_tolerance
+    )
+    near_upper_boundary = hit_upper_boundary or (
+        parameter_value >= upper_bound - near_boundary_tolerance
+    )
+    flat_likelihood_near_boundary = any(
+        kind in {"flat_likelihood", "flat_likelihood_profile"}
+        for kind in boundary_warning_kinds
+    )
+    boundary_dominates_interpretation = (
+        (near_lower_boundary or near_upper_boundary)
+        and (
+            flat_likelihood_near_boundary
+            or any(
+                kind.startswith("boundary_") or kind in _boundary_limit_warning_kinds()
+                for kind in boundary_warning_kinds
+            )
+        )
+    )
+    return ContinuousModeBoundaryAssessment(
+        affected_parameter=parameter_name,
+        parameter_value=_stable_value(parameter_value),
+        lower_bound=_stable_value(lower_bound),
+        upper_bound=_stable_value(upper_bound),
+        hit_lower_boundary=hit_lower_boundary,
+        hit_upper_boundary=hit_upper_boundary,
+        near_lower_boundary=near_lower_boundary,
+        near_upper_boundary=near_upper_boundary,
+        flat_likelihood_near_boundary=flat_likelihood_near_boundary,
+        boundary_warning_kinds=boundary_warning_kinds,
+        boundary_dominates_interpretation=boundary_dominates_interpretation,
+        stable_conclusion_supported=not boundary_dominates_interpretation,
+    )
+
+
+def _is_boundary_warning_kind(kind: str) -> bool:
+    return kind.startswith("boundary_") or kind in {
+        "flat_likelihood",
+        "flat_likelihood_profile",
+        *_boundary_limit_warning_kinds(),
+    }
+
+
+def _boundary_limit_warning_kinds() -> set[str]:
+    return {
+        "weak_pull_to_optimum",
+        "brownian_like_rate_change",
+        "weak_phylogenetic_signal",
+        "brownian_limit",
+        "punctuational_limit",
+        "upper_search_limit",
+        "early_change_limit",
+        "late_change_limit",
+    }
 
 
 def _build_tree_rescaling_report(
