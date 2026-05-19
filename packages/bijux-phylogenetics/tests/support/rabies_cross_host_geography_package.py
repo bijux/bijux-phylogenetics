@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-import bijux_phylogenetics.datasets.rabies_host_geography as rabies_host_geography_api
+import bijux_phylogenetics.datasets.rabies_cross_host_geography.package as rabies_cross_host_geography_package
 from bijux_phylogenetics.datasets import (
     RabiesCrossHostGeographyPanelDemoResult,
     load_rabies_cross_host_geography_panel_dataset,
@@ -230,10 +230,10 @@ def refresh_stub_rabies_cross_host_geography_package(
     """Rebuild package-control artifacts after mutating a stub rabies package."""
 
     config = _stub_workflow_config(result.dataset)
-    short_answer = rabies_host_geography_api._build_flagship_answer_summary(  # noqa: SLF001
+    short_answer = rabies_cross_host_geography_package._build_flagship_answer_summary(  # noqa: SLF001
         result.workflow_bundle
     )
-    rabies_host_geography_api._write_overview(  # noqa: SLF001
+    rabies_cross_host_geography_package._write_overview(  # noqa: SLF001
         result.overview_path,
         dataset=result.dataset,
         workflow_bundle=result.workflow_bundle,
@@ -242,7 +242,7 @@ def refresh_stub_rabies_cross_host_geography_package(
         artifact_inventory_path=result.artifact_inventory_path,
         reproducibility_checklist_path=result.reproducibility_checklist_path,
     )
-    rabies_host_geography_api._write_demo_overview_html(  # noqa: SLF001
+    rabies_cross_host_geography_package._write_demo_overview_html(  # noqa: SLF001
         result.overview_html_path,
         dataset=result.dataset,
         dataset_export=result.dataset_export,
@@ -253,7 +253,7 @@ def refresh_stub_rabies_cross_host_geography_package(
         reproducibility_checklist_path=result.reproducibility_checklist_path,
     )
     artifact_inventory_path, artifact_inventory_rows = (
-        rabies_host_geography_api._write_package_artifact_inventory(  # noqa: SLF001
+        rabies_cross_host_geography_package._write_package_artifact_inventory(  # noqa: SLF001
             result.artifact_inventory_path,
             output_root=result.output_root,
             dataset_export=result.dataset_export,
@@ -263,14 +263,14 @@ def refresh_stub_rabies_cross_host_geography_package(
         )
     )
     reproducibility_checklist_path, checklist_rows = (
-        rabies_host_geography_api._write_package_reproducibility_checklist(  # noqa: SLF001
+        rabies_cross_host_geography_package._write_package_reproducibility_checklist(  # noqa: SLF001
             result.reproducibility_checklist_path,
             workflow_bundle=result.workflow_bundle,
             inventory_rows=artifact_inventory_rows,
             artifact_inventory_path=artifact_inventory_path,
         )
     )
-    package_manifest_path = rabies_host_geography_api._write_demo_package_manifest(  # noqa: SLF001
+    package_manifest_path = rabies_cross_host_geography_package._write_demo_package_manifest(  # noqa: SLF001
         result.package_manifest_path,
         dataset=result.dataset,
         dataset_export=result.dataset_export,
