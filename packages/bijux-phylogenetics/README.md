@@ -1633,8 +1633,13 @@ pruning behavior, transform identity, and the fitted lambda value against
 real local `geiger` output while still checking the directed rate rows on the
 transformed branch surface for the stable strong-signal and missing-value
 cases. The near-zero weak-signal review remains summary-level on the parity
-surface, because the raw ER rate can inflate sharply as lambda collapses
-toward zero even when the likelihood surface itself still agrees.
+surface, but the reason is now more specific than raw-rate instability alone:
+live `geiger` can return materially different plateau lambda values across
+repeated runs on that flat surface while still matching Bijux on
+log-likelihood, AIC, AICc, transform identity, and pruning behavior. Bijux
+resolves that same weak surface to the lower boundary, so the governed weak
+lambda contract compares the stable objective surface rather than pretending
+the plateau lambda parameter itself is deterministic.
 The same owned surface now also supports
 `fit_discrete_mk_model(..., transform='kappa')` and a governed live
 `geiger::fitDiscrete(transform='kappa')` parity lane. That registry covers a
