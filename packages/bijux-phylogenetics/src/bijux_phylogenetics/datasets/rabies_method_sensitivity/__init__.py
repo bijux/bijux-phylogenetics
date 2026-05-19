@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from .audit import *
 from .bundle import (
-    run_rabies_method_sensitivity_panel_demo,
     write_rabies_method_sensitivity_panel_workflow_bundle,
 )
 from .config import (
@@ -11,6 +10,6 @@ from .config import (
     load_rabies_method_sensitivity_panel_dataset,
 )
 from .models import *
+from .package import run_rabies_method_sensitivity_panel_demo
 from .slurm import *
 from .workflow import run_rabies_method_sensitivity_panel_workflow
-
