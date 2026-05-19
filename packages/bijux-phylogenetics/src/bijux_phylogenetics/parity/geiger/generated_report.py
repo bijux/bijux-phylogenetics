@@ -6,10 +6,6 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.benchmark import (
-    benchmark_large_tree_model_fitting,
-    benchmark_real_dataset_macroevolution,
-)
 from bijux_phylogenetics.parity.geiger.registry import list_geiger_parity_cases
 from bijux_phylogenetics.simulation import validate_geiger_sim_char_reference_examples
 
@@ -1083,28 +1079,63 @@ def _load_sim_char_summary() -> dict[str, object]:
 
 
 def _load_large_tree_benchmark_summary() -> dict[str, int]:
-    report = benchmark_large_tree_model_fitting(tier="small")
+    rows = _read_tsv_rows(
+        _repository_root()
+        / "packages"
+        / "bijux-phylogenetics"
+        / "src"
+        / "bijux_phylogenetics"
+        / "resources"
+        / "benchmarks"
+        / "large_tree_model_fitting"
+        / "expected"
+        / "summary.tsv"
+    )
+    if len(rows) != 1:
+        raise ValueError("expected one large-tree benchmark summary row")
+    row = rows[0]
     return {
-        "case_count": report.case_count,
-        "geiger_match_case_count": report.geiger_match_case_count,
-        "threshold_pass_case_count": report.threshold_pass_case_count,
-        "too_slow_case_count": report.too_slow_case_count,
-        "unstable_case_count": report.unstable_case_count,
+        "case_count": int(row["case_count"]),
+        "geiger_match_case_count": int(row["geiger_match_case_count"]),
+        "threshold_pass_case_count": int(row["threshold_pass_case_count"]),
+        "too_slow_case_count": int(row["too_slow_case_count"]),
+        "unstable_case_count": int(row["unstable_case_count"]),
     }
 
 
 def _load_real_dataset_benchmark_summary() -> dict[str, int]:
-    report = benchmark_real_dataset_macroevolution()
+    expected_root = (
+        _repository_root()
+        / "packages"
+        / "bijux-phylogenetics"
+        / "src"
+        / "bijux_phylogenetics"
+        / "resources"
+        / "benchmarks"
+        / "real_dataset_macroevolution"
+        / "expected"
+    )
+    summary_rows = _read_tsv_rows(expected_root / "benchmark-summary.tsv")
+    model_rows = _read_tsv_rows(expected_root / "model-table.tsv")
+    alignment_review_rows = _read_tsv_rows(expected_root / "alignment-review.tsv")
+    parity_rows = _read_tsv_rows(expected_root / "geiger-parity.tsv")
+    native_summary_rows = [
+        row for row in summary_rows if row["review_scope"] == "native-model-table"
+    ]
     return {
-        "summary_row_count": len(report.summary_rows),
-        "model_row_count": len(report.model_rows),
-        "alignment_review_row_count": len(report.alignment_review_rows),
-        "parity_row_count": len(report.parity_rows),
+        "summary_row_count": len(summary_rows),
+        "model_row_count": len(model_rows),
+        "alignment_review_row_count": len(alignment_review_rows),
+        "parity_row_count": len(parity_rows),
         "selection_match_count": sum(
-            1 for row in report.summary_rows if row.selection_matches_geiger
+            1
+            for row in native_summary_rows
+            if _tsv_bool(row["selection_matches_geiger"])
         ),
         "unstable_review_count": sum(
-            1 for row in report.summary_rows if not row.stable_conclusion_supported
+            1
+            for row in native_summary_rows
+            if not _tsv_bool(row["stable_conclusion_supported"])
         ),
     }
 
@@ -1119,6 +1150,15 @@ def _first_nonempty_string(values) -> str | None:
         if isinstance(value, str) and value:
             return value
     return None
+
+
+def _tsv_bool(value: str) -> bool:
+    normalized = value.strip().lower()
+    if normalized == "true":
+        return True
+    if normalized == "false":
+        return False
+    raise ValueError(f"expected boolean TSV cell, found {value!r}")
 
 
 def _repository_root() -> Path:
