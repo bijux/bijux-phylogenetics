@@ -274,32 +274,6 @@ def _serialize_clade_support_row(
     }
 
 
-def _serialize_model_selection_row(
-    row: SupplementaryModelSelectionRow,
-) -> dict[str, object]:
-    return {
-        "iqtree_report_source": row.iqtree_report_source,
-        "model_sidecar_source": ""
-        if row.model_sidecar_source is None
-        else row.model_sidecar_source,
-        "rank": row.rank,
-        "model": row.model,
-        "log_likelihood": row.log_likelihood,
-        "parameter_count": "" if row.parameter_count is None else row.parameter_count,
-        "aic": row.aic,
-        "aicc": row.aicc,
-        "bic": row.bic,
-        "best_aic": row.best_aic,
-        "best_aicc": row.best_aicc,
-        "best_bic": row.best_bic,
-        "selected_model": row.selected_model,
-        "selected_model_name": row.selected_model_name,
-        "selected_criterion": ""
-        if row.selected_criterion is None
-        else row.selected_criterion,
-    }
-
-
 def _serialize_comparative_model_row(
     row: SupplementaryComparativeModelRow,
 ) -> dict[str, object]:
@@ -561,19 +535,6 @@ def _write_clade_support_rows(
     return write_rows_impl(path, columns=columns, rows=rows)
 
 
-def _write_model_selection_rows(
-    path: Path,
-    *,
-    columns: list[str],
-    rows: list[SupplementaryModelSelectionRow],
-) -> Path:
-    return _write_dict_rows(
-        path,
-        columns=columns,
-        rows=[_serialize_model_selection_row(row) for row in rows],
-    )
-
-
 def _write_comparative_model_rows(
     path: Path,
     *,
@@ -645,76 +606,6 @@ def _write_ancestral_state_rows(
         path,
         columns=columns,
         rows=[_serialize_ancestral_state_row(row) for row in rows],
-    )
-
-
-def _serialize_sampling_issue(row: SamplingFractionIssue) -> str:
-    raw_value = row.raw_value if row.raw_value else "<missing>"
-    return f"{row.taxon}:{row.code}:{raw_value}"
-
-
-def _serialize_diversification_row(
-    row: SupplementaryDiversificationRow,
-) -> dict[str, str]:
-    return {
-        "tree_source": row.tree_source,
-        "metadata_source": "" if row.metadata_source is None else row.metadata_source,
-        "clade_model": row.clade_model,
-        "better_model": row.better_model,
-        "node": row.node,
-        "node_name": "" if row.node_name is None else row.node_name,
-        "descendant_taxa": _stringify_list(row.descendant_taxa),
-        "tip_count": str(row.tip_count),
-        "crown_age": str(row.crown_age),
-        "clade_diversification_rate": str(row.clade_diversification_rate),
-        "clade_rate_z_score": str(row.clade_rate_z_score),
-        "clade_classification": row.clade_classification,
-        "global_diversification_rate": str(row.global_diversification_rate),
-        "yule_log_likelihood": str(row.yule_log_likelihood),
-        "yule_aic": str(row.yule_aic),
-        "yule_corrected_tip_count": str(row.yule_corrected_tip_count),
-        "yule_sampling_fraction": str(row.yule_sampling_fraction),
-        "yule_net_diversification_rate": str(row.yule_net_diversification_rate),
-        "yule_relative_extinction": str(row.yule_relative_extinction),
-        "birth_death_log_likelihood": str(row.birth_death_log_likelihood),
-        "birth_death_aic": str(row.birth_death_aic),
-        "birth_death_corrected_tip_count": str(row.birth_death_corrected_tip_count),
-        "birth_death_sampling_fraction": str(row.birth_death_sampling_fraction),
-        "birth_death_net_diversification_rate": str(
-            row.birth_death_net_diversification_rate
-        ),
-        "birth_death_relative_extinction": str(row.birth_death_relative_extinction),
-        "sampling_metadata_complete": (
-            ""
-            if row.sampling_metadata_complete is None
-            else str(row.sampling_metadata_complete).lower()
-        ),
-        "sampling_column": "" if row.sampling_column is None else row.sampling_column,
-        "sampling_fraction": (
-            "" if row.sampling_fraction is None else str(row.sampling_fraction)
-        ),
-        "sampling_heterogeneous": (
-            ""
-            if row.sampling_heterogeneous is None
-            else str(row.sampling_heterogeneous).lower()
-        ),
-        "sampling_missing_taxa": _stringify_list(row.sampling_missing_taxa),
-        "sampling_invalid_rows": _stringify_list(row.sampling_invalid_rows),
-        "warning_count": str(row.warning_count),
-        "warnings": _stringify_list(row.warnings),
-    }
-
-
-def _write_diversification_rows(
-    path: Path,
-    *,
-    columns: list[str],
-    rows: list[SupplementaryDiversificationRow],
-) -> Path:
-    return _write_dict_rows(
-        path,
-        columns=columns,
-        rows=[_serialize_diversification_row(row) for row in rows],
     )
 
 
@@ -924,158 +815,20 @@ def write_supplementary_clade_support_table(
     )
 
 
-def _resolve_model_sidecar_path(
-    iqtree_report_path: Path,
-    model_sidecar_path: Path | None,
-) -> Path | None:
-    if model_sidecar_path is not None:
-        return model_sidecar_path
-    return resolve_iqtree_model_sidecar(iqtree_report_path.with_suffix(""))
-
-
-def _build_model_selection_row(
-    *,
-    iqtree_report_path: Path,
-    model_sidecar_path: Path | None,
-    candidate: IqtreeModelCandidate,
-    summary: IqtreeModelSelectionSummary,
-) -> SupplementaryModelSelectionRow:
-    return SupplementaryModelSelectionRow(
-        iqtree_report_source=str(iqtree_report_path),
-        model_sidecar_source=(
-            None if model_sidecar_path is None else str(model_sidecar_path)
-        ),
-        rank=candidate.rank,
-        model=candidate.model,
-        log_likelihood=candidate.log_likelihood,
-        parameter_count=candidate.parameter_count,
-        aic=candidate.aic,
-        aicc=candidate.aicc,
-        bic=candidate.bic,
-        best_aic=candidate.model == summary.best_model_aic,
-        best_aicc=candidate.model == summary.best_model_aicc,
-        best_bic=candidate.model == summary.best_model_bic,
-        selected_model=candidate.model == summary.selected_model,
-        selected_model_name=summary.selected_model or candidate.model,
-        selected_criterion=summary.selected_criterion,
-    )
-
-
 def write_supplementary_model_selection_table(
     path: Path,
     *,
     iqtree_report_path: Path,
     model_sidecar_path: Path | None = None,
 ) -> SupplementaryModelSelectionTableResult:
-    """Write one supplementary model-selection table from parsed IQ-TREE artifacts."""
-    resolved_sidecar_path = _resolve_model_sidecar_path(
-        iqtree_report_path,
-        model_sidecar_path,
+    from .model_selection import (
+        write_supplementary_model_selection_table as write_model_selection_table_impl,
     )
-    summary = parse_iqtree_model_selection_summary(
+
+    return write_model_selection_table_impl(
+        path,
         iqtree_report_path=iqtree_report_path,
-        model_sidecar_path=resolved_sidecar_path,
-    )
-    if summary is None or summary.selected_model is None:
-        raise ValueError(
-            "iqtree model-selection artifacts do not expose a selected model"
-        )
-    if not summary.candidates:
-        raise ValueError(
-            "iqtree model-selection artifacts do not expose candidate model rows"
-        )
-    rows = [
-        _build_model_selection_row(
-            iqtree_report_path=iqtree_report_path,
-            model_sidecar_path=resolved_sidecar_path,
-            candidate=candidate,
-            summary=summary,
-        )
-        for candidate in summary.candidates
-    ]
-    columns = _model_selection_table_columns()
-    _write_model_selection_rows(path, columns=columns, rows=rows)
-    return SupplementaryModelSelectionTableResult(
-        output_path=path,
-        row_count=len(rows),
-        selected_model=summary.selected_model,
-        selected_criterion=summary.selected_criterion,
-        candidate_count=summary.candidate_count,
-        columns=columns,
-        rows=rows,
-    )
-
-
-def _diversification_model_by_name(
-    reports: list[DiversificationRateReport],
-) -> dict[str, DiversificationRateReport]:
-    return {report.model: report for report in reports}
-
-
-def _build_diversification_row(
-    *,
-    observation: CladeDiversificationObservation,
-    tree_path: Path,
-    metadata_path: Path | None,
-    clade_model: str,
-    better_model: str,
-    global_diversification_rate: float,
-    yule_report: DiversificationRateReport,
-    birth_death_report: DiversificationRateReport,
-    sampling_report: SamplingFractionReport | None,
-    warnings: list[str],
-) -> SupplementaryDiversificationRow:
-    return SupplementaryDiversificationRow(
-        tree_source=str(tree_path),
-        metadata_source=None if metadata_path is None else str(metadata_path),
-        clade_model=clade_model,
-        better_model=better_model,
-        node=observation.node,
-        node_name=observation.node_name,
-        descendant_taxa=list(observation.descendant_taxa),
-        tip_count=observation.tip_count,
-        crown_age=observation.crown_age,
-        clade_diversification_rate=observation.diversification_rate,
-        clade_rate_z_score=observation.z_score,
-        clade_classification=observation.classification,
-        global_diversification_rate=global_diversification_rate,
-        yule_log_likelihood=yule_report.log_likelihood,
-        yule_aic=yule_report.aic,
-        yule_corrected_tip_count=yule_report.corrected_tip_count,
-        yule_sampling_fraction=yule_report.sampling_fraction,
-        yule_net_diversification_rate=yule_report.net_diversification_rate,
-        yule_relative_extinction=yule_report.relative_extinction,
-        birth_death_log_likelihood=birth_death_report.log_likelihood,
-        birth_death_aic=birth_death_report.aic,
-        birth_death_corrected_tip_count=birth_death_report.corrected_tip_count,
-        birth_death_sampling_fraction=birth_death_report.sampling_fraction,
-        birth_death_net_diversification_rate=(
-            birth_death_report.net_diversification_rate
-        ),
-        birth_death_relative_extinction=birth_death_report.relative_extinction,
-        sampling_metadata_complete=(
-            None if sampling_report is None else sampling_report.complete
-        ),
-        sampling_column=None if sampling_report is None else sampling_report.sampling_column,
-        sampling_fraction=(
-            None if sampling_report is None else sampling_report.sampling_fraction
-        ),
-        sampling_heterogeneous=(
-            None if sampling_report is None else sampling_report.heterogeneous_values
-        ),
-        sampling_missing_taxa=(
-            [] if sampling_report is None else list(sampling_report.missing_taxa)
-        ),
-        sampling_invalid_rows=(
-            []
-            if sampling_report is None
-            else [
-                _serialize_sampling_issue(issue)
-                for issue in sampling_report.invalid_rows
-            ]
-        ),
-        warning_count=len(warnings),
-        warnings=list(warnings),
+        model_sidecar_path=model_sidecar_path,
     )
 
 
@@ -1088,86 +841,17 @@ def write_supplementary_diversification_table(
     sampling_column: str | None = None,
     clade_model: str = "birth-death",
 ) -> SupplementaryDiversificationTableResult:
-    """Write one supplementary diversification table over clade and model evidence."""
-    if clade_model not in {"yule", "birth-death"}:
-        raise ValueError(
-            "clade_model must be 'yule' or 'birth-death'"
-        )
-    sampling_report = (
-        None
-        if metadata_path is None
-        else detect_incomplete_taxon_sampling_metadata(
-            tree_path,
-            metadata_path,
-            taxon_column=taxon_column,
-            sampling_column=sampling_column,
-        )
+    from .diversification import (
+        write_supplementary_diversification_table as write_diversification_table_impl,
     )
-    comparison = compare_diversification_models(
-        tree_path,
+
+    return write_diversification_table_impl(
+        path,
+        tree_path=tree_path,
         metadata_path=metadata_path,
         taxon_column=taxon_column,
         sampling_column=sampling_column,
-    )
-    diversification_reports = [
-        estimate_diversification_rate(
-            tree_path,
-            metadata_path=metadata_path,
-            taxon_column=taxon_column,
-            sampling_column=sampling_column,
-            model="yule",
-        ),
-        estimate_diversification_rate(
-            tree_path,
-            metadata_path=metadata_path,
-            taxon_column=taxon_column,
-            sampling_column=sampling_column,
-            model="birth-death",
-        ),
-    ]
-    reports_by_name = _diversification_model_by_name(diversification_reports)
-    clade_report = detect_diversification_outlier_clades(
-        tree_path,
-        model=clade_model,
-    )
-    warnings = sorted(
-        set(
-            clade_report.warnings
-            + reports_by_name["yule"].warnings
-            + reports_by_name["birth-death"].warnings
-            + ([] if sampling_report is None else sampling_report.warnings)
-        )
-    )
-    rows = [
-        _build_diversification_row(
-            observation=observation,
-            tree_path=tree_path,
-            metadata_path=metadata_path,
-            clade_model=clade_model,
-            better_model=comparison.better_model,
-            global_diversification_rate=clade_report.global_rate,
-            yule_report=reports_by_name["yule"],
-            birth_death_report=reports_by_name["birth-death"],
-            sampling_report=sampling_report,
-            warnings=warnings,
-        )
-        for observation in clade_report.observations
-    ]
-    columns = _diversification_table_columns()
-    _write_diversification_rows(path, columns=columns, rows=rows)
-    return SupplementaryDiversificationTableResult(
-        output_path=path,
-        row_count=len(rows),
-        better_model=comparison.better_model,
         clade_model=clade_model,
-        high_clade_count=len(clade_report.high_diversification_clades),
-        low_clade_count=len(clade_report.low_diversification_clades),
-        warning_count=len(warnings),
-        sampling_metadata_complete=(
-            None if sampling_report is None else sampling_report.complete
-        ),
-        columns=columns,
-        rows=rows,
     )
 
 
