@@ -7,6 +7,10 @@ from bijux_phylogenetics.command_line.ancestral.discrete_diagnostics import (
     add_discrete_diagnostic_ancestral_commands,
     run_discrete_diagnostic_ancestral_command,
 )
+from bijux_phylogenetics.command_line.ancestral.sensitivity import (
+    add_sensitivity_ancestral_commands,
+    run_sensitivity_ancestral_command,
+)
 from bijux_phylogenetics.command_line.ancestral.stability import (
     add_stability_ancestral_commands,
     run_stability_ancestral_command,
@@ -19,7 +23,6 @@ from bijux_phylogenetics.ancestral.package import build_ancestral_figure_package
 from bijux_phylogenetics.ancestral.report_package import (
     build_ancestral_report_package,
 )
-from bijux_phylogenetics.ancestral.sensitivity import build_ancestral_sensitivity_report
 from bijux_phylogenetics.ancestral.service import (
     render_ancestral_state_report,
 )
@@ -28,7 +31,6 @@ from bijux_phylogenetics.ancestral.visualization import (
 )
 from bijux_phylogenetics.command_line.arguments import (
     _add_manifest_argument,
-    _parse_assignment_map,
     _split_csv_values,
     _validate_ancestral_discrete_model_arguments,
 )
@@ -49,36 +51,7 @@ def add_ancestral_commands(subparsers: Any) -> None:
     add_reconstruction_ancestral_commands(ancestral_subparsers)
     add_stability_ancestral_commands(ancestral_subparsers)
     add_discrete_diagnostic_ancestral_commands(ancestral_subparsers)
-    ancestral_sensitivity = ancestral_subparsers.add_parser(
-        "sensitivity",
-        help="Summarize how ancestral results change across model, tree, pruning, or coding choices.",
-    )
-    ancestral_sensitivity.add_argument("tree", type=Path)
-    ancestral_sensitivity.add_argument("table", type=Path)
-    ancestral_sensitivity.add_argument("--trait", required=True)
-    ancestral_sensitivity.add_argument(
-        "--kind", choices=("continuous", "discrete"), required=True
-    )
-    ancestral_sensitivity.add_argument("--taxon-column")
-    ancestral_sensitivity.add_argument("--model")
-    ancestral_sensitivity.add_argument(
-        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
-    )
-    ancestral_sensitivity.add_argument(
-        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
-    )
-    ancestral_sensitivity.add_argument("--alpha", type=float, default=1.0)
-    ancestral_sensitivity.add_argument("--compare-model")
-    ancestral_sensitivity.add_argument("--compare-tree", type=Path)
-    ancestral_sensitivity.add_argument("--drop-taxa", nargs="+")
-    ancestral_sensitivity.add_argument(
-        "--coding-map",
-        help="Comma-delimited KEY=VALUE recoding map for discrete traits.",
-    )
-    ancestral_sensitivity.add_argument(
-        "--json", action="store_true", help="Emit the sensitivity report as JSON."
-    )
-    _add_manifest_argument(ancestral_sensitivity)
+    add_sensitivity_ancestral_commands(ancestral_subparsers)
     ancestral_render = ancestral_subparsers.add_parser(
         "render",
         help="Render a tree annotated with reconstructed ancestral states.",
@@ -193,48 +166,9 @@ def run_ancestral_command(args: Any, *, parser: Any) -> int:
     )
     if discrete_diagnostic_exit_code is not None:
         return discrete_diagnostic_exit_code
-    if args.ancestral_command == "sensitivity":
-        _validate_ancestral_discrete_model_arguments(args, parser)
-        resolved_model = args.model or (
-            "brownian" if args.kind == "continuous" else "fitch"
-        )
-        report = build_ancestral_sensitivity_report(
-            tree_path=args.tree,
-            traits_path=args.table,
-            trait=args.trait,
-            reconstruction_kind=args.kind,
-            model=resolved_model,
-            taxon_column=args.taxon_column,
-            alpha=args.alpha,
-            state_ordering=args.state_ordering,
-            ordered_states=_split_csv_values(args.ordered_states) or None,
-            compare_tree_path=args.compare_tree,
-            compare_model=args.compare_model,
-            drop_taxa=args.drop_taxa,
-            coding_map=_parse_assignment_map(args.coding_map) or None,
-        )
-        outputs = _finalize_outputs(
-            args, command="ancestral", inputs=[args.tree, args.table]
-        )
-        _print_result(
-            build_command_result(
-                command="ancestral",
-                inputs=[args.tree, args.table],
-                outputs=outputs,
-                metrics={
-                    "baseline_node_count": report.baseline_node_count,
-                    "has_model_sensitivity": report.model_sensitivity is not None,
-                    "has_tree_sensitivity": report.tree_sensitivity is not None,
-                    "has_pruning_sensitivity": report.pruning_sensitivity is not None,
-                    "has_trait_coding_sensitivity": (
-                        report.trait_coding_sensitivity is not None
-                    ),
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
+    sensitivity_exit_code = run_sensitivity_ancestral_command(args, parser=parser)
+    if sensitivity_exit_code is not None:
+        return sensitivity_exit_code
     if args.ancestral_command == "render":
         _validate_ancestral_discrete_model_arguments(args, parser)
         if args.kind == "continuous" and args.branch_coloring == "state":
