@@ -7,6 +7,7 @@ from pathlib import Path
 from bijux_phylogenetics.parity import (
     list_geiger_parity_cases,
     run_geiger_parity_cases,
+    write_geiger_likelihood_policy_table,
     write_geiger_parity_observation_table,
     write_geiger_optimizer_triage_table,
     write_geiger_parity_summary_table,
@@ -1422,6 +1423,79 @@ def test_write_geiger_optimizer_triage_table_writes_rows(tmp_path: Path) -> None
     assert len(rows) == 1
     assert rows[0]["case_id"] == "fitcontinuous-lambda-weak-signal-review"
     assert rows[0]["mismatch_type"] == "no_algorithm_mismatch"
+
+
+def test_run_geiger_parity_cases_builds_single_fit_likelihood_policy_rows(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    report = run_geiger_parity_cases(
+        case_ids=[
+            "fitcontinuous-bm-example-tree",
+            "fitcontinuous-white-weak-signal-review",
+        ],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    rows_by_case = {row.case_id: row for row in report.likelihood_policy_rows}
+    brownian = rows_by_case["fitcontinuous-bm-example-tree"]
+    assert brownian.reference_likelihood_constant_policy == (
+        "full-gaussian-loglikelihood-includes-normalizing-constant"
+    )
+    assert brownian.bijux_likelihood_constant_policy == (
+        "full-gaussian-loglikelihood-includes-normalizing-constant"
+    )
+    assert brownian.case_level_raw_log_likelihood_comparable is True
+    assert brownian.raw_log_likelihood_match_within_tolerance is True
+    assert brownian.reference_aic_matches_raw_log_likelihood is True
+    assert brownian.bijux_aic_matches_raw_log_likelihood is True
+    assert brownian.ranking_permitted is False
+    white = rows_by_case["fitcontinuous-white-weak-signal-review"]
+    assert white.reference_aic_matches_raw_log_likelihood is True
+    assert white.bijux_aic_matches_raw_log_likelihood is True
+
+
+def test_run_geiger_parity_cases_builds_model_comparison_likelihood_policy_rows(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads=GEIGER_FITCONTINUOUS_MODEL_COMPARISON_REFERENCE_PAYLOADS,
+    )
+    report = run_geiger_parity_cases(
+        case_ids=["fitcontinuous-model-comparison-brownian-review"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    row = report.likelihood_policy_rows[0]
+    assert row.case_id == "fitcontinuous-model-comparison-brownian-review"
+    assert row.case_level_raw_log_likelihood_comparable is False
+    assert row.raw_log_likelihood_match_within_tolerance is None
+    assert row.reference_aic_matches_raw_log_likelihood is True
+    assert row.bijux_aic_matches_raw_log_likelihood is True
+    assert row.relative_aic_comparable is True
+    assert row.ranking_permitted is True
+    assert row.ranking_guard_outcome == "shared-fitcontinuous-policy-ranking-permitted"
+
+
+def test_write_geiger_likelihood_policy_table_writes_rows(tmp_path: Path) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    report = run_geiger_parity_cases(
+        case_ids=["fitcontinuous-bm-example-tree"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+    policy_path = tmp_path / "geiger-likelihood-policy.tsv"
+
+    write_geiger_likelihood_policy_table(policy_path, report)
+
+    with policy_path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle, delimiter="\t"))
+    assert len(rows) == 1
+    assert rows[0]["case_id"] == "fitcontinuous-bm-example-tree"
+    assert rows[0]["case_level_raw_log_likelihood_comparable"] == "True"
 
 
 def test_run_geiger_parity_cases_builds_direct_parameterization_registry_rows(
