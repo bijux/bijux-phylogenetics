@@ -70,6 +70,8 @@ def test_run_discrete_mode_recovery_panel_demo_materializes_dataset_and_workflow
     assert result.dataset_export.simulation_cases_path.is_file()
     assert result.workflow_bundle.workflow_summary_path.is_file()
     assert result.workflow_bundle.recovery_summary_path.is_file()
+    assert result.workflow_bundle.parameter_recovery_path.is_file()
+    assert result.workflow_bundle.parameter_comparison_path.is_file()
     assert result.workflow_bundle.rate_recovery_path.is_file()
     assert result.workflow_bundle.rate_comparison_path.is_file()
     assert result.workflow_bundle.model_choice_path.is_file()
@@ -80,6 +82,7 @@ def test_run_discrete_mode_recovery_panel_demo_materializes_dataset_and_workflow
     assert result.overview_path.is_file()
     overview_text = result.overview_path.read_text(encoding="utf-8")
     assert "geiger model-selection matches expectation" in overview_text
+    assert "paired transform-parameter comparisons" in overview_text
     assert "all paired rate comparisons" in overview_text
 
 
@@ -97,6 +100,8 @@ def test_export_discrete_mode_recovery_panel_dataset_copies_expected_outputs(
     assert result.reference_tree_root.is_dir()
     assert result.simulation_cases_path.is_file()
     assert Path("workflow-summary.tsv") in expected_files
+    assert Path("parameter-recovery.tsv") in expected_files
+    assert Path("parameter-comparison.tsv") in expected_files
     assert Path("rate-comparison.tsv") in expected_files
     assert Path("execution-review.tsv") in expected_files
     assert Path(
@@ -146,10 +151,12 @@ def test_cli_demo_discrete_mode_recovery_panel_json_output_reports_metrics(
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 12
+    assert payload["metrics"]["artifact_count"] == 14
     assert payload["metrics"]["taxon_count"] == 24
     assert payload["metrics"]["tree_count"] == 2
     assert payload["metrics"]["case_count"] == 4
+    assert payload["metrics"]["parameter_row_count"] == 0
+    assert payload["metrics"]["parameter_comparison_row_count"] == 0
     assert payload["data"]["dataset"]["dataset_id"] == "discrete_mode_recovery_panel"
     assert payload["data"]["workflow_bundle"]["workflow_summary_path"] == str(
         output / "workflow" / "workflow-summary.tsv"

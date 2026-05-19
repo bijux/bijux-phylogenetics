@@ -119,6 +119,8 @@ def run_recovery_demo_command(args: Any) -> int | None:
             result.dataset_export.simulation_cases_path,
             result.workflow_bundle.workflow_summary_path,
             result.workflow_bundle.recovery_summary_path,
+            result.workflow_bundle.parameter_recovery_path,
+            result.workflow_bundle.parameter_comparison_path,
             result.workflow_bundle.rate_recovery_path,
             result.workflow_bundle.rate_comparison_path,
             result.workflow_bundle.model_choice_path,
@@ -143,6 +145,20 @@ def run_recovery_demo_command(args: Any) -> int | None:
                 ),
                 "geiger_selection_match_count": (
                     result.workflow_bundle.geiger_selection_match_count
+                ),
+                "parameter_pass_count": result.workflow_bundle.parameter_pass_count,
+                "governed_parameter_row_count": (
+                    result.workflow_bundle.governed_parameter_row_count
+                ),
+                "parameter_row_count": result.workflow_bundle.parameter_row_count,
+                "parameter_comparison_row_count": (
+                    result.workflow_bundle.parameter_comparison_row_count
+                ),
+                "parameter_closer_to_truth_count_bijux": (
+                    result.workflow_bundle.parameter_closer_to_truth_count_bijux
+                ),
+                "parameter_closer_to_truth_count_geiger": (
+                    result.workflow_bundle.parameter_closer_to_truth_count_geiger
                 ),
                 "rate_pass_count": result.workflow_bundle.rate_pass_count,
                 "governed_rate_row_count": (

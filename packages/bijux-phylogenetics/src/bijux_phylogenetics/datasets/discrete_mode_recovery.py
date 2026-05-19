@@ -11,6 +11,8 @@ from bijux_phylogenetics.comparative.discrete_mode_recovery import (
     run_discrete_mode_recovery,
     write_discrete_mode_recovery_execution_table,
     write_discrete_mode_recovery_model_choice_table,
+    write_discrete_mode_recovery_parameter_comparison_table,
+    write_discrete_mode_recovery_parameter_table,
     write_discrete_mode_recovery_rate_comparison_table,
     write_discrete_mode_recovery_rate_table,
     write_discrete_mode_recovery_summary_table,
@@ -70,6 +72,12 @@ class DiscreteModeRecoveryPanelWorkflowBundle:
     selection_review_case_count: int
     selection_match_count: int
     geiger_selection_match_count: int
+    parameter_pass_count: int
+    governed_parameter_row_count: int
+    parameter_row_count: int
+    parameter_comparison_row_count: int
+    parameter_closer_to_truth_count_bijux: int
+    parameter_closer_to_truth_count_geiger: int
     rate_pass_count: int
     governed_rate_row_count: int
     rate_row_count: int
@@ -81,6 +89,8 @@ class DiscreteModeRecoveryPanelWorkflowBundle:
     expected_warning_present_count: int
     workflow_summary_path: Path
     recovery_summary_path: Path
+    parameter_recovery_path: Path
+    parameter_comparison_path: Path
     rate_recovery_path: Path
     rate_comparison_path: Path
     model_choice_path: Path
@@ -198,6 +208,20 @@ def write_discrete_mode_recovery_panel_workflow_bundle(
         for case in report.recovery_report.case_reports
         if case.geiger_selection_matches_expectation is True
     )
+    parameter_rows = [
+        row
+        for case in report.recovery_report.case_reports
+        for row in case.parameter_rows
+    ]
+    governed_parameter_rows = [row for row in parameter_rows if row.tolerance is not None]
+    parameter_comparison_rows = [
+        row
+        for case in report.recovery_report.case_reports
+        for row in case.parameter_comparison_rows
+    ]
+    parameter_pass_count = sum(
+        1 for row in governed_parameter_rows if row.within_tolerance is True
+    )
     rate_rows = [
         row for case in report.recovery_report.case_reports for row in case.rate_rows
     ]
@@ -229,6 +253,16 @@ def write_discrete_mode_recovery_panel_workflow_bundle(
         selection_review_case_count=selection_review_case_count,
         selection_match_count=selection_match_count,
         geiger_selection_match_count=geiger_selection_match_count,
+        parameter_pass_count=parameter_pass_count,
+        governed_parameter_row_count=len(governed_parameter_rows),
+        parameter_row_count=len(parameter_rows),
+        parameter_comparison_row_count=len(parameter_comparison_rows),
+        parameter_closer_to_truth_count_bijux=sum(
+            1 for row in parameter_comparison_rows if row.closer_engine == "bijux"
+        ),
+        parameter_closer_to_truth_count_geiger=sum(
+            1 for row in parameter_comparison_rows if row.closer_engine == "geiger"
+        ),
         rate_pass_count=rate_pass_count,
         governed_rate_row_count=len(governed_rate_rows),
         rate_row_count=len(rate_rows),
@@ -245,6 +279,14 @@ def write_discrete_mode_recovery_panel_workflow_bundle(
     )
     recovery_summary_path = write_discrete_mode_recovery_summary_table(
         output_root / "recovery-summary.tsv",
+        report.recovery_report,
+    )
+    parameter_recovery_path = write_discrete_mode_recovery_parameter_table(
+        output_root / "parameter-recovery.tsv",
+        report.recovery_report,
+    )
+    parameter_comparison_path = write_discrete_mode_recovery_parameter_comparison_table(
+        output_root / "parameter-comparison.tsv",
         report.recovery_report,
     )
     rate_recovery_path = write_discrete_mode_recovery_rate_table(
@@ -283,6 +325,16 @@ def write_discrete_mode_recovery_panel_workflow_bundle(
         selection_review_case_count=selection_review_case_count,
         selection_match_count=selection_match_count,
         geiger_selection_match_count=geiger_selection_match_count,
+        parameter_pass_count=parameter_pass_count,
+        governed_parameter_row_count=len(governed_parameter_rows),
+        parameter_row_count=len(parameter_rows),
+        parameter_comparison_row_count=len(parameter_comparison_rows),
+        parameter_closer_to_truth_count_bijux=sum(
+            1 for row in parameter_comparison_rows if row.closer_engine == "bijux"
+        ),
+        parameter_closer_to_truth_count_geiger=sum(
+            1 for row in parameter_comparison_rows if row.closer_engine == "geiger"
+        ),
         rate_pass_count=rate_pass_count,
         governed_rate_row_count=len(governed_rate_rows),
         rate_row_count=len(rate_rows),
@@ -298,6 +350,8 @@ def write_discrete_mode_recovery_panel_workflow_bundle(
         expected_warning_present_count=expected_warning_present_count,
         workflow_summary_path=workflow_summary_path,
         recovery_summary_path=recovery_summary_path,
+        parameter_recovery_path=parameter_recovery_path,
+        parameter_comparison_path=parameter_comparison_path,
         rate_recovery_path=rate_recovery_path,
         rate_comparison_path=rate_comparison_path,
         model_choice_path=model_choice_path,
@@ -342,6 +396,12 @@ def _write_workflow_summary_table(
     selection_review_case_count: int,
     selection_match_count: int,
     geiger_selection_match_count: int,
+    parameter_pass_count: int,
+    governed_parameter_row_count: int,
+    parameter_row_count: int,
+    parameter_comparison_row_count: int,
+    parameter_closer_to_truth_count_bijux: int,
+    parameter_closer_to_truth_count_geiger: int,
     rate_pass_count: int,
     governed_rate_row_count: int,
     rate_row_count: int,
@@ -362,6 +422,12 @@ def _write_workflow_summary_table(
                 "selection_review_case_count",
                 "selection_match_count",
                 "geiger_selection_match_count",
+                "parameter_pass_count",
+                "governed_parameter_row_count",
+                "parameter_row_count",
+                "parameter_comparison_row_count",
+                "parameter_closer_to_truth_count_bijux",
+                "parameter_closer_to_truth_count_geiger",
                 "rate_pass_count",
                 "governed_rate_row_count",
                 "rate_row_count",
@@ -382,6 +448,12 @@ def _write_workflow_summary_table(
                 str(selection_review_case_count),
                 str(selection_match_count),
                 str(geiger_selection_match_count),
+                str(parameter_pass_count),
+                str(governed_parameter_row_count),
+                str(parameter_row_count),
+                str(parameter_comparison_row_count),
+                str(parameter_closer_to_truth_count_bijux),
+                str(parameter_closer_to_truth_count_geiger),
                 str(rate_pass_count),
                 str(governed_rate_row_count),
                 str(rate_row_count),
@@ -413,6 +485,11 @@ def _write_overview(
         f"- selection review cases: `{bundle.selection_review_case_count}`",
         f"- Bijux model-selection matches expectation: `{bundle.selection_match_count}`",
         f"- geiger model-selection matches expectation: `{bundle.geiger_selection_match_count}`",
+        f"- transform parameters within tolerance: `{bundle.parameter_pass_count}/{bundle.governed_parameter_row_count}`",
+        f"- all transform-parameter recovery rows: `{bundle.parameter_row_count}`",
+        f"- paired transform-parameter comparisons: `{bundle.parameter_comparison_row_count}`",
+        f"- transform parameters closer to truth in Bijux: `{bundle.parameter_closer_to_truth_count_bijux}`",
+        f"- transform parameters closer to truth in geiger: `{bundle.parameter_closer_to_truth_count_geiger}`",
         f"- rate recoveries within tolerance: `{bundle.rate_pass_count}/{bundle.governed_rate_row_count}`",
         f"- all rate recovery rows: `{bundle.rate_row_count}`",
         f"- governed paired rate comparisons: `{bundle.governed_rate_comparison_row_count}`",
@@ -425,6 +502,8 @@ def _write_overview(
         "",
         f"- workflow summary: `{bundle.workflow_summary_path.name}`",
         f"- recovery summary: `{bundle.recovery_summary_path.name}`",
+        f"- transform-parameter recovery ledger: `{bundle.parameter_recovery_path.name}`",
+        f"- transform-parameter comparison ledger: `{bundle.parameter_comparison_path.name}`",
         f"- rate recovery ledger: `{bundle.rate_recovery_path.name}`",
         f"- rate comparison ledger: `{bundle.rate_comparison_path.name}`",
         f"- model-choice ledger: `{bundle.model_choice_path.name}`",
