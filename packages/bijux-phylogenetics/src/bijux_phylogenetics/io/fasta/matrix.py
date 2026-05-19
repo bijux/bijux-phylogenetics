@@ -1,30 +1,203 @@
 from __future__ import annotations
 
-from ._shared import (
+from pathlib import Path
+
+from bijux_phylogenetics.core.alignment import (
     AlignmentBaseFrequencyReport,
+    AlignmentRecord,
     AlignmentSegregatingSiteReport,
     DnaBinAlignment,
     DnaBinSequence,
     DnaBinStateRow,
-    InvalidAlignmentError,
     NucleotideStateFrequencyRow,
-    Path,
     SegregatingSiteRow,
-    _APE_DNA_STATE_ORDER,
-    _APE_SEGREGATING_STATE_SETS,
-    _ape_nucleotide_state_counts,
-    _ape_segregating_sequences_from_dna_bin_alignment,
-    _detect_composition_outlier_sequences_records,
-    _is_ape_gap_state,
-    _is_ape_known_base,
-    _is_ape_missing_state,
-    _is_ape_segregating_column,
-    _normalize_dnabin_state,
-    _records_from_dnabin_alignment,
+)
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
+
+from .core import (
     infer_alignment_alphabet,
     load_fasta_alignment,
     write_fasta_alignment,
 )
+from .records import (
+    _detect_composition_outlier_sequences_records,
+)
+
+_APE_DNA_STATE_ORDER = (
+    "a",
+    "c",
+    "g",
+    "t",
+    "r",
+    "m",
+    "w",
+    "s",
+    "k",
+    "y",
+    "v",
+    "h",
+    "d",
+    "b",
+    "n",
+    "-",
+    "?",
+)
+_APE_DNA_STATE_SET = set(_APE_DNA_STATE_ORDER)
+_APE_SEGREGATING_STATE_SETS: dict[str, frozenset[str]] = {
+    "A": frozenset({"A"}),
+    "C": frozenset({"C"}),
+    "G": frozenset({"G"}),
+    "T": frozenset({"T"}),
+    "M": frozenset({"A", "C"}),
+    "R": frozenset({"A", "G"}),
+    "W": frozenset({"A", "T"}),
+    "S": frozenset({"C", "G"}),
+    "K": frozenset({"G", "T"}),
+    "Y": frozenset({"C", "T"}),
+    "V": frozenset({"A", "C", "G"}),
+    "H": frozenset({"A", "C", "T"}),
+    "D": frozenset({"A", "G", "T"}),
+    "B": frozenset({"C", "G", "T"}),
+    "N": frozenset({"A", "C", "G", "T"}),
+}
+
+
+def _normalize_ape_nucleotide_state(residue: str) -> str | None:
+    normalized = residue.lower().replace("u", "t")
+    if normalized in _APE_DNA_STATE_ORDER:
+        return normalized
+    return None
+
+
+def _normalize_dnabin_state(
+    residue: str,
+    *,
+    normalize_uracil: bool,
+) -> str | None:
+    normalized = residue.lower()
+    if normalized == "u" and normalize_uracil:
+        normalized = "t"
+    if normalized in _APE_DNA_STATE_SET:
+        return normalized
+    return None
+
+
+def _records_from_dnabin_alignment(
+    alignment: DnaBinAlignment,
+    *,
+    uppercase: bool,
+) -> list[AlignmentRecord]:
+    return [
+        AlignmentRecord(
+            identifier=record.identifier,
+            sequence=record.sequence.upper() if uppercase else record.sequence,
+        )
+        for record in alignment.records
+    ]
+
+
+def _ape_nucleotide_state_counts(sequence: str) -> dict[str, int]:
+    counts = dict.fromkeys(_APE_DNA_STATE_ORDER, 0)
+    for residue in sequence:
+        normalized = _normalize_ape_nucleotide_state(residue)
+        if normalized is None:
+            continue
+        counts[normalized] += 1
+    return counts
+
+
+def _normalize_ape_segregating_state(residue: str) -> str | None:
+    normalized = residue.upper().replace("U", "T")
+    if normalized in _APE_SEGREGATING_STATE_SETS or normalized in {"-", "?"}:
+        return normalized
+    return None
+
+
+def _leading_trailing_gaps_to_n(sequence: str) -> str:
+    characters = list(sequence)
+    left = 0
+    while left < len(characters) and characters[left] == "-":
+        characters[left] = "N"
+        left += 1
+    right = len(characters) - 1
+    while right >= 0 and characters[right] == "-":
+        characters[right] = "N"
+        right -= 1
+    return "".join(characters)
+
+
+def _ape_segregating_states_different(left: str, right: str) -> bool:
+    if left == "?" or right == "?":
+        return False
+    left_states = _APE_SEGREGATING_STATE_SETS.get(left)
+    right_states = _APE_SEGREGATING_STATE_SETS.get(right)
+    if left_states is None or right_states is None:
+        return False
+    return left_states.isdisjoint(right_states)
+
+
+def _is_ape_known_base(state: str) -> bool:
+    return state in {"A", "C", "G", "T"}
+
+
+def _is_ape_gap_state(state: str) -> bool:
+    return state == "-"
+
+
+def _is_ape_missing_state(state: str) -> bool:
+    return state == "?"
+
+
+def _is_ape_segregating_column(column: list[str]) -> bool:
+    if len(column) <= 1:
+        return False
+    index = 0
+    end = len(column) - 1
+    base = column[index]
+
+    while not _is_ape_known_base(base):
+        index += 1
+        if index > end:
+            return False
+        current = column[index]
+        if base != current:
+            if not _is_ape_missing_state(base) and not _is_ape_missing_state(current):
+                if not _is_ape_gap_state(base):
+                    if _is_ape_gap_state(current):
+                        return True
+                    if _ape_segregating_states_different(current, base):
+                        return True
+                else:
+                    return True
+            base = current
+
+    index += 1
+    while index <= end:
+        current = column[index]
+        if current != base:
+            if _is_ape_gap_state(current):
+                return True
+            if _ape_segregating_states_different(current, base):
+                return True
+        index += 1
+    return False
+
+
+def _ape_segregating_sequences_from_dna_bin_alignment(
+    alignment: DnaBinAlignment,
+) -> tuple[list[str], list[str]]:
+    records = _records_from_dnabin_alignment(alignment, uppercase=False)
+    original_sequences = [
+        "".join(
+            _normalize_ape_segregating_state(residue) or ""
+            for residue in record.sequence
+        )
+        for record in records
+    ]
+    effective_sequences = [
+        _leading_trailing_gaps_to_n(sequence) for sequence in original_sequences
+    ]
+    return original_sequences, effective_sequences
 
 def load_dna_bin_alignment(
     path: Path,
