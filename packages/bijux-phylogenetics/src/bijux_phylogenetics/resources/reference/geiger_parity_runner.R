@@ -149,12 +149,45 @@ fitcontinuous_control <- function(case_payload) {
   case_payload$reference_control
 }
 
+matrix_attempt_rows <- function(result_matrix) {
+  if (!(is.matrix(result_matrix) || is.data.frame(result_matrix))) {
+    return(NULL)
+  }
+  row_names <- rownames(result_matrix)
+  rows <- lapply(seq_len(nrow(result_matrix)), function(index) {
+    attempt <- as.list(result_matrix[index, , drop = FALSE])
+    for (column_name in names(attempt)) {
+      value <- attempt[[column_name]]
+      if (is.factor(value)) {
+        value <- as.character(value)
+      }
+      if (is.numeric(value) || is.integer(value)) {
+        attempt[[column_name]] <- as.numeric(value)
+      } else if (is.logical(value)) {
+        attempt[[column_name]] <- isTRUE(value)
+      } else {
+        attempt[[column_name]] <- value
+      }
+    }
+    attempt$attempt_index <- index
+    if (!is.null(row_names) && length(row_names) >= index) {
+      attempt$method <- as.character(row_names[[index]])
+    }
+    if (!is.null(attempt$lnL)) {
+      attempt$log_likelihood <- as.numeric(attempt$lnL)
+    }
+    attempt
+  })
+  json_array(rows)
+}
+
 normalize_optimizer_result <- function(fit) {
   result <- list()
   if (!is.null(fit$opt$method)) {
     result$best_method <- as.character(fit$opt$method)
   }
   if (is.matrix(fit$res) || is.data.frame(fit$res)) {
+    result$attempt_rows <- matrix_attempt_rows(fit$res)
     result$attempt_count <- nrow(fit$res)
     if (!is.null(rownames(fit$res))) {
       result$attempted_methods <- sort(unique(as.character(rownames(fit$res))))
@@ -202,6 +235,7 @@ normalize_fitdiscrete_result <- function(fit) {
     result$parameter_count <- as.integer(fit$opt$k)
   }
   if (is.matrix(fit$res) || is.data.frame(fit$res)) {
+    result$attempt_rows <- matrix_attempt_rows(fit$res)
     result$attempt_count <- nrow(fit$res)
     convergence_codes <- as.integer(fit$res[, ncol(fit$res)])
     result$converged_attempt_count <- sum(convergence_codes == 0, na.rm = TRUE)
@@ -483,8 +517,19 @@ build_fitcontinuous_model_comparison_payload <- function(tree, trait_values, exc
 
 build_fitdiscrete_payload <- function(tree, trait_values, excluded_taxa, missing_value_taxa, missing_from_traits, extra_trait_taxa, case_payload) {
   bounds <- list()
+  parameter_bounds <- NULL
   if (identical(case_payload$discrete_transform_name, "EB") && !is.null(case_payload$early_burst_bounds)) {
-    bounds <- list(a = as.numeric(unlist(case_payload$early_burst_bounds)))
+    parameter_bounds <- as.numeric(unlist(case_payload$early_burst_bounds))
+    bounds <- list(a = parameter_bounds)
+  }
+  if (identical(case_payload$discrete_transform_name, "lambda") && !is.null(case_payload$lambda_bounds)) {
+    parameter_bounds <- as.numeric(unlist(case_payload$lambda_bounds))
+  }
+  if (identical(case_payload$discrete_transform_name, "kappa") && !is.null(case_payload$kappa_bounds)) {
+    parameter_bounds <- as.numeric(unlist(case_payload$kappa_bounds))
+  }
+  if (identical(case_payload$discrete_transform_name, "delta") && !is.null(case_payload$delta_bounds)) {
+    parameter_bounds <- as.numeric(unlist(case_payload$delta_bounds))
   }
   fit <- geiger::fitDiscrete(
     phy = tree,
@@ -523,6 +568,7 @@ build_fitdiscrete_payload <- function(tree, trait_values, excluded_taxa, missing
     parameter_name <- "a"
     parameter_value <- as.numeric(fit$opt$a)
   }
+  boundary_hits <- hit_parameter_boundary(parameter_value, parameter_bounds)
   summary <- list(
     taxon_count = length(trait_values),
     trait_name = case_payload$trait_name,
@@ -542,6 +588,8 @@ build_fitdiscrete_payload <- function(tree, trait_values, excluded_taxa, missing
     aicc = as.numeric(fit$opt$aicc),
     parameter_name = parameter_name,
     parameter_value = parameter_value,
+    hit_lower_parameter_boundary = boundary_hits$hit_lower,
+    hit_upper_parameter_boundary = boundary_hits$hit_upper,
     sparse_states = json_array(unname(sparse_states)),
     optimizer_settings = case_payload$optimizer_settings,
     optimizer_result = normalize_fitdiscrete_result(fit)

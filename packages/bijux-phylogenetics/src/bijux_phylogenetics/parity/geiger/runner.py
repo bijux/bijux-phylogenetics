@@ -19,6 +19,10 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 
+from .optimizer_triage import (
+    GeigerOptimizerTriageRow,
+    build_geiger_optimizer_triage_rows,
+)
 from .registry import GeigerParityCase, list_geiger_parity_cases
 
 
@@ -66,6 +70,7 @@ class GeigerParityReport:
     """Aggregate report for governed live `geiger` parity cases."""
 
     observations: list[GeigerParityObservation]
+    optimizer_triage_rows: list[GeigerOptimizerTriageRow]
     summary_rows: list[GeigerParitySummaryRow]
     case_count: int
     passed_case_count: int
@@ -444,6 +449,18 @@ def _bijux_optimizer_result(
             "fine_search_stop": diagnostics.fine_search_stop,
             "hit_lower_boundary": diagnostics.hit_lower_boundary,
             "hit_upper_boundary": diagnostics.hit_upper_boundary,
+            "profile_rows": (
+                None
+                if report.optimizer_profile_rows is None
+                else [
+                    {
+                        "parameter_name": report.parameter_name,
+                        "parameter_value": row.parameter_value,
+                        "log_likelihood": row.log_likelihood,
+                    }
+                    for row in report.optimizer_profile_rows
+                ]
+            ),
         }
     if case.python_mode in {"brownian", "white-noise"}:
         return {
@@ -614,6 +631,7 @@ def _build_bijux_discrete_case_payload(
     excluded_taxa = sorted(
         set(input_audit.missing_from_traits) | set(missing_value_taxa)
     )
+    diagnostics = report.optimizer_diagnostics
     transform_fit = report.transform_fit
     summary = {
         "taxon_count": report.taxon_count,
@@ -645,8 +663,32 @@ def _build_bijux_discrete_case_payload(
         "parameter_value": (
             None if transform_fit is None else transform_fit.parameter_value
         ),
+        "hit_lower_parameter_boundary": (
+            diagnostics.hit_lower_parameter_bound
+            if transform_fit is None
+            else transform_fit.hit_lower_parameter_boundary
+        ),
+        "hit_upper_parameter_boundary": (
+            diagnostics.hit_upper_parameter_bound
+            if transform_fit is None
+            else transform_fit.hit_upper_parameter_boundary
+        ),
         "optimizer_settings": case.optimizer_settings,
-        "optimizer_result": _bijux_optimizer_result(case, report),
+        "optimizer_result": {
+            **_bijux_optimizer_result(case, report),
+            "profile_rows": (
+                None
+                if transform_fit is None
+                else [
+                    {
+                        "parameter_name": transform_fit.parameter_name,
+                        "parameter_value": row.transform_parameter_value,
+                        "log_likelihood": row.log_likelihood,
+                    }
+                    for row in transform_fit.profile_rows
+                ]
+            ),
+        },
     }
     return summary, _discrete_rate_rows(report)
 
@@ -970,6 +1012,7 @@ def run_geiger_parity_cases(
     skipped_case_count = sum(1 for item in observations if item.status == "skipped")
     return GeigerParityReport(
         observations=observations,
+        optimizer_triage_rows=build_geiger_optimizer_triage_rows(observations),
         summary_rows=_summary_rows(observations),
         case_count=case_count,
         passed_case_count=passed_case_count,

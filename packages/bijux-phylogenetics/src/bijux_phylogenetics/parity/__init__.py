@@ -13,10 +13,12 @@ from .geiger import (
     GeigerParityObservation,
     GeigerParityReport,
     GeigerParitySummaryRow,
+    GeigerOptimizerTriageRow,
     list_geiger_parity_cases,
     run_geiger_parity_cases,
     write_geiger_parity_observation_table,
     write_geiger_parity_summary_table,
+    write_geiger_optimizer_triage_table,
 )
 from .phytools import (
     PhytoolsParityObservation,
@@ -43,6 +45,7 @@ __all__ = [
     "GeigerParityObservation",
     "GeigerParityReport",
     "GeigerParitySummaryRow",
+    "GeigerOptimizerTriageRow",
     "PhytoolsParityObservation",
     "PhytoolsParityReport",
     "PhytoolsParitySummaryRow",
@@ -60,6 +63,7 @@ __all__ = [
     "write_ape_parity_summary_table",
     "write_geiger_parity_observation_table",
     "write_geiger_parity_summary_table",
+    "write_geiger_optimizer_triage_table",
     "write_phytools_parity_observation_table",
     "write_phytools_parity_summary_table",
     "write_reference_parity_observation_table",
