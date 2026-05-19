@@ -116,6 +116,7 @@ from bijux_phylogenetics.parity import (
     write_ape_parity_observation_table,
     write_ape_parity_summary_table,
     write_geiger_parity_observation_table,
+    write_geiger_likelihood_policy_table,
     write_geiger_optimizer_triage_table,
     write_geiger_parity_summary_table,
     write_geiger_parameterization_registry_table,
@@ -3316,6 +3317,7 @@ def build_parser() -> argparse.ArgumentParser:
     parity.add_argument("--summary-out", type=Path)
     parity.add_argument("--observations-out", type=Path)
     parity.add_argument("--optimizer-triage-out", type=Path)
+    parity.add_argument("--likelihood-policy-out", type=Path)
     parity.add_argument("--parameterization-registry-out", type=Path)
     parity.add_argument(
         "--json", action="store_true", help="Emit the parity report as JSON."
@@ -9253,6 +9255,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 summary_path = None
                 observation_path = None
                 optimizer_triage_path = None
+                likelihood_policy_path = None
                 parameterization_registry_path = None
                 if args.summary_out is not None:
                     summary_path = write_geiger_parity_summary_table(
@@ -9272,6 +9275,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         report,
                     )
                     output_paths.append(optimizer_triage_path)
+                if args.likelihood_policy_out is not None:
+                    likelihood_policy_path = write_geiger_likelihood_policy_table(
+                        args.likelihood_policy_out,
+                        report,
+                    )
+                    output_paths.append(likelihood_policy_path)
                 if args.parameterization_registry_out is not None:
                     parameterization_registry_path = (
                         write_geiger_parameterization_registry_table(
@@ -9304,6 +9313,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "summary_table": summary_path,
                             "observation_table": observation_path,
                             "optimizer_triage_table": optimizer_triage_path,
+                            "likelihood_policy_table": likelihood_policy_path,
                             "parameterization_registry_table": (
                                 parameterization_registry_path
                             ),
