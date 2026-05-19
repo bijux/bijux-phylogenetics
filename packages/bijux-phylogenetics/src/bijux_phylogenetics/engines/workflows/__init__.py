@@ -1,14 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import hashlib
 from pathlib import Path
 import re
 
-from bijux_phylogenetics.compare.reports import (
-    ComparisonReportBuildResult,
-    build_tree_comparison_report,
-)
+from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.alignment import (
     AlignmentAlphabet,
     AlignmentRecord,
@@ -17,7 +13,6 @@ from bijux_phylogenetics.core.alignment import (
 )
 from bijux_phylogenetics.core.partitions import (
     LocusPartition,
-    PartitionSummaryReport,
     build_partition_summary_report,
     normalize_partition_data_type,
     parse_locus_partitions,
@@ -42,14 +37,23 @@ from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.trees import load_tree_set
 
-from .bootstrap_artifacts import (
+from .models import (
+    AlignmentTrimmingSummary,
+    CodonAwareAlignmentWorkflowReport,
+    EngineWorkflowReport,
+    ExternalTreeComparisonReport,
+    IqtreeSupportValue,
+    IqtreeWorkflowSummary,
+    PreparedIqtreePartitions as _PreparedIqtreePartitions,
+)
+from ..bootstrap_artifacts import (
     build_bootstrap_support_histogram_rows,
     build_bootstrap_support_rows,
     build_low_support_bootstrap_rows,
     write_bootstrap_support_histogram,
     write_bootstrap_support_table,
 )
-from .common import (
+from ..common import (
     EngineRunReport,
     EngineVersionInfo,
     active_engine_run_is_live,
@@ -71,14 +75,14 @@ from .common import (
     validate_timeout_seconds,
     write_engine_manifest,
 )
-from .fasttree_artifacts import (
+from ..fasttree_artifacts import (
     build_fasttree_low_support_rows,
     build_fasttree_support_histogram_rows,
     build_fasttree_support_rows,
     write_fasttree_support_histogram,
     write_fasttree_support_table,
 )
-from .iqtree_artifacts import (
+from ..iqtree_artifacts import (
     IqtreeModelCandidate,
     IqtreeModelSelectionSummary,
     parse_best_model_file,
@@ -87,12 +91,12 @@ from .iqtree_artifacts import (
     resolve_iqtree_model_sidecar,
     write_iqtree_model_candidates_table,
 )
-from .sh_alrt_artifacts import (
+from ..sh_alrt_artifacts import (
     build_conflicting_sh_alrt_support_rows,
     build_sh_alrt_support_rows,
     write_sh_alrt_support_table,
 )
-from .validation import (
+from ..validation import (
     BootstrapSupportNode,
     BootstrapSupportSummaryReport,
     FastTreeSupportNode,
@@ -122,105 +126,6 @@ _TRIMAL_TRIMMING_MODES: tuple[str, ...] = (
 )
 _MINIMUM_UFBOOT_REPLICATES = 1000
 _INCOMPLETE_RUN_POLICIES = {"reject", "clean"}
-
-
-@dataclass(slots=True)
-class EngineWorkflowReport:
-    workflow: str
-    engine_name: str
-    input_paths: list[Path]
-    output_paths: dict[str, Path]
-    run: EngineRunReport
-    manifest_path: Path
-    input_checksums: dict[str, str]
-    output_checksums: dict[str, str]
-    config: dict[str, object] = field(default_factory=dict)
-    selected_model: str | None = None
-    log_likelihood: float | None = None
-    iqtree_summary: IqtreeWorkflowSummary | None = None
-    model_selection_summary: IqtreeModelSelectionSummary | None = None
-    bootstrap_support_summary: BootstrapSupportSummaryReport | None = None
-    fasttree_support_summary: FastTreeSupportSummaryReport | None = None
-    sh_alrt_support_summary: ShAlrtSupportSummaryReport | None = None
-    weak_backbone_report: WeakBackboneReport | None = None
-    trimming_summary: AlignmentTrimmingSummary | None = None
-    resumed: bool = False
-    notes: list[str] = field(default_factory=list)
-
-
-@dataclass(slots=True)
-class IqtreeSupportValue:
-    node: str
-    descendant_taxa: list[str]
-    support: float
-    support_fraction: float
-    is_backbone: bool
-
-
-@dataclass(slots=True)
-class IqtreeWorkflowSummary:
-    selected_model: str | None
-    log_likelihood: float | None
-    support_value_count: int
-    minimum_support: float | None
-    maximum_support: float | None
-    support_values: list[IqtreeSupportValue] = field(default_factory=list)
-
-
-@dataclass(slots=True)
-class AlignmentTrimmingSummary:
-    mode: str
-    gap_threshold: float | None
-    input_alignment_length: int
-    trimmed_alignment_length: int
-    retained_site_count: int
-    removed_site_count: int
-    retained_site_fraction: float
-    removed_site_fraction: float
-    input_gap_fraction: float
-    trimmed_gap_fraction: float
-    input_gap_percentage: float
-    trimmed_gap_percentage: float
-
-
-@dataclass(slots=True)
-class ExternalTreeComparisonReport:
-    fast_tree_path: Path
-    ml_tree_path: Path
-    comparison_report: ComparisonReportBuildResult
-
-
-@dataclass(slots=True)
-class CodonAwareAlignmentWorkflowReport:
-    workflow: str
-    engine_name: str
-    input_path: Path
-    output_paths: dict[str, Path]
-    run: EngineRunReport
-    manifest_path: Path
-    input_checksums: dict[str, str]
-    output_checksums: dict[str, str]
-    config: dict[str, object]
-    sequence_type: AlignmentAlphabet
-    genetic_code_id: int
-    genetic_code_name: str
-    input_sequence_count: int
-    accepted_sequence_count: int
-    invalid_codon_sequence_count: int
-    excluded_sequences: list[CodingSequenceExclusion]
-    terminal_stop_sequence_count: int
-    notes: list[str] = field(default_factory=list)
-    warnings: list[str] = field(default_factory=list)
-    resumed: bool = False
-
-
-@dataclass(frozen=True, slots=True)
-class _PreparedIqtreePartitions:
-    command_args: list[str]
-    summary: PartitionSummaryReport
-    output_paths: dict[str, Path]
-    notes: list[str]
-    mixed_data_types: bool
 
 
 def list_mafft_alignment_modes() -> tuple[str, ...]:
