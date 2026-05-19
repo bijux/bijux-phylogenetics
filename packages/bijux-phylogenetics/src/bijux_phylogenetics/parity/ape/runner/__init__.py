@@ -87,7 +87,7 @@ from bijux_phylogenetics.trees import (
     compute_reference_tree_clade_support,
     compute_strict_consensus_tree,
 )
-from .registry import ApeParityCase, _selected_cases, _write_case_file
+from ..registry import ApeParityCase, _selected_cases, _write_case_file
 
 
 @dataclass(frozen=True, slots=True)
@@ -141,12 +141,12 @@ class ApeParityReport:
 
 
 def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[6]
+    return Path(__file__).resolve().parents[7]
 
 
 def _ape_runner_path() -> Path:
     return (
-        Path(__file__).resolve().parents[2]
+        Path(__file__).resolve().parents[3]
         / "resources"
         / "reference"
         / "ape_parity_runner.R"
