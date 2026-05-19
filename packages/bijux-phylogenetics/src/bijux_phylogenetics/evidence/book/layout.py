@@ -68,6 +68,21 @@ def load_json_list(path: Path) -> list[object]:
     return payload
 
 
+def load_bundle_claim_rows(bundle_root: Path) -> list[dict[str, object]]:
+    claims_path = bundle_root / "claims.json"
+    legacy_claim_verdicts_path = bundle_root / "claim_verdicts.json"
+    if claims_path.exists():
+        payload = load_json(claims_path)
+        claims = payload.get("claims")
+        if not isinstance(claims, list):
+            raise ValueError("claims.json must contain a claims list")
+        return [row for row in claims if isinstance(row, dict)]
+    if legacy_claim_verdicts_path.exists():
+        rows = load_json_list(legacy_claim_verdicts_path)
+        return [row for row in rows if isinstance(row, dict)]
+    return []
+
+
 def study_paths(book_root: Path) -> list[Path]:
     studies_root = book_root / EVIDENCE_STUDIES_DIRNAME
     if not studies_root.exists():
