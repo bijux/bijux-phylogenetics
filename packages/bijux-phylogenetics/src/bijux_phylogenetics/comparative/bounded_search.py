@@ -220,6 +220,123 @@ def run_bounded_maximization(
     )
 
 
+def run_bounded_golden_section_maximization(
+    *,
+    lower_bound: float,
+    upper_bound: float,
+    evaluate: Callable[[float], tuple[_PayloadT, float]],
+    tolerance: float = 1e-9,
+    max_iterations: int = 400,
+    optimizer_name: str = "golden-section-search",
+    parameter_search_strategy: str = "bounded-single-start-golden-section-search",
+) -> BoundedSearchResult[_PayloadT]:
+    """Maximize one bounded objective with one deterministic golden-section search."""
+    if upper_bound <= lower_bound:
+        raise ComparativeMethodError("parameter bounds must be strictly increasing")
+    if tolerance <= 0.0:
+        raise ComparativeMethodError("tolerance must be positive for bounded search")
+    if max_iterations < 1:
+        raise ComparativeMethodError(
+            "max_iterations must be at least 1 for bounded search"
+        )
+
+    phi = (math.sqrt(5.0) - 1.0) / 2.0
+    original_lower_bound = lower_bound
+    original_upper_bound = upper_bound
+    cache: dict[float, tuple[_PayloadT, float]] = {}
+
+    def evaluate_cached(parameter_value: float) -> tuple[_PayloadT, float]:
+        cache_key = round(parameter_value, 12)
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+        candidate = evaluate(parameter_value)
+        cache[cache_key] = candidate
+        return candidate
+
+    left = upper_bound - (phi * (upper_bound - lower_bound))
+    right = lower_bound + (phi * (upper_bound - lower_bound))
+    left_payload, left_objective_value = evaluate_cached(left)
+    right_payload, right_objective_value = evaluate_cached(right)
+    starting_parameter_value = left
+    starting_parameter_objective_value = left_objective_value
+    converged = False
+
+    for _ in range(max_iterations):
+        if abs(upper_bound - lower_bound) < tolerance:
+            converged = True
+            break
+        if left_objective_value > right_objective_value:
+            upper_bound = right
+            right = left
+            right_payload = left_payload
+            right_objective_value = left_objective_value
+            left = upper_bound - (phi * (upper_bound - lower_bound))
+            left_payload, left_objective_value = evaluate_cached(left)
+        else:
+            lower_bound = left
+            left = right
+            left_payload = right_payload
+            left_objective_value = right_objective_value
+            right = lower_bound + (phi * (upper_bound - lower_bound))
+            right_payload, right_objective_value = evaluate_cached(right)
+
+    if left_objective_value >= right_objective_value:
+        best_parameter = left
+        best_payload = left_payload
+        best_objective_value = left_objective_value
+    else:
+        best_parameter = right
+        best_payload = right_payload
+        best_objective_value = right_objective_value
+    boundary_tolerance = tolerance
+    return BoundedSearchResult(
+        parameter_value=best_parameter,
+        payload=best_payload,
+        objective_value=best_objective_value,
+        diagnostics=BoundedSearchDiagnostics(
+            optimizer_name=optimizer_name,
+            parameter_search_strategy=parameter_search_strategy,
+            lower_bound=original_lower_bound,
+            upper_bound=original_upper_bound,
+            starting_parameter_policy="left-golden-interior-first-evaluation",
+            starting_parameter_value=starting_parameter_value,
+            starting_parameter_objective_value=starting_parameter_objective_value,
+            coarse_grid_point_count=2,
+            fine_grid_point_count=0,
+            refinement_start_count=1,
+            function_evaluation_count=len(cache),
+            coarse_best_parameter=best_parameter,
+            coarse_best_objective_value=best_objective_value,
+            fine_search_start=lower_bound,
+            fine_search_stop=upper_bound,
+            converged=converged,
+            hit_lower_boundary=math.isclose(
+                best_parameter,
+                original_lower_bound,
+                rel_tol=0.0,
+                abs_tol=boundary_tolerance,
+            ),
+            hit_upper_boundary=math.isclose(
+                best_parameter,
+                original_upper_bound,
+                rel_tol=0.0,
+                abs_tol=boundary_tolerance,
+            ),
+        ),
+        profile_rows=[
+            BoundedSearchProfileRow(
+                parameter_value=parameter_value,
+                objective_value=objective_value,
+            )
+            for parameter_value, (_, objective_value) in sorted(
+                cache.items(),
+                key=lambda item: item[0],
+            )
+        ],
+    )
+
+
 def _ordered_coarse_candidates(
     coarse_candidates: list[float],
     *,

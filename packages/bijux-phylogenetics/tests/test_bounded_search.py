@@ -5,6 +5,7 @@ import math
 from bijux_phylogenetics.comparative.bounded_search import (
     BoundedSearchControls,
     run_bounded_maximization,
+    run_bounded_golden_section_maximization,
 )
 
 
@@ -55,5 +56,27 @@ def test_run_bounded_maximization_can_escape_weaker_coarse_candidate_with_multi_
 
     assert math.isclose(result.parameter_value, 3.05, rel_tol=0.0, abs_tol=1e-2)
     assert result.diagnostics.refinement_start_count == 2
+    assert not result.diagnostics.hit_lower_boundary
+    assert not result.diagnostics.hit_upper_boundary
+
+
+def test_run_bounded_golden_section_maximization_records_shared_audit_surface() -> None:
+    result = run_bounded_golden_section_maximization(
+        lower_bound=-2.0,
+        upper_bound=2.0,
+        evaluate=lambda parameter: (parameter, -((parameter - 0.35) ** 2)),
+    )
+
+    assert math.isclose(result.parameter_value, 0.35, rel_tol=0.0, abs_tol=1e-6)
+    assert math.isclose(result.payload, 0.35, rel_tol=0.0, abs_tol=1e-6)
+    assert result.diagnostics.optimizer_name == "golden-section-search"
+    assert result.diagnostics.parameter_search_strategy == (
+        "bounded-single-start-golden-section-search"
+    )
+    assert result.diagnostics.starting_parameter_policy == (
+        "left-golden-interior-first-evaluation"
+    )
+    assert result.diagnostics.function_evaluation_count >= 2
+    assert result.diagnostics.refinement_start_count == 1
     assert not result.diagnostics.hit_lower_boundary
     assert not result.diagnostics.hit_upper_boundary

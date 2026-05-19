@@ -1427,14 +1427,14 @@ def _optimize_single_log_parameter(
     allowed_transition_pairs: set[tuple[int, int]],
     root_prior_mode: str,
 ) -> _DiscreteOptimizationRun:
-    lower = _DISCRETE_LOG_PARAMETER_LOWER_BOUND
-    upper = _DISCRETE_LOG_PARAMETER_UPPER_BOUND
-    phi = (math.sqrt(5.0) - 1.0) / 2.0
-    left = upper - phi * (upper - lower)
-    right = lower + phi * (upper - lower)
+    from bijux_phylogenetics.comparative.bounded_search import (
+        run_bounded_golden_section_maximization,
+    )
 
-    def evaluate(parameter: float) -> float:
-        return _evaluate_log_likelihood(
+    search_result = run_bounded_golden_section_maximization(
+        lower_bound=_DISCRETE_LOG_PARAMETER_LOWER_BOUND,
+        upper_bound=_DISCRETE_LOG_PARAMETER_UPPER_BOUND,
+        evaluate=lambda parameter: _evaluate_single_log_parameter_candidate(
             tree,
             states_by_taxon,
             state_order=state_order,
@@ -1442,49 +1442,46 @@ def _optimize_single_log_parameter(
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
             root_prior_mode=root_prior_mode,
-            log_parameters=numpy.array([parameter], dtype=float),
-        )
-
-    left_score = evaluate(left)
-    right_score = evaluate(right)
-    function_evaluation_count = 2
-    converged = False
-    iteration_count = 0
-    for current_iteration in range(1, 401):
-        iteration_count = current_iteration
-        if abs(upper - lower) < 1e-9:
-            converged = True
-            break
-        if left_score > right_score:
-            upper = right
-            right = left
-            right_score = left_score
-            left = upper - phi * (upper - lower)
-            left_score = evaluate(left)
-        else:
-            lower = left
-            left = right
-            left_score = right_score
-            right = lower + phi * (upper - lower)
-            right_score = evaluate(right)
-        function_evaluation_count += 1
-    if left_score >= right_score:
-        best_parameter = left
-        best_log_likelihood = left_score
-    else:
-        best_parameter = right
-        best_log_likelihood = right_score
+            parameter=parameter,
+        ),
+        optimizer_name="golden-section-search",
+    )
+    best_parameter = search_result.parameter_value
     return _DiscreteOptimizationRun(
         log_parameters=numpy.array([best_parameter], dtype=float),
-        log_likelihood=best_log_likelihood,
-        optimizer_name="golden-section-search",
+        log_likelihood=search_result.objective_value,
+        optimizer_name=search_result.diagnostics.optimizer_name,
         initial_candidate_count=1,
         initial_scale=float(math.exp(best_parameter)),
-        converged=converged,
-        iteration_count=iteration_count,
-        function_evaluation_count=function_evaluation_count,
+        converged=search_result.diagnostics.converged,
+        iteration_count=max(search_result.diagnostics.function_evaluation_count - 2, 0),
+        function_evaluation_count=search_result.diagnostics.function_evaluation_count,
         simplex_shrink_count=0,
     )
+
+
+def _evaluate_single_log_parameter_candidate(
+    tree,
+    states_by_taxon: dict[str, str],
+    *,
+    state_order: list[str],
+    model: str,
+    state_ordering: str,
+    allowed_transition_pairs: set[tuple[int, int]],
+    root_prior_mode: str,
+    parameter: float,
+) -> tuple[float, float]:
+    objective_value = _evaluate_log_likelihood(
+        tree,
+        states_by_taxon,
+        state_order=state_order,
+        model=model,
+        state_ordering=state_ordering,
+        allowed_transition_pairs=allowed_transition_pairs,
+        root_prior_mode=root_prior_mode,
+        log_parameters=numpy.array([parameter], dtype=float),
+    )
+    return parameter, objective_value
 
 
 def _evaluate_log_likelihood(
