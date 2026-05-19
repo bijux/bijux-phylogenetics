@@ -65,6 +65,8 @@ CONTINUOUS_GAUSSIAN_LIKELIHOOD_COMPARISON_POLICY = (
 FITCONTINUOUS_MODEL_RANKING_POLICY = (
     "relative-aic-and-aicc-ranking-is-permitted-only-when-all-candidate-modes-share-one-gaussian-likelihood-constant-policy"
 )
+FITCONTINUOUS_MODEL_CONFIDENCE_WEIGHT_BASIS = "AICc"
+FITCONTINUOUS_MODEL_CONFIDENCE_DELTA_THRESHOLD = 2.0
 
 
 @dataclass(slots=True)
@@ -227,6 +229,12 @@ class ContinuousEvolutionaryModeComparisonReport:
     likelihood_comparison_policy: str
     noncomparable_likelihood_models: list[str]
     likelihood_ratio_tests: list[LikelihoodRatioTestResult]
+    model_confidence_weight_basis: str
+    model_confidence_delta_threshold: float
+    selected_model_akaike_weight: float | None
+    models_within_delta_aic_threshold: list[str]
+    models_within_delta_aicc_threshold: list[str]
+    uncertainty_language: str
     warnings: list[str]
     selected_model_boundary_assessment: ContinuousModeBoundaryAssessment | None = None
     stable_conclusion_supported: bool = True
@@ -613,6 +621,24 @@ def _compare_selected_continuous_modes(
         likelihood_comparison_policy=FITCONTINUOUS_MODEL_RANKING_POLICY,
         noncomparable_likelihood_models=noncomparable_likelihood_models,
         likelihood_ratio_tests=likelihood_ratio_tests,
+        model_confidence_weight_basis=FITCONTINUOUS_MODEL_CONFIDENCE_WEIGHT_BASIS,
+        model_confidence_delta_threshold=FITCONTINUOUS_MODEL_CONFIDENCE_DELTA_THRESHOLD,
+        selected_model_akaike_weight=_selected_model_akaike_weight(rows),
+        models_within_delta_aic_threshold=_models_within_delta_threshold(
+            rows,
+            criterion="aic",
+            threshold=FITCONTINUOUS_MODEL_CONFIDENCE_DELTA_THRESHOLD,
+        ),
+        models_within_delta_aicc_threshold=_models_within_delta_threshold(
+            rows,
+            criterion="aicc",
+            threshold=FITCONTINUOUS_MODEL_CONFIDENCE_DELTA_THRESHOLD,
+        ),
+        uncertainty_language=_model_confidence_uncertainty_language(
+            rows,
+            better_model=better_model,
+            threshold=FITCONTINUOUS_MODEL_CONFIDENCE_DELTA_THRESHOLD,
+        ),
         warnings=comparison_warnings,
         selected_model_boundary_assessment=selected_model_boundary_assessment,
         stable_conclusion_supported=stable_conclusion_supported,
@@ -668,6 +694,16 @@ def _rank_comparison_rows(rows: list[ComparativeModelComparisonRow]) -> None:
             rel_tol=0.0,
             abs_tol=1e-12,
         )
+    raw_weights = [math.exp(-0.5 * row.delta_aicc) for row in ranked_rows]
+    weight_total = sum(raw_weights)
+    for row, raw_weight in zip(ranked_rows, raw_weights, strict=True):
+        row.akaike_weight = raw_weight / weight_total if weight_total else 0.0
+        row.within_delta_aic_threshold = (
+            row.delta_aic <= FITCONTINUOUS_MODEL_CONFIDENCE_DELTA_THRESHOLD
+        )
+        row.within_delta_aicc_threshold = (
+            row.delta_aicc <= FITCONTINUOUS_MODEL_CONFIDENCE_DELTA_THRESHOLD
+        )
     for row in rows:
         if row in comparable_rows:
             continue
@@ -675,12 +711,84 @@ def _rank_comparison_rows(rows: list[ComparativeModelComparisonRow]) -> None:
         row.delta_aic = math.inf
         row.delta_aicc = math.inf
         row.selected = False
+        row.akaike_weight = None
+        row.within_delta_aic_threshold = None
+        row.within_delta_aicc_threshold = None
     rows.sort(
         key=lambda row: (
             row.rank is None,
             math.inf if row.rank is None else row.rank,
             row.model,
         )
+    )
+
+
+def _selected_model_akaike_weight(
+    rows: list[ComparativeModelComparisonRow],
+) -> float | None:
+    selected_row = next((row for row in rows if row.selected), None)
+    if selected_row is None:
+        return None
+    return selected_row.akaike_weight
+
+
+def _models_within_delta_threshold(
+    rows: list[ComparativeModelComparisonRow],
+    *,
+    criterion: str,
+    threshold: float,
+) -> list[str]:
+    selected_rows: list[str] = []
+    for row in rows:
+        if not row.comparable:
+            continue
+        within_threshold = (
+            row.within_delta_aic_threshold
+            if criterion == "aic"
+            else row.within_delta_aicc_threshold
+        )
+        if within_threshold:
+            selected_rows.append(row.model)
+    return selected_rows
+
+
+def _model_confidence_uncertainty_language(
+    rows: list[ComparativeModelComparisonRow],
+    *,
+    better_model: str,
+    threshold: float,
+) -> str:
+    selected_row = next((row for row in rows if row.model == better_model), None)
+    if selected_row is None or selected_row.akaike_weight is None:
+        return (
+            "model confidence is unresolved because no comparable candidate retained "
+            "one finite AICc surface for Akaike-weight review"
+        )
+    nearby_models = [
+        row.model
+        for row in rows
+        if row.comparable
+        and row.model != better_model
+        and row.within_delta_aicc_threshold is True
+    ]
+    if nearby_models:
+        tied_models = ", ".join([better_model, *nearby_models])
+        return (
+            "model confidence is limited because "
+            f"{tied_models} remain within {threshold:.1f} AICc units of the selected "
+            f"surface; {better_model} carries Akaike weight "
+            f"{selected_row.akaike_weight:.3f}"
+        )
+    if selected_row.akaike_weight < 0.9:
+        return (
+            f"model confidence is moderate because {better_model} carries Akaike "
+            f"weight {selected_row.akaike_weight:.3f} even though no runner-up remains "
+            f"within {threshold:.1f} AICc units"
+        )
+    return (
+        f"model confidence is strong because {better_model} carries Akaike weight "
+        f"{selected_row.akaike_weight:.3f} and no runner-up remains within "
+        f"{threshold:.1f} AICc units"
     )
 
 

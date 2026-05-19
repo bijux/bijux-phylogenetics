@@ -131,6 +131,9 @@ class ComparativeModelComparisonRow:
     comparability_note: str | None = None
     selected: bool = False
     likelihood_constant_policy: str | None = None
+    akaike_weight: float | None = None
+    within_delta_aic_threshold: bool | None = None
+    within_delta_aicc_threshold: bool | None = None
 
 
 @dataclass(slots=True)
