@@ -9,7 +9,7 @@ from bijux_phylogenetics.engines.fasta_to_tree import (
     FastaToTreeWorkflowReport,
     run_fasta_to_tree_workflow,
 )
-from bijux_phylogenetics.io.fasta import validate_fasta_input
+from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 
 _DATASET_ID = "influenza_a_ha_reference_panel"
 _DATASET_LABEL = "Influenza A hemagglutinin reference panel"

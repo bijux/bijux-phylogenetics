@@ -14,15 +14,17 @@ from bijux_phylogenetics.engines.fasta_to_tree import (
     FastaToTreeWorkflowReport,
     run_fasta_to_tree_workflow,
 )
-from bijux_phylogenetics.io.fasta import (
+from bijux_phylogenetics.io.fasta._shared import (
     AlignmentRecord,
-    build_alignment_quality_report,
     load_fasta_records,
+    write_fasta_alignment,
+)
+from bijux_phylogenetics.io.fasta.cleaning import trim_alignment
+from bijux_phylogenetics.io.fasta.quality import build_alignment_quality_report
+from bijux_phylogenetics.io.fasta.records import (
     summarise_fasta,
     summarise_records_as_alignment_summary,
-    trim_alignment,
     validate_fasta_input,
-    write_fasta_alignment,
 )
 
 _DATASET_ID = "pleistocene_bear_cytb_fragments"

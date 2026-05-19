@@ -9,11 +9,11 @@ from bijux_phylogenetics.engines.fasta_to_tree import (
     FastaToTreeWorkflowReport,
     run_fasta_to_tree_workflow,
 )
-from bijux_phylogenetics.io.fasta import (
+from bijux_phylogenetics.io.fasta._shared import (
     load_fasta_alignment,
     load_fasta_records,
-    validate_fasta_input,
 )
+from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 
 _DATASET_ID = "gnathostome_ortholog_protein_benchmark"
 _DATASET_LABEL = "Gnathostome ortholog protein benchmark"

@@ -64,11 +64,11 @@ from bijux_phylogenetics.fixtures import get_shared_tree_simulation_fixture
 from bijux_phylogenetics.comparative import (
     compute_diversification_gamma_statistic,
 )
-from bijux_phylogenetics.io.fasta import (
+from bijux_phylogenetics.io.fasta.coding import translate_coding_alignment
+from bijux_phylogenetics.io.fasta.matrix import (
     compute_alignment_base_frequency_report,
     compute_alignment_segregating_site_report,
     load_dna_bin_alignment,
-    translate_coding_alignment,
 )
 from bijux_phylogenetics.io.newick import (
     dumps_newick,

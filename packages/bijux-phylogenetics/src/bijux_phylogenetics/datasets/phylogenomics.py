@@ -21,11 +21,11 @@ from bijux_phylogenetics.engines import (
     run_bootstrap_support_estimation,
     run_model_selection,
 )
-from bijux_phylogenetics.io.fasta import (
+from bijux_phylogenetics.io.fasta._shared import (
     load_fasta_alignment,
-    validate_fasta_input,
     write_fasta_alignment,
 )
+from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 
 _DATASET_ID = "catarrhine_mitogenome_five_locus_panel"
 _DATASET_LABEL = "Catarrhine mitogenome five-locus panel"

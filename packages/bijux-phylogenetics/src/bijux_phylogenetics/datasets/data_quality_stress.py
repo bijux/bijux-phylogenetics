@@ -30,14 +30,16 @@ from bijux_phylogenetics.diagnostics.validation import (
     validate_tree_path,
 )
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
-from bijux_phylogenetics.io.fasta import (
-    detect_composition_outlier_sequences,
-    detect_sequence_length_outliers,
+from bijux_phylogenetics.io.fasta._shared import (
     load_fasta_alignment,
-    prepare_coding_sequences_for_alignment,
+    write_fasta_alignment,
+)
+from bijux_phylogenetics.io.fasta.cleaning import detect_composition_outlier_sequences
+from bijux_phylogenetics.io.fasta.coding import prepare_coding_sequences_for_alignment
+from bijux_phylogenetics.io.fasta.records import (
+    detect_sequence_length_outliers,
     repair_fasta_input,
     validate_fasta_input,
-    write_fasta_alignment,
 )
 from bijux_phylogenetics.io.newick import write_newick
 

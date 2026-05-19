@@ -121,12 +121,12 @@ from bijux_phylogenetics.host_association import (
     write_unsupported_host_switch_claim_table,
 )
 from bijux_phylogenetics.io.biopython import tree_from_biophylo, tree_to_biophylo
-from bijux_phylogenetics.io.fasta import (
+from bijux_phylogenetics.io.fasta._shared import load_permissive_fasta_records
+from bijux_phylogenetics.io.fasta.quality import (
     build_alignment_quality_report,
     build_sequence_quality_ranking,
-    load_permissive_fasta_records,
-    validate_fasta_input,
 )
+from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.simulation import write_tree_set
