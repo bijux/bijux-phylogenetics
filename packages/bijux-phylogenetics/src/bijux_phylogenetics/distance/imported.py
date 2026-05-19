@@ -23,7 +23,7 @@ from .models import (
     NonMetricDistanceObservation,
     SaturatedDistancePair,
 )
-from . import (
+from .shared import (
     _iter_ultrametric_violations,
     _pair_key,
     _require_supported_distance_tree_method,

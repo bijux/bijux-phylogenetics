@@ -43,11 +43,11 @@ from . import (
     _bio_distance_matrix,
     _distance_lookup,
     _load_alignment_for_model,
-    _require_supported_distance_tree_method,
     assess_distance_method_assumptions_from_genetic_distance_matrix,
     compute_pairwise_genetic_distance_matrix,
     inspect_distance_matrix_quality,
 )
+from .shared import _require_supported_distance_tree_method
 
 
 def build_distance_tree(
