@@ -52,7 +52,7 @@ from bijux_phylogenetics.runtime.errors import (
     TreeParseError,
 )
 from bijux_phylogenetics.io.biopython import loads_biophylo
-from bijux_phylogenetics.io.fasta._shared import (
+from bijux_phylogenetics.io.fasta import (
     infer_alignment_alphabet,
     load_fasta_alignment,
 )

@@ -14,7 +14,7 @@ from bijux_phylogenetics.engines.fasta_to_tree import (
     FastaToTreeWorkflowReport,
     run_fasta_to_tree_workflow,
 )
-from bijux_phylogenetics.io.fasta._shared import (
+from bijux_phylogenetics.io.fasta import (
     AlignmentRecord,
     load_fasta_records,
     write_fasta_alignment,

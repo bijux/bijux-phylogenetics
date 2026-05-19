@@ -123,7 +123,7 @@ from bijux_phylogenetics.host_association import (
     write_unsupported_host_switch_claim_table,
 )
 from bijux_phylogenetics.io.biopython import tree_from_biophylo, tree_to_biophylo
-from bijux_phylogenetics.io.fasta._shared import load_permissive_fasta_records
+from bijux_phylogenetics.io.fasta import load_permissive_fasta_records
 from bijux_phylogenetics.io.fasta.quality import (
     build_alignment_quality_report,
     build_sequence_quality_ranking,

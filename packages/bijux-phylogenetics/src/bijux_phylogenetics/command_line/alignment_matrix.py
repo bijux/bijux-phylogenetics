@@ -22,7 +22,7 @@ from bijux_phylogenetics.core.partitions import (
     parse_locus_partitions,
     write_partition_summary_table,
 )
-from bijux_phylogenetics.io.fasta._shared import write_fasta_alignment
+from bijux_phylogenetics.io.fasta import write_fasta_alignment
 from bijux_phylogenetics.io.fasta.cleaning import (
     clean_alignment_with_profile,
     compare_alignment_versions,

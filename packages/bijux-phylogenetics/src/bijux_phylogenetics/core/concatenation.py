@@ -17,7 +17,7 @@ from bijux_phylogenetics.core.partitions import (
     normalize_partition_data_type,
 )
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError, InvalidPartitionError
-from bijux_phylogenetics.io.fasta._shared import (
+from bijux_phylogenetics.io.fasta import (
     infer_alignment_alphabet,
     load_fasta_alignment,
 )

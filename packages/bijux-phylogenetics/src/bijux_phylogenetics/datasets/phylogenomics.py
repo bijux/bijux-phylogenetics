@@ -21,7 +21,7 @@ from bijux_phylogenetics.engines.workflows.iqtree import (
     run_model_selection,
 )
 from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
-from bijux_phylogenetics.io.fasta._shared import (
+from bijux_phylogenetics.io.fasta import (
     load_fasta_alignment,
     write_fasta_alignment,
 )

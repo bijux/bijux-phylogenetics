@@ -23,7 +23,7 @@ from bijux_phylogenetics.runtime.error_explanations import (
     explain_inference_workflow_failure,
 )
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
-from bijux_phylogenetics.io.fasta._shared import load_fasta_alignment
+from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.fasta.quality import summarize_alignment_readiness
 from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 from bijux_phylogenetics.io.fasttree_support import (

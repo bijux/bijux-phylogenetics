@@ -30,7 +30,7 @@ from bijux_phylogenetics.diagnostics.validation import (
     validate_tree_path,
 )
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
-from bijux_phylogenetics.io.fasta._shared import (
+from bijux_phylogenetics.io.fasta import (
     load_fasta_alignment,
     write_fasta_alignment,
 )

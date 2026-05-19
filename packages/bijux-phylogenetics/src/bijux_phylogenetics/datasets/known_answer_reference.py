@@ -47,7 +47,7 @@ from bijux_phylogenetics.host_association import (
     write_host_switch_branch_table,
     write_host_switch_summary_table,
 )
-from bijux_phylogenetics.io.fasta._shared import load_fasta_alignment
+from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.io.trees import load_tree

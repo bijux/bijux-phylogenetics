@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.engines.common import file_sha256
-from bijux_phylogenetics.io.fasta._shared import load_fasta_alignment
+from bijux_phylogenetics.io.fasta import load_fasta_alignment
 
 __all__ = [
     "RabiesMethodSensitivityReproducibilityAuditReport",

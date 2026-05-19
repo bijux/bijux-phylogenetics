@@ -14,7 +14,7 @@ from bijux_phylogenetics.core.alignment import (
     SequenceQualityRankingRow,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.io.fasta._shared import load_fasta_alignment
+from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.fasta.quality import (
     build_alignment_forensic_report,
     summarize_alignment_windows,

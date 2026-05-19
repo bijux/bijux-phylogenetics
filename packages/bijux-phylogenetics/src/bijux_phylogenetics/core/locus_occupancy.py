@@ -15,7 +15,7 @@ from bijux_phylogenetics.core.partitions import (
     write_locus_partitions as _write_locus_partitions,
 )
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError, InvalidPartitionError
-from bijux_phylogenetics.io.fasta._shared import load_fasta_alignment
+from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.fasta.records import summarise_records_as_alignment_summary
 
 __all__ = [

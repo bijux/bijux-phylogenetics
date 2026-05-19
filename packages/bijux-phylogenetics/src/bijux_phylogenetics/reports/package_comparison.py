@@ -8,7 +8,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.compare import compare_tree_structurally, compare_tree_paths
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.io.fasta._shared import load_fasta_records
+from bijux_phylogenetics.io.fasta import load_fasta_records
 from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.reports.publication_package_support import (

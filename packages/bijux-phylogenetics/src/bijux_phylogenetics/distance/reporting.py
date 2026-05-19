@@ -6,7 +6,7 @@ from pathlib import Path
 import shutil
 import tempfile
 
-from bijux_phylogenetics.io.fasta._shared import (
+from bijux_phylogenetics.io.fasta import (
     infer_alignment_alphabet,
     load_fasta_alignment,
 )

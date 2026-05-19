@@ -9,7 +9,7 @@ from bijux_phylogenetics.engines.fasta_to_tree import (
     FastaToTreeWorkflowReport,
     run_fasta_to_tree_workflow,
 )
-from bijux_phylogenetics.io.fasta._shared import (
+from bijux_phylogenetics.io.fasta import (
     load_fasta_alignment,
     load_fasta_records,
 )
