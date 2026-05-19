@@ -2,6 +2,12 @@
 
 This packaged simulation panel benchmarks Bijux discrete Mk recovery against known transition-rate truth and stored local `geiger::fitDiscrete` recovery references.
 
+The packaged Python surface lives under
+`bijux_phylogenetics.datasets.discrete_mode_recovery` and is intentionally
+split by ownership: `panel` exposes dataset metadata, `scenarios` owns the
+case-table parser, `workflow` reruns the benchmark, `bundle` writes the
+reviewer-facing ledgers, and `demo` materializes the full review bundle.
+
 The panel contains:
 
 - `trees/reference-tree-twelve-taxa.nwk`: the governed twelve-taxon rooted review tree for the overparameterized five-state ARD failure surface.

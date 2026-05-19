@@ -440,6 +440,15 @@ transform-parameter recovery, and transform-parameter comparison ledgers,
 records execution and warning review rows, and keeps review-only ARD cases
 explicit instead of flattening weak identification into success claims.
 
+The same packaged panel is available as a typed Python surface under
+`bijux_phylogenetics.datasets.discrete_mode_recovery`. Use
+`load_discrete_mode_recovery_panel_dataset()` to inspect the packaged trees
+and case table, `run_discrete_mode_recovery_panel_workflow()` to rerun the
+governed recovery report in memory,
+`write_discrete_mode_recovery_panel_workflow_bundle(...)` to emit the
+reviewer-facing ledgers, or `run_discrete_mode_recovery_panel_demo(...)` to
+materialize the dataset copy plus the workflow outputs in one call.
+
 For governed owned known-answer recovery review, use
 `demo known-answer-reference-panel`. It materializes the packaged simulation
 dataset, rebuilds the distance tree, reruns the continuous and discrete
@@ -1874,14 +1883,18 @@ one three-state ARD weak-identification review, and one five-state
 overparameterized ARD failure review across the governed twelve-taxon and
 twenty-four-taxon trees. Bijux exposes that benchmark through
 `run_discrete_mode_recovery_panel_workflow()` and
-`demo discrete-mode-recovery-panel`, writes paired rate-recovery,
-rate-comparison, model-choice, and transform-parameter ledgers, compares
-Bijux truth error against stored local `geiger` truth error wherever the panel
-defines that truth, and keeps the scientific boundary explicit: the ARD
-surfaces are review cases and are not counted as successful recovery when the
-information-criterion surface prefers simpler models, when fitted state pairs
-drop out entirely, or when transform-bearing cases are not part of the
-governed panel.
+`demo discrete-mode-recovery-panel`, while the packaged dataset and artifact
+materialization surface also stays available through
+`load_discrete_mode_recovery_panel_dataset()`,
+`write_discrete_mode_recovery_panel_workflow_bundle(...)`, and
+`run_discrete_mode_recovery_panel_demo(...)`. The benchmark writes paired
+rate-recovery, rate-comparison, model-choice, and transform-parameter
+ledgers, compares Bijux truth error against stored local `geiger` truth error
+wherever the panel defines that truth, and keeps the scientific boundary
+explicit: the ARD surfaces are review cases and are not counted as successful
+recovery when the information-criterion surface prefers simpler models, when
+fitted state pairs drop out entirely, or when transform-bearing cases are not
+part of the governed panel.
 The same owned simulation surface now also exposes
 `simulate_correlated_brownian_trait_collection(...)` for two or more
 continuous traits on one fixed tree from one explicit evolutionary covariance
