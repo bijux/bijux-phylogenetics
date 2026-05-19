@@ -62,6 +62,7 @@ from bijux_phylogenetics.comparative import (
     ComparativeReportPackageResult,
     CorrelatedTraitEvolutionReport,
     DiscreteMkFitReport,
+    DiscreteMkModelComparisonReport,
     EarlyBurstTraitEvolutionSummaryReport,
     PagelLambdaLikelihoodReport,
     TraitOutlierSummaryReport,
@@ -72,6 +73,7 @@ from bijux_phylogenetics.comparative import (
     build_comparative_report_package,
     build_pgls_model_matrix,
     compare_comparative_regression_models,
+    compare_discrete_mk_model_ranking,
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
     estimate_pagels_lambda,
@@ -719,6 +721,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert comparative_api.summarize_phylogenetic_signal is summarize_phylogenetic_signal
     assert comparative_api.compute_blombergs_k is compute_blombergs_k
     assert comparative_api.fit_discrete_mk_model is fit_discrete_mk_model
+    assert (
+        comparative_api.compare_discrete_mk_model_ranking
+        is compare_discrete_mk_model_ranking
+    )
     assert comparative_api.estimate_pagels_lambda is estimate_pagels_lambda
     assert (
         comparative_api.build_comparative_report_package
@@ -822,6 +828,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
 
     assert comparative_api.PagelLambdaLikelihoodReport is PagelLambdaLikelihoodReport
     assert comparative_api.DiscreteMkFitReport is DiscreteMkFitReport
+    assert (
+        comparative_api.DiscreteMkModelComparisonReport
+        is DiscreteMkModelComparisonReport
+    )
     assert (
         comparative_api.BrownianRegimeFitSummaryReport
         is BrownianRegimeFitSummaryReport
