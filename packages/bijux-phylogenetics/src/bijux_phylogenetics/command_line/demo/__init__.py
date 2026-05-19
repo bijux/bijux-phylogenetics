@@ -4,6 +4,10 @@ from pathlib import Path
 from typing import Any
 
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
+from bijux_phylogenetics.command_line.demo.benchmark_panels import (
+    add_benchmark_demo_commands,
+    run_benchmark_demo_command,
+)
 from bijux_phylogenetics.command_line.demo.introductory_panels import (
     add_introductory_demo_commands,
     run_introductory_demo_command,
@@ -48,15 +52,7 @@ def add_demo_command(subparsers: Any) -> None:
     )
     demo_subparsers = demo.add_subparsers(dest="demo_command", required=True)
     add_introductory_demo_commands(demo_subparsers)
-    demo_real_dataset_benchmark = demo_subparsers.add_parser(
-        "real-dataset-macroevolution",
-        help="Materialize the packaged Central European plant dataset together with the governed real-dataset macroevolution benchmark bundle.",
-    )
-    demo_real_dataset_benchmark.add_argument("--out", required=True, type=Path)
-    demo_real_dataset_benchmark.add_argument(
-        "--json", action="store_true", help="Emit the demo result as JSON."
-    )
-    _add_manifest_argument(demo_real_dataset_benchmark)
+    add_benchmark_demo_commands(demo_subparsers)
     demo_viruses = demo_subparsers.add_parser(
         "influenza-a-ha-reference-panel",
         help="Materialize the packaged influenza A HA dataset and rerun the sequence-to-tree workflow outputs.",
@@ -232,40 +228,9 @@ def run_demo_command(args: Any) -> int:
     introductory_exit_code = run_introductory_demo_command(args)
     if introductory_exit_code is not None:
         return introductory_exit_code
-
-    if args.demo_command == "real-dataset-macroevolution":
-        result = resolve_demo_runner(
-            "run_real_dataset_macroevolution_benchmark_demo"
-        )(args.out)
-        outputs = [
-            result.dataset_export.readme_path,
-            result.dataset_export.tree_path,
-            result.dataset_export.traits_path,
-            result.benchmark_bundle.review_traits_path,
-            result.benchmark_bundle.summary_path,
-            result.benchmark_bundle.model_table_path,
-            result.benchmark_bundle.alignment_review_path,
-            result.benchmark_bundle.parity_table_path,
-            result.benchmark_bundle.geiger_reference_path,
-            result.overview_path,
-        ]
-        return emit_demo_result(
-            args,
-            outputs=outputs,
-            metrics={
-                "artifact_count": len(outputs),
-                "dataset_taxon_count": result.dataset.taxon_count,
-                "summary_row_count": 4,
-                "native_model_row_count": 8,
-                "alignment_review_row_count": 2,
-                "parity_row_count": 10,
-                "reference_output_count": count_expected_output_files(
-                    result.dataset_export.expected_output_root
-                ),
-            },
-            data=result,
-            output_root=result.output_root,
-        )
+    benchmark_exit_code = run_benchmark_demo_command(args)
+    if benchmark_exit_code is not None:
+        return benchmark_exit_code
 
     if args.demo_command == "influenza-a-ha-reference-panel":
         result = run_influenza_a_ha_reference_demo(
