@@ -126,6 +126,7 @@ from bijux_phylogenetics.parity import (
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
     benchmark_large_alignment_scaling,
+    benchmark_large_tree_model_fitting,
     benchmark_large_tree_set_scaling,
     benchmark_large_tree_scaling,
     benchmark_large_dataset_stress_suite,
@@ -3253,6 +3254,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the benchmark report as JSON."
     )
     _add_manifest_argument(benchmark_stress)
+    benchmark_large_tree_model = benchmark_subparsers.add_parser(
+        "large-tree-model-fitting",
+        help="Benchmark 100+ taxon continuous and discrete model fitting with governed geiger comparison and heavy-tier review.",
+    )
+    benchmark_large_tree_model.add_argument(
+        "--tier",
+        choices=("small", "heavy"),
+        default="small",
+        help="Select the governed model-fitting tier to execute.",
+    )
+    benchmark_large_tree_model.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(benchmark_large_tree_model)
 
     parity = subparsers.add_parser(
         get_command_spec("parity").name, help=get_command_spec("parity").summary
@@ -9069,6 +9084,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
             elif args.benchmark_command == "stress-suite":
                 report = benchmark_large_dataset_stress_suite(tier=args.tier)
+            elif args.benchmark_command == "large-tree-model-fitting":
+                report = benchmark_large_tree_model_fitting(tier=args.tier)
             else:
                 report = benchmark_alignment_diagnostics(
                     replicates=args.replicates,
@@ -9091,6 +9108,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 metrics["replicates"] = report.replicates
             if hasattr(report, "tier"):
                 metrics["tier"] = report.tier
+            if hasattr(report, "case_count"):
+                metrics["case_count"] = report.case_count
+            if hasattr(report, "geiger_match_case_count"):
+                metrics["geiger_match_case_count"] = report.geiger_match_case_count
+            if hasattr(report, "threshold_pass_case_count"):
+                metrics["threshold_pass_case_count"] = (
+                    report.threshold_pass_case_count
+                )
+            if hasattr(report, "too_slow_case_count"):
+                metrics["too_slow_case_count"] = report.too_slow_case_count
+            if hasattr(report, "unstable_case_count"):
+                metrics["unstable_case_count"] = report.unstable_case_count
             if hasattr(report, "stress_tiers"):
                 metrics["stress_tier_count"] = len(report.stress_tiers)
             if hasattr(report, "workflows"):
@@ -9132,6 +9161,14 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     metrics["max_tree_limit"] = max(tree_limits)
                 if posterior_limits:
                     metrics["max_posterior_size"] = max(posterior_limits)
+            if hasattr(report, "observations") and report.observations:
+                taxon_counts = [
+                    row.taxon_count
+                    for row in report.observations
+                    if hasattr(row, "taxon_count") and row.taxon_count is not None
+                ]
+                if taxon_counts:
+                    metrics["max_taxon_count"] = max(taxon_counts)
             _print_result(
                 build_command_result(
                     command="benchmark",
