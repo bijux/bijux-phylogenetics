@@ -11,8 +11,13 @@ from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.svg import TreeRenderResult, render_tree_svg
 
-from .core import (
-    _DEFAULT_STATE_COLORS,
+from .analysis import (
+    assess_geographic_state_analysis_readiness,
+    estimate_ancestral_geographic_states,
+    run_discrete_state_transition_model,
+)
+from .comparison import compare_discrete_state_models
+from .models import (
     BiogeographicComputedResult,
     BiogeographicInterpretationReport,
     DiscreteEvolutionNarrative,
@@ -22,12 +27,9 @@ from .core import (
     DiscreteTransitionReferenceObservation,
     DiscreteTransitionReferenceRate,
     DiscreteTransitionReferenceValidationReport,
-    assess_geographic_state_analysis_readiness,
-    audit_discrete_state_coding,
-    compare_discrete_state_models,
-    estimate_ancestral_geographic_states,
-    run_discrete_state_transition_model,
 )
+from .palette import _DEFAULT_STATE_COLORS
+from .state_coding import audit_discrete_state_coding
 
 
 def _build_discrete_evolution_narrative(

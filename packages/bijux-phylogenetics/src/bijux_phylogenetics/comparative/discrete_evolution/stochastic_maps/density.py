@@ -9,7 +9,7 @@ from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.svg import render_tree_svg
 
-from ..core import _DEFAULT_STATE_COLORS
+from ..palette import _DEFAULT_STATE_COLORS
 from .models import (
     StochasticMapBranchProbabilityRow,
     StochasticMapCollectionReport,

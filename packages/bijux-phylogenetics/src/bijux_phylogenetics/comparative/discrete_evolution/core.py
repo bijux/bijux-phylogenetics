@@ -37,6 +37,7 @@ from .models import (
     TransitionSupportRow as TransitionSupportRow,
 )
 from .numeric import _quantile as _quantile
+from .palette import _DEFAULT_STATE_COLORS as _DEFAULT_STATE_COLORS
 from .state_coding import (
     audit_discrete_state_coding as audit_discrete_state_coding,
     detect_state_imbalance_problems as detect_state_imbalance_problems,
@@ -51,15 +52,4 @@ from .transition_engine import (
     _root_prior as _root_prior,
     _stationary_frequencies as _stationary_frequencies,
     _transition_events as _transition_events,
-)
-
-_DEFAULT_STATE_COLORS = (
-    "#0f766e",
-    "#1d4ed8",
-    "#c2410c",
-    "#7c3aed",
-    "#b91c1c",
-    "#047857",
-    "#a16207",
-    "#0f172a",
 )
