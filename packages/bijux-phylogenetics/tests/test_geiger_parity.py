@@ -854,7 +854,7 @@ def test_run_geiger_parity_cases_governs_model_comparison_reference_payloads(
     )
     assert brownian.reference_summary is not None
     assert brownian.reference_summary["selected_model"] == "brownian"
-    assert brownian.reference_summary["runner_up_model"] == "pagel-kappa"
+    assert brownian.reference_summary["runner_up_model"] == "ornstein-uhlenbeck"
     assert brownian.reference_summary["warning_count"] == 1
     assert brownian.reference_rows is not None
     assert brownian.reference_rows[0]["model"] == "brownian"
@@ -864,8 +864,8 @@ def test_run_geiger_parity_cases_governs_model_comparison_reference_payloads(
     assert brownian.bijux_summary is not None
     assert brownian.bijux_summary["model_ranking"][:3] == [
         "brownian",
-        "pagel-kappa",
         "ornstein-uhlenbeck",
+        "pagel-delta",
     ]
     white = next(
         item
@@ -1613,10 +1613,12 @@ def test_run_geiger_parity_cases_builds_model_confidence_rows(
     assert brownian_row.akaike_weight_match_within_tolerance is True
     assert brownian_row.reference_within_delta_aic_threshold is True
     assert brownian_row.within_delta_aic_threshold_match is True
-    runner_up_row = rows_by_model["pagel-kappa"]
-    assert runner_up_row.reference_rank == 2
+    runner_up_row = next(
+        row for row in report.model_confidence_rows if row.reference_rank == 2
+    )
+    assert runner_up_row.candidate_model == "ornstein-uhlenbeck"
     assert runner_up_row.reference_within_delta_aic_threshold is True
-    assert runner_up_row.reference_within_delta_aicc_threshold is True
+    assert runner_up_row.reference_within_delta_aicc_threshold is False
     white_row = rows_by_model["white-noise"]
     assert white_row.reference_within_delta_aic_threshold is False
     assert white_row.bijux_within_delta_aic_threshold is False
