@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ..core import _quantile
+from ..numeric import _quantile
 from .models import (
     StochasticMapBranchOccupancyRow,
     StochasticMapBranchTransitionCountRow,
