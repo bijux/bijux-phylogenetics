@@ -93,6 +93,17 @@ from bijux_phylogenetics.trees import (
     TreeSetCladeSupportRow,
 )
 from bijux_phylogenetics.io.newick import dumps_newick
+from .columns import (
+    alignment_table_columns as _alignment_table_columns,
+    ancestral_state_table_columns as _ancestral_state_table_columns,
+    batch_summary_table_columns as _batch_summary_table_columns,
+    clade_support_table_columns as _clade_support_table_columns,
+    comparative_model_table_columns as _comparative_model_table_columns,
+    diversification_table_columns as _diversification_table_columns,
+    model_selection_table_columns as _model_selection_table_columns,
+    taxon_table_columns as _table_columns,
+    tree_table_columns as _tree_table_columns,
+)
 from .models import (
     SupplementaryAlignmentDiagnosticsRow,
     SupplementaryAlignmentDiagnosticsTableResult,
@@ -113,361 +124,13 @@ from .models import (
     SupplementaryTreeDiagnosticsRow,
     SupplementaryTreeDiagnosticsTableResult,
 )
-
-
-def _row_lookup(table: TaxonTable) -> dict[str, dict[str, str]]:
-    return {row[table.taxon_column]: row for row in table.rows}
-
-
-def _stringify_list(values: list[str]) -> str:
-    return "|".join(values)
-
-
-def _stringify_mapping(values: dict[str, str]) -> str:
-    return "|".join(f"{key}={value}" for key, value in sorted(values.items()))
-
-
-def _table_delimiter(path: Path) -> str:
-    return "," if path.suffix.lower() == ".csv" else "\t"
-
-
-def _build_dynamic_columns(
-    metadata_table: TaxonTable,
-    traits_table: TaxonTable,
-) -> tuple[list[str], list[str]]:
-    metadata_columns = [
-        f"metadata_{column}"
-        for column in metadata_table.columns
-        if column != metadata_table.taxon_column
-    ]
-    trait_columns = [
-        f"trait_{column}"
-        for column in traits_table.columns
-        if column != traits_table.taxon_column
-    ]
-    return metadata_columns, trait_columns
-
-
-def _table_columns(metadata_table: TaxonTable, traits_table: TaxonTable) -> list[str]:
-    metadata_columns, trait_columns = _build_dynamic_columns(
-        metadata_table, traits_table
-    )
-    return [
-        "taxon",
-        "tree_tip_id",
-        "alignment_id",
-        "metadata_id",
-        "trait_id",
-        "tip_date_id",
-        "geography_source",
-        "calibration_targets",
-        "external_taxonomy_ids",
-        "analysis_status",
-        "analysis_exclusion_reason",
-        "analysis_exclusion_causes",
-        "analysis_first_failed_surface",
-        "affected_analyses",
-        "reporting_status",
-        "reporting_loss_reason",
-        "workflow_first_loss_stage",
-        "workflow_loss_stages",
-        "workflow_loss_reasons",
-        "in_tree",
-        "in_alignment",
-        "in_metadata",
-        "in_traits",
-        "in_tip_dates",
-        "in_geography",
-        "in_calibrations",
-        *metadata_columns,
-        *trait_columns,
-    ]
-
-
-def _alignment_table_columns() -> list[str]:
-    return [
-        "sequence_id",
-        "original_sequence_present",
-        "filtered_sequence_present",
-        "filtering_status",
-        "filtering_reason",
-        "original_missing_fraction",
-        "original_gap_fraction",
-        "original_ambiguity_fraction",
-        "original_quality_score",
-        "duplicate_status",
-        "composition_outlier",
-        "original_alignment_length",
-        "original_sequence_count",
-        "original_missing_data_fraction",
-        "original_gap_fraction_alignment",
-        "original_variable_site_count",
-        "original_parsimony_informative_site_count",
-        "original_suspicious_alignment",
-        "original_low_information",
-        "original_low_information_reasons",
-        "filtered_alignment_length",
-        "filtered_sequence_count",
-        "filtered_missing_data_fraction",
-        "filtered_gap_fraction_alignment",
-        "filtered_variable_site_count",
-        "filtered_parsimony_informative_site_count",
-        "filtered_low_information",
-        "filtered_low_information_reasons",
-    ]
-
-
-def _tree_table_columns() -> list[str]:
-    return [
-        "tree_source",
-        "source_format",
-        "tip_count",
-        "internal_node_count",
-        "edge_count",
-        "clade_count",
-        "topology_shape",
-        "is_binary",
-        "star_like",
-        "comb_like",
-        "polytomy_count",
-        "polytomy_nodes",
-        "rooted",
-        "root_state_classification",
-        "root_state_suspicious",
-        "branch_length_status",
-        "has_complete_branch_lengths",
-        "total_branch_length",
-        "minimum_branch_length",
-        "maximum_branch_length",
-        "mean_branch_length",
-        "median_branch_length",
-        "positive_branch_median",
-        "missing_branch_count",
-        "zero_length_branch_count",
-        "negative_branch_count",
-        "long_branch_outlier_count",
-        "short_branch_outlier_count",
-        "supported_branch_count",
-        "strong_support_branch_count",
-        "moderate_support_branch_count",
-        "weak_support_branch_count",
-        "missing_support_branch_count",
-        "support_value_range_warnings",
-        "ultrametric",
-        "min_root_to_tip",
-        "max_root_to_tip",
-        "tree_diameter",
-        "tree_quality_score",
-        "safe_for_topology_comparison",
-        "safe_for_time_tree_analysis",
-        "safe_for_comparative_methods",
-        "safe_for_visualization",
-        "safe_for_publication",
-        "warning_count",
-        "warnings",
-    ]
-
-
-def _clade_support_table_columns() -> list[str]:
-    return [
-        "tree_source",
-        "comparison_tree_set_source",
-        "clade_id",
-        "node_kind",
-        "node_label",
-        "descendant_taxa",
-        "support",
-        "support_fraction",
-        "support_class",
-        "support_method",
-        "branch_length",
-        "root_depth",
-        "supporting_tree_count",
-        "clade_frequency",
-        "support_percent",
-        "frequency_method",
-        "frequency_status",
-        "frequency_explanation",
-    ]
-
-
-def _model_selection_table_columns() -> list[str]:
-    return [
-        "iqtree_report_source",
-        "model_sidecar_source",
-        "rank",
-        "model",
-        "log_likelihood",
-        "parameter_count",
-        "aic",
-        "aicc",
-        "bic",
-        "best_aic",
-        "best_aicc",
-        "best_bic",
-        "selected_model",
-        "selected_model_name",
-        "selected_criterion",
-    ]
-
-
-def _comparative_model_table_columns() -> list[str]:
-    return [
-        "tree_source",
-        "traits_source",
-        "response",
-        "formula",
-        "model_family",
-        "selected_criterion",
-        "best_formula",
-        "rank",
-        "selected",
-        "analysis_taxon_count",
-        "excluded_taxon_count",
-        "excluded_taxa",
-        "encoded_columns",
-        "coefficient_name",
-        "estimate",
-        "standard_error",
-        "test_statistic",
-        "p_value",
-        "lower_95_confidence_interval",
-        "upper_95_confidence_interval",
-        "inference_distribution",
-        "phylogenetic_parameter_name",
-        "phylogenetic_parameter_value",
-        "phylogenetic_parameter_estimated",
-        "log_likelihood",
-        "aic",
-        "aicc",
-        "bic",
-        "delta_aicc",
-        "delta_bic",
-        "akaike_weight",
-        "residual_mean",
-        "outlier_taxon_count",
-        "outlier_taxa",
-        "max_leverage",
-        "max_abs_standardized_residual",
-        "converged",
-        "iteration_count",
-        "separation_detected",
-        "diagnostic_warning_count",
-        "diagnostic_warnings",
-    ]
-
-
-def _ancestral_state_table_columns() -> list[str]:
-    return [
-        "tree_source",
-        "traits_source",
-        "trait",
-        "reconstruction_kind",
-        "model",
-        "estimator",
-        "state_ordering",
-        "root_prior_mode",
-        "fixed_root_state",
-        "alpha",
-        "analysis_taxon_count",
-        "excluded_taxon_count",
-        "excluded_taxa",
-        "warning_count",
-        "warnings",
-        "node",
-        "node_name",
-        "descendant_taxa",
-        "descendant_taxon_count",
-        "estimate_value",
-        "most_likely_state",
-        "state_set",
-        "state_probabilities",
-        "standard_error",
-        "lower_95_interval",
-        "upper_95_interval",
-        "confidence",
-        "ambiguous",
-        "unstable",
-        "interpretation",
-        "downstream_risks",
-    ]
-
-
-def _diversification_table_columns() -> list[str]:
-    return [
-        "tree_source",
-        "metadata_source",
-        "clade_model",
-        "better_model",
-        "node",
-        "node_name",
-        "descendant_taxa",
-        "tip_count",
-        "crown_age",
-        "clade_diversification_rate",
-        "clade_rate_z_score",
-        "clade_classification",
-        "global_diversification_rate",
-        "yule_log_likelihood",
-        "yule_aic",
-        "yule_corrected_tip_count",
-        "yule_sampling_fraction",
-        "yule_net_diversification_rate",
-        "yule_relative_extinction",
-        "birth_death_log_likelihood",
-        "birth_death_aic",
-        "birth_death_corrected_tip_count",
-        "birth_death_sampling_fraction",
-        "birth_death_net_diversification_rate",
-        "birth_death_relative_extinction",
-        "sampling_metadata_complete",
-        "sampling_column",
-        "sampling_fraction",
-        "sampling_heterogeneous",
-        "sampling_missing_taxa",
-        "sampling_invalid_rows",
-        "warning_count",
-        "warnings",
-    ]
-
-
-def _batch_summary_table_columns() -> list[str]:
-    return [
-        "row_scope",
-        "dataset_id",
-        "dataset_label",
-        "workflow_status",
-        "variant_id",
-        "label",
-        "execution_mode",
-        "task_status",
-        "job_status",
-        "output_freshness_status",
-        "recovery_action",
-        "merge_status",
-        "evidence_status",
-        "reproducibility_status",
-        "selected_model",
-        "output_root",
-        "task_log_path",
-        "evidence_json_path",
-        "evidence_html_path",
-        "variant_count",
-        "successful_variant_count",
-        "failed_variant_count",
-        "output_file_count",
-        "output_byte_count",
-        "artifact_file_count",
-        "linked_artifact_count",
-        "linked_artifact_bytes",
-        "issue_count",
-        "issues",
-        "error_code",
-        "error_message",
-        "job_evidence_warning_count",
-        "warning_count",
-        "warnings",
-    ]
+from .shared import (
+    row_lookup as _row_lookup,
+    stringify_list as _stringify_list,
+    stringify_mapping as _stringify_mapping,
+    table_delimiter as _table_delimiter,
+    write_dict_rows as _write_dict_rows,
+)
 
 
 def _serialize_row(
@@ -966,17 +629,11 @@ def _write_alignment_rows(
     columns: list[str],
     rows: list[SupplementaryAlignmentDiagnosticsRow],
 ) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=columns,
-            delimiter=_table_delimiter(path),
-        )
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(_serialize_alignment_row(row))
-    return path
+    return _write_dict_rows(
+        path,
+        columns=columns,
+        rows=[_serialize_alignment_row(row) for row in rows],
+    )
 
 
 def _support_counts(rows: list[TreeSupportRow]) -> dict[str, int]:
@@ -1138,17 +795,11 @@ def _write_tree_rows(
     columns: list[str],
     rows: list[SupplementaryTreeDiagnosticsRow],
 ) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=columns,
-            delimiter=_table_delimiter(path),
-        )
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(_serialize_tree_row(row))
-    return path
+    return _write_dict_rows(
+        path,
+        columns=columns,
+        rows=[_serialize_tree_row(row) for row in rows],
+    )
 
 
 def _clade_support_row_lookup(
@@ -1202,17 +853,11 @@ def _write_clade_support_rows(
     columns: list[str],
     rows: list[SupplementaryCladeSupportRow],
 ) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=columns,
-            delimiter=_table_delimiter(path),
-        )
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(_serialize_clade_support_row(row))
-    return path
+    return _write_dict_rows(
+        path,
+        columns=columns,
+        rows=[_serialize_clade_support_row(row) for row in rows],
+    )
 
 
 def _write_model_selection_rows(
@@ -1221,17 +866,11 @@ def _write_model_selection_rows(
     columns: list[str],
     rows: list[SupplementaryModelSelectionRow],
 ) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=columns,
-            delimiter=_table_delimiter(path),
-        )
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(_serialize_model_selection_row(row))
-    return path
+    return _write_dict_rows(
+        path,
+        columns=columns,
+        rows=[_serialize_model_selection_row(row) for row in rows],
+    )
 
 
 def _write_comparative_model_rows(
@@ -1240,17 +879,11 @@ def _write_comparative_model_rows(
     columns: list[str],
     rows: list[SupplementaryComparativeModelRow],
 ) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=columns,
-            delimiter=_table_delimiter(path),
-        )
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(_serialize_comparative_model_row(row))
-    return path
+    return _write_dict_rows(
+        path,
+        columns=columns,
+        rows=[_serialize_comparative_model_row(row) for row in rows],
+    )
 
 
 def _serialize_ancestral_state_row(
@@ -1307,17 +940,11 @@ def _write_ancestral_state_rows(
     columns: list[str],
     rows: list[SupplementaryAncestralStateRow],
 ) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=columns,
-            delimiter=_table_delimiter(path),
-        )
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(_serialize_ancestral_state_row(row))
-    return path
+    return _write_dict_rows(
+        path,
+        columns=columns,
+        rows=[_serialize_ancestral_state_row(row) for row in rows],
+    )
 
 
 def _serialize_sampling_issue(row: SamplingFractionIssue) -> str:
@@ -1383,17 +1010,11 @@ def _write_diversification_rows(
     columns: list[str],
     rows: list[SupplementaryDiversificationRow],
 ) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=columns,
-            delimiter=_table_delimiter(path),
-        )
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(_serialize_diversification_row(row))
-    return path
+    return _write_dict_rows(
+        path,
+        columns=columns,
+        rows=[_serialize_diversification_row(row) for row in rows],
+    )
 
 
 def _split_batch_values(value: str) -> list[str]:
@@ -1503,17 +1124,11 @@ def _write_batch_summary_rows(
     columns: list[str],
     rows: list[SupplementaryBatchSummaryRow],
 ) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=columns,
-            delimiter=_table_delimiter(path),
-        )
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(_serialize_batch_summary_row(row))
-    return path
+    return _write_dict_rows(
+        path,
+        columns=columns,
+        rows=[_serialize_batch_summary_row(row) for row in rows],
+    )
 
 
 def _build_taxon_rows(
