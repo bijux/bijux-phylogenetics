@@ -314,6 +314,16 @@ def test_build_generated_geiger_parity_report_aggregates_live_and_artifact_evide
         row.goal_id == 289 and row.status == "artifact-backed"
         for row in report.goal_coverage_rows
     )
+    assert any(
+        row.goal_id == 269
+        and any("nondeterministic plateau lambda values" in note for note in row.notes)
+        for row in report.goal_coverage_rows
+    )
+    assert any(
+        row.surface == "geiger::fitDiscrete(model='ER', transform='lambda')"
+        and any("nondeterministic plateau lambda value" in note for note in row.notes)
+        for row in report.tolerance_rules
+    )
 
     markdown_path = write_generated_geiger_parity_report_markdown(
         tmp_path / "geiger-parity-report.md",
