@@ -435,7 +435,9 @@ def _replay_engine_workflow(
             ),
         )
     if workflow == "posterior-tree-inference" and engine_name == "BEAST":
-        from bijux_phylogenetics.bayesian.beast import run_beast_posterior_inference
+        from bijux_phylogenetics.bayesian.beast.execution import (
+            run_beast_posterior_inference,
+        )
 
         replay_input = _copy_input_for_inplace_engine(input_paths[0], replay_out_dir)
         return run_beast_posterior_inference(
@@ -678,8 +680,10 @@ def _compare_posterior_outputs(
             ),
             *tree_comparisons,
         ]
-    from bijux_phylogenetics.bayesian.beast import (
+    from bijux_phylogenetics.bayesian.beast.logs import (
         parse_beast_log,
+    )
+    from bijux_phylogenetics.bayesian.beast.posterior_trees import (
         parse_beast_posterior_tree_samples,
     )
 

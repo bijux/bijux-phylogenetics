@@ -115,10 +115,14 @@ def build_beast_artifact_validation_case(
     burnin_fraction: float = 0.1,
 ) -> ExternalEngineValidationCase:
     """Build one validation row from governed real BEAST analysis artifacts."""
-    from bijux_phylogenetics.bayesian.beast import (
-        parse_beast_posterior_tree_samples,
-        summarize_beast_analysis_xml,
+    from bijux_phylogenetics.bayesian.beast.logs import (
         summarize_beast_log,
+    )
+    from bijux_phylogenetics.bayesian.beast.posterior_trees import (
+        parse_beast_posterior_tree_samples,
+    )
+    from bijux_phylogenetics.bayesian.beast.xml_analysis import (
+        summarize_beast_analysis_xml,
     )
 
     xml_report = summarize_beast_analysis_xml(xml_path)
