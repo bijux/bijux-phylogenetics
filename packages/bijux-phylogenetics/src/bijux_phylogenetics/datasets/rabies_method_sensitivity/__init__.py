@@ -3182,7 +3182,7 @@ def _sha256(path: Path) -> str:
 
 def _resource_root() -> Path:
     return (
-        Path(__file__).resolve().parent.parent
+        Path(__file__).resolve().parent.parent.parent
         / "resources"
         / "datasets"
         / "pathogens"
