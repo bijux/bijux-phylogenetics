@@ -34,13 +34,17 @@ from .validation import (
     summarize_bootstrap_support_distribution,
     validate_model_selection_against_engine_outputs,
 )
-from .workflows import (
-    EngineWorkflowReport,
+from .workflows.alignment import (
     run_alignment_trimming,
+    run_multiple_sequence_alignment,
+)
+from .workflows.iqtree import (
     run_bootstrap_support_estimation,
     run_maximum_likelihood_tree_inference,
     run_model_selection,
-    run_multiple_sequence_alignment,
+)
+from .workflows.models import (
+    EngineWorkflowReport,
 )
 
 __all__ = [

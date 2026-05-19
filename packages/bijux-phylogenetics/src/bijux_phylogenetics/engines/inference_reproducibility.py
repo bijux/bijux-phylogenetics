@@ -12,11 +12,11 @@ from bijux_phylogenetics.core.alignment import AlignmentAlphabet
 from bijux_phylogenetics.io.iqtree_support import support_fraction
 
 from .common import build_file_checksums, write_engine_manifest
-from .workflows import (
-    EngineWorkflowReport,
+from .workflows.iqtree import (
     run_bootstrap_support_estimation,
     run_model_selection,
 )
+from .workflows.models import EngineWorkflowReport
 
 __all__ = [
     "InferenceReproducibilityComparisonRow",

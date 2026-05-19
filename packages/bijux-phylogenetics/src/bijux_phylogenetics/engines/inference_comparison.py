@@ -29,12 +29,12 @@ from .validation import (
     InferenceTreeComparisonReport,
     compare_inferred_trees_across_engines,
 )
-from .workflows import (
-    EngineWorkflowReport,
+from .workflows.fasttree import run_fast_tree_inference
+from .workflows.iqtree import (
     run_bootstrap_support_estimation,
-    run_fast_tree_inference,
     run_model_selection,
 )
+from .workflows.models import EngineWorkflowReport
 
 __all__ = [
     "InferenceComparisonConflictRow",

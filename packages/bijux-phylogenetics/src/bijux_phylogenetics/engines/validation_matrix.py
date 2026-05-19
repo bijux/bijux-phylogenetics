@@ -8,7 +8,7 @@ from pathlib import Path
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 
 from .common import build_file_checksums, utc_now_text
-from .workflows import EngineWorkflowReport
+from .workflows.models import EngineWorkflowReport
 
 _CANONICAL_ENGINE_NAMES = {
     "mafft": "MAFFT",
