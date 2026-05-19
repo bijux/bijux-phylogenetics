@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import json
 from pathlib import Path
 from statistics import stdev
@@ -62,6 +63,11 @@ def fixture(name: str) -> Path:
 
 def beast_reference(name: str) -> Path:
     return EXPECTED_BEAST_REFERENCE_ROOT / name
+
+
+def test_core_dataset_imports_after_beast_package_split() -> None:
+    dataset_module = importlib.import_module("bijux_phylogenetics.core.dataset")
+    assert hasattr(dataset_module, "summarize_dataset_readiness")
 
 
 def _write_executable(path: Path, body: str) -> Path:

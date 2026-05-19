@@ -3,9 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.bayesian.beast import (
+from bijux_phylogenetics.bayesian.beast.models import (
     FossilCalibrationValidationReport,
     TipDatingValidationReport,
+)
+from bijux_phylogenetics.bayesian.beast.validation import (
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
 )
