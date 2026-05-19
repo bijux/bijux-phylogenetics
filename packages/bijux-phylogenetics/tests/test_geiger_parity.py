@@ -9,6 +9,7 @@ from bijux_phylogenetics.parity import (
     run_geiger_parity_cases,
     write_geiger_boundary_warning_table,
     write_geiger_likelihood_policy_table,
+    write_geiger_model_confidence_table,
     write_geiger_parity_observation_table,
     write_geiger_optimizer_triage_table,
     write_geiger_parity_summary_table,
@@ -1584,6 +1585,64 @@ def test_write_geiger_likelihood_policy_table_writes_rows(tmp_path: Path) -> Non
     assert len(rows) == 1
     assert rows[0]["case_id"] == "fitcontinuous-bm-example-tree"
     assert rows[0]["case_level_raw_log_likelihood_comparable"] == "True"
+
+
+def test_run_geiger_parity_cases_builds_model_confidence_rows(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads=GEIGER_FITCONTINUOUS_MODEL_COMPARISON_REFERENCE_PAYLOADS,
+    )
+    report = run_geiger_parity_cases(
+        case_ids=["fitcontinuous-model-comparison-brownian-review"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    rows_by_model = {
+        row.candidate_model: row for row in report.model_confidence_rows
+    }
+    brownian_row = rows_by_model["brownian"]
+    assert brownian_row.reference_best_model == "brownian"
+    assert brownian_row.bijux_best_model == "brownian"
+    assert brownian_row.reference_selected is True
+    assert brownian_row.bijux_selected is True
+    assert brownian_row.reference_akaike_weight is not None
+    assert brownian_row.bijux_akaike_weight is not None
+    assert brownian_row.akaike_weight_match_within_tolerance is True
+    assert brownian_row.reference_within_delta_aic_threshold is True
+    assert brownian_row.within_delta_aic_threshold_match is True
+    runner_up_row = rows_by_model["pagel-kappa"]
+    assert runner_up_row.reference_rank == 2
+    assert runner_up_row.reference_within_delta_aic_threshold is True
+    assert runner_up_row.reference_within_delta_aicc_threshold is True
+    white_row = rows_by_model["white-noise"]
+    assert white_row.reference_within_delta_aic_threshold is False
+    assert white_row.bijux_within_delta_aic_threshold is False
+    assert white_row.reference_uncertainty_class in {"limited", "moderate", "strong"}
+    assert white_row.bijux_uncertainty_class in {"limited", "moderate", "strong"}
+
+
+def test_write_geiger_model_confidence_table_writes_rows(tmp_path: Path) -> None:
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads=GEIGER_FITCONTINUOUS_MODEL_COMPARISON_REFERENCE_PAYLOADS,
+    )
+    report = run_geiger_parity_cases(
+        case_ids=["fitcontinuous-model-comparison-brownian-review"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+    confidence_path = tmp_path / "geiger-model-confidence.tsv"
+
+    write_geiger_model_confidence_table(confidence_path, report)
+
+    with confidence_path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle, delimiter="\t"))
+    assert len(rows) == 7
+    assert rows[0]["case_id"] == "fitcontinuous-model-comparison-brownian-review"
+    assert rows[0]["weight_basis"] == "AICc"
 
 
 def test_run_geiger_parity_cases_builds_direct_parameterization_registry_rows(
