@@ -1370,6 +1370,15 @@ row-level AIC/AICc comparison surface, checks that `AIC = 2k - 2logLik`
 wherever a raw likelihood is supposed to be directly comparable, and keeps the
 owned ranking guard explicit: `compare_fitcontinuous_model_ranking(...)` now
 refuses to rank candidate modes if their likelihood-constant policies differ.
+The same report now also carries a governed boundary-warning registry plus an
+optional `--boundary-warning-out` TSV. That table records the affected
+parameter, declared lower and upper bounds, explicit boundary hits,
+near-boundary review, flat-likelihood-near-boundary review where trace data
+exists, reviewer-facing warning kinds, and whether the reference and owned
+surfaces still support a stable conclusion. Boundary-dominated cases such as
+lambda at `0` or `1`, alpha near `0`, and EB, kappa, or delta fits that
+collapse onto a limit surface now stay explicit instead of being narrated as
+stable parameter recovery.
 The owned Brownian and white-noise fits also now store that Gaussian
 normalizing-constant policy directly in the fit result object, and the governed
 tests pin both lanes against analytical known-answer likelihood calculations.
@@ -1456,6 +1465,10 @@ reference lane and the owned Bijux search controls.
 The Bijux side now records weak-identifiability and boundary warnings directly
 from the owned continuous-mode fit report instead of hiding them inside
 parity-only logic.
+That owned report now also exposes a `boundary_assessment` for parameterized
+continuous-mode fits, and `compare_fitcontinuous_model_ranking(...)` withholds
+`stable_conclusion_supported` when the selected fit is dominated by a
+boundary-hugging or flat boundary profile.
 For parameterized continuous-mode fits, the owned side now also exposes
 `ContinuousModeSearchControls` so bounded parity cases can declare coarse-grid
 size, fine-grid size, and one explicit initial parameter value while the
