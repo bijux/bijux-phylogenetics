@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from ._shared import (
+from pathlib import Path
+
+from Bio.Data import CodonTable
+
+from bijux_phylogenetics.core.alignment import (
     AlignmentAlphabet,
     AlignmentRecord,
     CodingAlignmentDiagnostics,
@@ -8,30 +12,315 @@ from ._shared import (
     CodingSequencePreparationReport,
     DnaBinAlignment,
     FrameshiftLikeSequence,
-    InvalidAlignmentError,
+    InvalidCodonObservation,
     PartialCodonSequence,
-    Path,
     SequenceCodingBehavior,
     StopCodonObservation,
+    TranslationCodonObservation,
     TranslationReport,
-    _build_translation_codon_observations,
-    _classify_sequence_coding_behavior_records,
-    _coding_residues,
-    _detect_frameshift_like_records,
-    _detect_invalid_codons_in_records,
-    _detect_stop_codons_in_records,
-    _iter_codon_windows,
-    _records_from_dnabin_alignment,
-    _resolve_genetic_code_table,
-    _sequence_type_for_coding_preparation,
-    _translate_codon,
+)
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
+
+from .core import (
+    _DNA_CHARACTERS_UPPER,
+    _GAP_CHARACTERS,
+    _is_explicit_missing,
+    detect_fasta_sequence_type,
     load_fasta_alignment,
     load_fasta_records,
 )
-
 from .matrix import (
+    _records_from_dnabin_alignment,
     load_dna_bin_alignment,
 )
+
+_DEFAULT_GENETIC_CODE_ID = 1
+_DNA_BASES = {"A", "C", "G", "T"}
+
+
+def _resolve_genetic_code_table(
+    genetic_code: int | str | None,
+) -> tuple[int, str, dict[str, str], set[str]]:
+    if genetic_code is None:
+        code_id = _DEFAULT_GENETIC_CODE_ID
+        table = CodonTable.unambiguous_dna_by_id[code_id]
+        return code_id, table.names[0], table.forward_table, set(table.stop_codons)
+    if isinstance(genetic_code, int):
+        code_id = genetic_code
+        try:
+            table = CodonTable.unambiguous_dna_by_id[code_id]
+        except KeyError as error:
+            raise InvalidAlignmentError(
+                f"unsupported genetic code id for coding analysis: {code_id}"
+            ) from error
+        return code_id, table.names[0], table.forward_table, set(table.stop_codons)
+    text = genetic_code.strip()
+    if not text:
+        raise InvalidAlignmentError("genetic code name must not be empty")
+    if text.isdigit():
+        return _resolve_genetic_code_table(int(text))
+    lowered = text.lower()
+    for table in CodonTable.unambiguous_dna_by_id.values():
+        if lowered in {name.lower() for name in table.names}:
+            return (
+                int(table.id),
+                table.names[0],
+                table.forward_table,
+                set(table.stop_codons),
+            )
+    raise InvalidAlignmentError(
+        f"unsupported genetic code for coding analysis: {genetic_code}"
+    )
+
+
+def _coding_residues(sequence: str) -> str:
+    return "".join(
+        residue.upper().replace("U", "T")
+        for residue in sequence
+        if residue not in _GAP_CHARACTERS and not _is_explicit_missing(residue)
+    )
+
+
+def _detect_frameshift_like_records(
+    records: list[AlignmentRecord],
+) -> list[FrameshiftLikeSequence]:
+    flagged: list[FrameshiftLikeSequence] = []
+    for record in records:
+        comparable_length = len(_coding_residues(record.sequence))
+        remainder = comparable_length % 3
+        if remainder != 0:
+            flagged.append(
+                FrameshiftLikeSequence(
+                    identifier=record.identifier,
+                    comparable_length=comparable_length,
+                    remainder=remainder,
+                )
+            )
+    return flagged
+
+
+def _iter_codon_windows(sequence: str) -> list[tuple[int, str]]:
+    return [
+        (position, sequence[position - 1 : position + 2])
+        for position in range(1, len(sequence) + 1, 3)
+        if len(sequence[position - 1 : position + 2]) == 3
+    ]
+
+
+def _invalid_codon_reason(codon: str) -> str | None:
+    normalized = codon.upper().replace("U", "T")
+    if set(normalized) <= _GAP_CHARACTERS | {"?"}:
+        return None
+    if any(
+        base in _GAP_CHARACTERS or _is_explicit_missing(base) for base in normalized
+    ):
+        return "partial-missing-codon"
+    unsupported = sorted(
+        {base for base in normalized if base not in _DNA_CHARACTERS_UPPER}
+    )
+    if unsupported:
+        return f"unsupported-residue:{''.join(unsupported)}"
+    if any(base not in _DNA_BASES for base in normalized):
+        return "ambiguous-codon"
+    return None
+
+
+def _detect_invalid_codons_in_records(
+    records: list[AlignmentRecord],
+) -> list[InvalidCodonObservation]:
+    invalid_codons: list[InvalidCodonObservation] = []
+    for record in records:
+        coding_sequence = _coding_residues(record.sequence)
+        for codon_index, (start, codon) in enumerate(
+            _iter_codon_windows(coding_sequence),
+            start=1,
+        ):
+            reason = _invalid_codon_reason(codon)
+            if reason is None:
+                continue
+            invalid_codons.append(
+                InvalidCodonObservation(
+                    identifier=record.identifier,
+                    codon_index=codon_index,
+                    nucleotide_start=start,
+                    codon=codon.upper(),
+                    reason=reason,
+                )
+            )
+    return invalid_codons
+
+
+def _detect_stop_codons_in_records(
+    records: list[AlignmentRecord],
+    *,
+    genetic_code: int | str | None = None,
+) -> list[StopCodonObservation]:
+    _code_id, _code_name, _forward_table, stop_codon_set = _resolve_genetic_code_table(
+        genetic_code
+    )
+    stop_observations: list[StopCodonObservation] = []
+    for record in records:
+        coding_sequence = _coding_residues(record.sequence)
+        codons = _iter_codon_windows(coding_sequence)
+        for codon_index, (start, codon) in enumerate(codons, start=1):
+            normalized = codon.upper().replace("U", "T")
+            if _invalid_codon_reason(normalized) is not None:
+                continue
+            if normalized in stop_codon_set:
+                stop_observations.append(
+                    StopCodonObservation(
+                        identifier=record.identifier,
+                        codon_index=codon_index,
+                        nucleotide_start=start,
+                        codon=normalized,
+                        terminal=codon_index == len(codons),
+                    )
+                )
+    return stop_observations
+
+
+def _classify_sequence_coding_behavior_records(
+    records: list[AlignmentRecord],
+    *,
+    genetic_code: int | str | None = None,
+) -> list[SequenceCodingBehavior]:
+    stop_observations = _detect_stop_codons_in_records(
+        records,
+        genetic_code=genetic_code,
+    )
+    stop_counts_by_identifier: dict[str, list[StopCodonObservation]] = {}
+    for stop in stop_observations:
+        stop_counts_by_identifier.setdefault(stop.identifier, []).append(stop)
+    invalid_observations = _detect_invalid_codons_in_records(records)
+    invalid_counts_by_identifier: dict[str, list[InvalidCodonObservation]] = {}
+    for invalid in invalid_observations:
+        invalid_counts_by_identifier.setdefault(invalid.identifier, []).append(invalid)
+
+    behaviors: list[SequenceCodingBehavior] = []
+    for record in records:
+        comparable_length = len(_coding_residues(record.sequence))
+        stops = stop_counts_by_identifier.get(record.identifier, [])
+        invalid_codons = invalid_counts_by_identifier.get(record.identifier, [])
+        premature_stop_count = sum(1 for stop in stops if not stop.terminal)
+        terminal_stop_count = sum(1 for stop in stops if stop.terminal)
+        invalid_codon_count = len(invalid_codons)
+        divisible_by_three = comparable_length % 3 == 0
+        coding_like = (
+            divisible_by_three
+            and invalid_codon_count == 0
+            and premature_stop_count == 0
+        )
+        if not comparable_length:
+            note = "sequence contains no comparable coding residues after gaps and missing data are removed"
+        elif coding_like and terminal_stop_count <= 1:
+            note = "sequence is consistent with a coding reading frame"
+        elif not divisible_by_three:
+            note = "sequence is not frame-consistent after removing gaps and missing data"
+        elif invalid_codon_count:
+            note = "sequence contains ambiguous or invalid codons after normalization to coding triplets"
+        elif premature_stop_count:
+            note = "sequence contains one or more premature stop codons"
+        else:
+            note = "sequence shows mixed evidence for a coding interpretation"
+        behaviors.append(
+            SequenceCodingBehavior(
+                identifier=record.identifier,
+                coding_like=coding_like,
+                comparable_length=comparable_length,
+                divisible_by_three=divisible_by_three,
+                invalid_codon_count=invalid_codon_count,
+                premature_stop_count=premature_stop_count,
+                terminal_stop_count=terminal_stop_count,
+                note=note,
+            )
+        )
+    return sorted(behaviors, key=lambda item: item.identifier)
+
+
+def _sequence_type_for_coding_preparation(
+    path: Path,
+    *,
+    records: list[AlignmentRecord],
+    sequence_type: AlignmentAlphabet | None,
+) -> AlignmentAlphabet:
+    if sequence_type is not None and sequence_type not in {"dna", "rna"}:
+        raise InvalidAlignmentError(
+            "codon-aware alignment requires dna or rna coding input"
+        )
+    detected = detect_fasta_sequence_type(path, records=records)
+    effective = sequence_type if sequence_type is not None else detected.selected_type
+    if effective not in {"dna", "rna"}:
+        raise InvalidAlignmentError(
+            f"codon-aware alignment requires nucleotide coding input: {detected.note}"
+        )
+    return effective
+
+
+def _translate_codon(
+    codon: str,
+    *,
+    genetic_code: int | str | None = None,
+) -> str:
+    _code_id, _code_name, forward_table, stop_codons = _resolve_genetic_code_table(
+        genetic_code
+    )
+    normalized = codon.upper().replace("U", "T")
+    if set(normalized) <= _GAP_CHARACTERS:
+        return "-"
+    if _invalid_codon_reason(normalized) is not None:
+        return "X"
+    if normalized in stop_codons:
+        return "*"
+    return forward_table.get(normalized, "X")
+
+
+def _translation_status_for_codon(
+    codon: str,
+    amino_acid: str,
+    *,
+    codon_index: int,
+    codon_count: int,
+) -> str:
+    normalized = codon.upper().replace("U", "T")
+    if set(normalized) <= _GAP_CHARACTERS | {"?"}:
+        return "missing-or-gap-codon"
+    if _invalid_codon_reason(normalized) is not None:
+        return "ambiguous-or-invalid-codon"
+    if amino_acid == "*":
+        if codon_index == codon_count:
+            return "terminal-stop-codon"
+        return "internal-stop-codon"
+    return "translated"
+
+
+def _build_translation_codon_observations(
+    records: list[AlignmentRecord],
+    *,
+    translated_length: int,
+    genetic_code_id: int,
+) -> list[TranslationCodonObservation]:
+    observations: list[TranslationCodonObservation] = []
+    aligned_nucleotide_length = translated_length * 3
+    for record in records:
+        codons = _iter_codon_windows(record.sequence[:aligned_nucleotide_length])
+        for codon_index, (nucleotide_start, codon) in enumerate(codons, start=1):
+            amino_acid = _translate_codon(codon, genetic_code=genetic_code_id)
+            observations.append(
+                TranslationCodonObservation(
+                    identifier=record.identifier,
+                    codon_index=codon_index,
+                    nucleotide_start=nucleotide_start,
+                    codon=codon.upper(),
+                    amino_acid=amino_acid,
+                    translation_status=_translation_status_for_codon(
+                        codon,
+                        amino_acid,
+                        codon_index=codon_index,
+                        codon_count=translated_length,
+                    ),
+                )
+            )
+    return observations
 
 def detect_frameshift_like_sequences(path: Path) -> list[FrameshiftLikeSequence]:
     """Detect coding sequences whose comparable length is not divisible by three."""
