@@ -12,7 +12,7 @@ from bijux_phylogenetics.engines.workflows.alignment import (
     run_alignment_trimming,
     run_multiple_sequence_alignment,
 )
-from bijux_phylogenetics.engines.workflows import (
+from bijux_phylogenetics.engines.workflows.iqtree import (
     run_bootstrap_support_estimation,
     run_maximum_likelihood_tree_inference,
 )

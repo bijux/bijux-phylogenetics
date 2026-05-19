@@ -16,11 +16,11 @@ from bijux_phylogenetics.core.locus_occupancy import (
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.partitions import LocusPartition
-from bijux_phylogenetics.engines import (
-    EngineWorkflowReport,
+from bijux_phylogenetics.engines.workflows.iqtree import (
     run_bootstrap_support_estimation,
     run_model_selection,
 )
+from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
 from bijux_phylogenetics.io.fasta._shared import (
     load_fasta_alignment,
     write_fasta_alignment,
