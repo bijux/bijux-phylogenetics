@@ -5,13 +5,6 @@ from pathlib import Path
 from time import perf_counter
 import tracemalloc
 
-from bijux_phylogenetics.distance import (
-    assess_imported_distance_method_assumptions,
-    build_distance_method_report,
-    build_tree_from_imported_distance_matrix,
-    inspect_imported_distance_matrix_quality,
-)
-from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.trees import (
     TreeSetProcessingSummary,
@@ -60,6 +53,7 @@ from .artifacts import (
     write_machine_manifest as _write_machine_manifest,
     write_tabular_artifact as _write_tabular_artifact,
 )
+from .distance_reports import render_distance_report
 from .input_reports import (
     render_alignment_report,
     render_dataset_report,
@@ -105,6 +99,7 @@ __all__ = [
     "TreeUncertaintyReportBuildResult",
     "WorkflowValidationReportBuildResult",
     "annotate_tree_against_table",
+    "distance_method_limitations",
     "render_alignment_report",
     "render_dataset_report",
     "render_distance_report",
@@ -121,114 +116,6 @@ __all__ = [
     "summarise_alignment_path",
     "write_annotation_report",
 ]
-def render_distance_report(
-    *,
-    out_path: Path,
-    alignment_path: Path | None = None,
-    matrix_path: Path | None = None,
-) -> DistanceReportBuildResult:
-    """Build a deterministic HTML report for computed or imported distance analysis."""
-    if (alignment_path is None) == (matrix_path is None):
-        raise ValueError(
-            "render_distance_report requires exactly one of alignment_path or matrix_path"
-        )
-
-    method_limitations = distance_method_limitations()
-    if alignment_path is not None:
-        report = build_distance_method_report(alignment_path)
-        title = "Bijux Distance Analysis Report"
-        sections = [
-            _section("computed-distance-matrix", asdict(report.matrix)),
-            _section("distance-quality", asdict(report.quality)),
-            _section("distance-method-assumptions", asdict(report.assumptions)),
-            _section(
-                "distance-reference-validation", asdict(report.reference_validation)
-            ),
-            _section("neighbor-joining-tree", {"newick": report.built_tree_newick}),
-            _section("upgma-tree", {"newick": report.alternative_tree_newick}),
-            _section("distance-tree-comparison", asdict(report.topology_comparison)),
-            _section("distance-bootstrap-summary", asdict(report.bootstrap_summary)),
-            _section("distance-model-comparison", asdict(report.model_comparison)),
-            _section(
-                "distance-gap-policy-sensitivity", asdict(report.gap_policy_sensitivity)
-            ),
-            _section("distance-maturity-gate", asdict(report.maturity_gate)),
-            _section("distance-method-limitations", method_limitations),
-        ]
-        machine_manifest = {
-            "report_kind": "distance-analysis",
-            "source_kind": "alignment",
-            "source_path": str(alignment_path),
-            "method_limitations": method_limitations,
-            "sections": [name for name, _ in sections],
-        }
-        write_html_report(
-            title=title,
-            sections=sections,
-            out_path=out_path,
-            embedded_json=machine_manifest,
-        )
-        return DistanceReportBuildResult(
-            output_path=out_path,
-            report_kind="distance-analysis",
-            title=title,
-            source_path=alignment_path,
-            source_kind="alignment",
-            method_limitations=method_limitations,
-            machine_manifest=machine_manifest,
-        )
-
-    quality = inspect_imported_distance_matrix_quality(matrix_path)
-    assumptions = assess_imported_distance_method_assumptions(matrix_path)
-    title = "Bijux Imported Distance Report"
-    sections = [
-        _section("imported-distance-matrix-quality", asdict(quality)),
-        _section("distance-method-assumptions", asdict(assumptions)),
-        _section("distance-method-limitations", method_limitations),
-    ]
-    validation = quality.validation
-    if (
-        validation.complete
-        and validation.symmetric
-        and validation.zero_diagonal
-        and validation.nonnegative
-    ):
-        nj_tree, _ = build_tree_from_imported_distance_matrix(
-            matrix_path, method="neighbor-joining"
-        )
-        upgma_tree, _ = build_tree_from_imported_distance_matrix(
-            matrix_path, method="upgma"
-        )
-        sections.extend(
-            [
-                _section("neighbor-joining-tree", {"newick": dumps_newick(nj_tree)}),
-                _section("upgma-tree", {"newick": dumps_newick(upgma_tree)}),
-            ]
-        )
-    machine_manifest = {
-        "report_kind": "distance-analysis",
-        "source_kind": "imported-distance-matrix",
-        "source_path": str(matrix_path),
-        "method_limitations": method_limitations,
-        "sections": [name for name, _ in sections],
-    }
-    write_html_report(
-        title=title,
-        sections=sections,
-        out_path=out_path,
-        embedded_json=machine_manifest,
-    )
-    return DistanceReportBuildResult(
-        output_path=out_path,
-        report_kind="distance-analysis",
-        title=title,
-        source_path=matrix_path,
-        source_kind="imported-distance-matrix",
-        method_limitations=method_limitations,
-        machine_manifest=machine_manifest,
-    )
-
-
 def render_tree_uncertainty_report(
     *,
     tree_set_path: Path,
