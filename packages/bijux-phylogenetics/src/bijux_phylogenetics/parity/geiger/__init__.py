@@ -8,6 +8,10 @@ from .likelihood_policy import (
     GeigerLikelihoodPolicyRow,
     write_geiger_likelihood_policy_table,
 )
+from .model_confidence import (
+    GeigerModelConfidenceRow,
+    write_geiger_model_confidence_table,
+)
 from .optimizer_triage import (
     GeigerOptimizerTriageRow,
     write_geiger_optimizer_triage_table,
@@ -34,6 +38,7 @@ __all__ = [
     "GeigerOptimizerTriageRow",
     "GeigerBoundaryWarningRow",
     "GeigerLikelihoodPolicyRow",
+    "GeigerModelConfidenceRow",
     "GeigerParameterizationRegistryRow",
     "list_geiger_parity_cases",
     "run_geiger_parity_cases",
@@ -42,5 +47,6 @@ __all__ = [
     "write_geiger_optimizer_triage_table",
     "write_geiger_boundary_warning_table",
     "write_geiger_likelihood_policy_table",
+    "write_geiger_model_confidence_table",
     "write_geiger_parameterization_registry_table",
 ]

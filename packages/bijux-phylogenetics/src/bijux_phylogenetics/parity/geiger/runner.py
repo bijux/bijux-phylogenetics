@@ -33,6 +33,10 @@ from .likelihood_policy import (
     GeigerLikelihoodPolicyRow,
     build_geiger_likelihood_policy_rows,
 )
+from .model_confidence import (
+    GeigerModelConfidenceRow,
+    build_geiger_model_confidence_rows,
+)
 from .parameterization_registry import (
     GeigerParameterizationRegistryRow,
     build_geiger_parameterization_registry_rows,
@@ -87,6 +91,7 @@ class GeigerParityReport:
     optimizer_triage_rows: list[GeigerOptimizerTriageRow]
     boundary_warning_rows: list[GeigerBoundaryWarningRow]
     likelihood_policy_rows: list[GeigerLikelihoodPolicyRow]
+    model_confidence_rows: list[GeigerModelConfidenceRow]
     parameterization_registry_rows: list[GeigerParameterizationRegistryRow]
     summary_rows: list[GeigerParitySummaryRow]
     case_count: int
@@ -1046,6 +1051,7 @@ def run_geiger_parity_cases(
         optimizer_triage_rows=build_geiger_optimizer_triage_rows(observations),
         boundary_warning_rows=build_geiger_boundary_warning_rows(observations),
         likelihood_policy_rows=build_geiger_likelihood_policy_rows(observations),
+        model_confidence_rows=build_geiger_model_confidence_rows(observations),
         parameterization_registry_rows=build_geiger_parameterization_registry_rows(
             observations
         ),

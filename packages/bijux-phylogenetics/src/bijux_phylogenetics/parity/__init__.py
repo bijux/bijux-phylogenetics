@@ -16,6 +16,7 @@ from .geiger import (
     GeigerOptimizerTriageRow,
     GeigerBoundaryWarningRow,
     GeigerLikelihoodPolicyRow,
+    GeigerModelConfidenceRow,
     GeigerParameterizationRegistryRow,
     list_geiger_parity_cases,
     run_geiger_parity_cases,
@@ -24,6 +25,7 @@ from .geiger import (
     write_geiger_optimizer_triage_table,
     write_geiger_boundary_warning_table,
     write_geiger_likelihood_policy_table,
+    write_geiger_model_confidence_table,
     write_geiger_parameterization_registry_table,
 )
 from .phytools import (
@@ -54,6 +56,7 @@ __all__ = [
     "GeigerOptimizerTriageRow",
     "GeigerBoundaryWarningRow",
     "GeigerLikelihoodPolicyRow",
+    "GeigerModelConfidenceRow",
     "GeigerParameterizationRegistryRow",
     "PhytoolsParityObservation",
     "PhytoolsParityReport",
@@ -75,6 +78,7 @@ __all__ = [
     "write_geiger_optimizer_triage_table",
     "write_geiger_boundary_warning_table",
     "write_geiger_likelihood_policy_table",
+    "write_geiger_model_confidence_table",
     "write_geiger_parameterization_registry_table",
     "write_phytools_parity_observation_table",
     "write_phytools_parity_summary_table",
