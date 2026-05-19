@@ -7,25 +7,25 @@ from pathlib import Path
 import re
 from typing import Any
 
-from .bundle_contracts import (
+from ..bundle_contracts import (
     REQUIRED_BUNDLE_LOCAL_ARTIFACTS,
     REQUIRED_BUNDLE_RESULT_ARTIFACTS,
 )
-from .coverage import COVERAGE_GAPS_JSON, COVERAGE_GAPS_MARKDOWN
-from .freshness import FRESHNESS_REPORT_JSON, FRESHNESS_REPORT_MARKDOWN
-from .integrity import INTEGRITY_REPORT_JSON, INTEGRITY_REPORT_MARKDOWN
-from .portability import (
+from ..coverage import COVERAGE_GAPS_JSON, COVERAGE_GAPS_MARKDOWN
+from ..freshness import FRESHNESS_REPORT_JSON, FRESHNESS_REPORT_MARKDOWN
+from ..integrity import INTEGRITY_REPORT_JSON, INTEGRITY_REPORT_MARKDOWN
+from ..portability import (
     audit_payload_path_values,
     classify_locator_kind,
     render_portability_rules_markdown,
 )
-from .reviewer import REVIEWER_SUMMARY_JSON, REVIEWER_SUMMARY_MARKDOWN
-from .study_contracts import (
+from ..reviewer import REVIEWER_SUMMARY_JSON, REVIEWER_SUMMARY_MARKDOWN
+from ..study_contracts import (
     ALLOWED_STUDY_ROOT_DIRS,
     ALLOWED_STUDY_ROOT_FILES,
     load_study_contract,
 )
-from .teaching import (
+from ..teaching import (
     ALLOWED_COMPARISON_MODES,
     ALLOWED_STUDY_CATEGORIES,
     TEACHING_AND_MIGRATION_INDEX_FILENAME,
