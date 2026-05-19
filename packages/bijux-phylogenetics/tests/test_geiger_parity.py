@@ -7,6 +7,7 @@ from pathlib import Path
 from bijux_phylogenetics.parity import (
     list_geiger_parity_cases,
     run_geiger_parity_cases,
+    write_geiger_boundary_warning_table,
     write_geiger_likelihood_policy_table,
     write_geiger_parity_observation_table,
     write_geiger_optimizer_triage_table,
@@ -1423,6 +1424,93 @@ def test_write_geiger_optimizer_triage_table_writes_rows(tmp_path: Path) -> None
     assert len(rows) == 1
     assert rows[0]["case_id"] == "fitcontinuous-lambda-weak-signal-review"
     assert rows[0]["mismatch_type"] == "no_algorithm_mismatch"
+
+
+def test_run_geiger_parity_cases_builds_boundary_warning_rows(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads=(
+            GEIGER_FITCONTINUOUS_LAMBDA_REFERENCE_PAYLOADS
+            | GEIGER_FITCONTINUOUS_OU_REFERENCE_PAYLOADS
+            | GEIGER_FITCONTINUOUS_EARLY_BURST_REFERENCE_PAYLOADS
+            | GEIGER_FITCONTINUOUS_KAPPA_REFERENCE_PAYLOADS
+            | GEIGER_FITCONTINUOUS_DELTA_REFERENCE_PAYLOADS
+        ),
+    )
+    report = run_geiger_parity_cases(
+        case_ids=[
+            "fitcontinuous-lambda-weak-signal-review",
+            "fitcontinuous-ou-lower-boundary-review",
+            "fitcontinuous-eb-lower-boundary-review",
+            "fitcontinuous-kappa-weak-signal-review",
+            "fitcontinuous-delta-weak-signal-review",
+        ],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    rows_by_case = {row.case_id: row for row in report.boundary_warning_rows}
+    lambda_row = rows_by_case["fitcontinuous-lambda-weak-signal-review"]
+    assert lambda_row.affected_parameter == "lambda"
+    assert lambda_row.reference_hit_lower_boundary is True
+    assert "weak_phylogenetic_signal" in lambda_row.reference_boundary_warning_kinds
+    assert lambda_row.reference_stable_conclusion_supported is False
+    assert lambda_row.stable_conclusion_supported_match is True
+    ou_row = rows_by_case["fitcontinuous-ou-lower-boundary-review"]
+    assert ou_row.affected_parameter == "alpha"
+    assert ou_row.reference_hit_lower_boundary is True
+    assert "weak_pull_to_optimum" in ou_row.reference_boundary_warning_kinds
+    assert ou_row.reference_stable_conclusion_supported is False
+    eb_row = rows_by_case["fitcontinuous-eb-lower-boundary-review"]
+    assert eb_row.affected_parameter == "rate_change"
+    assert eb_row.reference_hit_lower_boundary is True
+    assert "brownian_like_rate_change" in eb_row.reference_boundary_warning_kinds
+    kappa_row = rows_by_case["fitcontinuous-kappa-weak-signal-review"]
+    assert kappa_row.affected_parameter == "kappa"
+    assert kappa_row.reference_hit_lower_boundary is True
+    assert "punctuational_limit" in kappa_row.reference_boundary_warning_kinds
+    delta_row = rows_by_case["fitcontinuous-delta-weak-signal-review"]
+    assert delta_row.affected_parameter == "delta"
+    assert delta_row.reference_hit_upper_boundary is True
+    assert "late_change_limit" in delta_row.reference_boundary_warning_kinds
+
+
+def test_run_geiger_parity_cases_derives_flat_boundary_review_from_fake_profiles(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    report = run_geiger_parity_cases(
+        case_ids=["fitcontinuous-lambda-weak-signal-review"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    row = report.boundary_warning_rows[0]
+    assert row.reference_flat_likelihood_near_boundary is True
+    assert row.bijux_flat_likelihood_near_boundary is True
+    assert "flat_likelihood" in row.reference_boundary_warning_kinds
+    assert "flat_likelihood" in row.bijux_boundary_warning_kinds
+
+
+def test_write_geiger_boundary_warning_table_writes_rows(tmp_path: Path) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    report = run_geiger_parity_cases(
+        case_ids=["fitcontinuous-lambda-weak-signal-review"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+    boundary_path = tmp_path / "geiger-boundary-warning.tsv"
+
+    write_geiger_boundary_warning_table(boundary_path, report)
+
+    with boundary_path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle, delimiter="\t"))
+    assert len(rows) == 1
+    assert rows[0]["case_id"] == "fitcontinuous-lambda-weak-signal-review"
+    assert rows[0]["reference_hit_lower_boundary"] == "True"
+    assert "weak_phylogenetic_signal" in rows[0]["bijux_boundary_warning_kinds"]
 
 
 def test_run_geiger_parity_cases_builds_single_fit_likelihood_policy_rows(
