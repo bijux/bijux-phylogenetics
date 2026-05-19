@@ -5,15 +5,19 @@ import json
 from pathlib import Path
 import tempfile
 
-from bijux_phylogenetics.bayesian.beast import (
+from bijux_phylogenetics.bayesian.beast.logs import (
     assess_beast_burnin_sensitivity,
     assess_beast_chain_mixing,
+    validate_beast_posterior_log,
+)
+from bijux_phylogenetics.bayesian.beast.validation import (
     assess_time_tree_readiness,
     detect_impossible_calibration_constraints,
-    summarize_beast_analysis_xml,
-    validate_beast_posterior_log,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
+)
+from bijux_phylogenetics.bayesian.beast.xml_analysis import (
+    summarize_beast_analysis_xml,
 )
 from bijux_phylogenetics.bayesian.comparison import (
     compare_independent_bayesian_runs,

@@ -290,7 +290,9 @@ def subsample_beast_posterior_tree_set(
     random_seed: int | None = None,
 ) -> PosteriorTreeSubsamplingReport:
     """Subsample native BEAST posterior trees while preserving state metadata."""
-    from bijux_phylogenetics.bayesian.beast import parse_beast_posterior_tree_samples
+    from bijux_phylogenetics.bayesian.beast.posterior_trees import (
+        parse_beast_posterior_tree_samples,
+    )
 
     report = parse_beast_posterior_tree_samples(
         tree_set_path,

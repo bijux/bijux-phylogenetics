@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import tempfile
 
-from bijux_phylogenetics.bayesian.beast import assess_beast_convergence
+from bijux_phylogenetics.bayesian.beast.logs import assess_beast_convergence
 from bijux_phylogenetics.bayesian.mrbayes import assess_mrbayes_convergence
 from bijux_phylogenetics.bayesian.posterior import (
     BayesianRunTreeComparison,

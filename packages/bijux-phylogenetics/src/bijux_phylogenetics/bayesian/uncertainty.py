@@ -4,13 +4,17 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.bayesian.beast import (
+from bijux_phylogenetics.bayesian.beast.logs import (
     assess_beast_burnin_sensitivity,
     assess_beast_chain_mixing,
+    validate_beast_posterior_log,
+)
+from bijux_phylogenetics.bayesian.beast.validation import (
     assess_calibration_dominance,
     assess_time_tree_readiness,
+)
+from bijux_phylogenetics.bayesian.beast.xml_analysis import (
     summarize_beast_analysis_xml,
-    validate_beast_posterior_log,
 )
 from bijux_phylogenetics.bayesian.burnin import DEFAULT_BURNIN_FRACTIONS
 from bijux_phylogenetics.core.metadata import write_taxon_rows
