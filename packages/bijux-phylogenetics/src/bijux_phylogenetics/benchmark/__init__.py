@@ -67,7 +67,7 @@ from bijux_phylogenetics.trees import detect_unstable_taxa
 from bijux_phylogenetics.trees import load_tree_set
 from bijux_phylogenetics.trees import summarize_posterior_topology_diversity
 from bijux_phylogenetics.trees import summarize_uncertainty_aware_conclusions
-from bijux_phylogenetics.engines.workflows import run_alignment_trimming
+from bijux_phylogenetics.engines.workflows.alignment import run_alignment_trimming
 
 
 @dataclass(frozen=True, slots=True)

@@ -17,7 +17,7 @@ from bijux_phylogenetics.engines.bootstrap_artifacts import (
 )
 from bijux_phylogenetics.engines.fasta_to_tree import FastaToTreeWorkflowReport
 from bijux_phylogenetics.engines.workflow_config import WorkflowConfigRunReport
-from bijux_phylogenetics.engines.workflows import EngineWorkflowReport
+from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
 from bijux_phylogenetics.reports.service import ReportBuildResult
 
 __all__ = [

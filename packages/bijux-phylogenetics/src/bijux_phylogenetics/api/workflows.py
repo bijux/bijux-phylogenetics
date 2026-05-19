@@ -8,11 +8,13 @@ from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.core.alignment import AlignmentAlphabet
 from bijux_phylogenetics.engines.fasta_to_tree import run_fasta_to_tree_workflow
 from bijux_phylogenetics.engines.workflow_config import run_phylo_workflow_config
-from bijux_phylogenetics.engines.workflows import (
+from bijux_phylogenetics.engines.workflows.alignment import (
     run_alignment_trimming,
+    run_multiple_sequence_alignment,
+)
+from bijux_phylogenetics.engines.workflows import (
     run_bootstrap_support_estimation,
     run_maximum_likelihood_tree_inference,
-    run_multiple_sequence_alignment,
 )
 from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 from bijux_phylogenetics.reports.service import render_phylogenetics_report

@@ -23,7 +23,10 @@ from .result_bundle import (
     export_workflow_result_bundle,
     validate_workflow_result_bundle,
 )
-from .workflows import list_mafft_alignment_modes, list_trimal_trimming_modes
+from .workflows.alignment import (
+    list_mafft_alignment_modes,
+    list_trimal_trimming_modes,
+)
 
 __all__ = [
     "PhyloWorkflowConfig",

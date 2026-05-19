@@ -25,11 +25,11 @@ from bijux_phylogenetics.engines.inference_comparison import (
     InferenceComparisonWorkflowReport,
     run_tree_inference_comparison,
 )
-from bijux_phylogenetics.engines.workflows import (
-    EngineWorkflowReport,
+from bijux_phylogenetics.engines.workflows.alignment import (
     run_alignment_trimming,
     run_multiple_sequence_alignment,
 )
+from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
 from bijux_phylogenetics.datasets.rabies_method_sensitivity_audit import (
     RabiesMethodSensitivityReproducibilityAuditReport,
     audit_rabies_method_sensitivity_workflow_bundle,
