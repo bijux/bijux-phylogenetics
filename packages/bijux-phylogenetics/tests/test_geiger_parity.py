@@ -1036,6 +1036,12 @@ def test_run_geiger_parity_cases_governs_fitdiscrete_lambda_reference_payloads(
     assert strong.reference_rows[0]["rate"] == 0.393523199371205
     assert strong.bijux_summary is not None
     assert strong.bijux_summary["transform_name"] == "pagel-lambda"
+    strong_case = next(
+        item
+        for item in list_geiger_parity_cases()
+        if item.case_id == "fitdiscrete-lambda-strong-signal-review"
+    )
+    assert "parameter_value" in strong_case.comparison_fields
     weak = next(
         item
         for item in report.observations
@@ -1048,6 +1054,13 @@ def test_run_geiger_parity_cases_governs_fitdiscrete_lambda_reference_payloads(
     assert weak.reference_rows[0]["rate"] == 31.5169313693995
     assert weak.bijux_summary is not None
     assert weak.bijux_summary["parameter_value"] == 0.0
+    weak_case = next(
+        item
+        for item in list_geiger_parity_cases()
+        if item.case_id == "fitdiscrete-lambda-weak-signal-review"
+    )
+    assert weak_case.row_comparison_policy == "summary-only"
+    assert "parameter_value" not in weak_case.comparison_fields
     missing = next(
         item
         for item in report.observations
@@ -1057,6 +1070,38 @@ def test_run_geiger_parity_cases_governs_fitdiscrete_lambda_reference_payloads(
     assert missing.reference_summary["missing_value_taxa"] == ["Phy10"]
     assert missing.bijux_summary is not None
     assert missing.bijux_summary["excluded_taxa"] == ["Phy10"]
+
+
+def test_run_geiger_parity_cases_accepts_flat_lambda_plateau_review_surface(
+    tmp_path: Path,
+) -> None:
+    payloads = dict(GEIGER_FITDISCRETE_LAMBDA_REFERENCE_PAYLOADS)
+    weak_payload = dict(payloads["fitdiscrete-lambda-weak-signal-review"])
+    weak_summary = dict(weak_payload["summary"])
+    weak_summary["parameter_value"] = 0.7215146376631235
+    weak_payload["summary"] = weak_summary
+    payloads["fitdiscrete-lambda-weak-signal-review"] = weak_payload
+
+    rscript = fake_geiger_rscript(
+        tmp_path / "fake-geiger-rscript",
+        reference_payloads=payloads,
+    )
+
+    report = run_geiger_parity_cases(
+        case_ids=["fitdiscrete-lambda-weak-signal-review"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    assert report.case_count == 1
+    assert report.passed_case_count == 1
+    observation = report.observations[0]
+    assert observation.passed is True
+    assert observation.mismatch_reason is None
+    assert observation.reference_summary is not None
+    assert observation.reference_summary["parameter_value"] == 0.7215146376631235
+    assert observation.bijux_summary is not None
+    assert observation.bijux_summary["parameter_value"] == 0.0
 
 
 def test_run_geiger_parity_cases_governs_fitdiscrete_kappa_reference_payloads(
