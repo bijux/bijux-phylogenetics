@@ -27,9 +27,15 @@ from bijux_phylogenetics.comparative.bounded_search import (
     run_bounded_maximization,
 )
 from bijux_phylogenetics.comparative.common import tip_root_depths
+from bijux_phylogenetics.comparative.information_criteria import (
+    compute_aic,
+    compute_aicc,
+    rank_model_comparison_rows,
+)
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     transform_tree_for_evolutionary_mode,
 )
+from bijux_phylogenetics.comparative.models import ComparativeModelComparisonRow
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
@@ -41,6 +47,22 @@ _DISCRETE_DELTA_LOWER_BOUND = math.exp(-5.0)
 _DISCRETE_DELTA_UPPER_BOUND = 3.0
 _DISCRETE_EARLY_BURST_LOWER_BOUND = -10.0
 _DISCRETE_EARLY_BURST_UPPER_BOUND = 10.0
+DISCRETE_MK_MODEL_COMPARISON_ORDER = (
+    "equal-rates",
+    "symmetric",
+    "all-rates-different",
+)
+DISCRETE_MK_LIKELIHOOD_CONSTANT_POLICY = (
+    "continuous-time-markov-pruning-loglikelihood-has-no-extra-normalizing-constant"
+)
+DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY = (
+    "raw-loglikelihood-and-derived-aic-are-directly-comparable-when-all-candidate-mk-models-share-the-owned-pruning-likelihood-policy"
+)
+DISCRETE_MK_MODEL_RANKING_POLICY = (
+    "relative-aic-and-aicc-ranking-is-permitted-only-when-all-candidate-discrete-mk-models-share-one-pruning-likelihood-policy"
+)
+DISCRETE_MK_MODEL_CONFIDENCE_WEIGHT_BASIS = "AICc"
+DISCRETE_MK_MODEL_CONFIDENCE_DELTA_THRESHOLD = 2.0
 
 
 @dataclass(slots=True)
@@ -137,6 +159,8 @@ class DiscreteMkFitReport:
     parameter_count: int
     aic: float
     aicc: float
+    likelihood_constant_policy: str
+    likelihood_comparison_policy: str
     transition_rate_rows: list[DiscreteTransitionRateRow]
     allowed_transition_pairs: list[tuple[str, str]]
     optimizer_diagnostics: DiscreteOptimizerDiagnostics
@@ -144,6 +168,28 @@ class DiscreteMkFitReport:
     transform_fit: DiscreteMkTransformFit | None
     transform_baseline_comparison: DiscreteMkTransformBaselineComparison | None
     baseline_comparison: DiscreteModelBaselineComparison | None
+
+
+@dataclass(slots=True)
+class DiscreteMkModelComparisonReport:
+    """AIC/AICc model-comparison surface over governed discrete Mk fits."""
+
+    tree_path: Path
+    traits_path: Path
+    trait: str
+    taxon_count: int
+    rows: list[ComparativeModelComparisonRow]
+    better_model: str
+    likelihood_constant_policy: str | None
+    likelihood_comparison_policy: str
+    noncomparable_likelihood_models: list[str]
+    model_confidence_weight_basis: str
+    model_confidence_delta_threshold: float
+    selected_model_akaike_weight: float | None
+    models_within_delta_aic_threshold: list[str]
+    models_within_delta_aicc_threshold: list[str]
+    uncertainty_language: str
+    warnings: list[str]
 
 
 def _normalize_transition_rate_rows(
@@ -285,9 +331,11 @@ def fit_discrete_mk_model_from_dataset(
         state_ordering=state_ordering,
         allowed_transition_pairs=resolved_allowed_transition_pairs,
     )
-    aic = (2.0 * parameter_count) - (2.0 * log_likelihood)
-    aicc = _fit_aicc(
-        aic, sample_size=len(dataset.taxa), parameter_count=parameter_count
+    aic = compute_aic(log_likelihood, parameter_count=parameter_count)
+    aicc = compute_aicc(
+        aic,
+        sample_size=len(dataset.taxa),
+        parameter_count=parameter_count,
     )
     baseline_comparison: DiscreteModelBaselineComparison | None = None
     transform_baseline_comparison: DiscreteMkTransformBaselineComparison | None = None
@@ -394,6 +442,8 @@ def fit_discrete_mk_model_from_dataset(
         parameter_count=parameter_count,
         aic=aic,
         aicc=aicc,
+        likelihood_constant_policy=DISCRETE_MK_LIKELIHOOD_CONSTANT_POLICY,
+        likelihood_comparison_policy=DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY,
         transition_rate_rows=_normalize_transition_rate_rows(
             _build_transition_rate_rows(
                 state_order=state_order,
@@ -461,6 +511,8 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
             "parameter_count",
             "aic",
             "aicc",
+            "likelihood_constant_policy",
+            "likelihood_comparison_policy",
             "optimizer_name",
             "optimizer_converged",
             "optimizer_iteration_count",
@@ -604,6 +656,8 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
                 "aicc": "inf"
                 if math.isinf(report.aicc)
                 else format(report.aicc, ".15g"),
+                "likelihood_constant_policy": report.likelihood_constant_policy,
+                "likelihood_comparison_policy": report.likelihood_comparison_policy,
                 "optimizer_name": diagnostics.optimizer_name,
                 "optimizer_converged": str(diagnostics.converged).lower(),
                 "optimizer_iteration_count": str(diagnostics.iteration_count),
@@ -670,6 +724,214 @@ def write_discrete_mk_rate_table(path: Path, report: DiscreteMkFitReport) -> Pat
             }
             for row in report.transition_rate_rows
         ],
+    )
+
+
+def compare_discrete_mk_model_ranking(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    trait: str,
+    taxon_column: str | None = None,
+    models: tuple[str, ...] | None = None,
+    transform: str | None = None,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
+    allowed_transition_pairs: list[tuple[str, str]] | None = None,
+    lambda_bounds: tuple[float, float] = (0.0, 1.0),
+    kappa_bounds: tuple[float, float] = (0.0, 1.0),
+    delta_bounds: tuple[float, float] = (
+        _DISCRETE_DELTA_LOWER_BOUND,
+        _DISCRETE_DELTA_UPPER_BOUND,
+    ),
+    early_burst_bounds: tuple[float, float] = (
+        _DISCRETE_EARLY_BURST_LOWER_BOUND,
+        _DISCRETE_EARLY_BURST_UPPER_BOUND,
+    ),
+) -> DiscreteMkModelComparisonReport:
+    """Compare governed discrete Mk models by AIC and AICc."""
+    dataset = load_discrete_dataset(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+    )
+    return compare_discrete_mk_model_ranking_from_dataset(
+        dataset,
+        models=models,
+        transform=transform,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
+        allowed_transition_pairs=allowed_transition_pairs,
+        lambda_bounds=lambda_bounds,
+        kappa_bounds=kappa_bounds,
+        delta_bounds=delta_bounds,
+        early_burst_bounds=early_burst_bounds,
+    )
+
+
+def compare_discrete_mk_model_ranking_from_dataset(
+    dataset: AncestralDiscreteDataset,
+    *,
+    models: tuple[str, ...] | None = None,
+    transform: str | None = None,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
+    allowed_transition_pairs: list[tuple[str, str]] | None = None,
+    lambda_bounds: tuple[float, float] = (0.0, 1.0),
+    kappa_bounds: tuple[float, float] = (0.0, 1.0),
+    delta_bounds: tuple[float, float] = (
+        _DISCRETE_DELTA_LOWER_BOUND,
+        _DISCRETE_DELTA_UPPER_BOUND,
+    ),
+    early_burst_bounds: tuple[float, float] = (
+        _DISCRETE_EARLY_BURST_LOWER_BOUND,
+        _DISCRETE_EARLY_BURST_UPPER_BOUND,
+    ),
+) -> DiscreteMkModelComparisonReport:
+    """Compare a selected governed discrete Mk model set by information criteria."""
+    selected_models = _comparison_models(models)
+    state_order = _resolve_state_order(
+        dataset.observed_states,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
+    )
+    rows: list[ComparativeModelComparisonRow] = []
+    fits: dict[str, DiscreteMkFitReport] = {}
+    comparison_warnings: list[str] = []
+    for model in selected_models:
+        resolved_model = _resolve_discrete_model_name(model)
+        try:
+            fit = fit_discrete_mk_model_from_dataset(
+                dataset,
+                model=resolved_model,
+                transform=transform,
+                state_ordering=state_ordering,
+                ordered_states=state_order,
+                allowed_transition_pairs=allowed_transition_pairs,
+                lambda_bounds=lambda_bounds,
+                kappa_bounds=kappa_bounds,
+                delta_bounds=delta_bounds,
+                early_burst_bounds=early_burst_bounds,
+            )
+        except ComparativeMethodError as error:
+            rows.append(
+                ComparativeModelComparisonRow(
+                    model=resolved_model,
+                    parameter_count=_comparison_parameter_count(
+                        state_order=state_order,
+                        model=resolved_model,
+                        transform=transform,
+                        state_ordering=state_ordering,
+                        allowed_transition_pairs=allowed_transition_pairs,
+                    ),
+                    log_likelihood=math.nan,
+                    aic=math.inf,
+                    aicc=math.inf,
+                    comparable=False,
+                    comparability_note=str(error),
+                    selected=False,
+                    likelihood_constant_policy=DISCRETE_MK_LIKELIHOOD_CONSTANT_POLICY,
+                )
+            )
+            comparison_warnings.append(
+                f"{resolved_model} is not comparable on this dataset because the owned fit failed: {error}"
+            )
+            continue
+        fits[resolved_model] = fit
+        row = ComparativeModelComparisonRow(
+            model=fit.model,
+            parameter_count=fit.parameter_count,
+            log_likelihood=fit.log_likelihood,
+            aic=fit.aic,
+            aicc=fit.aicc,
+            likelihood_constant_policy=fit.likelihood_constant_policy,
+        )
+        if not math.isfinite(row.aicc):
+            row.comparable = False
+            row.comparability_note = (
+                "sample size is too small to compute finite AICc for this parameter count"
+            )
+            comparison_warnings.append(
+                f"{resolved_model} is not comparable on AICc because the retained taxon count is too small for a {row.parameter_count}-parameter fit"
+            )
+        rows.append(row)
+    if not fits:
+        raise ComparativeMethodError(
+            "no discrete Mk model remained comparable for the requested dataset"
+        )
+    likelihood_constant_policy, noncomparable_likelihood_models = (
+        rank_model_comparison_rows(
+            rows,
+            delta_threshold=DISCRETE_MK_MODEL_CONFIDENCE_DELTA_THRESHOLD,
+        )
+    )
+    if noncomparable_likelihood_models:
+        blocked_models = ", ".join(noncomparable_likelihood_models)
+        comparison_warnings.append(
+            "discrete Mk ranking excluded models with incompatible likelihood "
+            f"constant policies: {blocked_models}"
+        )
+    selected_rows = [row for row in rows if row.selected]
+    if not selected_rows:
+        if noncomparable_likelihood_models:
+            raise ComparativeMethodError(
+                "mixed likelihood constant policies prevent ranking incompatible discrete Mk models"
+            )
+        raise ComparativeMethodError(
+            "no finite AICc model remained available for discrete Mk comparison"
+        )
+    better_model = selected_rows[0].model
+    if len(selected_rows) > 1:
+        tied_models = ", ".join(row.model for row in selected_rows)
+        comparison_warnings.append(
+            f"multiple discrete Mk models remain tied at the selected AICc boundary: {tied_models}"
+        )
+    selected_fit = fits[better_model]
+    if selected_fit.overparameterized:
+        comparison_warnings.append(
+            "selected discrete Mk fit remains overparameterized relative to the analyzed taxon count and should be interpreted cautiously"
+        )
+    if not selected_fit.optimizer_diagnostics.converged:
+        comparison_warnings.append(
+            "selected discrete Mk fit did not converge cleanly, so model-ranking confidence is reduced"
+        )
+    if (
+        selected_fit.optimizer_diagnostics.hit_lower_parameter_bound
+        or selected_fit.optimizer_diagnostics.hit_upper_parameter_bound
+    ):
+        comparison_warnings.append(
+            "selected discrete Mk fit hits one or more optimizer bounds, so the winning rate surface should be treated as weakly identified"
+        )
+    return DiscreteMkModelComparisonReport(
+        tree_path=dataset.tree_path,
+        traits_path=dataset.traits_path,
+        trait=dataset.trait,
+        taxon_count=len(dataset.taxa),
+        rows=rows,
+        better_model=better_model,
+        likelihood_constant_policy=likelihood_constant_policy,
+        likelihood_comparison_policy=DISCRETE_MK_MODEL_RANKING_POLICY,
+        noncomparable_likelihood_models=noncomparable_likelihood_models,
+        model_confidence_weight_basis=DISCRETE_MK_MODEL_CONFIDENCE_WEIGHT_BASIS,
+        model_confidence_delta_threshold=DISCRETE_MK_MODEL_CONFIDENCE_DELTA_THRESHOLD,
+        selected_model_akaike_weight=_selected_model_akaike_weight(rows),
+        models_within_delta_aic_threshold=_models_within_delta_threshold(
+            rows,
+            criterion="aic",
+            threshold=DISCRETE_MK_MODEL_CONFIDENCE_DELTA_THRESHOLD,
+        ),
+        models_within_delta_aicc_threshold=_models_within_delta_threshold(
+            rows,
+            criterion="aicc",
+            threshold=DISCRETE_MK_MODEL_CONFIDENCE_DELTA_THRESHOLD,
+        ),
+        uncertainty_language=_model_confidence_uncertainty_language(
+            rows,
+            better_model=better_model,
+            threshold=DISCRETE_MK_MODEL_CONFIDENCE_DELTA_THRESHOLD,
+        ),
+        warnings=comparison_warnings,
     )
 
 
@@ -778,6 +1040,34 @@ def _validate_early_burst_bounds(bounds: tuple[float, float]) -> None:
         )
 
 
+def _comparison_models(models: tuple[str, ...] | None) -> tuple[str, ...]:
+    if models is None:
+        return DISCRETE_MK_MODEL_COMPARISON_ORDER
+    deduplicated: list[str] = []
+    unknown: list[str] = []
+    for model in models:
+        try:
+            resolved_model = _resolve_discrete_model_name(model)
+        except ValueError:
+            unknown.append(model)
+            continue
+        if resolved_model not in DISCRETE_MK_MODEL_COMPARISON_ORDER:
+            unknown.append(model)
+            continue
+        if resolved_model not in deduplicated:
+            deduplicated.append(resolved_model)
+    if unknown:
+        raise ComparativeMethodError(
+            "unsupported discrete Mk comparison model(s): "
+            + ", ".join(sorted(set(unknown)))
+        )
+    if not deduplicated:
+        raise ComparativeMethodError(
+            "at least one supported discrete Mk model is required for comparison"
+        )
+    return tuple(deduplicated)
+
+
 def _discrete_parameter_count(
     *,
     state_count: int,
@@ -795,6 +1085,29 @@ def _discrete_parameter_count(
     if transform in {"lambda", "kappa", "delta", "early-burst"}:
         return parameter_count + 1
     return parameter_count
+
+
+def _comparison_parameter_count(
+    *,
+    state_order: list[str],
+    model: str,
+    transform: str | None,
+    state_ordering: str,
+    allowed_transition_pairs: list[tuple[str, str]] | None,
+) -> int:
+    resolved_allowed_transition_pairs = _resolve_allowed_transition_pairs(
+        state_order,
+        model=model,
+        state_ordering=state_ordering,
+        allowed_transition_pairs=allowed_transition_pairs,
+    )
+    return _discrete_parameter_count(
+        state_count=len(state_order),
+        model=model,
+        transform=_resolve_discrete_transform_name(transform),
+        state_ordering=state_ordering,
+        allowed_transition_pairs=resolved_allowed_transition_pairs,
+    )
 
 
 def _fit_discrete_mk_surface(
@@ -1209,8 +1522,70 @@ def _build_discrete_mk_input_audit(
     )
 
 
-def _fit_aicc(aic: float, *, sample_size: int, parameter_count: int) -> float:
-    denominator = sample_size - parameter_count - 1
-    if denominator <= 0:
-        return math.inf
-    return aic + ((2.0 * parameter_count * (parameter_count + 1.0)) / denominator)
+def _selected_model_akaike_weight(
+    rows: list[ComparativeModelComparisonRow],
+) -> float | None:
+    selected_row = next((row for row in rows if row.selected), None)
+    if selected_row is None:
+        return None
+    return selected_row.akaike_weight
+
+
+def _models_within_delta_threshold(
+    rows: list[ComparativeModelComparisonRow],
+    *,
+    criterion: str,
+    threshold: float,
+) -> list[str]:
+    selected_rows: list[str] = []
+    for row in rows:
+        if not row.comparable:
+            continue
+        within_threshold = (
+            row.within_delta_aic_threshold
+            if criterion == "aic"
+            else row.within_delta_aicc_threshold
+        )
+        if within_threshold:
+            selected_rows.append(row.model)
+    return selected_rows
+
+
+def _model_confidence_uncertainty_language(
+    rows: list[ComparativeModelComparisonRow],
+    *,
+    better_model: str,
+    threshold: float,
+) -> str:
+    selected_row = next((row for row in rows if row.model == better_model), None)
+    if selected_row is None or selected_row.akaike_weight is None:
+        return (
+            "model confidence is unresolved because no comparable discrete Mk "
+            "candidate retained one finite AICc surface for Akaike-weight review"
+        )
+    nearby_models = [
+        row.model
+        for row in rows
+        if row.comparable
+        and row.model != better_model
+        and row.within_delta_aicc_threshold is True
+    ]
+    if nearby_models:
+        tied_models = ", ".join([better_model, *nearby_models])
+        return (
+            "model confidence is limited because "
+            f"{tied_models} remain within {threshold:.1f} AICc units of the selected "
+            f"surface; {better_model} carries Akaike weight "
+            f"{selected_row.akaike_weight:.3f}"
+        )
+    if selected_row.akaike_weight < 0.9:
+        return (
+            f"model confidence is moderate because {better_model} carries Akaike "
+            f"weight {selected_row.akaike_weight:.3f} even though no runner-up remains "
+            f"within {threshold:.1f} AICc units"
+        )
+    return (
+        f"model confidence is strong because {better_model} carries Akaike weight "
+        f"{selected_row.akaike_weight:.3f} and no runner-up remains within "
+        f"{threshold:.1f} AICc units"
+    )

@@ -8,6 +8,8 @@ import pytest
 
 from bijux_phylogenetics.ancestral.common import load_discrete_dataset
 from bijux_phylogenetics.comparative.discrete_mk import (
+    compare_discrete_mk_model_ranking,
+    compare_discrete_mk_model_ranking_from_dataset,
     fit_discrete_mk_model,
     fit_discrete_mk_model_from_dataset,
     write_discrete_mk_summary_table,
@@ -512,8 +514,112 @@ def test_write_discrete_mk_summary_table_reports_shared_transform_search_audit(
 
     assert "transform_starting_parameter_policy" in lines[0]
     assert "transform_refinement_start_count" in lines[0]
+    assert "likelihood_constant_policy" in lines[0]
     assert "lower-bound-first-evaluation" in lines[1]
     assert "\t1\t" in lines[1]
+    assert (
+        "continuous-time-markov-pruning-loglikelihood-has-no-extra-normalizing-constant"
+        in lines[1]
+    )
+
+
+def test_compare_discrete_mk_model_ranking_reports_ranked_model_surface() -> None:
+    report = compare_discrete_mk_model_ranking(
+        fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),
+        fixture("example_traits_phytools_signal_twenty_four_taxa.tsv"),
+        trait="region_state",
+        taxon_column="taxon",
+    )
+
+    assert report.better_model == "equal-rates"
+    assert report.likelihood_constant_policy == (
+        "continuous-time-markov-pruning-loglikelihood-has-no-extra-normalizing-constant"
+    )
+    assert report.likelihood_comparison_policy == (
+        "relative-aic-and-aicc-ranking-is-permitted-only-when-all-candidate-discrete-mk-models-share-one-pruning-likelihood-policy"
+    )
+    assert report.model_confidence_weight_basis == "AICc"
+    assert report.selected_model_akaike_weight is not None
+    assert report.selected_model_akaike_weight > 0.0
+    assert report.models_within_delta_aicc_threshold == ["equal-rates"]
+    assert [row.model for row in report.rows] == [
+        "equal-rates",
+        "symmetric",
+        "all-rates-different",
+    ]
+    assert [row.rank for row in report.rows] == [1, 2, 3]
+    assert report.rows[0].selected is True
+    assert report.rows[0].akaike_weight is not None
+    assert "equal-rates" in report.uncertainty_language
+
+
+def test_compare_discrete_mk_model_ranking_from_dataset_matches_path_surface() -> None:
+    dataset = load_discrete_dataset(
+        fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),
+        fixture("example_traits_phytools_signal_twenty_four_taxa.tsv"),
+        trait="binary_state",
+        taxon_column="taxon",
+    )
+
+    path_report = compare_discrete_mk_model_ranking(
+        dataset.tree_path,
+        dataset.traits_path,
+        trait=dataset.trait,
+        taxon_column=dataset.taxon_column,
+    )
+    dataset_report = compare_discrete_mk_model_ranking_from_dataset(dataset)
+
+    assert dataset_report.better_model == path_report.better_model
+    assert dataset_report.likelihood_constant_policy == (
+        path_report.likelihood_constant_policy
+    )
+    assert [row.model for row in dataset_report.rows] == [
+        row.model for row in path_report.rows
+    ]
+    assert [row.rank for row in dataset_report.rows] == [
+        row.rank for row in path_report.rows
+    ]
+
+
+def test_compare_discrete_mk_model_ranking_marks_infinite_aicc_rows_noncomparable(
+    tmp_path: Path,
+) -> None:
+    tree_path = tmp_path / "small-tree.nwk"
+    traits_path = tmp_path / "small-traits.tsv"
+    tree_path.write_text("((a:1,b:1):1,(c:1,d:1):1);\n", encoding="utf-8")
+    traits_path.write_text(
+        "taxon\tstate\n"
+        "a\tnorth\n"
+        "b\tsouth\n"
+        "c\twest\n"
+        "d\tnorth\n",
+        encoding="utf-8",
+    )
+
+    report = compare_discrete_mk_model_ranking(
+        tree_path,
+        traits_path,
+        trait="state",
+        taxon_column="taxon",
+    )
+
+    row_by_model = {row.model: row for row in report.rows}
+
+    assert report.better_model == "equal-rates"
+    assert row_by_model["equal-rates"].selected is True
+    assert row_by_model["equal-rates"].rank == 1
+    assert row_by_model["symmetric"].comparable is False
+    assert row_by_model["all-rates-different"].comparable is False
+    assert row_by_model["symmetric"].akaike_weight is None
+    assert row_by_model["all-rates-different"].akaike_weight is None
+    assert (
+        row_by_model["symmetric"].comparability_note
+        == "sample size is too small to compute finite AICc for this parameter count"
+    )
+    assert (
+        row_by_model["all-rates-different"].comparability_note
+        == "sample size is too small to compute finite AICc for this parameter count"
+    )
 
 
 def test_fit_discrete_mk_model_matches_governed_geiger_er_kappa_surface() -> None:
