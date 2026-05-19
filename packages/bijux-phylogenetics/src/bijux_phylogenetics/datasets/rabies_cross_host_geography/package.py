@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 from hashlib import sha256
 from html import escape
@@ -145,29 +146,37 @@ from .models import *
 from .shared import _checksum, _html_list
 from .workflow import run_rabies_cross_host_geography_panel_workflow
 
-def run_rabies_cross_host_geography_panel_demo(
+
+def _materialize_rabies_cross_host_geography_panel_demo(
     output_root: Path,
     *,
-    config_path: Path | None = None,
-    mafft_executable: str | Path = "mafft",
-    trimal_executable: str | Path = "trimal",
-    iqtree_executable: str | Path = "iqtree2",
-    fasttree_executable: str | Path = "FastTree",
-    iqtree_seed: int | None = None,
-    iqtree_threads: int | None = None,
-    bootstrap_replicates: int | None = None,
+    config_path: Path | None,
+    mafft_executable: str | Path,
+    trimal_executable: str | Path,
+    iqtree_executable: str | Path,
+    fasttree_executable: str | Path,
+    iqtree_seed: int | None,
+    iqtree_threads: int | None,
+    bootstrap_replicates: int | None,
+    load_dataset: Callable[[Path | None], RabiesCrossHostGeographyPanelDataset],
+    export_dataset: Callable[..., RabiesCrossHostGeographyPanelExportResult],
+    run_workflow: Callable[..., RabiesCrossHostGeographyPanelWorkflowReport],
+    write_workflow_bundle: Callable[
+        [Path, RabiesCrossHostGeographyPanelWorkflowReport],
+        RabiesCrossHostGeographyPanelWorkflowBundle,
+    ],
 ) -> RabiesCrossHostGeographyPanelDemoResult:
-    """Materialize the packaged integrated rabies dataset and rerun the full workflow."""
+    """Build one rabies demo package from the supplied workflow surfaces."""
     if output_root.exists():
         shutil.rmtree(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
-    dataset = load_rabies_cross_host_geography_panel_dataset(config_path)
-    dataset_export = export_rabies_cross_host_geography_panel_dataset(
+    dataset = load_dataset(config_path)
+    dataset_export = export_dataset(
         output_root / "dataset",
         config_path=config_path,
     )
     with TemporaryDirectory(prefix="rabies-cross-host-geography-") as temporary_root:
-        workflow_report = run_rabies_cross_host_geography_panel_workflow(
+        workflow_report = run_workflow(
             Path(temporary_root),
             config_path=config_path,
             mafft_executable=mafft_executable,
@@ -178,7 +187,7 @@ def run_rabies_cross_host_geography_panel_demo(
             iqtree_threads=iqtree_threads,
             bootstrap_replicates=bootstrap_replicates,
         )
-        workflow_bundle = write_rabies_cross_host_geography_panel_workflow_bundle(
+        workflow_bundle = write_workflow_bundle(
             output_root / "workflow",
             workflow_report,
         )
@@ -244,6 +253,36 @@ def run_rabies_cross_host_geography_panel_demo(
         artifact_inventory_path=artifact_inventory_path,
         reproducibility_checklist_path=reproducibility_checklist_path,
         package_manifest_path=package_manifest_path,
+    )
+
+
+def run_rabies_cross_host_geography_panel_demo(
+    output_root: Path,
+    *,
+    config_path: Path | None = None,
+    mafft_executable: str | Path = "mafft",
+    trimal_executable: str | Path = "trimal",
+    iqtree_executable: str | Path = "iqtree2",
+    fasttree_executable: str | Path = "FastTree",
+    iqtree_seed: int | None = None,
+    iqtree_threads: int | None = None,
+    bootstrap_replicates: int | None = None,
+) -> RabiesCrossHostGeographyPanelDemoResult:
+    """Materialize the packaged integrated rabies dataset and rerun the full workflow."""
+    return _materialize_rabies_cross_host_geography_panel_demo(
+        output_root,
+        config_path=config_path,
+        mafft_executable=mafft_executable,
+        trimal_executable=trimal_executable,
+        iqtree_executable=iqtree_executable,
+        fasttree_executable=fasttree_executable,
+        iqtree_seed=iqtree_seed,
+        iqtree_threads=iqtree_threads,
+        bootstrap_replicates=bootstrap_replicates,
+        load_dataset=load_rabies_cross_host_geography_panel_dataset,
+        export_dataset=export_rabies_cross_host_geography_panel_dataset,
+        run_workflow=run_rabies_cross_host_geography_panel_workflow,
+        write_workflow_bundle=write_rabies_cross_host_geography_panel_workflow_bundle,
     )
 
 
