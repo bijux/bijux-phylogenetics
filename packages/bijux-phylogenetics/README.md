@@ -388,6 +388,7 @@ bijux-phylogenetics benchmark tree-comparison --replicates 3 --json
 bijux-phylogenetics benchmark large-tree-scaling --replicates 1 --tip-count 512 --tip-count 1024 --json
 bijux-phylogenetics benchmark large-alignment-scaling --replicates 1 --sequence-count 256 --alignment-length 512 --sequence-count 512 --alignment-length 1024 --json
 bijux-phylogenetics benchmark large-tree-set-scaling --replicates 1 --tree-count 128 --tip-count 48 --tree-count 256 --tip-count 64 --json
+bijux-phylogenetics benchmark large-tree-model-fitting --tier small --json
 bijux-phylogenetics benchmark workflow-practical-limits --replicates 1 --stress-tier heavy --json
 bijux-phylogenetics report production-scale-readiness --replicates 1 --tree-tip-count 512 --tree-tip-count 1024 --sequence-count 256 --alignment-length 512 --sequence-count 512 --alignment-length 1024 --posterior-tree-count 128 --tree-set-tip-count 48 --posterior-tree-count 256 --tree-set-tip-count 64 --stress-tier heavy --out artifacts/production-scale-readiness.html --json
 bijux-phylogenetics report alignment-package alignment.fasta --out-dir artifacts/alignment-quality-package --json
@@ -420,6 +421,16 @@ panel across two rooted trees, writes Bijux-versus-stored-`geiger`
 parameter-recovery ledgers, records execution and warning review rows, and
 keeps weak-identifiability transformed-model cases explicit instead of forcing
 them into binary pass-or-fail claims.
+
+For governed large-tree macroevolution fitting review, use
+`benchmark large-tree-model-fitting`. The small tier runs one 100-taxon
+Pagel-lambda fit and one 100-taxon binary discrete ER fit, records owned
+runtime, peak memory, and optimizer-step budgets, and compares the resulting
+fit summaries against stored local `geiger` references. The heavy tier adds
+one 512-taxon Brownian continuous-fit review case so 500-plus-taxon fitting is
+still exercised on a real owned surface even when transformed-branch optimizers
+are materially slower, and it keeps slowdown explicit through threshold-review
+rows instead of silently treating the larger surface as proven.
 
 For reviewer-facing scale checks on posterior and bootstrap tree-set review,
 use `benchmark large-tree-set-scaling`. It benchmarks
