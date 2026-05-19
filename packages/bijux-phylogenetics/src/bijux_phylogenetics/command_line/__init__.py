@@ -188,29 +188,13 @@ from bijux_phylogenetics.command_line.prune import (
     add_prune_command,
     run_prune_command,
 )
-from bijux_phylogenetics.command_line.alignment_distance import (
-    add_alignment_distance_commands,
-    run_alignment_distance_command,
-)
-from bijux_phylogenetics.command_line.alignment_review import (
-    add_alignment_review_commands,
-    run_alignment_review_command,
-)
-from bijux_phylogenetics.command_line.alignment_matrix import (
-    add_alignment_matrix_commands,
-    run_alignment_matrix_command,
+from bijux_phylogenetics.command_line.alignment import (
+    add_alignment_commands,
+    run_alignment_command,
 )
 from bijux_phylogenetics.command_line.annotate import (
     add_annotate_command,
     run_annotate_command,
-)
-from bijux_phylogenetics.command_line.alignment_coding import (
-    add_alignment_coding_commands,
-    run_alignment_coding_command,
-)
-from bijux_phylogenetics.command_line.alignment_linkage import (
-    add_alignment_linkage_commands,
-    run_alignment_linkage_command,
 )
 from bijux_phylogenetics.command_line.comparative_continuous import (
     add_comparative_continuous_commands,
@@ -751,17 +735,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     add_prune_command(subparsers)
 
-    alignment = subparsers.add_parser(
-        get_command_spec("alignment").name, help=get_command_spec("alignment").summary
-    )
-    alignment_subparsers = alignment.add_subparsers(
-        dest="alignment_command", required=True
-    )
-    add_alignment_review_commands(alignment_subparsers)
-    add_alignment_matrix_commands(alignment_subparsers)
-    add_alignment_distance_commands(alignment_subparsers)
-    add_alignment_coding_commands(alignment_subparsers)
-    add_alignment_linkage_commands(alignment_subparsers)
+    add_alignment_commands(subparsers)
 
     comparative = subparsers.add_parser(
         get_command_spec("comparative").name,
@@ -1877,21 +1851,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "prune":
             return run_prune_command(args)
         if args.command == "alignment":
-            review_exit_code = run_alignment_review_command(args)
-            if review_exit_code is not None:
-                return review_exit_code
-            matrix_exit_code = run_alignment_matrix_command(args)
-            if matrix_exit_code is not None:
-                return matrix_exit_code
-            distance_exit_code = run_alignment_distance_command(args)
-            if distance_exit_code is not None:
-                return distance_exit_code
-            coding_exit_code = run_alignment_coding_command(args)
-            if coding_exit_code is not None:
-                return coding_exit_code
-            linkage_exit_code = run_alignment_linkage_command(args)
-            if linkage_exit_code is not None:
-                return linkage_exit_code
+            alignment_exit_code = run_alignment_command(args)
+            if alignment_exit_code is not None:
+                return alignment_exit_code
         if args.command == "comparative":
             continuous_exit_code = run_comparative_continuous_command(
                 args,
