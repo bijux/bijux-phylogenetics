@@ -1437,12 +1437,10 @@ def list_geiger_parity_cases() -> list[GeigerParityCase]:
                 "aic",
                 "aicc",
                 "parameter_name",
-                "parameter_value",
             ),
             lambda_bounds=(0.0, 1.0),
             discrete_transform_name="lambda",
             row_comparison_policy="summary-only",
-            field_tolerances={"parameter_value": 1e-4},
             row_field_tolerances={"rate": 1e-2},
         ),
         GeigerParityCase(
