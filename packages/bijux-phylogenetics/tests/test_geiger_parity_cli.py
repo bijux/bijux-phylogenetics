@@ -18,6 +18,7 @@ def test_parity_cli_runs_live_geiger_harness_and_writes_tables(
     rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
     summary_path = tmp_path / "geiger-parity-summary.tsv"
     observation_path = tmp_path / "geiger-parity-observations.tsv"
+    triage_path = tmp_path / "geiger-optimizer-triage.tsv"
 
     exit_code = main(
         [
@@ -30,6 +31,8 @@ def test_parity_cli_runs_live_geiger_harness_and_writes_tables(
             str(summary_path),
             "--observations-out",
             str(observation_path),
+            "--optimizer-triage-out",
+            str(triage_path),
             "--json",
         ]
     )
@@ -43,6 +46,11 @@ def test_parity_cli_runs_live_geiger_harness_and_writes_tables(
     assert payload["metrics"]["skipped_case_count"] == 0
     assert summary_path.exists()
     assert observation_path.exists()
+    assert triage_path.exists()
+    assert payload["data"]["optimizer_triage_table"] == str(triage_path)
+    assert len(payload["data"]["report"]["optimizer_triage_rows"]) == payload["metrics"][
+        "case_count"
+    ]
 
 
 def test_parity_cli_restricts_live_geiger_cases(tmp_path: Path, capsys) -> None:
@@ -68,6 +76,38 @@ def test_parity_cli_restricts_live_geiger_cases(tmp_path: Path, capsys) -> None:
     observation = payload["data"]["report"]["observations"][0]
     assert observation["case_id"] == "fitcontinuous-lambda-weak-signal-review"
     assert observation["model_name"] == "lambda"
+
+
+def test_parity_cli_writes_geiger_optimizer_triage_table_for_single_case(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    triage_path = tmp_path / "geiger-optimizer-triage.tsv"
+
+    exit_code = main(
+        [
+            "parity",
+            "--reference-source",
+            "geiger-live",
+            "--geiger-rscript-executable",
+            str(rscript),
+            "--geiger-case",
+            "fitcontinuous-lambda-weak-signal-review",
+            "--optimizer-triage-out",
+            str(triage_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert triage_path.exists()
+    assert payload["data"]["optimizer_triage_table"] == str(triage_path)
+    triage_row = payload["data"]["report"]["optimizer_triage_rows"][0]
+    assert triage_row["case_id"] == "fitcontinuous-lambda-weak-signal-review"
+    assert triage_row["mismatch_type"] == "no_algorithm_mismatch"
 
 
 def test_parity_cli_restricts_live_geiger_discrete_cases(
