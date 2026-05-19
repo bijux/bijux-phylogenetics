@@ -10,6 +10,7 @@ from bijux_phylogenetics.parity import (
     write_geiger_parity_observation_table,
     write_geiger_optimizer_triage_table,
     write_geiger_parity_summary_table,
+    write_geiger_parameterization_registry_table,
 )
 from tests.support.geiger_optimizer_triage_reference import (
     geiger_optimizer_triage_reference_payloads,
@@ -1421,6 +1422,77 @@ def test_write_geiger_optimizer_triage_table_writes_rows(tmp_path: Path) -> None
     assert len(rows) == 1
     assert rows[0]["case_id"] == "fitcontinuous-lambda-weak-signal-review"
     assert rows[0]["mismatch_type"] == "no_algorithm_mismatch"
+
+
+def test_run_geiger_parity_cases_builds_direct_parameterization_registry_rows(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    report = run_geiger_parity_cases(
+        case_ids=["fitcontinuous-lambda-weak-signal-review"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    row = report.parameterization_registry_rows[0]
+    assert row.case_id == "fitcontinuous-lambda-weak-signal-review"
+    assert row.reference_parameter_name == "lambda"
+    assert row.bijux_parameter_name == "lambda"
+    assert row.canonical_parameter_name == "lambda"
+    assert row.parameter_match_after_conversion is True
+    assert row.parameter_bounds_match_after_conversion is True
+    assert row.expected_divergence is False
+    assert row.root_state_match_within_tolerance is True
+    assert row.variance_match_within_tolerance is True
+    assert row.log_likelihood_match_within_tolerance is True
+
+
+def test_run_geiger_parity_cases_marks_expected_early_burst_parameterization_divergence(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    report = run_geiger_parity_cases(
+        case_ids=["fitcontinuous-eb-early-burst-rate-recovery"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+
+    row = report.parameterization_registry_rows[0]
+    assert row.case_id == "fitcontinuous-eb-early-burst-rate-recovery"
+    assert row.reference_parameter_name == "a"
+    assert row.bijux_parameter_name == "rate_change"
+    assert row.canonical_parameter_name == "rate_change"
+    assert row.reference_parameter_value is not None
+    assert row.converted_reference_parameter_value is not None
+    assert row.bijux_parameter_value is not None
+    assert row.parameter_match_after_conversion is True
+    assert row.expected_divergence is True
+    assert (
+        row.expected_divergence_kind
+        == "continuous-early-burst-sign-and-bound-convention"
+    )
+    assert row.expected_divergence_evidence is not None
+    assert row.parameter_bounds_match_after_conversion is False
+
+
+def test_write_geiger_parameterization_registry_table_writes_rows(
+    tmp_path: Path,
+) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    report = run_geiger_parity_cases(
+        case_ids=["fitcontinuous-lambda-weak-signal-review"],
+        rscript_executable=str(rscript),
+        failure_root=tmp_path / "geiger-parity-failures",
+    )
+    registry_path = tmp_path / "geiger-parameterization-registry.tsv"
+
+    write_geiger_parameterization_registry_table(registry_path, report)
+
+    with registry_path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle, delimiter="\t"))
+    assert len(rows) == 1
+    assert rows[0]["case_id"] == "fitcontinuous-lambda-weak-signal-review"
+    assert rows[0]["reference_parameter_name"] == "lambda"
 
 
 def test_write_geiger_parity_tables_writes_summary_and_observations(
