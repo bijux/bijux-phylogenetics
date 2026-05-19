@@ -22,11 +22,9 @@ from bijux_phylogenetics.core.traits import (
     link_tree_to_traits,
 )
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
-from bijux_phylogenetics.io.fasta import (
-    build_alignment_forensic_report,
-    link_alignment_to_tree,
-    load_fasta_alignment,
-)
+from bijux_phylogenetics.io.fasta._shared import load_fasta_alignment
+from bijux_phylogenetics.io.fasta.quality import build_alignment_forensic_report
+from bijux_phylogenetics.io.fasta.records import link_alignment_to_tree
 from bijux_phylogenetics.io.trees import load_tree
 
 _GEOGRAPHY_COLUMN_HINTS = (

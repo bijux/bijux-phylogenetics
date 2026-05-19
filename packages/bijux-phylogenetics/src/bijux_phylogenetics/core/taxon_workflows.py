@@ -5,7 +5,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.core.traits import detect_missing_trait_values
-from bijux_phylogenetics.io.fasta import load_fasta_alignment
+from bijux_phylogenetics.io.fasta._shared import load_fasta_alignment
 from bijux_phylogenetics.io.trees import detect_tree_format, load_tree
 
 

@@ -27,16 +27,18 @@ from bijux_phylogenetics.core.partitions import (
 )
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError, PhylogeneticsError
-from bijux_phylogenetics.io.fasta import (
-    back_translate_aligned_coding_sequences,
-    classify_sequence_coding_behavior,
+from bijux_phylogenetics.io.fasta._shared import (
     infer_alignment_alphabet,
     load_fasta_alignment,
-    prepare_coding_sequences_for_alignment,
-    summarise_fasta,
-    translate_prepared_coding_sequences,
     write_fasta_alignment,
 )
+from bijux_phylogenetics.io.fasta.coding import (
+    back_translate_aligned_coding_sequences,
+    classify_sequence_coding_behavior,
+    prepare_coding_sequences_for_alignment,
+    translate_prepared_coding_sequences,
+)
+from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.trees import load_tree_set
 

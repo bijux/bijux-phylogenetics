@@ -14,11 +14,13 @@ from bijux_phylogenetics.core.alignment import (
 )
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
-from bijux_phylogenetics.io.fasta import (
+from bijux_phylogenetics.io.fasta._shared import (
     detect_fasta_sequence_type,
+    write_fasta_alignment,
+)
+from bijux_phylogenetics.io.fasta.records import (
     repair_fasta_input,
     validate_fasta_input,
-    write_fasta_alignment,
 )
 from bijux_phylogenetics.provenance.method_tiers import (
     MethodTierAssessment,

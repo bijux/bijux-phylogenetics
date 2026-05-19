@@ -11,7 +11,7 @@ from bijux_phylogenetics.compare.topology import (
     compare_tree_paths,
 )
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
-from bijux_phylogenetics.io.fasta import load_fasta_alignment
+from bijux_phylogenetics.io.fasta._shared import load_fasta_alignment
 
 from .common import build_file_checksums, load_engine_manifest, read_engine_version
 from .fasta_to_tree import run_fasta_to_tree_workflow

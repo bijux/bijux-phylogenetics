@@ -52,7 +52,10 @@ from bijux_phylogenetics.runtime.errors import (
     TreeParseError,
 )
 from bijux_phylogenetics.io.biopython import loads_biophylo
-from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
+from bijux_phylogenetics.io.fasta._shared import (
+    infer_alignment_alphabet,
+    load_fasta_alignment,
+)
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.trees import (

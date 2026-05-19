@@ -14,7 +14,7 @@ from bijux_phylogenetics.engines.workflows import (
     run_maximum_likelihood_tree_inference,
     run_multiple_sequence_alignment,
 )
-from bijux_phylogenetics.io.fasta import validate_fasta_input
+from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 from bijux_phylogenetics.reports.service import render_phylogenetics_report
 
 from .workflow_results import (

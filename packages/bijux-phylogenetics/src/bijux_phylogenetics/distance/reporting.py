@@ -6,7 +6,10 @@ from pathlib import Path
 import shutil
 import tempfile
 
-from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
+from bijux_phylogenetics.io.fasta._shared import (
+    infer_alignment_alphabet,
+    load_fasta_alignment,
+)
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,

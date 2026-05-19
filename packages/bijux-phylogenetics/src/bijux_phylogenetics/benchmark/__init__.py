@@ -48,8 +48,10 @@ from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.engines.large_alignment_inference import (
     run_large_alignment_inference,
 )
-from bijux_phylogenetics.io.fasta import build_alignment_quality_report
-from bijux_phylogenetics.io.fasta import summarize_alignment_readiness
+from bijux_phylogenetics.io.fasta.quality import (
+    build_alignment_quality_report,
+    summarize_alignment_readiness,
+)
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.render.svg import render_tree_svg
 from bijux_phylogenetics.simulation import (

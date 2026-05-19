@@ -21,11 +21,11 @@ from bijux_phylogenetics.runtime.errors import (
     InvalidAlignmentError,
     UnsupportedDistanceTreeMethodError,
 )
-from bijux_phylogenetics.io.fasta import (
+from bijux_phylogenetics.io.fasta._shared import (
     infer_alignment_alphabet,
-    load_dna_bin_alignment,
     load_fasta_alignment,
 )
+from bijux_phylogenetics.io.fasta.matrix import load_dna_bin_alignment
 
 DistanceModel = str
 GapHandlingMode = str
