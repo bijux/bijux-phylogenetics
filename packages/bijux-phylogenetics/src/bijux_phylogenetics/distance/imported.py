@@ -12,7 +12,7 @@ from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.runtime.errors import InvalidDistanceMatrixError
 
-from . import (
+from .models import (
     DistanceMatrixAsymmetry,
     DistanceMethodAssumptionReport,
     ImportedDistanceEntry,
@@ -22,6 +22,8 @@ from . import (
     LowInformationPair,
     NonMetricDistanceObservation,
     SaturatedDistancePair,
+)
+from . import (
     _iter_ultrametric_violations,
     _pair_key,
     _require_supported_distance_tree_method,

@@ -26,7 +26,7 @@ from bijux_phylogenetics.trees import (
     compute_consensus_tree,
 )
 
-from . import (
+from .models import (
     AmbiguityPolicy,
     DistanceBootstrapReport,
     DistanceBootstrapSupportRow,
@@ -38,6 +38,8 @@ from . import (
     DistanceTreeTopologyComparison,
     GapHandlingMode,
     GeneticDistanceMatrix,
+)
+from . import (
     _bio_distance_matrix,
     _distance_lookup,
     _load_alignment_for_model,
