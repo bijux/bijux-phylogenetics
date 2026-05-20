@@ -15,7 +15,7 @@ from bijux_phylogenetics.comparative.common import (
     build_brownian_covariance_matrix,
     tip_root_depths,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import summarize_ultrametric_tip_depths
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError

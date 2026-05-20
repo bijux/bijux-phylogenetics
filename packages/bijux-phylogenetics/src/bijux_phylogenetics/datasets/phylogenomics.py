@@ -14,7 +14,7 @@ from bijux_phylogenetics.phylo.alignment.occupancy import (
     LocusOccupancyReport,
     write_locus_partitions,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.alignment.partitions import LocusPartition
 from bijux_phylogenetics.engines.workflows.iqtree import (
     run_bootstrap_support_estimation,

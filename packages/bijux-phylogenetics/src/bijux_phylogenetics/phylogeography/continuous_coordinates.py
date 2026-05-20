@@ -10,7 +10,7 @@ from bijux_phylogenetics.ancestral.continuous import (
     ContinuousAncestralReport,
     reconstruct_continuous_ancestral_states,
 )
-from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.newick import dumps_newick

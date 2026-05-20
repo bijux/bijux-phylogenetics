@@ -20,7 +20,7 @@ from bijux_phylogenetics.phylo.alignment import (
     SequenceIdentityMatrix,
     TrimmedAlignmentColumn,
 )
-from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 
 from .core import (
     _GAP_CHARACTERS,

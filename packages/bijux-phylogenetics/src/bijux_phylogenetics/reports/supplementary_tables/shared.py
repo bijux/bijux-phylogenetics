@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from bijux_phylogenetics.core.metadata import TaxonTable
+from bijux_phylogenetics.datasets.study_inputs import TaxonTable
 
 
 def row_lookup(table: TaxonTable) -> dict[str, dict[str, str]]:

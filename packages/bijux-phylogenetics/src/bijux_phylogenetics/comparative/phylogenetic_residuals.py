@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs, run_pgls
-from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
 

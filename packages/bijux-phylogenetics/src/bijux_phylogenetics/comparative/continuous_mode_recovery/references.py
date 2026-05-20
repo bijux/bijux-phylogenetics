@@ -6,7 +6,7 @@ from pathlib import Path
 from bijux_phylogenetics.comparative.geiger_fitcontinuous_recovery_reference import (
     GEIGER_FITCONTINUOUS_RECOVERY_REFERENCE_PAYLOADS,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 from .models import ContinuousModeRecoveryReport
 

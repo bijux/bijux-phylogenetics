@@ -21,7 +21,7 @@ from bijux_phylogenetics.comparative.pgls import (
     PGLSFormulaAudit,
     inspect_pgls_inputs,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,

@@ -6,9 +6,9 @@ from pathlib import Path
 from statistics import mean
 
 from bijux_phylogenetics.phylo.topology.node_identity import build_ape_internal_node_map
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.core.traits import (
+from bijux_phylogenetics.datasets.study_inputs import (
     align_tree_and_trait_table,
     validate_traits_table,
 )

@@ -25,7 +25,7 @@ from bijux_phylogenetics.comparative import (
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 from .models import (
     AvianReproductiveTraitWorkflowBundle,

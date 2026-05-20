@@ -11,7 +11,7 @@ from bijux_phylogenetics.comparative.signal import (
     IndependentContrastReport,
     compute_phylogenetic_independent_contrasts,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 

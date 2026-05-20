@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.core.metadata import inspect_metadata_table, load_taxon_table
-from bijux_phylogenetics.core.traits import (
+from bijux_phylogenetics.datasets.study_inputs import inspect_metadata_table, load_taxon_table
+from bijux_phylogenetics.datasets.study_inputs import (
     check_tree_and_trait_taxon_names,
     detect_unusable_trait_columns,
     link_tree_to_traits,

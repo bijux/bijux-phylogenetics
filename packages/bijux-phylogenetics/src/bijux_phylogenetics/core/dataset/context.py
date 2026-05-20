@@ -12,7 +12,7 @@ from bijux_phylogenetics.bayesian.beast.validation import (
     validate_tip_dating_metadata,
 )
 from bijux_phylogenetics.phylo.alignment import AlignmentForensicReport
-from bijux_phylogenetics.core.metadata import TaxonTable, load_taxon_table
+from bijux_phylogenetics.datasets.study_inputs import TaxonTable, load_taxon_table
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.fasta.quality import build_alignment_forensic_report
 from bijux_phylogenetics.io.trees import load_tree

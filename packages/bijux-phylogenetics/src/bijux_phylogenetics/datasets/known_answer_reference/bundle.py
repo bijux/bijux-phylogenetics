@@ -22,7 +22,7 @@ from bijux_phylogenetics.comparative.discrete_evolution import (
 from bijux_phylogenetics.comparative.ou_trait_evolution import (
     write_ou_trait_evolution_summary_table,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.ecology import (
     write_host_state_node_table,
     write_host_switch_branch_table,

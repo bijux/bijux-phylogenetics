@@ -7,8 +7,8 @@ from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.core.traits import (
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import (
     check_tree_and_trait_taxon_names,
     detect_missing_trait_values,
     link_tree_to_traits,

@@ -14,7 +14,7 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralReport,
     reconstruct_discrete_ancestral_states,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.comparative.discrete_evolution import (
     audit_discrete_state_coding,
 )

@@ -14,7 +14,7 @@ from bijux_phylogenetics.ancestral.service import (
     compare_discrete_ancestral_reconstructions,
     compare_discrete_ancestral_trees,
 )
-from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree

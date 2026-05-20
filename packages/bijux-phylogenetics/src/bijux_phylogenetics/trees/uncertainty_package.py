@@ -8,7 +8,7 @@ from pathlib import Path
 from time import perf_counter
 import tracemalloc
 
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.render.svg import (
     TreeRenderResult,

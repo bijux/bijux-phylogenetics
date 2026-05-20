@@ -7,7 +7,7 @@ import json
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
 )

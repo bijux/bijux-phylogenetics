@@ -4,7 +4,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from bijux_phylogenetics.core.dataset import audit_dataset_inputs, summarize_dataset_readiness
-from bijux_phylogenetics.core.traits import detect_missing_trait_values
+from bijux_phylogenetics.datasets.study_inputs import detect_missing_trait_values
 from bijux_phylogenetics.diagnostics.validation import (
     forensic_tree_path,
     inspect_tree_path,

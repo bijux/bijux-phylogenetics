@@ -8,7 +8,7 @@ from bijux_phylogenetics.bayesian.beast.models import (
     TipDatingValidationReport,
 )
 from bijux_phylogenetics.phylo.alignment import AlignmentForensicReport
-from bijux_phylogenetics.core.metadata import MetadataColumnCompleteness
+from bijux_phylogenetics.datasets.study_inputs import MetadataColumnCompleteness
 
 
 @dataclass(slots=True)

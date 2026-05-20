@@ -14,7 +14,7 @@ from bijux_phylogenetics.bayesian.posterior import (
     summarize_maximum_clade_credibility_tree,
     write_posterior_tree_subsample,
 )
-from bijux_phylogenetics.core.metadata import TaxonTable, load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import TaxonTable, load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.newick import load_newick_tree_set
 from bijux_phylogenetics.render.html import write_html_report

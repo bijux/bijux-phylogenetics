@@ -1321,7 +1321,7 @@ def _write_reduced_trait_table(
     *,
     taxon_column: str,
 ) -> Path:
-    from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
+    from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     kept_taxa = {taxon for taxon in taxa if taxon != dropped_taxon}

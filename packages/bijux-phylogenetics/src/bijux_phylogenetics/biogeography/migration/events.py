@@ -21,7 +21,7 @@ from bijux_phylogenetics.biogeography.state_models import (
     GeographicStateModelReport,
     summarize_geographic_state_model,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree

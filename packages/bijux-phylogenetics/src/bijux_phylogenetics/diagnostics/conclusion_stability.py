@@ -14,7 +14,7 @@ from bijux_phylogenetics.comparative.posterior_tree_pgls import (
     PosteriorTreePGLSCoefficientSummaryRow,
     PosteriorTreePGLSReport,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.trees import CladeFrequencyReport
 

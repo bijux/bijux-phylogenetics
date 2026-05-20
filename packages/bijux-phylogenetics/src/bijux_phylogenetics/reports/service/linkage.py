@@ -5,7 +5,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from bijux_phylogenetics.phylo.alignment import AlignmentSummary
-from bijux_phylogenetics.core.metadata import join_table_to_taxa, load_taxon_table
+from bijux_phylogenetics.datasets.study_inputs import join_table_to_taxa, load_taxon_table
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.io.fasta.records import summarise_fasta
 

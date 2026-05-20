@@ -14,7 +14,7 @@ from bijux_phylogenetics.comparative.models import (
     ComparativeParameterInterval,
     ComparativeResidualSummary,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 
 @dataclass(slots=True)

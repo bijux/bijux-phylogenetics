@@ -7,7 +7,7 @@ from bijux_phylogenetics.phylo.alignment import (
     CodingSequencePreparationReport,
     SequenceCompositionOutlier,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.diagnostics.validation import TreeValidationReport
 
 from .models import (

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.pruning import drop_tree_taxa
-from bijux_phylogenetics.core.traits import (
+from bijux_phylogenetics.datasets.study_inputs import (
     link_tree_to_traits,
     validate_traits_table,
 )

@@ -8,7 +8,7 @@ from Bio import Phylo
 from Bio.Phylo.BaseTree import Clade
 from Bio.Phylo.BaseTree import Tree as BioTree
 
-from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo

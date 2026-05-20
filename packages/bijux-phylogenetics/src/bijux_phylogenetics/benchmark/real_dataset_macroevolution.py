@@ -20,8 +20,8 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
     compare_fitcontinuous_model_ranking,
     fit_continuous_evolutionary_mode,
 )
-from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.core.traits import TreeTraitAlignmentReport, align_tree_and_trait_table
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import TreeTraitAlignmentReport, align_tree_and_trait_table
 from bijux_phylogenetics.datasets.central_european_seashore_flora import (
     CentralEuropeanSeashoreFloraDataset,
     CentralEuropeanSeashoreFloraDatasetExportResult,

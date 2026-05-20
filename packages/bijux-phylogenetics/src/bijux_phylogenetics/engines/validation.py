@@ -8,7 +8,7 @@ from bijux_phylogenetics.compare.topology import (
     compare_support_values,
     compare_tree_paths,
 )
-from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.engines.common import (
     build_file_checksums,
     load_engine_manifest,

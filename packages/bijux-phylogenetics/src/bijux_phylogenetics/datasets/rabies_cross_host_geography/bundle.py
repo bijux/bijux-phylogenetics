@@ -79,7 +79,7 @@ from bijux_phylogenetics.phylo.alignment import (
     AlignmentQualityReport,
     SequenceQualityRankingReport,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.topology import (
     TreeRootingReport,
     root_tree_on_outgroup,

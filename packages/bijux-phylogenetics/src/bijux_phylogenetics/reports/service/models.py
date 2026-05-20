@@ -21,13 +21,13 @@ from bijux_phylogenetics.core.dataset import (
     DatasetExclusionTable,
     DatasetReadinessSummary,
 )
-from bijux_phylogenetics.core.metadata import MetadataJoinRow
+from bijux_phylogenetics.datasets.study_inputs import MetadataJoinRow
 from bijux_phylogenetics.phylo.taxa import (
     TaxonStabilityReport,
     TaxonWorkflowLossReport,
 )
 from bijux_phylogenetics.phylo.taxa import TaxonAuditReport
-from bijux_phylogenetics.core.traits import TraitMissingValueReport
+from bijux_phylogenetics.datasets.study_inputs import TraitMissingValueReport
 from bijux_phylogenetics.diagnostics.validation import (
     TreeForensicReport,
     TreeInspectionReport,

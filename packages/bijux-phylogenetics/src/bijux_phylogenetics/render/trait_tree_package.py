@@ -5,7 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.core.metadata import TaxonTable, load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import TaxonTable, load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.package import (

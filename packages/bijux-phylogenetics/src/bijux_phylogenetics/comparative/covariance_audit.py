@@ -19,7 +19,7 @@ from bijux_phylogenetics.comparative.common import (
 )
 from bijux_phylogenetics.comparative.models import _alpha_grid
 from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs
-from bijux_phylogenetics.core.metadata import (
+from bijux_phylogenetics.datasets.study_inputs import (
     inspect_taxon_table_index,
     write_taxon_rows,
 )

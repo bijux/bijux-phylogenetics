@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bijux_phylogenetics.core.metadata import TaxonTable
+from bijux_phylogenetics.datasets.study_inputs import TaxonTable
 
 from .shared import build_dynamic_columns
 

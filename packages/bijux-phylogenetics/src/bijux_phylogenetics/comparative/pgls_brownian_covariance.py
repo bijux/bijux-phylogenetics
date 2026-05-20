@@ -15,7 +15,7 @@ from bijux_phylogenetics.comparative.pgls import (
     inspect_pgls_inputs,
     run_pgls,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import summarize_ultrametric_tip_depths
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 

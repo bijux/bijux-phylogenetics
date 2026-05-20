@@ -31,7 +31,7 @@ from bijux_phylogenetics.comparative.trait_regime_mapping import (
     build_branch_identity_lookup,
     resolve_branch_regime_id_column,
 )
-from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 

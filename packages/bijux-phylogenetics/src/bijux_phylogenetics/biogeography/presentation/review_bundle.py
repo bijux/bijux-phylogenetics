@@ -28,7 +28,7 @@ from bijux_phylogenetics.biogeography.presentation.publication_support import (
     write_biogeography_caption,
     write_biogeography_publication_legend,
 )
-from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.comparative.discrete_evolution import (
     estimate_ancestral_geographic_states,
     render_tree_with_geographic_states,

@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
-from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.core.traits import validate_traits_table
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import validate_traits_table
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 

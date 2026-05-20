@@ -6,7 +6,7 @@ from html import escape
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.render.reproducibility import (
     FigureReproducibilityFilter,
     write_figure_reproducibility_manifest,

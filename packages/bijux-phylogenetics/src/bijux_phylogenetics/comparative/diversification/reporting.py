@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import node_signature
-from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.runtime.errors import (
     DiversificationAnalysisError,
 )

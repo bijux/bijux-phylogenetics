@@ -22,7 +22,7 @@ from bijux_phylogenetics.comparative.common import (
     load_comparative_dataset,
     summarize_numeric_trait_readiness,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 
 _Z_95 = 1.959963984540054

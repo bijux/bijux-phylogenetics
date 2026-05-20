@@ -6,7 +6,7 @@ from bijux_phylogenetics.comparative.pgls import (
     PGLSLambdaFitReport,
     run_pgls,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 
 def summarize_pgls_lambda_fit(

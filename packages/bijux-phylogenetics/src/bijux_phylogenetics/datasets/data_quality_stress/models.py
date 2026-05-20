@@ -11,7 +11,7 @@ from bijux_phylogenetics.phylo.alignment import (
     SequenceCompositionOutlier,
     SequenceLengthOutlier,
 )
-from bijux_phylogenetics.core.traits import TraitLinkageReport, TraitValidationReport
+from bijux_phylogenetics.datasets.study_inputs import TraitLinkageReport, TraitValidationReport
 from bijux_phylogenetics.diagnostics.validation import (
     TreeInspectionReport,
     TreeValidationReport,

@@ -12,7 +12,7 @@ from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 
 @dataclass(slots=True)

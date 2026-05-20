@@ -413,7 +413,7 @@ def simulate_speciational_trait_collection(
 
 
 def write_continuous_trait_table(path: Path, report) -> Path:
-    from bijux_phylogenetics.core.metadata import write_taxon_rows
+    from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
     return write_taxon_rows(
         path,
@@ -426,7 +426,7 @@ def write_continuous_trait_table(path: Path, report) -> Path:
 
 
 def write_continuous_trait_collection_table(path: Path, report) -> Path:
-    from bijux_phylogenetics.core.metadata import write_taxon_rows
+    from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
     return write_taxon_rows(
         path,
@@ -444,7 +444,7 @@ def write_continuous_trait_collection_table(path: Path, report) -> Path:
 
 
 def write_continuous_trait_collection_summary_table(path: Path, report) -> Path:
-    from bijux_phylogenetics.core.metadata import write_taxon_rows
+    from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
     return write_taxon_rows(
         path,

@@ -9,7 +9,7 @@ from bijux_phylogenetics.core.dataset import (
     DatasetExclusionRow,
     audit_dataset_inputs,
 )
-from bijux_phylogenetics.core.metadata import (
+from bijux_phylogenetics.datasets.study_inputs import (
     TaxonTable,
     load_taxon_table,
     write_taxon_rows,

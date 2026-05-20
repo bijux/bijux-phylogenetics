@@ -4,7 +4,7 @@ from dataclasses import asdict
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 from .models import (
     StochasticMapBranchHistory,

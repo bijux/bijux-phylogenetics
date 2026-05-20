@@ -25,7 +25,7 @@ from bijux_phylogenetics.comparative.models import (
     fit_brownian_motion_model,
     fit_ornstein_uhlenbeck_model,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 

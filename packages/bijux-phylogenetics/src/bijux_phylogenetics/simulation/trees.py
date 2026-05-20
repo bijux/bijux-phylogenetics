@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import random
 
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.newick import (
     dumps_newick,

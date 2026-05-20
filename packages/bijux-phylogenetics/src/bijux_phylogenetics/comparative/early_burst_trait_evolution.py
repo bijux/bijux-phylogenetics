@@ -26,7 +26,7 @@ from bijux_phylogenetics.comparative.models import (
     _comparison_row,
     _fit_intercept_only_model,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 _PROFILE_CONFIDENCE_DELTA = 1.920729410347062
 

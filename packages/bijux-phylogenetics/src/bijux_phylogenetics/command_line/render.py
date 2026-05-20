@@ -13,7 +13,7 @@ from bijux_phylogenetics.command_line.arguments import (
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.svg import (
     audit_support_label_rendering,

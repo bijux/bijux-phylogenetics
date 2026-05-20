@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 DEFAULT_BURNIN_FRACTIONS: tuple[float, ...] = (0.05, 0.1, 0.25, 0.5)
 MAJORITY_CLADE_THRESHOLD = 0.5

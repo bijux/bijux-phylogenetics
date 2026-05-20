@@ -13,7 +13,7 @@ from bijux_phylogenetics.bayesian.diagnostics import (
     summarize_trace_convergence,
     summarize_trace_parameters,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.trees import compute_clade_frequency_table
 
 from .models import (

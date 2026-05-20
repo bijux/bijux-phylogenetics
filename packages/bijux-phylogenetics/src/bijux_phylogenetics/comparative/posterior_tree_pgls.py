@@ -13,7 +13,7 @@ from bijux_phylogenetics.comparative.pgls import (
     inspect_pgls_inputs,
     run_pgls,
 )
-from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError, InvalidAlignmentError
