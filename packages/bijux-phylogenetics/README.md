@@ -1081,6 +1081,15 @@ matching `analysis.manifest.json` from `adapter beast-run` is present, those
 diagnostics identify the posterior log and tree set as outputs from a recorded
 prior BEAST inference rather than implying the report executed BEAST itself.
 
+The MrBayes surface now follows that same owned package shape under
+`bijux_phylogenetics.bayesian.mrbayes`. Preparation policy lives in
+`preparation`, engine orchestration in `execution`, trace and MCMC table
+parsing in `tabular`, posterior-tree parsing and consensus summarization in
+`posterior_trees`, and ESS, convergence, parameter-summary, and burn-in
+sensitivity reporting in `diagnostics`, with shared dataclasses in `models`
+and structured artifact errors in `artifacts`. The package root is now only a
+curated re-export surface instead of another long mixed-responsibility module.
+
 The Bayesian runtime controls are intentionally strict and now aligned across
 BEAST and MrBayes. `adapter beast-run` and `adapter mrbayes-run` leave an
 explicit `.incomplete.json` marker not only for timeouts and nonzero exits but
