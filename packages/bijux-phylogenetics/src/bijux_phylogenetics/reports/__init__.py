@@ -1,6 +1,6 @@
 """High-level report services."""
 
-from .alignment_package import (
+from .publication import (
     AlignmentFigureAudit,
     AlignmentFigurePackageResult,
     build_alignment_figure_package,

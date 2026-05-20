@@ -6,7 +6,7 @@ from bijux_phylogenetics.comparative import (
     build_comparative_model_figure_package,
     build_diversification_figure_package,
 )
-from bijux_phylogenetics.reports.alignment_package import (
+from bijux_phylogenetics.reports.publication.alignment import (
     build_alignment_figure_package,
 )
 from bijux_phylogenetics.trees import (
