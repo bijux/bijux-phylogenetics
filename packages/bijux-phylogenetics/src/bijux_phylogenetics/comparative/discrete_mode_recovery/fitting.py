@@ -7,7 +7,7 @@ from bijux_phylogenetics.comparative.discrete_mk import (
     compare_discrete_mk_model_ranking,
     fit_discrete_mk_model,
 )
-from bijux_phylogenetics.comparative.geiger_fitdiscrete_recovery_reference import (
+from bijux_phylogenetics.comparative.discrete_mode_recovery.reference_payloads import (
     GEIGER_FITDISCRETE_RECOVERY_REFERENCE_PAYLOADS,
 )
 from bijux_phylogenetics.simulation import (
