@@ -4,8 +4,10 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.compare.topology import (
+from bijux_phylogenetics.compare.topology.branch_lengths import (
     compare_branch_score_distance,
+)
+from bijux_phylogenetics.compare.topology.comparison import (
     compare_robinson_foulds,
 )
 
@@ -297,7 +299,7 @@ def _trees_root() -> Path:
 
 
 def _package_root() -> Path:
-    return Path(__file__).resolve().parents[3]
+    return Path(__file__).resolve().parents[4]
 
 
 def _load_robinson_foulds_reference_rows() -> list[dict[str, str]]:

@@ -19,8 +19,6 @@ from bijux_phylogenetics.trees import (
 )
 from bijux_phylogenetics.compare.reference import (
     validate_support_reference_examples,
-)
-from bijux_phylogenetics.compare.tree_distance_reference import (
     validate_tree_distance_reference_examples,
 )
 from bijux_phylogenetics.phylo.topology import (

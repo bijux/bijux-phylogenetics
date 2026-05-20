@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bijux_phylogenetics.compare.tree_distance_reference import (
+from bijux_phylogenetics.compare.reference import (
     validate_tree_distance_reference_examples,
 )
 

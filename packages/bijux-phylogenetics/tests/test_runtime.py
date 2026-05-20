@@ -180,6 +180,7 @@ from bijux_phylogenetics.comparative.evidence_contract import (
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.reference import (
     validate_support_reference_examples,
+    validate_tree_distance_reference_examples,
 )
 from bijux_phylogenetics.compare.taxon_influence import (
     analyze_taxon_influence,
@@ -200,9 +201,6 @@ from bijux_phylogenetics.compare.topology import (
 )
 from bijux_phylogenetics.compare.topology_distance import (
     compare_topology_distance,
-)
-from bijux_phylogenetics.compare.tree_distance_reference import (
-    validate_tree_distance_reference_examples,
 )
 from bijux_phylogenetics.phylo.alignment import AlignmentRecord, AlignmentSummary
 from bijux_phylogenetics.phylo.branch_lengths.branching_times import (

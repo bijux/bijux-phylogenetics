@@ -9,7 +9,10 @@ from .structural_parity import (
 from .reference import (
     SupportReferenceObservation,
     SupportReferenceValidationReport,
+    TreeDistanceReferenceObservation,
+    TreeDistanceReferenceValidationReport,
     validate_support_reference_examples,
+    validate_tree_distance_reference_examples,
 )
 from .taxon_influence import (
     TaxonInfluenceReport,
@@ -42,12 +45,6 @@ from .topology_distance import (
     compare_topology_distance,
     write_topology_distance_split_table,
 )
-from .tree_distance_reference import (
-    TreeDistanceReferenceObservation,
-    TreeDistanceReferenceValidationReport,
-    validate_tree_distance_reference_examples,
-)
-
 __all__ = [
     "BranchScoreComparisonReport",
     "CladeOverlapComparisonReport",
