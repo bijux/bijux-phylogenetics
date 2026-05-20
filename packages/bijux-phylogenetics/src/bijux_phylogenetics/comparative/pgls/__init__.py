@@ -1,3 +1,5 @@
+"""Phylogenetic generalized least-squares package surface."""
+
 from __future__ import annotations
 
 from .design import (
@@ -44,3 +46,29 @@ from .models import (
     PGLSResult,
     PGLSTaxonExclusion,
 )
+
+__all__ = [
+    "ComparativeFormulaSpecification",
+    "ComparativeHypothesisTestRow",
+    "ComparativeMultipleTestingReport",
+    "PGLSCoefficient",
+    "PGLSDiagnosticsReport",
+    "PGLSFormulaAudit",
+    "PGLSFittedObservation",
+    "PGLSInputReport",
+    "PGLSInteractionAudit",
+    "PGLSLambdaFitReport",
+    "PGLSLambdaProfileRow",
+    "PGLSLeverageRow",
+    "PGLSModelMatrixReport",
+    "PGLSModelMatrixRow",
+    "PGLSPredictorClassification",
+    "PGLSResidualOutlier",
+    "PGLSResult",
+    "PGLSTaxonExclusion",
+    "build_pgls_model_matrix",
+    "inspect_pgls_inputs",
+    "run_pgls",
+    "run_pgls_multiple_testing",
+    "write_pgls_model_matrix_table",
+]
