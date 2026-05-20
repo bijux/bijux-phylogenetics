@@ -32,7 +32,9 @@ from bijux_phylogenetics.comparative import (
     rescale_tree_pagel_kappa,
     rescale_tree_white_noise,
 )
-from bijux_phylogenetics.comparative.models import ComparativeResidualSummary
+from bijux_phylogenetics.comparative.continuous.model_fitting import (
+    ComparativeResidualSummary,
+)
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_geiger_continuous_fixture,
 )

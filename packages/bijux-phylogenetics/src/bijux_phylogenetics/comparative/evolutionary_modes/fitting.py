@@ -36,7 +36,7 @@ from bijux_phylogenetics.comparative.evolutionary_modes.tree_transforms import (
     identity_covariance_matrix,
     transform_tree,
 )
-from bijux_phylogenetics.comparative.models import (
+from bijux_phylogenetics.comparative.continuous.model_fitting import (
     _brownian_parameter_intervals,
     _build_residual_diagnostics,
     _comparison_row,

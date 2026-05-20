@@ -17,7 +17,7 @@ from bijux_phylogenetics.comparative.common import (
     load_comparative_dataset,
     tip_root_depths,
 )
-from bijux_phylogenetics.comparative.models import _alpha_grid
+from bijux_phylogenetics.comparative.continuous.model_fitting import _alpha_grid
 from bijux_phylogenetics.comparative.pgls.design import inspect_pgls_inputs
 from bijux_phylogenetics.comparative.pgls.fitting import (
     _build_pgls_diagnostics,

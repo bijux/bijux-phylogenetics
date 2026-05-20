@@ -3,8 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.comparative.continuous.model_fitting import (
+    ComparativeResidualSummary,
+)
 from bijux_phylogenetics.comparative.model_selection import ComparativeModelComparisonRow
-from bijux_phylogenetics.comparative.models import ComparativeResidualSummary
 
 ALLOWED_EVOLUTIONARY_MODES = {
     "brownian",

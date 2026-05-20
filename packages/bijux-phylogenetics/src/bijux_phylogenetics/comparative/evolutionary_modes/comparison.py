@@ -20,7 +20,7 @@ from bijux_phylogenetics.comparative.evolutionary_modes.models import (
     LikelihoodRatioTestResult,
 )
 from bijux_phylogenetics.comparative.evolutionary_modes.numeric import stable_float
-from bijux_phylogenetics.comparative.models import _comparison_row
+from bijux_phylogenetics.comparative.continuous.model_fitting import _comparison_row
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 DatasetLoader = Callable[..., ComparativeDataset]

@@ -7,7 +7,7 @@ from bijux_phylogenetics.comparative.common import (
     ComparativeReadinessReport,
     summarize_numeric_trait_readiness,
 )
-from bijux_phylogenetics.comparative.models import (
+from bijux_phylogenetics.comparative.continuous.model_fitting import (
     ComparativeParameterInterval,
     ComparativeResidualSummary,
     OUIdentifiabilityWarning,

@@ -20,7 +20,7 @@ from bijux_phylogenetics.comparative.common import (
     summarize_numeric_trait_readiness,
 )
 from bijux_phylogenetics.comparative.model_selection import ComparativeModelComparisonRow
-from bijux_phylogenetics.comparative.models import (
+from bijux_phylogenetics.comparative.continuous import (
     compare_brownian_and_ou_models,
     fit_brownian_motion_model,
     fit_ornstein_uhlenbeck_model,

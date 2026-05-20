@@ -3,13 +3,15 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+from bijux_phylogenetics.comparative.continuous import (
+    compare_brownian_and_ou_models,
+    fit_brownian_motion_model,
+    fit_ornstein_uhlenbeck_model,
+)
 from bijux_phylogenetics.comparative.models import (
     assess_comparative_method_maturity,
     audit_comparative_parameter_uncertainty,
     audit_ou_identifiability_reference_examples,
-    compare_brownian_and_ou_models,
-    fit_brownian_motion_model,
-    fit_ornstein_uhlenbeck_model,
     run_comparative_sensitivity_analysis,
     validate_comparative_reference_examples,
 )

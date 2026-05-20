@@ -5,6 +5,11 @@ import json
 from pathlib import Path
 import tempfile
 
+from bijux_phylogenetics.comparative.continuous import (
+    BrownianMotionFitReport,
+    compare_brownian_and_ou_models,
+    fit_brownian_motion_model,
+)
 from bijux_phylogenetics.comparative.common import (
     ComparativeReadinessReport,
     NumericTraitSummary,
@@ -13,12 +18,9 @@ from bijux_phylogenetics.comparative.common import (
 )
 from bijux_phylogenetics.comparative.model_selection import ComparativeModelComparisonReport
 from bijux_phylogenetics.comparative.models import (
-    BrownianMotionFitReport,
     ComparativeMethodMaturityReport,
     ComparativeSensitivityReport,
     assess_comparative_method_maturity,
-    compare_brownian_and_ou_models,
-    fit_brownian_motion_model,
     run_comparative_sensitivity_analysis,
 )
 from bijux_phylogenetics.comparative.continuous import (

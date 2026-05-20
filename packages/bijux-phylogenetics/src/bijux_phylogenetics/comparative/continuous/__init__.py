@@ -1,5 +1,16 @@
 from __future__ import annotations
 
+from .model_fitting import (
+    BrownianMotionFitReport,
+    ComparativeParameterInterval,
+    ComparativeResidualOutlier,
+    ComparativeResidualSummary,
+    OUIdentifiabilityWarning,
+    OUTraitModelReport,
+    compare_brownian_and_ou_models,
+    fit_brownian_motion_model,
+    fit_ornstein_uhlenbeck_model,
+)
 from .brownian import (
     BrownianTraitEvolutionExclusion,
     BrownianTraitEvolutionSummaryReport,
@@ -42,6 +53,7 @@ from .ornstein_uhlenbeck import (
 )
 
 __all__ = [
+    "BrownianMotionFitReport",
     "BrownianTraitEvolutionExclusion",
     "BrownianTraitEvolutionSummaryReport",
     "BrownianRegimeBranchRow",
@@ -50,12 +62,20 @@ __all__ = [
     "BrownianRegimeIdentifiabilityWarning",
     "BrownianRegimeProfileRow",
     "BrownianRegimeRateRow",
+    "ComparativeParameterInterval",
+    "ComparativeResidualOutlier",
+    "ComparativeResidualSummary",
     "EarlyBurstIdentifiabilityWarning",
     "EarlyBurstRateChangeProfileRow",
     "EarlyBurstTraitEvolutionExclusion",
     "EarlyBurstTraitEvolutionSummaryReport",
+    "OUIdentifiabilityWarning",
+    "OUTraitModelReport",
     "OUTraitEvolutionExclusion",
     "OUTraitEvolutionSummaryReport",
+    "compare_brownian_and_ou_models",
+    "fit_brownian_motion_model",
+    "fit_ornstein_uhlenbeck_model",
     "summarize_brownian_trait_evolution",
     "summarize_brownian_regime_rates",
     "summarize_early_burst_trait_evolution",

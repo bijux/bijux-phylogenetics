@@ -10,7 +10,7 @@ from bijux_phylogenetics.comparative.common import (
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     fit_continuous_evolutionary_mode,
 )
-from bijux_phylogenetics.comparative.models import (
+from bijux_phylogenetics.comparative.continuous.model_fitting import (
     ComparativeParameterInterval,
     ComparativeResidualSummary,
 )

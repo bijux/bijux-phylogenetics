@@ -13,7 +13,7 @@ from bijux_phylogenetics.render.reproducibility import (
 )
 
 from ..model_selection import ComparativeModelComparisonReport
-from ..models import (
+from ..continuous import (
     BrownianMotionFitReport,
     OUTraitModelReport,
     compare_brownian_and_ou_models,

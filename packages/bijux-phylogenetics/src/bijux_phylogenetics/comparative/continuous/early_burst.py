@@ -20,7 +20,7 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
     transform_tree_for_evolutionary_mode,
 )
 from bijux_phylogenetics.comparative.model_selection import ComparativeModelComparisonRow
-from bijux_phylogenetics.comparative.models import (
+from bijux_phylogenetics.comparative.continuous.model_fitting import (
     ComparativeParameterInterval,
     ComparativeResidualSummary,
     _comparison_row,
