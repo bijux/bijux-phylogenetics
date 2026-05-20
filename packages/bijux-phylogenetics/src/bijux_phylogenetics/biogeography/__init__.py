@@ -70,7 +70,7 @@ from bijux_phylogenetics.biogeography.sampling_bias import (
     write_geographic_sampling_bias_transition_table,
     write_geographic_sampling_count_table,
 )
-from bijux_phylogenetics.biogeography.time_stratified import (
+from bijux_phylogenetics.biogeography.state_models import (
     TimeBinDefinition,
     TimeStratifiedBranchRow,
     TimeStratifiedTransitionMatrixRow,
