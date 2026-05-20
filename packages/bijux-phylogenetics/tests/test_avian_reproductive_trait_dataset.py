@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.birds as birds_api
+import bijux_phylogenetics.datasets.avian_reproductive_traits as birds_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_avian_reproductive_trait_dataset,

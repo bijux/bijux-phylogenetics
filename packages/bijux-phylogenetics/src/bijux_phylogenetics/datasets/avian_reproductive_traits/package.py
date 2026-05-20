@@ -376,7 +376,7 @@ def run_avian_reproductive_trait_demo(
 
 def _resource_root() -> Path:
     return (
-        Path(__file__).resolve().parents[1]
+        Path(__file__).resolve().parents[2]
         / "resources"
         / "datasets"
         / "birds"

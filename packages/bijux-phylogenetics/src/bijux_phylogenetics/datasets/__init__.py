@@ -13,7 +13,7 @@ from .pleistocene_bear_cytb_fragments import (
     run_pleistocene_bear_cytb_fragment_workflow,
     write_pleistocene_bear_cytb_fragment_workflow_bundle,
 )
-from .birds import (
+from .avian_reproductive_traits import (
     AvianReproductiveTraitDataset,
     AvianReproductiveTraitDatasetExportResult,
     AvianReproductiveTraitDemoResult,
