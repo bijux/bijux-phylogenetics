@@ -4,7 +4,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.ancestral import build_ancestral_figure_package
 from bijux_phylogenetics.bayesian import build_time_tree_figure_package
-from bijux_phylogenetics.biogeography.report_package import (
+from bijux_phylogenetics.biogeography.presentation import (
     build_biogeography_report_package,
 )
 from bijux_phylogenetics.render.package import build_tree_figure_package

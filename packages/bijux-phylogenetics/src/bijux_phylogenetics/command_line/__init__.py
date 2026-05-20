@@ -159,7 +159,7 @@ from bijux_phylogenetics.biogeography import (
     write_time_stratified_transition_summary_table,
     write_unsupported_geographic_transition_claim_table,
 )
-from bijux_phylogenetics.biogeography.report_package import (
+from bijux_phylogenetics.biogeography.presentation import (
     build_biogeography_report_package,
 )
 from bijux_phylogenetics.biogeography.migration import (

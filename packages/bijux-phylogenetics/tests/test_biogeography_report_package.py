@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.biogeography.report_package import (
+from bijux_phylogenetics.biogeography.presentation import (
     build_biogeography_report_package,
 )
 

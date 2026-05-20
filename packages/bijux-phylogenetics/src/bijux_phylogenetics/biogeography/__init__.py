@@ -48,7 +48,7 @@ from bijux_phylogenetics.biogeography.migration import (
     write_geographic_migration_tree_set_summary_table,
     write_geographic_migration_tree_set_tree_table,
 )
-from bijux_phylogenetics.biogeography.report_package import (
+from bijux_phylogenetics.biogeography.presentation import (
     BiogeographyRegionCountRow,
     BiogeographyReportExclusionRow,
     BiogeographyReportPackageResult,
