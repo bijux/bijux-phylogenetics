@@ -7,6 +7,7 @@ from .models import PhytoolsParityCase
 from .discrete_history_cases import build_discrete_history_cases
 from .discrete_model_cases import build_discrete_model_cases
 from .selection import select_cases
+from .serialization import write_case_file
 from .signal_cases import build_signal_cases
 from .stochastic_map_cases import build_stochastic_map_cases
 
@@ -26,3 +27,7 @@ def list_phytools_parity_cases() -> list[PhytoolsParityCase]:
 
 def _selected_cases(case_ids: list[str] | None) -> list[PhytoolsParityCase]:
     return select_cases(case_ids=case_ids)
+
+
+def _write_case_file(path: Path, case: PhytoolsParityCase) -> Path:
+    return write_case_file(path, case)
