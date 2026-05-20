@@ -1803,7 +1803,12 @@ as the live `ape` lane, records the R version, `phytools` version, Bijux
 version, Bijux commit, function name, input fixtures, tolerance, pass or fail
 state, mismatch reason, and reproducible artifact root for every governed case,
 and writes one summary TSV plus one observation TSV just like the other parity
-surfaces. The initial live `phytools` registry is intentionally narrow for this
+surfaces. The live `phytools` runner itself now lives as a real package under
+`parity/phytools/runner/`: registry selection and case serialization live with
+the registry, `dispatch.py` owns Bijux payload routing, `comparison.py` owns
+summary and row equivalence policy, `execution.py` owns orchestration, and
+`__init__.py` is only the curated API gateway. The initial live `phytools`
+registry is intentionally narrow for this
 goal: it currently covers `phytools::phylosig(method='lambda')`,
 `phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
 `phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
