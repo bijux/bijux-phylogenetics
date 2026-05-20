@@ -4,6 +4,14 @@ from typing import Any
 
 from bijux_phylogenetics.command_line.registry import get_command_spec
 
+from .assessment import (
+    add_comparative_maturity_command,
+    run_comparative_maturity_command,
+)
+from .clades import (
+    add_comparative_clade_commands,
+    run_comparative_clade_command,
+)
 from .evolution import (
     add_comparative_evolution_commands,
     run_comparative_evolution_command,
@@ -15,14 +23,6 @@ from .regression import (
     run_comparative_logistic_command,
     run_comparative_modeling_command,
     run_comparative_pgls_command,
-)
-from .maturity import (
-    add_comparative_maturity_command,
-    run_comparative_maturity_command,
-)
-from .clades import (
-    add_comparative_clade_commands,
-    run_comparative_clade_command,
 )
 from .signal import (
     add_comparative_signal_commands,
