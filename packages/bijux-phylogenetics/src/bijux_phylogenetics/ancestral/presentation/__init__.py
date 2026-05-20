@@ -17,6 +17,14 @@ _PUBLIC_SURFACES = (
             "render_ancestral_state_visualization",
         ),
     ),
+    (
+        "methods_text",
+        (
+            "AncestralMethodsSummaryTextResult",
+            "build_ancestral_methods_summary_text",
+            "write_ancestral_methods_summary_text",
+        ),
+    ),
 )
 
 __all__ = [

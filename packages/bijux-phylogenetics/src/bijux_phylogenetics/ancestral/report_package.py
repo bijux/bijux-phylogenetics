@@ -30,7 +30,7 @@ from bijux_phylogenetics.ancestral.discrete import (
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
 )
-from bijux_phylogenetics.ancestral.methods_summary import (
+from bijux_phylogenetics.ancestral.presentation.methods_text import (
     AncestralMethodsSummaryTextResult,
     write_ancestral_methods_summary_text,
 )

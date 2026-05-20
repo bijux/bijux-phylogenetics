@@ -85,7 +85,7 @@ from .ordered_discrete import (
     write_ordered_discrete_summary_table,
     write_ordered_discrete_transition_table,
 )
-from .methods_summary import (
+from .presentation.methods_text import (
     AncestralMethodsSummaryTextResult,
     build_ancestral_methods_summary_text,
     write_ancestral_methods_summary_text,
