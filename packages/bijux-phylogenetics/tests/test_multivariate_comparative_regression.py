@@ -11,7 +11,7 @@ from bijux_phylogenetics.comparative.common import (
     build_brownian_covariance_matrix,
     lambda_transform_covariance,
 )
-from bijux_phylogenetics.comparative.multivariate_regression import (
+from bijux_phylogenetics.comparative.regression import (
     MULTIVARIATE_MISSING_VALUE_POLICY,
     MULTIVARIATE_NUMERICAL_TOLERANCE,
     run_multivariate_comparative_regression,

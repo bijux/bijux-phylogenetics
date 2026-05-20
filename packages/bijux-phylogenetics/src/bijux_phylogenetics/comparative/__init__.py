@@ -269,7 +269,7 @@ from .models import (
     run_comparative_sensitivity_analysis,
     validate_comparative_reference_examples,
 )
-from .multivariate_regression import (
+from .regression import (
     MultivariateComparativeRegressionReport,
     MultivariateResidualAssociationRow,
     MultivariateResidualCorrelationRow,

@@ -6,7 +6,7 @@ from typing import Any
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.comparative.multivariate_regression import (
+from bijux_phylogenetics.comparative.regression import (
     run_multivariate_comparative_regression,
     write_multivariate_excluded_taxa_table,
     write_multivariate_residual_association_table,
