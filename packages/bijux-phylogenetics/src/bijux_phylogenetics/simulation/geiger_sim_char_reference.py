@@ -7,7 +7,7 @@ from .continuous import (
     simulate_brownian_trait_collection,
     simulate_speciational_trait_collection,
 )
-from .discrete_histories import simulate_discrete_histories
+from .discrete import simulate_discrete_histories
 
 
 @dataclass(frozen=True, slots=True)

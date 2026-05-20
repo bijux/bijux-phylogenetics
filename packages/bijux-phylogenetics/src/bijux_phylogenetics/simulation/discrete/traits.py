@@ -15,14 +15,14 @@ def _simulate_symmetric_state_trajectory(
     states: tuple[str, ...],
     rng: random.Random,
 ):
-    from .models import (
+    from ..models import (
         SimulatedDiscreteStateSegment,
         SimulatedDiscreteTransitionEvent,
     )
-    from .statistics import (
+    from ..statistics import (
         _round_float,
     )
-    from .stochastic import _poisson_count
+    from ..stochastic import _poisson_count
 
     current_state = state
     events: list[SimulatedDiscreteTransitionEvent] = []
@@ -84,7 +84,7 @@ def simulate_discrete_traits(
         node_signature,
     )
 
-    from .models import (
+    from ..models import (
         DiscreteHistoryRateRow,
         DiscreteTraitSimulationReport,
         SimulatedDiscreteBranchHistory,
@@ -93,11 +93,11 @@ def simulate_discrete_traits(
         SimulatedDiscreteTrait,
         SimulatedDiscreteTransitionEvent,
     )
-    from .discrete_policy import (
+    from .policy import (
         _normalize_discrete_states,
         _normalize_root_state_probabilities,
     )
-    from .propagation import _tip_values_from_node_map
+    from ..propagation import _tip_values_from_node_map
 
     unique_states = _normalize_discrete_states(states)
     if transition_rate < 0.0:

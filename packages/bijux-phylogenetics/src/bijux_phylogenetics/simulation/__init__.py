@@ -53,15 +53,15 @@ _PUBLIC_NAME_TO_MODULE = {
     "write_correlated_continuous_trait_collection_summary_table": ".continuous",
     "write_correlated_continuous_trait_collection_table": ".continuous",
     "write_correlated_continuous_trait_table": ".continuous",
-    "simulate_discrete_traits": ".discrete_traits",
-    "write_discrete_trait_table": ".discrete_traits",
-    "simulate_discrete_histories": ".discrete_histories",
-    "write_discrete_history_branch_truth_table": ".discrete_histories",
-    "write_discrete_history_event_table": ".discrete_histories",
-    "write_discrete_history_node_truth_table": ".discrete_histories",
-    "write_discrete_history_segment_table": ".discrete_histories",
-    "write_discrete_history_summary_table": ".discrete_histories",
-    "write_discrete_history_tip_truth_table": ".discrete_histories",
+    "simulate_discrete_traits": ".discrete",
+    "write_discrete_trait_table": ".discrete",
+    "simulate_discrete_histories": ".discrete",
+    "write_discrete_history_branch_truth_table": ".discrete",
+    "write_discrete_history_event_table": ".discrete",
+    "write_discrete_history_node_truth_table": ".discrete",
+    "write_discrete_history_segment_table": ".discrete",
+    "write_discrete_history_summary_table": ".discrete",
+    "write_discrete_history_tip_truth_table": ".discrete",
     "simulate_dna_alignment": ".alignment",
     "simulate_protein_alignment": ".alignment",
     "write_simulated_alignment": ".alignment",
@@ -115,17 +115,15 @@ if TYPE_CHECKING:
         write_correlated_continuous_trait_collection_table,
         write_correlated_continuous_trait_table,
     )
-    from .discrete_histories import (
+    from .discrete import (
         simulate_discrete_histories,
+        simulate_discrete_traits,
         write_discrete_history_branch_truth_table,
         write_discrete_history_event_table,
         write_discrete_history_node_truth_table,
         write_discrete_history_segment_table,
         write_discrete_history_summary_table,
         write_discrete_history_tip_truth_table,
-    )
-    from .discrete_traits import (
-        simulate_discrete_traits,
         write_discrete_trait_table,
     )
     from .geiger_sim_char_reference import (
