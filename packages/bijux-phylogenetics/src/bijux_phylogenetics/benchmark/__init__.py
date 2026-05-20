@@ -56,7 +56,7 @@ from .macroevolution import (
     write_real_dataset_macroevolution_parity_table as write_real_dataset_macroevolution_parity_table,
     write_real_dataset_macroevolution_summary_table as write_real_dataset_macroevolution_summary_table,
 )
-from .review_benchmarks import (
+from .review import (
     benchmark_alignment_diagnostics as benchmark_alignment_diagnostics,
     benchmark_alignment_site_scaling as benchmark_alignment_site_scaling,
     benchmark_tree_comparison as benchmark_tree_comparison,

@@ -15,9 +15,9 @@ from bijux_phylogenetics.simulation import (
 )
 from bijux_phylogenetics.trees import compute_consensus_tree
 
-from .fixtures import build_balanced_tree, build_caterpillar_tree
-from .measurement import measure
-from .contracts import (
+from ..fixtures import build_balanced_tree, build_caterpillar_tree
+from ..measurement import measure
+from ..contracts import (
     AlignmentDiagnosticsBenchmarkReport,
     AlignmentSiteBenchmarkReport,
     TreeComparisonBenchmarkReport,
