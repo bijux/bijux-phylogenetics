@@ -2199,6 +2199,13 @@ sets, and non-finite branch lengths instead of writing malformed Newick
 silently. Tree IO parity in that lane is structural rather than text-based:
 equivalent child reorderings pass, while rootedness, tip-set, clade or split,
 branch-length, and internal-label drift produce specific mismatch reasons.
+The live `ape` runner itself is now packaged by owned boundaries under
+`parity/ape/runner/`: `dispatch.py` maps governed cases to Bijux payload
+builders, `reference_payloads.py` loads live runner outputs, `comparison.py`
+and `mismatch_policy.py` own equivalence rules, `failure_artifacts.py` owns
+reproducibility bundles, `execution.py` owns orchestration, and
+`__init__.py` stays as the public API gateway instead of remaining the real
+module.
 
 The smaller ancestral review lanes now use the same governed shared trait-table
 fixture catalog in `tests/fixtures/metadata/shared_trait_table_fixture_catalog.json`.
