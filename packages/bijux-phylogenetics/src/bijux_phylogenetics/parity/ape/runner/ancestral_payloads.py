@@ -13,7 +13,7 @@ from bijux_phylogenetics.ancestral.continuous import (
 from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
 )
-from bijux_phylogenetics.core._node_identity import build_ape_internal_node_map
+from bijux_phylogenetics.phylo.topology.node_identity import build_ape_internal_node_map
 
 from .normalization import _coerce_table_cell
 

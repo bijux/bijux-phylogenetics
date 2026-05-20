@@ -7,7 +7,7 @@ from bijux_phylogenetics.core.clade_sets import (
     informative_rooted_clades,
     informative_unrooted_splits,
 )
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.trees import load_tree
 
 from .models import BranchCollapseReport, TreeTransformationSummary, _TopologyComparison

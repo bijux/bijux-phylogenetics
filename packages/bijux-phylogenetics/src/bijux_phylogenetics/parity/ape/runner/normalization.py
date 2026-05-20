@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import re
 
-from bijux_phylogenetics.core.tree import TreeNode
+from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 

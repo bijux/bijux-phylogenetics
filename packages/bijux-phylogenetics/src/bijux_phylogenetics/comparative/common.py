@@ -11,7 +11,7 @@ from bijux_phylogenetics.core.traits import (
     align_tree_and_trait_table,
     validate_traits_table,
 )
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
 

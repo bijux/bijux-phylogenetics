@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from statistics import mean, median
 
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 from .models import (
     BranchLengthContextAssessment,

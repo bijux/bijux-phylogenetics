@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import Counter
 from pathlib import Path
 
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.core.ultrametric import (
     APE_ULTRAMETRIC_TOLERANCE,
     summarize_ultrametric_tip_depths,

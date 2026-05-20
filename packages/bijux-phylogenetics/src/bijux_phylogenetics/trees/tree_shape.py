@@ -9,7 +9,7 @@ from statistics import median
 from Bio import Phylo
 from Bio.Phylo.BaseTree import Tree as BioTree
 
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.trees import detect_tree_format, load_tree

@@ -7,14 +7,14 @@ from pathlib import Path
 from time import perf_counter
 import tracemalloc
 
-from bijux_phylogenetics.core._node_identity import build_ape_internal_node_map
+from bijux_phylogenetics.phylo.topology.node_identity import build_ape_internal_node_map
 from bijux_phylogenetics.core.clade_sets import (
     canonical_bipartition,
     informative_rooted_clades,
     informative_unrooted_splits,
     robinson_foulds_metrics,
 )
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import (
     InvalidAlignmentError,
     UnsupportedTreeFormatError,

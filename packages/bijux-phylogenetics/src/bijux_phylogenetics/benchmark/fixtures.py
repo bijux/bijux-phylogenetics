@@ -4,7 +4,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.engines.large_alignment_inference import (
     run_large_alignment_inference,
 )

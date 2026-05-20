@@ -8,7 +8,7 @@ from bijux_phylogenetics.core.clade_sets import (
     node_support_value,
 )
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 
 from .comparison import _build_tree_comparison_report

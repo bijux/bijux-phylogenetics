@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from html import escape
 from pathlib import Path
 
-from bijux_phylogenetics.core.tree import TreeNode
+from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.io.trees import load_tree
 
 

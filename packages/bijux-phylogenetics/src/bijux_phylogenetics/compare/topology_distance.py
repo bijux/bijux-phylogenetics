@@ -19,7 +19,7 @@ from bijux_phylogenetics.core.clade_sets import (
     split_sort_key,
     tree_has_polytomy,
 )
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 
 

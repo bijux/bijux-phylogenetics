@@ -9,7 +9,7 @@ from bijux_phylogenetics.comparative.evolutionary_modes.models import (
 )
 from bijux_phylogenetics.comparative.evolutionary_modes.numeric import stable_float
 from bijux_phylogenetics.comparative.common import node_signature
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError

@@ -23,7 +23,7 @@ from bijux_phylogenetics.comparative.evolutionary_modes.tree_transforms import (
     transform_tree,
 )
 from bijux_phylogenetics.comparative.models import _fit_intercept_only_model
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 

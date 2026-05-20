@@ -8,7 +8,7 @@ from bijux_phylogenetics.core.traits import (
     link_tree_to_traits,
     validate_traits_table,
 )
-from bijux_phylogenetics.core.tree import TreeNode
+from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,

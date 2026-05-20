@@ -5,7 +5,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import node_signature
 from bijux_phylogenetics.core.branching_times import compute_tree_branching_times
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.runtime.errors import DiversificationAnalysisError
 

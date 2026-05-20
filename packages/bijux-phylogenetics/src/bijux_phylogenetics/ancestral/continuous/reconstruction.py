@@ -9,7 +9,7 @@ from bijux_phylogenetics.ancestral.common import (
     node_signature,
     stable_value,
 )
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from .diagnostics import (
     _apply_anc_ml_profile_to_brownian_diagnostics,
     _summarize_brownian_fit_diagnostics,

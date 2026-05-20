@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.core.clade_sets import robinson_foulds_metrics
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 
 from .models import (

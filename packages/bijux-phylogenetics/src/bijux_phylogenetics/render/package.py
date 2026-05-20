@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.core.tree import TreeNode
+from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.reproducibility import (
     FigureReproducibilityFilter,

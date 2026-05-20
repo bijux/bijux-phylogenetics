@@ -5,14 +5,14 @@ from html import escape
 from pathlib import Path
 from statistics import mean
 
-from bijux_phylogenetics.core._node_identity import build_ape_internal_node_map
+from bijux_phylogenetics.phylo.topology.node_identity import build_ape_internal_node_map
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.core.traits import (
     align_tree_and_trait_table,
     validate_traits_table,
 )
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 from .common import node_signature, tip_root_depths

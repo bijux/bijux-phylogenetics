@@ -16,7 +16,7 @@ from bijux_phylogenetics.comparative.common import (
     load_comparative_dataset,
     tip_root_depths,
 )
-from bijux_phylogenetics.core._node_identity import ape_node_id_for_node
+from bijux_phylogenetics.phylo.topology.node_identity import ape_node_id_for_node
 from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 

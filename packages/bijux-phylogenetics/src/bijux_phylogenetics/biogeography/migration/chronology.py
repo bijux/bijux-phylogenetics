@@ -19,7 +19,7 @@ from bijux_phylogenetics.biogeography.migration import (
     summarize_geographic_migration_events,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.trees import load_tree

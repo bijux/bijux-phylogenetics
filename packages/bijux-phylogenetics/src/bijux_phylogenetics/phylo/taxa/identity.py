@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 from .models import TaxonIdentityAudit, TaxonLabelPair
 

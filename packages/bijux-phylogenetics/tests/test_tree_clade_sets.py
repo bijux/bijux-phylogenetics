@@ -9,7 +9,7 @@ from bijux_phylogenetics.core.clade_sets import (
     split_sort_key,
     tree_has_polytomy,
 )
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.newick import loads_newick
 
 

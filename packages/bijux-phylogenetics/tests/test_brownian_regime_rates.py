@@ -14,7 +14,7 @@ from bijux_phylogenetics.comparative.brownian_regime_rates import (
     write_brownian_regime_summary_table,
 )
 from bijux_phylogenetics.comparative.common import descendant_taxa, node_signature
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.io.trees import load_tree
 
 FIXTURES = Path(__file__).parent / "fixtures"

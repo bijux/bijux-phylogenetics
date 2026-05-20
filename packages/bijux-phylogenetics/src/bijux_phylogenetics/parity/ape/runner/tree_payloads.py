@@ -17,7 +17,7 @@ from bijux_phylogenetics.phylo.topology import (
     root_tree_on_outgroup,
     unroot_tree,
 )
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.tree_distance import compute_tree_tip_distance_matrix
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.io.newick import (

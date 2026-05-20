@@ -28,7 +28,7 @@ from bijux_phylogenetics.bayesian.posterior import (
     summarize_maximum_clade_credibility_tree,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.core.tree import PhyloTree, descendant_taxa
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, descendant_taxa
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.engines.common import (
     build_file_checksums,

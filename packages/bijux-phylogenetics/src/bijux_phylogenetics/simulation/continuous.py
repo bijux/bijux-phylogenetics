@@ -4,7 +4,7 @@ from math import exp, sqrt
 from pathlib import Path
 import random
 
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.io.trees import load_tree
 
 

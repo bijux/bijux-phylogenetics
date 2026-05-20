@@ -9,7 +9,7 @@ from bijux_phylogenetics.core.traits import (
     TreeTraitAlignmentReport,
     align_tree_and_trait_table,
 )
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree

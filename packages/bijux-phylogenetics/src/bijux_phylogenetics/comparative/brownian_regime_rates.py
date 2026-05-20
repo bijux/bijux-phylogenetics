@@ -32,7 +32,7 @@ from bijux_phylogenetics.comparative.trait_regime_mapping import (
     resolve_branch_regime_id_column,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 _PROFILE_CONFIDENCE_DELTA = 1.920729410347062

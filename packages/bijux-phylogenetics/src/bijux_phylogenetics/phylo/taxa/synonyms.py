@@ -4,7 +4,7 @@ from collections import defaultdict
 import csv
 from pathlib import Path
 
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode, normalize_taxon_key
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode, normalize_taxon_key
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
 
 from .models import (

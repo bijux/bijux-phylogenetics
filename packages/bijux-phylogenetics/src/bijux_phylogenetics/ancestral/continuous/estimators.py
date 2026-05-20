@@ -10,7 +10,7 @@ from bijux_phylogenetics.ancestral.common import (
     stable_value,
 )
 from bijux_phylogenetics.phylo.topology import _root_tree_by_outgroup_node
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from .diagnostics import (
     _build_anc_ml_covariance_matrix,
     _build_anc_ml_parameter_design,

@@ -18,7 +18,7 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
     transform_tree_for_evolutionary_mode,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.simulation import (

@@ -88,7 +88,7 @@ from bijux_phylogenetics.phylo.topology import (
     root_tree_on_outgroup,
     write_tree_rooting_report,
 )
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     RabiesMethodSensitivityPanelWorkflowReport,
     run_rabies_method_sensitivity_panel_workflow,

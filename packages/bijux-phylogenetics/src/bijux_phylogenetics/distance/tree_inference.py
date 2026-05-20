@@ -17,7 +17,7 @@ from bijux_phylogenetics.core.clade_sets import (
     robinson_foulds_metrics,
 )
 from bijux_phylogenetics.core.neighbor_joining import build_neighbor_joining_tree
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from bijux_phylogenetics.phylo.taxa import inspect_tree_taxa_safety
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 from .models import (
     InternalLabelInterpretation,

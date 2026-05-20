@@ -13,7 +13,7 @@ from bijux_phylogenetics.ancestral.common import (
 )
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.svg import TreeRenderResult, render_tree_svg

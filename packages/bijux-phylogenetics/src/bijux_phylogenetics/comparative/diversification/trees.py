@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import node_signature
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.ultrametric import assess_tree_ultrametricity
 from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,

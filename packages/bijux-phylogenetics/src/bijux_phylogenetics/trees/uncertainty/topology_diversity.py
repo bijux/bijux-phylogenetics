@@ -4,7 +4,7 @@ import csv
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 from .instability import _build_unstable_clade_report
