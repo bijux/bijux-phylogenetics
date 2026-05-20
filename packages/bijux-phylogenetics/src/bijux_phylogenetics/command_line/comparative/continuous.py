@@ -15,7 +15,7 @@ from bijux_phylogenetics.comparative.independent_contrasts import (
     write_independent_contrast_regression_table,
     write_independent_contrast_table,
 )
-from bijux_phylogenetics.comparative.phylogenetic_signal import (
+from bijux_phylogenetics.comparative.signal import (
     summarize_phylogenetic_signal,
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,

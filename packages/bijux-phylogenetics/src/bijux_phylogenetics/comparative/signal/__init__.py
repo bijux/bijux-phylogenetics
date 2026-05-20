@@ -20,6 +20,12 @@ from .core import (
     evaluate_pagels_lambda_likelihood,
     evaluate_pagels_lambda_likelihood_from_dataset,
 )
+from .review import (
+    PhylogeneticSignalSummaryReport,
+    summarize_phylogenetic_signal,
+    write_phylogenetic_signal_permutation_table,
+    write_phylogenetic_signal_summary_table,
+)
 
 __all__ = [
     "BlombergKReport",
@@ -30,6 +36,7 @@ __all__ = [
     "PagelLambdaOptimizerDiagnostics",
     "PagelLambdaProfileRow",
     "PagelLambdaReport",
+    "PhylogeneticSignalSummaryReport",
     "PhylogeneticSignalInputAudit",
     "PhylogeneticSignalPermutation",
     "PhylogeneticSignalTestReport",
@@ -40,4 +47,7 @@ __all__ = [
     "estimate_pagels_lambda",
     "evaluate_pagels_lambda_likelihood",
     "evaluate_pagels_lambda_likelihood_from_dataset",
+    "summarize_phylogenetic_signal",
+    "write_phylogenetic_signal_permutation_table",
+    "write_phylogenetic_signal_summary_table",
 ]

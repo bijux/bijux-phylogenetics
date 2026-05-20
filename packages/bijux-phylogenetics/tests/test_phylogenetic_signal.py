@@ -4,7 +4,7 @@ import json
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.phylogenetic_signal import (
+from bijux_phylogenetics.comparative.signal import (
     summarize_phylogenetic_signal,
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,

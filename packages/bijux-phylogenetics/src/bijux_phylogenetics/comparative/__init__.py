@@ -392,7 +392,7 @@ from .phylogenetic_residuals import (
     write_phylogenetic_residual_summary_table,
     write_phylogenetic_residual_taxon_table,
 )
-from .phylogenetic_signal import (
+from .signal import (
     PhylogeneticSignalSummaryReport,
     summarize_phylogenetic_signal,
     write_phylogenetic_signal_permutation_table,

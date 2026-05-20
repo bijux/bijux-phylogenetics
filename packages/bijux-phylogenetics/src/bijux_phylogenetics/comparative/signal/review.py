@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.signal import (
+from .core import (
     BlombergKReport,
     PagelLambdaReport,
     PhylogeneticSignalInputAudit,
