@@ -8,7 +8,7 @@ from .reference import (
     validate_support_reference_examples,
     validate_tree_distance_reference_examples,
 )
-from .taxon_influence import (
+from .influence import (
     TaxonInfluenceReport,
     TaxonInfluenceRow,
     analyze_taxon_influence,

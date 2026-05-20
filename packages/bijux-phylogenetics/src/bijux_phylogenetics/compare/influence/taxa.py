@@ -7,11 +7,13 @@ from pathlib import Path
 
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 
-from .topology import (
+from ..topology.comparison import _build_tree_comparison_report
+from ..topology.models import (
     SupportComparisonReport,
     TreeComparisonReport,
+)
+from ..topology.support import (
     _build_support_comparison_report,
-    _build_tree_comparison_report,
 )
 
 

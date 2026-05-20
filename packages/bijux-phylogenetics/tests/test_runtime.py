@@ -182,7 +182,7 @@ from bijux_phylogenetics.compare.reference import (
     validate_support_reference_examples,
     validate_tree_distance_reference_examples,
 )
-from bijux_phylogenetics.compare.taxon_influence import (
+from bijux_phylogenetics.compare.influence import (
     analyze_taxon_influence,
 )
 from bijux_phylogenetics.compare.topology import (

@@ -10,7 +10,7 @@ from bijux_phylogenetics.compare.reports import (
     ComparisonReportBuildResult,
     build_tree_comparison_report,
 )
-from bijux_phylogenetics.compare.taxon_influence import (
+from bijux_phylogenetics.compare.influence import (
     TaxonInfluenceReport,
     analyze_taxon_influence,
 )
