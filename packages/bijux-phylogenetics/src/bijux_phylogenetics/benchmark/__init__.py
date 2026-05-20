@@ -10,7 +10,7 @@ from .model_fitting import (
     write_large_tree_model_fitting_observation_table as write_large_tree_model_fitting_observation_table,
     write_large_tree_model_fitting_summary_table as write_large_tree_model_fitting_summary_table,
 )
-from .models import (
+from .contracts import (
     AlignmentDiagnosticsBenchmarkReport as AlignmentDiagnosticsBenchmarkReport,
     AlignmentSiteBenchmarkReport as AlignmentSiteBenchmarkReport,
     BenchmarkObservation as BenchmarkObservation,

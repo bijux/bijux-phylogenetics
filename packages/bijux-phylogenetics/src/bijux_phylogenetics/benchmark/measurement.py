@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 import tracemalloc
 
-from .models import (
+from .contracts import (
     BenchmarkObservation,
     LargeAlignmentScalingObservation,
     LargeTreeSetScalingObservation,

@@ -42,7 +42,7 @@ from .measurement import (
     measure_large_alignment_observation,
     measure_large_tree_set_observation,
 )
-from .models import (
+from .contracts import (
     BenchmarkObservation,
     LargeAlignmentScalingBenchmarkReport,
     LargeAlignmentScalingObservation,

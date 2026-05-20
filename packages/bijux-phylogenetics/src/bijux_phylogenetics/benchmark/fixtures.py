@@ -20,7 +20,7 @@ from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_independent_contrasts,
 )
 
-from .models import _StressObservationPayload, _StressTierConfig
+from .contracts import _StressObservationPayload, _StressTierConfig
 
 STRESS_TIER_CONFIGS: dict[str, _StressTierConfig] = {
     "small": _StressTierConfig(

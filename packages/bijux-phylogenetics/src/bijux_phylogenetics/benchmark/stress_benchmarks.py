@@ -12,7 +12,7 @@ from .fixtures import (
     tree_set_stress_payload,
 )
 from .measurement import measure_stress_workload
-from .models import LargeDatasetStressObservation, LargeDatasetStressSuiteReport
+from .contracts import LargeDatasetStressObservation, LargeDatasetStressSuiteReport
 
 
 def benchmark_large_dataset_stress_suite(
