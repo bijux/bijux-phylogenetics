@@ -2019,6 +2019,16 @@ rerooting, unrooting, and rooting-ledger writing live in
 `core.topology.rooting`. The package root is now the curated gateway so
 downstream tree, pruning, parity, and dataset surfaces import one stable
 topology API without depending on a foundational kitchen-sink file.
+The taxon-audit core now follows that same package shape under
+`bijux_phylogenetics.core.taxonomy`. Shared taxon dataclasses live in
+`core.taxonomy.models`, label-collision heuristics live in
+`core.taxonomy.identity`, downstream-safe label rewriting lives in
+`core.taxonomy.normalization`, synonym-table parsing and accepted-name export
+live in `core.taxonomy.synonyms`, namespace and rank heuristics live in
+`core.taxonomy.classification`, duplicate-identity and mapping-conflict review
+live in `core.taxonomy.conflicts`, and the final reviewer-facing audit
+composition lives in `core.taxonomy.audit`. The package root is now a curated
+gateway with explicit exports instead of another foundational spill file.
 The owned simulation baseline now also exposes direct single-tree surfaces
 through `simulate_random_tree(...)` and `simulate_coalescent_tree(...)`, so a
 caller that needs one governed baseline tree with its summary record no longer
