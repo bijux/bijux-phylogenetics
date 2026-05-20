@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from bijux_phylogenetics.core.clade_sets import informative_rooted_clade_nodes
+from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clade_nodes
 
 from .instability import _build_unstable_clade_report, write_unstable_clade_table
 from .models import (

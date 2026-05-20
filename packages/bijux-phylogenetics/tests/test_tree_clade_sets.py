@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bijux_phylogenetics.core.clade_sets import (
+from bijux_phylogenetics.phylo.topology.clades import (
     canonical_bipartition,
     informative_rooted_clades,
     informative_unrooted_splits,

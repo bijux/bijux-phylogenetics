@@ -1,5 +1,17 @@
 from __future__ import annotations
 
+from .clades import (
+    RobinsonFouldsMetrics,
+    canonical_bipartition,
+    canonical_clade_id,
+    informative_rooted_clade_nodes,
+    informative_rooted_clades,
+    informative_unrooted_splits,
+    node_support_value,
+    robinson_foulds_metrics,
+    split_sort_key,
+    tree_has_polytomy,
+)
 from .node_identity import (
     ape_node_id_for_node,
     build_ape_internal_node_map,
@@ -25,6 +37,7 @@ from .ordering import (
     rotate_named_node,
     sort_tree_tips_alphabetically,
 )
+from .neighbor_joining import build_neighbor_joining_tree
 from .rooting import (
     _adjacent_nodes,
     _analyze_midpoint_path,
@@ -73,6 +86,13 @@ from .transformation import (
     _summarize_transformation,
     collapse_branches_below_length,
 )
+from .tip_distances import (
+    TipDistanceMatrixReport,
+    TipDistanceMatrixRow,
+    compute_tree_tip_distance_matrix,
+    write_tree_tip_distance_long_table,
+    write_tree_tip_distance_matrix,
+)
 from .tree import (
     PhyloTree,
     TaxonLabel,
@@ -86,8 +106,11 @@ __all__ = [
     "BranchCollapseReport",
     "CladeExtractionReport",
     "PhyloTree",
+    "RobinsonFouldsMetrics",
     "SubtreeExtractionReport",
     "TaxonLabel",
+    "TipDistanceMatrixReport",
+    "TipDistanceMatrixRow",
     "TreeMonophylyReport",
     "TreeMrcaReport",
     "TreeNode",
@@ -129,25 +152,38 @@ __all__ = [
     "_rotate_named_node",
     "_summarize_transformation",
     "assess_tree_monophyly",
+    "build_neighbor_joining_tree",
     "build_ape_internal_node_map",
     "build_ape_tip_node_map",
+    "canonical_bipartition",
+    "canonical_clade_id",
     "collapse_branches_below_length",
+    "compute_tree_tip_distance_matrix",
     "descendant_taxa",
     "extract_named_clade",
     "extract_tree_clade_by_descendant_taxa",
     "extract_tree_clade_by_node_id",
     "find_tree_mrca",
+    "informative_rooted_clade_nodes",
+    "informative_rooted_clades",
+    "informative_unrooted_splits",
     "iter_internal_nodes_preorder",
     "ladderize_tree",
+    "node_support_value",
     "normalize_taxon_key",
     "reroot_tree_by_midpoint",
+    "robinson_foulds_metrics",
     "root_tree_on_outgroup",
     "rotate_all_internal_nodes",
     "rotate_named_node",
     "sort_tree_tips_alphabetically",
+    "split_sort_key",
     "stable_node_label",
     "tree_from_biophylo",
+    "tree_has_polytomy",
     "tree_to_biophylo",
     "unroot_tree",
+    "write_tree_tip_distance_long_table",
+    "write_tree_tip_distance_matrix",
     "write_tree_rooting_report",
 ]

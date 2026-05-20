@@ -18,7 +18,7 @@ from bijux_phylogenetics.phylo.topology import (
     unroot_tree,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.core.tree_distance import compute_tree_tip_distance_matrix
+from bijux_phylogenetics.phylo.topology.tip_distances import compute_tree_tip_distance_matrix
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.io.newick import (
     dumps_newick,
@@ -35,7 +35,7 @@ from bijux_phylogenetics.trees import (
     extract_tree_clades,
     extract_tree_set_clades,
 )
-from bijux_phylogenetics.core.clade_sets import informative_unrooted_splits
+from bijux_phylogenetics.phylo.topology.clades import informative_unrooted_splits
 
 from ..registry import ApeParityCase
 

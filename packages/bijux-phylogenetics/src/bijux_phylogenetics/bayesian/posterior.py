@@ -9,7 +9,7 @@ import tempfile
 from Bio import Phylo
 
 from bijux_phylogenetics.compare.topology import compare_tree_paths
-from bijux_phylogenetics.core.clade_sets import informative_rooted_clades
+from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clades
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError, InvalidAlignmentError

@@ -8,7 +8,7 @@ from time import perf_counter
 import tracemalloc
 
 from bijux_phylogenetics.phylo.topology.node_identity import build_ape_internal_node_map
-from bijux_phylogenetics.core.clade_sets import (
+from bijux_phylogenetics.phylo.topology.clades import (
     canonical_bipartition,
     informative_rooted_clades,
     informative_unrooted_splits,

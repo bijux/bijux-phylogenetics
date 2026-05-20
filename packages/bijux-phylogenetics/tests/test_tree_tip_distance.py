@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.core.tree_distance import (
+from bijux_phylogenetics.phylo.topology.tip_distances import (
     compute_tree_tip_distance_matrix,
     write_tree_tip_distance_long_table,
     write_tree_tip_distance_matrix,

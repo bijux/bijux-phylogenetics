@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.core.clade_sets import (
+from bijux_phylogenetics.phylo.topology.clades import (
     canonical_clade_id,
     informative_rooted_clade_nodes,
     node_support_value,

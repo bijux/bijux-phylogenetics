@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 from time import perf_counter
 
-from bijux_phylogenetics.core.clade_sets import informative_rooted_clades
+from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clades
 
 from .comparisons import compare_posterior_tree_sets
 from .instability import (

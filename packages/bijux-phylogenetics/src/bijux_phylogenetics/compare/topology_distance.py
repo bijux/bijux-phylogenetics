@@ -11,7 +11,7 @@ from bijux_phylogenetics.compare.topology import (
     _validate_rf_mode,
     _validate_taxon_overlap_policy,
 )
-from bijux_phylogenetics.core.clade_sets import (
+from bijux_phylogenetics.phylo.topology.clades import (
     canonical_clade_id,
     informative_rooted_clades,
     informative_unrooted_splits,

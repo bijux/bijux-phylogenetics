@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.core.clade_sets import informative_rooted_clade_nodes
+from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clade_nodes
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.io.iqtree_support import (
     parse_iqtree_branch_support_label,

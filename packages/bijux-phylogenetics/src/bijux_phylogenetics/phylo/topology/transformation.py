@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from pathlib import Path
 
-from bijux_phylogenetics.core.clade_sets import (
+from bijux_phylogenetics.phylo.topology.clades import (
     informative_rooted_clades,
     informative_unrooted_splits,
 )

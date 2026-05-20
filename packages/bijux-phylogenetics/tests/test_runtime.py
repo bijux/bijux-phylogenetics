@@ -263,7 +263,7 @@ from bijux_phylogenetics.core.traits import (
     validate_traits_table,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TaxonLabel, TreeNode
-from bijux_phylogenetics.core.tree_distance import (
+from bijux_phylogenetics.phylo.topology.tip_distances import (
     TipDistanceMatrixReport,
     compute_tree_tip_distance_matrix,
     write_tree_tip_distance_matrix,
@@ -542,7 +542,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     import bijux_phylogenetics.core.branching_times as branching_times_api
     import bijux_phylogenetics.core.node_depth as node_depth_api
     import bijux_phylogenetics.phylo.topology.tree as tree_api
-    import bijux_phylogenetics.core.tree_distance as tree_distance_api
+    import bijux_phylogenetics.phylo.topology.tip_distances as tree_distance_api
     import bijux_phylogenetics.core.ultrametric as ultrametric_api
     import bijux_phylogenetics.distance as distance_api
     import bijux_phylogenetics.ecology as ecology_api
