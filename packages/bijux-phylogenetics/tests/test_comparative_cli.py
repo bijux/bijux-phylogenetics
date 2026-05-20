@@ -325,7 +325,7 @@ def test_comparative_discrete_mk_cli_reports_er_metrics(capsys) -> None:
     assert payload["metrics"]["observed_state_count"] == 2
     assert payload["metrics"]["parameter_count"] == 1
     assert payload["metrics"]["aic"] < payload["metrics"]["aicc"]
-    assert payload["metrics"]["optimizer_name"] == "nelder-mead"
+    assert payload["metrics"]["optimizer_name"] == "golden-section-search"
     assert payload["metrics"]["optimizer_converged"] is True
     assert payload["metrics"]["transition_rate_count"] == 2
     assert payload["metrics"]["baseline_model"] is None
