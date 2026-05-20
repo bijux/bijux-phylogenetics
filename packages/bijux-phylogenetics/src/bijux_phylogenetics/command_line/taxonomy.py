@@ -15,7 +15,7 @@ from bijux_phylogenetics.core.taxon_workflows import (
     build_taxon_workflow_loss_report,
     load_taxon_run_source,
 )
-from bijux_phylogenetics.core.taxonomy import (
+from bijux_phylogenetics.phylo.taxa import (
     audit_tree_taxon_synonyms,
     build_taxon_audit_report,
     export_tree_accepted_names,

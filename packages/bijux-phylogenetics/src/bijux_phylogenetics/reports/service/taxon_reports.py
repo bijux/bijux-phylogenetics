@@ -9,7 +9,7 @@ from bijux_phylogenetics.core.taxon_workflows import (
     build_taxon_workflow_loss_report,
     load_taxon_run_source,
 )
-from bijux_phylogenetics.core.taxonomy import build_taxon_audit_report
+from bijux_phylogenetics.phylo.taxa import build_taxon_audit_report
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.render.html import write_html_report
 

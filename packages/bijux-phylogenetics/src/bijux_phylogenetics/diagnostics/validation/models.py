@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.core.taxonomy import TaxonIdentityAudit
+from bijux_phylogenetics.phylo.taxa import TaxonIdentityAudit
 
 
 @dataclass(slots=True)

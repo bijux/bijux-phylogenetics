@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.core.dataset import audit_dataset_inputs
-from bijux_phylogenetics.core.taxonomy import (
+from bijux_phylogenetics.phylo.taxa import (
     build_taxon_audit_report,
     build_taxon_mapping_conflict_report,
 )

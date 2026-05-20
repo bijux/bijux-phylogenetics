@@ -233,7 +233,7 @@ from bijux_phylogenetics.core.pruning import (
     prune_tree_to_requested_taxa,
     prune_tree_to_taxa,
 )
-from bijux_phylogenetics.core.taxonomy import (
+from bijux_phylogenetics.phylo.taxa import (
     inspect_tree_taxa_safety,
     inspect_tree_taxon_identity,
     normalize_tree_taxa,

@@ -26,7 +26,7 @@ from bijux_phylogenetics.core.taxon_workflows import (
     TaxonStabilityReport,
     TaxonWorkflowLossReport,
 )
-from bijux_phylogenetics.core.taxonomy import TaxonAuditReport
+from bijux_phylogenetics.phylo.taxa import TaxonAuditReport
 from bijux_phylogenetics.core.traits import TraitMissingValueReport
 from bijux_phylogenetics.diagnostics.validation import (
     TreeForensicReport,

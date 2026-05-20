@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.core.taxonomy import inspect_tree_taxon_identity
+from bijux_phylogenetics.phylo.taxa import inspect_tree_taxon_identity
 from bijux_phylogenetics.trees import summarize_tree_shape_from_tree
 
 from .branch_review import (
