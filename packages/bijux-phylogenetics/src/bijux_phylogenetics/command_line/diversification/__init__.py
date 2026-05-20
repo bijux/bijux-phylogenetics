@@ -10,9 +10,7 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.comparative import (
     build_diversification_figure_package,
     build_diversification_method_report,
-    compare_diversification_models,
     detect_diversification_outlier_clades,
-    estimate_diversification_rate,
     render_diversification_report,
     run_trait_dependent_diversification_analysis,
     summarize_geiger_birth_death_exclusion,
@@ -29,6 +27,10 @@ from .inspection import (
     add_diversification_inspection_commands,
     run_diversification_inspection_command,
 )
+from .modeling import (
+    add_diversification_modeling_commands,
+    run_diversification_modeling_command,
+)
 
 
 def add_diversification_commands(subparsers: Any) -> None:
@@ -41,35 +43,7 @@ def add_diversification_commands(subparsers: Any) -> None:
         required=True,
     )
     add_diversification_inspection_commands(diversification_subparsers)
-
-    diversification_estimate = diversification_subparsers.add_parser(
-        "estimate",
-        help="Estimate a simple Yule or birth-death diversification model.",
-    )
-    diversification_estimate.add_argument("tree", type=Path)
-    diversification_estimate.add_argument("--metadata", type=Path)
-    diversification_estimate.add_argument("--taxon-column")
-    diversification_estimate.add_argument("--sampling-column")
-    diversification_estimate.add_argument(
-        "--model", choices=("yule", "birth-death"), default="birth-death"
-    )
-    diversification_estimate.add_argument(
-        "--json", action="store_true", help="Emit the diversification estimate as JSON."
-    )
-    _add_manifest_argument(diversification_estimate)
-
-    diversification_compare = diversification_subparsers.add_parser(
-        "compare-models",
-        help="Compare Yule and birth-death diversification fits.",
-    )
-    diversification_compare.add_argument("tree", type=Path)
-    diversification_compare.add_argument("--metadata", type=Path)
-    diversification_compare.add_argument("--taxon-column")
-    diversification_compare.add_argument("--sampling-column")
-    diversification_compare.add_argument(
-        "--json", action="store_true", help="Emit the model comparison as JSON."
-    )
-    _add_manifest_argument(diversification_compare)
+    add_diversification_modeling_commands(diversification_subparsers)
 
     diversification_clades = diversification_subparsers.add_parser(
         "clades",
@@ -204,62 +178,6 @@ def add_diversification_commands(subparsers: Any) -> None:
         help="Emit the birth-death exclusion as JSON.",
     )
     _add_manifest_argument(diversification_bd_ms)
-
-
-def _run_estimate(args: Any) -> int:
-    inputs = tree_and_metadata_inputs(args)
-    report = estimate_diversification_rate(
-        args.tree,
-        metadata_path=args.metadata,
-        taxon_column=args.taxon_column,
-        sampling_column=args.sampling_column,
-        model=args.model,
-    )
-    outputs = _finalize_outputs(args, command="diversification", inputs=inputs)
-    _print_result(
-        build_command_result(
-            command="diversification",
-            inputs=inputs,
-            outputs=outputs,
-            warnings=report.warnings,
-            metrics={
-                "model": report.model,
-                "sampling_fraction": report.sampling_fraction,
-                "net_diversification_rate": report.net_diversification_rate,
-                "aic": report.aic,
-            },
-            data=report,
-        ),
-        json_output=args.json,
-    )
-    return 0
-
-
-def _run_compare_models(args: Any) -> int:
-    inputs = tree_and_metadata_inputs(args)
-    report = compare_diversification_models(
-        args.tree,
-        metadata_path=args.metadata,
-        taxon_column=args.taxon_column,
-        sampling_column=args.sampling_column,
-    )
-    outputs = _finalize_outputs(args, command="diversification", inputs=inputs)
-    _print_result(
-        build_command_result(
-            command="diversification",
-            inputs=inputs,
-            outputs=outputs,
-            metrics={
-                "better_model": report.better_model,
-                "model_count": len(report.rows),
-            },
-            data=report,
-        ),
-        json_output=args.json,
-    )
-    return 0
-
-
 def _run_clades(args: Any) -> int:
     report = detect_diversification_outlier_clades(
         args.tree,
@@ -520,10 +438,10 @@ def run_diversification_command(args: Any) -> int:
     if inspection_exit_code is not None:
         return inspection_exit_code
 
-    if args.diversification_command == "estimate":
-        return _run_estimate(args)
-    if args.diversification_command == "compare-models":
-        return _run_compare_models(args)
+    modeling_exit_code = run_diversification_modeling_command(args)
+    if modeling_exit_code is not None:
+        return modeling_exit_code
+
     if args.diversification_command == "clades":
         return _run_clades(args)
     if args.diversification_command == "trait-dependent":
