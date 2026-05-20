@@ -3,19 +3,19 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from bijux_phylogenetics.command_line.adapter_bayesian import (
+from .bayesian import (
     add_bayesian_adapter_commands,
     run_bayesian_adapter_command,
 )
-from bijux_phylogenetics.command_line.adapter_beast import (
+from .beast import (
     add_beast_adapter_commands,
     run_beast_adapter_command,
 )
-from bijux_phylogenetics.command_line.adapter_inference import (
+from .inference import (
     add_inference_adapter_commands,
     run_inference_adapter_command,
 )
-from bijux_phylogenetics.command_line.adapter_mrbayes import (
+from .mrbayes import (
     add_mrbayes_adapter_commands,
     run_mrbayes_adapter_command,
 )

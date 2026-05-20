@@ -105,7 +105,7 @@ from bijux_phylogenetics.command_line.compare import (
     add_compare_command,
     run_compare_command,
 )
-from bijux_phylogenetics.command_line.adapter_workflows import (
+from bijux_phylogenetics.command_line.adapters import (
     add_adapter_commands,
     run_adapter_command,
 )
