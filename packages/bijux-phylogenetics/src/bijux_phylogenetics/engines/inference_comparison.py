@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import shutil
 
-from bijux_phylogenetics.compare.reports import (
+from bijux_phylogenetics.compare.presentation import (
     ComparisonReportBuildResult,
     build_tree_comparison_report,
 )

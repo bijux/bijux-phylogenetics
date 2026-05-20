@@ -5,7 +5,7 @@ import hashlib
 from pathlib import Path
 import re
 
-from bijux_phylogenetics.compare.reports import build_tree_comparison_report
+from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
 from bijux_phylogenetics.phylo.alignment import (
     AlignmentAlphabet,
     AlignmentRecord,
@@ -528,4 +528,3 @@ def run_alignment_trimming(
         ],
     )
     return _persist_workflow_report(report)
-

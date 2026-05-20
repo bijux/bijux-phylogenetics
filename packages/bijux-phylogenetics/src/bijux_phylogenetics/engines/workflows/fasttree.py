@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.compare.reports import build_tree_comparison_report
+from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
 from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
 from bijux_phylogenetics.io.fasta import (
     infer_alignment_alphabet,

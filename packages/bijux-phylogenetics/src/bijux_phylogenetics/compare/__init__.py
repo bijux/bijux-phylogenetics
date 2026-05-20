@@ -8,6 +8,10 @@ from .reference import (
     validate_support_reference_examples,
     validate_tree_distance_reference_examples,
 )
+from .presentation import (
+    ComparisonReportBuildResult,
+    build_tree_comparison_report,
+)
 from .influence import (
     TaxonInfluenceReport,
     TaxonInfluenceRow,
@@ -44,6 +48,7 @@ from .topology import (
 __all__ = [
     "BranchScoreComparisonReport",
     "CladeOverlapComparisonReport",
+    "ComparisonReportBuildResult",
     "RobinsonFouldsComparisonReport",
     "SharedTaxaPruningReport",
     "StructuralTreeParityReport",
@@ -68,6 +73,7 @@ __all__ = [
     "compare_tree_sets_structurally",
     "compare_tree_structurally",
     "compare_tree_paths",
+    "build_tree_comparison_report",
     "prune_trees_to_shared_taxa",
     "validate_support_reference_examples",
     "validate_tree_distance_reference_examples",

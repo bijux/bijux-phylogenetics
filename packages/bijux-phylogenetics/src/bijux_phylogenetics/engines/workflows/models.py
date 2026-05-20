@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from bijux_phylogenetics.compare.reports import ComparisonReportBuildResult
+from bijux_phylogenetics.compare.presentation import ComparisonReportBuildResult
 from bijux_phylogenetics.phylo.alignment import (
     AlignmentAlphabet,
     CodingSequenceExclusion,

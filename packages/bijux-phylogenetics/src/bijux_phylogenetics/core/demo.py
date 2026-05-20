@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import shutil
 
-from bijux_phylogenetics.compare.reports import build_tree_comparison_report
+from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
 from bijux_phylogenetics.reports.service import (
     render_dataset_report,
     render_phylo_inputs_report,

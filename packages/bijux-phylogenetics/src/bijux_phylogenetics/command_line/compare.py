@@ -8,11 +8,11 @@ from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.influence import (
     analyze_taxon_influence,
     write_taxon_influence_table,
 )
+from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
     compare_clade_overlap,

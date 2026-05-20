@@ -72,7 +72,7 @@ from bijux_phylogenetics.comparative.reporting import (
     ComparativeMethodReport,
     build_comparative_method_report,
 )
-from bijux_phylogenetics.compare.reports import (
+from bijux_phylogenetics.compare.presentation import (
     ComparisonReportBuildResult,
     build_tree_comparison_report,
 )
