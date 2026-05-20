@@ -15,6 +15,10 @@ from .beast import (
     add_beast_adapter_commands,
     run_beast_adapter_command,
 )
+from .maximum_likelihood import (
+    add_adapter_maximum_likelihood_commands,
+    run_adapter_maximum_likelihood_command,
+)
 from .inference import (
     add_inference_adapter_commands,
     run_inference_adapter_command,
@@ -44,8 +48,6 @@ from bijux_phylogenetics.engines import (
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
     run_fasta_to_tree_workflow,
-    run_maximum_likelihood_tree_inference,
-    run_model_selection,
     run_sh_alrt_support_estimation,
 )
 from bijux_phylogenetics.evidence.provenance.method_tiers import method_tier_metrics
@@ -62,49 +64,7 @@ def add_adapter_commands(subparsers: Any) -> None:
     add_adapter_reporting_commands(adapter_subparsers)
 
     add_adapter_alignment_workflow_commands(adapter_subparsers)
-
-    adapter_model = adapter_subparsers.add_parser(
-        "model-select", help="Run external sequence-model selection."
-    )
-    adapter_model.add_argument("input_path", type=Path)
-    adapter_model.add_argument("--out-dir", required=True, type=Path)
-    adapter_model.add_argument("--prefix", default="model-selection")
-    adapter_model.add_argument(
-        "--partitions",
-        type=Path,
-        help="Validate and apply a partition scheme for partitioned model selection.",
-    )
-    adapter_model.add_argument(
-        "--sequence-type", choices=("dna", "rna", "protein", "unknown")
-    )
-    adapter_model.add_argument("--executable", type=str)
-    adapter_model.add_argument(
-        "--json", action="store_true", help="Emit the workflow report as JSON."
-    )
-    _add_external_adapter_execution_arguments(adapter_model)
-    _add_manifest_argument(adapter_model)
-
-    adapter_ml = adapter_subparsers.add_parser(
-        "infer-ml", help="Run maximum-likelihood tree inference."
-    )
-    adapter_ml.add_argument("input_path", type=Path)
-    adapter_ml.add_argument("--out-dir", required=True, type=Path)
-    adapter_ml.add_argument("--model", required=True)
-    adapter_ml.add_argument("--prefix", default="maximum-likelihood")
-    adapter_ml.add_argument(
-        "--partitions",
-        type=Path,
-        help="Validate and apply a partition scheme for partitioned maximum-likelihood inference.",
-    )
-    adapter_ml.add_argument(
-        "--sequence-type", choices=("dna", "rna", "protein", "unknown")
-    )
-    adapter_ml.add_argument("--executable", type=str)
-    adapter_ml.add_argument(
-        "--json", action="store_true", help="Emit the workflow report as JSON."
-    )
-    _add_external_adapter_execution_arguments(adapter_ml)
-    _add_manifest_argument(adapter_ml)
+    add_adapter_maximum_likelihood_commands(adapter_subparsers)
 
     adapter_bootstrap = adapter_subparsers.add_parser(
         "bootstrap", help="Run bootstrap support estimation."
@@ -240,125 +200,9 @@ def run_adapter_command(args: Any) -> int | None:
     alignment_exit_code = run_adapter_alignment_workflow_command(args)
     if alignment_exit_code is not None:
         return alignment_exit_code
-    if args.adapter_command == "model-select":
-        report = run_model_selection(
-            args.input_path,
-            out_dir=args.out_dir,
-            prefix=args.prefix,
-            executable=args.executable or "iqtree2",
-            sequence_type=args.sequence_type,
-            partition_path=args.partitions,
-            resume=args.resume,
-            timeout_seconds=args.timeout_seconds,
-            incomplete_run_policy=args.incomplete_run_policy,
-        )
-        adapter_inputs = (
-            [args.input_path] if args.partitions is None else [args.input_path, args.partitions]
-        )
-        outputs = _finalize_outputs(
-            args,
-            command="adapter",
-            inputs=adapter_inputs,
-            outputs=[*report.output_paths.values(), report.manifest_path],
-        )
-        _print_result(
-            build_command_result(
-                command="adapter",
-                inputs=adapter_inputs,
-                outputs=outputs,
-                warnings=report.run.warning_lines,
-                metrics={
-                    "selected_model": report.selected_model,
-                    "selected_criterion": (
-                        None
-                        if report.model_selection_summary is None
-                        else report.model_selection_summary.selected_criterion
-                    ),
-                    "candidate_model_count": (
-                        0
-                        if report.model_selection_summary is None
-                        else report.model_selection_summary.candidate_count
-                    ),
-                    "best_model_aic": (
-                        None
-                        if report.model_selection_summary is None
-                        else report.model_selection_summary.best_model_aic
-                    ),
-                    "best_model_aicc": (
-                        None
-                        if report.model_selection_summary is None
-                        else report.model_selection_summary.best_model_aicc
-                    ),
-                    "best_model_bic": (
-                        None
-                        if report.model_selection_summary is None
-                        else report.model_selection_summary.best_model_bic
-                    ),
-                    "log_likelihood": report.log_likelihood,
-                    "partitioned": args.partitions is not None,
-                    "resumed": report.resumed,
-                    "timeout_seconds": report.run.timeout_seconds,
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
-    if args.adapter_command == "infer-ml":
-        report = run_maximum_likelihood_tree_inference(
-            args.input_path,
-            out_dir=args.out_dir,
-            model=args.model,
-            prefix=args.prefix,
-            executable=args.executable or "iqtree2",
-            sequence_type=args.sequence_type,
-            partition_path=args.partitions,
-            resume=args.resume,
-            timeout_seconds=args.timeout_seconds,
-            incomplete_run_policy=args.incomplete_run_policy,
-        )
-        adapter_inputs = (
-            [args.input_path] if args.partitions is None else [args.input_path, args.partitions]
-        )
-        outputs = _finalize_outputs(
-            args,
-            command="adapter",
-            inputs=adapter_inputs,
-            outputs=[*report.output_paths.values(), report.manifest_path],
-        )
-        _print_result(
-            build_command_result(
-                command="adapter",
-                inputs=adapter_inputs,
-                outputs=outputs,
-                warnings=report.run.warning_lines,
-                metrics={
-                    "selected_model": report.selected_model,
-                    "selected_criterion": (
-                        None
-                        if report.model_selection_summary is None
-                        else report.model_selection_summary.selected_criterion
-                    ),
-                    "candidate_model_count": (
-                        0
-                        if report.model_selection_summary is None
-                        else report.model_selection_summary.candidate_count
-                    ),
-                    "log_likelihood": report.log_likelihood,
-                    "support_value_count": (
-                        0
-                        if report.iqtree_summary is None
-                        else report.iqtree_summary.support_value_count
-                    ),
-                    "partitioned": args.partitions is not None,
-                    "resumed": report.resumed,
-                    "timeout_seconds": report.run.timeout_seconds,
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
+    maximum_likelihood_exit_code = run_adapter_maximum_likelihood_command(args)
+    if maximum_likelihood_exit_code is not None:
+        return maximum_likelihood_exit_code
     if args.adapter_command == "bootstrap":
         report = run_bootstrap_support_estimation(
             args.input_path,
