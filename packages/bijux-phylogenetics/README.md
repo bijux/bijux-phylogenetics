@@ -1984,6 +1984,14 @@ The owned simulation baseline now also exposes direct single-tree surfaces
 through `simulate_random_tree(...)` and `simulate_coalescent_tree(...)`, so a
 caller that needs one governed baseline tree with its summary record no longer
 has to go through one batch-only wrapper.
+That simulation lane now also lives as a real Python package instead of one
+overgrown `simulation/__init__.py` file. The package root is a curated lazy
+public API surface, shared dataclasses live in `simulation.models`, summary
+math lives in `simulation.statistics`, trait and Brownian propagation lives in
+`simulation.propagation`, discrete state validation lives in
+`simulation.discrete_policy`, and shared stochastic jump counting lives in
+`simulation.stochastic`, so dataset, parity, and comparative consumers no
+longer depend on package-root implementation spillover.
 The `ape::pic` lane now covers balanced rooted ultrametric, pectinate rooted
 non-ultrametric, and six-taxon clean comparative fixtures through one governed
 trait-table catalog. On the owned Bijux side, `comparative contrasts
