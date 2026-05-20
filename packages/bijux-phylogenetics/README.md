@@ -1040,7 +1040,11 @@ diagnostics, and ER baseline comparison metrics instead of reducing the fit
 to one scalar alone. The same owned runtime is also reusable directly from
 Python through
 `fit_discrete_mk_model_from_dataset(...)` once one `AncestralDiscreteDataset`
-has already been loaded.
+has already been loaded. Inside the comparative package, that discrete Mk
+surface now lives as a domain package with separate `models`, `transforms`,
+`fitting`, `comparison`, and `tables` modules so transform search policy,
+single-fit execution, model-ranking workflow, and ledger writing do not
+collapse back into one flat implementation file.
 
 The BEAST adapter surface now makes its evidence state explicit. `adapter
 beast-prepare` only prepares XML, `adapter beast-log`, `beast-trees`, and
