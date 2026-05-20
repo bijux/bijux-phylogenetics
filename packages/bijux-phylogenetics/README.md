@@ -2269,6 +2269,18 @@ fixtures, proves that support comparison still maps values by clade instead of
 node order, and flags bootstrap-versus-posterior topology mismatch explicitly
 when one support surface contains clades the other does not.
 
+The Python tree-comparison surface now also lives as a real
+`bijux_phylogenetics.compare.topology` package instead of one overgrown module.
+Shared report dataclasses and enums live in `compare.topology.models`,
+rooted-versus-unrooted RF workflow and shared-taxa policy live in
+`compare.topology.comparison`, branch-length and branch-score review live in
+`compare.topology.branch_lengths`, clade-overlap and shared-taxa pruning live
+in `compare.topology.overlap`, support pairing and conflict classification live
+in `compare.topology.support`, and reviewer-facing TSV writers live in
+`compare.topology.tables`. The package root is now the curated public gateway,
+so downstream code imports one stable comparison surface without reaching
+through a single kitchen-sink file.
+
 ## Read this next
 
 - package docs: [Runtime package docs](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
