@@ -1,17 +1,6 @@
 """Tree-set loading, consensus, support, and distance workflows."""
 
 from .analysis import (
-    CladeFrequency,
-    CladeFrequencyReport,
-    ConsensusTreeReport,
-    TreeDistanceMatrixReport,
-    TreeDistancePair,
-    TreeSetCladeSupportReport,
-    TreeSetCladeSupportRow,
-    TreeSetProcessingSummary,
-    TreeSetRecord,
-    TreeSetReport,
-    TreeSetWorkflowBudgetReport,
     build_tree_set_budget_report,
     build_tree_set_workflow_budget,
     compute_clade_frequency_table,
@@ -27,6 +16,20 @@ from .analysis import (
     write_reference_tree_clade_support_table,
     write_tree_distance_matrix,
 )
+from .contracts import (
+    CladeFrequency,
+    CladeFrequencyReport,
+    ConsensusTreeReport,
+    TreeDistanceMatrixReport,
+    TreeDistancePair,
+    TreeSetCladeSupportReport,
+    TreeSetCladeSupportRow,
+    TreeSetProcessingSummary,
+    TreeSetRecord,
+    TreeSetReport,
+    TreeSetWorkflowBudget,
+    TreeSetWorkflowBudgetReport,
+)
 
 __all__ = [
     "CladeFrequency",
@@ -39,6 +42,7 @@ __all__ = [
     "TreeSetProcessingSummary",
     "TreeSetRecord",
     "TreeSetReport",
+    "TreeSetWorkflowBudget",
     "TreeSetWorkflowBudgetReport",
     "build_tree_set_budget_report",
     "build_tree_set_workflow_budget",

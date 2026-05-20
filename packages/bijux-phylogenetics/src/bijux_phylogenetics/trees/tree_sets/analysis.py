@@ -28,123 +28,20 @@ from bijux_phylogenetics.io.newick import (
     write_newick,
 )
 from bijux_phylogenetics.io.trees import detect_tree_format, load_tree
-
-@dataclass(frozen=True, slots=True)
-class TreeSetRecord:
-    index: int
-    tip_count: int
-    taxa: list[str]
-    rooted_topology_id: str
-    unrooted_topology_id: str
-
-
-@dataclass(frozen=True, slots=True)
-class TreeSetProcessingSummary:
-    runtime_seconds: float
-    peak_memory_bytes: int
-    skipped_malformed_tree_count: int
-
-
-@dataclass(frozen=True, slots=True)
-class TreeSetWorkflowBudget:
-    max_tree_count: int | None = None
-    max_report_table_rows: int | None = None
-    memory_warning_threshold_bytes: int | None = None
-
-
-@dataclass(slots=True)
-class TreeSetWorkflowBudgetReport:
-    max_tree_count: int | None
-    max_report_table_rows: int | None
-    memory_warning_threshold_bytes: int | None
-    truncated_section_names: list[str]
-    warning_messages: list[str]
-
-
-@dataclass(slots=True)
-class TreeSetReport:
-    path: Path
-    source_format: str
-    tree_count: int
-    processing: TreeSetProcessingSummary
-    shared_taxa: list[str]
-    taxa_union: list[str]
-    rooted_topology_count: int
-    unrooted_topology_count: int
-    records: list[TreeSetRecord]
-
-
-@dataclass(frozen=True, slots=True)
-class CladeFrequency:
-    clade: str
-    tree_count: int
-    frequency: float
-
-
-@dataclass(slots=True)
-class CladeFrequencyReport:
-    path: Path
-    tree_count: int
-    processing: TreeSetProcessingSummary
-    shared_taxa: list[str]
-    clade_frequencies: list[CladeFrequency]
-
-
-@dataclass(frozen=True, slots=True)
-class TreeSetCladeSupportRow:
-    node_id: int
-    node_kind: str
-    node_label: str | None
-    descendant_taxa: list[str]
-    supporting_tree_count: int | None
-    clade_frequency: float | None
-    support_percent: float | None
-    support_status: str
-    explanation: str
-    reference_branch_length: float | None
-    reference_root_depth: float | None
-
-
-@dataclass(slots=True)
-class TreeSetCladeSupportReport:
-    reference_tree_path: Path
-    comparison_tree_set_path: Path
-    tree_count: int
-    processing: TreeSetProcessingSummary
-    shared_taxa: list[str]
-    supported_clade_count: int
-    absent_clade_count: int
-    unscored_clade_count: int
-    rows: list[TreeSetCladeSupportRow]
-
-
-@dataclass(slots=True)
-class ConsensusTreeReport:
-    path: Path
-    tree_count: int
-    processing: TreeSetProcessingSummary
-    shared_taxa: list[str]
-    consensus_method: str
-    consensus_threshold: float
-    included_clade_count: int
-    consensus_newick: str
-
-
-@dataclass(frozen=True, slots=True)
-class TreeDistancePair:
-    left_index: int
-    right_index: int
-    robinson_foulds_distance: int
-    normalized_robinson_foulds: float
-
-
-@dataclass(slots=True)
-class TreeDistanceMatrixReport:
-    path: Path
-    tree_count: int
-    processing: TreeSetProcessingSummary
-    shared_taxa: list[str]
-    pairs: list[TreeDistancePair]
+from .contracts import (
+    CladeFrequency,
+    CladeFrequencyReport,
+    ConsensusTreeReport,
+    TreeDistanceMatrixReport,
+    TreeDistancePair,
+    TreeSetCladeSupportReport,
+    TreeSetCladeSupportRow,
+    TreeSetProcessingSummary,
+    TreeSetRecord,
+    TreeSetReport,
+    TreeSetWorkflowBudget,
+    TreeSetWorkflowBudgetReport,
+)
 
 
 @dataclass(slots=True)
