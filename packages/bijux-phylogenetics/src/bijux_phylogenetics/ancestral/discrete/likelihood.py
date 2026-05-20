@@ -539,7 +539,7 @@ def optimize_single_log_parameter(
     allowed_transition_pairs: set[tuple[int, int]],
     root_prior_mode: str,
 ) -> _DiscreteOptimizationRun:
-    from bijux_phylogenetics.comparative.bounded_search import (
+    from bijux_phylogenetics.comparative.search import (
         run_bounded_golden_section_maximization,
     )
 

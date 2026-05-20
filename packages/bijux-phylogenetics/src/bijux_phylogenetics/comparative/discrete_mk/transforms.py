@@ -13,7 +13,7 @@ from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_allowed_transition_pairs as _resolve_allowed_transition_pairs,
     resolve_discrete_model_name as _resolve_discrete_model_name,
 )
-from bijux_phylogenetics.comparative.bounded_search import (
+from bijux_phylogenetics.comparative.search import (
     BoundedSearchControls,
     run_bounded_maximization,
 )

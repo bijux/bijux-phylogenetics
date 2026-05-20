@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
-from bijux_phylogenetics.comparative.bounded_search import (
+from bijux_phylogenetics.comparative.search import (
     BoundedSearchControls,
     run_bounded_maximization,
 )
