@@ -20,7 +20,7 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralReport,
     reconstruct_discrete_ancestral_states,
 )
-from bijux_phylogenetics.ancestral.visualization import (
+from bijux_phylogenetics.ancestral.presentation import (
     render_ancestral_state_visualization,
 )
 from bijux_phylogenetics.comparative.evolutionary_modes import (

@@ -9,7 +9,7 @@ from bijux_phylogenetics.ancestral.continuous import (
     reconstruct_continuous_ancestral_states,
 )
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
-from bijux_phylogenetics.ancestral.visualization import (
+from bijux_phylogenetics.ancestral.presentation import (
     render_ancestral_state_visualization,
 )
 

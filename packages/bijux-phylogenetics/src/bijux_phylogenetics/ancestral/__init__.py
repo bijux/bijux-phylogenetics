@@ -180,7 +180,7 @@ from .tree_set import (
     write_discrete_ancestral_tree_set_node_table,
     write_discrete_ancestral_tree_set_summary_table,
 )
-from .visualization import (
+from .presentation import (
     AncestralVisualizationResult,
     render_ancestral_state_visualization,
 )

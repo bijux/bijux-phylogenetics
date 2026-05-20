@@ -107,7 +107,7 @@ from bijux_phylogenetics.ancestral.tree_set import (
     write_discrete_ancestral_tree_set_node_table,
     write_discrete_ancestral_tree_set_summary_table,
 )
-from bijux_phylogenetics.ancestral.visualization import (
+from bijux_phylogenetics.ancestral.presentation import (
     render_ancestral_state_visualization,
 )
 from bijux_phylogenetics.benchmark import (

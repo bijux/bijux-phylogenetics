@@ -14,7 +14,7 @@ from bijux_phylogenetics.ancestral.report_package import (
     build_ancestral_report_package,
 )
 from bijux_phylogenetics.ancestral.service import render_ancestral_state_report
-from bijux_phylogenetics.ancestral.visualization import (
+from bijux_phylogenetics.ancestral.presentation import (
     render_ancestral_state_visualization,
 )
 from bijux_phylogenetics.command_line.arguments import (
