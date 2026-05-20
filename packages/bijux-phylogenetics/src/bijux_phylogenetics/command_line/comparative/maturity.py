@@ -6,7 +6,7 @@ from typing import Any
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.comparative.models import (
+from bijux_phylogenetics.comparative.assessment import (
     assess_comparative_method_maturity,
 )
 from bijux_phylogenetics.runtime.results import build_command_result

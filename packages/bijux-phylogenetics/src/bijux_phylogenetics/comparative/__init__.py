@@ -253,22 +253,24 @@ from .signal import (
     write_independent_contrast_regression_table,
     write_independent_contrast_table,
 )
-from .models import (
+from .assessment import (
     ComparativeMethodMaturityReport,
+    ComparativeResidualDiagnosticSurface,
+    ComparativeSensitivityReport,
+    ComparativeSensitivitySummary,
+    LeaveOneTaxonOutRow,
+    assess_comparative_method_maturity,
+    run_comparative_sensitivity_analysis,
+)
+from .validation import (
     ComparativeOUIdentifiabilityAudit,
     ComparativeOUIdentifiabilityCase,
     ComparativeParameterIntervalAuditRow,
     ComparativeParameterUncertaintyAudit,
     ComparativeReferenceObservation,
     ComparativeReferenceValidationReport,
-    ComparativeResidualDiagnosticSurface,
-    ComparativeSensitivityReport,
-    ComparativeSensitivitySummary,
-    LeaveOneTaxonOutRow,
-    assess_comparative_method_maturity,
     audit_comparative_parameter_uncertainty,
     audit_ou_identifiability_reference_examples,
-    run_comparative_sensitivity_analysis,
     validate_comparative_reference_examples,
 )
 from .regression import (

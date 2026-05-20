@@ -8,11 +8,13 @@ from bijux_phylogenetics.comparative.continuous import (
     fit_brownian_motion_model,
     fit_ornstein_uhlenbeck_model,
 )
-from bijux_phylogenetics.comparative.models import (
+from bijux_phylogenetics.comparative.assessment import (
     assess_comparative_method_maturity,
+    run_comparative_sensitivity_analysis,
+)
+from bijux_phylogenetics.comparative.validation import (
     audit_comparative_parameter_uncertainty,
     audit_ou_identifiability_reference_examples,
-    run_comparative_sensitivity_analysis,
     validate_comparative_reference_examples,
 )
 

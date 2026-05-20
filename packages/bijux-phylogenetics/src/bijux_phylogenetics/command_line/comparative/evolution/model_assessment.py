@@ -6,11 +6,13 @@ from typing import Any
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
+from bijux_phylogenetics.comparative.assessment import (
+    run_comparative_sensitivity_analysis,
+)
 from bijux_phylogenetics.comparative.continuous import compare_brownian_and_ou_models
-from bijux_phylogenetics.comparative.models import (
+from bijux_phylogenetics.comparative.validation import (
     audit_comparative_parameter_uncertainty,
     audit_ou_identifiability_reference_examples,
-    run_comparative_sensitivity_analysis,
     validate_comparative_reference_examples,
 )
 from bijux_phylogenetics.comparative.reporting.model_comparison_figures import (

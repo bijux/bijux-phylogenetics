@@ -17,7 +17,7 @@ from bijux_phylogenetics.comparative.common import (
     summarize_numeric_trait_readiness,
 )
 from bijux_phylogenetics.comparative.model_selection import ComparativeModelComparisonReport
-from bijux_phylogenetics.comparative.models import (
+from bijux_phylogenetics.comparative.assessment import (
     ComparativeMethodMaturityReport,
     ComparativeSensitivityReport,
     assess_comparative_method_maturity,
