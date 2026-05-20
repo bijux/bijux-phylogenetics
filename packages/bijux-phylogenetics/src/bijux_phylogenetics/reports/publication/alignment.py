@@ -23,7 +23,7 @@ from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
 )
-from bijux_phylogenetics.reports.reviewer_audit import (
+from bijux_phylogenetics.reports.review import (
     build_reviewer_audit_checklist,
     ReviewerAuditChecklist,
     write_reviewer_audit_checklist,

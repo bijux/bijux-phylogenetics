@@ -17,7 +17,7 @@ from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
     comparative_report_method_tier,
 )
-from bijux_phylogenetics.reports.reviewer_audit import (
+from bijux_phylogenetics.reports.review import (
     ReviewerAuditChecklist,
     write_reviewer_audit_checklist,
 )

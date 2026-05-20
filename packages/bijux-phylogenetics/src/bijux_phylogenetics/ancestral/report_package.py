@@ -52,7 +52,7 @@ from bijux_phylogenetics.ancestral.visualization import (
     render_ancestral_state_visualization,
 )
 from bijux_phylogenetics.io.newick import loads_newick
-from bijux_phylogenetics.reports.reviewer_audit import (
+from bijux_phylogenetics.reports.review import (
     ReviewerAuditChecklist,
     write_reviewer_audit_checklist,
 )

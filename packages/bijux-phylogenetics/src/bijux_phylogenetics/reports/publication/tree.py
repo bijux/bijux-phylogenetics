@@ -33,7 +33,7 @@ from bijux_phylogenetics.reports.methods_summary import (
     TreeValidationMethodsSummaryTextResult,
     write_tree_validation_methods_summary_text,
 )
-from bijux_phylogenetics.reports.reviewer_audit import (
+from bijux_phylogenetics.reports.review import (
     ReviewerAuditChecklist,
     write_reviewer_audit_checklist,
 )
