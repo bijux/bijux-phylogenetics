@@ -24,6 +24,10 @@ from bijux_phylogenetics.ancestral.continuous import (
 from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
 )
+from bijux_phylogenetics.ancestral.tree_set import (
+    summarize_continuous_ancestral_tree_set,
+    summarize_discrete_ancestral_tree_set,
+)
 from bijux_phylogenetics.command_line.arguments import (
     _add_manifest_argument,
     _split_csv_values,
