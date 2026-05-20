@@ -132,7 +132,7 @@ from .time_tree_package import (
     TimeTreePublicationAudit,
     build_time_tree_figure_package,
 )
-from .uncertainty import (
+from .presentation.posterior_uncertainty import (
     BayesianLimitationsTextResult,
     BayesianMethodsSummaryTextResult,
     PosteriorUncertaintyFigurePackageResult,

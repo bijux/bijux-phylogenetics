@@ -27,7 +27,7 @@ from bijux_phylogenetics.bayesian.presentation.html_reports import (
     render_ml_vs_bayesian_tree_report,
     render_time_tree_readiness_report,
 )
-from bijux_phylogenetics.bayesian.uncertainty import (
+from bijux_phylogenetics.bayesian.presentation.posterior_uncertainty import (
     build_posterior_uncertainty_figure_package,
     write_bayesian_limitations_text,
     write_bayesian_methods_summary_text,

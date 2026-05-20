@@ -29,7 +29,7 @@ from bijux_phylogenetics.bayesian.mrbayes import (
     parse_mrbayes_parameter_traces,
     summarize_mrbayes_posterior_trees,
 )
-from bijux_phylogenetics.bayesian.uncertainty import (
+from .posterior_uncertainty import (
     summarize_beast_workflow_evidence,
     write_bayesian_limitations_text,
     write_bayesian_methods_summary_text,

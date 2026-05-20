@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.bayesian.uncertainty import (
+from bijux_phylogenetics.bayesian.presentation.posterior_uncertainty import (
     build_posterior_uncertainty_figure_package,
 )
 from bijux_phylogenetics.command_line import main
