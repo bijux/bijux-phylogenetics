@@ -62,71 +62,124 @@ def summarize_brownian_covariance_pgls(
     taxon_column: str | None = None,
 ) -> BrownianCovariancePGLSReport:
     """Fit one PGLS model under fixed Brownian covariance and audit the raw matrix."""
-    input_report = inspect_pgls_inputs(
-        tree_path,
-        traits_path,
-        response=response,
-        predictors=predictors,
-        formula=formula,
-        taxon_column=taxon_column,
-    )
-    if not input_report.ready:
-        raise ComparativeMethodError("; ".join(input_report.blockers))
-
-    dataset = load_comparative_dataset(
-        tree_path,
-        traits_path,
-        trait=input_report.formula_audit.response_column,
-        taxon_column=taxon_column,
-        minimum_taxa=len(input_report.encoded_columns) + 1,
-        require_rooted=True,
-        require_binary=False,
-    )
-    taxa = list(input_report.analysis_taxa)
-    raw_covariance = build_brownian_covariance_matrix(dataset.tree, taxa)
-    root_depths = tip_root_depths(dataset.tree, taxa)
-    ultrametric_summary = summarize_ultrametric_tip_depths(
-        root_depths,
-        tolerance=1e-12,
-    )
-    minimum_branch_length, maximum_branch_length = _branch_length_range(
-        dataset.tree_path
-    )
-    raw_log_determinant = _validate_raw_brownian_covariance(
-        tree_path=tree_path,
-        taxa=taxa,
-        covariance_matrix=raw_covariance,
-        minimum_branch_length=minimum_branch_length,
-    )
-    rows = _build_covariance_rows(
-        taxa=taxa,
-        covariance_matrix=raw_covariance,
-        root_depths=root_depths,
-    )
-    return BrownianCovariancePGLSReport(
-        tree_path=tree_path,
-        traits_path=traits_path,
-        response=input_report.response,
-        formula=input_report.formula,
-        taxon_count=len(taxa),
-        tree_is_ultrametric=ultrametric_summary.ultrametric,
-        minimum_root_to_tip_depth=ultrametric_summary.minimum_tip_depth,
-        maximum_root_to_tip_depth=ultrametric_summary.maximum_tip_depth,
-        minimum_branch_length=minimum_branch_length,
-        maximum_branch_length=maximum_branch_length,
-        raw_log_determinant=raw_log_determinant,
-        positive_definite_before_stabilization=True,
-        rows=rows,
-        model=run_pgls(
+    try:
+        input_report = inspect_pgls_inputs(
             tree_path,
             traits_path,
             response=response,
             predictors=predictors,
             formula=formula,
             taxon_column=taxon_column,
-            lambda_value=1.0,
-        ),
-    )
+        )
+        if not input_report.ready:
+            raise ComparativeMethodError("; ".join(input_report.blockers))
+
+        dataset = load_comparative_dataset(
+            tree_path,
+            traits_path,
+            trait=input_report.formula_audit.response_column,
+            taxon_column=taxon_column,
+            minimum_taxa=len(input_report.encoded_columns) + 1,
+            require_rooted=True,
+            require_binary=False,
+        )
+        taxa = list(input_report.analysis_taxa)
+        raw_covariance = build_brownian_covariance_matrix(dataset.tree, taxa)
+        root_depths = tip_root_depths(dataset.tree, taxa)
+        ultrametric_summary = summarize_ultrametric_tip_depths(
+            root_depths,
+            tolerance=1e-12,
+        )
+        minimum_branch_length, maximum_branch_length = _branch_length_range(
+            dataset.tree_path
+        )
+        raw_log_determinant = _validate_raw_brownian_covariance(
+            tree_path=tree_path,
+            taxa=taxa,
+            covariance_matrix=raw_covariance,
+            minimum_branch_length=minimum_branch_length,
+        )
+        rows = _build_covariance_rows(
+            taxa=taxa,
+            covariance_matrix=raw_covariance,
+            root_depths=root_depths,
+        )
+        return BrownianCovariancePGLSReport(
+            tree_path=tree_path,
+            traits_path=traits_path,
+            response=input_report.response,
+            formula=input_report.formula,
+            taxon_count=len(taxa),
+            tree_is_ultrametric=ultrametric_summary.ultrametric,
+            minimum_root_to_tip_depth=ultrametric_summary.minimum_tip_depth,
+            maximum_root_to_tip_depth=ultrametric_summary.maximum_tip_depth,
+            minimum_branch_length=minimum_branch_length,
+            maximum_branch_length=maximum_branch_length,
+            raw_log_determinant=raw_log_determinant,
+            positive_definite_before_stabilization=True,
+            rows=rows,
+            model=run_pgls(
+                tree_path,
+                traits_path,
+                response=response,
+                predictors=predictors,
+                formula=formula,
+                taxon_column=taxon_column,
+                lambda_value=1.0,
+            ),
+        )
+    except ComparativeMethodError as error:
+        _reraise_brownian_input_error(tree_path, error)
+
+
+def _reraise_brownian_input_error(
+    tree_path: Path,
+    error: ComparativeMethodError,
+) -> None:
+    details = error.details or {}
+    failure_reason = details.get("failure_reason")
+    evidence = details.get("evidence", {})
+    if failure_reason == "comparative_negative_branch_lengths":
+        raise ComparativeMethodError(
+            "Brownian covariance is invalid: tree contains negative branch lengths",
+            details={
+                "failure_reason": "brownian_covariance_negative_branch_lengths",
+                "scientific_explanation": (
+                    "Brownian shared-path covariance is invalid on a tree with negative branch lengths because shared evolutionary distance cannot be negative."
+                ),
+                "likely_causes": [
+                    "the tree file contains one or more negative branch lengths",
+                ],
+                "actionable_fixes": [
+                    "repair or re-estimate the tree so every non-root branch length is non-negative",
+                    "inspect the tree for scaling or export errors that introduced negative lengths",
+                ],
+                "evidence": {
+                    "tree_path": str(tree_path),
+                    "minimum_branch_length": evidence.get("minimum_branch_length"),
+                },
+            },
+        ) from error
+    if failure_reason == "comparative_branch_lengths_incomplete":
+        raise ComparativeMethodError(
+            "Brownian covariance requires complete branch lengths",
+            details={
+                "failure_reason": "brownian_covariance_branch_lengths_incomplete",
+                "scientific_explanation": (
+                    "Brownian covariance needs complete numeric branch lengths because shared evolutionary path length defines the covariance."
+                ),
+                "likely_causes": [
+                    "the tree was exported without complete branch lengths",
+                    "one or more branches have blank or missing lengths",
+                ],
+                "actionable_fixes": [
+                    "rerun tree inference or export with branch lengths preserved",
+                    "inspect the tree file for missing branch-length fields",
+                ],
+                "evidence": {"tree_path": str(tree_path)},
+            },
+        ) from error
+    raise error
 
 
 def write_brownian_covariance_table(

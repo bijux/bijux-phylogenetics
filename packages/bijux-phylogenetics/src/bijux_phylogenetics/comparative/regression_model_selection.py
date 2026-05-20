@@ -5,12 +5,14 @@ import math
 from pathlib import Path
 import tempfile
 
-from bijux_phylogenetics.comparative.pgls import (
+from bijux_phylogenetics.comparative.pgls import run_pgls
+from bijux_phylogenetics.comparative.pgls.formula import (
+    coerce_numeric_value,
+    parse_term_descriptor,
+    resolve_formula_specification,
+)
+from bijux_phylogenetics.comparative.pgls.models import (
     ComparativeFormulaSpecification,
-    _coerce_numeric_value,
-    _parse_term_descriptor,
-    _resolve_formula_specification,
-    run_pgls,
 )
 from bijux_phylogenetics.comparative.phylogenetic_logistic import (
     summarize_phylogenetic_logistic,
@@ -175,7 +177,7 @@ def compare_comparative_regression_models(
             if not row.get(candidate.response_column, ""):
                 continue
             try:
-                _coerce_numeric_value(
+                coerce_numeric_value(
                     row[candidate.response_column],
                     descriptor=candidate.response_descriptor,
                 )
@@ -196,7 +198,7 @@ def compare_comparative_regression_models(
                 if predictor_kind != "numeric":
                     continue
                 try:
-                    _coerce_numeric_value(
+                    coerce_numeric_value(
                         row[predictor_descriptor.source_column],
                         descriptor=predictor_descriptor,
                     )
@@ -434,14 +436,14 @@ class _CandidateSpecification:
 
 
 def _candidate_specification(formula: str) -> _CandidateSpecification:
-    specification = _resolve_formula_specification(
+    specification = resolve_formula_specification(
         response=None,
         predictors=None,
         formula=formula,
     )
-    response_descriptor = _parse_term_descriptor(specification.response)
+    response_descriptor = parse_term_descriptor(specification.response)
     predictor_descriptors = [
-        _parse_term_descriptor(term) for term in specification.predictors
+        parse_term_descriptor(term) for term in specification.predictors
     ]
     required_columns = [response_descriptor.source_column]
     required_columns.extend(
