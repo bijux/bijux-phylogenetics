@@ -23,7 +23,7 @@ from bijux_phylogenetics.ancestral.discrete.reconstruction import (
     _detect_discrete_overparameterization,
 )
 from bijux_phylogenetics.comparative.common import tip_root_depths
-from bijux_phylogenetics.comparative.information_criteria import (
+from bijux_phylogenetics.comparative.model_selection import (
     compute_aic,
     compute_aicc,
 )

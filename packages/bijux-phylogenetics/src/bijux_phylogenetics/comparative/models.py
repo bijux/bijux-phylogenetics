@@ -20,6 +20,10 @@ from bijux_phylogenetics.comparative.common import (
     build_ou_covariance_matrix,
     load_comparative_dataset,
 )
+from bijux_phylogenetics.comparative.model_selection import (
+    ComparativeModelComparisonReport,
+    ComparativeModelComparisonRow,
+)
 from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs, run_pgls
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
@@ -113,40 +117,6 @@ class OUTraitModelReport:
     confidence_intervals: list[ComparativeParameterInterval]
     identifiability_warnings: list[OUIdentifiabilityWarning]
     residual_diagnostics: ComparativeResidualSummary
-
-
-@dataclass(slots=True)
-class ComparativeModelComparisonRow:
-    """Likelihood-comparison row for one comparative trait model."""
-
-    model: str
-    parameter_count: int
-    log_likelihood: float
-    aic: float
-    aicc: float
-    delta_aic: float | None = None
-    delta_aicc: float | None = None
-    rank: int | None = None
-    comparable: bool = True
-    comparability_note: str | None = None
-    selected: bool = False
-    likelihood_constant_policy: str | None = None
-    akaike_weight: float | None = None
-    within_delta_aic_threshold: bool | None = None
-    within_delta_aicc_threshold: bool | None = None
-
-
-@dataclass(slots=True)
-class ComparativeModelComparisonReport:
-    """Likelihood comparison between BM and OU trait models."""
-
-    tree_path: Path
-    traits_path: Path
-    trait: str
-    taxon_count: int
-    rows: list[ComparativeModelComparisonRow]
-    better_model: str
-    warnings: list[str]
 
 
 @dataclass(slots=True)

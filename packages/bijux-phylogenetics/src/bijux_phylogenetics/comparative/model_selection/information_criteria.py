@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 
-from bijux_phylogenetics.comparative.models import ComparativeModelComparisonRow
+from .contracts import ComparativeModelComparisonRow
 
 
 def compute_aic(log_likelihood: float, *, parameter_count: int) -> float:

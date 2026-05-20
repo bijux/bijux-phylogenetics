@@ -233,6 +233,10 @@ from .evolutionary_modes import (
     rescale_tree_white_noise,
     transform_tree_for_evolutionary_mode,
 )
+from .model_selection import (
+    ComparativeModelComparisonReport,
+    ComparativeModelComparisonRow,
+)
 from .signal import (
     IndependentContrastRegressionReport,
     IndependentContrastRegressionRow,
@@ -243,8 +247,6 @@ from .signal import (
 from .models import (
     BrownianMotionFitReport,
     ComparativeMethodMaturityReport,
-    ComparativeModelComparisonReport,
-    ComparativeModelComparisonRow,
     ComparativeOUIdentifiabilityAudit,
     ComparativeOUIdentifiabilityCase,
     ComparativeParameterInterval,

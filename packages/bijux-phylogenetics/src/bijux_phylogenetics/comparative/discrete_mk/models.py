@@ -8,7 +8,7 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteOptimizerDiagnostics,
     DiscreteTransitionRateRow,
 )
-from bijux_phylogenetics.comparative.models import ComparativeModelComparisonRow
+from bijux_phylogenetics.comparative.model_selection import ComparativeModelComparisonRow
 
 
 DISCRETE_MK_MODEL_COMPARISON_ORDER = (

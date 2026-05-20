@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import math
 
-from bijux_phylogenetics.comparative.information_criteria import (
+from bijux_phylogenetics.comparative.model_selection import (
     compute_aic,
     compute_aicc,
     rank_model_comparison_rows,
 )
-from bijux_phylogenetics.comparative.models import ComparativeModelComparisonRow
+from bijux_phylogenetics.comparative.model_selection import ComparativeModelComparisonRow
 
 
 def test_compute_aicc_returns_infinity_when_correction_is_undefined() -> None:

@@ -11,10 +11,10 @@ from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_discrete_model_name as _resolve_discrete_model_name,
     resolve_state_order as _resolve_state_order,
 )
-from bijux_phylogenetics.comparative.information_criteria import (
+from bijux_phylogenetics.comparative.model_selection import (
+    ComparativeModelComparisonRow,
     rank_model_comparison_rows,
 )
-from bijux_phylogenetics.comparative.models import ComparativeModelComparisonRow
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 from .fitting import fit_discrete_mk_model_from_dataset

@@ -18,8 +18,8 @@ from bijux_phylogenetics.comparative.common import (
     load_comparative_dataset,
     summarize_numeric_trait_readiness,
 )
+from bijux_phylogenetics.comparative.model_selection import ComparativeModelComparisonRow
 from bijux_phylogenetics.comparative.models import (
-    ComparativeModelComparisonRow,
     ComparativeParameterInterval,
     ComparativeResidualOutlier,
     ComparativeResidualSummary,

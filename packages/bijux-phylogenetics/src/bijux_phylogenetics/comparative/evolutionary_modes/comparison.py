@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Callable
 
 from bijux_phylogenetics.comparative.common import ComparativeDataset
-from bijux_phylogenetics.comparative.information_criteria import (
+from bijux_phylogenetics.comparative.model_selection import (
+    ComparativeModelComparisonRow,
     rank_model_comparison_rows,
 )
 from bijux_phylogenetics.comparative.evolutionary_modes.models import (
@@ -19,10 +20,7 @@ from bijux_phylogenetics.comparative.evolutionary_modes.models import (
     LikelihoodRatioTestResult,
 )
 from bijux_phylogenetics.comparative.evolutionary_modes.numeric import stable_float
-from bijux_phylogenetics.comparative.models import (
-    ComparativeModelComparisonRow,
-    _comparison_row,
-)
+from bijux_phylogenetics.comparative.models import _comparison_row
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 DatasetLoader = Callable[..., ComparativeDataset]
