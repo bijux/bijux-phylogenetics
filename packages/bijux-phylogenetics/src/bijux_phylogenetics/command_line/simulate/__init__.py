@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from .trees import add_simulate_tree_commands, run_simulate_tree_command
 from bijux_phylogenetics.command_line.arguments import (
     _add_manifest_argument,
     _parse_float_csv_row,
@@ -14,9 +15,7 @@ from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.runtime.results import build_command_result
 from bijux_phylogenetics.simulation import (
-    simulate_birth_death_trees,
     simulate_brownian_traits,
-    simulate_coalescent_trees,
     simulate_correlated_brownian_trait_collection,
     simulate_discrete_histories,
     simulate_discrete_traits,
@@ -24,7 +23,6 @@ from bijux_phylogenetics.simulation import (
     simulate_early_burst_traits,
     simulate_ou_traits,
     simulate_protein_alignment,
-    simulate_random_trees,
     simulate_speciational_traits,
     validate_geiger_sim_char_reference_examples,
     write_continuous_trait_table,
@@ -38,9 +36,6 @@ from bijux_phylogenetics.simulation import (
     write_discrete_history_tip_truth_table,
     write_discrete_trait_table,
     write_simulated_alignment,
-    write_tree_set,
-    write_tree_simulation_envelope_table,
-    write_tree_simulation_record_table,
 )
 
 
@@ -51,53 +46,7 @@ def add_simulate_command(subparsers: Any) -> None:
     simulate_subparsers = simulate.add_subparsers(
         dest="simulate_command", required=True
     )
-    simulate_birth_death = simulate_subparsers.add_parser(
-        "tree-birth-death",
-        help="Simulate one or more trees under a birth-death process.",
-    )
-    simulate_birth_death.add_argument("--tree-count", type=int, default=1)
-    simulate_birth_death.add_argument("--tip-count", type=int, required=True)
-    simulate_birth_death.add_argument("--birth-rate", type=float, default=1.0)
-    simulate_birth_death.add_argument("--death-rate", type=float, default=0.25)
-    simulate_birth_death.add_argument("--seed", type=int, default=1)
-    simulate_birth_death.add_argument("--out", required=True, type=Path)
-    simulate_birth_death.add_argument("--record-table-out", type=Path)
-    simulate_birth_death.add_argument("--envelope-table-out", type=Path)
-    simulate_birth_death.add_argument(
-        "--json", action="store_true", help="Emit the simulation report as JSON."
-    )
-    _add_manifest_argument(simulate_birth_death)
-
-    simulate_random_tree = simulate_subparsers.add_parser(
-        "tree-random",
-        help="Simulate one or more rooted random trees with uniform branch lengths.",
-    )
-    simulate_random_tree.add_argument("--tree-count", type=int, default=1)
-    simulate_random_tree.add_argument("--tip-count", type=int, required=True)
-    simulate_random_tree.add_argument("--seed", type=int, default=1)
-    simulate_random_tree.add_argument("--out", required=True, type=Path)
-    simulate_random_tree.add_argument("--record-table-out", type=Path)
-    simulate_random_tree.add_argument("--envelope-table-out", type=Path)
-    simulate_random_tree.add_argument(
-        "--json", action="store_true", help="Emit the simulation report as JSON."
-    )
-    _add_manifest_argument(simulate_random_tree)
-
-    simulate_coalescent = simulate_subparsers.add_parser(
-        "tree-coalescent",
-        help="Simulate one or more trees under a coalescent model.",
-    )
-    simulate_coalescent.add_argument("--tree-count", type=int, default=1)
-    simulate_coalescent.add_argument("--tip-count", type=int, required=True)
-    simulate_coalescent.add_argument("--population-size", type=float, default=1.0)
-    simulate_coalescent.add_argument("--seed", type=int, default=1)
-    simulate_coalescent.add_argument("--out", required=True, type=Path)
-    simulate_coalescent.add_argument("--record-table-out", type=Path)
-    simulate_coalescent.add_argument("--envelope-table-out", type=Path)
-    simulate_coalescent.add_argument(
-        "--json", action="store_true", help="Emit the simulation report as JSON."
-    )
-    _add_manifest_argument(simulate_coalescent)
+    add_simulate_tree_commands(simulate_subparsers)
 
     simulate_brownian = simulate_subparsers.add_parser(
         "traits-brownian",
@@ -312,133 +261,9 @@ def add_simulate_command(subparsers: Any) -> None:
 
 
 def run_simulate_command(args: Any, *, parser: Any) -> int:
-    if args.simulate_command == "tree-birth-death":
-        trees, report = simulate_birth_death_trees(
-            tree_count=args.tree_count,
-            tip_count=args.tip_count,
-            birth_rate=args.birth_rate,
-            death_rate=args.death_rate,
-            seed=args.seed,
-        )
-        output_path = write_tree_set(args.out, trees)
-        outputs_to_finalize = [output_path]
-        if args.record_table_out is not None:
-            outputs_to_finalize.append(
-                write_tree_simulation_record_table(args.record_table_out, report)
-            )
-        if args.envelope_table_out is not None:
-            outputs_to_finalize.append(
-                write_tree_simulation_envelope_table(
-                    args.envelope_table_out,
-                    report,
-                )
-            )
-        outputs = _finalize_outputs(
-            args,
-            command="simulate",
-            inputs=[],
-            outputs=outputs_to_finalize,
-        )
-        _print_result(
-            build_command_result(
-                command="simulate",
-                inputs=[],
-                outputs=outputs,
-                metrics={
-                    "tree_count": report.tree_count,
-                    "tip_count": report.tip_count,
-                    "pooled_branch_count": report.pooled_branch_count,
-                    "envelope_metric_count": len(report.envelope_metrics),
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
-    if args.simulate_command == "tree-random":
-        trees, report = simulate_random_trees(
-            tree_count=args.tree_count,
-            tip_count=args.tip_count,
-            seed=args.seed,
-        )
-        output_path = write_tree_set(args.out, trees)
-        outputs_to_finalize = [output_path]
-        if args.record_table_out is not None:
-            outputs_to_finalize.append(
-                write_tree_simulation_record_table(args.record_table_out, report)
-            )
-        if args.envelope_table_out is not None:
-            outputs_to_finalize.append(
-                write_tree_simulation_envelope_table(
-                    args.envelope_table_out,
-                    report,
-                )
-            )
-        outputs = _finalize_outputs(
-            args,
-            command="simulate",
-            inputs=[],
-            outputs=outputs_to_finalize,
-        )
-        _print_result(
-            build_command_result(
-                command="simulate",
-                inputs=[],
-                outputs=outputs,
-                metrics={
-                    "tree_count": report.tree_count,
-                    "tip_count": report.tip_count,
-                    "pooled_branch_count": report.pooled_branch_count,
-                    "envelope_metric_count": len(report.envelope_metrics),
-                    "branch_length_model": report.branch_length_model,
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
-    if args.simulate_command == "tree-coalescent":
-        trees, report = simulate_coalescent_trees(
-            tree_count=args.tree_count,
-            tip_count=args.tip_count,
-            population_size=args.population_size,
-            seed=args.seed,
-        )
-        output_path = write_tree_set(args.out, trees)
-        outputs_to_finalize = [output_path]
-        if args.record_table_out is not None:
-            outputs_to_finalize.append(
-                write_tree_simulation_record_table(args.record_table_out, report)
-            )
-        if args.envelope_table_out is not None:
-            outputs_to_finalize.append(
-                write_tree_simulation_envelope_table(
-                    args.envelope_table_out,
-                    report,
-                )
-            )
-        outputs = _finalize_outputs(
-            args,
-            command="simulate",
-            inputs=[],
-            outputs=outputs_to_finalize,
-        )
-        _print_result(
-            build_command_result(
-                command="simulate",
-                inputs=[],
-                outputs=outputs,
-                metrics={
-                    "tree_count": report.tree_count,
-                    "tip_count": report.tip_count,
-                    "pooled_branch_count": report.pooled_branch_count,
-                    "envelope_metric_count": len(report.envelope_metrics),
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
+    tree_exit_code = run_simulate_tree_command(args)
+    if tree_exit_code is not None:
+        return tree_exit_code
     if args.simulate_command == "traits-brownian":
         report = simulate_brownian_traits(
             args.tree,
