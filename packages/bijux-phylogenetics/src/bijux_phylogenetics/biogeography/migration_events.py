@@ -10,11 +10,11 @@ from bijux_phylogenetics.ancestral.common import (
     node_signature,
     stable_value,
 )
-from bijux_phylogenetics.ancestral.tree_set import (
-    _load_tree_set_trees,
-    _prepare_analysis_tree_set,
-    _shared_taxa,
-    _validate_burnin_fraction,
+from bijux_phylogenetics.ancestral.tree_set.preparation import (
+    load_tree_set_trees,
+    prepare_analysis_tree_set,
+    shared_taxa,
+    validate_burnin_fraction,
 )
 from bijux_phylogenetics.biogeography.geographic_states import (
     GeographicExcludedTaxonRow,
@@ -263,8 +263,8 @@ def summarize_geographic_migration_event_tree_set(
     burnin_fraction: float = 0.0,
 ) -> GeographicMigrationTreeSetReport:
     """Extract and summarize inferred geographic movement events across a tree set."""
-    _validate_burnin_fraction(burnin_fraction)
-    _source_format, trees = _load_tree_set_trees(tree_set_path)
+    validate_burnin_fraction(burnin_fraction)
+    _source_format, trees = load_tree_set_trees(tree_set_path)
     total_tree_count = len(trees)
     burnin_tree_count = int(total_tree_count * burnin_fraction)
     kept_tree_entries = [
@@ -276,7 +276,7 @@ def summarize_geographic_migration_event_tree_set(
             "geographic movement-event tree-set analysis retains no trees after burn-in removal"
         )
     kept_trees = [tree for _, tree in kept_tree_entries]
-    shared_tree_taxa = sorted(_shared_taxa(kept_trees))
+    shared_tree_taxa = sorted(shared_taxa(kept_trees))
     warnings: list[str] = []
     if any(set(tree.tip_names) != set(shared_tree_taxa) for tree in kept_trees):
         warnings.append(
@@ -289,8 +289,7 @@ def summarize_geographic_migration_event_tree_set(
         raw_exclusions,
         dataset_warnings,
         resolved_taxon_column,
-    ) = _prepare_analysis_tree_set(
-        tree_set_path=tree_set_path,
+    ) = prepare_analysis_tree_set(
         traits_path=traits_path,
         taxon_column=taxon_column,
         trait=trait,
