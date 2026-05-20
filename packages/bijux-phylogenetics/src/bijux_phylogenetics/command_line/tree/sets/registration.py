@@ -14,10 +14,12 @@ from bijux_phylogenetics.trees.uncertainty import (
 )
 from bijux_phylogenetics.trees import (
     build_tree_set_uncertainty_method_report,
-    compare_posterior_topological_diversity,
-    compare_posterior_tree_sets,
     write_bootstrap_tree_set_artifacts,
     write_tree_set_uncertainty_methods_summary_text,
+)
+from .comparison import (
+    add_tree_set_comparison_commands,
+    run_tree_set_comparison_command,
 )
 from .structure import (
     add_tree_set_structure_commands,
@@ -44,6 +46,7 @@ def add_tree_set_commands(subparsers: Any) -> None:
     add_tree_set_summary_commands(tree_set_subparsers)
     add_tree_set_structure_commands(tree_set_subparsers)
     add_tree_set_uncertainty_commands(tree_set_subparsers)
+    add_tree_set_comparison_commands(tree_set_subparsers)
 
     tree_set_bootstrap_summary = tree_set_subparsers.add_parser(
         "bootstrap-summary",
@@ -64,28 +67,6 @@ def add_tree_set_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the bootstrap summary report as JSON."
     )
     _add_manifest_argument(tree_set_bootstrap_summary)
-
-    tree_set_compare = tree_set_subparsers.add_parser(
-        "compare",
-        help="Compare two posterior tree sets over clade support and topology distance.",
-    )
-    tree_set_compare.add_argument("left", type=Path)
-    tree_set_compare.add_argument("right", type=Path)
-    tree_set_compare.add_argument(
-        "--json", action="store_true", help="Emit the comparison report as JSON."
-    )
-    _add_manifest_argument(tree_set_compare)
-
-    tree_set_diversity = tree_set_subparsers.add_parser(
-        "diversity-compare",
-        help="Compare posterior topological diversity across two analyses.",
-    )
-    tree_set_diversity.add_argument("left", type=Path)
-    tree_set_diversity.add_argument("right", type=Path)
-    tree_set_diversity.add_argument(
-        "--json", action="store_true", help="Emit the diversity report as JSON."
-    )
-    _add_manifest_argument(tree_set_diversity)
 
     tree_set_methods_summary = tree_set_subparsers.add_parser(
         "methods-summary",
@@ -141,6 +122,10 @@ def run_tree_set_command(args: Any) -> int:
     if uncertainty_result is not None:
         return uncertainty_result
 
+    comparison_result = run_tree_set_comparison_command(args)
+    if comparison_result is not None:
+        return comparison_result
+
     if args.tree_set_command == "bootstrap-summary":
         report = write_bootstrap_tree_set_artifacts(
             args.tree_set,
@@ -173,55 +158,6 @@ def run_tree_set_command(args: Any) -> int:
                     ),
                     "unstable_branch_count": report.summary_report.unstable_branch_count,
                     "warning_count": len(report.summary_report.warnings),
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
-
-    if args.tree_set_command == "compare":
-        report = compare_posterior_tree_sets(args.left, args.right)
-        outputs = _finalize_outputs(
-            args,
-            command="tree-set",
-            inputs=[args.left, args.right],
-        )
-        _print_result(
-            build_command_result(
-                command="tree-set",
-                inputs=[args.left, args.right],
-                outputs=outputs,
-                metrics={
-                    "left_tree_count": report.left_tree_count,
-                    "right_tree_count": report.right_tree_count,
-                    "shared_rooted_topology_count": report.shared_rooted_topology_count,
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
-
-    if args.tree_set_command == "diversity-compare":
-        report = compare_posterior_topological_diversity(args.left, args.right)
-        outputs = _finalize_outputs(
-            args,
-            command="tree-set",
-            inputs=[args.left, args.right],
-        )
-        _print_result(
-            build_command_result(
-                command="tree-set",
-                inputs=[args.left, args.right],
-                outputs=outputs,
-                metrics={
-                    "left_rooted_topology_count": (
-                        report.left_summary.rooted_topology_count
-                    ),
-                    "right_rooted_topology_count": (
-                        report.right_summary.rooted_topology_count
-                    ),
                 },
                 data=report,
             ),
