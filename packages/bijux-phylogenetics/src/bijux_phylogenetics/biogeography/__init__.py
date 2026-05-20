@@ -57,7 +57,7 @@ from bijux_phylogenetics.biogeography.report_package import (
     write_biogeography_region_count_table,
     write_biogeography_report_exclusion_table,
 )
-from bijux_phylogenetics.biogeography.sampling_bias import (
+from bijux_phylogenetics.biogeography.state_models import (
     GeographicSamplingBiasNodeRow,
     GeographicSamplingBiasReport,
     GeographicSamplingBiasSummary,
