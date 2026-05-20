@@ -8,7 +8,7 @@ from .inspection import (
     analyze_tree_set_branch_lengths,
     write_branch_length_table,
 )
-from .clades import (
+from .inspection import (
     CladeMetadataObservation,
     CladeTableReport,
     CladeTableRow,
