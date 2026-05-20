@@ -6,11 +6,7 @@ from pathlib import Path
 import statistics
 import tempfile
 
-from Bio import Phylo
-
 from bijux_phylogenetics.ancestral.common import (
-    load_continuous_dataset,
-    load_discrete_dataset,
     stable_value,
     write_ancestral_rows,
 )
@@ -23,16 +19,8 @@ from bijux_phylogenetics.ancestral.discrete import (
 from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_discrete_model_name as _resolve_discrete_model_name,
 )
-from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.core.tree import PhyloTree
-from bijux_phylogenetics.runtime.errors import (
-    AncestralReconstructionError,
-    InvalidAlignmentError,
-)
-from bijux_phylogenetics.io.biopython import tree_from_biophylo
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.newick import dumps_newick
-from bijux_phylogenetics.io.trees import detect_tree_format
-from bijux_phylogenetics.trees import load_tree_set
 from .models import (
     AncestralTreeSetExclusion,
     AncestralTreeSetTreeRow,
@@ -44,6 +32,12 @@ from .models import (
     DiscreteAncestralTreeSetNodeRow,
     DiscreteAncestralTreeSetReport,
     DiscreteAncestralTreeSetSummary,
+)
+from .preparation import (
+    load_tree_set_trees as _load_tree_set_trees,
+    prepare_analysis_tree_set as _prepare_analysis_tree_set,
+    shared_taxa as _shared_taxa,
+    validate_burnin_fraction as _validate_burnin_fraction,
 )
 
 
@@ -93,7 +87,6 @@ def summarize_continuous_ancestral_tree_set(
         dataset_warnings,
         resolved_taxon_column,
     ) = _prepare_analysis_tree_set(
-        tree_set_path=tree_set_path,
         traits_path=traits_path,
         taxon_column=taxon_column,
         trait=trait,
@@ -238,7 +231,6 @@ def summarize_discrete_ancestral_tree_set(
         dataset_warnings,
         resolved_taxon_column,
     ) = _prepare_analysis_tree_set(
-        tree_set_path=tree_set_path,
         traits_path=traits_path,
         taxon_column=taxon_column,
         trait=trait,
@@ -723,103 +715,6 @@ def write_discrete_ancestral_tree_set_clade_table(
     )
 
 
-def _prepare_analysis_tree_set(
-    *,
-    tree_set_path: Path,
-    traits_path: Path,
-    taxon_column: str | None,
-    trait: str,
-    kept_tree_entries: list[tuple[int, PhyloTree]],
-    shared_tree_taxa: list[str],
-    dataset_kind: str,
-) -> tuple[
-    list[tuple[int, PhyloTree]],
-    object,
-    list[str],
-    list[AncestralTreeSetExclusion],
-    list[str],
-    str,
-]:
-    with tempfile.TemporaryDirectory(
-        prefix="bijux-phylogenetics-ancestral-tree-set-prepare-"
-    ) as tmp_dir:
-        tmp_dir_path = Path(tmp_dir)
-        reference_tree_path = tmp_dir_path / "ancestral-tree-set-reference.nwk"
-        reference_tree = _prune_tree_to_taxa(
-            kept_tree_entries[0][1],
-            shared_tree_taxa,
-            scratch_path=reference_tree_path,
-        )
-        reference_tree_path.write_text(
-            dumps_newick(reference_tree) + "\n",
-            encoding="utf-8",
-        )
-        if dataset_kind == "continuous":
-            dataset = load_continuous_dataset(
-                reference_tree_path,
-                traits_path,
-                trait=trait,
-                taxon_column=taxon_column,
-            )
-            exclusions = [
-                *[
-                    AncestralTreeSetExclusion(
-                        taxon=taxon,
-                        reason="missing_trait_value",
-                    )
-                    for taxon in dataset.dropped_missing_taxa
-                ],
-                *[
-                    AncestralTreeSetExclusion(
-                        taxon=taxon,
-                        reason="non_numeric_trait_value",
-                    )
-                    for taxon in dataset.dropped_non_numeric_taxa
-                ],
-            ]
-        else:
-            dataset = load_discrete_dataset(
-                reference_tree_path,
-                traits_path,
-                trait=trait,
-                taxon_column=taxon_column,
-            )
-            exclusions = [
-                AncestralTreeSetExclusion(
-                    taxon=taxon,
-                    reason="missing_discrete_trait_state",
-                )
-                for taxon in dataset.dropped_missing_taxa
-            ]
-        analysis_taxa = list(dataset.taxa)
-        analysis_tree_set_path = tmp_dir_path / "ancestral-tree-set-analysis.nwk"
-        analysis_trees = [
-            (
-                source_tree_index,
-                _prune_tree_to_taxa(
-                    tree,
-                    analysis_taxa,
-                    scratch_path=tmp_dir_path
-                    / f"ancestral-tree-set-pruned-{source_tree_index}.nwk",
-                ),
-            )
-            for source_tree_index, tree in kept_tree_entries
-        ]
-        analysis_tree_set_path.write_text(
-            "".join(dumps_newick(tree) + "\n" for _, tree in analysis_trees),
-            encoding="utf-8",
-        )
-        topology_summary = load_tree_set(analysis_tree_set_path)
-        return (
-            analysis_trees,
-            topology_summary,
-            analysis_taxa,
-            sorted(exclusions, key=lambda row: (row.taxon, row.reason)),
-            list(dataset.warnings),
-            dataset.taxon_column,
-        )
-
-
 def _summarize_continuous_clades(
     rows: list[ContinuousAncestralTreeSetNodeRow],
     *,
@@ -942,43 +837,6 @@ def _summarize_discrete_clades(
             )
         )
     return summaries
-
-
-def _validate_burnin_fraction(burnin_fraction: float) -> None:
-    if not 0.0 <= burnin_fraction < 1.0:
-        raise AncestralReconstructionError(
-            "ancestral tree-set burnin fraction must be between 0 inclusive and 1 exclusive"
-        )
-
-
-def _load_tree_set_trees(path: Path) -> tuple[str, list[PhyloTree]]:
-    if not path.exists():
-        raise FileNotFoundError(f"tree-set file not found: {path}")
-    source_format = detect_tree_format(path)
-    bio_trees = list(Phylo.parse(path, source_format))
-    if not bio_trees:
-        raise InvalidAlignmentError(f"tree set contains no trees: {path}")
-    return source_format, [
-        tree_from_biophylo(tree, source_format=source_format) for tree in bio_trees
-    ]
-
-
-def _shared_taxa(trees: list[PhyloTree]) -> set[str]:
-    shared = set(trees[0].tip_names)
-    for tree in trees[1:]:
-        shared &= set(tree.tip_names)
-    return shared
-
-
-def _prune_tree_to_taxa(
-    tree: PhyloTree,
-    requested_taxa: list[str],
-    *,
-    scratch_path: Path,
-) -> PhyloTree:
-    scratch_path.write_text(dumps_newick(tree) + "\n", encoding="utf-8")
-    pruned_tree, _report = prune_tree_to_requested_taxa(scratch_path, requested_taxa)
-    return pruned_tree
 
 
 def _empirical_quantile(values: list[float], probability: float) -> float:
