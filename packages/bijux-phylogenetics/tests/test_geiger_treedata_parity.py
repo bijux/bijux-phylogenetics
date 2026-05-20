@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.core.traits import align_tree_and_trait_table
+from bijux_phylogenetics.datasets.study_inputs import align_tree_and_trait_table
 from tests.support.geiger_treedata_reference import (
     GEIGER_TREEDATA_REFERENCE_PAYLOADS,
 )

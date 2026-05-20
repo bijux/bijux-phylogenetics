@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.core.traits import check_tree_and_trait_taxon_names
+from bijux_phylogenetics.datasets.study_inputs import check_tree_and_trait_taxon_names
 from tests.support.geiger_name_check_reference import (
     GEIGER_NAME_CHECK_REFERENCE_PAYLOADS,
 )

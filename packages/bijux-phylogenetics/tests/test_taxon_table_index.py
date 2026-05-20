@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.core.metadata import inspect_taxon_table_index
+from bijux_phylogenetics.datasets.study_inputs import inspect_taxon_table_index
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

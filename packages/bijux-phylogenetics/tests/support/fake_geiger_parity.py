@@ -117,7 +117,7 @@ def build_reference_payload(case_payload: dict[str, object]) -> tuple[dict[str, 
 import json
 import math
 from pathlib import Path
-from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness

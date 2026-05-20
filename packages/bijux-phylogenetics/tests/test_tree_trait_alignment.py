@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.core.traits import align_tree_and_trait_table
+from bijux_phylogenetics.datasets.study_inputs import align_tree_and_trait_table
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
 
 FIXTURES = Path(__file__).parent / "fixtures"

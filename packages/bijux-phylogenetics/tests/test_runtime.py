@@ -221,7 +221,7 @@ from bijux_phylogenetics.core.dataset import (
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
-from bijux_phylogenetics.core.metadata import inspect_metadata_table, join_table_to_taxa
+from bijux_phylogenetics.datasets.study_inputs import inspect_metadata_table, join_table_to_taxa
 from bijux_phylogenetics.phylo.branch_lengths.node_depths import (
     TreeNodeDepthReport,
     compute_tree_node_depths,
@@ -255,7 +255,7 @@ from bijux_phylogenetics.phylo.topology import (
     unroot_tree,
     write_tree_rooting_report,
 )
-from bijux_phylogenetics.core.traits import (
+from bijux_phylogenetics.datasets.study_inputs import (
     detect_missing_trait_values,
     detect_unusable_trait_columns,
     link_tree_to_traits,

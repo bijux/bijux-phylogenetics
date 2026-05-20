@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.core.traits import (
+from bijux_phylogenetics.datasets.study_inputs import (
     check_tree_and_trait_taxon_names,
     write_tree_trait_name_mismatch_table,
 )
