@@ -3,17 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from bijux_phylogenetics.command_line.arguments import (
-    _add_manifest_argument,
-    _split_csv_values,
-)
+from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.comparative.discrete_evolution import (
     compare_discrete_state_models,
     count_discrete_stochastic_map_transitions,
-    detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
     load_stochastic_map_collection,
     render_discrete_state_evolution_report,
@@ -22,8 +18,6 @@ from bijux_phylogenetics.comparative.discrete_evolution import (
     simulate_discrete_stochastic_maps,
     summarize_discrete_stochastic_map_density,
     summarize_discrete_stochastic_maps,
-    validate_discrete_state_coding,
-    validate_discrete_transition_reference_examples,
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
     write_stochastic_map_aggregate_transition_matrix,
@@ -42,6 +36,9 @@ from bijux_phylogenetics.comparative.discrete_evolution import (
 )
 from bijux_phylogenetics.runtime.results import build_command_result
 
+from .shared import COMMAND_NAME, allowed_states, model_inputs, ordered_states, render_density_outputs
+from .validation import add_validation_commands, run_validation_command
+
 
 def add_discrete_evolution_commands(subparsers: Any) -> None:
     discrete_evolution = subparsers.add_parser(
@@ -52,52 +49,7 @@ def add_discrete_evolution_commands(subparsers: Any) -> None:
         dest="discrete_evolution_command",
         required=True,
     )
-    discrete_validate = discrete_evolution_subparsers.add_parser(
-        "validate-coding",
-        help="Validate discrete-state labels against tree-overlapping taxa.",
-    )
-    discrete_validate.add_argument("tree", type=Path)
-    discrete_validate.add_argument("table", type=Path)
-    discrete_validate.add_argument("--trait", required=True)
-    discrete_validate.add_argument("--taxon-column")
-    discrete_validate.add_argument(
-        "--allowed-states",
-        help="Comma-delimited allowed state vocabulary. When omitted, accept any single token state label.",
-    )
-    discrete_validate.add_argument(
-        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
-    )
-    discrete_validate.add_argument(
-        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
-    )
-    discrete_validate.add_argument(
-        "--json", action="store_true", help="Emit the validation report as JSON."
-    )
-    _add_manifest_argument(discrete_validate)
-
-    discrete_imbalance = discrete_evolution_subparsers.add_parser(
-        "imbalance",
-        help="Detect rare, dominant, or degenerate state balance problems.",
-    )
-    discrete_imbalance.add_argument("tree", type=Path)
-    discrete_imbalance.add_argument("table", type=Path)
-    discrete_imbalance.add_argument("--trait", required=True)
-    discrete_imbalance.add_argument("--taxon-column")
-    discrete_imbalance.add_argument(
-        "--json", action="store_true", help="Emit the imbalance report as JSON."
-    )
-    _add_manifest_argument(discrete_imbalance)
-
-    discrete_reference = discrete_evolution_subparsers.add_parser(
-        "reference",
-        help="Validate deterministic discrete-state transition examples against built-in reference expectations.",
-    )
-    discrete_reference.add_argument(
-        "--json",
-        action="store_true",
-        help="Emit the reference-validation report as JSON.",
-    )
-    _add_manifest_argument(discrete_reference)
+    add_validation_commands(discrete_evolution_subparsers)
 
     discrete_model = discrete_evolution_subparsers.add_parser(
         "model",
@@ -446,110 +398,6 @@ def add_discrete_evolution_commands(subparsers: Any) -> None:
     _add_manifest_argument(discrete_report)
 
 
-def _ordered_states(args: Any) -> list[str] | None:
-    return _split_csv_values(args.ordered_states) or None
-
-
-def _allowed_states(args: Any) -> list[str] | None:
-    if not hasattr(args, "allowed_states"):
-        return None
-    return _split_csv_values(args.allowed_states) or None
-
-
-def _model_inputs(args: Any) -> list[Path]:
-    return [args.tree, args.table]
-
-
-def _render_density_outputs(outputs: list[Path | str], density_result: Any) -> None:
-    outputs.extend(
-        [density_result.output_path, density_result.svg_path]
-        if density_result.format == "html"
-        else [density_result.output_path]
-    )
-
-
-def _run_validate_coding(args: Any) -> int:
-    report = validate_discrete_state_coding(
-        args.tree,
-        args.table,
-        trait=args.trait,
-        taxon_column=args.taxon_column,
-        allowed_states=_allowed_states(args),
-        state_ordering=args.state_ordering,
-        ordered_states=_ordered_states(args),
-    )
-    outputs = _finalize_outputs(
-        args,
-        command="discrete-evolution",
-        inputs=_model_inputs(args),
-    )
-    _print_result(
-        build_command_result(
-            command="discrete-evolution",
-            inputs=_model_inputs(args),
-            outputs=outputs,
-            metrics={
-                "valid": report.valid,
-                "issue_count": len(report.issues),
-                "observed_state_count": len(report.observed_states),
-                "state_ordering": report.state_ordering,
-            },
-            data=report,
-        ),
-        json_output=args.json,
-    )
-    return 0
-
-
-def _run_imbalance(args: Any) -> int:
-    report = detect_state_imbalance_problems(
-        args.tree,
-        args.table,
-        trait=args.trait,
-        taxon_column=args.taxon_column,
-    )
-    outputs = _finalize_outputs(
-        args,
-        command="discrete-evolution",
-        inputs=_model_inputs(args),
-    )
-    _print_result(
-        build_command_result(
-            command="discrete-evolution",
-            inputs=_model_inputs(args),
-            outputs=outputs,
-            warnings=[warning.message for warning in report.warnings],
-            metrics={
-                "taxon_count": report.taxon_count,
-                "observed_state_count": len(report.observed_states),
-                "warning_count": len(report.warnings),
-            },
-            data=report,
-        ),
-        json_output=args.json,
-    )
-    return 0
-
-
-def _run_reference(args: Any) -> int:
-    report = validate_discrete_transition_reference_examples()
-    outputs = _finalize_outputs(args, command="discrete-evolution", inputs=[])
-    _print_result(
-        build_command_result(
-            command="discrete-evolution",
-            inputs=[],
-            outputs=outputs,
-            metrics={
-                "case_count": report.case_count,
-                "all_passed": report.all_passed,
-            },
-            data=report,
-        ),
-        json_output=args.json,
-    )
-    return 0
-
-
 def _run_model(args: Any) -> int:
     report = estimate_ancestral_geographic_states(
         args.tree,
@@ -557,9 +405,9 @@ def _run_model(args: Any) -> int:
         trait=args.trait,
         taxon_column=args.taxon_column,
         model=args.model,
-        allowed_states=_allowed_states(args),
+        allowed_states=allowed_states(args),
         state_ordering=args.state_ordering,
-        ordered_states=_ordered_states(args),
+        ordered_states=ordered_states(args),
     )
     outputs: list[Path | str] = []
     if args.node_table_out is not None:
@@ -569,13 +417,13 @@ def _run_model(args: Any) -> int:
     outputs = _finalize_outputs(
         args,
         command="discrete-evolution",
-        inputs=_model_inputs(args),
+        inputs=model_inputs(args),
         outputs=outputs,
     )
     _print_result(
         build_command_result(
             command="discrete-evolution",
-            inputs=_model_inputs(args),
+            inputs=model_inputs(args),
             outputs=outputs,
             warnings=report.warnings,
             metrics={
@@ -602,9 +450,9 @@ def _run_stochastic_map(args: Any) -> int:
         trait=args.trait,
         taxon_column=args.taxon_column,
         model=args.model,
-        allowed_states=_allowed_states(args),
+        allowed_states=allowed_states(args),
         state_ordering=args.state_ordering,
-        ordered_states=_ordered_states(args),
+        ordered_states=ordered_states(args),
         replicates=args.replicates,
         seed=args.seed,
     )
@@ -694,17 +542,17 @@ def _run_stochastic_map(args: Any) -> int:
             out_path=args.density_figure_out,
             layout=args.layout,
         )
-        _render_density_outputs(outputs, density_result)
+        render_density_outputs(outputs, density_result)
     outputs = _finalize_outputs(
         args,
         command="discrete-evolution",
-        inputs=_model_inputs(args),
+        inputs=model_inputs(args),
         outputs=outputs,
     )
     _print_result(
         build_command_result(
             command="discrete-evolution",
-            inputs=_model_inputs(args),
+            inputs=model_inputs(args),
             outputs=outputs,
             warnings=list(
                 dict.fromkeys(
@@ -879,7 +727,7 @@ def _run_density_maps(args: Any) -> int:
             out_path=args.out,
             layout=args.layout,
         )
-        _render_density_outputs(outputs, density_result)
+        render_density_outputs(outputs, density_result)
     outputs = _finalize_outputs(
         args,
         command="discrete-evolution",
@@ -920,9 +768,9 @@ def _run_render(args: Any) -> int:
         trait=args.trait,
         taxon_column=args.taxon_column,
         model=args.model,
-        allowed_states=_allowed_states(args),
+        allowed_states=allowed_states(args),
         state_ordering=args.state_ordering,
-        ordered_states=_ordered_states(args),
+        ordered_states=ordered_states(args),
     )
     result = render_tree_with_geographic_states(
         args.tree,
@@ -933,13 +781,13 @@ def _run_render(args: Any) -> int:
     outputs = _finalize_outputs(
         args,
         command="discrete-evolution",
-        inputs=_model_inputs(args),
+        inputs=model_inputs(args),
         outputs=[result.output_path],
     )
     _print_result(
         build_command_result(
             command="discrete-evolution",
-            inputs=_model_inputs(args),
+            inputs=model_inputs(args),
             outputs=outputs,
             warnings=report.warnings,
             metrics={
@@ -966,21 +814,21 @@ def _run_report(args: Any) -> int:
         out_path=args.out,
         taxon_column=args.taxon_column,
         model=args.model,
-        allowed_states=_allowed_states(args),
+        allowed_states=allowed_states(args),
         state_ordering=args.state_ordering,
-        ordered_states=_ordered_states(args),
+        ordered_states=ordered_states(args),
         compare_model=args.compare_model,
     )
     outputs = _finalize_outputs(
         args,
         command="discrete-evolution",
-        inputs=_model_inputs(args),
+        inputs=model_inputs(args),
         outputs=[result.output_path, args.out.with_suffix(".svg")],
     )
     _print_result(
         build_command_result(
             command="discrete-evolution",
-            inputs=_model_inputs(args),
+            inputs=model_inputs(args),
             outputs=outputs,
             metrics={
                 "report_kind": result.report_kind,
@@ -1002,9 +850,9 @@ def _run_compare_models(args: Any) -> int:
         taxon_column=args.taxon_column,
         left_model=args.left_model,
         right_model=args.right_model,
-        allowed_states=_allowed_states(args),
+        allowed_states=allowed_states(args),
         state_ordering=args.state_ordering,
-        ordered_states=_ordered_states(args),
+        ordered_states=ordered_states(args),
     )
     outputs: list[Path | str] = []
     if args.table_out is not None:
@@ -1012,13 +860,13 @@ def _run_compare_models(args: Any) -> int:
     outputs = _finalize_outputs(
         args,
         command="discrete-evolution",
-        inputs=_model_inputs(args),
+        inputs=model_inputs(args),
         outputs=outputs,
     )
     _print_result(
         build_command_result(
             command="discrete-evolution",
-            inputs=_model_inputs(args),
+            inputs=model_inputs(args),
             outputs=outputs,
             metrics={
                 "better_model": comparison.better_model,
@@ -1036,12 +884,9 @@ def _run_compare_models(args: Any) -> int:
 
 
 def run_discrete_evolution_command(args: Any) -> int:
-    if args.discrete_evolution_command == "validate-coding":
-        return _run_validate_coding(args)
-    if args.discrete_evolution_command == "imbalance":
-        return _run_imbalance(args)
-    if args.discrete_evolution_command == "reference":
-        return _run_reference(args)
+    validation_result = run_validation_command(args)
+    if validation_result is not None:
+        return validation_result
     if args.discrete_evolution_command == "model":
         return _run_model(args)
     if args.discrete_evolution_command == "stochastic-map":
