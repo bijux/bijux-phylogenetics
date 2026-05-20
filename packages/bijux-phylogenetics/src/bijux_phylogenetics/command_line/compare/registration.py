@@ -5,12 +5,9 @@ from pathlib import Path
 from typing import Any
 
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
-from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
-from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.compare.topology import compare_branch_lengths
-from bijux_phylogenetics.runtime.results import build_command_result
 
+from .branch_lengths import run_compare_branch_lengths_command
 from .clades import run_compare_clade_command
 from .influence import run_compare_influence_command
 from .presentation import run_compare_presentation_command
@@ -73,44 +70,13 @@ def run_compare_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
     pruning_result = run_compare_pruning_command(args, parser=parser)
     if pruning_result is not None:
         return pruning_result
+    branch_length_result = run_compare_branch_lengths_command(args, parser=parser)
+    if branch_length_result is not None:
+        return branch_length_result
     topology_distance_result = run_compare_topology_distance_command(
         args, parser=parser
     )
     if topology_distance_result is not None:
         return topology_distance_result
-
-    if args.left == "branch-lengths":
-        if args.third is None:
-            parser.exit(
-                status=2,
-                message="compare branch-lengths requires two tree paths\n",
-            )
-        left_path = Path(args.right)
-        right_path = Path(args.third)
-        report = compare_branch_lengths(
-            left_path,
-            right_path,
-            taxon_overlap_policy=args.taxon_overlap_policy,
-        )
-        outputs = _finalize_outputs(
-            args, command="compare", inputs=[left_path, right_path]
-        )
-        _print_result(
-            build_command_result(
-                command="compare",
-                inputs=[left_path, right_path],
-                outputs=outputs,
-                metrics={
-                    "shared_taxa": len(report.shared_taxa),
-                    "same_taxon_set": report.same_taxon_set,
-                    "shared_splits": len(report.shared_splits),
-                    "branch_score_distance": report.branch_score.branch_score_distance,
-                    "missing_length_splits": report.branch_score.missing_length_split_count,
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
 
     parser.error("compare requires a supported workflow or two tree paths")
