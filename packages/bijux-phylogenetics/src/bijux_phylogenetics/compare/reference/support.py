@@ -4,7 +4,7 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.compare.topology import compare_support_values
+from bijux_phylogenetics.compare.topology.support import compare_support_values
 from bijux_phylogenetics.io.trees import load_tree
 
 
@@ -471,4 +471,4 @@ def _trees_root() -> Path:
 
 
 def _package_root() -> Path:
-    return Path(__file__).resolve().parents[3]
+    return Path(__file__).resolve().parents[4]

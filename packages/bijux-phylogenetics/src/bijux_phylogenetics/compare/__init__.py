@@ -6,7 +6,7 @@ from .structural_parity import (
     compare_tree_sets_structurally,
     compare_tree_structurally,
 )
-from .support_reference import (
+from .reference import (
     SupportReferenceObservation,
     SupportReferenceValidationReport,
     validate_support_reference_examples,

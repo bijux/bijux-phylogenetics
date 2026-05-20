@@ -178,7 +178,7 @@ from bijux_phylogenetics.comparative.evidence_contract import (
     resolve_supported_evidence_api,
 )
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
-from bijux_phylogenetics.compare.support_reference import (
+from bijux_phylogenetics.compare.reference import (
     validate_support_reference_examples,
 )
 from bijux_phylogenetics.compare.taxon_influence import (

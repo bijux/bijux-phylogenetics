@@ -17,7 +17,7 @@ from bijux_phylogenetics.trees import (
     write_clade_table,
     write_tree_shape_table,
 )
-from bijux_phylogenetics.compare.support_reference import (
+from bijux_phylogenetics.compare.reference import (
     validate_support_reference_examples,
 )
 from bijux_phylogenetics.compare.tree_distance_reference import (

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bijux_phylogenetics.compare.support_reference import (
+from bijux_phylogenetics.compare.reference import (
     validate_support_reference_examples,
 )
 
