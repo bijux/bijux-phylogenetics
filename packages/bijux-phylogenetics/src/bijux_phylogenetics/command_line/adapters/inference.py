@@ -14,7 +14,7 @@ from bijux_phylogenetics.engines import (
     run_fast_tree_inference,
     run_tree_inference_comparison,
 )
-from bijux_phylogenetics.engines.inference_reproducibility import (
+from bijux_phylogenetics.engines.inference import (
     run_inference_reproducibility_check,
 )
 from bijux_phylogenetics.engines.inference import (

@@ -13,18 +13,18 @@ from bijux_phylogenetics.compare.topology import (
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 
-from .common import build_file_checksums, load_engine_manifest, read_engine_version
-from .inference import run_fasta_to_tree_workflow
-from .inference_comparison import run_tree_inference_comparison
-from .inference_reproducibility import run_inference_reproducibility_check
-from .inference import run_large_alignment_inference
-from .workflows.alignment import (
+from ..common import build_file_checksums, load_engine_manifest, read_engine_version
+from .comparison import run_tree_inference_comparison
+from .fasta_to_tree import run_fasta_to_tree_workflow
+from .large_alignment import run_large_alignment_inference
+from .reproducibility import run_inference_reproducibility_check
+from ..workflows.alignment import (
     run_alignment_trimming,
     run_codon_aware_multiple_sequence_alignment,
     run_multiple_sequence_alignment,
 )
-from .workflows.fasttree import run_fast_tree_inference
-from .workflows.iqtree import (
+from ..workflows.fasttree import run_fast_tree_inference
+from ..workflows.iqtree import (
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
     run_maximum_likelihood_tree_inference,

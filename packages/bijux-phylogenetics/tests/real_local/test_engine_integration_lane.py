@@ -15,7 +15,7 @@ from bijux_phylogenetics.engines import (
     run_sh_alrt_support_estimation,
     run_tree_inference_comparison,
 )
-from bijux_phylogenetics.engines.inference_reproducibility import (
+from bijux_phylogenetics.engines.inference import (
     run_inference_reproducibility_check,
 )
 from bijux_phylogenetics.engines.inference import (

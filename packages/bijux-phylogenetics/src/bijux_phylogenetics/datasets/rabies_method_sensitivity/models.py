@@ -5,7 +5,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.compare.topology import TreeComparisonReport
 from bijux_phylogenetics.phylo.topology import TreeRootingReport
-from bijux_phylogenetics.engines.inference_comparison import (
+from bijux_phylogenetics.engines.inference import (
     InferenceComparisonWorkflowReport,
 )
 from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.engines.workflow_config import (
+from bijux_phylogenetics.engines.inference import (
     load_phylo_workflow_config,
     run_phylo_workflow_config,
 )

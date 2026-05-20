@@ -13,7 +13,7 @@ from bijux_phylogenetics.engines.common import (
     clear_active_engine_run,
     utc_now_text,
 )
-from bijux_phylogenetics.engines.inference_comparison import (
+from bijux_phylogenetics.engines.inference import (
     run_tree_inference_comparison,
 )
 from bijux_phylogenetics.engines.workflows.alignment import (
