@@ -13,6 +13,12 @@ from .ordering import (
     write_ordered_discrete_summary_table,
     write_ordered_discrete_transition_table,
 )
+from .reference_validation import (
+    DiscreteAncestralReferenceObservation,
+    DiscreteAncestralReferenceProbabilityRow,
+    DiscreteAncestralReferenceValidationReport,
+    validate_discrete_ancestral_reference_examples,
+)
 from .transition_constraints import (
     IrreversibleDiscreteFitRow,
     IrreversibleDiscreteNodeComparisonRow,
@@ -28,6 +34,9 @@ from .transition_constraints import (
 )
 
 __all__ = [
+    "DiscreteAncestralReferenceObservation",
+    "DiscreteAncestralReferenceProbabilityRow",
+    "DiscreteAncestralReferenceValidationReport",
     "IrreversibleDiscreteFitRow",
     "IrreversibleDiscreteNodeComparisonRow",
     "IrreversibleDiscreteReport",
@@ -42,6 +51,7 @@ __all__ = [
     "summarize_irreversible_discrete_report",
     "summarize_ordered_discrete_reconstruction",
     "summarize_ordered_discrete_report",
+    "validate_discrete_ancestral_reference_examples",
     "write_irreversible_discrete_fit_table",
     "write_irreversible_discrete_node_table",
     "write_irreversible_discrete_summary_table",

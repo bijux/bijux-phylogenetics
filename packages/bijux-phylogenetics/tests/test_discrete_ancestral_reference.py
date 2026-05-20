@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from bijux_phylogenetics.ancestral.discrete_reference import (
+from bijux_phylogenetics.ancestral.discrete.review import (
     validate_discrete_ancestral_reference_examples,
 )
 

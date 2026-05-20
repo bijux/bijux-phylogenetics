@@ -6,13 +6,13 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
-from bijux_phylogenetics.ancestral.discrete.review import (
-    summarize_irreversible_discrete_reconstruction,
-    summarize_irreversible_discrete_report,
-)
-from bijux_phylogenetics.ancestral.discrete.review import (
+from bijux_phylogenetics.ancestral.discrete.review.ordering import (
     summarize_ordered_discrete_reconstruction,
     summarize_ordered_discrete_report,
+)
+from bijux_phylogenetics.ancestral.discrete.review.transition_constraints import (
+    summarize_irreversible_discrete_reconstruction,
+    summarize_irreversible_discrete_report,
 )
 from bijux_phylogenetics.ancestral.sensitivity import (
     summarize_ancestral_root_sensitivity,
@@ -438,7 +438,7 @@ def _fixtures_root() -> Path:
 
 
 def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[5]
+    return Path(__file__).resolve().parents[7]
 
 
 def _root_estimate(report):

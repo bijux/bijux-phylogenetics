@@ -68,7 +68,7 @@ _PUBLIC_SURFACES = (
         ),
     ),
     (
-        "discrete_reference",
+        "discrete.review.reference_validation",
         (
             "DiscreteAncestralReferenceObservation",
             "DiscreteAncestralReferenceProbabilityRow",

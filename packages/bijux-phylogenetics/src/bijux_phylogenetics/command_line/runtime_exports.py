@@ -33,7 +33,7 @@ from bijux_phylogenetics.ancestral.discrete import (
     write_discrete_ancestral_summary_table,
     write_discrete_ancestral_transition_table,
 )
-from bijux_phylogenetics.ancestral.discrete_reference import (
+from bijux_phylogenetics.ancestral.discrete.review import (
     validate_discrete_ancestral_reference_examples,
 )
 from bijux_phylogenetics.ancestral.discrete.review import (
