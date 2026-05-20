@@ -72,7 +72,7 @@ from bijux_phylogenetics.ancestral.service import (
     write_ancestral_state_table,
     write_discrete_ancestral_comparison_table,
 )
-from bijux_phylogenetics.ancestral.transitions import (
+from bijux_phylogenetics.ancestral.discrete.review import (
     summarize_ancestral_transition_report,
     summarize_ancestral_transition_tree_set,
     summarize_ancestral_transition_tree_set_report,

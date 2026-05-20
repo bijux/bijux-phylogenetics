@@ -165,7 +165,7 @@ _PUBLIC_SURFACES = (
         ),
     ),
     (
-        "transitions",
+        "discrete.review.transition_review",
         (
             "AncestralTransitionBranchRow",
             "AncestralTransitionCountRow",

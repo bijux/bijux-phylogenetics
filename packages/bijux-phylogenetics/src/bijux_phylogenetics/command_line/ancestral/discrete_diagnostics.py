@@ -26,7 +26,7 @@ from bijux_phylogenetics.ancestral.sensitivity import (
     write_ancestral_root_sensitivity_node_table,
     write_ancestral_root_sensitivity_summary_table,
 )
-from bijux_phylogenetics.ancestral.transitions import (
+from bijux_phylogenetics.ancestral.discrete.review import (
     summarize_ancestral_transition_report,
     summarize_ancestral_transition_tree_set,
     summarize_ancestral_transition_tree_set_report,

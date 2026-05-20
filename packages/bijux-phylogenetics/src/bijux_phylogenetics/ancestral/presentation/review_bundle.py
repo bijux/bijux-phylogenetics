@@ -38,7 +38,7 @@ from bijux_phylogenetics.ancestral.service import (
     render_ancestral_state_report,
     write_ancestral_state_table,
 )
-from bijux_phylogenetics.ancestral.transitions import (
+from bijux_phylogenetics.ancestral.discrete.review import (
     AncestralTransitionBranchRow,
     AncestralTransitionCountRow,
     AncestralTransitionReport,
