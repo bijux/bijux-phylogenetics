@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 import sys
 from typing import Any
 
@@ -37,29 +36,9 @@ from bijux_phylogenetics.command_line.study_inputs.annotation import (
     add_annotate_command,
     run_annotate_command,
 )
-from bijux_phylogenetics.command_line.comparative_continuous import (
-    add_comparative_continuous_commands,
-    run_comparative_continuous_command,
-)
-from bijux_phylogenetics.command_line.comparative_evolution import (
-    add_comparative_evolution_commands,
-    run_comparative_evolution_command,
-)
-from bijux_phylogenetics.command_line.comparative_trait_review import (
-    add_comparative_trait_review_commands,
-    run_comparative_trait_review_command,
-)
-from bijux_phylogenetics.command_line.comparative_support import (
-    add_comparative_support_commands,
-    run_comparative_support_command,
-)
-from bijux_phylogenetics.command_line.comparative_modeling import (
-    add_comparative_modeling_commands,
-    run_comparative_modeling_command,
-)
-from bijux_phylogenetics.command_line.comparative_pgls import (
-    add_comparative_pgls_commands,
-    run_comparative_pgls_command,
+from bijux_phylogenetics.command_line.comparative import (
+    add_comparative_commands,
+    run_comparative_command,
 )
 from bijux_phylogenetics.command_line.parity import (
     add_parity_command,
@@ -157,21 +136,8 @@ from bijux_phylogenetics.command_line.arguments import (
     _add_manifest_argument,
     _json_requested,
 )
-from bijux_phylogenetics.comparative.models import (
-    assess_comparative_method_maturity,
-)
-from bijux_phylogenetics.comparative.phylogenetic_logistic import (
-    summarize_phylogenetic_logistic,
-    write_phylogenetic_logistic_coefficient_table,
-    write_phylogenetic_logistic_excluded_taxa_table,
-    write_phylogenetic_logistic_fitted_table,
-)
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
-from bijux_phylogenetics.evidence.provenance.method_tiers import (
-    method_tier_metrics,
-    method_tier_warnings,
-)
 from bijux_phylogenetics.runtime.results import build_command_result, build_error_result
 
 
@@ -211,78 +177,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     add_alignment_commands(subparsers)
 
-    comparative = subparsers.add_parser(
-        get_command_spec("comparative").name,
-        help=get_command_spec("comparative").summary,
-    )
-    comparative_subparsers = comparative.add_subparsers(
-        dest="comparative_command", required=True
-    )
-    add_comparative_continuous_commands(comparative_subparsers)
-    add_comparative_evolution_commands(comparative_subparsers)
-    add_comparative_trait_review_commands(comparative_subparsers)
-    comparative_maturity = comparative_subparsers.add_parser(
-        "maturity",
-        help="Audit comparative residual diagnostics and sensitivity for one response trait workflow.",
-    )
-    comparative_maturity.add_argument("tree", type=Path)
-    comparative_maturity.add_argument("table", type=Path)
-    comparative_maturity.add_argument("--response")
-    comparative_maturity.add_argument("--predictors", nargs="+")
-    comparative_maturity.add_argument(
-        "--formula",
-        help="Formula-style specification such as 'response ~ body_mass * habitat'.",
-    )
-    comparative_maturity.add_argument("--taxon-column")
-    comparative_maturity.add_argument(
-        "--lambda-value",
-        default="estimate",
-        help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
-    )
-    comparative_maturity.add_argument(
-        "--json", action="store_true", help="Emit the maturity audit as JSON."
-    )
-    _add_manifest_argument(comparative_maturity)
-    add_comparative_pgls_commands(comparative_subparsers)
-    comparative_logistic = comparative_subparsers.add_parser(
-        "logistic",
-        help="Fit a binary phylogenetic logistic approximation with a phylogenetic working correlation.",
-    )
-    comparative_logistic.add_argument("tree", type=Path)
-    comparative_logistic.add_argument("table", type=Path)
-    comparative_logistic.add_argument("--response")
-    comparative_logistic.add_argument("--predictors", nargs="+")
-    comparative_logistic.add_argument(
-        "--formula",
-        help="Formula-style specification such as 'presence ~ body_mass + habitat'.",
-    )
-    comparative_logistic.add_argument("--taxon-column")
-    comparative_logistic.add_argument(
-        "--lambda-value",
-        default="1.0",
-        help="Use a numeric Pagel lambda value between 0 and 1 for the working correlation.",
-    )
-    comparative_logistic.add_argument(
-        "--coefficients-out",
-        type=Path,
-        help="Write the fitted logistic coefficient ledger as TSV or CSV.",
-    )
-    comparative_logistic.add_argument(
-        "--fitted-out",
-        type=Path,
-        help="Write the fitted taxon-level probability ledger as TSV or CSV.",
-    )
-    comparative_logistic.add_argument(
-        "--excluded-taxa-out",
-        type=Path,
-        help="Write the excluded-taxa ledger as TSV or CSV.",
-    )
-    comparative_logistic.add_argument(
-        "--json", action="store_true", help="Emit the logistic result as JSON."
-    )
-    _add_manifest_argument(comparative_logistic)
-    add_comparative_support_commands(comparative_subparsers)
-    add_comparative_modeling_commands(comparative_subparsers)
+    add_comparative_commands(subparsers)
 
     add_ancestral_commands(subparsers)
 
@@ -364,153 +259,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             if alignment_exit_code is not None:
                 return alignment_exit_code
         if args.command == "comparative":
-            continuous_exit_code = run_comparative_continuous_command(
-                args,
-                parser=parser,
-            )
-            if continuous_exit_code is not None:
-                return continuous_exit_code
-            evolution_exit_code = run_comparative_evolution_command(
-                args,
-                parser=parser,
-            )
-            if evolution_exit_code is not None:
-                return evolution_exit_code
-            review_exit_code = run_comparative_trait_review_command(
-                args,
-                parser=parser,
-            )
-            if review_exit_code is not None:
-                return review_exit_code
-            support_exit_code = run_comparative_support_command(
-                args,
-                parser=parser,
-            )
-            if support_exit_code is not None:
-                return support_exit_code
-            modeling_exit_code = run_comparative_modeling_command(
-                args,
-                parser=parser,
-            )
-            if modeling_exit_code is not None:
-                return modeling_exit_code
-            pgls_exit_code = run_comparative_pgls_command(
-                args,
-                parser=parser,
-            )
-            if pgls_exit_code is not None:
-                return pgls_exit_code
-            lambda_value: float | str
-            if hasattr(args, "lambda_value"):
-                if args.lambda_value == "estimate":
-                    lambda_value = "estimate"
-                else:
-                    lambda_value = float(args.lambda_value)
-            else:
-                lambda_value = "estimate"
-            if args.comparative_command == "maturity":
-                report = assess_comparative_method_maturity(
-                    args.tree,
-                    args.table,
-                    response=args.response,
-                    predictors=list(args.predictors or []),
-                    formula=args.formula,
-                    taxon_column=args.taxon_column,
-                    lambda_value=lambda_value,
-                )
-                outputs = _finalize_outputs(
-                    args, command="comparative", inputs=[args.tree, args.table]
-                )
-                _print_result(
-                    build_command_result(
-                        command="comparative",
-                        inputs=[args.tree, args.table],
-                        outputs=outputs,
-                        warnings=report.warnings,
-                        metrics={
-                            "selected_model": report.selected_model,
-                            "residual_surface_count": len(report.residual_diagnostics),
-                            "influential_taxa": len(
-                                report.sensitivity.influential_taxa
-                            ),
-                            "reference_validation_passed": report.reference_validation_passed,
-                        },
-                        data=report,
-                    ),
-                    json_output=args.json,
-                )
-                return 0
-            if args.comparative_command == "logistic":
-                report = summarize_phylogenetic_logistic(
-                    args.tree,
-                    args.table,
-                    response=args.response,
-                    predictors=list(args.predictors or []),
-                    formula=args.formula,
-                    taxon_column=args.taxon_column,
-                    lambda_value=float(args.lambda_value),
-                )
-                outputs: list[Path | str] = []
-                if args.coefficients_out is not None:
-                    outputs.append(
-                        write_phylogenetic_logistic_coefficient_table(
-                            args.coefficients_out,
-                            report,
-                        )
-                    )
-                if args.fitted_out is not None:
-                    outputs.append(
-                        write_phylogenetic_logistic_fitted_table(
-                            args.fitted_out,
-                            report,
-                        )
-                    )
-                if args.excluded_taxa_out is not None:
-                    outputs.append(
-                        write_phylogenetic_logistic_excluded_taxa_table(
-                            args.excluded_taxa_out,
-                            report,
-                        )
-                    )
-                outputs = _finalize_outputs(
-                    args,
-                    command="comparative",
-                    inputs=[args.tree, args.table],
-                    outputs=outputs,
-                )
-                _print_result(
-                    build_command_result(
-                        command="comparative",
-                        inputs=[args.tree, args.table],
-                        outputs=outputs,
-                        metrics={
-                            "taxon_count": report.taxon_count,
-                            "success_count": report.success_count,
-                            "failure_count": report.failure_count,
-                            "coefficient_count": len(report.coefficients),
-                            "fitted_row_count": len(report.fitted_rows),
-                            "lambda_value": report.lambda_value,
-                            "approximation_method": report.approximation_method,
-                            "converged": report.converged,
-                            "iteration_count": report.iteration_count,
-                            "binomial_log_likelihood": report.binomial_log_likelihood,
-                            "separation_detected": report.separation_detected,
-                            "warning_count": len(report.warnings)
-                            + len(method_tier_warnings(report.method_tier)),
-                            "coefficient_inference_distribution": (
-                                report.coefficients[0].inference_distribution
-                                if report.coefficients
-                                else None
-                            ),
-                            **method_tier_metrics(report.method_tier),
-                        },
-                        warnings=method_tier_warnings(report.method_tier)
-                        + [warning.message for warning in report.warnings],
-                        data=report,
-                    ),
-                    json_output=args.json,
-                )
-                return 0
+            return run_comparative_command(args, parser=parser)
         if args.command == "ancestral":
             return run_ancestral_command(args, parser=parser)
         if args.command == "biogeography":

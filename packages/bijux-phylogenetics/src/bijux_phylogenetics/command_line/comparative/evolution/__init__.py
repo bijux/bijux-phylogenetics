@@ -2,27 +2,27 @@ from __future__ import annotations
 
 from typing import Any
 
-from bijux_phylogenetics.command_line.comparative_evolution.continuous_models import (
+from .continuous_models import (
     add_continuous_model_comparative_evolution_commands,
     run_continuous_model_comparative_evolution_command,
 )
-from bijux_phylogenetics.command_line.comparative_evolution.discrete_models import (
+from .discrete_models import (
     add_discrete_model_comparative_evolution_commands,
     run_discrete_model_comparative_evolution_command,
 )
-from bijux_phylogenetics.command_line.comparative_evolution.disparity_workflows import (
+from .disparity_workflows import (
     add_disparity_workflow_comparative_evolution_commands,
     run_disparity_workflow_comparative_evolution_command,
 )
-from bijux_phylogenetics.command_line.comparative_evolution.model_assessment import (
+from .model_assessment import (
     add_model_assessment_comparative_evolution_commands,
     run_model_assessment_comparative_evolution_command,
 )
-from bijux_phylogenetics.command_line.comparative_evolution.regime_workflows import (
+from .regime_workflows import (
     add_regime_workflow_comparative_evolution_commands,
     run_regime_workflow_comparative_evolution_command,
 )
-from bijux_phylogenetics.command_line.comparative_evolution.trait_dependence import (
+from .trait_dependence import (
     add_trait_dependence_comparative_evolution_commands,
     run_trait_dependence_comparative_evolution_command,
 )
@@ -78,3 +78,9 @@ def run_comparative_evolution_command(
         return disparity_workflow_exit_code
 
     return run_model_assessment_comparative_evolution_command(args, parser=parser)
+
+
+__all__ = [
+    "add_comparative_evolution_commands",
+    "run_comparative_evolution_command",
+]
