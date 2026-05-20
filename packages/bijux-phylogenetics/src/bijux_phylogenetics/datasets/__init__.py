@@ -286,7 +286,7 @@ from .vertebrates import (
     run_gnathostome_ortholog_protein_benchmark_workflow,
     write_gnathostome_ortholog_protein_benchmark_workflow_bundle,
 )
-from .viruses import (
+from .influenza_a_ha_reference import (
     InfluenzaAHAReferenceDataset,
     InfluenzaAHAReferenceDatasetExportResult,
     InfluenzaAHAReferenceDemoResult,
