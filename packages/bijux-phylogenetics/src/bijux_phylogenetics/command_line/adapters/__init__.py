@@ -15,12 +15,19 @@ from .inference import (
     add_inference_adapter_commands,
     run_inference_adapter_command,
 )
+from .inspection import (
+    add_adapter_inspection_commands,
+    run_adapter_inspection_command,
+)
 from .mrbayes import (
     add_mrbayes_adapter_commands,
     run_mrbayes_adapter_command,
 )
+from .reporting import (
+    add_adapter_reporting_commands,
+    run_adapter_reporting_command,
+)
 from bijux_phylogenetics.command_line.arguments import (
-    _adapter_version_args,
     _add_external_adapter_execution_arguments,
     _add_manifest_argument,
 )
@@ -30,8 +37,6 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.engines import (
     list_mafft_alignment_modes,
     list_trimal_trimming_modes,
-    read_engine_version,
-    render_inference_workflow_report,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
@@ -52,27 +57,8 @@ def add_adapter_commands(subparsers: Any) -> None:
         get_command_spec("adapter").name, help=get_command_spec("adapter").summary
     )
     adapter_subparsers = adapter.add_subparsers(dest="adapter_command", required=True)
-    adapter_inspect = adapter_subparsers.add_parser(
-        "inspect", help="Report external engine version metadata."
-    )
-    adapter_inspect.add_argument(
-        "engine_name", choices=("mafft", "trimal", "iqtree", "FastTree", "MrBayes")
-    )
-    adapter_inspect.add_argument("--executable", type=str)
-    adapter_inspect.add_argument(
-        "--json", action="store_true", help="Emit the adapter report as JSON."
-    )
-    _add_manifest_argument(adapter_inspect)
-
-    adapter_report = adapter_subparsers.add_parser(
-        "report", help="Render an HTML report from an engine workflow manifest."
-    )
-    adapter_report.add_argument("manifest_path", type=Path)
-    adapter_report.add_argument("--out", required=True, type=Path)
-    adapter_report.add_argument(
-        "--json", action="store_true", help="Emit the report build result as JSON."
-    )
-    _add_manifest_argument(adapter_report)
+    add_adapter_inspection_commands(adapter_subparsers)
+    add_adapter_reporting_commands(adapter_subparsers)
 
     adapter_align = adapter_subparsers.add_parser(
         "align", help="Run multiple-sequence alignment on unaligned FASTA."
@@ -294,47 +280,12 @@ def add_adapter_commands(subparsers: Any) -> None:
 def run_adapter_command(args: Any) -> int | None:
     if args.command != "adapter":
         return None
-    if args.adapter_command == "inspect":
-        executable = args.executable or args.engine_name
-        report = read_engine_version(
-            args.engine_name,
-            executable,
-            version_args=_adapter_version_args(args.engine_name),
-        )
-        outputs = _finalize_outputs(args, command="adapter", inputs=[args.engine_name])
-        _print_result(
-            build_command_result(
-                command="adapter",
-                inputs=[args.engine_name],
-                outputs=outputs,
-                metrics={"version_line_count": len(report.text.splitlines())},
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
-    if args.adapter_command == "report":
-        report = render_inference_workflow_report(
-            manifest_path=args.manifest_path,
-            out_path=args.out,
-        )
-        outputs = _finalize_outputs(
-            args,
-            command="adapter",
-            inputs=[args.manifest_path],
-            outputs=[report.output_path],
-        )
-        _print_result(
-            build_command_result(
-                command="adapter",
-                inputs=[args.manifest_path],
-                outputs=outputs,
-                metrics={"warning_count": report.warning_count},
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
+    inspection_exit_code = run_adapter_inspection_command(args)
+    if inspection_exit_code is not None:
+        return inspection_exit_code
+    reporting_exit_code = run_adapter_reporting_command(args)
+    if reporting_exit_code is not None:
+        return reporting_exit_code
     if args.adapter_command == "align":
         if args.codon_aware:
             report = run_codon_aware_multiple_sequence_alignment(
