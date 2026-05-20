@@ -15,7 +15,6 @@ from bijux_phylogenetics.compare.influence import (
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
     compare_clade_overlap,
-    compare_support_values,
     compare_topology_distance,
     compare_tree_paths,
     detect_clade_changes,
@@ -23,7 +22,6 @@ from bijux_phylogenetics.compare.topology import (
     write_clade_overlap_table,
     write_shared_taxa_pruning_table,
     write_shared_taxa_removed_taxa_table,
-    write_support_comparison_table,
     write_topology_distance_split_table,
     write_tree_comparison_table,
 )
@@ -31,6 +29,7 @@ from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.runtime.results import build_command_result
 
 from .presentation import run_compare_presentation_command
+from .support import run_compare_support_command
 
 
 def add_compare_command(subparsers: Any) -> None:
@@ -75,63 +74,9 @@ def run_compare_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
     presentation_result = run_compare_presentation_command(args, parser=parser)
     if presentation_result is not None:
         return presentation_result
-
-    if args.left == "support":
-        if args.third is None:
-            parser.exit(status=2, message="compare support requires two tree paths\n")
-        left_path = Path(args.right)
-        right_path = Path(args.third)
-        report = compare_support_values(left_path, right_path)
-        output_paths: list[Path | str] = []
-        if args.out is not None:
-            output_paths.append(
-                write_support_comparison_table(args.out, left_path, right_path)
-            )
-        outputs = _finalize_outputs(
-            args,
-            command="compare",
-            inputs=[left_path, right_path],
-            outputs=output_paths,
-        )
-        _print_result(
-            build_command_result(
-                command="compare",
-                inputs=[left_path, right_path],
-                outputs=outputs,
-                metrics={
-                    "shared_clades": len(report.shared_clades),
-                    "support_disagreements": sum(
-                        1
-                        for row in report.shared_clades
-                        if row.support_disagreement
-                    ),
-                    "high_support_conflicts": sum(
-                        1
-                        for row in report.conflicting_clades
-                        if row.conflict_classification == "high_support_conflict"
-                    ),
-                    "low_support_disagreements": sum(
-                        1
-                        for row in report.conflicting_clades
-                        if row.conflict_classification == "low_support_disagreement"
-                    ),
-                    "moderate_support_disagreements": sum(
-                        1
-                        for row in report.conflicting_clades
-                        if row.conflict_classification
-                        == "moderate_support_disagreement"
-                    ),
-                    "support_unavailable_conflicts": sum(
-                        1
-                        for row in report.conflicting_clades
-                        if row.conflict_classification == "support_unavailable"
-                    ),
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
+    support_result = run_compare_support_command(args, parser=parser)
+    if support_result is not None:
+        return support_result
 
     if args.left == "influence":
         if args.third is None:
