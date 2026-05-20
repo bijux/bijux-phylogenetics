@@ -6,7 +6,7 @@ from bijux_phylogenetics.trees import extract_tree_clades, write_clade_table
 from bijux_phylogenetics.datasets.rabies_host_geography import (
     load_rabies_cross_host_geography_panel_dataset,
 )
-from bijux_phylogenetics.host_association.host_switching import (
+from bijux_phylogenetics.ecology.host_switching import (
     summarize_host_switching,
     write_host_switch_branch_table,
 )

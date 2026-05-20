@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import shutil
 
-from bijux_phylogenetics.host_association import (
+from bijux_phylogenetics.ecology import (
     HostSwitchingReport,
     summarize_host_switching,
     write_host_state_node_table,

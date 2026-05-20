@@ -16,7 +16,7 @@ from bijux_phylogenetics.comparative.ou_trait_evolution import (
 )
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.distance import build_distance_tree
-from bijux_phylogenetics.host_association import summarize_host_switching
+from bijux_phylogenetics.ecology import summarize_host_switching
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 
 from .models import (

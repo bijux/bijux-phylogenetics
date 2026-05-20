@@ -110,7 +110,7 @@ from bijux_phylogenetics.engines.fasta_to_tree import (
     FastaToTreeWorkflowReport,
     run_fasta_to_tree_workflow,
 )
-from bijux_phylogenetics.host_association import (
+from bijux_phylogenetics.ecology import (
     HostSwitchingReport,
     summarize_host_switching,
     write_host_state_node_table,
@@ -691,4 +691,3 @@ def _stabilize_clade_report(
             for row in report.rows
         ],
     )
-

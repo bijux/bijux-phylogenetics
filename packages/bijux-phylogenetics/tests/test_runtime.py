@@ -300,7 +300,7 @@ from bijux_phylogenetics.distance import (
     summarize_distance_bootstrap_support,
     validate_imported_distance_matrix,
 )
-from bijux_phylogenetics.ecological_niche import (
+from bijux_phylogenetics.ecology import (
     summarize_niche_transitions,
     write_niche_transition_summary_table,
 )
@@ -324,7 +324,7 @@ from bijux_phylogenetics.evidence.bundles import (
     bundle_file_paths,
     validate_bundle,
 )
-from bijux_phylogenetics.host_association import (
+from bijux_phylogenetics.ecology import (
     summarize_host_switching,
     write_host_switch_summary_table,
 )
@@ -545,8 +545,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     import bijux_phylogenetics.core.tree_distance as tree_distance_api
     import bijux_phylogenetics.core.ultrametric as ultrametric_api
     import bijux_phylogenetics.distance as distance_api
-    import bijux_phylogenetics.ecological_niche as ecological_niche_api
-    import bijux_phylogenetics.host_association as host_association_api
+    import bijux_phylogenetics.ecology as ecology_api
     import bijux_phylogenetics.io.fasta as fasta_api
     import bijux_phylogenetics.phylogeography as phylogeography_api
     import bijux_phylogenetics.trees as trees_api
@@ -655,17 +654,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         biogeography_api.write_geographic_transition_event_table
         is write_geographic_transition_event_table
     )
-    assert host_association_api.summarize_host_switching is summarize_host_switching
+    assert ecology_api.summarize_host_switching is summarize_host_switching
     assert (
-        host_association_api.write_host_switch_summary_table
+        ecology_api.write_host_switch_summary_table
         is write_host_switch_summary_table
     )
+    assert ecology_api.summarize_niche_transitions is summarize_niche_transitions
     assert (
-        ecological_niche_api.summarize_niche_transitions
-        is summarize_niche_transitions
-    )
-    assert (
-        ecological_niche_api.write_niche_transition_summary_table
+        ecology_api.write_niche_transition_summary_table
         is write_niche_transition_summary_table
     )
     assert (

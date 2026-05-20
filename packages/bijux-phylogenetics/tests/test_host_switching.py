@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.host_association import (
+from bijux_phylogenetics.ecology import (
     summarize_host_switching,
     write_host_state_node_table,
     write_host_switch_branch_table,

@@ -16,7 +16,7 @@ from bijux_phylogenetics.comparative.ou_trait_evolution import (
 )
 from bijux_phylogenetics.compare.topology import TreeComparisonReport
 from bijux_phylogenetics.distance import DistanceTreeBuildReport
-from bijux_phylogenetics.host_association import HostSwitchingReport
+from bijux_phylogenetics.ecology import HostSwitchingReport
 
 DATASET_ID = "known_answer_reference_panel"
 DATASET_LABEL = "Known-answer simulation reference panel"

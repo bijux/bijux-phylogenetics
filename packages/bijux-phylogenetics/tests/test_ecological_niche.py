@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.ecological_niche import (
+from bijux_phylogenetics.ecology import (
     summarize_niche_transitions,
     write_niche_state_node_table,
     write_niche_transition_branch_table,

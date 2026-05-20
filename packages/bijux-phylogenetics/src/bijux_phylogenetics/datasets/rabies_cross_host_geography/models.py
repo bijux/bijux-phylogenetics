@@ -31,7 +31,7 @@ if TYPE_CHECKING:
         ConclusionStabilityReport,
     )
     from bijux_phylogenetics.engines.fasta_to_tree import FastaToTreeWorkflowReport
-    from bijux_phylogenetics.host_association import HostSwitchingReport
+    from bijux_phylogenetics.ecology import HostSwitchingReport
 
 _DATASET_ID = "rabies_cross_host_geography_panel"
 _DATASET_LABEL = "Rabies cross-host geography panel"

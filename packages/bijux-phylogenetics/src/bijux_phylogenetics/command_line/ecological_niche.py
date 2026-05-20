@@ -7,7 +7,7 @@ from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.ecological_niche import (
+from bijux_phylogenetics.ecology import (
     summarize_niche_transitions,
     write_niche_state_node_table,
     write_niche_transition_branch_table,

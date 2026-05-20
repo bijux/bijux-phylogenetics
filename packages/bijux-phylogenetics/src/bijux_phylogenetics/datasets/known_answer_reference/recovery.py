@@ -12,7 +12,7 @@ from bijux_phylogenetics.comparative.ou_trait_evolution import (
     OUTraitEvolutionSummaryReport,
 )
 from bijux_phylogenetics.compare.topology import TreeComparisonReport
-from bijux_phylogenetics.host_association import HostSwitchingReport
+from bijux_phylogenetics.ecology import HostSwitchingReport
 
 from .models import (
     KnownAnswerContinuousNodeRecoveryRow,
