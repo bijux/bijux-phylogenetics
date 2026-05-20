@@ -27,7 +27,7 @@ from bijux_phylogenetics.trees import (
     summarize_uncertainty_aware_conclusions,
 )
 
-from .fixtures import (
+from ..fixtures import (
     LARGE_ALIGNMENT_SCALING_CLASSES,
     LARGE_TREE_SCALING_TIP_COUNTS,
     LARGE_TREE_SET_SCALING_CLASSES,
@@ -37,12 +37,12 @@ from .fixtures import (
     write_named_balanced_tree,
     write_trimal_benchmark_fixture,
 )
-from .measurement import (
+from ..measurement import (
     measure,
     measure_large_alignment_observation,
     measure_large_tree_set_observation,
 )
-from .contracts import (
+from ..contracts import (
     BenchmarkObservation,
     LargeAlignmentScalingBenchmarkReport,
     LargeAlignmentScalingObservation,

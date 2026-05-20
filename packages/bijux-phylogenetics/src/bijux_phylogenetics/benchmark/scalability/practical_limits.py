@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from .measurement import max_peak_memory_bytes, max_runtime_seconds
-from .contracts import (
+from ..measurement import max_peak_memory_bytes, max_runtime_seconds
+from ..contracts import (
     LargeAlignmentScalingBenchmarkReport,
     LargeDatasetStressObservation,
     LargeDatasetStressSuiteReport,
@@ -10,12 +10,12 @@ from .contracts import (
     WorkflowPracticalLimitEntry,
     WorkflowPracticalLimitReport,
 )
-from .scaling_benchmarks import (
+from .scaling import (
     benchmark_large_alignment_scaling,
     benchmark_large_tree_scaling,
     benchmark_large_tree_set_scaling,
 )
-from .stress_benchmarks import benchmark_large_dataset_stress_suite
+from .stress import benchmark_large_dataset_stress_suite
 
 
 def _large_tree_limit_entries(

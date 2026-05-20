@@ -32,7 +32,11 @@ from .contracts import (
     _StressObservationPayload as _StressObservationPayload,
     _StressTierConfig as _StressTierConfig,
 )
-from .practical_limits import (
+from .scalability import (
+    benchmark_large_alignment_scaling as benchmark_large_alignment_scaling,
+    benchmark_large_dataset_stress_suite as benchmark_large_dataset_stress_suite,
+    benchmark_large_tree_scaling as benchmark_large_tree_scaling,
+    benchmark_large_tree_set_scaling as benchmark_large_tree_set_scaling,
     benchmark_workflow_practical_limits as benchmark_workflow_practical_limits,
 )
 from .macroevolution import (
@@ -58,14 +62,6 @@ from .review_benchmarks import (
     benchmark_tree_comparison as benchmark_tree_comparison,
     benchmark_tree_set_consensus as benchmark_tree_set_consensus,
     benchmark_tree_validation as benchmark_tree_validation,
-)
-from .scaling_benchmarks import (
-    benchmark_large_alignment_scaling as benchmark_large_alignment_scaling,
-    benchmark_large_tree_scaling as benchmark_large_tree_scaling,
-    benchmark_large_tree_set_scaling as benchmark_large_tree_set_scaling,
-)
-from .stress_benchmarks import (
-    benchmark_large_dataset_stress_suite as benchmark_large_dataset_stress_suite,
 )
 
 __all__ = [
