@@ -147,21 +147,31 @@ _PUBLIC_SURFACES = (
         ),
     ),
     (
-        "service",
+        "comparison",
         (
-            "AncestralStateReportBuildResult",
             "ContinuousAncestralComparisonReport",
             "ContinuousAncestralComparisonRow",
-            "ContinuousEvolutionaryModeAncestralReport",
             "DiscreteAncestralPairComparisonReport",
             "DiscreteAncestralPairComparisonRow",
             "compare_continuous_ancestral_models",
             "compare_discrete_ancestral_reconstructions",
+            "write_discrete_ancestral_comparison_table",
+        ),
+    ),
+    (
+        "continuous.mode_reconstruction",
+        (
+            "ContinuousEvolutionaryModeAncestralReport",
             "reconstruct_continuous_evolutionary_mode_states",
+        ),
+    ),
+    (
+        "presentation.report_rendering",
+        (
+            "AncestralStateReportBuildResult",
             "render_ancestral_state_report",
             "render_ancestral_state_tree",
             "write_ancestral_state_table",
-            "write_discrete_ancestral_comparison_table",
         ),
     ),
     (

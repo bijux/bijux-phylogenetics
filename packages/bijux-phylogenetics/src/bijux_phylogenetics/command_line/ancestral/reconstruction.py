@@ -24,11 +24,13 @@ from bijux_phylogenetics.ancestral.discrete import (
 from bijux_phylogenetics.ancestral.discrete.review import (
     validate_discrete_ancestral_reference_examples,
 )
-from bijux_phylogenetics.ancestral.service import (
+from bijux_phylogenetics.ancestral.comparison import (
     compare_continuous_ancestral_models,
     compare_discrete_ancestral_reconstructions,
-    write_ancestral_state_table,
     write_discrete_ancestral_comparison_table,
+)
+from bijux_phylogenetics.ancestral.presentation.report_rendering import (
+    write_ancestral_state_table,
 )
 from bijux_phylogenetics.command_line.arguments import (
     _add_manifest_argument,

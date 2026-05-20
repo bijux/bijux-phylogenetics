@@ -8,7 +8,7 @@ from bijux_phylogenetics.ancestral.continuous import (
     reconstruct_continuous_ancestral_states,
 )
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
-from bijux_phylogenetics.ancestral.service import (
+from bijux_phylogenetics.ancestral.comparison import (
     compare_continuous_ancestral_models,
     compare_continuous_ancestral_trees,
     compare_discrete_ancestral_reconstructions,

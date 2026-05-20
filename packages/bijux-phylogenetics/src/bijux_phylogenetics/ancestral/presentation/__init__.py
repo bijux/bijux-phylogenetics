@@ -27,6 +27,15 @@ _PUBLIC_SURFACES = (
         ),
     ),
     (
+        "report_rendering",
+        (
+            "AncestralStateReportBuildResult",
+            "render_ancestral_state_report",
+            "render_ancestral_state_tree",
+            "write_ancestral_state_table",
+        ),
+    ),
+    (
         "figure_bundle",
         (
             "AncestralFigurePackageResult",

@@ -34,7 +34,7 @@ from bijux_phylogenetics.ancestral.presentation.methods_text import (
     AncestralMethodsSummaryTextResult,
     write_ancestral_methods_summary_text,
 )
-from bijux_phylogenetics.ancestral.service import (
+from bijux_phylogenetics.ancestral.presentation.report_rendering import (
     render_ancestral_state_report,
     write_ancestral_state_table,
 )

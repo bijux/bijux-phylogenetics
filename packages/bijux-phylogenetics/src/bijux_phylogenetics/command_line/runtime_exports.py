@@ -65,12 +65,14 @@ from bijux_phylogenetics.ancestral.sensitivity import (
     write_ancestral_root_sensitivity_node_table,
     write_ancestral_root_sensitivity_summary_table,
 )
-from bijux_phylogenetics.ancestral.service import (
+from bijux_phylogenetics.ancestral.comparison import (
     compare_continuous_ancestral_models,
     compare_discrete_ancestral_reconstructions,
+    write_discrete_ancestral_comparison_table,
+)
+from bijux_phylogenetics.ancestral.presentation.report_rendering import (
     render_ancestral_state_report,
     write_ancestral_state_table,
-    write_discrete_ancestral_comparison_table,
 )
 from bijux_phylogenetics.ancestral.discrete.review import (
     summarize_ancestral_transition_report,

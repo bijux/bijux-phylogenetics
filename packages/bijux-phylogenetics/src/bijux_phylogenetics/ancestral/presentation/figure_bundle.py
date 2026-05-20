@@ -16,7 +16,9 @@ from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
     write_discrete_ancestral_probability_table,
 )
-from bijux_phylogenetics.ancestral.service import write_ancestral_state_table
+from bijux_phylogenetics.ancestral.presentation.report_rendering import (
+    write_ancestral_state_table,
+)
 from bijux_phylogenetics.ancestral.presentation.visualization import (
     render_ancestral_state_visualization,
 )

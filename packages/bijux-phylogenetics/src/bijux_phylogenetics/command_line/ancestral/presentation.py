@@ -13,7 +13,9 @@ from bijux_phylogenetics.ancestral.presentation import build_ancestral_figure_pa
 from bijux_phylogenetics.ancestral.presentation import (
     build_ancestral_report_package,
 )
-from bijux_phylogenetics.ancestral.service import render_ancestral_state_report
+from bijux_phylogenetics.ancestral.presentation.report_rendering import (
+    render_ancestral_state_report,
+)
 from bijux_phylogenetics.ancestral.presentation import (
     render_ancestral_state_visualization,
 )

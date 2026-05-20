@@ -8,6 +8,10 @@ from .models import (
     ContinuousAncestralReport,
     ContinuousAncestralSummary,
 )
+from .mode_reconstruction import (
+    ContinuousEvolutionaryModeAncestralReport,
+    reconstruct_continuous_evolutionary_mode_states,
+)
 from .reconstruction import (
     reconstruct_continuous_ancestral_states,
     reconstruct_continuous_ancestral_states_from_dataset,
@@ -24,10 +28,12 @@ __all__ = [
     "ContinuousAncestralBrownianFitDiagnostics",
     "ContinuousAncestralEstimate",
     "ContinuousAncestralExclusion",
+    "ContinuousEvolutionaryModeAncestralReport",
     "ContinuousAncestralOptimizerDiagnostics",
     "ContinuousAncestralReport",
     "ContinuousAncestralSummary",
     "continuous_ancestral_exclusions",
+    "reconstruct_continuous_evolutionary_mode_states",
     "reconstruct_continuous_ancestral_states",
     "reconstruct_continuous_ancestral_states_from_dataset",
     "summarize_continuous_ancestral_report",
