@@ -1,11 +1,10 @@
+"""Curated public API for simulation workflows and generated truth ledgers."""
+
 from __future__ import annotations
 
-import math
-from math import sqrt
-from pathlib import Path
-import random
+from importlib import import_module
+from typing import TYPE_CHECKING, Any
 
-from bijux_phylogenetics.core.tree import PhyloTree
 from .models import (
     AlignmentSimulationReport,
     ContinuousTraitSimulationCollectionReport,
@@ -29,639 +28,132 @@ from .models import (
     TreeSimulationEnvelopeMetric,
     TreeSimulationReport,
 )
-from .discrete_policy import (
-    _normalize_discrete_states,
-    _normalize_root_state_probabilities,
-)
-from .propagation import (
-    _iter_node_trait_values,
-    _iter_tip_trait_values,
-    _resolve_brownian_sigma_parameters,
-    _simulate_brownian_node_values,
-    _tip_values_from_node_map,
-)
-from .statistics import (
-    _mean,
-    _median,
-    _population_standard_deviation,
-    _round_float,
-    _sample_correlation,
-    _sample_covariance,
-    _sample_standard_deviation,
-)
-from .stochastic import _poisson_count
 
+_PUBLIC_NAME_TO_MODULE = {
+    "simulate_birth_death_trees": ".trees",
+    "simulate_coalescent_tree": ".trees",
+    "simulate_coalescent_trees": ".trees",
+    "simulate_random_tree": ".trees",
+    "simulate_random_trees": ".trees",
+    "write_simulated_tree": ".trees",
+    "write_tree_set": ".trees",
+    "write_tree_simulation_envelope_table": ".trees",
+    "write_tree_simulation_record_table": ".trees",
+    "simulate_brownian_trait_collection": ".continuous",
+    "simulate_brownian_traits": ".continuous",
+    "simulate_early_burst_traits": ".continuous",
+    "simulate_ou_traits": ".continuous",
+    "simulate_speciational_trait_collection": ".continuous",
+    "simulate_speciational_traits": ".continuous",
+    "write_continuous_trait_collection_summary_table": ".continuous",
+    "write_continuous_trait_collection_table": ".continuous",
+    "write_continuous_trait_table": ".continuous",
+    "simulate_correlated_brownian_trait_collection": ".correlated",
+    "simulate_correlated_brownian_traits": ".correlated",
+    "write_correlated_continuous_trait_collection_summary_table": ".correlated",
+    "write_correlated_continuous_trait_collection_table": ".correlated",
+    "write_correlated_continuous_trait_table": ".correlated",
+    "simulate_discrete_traits": ".discrete_traits",
+    "write_discrete_trait_table": ".discrete_traits",
+    "simulate_discrete_histories": ".discrete_histories",
+    "write_discrete_history_branch_truth_table": ".discrete_histories",
+    "write_discrete_history_event_table": ".discrete_histories",
+    "write_discrete_history_node_truth_table": ".discrete_histories",
+    "write_discrete_history_segment_table": ".discrete_histories",
+    "write_discrete_history_summary_table": ".discrete_histories",
+    "write_discrete_history_tip_truth_table": ".discrete_histories",
+    "simulate_dna_alignment": ".alignment",
+    "simulate_protein_alignment": ".alignment",
+    "write_simulated_alignment": ".alignment",
+    "validate_geiger_sim_char_reference_examples": ".geiger_sim_char_reference",
+}
 
-def simulate_birth_death_trees(
-    *,
-    tree_count: int,
-    tip_count: int,
-    birth_rate: float = 1.0,
-    death_rate: float = 0.25,
-    seed: int = 1,
-    taxon_prefix: str = "Taxon",
-) -> tuple[list[PhyloTree], TreeSimulationReport]:
-    from .trees import simulate_birth_death_trees as simulate_birth_death_trees_impl
+__all__ = [
+    "AlignmentSimulationReport",
+    "ContinuousTraitSimulationCollectionReport",
+    "ContinuousTraitSimulationReport",
+    "ContinuousTraitSimulationSummaryRow",
+    "CorrelatedContinuousTraitSimulationCollectionReport",
+    "CorrelatedContinuousTraitSimulationReport",
+    "DiscreteHistoryRateRow",
+    "DiscreteHistorySimulationCollectionReport",
+    "DiscreteHistorySummaryRow",
+    "DiscreteTraitSimulationReport",
+    "SimulatedContinuousNode",
+    "SimulatedContinuousTrait",
+    "SimulatedCorrelatedContinuousTrait",
+    "SimulatedDiscreteBranchHistory",
+    "SimulatedDiscreteNode",
+    "SimulatedDiscreteStateSegment",
+    "SimulatedDiscreteTrait",
+    "SimulatedDiscreteTransitionEvent",
+    "SimulatedTreeRecord",
+    "TreeSimulationEnvelopeMetric",
+    "TreeSimulationReport",
+    *_PUBLIC_NAME_TO_MODULE,
+]
 
-    return simulate_birth_death_trees_impl(
-        tree_count=tree_count,
-        tip_count=tip_count,
-        birth_rate=birth_rate,
-        death_rate=death_rate,
-        seed=seed,
-        taxon_prefix=taxon_prefix,
-    )
-
-
-def simulate_random_trees(
-    *,
-    tree_count: int,
-    tip_count: int,
-    seed: int = 1,
-    taxon_prefix: str = "Taxon",
-    branch_length_model: str = "uniform",
-) -> tuple[list[PhyloTree], TreeSimulationReport]:
-    from .trees import simulate_random_trees as simulate_random_trees_impl
-
-    return simulate_random_trees_impl(
-        tree_count=tree_count,
-        tip_count=tip_count,
-        seed=seed,
-        taxon_prefix=taxon_prefix,
-        branch_length_model=branch_length_model,
-    )
-
-
-def simulate_random_tree(
-    *,
-    tip_count: int,
-    seed: int = 1,
-    taxon_prefix: str = "Taxon",
-    branch_length_model: str = "uniform",
-) -> tuple[PhyloTree, TreeSimulationReport]:
-    from .trees import simulate_random_tree as simulate_random_tree_impl
-
-    return simulate_random_tree_impl(
-        tip_count=tip_count,
-        seed=seed,
-        taxon_prefix=taxon_prefix,
-        branch_length_model=branch_length_model,
-)
-def _simulate_symmetric_state_trajectory(
-    state: str,
-    *,
-    branch_length: float,
-    rate: float,
-    states: tuple[str, ...],
-    rng: random.Random,
-) -> tuple[
-    str,
-    list[SimulatedDiscreteTransitionEvent],
-    list[SimulatedDiscreteStateSegment],
-]:
-    if rate < 0.0:
-        raise ValueError(f"rate must be nonnegative, got {rate}")
-    next_state = state
-    event_states: list[tuple[str, str]] = []
-    segment_boundaries = [0.0]
-    for _ in range(_poisson_count(rate * branch_length, rng)):
-        alternatives = [candidate for candidate in states if candidate != next_state]
-        candidate = rng.choice(alternatives)
-        event_states.append((next_state, candidate))
-        next_state = candidate
-    if event_states:
-        event_distances = [
-            branch_length * index / (len(event_states) + 1)
-            for index in range(1, len(event_states) + 1)
-        ]
-        segment_boundaries.extend(event_distances)
-    segment_boundaries.append(branch_length)
-    events: list[SimulatedDiscreteTransitionEvent] = []
-    segments: list[SimulatedDiscreteStateSegment] = []
-    current_state = state
-    parent_node = ""
-    child_node = ""
-    for index, (start_distance, end_distance) in enumerate(
-        zip(segment_boundaries[:-1], segment_boundaries[1:], strict=True),
-        start=1,
-    ):
-        segments.append(
-            SimulatedDiscreteStateSegment(
-                parent_node=parent_node,
-                child_node=child_node,
-                state=current_state,
-                start_distance=_round_float(start_distance),
-                end_distance=_round_float(end_distance),
-                duration=_round_float(max(end_distance - start_distance, 0.0)),
-            )
-        )
-        if index <= len(event_states):
-            source_state, target_state = event_states[index - 1]
-            events.append(
-                SimulatedDiscreteTransitionEvent(
-                    parent_node=parent_node,
-                    child_node=child_node,
-                    source_state=source_state,
-                    target_state=target_state,
-                    event_index=index,
-                    branch_distance=_round_float(end_distance),
-                )
-            )
-            current_state = target_state
-    return next_state, events, segments
-
-
-def simulate_discrete_histories(
-    tree_path: Path,
-    *,
-    states: list[str],
-    rate_rows: list[DiscreteHistoryRateRow],
-    root_state: str | None = None,
-    root_state_probabilities: dict[str, float] | None = None,
-    transform: str | None = None,
-    transform_parameter_value: float | None = None,
-    replicates: int = 1,
-    seed: int = 1,
-) -> DiscreteHistorySimulationCollectionReport:
-    from .discrete_histories import (
-        simulate_discrete_histories as simulate_discrete_histories_impl,
-    )
-
-    return simulate_discrete_histories_impl(
-        tree_path,
-        states=states,
-        rate_rows=rate_rows,
-        root_state=root_state,
-        root_state_probabilities=root_state_probabilities,
-        transform=transform,
-        transform_parameter_value=transform_parameter_value,
-        replicates=replicates,
-        seed=seed,
-    )
-
-
-def simulate_coalescent_trees(
-    *,
-    tree_count: int,
-    tip_count: int,
-    population_size: float = 1.0,
-    seed: int = 1,
-    taxon_prefix: str = "Taxon",
-) -> tuple[list[PhyloTree], TreeSimulationReport]:
-    from .trees import simulate_coalescent_trees as simulate_coalescent_trees_impl
-
-    return simulate_coalescent_trees_impl(
-        tree_count=tree_count,
-        tip_count=tip_count,
-        population_size=population_size,
-        seed=seed,
-        taxon_prefix=taxon_prefix,
-    )
-
-
-def simulate_coalescent_tree(
-    *,
-    tip_count: int,
-    population_size: float = 1.0,
-    seed: int = 1,
-    taxon_prefix: str = "Taxon",
-) -> tuple[PhyloTree, TreeSimulationReport]:
-    from .trees import simulate_coalescent_tree as simulate_coalescent_tree_impl
-
-    return simulate_coalescent_tree_impl(
-        tip_count=tip_count,
-        population_size=population_size,
-        seed=seed,
-        taxon_prefix=taxon_prefix,
-    )
-
-
-def simulate_brownian_traits(
-    tree_path: Path,
-    *,
-    root_state: float = 0.0,
-    sigma: float | None = None,
-    sigma_squared: float | None = None,
-    seed: int = 1,
-) -> ContinuousTraitSimulationReport:
-    from .continuous import simulate_brownian_traits as simulate_brownian_traits_impl
-
-    return simulate_brownian_traits_impl(
-        tree_path,
-        root_state=root_state,
-        sigma=sigma,
-        sigma_squared=sigma_squared,
-        seed=seed,
-    )
-
-
-def simulate_ou_traits(
-    tree_path: Path,
-    *,
-    root_state: float = 0.0,
-    sigma: float = 1.0,
-    alpha: float = 1.0,
-    theta: float = 0.0,
-    seed: int = 1,
-) -> ContinuousTraitSimulationReport:
-    from .continuous import simulate_ou_traits as simulate_ou_traits_impl
-
-    return simulate_ou_traits_impl(
-        tree_path,
-        root_state=root_state,
-        sigma=sigma,
-        alpha=alpha,
-        theta=theta,
-        seed=seed,
-    )
-
-
-def simulate_early_burst_traits(
-    tree_path: Path,
-    *,
-    root_state: float = 0.0,
-    sigma: float = 1.0,
-    rate_change: float = 1.0,
-    seed: int = 1,
-) -> ContinuousTraitSimulationReport:
-    from .continuous import (
-        simulate_early_burst_traits as simulate_early_burst_traits_impl,
-    )
-
-    return simulate_early_burst_traits_impl(
-        tree_path,
-        root_state=root_state,
-        sigma=sigma,
-        rate_change=rate_change,
-        seed=seed,
-    )
-
-
-def simulate_speciational_traits(
-    tree_path: Path,
-    *,
-    root_state: float = 0.0,
-    sigma: float | None = None,
-    sigma_squared: float | None = None,
-    seed: int = 1,
-) -> ContinuousTraitSimulationReport:
-    from .continuous import (
-        simulate_speciational_traits as simulate_speciational_traits_impl,
-    )
-
-    return simulate_speciational_traits_impl(
-        tree_path,
-        root_state=root_state,
-        sigma=sigma,
-        sigma_squared=sigma_squared,
-        seed=seed,
-    )
-
-
-def simulate_brownian_trait_collection(
-    tree_path: Path,
-    *,
-    root_state: float = 0.0,
-    sigma: float | None = None,
-    sigma_squared: float | None = None,
-    replicates: int = 128,
-    seed: int = 1,
-) -> ContinuousTraitSimulationCollectionReport:
-    from .continuous import (
-        simulate_brownian_trait_collection as simulate_brownian_trait_collection_impl,
-    )
-
-    return simulate_brownian_trait_collection_impl(
-        tree_path,
-        root_state=root_state,
-        sigma=sigma,
-        sigma_squared=sigma_squared,
-        replicates=replicates,
-        seed=seed,
-    )
-
-
-def simulate_speciational_trait_collection(
-    tree_path: Path,
-    *,
-    root_state: float = 0.0,
-    sigma: float | None = None,
-    sigma_squared: float | None = None,
-    replicates: int = 128,
-    seed: int = 1,
-) -> ContinuousTraitSimulationCollectionReport:
-    from .continuous import (
-        simulate_speciational_trait_collection as simulate_speciational_trait_collection_impl,
-    )
-
-    return simulate_speciational_trait_collection_impl(
-        tree_path,
-        root_state=root_state,
-        sigma=sigma,
-        sigma_squared=sigma_squared,
-        replicates=replicates,
-        seed=seed,
-    )
-
-
-def simulate_correlated_brownian_traits(
-    tree_path: Path,
-    *,
-    trait_names: list[str] | tuple[str, ...],
-    evolutionary_covariance_matrix: list[list[float]]
-    | tuple[tuple[float, ...], ...]
-    | None = None,
-    evolutionary_correlation_matrix: list[list[float]]
-    | tuple[tuple[float, ...], ...]
-    | None = None,
-    trait_standard_deviations: list[float] | tuple[float, ...] | None = None,
-    root_states: list[float] | tuple[float, ...] | None = None,
-    seed: int = 1,
-) -> CorrelatedContinuousTraitSimulationReport:
-    from .correlated import (
-        simulate_correlated_brownian_traits as simulate_correlated_brownian_traits_impl,
-    )
-
-    return simulate_correlated_brownian_traits_impl(
-        tree_path,
-        trait_names=trait_names,
-        evolutionary_covariance_matrix=evolutionary_covariance_matrix,
-        evolutionary_correlation_matrix=evolutionary_correlation_matrix,
-        trait_standard_deviations=trait_standard_deviations,
-        root_states=root_states,
-        seed=seed,
-    )
-
-
-def simulate_correlated_brownian_trait_collection(
-    tree_path: Path,
-    *,
-    trait_names: list[str] | tuple[str, ...],
-    evolutionary_covariance_matrix: list[list[float]]
-    | tuple[tuple[float, ...], ...]
-    | None = None,
-    evolutionary_correlation_matrix: list[list[float]]
-    | tuple[tuple[float, ...], ...]
-    | None = None,
-    trait_standard_deviations: list[float] | tuple[float, ...] | None = None,
-    root_states: list[float] | tuple[float, ...] | None = None,
-    replicates: int = 128,
-    seed: int = 1,
-) -> CorrelatedContinuousTraitSimulationCollectionReport:
-    from .correlated import (
-        simulate_correlated_brownian_trait_collection as simulate_correlated_brownian_trait_collection_impl,
-    )
-
-    return simulate_correlated_brownian_trait_collection_impl(
-        tree_path,
-        trait_names=trait_names,
-        evolutionary_covariance_matrix=evolutionary_covariance_matrix,
-        evolutionary_correlation_matrix=evolutionary_correlation_matrix,
-        trait_standard_deviations=trait_standard_deviations,
-        root_states=root_states,
-        replicates=replicates,
-        seed=seed,
-    )
-
-
-def simulate_discrete_traits(
-    tree_path: Path,
-    *,
-    states: list[str],
-    transition_rate: float = 1.0,
-    root_state: str | None = None,
-    seed: int = 1,
-) -> DiscreteTraitSimulationReport:
-    from .discrete_traits import (
-        simulate_discrete_traits as simulate_discrete_traits_impl,
-    )
-
-    return simulate_discrete_traits_impl(
-        tree_path,
-        states=states,
-        transition_rate=transition_rate,
-        root_state=root_state,
-        seed=seed,
-    )
-
-
-def simulate_dna_alignment(
-    tree_path: Path,
-    *,
-    sequence_length: int,
-    substitution_rate: float = 1.0,
-    seed: int = 1,
-) -> AlignmentSimulationReport:
-    from .alignment import simulate_dna_alignment as simulate_dna_alignment_impl
-
-    return simulate_dna_alignment_impl(
-        tree_path,
-        sequence_length=sequence_length,
-        substitution_rate=substitution_rate,
-        seed=seed,
-    )
-
-
-def simulate_protein_alignment(
-    tree_path: Path,
-    *,
-    sequence_length: int,
-    substitution_rate: float = 1.0,
-    seed: int = 1,
-) -> AlignmentSimulationReport:
+if TYPE_CHECKING:
     from .alignment import (
-        simulate_protein_alignment as simulate_protein_alignment_impl,
+        simulate_dna_alignment,
+        simulate_protein_alignment,
+        write_simulated_alignment,
     )
-
-    return simulate_protein_alignment_impl(
-        tree_path,
-        sequence_length=sequence_length,
-        substitution_rate=substitution_rate,
-        seed=seed,
-    )
-
-
-def write_tree_set(path: Path, trees: list[PhyloTree]) -> Path:
-    from .trees import write_tree_set as write_tree_set_impl
-
-    return write_tree_set_impl(path, trees)
-
-
-def write_simulated_tree(path: Path, tree: PhyloTree) -> Path:
-    from .trees import write_simulated_tree as write_simulated_tree_impl
-
-    return write_simulated_tree_impl(path, tree)
-
-
-def write_tree_simulation_record_table(
-    path: Path, report: TreeSimulationReport
-) -> Path:
-    from .trees import (
-        write_tree_simulation_record_table as write_tree_simulation_record_table_impl,
-    )
-
-    return write_tree_simulation_record_table_impl(path, report)
-
-
-def write_tree_simulation_envelope_table(
-    path: Path,
-    report: TreeSimulationReport,
-) -> Path:
-    from .trees import (
-        write_tree_simulation_envelope_table as write_tree_simulation_envelope_table_impl,
-    )
-
-    return write_tree_simulation_envelope_table_impl(path, report)
-
-
-def write_continuous_trait_table(
-    path: Path, report: ContinuousTraitSimulationReport
-) -> Path:
-    from .continuous import write_continuous_trait_table as write_continuous_trait_table_impl
-
-    return write_continuous_trait_table_impl(path, report)
-
-
-def write_continuous_trait_collection_table(
-    path: Path,
-    report: ContinuousTraitSimulationCollectionReport,
-) -> Path:
     from .continuous import (
-        write_continuous_trait_collection_table as write_continuous_trait_collection_table_impl,
+        simulate_brownian_trait_collection,
+        simulate_brownian_traits,
+        simulate_early_burst_traits,
+        simulate_ou_traits,
+        simulate_speciational_trait_collection,
+        simulate_speciational_traits,
+        write_continuous_trait_collection_summary_table,
+        write_continuous_trait_collection_table,
+        write_continuous_trait_table,
     )
-
-    return write_continuous_trait_collection_table_impl(path, report)
-
-
-def write_continuous_trait_collection_summary_table(
-    path: Path,
-    report: ContinuousTraitSimulationCollectionReport,
-) -> Path:
-    from .continuous import (
-        write_continuous_trait_collection_summary_table as write_continuous_trait_collection_summary_table_impl,
-    )
-
-    return write_continuous_trait_collection_summary_table_impl(path, report)
-
-
-def write_correlated_continuous_trait_table(
-    path: Path,
-    report: CorrelatedContinuousTraitSimulationReport,
-) -> Path:
     from .correlated import (
-        write_correlated_continuous_trait_table as write_correlated_continuous_trait_table_impl,
+        simulate_correlated_brownian_trait_collection,
+        simulate_correlated_brownian_traits,
+        write_correlated_continuous_trait_collection_summary_table,
+        write_correlated_continuous_trait_collection_table,
+        write_correlated_continuous_trait_table,
     )
-
-    return write_correlated_continuous_trait_table_impl(path, report)
-
-
-def write_correlated_continuous_trait_collection_table(
-    path: Path,
-    report: CorrelatedContinuousTraitSimulationCollectionReport,
-) -> Path:
-    from .correlated import (
-        write_correlated_continuous_trait_collection_table as write_correlated_continuous_trait_collection_table_impl,
+    from .discrete_histories import (
+        simulate_discrete_histories,
+        write_discrete_history_branch_truth_table,
+        write_discrete_history_event_table,
+        write_discrete_history_node_truth_table,
+        write_discrete_history_segment_table,
+        write_discrete_history_summary_table,
+        write_discrete_history_tip_truth_table,
     )
-
-    return write_correlated_continuous_trait_collection_table_impl(path, report)
-
-
-def write_correlated_continuous_trait_collection_summary_table(
-    path: Path,
-    report: CorrelatedContinuousTraitSimulationCollectionReport,
-) -> Path:
-    from .correlated import (
-        write_correlated_continuous_trait_collection_summary_table as write_correlated_continuous_trait_collection_summary_table_impl,
-    )
-
-    return write_correlated_continuous_trait_collection_summary_table_impl(path, report)
-
-
-def write_discrete_trait_table(
-    path: Path, report: DiscreteTraitSimulationReport
-) -> Path:
     from .discrete_traits import (
-        write_discrete_trait_table as write_discrete_trait_table_impl,
+        simulate_discrete_traits,
+        write_discrete_trait_table,
     )
-
-    return write_discrete_trait_table_impl(path, report)
-
-
-def write_discrete_history_tip_truth_table(
-    path: Path,
-    report: DiscreteHistorySimulationCollectionReport,
-) -> Path:
-    from .discrete_histories import (
-        write_discrete_history_tip_truth_table as write_discrete_history_tip_truth_table_impl,
-    )
-
-    return write_discrete_history_tip_truth_table_impl(path, report)
-
-
-def write_discrete_history_node_truth_table(
-    path: Path,
-    report: DiscreteHistorySimulationCollectionReport,
-) -> Path:
-    from .discrete_histories import (
-        write_discrete_history_node_truth_table as write_discrete_history_node_truth_table_impl,
-    )
-
-    return write_discrete_history_node_truth_table_impl(path, report)
-
-
-def write_discrete_history_branch_truth_table(
-    path: Path,
-    report: DiscreteHistorySimulationCollectionReport,
-) -> Path:
-    from .discrete_histories import (
-        write_discrete_history_branch_truth_table as write_discrete_history_branch_truth_table_impl,
-    )
-
-    return write_discrete_history_branch_truth_table_impl(path, report)
-
-
-def write_discrete_history_event_table(
-    path: Path,
-    report: DiscreteHistorySimulationCollectionReport,
-) -> Path:
-    from .discrete_histories import (
-        write_discrete_history_event_table as write_discrete_history_event_table_impl,
-    )
-
-    return write_discrete_history_event_table_impl(path, report)
-
-
-def write_discrete_history_segment_table(
-    path: Path,
-    report: DiscreteHistorySimulationCollectionReport,
-) -> Path:
-    from .discrete_histories import (
-        write_discrete_history_segment_table as write_discrete_history_segment_table_impl,
-    )
-
-    return write_discrete_history_segment_table_impl(path, report)
-
-
-def write_discrete_history_summary_table(
-    path: Path,
-    report: DiscreteHistorySimulationCollectionReport,
-) -> Path:
-    from .discrete_histories import (
-        write_discrete_history_summary_table as write_discrete_history_summary_table_impl,
-    )
-
-    return write_discrete_history_summary_table_impl(path, report)
-
-
-def write_simulated_alignment(path: Path, report: AlignmentSimulationReport) -> Path:
-    from .alignment import write_simulated_alignment as write_simulated_alignment_impl
-
-    return write_simulated_alignment_impl(path, report)
-
-
-def validate_geiger_sim_char_reference_examples():
     from .geiger_sim_char_reference import (
-        validate_geiger_sim_char_reference_examples as validate_geiger_sim_char_reference_examples_impl,
+        validate_geiger_sim_char_reference_examples,
+    )
+    from .trees import (
+        simulate_birth_death_trees,
+        simulate_coalescent_tree,
+        simulate_coalescent_trees,
+        simulate_random_tree,
+        simulate_random_trees,
+        write_simulated_tree,
+        write_tree_set,
+        write_tree_simulation_envelope_table,
+        write_tree_simulation_record_table,
     )
 
-    return validate_geiger_sim_char_reference_examples_impl()
+
+def __getattr__(name: str) -> Any:
+    if name not in _PUBLIC_NAME_TO_MODULE:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    module = import_module(_PUBLIC_NAME_TO_MODULE[name], __name__)
+    value = getattr(module, name)
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    return sorted(set(globals()) | set(__all__))
