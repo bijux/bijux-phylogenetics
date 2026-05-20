@@ -8,7 +8,7 @@ from bijux_phylogenetics.phylo.alignment import (
     AlignmentAlphabet,
     CodingSequenceExclusion,
 )
-from bijux_phylogenetics.core.partitions import PartitionSummaryReport
+from bijux_phylogenetics.phylo.alignment.partitions import PartitionSummaryReport
 from bijux_phylogenetics.engines.common import EngineRunReport
 from bijux_phylogenetics.engines.iqtree_artifacts import IqtreeModelSelectionSummary
 from bijux_phylogenetics.engines.validation import (

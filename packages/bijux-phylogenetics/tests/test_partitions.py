@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.core.partitions import (
+from bijux_phylogenetics.phylo.alignment.partitions import (
     build_partition_summary_report,
     parse_locus_partitions,
     slice_partition_sequence,

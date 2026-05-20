@@ -17,7 +17,7 @@ from bijux_phylogenetics.core.locus_occupancy import (
     filter_locus_occupancy,
     write_locus_partitions,
 )
-from bijux_phylogenetics.core.partitions import (
+from bijux_phylogenetics.phylo.alignment.partitions import (
     build_partition_summary_report,
     parse_locus_partitions,
     write_partition_summary_table,

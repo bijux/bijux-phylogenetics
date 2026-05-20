@@ -11,7 +11,7 @@ from bijux_phylogenetics.core.locus_occupancy import (
     LocusOccupancyReport,
     TaxonCoverageRow,
 )
-from bijux_phylogenetics.core.partitions import (
+from bijux_phylogenetics.phylo.alignment.partitions import (
     LocusPartition,
     LocusSegment,
     normalize_partition_data_type,

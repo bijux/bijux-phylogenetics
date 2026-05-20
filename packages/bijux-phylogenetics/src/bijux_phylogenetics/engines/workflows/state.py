@@ -12,7 +12,7 @@ from bijux_phylogenetics.phylo.alignment import (
     AlignmentSummary,
     CodingSequenceExclusion,
 )
-from bijux_phylogenetics.core.partitions import (
+from bijux_phylogenetics.phylo.alignment.partitions import (
     LocusPartition,
     build_partition_summary_report,
     normalize_partition_data_type,

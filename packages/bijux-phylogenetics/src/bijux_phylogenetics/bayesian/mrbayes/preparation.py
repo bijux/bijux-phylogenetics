@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
-from bijux_phylogenetics.core.partitions import (
+from bijux_phylogenetics.phylo.alignment.partitions import (
     LocusPartition,
     build_partition_summary_report,
     normalize_partition_data_type,

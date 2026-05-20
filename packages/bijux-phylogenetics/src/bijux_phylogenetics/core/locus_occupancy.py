@@ -4,14 +4,14 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.phylo.alignment import AlignmentRecord
-from bijux_phylogenetics.core.partitions import (
+from bijux_phylogenetics.phylo.alignment.partitions import (
     LocusPartition,
     LocusSegment,
     parse_locus_partitions,
     slice_partition_sequence,
     validate_locus_partitions,
 )
-from bijux_phylogenetics.core.partitions import (
+from bijux_phylogenetics.phylo.alignment.partitions import (
     write_locus_partitions as _write_locus_partitions,
 )
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError, InvalidPartitionError
