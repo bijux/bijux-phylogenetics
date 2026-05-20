@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.engines.fasta_to_tree import (
+from bijux_phylogenetics.engines.inference import (
     FastaToTreeModelRow,
     FastaToTreeSupportRow,
     infer_unaligned_sequence_type,

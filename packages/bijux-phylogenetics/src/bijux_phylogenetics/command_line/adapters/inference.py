@@ -17,7 +17,7 @@ from bijux_phylogenetics.engines import (
 from bijux_phylogenetics.engines.inference_reproducibility import (
     run_inference_reproducibility_check,
 )
-from bijux_phylogenetics.engines.large_alignment_inference import (
+from bijux_phylogenetics.engines.inference import (
     run_large_alignment_inference,
 )
 from bijux_phylogenetics.runtime.results import build_command_result

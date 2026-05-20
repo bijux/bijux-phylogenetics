@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.engines.large_alignment_inference import (
+from bijux_phylogenetics.engines.inference import (
     run_large_alignment_inference,
 )
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError

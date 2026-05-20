@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from bijux_phylogenetics.diagnostics.conclusion_stability import (
         ConclusionStabilityReport,
     )
-    from bijux_phylogenetics.engines.fasta_to_tree import FastaToTreeWorkflowReport
+    from bijux_phylogenetics.engines.inference import FastaToTreeWorkflowReport
     from bijux_phylogenetics.ecology import HostSwitchingReport
 
 _DATASET_ID = "rabies_cross_host_geography_panel"

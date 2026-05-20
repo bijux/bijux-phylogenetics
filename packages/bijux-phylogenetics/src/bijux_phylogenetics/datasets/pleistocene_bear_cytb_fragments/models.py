@@ -8,7 +8,7 @@ from bijux_phylogenetics.phylo.alignment import (
     AlignmentSummary,
     AlignmentTrimReport,
 )
-from bijux_phylogenetics.engines.fasta_to_tree import FastaToTreeWorkflowReport
+from bijux_phylogenetics.engines.inference import FastaToTreeWorkflowReport
 from bijux_phylogenetics.io.fasta import AlignmentRecord
 
 

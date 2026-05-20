@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.command_line import main
-from bijux_phylogenetics.engines.fasta_to_tree import run_fasta_to_tree_workflow
+from bijux_phylogenetics.engines.inference import run_fasta_to_tree_workflow
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 

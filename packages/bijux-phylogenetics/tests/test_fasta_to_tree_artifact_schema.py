@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.engines.fasta_to_tree import run_fasta_to_tree_workflow
+from bijux_phylogenetics.engines.inference import run_fasta_to_tree_workflow
 from bijux_phylogenetics.io.artifact_schema import (
     validate_artifact_schema,
     validate_fasta_to_tree_manifest_schema,

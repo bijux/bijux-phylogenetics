@@ -14,10 +14,10 @@ from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 
 from .common import build_file_checksums, load_engine_manifest, read_engine_version
-from .fasta_to_tree import run_fasta_to_tree_workflow
+from .inference import run_fasta_to_tree_workflow
 from .inference_comparison import run_tree_inference_comparison
 from .inference_reproducibility import run_inference_reproducibility_check
-from .large_alignment_inference import run_large_alignment_inference
+from .inference import run_large_alignment_inference
 from .workflows.alignment import (
     run_alignment_trimming,
     run_codon_aware_multiple_sequence_alignment,

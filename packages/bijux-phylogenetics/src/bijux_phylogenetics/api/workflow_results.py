@@ -17,7 +17,7 @@ from bijux_phylogenetics.engines.artifacts.bootstrap import (
     build_bootstrap_support_rows,
     write_bootstrap_support_table,
 )
-from bijux_phylogenetics.engines.fasta_to_tree import FastaToTreeWorkflowReport
+from bijux_phylogenetics.engines.inference import FastaToTreeWorkflowReport
 from bijux_phylogenetics.engines.workflow_config import WorkflowConfigRunReport
 from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
 from bijux_phylogenetics.reports.service import ReportBuildResult

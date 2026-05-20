@@ -104,7 +104,7 @@ from bijux_phylogenetics.diagnostics.conclusion_stability import (
     write_key_clade_stability_table,
     write_support_value_stability_table,
 )
-from bijux_phylogenetics.engines.fasta_to_tree import (
+from bijux_phylogenetics.engines.inference import (
     FastaToTreeWorkflowReport,
     run_fasta_to_tree_workflow,
 )
