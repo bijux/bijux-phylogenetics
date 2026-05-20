@@ -65,7 +65,7 @@ _PUBLIC_NAME_TO_MODULE = {
     "simulate_dna_alignment": ".alignment",
     "simulate_protein_alignment": ".alignment",
     "write_simulated_alignment": ".alignment",
-    "validate_geiger_sim_char_reference_examples": ".geiger_sim_char_reference",
+    "validate_geiger_sim_char_reference_examples": ".reference",
 }
 
 __all__ = [
@@ -126,7 +126,7 @@ if TYPE_CHECKING:
         write_discrete_history_tip_truth_table,
         write_discrete_trait_table,
     )
-    from .geiger_sim_char_reference import (
+    from .reference import (
         validate_geiger_sim_char_reference_examples,
     )
     from .trees import (

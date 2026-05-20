@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from .continuous import (
+from ..continuous import (
     simulate_brownian_trait_collection,
     simulate_speciational_trait_collection,
 )
-from .discrete import simulate_discrete_histories
+from ..discrete import simulate_discrete_histories
 
 
 @dataclass(frozen=True, slots=True)
@@ -336,5 +336,5 @@ def _discrete_tip_state_frequency_metrics_match(
 
 def _tree_fixture_path(name: str) -> Path:
     return (
-        Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "trees" / name
+        Path(__file__).resolve().parents[4] / "tests" / "fixtures" / "trees" / name
     )

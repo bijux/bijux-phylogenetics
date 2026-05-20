@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from bijux_phylogenetics.simulation import validate_geiger_sim_char_reference_examples
-from bijux_phylogenetics.simulation.geiger_sim_char_reference import (
+from bijux_phylogenetics.simulation.reference.geiger_sim_char import (
     GEIGER_SIM_CHAR_REFERENCE_PAYLOADS,
 )
 
