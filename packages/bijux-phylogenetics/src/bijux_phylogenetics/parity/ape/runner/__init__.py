@@ -6,25 +6,14 @@ import subprocess  # nosec B404 - parity helpers invoke repository-owned referen
 import tempfile
 
 from .normalization import (
-    _compare_json,
     _load_json,
-    _load_rows_table,
-    _normalize_reference_summary,
     _optional_payload_string,
 )
-from .mismatch_policy import (
-    _consensus_tree_mismatch_reason,
-    _drop_tip_tree_mismatch_reason,
-    _extract_clade_tree_mismatch_reason,
-    _keep_tip_tree_mismatch_reason,
-    _neighbor_joining_tree_mismatch_reason,
-    _root_tree_outgroup_mismatch_reason,
-    _transition_rate_rows_match,
-    _tree_set_structure_mismatch_reason,
-    _tree_structure_mismatch_reason,
-    _unroot_tree_mismatch_reason,
+from ..registry import _selected_cases, _write_case_file
+from .comparison import (
+    _apply_expected_status_contract,
+    _determine_reference_mismatch_reason,
 )
-from ..registry import ApeParityCase, _selected_cases, _write_case_file
 from .models import (
     ApeParityObservation,
     ApeParityReport,
@@ -47,6 +36,8 @@ from .runtime import (
     reference_environment as _reference_environment,
     repository_root as _repository_root,
 )
+
+
 def run_ape_parity_cases(
     *,
     case_ids: list[str] | None = None,
@@ -163,266 +154,25 @@ def run_ape_parity_cases(
                             reference_rows,
                             reference_normalized_text,
                         ) = _load_reference_case_payload(case, execution_root)
-                        if case.operation in {
-                            "read-tree-structure",
-                            "write-tree-structure",
-                        }:
-                            mismatch_reason = _tree_structure_mismatch_reason(
-                                case,
-                                execution_root,
-                            )
-                        elif case.operation == "root-tree-outgroup":
-                            mismatch_reason = _root_tree_outgroup_mismatch_reason(
-                                case,
-                                execution_root,
-                            )
-                        elif case.operation == "unroot-tree":
-                            mismatch_reason = _unroot_tree_mismatch_reason(
-                                case,
-                                execution_root,
-                            )
-                        elif case.operation == "drop-tree-taxa":
-                            mismatch_reason = _drop_tip_tree_mismatch_reason(
-                                case,
-                                execution_root,
-                            )
-                            if mismatch_reason is None and not _compare_json(
-                                reference_summary,
-                                bijux_summary,
-                                tolerance=case.tolerance,
-                            ):
-                                mismatch_reason = "summary_mismatch"
-                        elif case.operation == "keep-tree-taxa":
-                            mismatch_reason = _keep_tip_tree_mismatch_reason(
-                                case,
-                                execution_root,
-                            )
-                            if mismatch_reason is None and not _compare_json(
-                                reference_summary,
-                                bijux_summary,
-                                tolerance=case.tolerance,
-                            ):
-                                mismatch_reason = "summary_mismatch"
-                        elif case.operation == "extract-tree-clade":
-                            mismatch_reason = _extract_clade_tree_mismatch_reason(
-                                case,
-                                execution_root,
-                            )
-                            if mismatch_reason is None and not _compare_json(
-                                reference_summary,
-                                bijux_summary,
-                                tolerance=case.tolerance,
-                            ):
-                                mismatch_reason = "summary_mismatch"
-                        elif (
-                            case.operation == "get-tree-mrca"
-                            or case.operation == "assess-tree-monophyly"
-                        ):
-                            if not _compare_json(
-                                reference_summary,
-                                bijux_summary,
-                                tolerance=case.tolerance,
-                            ):
-                                mismatch_reason = "summary_mismatch"
-                            else:
-                                status = "passed"
-                        elif case.operation in {
-                            "read-tree-set-structure",
-                            "write-tree-set-structure",
-                        }:
-                            mismatch_reason = _tree_set_structure_mismatch_reason(
-                                case,
-                                execution_root,
-                            )
-                        elif case.operation == "tree-consensus":
-                            mismatch_reason = _consensus_tree_mismatch_reason(
-                                case,
-                                execution_root,
-                            )
-                            if mismatch_reason is None and not _compare_json(
-                                reference_summary,
-                                bijux_summary,
-                                tolerance=case.tolerance,
-                            ):
-                                mismatch_reason = "summary_mismatch"
-                            elif mismatch_reason is None and not _compare_json(
-                                reference_rows,
-                                bijux_rows,
-                                tolerance=case.tolerance,
-                            ):
-                                mismatch_reason = "rows_mismatch"
-                        elif case.operation == "distance-matrix-neighbor-joining":
-                            mismatch_reason = _neighbor_joining_tree_mismatch_reason(
-                                case,
-                                execution_root,
-                            )
-                            if mismatch_reason is None and not _compare_json(
-                                reference_summary,
-                                bijux_summary,
-                                tolerance=case.tolerance,
-                            ):
-                                mismatch_reason = "summary_mismatch"
-                        elif case.operation == "tree-discrete-ancestral-states":
-                            reference_transition_rows = (
-                                []
-                                if reference_summary is None
-                                else reference_summary.get("transition_rate_rows", [])
-                            )
-                            bijux_transition_rows = (
-                                []
-                                if bijux_summary is None
-                                else bijux_summary.get("transition_rate_rows", [])
-                            )
-                            reference_summary_without_transition_rows = (
-                                {}
-                                if reference_summary is None
-                                else {
-                                    key: value
-                                    for key, value in reference_summary.items()
-                                    if key != "transition_rate_rows"
-                                }
-                            )
-                            bijux_summary_without_transition_rows = (
-                                {}
-                                if bijux_summary is None
-                                else {
-                                    key: value
-                                    for key, value in bijux_summary.items()
-                                    if key != "transition_rate_rows"
-                                }
-                            )
-                            if not _compare_json(
-                                reference_summary_without_transition_rows,
-                                bijux_summary_without_transition_rows,
-                                tolerance=case.tolerance,
-                            ):
-                                mismatch_reason = "summary_mismatch"
-                            elif not _transition_rate_rows_match(
-                                reference_rows=reference_transition_rows,
-                                bijux_rows=bijux_transition_rows,
-                                reference_summary=reference_summary,
-                                bijux_summary=bijux_summary,
-                                tolerance=(
-                                    case.transition_rate_tolerance
-                                    if case.transition_rate_tolerance is not None
-                                    else case.tolerance
-                                ),
-                            ):
-                                mismatch_reason = "transition_rate_rows_mismatch"
-                        elif not _compare_json(
-                            reference_summary, bijux_summary, tolerance=case.tolerance
-                        ):
-                            mismatch_reason = "summary_mismatch"
-                        elif not _compare_json(
-                            reference_rows,
-                            bijux_rows,
-                            tolerance=case.tolerance,
-                        ):
-                            mismatch_reason = "rows_mismatch"
-                        elif reference_normalized_text != bijux_normalized_text:
-                            mismatch_reason = "normalized_text_mismatch"
-                        else:
-                            status = "passed"
+                        mismatch_reason = _determine_reference_mismatch_reason(
+                            case=case,
+                            execution_root=execution_root,
+                            reference_summary=reference_summary,
+                            bijux_summary=bijux_summary,
+                            reference_rows=reference_rows,
+                            bijux_rows=bijux_rows,
+                            reference_normalized_text=reference_normalized_text,
+                            bijux_normalized_text=bijux_normalized_text,
+                        )
                         if mismatch_reason is None:
                             status = "passed"
-            if case.expected_status == "parse-error":
-                if bijux_error is None:
-                    mismatch_reason = "bijux_expected_parse_error_missing"
-                elif reference_error is None:
-                    mismatch_reason = "reference_expected_parse_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get(
-                    "message"
-                ):
-                    mismatch_reason = "parse_error_message_missing"
-                else:
-                    status = "passed"
-                    mismatch_reason = None
-            if case.expected_status == "rooting-error":
-                if bijux_error is None:
-                    mismatch_reason = "bijux_expected_rooting_error_missing"
-                elif reference_error is None:
-                    mismatch_reason = "reference_expected_rooting_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get(
-                    "message"
-                ):
-                    mismatch_reason = "rooting_error_message_missing"
-                else:
-                    status = "passed"
-                    mismatch_reason = None
-            if case.expected_status == "clade-extraction-error":
-                if bijux_error is None:
-                    mismatch_reason = "bijux_expected_clade_extraction_error_missing"
-                elif reference_error is None:
-                    mismatch_reason = (
-                        "reference_expected_clade_extraction_error_missing"
-                    )
-                elif not bijux_error.get("message") or not reference_error.get(
-                    "message"
-                ):
-                    mismatch_reason = "clade_extraction_error_message_missing"
-                else:
-                    status = "passed"
-                    mismatch_reason = None
-            if case.expected_status == "mrca-error":
-                if bijux_error is None:
-                    mismatch_reason = "bijux_expected_mrca_error_missing"
-                elif reference_error is None:
-                    mismatch_reason = "reference_expected_mrca_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get(
-                    "message"
-                ):
-                    mismatch_reason = "mrca_error_message_missing"
-                else:
-                    status = "passed"
-                    mismatch_reason = None
-            if case.expected_status == "monophyly-error":
-                if bijux_error is None:
-                    mismatch_reason = "bijux_expected_monophyly_error_missing"
-                elif reference_error is None:
-                    mismatch_reason = "reference_expected_monophyly_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get(
-                    "message"
-                ):
-                    mismatch_reason = "monophyly_error_message_missing"
-                else:
-                    status = "passed"
-                    mismatch_reason = None
-            if case.expected_status == "consensus-error":
-                if bijux_error is None:
-                    mismatch_reason = "bijux_expected_consensus_error_missing"
-                elif reference_error is None:
-                    mismatch_reason = "reference_expected_consensus_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get(
-                    "message"
-                ):
-                    mismatch_reason = "consensus_error_message_missing"
-                else:
-                    status = "passed"
-                    mismatch_reason = None
-            if case.expected_status == "prop-clades-error":
-                if bijux_error is None:
-                    mismatch_reason = "bijux_expected_prop_clades_error_missing"
-                elif reference_error is None:
-                    mismatch_reason = "reference_expected_prop_clades_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get(
-                    "message"
-                ):
-                    mismatch_reason = "prop_clades_error_message_missing"
-                else:
-                    status = "passed"
-                    mismatch_reason = None
-            if case.expected_status == "dna-distance-error":
-                if bijux_error is None:
-                    mismatch_reason = "bijux_expected_dna_distance_error_missing"
-                elif reference_error is None:
-                    mismatch_reason = "reference_expected_dna_distance_error_missing"
-                elif not bijux_error.get("message") or not reference_error.get(
-                    "message"
-                ):
-                    mismatch_reason = "dna_distance_error_message_missing"
-                else:
-                    status = "passed"
-                    mismatch_reason = None
+            status, mismatch_reason = _apply_expected_status_contract(
+                case=case,
+                bijux_error=bijux_error,
+                reference_error=reference_error,
+                status=status,
+                mismatch_reason=mismatch_reason,
+            )
             if status != "passed":
                 artifact_root = _persist_failure_bundle(
                     failure_root=active_failure_root,
