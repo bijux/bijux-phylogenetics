@@ -9,9 +9,7 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralEstimate,
     DiscreteTransitionRateRow,
 )
-from bijux_phylogenetics.biogeography import (
-    constrained_geography as constrained_geography_module,
-)
+import bijux_phylogenetics.biogeography.state_models.constrained as constrained_geography_module
 from bijux_phylogenetics.biogeography import (
     summarize_constrained_geographic_model,
     summarize_constrained_geographic_report,

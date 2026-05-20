@@ -20,7 +20,7 @@ from bijux_phylogenetics.comparative.discrete_evolution import (
 )
 from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
-from .state_models import GeographicExcludedTaxonRow
+from .likelihood import GeographicExcludedTaxonRow
 
 _MODEL_ALIAS_TO_INTERNAL = {
     "er": "equal-rates",

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bijux_phylogenetics.biogeography.constrained_geography import (
+from bijux_phylogenetics.biogeography.state_models import (
     ConstrainedGeographicFitRow,
     ConstrainedGeographicReport,
     ConstrainedGeographicSummary,
