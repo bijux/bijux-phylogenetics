@@ -388,7 +388,7 @@ def run_central_european_seashore_flora_demo(
 
 def _resource_root() -> Path:
     return (
-        Path(__file__).resolve().parents[1]
+        Path(__file__).resolve().parents[2]
         / "resources"
         / "datasets"
         / "plants"

@@ -22,7 +22,7 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.traits import TreeTraitAlignmentReport, align_tree_and_trait_table
-from bijux_phylogenetics.datasets.plants import (
+from bijux_phylogenetics.datasets.central_european_seashore_flora import (
     CentralEuropeanSeashoreFloraDataset,
     CentralEuropeanSeashoreFloraDatasetExportResult,
     export_central_european_seashore_flora_dataset,

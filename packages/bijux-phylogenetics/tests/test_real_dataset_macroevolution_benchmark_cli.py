@@ -17,7 +17,7 @@ from bijux_phylogenetics.benchmark.real_dataset_macroevolution import (
     RealDatasetMacroevolutionSummaryRow,
 )
 from bijux_phylogenetics.command_line import main
-from bijux_phylogenetics.datasets.plants import (
+from bijux_phylogenetics.datasets.central_european_seashore_flora import (
     CentralEuropeanSeashoreFloraDataset,
     CentralEuropeanSeashoreFloraDatasetExportResult,
 )

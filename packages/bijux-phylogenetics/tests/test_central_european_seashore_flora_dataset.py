@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.plants as plants_api
+import bijux_phylogenetics.datasets.central_european_seashore_flora as plants_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_central_european_seashore_flora_dataset,

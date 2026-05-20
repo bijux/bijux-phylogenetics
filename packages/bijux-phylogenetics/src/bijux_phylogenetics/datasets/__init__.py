@@ -117,7 +117,7 @@ from .phylogenomics import (
     run_catarrhine_mitogenome_five_locus_panel_workflow,
     write_catarrhine_mitogenome_five_locus_panel_workflow_bundle,
 )
-from .plants import (
+from .central_european_seashore_flora import (
     CentralEuropeanSeashoreFloraDataset,
     CentralEuropeanSeashoreFloraDatasetExportResult,
     CentralEuropeanSeashoreFloraDemoResult,
