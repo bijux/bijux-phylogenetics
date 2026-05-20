@@ -84,7 +84,7 @@ from .state import (
     _write_coding_exclusion_table,
     _write_coding_summary_table,
 )
-from ..bootstrap_artifacts import (
+from ..artifacts.bootstrap import (
     build_bootstrap_support_histogram_rows,
     build_bootstrap_support_rows,
     build_low_support_bootstrap_rows,

@@ -47,7 +47,7 @@ from .models import (
     IqtreeWorkflowSummary,
     PreparedIqtreePartitions as _PreparedIqtreePartitions,
 )
-from ..bootstrap_artifacts import (
+from ..artifacts.bootstrap import (
     build_bootstrap_support_histogram_rows,
     build_bootstrap_support_rows,
     build_low_support_bootstrap_rows,

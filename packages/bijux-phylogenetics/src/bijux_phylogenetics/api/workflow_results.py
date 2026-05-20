@@ -13,7 +13,7 @@ from bijux_phylogenetics.ancestral.presentation.report_rendering import (
 from bijux_phylogenetics.comparative.pgls import PGLSResult
 from bijux_phylogenetics.compare.topology import TreeComparisonReport
 from bijux_phylogenetics.phylo.alignment import FastaInputValidationReport
-from bijux_phylogenetics.engines.bootstrap_artifacts import (
+from bijux_phylogenetics.engines.artifacts.bootstrap import (
     build_bootstrap_support_rows,
     write_bootstrap_support_table,
 )

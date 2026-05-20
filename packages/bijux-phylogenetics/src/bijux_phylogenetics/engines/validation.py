@@ -13,6 +13,15 @@ from bijux_phylogenetics.engines.common import (
     build_file_checksums,
     load_engine_manifest,
 )
+from bijux_phylogenetics.engines.artifacts.support import (
+    BootstrapSupportNode,
+    BootstrapSupportSummaryReport,
+    FastTreeSupportNode,
+    FastTreeSupportSummaryReport,
+    ShAlrtSupportNode,
+    ShAlrtSupportSummaryReport,
+    WeakBackboneReport,
+)
 from bijux_phylogenetics.engines.iqtree_artifacts import (
     parse_best_model_file,
     parse_iqtree_model_selection_summary,
@@ -37,17 +46,6 @@ from bijux_phylogenetics.io.iqtree_support import (
 )
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.trees import load_tree_set
-from .support_summaries import (
-    BootstrapSupportNode,
-    BootstrapSupportSummaryReport,
-    FastTreeSupportNode,
-    FastTreeSupportSummaryReport,
-    ShAlrtSupportNode,
-    ShAlrtSupportSummaryReport,
-    WeakBackboneReport,
-)
-
-
 @dataclass(slots=True)
 class InferenceReadinessDecision:
     workflow: str
