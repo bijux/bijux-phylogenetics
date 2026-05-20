@@ -14,7 +14,7 @@ from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     estimate_pagels_lambda,
 )
-from bijux_phylogenetics.core.ultrametric import assess_tree_ultrametricity
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import assess_tree_ultrametricity
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_geiger_continuous_fixture,
     list_shared_geiger_continuous_fixtures,

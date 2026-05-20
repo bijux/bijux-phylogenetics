@@ -2,4 +2,4 @@
 
 from __future__ import annotations
 
-__all__ = ["pruning", "taxa", "topology"]
+__all__ = ["branch_lengths", "pruning", "taxa", "topology"]

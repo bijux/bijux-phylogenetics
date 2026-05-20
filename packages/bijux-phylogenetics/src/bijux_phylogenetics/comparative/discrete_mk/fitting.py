@@ -27,7 +27,7 @@ from bijux_phylogenetics.comparative.information_criteria import (
     compute_aic,
     compute_aicc,
 )
-from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import summarize_ultrametric_tip_depths
 
 from .models import (
     DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY,

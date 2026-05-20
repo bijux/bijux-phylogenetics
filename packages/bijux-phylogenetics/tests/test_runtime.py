@@ -205,7 +205,7 @@ from bijux_phylogenetics.compare.tree_distance_reference import (
     validate_tree_distance_reference_examples,
 )
 from bijux_phylogenetics.core.alignment import AlignmentRecord, AlignmentSummary
-from bijux_phylogenetics.core.branching_times import (
+from bijux_phylogenetics.phylo.branch_lengths.branching_times import (
     TreeBranchingTimeReport,
     compute_tree_branching_times,
     write_tree_branching_time_table,
@@ -222,7 +222,7 @@ from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table, join_table_to_taxa
-from bijux_phylogenetics.core.node_depth import (
+from bijux_phylogenetics.phylo.branch_lengths.node_depths import (
     TreeNodeDepthReport,
     compute_tree_node_depths,
 )
@@ -268,7 +268,7 @@ from bijux_phylogenetics.phylo.topology.tip_distances import (
     compute_tree_tip_distance_matrix,
     write_tree_tip_distance_matrix,
 )
-from bijux_phylogenetics.core.ultrametric import (
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
     APE_ULTRAMETRIC_TOLERANCE,
     TreeUltrametricReport,
     assess_tree_ultrametricity,
@@ -506,6 +506,7 @@ def test_package_root_exposes_curated_domain_gateways() -> None:
     import bijux_phylogenetics.distance as distance_api
     import bijux_phylogenetics.evidence as evidence_api
     import bijux_phylogenetics.parity as parity_api
+    import bijux_phylogenetics.phylo as phylo_api
     import bijux_phylogenetics.trees as trees_api
 
     assert bijux_phylogenetics.__all__ == [
@@ -519,6 +520,7 @@ def test_package_root_exposes_curated_domain_gateways() -> None:
         "distance",
         "evidence",
         "parity",
+        "phylo",
         "trees",
     ]
     assert bijux_phylogenetics.ancestral is ancestral_api
@@ -530,6 +532,7 @@ def test_package_root_exposes_curated_domain_gateways() -> None:
     assert bijux_phylogenetics.distance is distance_api
     assert bijux_phylogenetics.evidence is evidence_api
     assert bijux_phylogenetics.parity is parity_api
+    assert bijux_phylogenetics.phylo is phylo_api
     assert bijux_phylogenetics.trees is trees_api
     assert not hasattr(bijux_phylogenetics, "trim_alignment")
     assert not hasattr(bijux_phylogenetics, "run_pgls")
@@ -539,11 +542,11 @@ def test_package_root_exposes_curated_domain_gateways() -> None:
 def test_public_package_exports_alignment_and_topology_workflows() -> None:
     import bijux_phylogenetics.biogeography as biogeography_api
     import bijux_phylogenetics.compare as compare_module_api
-    import bijux_phylogenetics.core.branching_times as branching_times_api
-    import bijux_phylogenetics.core.node_depth as node_depth_api
+    import bijux_phylogenetics.phylo.branch_lengths.branching_times as branching_times_api
+    import bijux_phylogenetics.phylo.branch_lengths.node_depths as node_depth_api
     import bijux_phylogenetics.phylo.topology.tree as tree_api
     import bijux_phylogenetics.phylo.topology.tip_distances as tree_distance_api
-    import bijux_phylogenetics.core.ultrametric as ultrametric_api
+    import bijux_phylogenetics.phylo.branch_lengths.ultrametric as ultrametric_api
     import bijux_phylogenetics.distance as distance_api
     import bijux_phylogenetics.ecology as ecology_api
     import bijux_phylogenetics.io.fasta as fasta_api

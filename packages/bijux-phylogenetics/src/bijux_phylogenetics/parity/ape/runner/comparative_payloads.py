@@ -6,9 +6,9 @@ from pathlib import Path
 from bijux_phylogenetics.comparative import compute_diversification_gamma_statistic
 from bijux_phylogenetics.comparative.brownian_covariance import summarize_brownian_covariance
 from bijux_phylogenetics.comparative.signal import compute_phylogenetic_independent_contrasts
-from bijux_phylogenetics.core.branching_times import compute_tree_branching_times
-from bijux_phylogenetics.core.node_depth import compute_tree_node_depths
-from bijux_phylogenetics.core.ultrametric import assess_tree_ultrametricity
+from bijux_phylogenetics.phylo.branch_lengths.branching_times import compute_tree_branching_times
+from bijux_phylogenetics.phylo.branch_lengths.node_depths import compute_tree_node_depths
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import assess_tree_ultrametricity
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_tree_simulation_fixture,
 )

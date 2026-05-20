@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import summarize_ultrametric_tip_depths
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 
 

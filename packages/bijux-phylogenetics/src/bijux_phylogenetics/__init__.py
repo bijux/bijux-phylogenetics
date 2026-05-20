@@ -15,6 +15,7 @@ _PUBLIC_MODULES = (
     "distance",
     "evidence",
     "parity",
+    "phylo",
     "trees",
 )
 
@@ -34,6 +35,7 @@ __all__ = [
     "distance",
     "evidence",
     "parity",
+    "phylo",
     "trees",
 ]
 
@@ -48,6 +50,7 @@ if TYPE_CHECKING:
         distance,
         evidence,
         parity,
+        phylo,
         trees,
     )
 

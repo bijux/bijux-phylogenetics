@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.core.branching_times import (
+from bijux_phylogenetics.phylo.branch_lengths.branching_times import (
     compute_tree_branching_times,
     write_tree_branching_time_table,
 )

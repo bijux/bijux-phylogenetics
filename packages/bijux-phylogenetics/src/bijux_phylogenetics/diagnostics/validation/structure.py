@@ -4,7 +4,7 @@ from collections import Counter
 from pathlib import Path
 
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.core.ultrametric import (
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
     APE_ULTRAMETRIC_TOLERANCE,
     summarize_ultrametric_tip_depths,
 )

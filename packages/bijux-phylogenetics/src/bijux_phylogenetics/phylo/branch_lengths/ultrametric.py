@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 import sys
 
-from bijux_phylogenetics.core.node_depth import (
+from bijux_phylogenetics.phylo.branch_lengths.node_depths import (
     TreeNodeDepthReport,
     compute_tree_node_depths,
 )

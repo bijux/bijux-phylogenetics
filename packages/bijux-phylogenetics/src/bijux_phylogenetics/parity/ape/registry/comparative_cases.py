@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bijux_phylogenetics.core.ultrametric import APE_ULTRAMETRIC_TOLERANCE
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import APE_ULTRAMETRIC_TOLERANCE
 
 from .fixtures import ApeParityFixtureResolver
 from .models import ApeParityCase
