@@ -183,7 +183,7 @@ from bijux_phylogenetics.command_line.engines import (
     add_phylo_commands,
     run_phylo_command,
 )
-from bijux_phylogenetics.command_line.metadata import (
+from bijux_phylogenetics.command_line.study_inputs.metadata import (
     add_metadata_commands,
     run_metadata_command,
 )
@@ -195,7 +195,7 @@ from bijux_phylogenetics.command_line.alignment import (
     add_alignment_commands,
     run_alignment_command,
 )
-from bijux_phylogenetics.command_line.annotate import (
+from bijux_phylogenetics.command_line.study_inputs.annotation import (
     add_annotate_command,
     run_annotate_command,
 )
@@ -317,7 +317,7 @@ from bijux_phylogenetics.command_line.taxonomy import (
     add_taxonomy_commands,
     run_taxonomy_command,
 )
-from bijux_phylogenetics.command_line.traits import (
+from bijux_phylogenetics.command_line.study_inputs.traits import (
     add_traits_commands,
     run_traits_command,
 )
