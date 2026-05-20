@@ -6,7 +6,7 @@ from importlib import import_module
 
 _PUBLIC_SURFACES = (
     (
-        "confidence",
+        "presentation.confidence_review",
         (
             "AncestralConfidenceSummary",
             "ContinuousAncestralConfidenceRow",

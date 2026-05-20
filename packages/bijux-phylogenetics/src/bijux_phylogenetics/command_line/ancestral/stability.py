@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from bijux_phylogenetics.ancestral.confidence import (
+from bijux_phylogenetics.ancestral.presentation.confidence_review import (
     build_continuous_ancestral_confidence_rows,
     build_continuous_ancestral_tree_set_confidence_rows,
     build_discrete_ancestral_confidence_rows,

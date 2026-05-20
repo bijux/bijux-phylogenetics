@@ -4,6 +4,29 @@ from importlib import import_module
 
 _PUBLIC_SURFACES = (
     (
+        "confidence_review",
+        (
+            "AncestralConfidenceSummary",
+            "ContinuousAncestralConfidenceRow",
+            "ContinuousAncestralTreeSetConfidenceRow",
+            "DiscreteAncestralConfidenceRow",
+            "DiscreteAncestralTreeSetConfidenceRow",
+            "build_continuous_ancestral_confidence_rows",
+            "build_continuous_ancestral_tree_set_confidence_rows",
+            "build_discrete_ancestral_confidence_rows",
+            "build_discrete_ancestral_tree_set_confidence_rows",
+            "summarize_continuous_ancestral_confidence",
+            "summarize_continuous_ancestral_tree_set_confidence",
+            "summarize_discrete_ancestral_confidence",
+            "summarize_discrete_ancestral_tree_set_confidence",
+            "write_ancestral_confidence_summary_table",
+            "write_continuous_ancestral_confidence_table",
+            "write_continuous_ancestral_tree_set_confidence_table",
+            "write_discrete_ancestral_confidence_table",
+            "write_discrete_ancestral_tree_set_confidence_table",
+        ),
+    ),
+    (
         "figure_bundle",
         (
             "AncestralFigurePackageResult",
