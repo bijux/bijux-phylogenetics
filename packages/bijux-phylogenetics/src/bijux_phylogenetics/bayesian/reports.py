@@ -35,7 +35,7 @@ from bijux_phylogenetics.bayesian.uncertainty import (
     write_bayesian_methods_summary_text,
     write_supplementary_bayesian_diagnostics_table,
 )
-from bijux_phylogenetics.provenance.method_tiers import (
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
     bayesian_report_method_tier,
 )

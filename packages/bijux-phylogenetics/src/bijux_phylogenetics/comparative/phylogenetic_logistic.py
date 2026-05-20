@@ -23,7 +23,7 @@ from bijux_phylogenetics.comparative.pgls import (
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
-from bijux_phylogenetics.provenance.method_tiers import (
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
     phylogenetic_logistic_method_tier,
 )

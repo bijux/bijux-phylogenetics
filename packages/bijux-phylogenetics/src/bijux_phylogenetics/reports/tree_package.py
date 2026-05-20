@@ -25,7 +25,7 @@ from bijux_phylogenetics.diagnostics.validation import (
     validate_tree_path,
 )
 from bijux_phylogenetics.io.iqtree_support import support_fraction
-from bijux_phylogenetics.provenance.method_tiers import (
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
     tree_report_method_tier,
 )

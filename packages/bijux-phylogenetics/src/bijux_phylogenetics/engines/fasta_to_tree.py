@@ -22,7 +22,7 @@ from bijux_phylogenetics.io.fasta.records import (
     repair_fasta_input,
     validate_fasta_input,
 )
-from bijux_phylogenetics.provenance.method_tiers import (
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
     fasta_to_tree_method_tier,
 )

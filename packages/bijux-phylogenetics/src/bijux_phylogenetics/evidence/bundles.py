@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.provenance.bundles import (
+from .provenance.bundles import (
     ArtifactBundleReport as EvidenceBundleReport,
 )
-from bijux_phylogenetics.provenance.bundles import (
+from .provenance.bundles import (
     ArtifactBundleValidationReport as EvidenceValidationReport,
 )
-from bijux_phylogenetics.provenance.bundles import (
+from .provenance.bundles import (
     bundle_artifact_directories,
     bundle_artifact_files,
     validate_artifact_bundle,

@@ -13,7 +13,7 @@ from bijux_phylogenetics.comparative.reporting import (
     build_comparative_method_report,
     write_comparative_methods_summary_text,
 )
-from bijux_phylogenetics.provenance.method_tiers import (
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
     comparative_report_method_tier,
 )

@@ -6,7 +6,7 @@ from typing import Any
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.provenance.method_tiers import method_tier_metrics
+from bijux_phylogenetics.evidence.provenance.method_tiers import method_tier_metrics
 from bijux_phylogenetics.reports import (
     write_publication_package_comparison_report,
     write_publication_package_revalidation_report,

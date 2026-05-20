@@ -33,7 +33,7 @@ from bijux_phylogenetics.command_line.arguments import (
 )
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.provenance.method_tiers import (
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
     method_tier_metrics,
     method_tier_warnings,
 )

@@ -14,7 +14,7 @@ from bijux_phylogenetics.datasets.catalog import (
     PublicDatasetSurface,
     list_flagship_dataset_surfaces,
 )
-from bijux_phylogenetics.provenance.method_tiers import (
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
     method_tier_warnings,
     release_method_tier_inventory,

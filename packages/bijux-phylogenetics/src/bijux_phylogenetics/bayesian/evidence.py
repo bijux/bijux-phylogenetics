@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.provenance.bundles import (
+from bijux_phylogenetics.evidence.provenance.bundles import (
     bundle_artifact_files,
     validate_artifact_bundle,
 )

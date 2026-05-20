@@ -356,7 +356,7 @@ from bijux_phylogenetics.phylogeography import (
     write_geographic_map_marker_table,
     write_geographic_map_summary_table,
 )
-from bijux_phylogenetics.provenance.method_tiers import (
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
     method_tier_metrics,
     method_tier_warnings,
 )

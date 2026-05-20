@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from bijux_phylogenetics.provenance.method_tiers import (
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
     bayesian_report_method_tier,
     comparative_report_method_tier,

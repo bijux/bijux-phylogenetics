@@ -42,7 +42,7 @@ from bijux_phylogenetics.engines import (
     run_multiple_sequence_alignment,
     run_sh_alrt_support_estimation,
 )
-from bijux_phylogenetics.provenance.method_tiers import method_tier_metrics
+from bijux_phylogenetics.evidence.provenance.method_tiers import method_tier_metrics
 from bijux_phylogenetics.runtime.errors import EngineUnavailableError
 from bijux_phylogenetics.runtime.results import build_command_result
 
