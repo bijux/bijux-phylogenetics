@@ -14,7 +14,7 @@ from bijux_phylogenetics.biogeography.state_models import (
     GeographicStateModelReport,
     summarize_geographic_state_model,
 )
-from bijux_phylogenetics.biogeography.migration_events import (
+from bijux_phylogenetics.biogeography.migration import (
     GeographicMigrationEventReport,
     summarize_geographic_migration_events,
 )

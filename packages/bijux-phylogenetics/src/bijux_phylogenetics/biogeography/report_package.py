@@ -13,7 +13,7 @@ from bijux_phylogenetics.biogeography.state_models import (
     write_geographic_state_summary_table,
     write_geographic_transition_rate_table,
 )
-from bijux_phylogenetics.biogeography.migration_events import (
+from bijux_phylogenetics.biogeography.migration import (
     GeographicMigrationEventReport,
     summarize_geographic_migration_events,
     write_geographic_migration_event_table,

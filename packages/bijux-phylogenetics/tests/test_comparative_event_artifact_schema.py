@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.biogeography.migration_events import (
+from bijux_phylogenetics.biogeography.migration import (
     summarize_geographic_migration_events,
     write_geographic_migration_event_table,
 )
