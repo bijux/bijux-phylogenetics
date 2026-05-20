@@ -13,16 +13,14 @@ from .methods_summary import (
     write_tree_inference_methods_summary_text,
     write_tree_validation_methods_summary_text,
 )
-from .package_comparison import (
+from .publication import (
     PublicationPackageComparisonArtifactRow,
     PublicationPackageComparisonCheckRow,
     PublicationPackageComparisonResult,
-    write_publication_package_comparison_report,
-)
-from .package_revalidation import (
     PublicationPackageRevalidationArtifactRow,
     PublicationPackageRevalidationCheckRow,
     PublicationPackageRevalidationResult,
+    write_publication_package_comparison_report,
     write_publication_package_revalidation_report,
 )
 from .reviewer_audit import (

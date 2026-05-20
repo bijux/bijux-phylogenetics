@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.reports.publication_package_support import (
+from .support import (
     SUPPORTED_PUBLICATION_PACKAGE_KIND,
     artifact_kind,
     checksum,

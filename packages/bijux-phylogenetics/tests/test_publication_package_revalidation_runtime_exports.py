@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import bijux_phylogenetics.reports.package_revalidation as package_revalidation_api
+import bijux_phylogenetics.reports.publication.revalidation as package_revalidation_api
 from bijux_phylogenetics.reports import (
     PublicationPackageRevalidationArtifactRow,
     PublicationPackageRevalidationCheckRow,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import bijux_phylogenetics.reports.package_comparison as package_comparison_api
+import bijux_phylogenetics.reports.publication.comparison as package_comparison_api
 from bijux_phylogenetics.reports import (
     PublicationPackageComparisonArtifactRow,
     PublicationPackageComparisonCheckRow,

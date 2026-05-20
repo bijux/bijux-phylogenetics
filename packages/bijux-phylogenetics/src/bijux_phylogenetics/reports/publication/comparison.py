@@ -11,7 +11,7 @@ from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.io.fasta import load_fasta_records
 from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.reports.publication_package_support import (
+from .support import (
     SUPPORTED_PUBLICATION_PACKAGE_KIND,
     artifact_kind,
     checksum,
