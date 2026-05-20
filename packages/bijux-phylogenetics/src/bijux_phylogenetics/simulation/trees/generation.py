@@ -18,7 +18,7 @@ from ..contracts import (
     TreeSimulationReport,
     SimulatedTreeRecord,
 )
-from ..statistics import (
+from .._statistics import (
     _mean,
     _median,
     _population_standard_deviation,

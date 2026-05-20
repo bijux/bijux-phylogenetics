@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ..statistics import _round_float
+from .._statistics import _round_float
 
 
 def _normalize_discrete_states(states: list[str]) -> tuple[str, ...]:

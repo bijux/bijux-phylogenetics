@@ -171,7 +171,7 @@ def _build_correlated_brownian_collection_summary_rows(
     simulations,
 ):
     from ..contracts import ContinuousTraitSimulationSummaryRow
-    from ..statistics import (
+    from .._statistics import (
         _mean,
         _median,
         _round_float,
@@ -276,7 +276,7 @@ def simulate_correlated_brownian_traits(
         CorrelatedContinuousTraitSimulationReport,
         SimulatedCorrelatedContinuousTrait,
     )
-    from ..statistics import _round_float
+    from .._statistics import _round_float
 
     normalized_trait_names = _normalize_trait_names(trait_names)
     normalized_root_states = _normalize_root_states(
@@ -340,7 +340,7 @@ def simulate_correlated_brownian_trait_collection(
     seed: int = 1,
 ):
     from ..contracts import CorrelatedContinuousTraitSimulationCollectionReport
-    from ..statistics import (
+    from .._statistics import (
         _round_float,
     )
 

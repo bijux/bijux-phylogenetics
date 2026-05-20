@@ -16,7 +16,7 @@ def simulate_brownian_traits(
     sigma_squared: float | None = None,
     seed: int = 1,
 ):
-    from ..propagation import (
+    from .._state_propagation import (
         _resolve_brownian_sigma_parameters,
         _simulate_brownian_node_values,
     )
@@ -57,7 +57,7 @@ def simulate_ou_traits(
     theta: float = 0.0,
     seed: int = 1,
 ):
-    from ..propagation import _iter_node_trait_values
+    from .._state_propagation import _iter_node_trait_values
 
     if sigma < 0.0:
         raise ValueError(f"sigma must be nonnegative, got {sigma}")
@@ -107,7 +107,7 @@ def simulate_early_burst_traits(
         transform_tree_for_evolutionary_mode,
     )
 
-    from ..propagation import _iter_node_trait_values
+    from .._state_propagation import _iter_node_trait_values
 
     if sigma < 0.0:
         raise ValueError(f"sigma must be nonnegative, got {sigma}")
@@ -150,7 +150,7 @@ def simulate_speciational_traits(
     sigma_squared: float | None = None,
     seed: int = 1,
 ):
-    from ..propagation import (
+    from .._state_propagation import (
         _resolve_brownian_sigma_parameters,
         _simulate_brownian_node_values,
     )
@@ -206,7 +206,7 @@ def _build_continuous_trait_simulation_report(
         SimulatedContinuousNode,
         SimulatedContinuousTrait,
     )
-    from ..propagation import _tip_values_from_node_map
+    from .._state_propagation import _tip_values_from_node_map
 
     values = _tip_values_from_node_map(tree, node_values)
     return ContinuousTraitSimulationReport(
@@ -251,7 +251,7 @@ def _build_speciational_tree(tree: PhyloTree) -> PhyloTree:
 
 def _build_continuous_collection_summary_rows(simulations):
     from ..contracts import ContinuousTraitSimulationSummaryRow
-    from ..statistics import (
+    from .._statistics import (
         _mean,
         _median,
         _round_float,
@@ -306,7 +306,7 @@ def simulate_brownian_trait_collection(
     seed: int = 1,
 ):
     from ..contracts import ContinuousTraitSimulationCollectionReport
-    from ..propagation import (
+    from .._state_propagation import (
         _resolve_brownian_sigma_parameters,
         _simulate_brownian_node_values,
     )
@@ -364,7 +364,7 @@ def simulate_speciational_trait_collection(
     seed: int = 1,
 ):
     from ..contracts import ContinuousTraitSimulationCollectionReport
-    from ..propagation import (
+    from .._state_propagation import (
         _resolve_brownian_sigma_parameters,
         _simulate_brownian_node_values,
     )

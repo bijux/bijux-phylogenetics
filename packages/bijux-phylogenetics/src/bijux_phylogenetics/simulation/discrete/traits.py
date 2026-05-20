@@ -19,10 +19,10 @@ def _simulate_symmetric_state_trajectory(
         SimulatedDiscreteStateSegment,
         SimulatedDiscreteTransitionEvent,
     )
-    from ..statistics import (
+    from .._statistics import (
         _round_float,
     )
-    from ..stochastic import _poisson_count
+    from .._stochastic import _poisson_count
 
     current_state = state
     events: list[SimulatedDiscreteTransitionEvent] = []
@@ -97,7 +97,7 @@ def simulate_discrete_traits(
         _normalize_discrete_states,
         _normalize_root_state_probabilities,
     )
-    from ..propagation import _tip_values_from_node_map
+    from .._state_propagation import _tip_values_from_node_map
 
     unique_states = _normalize_discrete_states(states)
     if transition_rate < 0.0:
