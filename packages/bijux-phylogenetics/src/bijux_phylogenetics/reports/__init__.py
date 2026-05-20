@@ -34,13 +34,13 @@ from .review import (
     write_reviewer_audit_checklist_from_manifest,
 )
 from .methods import (
+    AlignmentFilteringMethodsSummaryTextResult,
     TreeInferenceMethodsSummaryTextResult,
+    write_alignment_filtering_methods_summary_text,
     write_tree_inference_methods_summary_text,
 )
 from .methods_summary import (
-    AlignmentFilteringMethodsSummaryTextResult,
     TreeValidationMethodsSummaryTextResult,
-    write_alignment_filtering_methods_summary_text,
     write_tree_validation_methods_summary_text,
 )
 from .supplementary_tables import (

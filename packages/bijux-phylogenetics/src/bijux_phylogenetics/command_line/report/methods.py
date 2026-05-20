@@ -15,10 +15,10 @@ from bijux_phylogenetics.command_line.arguments import (
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.reports import (
-    write_alignment_filtering_methods_summary_text,
     write_tree_validation_methods_summary_text,
 )
 from bijux_phylogenetics.reports.methods import (
+    write_alignment_filtering_methods_summary_text,
     write_tree_inference_methods_summary_text,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
