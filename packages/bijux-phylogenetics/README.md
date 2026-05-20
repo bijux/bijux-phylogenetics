@@ -2000,6 +2000,16 @@ Outgroup rooting, unrooting, keep-tip pruning, drop-tip pruning, clade
 extraction, MRCA lookup, and monophyly review all run through one native
 topology surface with explicit rootedness and branch-length policy instead of
 splitting those transforms across separate tree backends.
+That topology lane now also lives as a real `bijux_phylogenetics.core.topology`
+package instead of one overgrown flat module. Shared report dataclasses live
+in `core.topology.models`, branch-preserving change summaries and collapse
+workflow live in `core.topology.transformation`, subtree extraction plus MRCA
+and monophyly review live in `core.topology.subtree`, deterministic child-order
+transforms live in `core.topology.ordering`, and outgroup rooting, midpoint
+rerooting, unrooting, and rooting-ledger writing live in
+`core.topology.rooting`. The package root is now the curated gateway so
+downstream tree, pruning, parity, and dataset surfaces import one stable
+topology API without depending on a foundational kitchen-sink file.
 The owned simulation baseline now also exposes direct single-tree surfaces
 through `simulate_random_tree(...)` and `simulate_coalescent_tree(...)`, so a
 caller that needs one governed baseline tree with its summary record no longer
