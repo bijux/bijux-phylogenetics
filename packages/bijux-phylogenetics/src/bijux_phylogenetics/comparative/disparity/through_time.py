@@ -15,7 +15,7 @@ from bijux_phylogenetics.datasets.study_inputs import (
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
-from .common import node_signature, tip_root_depths
+from ..common import node_signature, tip_root_depths
 
 
 @dataclass(slots=True)

@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.disparity_through_time import (
+from bijux_phylogenetics.comparative.disparity import (
     summarize_continuous_clade_disparity,
     summarize_disparity_through_time,
 )

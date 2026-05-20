@@ -9,7 +9,7 @@ from bijux_phylogenetics.command_line.arguments import (
 )
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.comparative.disparity_through_time import (
+from bijux_phylogenetics.comparative.disparity import (
     render_disparity_through_time_svg,
     summarize_continuous_clade_disparity,
     summarize_disparity_through_time,

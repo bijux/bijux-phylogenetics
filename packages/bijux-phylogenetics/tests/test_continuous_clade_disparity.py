@@ -4,7 +4,7 @@ import csv
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.disparity_through_time import (
+from bijux_phylogenetics.comparative.disparity import (
     summarize_continuous_clade_disparity,
     write_continuous_clade_disparity_summary_table,
     write_continuous_clade_disparity_table,

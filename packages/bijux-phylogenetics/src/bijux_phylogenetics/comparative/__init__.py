@@ -120,7 +120,7 @@ from .covariance import (
     write_comparative_covariance_audit_excluded_taxa_table,
     write_comparative_covariance_audit_summary_table,
 )
-from .disparity_through_time import (
+from .disparity import (
     CladeDisparityRow,
     ContinuousCladeDisparityReport,
     DisparityTaxonExclusion,
