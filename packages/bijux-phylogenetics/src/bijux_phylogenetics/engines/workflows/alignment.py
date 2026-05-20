@@ -111,7 +111,7 @@ from ..artifacts.fasttree import (
     write_fasttree_support_histogram,
     write_fasttree_support_table,
 )
-from ..iqtree_artifacts import (
+from ..artifacts.iqtree import (
     IqtreeModelCandidate,
     IqtreeModelSelectionSummary,
     parse_best_model_file,

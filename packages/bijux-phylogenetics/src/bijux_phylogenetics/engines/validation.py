@@ -22,7 +22,7 @@ from bijux_phylogenetics.engines.artifacts.support import (
     ShAlrtSupportSummaryReport,
     WeakBackboneReport,
 )
-from bijux_phylogenetics.engines.iqtree_artifacts import (
+from bijux_phylogenetics.engines.artifacts.iqtree import (
     parse_best_model_file,
     parse_iqtree_model_selection_summary,
     parse_log_likelihood_file,

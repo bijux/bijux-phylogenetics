@@ -10,8 +10,8 @@ from bijux_phylogenetics.phylo.alignment import (
 )
 from bijux_phylogenetics.phylo.alignment.partitions import PartitionSummaryReport
 from bijux_phylogenetics.engines.common import EngineRunReport
-from bijux_phylogenetics.engines.iqtree_artifacts import IqtreeModelSelectionSummary
-from bijux_phylogenetics.engines.validation import (
+from bijux_phylogenetics.engines.artifacts.iqtree import IqtreeModelSelectionSummary
+from bijux_phylogenetics.engines.artifacts.support import (
     BootstrapSupportSummaryReport,
     FastTreeSupportSummaryReport,
     ShAlrtSupportSummaryReport,

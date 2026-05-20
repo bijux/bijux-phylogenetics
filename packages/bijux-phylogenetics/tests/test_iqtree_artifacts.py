@@ -3,7 +3,7 @@ from __future__ import annotations
 import gzip
 from pathlib import Path
 
-from bijux_phylogenetics.engines.iqtree_artifacts import (
+from bijux_phylogenetics.engines.artifacts.iqtree import (
     parse_iqtree_model_selection_summary,
     parse_log_likelihood_text,
     parse_selected_model_decision_text,

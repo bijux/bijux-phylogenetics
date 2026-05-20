@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.engines.iqtree_artifacts import (
+from bijux_phylogenetics.engines.artifacts.iqtree import (
     IqtreeModelCandidate,
     IqtreeModelSelectionSummary,
     parse_iqtree_model_selection_summary,
