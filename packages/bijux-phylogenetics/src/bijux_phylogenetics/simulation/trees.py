@@ -18,7 +18,7 @@ from .models import (
     TreeSimulationReport,
     SimulatedTreeRecord,
 )
-from . import (
+from .statistics import (
     _mean,
     _median,
     _population_standard_deviation,

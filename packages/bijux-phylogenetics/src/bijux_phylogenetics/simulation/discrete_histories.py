@@ -12,7 +12,7 @@ from bijux_phylogenetics.io.trees import load_tree
 
 
 def _quantile(values: list[float], probability: float) -> float:
-    from . import _round_float
+    from .statistics import _round_float
 
     if not values:
         return 0.0
@@ -31,7 +31,7 @@ def _quantile(values: list[float], probability: float) -> float:
 
 def _normalize_rate_rows(*, states: tuple[str, ...], rate_rows: list) -> list:
     from .models import DiscreteHistoryRateRow
-    from . import _round_float
+    from .statistics import _round_float
 
     if not rate_rows:
         raise ValueError("rate_rows must contain at least one transition rate row")
@@ -106,7 +106,7 @@ def _simulate_rate_matrix_state_trajectory(
         SimulatedDiscreteStateSegment,
         SimulatedDiscreteTransitionEvent,
     )
-    from . import (
+    from .statistics import (
         _round_float,
     )
 
@@ -372,7 +372,7 @@ def _summarize_discrete_history_collection(
     states: tuple[str, ...],
 ):
     from .models import DiscreteHistorySummaryRow
-    from . import _mean, _round_float
+    from .statistics import _mean, _round_float
 
     total_transition_counts = [
         float(sum(branch.event_count for branch in simulation.branch_histories))

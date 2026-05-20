@@ -245,7 +245,7 @@ def _build_speciational_tree(tree: PhyloTree) -> PhyloTree:
 
 def _build_continuous_collection_summary_rows(simulations):
     from .models import ContinuousTraitSimulationSummaryRow
-    from . import (
+    from .statistics import (
         _mean,
         _median,
         _round_float,

@@ -19,10 +19,10 @@ def _simulate_symmetric_state_trajectory(
         SimulatedDiscreteStateSegment,
         SimulatedDiscreteTransitionEvent,
     )
-    from . import (
-        _poisson_count,
+    from .statistics import (
         _round_float,
     )
+    from . import _poisson_count
 
     current_state = state
     events: list[SimulatedDiscreteTransitionEvent] = []
