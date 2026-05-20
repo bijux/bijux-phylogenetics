@@ -11,14 +11,11 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
     compare_clade_overlap,
-    compare_topology_distance,
-    compare_tree_paths,
     detect_clade_changes,
     prune_trees_to_shared_taxa,
     write_clade_overlap_table,
     write_shared_taxa_pruning_table,
     write_shared_taxa_removed_taxa_table,
-    write_topology_distance_split_table,
     write_tree_comparison_table,
 )
 from bijux_phylogenetics.io.newick import write_newick
@@ -27,6 +24,7 @@ from bijux_phylogenetics.runtime.results import build_command_result
 from .influence import run_compare_influence_command
 from .presentation import run_compare_presentation_command
 from .support import run_compare_support_command
+from .topology_distance import run_compare_topology_distance_command
 
 
 def add_compare_command(subparsers: Any) -> None:
@@ -77,6 +75,11 @@ def run_compare_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
     influence_result = run_compare_influence_command(args, parser=parser)
     if influence_result is not None:
         return influence_result
+    topology_distance_result = run_compare_topology_distance_command(
+        args, parser=parser
+    )
+    if topology_distance_result is not None:
+        return topology_distance_result
 
     if args.left == "clades":
         if args.third is None:
@@ -233,77 +236,4 @@ def run_compare_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         )
         return 0
 
-    if args.left == "table":
-        if args.third is None:
-            parser.exit(status=2, message="compare table requires two tree paths\n")
-        if args.out is None:
-            parser.exit(status=2, message="compare table requires --out\n")
-        left_path = Path(args.right)
-        right_path = Path(args.third)
-        output_path = write_tree_comparison_table(args.out, left_path, right_path)
-        outputs = _finalize_outputs(
-            args,
-            command="compare",
-            inputs=[left_path, right_path],
-            outputs=[output_path],
-        )
-        _print_result(
-            build_command_result(
-                command="compare",
-                inputs=[left_path, right_path],
-                outputs=outputs,
-                metrics={
-                    "table_rows": sum(
-                        1
-                        for _ in output_path.read_text(
-                            encoding="utf-8"
-                        ).splitlines()[1:]
-                    )
-                },
-                data={"table_path": output_path},
-            ),
-            json_output=args.json,
-        )
-        return 0
-
-    left_path = Path(args.left)
-    right_path = Path(args.right)
-    report = compare_tree_paths(
-        left_path,
-        right_path,
-        rf_mode=args.rf_mode,
-        taxon_overlap_policy=args.taxon_overlap_policy,
-    )
-    outputs: list[Path | str] = []
-    if args.split_table_out is not None:
-        outputs.append(
-            write_topology_distance_split_table(
-                args.split_table_out,
-                left_path,
-                right_path,
-                rf_mode=args.rf_mode,
-                taxon_overlap_policy=args.taxon_overlap_policy,
-            )
-        )
-    outputs = _finalize_outputs(
-        args,
-        command="compare",
-        inputs=[left_path, right_path],
-        outputs=outputs,
-    )
-    _print_result(
-        build_command_result(
-            command="compare",
-            inputs=[left_path, right_path],
-            outputs=outputs,
-            metrics={
-                "shared_taxa": len(report.shared_taxa),
-                "robinson_foulds_distance": report.robinson_foulds_distance,
-                "rf_mode": report.rf_mode,
-                "taxon_overlap_policy": report.taxon_overlap_policy,
-            },
-            data=report,
-        ),
-        json_output=args.json,
-    )
-    return 0
+    parser.error("compare requires a supported workflow or two tree paths")
