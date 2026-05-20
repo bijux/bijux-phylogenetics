@@ -19,7 +19,7 @@ from bijux_phylogenetics.ancestral.ordered_discrete import (
     write_ordered_discrete_summary_table,
     write_ordered_discrete_transition_table,
 )
-from bijux_phylogenetics.ancestral.root_sensitivity import (
+from bijux_phylogenetics.ancestral.sensitivity import (
     summarize_ancestral_root_sensitivity,
     summarize_ancestral_root_sensitivity_report,
     write_ancestral_root_assumption_table,

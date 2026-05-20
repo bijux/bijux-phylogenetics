@@ -64,7 +64,7 @@ from bijux_phylogenetics.ancestral.presentation import build_ancestral_figure_pa
 from bijux_phylogenetics.ancestral.presentation import (
     build_ancestral_report_package,
 )
-from bijux_phylogenetics.ancestral.root_sensitivity import (
+from bijux_phylogenetics.ancestral.sensitivity import (
     summarize_ancestral_root_sensitivity,
     summarize_ancestral_root_sensitivity_report,
     write_ancestral_root_assumption_table,

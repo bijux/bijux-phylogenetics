@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
-from bijux_phylogenetics.ancestral.root_sensitivity import (
+from bijux_phylogenetics.ancestral.sensitivity import (
     summarize_ancestral_root_sensitivity,
     summarize_ancestral_root_sensitivity_report,
     write_ancestral_root_assumption_table,

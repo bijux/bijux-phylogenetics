@@ -14,7 +14,7 @@ from bijux_phylogenetics.ancestral.ordered_discrete import (
     summarize_ordered_discrete_reconstruction,
     summarize_ordered_discrete_report,
 )
-from bijux_phylogenetics.ancestral.root_sensitivity import (
+from bijux_phylogenetics.ancestral.sensitivity import (
     summarize_ancestral_root_sensitivity,
     summarize_ancestral_root_sensitivity_report,
 )
