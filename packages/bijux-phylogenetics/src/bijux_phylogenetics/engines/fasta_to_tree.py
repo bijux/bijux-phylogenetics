@@ -790,7 +790,9 @@ def run_fasta_to_tree_workflow(
         round((ended_at - started_at).total_seconds(), 6),
     )
     write_fasta_to_tree_log(final_outputs["log"], report, root_dir=out_dir)
-    from bijux_phylogenetics.reports import write_tree_inference_methods_summary_text
+    from bijux_phylogenetics.reports.methods import (
+        write_tree_inference_methods_summary_text,
+    )
 
     write_tree_inference_methods_summary_text(
         final_outputs["methods_summary"],
