@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.mammals as mammals_api
+import bijux_phylogenetics.datasets.primate_comparative as mammals_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_primate_comparative_dataset,

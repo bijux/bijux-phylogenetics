@@ -342,7 +342,7 @@ def run_primate_comparative_demo(output_root: Path) -> PrimateComparativeDemoRes
 
 def _resource_root() -> Path:
     return (
-        Path(__file__).resolve().parents[1]
+        Path(__file__).resolve().parents[2]
         / "resources"
         / "datasets"
         / "mammals"

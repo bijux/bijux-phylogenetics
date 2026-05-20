@@ -81,7 +81,7 @@ from .known_answer_reference import (
     run_known_answer_reference_workflow,
     write_known_answer_reference_workflow_bundle,
 )
-from .mammals import (
+from .primate_comparative import (
     PrimateComparativeDataset,
     PrimateComparativeDatasetExportResult,
     PrimateComparativeDemoResult,
