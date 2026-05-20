@@ -10,7 +10,9 @@ from .evolution import (
 )
 from .regression import (
     add_comparative_logistic_command,
+    add_comparative_pgls_commands,
     run_comparative_logistic_command,
+    run_comparative_pgls_command,
 )
 from .maturity import (
     add_comparative_maturity_command,
@@ -19,10 +21,6 @@ from .maturity import (
 from .modeling import (
     add_comparative_modeling_commands,
     run_comparative_modeling_command,
-)
-from .pgls import (
-    add_comparative_pgls_commands,
-    run_comparative_pgls_command,
 )
 from .support import (
     add_comparative_support_commands,
