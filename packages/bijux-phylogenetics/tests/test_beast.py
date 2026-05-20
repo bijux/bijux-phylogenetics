@@ -35,7 +35,7 @@ from bijux_phylogenetics.bayesian.posterior_sets.tree_sets import (
     write_posterior_tree_subsample,
     write_posterior_tree_subsample_table,
 )
-from bijux_phylogenetics.bayesian.reports import (
+from bijux_phylogenetics.bayesian.presentation.html_reports import (
     render_bayesian_diagnostics_report,
     render_calibration_audit_report,
 )

@@ -22,7 +22,7 @@ from bijux_phylogenetics.bayesian.posterior_sets.tree_sets import (
     thin_posterior_tree_set,
     write_posterior_tree_subsample_table,
 )
-from bijux_phylogenetics.bayesian.reports import (
+from bijux_phylogenetics.bayesian.presentation.html_reports import (
     render_bayesian_run_comparison_report,
     render_ml_vs_bayesian_tree_report,
     render_time_tree_readiness_report,

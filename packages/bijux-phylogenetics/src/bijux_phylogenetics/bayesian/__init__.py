@@ -113,7 +113,7 @@ from .posterior_sets.tree_sets import (
     write_posterior_tree_subsample,
     write_posterior_tree_subsample_table,
 )
-from .reports import (
+from .presentation.html_reports import (
     BayesianDiagnosticsReportBuildResult,
     BayesianMlComparisonReportBuildResult,
     BayesianPosteriorReportBuildResult,
