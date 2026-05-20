@@ -11,23 +11,24 @@ from bijux_phylogenetics.comparative import (
     build_diversification_figure_package,
     build_diversification_method_report,
     compare_diversification_models,
-    compute_diversification_gamma_statistic,
-    compute_lineage_through_time_curve,
     detect_diversification_outlier_clades,
-    detect_incomplete_taxon_sampling_metadata,
     estimate_diversification_rate,
     render_diversification_report,
     run_trait_dependent_diversification_analysis,
     summarize_geiger_birth_death_exclusion,
     summarize_medusa_exclusion,
     write_clade_diversification_table,
-    write_diversification_gamma_statistic_table,
     write_diversification_methods_summary_text,
-    write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
 from bijux_phylogenetics.runtime.errors import DiversificationAnalysisError
 from bijux_phylogenetics.runtime.results import build_command_result
+
+from .inputs import tree_and_metadata_inputs, tree_metadata_traits_inputs
+from .inspection import (
+    add_diversification_inspection_commands,
+    run_diversification_inspection_command,
+)
 
 
 def add_diversification_commands(subparsers: Any) -> None:
@@ -39,31 +40,7 @@ def add_diversification_commands(subparsers: Any) -> None:
         dest="diversification_command",
         required=True,
     )
-    diversification_ltt = diversification_subparsers.add_parser(
-        "ltt",
-        help="Compute a lineage-through-time curve for one rooted ultrametric tree.",
-    )
-    diversification_ltt.add_argument("tree", type=Path)
-    diversification_ltt.add_argument(
-        "--out", type=Path, help="Write the lineage-through-time table as TSV."
-    )
-    diversification_ltt.add_argument(
-        "--json", action="store_true", help="Emit the LTT report as JSON."
-    )
-    _add_manifest_argument(diversification_ltt)
-
-    diversification_sampling = diversification_subparsers.add_parser(
-        "sampling",
-        help="Inspect taxon sampling-fraction metadata against the tree tips.",
-    )
-    diversification_sampling.add_argument("tree", type=Path)
-    diversification_sampling.add_argument("table", type=Path)
-    diversification_sampling.add_argument("--taxon-column")
-    diversification_sampling.add_argument("--sampling-column")
-    diversification_sampling.add_argument(
-        "--json", action="store_true", help="Emit the sampling report as JSON."
-    )
-    _add_manifest_argument(diversification_sampling)
+    add_diversification_inspection_commands(diversification_subparsers)
 
     diversification_estimate = diversification_subparsers.add_parser(
         "estimate",
@@ -80,26 +57,6 @@ def add_diversification_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the diversification estimate as JSON."
     )
     _add_manifest_argument(diversification_estimate)
-
-    diversification_gamma = diversification_subparsers.add_parser(
-        "gamma-stat",
-        help="Compute the Pybus-Harvey diversification gamma statistic.",
-    )
-    diversification_gamma.add_argument("tree", type=Path)
-    diversification_gamma.add_argument("--metadata", type=Path)
-    diversification_gamma.add_argument("--taxon-column")
-    diversification_gamma.add_argument("--sampling-column")
-    diversification_gamma.add_argument(
-        "--out",
-        type=Path,
-        help="Write the diversification gamma-statistic table as TSV.",
-    )
-    diversification_gamma.add_argument(
-        "--json",
-        action="store_true",
-        help="Emit the diversification gamma-statistic report as JSON.",
-    )
-    _add_manifest_argument(diversification_gamma)
 
     diversification_compare = diversification_subparsers.add_parser(
         "compare-models",
@@ -249,78 +206,8 @@ def add_diversification_commands(subparsers: Any) -> None:
     _add_manifest_argument(diversification_bd_ms)
 
 
-def _tree_and_metadata_inputs(args: Any) -> list[Path]:
-    inputs = [args.tree]
-    if getattr(args, "metadata", None) is not None:
-        inputs.append(args.metadata)
-    return inputs
-
-
-def _tree_metadata_traits_inputs(args: Any) -> list[Path]:
-    inputs = _tree_and_metadata_inputs(args)
-    if getattr(args, "traits", None) is not None:
-        inputs.append(args.traits)
-    return inputs
-
-
-def _run_ltt(args: Any) -> int:
-    report = compute_lineage_through_time_curve(args.tree)
-    outputs: list[Path | str] = []
-    if args.out is not None:
-        outputs.append(write_lineage_through_time_table(args.out, report))
-    outputs = _finalize_outputs(
-        args,
-        command="diversification",
-        inputs=[args.tree],
-        outputs=outputs,
-    )
-    _print_result(
-        build_command_result(
-            command="diversification",
-            inputs=[args.tree],
-            outputs=outputs,
-            metrics={
-                "tip_count": report.tip_count,
-                "root_age": report.root_age,
-                "point_count": len(report.points),
-            },
-            data=report,
-        ),
-        json_output=args.json,
-    )
-    return 0
-
-
-def _run_sampling(args: Any) -> int:
-    report = detect_incomplete_taxon_sampling_metadata(
-        args.tree,
-        args.table,
-        taxon_column=args.taxon_column,
-        sampling_column=args.sampling_column,
-    )
-    inputs = [args.tree, args.table]
-    outputs = _finalize_outputs(args, command="diversification", inputs=inputs)
-    _print_result(
-        build_command_result(
-            command="diversification",
-            inputs=inputs,
-            outputs=outputs,
-            warnings=report.warnings,
-            metrics={
-                "complete": report.complete,
-                "matched_taxon_count": len(report.matched_taxa),
-                "missing_taxon_count": len(report.missing_taxa),
-                "invalid_row_count": len(report.invalid_rows),
-            },
-            data=report,
-        ),
-        json_output=args.json,
-    )
-    return 0
-
-
 def _run_estimate(args: Any) -> int:
-    inputs = _tree_and_metadata_inputs(args)
+    inputs = tree_and_metadata_inputs(args)
     report = estimate_diversification_rate(
         args.tree,
         metadata_path=args.metadata,
@@ -348,44 +235,8 @@ def _run_estimate(args: Any) -> int:
     return 0
 
 
-def _run_gamma_stat(args: Any) -> int:
-    inputs = _tree_and_metadata_inputs(args)
-    report = compute_diversification_gamma_statistic(
-        args.tree,
-        metadata_path=args.metadata,
-        taxon_column=args.taxon_column,
-        sampling_column=args.sampling_column,
-    )
-    outputs: list[Path | str] = []
-    if args.out is not None:
-        outputs.append(write_diversification_gamma_statistic_table(args.out, report))
-    outputs = _finalize_outputs(
-        args,
-        command="diversification",
-        inputs=inputs,
-        outputs=outputs,
-    )
-    _print_result(
-        build_command_result(
-            command="diversification",
-            inputs=inputs,
-            outputs=outputs,
-            warnings=report.warnings,
-            metrics={
-                "tip_count": report.tip_count,
-                "branching_time_count": report.branching_time_count,
-                "gamma_statistic": report.gamma_statistic,
-                "sampling_fraction": report.sampling_fraction,
-            },
-            data=report,
-        ),
-        json_output=args.json,
-    )
-    return 0
-
-
 def _run_compare_models(args: Any) -> int:
-    inputs = _tree_and_metadata_inputs(args)
+    inputs = tree_and_metadata_inputs(args)
     report = compare_diversification_models(
         args.tree,
         metadata_path=args.metadata,
@@ -479,7 +330,7 @@ def _run_trait_dependent(args: Any) -> int:
 
 
 def _run_package(args: Any) -> int:
-    inputs = _tree_and_metadata_inputs(args)
+    inputs = tree_and_metadata_inputs(args)
     result = build_diversification_figure_package(
         args.tree,
         out_dir=args.out_dir,
@@ -533,7 +384,7 @@ def _run_package(args: Any) -> int:
 
 
 def _run_methods_summary(args: Any) -> int:
-    inputs = _tree_metadata_traits_inputs(args)
+    inputs = tree_metadata_traits_inputs(args)
     report = build_diversification_method_report(
         args.tree,
         metadata_path=args.metadata,
@@ -627,7 +478,7 @@ def _raise_bd_ms_exclusion(args: Any) -> None:
 
 
 def _run_report(args: Any) -> int:
-    inputs = _tree_metadata_traits_inputs(args)
+    inputs = tree_metadata_traits_inputs(args)
     result = render_diversification_report(
         tree_path=args.tree,
         out_path=args.out,
@@ -665,14 +516,12 @@ def _run_report(args: Any) -> int:
 
 
 def run_diversification_command(args: Any) -> int:
-    if args.diversification_command == "ltt":
-        return _run_ltt(args)
-    if args.diversification_command == "sampling":
-        return _run_sampling(args)
+    inspection_exit_code = run_diversification_inspection_command(args)
+    if inspection_exit_code is not None:
+        return inspection_exit_code
+
     if args.diversification_command == "estimate":
         return _run_estimate(args)
-    if args.diversification_command == "gamma-stat":
-        return _run_gamma_stat(args)
     if args.diversification_command == "compare-models":
         return _run_compare_models(args)
     if args.diversification_command == "clades":
