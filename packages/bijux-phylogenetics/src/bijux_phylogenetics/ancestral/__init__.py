@@ -90,7 +90,7 @@ from .presentation.methods_text import (
     build_ancestral_methods_summary_text,
     write_ancestral_methods_summary_text,
 )
-from .report_package import (
+from .presentation.review_bundle import (
     AncestralContinuousChangeBranchRow,
     AncestralContinuousChangeCountRow,
     AncestralReportPackageResult,

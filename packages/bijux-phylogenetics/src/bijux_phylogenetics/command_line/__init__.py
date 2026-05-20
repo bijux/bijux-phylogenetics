@@ -61,7 +61,7 @@ from bijux_phylogenetics.ancestral.ordered_discrete import (
     write_ordered_discrete_transition_table,
 )
 from bijux_phylogenetics.ancestral.presentation import build_ancestral_figure_package
-from bijux_phylogenetics.ancestral.report_package import (
+from bijux_phylogenetics.ancestral.presentation import (
     build_ancestral_report_package,
 )
 from bijux_phylogenetics.ancestral.root_sensitivity import (

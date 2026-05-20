@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.ancestral.report_package import build_ancestral_report_package
+from bijux_phylogenetics.ancestral.presentation import build_ancestral_report_package
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

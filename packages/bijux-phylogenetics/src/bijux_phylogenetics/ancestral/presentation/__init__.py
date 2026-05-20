@@ -25,6 +25,19 @@ _PUBLIC_SURFACES = (
             "write_ancestral_methods_summary_text",
         ),
     ),
+    (
+        "review_bundle",
+        (
+            "AncestralContinuousChangeBranchRow",
+            "AncestralContinuousChangeCountRow",
+            "AncestralReportPackageResult",
+            "build_ancestral_report_package",
+            "summarize_continuous_change_branches",
+            "summarize_continuous_change_counts",
+            "write_continuous_change_branch_table",
+            "write_continuous_change_count_table",
+        ),
+    ),
 )
 
 __all__ = [
