@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from math import exp, sqrt
+from math import sqrt
 from pathlib import Path
 import random
 
@@ -45,6 +45,7 @@ from .statistics import (
     _sample_covariance,
     _sample_standard_deviation,
 )
+from .stochastic import _poisson_count
 
 
 def simulate_birth_death_trees(
@@ -102,20 +103,6 @@ def simulate_random_tree(
         taxon_prefix=taxon_prefix,
         branch_length_model=branch_length_model,
 )
-
-
-def _poisson_count(expected_changes: float, rng: random.Random) -> int:
-    if expected_changes <= 0.0:
-        return 0
-    threshold = exp(-expected_changes)
-    product = 1.0
-    changes = 0
-    while product > threshold:
-        changes += 1
-        product *= rng.random()
-    return changes - 1
-
-
 def _simulate_symmetric_state_trajectory(
     state: str,
     *,
