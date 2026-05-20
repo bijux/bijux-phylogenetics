@@ -4,7 +4,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from bijux_phylogenetics.core.dataset import audit_dataset_inputs
-from bijux_phylogenetics.core.taxon_workflows import (
+from bijux_phylogenetics.phylo.taxa import (
     build_taxon_stability_report,
     build_taxon_workflow_loss_report,
     load_taxon_run_source,

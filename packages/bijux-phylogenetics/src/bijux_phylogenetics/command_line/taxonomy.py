@@ -10,7 +10,7 @@ from bijux_phylogenetics.command_line.arguments import (
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.core.taxon_workflows import (
+from bijux_phylogenetics.phylo.taxa import (
     build_taxon_stability_report,
     build_taxon_workflow_loss_report,
     load_taxon_run_source,

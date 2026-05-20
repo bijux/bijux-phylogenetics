@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa
-from bijux_phylogenetics.core.taxon_workflows import (
+from bijux_phylogenetics.phylo.taxa import (
     build_taxon_stability_report,
     build_taxon_workflow_loss_report,
     load_taxon_run_source,

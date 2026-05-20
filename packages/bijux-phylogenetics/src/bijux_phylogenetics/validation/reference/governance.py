@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.core.dataset import audit_dataset_inputs
-from bijux_phylogenetics.core.taxon_workflows import build_taxon_workflow_loss_report
+from bijux_phylogenetics.phylo.taxa import build_taxon_workflow_loss_report
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.render.package import build_tree_figure_package

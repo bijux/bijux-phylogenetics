@@ -22,7 +22,7 @@ from bijux_phylogenetics.core.dataset import (
     DatasetReadinessSummary,
 )
 from bijux_phylogenetics.core.metadata import MetadataJoinRow
-from bijux_phylogenetics.core.taxon_workflows import (
+from bijux_phylogenetics.phylo.taxa import (
     TaxonStabilityReport,
     TaxonWorkflowLossReport,
 )

@@ -14,7 +14,7 @@ from bijux_phylogenetics.core.metadata import (
     load_taxon_table,
     write_taxon_rows,
 )
-from bijux_phylogenetics.core.taxon_workflows import (
+from bijux_phylogenetics.phylo.taxa import (
     TaxonWorkflowLossReport,
     TaxonWorkflowLossRow,
     build_taxon_workflow_loss_report,
