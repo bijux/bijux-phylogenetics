@@ -82,7 +82,7 @@ from bijux_phylogenetics.biogeography.state_models import (
     write_time_stratified_transition_matrix_table,
     write_time_stratified_transition_summary_table,
 )
-from bijux_phylogenetics.biogeography.transition_chronology import (
+from bijux_phylogenetics.biogeography.migration import (
     DatedBiogeographyEventRow,
     DatedBiogeographyNodeRow,
     DatedBiogeographyReport,

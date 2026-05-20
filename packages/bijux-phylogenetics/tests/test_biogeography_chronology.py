@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.biogeography.transition_chronology import (
+from bijux_phylogenetics.biogeography.migration import (
     summarize_biogeographic_transition_chronology,
     write_dated_biogeography_event_table,
     write_dated_biogeography_exclusion_table,
