@@ -133,23 +133,17 @@ from bijux_phylogenetics.command_line.diagnose import (
     add_diagnose_command,
     run_diagnose_command,
 )
-from bijux_phylogenetics.command_line.tree_set import (
-    add_tree_set_commands,
-    run_tree_set_command,
-)
-from bijux_phylogenetics.command_line.tree_inspection import (
+from bijux_phylogenetics.command_line.tree import (
     add_tree_inspection_commands,
-    run_inspect_command,
-    run_validate_command,
-)
-from bijux_phylogenetics.command_line.tree_normalization import (
+    add_topology_commands,
     add_tree_normalization_commands,
+    add_tree_set_commands,
+    run_inspect_command,
     run_normalize_command,
     run_normalize_taxa_command,
-)
-from bijux_phylogenetics.command_line.topology import (
-    add_topology_commands,
     run_topology_command,
+    run_tree_set_command,
+    run_validate_command,
 )
 from bijux_phylogenetics.command_line.taxonomy import (
     add_taxonomy_commands,
