@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.biogeography.geographic_states import GeographicStateModelReport
+from bijux_phylogenetics.biogeography.state_models import GeographicStateModelReport
 from bijux_phylogenetics.phylogeography.geographic_map import GeographicMapReport
 from bijux_phylogenetics.phylogeography.region_styles import (
     build_geographic_state_color_map,

@@ -6,7 +6,7 @@ from html import escape
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.biogeography.geographic_states import (
+from bijux_phylogenetics.biogeography.state_models import (
     GeographicStateModelReport,
     summarize_geographic_state_model,
     write_geographic_region_probability_table,

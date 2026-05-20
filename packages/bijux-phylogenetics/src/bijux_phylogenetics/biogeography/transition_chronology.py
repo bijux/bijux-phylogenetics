@@ -9,7 +9,7 @@ from bijux_phylogenetics.ancestral.common import (
     node_signature,
     stable_value,
 )
-from bijux_phylogenetics.biogeography.geographic_states import (
+from bijux_phylogenetics.biogeography.state_models import (
     GeographicExcludedTaxonRow,
     GeographicStateModelReport,
     summarize_geographic_state_model,

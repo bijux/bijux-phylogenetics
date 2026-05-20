@@ -14,7 +14,7 @@ from bijux_phylogenetics.biogeography.constrained_geography import (
     write_constrained_geographic_transition_table,
     write_unsupported_geographic_transition_claim_table,
 )
-from bijux_phylogenetics.biogeography.geographic_states import (
+from bijux_phylogenetics.biogeography.state_models import (
     GeographicExcludedTaxonRow,
     GeographicRegionProbabilityRow,
     GeographicStateModelReport,

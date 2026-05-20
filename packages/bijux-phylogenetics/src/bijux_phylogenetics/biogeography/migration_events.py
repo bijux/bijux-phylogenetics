@@ -16,7 +16,7 @@ from bijux_phylogenetics.ancestral.tree_set.preparation import (
     shared_taxa,
     validate_burnin_fraction,
 )
-from bijux_phylogenetics.biogeography.geographic_states import (
+from bijux_phylogenetics.biogeography.state_models import (
     GeographicExcludedTaxonRow,
     GeographicStateModelReport,
     summarize_geographic_state_model,
