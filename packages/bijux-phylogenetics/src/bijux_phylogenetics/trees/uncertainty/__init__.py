@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from importlib import import_module
+
 from .instability import (
     detect_unstable_clades as detect_unstable_clades,
     detect_unstable_taxa as detect_unstable_taxa,
@@ -76,13 +78,6 @@ from .methods_text import (
     build_tree_set_uncertainty_methods_summary_text as build_tree_set_uncertainty_methods_summary_text,
     write_tree_set_uncertainty_methods_summary_text as write_tree_set_uncertainty_methods_summary_text,
 )
-from .figure_package import (
-    TreeSetUncertaintyCaptionDraft as TreeSetUncertaintyCaptionDraft,
-    TreeSetUncertaintyFigurePackageResult as TreeSetUncertaintyFigurePackageResult,
-    TreeSetUncertaintyLegendEntry as TreeSetUncertaintyLegendEntry,
-    TreeSetUncertaintyPublicationAudit as TreeSetUncertaintyPublicationAudit,
-    build_tree_set_uncertainty_figure_package as build_tree_set_uncertainty_figure_package,
-)
 
 __all__ = [
     "BootstrapPosteriorCladeComparison",
@@ -153,3 +148,18 @@ __all__ = [
     "write_uncertainty_conclusion_table",
     "write_unstable_clade_table",
 ]
+
+_LAZY_FIGURE_PACKAGE_EXPORTS = {
+    "TreeSetUncertaintyCaptionDraft",
+    "TreeSetUncertaintyFigurePackageResult",
+    "TreeSetUncertaintyLegendEntry",
+    "TreeSetUncertaintyPublicationAudit",
+    "build_tree_set_uncertainty_figure_package",
+}
+
+
+def __getattr__(name: str):
+    if name in _LAZY_FIGURE_PACKAGE_EXPORTS:
+        module = import_module(".figure_package", __name__)
+        return getattr(module, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

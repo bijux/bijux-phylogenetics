@@ -1,5 +1,7 @@
 """Tree-analysis reports and tree-set workflows."""
 
+from importlib import import_module
+
 from .inspection import (
     BranchLengthAggregate,
     BranchLengthDistributionReport,
@@ -75,12 +77,8 @@ from .uncertainty import (
     TreeSetMaturityGateReport,
     TreeSetScalingBenchmarkReport,
     TreeSetStorageRiskReport,
-    TreeSetUncertaintyCaptionDraft,
-    TreeSetUncertaintyFigurePackageResult,
-    TreeSetUncertaintyLegendEntry,
     TreeSetThinningSensitivityReport,
     TreeSetThinningSensitivityRow,
-    TreeSetUncertaintyPublicationAudit,
     TreeTopologyCluster,
     TreeTopologyClusterReport,
     UncertaintyAwareCladeConclusion,
@@ -93,7 +91,6 @@ from .uncertainty import (
     assess_tree_set_storage_risk,
     assess_tree_set_thinning_sensitivity,
     benchmark_tree_set_uncertainty,
-    build_tree_set_uncertainty_figure_package,
     cluster_trees_by_topology,
     compare_bootstrap_and_posterior_uncertainty,
     compare_consensus_thresholds,
@@ -189,7 +186,6 @@ __all__ = [
     "assess_tree_set_storage_risk",
     "assess_tree_set_thinning_sensitivity",
     "benchmark_tree_set_uncertainty",
-    "build_tree_set_uncertainty_figure_package",
     "build_tree_set_uncertainty_method_report",
     "build_tree_set_uncertainty_methods_summary_text",
     "build_tree_set_budget_report",
@@ -235,3 +231,18 @@ __all__ = [
     "write_uncertainty_conclusion_table",
     "write_unstable_clade_table",
 ]
+
+_LAZY_UNCERTAINTY_FIGURE_EXPORTS = {
+    "TreeSetUncertaintyCaptionDraft",
+    "TreeSetUncertaintyFigurePackageResult",
+    "TreeSetUncertaintyLegendEntry",
+    "TreeSetUncertaintyPublicationAudit",
+    "build_tree_set_uncertainty_figure_package",
+}
+
+
+def __getattr__(name: str):
+    if name in _LAZY_UNCERTAINTY_FIGURE_EXPORTS:
+        module = import_module(".uncertainty", __name__)
+        return getattr(module, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
