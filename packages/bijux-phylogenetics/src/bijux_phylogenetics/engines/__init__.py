@@ -54,7 +54,7 @@ from .inference import (
     write_large_alignment_inference_log,
     write_large_alignment_resource_table,
 )
-from .reports import (
+from .presentation import (
     InferenceSensitivityReport,
     InferenceSensitivityReportBuildResult,
     InferenceWorkflowReportBuildResult,
