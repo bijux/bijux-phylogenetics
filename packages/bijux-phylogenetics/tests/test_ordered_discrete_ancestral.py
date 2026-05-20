@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
-from bijux_phylogenetics.ancestral.ordered_discrete import (
+from bijux_phylogenetics.ancestral.discrete.review import (
     summarize_ordered_discrete_reconstruction,
     summarize_ordered_discrete_report,
     write_ordered_discrete_fit_table,

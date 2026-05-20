@@ -93,7 +93,7 @@ _PUBLIC_SURFACES = (
         ),
     ),
     (
-        "ordered_discrete",
+        "discrete.review.ordering",
         (
             "OrderedDiscreteFitRow",
             "OrderedDiscreteNodeComparisonRow",

@@ -10,7 +10,7 @@ from bijux_phylogenetics.ancestral.irreversible_discrete import (
     summarize_irreversible_discrete_reconstruction,
     summarize_irreversible_discrete_report,
 )
-from bijux_phylogenetics.ancestral.ordered_discrete import (
+from bijux_phylogenetics.ancestral.discrete.review import (
     summarize_ordered_discrete_reconstruction,
     summarize_ordered_discrete_report,
 )

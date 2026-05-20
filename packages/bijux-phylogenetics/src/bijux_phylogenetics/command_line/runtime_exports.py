@@ -44,7 +44,7 @@ from bijux_phylogenetics.ancestral.irreversible_discrete import (
     write_irreversible_discrete_summary_table,
     write_irreversible_discrete_transition_table,
 )
-from bijux_phylogenetics.ancestral.ordered_discrete import (
+from bijux_phylogenetics.ancestral.discrete.review import (
     summarize_ordered_discrete_reconstruction,
     summarize_ordered_discrete_report,
     write_ordered_discrete_fit_table,
