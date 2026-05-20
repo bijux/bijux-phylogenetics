@@ -1,6 +1,6 @@
 """Packaged public datasets and governed workflow bundles."""
 
-from .ancient_dna import (
+from .pleistocene_bear_cytb_fragments import (
     PleistoceneBearCytbFragmentDataset,
     PleistoceneBearCytbFragmentDatasetExportResult,
     PleistoceneBearCytbFragmentDemoResult,

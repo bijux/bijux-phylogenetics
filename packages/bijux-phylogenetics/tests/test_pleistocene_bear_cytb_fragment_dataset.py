@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.ancient_dna as ancient_dna_api
+import bijux_phylogenetics.datasets.pleistocene_bear_cytb_fragments as ancient_dna_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_pleistocene_bear_cytb_fragment_dataset,
