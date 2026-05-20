@@ -233,7 +233,7 @@ from .evolutionary_modes import (
     rescale_tree_white_noise,
     transform_tree_for_evolutionary_mode,
 )
-from .independent_contrasts import (
+from .signal import (
     IndependentContrastRegressionReport,
     IndependentContrastRegressionRow,
     summarize_independent_contrast_regression,

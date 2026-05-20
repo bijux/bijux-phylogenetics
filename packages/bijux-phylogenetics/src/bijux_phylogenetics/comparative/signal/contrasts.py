@@ -7,7 +7,7 @@ from bijux_phylogenetics.comparative._math import (
     student_t_quantile,
     student_t_two_sided_p_value,
 )
-from bijux_phylogenetics.comparative.signal import (
+from .core import (
     IndependentContrastReport,
     compute_phylogenetic_independent_contrasts,
 )

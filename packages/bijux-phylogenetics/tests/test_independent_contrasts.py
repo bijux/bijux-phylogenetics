@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.comparative.common import load_comparative_dataset
-from bijux_phylogenetics.comparative.independent_contrasts import (
+from bijux_phylogenetics.comparative.signal import (
     summarize_independent_contrast_regression,
     write_independent_contrast_regression_table,
     write_independent_contrast_table,

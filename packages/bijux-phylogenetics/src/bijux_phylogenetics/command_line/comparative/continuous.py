@@ -10,7 +10,7 @@ from bijux_phylogenetics.comparative.common import (
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
 )
-from bijux_phylogenetics.comparative.independent_contrasts import (
+from bijux_phylogenetics.comparative.signal import (
     summarize_independent_contrast_regression,
     write_independent_contrast_regression_table,
     write_independent_contrast_table,

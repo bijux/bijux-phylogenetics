@@ -20,6 +20,13 @@ from .core import (
     evaluate_pagels_lambda_likelihood,
     evaluate_pagels_lambda_likelihood_from_dataset,
 )
+from .contrasts import (
+    IndependentContrastRegressionReport,
+    IndependentContrastRegressionRow,
+    summarize_independent_contrast_regression,
+    write_independent_contrast_regression_table,
+    write_independent_contrast_table,
+)
 from .review import (
     PhylogeneticSignalSummaryReport,
     summarize_phylogenetic_signal,
@@ -32,6 +39,8 @@ __all__ = [
     "IndependentContrast",
     "IndependentContrastInputAudit",
     "IndependentContrastReport",
+    "IndependentContrastRegressionReport",
+    "IndependentContrastRegressionRow",
     "PagelLambdaLikelihoodReport",
     "PagelLambdaOptimizerDiagnostics",
     "PagelLambdaProfileRow",
@@ -47,6 +56,9 @@ __all__ = [
     "estimate_pagels_lambda",
     "evaluate_pagels_lambda_likelihood",
     "evaluate_pagels_lambda_likelihood_from_dataset",
+    "summarize_independent_contrast_regression",
+    "write_independent_contrast_regression_table",
+    "write_independent_contrast_table",
     "summarize_phylogenetic_signal",
     "write_phylogenetic_signal_permutation_table",
     "write_phylogenetic_signal_summary_table",
