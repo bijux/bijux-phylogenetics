@@ -6,7 +6,7 @@ import shutil
 from tempfile import TemporaryDirectory
 
 from bijux_phylogenetics.phylo.alignment import AlignmentRecord
-from bijux_phylogenetics.core.concatenation import (
+from bijux_phylogenetics.phylo.alignment.concatenation import (
     ConcatenatedAlignmentReport,
     concatenate_locus_alignments,
 )

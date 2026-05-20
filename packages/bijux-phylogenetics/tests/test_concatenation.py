@@ -5,8 +5,8 @@ from typing import Any
 
 import pytest
 
-import bijux_phylogenetics.core.concatenation as concatenation_api
-from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
+import bijux_phylogenetics.phylo.alignment.concatenation as concatenation_api
+from bijux_phylogenetics.phylo.alignment.concatenation import concatenate_locus_alignments
 from bijux_phylogenetics.phylo.alignment.partitions import write_locus_partitions
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import write_fasta_alignment

@@ -3,7 +3,7 @@ from __future__ import annotations
 from importlib import import_module
 from typing import Any
 
-_EXPORT_MODULES = ("models", "occupancy", "partitions")
+_EXPORT_MODULES = ("concatenation", "models", "occupancy", "partitions")
 
 
 def __getattr__(name: str) -> Any:

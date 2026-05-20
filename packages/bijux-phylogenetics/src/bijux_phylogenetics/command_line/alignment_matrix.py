@@ -11,7 +11,7 @@ from bijux_phylogenetics.command_line.output import (
     _write_locus_occupancy_taxa_tsv,
 )
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
+from bijux_phylogenetics.phylo.alignment.concatenation import concatenate_locus_alignments
 from bijux_phylogenetics.phylo.alignment.occupancy import (
     build_locus_occupancy_report,
     filter_locus_occupancy,
