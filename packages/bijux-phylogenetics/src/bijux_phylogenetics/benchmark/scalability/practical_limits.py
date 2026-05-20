@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ..measurement import max_peak_memory_bytes, max_runtime_seconds
+from .._measurement import max_peak_memory_bytes, max_runtime_seconds
 from ..contracts import (
     LargeAlignmentScalingBenchmarkReport,
     LargeDatasetStressObservation,

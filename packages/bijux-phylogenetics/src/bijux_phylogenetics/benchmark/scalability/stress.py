@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 
-from ..fixtures import (
+from .._fixtures import (
     comparative_stress_payload,
     large_alignment_stress_payload,
     resolve_stress_tier_config,
@@ -11,7 +11,7 @@ from ..fixtures import (
     table_generation_stress_payload,
     tree_set_stress_payload,
 )
-from ..measurement import measure_stress_workload
+from .._measurement import measure_stress_workload
 from ..contracts import LargeDatasetStressObservation, LargeDatasetStressSuiteReport
 
 

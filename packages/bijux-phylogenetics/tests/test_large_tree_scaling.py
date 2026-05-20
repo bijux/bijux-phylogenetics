@@ -6,11 +6,11 @@ from pathlib import Path
 import pytest
 
 import bijux_phylogenetics.benchmark as benchmark_api
-from bijux_phylogenetics.benchmark import (
-    _build_balanced_tree,
-    _interleaved_taxa,
-    _write_named_balanced_tree,
-    benchmark_large_tree_scaling,
+from bijux_phylogenetics.benchmark import benchmark_large_tree_scaling
+from bijux_phylogenetics.benchmark._fixtures import (
+    build_balanced_tree,
+    interleaved_taxa,
+    write_named_balanced_tree,
 )
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.command_line import main
@@ -84,11 +84,11 @@ def test_large_tree_scaling_comparison_shape_supports_2048_taxa(
 ) -> None:
     left_path = write_newick(
         tmp_path / "large-tree-balanced-2048.nwk",
-        _build_balanced_tree(2048, prefix="LargeTaxon"),
+        build_balanced_tree(2048, prefix="LargeTaxon"),
     )
-    right_path = _write_named_balanced_tree(
+    right_path = write_named_balanced_tree(
         tmp_path / "large-tree-permuted-balanced-2048.nwk",
-        _interleaved_taxa(2048, prefix="LargeTaxon"),
+        interleaved_taxa(2048, prefix="LargeTaxon"),
     )
 
     report = compare_tree_paths(left_path, right_path)
