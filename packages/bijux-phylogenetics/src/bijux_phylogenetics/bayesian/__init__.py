@@ -52,7 +52,7 @@ from .beast import (
     write_beast_log_summary_table,
     write_beast_posterior_tree_set,
 )
-from .comparison import (
+from .posterior_sets.comparison import (
     BayesianIndependentRunComparisonReport,
     BayesianMlTreeComparisonReport,
     BayesianParameterDifference,
@@ -95,7 +95,7 @@ from .mrbayes import (
     write_mrbayes_burnin_sensitivity_slice_table,
     write_mrbayes_parameter_summary_table,
 )
-from .posterior import (
+from .posterior_sets.tree_sets import (
     BayesianRunTreeComparison,
     MaximumCladeCredibilityTreeReport,
     PosteriorCladeAgeSummary,

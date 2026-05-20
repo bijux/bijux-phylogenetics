@@ -21,7 +21,7 @@ from bijux_phylogenetics.bayesian import (
     summarize_mrbayes_posterior_trees,
     write_mrbayes_parameter_summary_table,
 )
-from bijux_phylogenetics.bayesian.posterior import (
+from bijux_phylogenetics.bayesian.posterior_sets.tree_sets import (
     subsample_mrbayes_posterior_tree_set,
     write_posterior_tree_subsample,
     write_posterior_tree_subsample_table,

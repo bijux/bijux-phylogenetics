@@ -8,13 +8,13 @@ from bijux_phylogenetics.bayesian.beast import (
     assess_calibration_dominance,
     assess_time_tree_readiness,
 )
-from bijux_phylogenetics.bayesian.comparison import (
+from bijux_phylogenetics.bayesian.posterior_sets.comparison import (
     compare_independent_bayesian_runs,
     compare_ml_tree_to_bayesian_posterior,
     compare_posterior_tree_sets_by_clock,
     compare_posterior_tree_sets_by_prior,
 )
-from bijux_phylogenetics.bayesian.posterior import (
+from bijux_phylogenetics.bayesian.posterior_sets.tree_sets import (
     compare_bayesian_tree_sets,
     subsample_posterior_tree_set,
     summarize_maximum_clade_credibility_tree,

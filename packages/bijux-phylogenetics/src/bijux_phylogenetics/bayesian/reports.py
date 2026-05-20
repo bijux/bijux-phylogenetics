@@ -19,7 +19,7 @@ from bijux_phylogenetics.bayesian.beast.validation import (
 from bijux_phylogenetics.bayesian.beast.xml_analysis import (
     summarize_beast_analysis_xml,
 )
-from bijux_phylogenetics.bayesian.comparison import (
+from bijux_phylogenetics.bayesian.posterior_sets.comparison import (
     compare_independent_bayesian_runs,
     compare_ml_tree_to_bayesian_posterior,
 )

@@ -29,7 +29,7 @@ from bijux_phylogenetics.bayesian.beast import (
     write_beast_posterior_tree_set,
 )
 from bijux_phylogenetics.bayesian.evidence import build_bayesian_evidence_package
-from bijux_phylogenetics.bayesian.posterior import (
+from bijux_phylogenetics.bayesian.posterior_sets.tree_sets import (
     subsample_beast_posterior_tree_set,
     summarize_maximum_clade_credibility_tree,
     write_posterior_tree_subsample,

@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.bayesian.beast.validation import assess_time_tree_readiness
-from bijux_phylogenetics.bayesian.posterior import (
+from bijux_phylogenetics.bayesian.posterior_sets.tree_sets import (
     PosteriorTreeSubsamplingReport,
     subsample_beast_posterior_tree_set,
     subsample_mrbayes_posterior_tree_set,

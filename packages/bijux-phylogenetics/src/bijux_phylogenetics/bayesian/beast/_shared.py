@@ -24,7 +24,7 @@ from bijux_phylogenetics.bayesian.posterior_sets.diagnostics import (
     TraceConvergenceReport,
     summarize_trace_convergence,
 )
-from bijux_phylogenetics.bayesian.posterior import (
+from bijux_phylogenetics.bayesian.posterior_sets.tree_sets import (
     summarize_maximum_clade_credibility_tree,
 )
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
