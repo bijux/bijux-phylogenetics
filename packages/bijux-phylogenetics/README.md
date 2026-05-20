@@ -1046,6 +1046,17 @@ surface now lives as a domain package with separate `models`, `transforms`,
 single-fit execution, model-ranking workflow, and ledger writing do not
 collapse back into one flat implementation file.
 
+The PGLS surface is likewise available as a typed Python package under
+`bijux_phylogenetics.comparative.pgls`. Use `inspect_pgls_inputs()` and
+`build_pgls_model_matrix()` for formula audit and encoded design-matrix
+inspection, `run_pgls()` for one comparative regression fit, and
+`run_pgls_multiple_testing()` for family-wise coefficient review across many
+response traits. Inside that package, formula parsing, input/design audit,
+numerical fitting, and multiple-testing policy now live in separate
+`formula`, `design`, `fitting`, and `multiple_testing` modules, with shared
+dataclasses in `models`, so the package root stays a curated API surface
+instead of regressing into one flat implementation file.
+
 The BEAST adapter surface now makes its evidence state explicit. `adapter
 beast-prepare` only prepares XML, `adapter beast-log`, `beast-trees`, and
 `beast-consensus` parse existing posterior outputs, and reviewer-facing
