@@ -9,11 +9,14 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.reports import (
     write_supplementary_ancestral_state_table,
     write_supplementary_batch_summary_table,
-    write_supplementary_comparative_model_table,
     write_supplementary_diversification_table,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
 
+from .comparative_models import (
+    add_comparative_model_supplementary_table_commands,
+    run_comparative_model_supplementary_table_command,
+)
 from .model_selection import (
     add_model_selection_supplementary_table_commands,
     run_model_selection_supplementary_table_command,
@@ -26,49 +29,11 @@ from .tree_review import (
     add_tree_review_supplementary_table_commands,
     run_tree_review_supplementary_table_command,
 )
-
-
-def _parse_lambda_value(value: str | None) -> float | str:
-    if value == "estimate" or value is None:
-        return "estimate"
-    return float(value)
-
-
 def add_supplementary_table_report_commands(report_subparsers: Any) -> None:
     add_study_input_supplementary_table_commands(report_subparsers)
     add_tree_review_supplementary_table_commands(report_subparsers)
     add_model_selection_supplementary_table_commands(report_subparsers)
-
-    report_supplementary_comparative_model_table = report_subparsers.add_parser(
-        "supplementary-comparative-model-table",
-        help="Write a supplementary comparative-model table with coefficients, uncertainty, diagnostics, and exclusions.",
-    )
-    report_supplementary_comparative_model_table.add_argument(
-        "--tree", required=True, type=Path
-    )
-    report_supplementary_comparative_model_table.add_argument(
-        "--traits", required=True, type=Path
-    )
-    report_supplementary_comparative_model_table.add_argument(
-        "--formula",
-        dest="formulas",
-        action="append",
-        required=True,
-        help="Add one comparative candidate formula. Repeat for each candidate model.",
-    )
-    report_supplementary_comparative_model_table.add_argument("--taxon-column")
-    report_supplementary_comparative_model_table.add_argument(
-        "--lambda-value",
-        default="estimate",
-        help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
-    )
-    report_supplementary_comparative_model_table.add_argument(
-        "--out", required=True, type=Path
-    )
-    report_supplementary_comparative_model_table.add_argument(
-        "--json", action="store_true", help="Emit the table write result as JSON."
-    )
-    _add_manifest_argument(report_supplementary_comparative_model_table)
+    add_comparative_model_supplementary_table_commands(report_subparsers)
 
     report_supplementary_ancestral_state_table = report_subparsers.add_parser(
         "supplementary-ancestral-state-table",
@@ -169,43 +134,9 @@ def run_supplementary_table_report_command(args: Any) -> int | None:
     if model_selection_result is not None:
         return model_selection_result
 
-    if args.report_command == "supplementary-comparative-model-table":
-        result = write_supplementary_comparative_model_table(
-            args.out,
-            tree_path=args.tree,
-            traits_path=args.traits,
-            formulas=list(args.formulas),
-            taxon_column=args.taxon_column,
-            lambda_value=_parse_lambda_value(getattr(args, "lambda_value", None)),
-        )
-        inputs = [args.tree, args.traits]
-        outputs = _finalize_outputs(
-            args,
-            command="report",
-            inputs=inputs,
-            outputs=[result.output_path],
-        )
-        if args.json:
-            _print_result(
-                build_command_result(
-                    command="report",
-                    inputs=inputs,
-                    outputs=outputs,
-                    warnings=[],
-                    metrics={
-                        "row_count": result.row_count,
-                        "model_count": result.model_count,
-                        "selected_formula": result.selected_formula,
-                        "selected_criterion": result.selected_criterion,
-                        "excluded_taxon_count": result.excluded_taxon_count,
-                    },
-                    data=result,
-                ),
-                json_output=True,
-            )
-            return 0
-        print(result.output_path)
-        return 0
+    comparative_model_result = run_comparative_model_supplementary_table_command(args)
+    if comparative_model_result is not None:
+        return comparative_model_result
 
     if args.report_command == "supplementary-ancestral-state-table":
         result = write_supplementary_ancestral_state_table(
