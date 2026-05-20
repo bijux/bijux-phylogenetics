@@ -6,7 +6,7 @@ from typing import Any, cast
 
 import yaml
 
-from bijux_phylogenetics.core.alignment import AlignmentAlphabet
+from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 from .fasta_to_tree import FastaToTreeWorkflowReport, run_fasta_to_tree_workflow

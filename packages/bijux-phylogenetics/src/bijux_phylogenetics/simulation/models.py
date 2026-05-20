@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from bijux_phylogenetics.core.alignment import AlignmentRecord
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 
 
 @dataclass(frozen=True, slots=True)

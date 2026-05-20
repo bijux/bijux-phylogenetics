@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.core.alignment import AlignmentCleaningReport
+from bijux_phylogenetics.phylo.alignment import AlignmentCleaningReport
 from bijux_phylogenetics.io.fasta.cleaning import clean_alignment_with_profile
 
 

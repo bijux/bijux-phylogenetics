@@ -5,7 +5,7 @@ from pathlib import Path
 import shutil
 from tempfile import TemporaryDirectory
 
-from bijux_phylogenetics.core.alignment import AlignmentRecord
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 from bijux_phylogenetics.core.concatenation import (
     ConcatenatedAlignmentReport,
     concatenate_locus_alignments,

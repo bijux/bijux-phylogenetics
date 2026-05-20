@@ -4,7 +4,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.core.alignment import AlignmentRecord
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clades
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.phylo.topology import (

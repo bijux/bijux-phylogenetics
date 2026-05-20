@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
-from bijux_phylogenetics.core.alignment import (
+from bijux_phylogenetics.phylo.alignment import (
     AlignmentAlphabet,
     AlignmentRecord,
     AlignmentSummary,

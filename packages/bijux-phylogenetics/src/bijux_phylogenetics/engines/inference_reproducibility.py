@@ -8,7 +8,7 @@ from bijux_phylogenetics.compare.topology import (
     compare_support_values,
     compare_tree_paths,
 )
-from bijux_phylogenetics.core.alignment import AlignmentAlphabet
+from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
 from bijux_phylogenetics.io.iqtree_support import support_fraction
 
 from .common import build_file_checksums, write_engine_manifest

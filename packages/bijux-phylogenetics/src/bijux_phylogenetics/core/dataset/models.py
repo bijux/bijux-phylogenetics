@@ -7,7 +7,7 @@ from bijux_phylogenetics.bayesian.beast.models import (
     FossilCalibrationValidationReport,
     TipDatingValidationReport,
 )
-from bijux_phylogenetics.core.alignment import AlignmentForensicReport
+from bijux_phylogenetics.phylo.alignment import AlignmentForensicReport
 from bijux_phylogenetics.core.metadata import MetadataColumnCompleteness
 
 

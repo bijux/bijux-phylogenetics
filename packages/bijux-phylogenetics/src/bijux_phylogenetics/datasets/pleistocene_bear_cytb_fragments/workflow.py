@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from bijux_phylogenetics.core.alignment import AlignmentSummary
+from bijux_phylogenetics.phylo.alignment import AlignmentSummary
 from bijux_phylogenetics.engines.fasta_to_tree import run_fasta_to_tree_workflow
 from bijux_phylogenetics.io.fasta import load_fasta_records, write_fasta_alignment
 from bijux_phylogenetics.io.fasta.cleaning import trim_alignment

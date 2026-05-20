@@ -10,7 +10,7 @@ from bijux_phylogenetics.bayesian.beast.validation import (
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
 )
-from bijux_phylogenetics.core.alignment import AlignmentForensicReport
+from bijux_phylogenetics.phylo.alignment import AlignmentForensicReport
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.core.traits import link_tree_to_traits
 from bijux_phylogenetics.io.fasta.quality import build_alignment_forensic_report

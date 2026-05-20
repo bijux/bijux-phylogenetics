@@ -6,7 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.core.alignment import (
+from bijux_phylogenetics.phylo.alignment import (
     AlignmentAlphabet,
     AlignmentRecord,
     FastaInputValidationReport,

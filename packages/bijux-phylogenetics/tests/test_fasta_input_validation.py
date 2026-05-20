@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.core.alignment import AlignmentRecord
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
     detect_fasta_sequence_type,

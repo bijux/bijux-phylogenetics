@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import NamedTuple
 
-from bijux_phylogenetics.core.alignment import AlignmentAlphabet, AlignmentRecord
+from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet, AlignmentRecord
 from bijux_phylogenetics.core.locus_occupancy import (
     LocusCoverageRow,
     LocusOccupancyCell,

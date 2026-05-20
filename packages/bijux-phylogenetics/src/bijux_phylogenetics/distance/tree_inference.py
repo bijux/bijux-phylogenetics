@@ -11,7 +11,7 @@ from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
     compare_tree_paths,
 )
-from bijux_phylogenetics.core.alignment import AlignmentRecord
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 from bijux_phylogenetics.phylo.topology.clades import (
     informative_unrooted_splits,
     robinson_foulds_metrics,

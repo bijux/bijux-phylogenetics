@@ -7,7 +7,7 @@ from bijux_phylogenetics.bayesian.burnin import (
     BurninSensitivityCladeShift,
     BurninSensitivityParameterShift,
 )
-from bijux_phylogenetics.core.alignment import AlignmentAlphabet
+from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 

@@ -7,7 +7,7 @@ import subprocess  # nosec B404
 import time
 import tracemalloc
 
-from bijux_phylogenetics.core.alignment import AlignmentAlphabet
+from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError, InvalidAlignmentError
 
 from .common import (

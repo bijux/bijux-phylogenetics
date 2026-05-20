@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import shutil
 
-from bijux_phylogenetics.core.alignment import (
+from bijux_phylogenetics.phylo.alignment import (
     CodingSequencePreparationReport,
     SequenceCompositionOutlier,
 )

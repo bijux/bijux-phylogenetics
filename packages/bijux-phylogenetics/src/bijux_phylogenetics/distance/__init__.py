@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.core.alignment import DnaBinAlignment
+from bijux_phylogenetics.phylo.alignment import DnaBinAlignment
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from .models import (
     AmbiguityPolicy,

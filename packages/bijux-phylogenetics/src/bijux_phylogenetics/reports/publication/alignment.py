@@ -6,7 +6,7 @@ from html import escape
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.core.alignment import (
+from bijux_phylogenetics.phylo.alignment import (
     AlignmentForensicReport,
     AlignmentRecord,
     AlignmentSummary,

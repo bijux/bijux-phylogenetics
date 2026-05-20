@@ -204,7 +204,7 @@ from bijux_phylogenetics.compare.topology_distance import (
 from bijux_phylogenetics.compare.tree_distance_reference import (
     validate_tree_distance_reference_examples,
 )
-from bijux_phylogenetics.core.alignment import AlignmentRecord, AlignmentSummary
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord, AlignmentSummary
 from bijux_phylogenetics.phylo.branch_lengths.branching_times import (
     TreeBranchingTimeReport,
     compute_tree_branching_times,

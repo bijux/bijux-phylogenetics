@@ -10,7 +10,7 @@ from bijux_phylogenetics.ancestral.discrete import DiscreteAncestralReport
 from bijux_phylogenetics.ancestral.service import write_ancestral_state_table
 from bijux_phylogenetics.comparative.pgls import PGLSResult
 from bijux_phylogenetics.compare.topology import TreeComparisonReport
-from bijux_phylogenetics.core.alignment import FastaInputValidationReport
+from bijux_phylogenetics.phylo.alignment import FastaInputValidationReport
 from bijux_phylogenetics.engines.bootstrap_artifacts import (
     build_bootstrap_support_rows,
     write_bootstrap_support_table,

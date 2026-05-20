@@ -19,7 +19,7 @@ if TYPE_CHECKING:
         PosteriorTreePGLSReport,
     )
     from bijux_phylogenetics.comparative.reporting import ComparativeMethodReport
-    from bijux_phylogenetics.core.alignment import (
+    from bijux_phylogenetics.phylo.alignment import (
         AlignmentQualityReport,
         SequenceQualityRankingReport,
     )

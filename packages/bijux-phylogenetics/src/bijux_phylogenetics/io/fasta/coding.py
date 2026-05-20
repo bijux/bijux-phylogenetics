@@ -4,7 +4,7 @@ from pathlib import Path
 
 from Bio.Data import CodonTable
 
-from bijux_phylogenetics.core.alignment import (
+from bijux_phylogenetics.phylo.alignment import (
     AlignmentAlphabet,
     AlignmentRecord,
     CodingAlignmentDiagnostics,

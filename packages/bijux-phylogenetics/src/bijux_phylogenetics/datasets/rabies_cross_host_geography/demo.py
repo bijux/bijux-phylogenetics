@@ -78,7 +78,7 @@ from bijux_phylogenetics.compare.reports import (
     build_tree_comparison_report,
 )
 from bijux_phylogenetics.compare.topology import write_tree_comparison_table
-from bijux_phylogenetics.core.alignment import (
+from bijux_phylogenetics.phylo.alignment import (
     AlignmentQualityReport,
     SequenceQualityRankingReport,
 )

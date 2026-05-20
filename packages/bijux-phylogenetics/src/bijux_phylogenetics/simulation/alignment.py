@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import random
 
-from bijux_phylogenetics.core.alignment import AlignmentRecord
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 from bijux_phylogenetics.io.fasta import write_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 

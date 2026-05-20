@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from statistics import median
 
-from bijux_phylogenetics.core.alignment import (
+from bijux_phylogenetics.phylo.alignment import (
     AlignmentAlphabet,
     AlignmentRecord,
     FastaDuplicateIdentifier,
