@@ -4,10 +4,6 @@ from typing import Any
 
 from bijux_phylogenetics.command_line.registry import get_command_spec
 
-from .continuous import (
-    add_comparative_continuous_commands,
-    run_comparative_continuous_command,
-)
 from .evolution import (
     add_comparative_evolution_commands,
     run_comparative_evolution_command,
@@ -32,6 +28,10 @@ from .support import (
     add_comparative_support_commands,
     run_comparative_support_command,
 )
+from .signal import (
+    add_comparative_signal_commands,
+    run_comparative_signal_command,
+)
 from .trait_review import (
     add_comparative_trait_review_commands,
     run_comparative_trait_review_command,
@@ -47,7 +47,7 @@ def add_comparative_commands(subparsers: Any) -> None:
         dest="comparative_command",
         required=True,
     )
-    add_comparative_continuous_commands(comparative_subparsers)
+    add_comparative_signal_commands(comparative_subparsers)
     add_comparative_evolution_commands(comparative_subparsers)
     add_comparative_trait_review_commands(comparative_subparsers)
     add_comparative_maturity_command(comparative_subparsers)
@@ -62,9 +62,9 @@ def run_comparative_command(
     *,
     parser: Any,
 ) -> int:
-    continuous_exit_code = run_comparative_continuous_command(args, parser=parser)
-    if continuous_exit_code is not None:
-        return continuous_exit_code
+    signal_exit_code = run_comparative_signal_command(args, parser=parser)
+    if signal_exit_code is not None:
+        return signal_exit_code
 
     evolution_exit_code = run_comparative_evolution_command(args, parser=parser)
     if evolution_exit_code is not None:
@@ -101,8 +101,8 @@ def run_comparative_command(
 
 __all__ = [
     "add_comparative_commands",
-    "add_comparative_continuous_commands",
     "add_comparative_evolution_commands",
+    "add_comparative_signal_commands",
     "add_comparative_logistic_command",
     "add_comparative_maturity_command",
     "add_comparative_modeling_commands",
@@ -110,8 +110,8 @@ __all__ = [
     "add_comparative_support_commands",
     "add_comparative_trait_review_commands",
     "run_comparative_command",
-    "run_comparative_continuous_command",
     "run_comparative_evolution_command",
+    "run_comparative_signal_command",
     "run_comparative_logistic_command",
     "run_comparative_maturity_command",
     "run_comparative_modeling_command",
