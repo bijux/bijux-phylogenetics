@@ -7,7 +7,6 @@ import json
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
 )
@@ -39,6 +38,11 @@ from .summaries import (
     model_figure_color as _model_color,
     parameter_label as _parameter_label,
 )
+from .outputs import (
+    write_model_figure_caption as _write_caption,
+    write_model_figure_legend_table as _write_legend_table,
+    write_model_figure_table as _write_table,
+)
 
 
 def _checksum(path: Path) -> str:
@@ -53,32 +57,6 @@ def _json_ready(payload: object) -> object:
     return json.loads(json.dumps(payload, default=str))
 
 
-
-
-def _write_table(path: Path, rows: list[object]) -> Path:
-    return write_taxon_rows(
-        path,
-        columns=list(asdict(rows[0]).keys()),
-        rows=[asdict(row) for row in rows],
-    )
-
-
-def _write_legend_table(
-    path: Path, entries: list[ComparativeModelFigureLegendEntry]
-) -> Path:
-    return write_taxon_rows(
-        path,
-        columns=["surface", "label", "swatch", "detail"],
-        rows=[
-            {
-                "surface": entry.surface,
-                "label": entry.label,
-                "swatch": entry.swatch,
-                "detail": entry.detail,
-            }
-            for entry in entries
-        ],
-    )
 
 
 def _write_information_criteria_svg(
@@ -298,29 +276,6 @@ def _write_fit_summary_svg(
     segments.append("</svg>")
     path.write_text("\n".join(segments) + "\n", encoding="utf-8")
     return len(rows)
-
-
-def _write_caption(path: Path, draft: ComparativeModelFigureCaptionDraft) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        "\n".join(
-            [
-                f"# {draft.title}",
-                "",
-                draft.lead_sentence,
-                draft.criteria_sentence,
-                draft.likelihood_sentence,
-                draft.parameter_sentence,
-                draft.fit_sentence,
-                draft.limitation_sentence,
-                "",
-                f"caption_ready: {'true' if draft.caption_ready else 'false'}",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    return path
 
 
 def _build_review_html(
