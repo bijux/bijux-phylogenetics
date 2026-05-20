@@ -30,7 +30,7 @@ from ..common import (
     resolve_engine_executable,
     validate_timeout_seconds,
 )
-from ..fasttree_artifacts import (
+from ..artifacts.fasttree import (
     build_fasttree_low_support_rows,
     build_fasttree_support_histogram_rows,
     build_fasttree_support_rows,

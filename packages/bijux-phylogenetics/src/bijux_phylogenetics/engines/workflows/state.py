@@ -76,7 +76,7 @@ from ..common import (
     validate_timeout_seconds,
     write_engine_manifest,
 )
-from ..fasttree_artifacts import (
+from ..artifacts.fasttree import (
     build_fasttree_low_support_rows,
     build_fasttree_support_histogram_rows,
     build_fasttree_support_rows,
@@ -92,7 +92,7 @@ from ..iqtree_artifacts import (
     resolve_iqtree_model_sidecar,
     write_iqtree_model_candidates_table,
 )
-from ..sh_alrt_artifacts import (
+from ..artifacts.sh_alrt import (
     build_conflicting_sh_alrt_support_rows,
     build_sh_alrt_support_rows,
     write_sh_alrt_support_table,

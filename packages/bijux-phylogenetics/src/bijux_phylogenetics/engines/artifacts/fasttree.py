@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .validation import FastTreeSupportSummaryReport
+    from .support import FastTreeSupportSummaryReport
 
 __all__ = [
     "FastTreeSupportHistogramRow",

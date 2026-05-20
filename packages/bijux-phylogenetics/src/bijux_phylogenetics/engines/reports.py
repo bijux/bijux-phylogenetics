@@ -8,8 +8,8 @@ from bijux_phylogenetics.render.html import write_html_report
 
 from .artifacts.bootstrap import build_low_support_bootstrap_rows
 from .common import load_engine_manifest
-from .fasttree_artifacts import build_fasttree_low_support_rows
-from .sh_alrt_artifacts import build_conflicting_sh_alrt_support_rows
+from .artifacts.fasttree import build_fasttree_low_support_rows
+from .artifacts.sh_alrt import build_conflicting_sh_alrt_support_rows
 from .validation import (
     classify_inference_workflow_failure,
     compare_inferred_trees_across_engines,
