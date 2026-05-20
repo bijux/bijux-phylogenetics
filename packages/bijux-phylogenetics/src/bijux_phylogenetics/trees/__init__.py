@@ -42,7 +42,7 @@ from .tree_sets import (
     write_reference_tree_clade_support_table,
     write_tree_distance_matrix,
 )
-from .tree_shape import (
+from .inspection import (
     TreeShapeAggregate,
     TreeShapeReport,
     TreeShapeRow,

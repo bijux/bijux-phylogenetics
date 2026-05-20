@@ -11,7 +11,7 @@ from bijux_phylogenetics.io.newick import (
     write_newick,
     write_newick_tree_set,
 )
-from bijux_phylogenetics.trees.tree_shape import summarize_tree_shape_from_tree
+from bijux_phylogenetics.trees.inspection import summarize_tree_shape_from_tree
 
 from ..contracts import (
     TreeSimulationEnvelopeMetric,
