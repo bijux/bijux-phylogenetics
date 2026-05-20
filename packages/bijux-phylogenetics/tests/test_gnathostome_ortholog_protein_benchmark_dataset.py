@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.vertebrates as vertebrates_api
+import bijux_phylogenetics.datasets.gnathostome_ortholog_protein_benchmark as vertebrates_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_gnathostome_ortholog_protein_benchmark_dataset,

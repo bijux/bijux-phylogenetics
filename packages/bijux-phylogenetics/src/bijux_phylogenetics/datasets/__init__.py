@@ -274,7 +274,7 @@ from .rabies_method_sensitivity.slurm import (
     write_rabies_method_sensitivity_slurm_storage_summary_json,
     write_rabies_method_sensitivity_slurm_storage_variants_table,
 )
-from .vertebrates import (
+from .gnathostome_ortholog_protein_benchmark import (
     GnathostomeOrthologProteinBenchmarkDataset,
     GnathostomeOrthologProteinBenchmarkDemoResult,
     GnathostomeOrthologProteinBenchmarkExportResult,

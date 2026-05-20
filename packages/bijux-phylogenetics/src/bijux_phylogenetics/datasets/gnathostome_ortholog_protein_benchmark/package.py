@@ -431,7 +431,7 @@ def _format_number(value: float | None) -> str:
 
 def _resource_root() -> Path:
     return (
-        Path(__file__).resolve().parent.parent
+        Path(__file__).resolve().parent.parent.parent
         / "resources"
         / "datasets"
         / "vertebrates"
