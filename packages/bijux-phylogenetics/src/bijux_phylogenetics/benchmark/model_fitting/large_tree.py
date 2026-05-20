@@ -28,7 +28,7 @@ from bijux_phylogenetics.simulation import (
     write_discrete_trait_table,
 )
 
-from .geiger_large_tree_model_fitting_reference import (
+from .geiger_reference import (
     GEIGER_LARGE_TREE_MODEL_FITTING_REFERENCE_PAYLOADS,
 )
 
