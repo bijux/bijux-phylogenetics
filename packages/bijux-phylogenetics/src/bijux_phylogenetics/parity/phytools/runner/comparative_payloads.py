@@ -6,7 +6,7 @@ from pathlib import Path
 from bijux_phylogenetics.comparative.phylogenetic_anova import (
     summarize_phylogenetic_anova,
 )
-from bijux_phylogenetics.comparative.phylogenetic_residuals import (
+from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_residuals,
 )
 from bijux_phylogenetics.comparative.pgls import (

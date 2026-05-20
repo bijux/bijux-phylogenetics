@@ -12,7 +12,7 @@ from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.phylogenetic_anova import (
     summarize_phylogenetic_anova,
 )
-from bijux_phylogenetics.comparative.phylogenetic_residuals import (
+from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_residuals,
 )
 from bijux_phylogenetics.comparative.pgls import (

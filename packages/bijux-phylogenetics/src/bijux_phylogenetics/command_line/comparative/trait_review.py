@@ -20,7 +20,7 @@ from bijux_phylogenetics.comparative.phylogenetic_anova import (
     write_phylogenetic_anova_simulation_table,
     write_phylogenetic_anova_summary_table,
 )
-from bijux_phylogenetics.comparative.phylogenetic_residuals import (
+from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_residuals,
     write_phylogenetic_residual_coefficient_table,
     write_phylogenetic_residual_exclusion_table,

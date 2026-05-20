@@ -833,7 +833,7 @@ def compute_phylogenetic_residual_payload(
     inline_script = '''
 import json
 from pathlib import Path
-from bijux_phylogenetics.comparative.phylogenetic_residuals import summarize_phylogenetic_residuals
+from bijux_phylogenetics.comparative.regression import summarize_phylogenetic_residuals
 
 payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
 tree_path, traits_path = payload["input_fixtures"]

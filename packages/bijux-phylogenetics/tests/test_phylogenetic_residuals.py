@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.phylogenetic_residuals import (
+from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_residuals,
     write_phylogenetic_residual_coefficient_table,
     write_phylogenetic_residual_exclusion_table,

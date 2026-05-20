@@ -381,7 +381,7 @@ from .phylogenetic_anova import (
     write_phylogenetic_anova_simulation_table,
     write_phylogenetic_anova_summary_table,
 )
-from .phylogenetic_residuals import (
+from .regression import (
     PhylogeneticResidualCoefficientRow,
     PhylogeneticResidualExclusion,
     PhylogeneticResidualReport,
