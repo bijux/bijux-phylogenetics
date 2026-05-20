@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.trait_regime_mapping import (
+from bijux_phylogenetics.comparative.traits.regime_mapping import (
     render_trait_regime_map,
     summarize_trait_regime_mapping,
     write_trait_regime_branch_table,

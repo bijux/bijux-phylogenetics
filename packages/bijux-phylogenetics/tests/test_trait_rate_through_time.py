@@ -11,7 +11,7 @@ from bijux_phylogenetics.comparative.common import (
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     transform_tree_for_evolutionary_mode,
 )
-from bijux_phylogenetics.comparative.trait_rate_through_time import (
+from bijux_phylogenetics.comparative.traits.rate_through_time import (
     summarize_trait_rate_through_time,
     write_trait_rate_through_time_exclusion_table,
     write_trait_rate_through_time_interval_table,

@@ -27,14 +27,14 @@ from bijux_phylogenetics.comparative.phylogenetic_residuals import (
     write_phylogenetic_residual_summary_table,
     write_phylogenetic_residual_taxon_table,
 )
-from bijux_phylogenetics.comparative.trait_imputation import (
+from bijux_phylogenetics.comparative.traits.imputation import (
     summarize_trait_imputation,
     write_trait_imputation_exclusion_table,
     write_trait_imputation_holdout_table,
     write_trait_imputation_summary_table,
     write_trait_imputation_table,
 )
-from bijux_phylogenetics.comparative.trait_outliers import (
+from bijux_phylogenetics.comparative.traits.outliers import (
     summarize_trait_outliers,
     write_trait_outlier_exclusion_table,
     write_trait_outlier_summary_table,

@@ -23,7 +23,7 @@ from bijux_phylogenetics.comparative.ou_trait_evolution import (
     write_ou_trait_evolution_exclusion_table,
     write_ou_trait_evolution_summary_table,
 )
-from bijux_phylogenetics.comparative.trait_rate_through_time import (
+from bijux_phylogenetics.comparative.traits.rate_through_time import (
     summarize_trait_rate_through_time,
     write_trait_rate_through_time_exclusion_table,
     write_trait_rate_through_time_interval_table,

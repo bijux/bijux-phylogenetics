@@ -27,7 +27,7 @@ from bijux_phylogenetics.comparative.models import (
     _estimate_lambda_for_values,
     fit_brownian_motion_model,
 )
-from bijux_phylogenetics.comparative.trait_regime_mapping import (
+from bijux_phylogenetics.comparative.traits.regime_mapping import (
     build_branch_identity_lookup,
     resolve_branch_regime_id_column,
 )

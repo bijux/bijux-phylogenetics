@@ -18,7 +18,7 @@ from bijux_phylogenetics.comparative.brownian_regime_rates import (
     write_brownian_regime_rate_table,
     write_brownian_regime_summary_table,
 )
-from bijux_phylogenetics.comparative.trait_regime_mapping import (
+from bijux_phylogenetics.comparative.traits.regime_mapping import (
     render_trait_regime_map,
     summarize_trait_regime_mapping,
     write_trait_regime_branch_table,
