@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.clade_residuals import (
+from bijux_phylogenetics.comparative.clades.residuals import (
     analyze_comparative_residual_clades,
     write_comparative_residual_clade_table,
     write_comparative_residual_taxon_table,

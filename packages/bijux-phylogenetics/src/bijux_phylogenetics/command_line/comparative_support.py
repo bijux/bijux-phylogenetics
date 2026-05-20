@@ -6,12 +6,12 @@ from typing import Any
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.comparative.clade_residuals import (
+from bijux_phylogenetics.comparative.clades.residuals import (
     analyze_comparative_residual_clades,
     write_comparative_residual_clade_table,
     write_comparative_residual_taxon_table,
 )
-from bijux_phylogenetics.comparative.clade_stability import (
+from bijux_phylogenetics.comparative.clades.stability import (
     analyze_comparative_clade_stability,
     write_comparative_clade_coefficient_change_table,
     write_comparative_clade_stability_table,

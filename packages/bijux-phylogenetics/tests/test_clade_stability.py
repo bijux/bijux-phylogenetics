@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.clade_stability import (
+from bijux_phylogenetics.comparative.clades.stability import (
     analyze_comparative_clade_stability,
     write_comparative_clade_coefficient_change_table,
     write_comparative_clade_stability_table,

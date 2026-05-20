@@ -6,7 +6,7 @@ from typing import Any
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.comparative.clade_traits import (
+from bijux_phylogenetics.comparative.clades.traits import (
     summarize_clade_traits,
     write_clade_trait_clade_table,
     write_clade_trait_exclusion_table,
