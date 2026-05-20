@@ -29,7 +29,7 @@ from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
     tree_report_method_tier,
 )
-from bijux_phylogenetics.reports.methods_summary import (
+from bijux_phylogenetics.reports.methods import (
     TreeValidationMethodsSummaryTextResult,
     write_tree_validation_methods_summary_text,
 )

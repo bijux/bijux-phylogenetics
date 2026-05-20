@@ -36,11 +36,9 @@ from .review import (
 from .methods import (
     AlignmentFilteringMethodsSummaryTextResult,
     TreeInferenceMethodsSummaryTextResult,
+    TreeValidationMethodsSummaryTextResult,
     write_alignment_filtering_methods_summary_text,
     write_tree_inference_methods_summary_text,
-)
-from .methods_summary import (
-    TreeValidationMethodsSummaryTextResult,
     write_tree_validation_methods_summary_text,
 )
 from .supplementary_tables import (
