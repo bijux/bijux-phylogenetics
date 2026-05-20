@@ -10,12 +10,10 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.comparative import (
     build_diversification_figure_package,
     build_diversification_method_report,
-    detect_diversification_outlier_clades,
     render_diversification_report,
     run_trait_dependent_diversification_analysis,
     summarize_geiger_birth_death_exclusion,
     summarize_medusa_exclusion,
-    write_clade_diversification_table,
     write_diversification_methods_summary_text,
     write_trait_dependent_diversification_table,
 )
@@ -23,6 +21,10 @@ from bijux_phylogenetics.runtime.errors import DiversificationAnalysisError
 from bijux_phylogenetics.runtime.results import build_command_result
 
 from .inputs import tree_and_metadata_inputs, tree_metadata_traits_inputs
+from .clades import (
+    add_diversification_clade_command,
+    run_diversification_clade_command,
+)
 from .inspection import (
     add_diversification_inspection_commands,
     run_diversification_inspection_command,
@@ -44,23 +46,7 @@ def add_diversification_commands(subparsers: Any) -> None:
     )
     add_diversification_inspection_commands(diversification_subparsers)
     add_diversification_modeling_commands(diversification_subparsers)
-
-    diversification_clades = diversification_subparsers.add_parser(
-        "clades",
-        help="Detect clades with unusually high or low diversification.",
-    )
-    diversification_clades.add_argument("tree", type=Path)
-    diversification_clades.add_argument(
-        "--model", choices=("yule", "birth-death"), default="birth-death"
-    )
-    diversification_clades.add_argument("--min-tip-count", type=int, default=2)
-    diversification_clades.add_argument(
-        "--out", type=Path, help="Write the clade diversification table as TSV."
-    )
-    diversification_clades.add_argument(
-        "--json", action="store_true", help="Emit the clade scan report as JSON."
-    )
-    _add_manifest_argument(diversification_clades)
+    add_diversification_clade_command(diversification_subparsers)
 
     diversification_trait = diversification_subparsers.add_parser(
         "trait-dependent",
@@ -178,39 +164,6 @@ def add_diversification_commands(subparsers: Any) -> None:
         help="Emit the birth-death exclusion as JSON.",
     )
     _add_manifest_argument(diversification_bd_ms)
-def _run_clades(args: Any) -> int:
-    report = detect_diversification_outlier_clades(
-        args.tree,
-        min_tip_count=args.min_tip_count,
-        model=args.model,
-    )
-    outputs: list[Path | str] = []
-    if args.out is not None:
-        outputs.append(write_clade_diversification_table(args.out, report))
-    outputs = _finalize_outputs(
-        args,
-        command="diversification",
-        inputs=[args.tree],
-        outputs=outputs,
-    )
-    _print_result(
-        build_command_result(
-            command="diversification",
-            inputs=[args.tree],
-            outputs=outputs,
-            warnings=report.warnings,
-            metrics={
-                "global_rate": report.global_rate,
-                "high_clade_count": len(report.high_diversification_clades),
-                "low_clade_count": len(report.low_diversification_clades),
-            },
-            data=report,
-        ),
-        json_output=args.json,
-    )
-    return 0
-
-
 def _run_trait_dependent(args: Any) -> int:
     report = run_trait_dependent_diversification_analysis(
         args.tree,
@@ -442,8 +395,10 @@ def run_diversification_command(args: Any) -> int:
     if modeling_exit_code is not None:
         return modeling_exit_code
 
-    if args.diversification_command == "clades":
-        return _run_clades(args)
+    clade_exit_code = run_diversification_clade_command(args)
+    if clade_exit_code is not None:
+        return clade_exit_code
+
     if args.diversification_command == "trait-dependent":
         return _run_trait_dependent(args)
     if args.diversification_command == "package":
