@@ -8,10 +8,10 @@ import tempfile
 
 from Bio import Phylo
 
-from bijux_phylogenetics.comparative.pgls import (
+from bijux_phylogenetics.comparative.pgls.design import inspect_pgls_inputs
+from bijux_phylogenetics.comparative.pgls.fitting import run_pgls
+from bijux_phylogenetics.comparative.pgls.models import (
     ComparativeFormulaSpecification,
-    inspect_pgls_inputs,
-    run_pgls,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa

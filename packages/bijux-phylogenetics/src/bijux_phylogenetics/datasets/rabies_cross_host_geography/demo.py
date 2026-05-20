@@ -36,15 +36,15 @@ from bijux_phylogenetics.comparative.pgls import (
     run_pgls,
     write_pgls_model_matrix_table,
 )
-from bijux_phylogenetics.comparative.pgls_categorical_contrasts import (
+from bijux_phylogenetics.comparative.pgls.categorical_contrasts import (
     PGLSCategoricalContrastReport,
     summarize_pgls_categorical_contrasts,
     write_pgls_categorical_contrast_table,
 )
-from bijux_phylogenetics.comparative.pgls_lambda_fit import (
+from bijux_phylogenetics.comparative.pgls.lambda_fit import (
     write_pgls_lambda_profile_table,
 )
-from bijux_phylogenetics.comparative.posterior_tree_pgls import (
+from bijux_phylogenetics.comparative.pgls.posterior_tree import (
     PosteriorTreePGLSReport,
     run_posterior_tree_pgls,
 )

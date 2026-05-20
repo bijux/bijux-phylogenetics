@@ -321,29 +321,29 @@ from .pgls import (
     run_pgls_multiple_testing,
     write_pgls_model_matrix_table,
 )
-from .pgls_brownian_covariance import (
+from .pgls.brownian_covariance import (
     BrownianCovariancePGLSReport,
     BrownianCovarianceRow,
     summarize_brownian_covariance_pgls,
     write_brownian_covariance_table,
 )
-from .pgls_categorical_contrasts import (
+from .pgls.categorical_contrasts import (
     PGLSCategoricalContrastReport,
     PGLSCategoricalContrastRow,
     summarize_pgls_categorical_contrasts,
     write_pgls_categorical_contrast_table,
 )
-from .pgls_interaction_coefficients import (
+from .pgls.interaction_coefficients import (
     PGLSInteractionCoefficientReport,
     PGLSInteractionCoefficientRow,
     summarize_pgls_interaction_coefficients,
     write_pgls_interaction_coefficient_table,
 )
-from .pgls_lambda_fit import (
+from .pgls.lambda_fit import (
     summarize_pgls_lambda_fit,
     write_pgls_lambda_profile_table,
 )
-from .pgls_ou_covariance import (
+from .pgls.ou_covariance import (
     OUCovarianceModelFit,
     OUCovariancePGLSReport,
     OUCovarianceRow,
@@ -351,6 +351,16 @@ from .pgls_ou_covariance import (
     summarize_ou_covariance_pgls,
     write_ou_alpha_profile_table,
     write_ou_covariance_table,
+)
+from .pgls.posterior_tree import (
+    PosteriorTreePGLSCoefficientRow,
+    PosteriorTreePGLSCoefficientSummaryRow,
+    PosteriorTreePGLSReport,
+    PosteriorTreePGLSTreeFitRow,
+    run_posterior_tree_pgls,
+    write_posterior_tree_pgls_coefficient_table,
+    write_posterior_tree_pgls_summary_table,
+    write_posterior_tree_pgls_tree_table,
 )
 from .phylogenetic_logistic import (
     PhylogeneticLogisticCoefficient,
@@ -391,16 +401,6 @@ from .phylogenetic_signal import (
     summarize_phylogenetic_signal,
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,
-)
-from .posterior_tree_pgls import (
-    PosteriorTreePGLSCoefficientRow,
-    PosteriorTreePGLSCoefficientSummaryRow,
-    PosteriorTreePGLSReport,
-    PosteriorTreePGLSTreeFitRow,
-    run_posterior_tree_pgls,
-    write_posterior_tree_pgls_coefficient_table,
-    write_posterior_tree_pgls_summary_table,
-    write_posterior_tree_pgls_tree_table,
 )
 from .regression_model_selection import (
     ComparativeRegressionModelExclusion,

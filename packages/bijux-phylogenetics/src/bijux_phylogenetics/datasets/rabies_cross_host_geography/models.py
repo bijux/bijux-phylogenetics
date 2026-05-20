@@ -12,10 +12,10 @@ if TYPE_CHECKING:
     from bijux_phylogenetics.biogeography import (
         BiogeographyReportPackageResult,
     )
-    from bijux_phylogenetics.comparative.pgls_categorical_contrasts import (
+    from bijux_phylogenetics.comparative.pgls.categorical_contrasts import (
         PGLSCategoricalContrastReport,
     )
-    from bijux_phylogenetics.comparative.posterior_tree_pgls import (
+    from bijux_phylogenetics.comparative.pgls.posterior_tree import (
         PosteriorTreePGLSReport,
     )
     from bijux_phylogenetics.comparative.reporting import ComparativeMethodReport

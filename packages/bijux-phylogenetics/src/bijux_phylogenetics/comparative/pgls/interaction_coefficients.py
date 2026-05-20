@@ -3,12 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.pgls import (
+from bijux_phylogenetics.comparative.pgls.design import inspect_pgls_inputs
+from bijux_phylogenetics.comparative.pgls.fitting import run_pgls
+from bijux_phylogenetics.comparative.pgls.models import (
     PGLSInputReport,
     PGLSPredictorClassification,
     PGLSResult,
-    inspect_pgls_inputs,
-    run_pgls,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError

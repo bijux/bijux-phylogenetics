@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.comparative.pgls_ou_covariance import (
+from bijux_phylogenetics.comparative.pgls.ou_covariance import (
     summarize_ou_covariance_pgls,
     write_ou_alpha_profile_table,
     write_ou_covariance_table,

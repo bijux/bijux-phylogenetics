@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.comparative.pgls import run_pgls
-from bijux_phylogenetics.comparative.pgls_lambda_fit import (
+from bijux_phylogenetics.comparative.pgls.lambda_fit import (
     summarize_pgls_lambda_fit,
     write_pgls_lambda_profile_table,
 )

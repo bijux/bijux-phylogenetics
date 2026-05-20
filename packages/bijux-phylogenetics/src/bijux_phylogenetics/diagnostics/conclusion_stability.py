@@ -10,7 +10,7 @@ from bijux_phylogenetics.ancestral.discrete import DiscreteAncestralReport
 from bijux_phylogenetics.ancestral.tree_set import DiscreteAncestralTreeSetReport
 from bijux_phylogenetics.trees import CladeTableReport, CladeTableRow
 from bijux_phylogenetics.comparative.pgls import PGLSResult
-from bijux_phylogenetics.comparative.posterior_tree_pgls import (
+from bijux_phylogenetics.comparative.pgls.posterior_tree import (
     PosteriorTreePGLSCoefficientSummaryRow,
     PosteriorTreePGLSReport,
 )

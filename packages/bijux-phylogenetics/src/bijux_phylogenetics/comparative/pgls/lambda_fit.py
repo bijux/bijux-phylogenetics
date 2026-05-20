@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.pgls import (
+from bijux_phylogenetics.comparative.pgls.fitting import run_pgls
+from bijux_phylogenetics.comparative.pgls.models import (
     PGLSLambdaFitReport,
-    run_pgls,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 

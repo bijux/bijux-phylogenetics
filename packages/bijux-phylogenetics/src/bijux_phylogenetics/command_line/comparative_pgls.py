@@ -18,22 +18,22 @@ from bijux_phylogenetics.comparative.pgls import (
     run_pgls_multiple_testing,
     write_pgls_model_matrix_table,
 )
-from bijux_phylogenetics.comparative.pgls_brownian_covariance import (
+from bijux_phylogenetics.comparative.pgls.brownian_covariance import (
     summarize_brownian_covariance_pgls,
     write_brownian_covariance_table,
 )
-from bijux_phylogenetics.comparative.pgls_categorical_contrasts import (
+from bijux_phylogenetics.comparative.pgls.categorical_contrasts import (
     summarize_pgls_categorical_contrasts,
     write_pgls_categorical_contrast_table,
 )
-from bijux_phylogenetics.comparative.pgls_interaction_coefficients import (
+from bijux_phylogenetics.comparative.pgls.interaction_coefficients import (
     summarize_pgls_interaction_coefficients,
     write_pgls_interaction_coefficient_table,
 )
-from bijux_phylogenetics.comparative.pgls_lambda_fit import (
+from bijux_phylogenetics.comparative.pgls.lambda_fit import (
     write_pgls_lambda_profile_table,
 )
-from bijux_phylogenetics.comparative.pgls_ou_covariance import (
+from bijux_phylogenetics.comparative.pgls.ou_covariance import (
     summarize_ou_covariance_pgls,
     write_ou_alpha_profile_table,
     write_ou_covariance_table,
