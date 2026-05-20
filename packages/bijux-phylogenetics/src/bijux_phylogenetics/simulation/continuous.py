@@ -16,7 +16,10 @@ def simulate_brownian_traits(
     sigma_squared: float | None = None,
     seed: int = 1,
 ):
-    from . import _resolve_brownian_sigma_parameters, _simulate_brownian_node_values
+    from .propagation import (
+        _resolve_brownian_sigma_parameters,
+        _simulate_brownian_node_values,
+    )
 
     sigma, sigma_squared = _resolve_brownian_sigma_parameters(
         sigma=sigma,
@@ -54,7 +57,7 @@ def simulate_ou_traits(
     theta: float = 0.0,
     seed: int = 1,
 ):
-    from . import _iter_node_trait_values
+    from .propagation import _iter_node_trait_values
 
     if sigma < 0.0:
         raise ValueError(f"sigma must be nonnegative, got {sigma}")
@@ -104,7 +107,7 @@ def simulate_early_burst_traits(
         transform_tree_for_evolutionary_mode,
     )
 
-    from . import _iter_node_trait_values
+    from .propagation import _iter_node_trait_values
 
     if sigma < 0.0:
         raise ValueError(f"sigma must be nonnegative, got {sigma}")
@@ -147,7 +150,10 @@ def simulate_speciational_traits(
     sigma_squared: float | None = None,
     seed: int = 1,
 ):
-    from . import _resolve_brownian_sigma_parameters, _simulate_brownian_node_values
+    from .propagation import (
+        _resolve_brownian_sigma_parameters,
+        _simulate_brownian_node_values,
+    )
 
     sigma, sigma_squared = _resolve_brownian_sigma_parameters(
         sigma=sigma,
@@ -200,7 +206,7 @@ def _build_continuous_trait_simulation_report(
         SimulatedContinuousNode,
         SimulatedContinuousTrait,
     )
-    from . import _tip_values_from_node_map
+    from .propagation import _tip_values_from_node_map
 
     values = _tip_values_from_node_map(tree, node_values)
     return ContinuousTraitSimulationReport(
@@ -300,7 +306,7 @@ def simulate_brownian_trait_collection(
     seed: int = 1,
 ):
     from .models import ContinuousTraitSimulationCollectionReport
-    from . import (
+    from .propagation import (
         _resolve_brownian_sigma_parameters,
         _simulate_brownian_node_values,
     )
@@ -358,7 +364,7 @@ def simulate_speciational_trait_collection(
     seed: int = 1,
 ):
     from .models import ContinuousTraitSimulationCollectionReport
-    from . import (
+    from .propagation import (
         _resolve_brownian_sigma_parameters,
         _simulate_brownian_node_values,
     )

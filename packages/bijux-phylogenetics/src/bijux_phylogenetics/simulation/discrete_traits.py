@@ -93,10 +93,10 @@ def simulate_discrete_traits(
         SimulatedDiscreteTrait,
         SimulatedDiscreteTransitionEvent,
     )
+    from .propagation import _tip_values_from_node_map
     from . import (
         _normalize_discrete_states,
         _normalize_root_state_probabilities,
-        _tip_values_from_node_map,
     )
 
     unique_states = _normalize_discrete_states(states)

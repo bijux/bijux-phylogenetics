@@ -18,7 +18,8 @@ def _simulate_alignment_records(
     seed: int,
 ):
     from .models import AlignmentSimulationReport
-    from . import _iter_tip_trait_values, _poisson_count
+    from .propagation import _iter_tip_trait_values
+    from . import _poisson_count
 
     if sequence_length < 1:
         raise ValueError(f"sequence_length must be at least 1, got {sequence_length}")

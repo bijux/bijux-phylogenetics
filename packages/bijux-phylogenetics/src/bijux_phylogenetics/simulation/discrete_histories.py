@@ -205,9 +205,7 @@ def _simulate_discrete_history_once(
         SimulatedDiscreteNode,
         SimulatedDiscreteTrait,
     )
-    from . import (
-        _tip_values_from_node_map,
-    )
+    from .propagation import _tip_values_from_node_map
 
     rng = random.Random(seed)  # nosec B311
     node_values: dict[str, str] = {}
