@@ -11,7 +11,7 @@ from bijux_phylogenetics.ancestral.discrete import (
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
 )
-from bijux_phylogenetics.comparative.brownian_trait_evolution import (
+from bijux_phylogenetics.comparative.continuous import (
     write_brownian_trait_evolution_summary_table,
 )
 from bijux_phylogenetics.comparative.discrete_evolution import (

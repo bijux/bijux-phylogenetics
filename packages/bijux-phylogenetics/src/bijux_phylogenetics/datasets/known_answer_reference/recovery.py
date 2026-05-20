@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from bijux_phylogenetics.ancestral.continuous import ContinuousAncestralReport
 from bijux_phylogenetics.ancestral.discrete import DiscreteAncestralReport
-from bijux_phylogenetics.comparative.brownian_trait_evolution import (
+from bijux_phylogenetics.comparative.continuous import (
     BrownianTraitEvolutionSummaryReport,
 )
 from bijux_phylogenetics.comparative.discrete_evolution import (

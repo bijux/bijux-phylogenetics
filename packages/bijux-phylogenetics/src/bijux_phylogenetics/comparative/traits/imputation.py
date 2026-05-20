@@ -12,7 +12,7 @@ from bijux_phylogenetics.comparative._math import (
     quadratic_form,
     stable_covariance,
 )
-from bijux_phylogenetics.comparative.brownian_trait_evolution import (
+from bijux_phylogenetics.comparative.continuous import (
     BrownianTraitEvolutionSummaryReport,
     summarize_brownian_trait_evolution,
 )

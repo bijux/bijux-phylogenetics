@@ -22,7 +22,7 @@ from .brownian_regime_rates import (
     write_brownian_regime_rate_table,
     write_brownian_regime_summary_table,
 )
-from .brownian_trait_evolution import (
+from .continuous import (
     BrownianTraitEvolutionExclusion,
     BrownianTraitEvolutionSummaryReport,
     summarize_brownian_trait_evolution,

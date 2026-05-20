@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 
 from bijux_phylogenetics.ancestral.continuous import reconstruct_continuous_ancestral_states
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
-from bijux_phylogenetics.comparative.brownian_trait_evolution import (
+from bijux_phylogenetics.comparative.continuous import (
     summarize_brownian_trait_evolution,
 )
 from bijux_phylogenetics.comparative.discrete_evolution import (
