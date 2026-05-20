@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.core.locus_occupancy import (
+from bijux_phylogenetics.phylo.alignment.occupancy import (
     build_locus_occupancy_report,
     build_locus_occupancy_report_from_records,
     filter_locus_occupancy,

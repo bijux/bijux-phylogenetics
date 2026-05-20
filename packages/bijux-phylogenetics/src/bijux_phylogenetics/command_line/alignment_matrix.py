@@ -12,7 +12,7 @@ from bijux_phylogenetics.command_line.output import (
 )
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
-from bijux_phylogenetics.core.locus_occupancy import (
+from bijux_phylogenetics.phylo.alignment.occupancy import (
     build_locus_occupancy_report,
     filter_locus_occupancy,
     write_locus_partitions,

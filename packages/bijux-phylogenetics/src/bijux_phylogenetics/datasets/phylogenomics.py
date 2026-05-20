@@ -10,7 +10,7 @@ from bijux_phylogenetics.core.concatenation import (
     ConcatenatedAlignmentReport,
     concatenate_locus_alignments,
 )
-from bijux_phylogenetics.core.locus_occupancy import (
+from bijux_phylogenetics.phylo.alignment.occupancy import (
     LocusOccupancyReport,
     write_locus_partitions,
 )
