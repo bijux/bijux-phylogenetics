@@ -15,9 +15,7 @@ from bijux_phylogenetics.parity import (
     write_phytools_parity_observation_table,
     write_phytools_parity_summary_table,
 )
-from bijux_phylogenetics.parity.phytools import (
-    _load_rows_table,
-)
+from bijux_phylogenetics.parity.phytools.runner.comparison import load_rows_table
 from tests.support.fake_phytools_parity import fake_phytools_rscript
 
 
@@ -553,7 +551,7 @@ def test_load_rows_table_preserves_discrete_state_identity_and_booleans(
         encoding="utf-8",
     )
 
-    rows = _load_rows_table(rows_path)
+    rows = load_rows_table(rows_path)
 
     assert rows == [
         {
@@ -588,7 +586,7 @@ def test_load_rows_table_preserves_stochastic_branch_summary_identity(
         encoding="utf-8",
     )
 
-    rows = _load_rows_table(rows_path)
+    rows = load_rows_table(rows_path)
 
     assert rows == [
         {
@@ -618,7 +616,7 @@ def test_load_rows_table_preserves_rerooting_state_identity(
         encoding="utf-8",
     )
 
-    rows = _load_rows_table(rows_path)
+    rows = load_rows_table(rows_path)
 
     assert rows == [
         {
@@ -650,7 +648,7 @@ def test_load_rows_table_preserves_stochastic_map_row_identity(
         encoding="utf-8",
     )
 
-    rows = _load_rows_table(rows_path)
+    rows = load_rows_table(rows_path)
 
     assert rows == [
         {
