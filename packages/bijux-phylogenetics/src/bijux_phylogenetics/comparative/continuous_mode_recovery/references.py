@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.geiger_fitcontinuous_recovery_reference import (
+from bijux_phylogenetics.comparative.continuous_mode_recovery.reference_payloads import (
     GEIGER_FITCONTINUOUS_RECOVERY_REFERENCE_PAYLOADS,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows

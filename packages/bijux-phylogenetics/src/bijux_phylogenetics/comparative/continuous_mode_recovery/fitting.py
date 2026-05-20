@@ -7,7 +7,7 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
     fit_continuous_evolutionary_mode,
     transform_tree_for_evolutionary_mode,
 )
-from bijux_phylogenetics.comparative.geiger_fitcontinuous_recovery_reference import (
+from bijux_phylogenetics.comparative.continuous_mode_recovery.reference_payloads import (
     GEIGER_FITCONTINUOUS_RECOVERY_REFERENCE_PAYLOADS,
 )
 from bijux_phylogenetics.io.newick import dumps_newick
