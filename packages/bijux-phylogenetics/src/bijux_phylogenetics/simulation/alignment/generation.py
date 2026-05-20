@@ -17,9 +17,9 @@ def _simulate_alignment_records(
     substitution_rate: float,
     seed: int,
 ):
-    from .contracts import AlignmentSimulationReport
-    from .propagation import _iter_tip_trait_values
-    from .stochastic import _poisson_count
+    from ..contracts import AlignmentSimulationReport
+    from ..propagation import _iter_tip_trait_values
+    from ..stochastic import _poisson_count
 
     if sequence_length < 1:
         raise ValueError(f"sequence_length must be at least 1, got {sequence_length}")
