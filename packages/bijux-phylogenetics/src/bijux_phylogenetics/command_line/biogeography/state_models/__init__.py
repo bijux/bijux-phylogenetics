@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from .constrained import (
+    add_constrained_geography_command,
+    run_constrained_geography_command,
+)
 from .likelihood import (
     add_geographic_likelihood_command,
     run_geographic_likelihood_command,
@@ -10,10 +14,15 @@ from .likelihood import (
 
 def add_biogeography_state_model_commands(biogeography_subparsers: Any) -> None:
     add_geographic_likelihood_command(biogeography_subparsers)
+    add_constrained_geography_command(biogeography_subparsers)
 
 
 def run_biogeography_state_model_command(args: Any) -> int | None:
-    return run_geographic_likelihood_command(args)
+    likelihood_exit_code = run_geographic_likelihood_command(args)
+    if likelihood_exit_code is not None:
+        return likelihood_exit_code
+
+    return run_constrained_geography_command(args)
 
 
 __all__ = [
