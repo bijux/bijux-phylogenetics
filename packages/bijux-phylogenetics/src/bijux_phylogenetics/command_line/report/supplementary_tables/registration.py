@@ -11,10 +11,13 @@ from bijux_phylogenetics.reports import (
     write_supplementary_batch_summary_table,
     write_supplementary_comparative_model_table,
     write_supplementary_diversification_table,
-    write_supplementary_model_selection_table,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
 
+from .model_selection import (
+    add_model_selection_supplementary_table_commands,
+    run_model_selection_supplementary_table_command,
+)
 from .study_inputs import (
     add_study_input_supplementary_table_commands,
     run_study_input_supplementary_table_command,
@@ -34,22 +37,7 @@ def _parse_lambda_value(value: str | None) -> float | str:
 def add_supplementary_table_report_commands(report_subparsers: Any) -> None:
     add_study_input_supplementary_table_commands(report_subparsers)
     add_tree_review_supplementary_table_commands(report_subparsers)
-
-    report_supplementary_model_selection_table = report_subparsers.add_parser(
-        "supplementary-model-selection-table",
-        help="Write a supplementary model-selection table from parsed IQ-TREE report artifacts.",
-    )
-    report_supplementary_model_selection_table.add_argument(
-        "--iqtree-report", required=True, type=Path
-    )
-    report_supplementary_model_selection_table.add_argument("--model-sidecar", type=Path)
-    report_supplementary_model_selection_table.add_argument(
-        "--out", required=True, type=Path
-    )
-    report_supplementary_model_selection_table.add_argument(
-        "--json", action="store_true", help="Emit the table write result as JSON."
-    )
-    _add_manifest_argument(report_supplementary_model_selection_table)
+    add_model_selection_supplementary_table_commands(report_subparsers)
 
     report_supplementary_comparative_model_table = report_subparsers.add_parser(
         "supplementary-comparative-model-table",
@@ -177,41 +165,9 @@ def run_supplementary_table_report_command(args: Any) -> int | None:
     if tree_review_result is not None:
         return tree_review_result
 
-    if args.report_command == "supplementary-model-selection-table":
-        result = write_supplementary_model_selection_table(
-            args.out,
-            iqtree_report_path=args.iqtree_report,
-            model_sidecar_path=args.model_sidecar,
-        )
-        inputs = [args.iqtree_report]
-        if args.model_sidecar is not None:
-            inputs.append(args.model_sidecar)
-        outputs = _finalize_outputs(
-            args,
-            command="report",
-            inputs=inputs,
-            outputs=[result.output_path],
-        )
-        if args.json:
-            _print_result(
-                build_command_result(
-                    command="report",
-                    inputs=inputs,
-                    outputs=outputs,
-                    warnings=[],
-                    metrics={
-                        "row_count": result.row_count,
-                        "candidate_count": result.candidate_count,
-                        "selected_model": result.selected_model,
-                        "selected_criterion": result.selected_criterion,
-                    },
-                    data=result,
-                ),
-                json_output=True,
-            )
-            return 0
-        print(result.output_path)
-        return 0
+    model_selection_result = run_model_selection_supplementary_table_command(args)
+    if model_selection_result is not None:
+        return model_selection_result
 
     if args.report_command == "supplementary-comparative-model-table":
         result = write_supplementary_comparative_model_table(
