@@ -11,7 +11,7 @@ from bijux_phylogenetics.ancestral.continuous import (
 from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
 )
-from bijux_phylogenetics.comparative.covariance_audit import (
+from bijux_phylogenetics.comparative.covariance import (
     summarize_comparative_covariance_audit,
 )
 from bijux_phylogenetics.comparative.phylogenetic_anova import (

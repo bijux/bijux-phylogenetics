@@ -6,7 +6,7 @@ from typing import Any
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.comparative.covariance_audit import (
+from bijux_phylogenetics.comparative.covariance import (
     summarize_comparative_covariance_audit,
     write_comparative_covariance_audit_candidate_table,
     write_comparative_covariance_audit_excluded_taxa_table,

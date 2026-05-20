@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.covariance_audit import (
+from bijux_phylogenetics.comparative.covariance import (
     summarize_comparative_covariance_audit,
     write_comparative_covariance_audit_candidate_table,
     write_comparative_covariance_audit_excluded_taxa_table,

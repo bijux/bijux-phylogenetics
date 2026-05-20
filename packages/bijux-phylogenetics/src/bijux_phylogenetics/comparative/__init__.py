@@ -111,7 +111,7 @@ from .correlated_trait_evolution import (
     write_correlated_trait_observation_table,
     write_correlated_trait_summary_table,
 )
-from .covariance_audit import (
+from .covariance import (
     ComparativeCovarianceAuditReport,
     CovarianceAuditCandidateRow,
     CovarianceAuditExcludedTaxon,
