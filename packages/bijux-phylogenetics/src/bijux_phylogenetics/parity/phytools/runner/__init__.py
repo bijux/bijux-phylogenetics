@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess  # nosec B404 - parity helpers invoke repository-owned reference commands
 import tempfile
 
-from ..registry import PhytoolsParityCase, list_phytools_parity_cases
+from ..registry import PhytoolsParityCase, _selected_cases
 from .comparison import (
     load_json as _load_json,
     load_rows_table as _load_rows_table,
@@ -42,19 +42,6 @@ from .signal_payloads import build_signal_case_payload
 def _optional_payload_string(payload: dict[str, object], key: str) -> str | None:
     value = payload.get(key)
     return value if isinstance(value, str) else None
-
-
-def _selected_cases(case_ids: list[str] | None) -> list[PhytoolsParityCase]:
-    registry = {case.case_id: case for case in list_phytools_parity_cases()}
-    if case_ids is None:
-        return list(registry.values())
-    missing = [case_id for case_id in case_ids if case_id not in registry]
-    if missing:
-        missing_text = ", ".join(sorted(missing))
-        raise ValueError(f"unknown phytools parity case id(s): {missing_text}")
-    return [registry[case_id] for case_id in case_ids]
-
-
 def _write_case_file(path: Path, case: PhytoolsParityCase) -> Path:
     payload = {
         "case_id": case.case_id,
