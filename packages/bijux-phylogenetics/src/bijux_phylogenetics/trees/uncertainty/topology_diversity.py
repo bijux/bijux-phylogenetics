@@ -18,7 +18,7 @@ from .models import (
     TreeTopologyCluster,
     TreeTopologyClusterReport,
 )
-from ..tree_set import (
+from ..tree_sets.analysis import (
     TreeSetReport,
     _TreeSetAnalysis,
     _analyze_tree_set,

@@ -24,9 +24,11 @@ from .models import (
     TreeSetThinningSensitivityRow,
 )
 from .topology_diversity import cluster_trees_by_topology
-from ..tree_set import (
+from ..tree_sets.analysis import (
     _require_tree_set,
     _rooted_topology_id,
+)
+from ..tree_sets import (
     compute_consensus_tree_with_threshold,
     load_tree_set,
 )

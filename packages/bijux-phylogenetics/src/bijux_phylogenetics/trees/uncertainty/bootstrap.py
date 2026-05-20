@@ -17,7 +17,7 @@ from .topology_diversity import (
     write_topology_cluster_table,
     write_tree_distance_distribution_table,
 )
-from ..tree_set import (
+from ..tree_sets.analysis import (
     TreeSetReport,
     _TreeSetAnalysis,
     _analyze_tree_set,

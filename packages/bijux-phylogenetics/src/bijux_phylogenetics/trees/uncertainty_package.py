@@ -20,7 +20,7 @@ from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
 )
 
-from .tree_set import (
+from .tree_sets import (
     TreeSetProcessingSummary,
     TreeSetWorkflowBudgetReport,
     build_tree_set_budget_report,

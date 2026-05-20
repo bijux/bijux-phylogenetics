@@ -19,7 +19,7 @@ from .models import (
     CladeFrequencyDelta,
     PosteriorTreeSetComparisonReport,
 )
-from ..tree_set import (
+from ..tree_sets.analysis import (
     _clade_counts,
     _format_clade,
     _require_tree_set,

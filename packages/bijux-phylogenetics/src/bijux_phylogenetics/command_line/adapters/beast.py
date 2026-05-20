@@ -41,7 +41,7 @@ from bijux_phylogenetics.evidence.provenance.method_tiers import (
     method_tier_warnings,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
-from bijux_phylogenetics.trees.tree_set import (
+from bijux_phylogenetics.trees.tree_sets import (
     compute_clade_frequency_table,
     compute_tree_distance_matrix,
     write_clade_frequency_table,

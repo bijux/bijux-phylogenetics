@@ -16,7 +16,7 @@ from .clades import (
     extract_tree_set_clades,
     write_clade_table,
 )
-from .tree_set import (
+from .tree_sets import (
     CladeFrequency,
     CladeFrequencyReport,
     ConsensusTreeReport,

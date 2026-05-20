@@ -14,7 +14,7 @@ from .models import (
     UnstableTaxaReport,
     UnstableTaxon,
 )
-from ..tree_set import (
+from ..tree_sets.analysis import (
     _TreeSetAnalysis,
     _analyze_tree_set,
     _clade_counts,
