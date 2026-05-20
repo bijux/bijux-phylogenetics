@@ -9,6 +9,10 @@ from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.runtime.results import build_command_result
 
+from .migration import (
+    add_biogeography_migration_commands,
+    run_biogeography_migration_command,
+)
 from .shared import command_line_api
 from .state_models import (
     add_biogeography_state_model_commands,
@@ -26,39 +30,7 @@ def add_biogeography_commands(subparsers: Any) -> None:
         required=True,
     )
     add_biogeography_state_model_commands(biogeography_subparsers)
-
-    biogeography_chronology = biogeography_subparsers.add_parser(
-        "chronology",
-        help="Place inferred geographic transitions into dated-tree age context with automatic age bins.",
-    )
-    biogeography_chronology.add_argument("tree", type=Path)
-    biogeography_chronology.add_argument("table", type=Path)
-    biogeography_chronology.add_argument("--trait", required=True)
-    biogeography_chronology.add_argument("--taxon-column")
-    biogeography_chronology.add_argument(
-        "--model",
-        choices=("er", "sym", "ard"),
-        default="er",
-    )
-    biogeography_chronology.add_argument(
-        "--allowed-regions",
-        help="Comma-delimited explicit region vocabulary.",
-    )
-    biogeography_chronology.add_argument(
-        "--time-bin-count",
-        type=int,
-        default=4,
-        help="Number of equal-width age bins between the tips and the root age.",
-    )
-    biogeography_chronology.add_argument("--summary-out", type=Path)
-    biogeography_chronology.add_argument("--nodes-out", type=Path)
-    biogeography_chronology.add_argument("--events-out", type=Path)
-    biogeography_chronology.add_argument("--bins-out", type=Path)
-    biogeography_chronology.add_argument("--exclusions-out", type=Path)
-    biogeography_chronology.add_argument(
-        "--json", action="store_true", help="Emit the biogeography review as JSON."
-    )
-    _add_manifest_argument(biogeography_chronology)
+    add_biogeography_migration_commands(biogeography_subparsers)
 
     biogeography_events = biogeography_subparsers.add_parser(
         "events",
@@ -139,82 +111,11 @@ def run_biogeography_command(args: Any) -> int:
     if state_model_exit_code is not None:
         return state_model_exit_code
 
+    migration_exit_code = run_biogeography_migration_command(args)
+    if migration_exit_code is not None:
+        return migration_exit_code
+
     cli_api = command_line_api()
-    if args.biogeography_command == "chronology":
-        report = cli_api.summarize_biogeographic_transition_chronology(
-            args.tree,
-            args.table,
-            trait=args.trait,
-            taxon_column=args.taxon_column,
-            model=args.model,
-            allowed_regions=cli_api._split_csv_values(args.allowed_regions)
-            or None,
-            time_bin_count=args.time_bin_count,
-        )
-        outputs: list[Path | str] = []
-        if args.summary_out is not None:
-            outputs.append(
-                cli_api.write_dated_biogeography_summary_table(
-                    args.summary_out,
-                    report,
-                )
-            )
-        if args.nodes_out is not None:
-            outputs.append(
-                cli_api.write_dated_biogeography_node_table(
-                    args.nodes_out,
-                    report,
-                )
-            )
-        if args.events_out is not None:
-            outputs.append(
-                cli_api.write_dated_biogeography_event_table(
-                    args.events_out,
-                    report,
-                )
-            )
-        if args.bins_out is not None:
-            outputs.append(
-                cli_api.write_dated_biogeography_time_bin_table(
-                    args.bins_out,
-                    report,
-                )
-            )
-        if args.exclusions_out is not None:
-            outputs.append(
-                cli_api.write_dated_biogeography_exclusion_table(
-                    args.exclusions_out,
-                    report,
-                )
-            )
-        outputs = _finalize_outputs(
-            args,
-            command="biogeography",
-            inputs=[args.tree, args.table],
-            outputs=outputs,
-        )
-        _print_result(
-            build_command_result(
-                command="biogeography",
-                inputs=[args.tree, args.table],
-                outputs=outputs,
-                warnings=report.warnings,
-                metrics={
-                    "model": report.summary.model,
-                    "tree_is_time_scaled": report.summary.tree_is_time_scaled,
-                    "root_age": report.summary.root_age,
-                    "event_count": report.summary.event_count,
-                    "time_bin_count": report.summary.time_bin_count,
-                    "high_uncertainty_bin_count": (
-                        report.summary.high_uncertainty_bin_count
-                    ),
-                    "excluded_taxon_count": report.summary.excluded_taxon_count,
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
     if args.biogeography_command == "events":
         outputs: list[Path | str] = []
         if args.tree_set:
