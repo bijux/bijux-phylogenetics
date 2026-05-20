@@ -241,6 +241,21 @@ differences.
 - audit ambiguous taxon identities, synonym candidates, namespace mixing, workflow taxon loss, and cross-run taxon stability before downstream comparison or linkage
 - produce HTML reports and file-level evidence manifests
 
+The dataset audit runtime is also available as a typed Python package under
+`bijux_phylogenetics.core.dataset`. Use `summarize_dataset_readiness()` for
+the comparative preflight, `build_dataset_crosswalk()`,
+`build_dataset_completeness_matrix()`, and
+`build_dataset_mismatch_report()` for reviewer-facing taxon-surface ledgers,
+`audit_dataset_taxon_ordering()` for silent order-drift detection, and
+`audit_dataset_inputs()` for the integrated blocker, risk, exclusion, and
+minimal-fix workflow. Inside that package, shared dataclasses live in
+`models`, dataset loading and surface introspection live in `context`,
+cross-surface ledgers live in `crosswalk`, order-drift logic lives in
+`ordering`, comparative preflight lives in `readiness`, audit policy lives in
+`audit_policy`, and the integrated orchestration lives in `workflow`, so the
+package root stays a curated API gateway instead of remaining the real
+implementation file.
+
 ## Example CLI Runs
 
 ```bash
