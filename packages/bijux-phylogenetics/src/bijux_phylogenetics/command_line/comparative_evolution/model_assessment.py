@@ -13,7 +13,7 @@ from bijux_phylogenetics.comparative.models import (
     run_comparative_sensitivity_analysis,
     validate_comparative_reference_examples,
 )
-from bijux_phylogenetics.comparative.model_comparison_package import (
+from bijux_phylogenetics.comparative.reporting.model_comparison_figures import (
     build_comparative_model_figure_package,
 )
 from bijux_phylogenetics.runtime.results import build_command_result

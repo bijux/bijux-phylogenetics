@@ -182,7 +182,7 @@ from .diversification import (
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
-from .model_comparison_package import (
+from .reporting.model_comparison_figures import (
     ComparativeModelCriteriaRow,
     ComparativeModelFigureAudit,
     ComparativeModelFigureCaptionDraft,
@@ -408,7 +408,7 @@ from .regression_model_selection import (
     write_comparative_regression_model_ranking_table,
     write_comparative_regression_pairwise_table,
 )
-from .report_package import (
+from .reporting.analysis_package import (
     ComparativeAnalysisSummaryRow,
     ComparativeAuditTableRow,
     ComparativeCoefficientTableRow,

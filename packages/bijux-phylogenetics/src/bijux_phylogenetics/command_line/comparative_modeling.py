@@ -21,7 +21,7 @@ from bijux_phylogenetics.comparative.regression_model_selection import (
     write_comparative_regression_model_ranking_table,
     write_comparative_regression_pairwise_table,
 )
-from bijux_phylogenetics.comparative.report_package import (
+from bijux_phylogenetics.comparative.reporting.analysis_package import (
     build_comparative_report_package,
 )
 from bijux_phylogenetics.comparative.reporting import (

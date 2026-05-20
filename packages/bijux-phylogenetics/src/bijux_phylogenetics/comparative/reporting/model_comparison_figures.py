@@ -12,7 +12,7 @@ from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
 )
 
-from .models import (
+from ..models import (
     BrownianMotionFitReport,
     ComparativeModelComparisonReport,
     OUTraitModelReport,

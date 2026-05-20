@@ -47,7 +47,7 @@ from bijux_phylogenetics.comparative.pgls.posterior_tree import (
     PosteriorTreePGLSReport,
     run_posterior_tree_pgls,
 )
-from bijux_phylogenetics.comparative.report_package import (
+from bijux_phylogenetics.comparative.reporting.analysis_package import (
     ComparativeAnalysisSummaryRow,
     ComparativeCoefficientTableRow,
     ComparativeInterpretationRow,

@@ -7,7 +7,7 @@ from bijux_phylogenetics.biogeography.migration import (
     summarize_geographic_migration_events,
     write_geographic_migration_event_table,
 )
-from bijux_phylogenetics.comparative.report_package import (
+from bijux_phylogenetics.comparative.reporting.analysis_package import (
     build_comparative_report_package,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows

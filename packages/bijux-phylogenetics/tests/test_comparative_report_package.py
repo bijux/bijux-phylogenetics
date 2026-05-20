@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.report_package import (
+from bijux_phylogenetics.comparative.reporting.analysis_package import (
     build_comparative_report_package,
     summarize_comparative_interpretation,
 )
