@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.command_line import main
-from bijux_phylogenetics.reports.tree_package import build_tree_report_package
+from bijux_phylogenetics.reports.publication.tree import build_tree_report_package
 
 
 def tree_fixture(name: str) -> Path:

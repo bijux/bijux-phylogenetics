@@ -13,7 +13,7 @@ from bijux_phylogenetics.reports import (
     write_reviewer_audit_checklist_from_manifest,
 )
 from bijux_phylogenetics.reports.service import render_tree_report
-from bijux_phylogenetics.reports.tree_package import build_tree_report_package
+from bijux_phylogenetics.reports.publication.tree import build_tree_report_package
 from bijux_phylogenetics.runtime.results import build_command_result
 
 

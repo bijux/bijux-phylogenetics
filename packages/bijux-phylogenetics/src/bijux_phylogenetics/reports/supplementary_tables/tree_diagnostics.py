@@ -9,7 +9,7 @@ from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
 )
-from bijux_phylogenetics.reports.tree_package import (
+from bijux_phylogenetics.reports.publication.tree import (
     TreeBranchStatisticsRow,
     TreeSupportRow,
     summarize_tree_branch_statistics,

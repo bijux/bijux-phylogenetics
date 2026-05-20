@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.reports.tree_package import TreeSupportRow, summarize_tree_support
+from bijux_phylogenetics.reports.publication.tree import (
+    TreeSupportRow,
+    summarize_tree_support,
+)
 from bijux_phylogenetics.trees import (
     TreeSetCladeSupportReport,
     TreeSetCladeSupportRow,

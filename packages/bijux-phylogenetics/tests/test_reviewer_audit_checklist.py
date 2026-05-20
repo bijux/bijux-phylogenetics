@@ -10,7 +10,7 @@ from bijux_phylogenetics.reports import (
     build_reviewer_audit_checklist,
     write_reviewer_audit_checklist_from_manifest,
 )
-from bijux_phylogenetics.reports.tree_package import build_tree_report_package
+from bijux_phylogenetics.reports.publication.tree import build_tree_report_package
 
 
 FIXTURES = Path(__file__).parent / "fixtures"

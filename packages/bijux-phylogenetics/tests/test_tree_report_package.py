@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.trees import extract_tree_clades
-from bijux_phylogenetics.reports.tree_package import (
+from bijux_phylogenetics.reports.publication.tree import (
     build_tree_report_package,
     summarize_tree_support,
 )
