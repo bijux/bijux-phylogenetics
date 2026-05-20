@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.engines import run_fasta_to_tree_workflow
-from bijux_phylogenetics.engines.result_bundle import (
+from bijux_phylogenetics.engines.bundles import (
     export_workflow_result_bundle,
     validate_workflow_result_bundle,
 )

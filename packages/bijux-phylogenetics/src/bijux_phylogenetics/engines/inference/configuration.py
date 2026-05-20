@@ -16,7 +16,7 @@ from ..validation import (
     inspect_external_engine_preflight,
     require_preflight_workflow,
 )
-from ..result_bundle import (
+from ..bundles import (
     WorkflowResultBundleExtraInput,
     WorkflowResultBundleReport,
     WorkflowResultBundleValidationReport,

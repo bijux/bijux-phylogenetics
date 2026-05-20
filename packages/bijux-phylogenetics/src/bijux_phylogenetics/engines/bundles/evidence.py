@@ -10,7 +10,7 @@ from bijux_phylogenetics.evidence.provenance.bundles import (
     validate_artifact_bundle,
 )
 
-from .common import load_engine_manifest
+from ..common import load_engine_manifest
 
 
 @dataclass(slots=True)
