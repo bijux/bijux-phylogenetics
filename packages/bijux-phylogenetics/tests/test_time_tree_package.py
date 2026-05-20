@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.bayesian.time_tree_package import (
+from bijux_phylogenetics.bayesian.presentation.time_tree_figure_bundle import (
     build_time_tree_figure_package,
 )
 

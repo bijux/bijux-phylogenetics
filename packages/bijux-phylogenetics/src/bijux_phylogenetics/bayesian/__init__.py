@@ -127,7 +127,7 @@ from .presentation.html_reports import (
     render_ml_vs_bayesian_tree_report,
     render_time_tree_readiness_report,
 )
-from .time_tree_package import (
+from .presentation.time_tree_figure_bundle import (
     TimeTreeFigurePackageResult,
     TimeTreePublicationAudit,
     build_time_tree_figure_package,
