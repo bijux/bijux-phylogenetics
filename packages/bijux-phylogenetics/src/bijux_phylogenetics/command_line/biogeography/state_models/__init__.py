@@ -10,11 +10,16 @@ from .likelihood import (
     add_geographic_likelihood_command,
     run_geographic_likelihood_command,
 )
+from .stratified import (
+    add_time_stratified_geography_command,
+    run_time_stratified_geography_command,
+)
 
 
 def add_biogeography_state_model_commands(biogeography_subparsers: Any) -> None:
     add_geographic_likelihood_command(biogeography_subparsers)
     add_constrained_geography_command(biogeography_subparsers)
+    add_time_stratified_geography_command(biogeography_subparsers)
 
 
 def run_biogeography_state_model_command(args: Any) -> int | None:
@@ -22,7 +27,11 @@ def run_biogeography_state_model_command(args: Any) -> int | None:
     if likelihood_exit_code is not None:
         return likelihood_exit_code
 
-    return run_constrained_geography_command(args)
+    constrained_exit_code = run_constrained_geography_command(args)
+    if constrained_exit_code is not None:
+        return constrained_exit_code
+
+    return run_time_stratified_geography_command(args)
 
 
 __all__ = [
