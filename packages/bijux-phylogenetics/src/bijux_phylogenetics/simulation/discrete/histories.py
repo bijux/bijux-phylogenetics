@@ -27,7 +27,7 @@ def _quantile(values: list[float], probability: float) -> float:
 
 
 def _normalize_rate_rows(*, states: tuple[str, ...], rate_rows: list) -> list:
-    from ..models import DiscreteHistoryRateRow
+    from ..contracts import DiscreteHistoryRateRow
     from ..statistics import _round_float
 
     if not rate_rows:
@@ -99,7 +99,7 @@ def _simulate_rate_matrix_state_trajectory(
     rate_lookup: dict[str, dict[str, float]],
     rng: random.Random,
 ):
-    from ..models import (
+    from ..contracts import (
         SimulatedDiscreteStateSegment,
         SimulatedDiscreteTransitionEvent,
     )
@@ -196,7 +196,7 @@ def _simulate_discrete_history_once(
         node_signature,
     )
 
-    from ..models import (
+    from ..contracts import (
         DiscreteTraitSimulationReport,
         SimulatedDiscreteBranchHistory,
         SimulatedDiscreteNode,
@@ -370,7 +370,7 @@ def _summarize_discrete_history_collection(
     *,
     states: tuple[str, ...],
 ):
-    from ..models import DiscreteHistorySummaryRow
+    from ..contracts import DiscreteHistorySummaryRow
     from ..statistics import _mean, _round_float
 
     total_transition_counts = [
@@ -463,7 +463,7 @@ def simulate_discrete_histories(
     replicates: int = 1,
     seed: int = 1,
 ):
-    from ..models import DiscreteHistorySimulationCollectionReport
+    from ..contracts import DiscreteHistorySimulationCollectionReport
     from .policy import (
         _normalize_discrete_states,
         _normalize_root_state_probabilities,

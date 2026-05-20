@@ -15,7 +15,7 @@ def _simulate_symmetric_state_trajectory(
     states: tuple[str, ...],
     rng: random.Random,
 ):
-    from ..models import (
+    from ..contracts import (
         SimulatedDiscreteStateSegment,
         SimulatedDiscreteTransitionEvent,
     )
@@ -84,7 +84,7 @@ def simulate_discrete_traits(
         node_signature,
     )
 
-    from ..models import (
+    from ..contracts import (
         DiscreteHistoryRateRow,
         DiscreteTraitSimulationReport,
         SimulatedDiscreteBranchHistory,

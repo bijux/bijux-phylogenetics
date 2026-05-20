@@ -13,7 +13,7 @@ from bijux_phylogenetics.io.newick import (
 )
 from bijux_phylogenetics.trees.tree_shape import summarize_tree_shape_from_tree
 
-from .models import (
+from .contracts import (
     TreeSimulationEnvelopeMetric,
     TreeSimulationReport,
     SimulatedTreeRecord,
