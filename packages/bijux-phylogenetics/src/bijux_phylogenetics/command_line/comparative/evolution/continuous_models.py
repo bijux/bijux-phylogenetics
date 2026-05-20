@@ -11,7 +11,7 @@ from bijux_phylogenetics.comparative.continuous import (
     write_brownian_trait_evolution_exclusion_table,
     write_brownian_trait_evolution_summary_table,
 )
-from bijux_phylogenetics.comparative.early_burst_trait_evolution import (
+from bijux_phylogenetics.comparative.continuous import (
     summarize_early_burst_trait_evolution,
     write_early_burst_rate_change_profile_table,
     write_early_burst_trait_evolution_comparison_table,

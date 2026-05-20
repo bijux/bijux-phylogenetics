@@ -204,7 +204,7 @@ from .discrete_mk import (
     write_discrete_mk_rate_table,
     write_discrete_mk_summary_table,
 )
-from .early_burst_trait_evolution import (
+from .continuous import (
     EarlyBurstIdentifiabilityWarning,
     EarlyBurstRateChangeProfileRow,
     EarlyBurstTraitEvolutionExclusion,

@@ -8,7 +8,7 @@ from bijux_phylogenetics.comparative.common import (
     build_brownian_covariance_matrix,
     stable_covariance,
 )
-from bijux_phylogenetics.comparative.early_burst_trait_evolution import (
+from bijux_phylogenetics.comparative.continuous import (
     summarize_early_burst_trait_evolution,
     write_early_burst_rate_change_profile_table,
     write_early_burst_trait_evolution_comparison_table,
