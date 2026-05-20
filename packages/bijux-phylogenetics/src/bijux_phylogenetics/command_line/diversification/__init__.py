@@ -11,11 +11,9 @@ from bijux_phylogenetics.comparative import (
     build_diversification_figure_package,
     build_diversification_method_report,
     render_diversification_report,
-    run_trait_dependent_diversification_analysis,
     summarize_geiger_birth_death_exclusion,
     summarize_medusa_exclusion,
     write_diversification_methods_summary_text,
-    write_trait_dependent_diversification_table,
 )
 from bijux_phylogenetics.runtime.errors import DiversificationAnalysisError
 from bijux_phylogenetics.runtime.results import build_command_result
@@ -33,6 +31,10 @@ from .modeling import (
     add_diversification_modeling_commands,
     run_diversification_modeling_command,
 )
+from .trait_dependence import (
+    add_diversification_trait_dependence_command,
+    run_diversification_trait_dependence_command,
+)
 
 
 def add_diversification_commands(subparsers: Any) -> None:
@@ -47,24 +49,7 @@ def add_diversification_commands(subparsers: Any) -> None:
     add_diversification_inspection_commands(diversification_subparsers)
     add_diversification_modeling_commands(diversification_subparsers)
     add_diversification_clade_command(diversification_subparsers)
-
-    diversification_trait = diversification_subparsers.add_parser(
-        "trait-dependent",
-        help="Summarize simple trait-linked diversification rates when states form interpretable clades.",
-    )
-    diversification_trait.add_argument("tree", type=Path)
-    diversification_trait.add_argument("table", type=Path)
-    diversification_trait.add_argument("--trait", required=True)
-    diversification_trait.add_argument("--taxon-column")
-    diversification_trait.add_argument(
-        "--out",
-        type=Path,
-        help="Write the trait-dependent diversification table as TSV.",
-    )
-    diversification_trait.add_argument(
-        "--json", action="store_true", help="Emit the trait-dependent report as JSON."
-    )
-    _add_manifest_argument(diversification_trait)
+    add_diversification_trait_dependence_command(diversification_subparsers)
 
     diversification_package = diversification_subparsers.add_parser(
         "package",
@@ -164,40 +149,6 @@ def add_diversification_commands(subparsers: Any) -> None:
         help="Emit the birth-death exclusion as JSON.",
     )
     _add_manifest_argument(diversification_bd_ms)
-def _run_trait_dependent(args: Any) -> int:
-    report = run_trait_dependent_diversification_analysis(
-        args.tree,
-        args.table,
-        trait=args.trait,
-        taxon_column=args.taxon_column,
-    )
-    inputs = [args.tree, args.table]
-    outputs: list[Path | str] = []
-    if args.out is not None:
-        outputs.append(write_trait_dependent_diversification_table(args.out, report))
-    outputs = _finalize_outputs(
-        args,
-        command="diversification",
-        inputs=inputs,
-        outputs=outputs,
-    )
-    _print_result(
-        build_command_result(
-            command="diversification",
-            inputs=inputs,
-            outputs=outputs,
-            warnings=report.warnings,
-            metrics={
-                "state_count": len(report.states),
-                "monophyletic_state_count": sum(
-                    1 for row in report.states if row.monophyletic
-                ),
-            },
-            data=report,
-        ),
-        json_output=args.json,
-    )
-    return 0
 
 
 def _run_package(args: Any) -> int:
@@ -399,8 +350,10 @@ def run_diversification_command(args: Any) -> int:
     if clade_exit_code is not None:
         return clade_exit_code
 
-    if args.diversification_command == "trait-dependent":
-        return _run_trait_dependent(args)
+    trait_dependence_exit_code = run_diversification_trait_dependence_command(args)
+    if trait_dependence_exit_code is not None:
+        return trait_dependence_exit_code
+
     if args.diversification_command == "package":
         return _run_package(args)
     if args.diversification_command == "methods-summary":
