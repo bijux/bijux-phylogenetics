@@ -24,7 +24,7 @@ from bijux_phylogenetics.engines.common import (
     build_file_checksums,
     load_engine_manifest,
 )
-from bijux_phylogenetics.trees.uncertainty_package import (
+from bijux_phylogenetics.trees.uncertainty import (
     TreeSetUncertaintyFigurePackageResult,
     build_tree_set_uncertainty_figure_package,
 )

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.trees.uncertainty_package import (
+from bijux_phylogenetics.trees.uncertainty import (
     build_tree_set_uncertainty_figure_package,
 )
 

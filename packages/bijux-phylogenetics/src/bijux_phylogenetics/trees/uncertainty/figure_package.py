@@ -20,7 +20,7 @@ from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
 )
 
-from .tree_sets import (
+from ..tree_sets import (
     TreeSetProcessingSummary,
     TreeSetWorkflowBudgetReport,
     build_tree_set_budget_report,
@@ -30,20 +30,22 @@ from .tree_sets import (
     enforce_tree_set_tree_budget,
     load_tree_set,
 )
-from .uncertainty import (
-    cluster_trees_by_topology,
-    detect_posterior_topology_multimodality,
+from .instability import (
     detect_unstable_taxa,
     summarize_clade_credibility_conflicts,
     summarize_uncertainty_aware_conclusions,
-    write_topology_cluster_table,
     write_uncertainty_conclusion_table,
 )
-from .uncertainty import (
+from .methods_text import (
     TreeSetUncertaintyMethodReport,
     TreeSetUncertaintyMethodsSummaryTextResult,
     build_tree_set_uncertainty_method_report,
     write_tree_set_uncertainty_methods_summary_text,
+)
+from .topology_diversity import (
+    cluster_trees_by_topology,
+    detect_posterior_topology_multimodality,
+    write_topology_cluster_table,
 )
 
 

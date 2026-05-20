@@ -9,7 +9,7 @@ from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.reports.service import render_tree_uncertainty_report
 from bijux_phylogenetics.runtime.results import build_command_result
-from bijux_phylogenetics.trees.uncertainty_package import (
+from bijux_phylogenetics.trees.uncertainty import (
     build_tree_set_uncertainty_figure_package,
 )
 from bijux_phylogenetics.trees import (

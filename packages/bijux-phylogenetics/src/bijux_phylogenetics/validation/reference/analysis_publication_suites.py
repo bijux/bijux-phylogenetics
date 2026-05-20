@@ -13,7 +13,7 @@ from bijux_phylogenetics.trees import (
     build_tree_set_uncertainty_method_report,
     write_tree_set_uncertainty_methods_summary_text,
 )
-from bijux_phylogenetics.trees.uncertainty_package import (
+from bijux_phylogenetics.trees.uncertainty import (
     build_tree_set_uncertainty_figure_package,
 )
 

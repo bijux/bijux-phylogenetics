@@ -76,6 +76,13 @@ from .methods_text import (
     build_tree_set_uncertainty_methods_summary_text as build_tree_set_uncertainty_methods_summary_text,
     write_tree_set_uncertainty_methods_summary_text as write_tree_set_uncertainty_methods_summary_text,
 )
+from .figure_package import (
+    TreeSetUncertaintyCaptionDraft as TreeSetUncertaintyCaptionDraft,
+    TreeSetUncertaintyFigurePackageResult as TreeSetUncertaintyFigurePackageResult,
+    TreeSetUncertaintyLegendEntry as TreeSetUncertaintyLegendEntry,
+    TreeSetUncertaintyPublicationAudit as TreeSetUncertaintyPublicationAudit,
+    build_tree_set_uncertainty_figure_package as build_tree_set_uncertainty_figure_package,
+)
 
 __all__ = [
     "BootstrapPosteriorCladeComparison",
@@ -103,8 +110,12 @@ __all__ = [
     "TreeSetStorageRiskReport",
     "TreeSetThinningSensitivityReport",
     "TreeSetThinningSensitivityRow",
+    "TreeSetUncertaintyCaptionDraft",
+    "TreeSetUncertaintyFigurePackageResult",
+    "TreeSetUncertaintyLegendEntry",
     "TreeSetUncertaintyMethodReport",
     "TreeSetUncertaintyMethodsSummaryTextResult",
+    "TreeSetUncertaintyPublicationAudit",
     "TreeTopologyCluster",
     "TreeTopologyClusterReport",
     "UncertaintyAwareCladeConclusion",
@@ -119,6 +130,7 @@ __all__ = [
     "benchmark_tree_set_uncertainty",
     "build_tree_set_uncertainty_method_report",
     "build_tree_set_uncertainty_methods_summary_text",
+    "build_tree_set_uncertainty_figure_package",
     "cluster_trees_by_topology",
     "compare_bootstrap_and_posterior_uncertainty",
     "compare_consensus_thresholds",
