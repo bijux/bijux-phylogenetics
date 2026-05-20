@@ -17,7 +17,7 @@ from .rabies_cross_host_geography import (
     load_rabies_cross_host_geography_panel_dataset as _load_dataset,
     write_rabies_cross_host_geography_panel_workflow_bundle as _write_workflow_bundle,
 )
-from .rabies_cross_host_geography.package import (
+from .rabies_cross_host_geography.demo import (
     _materialize_rabies_cross_host_geography_panel_demo,
     _build_flagship_answer_summary,
     _write_demo_overview_html,

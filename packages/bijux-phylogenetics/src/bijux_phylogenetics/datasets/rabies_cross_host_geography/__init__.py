@@ -22,7 +22,7 @@ from .workflow import (
 from .bundle import (
     write_rabies_cross_host_geography_panel_workflow_bundle as write_rabies_cross_host_geography_panel_workflow_bundle,
 )
-from .package import (
+from .demo import (
     run_rabies_cross_host_geography_panel_demo as run_rabies_cross_host_geography_panel_demo,
 )
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-import bijux_phylogenetics.datasets.rabies_cross_host_geography.package as rabies_cross_host_geography_package
+import bijux_phylogenetics.datasets.rabies_cross_host_geography.demo as rabies_cross_host_geography_package
 from bijux_phylogenetics.datasets import (
     RabiesCrossHostGeographyPanelDemoResult,
     load_rabies_cross_host_geography_panel_dataset,
