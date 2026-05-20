@@ -12,8 +12,6 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.distance import (
     assess_distance_method_maturity,
     build_distance_method_report,
-    compare_distance_gap_policies,
-    compare_distance_models,
     write_distance_reproducibility_bundle,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
@@ -28,6 +26,10 @@ from .shared import (
     add_distance_model_option,
     add_gap_handling_option,
 )
+from .sensitivity import (
+    add_distance_sensitivity_commands,
+    run_distance_sensitivity_command,
+)
 from .support import add_distance_support_commands, run_distance_support_command
 from .trees import add_distance_tree_commands, run_distance_tree_command
 
@@ -37,30 +39,7 @@ def add_alignment_distance_commands(alignment_subparsers: Any) -> None:
     add_distance_diagnostic_commands(alignment_subparsers)
     add_distance_tree_commands(alignment_subparsers)
     add_distance_support_commands(alignment_subparsers)
-
-    alignment_distance_models = alignment_subparsers.add_parser(
-        "distance-models",
-        help="Compare all supported distance models on the same alignment.",
-    )
-    alignment_distance_models.add_argument("alignment", type=Path)
-    add_gap_handling_option(alignment_distance_models)
-    add_ambiguity_policy_option(alignment_distance_models)
-    alignment_distance_models.add_argument(
-        "--json", action="store_true", help="Emit the model comparison as JSON."
-    )
-    _add_manifest_argument(alignment_distance_models)
-
-    alignment_distance_gap = alignment_subparsers.add_parser(
-        "distance-gap-sensitivity",
-        help="Compare pairwise versus complete deletion for the same distance workflow.",
-    )
-    alignment_distance_gap.add_argument("alignment", type=Path)
-    add_distance_model_option(alignment_distance_gap)
-    add_ambiguity_policy_option(alignment_distance_gap)
-    alignment_distance_gap.add_argument(
-        "--json", action="store_true", help="Emit the gap-policy sensitivity as JSON."
-    )
-    _add_manifest_argument(alignment_distance_gap)
+    add_distance_sensitivity_commands(alignment_subparsers)
 
     alignment_distance_method_report = alignment_subparsers.add_parser(
         "distance-method-report",
@@ -129,58 +108,10 @@ def run_alignment_distance_command(args: Any) -> int | None:
     if support_result is not None:
         return support_result
 
-    if args.alignment_command == "distance-models":
-        report = compare_distance_models(
-            args.alignment,
-            gap_handling=args.gap_handling,
-            ambiguity_policy=args.ambiguity_policy,
-        )
-        outputs = _finalize_outputs(
-            args,
-            command="alignment",
-            inputs=[args.alignment],
-        )
-        _print_result(
-            build_command_result(
-                command="alignment",
-                inputs=[args.alignment],
-                outputs=outputs,
-                warnings=report.warnings,
-                metrics={
-                    "model_count": len(report.rows),
-                    "alphabet": report.inferred_alphabet,
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
-    if args.alignment_command == "distance-gap-sensitivity":
-        report = compare_distance_gap_policies(
-            args.alignment,
-            model=args.model,
-            ambiguity_policy=args.ambiguity_policy,
-        )
-        outputs = _finalize_outputs(
-            args,
-            command="alignment",
-            inputs=[args.alignment],
-        )
-        _print_result(
-            build_command_result(
-                command="alignment",
-                inputs=[args.alignment],
-                outputs=outputs,
-                warnings=report.warnings,
-                metrics={
-                    "changed_pair_count": report.changed_pair_count,
-                    "pair_count": report.pair_count,
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
+    sensitivity_result = run_distance_sensitivity_command(args)
+    if sensitivity_result is not None:
+        return sensitivity_result
+
     if args.alignment_command == "distance-method-report":
         report = build_distance_method_report(
             args.alignment,
