@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.bayesian.burnin import (
+from bijux_phylogenetics.bayesian.posterior_sets.burnin import (
     DEFAULT_BURNIN_FRACTIONS,
     normalize_burnin_fractions,
     summarize_burnin_clade_shifts,
     summarize_burnin_parameter_shifts,
 )
-from bijux_phylogenetics.bayesian.diagnostics import (
+from bijux_phylogenetics.bayesian.posterior_sets.diagnostics import (
     TraceConvergenceReport,
     summarize_trace_convergence,
     summarize_trace_parameters,

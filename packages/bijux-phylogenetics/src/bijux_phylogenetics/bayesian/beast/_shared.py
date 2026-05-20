@@ -12,7 +12,7 @@ from xml.etree import ElementTree  # nosec B405
 from defusedxml import ElementTree as SafeXmlET
 from defusedxml.common import DefusedXmlException
 
-from bijux_phylogenetics.bayesian.burnin import (
+from bijux_phylogenetics.bayesian.posterior_sets.burnin import (
     DEFAULT_BURNIN_FRACTIONS,
     BurninSensitivityCladeShift,
     BurninSensitivityParameterShift,
@@ -20,7 +20,7 @@ from bijux_phylogenetics.bayesian.burnin import (
     summarize_burnin_clade_shifts,
     summarize_burnin_parameter_shifts,
 )
-from bijux_phylogenetics.bayesian.diagnostics import (
+from bijux_phylogenetics.bayesian.posterior_sets.diagnostics import (
     TraceConvergenceReport,
     summarize_trace_convergence,
 )

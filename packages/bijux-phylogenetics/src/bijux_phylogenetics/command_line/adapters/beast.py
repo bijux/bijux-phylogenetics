@@ -24,7 +24,7 @@ from bijux_phylogenetics.bayesian import (
     write_posterior_tree_subsample,
     write_posterior_tree_subsample_table,
 )
-from bijux_phylogenetics.bayesian.burnin import (
+from bijux_phylogenetics.bayesian.posterior_sets.burnin import (
     DEFAULT_BURNIN_FRACTIONS,
     write_burnin_clade_shift_table,
     write_burnin_parameter_shift_table,

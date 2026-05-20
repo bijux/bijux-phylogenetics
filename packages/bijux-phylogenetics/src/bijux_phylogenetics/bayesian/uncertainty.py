@@ -16,7 +16,9 @@ from bijux_phylogenetics.bayesian.beast.validation import (
 from bijux_phylogenetics.bayesian.beast.xml_analysis import (
     summarize_beast_analysis_xml,
 )
-from bijux_phylogenetics.bayesian.burnin import DEFAULT_BURNIN_FRACTIONS
+from bijux_phylogenetics.bayesian.posterior_sets.burnin import (
+    DEFAULT_BURNIN_FRACTIONS,
+)
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.engines.common import (
     build_file_checksums,
