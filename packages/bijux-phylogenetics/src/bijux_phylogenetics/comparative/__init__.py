@@ -1,6 +1,6 @@
 """Comparative-analysis methods and helpers."""
 
-from .brownian_covariance import (
+from .covariance import (
     BrownianCovarianceReport,
     summarize_brownian_covariance,
     summarize_brownian_covariance_from_tree,

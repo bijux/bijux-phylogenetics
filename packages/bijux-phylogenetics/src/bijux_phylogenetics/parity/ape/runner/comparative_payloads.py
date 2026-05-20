@@ -4,7 +4,7 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.comparative import compute_diversification_gamma_statistic
-from bijux_phylogenetics.comparative.brownian_covariance import summarize_brownian_covariance
+from bijux_phylogenetics.comparative.covariance import summarize_brownian_covariance
 from bijux_phylogenetics.comparative.signal import compute_phylogenetic_independent_contrasts
 from bijux_phylogenetics.phylo.branch_lengths.branching_times import compute_tree_branching_times
 from bijux_phylogenetics.phylo.branch_lengths.node_depths import compute_tree_node_depths

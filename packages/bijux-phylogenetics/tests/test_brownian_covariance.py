@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.comparative.brownian_covariance import (
+from bijux_phylogenetics.comparative.covariance import (
     summarize_brownian_covariance,
     summarize_brownian_covariance_from_tree,
     write_brownian_covariance_long_table,
