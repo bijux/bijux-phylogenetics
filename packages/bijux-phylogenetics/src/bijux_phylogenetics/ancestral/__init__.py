@@ -77,7 +77,7 @@ _PUBLIC_SURFACES = (
         ),
     ),
     (
-        "irreversible_discrete",
+        "discrete.review.transition_constraints",
         (
             "IrreversibleDiscreteFitRow",
             "IrreversibleDiscreteNodeComparisonRow",

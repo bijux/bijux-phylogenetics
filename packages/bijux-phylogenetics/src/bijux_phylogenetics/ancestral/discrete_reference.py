@@ -6,7 +6,7 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
-from bijux_phylogenetics.ancestral.irreversible_discrete import (
+from bijux_phylogenetics.ancestral.discrete.review import (
     summarize_irreversible_discrete_reconstruction,
     summarize_irreversible_discrete_report,
 )

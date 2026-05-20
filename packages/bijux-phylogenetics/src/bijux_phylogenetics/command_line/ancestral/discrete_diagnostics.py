@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from bijux_phylogenetics.ancestral.irreversible_discrete import (
+from bijux_phylogenetics.ancestral.discrete.review import (
     summarize_irreversible_discrete_reconstruction,
     summarize_irreversible_discrete_report,
     write_irreversible_discrete_fit_table,
