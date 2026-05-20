@@ -34,6 +34,7 @@ from bijux_phylogenetics.comparative.traits.regime_mapping import (
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
+from bijux_phylogenetics.io.trees import load_tree
 
 _PROFILE_CONFIDENCE_DELTA = 1.920729410347062
 _Z_95 = 1.959963984540054
@@ -157,9 +158,10 @@ def summarize_brownian_regime_rates(
         require_rooted=True,
         require_binary=False,
     )
+    source_tree = load_tree(tree_path)
     branch_rows, resolved_branch_id_column = _load_branch_regime_rows(
         regime_map_path,
-        tree=dataset.tree,
+        tree=source_tree,
         analyzed_taxa=dataset.taxa,
         branch_id_column=branch_id_column,
         regime_column=regime_column,

@@ -9,7 +9,7 @@ from bijux_phylogenetics.command_line.arguments import (
 )
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.comparative.brownian_regime_rates import (
+from bijux_phylogenetics.comparative.continuous import (
     summarize_brownian_regime_rates,
     write_brownian_regime_branch_table,
     write_brownian_regime_comparison_table,

@@ -4,7 +4,7 @@ import math
 from pathlib import Path
 import random
 
-from bijux_phylogenetics.comparative.brownian_regime_rates import (
+from bijux_phylogenetics.comparative.continuous import (
     summarize_brownian_regime_rates,
     write_brownian_regime_branch_table,
     write_brownian_regime_comparison_table,

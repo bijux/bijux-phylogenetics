@@ -7,7 +7,7 @@ from .covariance import (
     write_brownian_covariance_long_table,
     write_brownian_covariance_matrix_table,
 )
-from .brownian_regime_rates import (
+from .continuous import (
     BrownianRegimeBranchRow,
     BrownianRegimeExclusion,
     BrownianRegimeFitSummaryReport,
