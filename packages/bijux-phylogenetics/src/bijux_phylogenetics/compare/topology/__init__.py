@@ -79,6 +79,15 @@ _PUBLIC_SURFACES = (
         ),
     ),
     (
+        "structural_parity",
+        (
+            "StructuralTreeParityReport",
+            "StructuralTreeSetParityReport",
+            "compare_tree_sets_structurally",
+            "compare_tree_structurally",
+        ),
+    ),
+    (
         "tables",
         (
             "write_clade_overlap_table",

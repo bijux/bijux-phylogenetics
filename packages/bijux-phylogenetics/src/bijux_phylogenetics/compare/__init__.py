@@ -1,11 +1,5 @@
 """Tree comparison workflows."""
 
-from .structural_parity import (
-    StructuralTreeParityReport,
-    StructuralTreeSetParityReport,
-    compare_tree_sets_structurally,
-    compare_tree_structurally,
-)
 from .reference import (
     SupportReferenceObservation,
     SupportReferenceValidationReport,
@@ -25,6 +19,8 @@ from .topology import (
     CladeOverlapComparisonReport,
     RobinsonFouldsComparisonReport,
     SharedTaxaPruningReport,
+    StructuralTreeParityReport,
+    StructuralTreeSetParityReport,
     SupportComparisonReport,
     SupportConflictRow,
     TopologyDistanceReport,
@@ -35,6 +31,8 @@ from .topology import (
     compare_topology_distance,
     compare_robinson_foulds,
     compare_support_values,
+    compare_tree_sets_structurally,
+    compare_tree_structurally,
     compare_tree_paths,
     prune_trees_to_shared_taxa,
     write_clade_overlap_table,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.compare.structural_parity import (
+from bijux_phylogenetics.compare.topology import (
     compare_tree_sets_structurally,
     compare_tree_structurally,
 )
