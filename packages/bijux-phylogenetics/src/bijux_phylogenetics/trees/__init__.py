@@ -1,6 +1,6 @@
 """Tree-analysis reports and tree-set workflows."""
 
-from .branch_lengths import (
+from .inspection import (
     BranchLengthAggregate,
     BranchLengthDistributionReport,
     BranchLengthRow,
