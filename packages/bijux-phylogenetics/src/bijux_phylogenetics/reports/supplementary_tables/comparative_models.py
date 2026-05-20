@@ -7,7 +7,7 @@ from bijux_phylogenetics.comparative.pgls import run_pgls
 from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_logistic,
 )
-from bijux_phylogenetics.comparative.regression_model_selection import (
+from bijux_phylogenetics.comparative.regression import (
     ComparativeRegressionModelExclusion,
     ComparativeRegressionModelRow,
     ComparativeRegressionModelSelectionReport,

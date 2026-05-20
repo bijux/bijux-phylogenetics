@@ -14,9 +14,7 @@ from bijux_phylogenetics.comparative.pgls.formula import (
 from bijux_phylogenetics.comparative.pgls.models import (
     ComparativeFormulaSpecification,
 )
-from bijux_phylogenetics.comparative.regression import (
-    summarize_phylogenetic_logistic,
-)
+from .logistic import summarize_phylogenetic_logistic
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.datasets.study_inputs import validate_traits_table

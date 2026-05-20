@@ -15,7 +15,7 @@ from bijux_phylogenetics.comparative.regression import (
     write_multivariate_response_coefficient_table,
     write_multivariate_response_model_table,
 )
-from bijux_phylogenetics.comparative.regression_model_selection import (
+from bijux_phylogenetics.comparative.regression import (
     compare_comparative_regression_models,
     write_comparative_regression_excluded_taxa_table,
     write_comparative_regression_model_ranking_table,

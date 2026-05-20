@@ -398,7 +398,7 @@ from .signal import (
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,
 )
-from .regression_model_selection import (
+from .regression import (
     ComparativeRegressionModelExclusion,
     ComparativeRegressionModelRow,
     ComparativeRegressionModelSelectionReport,
