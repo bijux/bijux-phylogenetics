@@ -3,8 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.fixtures import SharedPhytoolsComparativeFixture
-from bijux_phylogenetics.fixtures import get_shared_phytools_comparative_fixture
+from bijux_phylogenetics.datasets.shared_fixtures import (
+    SharedPhytoolsComparativeFixture,
+    get_shared_phytools_comparative_fixture,
+)
 
 
 @dataclass(frozen=True, slots=True)

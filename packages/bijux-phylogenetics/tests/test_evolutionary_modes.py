@@ -33,7 +33,9 @@ from bijux_phylogenetics.comparative import (
     rescale_tree_white_noise,
 )
 from bijux_phylogenetics.comparative.models import ComparativeResidualSummary
-from bijux_phylogenetics.fixtures import get_shared_geiger_continuous_fixture
+from bijux_phylogenetics.datasets.shared_fixtures import (
+    get_shared_geiger_continuous_fixture,
+)
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures"

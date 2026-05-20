@@ -15,7 +15,7 @@ from bijux_phylogenetics.comparative.discrete_mk import (
     write_discrete_mk_summary_table,
 )
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.fixtures import (
+from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_geiger_discrete_fixture,
     get_shared_phytools_comparative_fixture,
 )

@@ -4,10 +4,10 @@ import csv
 
 import pytest
 
-import bijux_phylogenetics.fixtures as fixtures_api
+import bijux_phylogenetics.datasets.shared_fixtures as fixtures_api
 from bijux_phylogenetics.ancestral.common import load_discrete_dataset
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
-from bijux_phylogenetics.fixtures import (
+from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_geiger_discrete_fixture,
     list_shared_geiger_discrete_fixtures,
 )

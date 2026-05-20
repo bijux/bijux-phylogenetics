@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.fixtures import (
+from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_distance_matrix_fixture,
     get_shared_dna_alignment_fixture,
     get_shared_trait_table_fixture,

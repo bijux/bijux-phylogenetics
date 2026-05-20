@@ -9,7 +9,9 @@ from bijux_phylogenetics.comparative.signal import compute_phylogenetic_independ
 from bijux_phylogenetics.core.branching_times import compute_tree_branching_times
 from bijux_phylogenetics.core.node_depth import compute_tree_node_depths
 from bijux_phylogenetics.core.ultrametric import assess_tree_ultrametricity
-from bijux_phylogenetics.fixtures import get_shared_tree_simulation_fixture
+from bijux_phylogenetics.datasets.shared_fixtures import (
+    get_shared_tree_simulation_fixture,
+)
 from bijux_phylogenetics.simulation import simulate_coalescent_trees, simulate_random_trees
 
 

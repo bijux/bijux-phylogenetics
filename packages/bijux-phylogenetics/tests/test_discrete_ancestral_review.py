@@ -19,10 +19,10 @@ from bijux_phylogenetics.ancestral.discrete import (
     write_discrete_ancestral_summary_table,
     write_discrete_ancestral_transition_table,
 )
-from bijux_phylogenetics.fixtures import (
+from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_trait_table_fixture,
 )
-from bijux_phylogenetics.fixtures import get_shared_tree_fixture
+from bijux_phylogenetics.datasets.shared_fixtures import get_shared_tree_fixture
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

@@ -12,7 +12,7 @@ from bijux_phylogenetics.io.fasta import (
     summarise_fasta,
     translate_coding_alignment,
 )
-from bijux_phylogenetics.fixtures import (
+from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_dna_alignment_fixture,
     list_shared_dna_alignment_fixtures,
 )

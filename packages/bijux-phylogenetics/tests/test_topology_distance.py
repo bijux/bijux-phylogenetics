@@ -9,7 +9,7 @@ from bijux_phylogenetics.compare.topology_distance import (
     write_topology_distance_split_table,
 )
 from bijux_phylogenetics.io.newick import load_newick_tree_set, write_newick
-from bijux_phylogenetics.fixtures import get_shared_tree_set_fixture
+from bijux_phylogenetics.datasets.shared_fixtures import get_shared_tree_set_fixture
 
 
 def _fixture_pair(tmp_path: Path, fixture_id: str) -> tuple[Path, Path]:

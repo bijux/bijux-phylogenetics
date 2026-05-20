@@ -3,12 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.fixtures.geiger_continuous import SharedGeigerContinuousFixture
-from bijux_phylogenetics.fixtures.geiger_continuous import (
+from bijux_phylogenetics.datasets.shared_fixtures.geiger_continuous import (
+    SharedGeigerContinuousFixture,
     get_shared_geiger_continuous_fixture,
 )
-from bijux_phylogenetics.fixtures.geiger_discrete import SharedGeigerDiscreteFixture
-from bijux_phylogenetics.fixtures.geiger_discrete import (
+from bijux_phylogenetics.datasets.shared_fixtures.geiger_discrete import (
+    SharedGeigerDiscreteFixture,
     get_shared_geiger_discrete_fixture,
 )
 

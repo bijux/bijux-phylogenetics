@@ -4,23 +4,25 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
+from ._paths import governed_fixture_root
 from .trait_tables import SharedTraitTableFixture, get_shared_trait_table_fixture
 from .trees import SharedTreeFixture, get_shared_tree_fixture
 
 
 @dataclass(frozen=True, slots=True)
-class SharedGeigerContinuousFixture:
-    """One governed continuous-trait fixture for live `geiger::fitContinuous` parity."""
+class SharedGeigerDiscreteFixture:
+    """One governed discrete-trait fixture for future live `geiger::fitDiscrete` parity."""
 
     fixture_id: str
     trait_table_fixture_id: str
     trait_name: str
-    standard_error_trait_name: str | None
     taxon_column: str
+    trait_kind: str
     supported_model_names: tuple[str, ...]
     validation_expectation: str
     geiger_reference_expectation: str
     feature_tags: tuple[str, ...]
+    transition_matrix_metadata: dict[str, object] | None
     simulation_metadata: dict[str, object] | None
     notes: str
 
@@ -41,40 +43,33 @@ class SharedGeigerContinuousFixture:
         return self.trait_table_fixture.path
 
 
-def _package_root() -> Path:
-    return Path(__file__).resolve().parents[3]
-
-
 def _fixtures_root() -> Path:
-    return _package_root() / "tests" / "fixtures"
+    return governed_fixture_root()
 
 
 def _catalog_path() -> Path:
-    return (
-        _fixtures_root()
-        / "metadata"
-        / "shared_geiger_continuous_fixture_catalog.json"
-    )
+    return _fixtures_root() / "metadata" / "shared_geiger_discrete_fixture_catalog.json"
 
 
 def _load_catalog() -> dict[str, object]:
     return json.loads(_catalog_path().read_text(encoding="utf-8"))
 
 
-def list_shared_geiger_continuous_fixtures() -> list[SharedGeigerContinuousFixture]:
-    """Return the governed continuous-trait corpus for live `geiger` parity."""
+def list_shared_geiger_discrete_fixtures() -> list[SharedGeigerDiscreteFixture]:
+    """Return the governed discrete-trait corpus for future live `geiger` parity."""
     catalog = _load_catalog()
     return [
-        SharedGeigerContinuousFixture(
+        SharedGeigerDiscreteFixture(
             fixture_id=entry["fixture_id"],
             trait_table_fixture_id=entry["trait_table_fixture_id"],
             trait_name=entry["trait_name"],
-            standard_error_trait_name=entry.get("standard_error_trait_name"),
             taxon_column=entry["taxon_column"],
+            trait_kind=entry["trait_kind"],
             supported_model_names=tuple(entry["supported_model_names"]),
             validation_expectation=entry["validation_expectation"],
             geiger_reference_expectation=entry["geiger_reference_expectation"],
             feature_tags=tuple(entry["feature_tags"]),
+            transition_matrix_metadata=entry.get("transition_matrix_metadata"),
             simulation_metadata=entry.get("simulation_metadata"),
             notes=entry["notes"],
         )
@@ -82,19 +77,14 @@ def list_shared_geiger_continuous_fixtures() -> list[SharedGeigerContinuousFixtu
     ]
 
 
-def get_shared_geiger_continuous_fixture(
-    fixture_id: str,
-) -> SharedGeigerContinuousFixture:
-    """Resolve one governed `geiger` continuous fixture by durable id."""
-    for fixture in list_shared_geiger_continuous_fixtures():
+def get_shared_geiger_discrete_fixture(fixture_id: str) -> SharedGeigerDiscreteFixture:
+    """Resolve one governed `geiger` discrete fixture by durable id."""
+    for fixture in list_shared_geiger_discrete_fixtures():
         if fixture.fixture_id == fixture_id:
             return fixture
     supported = ", ".join(
-        sorted(
-            fixture.fixture_id
-            for fixture in list_shared_geiger_continuous_fixtures()
-        )
+        sorted(fixture.fixture_id for fixture in list_shared_geiger_discrete_fixtures())
     )
     raise ValueError(
-        f"unsupported shared geiger continuous fixture '{fixture_id}'; expected one of: {supported}"
+        f"unsupported shared geiger discrete fixture '{fixture_id}'; expected one of: {supported}"
     )

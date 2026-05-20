@@ -23,11 +23,11 @@ from bijux_phylogenetics.comparative.signal import (
 )
 from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.fixtures import (
+from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_trait_table_fixture,
     list_shared_trait_table_fixtures,
 )
-from bijux_phylogenetics.fixtures import get_shared_tree_fixture
+from bijux_phylogenetics.datasets.shared_fixtures import get_shared_tree_fixture
 
 
 def _read_taxa(fixture_id: str) -> list[str]:

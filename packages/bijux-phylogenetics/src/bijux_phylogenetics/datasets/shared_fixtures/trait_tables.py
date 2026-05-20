@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
+from ._paths import governed_fixture_root
+
 
 @dataclass(frozen=True, slots=True)
 class SharedTraitTableFixture:
@@ -26,12 +28,8 @@ class SharedTraitTableFixture:
         return _fixtures_root() / self.relative_path
 
 
-def _package_root() -> Path:
-    return Path(__file__).resolve().parents[3]
-
-
 def _fixtures_root() -> Path:
-    return _package_root() / "tests" / "fixtures"
+    return governed_fixture_root()
 
 
 def _catalog_path() -> Path:

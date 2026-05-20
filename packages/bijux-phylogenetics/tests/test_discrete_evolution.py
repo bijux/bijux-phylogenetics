@@ -47,7 +47,7 @@ from bijux_phylogenetics.comparative.discrete_evolution import (
     write_transition_summary_table,
 )
 from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
-from bijux_phylogenetics.fixtures import (
+from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_phytools_comparative_fixture,
 )
 

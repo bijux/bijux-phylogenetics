@@ -5,7 +5,7 @@ from statistics import median
 
 import pytest
 
-import bijux_phylogenetics.fixtures as fixtures_api
+import bijux_phylogenetics.datasets.shared_fixtures as fixtures_api
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     compare_fitcontinuous_model_ranking,
@@ -15,7 +15,7 @@ from bijux_phylogenetics.comparative.signal import (
     estimate_pagels_lambda,
 )
 from bijux_phylogenetics.core.ultrametric import assess_tree_ultrametricity
-from bijux_phylogenetics.fixtures import (
+from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_geiger_continuous_fixture,
     list_shared_geiger_continuous_fixtures,
 )
