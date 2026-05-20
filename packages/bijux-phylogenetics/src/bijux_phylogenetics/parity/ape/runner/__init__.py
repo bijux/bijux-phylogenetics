@@ -8,15 +8,10 @@ import shutil
 import subprocess  # nosec B404 - parity helpers invoke repository-owned reference commands
 import tempfile
 
-from bijux_phylogenetics.ancestral.common import load_discrete_dataset, node_signature
-from bijux_phylogenetics.ancestral.discrete import (
-    reconstruct_discrete_ancestral_states,
-)
 from bijux_phylogenetics.compare.structural_parity import (
     compare_tree_sets_structurally,
     compare_tree_structurally,
 )
-from bijux_phylogenetics.core._node_identity import build_ape_internal_node_map
 from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
     prune_tree_to_requested_taxa,
@@ -36,7 +31,6 @@ from bijux_phylogenetics.trees import (
 from .normalization import (
     _canonical_newick,
     _clear_branch_lengths,
-    _coerce_table_cell,
     _compare_json,
     _load_json,
     _load_rows_table,
@@ -56,10 +50,13 @@ from .reporting import (
     write_ape_parity_observation_table as write_ape_parity_observation_table,
     write_ape_parity_summary_table as write_ape_parity_summary_table,
 )
+from .ancestral_payloads import (
+    _build_bijux_continuous_ancestral_rows,
+    _build_bijux_discrete_ancestral_rows,
+)
 from .comparative_payloads import (
     _build_bijux_brownian_covariance_rows,
     _build_bijux_branching_time_rows,
-    _build_bijux_continuous_ancestral_rows,
     _build_bijux_diversification_gamma_rows,
     _build_bijux_independent_contrast_rows,
     _build_bijux_tree_node_depth_rows,
@@ -116,100 +113,6 @@ from .runtime import (
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-def _build_bijux_discrete_ancestral_rows(
-    input_fixture: Path,
-    *,
-    trait_table_path: Path,
-    trait_name: str,
-    trait_taxon_column: str,
-    ancestral_model: str,
-) -> tuple[dict[str, object], list[dict[str, object]]]:
-    dataset = load_discrete_dataset(
-        input_fixture,
-        trait_table_path,
-        trait=trait_name,
-        taxon_column=trait_taxon_column,
-    )
-    report = reconstruct_discrete_ancestral_states(
-        input_fixture,
-        trait_table_path,
-        trait=trait_name,
-        taxon_column=trait_taxon_column,
-        model=ancestral_model,
-    )
-    internal_node_map = {
-        node_signature(node): node_id
-        for node_id, node in build_ape_internal_node_map(dataset.tree).items()
-    }
-    rows = sorted(
-        [
-            {
-                "node_id": internal_node_map[estimate.node],
-                "node": estimate.node,
-                "state": _coerce_table_cell(state),
-                "posterior_probability": probability,
-                "most_likely_state": _coerce_table_cell(estimate.most_likely_state),
-                "max_posterior_probability": estimate.confidence,
-            }
-            for estimate in report.estimates
-            if not estimate.is_tip
-            for state, probability in sorted(estimate.state_probabilities.items())
-        ],
-        key=lambda row: (int(row["node_id"]), str(row["state"])),
-    )
-    transition_rows = [
-        {
-            "source_state": row.source_state,
-            "target_state": row.target_state,
-            "transition_allowed": row.transition_allowed,
-            "step_distance": row.step_distance,
-            "rate": row.rate,
-        }
-        for row in report.transition_rate_rows
-    ]
-    return {
-        "trait": report.trait,
-        "taxon_count": report.taxon_count,
-        "excluded_taxon_count": len(report.dropped_missing_taxa),
-        "dropped_missing_taxa": report.dropped_missing_taxa,
-        "internal_node_count": len(
-            [estimate for estimate in report.estimates if not estimate.is_tip]
-        ),
-        "model": report.model,
-        "state_count": len(report.observed_states),
-        "state_labels": report.observed_states,
-        "log_likelihood": report.log_likelihood,
-        "parameter_count": report.parameter_count,
-        "aic": report.aic,
-        "overparameterized": report.overparameterized,
-        "baseline_model": (
-            None
-            if report.baseline_comparison is None
-            else report.baseline_comparison.baseline_model
-        ),
-        "baseline_delta_aic": (
-            None
-            if report.baseline_comparison is None
-            else report.baseline_comparison.delta_aic
-        ),
-        "preferred_model_by_aic": (
-            None
-            if report.baseline_comparison is None
-            else report.baseline_comparison.preferred_model_by_aic
-        ),
-        "transition_rate_rows": transition_rows,
-    }, rows
 
 def _copy_if_exists(source: Path, destination: Path) -> None:
     if source.exists():

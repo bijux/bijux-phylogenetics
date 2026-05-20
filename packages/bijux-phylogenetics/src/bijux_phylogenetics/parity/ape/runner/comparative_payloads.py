@@ -3,12 +3,9 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.ancestral.common import load_continuous_dataset, node_signature
-from bijux_phylogenetics.ancestral.continuous import reconstruct_continuous_ancestral_states
 from bijux_phylogenetics.comparative import compute_diversification_gamma_statistic
 from bijux_phylogenetics.comparative.brownian_covariance import summarize_brownian_covariance
 from bijux_phylogenetics.comparative.signal import compute_phylogenetic_independent_contrasts
-from bijux_phylogenetics.core._node_identity import build_ape_internal_node_map
 from bijux_phylogenetics.core.branching_times import compute_tree_branching_times
 from bijux_phylogenetics.core.node_depth import compute_tree_node_depths
 from bijux_phylogenetics.core.ultrametric import assess_tree_ultrametricity
@@ -81,67 +78,6 @@ def _build_bijux_independent_contrast_rows(
         "minimum_root_to_tip_depth": report.input_audit.minimum_root_to_tip_depth,
         "maximum_root_to_tip_depth": report.input_audit.maximum_root_to_tip_depth,
     }, rows
-
-def _build_bijux_continuous_ancestral_rows(
-    input_fixture: Path,
-    *,
-    trait_table_path: Path,
-    trait_name: str,
-    trait_taxon_column: str,
-) -> tuple[dict[str, object], list[dict[str, object]]]:
-    dataset = load_continuous_dataset(
-        input_fixture,
-        trait_table_path,
-        trait=trait_name,
-        taxon_column=trait_taxon_column,
-    )
-    report = reconstruct_continuous_ancestral_states(
-        input_fixture,
-        trait_table_path,
-        trait=trait_name,
-        taxon_column=trait_taxon_column,
-        model="brownian",
-    )
-    internal_node_map = {
-        node_signature(node): node_id
-        for node_id, node in build_ape_internal_node_map(dataset.tree).items()
-    }
-    rows = sorted(
-        [
-            {
-                "node_id": internal_node_map[estimate.node],
-                "node": estimate.node,
-                "estimate": estimate.estimate,
-                "standard_error": estimate.standard_error,
-                "lower_95_interval": estimate.lower_95_interval,
-                "upper_95_interval": estimate.upper_95_interval,
-            }
-            for estimate in report.estimates
-            if not estimate.is_tip
-        ],
-        key=lambda row: int(row["node_id"]),
-    )
-    diagnostics = report.brownian_fit_diagnostics
-    return {
-        "trait": report.trait,
-        "taxon_count": report.taxon_count,
-        "excluded_taxon_count": len(report.dropped_missing_taxa)
-        + len(report.dropped_non_numeric_taxa),
-        "dropped_missing_taxa": report.dropped_missing_taxa,
-        "dropped_non_numeric_taxa": report.dropped_non_numeric_taxa,
-        "internal_node_count": len(rows),
-        "method": "pic",
-        "tree_is_ultrametric": (
-            None if diagnostics is None else diagnostics.tree_is_ultrametric
-        ),
-        "minimum_root_to_tip_depth": (
-            None if diagnostics is None else diagnostics.minimum_root_to_tip_depth
-        ),
-        "maximum_root_to_tip_depth": (
-            None if diagnostics is None else diagnostics.maximum_root_to_tip_depth
-        ),
-    }, rows
-
 def _build_bijux_tree_node_depth_rows(
     input_fixture: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
@@ -313,4 +249,3 @@ def _build_bijux_tree_ultrametric_rows(
         }
         for row in report.rows
     ]
-
