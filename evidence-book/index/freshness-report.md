@@ -4,12 +4,13 @@
 
 ## Status Counts
 
-- `current`: `19`
+- `current`: `18`
+- `stale`: `1`
 
 ## Bundles
 
-- `primate-longevity-signal/evidence-001` — `current`
-  Generated: `2026-05-16`; latest governed change: `2026-05-16`
+- `primate-longevity-signal/evidence-001` — `stale`
+  Generated: `2026-05-16`; latest governed change: `2026-05-20`
 - `primate-longevity-signal/evidence-002` — `current`
   Generated: `2026-05-16`; latest governed change: `2026-05-11`
 - `primate-longevity-signal/evidence-003` — `current`
@@ -29,7 +30,7 @@
 - `primate-pgls-and-signal/evidence-001` — `current`
   Generated: `2026-05-11`; latest governed change: `2026-05-11`
 - `primate-pgls-and-signal/evidence-002` — `current`
-  Generated: `2026-05-14`; latest governed change: `2026-05-11`
+  Generated: `2026-05-19`; latest governed change: `2026-05-11`
 - `primate-pgls-and-signal/evidence-003` — `current`
   Generated: `2026-05-11`; latest governed change: `2026-05-11`
 - `primate-pgls-and-signal/evidence-004` — `current`
