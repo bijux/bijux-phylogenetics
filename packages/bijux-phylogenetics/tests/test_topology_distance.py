@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.compare.topology_distance import (
+from bijux_phylogenetics.compare.topology import (
     compare_topology_distance_trees,
     write_topology_distance_split_table,
 )

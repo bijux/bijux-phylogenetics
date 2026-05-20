@@ -27,6 +27,16 @@ _PUBLIC_SURFACES = (
         ),
     ),
     (
+        "distance",
+        (
+            "TopologyDistanceReport",
+            "TopologyDistanceSplitRow",
+            "compare_topology_distance",
+            "compare_topology_distance_trees",
+            "write_topology_distance_split_table",
+        ),
+    ),
+    (
         "models",
         (
             "BranchLengthComparisonReport",

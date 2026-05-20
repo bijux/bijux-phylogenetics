@@ -192,15 +192,13 @@ from bijux_phylogenetics.compare.topology import (
     compare_branch_score_distance,
     compare_clade_overlap,
     compare_clade_sets,
+    compare_topology_distance,
     compare_robinson_foulds,
     compare_support_values,
     compare_tree_paths,
     detect_clade_changes,
     prune_trees_to_shared_taxa,
     write_clade_overlap_table,
-)
-from bijux_phylogenetics.compare.topology_distance import (
-    compare_topology_distance,
 )
 from bijux_phylogenetics.phylo.alignment import AlignmentRecord, AlignmentSummary
 from bijux_phylogenetics.phylo.branch_lengths.branching_times import (

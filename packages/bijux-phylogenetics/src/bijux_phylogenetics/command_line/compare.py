@@ -17,6 +17,7 @@ from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
     compare_clade_overlap,
     compare_support_values,
+    compare_topology_distance,
     compare_tree_paths,
     detect_clade_changes,
     prune_trees_to_shared_taxa,
@@ -24,10 +25,8 @@ from bijux_phylogenetics.compare.topology import (
     write_shared_taxa_pruning_table,
     write_shared_taxa_removed_taxa_table,
     write_support_comparison_table,
-    write_tree_comparison_table,
-)
-from bijux_phylogenetics.compare.topology_distance import (
     write_topology_distance_split_table,
+    write_tree_comparison_table,
 )
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.runtime.results import build_command_result

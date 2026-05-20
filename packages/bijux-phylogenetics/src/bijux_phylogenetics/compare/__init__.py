@@ -27,9 +27,12 @@ from .topology import (
     SharedTaxaPruningReport,
     SupportComparisonReport,
     SupportConflictRow,
+    TopologyDistanceReport,
+    TopologyDistanceSplitRow,
     TreeComparisonReport,
     compare_branch_score_distance,
     compare_clade_overlap,
+    compare_topology_distance,
     compare_robinson_foulds,
     compare_support_values,
     compare_tree_paths,
@@ -38,11 +41,6 @@ from .topology import (
     write_shared_taxa_pruning_table,
     write_shared_taxa_removed_taxa_table,
     write_support_comparison_table,
-)
-from .topology_distance import (
-    TopologyDistanceReport,
-    TopologyDistanceSplitRow,
-    compare_topology_distance,
     write_topology_distance_split_table,
 )
 __all__ = [

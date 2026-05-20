@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 
-from bijux_phylogenetics.compare.topology_distance import (
+from bijux_phylogenetics.compare.topology import (
     compare_topology_distance_trees,
 )
 from bijux_phylogenetics.phylo.pruning import (

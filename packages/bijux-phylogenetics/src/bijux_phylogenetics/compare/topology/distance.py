@@ -4,13 +4,16 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.compare.topology import (
-    RobinsonFouldsMode,
-    TaxonOverlapPolicy,
+from .comparison import (
     _resolve_shared_taxa,
     _validate_rf_mode,
     _validate_taxon_overlap_policy,
 )
+from .models import (
+    RobinsonFouldsMode,
+    TaxonOverlapPolicy,
+)
+from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.phylo.topology.clades import (
     canonical_clade_id,
     informative_rooted_clades,
@@ -20,7 +23,6 @@ from bijux_phylogenetics.phylo.topology.clades import (
     tree_has_polytomy,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.diagnostics.validation import _load_tree
 
 
 @dataclass(frozen=True, slots=True)
