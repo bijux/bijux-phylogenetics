@@ -6,7 +6,7 @@ from typing import Any
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.comparative.correlated_trait_evolution import (
+from bijux_phylogenetics.comparative.trait_dependence import (
     summarize_correlated_trait_evolution,
     write_correlated_trait_comparison_table,
     write_correlated_trait_exclusion_table,

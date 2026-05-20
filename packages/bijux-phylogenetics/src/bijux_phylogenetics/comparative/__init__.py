@@ -100,7 +100,7 @@ from .discrete_mode_recovery import (
     write_discrete_mode_recovery_warning_table,
     write_geiger_fitdiscrete_recovery_reference_payload_table,
 )
-from .correlated_trait_evolution import (
+from .trait_dependence import (
     CorrelatedTraitComparisonRow,
     CorrelatedTraitEvolutionReport,
     CorrelatedTraitExclusion,
