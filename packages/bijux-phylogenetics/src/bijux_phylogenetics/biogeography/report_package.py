@@ -18,7 +18,7 @@ from bijux_phylogenetics.biogeography.migration import (
     summarize_geographic_migration_events,
     write_geographic_migration_event_table,
 )
-from bijux_phylogenetics.biogeography.publication import (
+from bijux_phylogenetics.biogeography.presentation import (
     BiogeographyCaptionDraft,
     BiogeographyPublicationAudit,
     BiogeographyPublicationLegendEntry,
