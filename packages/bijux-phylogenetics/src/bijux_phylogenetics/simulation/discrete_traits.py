@@ -93,11 +93,11 @@ def simulate_discrete_traits(
         SimulatedDiscreteTrait,
         SimulatedDiscreteTransitionEvent,
     )
-    from .propagation import _tip_values_from_node_map
-    from . import (
+    from .discrete_policy import (
         _normalize_discrete_states,
         _normalize_root_state_probabilities,
     )
+    from .propagation import _tip_values_from_node_map
 
     unique_states = _normalize_discrete_states(states)
     if transition_rate < 0.0:

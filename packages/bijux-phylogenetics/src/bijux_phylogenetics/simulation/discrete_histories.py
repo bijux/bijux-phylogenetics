@@ -463,7 +463,7 @@ def simulate_discrete_histories(
     seed: int = 1,
 ):
     from .models import DiscreteHistorySimulationCollectionReport
-    from . import (
+    from .discrete_policy import (
         _normalize_discrete_states,
         _normalize_root_state_probabilities,
     )
