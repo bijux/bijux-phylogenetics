@@ -8,7 +8,7 @@ from .evolution import (
     add_comparative_evolution_commands,
     run_comparative_evolution_command,
 )
-from .logistic import (
+from .regression import (
     add_comparative_logistic_command,
     run_comparative_logistic_command,
 )
