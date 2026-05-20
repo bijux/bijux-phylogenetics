@@ -10,6 +10,6 @@ from .config import (
     load_rabies_method_sensitivity_panel_dataset,
 )
 from .models import *
-from .package import run_rabies_method_sensitivity_panel_demo
+from .demo import run_rabies_method_sensitivity_panel_demo
 from .slurm import *
 from .workflow import run_rabies_method_sensitivity_panel_workflow
