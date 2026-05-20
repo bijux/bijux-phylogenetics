@@ -7,7 +7,7 @@ import math
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from bijux_phylogenetics.benchmark.geiger_real_dataset_macroevolution_reference import (
+from .geiger_reference import (
     GEIGER_REAL_DATASET_MACROEVOLUTION_REFERENCE_PAYLOADS,
 )
 from bijux_phylogenetics.comparative.discrete_mk import (

@@ -7,7 +7,7 @@ import pytest
 
 import bijux_phylogenetics.command_line as command_line_api
 import bijux_phylogenetics.command_line.demo as demo_command_module
-from bijux_phylogenetics.benchmark.real_dataset_macroevolution import (
+from bijux_phylogenetics.benchmark.macroevolution import (
     RealDatasetMacroevolutionAlignmentReviewRow,
     RealDatasetMacroevolutionBenchmarkBundle,
     RealDatasetMacroevolutionBenchmarkDemoResult,

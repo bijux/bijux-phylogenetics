@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 import bijux_phylogenetics.benchmark as benchmark_api
-from bijux_phylogenetics.benchmark.real_dataset_macroevolution import (
+from bijux_phylogenetics.benchmark.macroevolution import (
     benchmark_real_dataset_macroevolution,
     run_real_dataset_macroevolution_benchmark_demo,
     write_real_dataset_macroevolution_bundle,
