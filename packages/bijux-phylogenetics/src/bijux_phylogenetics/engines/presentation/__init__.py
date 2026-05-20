@@ -4,12 +4,14 @@ from .model_limitations import (
     build_model_selection_limitations_report as build_model_selection_limitations_report,
     render_model_selection_limitations_report as render_model_selection_limitations_report,
 )
-from .workflow_reports import (
+from .sensitivity import (
     InferenceSensitivityReport as InferenceSensitivityReport,
     InferenceSensitivityReportBuildResult as InferenceSensitivityReportBuildResult,
-    InferenceWorkflowReportBuildResult as InferenceWorkflowReportBuildResult,
     build_inference_sensitivity_report as build_inference_sensitivity_report,
     render_inference_sensitivity_report as render_inference_sensitivity_report,
+)
+from .workflow_reports import (
+    InferenceWorkflowReportBuildResult as InferenceWorkflowReportBuildResult,
     render_inference_workflow_report as render_inference_workflow_report,
 )
 
