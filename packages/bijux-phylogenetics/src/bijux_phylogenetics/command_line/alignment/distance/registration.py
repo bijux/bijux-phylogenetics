@@ -13,16 +13,12 @@ from bijux_phylogenetics.distance import (
     assess_distance_method_maturity,
     bootstrap_distance_trees,
     build_distance_method_report,
-    build_distance_tree,
     compare_distance_gap_policies,
     compare_distance_models,
-    compare_distance_tree_to_reference_tree,
-    compare_distance_tree_topologies,
     summarize_distance_bootstrap_support,
     write_distance_bootstrap_support,
     write_distance_reproducibility_bundle,
 )
-from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.runtime.results import build_command_result
 from bijux_phylogenetics.simulation import write_tree_set
 
@@ -36,54 +32,13 @@ from .shared import (
     add_distance_model_option,
     add_gap_handling_option,
 )
+from .trees import add_distance_tree_commands, run_distance_tree_command
 
 
 def add_alignment_distance_commands(alignment_subparsers: Any) -> None:
     add_distance_matrix_command(alignment_subparsers)
     add_distance_diagnostic_commands(alignment_subparsers)
-
-    alignment_build_tree = alignment_subparsers.add_parser(
-        "build-tree",
-        help="Build a neighbor-joining or UPGMA tree from a DNA distance matrix.",
-    )
-    alignment_build_tree.add_argument("alignment", type=Path)
-    _add_distance_tree_method_argument(alignment_build_tree)
-    add_distance_model_option(alignment_build_tree)
-    add_gap_handling_option(alignment_build_tree)
-    add_ambiguity_policy_option(alignment_build_tree)
-    alignment_build_tree.add_argument("--out", required=True, type=Path)
-    alignment_build_tree.add_argument(
-        "--json", action="store_true", help="Emit the build report as JSON."
-    )
-    _add_manifest_argument(alignment_build_tree)
-
-    alignment_compare_distance_trees = alignment_subparsers.add_parser(
-        "compare-distance-trees",
-        help="Compare NJ and UPGMA topologies built from the same DNA alignment.",
-    )
-    alignment_compare_distance_trees.add_argument("alignment", type=Path)
-    add_distance_model_option(alignment_compare_distance_trees)
-    add_gap_handling_option(alignment_compare_distance_trees)
-    add_ambiguity_policy_option(alignment_compare_distance_trees)
-    alignment_compare_distance_trees.add_argument(
-        "--json", action="store_true", help="Emit the comparison as JSON."
-    )
-    _add_manifest_argument(alignment_compare_distance_trees)
-
-    alignment_compare_distance_reference = alignment_subparsers.add_parser(
-        "compare-distance-to-tree",
-        help="Compare one built distance tree against an external inferred or reviewer reference tree.",
-    )
-    alignment_compare_distance_reference.add_argument("alignment", type=Path)
-    alignment_compare_distance_reference.add_argument("reference_tree", type=Path)
-    _add_distance_tree_method_argument(alignment_compare_distance_reference)
-    add_distance_model_option(alignment_compare_distance_reference)
-    add_gap_handling_option(alignment_compare_distance_reference)
-    add_ambiguity_policy_option(alignment_compare_distance_reference)
-    alignment_compare_distance_reference.add_argument(
-        "--json", action="store_true", help="Emit the comparison as JSON."
-    )
-    _add_manifest_argument(alignment_compare_distance_reference)
+    add_distance_tree_commands(alignment_subparsers)
 
     alignment_bootstrap_tree = alignment_subparsers.add_parser(
         "bootstrap-tree",
@@ -206,95 +161,10 @@ def run_alignment_distance_command(args: Any) -> int | None:
     if diagnostic_result is not None:
         return diagnostic_result
 
-    if args.alignment_command == "build-tree":
-        tree, report = build_distance_tree(
-            args.alignment,
-            method=args.method,
-            model=args.model,
-            gap_handling=args.gap_handling,
-            ambiguity_policy=args.ambiguity_policy,
-        )
-        output_path = write_newick(args.out, tree)
-        outputs = _finalize_outputs(
-            args,
-            command="alignment",
-            inputs=[args.alignment],
-            outputs=[output_path],
-        )
-        _print_result(
-            build_command_result(
-                command="alignment",
-                inputs=[args.alignment],
-                outputs=outputs,
-                metrics={
-                    "taxon_count": report.taxon_count,
-                    "pair_count": report.pair_count,
-                    "method": report.method,
-                    "ambiguity_policy": report.ambiguity_policy,
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
-    if args.alignment_command == "compare-distance-trees":
-        report = compare_distance_tree_topologies(
-            args.alignment,
-            model=args.model,
-            gap_handling=args.gap_handling,
-            ambiguity_policy=args.ambiguity_policy,
-        )
-        outputs = _finalize_outputs(
-            args,
-            command="alignment",
-            inputs=[args.alignment],
-        )
-        _print_result(
-            build_command_result(
-                command="alignment",
-                inputs=[args.alignment],
-                outputs=outputs,
-                metrics={
-                    "shared_taxa": len(report.shared_taxa),
-                    "robinson_foulds_distance": report.robinson_foulds_distance,
-                    "same_unrooted_topology": report.same_unrooted_topology,
-                    "ambiguity_policy": report.ambiguity_policy,
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
-    if args.alignment_command == "compare-distance-to-tree":
-        report = compare_distance_tree_to_reference_tree(
-            args.alignment,
-            args.reference_tree,
-            method=args.method,
-            model=args.model,
-            gap_handling=args.gap_handling,
-            ambiguity_policy=args.ambiguity_policy,
-        )
-        outputs = _finalize_outputs(
-            args,
-            command="alignment",
-            inputs=[args.alignment, args.reference_tree],
-        )
-        _print_result(
-            build_command_result(
-                command="alignment",
-                inputs=[args.alignment, args.reference_tree],
-                outputs=outputs,
-                warnings=report.warnings,
-                metrics={
-                    "topology_equal": report.topology.topology_equal,
-                    "same_unrooted_topology": report.topology.same_unrooted_topology,
-                    "shared_taxa": len(report.topology.shared_taxa),
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
+    tree_result = run_distance_tree_command(args)
+    if tree_result is not None:
+        return tree_result
+
     if args.alignment_command == "bootstrap-tree":
         trees, report = bootstrap_distance_trees(
             args.alignment,
