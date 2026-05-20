@@ -9,11 +9,11 @@ from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.runtime.results import build_command_result
 
-
-def _command_line_api() -> Any:
-    import bijux_phylogenetics.command_line as command_line_api
-
-    return command_line_api
+from .shared import command_line_api
+from .state_models import (
+    add_biogeography_state_model_commands,
+    run_biogeography_state_model_command,
+)
 
 
 def add_biogeography_commands(subparsers: Any) -> None:
@@ -25,32 +25,7 @@ def add_biogeography_commands(subparsers: Any) -> None:
         dest="biogeography_command",
         required=True,
     )
-    biogeography_model = biogeography_subparsers.add_parser(
-        "model",
-        help="Reconstruct ancestral geographic regions under an ER, SYM, or ARD transition model.",
-    )
-    biogeography_model.add_argument("tree", type=Path)
-    biogeography_model.add_argument("table", type=Path)
-    biogeography_model.add_argument("--trait", required=True)
-    biogeography_model.add_argument("--taxon-column")
-    biogeography_model.add_argument(
-        "--model",
-        choices=("er", "sym", "ard"),
-        default="er",
-    )
-    biogeography_model.add_argument(
-        "--allowed-regions",
-        help="Comma-delimited explicit region vocabulary.",
-    )
-    biogeography_model.add_argument("--summary-out", type=Path)
-    biogeography_model.add_argument("--nodes-out", type=Path)
-    biogeography_model.add_argument("--rates-out", type=Path)
-    biogeography_model.add_argument("--events-out", type=Path)
-    biogeography_model.add_argument("--exclusions-out", type=Path)
-    biogeography_model.add_argument(
-        "--json", action="store_true", help="Emit the biogeography review as JSON."
-    )
-    _add_manifest_argument(biogeography_model)
+    add_biogeography_state_model_commands(biogeography_subparsers)
 
     biogeography_constrained = biogeography_subparsers.add_parser(
         "constrained",
@@ -259,78 +234,13 @@ def add_biogeography_commands(subparsers: Any) -> None:
 
 
 def run_biogeography_command(args: Any) -> int:
-    command_line_api = _command_line_api()
-    if args.biogeography_command == "model":
-        report = command_line_api.summarize_geographic_state_model(
-            args.tree,
-            args.table,
-            trait=args.trait,
-            taxon_column=args.taxon_column,
-            model=args.model,
-            allowed_regions=command_line_api._split_csv_values(args.allowed_regions)
-            or None,
-        )
-        outputs: list[Path | str] = []
-        if args.summary_out is not None:
-            outputs.append(
-                command_line_api.write_geographic_state_summary_table(
-                    args.summary_out, report
-                )
-            )
-        if args.nodes_out is not None:
-            outputs.append(
-                command_line_api.write_geographic_region_probability_table(
-                    args.nodes_out, report
-                )
-            )
-        if args.rates_out is not None:
-            outputs.append(
-                command_line_api.write_geographic_transition_rate_table(
-                    args.rates_out, report
-                )
-            )
-        if args.events_out is not None:
-            outputs.append(
-                command_line_api.write_geographic_transition_event_table(
-                    args.events_out, report
-                )
-            )
-        if args.exclusions_out is not None:
-            outputs.append(
-                command_line_api.write_geographic_exclusion_table(
-                    args.exclusions_out, report
-                )
-            )
-        outputs = _finalize_outputs(
-            args,
-            command="biogeography",
-            inputs=[args.tree, args.table],
-            outputs=outputs,
-        )
-        _print_result(
-            build_command_result(
-                command="biogeography",
-                inputs=[args.tree, args.table],
-                outputs=outputs,
-                warnings=report.warnings,
-                metrics={
-                    "model": report.model,
-                    "observed_region_count": report.summary.observed_region_count,
-                    "internal_node_count": report.summary.internal_node_count,
-                    "transition_rate_row_count": report.summary.transition_rate_row_count,
-                    "changed_branch_count": report.summary.changed_branch_count,
-                    "strongly_supported_transition_count": (
-                        report.summary.strongly_supported_transition_count
-                    ),
-                    "excluded_taxon_count": report.summary.excluded_taxon_count,
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
+    state_model_exit_code = run_biogeography_state_model_command(args)
+    if state_model_exit_code is not None:
+        return state_model_exit_code
+
+    cli_api = command_line_api()
     if args.biogeography_command == "constrained":
-        report = command_line_api.summarize_constrained_geographic_model(
+        report = cli_api.summarize_constrained_geographic_model(
             args.tree,
             args.table,
             args.adjacency,
@@ -338,39 +248,39 @@ def run_biogeography_command(args: Any) -> int:
             taxon_column=args.taxon_column,
             model=args.model,
         )
-        summary = command_line_api.summarize_constrained_geographic_report(report)
+        summary = cli_api.summarize_constrained_geographic_report(report)
         outputs: list[Path | str] = []
         if args.summary_out is not None:
             outputs.append(
-                command_line_api.write_constrained_geographic_summary_table(
+                cli_api.write_constrained_geographic_summary_table(
                     args.summary_out,
                     report,
                 )
             )
         if args.fits_out is not None:
             outputs.append(
-                command_line_api.write_constrained_geographic_fit_table(
+                cli_api.write_constrained_geographic_fit_table(
                     args.fits_out,
                     report,
                 )
             )
         if args.transitions_out is not None:
             outputs.append(
-                command_line_api.write_constrained_geographic_transition_table(
+                cli_api.write_constrained_geographic_transition_table(
                     args.transitions_out,
                     report,
                 )
             )
         if args.unsupported_out is not None:
             outputs.append(
-                command_line_api.write_unsupported_geographic_transition_claim_table(
+                cli_api.write_unsupported_geographic_transition_claim_table(
                     args.unsupported_out,
                     report,
                 )
             )
         if args.exclusions_out is not None:
             outputs.append(
-                command_line_api.write_constrained_geographic_exclusion_table(
+                cli_api.write_constrained_geographic_exclusion_table(
                     args.exclusions_out,
                     report,
                 )
@@ -403,44 +313,44 @@ def run_biogeography_command(args: Any) -> int:
         )
         return 0
     if args.biogeography_command == "time-stratified":
-        report = command_line_api.summarize_time_stratified_geographic_transitions(
+        report = cli_api.summarize_time_stratified_geographic_transitions(
             args.tree,
             args.table,
             trait=args.trait,
             taxon_column=args.taxon_column,
             model=args.model,
-            allowed_regions=command_line_api._split_csv_values(args.allowed_regions)
+            allowed_regions=cli_api._split_csv_values(args.allowed_regions)
             or None,
             time_bins=[
-                command_line_api._parse_time_bin_definition(raw_time_bin)
+                cli_api._parse_time_bin_definition(raw_time_bin)
                 for raw_time_bin in args.time_bin
             ],
         )
         outputs: list[Path | str] = []
         if args.summary_out is not None:
             outputs.append(
-                command_line_api.write_time_stratified_transition_summary_table(
+                cli_api.write_time_stratified_transition_summary_table(
                     args.summary_out,
                     report,
                 )
             )
         if args.matrix_out is not None:
             outputs.append(
-                command_line_api.write_time_stratified_transition_matrix_table(
+                cli_api.write_time_stratified_transition_matrix_table(
                     args.matrix_out,
                     report,
                 )
             )
         if args.branches_out is not None:
             outputs.append(
-                command_line_api.write_time_stratified_branch_table(
+                cli_api.write_time_stratified_branch_table(
                     args.branches_out,
                     report,
                 )
             )
         if args.exclusions_out is not None:
             outputs.append(
-                command_line_api.write_time_stratified_exclusion_table(
+                cli_api.write_time_stratified_exclusion_table(
                     args.exclusions_out,
                     report,
                 )
@@ -474,13 +384,13 @@ def run_biogeography_command(args: Any) -> int:
         )
         return 0
     if args.biogeography_command == "sampling-bias":
-        report = command_line_api.summarize_geographic_sampling_bias(
+        report = cli_api.summarize_geographic_sampling_bias(
             args.tree,
             args.table,
             trait=args.trait,
             taxon_column=args.taxon_column,
             model=args.model,
-            allowed_regions=command_line_api._split_csv_values(args.allowed_regions)
+            allowed_regions=cli_api._split_csv_values(args.allowed_regions)
             or None,
             weights_path=args.weights,
             region_column=args.region_column,
@@ -489,35 +399,35 @@ def run_biogeography_command(args: Any) -> int:
         outputs: list[Path | str] = []
         if args.summary_out is not None:
             outputs.append(
-                command_line_api.write_geographic_sampling_bias_summary_table(
+                cli_api.write_geographic_sampling_bias_summary_table(
                     args.summary_out,
                     report,
                 )
             )
         if args.regions_out is not None:
             outputs.append(
-                command_line_api.write_geographic_sampling_count_table(
+                cli_api.write_geographic_sampling_count_table(
                     args.regions_out,
                     report,
                 )
             )
         if args.nodes_out is not None:
             outputs.append(
-                command_line_api.write_geographic_sampling_bias_node_table(
+                cli_api.write_geographic_sampling_bias_node_table(
                     args.nodes_out,
                     report,
                 )
             )
         if args.transitions_out is not None:
             outputs.append(
-                command_line_api.write_geographic_sampling_bias_transition_table(
+                cli_api.write_geographic_sampling_bias_transition_table(
                     args.transitions_out,
                     report,
                 )
             )
         if args.exclusions_out is not None:
             outputs.append(
-                command_line_api.write_geographic_sampling_bias_exclusion_table(
+                cli_api.write_geographic_sampling_bias_exclusion_table(
                     args.exclusions_out,
                     report,
                 )
@@ -560,48 +470,48 @@ def run_biogeography_command(args: Any) -> int:
         )
         return 0
     if args.biogeography_command == "chronology":
-        report = command_line_api.summarize_biogeographic_transition_chronology(
+        report = cli_api.summarize_biogeographic_transition_chronology(
             args.tree,
             args.table,
             trait=args.trait,
             taxon_column=args.taxon_column,
             model=args.model,
-            allowed_regions=command_line_api._split_csv_values(args.allowed_regions)
+            allowed_regions=cli_api._split_csv_values(args.allowed_regions)
             or None,
             time_bin_count=args.time_bin_count,
         )
         outputs: list[Path | str] = []
         if args.summary_out is not None:
             outputs.append(
-                command_line_api.write_dated_biogeography_summary_table(
+                cli_api.write_dated_biogeography_summary_table(
                     args.summary_out,
                     report,
                 )
             )
         if args.nodes_out is not None:
             outputs.append(
-                command_line_api.write_dated_biogeography_node_table(
+                cli_api.write_dated_biogeography_node_table(
                     args.nodes_out,
                     report,
                 )
             )
         if args.events_out is not None:
             outputs.append(
-                command_line_api.write_dated_biogeography_event_table(
+                cli_api.write_dated_biogeography_event_table(
                     args.events_out,
                     report,
                 )
             )
         if args.bins_out is not None:
             outputs.append(
-                command_line_api.write_dated_biogeography_time_bin_table(
+                cli_api.write_dated_biogeography_time_bin_table(
                     args.bins_out,
                     report,
                 )
             )
         if args.exclusions_out is not None:
             outputs.append(
-                command_line_api.write_dated_biogeography_exclusion_table(
+                cli_api.write_dated_biogeography_exclusion_table(
                     args.exclusions_out,
                     report,
                 )
@@ -637,13 +547,13 @@ def run_biogeography_command(args: Any) -> int:
     if args.biogeography_command == "events":
         outputs: list[Path | str] = []
         if args.tree_set:
-            report = command_line_api.summarize_geographic_migration_event_tree_set(
+            report = cli_api.summarize_geographic_migration_event_tree_set(
                 args.tree,
                 args.table,
                 trait=args.trait,
                 taxon_column=args.taxon_column,
                 model=args.model,
-                allowed_regions=command_line_api._split_csv_values(
+                allowed_regions=cli_api._split_csv_values(
                     args.allowed_regions
                 )
                 or None,
@@ -651,35 +561,35 @@ def run_biogeography_command(args: Any) -> int:
             )
             if args.summary_out is not None:
                 outputs.append(
-                    command_line_api.write_geographic_migration_tree_set_summary_table(
+                    cli_api.write_geographic_migration_tree_set_summary_table(
                         args.summary_out,
                         report,
                     )
                 )
             if args.events_out is not None:
                 outputs.append(
-                    command_line_api.write_geographic_migration_tree_set_event_table(
+                    cli_api.write_geographic_migration_tree_set_event_table(
                         args.events_out,
                         report,
                     )
                 )
             if args.trees_out is not None:
                 outputs.append(
-                    command_line_api.write_geographic_migration_tree_set_tree_table(
+                    cli_api.write_geographic_migration_tree_set_tree_table(
                         args.trees_out,
                         report,
                     )
                 )
             if args.event_summaries_out is not None:
                 outputs.append(
-                    command_line_api.write_geographic_migration_tree_set_event_summary_table(
+                    cli_api.write_geographic_migration_tree_set_event_summary_table(
                         args.event_summaries_out,
                         report,
                     )
                 )
             if args.exclusions_out is not None:
                 outputs.append(
-                    command_line_api.write_geographic_migration_tree_set_exclusion_table(
+                    cli_api.write_geographic_migration_tree_set_exclusion_table(
                         args.exclusions_out,
                         report,
                     )
@@ -713,32 +623,32 @@ def run_biogeography_command(args: Any) -> int:
                 json_output=args.json,
             )
             return 0
-        report = command_line_api.summarize_geographic_migration_events(
+        report = cli_api.summarize_geographic_migration_events(
             args.tree,
             args.table,
             trait=args.trait,
             taxon_column=args.taxon_column,
             model=args.model,
-            allowed_regions=command_line_api._split_csv_values(args.allowed_regions)
+            allowed_regions=cli_api._split_csv_values(args.allowed_regions)
             or None,
         )
         if args.summary_out is not None:
             outputs.append(
-                command_line_api.write_geographic_migration_event_summary_table(
+                cli_api.write_geographic_migration_event_summary_table(
                     args.summary_out,
                     report,
                 )
             )
         if args.events_out is not None:
             outputs.append(
-                command_line_api.write_geographic_migration_event_table(
+                cli_api.write_geographic_migration_event_table(
                     args.events_out,
                     report,
                 )
             )
         if args.exclusions_out is not None:
             outputs.append(
-                command_line_api.write_geographic_migration_exclusion_table(
+                cli_api.write_geographic_migration_exclusion_table(
                     args.exclusions_out,
                     report,
                 )
@@ -770,7 +680,7 @@ def run_biogeography_command(args: Any) -> int:
             json_output=args.json,
         )
         return 0
-    result = command_line_api.build_biogeography_report_package(
+    result = cli_api.build_biogeography_report_package(
         tree_path=args.tree,
         traits_path=args.table,
         centroids_path=args.centroids,
