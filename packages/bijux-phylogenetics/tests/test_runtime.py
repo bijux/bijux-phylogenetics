@@ -173,7 +173,7 @@ from bijux_phylogenetics.comparative import (
     write_trait_regime_node_table,
     write_trait_regime_summary_table,
 )
-from bijux_phylogenetics.comparative.evidence_contract import (
+from bijux_phylogenetics.comparative.evidence import (
     SUPPORTED_EVIDENCE_API_LOCATORS,
     resolve_supported_evidence_api,
 )
