@@ -12,12 +12,20 @@ from .parameter_uncertainty import (
     ComparativeParameterUncertaintyAudit,
     audit_comparative_parameter_uncertainty,
 )
+from .ou_identifiability import (
+    ComparativeOUIdentifiabilityAudit,
+    ComparativeOUIdentifiabilityCase,
+    audit_ou_identifiability_reference_examples,
+)
 
 __all__ = [
+    "ComparativeOUIdentifiabilityAudit",
+    "ComparativeOUIdentifiabilityCase",
     "ComparativeParameterIntervalAuditRow",
     "ComparativeParameterUncertaintyAudit",
     "ComparativeReferenceObservation",
     "ComparativeReferenceValidationReport",
     "audit_comparative_parameter_uncertainty",
+    "audit_ou_identifiability_reference_examples",
     "validate_comparative_reference_examples",
 ]
