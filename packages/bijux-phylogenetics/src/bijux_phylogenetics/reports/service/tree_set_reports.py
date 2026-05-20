@@ -36,7 +36,7 @@ from bijux_phylogenetics.trees import (
     write_tree_set_uncertainty_methods_summary_text,
     write_unstable_clade_table,
 )
-from bijux_phylogenetics.trees.uncertainty_methods import (
+from bijux_phylogenetics.trees.uncertainty import (
     build_tree_set_uncertainty_method_report,
 )
 

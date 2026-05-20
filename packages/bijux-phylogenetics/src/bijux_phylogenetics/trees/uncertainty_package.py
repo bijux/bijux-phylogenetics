@@ -39,7 +39,7 @@ from .uncertainty import (
     write_topology_cluster_table,
     write_uncertainty_conclusion_table,
 )
-from .uncertainty_methods import (
+from .uncertainty import (
     TreeSetUncertaintyMethodReport,
     TreeSetUncertaintyMethodsSummaryTextResult,
     build_tree_set_uncertainty_method_report,

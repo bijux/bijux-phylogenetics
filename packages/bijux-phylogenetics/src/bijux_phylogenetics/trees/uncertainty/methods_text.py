@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from .tree_sets import (
+from ..tree_sets import (
     CladeFrequencyReport,
     ConsensusTreeReport,
     TreeSetReport,
@@ -11,17 +11,21 @@ from .tree_sets import (
     compute_consensus_tree,
     load_tree_set,
 )
-from .uncertainty import (
+from .instability import (
     CladeCredibilityConflictReport,
-    PosteriorTopologyMultimodalityReport,
-    TreeTopologyClusterReport,
     UncertaintyAwareConclusionSummaryReport,
     UnstableTaxaReport,
-    cluster_trees_by_topology,
-    detect_posterior_topology_multimodality,
     detect_unstable_taxa,
     summarize_clade_credibility_conflicts,
     summarize_uncertainty_aware_conclusions,
+)
+from .models import (
+    PosteriorTopologyMultimodalityReport,
+    TreeTopologyClusterReport,
+)
+from .topology_diversity import (
+    cluster_trees_by_topology,
+    detect_posterior_topology_multimodality,
 )
 
 

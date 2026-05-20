@@ -69,6 +69,13 @@ from .sensitivity import (
     benchmark_tree_set_uncertainty as benchmark_tree_set_uncertainty,
     compare_consensus_thresholds as compare_consensus_thresholds,
 )
+from .methods_text import (
+    TreeSetUncertaintyMethodReport as TreeSetUncertaintyMethodReport,
+    TreeSetUncertaintyMethodsSummaryTextResult as TreeSetUncertaintyMethodsSummaryTextResult,
+    build_tree_set_uncertainty_method_report as build_tree_set_uncertainty_method_report,
+    build_tree_set_uncertainty_methods_summary_text as build_tree_set_uncertainty_methods_summary_text,
+    write_tree_set_uncertainty_methods_summary_text as write_tree_set_uncertainty_methods_summary_text,
+)
 
 __all__ = [
     "BootstrapPosteriorCladeComparison",
@@ -96,6 +103,8 @@ __all__ = [
     "TreeSetStorageRiskReport",
     "TreeSetThinningSensitivityReport",
     "TreeSetThinningSensitivityRow",
+    "TreeSetUncertaintyMethodReport",
+    "TreeSetUncertaintyMethodsSummaryTextResult",
     "TreeTopologyCluster",
     "TreeTopologyClusterReport",
     "UncertaintyAwareCladeConclusion",
@@ -108,6 +117,8 @@ __all__ = [
     "assess_tree_set_storage_risk",
     "assess_tree_set_thinning_sensitivity",
     "benchmark_tree_set_uncertainty",
+    "build_tree_set_uncertainty_method_report",
+    "build_tree_set_uncertainty_methods_summary_text",
     "cluster_trees_by_topology",
     "compare_bootstrap_and_posterior_uncertainty",
     "compare_consensus_thresholds",
@@ -126,7 +137,7 @@ __all__ = [
     "write_clade_credibility_conflict_table",
     "write_topology_cluster_table",
     "write_tree_distance_distribution_table",
+    "write_tree_set_uncertainty_methods_summary_text",
     "write_uncertainty_conclusion_table",
     "write_unstable_clade_table",
 ]
-

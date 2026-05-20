@@ -110,7 +110,7 @@ from .uncertainty import (
     write_uncertainty_conclusion_table,
     write_unstable_clade_table,
 )
-from .uncertainty_methods import (
+from .uncertainty import (
     TreeSetUncertaintyMethodReport,
     TreeSetUncertaintyMethodsSummaryTextResult,
     build_tree_set_uncertainty_method_report,
