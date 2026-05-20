@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.engines.validation_matrix import (
+from bijux_phylogenetics.engines.validation.matrix import (
     build_external_engine_validation_matrix,
     merge_external_engine_validation_matrices,
     write_external_engine_validation_matrix,

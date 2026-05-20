@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.engines.preflight import (
+from bijux_phylogenetics.engines.validation.preflight import (
     inspect_external_engine_preflight,
     require_preflight_workflow,
 )
@@ -47,10 +47,12 @@ def fake_engine_metadata(monkeypatch: pytest.MonkeyPatch):
         )
 
     monkeypatch.setattr(
-        "bijux_phylogenetics.engines.preflight.resolve_engine_executable", fake_resolve
+        "bijux_phylogenetics.engines.validation.preflight.resolve_engine_executable",
+        fake_resolve,
     )
     monkeypatch.setattr(
-        "bijux_phylogenetics.engines.preflight.read_engine_version", fake_read
+        "bijux_phylogenetics.engines.validation.preflight.read_engine_version",
+        fake_read,
     )
     return installed
 
@@ -104,7 +106,8 @@ def test_engine_preflight_blocks_missing_selected_workflow_dependencies(
         return fake_engine_metadata[str(executable)][1]
 
     monkeypatch.setattr(
-        "bijux_phylogenetics.engines.preflight.resolve_engine_executable", fake_resolve
+        "bijux_phylogenetics.engines.validation.preflight.resolve_engine_executable",
+        fake_resolve,
     )
 
     report = inspect_external_engine_preflight(selected_workflow="beast-posterior")

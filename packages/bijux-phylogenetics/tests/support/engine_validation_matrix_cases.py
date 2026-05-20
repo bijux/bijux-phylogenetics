@@ -19,7 +19,7 @@ from bijux_phylogenetics.engines import (
     run_model_selection,
     run_multiple_sequence_alignment,
 )
-from bijux_phylogenetics.engines.validation_matrix import (
+from bijux_phylogenetics.engines.validation.matrix import (
     ExternalEngineValidationCase,
     build_beast_artifact_validation_case,
     build_external_engine_validation_case,

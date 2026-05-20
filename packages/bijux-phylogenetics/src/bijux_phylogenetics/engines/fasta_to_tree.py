@@ -27,9 +27,9 @@ from bijux_phylogenetics.evidence.provenance.method_tiers import (
     fasta_to_tree_method_tier,
 )
 
+from .artifacts.support import BootstrapSupportSummaryReport
 from .common import build_file_checksums, write_engine_manifest
 from .validation import (
-    BootstrapSupportSummaryReport,
     ModelSelectionValidationReport,
     summarize_bootstrap_support_distribution,
     validate_model_selection_against_engine_outputs,

@@ -10,7 +10,7 @@ from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 from .fasta_to_tree import FastaToTreeWorkflowReport, run_fasta_to_tree_workflow
-from .preflight import (
+from .validation import (
     ExternalEnginePreflightReport,
     WorkflowPreflightStatus,
     inspect_external_engine_preflight,

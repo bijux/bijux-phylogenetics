@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.engines import run_model_selection
-from bijux_phylogenetics.engines.validation_matrix import (
+from bijux_phylogenetics.engines.validation.matrix import (
     ExternalEngineValidationCase,
     ExternalEngineValidationMatrixReport,
     build_beast_artifact_validation_case,

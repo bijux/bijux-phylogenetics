@@ -134,7 +134,7 @@ from ..artifacts.sh_alrt import (
     build_sh_alrt_support_rows,
     write_sh_alrt_support_table,
 )
-from ..validation import (
+from ..artifacts.support import (
     BootstrapSupportNode,
     BootstrapSupportSummaryReport,
     FastTreeSupportNode,
@@ -142,6 +142,8 @@ from ..validation import (
     ShAlrtSupportNode,
     ShAlrtSupportSummaryReport,
     WeakBackboneReport,
+)
+from ..validation import (
     detect_weakly_supported_backbone,
     summarize_bootstrap_support_distribution,
     summarize_fasttree_support_distribution,

@@ -29,9 +29,8 @@ from .artifacts.fasttree import (
     write_fasttree_support_histogram,
     write_fasttree_support_table,
 )
+from .artifacts.support import FastTreeSupportNode, FastTreeSupportSummaryReport
 from .validation import (
-    FastTreeSupportNode,
-    FastTreeSupportSummaryReport,
     summarize_fasttree_support_distribution,
 )
 from .workflows.state import (
