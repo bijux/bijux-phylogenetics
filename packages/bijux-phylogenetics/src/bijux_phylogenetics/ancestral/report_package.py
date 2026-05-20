@@ -47,7 +47,7 @@ from bijux_phylogenetics.ancestral.transitions import (
     write_ancestral_transition_count_table,
     write_ancestral_transition_exclusion_table,
 )
-from bijux_phylogenetics.ancestral.presentation import (
+from bijux_phylogenetics.ancestral.presentation.visualization import (
     AncestralVisualizationResult,
     render_ancestral_state_visualization,
 )

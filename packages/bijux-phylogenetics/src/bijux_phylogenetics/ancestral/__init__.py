@@ -85,7 +85,6 @@ from .ordered_discrete import (
     write_ordered_discrete_summary_table,
     write_ordered_discrete_transition_table,
 )
-from .package import AncestralFigurePackageResult, build_ancestral_figure_package
 from .methods_summary import (
     AncestralMethodsSummaryTextResult,
     build_ancestral_methods_summary_text,
@@ -180,7 +179,11 @@ from .tree_set import (
     write_discrete_ancestral_tree_set_node_table,
     write_discrete_ancestral_tree_set_summary_table,
 )
-from .presentation import (
+from .presentation.figure_bundle import (
+    AncestralFigurePackageResult,
+    build_ancestral_figure_package,
+)
+from .presentation.visualization import (
     AncestralVisualizationResult,
     render_ancestral_state_visualization,
 )
