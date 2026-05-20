@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.core.pruning import RequestedTaxaPruningReport
+from bijux_phylogenetics.phylo.pruning import RequestedTaxaPruningReport
 
 RobinsonFouldsMode = str
 TaxonOverlapPolicy = str

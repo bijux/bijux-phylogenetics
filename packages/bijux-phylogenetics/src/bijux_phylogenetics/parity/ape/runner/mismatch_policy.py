@@ -6,7 +6,7 @@ from bijux_phylogenetics.compare.structural_parity import (
     compare_tree_sets_structurally,
     compare_tree_structurally,
 )
-from bijux_phylogenetics.core.pruning import (
+from bijux_phylogenetics.phylo.pruning import (
     drop_tree_taxa,
     prune_tree_to_requested_taxa,
 )

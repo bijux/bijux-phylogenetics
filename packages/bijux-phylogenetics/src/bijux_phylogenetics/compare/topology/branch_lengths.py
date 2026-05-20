@@ -7,7 +7,7 @@ from bijux_phylogenetics.phylo.topology.clades import (
     informative_rooted_clade_nodes,
     split_sort_key,
 )
-from bijux_phylogenetics.core.pruning import _prune_tree_against_taxa
+from bijux_phylogenetics.phylo.pruning import _prune_tree_against_taxa
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 

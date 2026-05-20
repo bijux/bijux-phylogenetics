@@ -117,7 +117,7 @@ TEACHING_STUDY_METADATA = {
                         "family_id": "tree-operations",
                         "fragment_id": "tree-import-and-pruning",
                         "bijux_locators": [
-                            "bijux_phylogenetics.core.pruning:prune_tree_to_requested_taxa",
+                            "bijux_phylogenetics.phylo.pruning:prune_tree_to_requested_taxa",
                             "bijux_phylogenetics.evidence.studies.primate_pcm1_component_bundles:build_primate_pcm1_component_bundles",
                         ],
                         "bijux_summary": (

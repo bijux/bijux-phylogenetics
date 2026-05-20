@@ -6,7 +6,7 @@ import tempfile
 from bijux_phylogenetics.compare.topology_distance import (
     compare_topology_distance_trees,
 )
-from bijux_phylogenetics.core.pruning import (
+from bijux_phylogenetics.phylo.pruning import (
     drop_tree_taxa,
     prune_tree_to_requested_taxa,
 )

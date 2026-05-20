@@ -1302,7 +1302,7 @@ def _build_pgls_residual_warnings(
 def _write_reduced_comparative_inputs(
     tree_path: Path, taxa: list[str], dropped_taxon: str
 ) -> tuple[Path, list[str]]:
-    from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
+    from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
     from bijux_phylogenetics.io.newick import write_newick
 
     kept_taxa = [taxon for taxon in taxa if taxon != dropped_taxon]

@@ -226,7 +226,7 @@ from bijux_phylogenetics.core.node_depth import (
     TreeNodeDepthReport,
     compute_tree_node_depths,
 )
-from bijux_phylogenetics.core.pruning import (
+from bijux_phylogenetics.phylo.pruning import (
     drop_tree_taxa,
     prune_alignment_to_tree,
     prune_tree_to_alignment,

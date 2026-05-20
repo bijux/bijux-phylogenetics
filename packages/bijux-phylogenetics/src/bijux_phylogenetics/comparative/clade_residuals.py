@@ -13,7 +13,7 @@ from bijux_phylogenetics.comparative.phylogenetic_logistic import (
     summarize_phylogenetic_logistic,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
+from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 

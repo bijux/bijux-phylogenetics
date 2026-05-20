@@ -14,7 +14,7 @@ from bijux_phylogenetics.comparative.regression_model_selection import (
     compare_comparative_regression_models,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
+from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.io.newick import dumps_newick
 
 from .columns import comparative_model_table_columns

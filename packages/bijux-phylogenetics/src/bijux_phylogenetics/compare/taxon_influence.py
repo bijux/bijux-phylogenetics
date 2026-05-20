@@ -296,7 +296,7 @@ def analyze_taxon_influence(
 
 
 def _prune_tree_against_shared_taxa(tree, keep_taxa: set[str]):
-    from bijux_phylogenetics.core.pruning import _prune_tree_against_taxa
+    from bijux_phylogenetics.phylo.pruning import _prune_tree_against_taxa
 
     return _prune_tree_against_taxa(tree, keep_taxa)
 
