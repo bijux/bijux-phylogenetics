@@ -8,7 +8,7 @@ from bijux_phylogenetics.comparative.continuous import (
 from bijux_phylogenetics.comparative.discrete_evolution import (
     DiscreteStateEvolutionReport,
 )
-from bijux_phylogenetics.comparative.ou_trait_evolution import (
+from bijux_phylogenetics.comparative.continuous import (
     OUTraitEvolutionSummaryReport,
 )
 from bijux_phylogenetics.compare.topology import TreeComparisonReport

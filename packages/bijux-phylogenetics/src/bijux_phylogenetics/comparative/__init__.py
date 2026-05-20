@@ -285,7 +285,7 @@ from .multivariate_regression import (
     write_multivariate_response_coefficient_table,
     write_multivariate_response_model_table,
 )
-from .ou_trait_evolution import (
+from .continuous import (
     OUTraitEvolutionExclusion,
     OUTraitEvolutionSummaryReport,
     summarize_ou_trait_evolution,

@@ -19,7 +19,7 @@ from bijux_phylogenetics.comparative.discrete_evolution import (
     write_node_state_probability_table,
     write_transition_summary_table,
 )
-from bijux_phylogenetics.comparative.ou_trait_evolution import (
+from bijux_phylogenetics.comparative.continuous import (
     write_ou_trait_evolution_summary_table,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows

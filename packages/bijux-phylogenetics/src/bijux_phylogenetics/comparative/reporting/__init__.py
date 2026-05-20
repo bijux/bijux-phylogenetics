@@ -21,7 +21,7 @@ from bijux_phylogenetics.comparative.models import (
     fit_brownian_motion_model,
     run_comparative_sensitivity_analysis,
 )
-from bijux_phylogenetics.comparative.ou_trait_evolution import (
+from bijux_phylogenetics.comparative.continuous import (
     OUTraitEvolutionSummaryReport,
     summarize_ou_trait_evolution,
 )

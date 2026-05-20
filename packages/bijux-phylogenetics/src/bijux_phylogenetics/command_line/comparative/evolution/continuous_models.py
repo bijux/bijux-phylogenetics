@@ -18,7 +18,7 @@ from bijux_phylogenetics.comparative.early_burst_trait_evolution import (
     write_early_burst_trait_evolution_exclusion_table,
     write_early_burst_trait_evolution_summary_table,
 )
-from bijux_phylogenetics.comparative.ou_trait_evolution import (
+from bijux_phylogenetics.comparative.continuous import (
     summarize_ou_trait_evolution,
     write_ou_trait_evolution_exclusion_table,
     write_ou_trait_evolution_summary_table,
