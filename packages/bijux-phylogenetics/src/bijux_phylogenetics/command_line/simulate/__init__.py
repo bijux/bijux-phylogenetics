@@ -3,6 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from .continuous_traits import (
+    add_simulate_continuous_trait_commands,
+    run_simulate_continuous_trait_command,
+)
 from .trees import add_simulate_tree_commands, run_simulate_tree_command
 from bijux_phylogenetics.command_line.arguments import (
     _add_manifest_argument,
@@ -15,17 +19,12 @@ from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.runtime.results import build_command_result
 from bijux_phylogenetics.simulation import (
-    simulate_brownian_traits,
     simulate_correlated_brownian_trait_collection,
     simulate_discrete_histories,
     simulate_discrete_traits,
     simulate_dna_alignment,
-    simulate_early_burst_traits,
-    simulate_ou_traits,
     simulate_protein_alignment,
-    simulate_speciational_traits,
     validate_geiger_sim_char_reference_examples,
-    write_continuous_trait_table,
     write_correlated_continuous_trait_collection_summary_table,
     write_correlated_continuous_trait_collection_table,
     write_discrete_history_branch_truth_table,
@@ -47,36 +46,7 @@ def add_simulate_command(subparsers: Any) -> None:
         dest="simulate_command", required=True
     )
     add_simulate_tree_commands(simulate_subparsers)
-
-    simulate_brownian = simulate_subparsers.add_parser(
-        "traits-brownian",
-        help="Simulate a continuous tip trait under Brownian motion.",
-    )
-    simulate_brownian.add_argument("tree", type=Path)
-    simulate_brownian.add_argument("--root-state", type=float, default=0.0)
-    simulate_brownian.add_argument("--sigma", type=float)
-    simulate_brownian.add_argument("--sigma-squared", type=float)
-    simulate_brownian.add_argument("--seed", type=int, default=1)
-    simulate_brownian.add_argument("--out", required=True, type=Path)
-    simulate_brownian.add_argument(
-        "--json", action="store_true", help="Emit the simulation report as JSON."
-    )
-    _add_manifest_argument(simulate_brownian)
-
-    simulate_speciational = simulate_subparsers.add_parser(
-        "traits-speciational",
-        help="Simulate a continuous tip trait under geiger-style speciational Brownian motion.",
-    )
-    simulate_speciational.add_argument("tree", type=Path)
-    simulate_speciational.add_argument("--root-state", type=float, default=0.0)
-    simulate_speciational.add_argument("--sigma", type=float)
-    simulate_speciational.add_argument("--sigma-squared", type=float)
-    simulate_speciational.add_argument("--seed", type=int, default=1)
-    simulate_speciational.add_argument("--out", required=True, type=Path)
-    simulate_speciational.add_argument(
-        "--json", action="store_true", help="Emit the simulation report as JSON."
-    )
-    _add_manifest_argument(simulate_speciational)
+    add_simulate_continuous_trait_commands(simulate_subparsers)
 
     simulate_brownian_correlated = simulate_subparsers.add_parser(
         "traits-brownian-correlated",
@@ -126,37 +96,6 @@ def add_simulate_command(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the simulation report as JSON."
     )
     _add_manifest_argument(simulate_brownian_correlated)
-
-    simulate_ou = simulate_subparsers.add_parser(
-        "traits-ou",
-        help="Simulate a continuous tip trait under an OU process.",
-    )
-    simulate_ou.add_argument("tree", type=Path)
-    simulate_ou.add_argument("--root-state", type=float, default=0.0)
-    simulate_ou.add_argument("--sigma", type=float, default=1.0)
-    simulate_ou.add_argument("--alpha", type=float, default=1.0)
-    simulate_ou.add_argument("--theta", type=float, default=0.0)
-    simulate_ou.add_argument("--seed", type=int, default=1)
-    simulate_ou.add_argument("--out", required=True, type=Path)
-    simulate_ou.add_argument(
-        "--json", action="store_true", help="Emit the simulation report as JSON."
-    )
-    _add_manifest_argument(simulate_ou)
-
-    simulate_early_burst = simulate_subparsers.add_parser(
-        "traits-early-burst",
-        help="Simulate a continuous tip trait under an early-burst branch-rate process.",
-    )
-    simulate_early_burst.add_argument("tree", type=Path)
-    simulate_early_burst.add_argument("--root-state", type=float, default=0.0)
-    simulate_early_burst.add_argument("--sigma", type=float, default=1.0)
-    simulate_early_burst.add_argument("--rate-change", type=float, default=1.0)
-    simulate_early_burst.add_argument("--seed", type=int, default=1)
-    simulate_early_burst.add_argument("--out", required=True, type=Path)
-    simulate_early_burst.add_argument(
-        "--json", action="store_true", help="Emit the simulation report as JSON."
-    )
-    _add_manifest_argument(simulate_early_burst)
 
     simulate_discrete = simulate_subparsers.add_parser(
         "traits-discrete",
@@ -264,60 +203,9 @@ def run_simulate_command(args: Any, *, parser: Any) -> int:
     tree_exit_code = run_simulate_tree_command(args)
     if tree_exit_code is not None:
         return tree_exit_code
-    if args.simulate_command == "traits-brownian":
-        report = simulate_brownian_traits(
-            args.tree,
-            root_state=args.root_state,
-            sigma=args.sigma,
-            sigma_squared=args.sigma_squared,
-            seed=args.seed,
-        )
-        output_path = write_continuous_trait_table(args.out, report)
-        outputs = _finalize_outputs(
-            args, command="simulate", inputs=[args.tree], outputs=[output_path]
-        )
-        _print_result(
-            build_command_result(
-                command="simulate",
-                inputs=[args.tree],
-                outputs=outputs,
-                metrics={
-                    "tip_count": report.tip_count,
-                    "trait_count": len(report.traits),
-                    "sigma_squared": report.sigma_squared,
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
-    if args.simulate_command == "traits-speciational":
-        report = simulate_speciational_traits(
-            args.tree,
-            root_state=args.root_state,
-            sigma=args.sigma,
-            sigma_squared=args.sigma_squared,
-            seed=args.seed,
-        )
-        output_path = write_continuous_trait_table(args.out, report)
-        outputs = _finalize_outputs(
-            args, command="simulate", inputs=[args.tree], outputs=[output_path]
-        )
-        _print_result(
-            build_command_result(
-                command="simulate",
-                inputs=[args.tree],
-                outputs=outputs,
-                metrics={
-                    "tip_count": report.tip_count,
-                    "trait_count": len(report.traits),
-                    "sigma_squared": report.sigma_squared,
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
+    continuous_trait_exit_code = run_simulate_continuous_trait_command(args)
+    if continuous_trait_exit_code is not None:
+        return continuous_trait_exit_code
     if args.simulate_command == "traits-brownian-correlated":
         if args.covariance_rows is None and args.correlation_rows is None:
             parser.error(
@@ -377,60 +265,6 @@ def run_simulate_command(args: Any, *, parser: Any) -> int:
                     "trait_count": len(report.trait_names),
                     "replicate_count": report.replicate_count,
                     "summary_row_count": len(report.rows),
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
-    if args.simulate_command == "traits-ou":
-        report = simulate_ou_traits(
-            args.tree,
-            root_state=args.root_state,
-            sigma=args.sigma,
-            alpha=args.alpha,
-            theta=args.theta,
-            seed=args.seed,
-        )
-        output_path = write_continuous_trait_table(args.out, report)
-        outputs = _finalize_outputs(
-            args, command="simulate", inputs=[args.tree], outputs=[output_path]
-        )
-        _print_result(
-            build_command_result(
-                command="simulate",
-                inputs=[args.tree],
-                outputs=outputs,
-                metrics={
-                    "tip_count": report.tip_count,
-                    "trait_count": len(report.traits),
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
-    if args.simulate_command == "traits-early-burst":
-        report = simulate_early_burst_traits(
-            args.tree,
-            root_state=args.root_state,
-            sigma=args.sigma,
-            rate_change=args.rate_change,
-            seed=args.seed,
-        )
-        output_path = write_continuous_trait_table(args.out, report)
-        outputs = _finalize_outputs(
-            args, command="simulate", inputs=[args.tree], outputs=[output_path]
-        )
-        _print_result(
-            build_command_result(
-                command="simulate",
-                inputs=[args.tree],
-                outputs=outputs,
-                metrics={
-                    "tip_count": report.tip_count,
-                    "trait_count": len(report.traits),
-                    "rate_change": report.rate_change,
                 },
                 data=report,
             ),
