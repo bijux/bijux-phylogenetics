@@ -170,8 +170,8 @@ def _build_correlated_brownian_collection_summary_rows(
     covariance_matrix: list[list[float]],
     simulations,
 ):
+    from .models import ContinuousTraitSimulationSummaryRow
     from . import (
-        ContinuousTraitSimulationSummaryRow,
         _mean,
         _median,
         _round_float,
@@ -272,7 +272,11 @@ def simulate_correlated_brownian_traits(
 ):
     from bijux_phylogenetics.ancestral.common import node_signature
 
-    from . import CorrelatedContinuousTraitSimulationReport, SimulatedCorrelatedContinuousTrait, _round_float
+    from .models import (
+        CorrelatedContinuousTraitSimulationReport,
+        SimulatedCorrelatedContinuousTrait,
+    )
+    from . import _round_float
 
     normalized_trait_names = _normalize_trait_names(trait_names)
     normalized_root_states = _normalize_root_states(
@@ -335,8 +339,8 @@ def simulate_correlated_brownian_trait_collection(
     replicates: int = 128,
     seed: int = 1,
 ):
+    from .models import CorrelatedContinuousTraitSimulationCollectionReport
     from . import (
-        CorrelatedContinuousTraitSimulationCollectionReport,
         _round_float,
     )
 

@@ -15,9 +15,11 @@ def _simulate_symmetric_state_trajectory(
     states: tuple[str, ...],
     rng: random.Random,
 ):
-    from . import (
+    from .models import (
         SimulatedDiscreteStateSegment,
         SimulatedDiscreteTransitionEvent,
+    )
+    from . import (
         _poisson_count,
         _round_float,
     )
@@ -82,7 +84,7 @@ def simulate_discrete_traits(
         node_signature,
     )
 
-    from . import (
+    from .models import (
         DiscreteHistoryRateRow,
         DiscreteTraitSimulationReport,
         SimulatedDiscreteBranchHistory,
@@ -90,6 +92,8 @@ def simulate_discrete_traits(
         SimulatedDiscreteStateSegment,
         SimulatedDiscreteTrait,
         SimulatedDiscreteTransitionEvent,
+    )
+    from . import (
         _normalize_discrete_states,
         _normalize_root_state_probabilities,
         _tip_values_from_node_map,

@@ -195,7 +195,11 @@ def _build_continuous_trait_simulation_report(
         node_signature,
     )
 
-    from . import ContinuousTraitSimulationReport, SimulatedContinuousNode, SimulatedContinuousTrait
+    from .models import (
+        ContinuousTraitSimulationReport,
+        SimulatedContinuousNode,
+        SimulatedContinuousTrait,
+    )
     from . import _tip_values_from_node_map
 
     values = _tip_values_from_node_map(tree, node_values)
@@ -240,8 +244,8 @@ def _build_speciational_tree(tree: PhyloTree) -> PhyloTree:
 
 
 def _build_continuous_collection_summary_rows(simulations):
+    from .models import ContinuousTraitSimulationSummaryRow
     from . import (
-        ContinuousTraitSimulationSummaryRow,
         _mean,
         _median,
         _round_float,
@@ -295,8 +299,8 @@ def simulate_brownian_trait_collection(
     replicates: int = 128,
     seed: int = 1,
 ):
+    from .models import ContinuousTraitSimulationCollectionReport
     from . import (
-        ContinuousTraitSimulationCollectionReport,
         _resolve_brownian_sigma_parameters,
         _simulate_brownian_node_values,
     )
@@ -353,8 +357,8 @@ def simulate_speciational_trait_collection(
     replicates: int = 128,
     seed: int = 1,
 ):
+    from .models import ContinuousTraitSimulationCollectionReport
     from . import (
-        ContinuousTraitSimulationCollectionReport,
         _resolve_brownian_sigma_parameters,
         _simulate_brownian_node_values,
     )

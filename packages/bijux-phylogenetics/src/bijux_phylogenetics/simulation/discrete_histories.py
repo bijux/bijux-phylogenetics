@@ -30,7 +30,8 @@ def _quantile(values: list[float], probability: float) -> float:
 
 
 def _normalize_rate_rows(*, states: tuple[str, ...], rate_rows: list) -> list:
-    from . import DiscreteHistoryRateRow, _round_float
+    from .models import DiscreteHistoryRateRow
+    from . import _round_float
 
     if not rate_rows:
         raise ValueError("rate_rows must contain at least one transition rate row")
@@ -101,9 +102,11 @@ def _simulate_rate_matrix_state_trajectory(
     rate_lookup: dict[str, dict[str, float]],
     rng: random.Random,
 ):
-    from . import (
+    from .models import (
         SimulatedDiscreteStateSegment,
         SimulatedDiscreteTransitionEvent,
+    )
+    from . import (
         _round_float,
     )
 
@@ -196,11 +199,13 @@ def _simulate_discrete_history_once(
         node_signature,
     )
 
-    from . import (
+    from .models import (
         DiscreteTraitSimulationReport,
         SimulatedDiscreteBranchHistory,
         SimulatedDiscreteNode,
         SimulatedDiscreteTrait,
+    )
+    from . import (
         _tip_values_from_node_map,
     )
 
@@ -366,7 +371,8 @@ def _summarize_discrete_history_collection(
     *,
     states: tuple[str, ...],
 ):
-    from . import DiscreteHistorySummaryRow, _mean, _round_float
+    from .models import DiscreteHistorySummaryRow
+    from . import _mean, _round_float
 
     total_transition_counts = [
         float(sum(branch.event_count for branch in simulation.branch_histories))
@@ -458,8 +464,8 @@ def simulate_discrete_histories(
     replicates: int = 1,
     seed: int = 1,
 ):
+    from .models import DiscreteHistorySimulationCollectionReport
     from . import (
-        DiscreteHistorySimulationCollectionReport,
         _normalize_discrete_states,
         _normalize_root_state_probabilities,
     )
