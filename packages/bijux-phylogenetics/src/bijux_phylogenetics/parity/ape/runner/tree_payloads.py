@@ -10,7 +10,7 @@ from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
     prune_tree_to_requested_taxa,
 )
-from bijux_phylogenetics.core.topology import (
+from bijux_phylogenetics.phylo.topology import (
     assess_tree_monophyly,
     extract_tree_clade_by_node_id,
     find_tree_mrca,

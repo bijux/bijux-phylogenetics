@@ -7,7 +7,7 @@ from pathlib import Path
 from bijux_phylogenetics.core.alignment import AlignmentRecord
 from bijux_phylogenetics.core.clade_sets import informative_rooted_clades
 from bijux_phylogenetics.core.metadata import load_taxon_table
-from bijux_phylogenetics.core.topology import (
+from bijux_phylogenetics.phylo.topology import (
     TreeTransformationSummary,
     _summarize_transformation,
 )

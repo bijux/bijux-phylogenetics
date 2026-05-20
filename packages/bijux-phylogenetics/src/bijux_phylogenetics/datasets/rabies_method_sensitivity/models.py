@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.compare.topology import TreeComparisonReport
-from bijux_phylogenetics.core.topology import TreeRootingReport
+from bijux_phylogenetics.phylo.topology import TreeRootingReport
 from bijux_phylogenetics.engines.inference_comparison import (
     InferenceComparisonWorkflowReport,
 )

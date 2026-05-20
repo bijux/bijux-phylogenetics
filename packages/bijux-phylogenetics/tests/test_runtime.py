@@ -239,7 +239,7 @@ from bijux_phylogenetics.phylo.taxa import (
     normalize_tree_taxa,
     write_taxon_mapping,
 )
-from bijux_phylogenetics.core.topology import (
+from bijux_phylogenetics.phylo.topology import (
     assess_tree_monophyly,
     collapse_branches_below_length,
     extract_named_clade,
@@ -2249,7 +2249,7 @@ def test_root_tree_on_outgroup_preserves_already_rooted_outgroup_tree() -> None:
 def test_root_tree_on_outgroup_stays_native_without_biopython_bridge(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import bijux_phylogenetics.core.topology as topology
+    import bijux_phylogenetics.phylo.topology as topology
 
     def _bridge_unavailable(*_args: object, **_kwargs: object) -> None:
         raise AssertionError("biopython bridge should not be used for outgroup rooting")

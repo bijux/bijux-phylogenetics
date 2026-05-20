@@ -23,7 +23,7 @@ if TYPE_CHECKING:
         AlignmentQualityReport,
         SequenceQualityRankingReport,
     )
-    from bijux_phylogenetics.core.topology import TreeRootingReport
+    from bijux_phylogenetics.phylo.topology import TreeRootingReport
     from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
         RabiesMethodSensitivityPanelWorkflowReport,
     )

@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 from bijux_phylogenetics.compare.topology import compare_tree_paths, write_tree_comparison_table
-from bijux_phylogenetics.core.topology import root_tree_on_outgroup
+from bijux_phylogenetics.phylo.topology import root_tree_on_outgroup
 from bijux_phylogenetics.engines.common import (
     EngineActiveRunRecord,
     acquire_active_engine_run,

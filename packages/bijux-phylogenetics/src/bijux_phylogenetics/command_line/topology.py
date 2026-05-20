@@ -23,7 +23,7 @@ from bijux_phylogenetics.compare.support_reference import (
 from bijux_phylogenetics.compare.tree_distance_reference import (
     validate_tree_distance_reference_examples,
 )
-from bijux_phylogenetics.core.topology import (
+from bijux_phylogenetics.phylo.topology import (
     reroot_tree_by_midpoint,
     root_tree_on_outgroup,
     unroot_tree,
