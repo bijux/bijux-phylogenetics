@@ -6,7 +6,7 @@ from typing import Any
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.comparative.phylogenetic_logistic import (
+from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_logistic,
     write_phylogenetic_logistic_coefficient_table,
     write_phylogenetic_logistic_excluded_taxa_table,

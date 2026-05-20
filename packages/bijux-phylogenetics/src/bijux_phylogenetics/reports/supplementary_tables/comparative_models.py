@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 
 from bijux_phylogenetics.comparative.pgls import run_pgls
-from bijux_phylogenetics.comparative.phylogenetic_logistic import (
+from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_logistic,
 )
 from bijux_phylogenetics.comparative.regression_model_selection import (

@@ -358,7 +358,7 @@ from .pgls.posterior_tree import (
     write_posterior_tree_pgls_summary_table,
     write_posterior_tree_pgls_tree_table,
 )
-from .phylogenetic_logistic import (
+from .regression import (
     PhylogeneticLogisticCoefficient,
     PhylogeneticLogisticFittedRow,
     PhylogeneticLogisticReport,

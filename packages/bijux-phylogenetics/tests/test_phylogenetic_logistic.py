@@ -9,7 +9,7 @@ import subprocess
 
 import pytest
 
-from bijux_phylogenetics.comparative.phylogenetic_logistic import (
+from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_logistic,
     write_phylogenetic_logistic_coefficient_table,
     write_phylogenetic_logistic_excluded_taxa_table,
