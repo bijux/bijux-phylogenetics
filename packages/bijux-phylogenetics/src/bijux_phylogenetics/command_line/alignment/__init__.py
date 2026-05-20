@@ -2,23 +2,23 @@ from __future__ import annotations
 
 from typing import Any
 
-from bijux_phylogenetics.command_line.alignment_coding import (
+from .coding import (
     add_alignment_coding_commands,
     run_alignment_coding_command,
 )
-from bijux_phylogenetics.command_line.alignment_distance import (
+from .distance import (
     add_alignment_distance_commands,
     run_alignment_distance_command,
 )
-from bijux_phylogenetics.command_line.alignment_linkage import (
+from .linkage import (
     add_alignment_linkage_commands,
     run_alignment_linkage_command,
 )
-from bijux_phylogenetics.command_line.alignment_matrix import (
+from .matrix import (
     add_alignment_matrix_commands,
     run_alignment_matrix_command,
 )
-from bijux_phylogenetics.command_line.alignment_review import (
+from .review import (
     add_alignment_review_commands,
     run_alignment_review_command,
 )
