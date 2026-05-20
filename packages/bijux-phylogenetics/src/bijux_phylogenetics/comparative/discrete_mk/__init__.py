@@ -1,39 +1,26 @@
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import (
     AncestralDiscreteDataset,
     load_discrete_dataset,
 )
-from bijux_phylogenetics.ancestral.discrete import (
-    DiscreteModelBaselineComparison,
-    DiscreteOptimizerDiagnostics,
-    DiscreteTransitionRateRow,
-)
-from bijux_phylogenetics.ancestral.discrete.likelihood import (
-    build_transition_rate_rows as _build_transition_rate_rows,
-    fit_discrete_mk_model as _fit_discrete_mk_model,
-    tree_log_likelihood as _tree_log_likelihood,
-)
 from bijux_phylogenetics.ancestral.discrete.policy import (
-    parameter_count as _parameter_count,
     resolve_discrete_model_name as _resolve_discrete_model_name,
-    resolve_allowed_transition_pairs as _resolve_allowed_transition_pairs,
     resolve_state_order as _resolve_state_order,
 )
-from bijux_phylogenetics.ancestral.discrete.reconstruction import (
-    _detect_discrete_overparameterization,
-)
-from bijux_phylogenetics.comparative.common import tip_root_depths
 from bijux_phylogenetics.comparative.information_criteria import (
-    compute_aic,
-    compute_aicc,
     rank_model_comparison_rows,
 )
 from bijux_phylogenetics.comparative.models import ComparativeModelComparisonRow
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
-from bijux_phylogenetics.core.ultrametric import summarize_ultrametric_tip_depths
+
+from .fitting import (
+    fit_discrete_mk_model as fit_discrete_mk_model,
+    fit_discrete_mk_model_from_dataset as fit_discrete_mk_model_from_dataset,
+)
 from .models import (
     DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY,
     DISCRETE_MK_LIKELIHOOD_CONSTANT_POLICY,
@@ -49,6 +36,10 @@ from .models import (
     DiscreteMkTransformProfileRow,
     DiscreteMkTransformWarning,
 )
+from .tables import (
+    write_discrete_mk_rate_table as write_discrete_mk_rate_table,
+    write_discrete_mk_summary_table as write_discrete_mk_summary_table,
+)
 from .transforms import (
     DISCRETE_DELTA_LOWER_BOUND as _DISCRETE_DELTA_LOWER_BOUND,
     DISCRETE_DELTA_UPPER_BOUND as _DISCRETE_DELTA_UPPER_BOUND,
@@ -56,288 +47,7 @@ from .transforms import (
     DISCRETE_EARLY_BURST_UPPER_BOUND as _DISCRETE_EARLY_BURST_UPPER_BOUND,
     comparison_models as _comparison_models,
     comparison_parameter_count as _comparison_parameter_count,
-    discrete_parameter_count as _discrete_parameter_count,
-    fit_discrete_mk_surface as _fit_discrete_mk_surface,
-    resolve_discrete_transform_name as _resolve_discrete_transform_name,
-    validate_discrete_transform_request as _validate_discrete_transform_request,
 )
-from .tables import (
-    write_discrete_mk_rate_table as write_discrete_mk_rate_table,
-    write_discrete_mk_summary_table as write_discrete_mk_summary_table,
-)
-
-
-def _normalize_transition_rate_rows(
-    rows: list[DiscreteTransitionRateRow],
-    *,
-    state_ordering: str,
-) -> list[DiscreteTransitionRateRow]:
-    if state_ordering != "unordered":
-        return rows
-    return [
-        DiscreteTransitionRateRow(
-            source_state=row.source_state,
-            target_state=row.target_state,
-            transition_allowed=row.transition_allowed,
-            step_distance=(1 if row.transition_allowed else row.step_distance),
-            rate=row.rate,
-        )
-        for row in rows
-    ]
-
-
-def fit_discrete_mk_model(
-    tree_path: Path,
-    traits_path: Path,
-    *,
-    trait: str,
-    taxon_column: str | None = None,
-    model: str = "equal-rates",
-    transform: str | None = None,
-    state_ordering: str = "unordered",
-    ordered_states: list[str] | None = None,
-    allowed_transition_pairs: list[tuple[str, str]] | None = None,
-    lambda_bounds: tuple[float, float] = (0.0, 1.0),
-    kappa_bounds: tuple[float, float] = (0.0, 1.0),
-    delta_bounds: tuple[float, float] = (
-        _DISCRETE_DELTA_LOWER_BOUND,
-        _DISCRETE_DELTA_UPPER_BOUND,
-    ),
-    early_burst_bounds: tuple[float, float] = (
-        _DISCRETE_EARLY_BURST_LOWER_BOUND,
-        _DISCRETE_EARLY_BURST_UPPER_BOUND,
-    ),
-) -> DiscreteMkFitReport:
-    """Fit one Mk discrete-trait model on a rooted tree."""
-    dataset = load_discrete_dataset(
-        tree_path,
-        traits_path,
-        trait=trait,
-        taxon_column=taxon_column,
-    )
-    return fit_discrete_mk_model_from_dataset(
-        dataset,
-        model=model,
-        transform=transform,
-        state_ordering=state_ordering,
-        ordered_states=ordered_states,
-        allowed_transition_pairs=allowed_transition_pairs,
-        lambda_bounds=lambda_bounds,
-        kappa_bounds=kappa_bounds,
-        delta_bounds=delta_bounds,
-        early_burst_bounds=early_burst_bounds,
-    )
-
-
-def fit_discrete_mk_model_from_dataset(
-    dataset: AncestralDiscreteDataset,
-    *,
-    model: str = "equal-rates",
-    transform: str | None = None,
-    state_ordering: str = "unordered",
-    ordered_states: list[str] | None = None,
-    allowed_transition_pairs: list[tuple[str, str]] | None = None,
-    lambda_bounds: tuple[float, float] = (0.0, 1.0),
-    kappa_bounds: tuple[float, float] = (0.0, 1.0),
-    delta_bounds: tuple[float, float] = (
-        _DISCRETE_DELTA_LOWER_BOUND,
-        _DISCRETE_DELTA_UPPER_BOUND,
-    ),
-    early_burst_bounds: tuple[float, float] = (
-        _DISCRETE_EARLY_BURST_LOWER_BOUND,
-        _DISCRETE_EARLY_BURST_UPPER_BOUND,
-    ),
-) -> DiscreteMkFitReport:
-    """Fit one Mk discrete-trait model from a native discrete dataset."""
-    resolved_model = _resolve_discrete_model_name(model)
-    resolved_transform = _resolve_discrete_transform_name(transform)
-    state_order = _resolve_state_order(
-        dataset.observed_states,
-        state_ordering=state_ordering,
-        ordered_states=ordered_states,
-    )
-    _validate_discrete_transform_request(
-        dataset,
-        transform=resolved_transform,
-        state_ordering=state_ordering,
-        allowed_transition_pairs=allowed_transition_pairs,
-        lambda_bounds=lambda_bounds,
-        kappa_bounds=kappa_bounds,
-        delta_bounds=delta_bounds,
-        early_burst_bounds=early_burst_bounds,
-    )
-    resolved_allowed_transition_pairs = _resolve_allowed_transition_pairs(
-        state_order,
-        model=resolved_model,
-        state_ordering=state_ordering,
-        allowed_transition_pairs=allowed_transition_pairs,
-    )
-    (
-        fit_tree,
-        rate_matrix,
-        root_prior,
-        optimizer_diagnostics,
-        transform_fit,
-        transform_warning_rows,
-    ) = _fit_discrete_mk_surface(
-        dataset,
-        model=resolved_model,
-        transform=resolved_transform,
-        state_ordering=state_ordering,
-        state_order=state_order,
-        allowed_transition_pairs=resolved_allowed_transition_pairs,
-        lambda_bounds=lambda_bounds,
-        kappa_bounds=kappa_bounds,
-        delta_bounds=delta_bounds,
-        early_burst_bounds=early_burst_bounds,
-    )
-    log_likelihood = _tree_log_likelihood(
-        fit_tree,
-        dataset.states_by_taxon,
-        state_order=state_order,
-        rate_matrix=rate_matrix,
-        root_prior=root_prior,
-        root_prior_mode="observed",
-    )
-    parameter_count = _discrete_parameter_count(
-        state_count=len(state_order),
-        model=resolved_model,
-        transform=resolved_transform,
-        state_ordering=state_ordering,
-        allowed_transition_pairs=resolved_allowed_transition_pairs,
-    )
-    aic = compute_aic(log_likelihood, parameter_count=parameter_count)
-    aicc = compute_aicc(
-        aic,
-        sample_size=len(dataset.taxa),
-        parameter_count=parameter_count,
-    )
-    baseline_comparison: DiscreteModelBaselineComparison | None = None
-    transform_baseline_comparison: DiscreteMkTransformBaselineComparison | None = None
-    if (
-        resolved_model != "equal-rates"
-        and allowed_transition_pairs is None
-        and state_ordering == "unordered"
-    ):
-        baseline_fit = fit_discrete_mk_model_from_dataset(
-            dataset,
-            model="equal-rates",
-            transform=resolved_transform,
-            state_ordering=state_ordering,
-            ordered_states=state_order,
-            allowed_transition_pairs=None,
-            lambda_bounds=lambda_bounds,
-            kappa_bounds=kappa_bounds,
-            delta_bounds=delta_bounds,
-            early_burst_bounds=early_burst_bounds,
-        )
-        baseline_comparison = DiscreteModelBaselineComparison(
-            baseline_model="equal-rates",
-            baseline_log_likelihood=baseline_fit.log_likelihood,
-            baseline_parameter_count=baseline_fit.parameter_count,
-            baseline_aic=baseline_fit.aic,
-            delta_log_likelihood=log_likelihood - baseline_fit.log_likelihood,
-            delta_aic=aic - baseline_fit.aic,
-            preferred_model_by_aic=(
-                resolved_model if aic <= baseline_fit.aic else "equal-rates"
-            ),
-        )
-    if resolved_transform is not None:
-        transform_baseline_fit = fit_discrete_mk_model_from_dataset(
-            dataset,
-            model=resolved_model,
-            transform=None,
-            state_ordering=state_ordering,
-            ordered_states=state_order,
-            allowed_transition_pairs=allowed_transition_pairs,
-            lambda_bounds=lambda_bounds,
-            kappa_bounds=kappa_bounds,
-            delta_bounds=delta_bounds,
-            early_burst_bounds=early_burst_bounds,
-        )
-        transform_baseline_comparison = DiscreteMkTransformBaselineComparison(
-            baseline_transform="untransformed",
-            baseline_log_likelihood=transform_baseline_fit.log_likelihood,
-            baseline_parameter_count=transform_baseline_fit.parameter_count,
-            baseline_aic=transform_baseline_fit.aic,
-            delta_log_likelihood=log_likelihood - transform_baseline_fit.log_likelihood,
-            delta_aic=aic - transform_baseline_fit.aic,
-            preferred_transform_by_aic=(
-                resolved_transform if aic <= transform_baseline_fit.aic else "untransformed"
-            ),
-        )
-    overparameterized = _detect_discrete_overparameterization(
-        taxon_count=len(dataset.taxa),
-        parameter_count=parameter_count,
-    )
-    warnings = list(dataset.warnings)
-    if overparameterized:
-        warnings.append(
-            "the discrete Mk likelihood fit is likely overparameterized relative to the analyzed taxon count"
-        )
-    for warning in transform_warning_rows:
-        warnings.append(warning.message)
-    if not optimizer_diagnostics.converged:
-        warnings.append(
-            "the discrete Mk optimizer did not converge and should be interpreted cautiously"
-        )
-    if (
-        optimizer_diagnostics.hit_lower_parameter_bound
-        or optimizer_diagnostics.hit_upper_parameter_bound
-    ):
-        warnings.append(
-            "one or more discrete Mk rate parameters hit an optimizer bound and should be interpreted as weakly identified"
-        )
-    if (
-        baseline_comparison is not None
-        and baseline_comparison.preferred_model_by_aic == "equal-rates"
-    ):
-        warnings.append(
-            "the equal-rates baseline remains preferred by AIC over the requested discrete Mk model"
-        )
-    if (
-        transform_baseline_comparison is not None
-        and transform_baseline_comparison.preferred_transform_by_aic == "untransformed"
-    ):
-        warnings.append(
-            "the untransformed branch-length baseline remains preferred by AIC over the requested discrete Mk transform"
-        )
-    input_audit = _build_discrete_mk_input_audit(dataset, warnings=warnings)
-    return DiscreteMkFitReport(
-        tree_path=dataset.tree_path,
-        traits_path=dataset.traits_path,
-        taxon_column=dataset.taxon_column,
-        trait=dataset.trait,
-        model=resolved_model,
-        state_ordering=state_ordering,
-        state_order=state_order,
-        taxon_count=len(dataset.taxa),
-        input_audit=input_audit,
-        log_likelihood=log_likelihood,
-        parameter_count=parameter_count,
-        aic=aic,
-        aicc=aicc,
-        likelihood_constant_policy=DISCRETE_MK_LIKELIHOOD_CONSTANT_POLICY,
-        likelihood_comparison_policy=DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY,
-        transition_rate_rows=_normalize_transition_rate_rows(
-            _build_transition_rate_rows(
-                state_order=state_order,
-                state_ordering=state_ordering,
-                rate_matrix=rate_matrix,
-                allowed_transition_pairs=resolved_allowed_transition_pairs,
-            ),
-            state_ordering=state_ordering,
-        ),
-        allowed_transition_pairs=[
-            (state_order[left_index], state_order[right_index])
-            for left_index, right_index in sorted(resolved_allowed_transition_pairs)
-        ],
-        optimizer_diagnostics=optimizer_diagnostics,
-        overparameterized=overparameterized,
-        transform_fit=transform_fit,
-        transform_baseline_comparison=transform_baseline_comparison,
-        baseline_comparison=baseline_comparison,
-    )
 
 
 def compare_discrete_mk_model_ranking(
@@ -545,36 +255,6 @@ def compare_discrete_mk_model_ranking_from_dataset(
             threshold=DISCRETE_MK_MODEL_CONFIDENCE_DELTA_THRESHOLD,
         ),
         warnings=comparison_warnings,
-    )
-
-
-def _build_discrete_mk_input_audit(
-    dataset: AncestralDiscreteDataset,
-    *,
-    warnings: list[str],
-) -> DiscreteMkInputAudit:
-    ultrametric_summary = summarize_ultrametric_tip_depths(
-        tip_root_depths(dataset.tree, dataset.taxa),
-        tolerance=1e-12,
-    )
-    return DiscreteMkInputAudit(
-        tree_path=dataset.tree_path,
-        traits_path=dataset.traits_path,
-        trait=dataset.trait,
-        taxon_count=len(dataset.taxa),
-        taxa=list(dataset.taxa),
-        observed_states=list(dataset.observed_states),
-        state_counts=dict(dataset.state_counts),
-        sparse_states=list(dataset.sparse_states),
-        tree_is_ultrametric=ultrametric_summary.ultrametric,
-        minimum_root_to_tip_depth=ultrametric_summary.minimum_tip_depth,
-        maximum_root_to_tip_depth=ultrametric_summary.maximum_tip_depth,
-        ultrametric_policy="accept-rooted-trees-and-report-ultrametricity",
-        missing_value_policy="prune-overlapping-missing-values",
-        missing_from_traits=list(dataset.alignment_report.dropped_tree_taxa),
-        extra_trait_taxa=list(dataset.alignment_report.dropped_trait_taxa),
-        pruned_missing_value_taxa=list(dataset.dropped_missing_taxa),
-        warnings=warnings,
     )
 
 
