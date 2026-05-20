@@ -10,10 +10,7 @@ from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
-    compare_clade_overlap,
-    detect_clade_changes,
     prune_trees_to_shared_taxa,
-    write_clade_overlap_table,
     write_shared_taxa_pruning_table,
     write_shared_taxa_removed_taxa_table,
     write_tree_comparison_table,
@@ -21,6 +18,7 @@ from bijux_phylogenetics.compare.topology import (
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.runtime.results import build_command_result
 
+from .clades import run_compare_clade_command
 from .influence import run_compare_influence_command
 from .presentation import run_compare_presentation_command
 from .support import run_compare_support_command
@@ -75,43 +73,14 @@ def run_compare_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
     influence_result = run_compare_influence_command(args, parser=parser)
     if influence_result is not None:
         return influence_result
+    clade_result = run_compare_clade_command(args, parser=parser)
+    if clade_result is not None:
+        return clade_result
     topology_distance_result = run_compare_topology_distance_command(
         args, parser=parser
     )
     if topology_distance_result is not None:
         return topology_distance_result
-
-    if args.left == "clades":
-        if args.third is None:
-            parser.exit(status=2, message="compare clades requires two tree paths\n")
-        tree_paths = [Path(args.right), Path(args.third)]
-        if args.extra_trees:
-            tree_paths.extend(args.extra_trees)
-        report = compare_clade_overlap(tree_paths)
-        output_paths: list[Path | str] = []
-        if args.out is not None:
-            output_paths.append(write_clade_overlap_table(args.out, tree_paths))
-        outputs = _finalize_outputs(
-            args,
-            command="compare",
-            inputs=tree_paths,
-            outputs=output_paths,
-        )
-        _print_result(
-            build_command_result(
-                command="compare",
-                inputs=tree_paths,
-                outputs=outputs,
-                metrics={
-                    "shared_clades": len(report.shared_clades),
-                    "conflicting_clades": len(report.conflicting_clades),
-                    "tree_count": len(report.tree_paths),
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
 
     if args.left == "prune":
         if args.third is None:
@@ -171,30 +140,6 @@ def run_compare_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     "post_pruning_robinson_foulds_distance": (
                         report.post_pruning_comparison.robinson_foulds_distance
                     ),
-                },
-                data=report,
-            ),
-            json_output=args.json,
-        )
-        return 0
-
-    if args.left == "changes":
-        if args.third is None:
-            parser.exit(status=2, message="compare changes requires two tree paths\n")
-        left_path = Path(args.right)
-        right_path = Path(args.third)
-        report = detect_clade_changes(left_path, right_path)
-        outputs = _finalize_outputs(
-            args, command="compare", inputs=[left_path, right_path]
-        )
-        _print_result(
-            build_command_result(
-                command="compare",
-                inputs=[left_path, right_path],
-                outputs=outputs,
-                metrics={
-                    "lost_clades": len(report.lost_clades),
-                    "gained_clades": len(report.gained_clades),
                 },
                 data=report,
             ),
