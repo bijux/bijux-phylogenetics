@@ -4,7 +4,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import NamedTuple
 
-from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet, AlignmentRecord
+from bijux_phylogenetics.phylo.alignment.models import (
+    AlignmentAlphabet,
+    AlignmentRecord,
+)
 from bijux_phylogenetics.phylo.alignment.occupancy import (
     LocusCoverageRow,
     LocusOccupancyCell,
@@ -17,10 +20,6 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
     normalize_partition_data_type,
 )
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError, InvalidPartitionError
-from bijux_phylogenetics.io.fasta import (
-    infer_alignment_alphabet,
-    load_fasta_alignment,
-)
 
 __all__ = [
     "ConcatenatedAlignmentLocusRow",
@@ -70,6 +69,20 @@ class _LoadedLocus(NamedTuple):
     @property
     def alignment_length(self) -> int:
         return len(self.records[0].sequence)
+
+
+def _load_alignment_records(path: Path) -> list[AlignmentRecord]:
+    from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
+
+    return load_fasta_alignment(path)
+
+
+def _infer_loaded_alignment_alphabet(
+    records: list[AlignmentRecord],
+) -> AlignmentAlphabet:
+    from bijux_phylogenetics.io.fasta.core import infer_alignment_alphabet
+
+    return infer_alignment_alphabet(records)
 
 
 def _validated_locus_names(
@@ -136,12 +149,12 @@ def _load_locus(
     locus_name: str,
     declared_data_type: str | None,
 ) -> _LoadedLocus:
-    records = load_fasta_alignment(path)
+    records = _load_alignment_records(path)
     if not records:
         raise InvalidAlignmentError(f"alignment does not contain any records: {path}")
     _validate_unique_taxa(path, records)
 
-    inferred_alphabet = infer_alignment_alphabet(records)
+    inferred_alphabet = _infer_loaded_alignment_alphabet(records)
     occupancy_by_taxon = {
         record.identifier: (len(record.sequence), 1.0) for record in records
     }

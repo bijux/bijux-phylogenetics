@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.alignment import AlignmentRecord
+from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.alignment.partitions import (
     LocusPartition,
     LocusSegment,
@@ -15,8 +15,6 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
     write_locus_partitions as _write_locus_partitions,
 )
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError, InvalidPartitionError
-from bijux_phylogenetics.io.fasta import load_fasta_alignment
-from bijux_phylogenetics.io.fasta.records import summarise_records_as_alignment_summary
 
 __all__ = [
     "LocusCoverageRow",
@@ -148,6 +146,24 @@ def write_locus_partitions(path: Path, partitions: tuple[LocusPartition, ...]) -
     return _write_locus_partitions(path, partitions)
 
 
+def _load_alignment_records(path: Path) -> list[AlignmentRecord]:
+    from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
+
+    return load_fasta_alignment(path)
+
+
+def _summarise_alignment_records(
+    *,
+    path: Path,
+    records: list[AlignmentRecord],
+):
+    from bijux_phylogenetics.io.fasta.records import (
+        summarise_records_as_alignment_summary,
+    )
+
+    return summarise_records_as_alignment_summary(path=path, records=records)
+
+
 def _partition_records(
     records: list[AlignmentRecord], partition: LocusPartition
 ) -> list[AlignmentRecord]:
@@ -215,8 +231,9 @@ def _build_locus_occupancy_report_from_inputs(
 
     for partition in partitions:
         partition_records = _partition_records(records, partition)
-        summary = summarise_records_as_alignment_summary(
-            path=alignment_path, records=partition_records
+        summary = _summarise_alignment_records(
+            path=alignment_path,
+            records=partition_records,
         )
         uncertainty_by_taxon = {
             row.identifier: row for row in summary.per_sequence_uncertainty
@@ -335,7 +352,7 @@ def build_locus_occupancy_report(
     _validate_threshold(minimum_locus_occupancy, "minimum locus occupancy")
 
     return build_locus_occupancy_report_from_records(
-        records=load_fasta_alignment(alignment_path),
+        records=_load_alignment_records(alignment_path),
         partitions=parse_locus_partitions(partition_path),
         alignment_path=alignment_path,
         partition_path=partition_path,
@@ -430,7 +447,7 @@ def filter_locus_occupancy(
     _validate_threshold(locus_coverage_threshold, "locus coverage threshold")
     _validate_threshold(minimum_locus_occupancy, "minimum locus occupancy")
 
-    current_records = load_fasta_alignment(alignment_path)
+    current_records = _load_alignment_records(alignment_path)
     current_partitions = parse_locus_partitions(partition_path)
     original_taxa = [record.identifier for record in current_records]
     original_loci = [partition.name for partition in current_partitions]
