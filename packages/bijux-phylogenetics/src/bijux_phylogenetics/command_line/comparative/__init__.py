@@ -20,9 +20,9 @@ from .maturity import (
     add_comparative_maturity_command,
     run_comparative_maturity_command,
 )
-from .support import (
-    add_comparative_support_commands,
-    run_comparative_support_command,
+from .clades import (
+    add_comparative_clade_commands,
+    run_comparative_clade_command,
 )
 from .signal import (
     add_comparative_signal_commands,
@@ -49,7 +49,7 @@ def add_comparative_commands(subparsers: Any) -> None:
     add_comparative_maturity_command(comparative_subparsers)
     add_comparative_pgls_commands(comparative_subparsers)
     add_comparative_logistic_command(comparative_subparsers)
-    add_comparative_support_commands(comparative_subparsers)
+    add_comparative_clade_commands(comparative_subparsers)
     add_comparative_modeling_commands(comparative_subparsers)
 
 
@@ -82,7 +82,7 @@ def run_comparative_command(
     if logistic_exit_code is not None:
         return logistic_exit_code
 
-    support_exit_code = run_comparative_support_command(args, parser=parser)
+    support_exit_code = run_comparative_clade_command(args, parser=parser)
     if support_exit_code is not None:
         return support_exit_code
 
@@ -103,7 +103,7 @@ __all__ = [
     "add_comparative_maturity_command",
     "add_comparative_modeling_commands",
     "add_comparative_pgls_commands",
-    "add_comparative_support_commands",
+    "add_comparative_clade_commands",
     "add_comparative_trait_commands",
     "run_comparative_command",
     "run_comparative_evolution_command",
@@ -112,6 +112,6 @@ __all__ = [
     "run_comparative_maturity_command",
     "run_comparative_modeling_command",
     "run_comparative_pgls_command",
-    "run_comparative_support_command",
+    "run_comparative_clade_command",
     "run_comparative_trait_command",
 ]
