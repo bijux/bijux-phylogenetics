@@ -14,7 +14,7 @@ from bijux_phylogenetics.ancestral.discrete import (
 from bijux_phylogenetics.comparative.covariance import (
     summarize_comparative_covariance_audit,
 )
-from bijux_phylogenetics.comparative.phylogenetic_anova import (
+from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_anova,
 )
 from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs

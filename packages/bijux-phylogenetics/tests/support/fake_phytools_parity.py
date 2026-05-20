@@ -911,7 +911,7 @@ def compute_phylogenetic_anova_payload(
     inline_script = '''
 import json
 from pathlib import Path
-from bijux_phylogenetics.comparative.phylogenetic_anova import summarize_phylogenetic_anova
+from bijux_phylogenetics.comparative.regression import summarize_phylogenetic_anova
 
 payload = json.loads(Path(__PAYLOAD_PATH__).read_text(encoding="utf-8"))
 tree_path, traits_path = payload["input_fixtures"]

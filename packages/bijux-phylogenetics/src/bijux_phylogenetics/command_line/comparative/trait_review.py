@@ -12,7 +12,7 @@ from bijux_phylogenetics.comparative.clades.traits import (
     write_clade_trait_exclusion_table,
     write_clade_trait_summary_table,
 )
-from bijux_phylogenetics.comparative.phylogenetic_anova import (
+from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_anova,
     write_phylogenetic_anova_exclusion_table,
     write_phylogenetic_anova_group_table,

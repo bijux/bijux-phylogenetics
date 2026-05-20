@@ -368,7 +368,7 @@ from .regression import (
     write_phylogenetic_logistic_excluded_taxa_table,
     write_phylogenetic_logistic_fitted_table,
 )
-from .phylogenetic_anova import (
+from .regression import (
     PhylogeneticAnovaExclusion,
     PhylogeneticAnovaGroupSummaryRow,
     PhylogeneticAnovaNullRow,

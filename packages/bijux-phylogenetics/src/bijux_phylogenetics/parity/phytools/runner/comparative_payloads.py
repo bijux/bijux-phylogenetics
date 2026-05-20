@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.phylogenetic_anova import (
+from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_anova,
 )
 from bijux_phylogenetics.comparative.regression import (

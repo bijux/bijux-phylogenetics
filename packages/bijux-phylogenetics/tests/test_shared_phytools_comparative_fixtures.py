@@ -9,7 +9,7 @@ from bijux_phylogenetics.ancestral.continuous import (
 )
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
-from bijux_phylogenetics.comparative.phylogenetic_anova import (
+from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_anova,
 )
 from bijux_phylogenetics.comparative.regression import (
