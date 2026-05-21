@@ -1,273 +1,69 @@
-from __future__ import annotations
-
-from pathlib import Path
-
-from bijux_phylogenetics.engines.common import (
-    build_file_checksums,
-    load_engine_manifest,
-)
-
 from .inference_audits import (
-    BootstrapTreeSetValidationReport,
-    InferenceFailureTaxonomyReport,
-    InferenceOutputConsistencyReport,
-    InferenceReadinessAuditReport,
-    InferenceReadinessDecision,
-    InferenceTreeComparisonReport,
-    MetadataClusteringReport,
-    MetadataClusterObservation,
-    MLTreeTaxonValidationReport,
-    ModelSelectionValidationReport,
-    audit_alignment_inference_readiness,
-    classify_inference_workflow_failure,
-    compare_inferred_tree_to_taxon_metadata,
-    compare_inferred_trees_across_engines,
-    compare_ml_trees_across_models,
-    detect_weakly_supported_backbone,
-    summarize_bootstrap_support_distribution,
-    summarize_fasttree_support_distribution,
-    summarize_sh_alrt_support_distribution,
-    validate_bootstrap_tree_set,
-    validate_ml_tree_contains_expected_taxa,
-    validate_model_selection_against_engine_outputs,
+    BootstrapTreeSetValidationReport as BootstrapTreeSetValidationReport,
 )
-
-
-def validate_inference_engine_outputs(
-    manifest_path: Path,
-) -> InferenceOutputConsistencyReport:
-    """Detect whether one engine workflow manifest and its current outputs still agree."""
-    manifest = load_engine_manifest(manifest_path)
-    workflow = str(manifest["workflow"])
-    input_paths = [Path(path) for path in manifest["input_paths"]]
-    output_paths = {
-        key: Path(value) for key, value in dict(manifest["output_paths"]).items()
-    }
-    run_payload = dict(manifest["run"])
-    failure = classify_inference_workflow_failure(
-        workflow=workflow,
-        input_paths=input_paths,
-        output_paths=output_paths,
-        run_exit_code=int(run_payload.get("exit_code", 0)),
-    )
-    issues = list(failure.issues)
-    current_checksums = build_file_checksums(list(output_paths.values()))
-    manifest_checksums = {
-        str(key): str(value)
-        for key, value in dict(manifest.get("output_checksums", {})).items()
-    }
-    current_output_checksum_match = current_checksums == manifest_checksums
-    if not current_output_checksum_match:
-        issues.append(
-            "current output checksums do not match the recorded manifest outputs"
-        )
-    if workflow == "model-selection":
-        model_validation = validate_model_selection_against_engine_outputs(
-            manifest_path
-        )
-        issues.extend(model_validation.issues)
-    elif workflow == "maximum-likelihood-tree":
-        tree_validation = validate_ml_tree_contains_expected_taxa(manifest_path)
-        issues.extend(tree_validation.issues)
-        if output_paths.get("iqtree_log") is None:
-            issues.append(
-                "maximum-likelihood manifest is missing the iqtree_log output"
-            )
-        if manifest.get("selected_model") is None:
-            issues.append("maximum-likelihood manifest is missing the selected model")
-        if manifest.get("log_likelihood") is None:
-            issues.append(
-                "maximum-likelihood manifest is missing the log_likelihood field"
-            )
-    elif workflow == "fast-approximate-tree":
-        if output_paths.get("support_table") is None:
-            issues.append(
-                "fast-approximate-tree manifest is missing the support_table output"
-            )
-        if output_paths.get("low_support_branches") is None:
-            issues.append(
-                "fast-approximate-tree manifest is missing the low_support_branches output"
-            )
-        if output_paths.get("support_histogram") is None:
-            issues.append(
-                "fast-approximate-tree manifest is missing the support_histogram output"
-            )
-        fasttree_support_summary = manifest.get("fasttree_support_summary")
-        if not isinstance(fasttree_support_summary, dict):
-            issues.append(
-                "fast-approximate-tree manifest is missing the fasttree_support_summary"
-            )
-        else:
-            if int(fasttree_support_summary.get("annotated_node_count", 0)) < 1:
-                issues.append(
-                    "fast-approximate-tree manifest does not record any parsed FastTree local support labels"
-                )
-            histogram = fasttree_support_summary.get("support_histogram")
-            if not isinstance(histogram, dict):
-                issues.append(
-                    "fast-approximate-tree manifest does not record the FastTree support histogram"
-                )
-            elif sorted(histogram) != ["0p5to0p69", "0p7to0p89", "ge0p9", "lt0p5"]:
-                issues.append(
-                    "fast-approximate-tree manifest records an incomplete FastTree support histogram"
-                )
-            if fasttree_support_summary.get("approximate_method") is not True:
-                issues.append(
-                    "fast-approximate-tree manifest does not record the FastTree approximation contract"
-                )
-            if (
-                fasttree_support_summary.get("support_label_kind")
-                != "sh-like-local-support"
-            ):
-                issues.append(
-                    "fast-approximate-tree manifest does not record the FastTree support label kind"
-                )
-            if fasttree_support_summary.get("support_scale") != "proportion-0-to-1":
-                issues.append(
-                    "fast-approximate-tree manifest does not record the FastTree support scale"
-                )
-    elif workflow == "bootstrap-support":
-        bootstrap_path = output_paths.get("bootstrap_trees")
-        if bootstrap_path is None:
-            issues.append(
-                "bootstrap-support manifest is missing the bootstrap_trees output"
-            )
-        else:
-            bootstrap_validation = validate_bootstrap_tree_set(bootstrap_path)
-            issues.extend(bootstrap_validation.issues)
-        if output_paths.get("support_tree") is None:
-            issues.append(
-                "bootstrap-support manifest is missing the support_tree output"
-            )
-        if output_paths.get("support_table") is None:
-            issues.append(
-                "bootstrap-support manifest is missing the support_table output"
-            )
-        if output_paths.get("low_support_branches") is None:
-            issues.append(
-                "bootstrap-support manifest is missing the low_support_branches output"
-            )
-        if output_paths.get("support_histogram") is None:
-            issues.append(
-                "bootstrap-support manifest is missing the support_histogram output"
-            )
-        if output_paths.get("iqtree_log") is None:
-            issues.append("bootstrap-support manifest is missing the iqtree_log output")
-        if manifest.get("selected_model") is None:
-            issues.append("bootstrap-support manifest is missing the selected model")
-        if manifest.get("log_likelihood") is None:
-            issues.append(
-                "bootstrap-support manifest is missing the log_likelihood field"
-            )
-        iqtree_summary = manifest.get("iqtree_summary")
-        if not isinstance(iqtree_summary, dict):
-            issues.append("bootstrap-support manifest is missing the iqtree_summary")
-        elif int(iqtree_summary.get("support_value_count", 0)) < 1:
-            issues.append(
-                "bootstrap-support manifest does not record parsed support values"
-            )
-        bootstrap_support_summary = manifest.get("bootstrap_support_summary")
-        if not isinstance(bootstrap_support_summary, dict):
-            issues.append(
-                "bootstrap-support manifest is missing the bootstrap_support_summary"
-            )
-        else:
-            if int(bootstrap_support_summary.get("supported_node_count", 0)) < 1:
-                issues.append(
-                    "bootstrap-support manifest does not record any supported internal nodes"
-                )
-            histogram = bootstrap_support_summary.get("support_histogram")
-            if not isinstance(histogram, dict):
-                issues.append(
-                    "bootstrap-support manifest does not record the support histogram"
-                )
-            elif sorted(histogram) != ["50to69", "70to89", "ge90", "lt50"]:
-                issues.append(
-                    "bootstrap-support manifest records an incomplete support histogram"
-                )
-        weak_backbone_report = manifest.get("weak_backbone_report")
-        if not isinstance(weak_backbone_report, dict):
-            issues.append(
-                "bootstrap-support manifest is missing the weak_backbone_report"
-            )
-        elif float(weak_backbone_report.get("threshold", 0.0)) <= 0.0:
-            issues.append(
-                "bootstrap-support manifest records an invalid weak-backbone threshold"
-            )
-    elif workflow == "bootstrap-consensus":
-        if output_paths.get("iqtree_log") is None:
-            issues.append(
-                "bootstrap-consensus manifest is missing the iqtree_log output"
-            )
-        iqtree_summary = manifest.get("iqtree_summary")
-        if not isinstance(iqtree_summary, dict):
-            issues.append("bootstrap-consensus manifest is missing the iqtree_summary")
-        elif int(iqtree_summary.get("support_value_count", 0)) < 1:
-            issues.append(
-                "bootstrap-consensus manifest does not record parsed support values"
-            )
-    elif workflow == "sh-alrt-support":
-        bootstrap_path = output_paths.get("bootstrap_trees")
-        if bootstrap_path is None:
-            issues.append(
-                "sh-alrt-support manifest is missing the bootstrap_trees output"
-            )
-        else:
-            bootstrap_validation = validate_bootstrap_tree_set(bootstrap_path)
-            issues.extend(bootstrap_validation.issues)
-        if output_paths.get("support_tree") is None:
-            issues.append("sh-alrt-support manifest is missing the support_tree output")
-        if output_paths.get("support_table") is None:
-            issues.append(
-                "sh-alrt-support manifest is missing the support_table output"
-            )
-        if output_paths.get("conflicting_support_branches") is None:
-            issues.append(
-                "sh-alrt-support manifest is missing the conflicting_support_branches output"
-            )
-        if output_paths.get("iqtree_log") is None:
-            issues.append("sh-alrt-support manifest is missing the iqtree_log output")
-        if manifest.get("selected_model") is None:
-            issues.append("sh-alrt-support manifest is missing the selected model")
-        if manifest.get("log_likelihood") is None:
-            issues.append(
-                "sh-alrt-support manifest is missing the log_likelihood field"
-            )
-        iqtree_summary = manifest.get("iqtree_summary")
-        if not isinstance(iqtree_summary, dict):
-            issues.append("sh-alrt-support manifest is missing the iqtree_summary")
-        elif int(iqtree_summary.get("support_value_count", 0)) < 1:
-            issues.append(
-                "sh-alrt-support manifest does not record parsed ufboot support values"
-            )
-        bootstrap_support_summary = manifest.get("bootstrap_support_summary")
-        if not isinstance(bootstrap_support_summary, dict):
-            issues.append(
-                "sh-alrt-support manifest is missing the bootstrap_support_summary"
-            )
-        elif int(bootstrap_support_summary.get("supported_node_count", 0)) < 1:
-            issues.append(
-                "sh-alrt-support manifest does not record any parsed ufboot-supported nodes"
-            )
-        sh_alrt_support_summary = manifest.get("sh_alrt_support_summary")
-        if not isinstance(sh_alrt_support_summary, dict):
-            issues.append(
-                "sh-alrt-support manifest is missing the sh_alrt_support_summary"
-            )
-        else:
-            if int(sh_alrt_support_summary.get("annotated_node_count", 0)) < 1:
-                issues.append(
-                    "sh-alrt-support manifest does not record any parsed sh-alrt labels"
-                )
-            if int(sh_alrt_support_summary.get("fully_scored_node_count", 0)) < 1:
-                issues.append(
-                    "sh-alrt-support manifest does not record any jointly scored sh-alrt and ufboot branches"
-                )
-    return InferenceOutputConsistencyReport(
-        manifest_path=manifest_path,
-        workflow=workflow,
-        failure_category=failure.failure_category,
-        current_output_checksum_match=current_output_checksum_match,
-        valid=not issues,
-        issues=sorted(dict.fromkeys(issues)),
-    )
+from .inference_audits import (
+    InferenceFailureTaxonomyReport as InferenceFailureTaxonomyReport,
+)
+from .inference_audits import (
+    InferenceOutputConsistencyReport as InferenceOutputConsistencyReport,
+)
+from .inference_audits import (
+    InferenceReadinessAuditReport as InferenceReadinessAuditReport,
+)
+from .inference_audits import (
+    InferenceReadinessDecision as InferenceReadinessDecision,
+)
+from .inference_audits import (
+    InferenceTreeComparisonReport as InferenceTreeComparisonReport,
+)
+from .inference_audits import (
+    MetadataClusteringReport as MetadataClusteringReport,
+)
+from .inference_audits import (
+    MetadataClusterObservation as MetadataClusterObservation,
+)
+from .inference_audits import (
+    MLTreeTaxonValidationReport as MLTreeTaxonValidationReport,
+)
+from .inference_audits import (
+    ModelSelectionValidationReport as ModelSelectionValidationReport,
+)
+from .inference_audits import (
+    audit_alignment_inference_readiness as audit_alignment_inference_readiness,
+)
+from .inference_audits import (
+    classify_inference_workflow_failure as classify_inference_workflow_failure,
+)
+from .inference_audits import (
+    compare_inferred_tree_to_taxon_metadata as compare_inferred_tree_to_taxon_metadata,
+)
+from .inference_audits import (
+    compare_inferred_trees_across_engines as compare_inferred_trees_across_engines,
+)
+from .inference_audits import (
+    compare_ml_trees_across_models as compare_ml_trees_across_models,
+)
+from .inference_audits import (
+    detect_weakly_supported_backbone as detect_weakly_supported_backbone,
+)
+from .inference_audits import (
+    summarize_bootstrap_support_distribution as summarize_bootstrap_support_distribution,
+)
+from .inference_audits import (
+    summarize_fasttree_support_distribution as summarize_fasttree_support_distribution,
+)
+from .inference_audits import (
+    summarize_sh_alrt_support_distribution as summarize_sh_alrt_support_distribution,
+)
+from .inference_audits import (
+    validate_bootstrap_tree_set as validate_bootstrap_tree_set,
+)
+from .inference_audits import (
+    validate_inference_engine_outputs as validate_inference_engine_outputs,
+)
+from .inference_audits import (
+    validate_ml_tree_contains_expected_taxa as validate_ml_tree_contains_expected_taxa,
+)
+from .inference_audits import (
+    validate_model_selection_against_engine_outputs as validate_model_selection_against_engine_outputs,
+)
