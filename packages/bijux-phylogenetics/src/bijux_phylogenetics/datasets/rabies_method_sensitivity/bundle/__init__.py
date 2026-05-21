@@ -7,10 +7,7 @@ from ..models import (
     RabiesMethodSensitivityPanelWorkflowBundle,
     RabiesMethodSensitivityPanelWorkflowReport,
 )
-from .package_manifest import (
-    _sha256,
-    _write_manifest,
-)
+from .manifest_artifacts import _write_bundle_manifest_artifacts
 from .shared import (
     _format_float,
     _format_optional_bool,
@@ -26,7 +23,7 @@ from .variant_artifacts import (
     _write_variant_outputs,
 )
 from .workflow_artifacts import _write_workflow_bundle_artifacts
-from ..reporting import _write_report, _write_report_manifest
+from ..reporting import _write_report
 
 
 def write_rabies_method_sensitivity_panel_workflow_bundle(
@@ -47,91 +44,11 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         report,
         execution_record_path=workflow_artifacts.execution_record_path,
     )
-    manifest_path = _write_manifest(
-        output_root / "rabies-method-sensitivity.manifest.json",
-        report=report,
-        bundle_paths={
-            "workflow_summary": workflow_artifacts.workflow_summary_path,
-            "variant_summary": workflow_artifacts.variant_summary_path,
-            "parallel_summary": workflow_artifacts.parallel_summary_path,
-            "preprocessing_comparison": (
-                workflow_artifacts.preprocessing_comparison_path
-            ),
-            "stable_clades": workflow_artifacts.stable_clades_path,
-            "changed_clades": workflow_artifacts.changed_clades_path,
-            "conclusion_summary": workflow_artifacts.conclusion_summary_path,
-            "config": workflow_artifacts.config_path,
-            "execution_record": workflow_artifacts.execution_record_path,
-            "task_logs_root": workflow_artifacts.task_logs_root,
-            "variants_root": workflow_artifacts.variants_root,
-            "slurm_job_plan": slurm_artifacts.job_plan_path,
-            "slurm_assumptions": slurm_artifacts.assumptions_path,
-            "slurm_summary": slurm_artifacts.summary_path,
-            "slurm_array_partitions": slurm_artifacts.array_partitions_path,
-            "slurm_array_members": slurm_artifacts.array_members_path,
-            "slurm_array_strategy": slurm_artifacts.array_strategy_path,
-            "slurm_array_scripts_root": slurm_artifacts.array_scripts_root,
-            "slurm_job_evidence_root": slurm_artifacts.job_evidence_report.evidence_root,
-            "slurm_job_evidence_index": slurm_artifacts.job_evidence_report.index_path,
-            "slurm_job_evidence_summary": slurm_artifacts.job_evidence_report.summary_path,
-            "slurm_merge_checks": slurm_artifacts.merge_checks_path,
-            "slurm_merge_variants": slurm_artifacts.merge_variants_path,
-            "slurm_merge_summary": slurm_artifacts.merge_summary_path,
-            "slurm_merge_report": slurm_artifacts.merge_report_path,
-            "slurm_output_freshness": slurm_artifacts.output_freshness_path,
-            "slurm_output_freshness_checks": slurm_artifacts.output_freshness_checks_path,
-            "slurm_output_freshness_summary": slurm_artifacts.output_freshness_summary_path,
-            "slurm_job_status": slurm_artifacts.job_status_path,
-            "slurm_partition_status": slurm_artifacts.partition_status_path,
-            "slurm_workflow_status": slurm_artifacts.workflow_status_path,
-            "slurm_failure_recovery_jobs": slurm_artifacts.failure_recovery_jobs_path,
-            "slurm_failure_recovery_partitions": slurm_artifacts.failure_recovery_partitions_path,
-            "slurm_failure_recovery_summary": slurm_artifacts.failure_recovery_summary_path,
-            "slurm_failure_recovery_report": slurm_artifacts.failure_recovery_report_path,
-        },
-    )
-    report_manifest_path = _write_report_manifest(
-        output_root
-        / "report-artifacts"
-        / "rabies-method-sensitivity-report.manifest.json",
-        report=report,
-        bundle_paths={
-            "workflow_summary": workflow_artifacts.workflow_summary_path,
-            "variant_summary": workflow_artifacts.variant_summary_path,
-            "parallel_summary": workflow_artifacts.parallel_summary_path,
-            "preprocessing_comparison": (
-                workflow_artifacts.preprocessing_comparison_path
-            ),
-            "stable_clades": workflow_artifacts.stable_clades_path,
-            "changed_clades": workflow_artifacts.changed_clades_path,
-            "conclusion_summary": workflow_artifacts.conclusion_summary_path,
-            "config": workflow_artifacts.config_path,
-            "execution_record": workflow_artifacts.execution_record_path,
-            "workflow_manifest": manifest_path,
-            "slurm_job_plan": slurm_artifacts.job_plan_path,
-            "slurm_assumptions": slurm_artifacts.assumptions_path,
-            "slurm_summary": slurm_artifacts.summary_path,
-            "slurm_array_partitions": slurm_artifacts.array_partitions_path,
-            "slurm_array_members": slurm_artifacts.array_members_path,
-            "slurm_array_strategy": slurm_artifacts.array_strategy_path,
-            "slurm_job_evidence_index": slurm_artifacts.job_evidence_report.index_path,
-            "slurm_job_evidence_summary": slurm_artifacts.job_evidence_report.summary_path,
-            "slurm_merge_checks": slurm_artifacts.merge_checks_path,
-            "slurm_merge_variants": slurm_artifacts.merge_variants_path,
-            "slurm_merge_summary": slurm_artifacts.merge_summary_path,
-            "slurm_merge_report": slurm_artifacts.merge_report_path,
-            "slurm_output_freshness": slurm_artifacts.output_freshness_path,
-            "slurm_output_freshness_checks": slurm_artifacts.output_freshness_checks_path,
-            "slurm_output_freshness_summary": slurm_artifacts.output_freshness_summary_path,
-            "slurm_job_status": slurm_artifacts.job_status_path,
-            "slurm_partition_status": slurm_artifacts.partition_status_path,
-            "slurm_workflow_status": slurm_artifacts.workflow_status_path,
-            "slurm_failure_recovery_jobs": slurm_artifacts.failure_recovery_jobs_path,
-            "slurm_failure_recovery_partitions": slurm_artifacts.failure_recovery_partitions_path,
-            "slurm_failure_recovery_summary": slurm_artifacts.failure_recovery_summary_path,
-            "slurm_failure_recovery_report": slurm_artifacts.failure_recovery_report_path,
-        },
-        sha256=_sha256,
+    manifest_artifacts = _write_bundle_manifest_artifacts(
+        output_root,
+        report,
+        workflow_artifacts,
+        slurm_artifacts,
     )
     reproducibility_artifacts = _write_reproducibility_artifacts(output_root, report)
     report_linked_files = (
@@ -144,8 +61,8 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         workflow_artifacts.conclusion_summary_path,
         workflow_artifacts.config_path,
         workflow_artifacts.execution_record_path,
-        manifest_path,
-        report_manifest_path,
+        manifest_artifacts.manifest_path,
+        manifest_artifacts.report_manifest_path,
         slurm_artifacts.job_plan_path,
         slurm_artifacts.assumptions_path,
         slurm_artifacts.summary_path,
@@ -200,7 +117,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "conclusion_summary": workflow_artifacts.conclusion_summary_path,
             "config": workflow_artifacts.config_path,
             "execution_record": workflow_artifacts.execution_record_path,
-            "workflow_manifest": manifest_path,
+            "workflow_manifest": manifest_artifacts.manifest_path,
             "slurm_job_plan": slurm_artifacts.job_plan_path,
             "slurm_assumptions": slurm_artifacts.assumptions_path,
             "slurm_summary": slurm_artifacts.summary_path,
@@ -241,7 +158,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             ),
             "reproducibility_audit": reproducibility_artifacts.audit_path,
         },
-        report_manifest_path=report_manifest_path,
+        report_manifest_path=manifest_artifacts.report_manifest_path,
         reproducibility_report=reproducibility_artifacts.report,
         slurm_planning_report=slurm_artifacts.planning_report,
         slurm_array_strategy_report=slurm_artifacts.array_strategy_report,
@@ -294,8 +211,8 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         changed_clades_path=workflow_artifacts.changed_clades_path,
         conclusion_summary_path=workflow_artifacts.conclusion_summary_path,
         config_path=workflow_artifacts.config_path,
-        manifest_path=manifest_path,
-        report_manifest_path=report_manifest_path,
+        manifest_path=manifest_artifacts.manifest_path,
+        report_manifest_path=manifest_artifacts.report_manifest_path,
         slurm_job_plan_path=slurm_artifacts.job_plan_path,
         slurm_assumptions_path=slurm_artifacts.assumptions_path,
         slurm_summary_path=slurm_artifacts.summary_path,
