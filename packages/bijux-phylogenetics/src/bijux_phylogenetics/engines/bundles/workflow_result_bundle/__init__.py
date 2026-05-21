@@ -15,6 +15,11 @@ from .bundle_files import prepared_input_label as prepared_input_label
 from .bundle_files import record_bundle_file as record_bundle_file
 from .bundle_files import sha256_file as sha256_file
 from .bundle_files import write_bundle_json as write_bundle_json
+from .source_inventory import build_bundle_rerun_payload as build_bundle_rerun_payload
+from .source_inventory import payload_workflow as payload_workflow
+from .source_inventory import recorded_input_paths as recorded_input_paths
+from .source_inventory import required_output_paths as required_output_paths
+from .source_inventory import step_manifest_paths as step_manifest_paths
 
 __all__ = [
     "WorkflowResultBundleExtraInput",
@@ -29,5 +34,10 @@ __all__ = [
     "prepared_input_label",
     "record_bundle_file",
     "sha256_file",
+    "build_bundle_rerun_payload",
+    "payload_workflow",
+    "recorded_input_paths",
+    "required_output_paths",
+    "step_manifest_paths",
     "write_bundle_json",
 ]

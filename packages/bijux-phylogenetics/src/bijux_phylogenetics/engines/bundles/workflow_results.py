@@ -17,13 +17,18 @@ from .workflow_result_bundle import (
     WorkflowResultBundleIssue,
     WorkflowResultBundleReport,
     WorkflowResultBundleValidationReport,
+    build_bundle_rerun_payload,
     copy_bundle_file,
     input_label,
     maybe_path,
     output_filename,
+    payload_workflow,
     prepared_input_label,
+    recorded_input_paths,
     record_bundle_file,
+    required_output_paths,
     sha256_file,
+    step_manifest_paths,
     write_bundle_json,
 )
 
@@ -52,7 +57,7 @@ def export_workflow_result_bundle(
 ) -> WorkflowResultBundleReport:
     """Export one portable workflow-result bundle rooted on one workflow manifest."""
     payload = load_engine_manifest(manifest_path)
-    workflow = _payload_workflow(payload)
+    workflow = payload_workflow(payload)
     if bundle_root.exists():
         shutil.rmtree(bundle_root)
     (bundle_root / "inputs").mkdir(parents=True, exist_ok=True)
@@ -120,7 +125,7 @@ def export_workflow_result_bundle(
     )
 
     rerun_path = bundle_root / _WORKFLOW_RERUN_NAME
-    rerun_payload = _build_bundle_rerun_payload(payload, bundle_root=bundle_root)
+    rerun_payload = build_bundle_rerun_payload(payload, bundle_root=bundle_root)
     write_bundle_json(rerun_path, rerun_payload)
     files.append(
         record_bundle_file(
@@ -133,7 +138,7 @@ def export_workflow_result_bundle(
     )
 
     input_entries: list[dict[str, str]] = []
-    for index, input_path in enumerate(_recorded_input_paths(payload), start=1):
+    for index, input_path in enumerate(recorded_input_paths(payload), start=1):
         label = input_label(index=index, path=input_path)
         if input_path.exists():
             destination = bundle_root / "inputs" / label
@@ -228,7 +233,7 @@ def export_workflow_result_bundle(
         )
 
     output_entries: dict[str, str] = {}
-    for label, source_path in _required_output_paths(payload).items():
+    for label, source_path in required_output_paths(payload).items():
         if (
             label == "manifest"
             and source_path.resolve() == Path(manifest_path).resolve()
@@ -255,7 +260,7 @@ def export_workflow_result_bundle(
 
     step_manifest_entries: dict[str, str] = {}
     step_output_entries: dict[str, dict[str, str]] = {}
-    for step_label, source_manifest_path in _step_manifest_paths(payload).items():
+    for step_label, source_manifest_path in step_manifest_paths(payload).items():
         destination = (
             bundle_root / "manifests" / "steps" / f"{step_label}.manifest.json"
         )
@@ -276,7 +281,7 @@ def export_workflow_result_bundle(
 
         step_payload = load_engine_manifest(source_manifest_path)
         step_output_entries[step_label] = {}
-        for output_label, output_path in _required_output_paths(step_payload).items():
+        for output_label, output_path in required_output_paths(step_payload).items():
             step_destination = (
                 bundle_root
                 / "outputs"
@@ -575,93 +580,6 @@ def validate_workflow_result_bundle(
     )
 
 
-def _payload_workflow(payload: dict[str, Any]) -> str:
-    workflow = payload.get("workflow")
-    if workflow is None:
-        raise EngineWorkflowError(
-            "workflow bundle requires a workflow identifier",
-            code="workflow_bundle_missing_workflow",
-        )
-    return str(workflow)
-
-
-def _recorded_input_paths(payload: dict[str, Any]) -> list[Path]:
-    if "input_paths" in payload:
-        return [Path(path) for path in payload["input_paths"]]
-    if "input_path" in payload:
-        return [Path(payload["input_path"])]
-    raise EngineWorkflowError(
-        "workflow bundle requires recorded input paths",
-        code="workflow_bundle_missing_inputs",
-    )
-
-
-def _required_output_paths(payload: dict[str, Any]) -> dict[str, Path]:
-    output_paths = {
-        str(label): Path(path)
-        for label, path in dict(payload.get("output_paths", {})).items()
-    }
-    if not output_paths:
-        raise EngineWorkflowError(
-            "workflow bundle requires recorded output paths",
-            code="workflow_bundle_missing_outputs",
-        )
-    missing = {label: path for label, path in output_paths.items() if not path.exists()}
-    if missing:
-        missing_payload = {label: str(path) for label, path in missing.items()}
-        raise EngineWorkflowError(
-            "workflow bundle source is missing one or more declared outputs",
-            code="workflow_bundle_missing_output",
-            details={"missing_outputs": missing_payload},
-        )
-    return output_paths
-
-
-def _step_manifest_paths(payload: dict[str, Any]) -> dict[str, Path]:
-    step_manifests = {
-        str(label): Path(path)
-        for label, path in dict(payload.get("step_manifests", {})).items()
-    }
-    missing = {
-        label: path for label, path in step_manifests.items() if not path.exists()
-    }
-    if missing:
-        missing_payload = {label: str(path) for label, path in missing.items()}
-        raise EngineWorkflowError(
-            "workflow bundle source is missing one or more step manifests",
-            code="workflow_bundle_missing_step_manifest",
-            details={"missing_step_manifests": missing_payload},
-        )
-    return step_manifests
-
-
-def _build_bundle_rerun_payload(
-    payload: dict[str, Any], *, bundle_root: Path
-) -> dict[str, object]:
-    return {
-        "workflow": _payload_workflow(payload),
-        "config": dict(payload.get("config", {})),
-        "engine_versions": dict(payload.get("engine_versions", {})),
-        "bundle_local_inputs": [
-            {
-                "source_path": str(path),
-                "relative_path": (
-                    bundle_root / "inputs" / input_label(index=index, path=path)
-                )
-                .relative_to(bundle_root)
-                .as_posix(),
-            }
-            for index, path in enumerate(_recorded_input_paths(payload), start=1)
-            if path.exists()
-        ],
-        "input_checksums": dict(payload.get("input_checksums", {})),
-        "notes": [
-            "Use the bundled input files together with this config to rerun the workflow in a new output directory.",
-            "The copied workflow manifest preserves original source paths for provenance; use this rerun ledger for bundle-local execution.",
-        ],
-    }
-
-
 def _write_bundle_report(
     path: Path,
     *,
@@ -908,4 +826,3 @@ def _require_payload_path(
                 relative_path=Path(str(value)),
             )
         )
-
