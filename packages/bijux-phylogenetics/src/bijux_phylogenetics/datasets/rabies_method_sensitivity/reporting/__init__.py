@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 import json
-import os
 from pathlib import Path
 
 from bijux_phylogenetics.render.html import write_html_report
@@ -21,10 +20,7 @@ from ..slurm import (
     RabiesMethodSensitivitySlurmStorageReport,
     RabiesMethodSensitivitySlurmTreeRetentionReport,
 )
-
-
-def _relative_bundle_path(base_path: Path, value: Path) -> str:
-    return Path(os.path.relpath(value, start=base_path.parent)).as_posix()
+from .shared import _format_float, _relative_bundle_path
 
 
 def _write_report_manifest(
@@ -786,7 +782,3 @@ def _write_report(
             ),
         ],
     )
-
-
-def _format_float(value: float) -> str:
-    return format(value, ".12g")
