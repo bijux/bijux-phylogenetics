@@ -10,7 +10,7 @@ from bijux_phylogenetics.command_line.arguments import (
 )
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.render.trait_tree_package import (
+from bijux_phylogenetics.render.annotated_trait_tree_package import (
     build_annotated_trait_tree_package,
 )
 from bijux_phylogenetics.reports import build_alignment_figure_package

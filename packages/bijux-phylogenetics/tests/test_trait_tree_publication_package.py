@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.render.trait_tree_package import (
+from bijux_phylogenetics.render.annotated_trait_tree_package import (
     build_annotated_trait_tree_package,
 )
 
