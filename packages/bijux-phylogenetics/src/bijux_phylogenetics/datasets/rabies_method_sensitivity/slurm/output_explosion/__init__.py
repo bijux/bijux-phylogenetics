@@ -12,31 +12,23 @@ from .contracts import (
 )
 from .inputs import _add_check, load_output_explosion_inputs
 from .shared import (
-    _DOMINANT_VARIANT_OUTPUT_MIB,
-    _DOMINANT_VARIANT_OUTPUT_SHARE,
     _BOOTSTRAP_HIGH_REPLICATES,
     _BOOTSTRAP_WARNING_REPLICATES,
-    _OUTPUT_HIGH_MIB,
-    _OUTPUT_WARNING_MIB,
     _POSTERIOR_HIGH_BYTES,
-    _POSTERIOR_HIGH_FILES,
     _POSTERIOR_WARNING_BYTES,
-    _POSTERIOR_WARNING_FILES,
     _REPORT_HIGH_BYTES,
     _REPORT_WARNING_BYTES,
-    _STORAGE_HIGH_MIB,
-    _STORAGE_WARNING_MIB,
     _TOTAL_OUTPUT_HIGH_MIB,
     _TOTAL_OUTPUT_WARNING_MIB,
     _TOTAL_STORAGE_HIGH_MIB,
     _TOTAL_STORAGE_WARNING_MIB,
     _TREE_HIGH_BYTES,
-    _TREE_HIGH_FILES,
     _TREE_WARNING_BYTES,
     _TREE_WARNING_FILES,
     _format_float,
     _write_tsv,
 )
+from .variant_risk import build_output_explosion_variant_rows, escalate_risk, raise_risk
 
 __all__ = [
     "RabiesMethodSensitivitySlurmOutputExplosionCheckRow",
@@ -49,6 +41,7 @@ __all__ = [
     "write_rabies_method_sensitivity_slurm_output_explosion_variants_table",
 ]
 
+
 def build_rabies_method_sensitivity_slurm_output_explosion_report(
     bundle_root: Path,
 ) -> RabiesMethodSensitivitySlurmOutputExplosionReport:
@@ -57,147 +50,24 @@ def build_rabies_method_sensitivity_slurm_output_explosion_report(
     bundle_root = loaded_inputs.bundle_root
     config = loaded_inputs.config
     configured_variant_ids = loaded_inputs.configured_variant_ids
-    job_plan_rows = loaded_inputs.job_plan_rows
-    storage_category_rows = loaded_inputs.storage_category_rows
-    storage_variant_rows = loaded_inputs.storage_variant_rows
     storage_summary = loaded_inputs.storage_summary
     checks = list(loaded_inputs.checks)
-    job_plan_by_variant = loaded_inputs.job_plan_by_variant
-    storage_variant_by_variant = loaded_inputs.storage_variant_by_variant
     storage_category_by_id = loaded_inputs.storage_category_by_id
     total_estimated_output_mib = loaded_inputs.total_estimated_output_mib
 
-    variant_rows: list[RabiesMethodSensitivitySlurmOutputExplosionVariantRow] = []
-    total_output_denom = max(1, total_estimated_output_mib)
-    for variant_id in configured_variant_ids:
-        plan_row = job_plan_by_variant.get(variant_id)
-        storage_row = storage_variant_by_variant.get(variant_id)
-        if plan_row is None or storage_row is None:
-            issues = ["planning or storage row is missing"]
-            variant_rows.append(
-                RabiesMethodSensitivitySlurmOutputExplosionVariantRow(
-                    variant_id=variant_id,
-                    risk_status="high",
-                    estimated_output_mib=0 if plan_row is None else int(plan_row["estimated_output_mib"]),
-                    estimated_storage_mib=0 if storage_row is None else int(storage_row["estimated_storage_mib"]),
-                    tree_file_count=0 if storage_row is None else int(storage_row["tree_file_count"]),
-                    tree_byte_count=0 if storage_row is None else int(storage_row["tree_byte_count"]),
-                    posterior_sample_file_count=0 if storage_row is None else int(storage_row["posterior_sample_file_count"]),
-                    posterior_sample_byte_count=0 if storage_row is None else int(storage_row["posterior_sample_byte_count"]),
-                    report_byte_count=0 if storage_row is None else int(storage_row["report_byte_count"]),
-                    output_share=0.0,
-                    issue_count=1,
-                    issues=tuple(issues),
-                )
-            )
-            continue
-
-        estimated_output_mib = int(plan_row["estimated_output_mib"])
-        estimated_storage_mib = int(storage_row["estimated_storage_mib"])
-        tree_file_count = int(storage_row["tree_file_count"])
-        tree_byte_count = int(storage_row["tree_byte_count"])
-        posterior_sample_file_count = int(storage_row["posterior_sample_file_count"])
-        posterior_sample_byte_count = int(storage_row["posterior_sample_byte_count"])
-        report_byte_count = int(storage_row["report_byte_count"])
-        output_share = round(estimated_output_mib / total_output_denom, 4)
-        issues: list[str] = []
-        severity = "low"
-
-        severity = _raise_variant_risk(
-            severity,
-            issues,
-            value=estimated_output_mib,
-            warning_threshold=_OUTPUT_WARNING_MIB,
-            high_threshold=_OUTPUT_HIGH_MIB,
-            warning_detail="estimated retained output MiB is large for one variant",
-            high_detail="estimated retained output MiB is very large for one variant",
-        )
-        severity = _raise_variant_risk(
-            severity,
-            issues,
-            value=estimated_storage_mib,
-            warning_threshold=_STORAGE_WARNING_MIB,
-            high_threshold=_STORAGE_HIGH_MIB,
-            warning_detail="estimated retained storage MiB is large for one variant",
-            high_detail="estimated retained storage MiB is very large for one variant",
-        )
-        severity = _raise_variant_risk(
-            severity,
-            issues,
-            value=tree_byte_count,
-            warning_threshold=_TREE_WARNING_BYTES,
-            high_threshold=_TREE_HIGH_BYTES,
-            warning_detail="tree artifact bytes are large enough to pressure retained storage",
-            high_detail="tree artifact bytes are large enough to dominate retained storage",
-        )
-        severity = _raise_variant_risk(
-            severity,
-            issues,
-            value=tree_file_count,
-            warning_threshold=_TREE_WARNING_FILES,
-            high_threshold=_TREE_HIGH_FILES,
-            warning_detail="tree artifact file counts suggest tree-set growth pressure",
-            high_detail="tree artifact file counts suggest a large retained tree-set burden",
-        )
-        severity = _raise_variant_risk(
-            severity,
-            issues,
-            value=posterior_sample_byte_count,
-            warning_threshold=_POSTERIOR_WARNING_BYTES,
-            high_threshold=_POSTERIOR_HIGH_BYTES,
-            warning_detail="posterior sample bytes are large enough to pressure retained storage",
-            high_detail="posterior sample bytes are large enough to dominate retained storage",
-        )
-        severity = _raise_variant_risk(
-            severity,
-            issues,
-            value=posterior_sample_file_count,
-            warning_threshold=_POSTERIOR_WARNING_FILES,
-            high_threshold=_POSTERIOR_HIGH_FILES,
-            warning_detail="posterior sample file counts suggest chain or tree-set growth pressure",
-            high_detail="posterior sample file counts suggest a very large retained chain or tree-set burden",
-        )
-        severity = _raise_variant_risk(
-            severity,
-            issues,
-            value=report_byte_count,
-            warning_threshold=_REPORT_WARNING_BYTES,
-            high_threshold=_REPORT_HIGH_BYTES,
-            warning_detail="review artifact bytes are becoming large for one variant",
-            high_detail="review artifact bytes are dominating retained storage for one variant",
-        )
-        if (
-            output_share >= _DOMINANT_VARIANT_OUTPUT_SHARE
-            and estimated_output_mib >= _DOMINANT_VARIANT_OUTPUT_MIB
-        ):
-            severity = _escalate_risk(
-                severity,
-                "warning",
-            )
-            issues.append("one variant dominates most retained output MiB")
-        variant_rows.append(
-            RabiesMethodSensitivitySlurmOutputExplosionVariantRow(
-                variant_id=variant_id,
-                risk_status=severity,
-                estimated_output_mib=estimated_output_mib,
-                estimated_storage_mib=estimated_storage_mib,
-                tree_file_count=tree_file_count,
-                tree_byte_count=tree_byte_count,
-                posterior_sample_file_count=posterior_sample_file_count,
-                posterior_sample_byte_count=posterior_sample_byte_count,
-                report_byte_count=report_byte_count,
-                output_share=output_share,
-                issue_count=len(issues),
-                issues=tuple(issues),
-            )
-        )
+    variant_rows = build_output_explosion_variant_rows(
+        configured_variant_ids=configured_variant_ids,
+        job_plan_by_variant=loaded_inputs.job_plan_by_variant,
+        storage_variant_by_variant=loaded_inputs.storage_variant_by_variant,
+        total_estimated_output_mib=total_estimated_output_mib,
+    )
 
     storage_trees_row = storage_category_by_id["trees"]
     storage_posterior_row = storage_category_by_id["posterior_samples"]
     storage_reports_row = storage_category_by_id["reports"]
     global_issues: list[str] = []
     global_severity = "low"
-    global_severity = _raise_variant_risk(
+    global_severity = raise_risk(
         global_severity,
         global_issues,
         value=total_estimated_output_mib,
@@ -206,7 +76,7 @@ def build_rabies_method_sensitivity_slurm_output_explosion_report(
         warning_detail="total retained output MiB suggests scaling pressure",
         high_detail="total retained output MiB suggests a severe retained-output burden",
     )
-    global_severity = _raise_variant_risk(
+    global_severity = raise_risk(
         global_severity,
         global_issues,
         value=int(storage_summary["total_estimated_storage_mib"]),
@@ -215,7 +85,7 @@ def build_rabies_method_sensitivity_slurm_output_explosion_report(
         warning_detail="total retained storage MiB suggests scaling pressure",
         high_detail="total retained storage MiB suggests severe retained-storage pressure",
     )
-    global_severity = _raise_variant_risk(
+    global_severity = raise_risk(
         global_severity,
         global_issues,
         value=int(storage_trees_row["total_byte_count"]),
@@ -224,7 +94,7 @@ def build_rabies_method_sensitivity_slurm_output_explosion_report(
         warning_detail="total tree artifact bytes are large enough to pressure retained storage",
         high_detail="total tree artifact bytes are dominating retained storage",
     )
-    global_severity = _raise_variant_risk(
+    global_severity = raise_risk(
         global_severity,
         global_issues,
         value=int(storage_posterior_row["total_byte_count"]),
@@ -233,7 +103,7 @@ def build_rabies_method_sensitivity_slurm_output_explosion_report(
         warning_detail="posterior sample bytes are becoming large enough to pressure retained storage",
         high_detail="posterior sample bytes are dominating retained storage",
     )
-    global_severity = _raise_variant_risk(
+    global_severity = raise_risk(
         global_severity,
         global_issues,
         value=int(storage_reports_row["total_byte_count"]),
@@ -248,7 +118,7 @@ def build_rabies_method_sensitivity_slurm_output_explosion_report(
         bootstrap_replicates >= _BOOTSTRAP_HIGH_REPLICATES
         and total_tree_file_count >= _TREE_WARNING_FILES
     ):
-        global_severity = _escalate_risk(global_severity, "high")
+        global_severity = escalate_risk(global_severity, "high")
         global_issues.append(
             "bootstrap replicates and retained tree-file counts together suggest a severe tree-output explosion risk"
         )
@@ -256,7 +126,7 @@ def build_rabies_method_sensitivity_slurm_output_explosion_report(
         bootstrap_replicates >= _BOOTSTRAP_WARNING_REPLICATES
         and total_tree_file_count >= _TREE_WARNING_FILES
     ):
-        global_severity = _escalate_risk(global_severity, "warning")
+        global_severity = escalate_risk(global_severity, "warning")
         global_issues.append(
             "bootstrap replicates and retained tree-file counts together suggest tree-output growth pressure"
         )
@@ -507,27 +377,3 @@ def _derive_overall_risk_status(
     if warning_variant_count > 0 or global_severity == "warning":
         return "warning"
     return "low"
-
-
-def _raise_variant_risk(
-    current_severity: str,
-    issues: list[str],
-    *,
-    value: int,
-    warning_threshold: int,
-    high_threshold: int,
-    warning_detail: str,
-    high_detail: str,
-) -> str:
-    if value >= high_threshold:
-        issues.append(high_detail)
-        return _escalate_risk(current_severity, "high")
-    if value >= warning_threshold:
-        issues.append(warning_detail)
-        return _escalate_risk(current_severity, "warning")
-    return current_severity
-
-
-def _escalate_risk(current_severity: str, next_severity: str) -> str:
-    order = {"low": 0, "warning": 1, "high": 2}
-    return next_severity if order[next_severity] > order[current_severity] else current_severity
