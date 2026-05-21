@@ -2,15 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.phylo.pruning import drop_tree_taxa
-from bijux_phylogenetics.datasets.study_inputs import (
-    link_tree_to_traits,
-    validate_traits_table,
-)
-from bijux_phylogenetics.io.fasta import load_fasta_alignment, write_fasta_alignment
-from bijux_phylogenetics.io.newick import write_newick
-
 from ..models import (
     CatarrhineDataQualityStressPanelDataset,
     CatarrhineDataQualityStressPanelWorkflowReport,
@@ -18,8 +9,8 @@ from ..models import (
     TraitDuplicateResolution,
 )
 from ..panel import TREE_BRANCH_FLOOR
+from .cleaned_subset import assemble_cleaned_subset
 from .sequence_processing import prepare_sequence_surfaces
-from .shared import apply_branch_length_floor
 from .trait_processing import prepare_trait_surfaces
 
 
@@ -44,46 +35,14 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
         | set(trait_surfaces.missing_required_trait_taxa)
     )
 
-    cleaned_trait_rows = [
-        dict(row)
-        for row in trait_surfaces.cleaned_trait_candidates
-        if row["taxon"] not in excluded_taxa
-        and all(row[trait] for trait in dataset.required_traits)
-    ]
-    cleaned_traits_path = write_taxon_rows(
-        assembled_root / "cleaned-traits.csv",
-        columns=list(cleaned_trait_rows[0].keys()),
-        rows=cleaned_trait_rows,
+    cleaned_subset = assemble_cleaned_subset(
+        dataset=dataset,
+        assembled_root=assembled_root,
+        excluded_taxa=excluded_taxa,
+        cleaned_trait_candidates=trait_surfaces.cleaned_trait_candidates,
+        validate_cleaned_tree=sequence_surfaces.validate_cleaned_tree,
+        validate_cleaned_alignment=sequence_surfaces.validate_cleaned_alignment,
     )
-
-    cleaned_tree, _ = drop_tree_taxa(dataset.raw_tree_path, excluded_taxa)
-    repaired_branch_nodes = apply_branch_length_floor(
-        cleaned_tree.root,
-        floor=TREE_BRANCH_FLOOR,
-    )
-    cleaned_tree_path = write_newick(assembled_root / "cleaned-tree.nwk", cleaned_tree)
-
-    cleaned_alignment_records = [
-        record
-        for record in load_fasta_alignment(dataset.raw_alignment_path)
-        if record.identifier not in excluded_taxa
-    ]
-    cleaned_alignment_path = write_fasta_alignment(
-        assembled_root / "cleaned-alignment.fasta",
-        cleaned_alignment_records,
-    )
-
-    cleaned_trait_validation = validate_traits_table(cleaned_traits_path)
-    cleaned_tree_validation = sequence_surfaces.validate_cleaned_tree(cleaned_tree_path)
-    cleaned_alignment_validation = sequence_surfaces.validate_cleaned_alignment(
-        cleaned_alignment_path
-    )
-    cleaned_linkage = link_tree_to_traits(
-        cleaned_tree_path,
-        cleaned_traits_path,
-        strict=True,
-    )
-    cleaned_taxa = sorted(cleaned_linkage.usable_taxa)
 
     repair_actions = build_repair_actions(
         raw_sequence_input_repair=sequence_surfaces.raw_sequence_input_repair,
@@ -94,7 +53,7 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
         missing_required_trait_taxa=trait_surfaces.missing_required_trait_taxa,
         sequence_outlier_taxa=sequence_surfaces.sequence_outlier_taxa,
         tree_outlier_taxa=sequence_surfaces.tree_outlier_taxa,
-        repaired_branch_nodes=repaired_branch_nodes,
+        repaired_branch_nodes=cleaned_subset.repaired_branch_nodes,
     )
     return CatarrhineDataQualityStressPanelWorkflowReport(
         dataset=dataset,
@@ -113,20 +72,20 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
         raw_tree_validation=sequence_surfaces.raw_tree_validation,
         trait_duplicates=trait_surfaces.trait_duplicates,
         missing_traits=trait_surfaces.missing_traits,
-        cleaned_trait_validation=cleaned_trait_validation,
-        cleaned_tree_validation=cleaned_tree_validation,
-        cleaned_linkage=cleaned_linkage,
-        cleaned_alignment_validation=cleaned_alignment_validation,
-        cleaned_alignment_records=cleaned_alignment_records,
+        cleaned_trait_validation=cleaned_subset.cleaned_trait_validation,
+        cleaned_tree_validation=cleaned_subset.cleaned_tree_validation,
+        cleaned_linkage=cleaned_subset.cleaned_linkage,
+        cleaned_alignment_validation=cleaned_subset.cleaned_alignment_validation,
+        cleaned_alignment_records=cleaned_subset.cleaned_alignment_records,
         repaired_sequence_input_path=sequence_surfaces.repaired_sequence_input_path,
         prepared_coding_sequences_path=sequence_surfaces.prepared_coding_sequences_path,
-        cleaned_tree_path=cleaned_tree_path,
-        cleaned_traits_path=cleaned_traits_path,
-        cleaned_alignment_path=cleaned_alignment_path,
-        cleaned_taxa=cleaned_taxa,
+        cleaned_tree_path=cleaned_subset.cleaned_tree_path,
+        cleaned_traits_path=cleaned_subset.cleaned_traits_path,
+        cleaned_alignment_path=cleaned_subset.cleaned_alignment_path,
+        cleaned_taxa=cleaned_subset.cleaned_taxa,
         dropped_taxa=excluded_taxa,
         repair_actions=repair_actions,
-        repaired_branch_nodes=repaired_branch_nodes,
+        repaired_branch_nodes=cleaned_subset.repaired_branch_nodes,
     )
 def build_repair_actions(
     *,
