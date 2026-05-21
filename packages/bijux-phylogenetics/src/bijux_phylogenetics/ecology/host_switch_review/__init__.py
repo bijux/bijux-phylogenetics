@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-import csv
 import json
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralReport,
     reconstruct_discrete_ancestral_states,
-)
-from bijux_phylogenetics.ancestral.discrete.state_resolution import (
-    resolve_clade_consensus_state,
 )
 from bijux_phylogenetics.comparative.discrete_evolution import (
     audit_discrete_state_coding,
@@ -26,6 +22,14 @@ from .contracts import (
     HostSwitchSummary,
     HostSwitchingReport,
     UnsupportedHostSwitchClaimRow,
+)
+from .shared import (
+    format_optional_float,
+    load_allowed_host_transitions,
+    node_signature,
+    resolve_host_state,
+    stable_float,
+    transition_certainty_class,
 )
 
 
@@ -61,7 +65,7 @@ def summarize_host_switching(
     allowed_transition_pairs: list[tuple[str, str]] | None = None
     constrained_report: DiscreteAncestralReport | None = None
     if constraint_path is not None:
-        allowed_transition_pairs = _load_allowed_host_transitions(
+        allowed_transition_pairs = load_allowed_host_transitions(
             constraint_path,
             observed_hosts=unconstrained_report.observed_states,
         )
@@ -199,13 +203,13 @@ def write_host_switch_summary_table(
                 "uncertain_host_switch_count": str(summary.uncertain_host_switch_count),
                 "allowed_transition_count": str(summary.allowed_transition_count),
                 "forbidden_transition_count": str(summary.forbidden_transition_count),
-                "constrained_log_likelihood": _format_optional_float(
+                "constrained_log_likelihood": format_optional_float(
                     summary.constrained_log_likelihood
                 ),
                 "unconstrained_log_likelihood": str(
                     summary.unconstrained_log_likelihood
                 ),
-                "constrained_aic": _format_optional_float(summary.constrained_aic),
+                "constrained_aic": format_optional_float(summary.constrained_aic),
                 "unconstrained_aic": str(summary.unconstrained_aic),
                 "preferred_constraint": summary.preferred_constraint,
                 "unsupported_switch_claim_count": str(
@@ -286,7 +290,7 @@ def write_host_switch_branch_table(
                 "parent_node": row.parent_node,
                 "child_node": row.child_node,
                 "child_descendant_taxa": ",".join(row.child_descendant_taxa),
-                "branch_length": _format_optional_float(row.branch_length),
+                "branch_length": format_optional_float(row.branch_length),
                 "parent_most_likely_host": row.parent_most_likely_host,
                 "child_most_likely_host": row.child_most_likely_host,
                 "parent_host_set": ",".join(row.parent_host_set),
@@ -443,7 +447,7 @@ def _build_node_rows(report: DiscreteAncestralReport) -> list[HostStateNodeRow]:
             descendant_taxa=list(estimate.descendant_taxa),
             most_likely_host=estimate.most_likely_state,
             host_probabilities=dict(sorted(estimate.state_probabilities.items())),
-            confidence=_stable_float(estimate.confidence),
+            confidence=stable_float(estimate.confidence),
             ambiguous=estimate.ambiguous,
             is_root=estimate.node == root_node,
         )
@@ -463,16 +467,16 @@ def _build_branch_rows(
     branch_rows: list[HostSwitchBranchRow] = []
 
     def visit(node) -> None:
-        parent_estimate = estimate_by_node[_node_signature(node)]
+        parent_estimate = estimate_by_node[node_signature(node)]
         for child in node.children:
-            child_estimate = estimate_by_node[_node_signature(child)]
-            parent_host = _resolve_host_state(
+            child_estimate = estimate_by_node[node_signature(child)]
+            parent_host = resolve_host_state(
                 descendant_taxa=parent_estimate.descendant_taxa,
                 candidate_hosts=parent_estimate.state_set,
                 observed_hosts_by_taxon=observed_hosts_by_taxon,
                 fallback_host=parent_estimate.most_likely_state,
             )
-            child_host = _resolve_host_state(
+            child_host = resolve_host_state(
                 descendant_taxa=child_estimate.descendant_taxa,
                 candidate_hosts=child_estimate.state_set,
                 observed_hosts_by_taxon=observed_hosts_by_taxon,
@@ -497,14 +501,14 @@ def _build_branch_rows(
                     overlapping_hosts=overlapping_hosts,
                     changed=changed,
                     transition=transition,
-                    certainty_class=_transition_certainty_class(
+                    certainty_class=transition_certainty_class(
                         changed=changed,
                         overlapping_hosts=overlapping_hosts,
                         parent_host_set=parent_estimate.state_set,
                         child_host_set=child_estimate.state_set,
                     ),
-                    parent_confidence=_stable_float(parent_estimate.confidence),
-                    child_confidence=_stable_float(child_estimate.confidence),
+                    parent_confidence=stable_float(parent_estimate.confidence),
+                    child_confidence=stable_float(child_estimate.confidence),
                     transition_allowed=(
                         not changed
                         or (parent_host, child_host) in allowed_transition_pairs
@@ -580,11 +584,11 @@ def _build_fit_row(
         constraint_mode=constraint_mode,
         model=report.model,
         analyzed_taxon_count=report.taxon_count,
-        log_likelihood=_stable_float(report.log_likelihood),
+        log_likelihood=stable_float(report.log_likelihood),
         parameter_count=report.parameter_count,
-        aic=_stable_float(report.aic),
+        aic=stable_float(report.aic),
         root_host=root_estimate.most_likely_state,
-        root_confidence=_stable_float(root_estimate.confidence),
+        root_confidence=stable_float(root_estimate.confidence),
     )
 
 
@@ -649,23 +653,6 @@ def _build_exclusion_rows(audit) -> list[HostSwitchExclusionRow]:
         for row in audit.rows
         if not row.included
     ]
-
-
-def _resolve_host_state(
-    *,
-    descendant_taxa: list[str],
-    candidate_hosts: list[str],
-    observed_hosts_by_taxon: dict[str, str],
-    fallback_host: str,
-) -> str:
-    return resolve_clade_consensus_state(
-        clade_taxa=descendant_taxa,
-        candidate_states=candidate_hosts,
-        observed_states_by_taxon=observed_hosts_by_taxon,
-        fallback_state=fallback_host,
-    )
-
-
 def _build_summary(
     *,
     active_report: DiscreteAncestralReport,
@@ -722,136 +709,23 @@ def _build_summary(
         allowed_transition_count=allowed_transition_count,
         forbidden_transition_count=forbidden_transition_count,
         constrained_log_likelihood=(
-            _stable_float(constrained_report.log_likelihood)
+            stable_float(constrained_report.log_likelihood)
             if constrained_report is not None
             and constrained_report.log_likelihood is not None
             else None
         ),
-        unconstrained_log_likelihood=_stable_float(
+        unconstrained_log_likelihood=stable_float(
             unconstrained_report.log_likelihood or 0.0
         ),
         constrained_aic=(
-            _stable_float(constrained_report.aic)
+            stable_float(constrained_report.aic)
             if constrained_report is not None and constrained_report.aic is not None
             else None
         ),
-        unconstrained_aic=_stable_float(unconstrained_report.aic or 0.0),
+        unconstrained_aic=stable_float(unconstrained_report.aic or 0.0),
         preferred_constraint=preferred_constraint,
         unsupported_switch_claim_count=len(unsupported_claim_rows),
         root_host=root_estimate.most_likely_state,
-        root_confidence=_stable_float(root_estimate.confidence),
+        root_confidence=stable_float(root_estimate.confidence),
         warning_count=len(warnings),
     )
-
-
-def _load_allowed_host_transitions(
-    path: Path,
-    *,
-    observed_hosts: list[str],
-) -> list[tuple[str, str]]:
-    if not path.exists():
-        raise FileNotFoundError(f"host-transition constraint file not found: {path}")
-    raw_text = path.read_text(encoding="utf-8")
-    sample = raw_text[:1024]
-    try:
-        dialect = csv.Sniffer().sniff(sample, delimiters=",\t")
-    except csv.Error:
-        dialect = csv.excel_tab if "\t" in sample else csv.excel
-    reader = csv.DictReader(raw_text.splitlines(), dialect=dialect)
-    if reader.fieldnames is None:
-        raise ValueError("host-transition constraint file must contain a header row")
-    required = {"source_host", "target_host"}
-    if not required.issubset(reader.fieldnames):
-        raise ValueError(
-            "host-transition constraint file must contain source_host and target_host columns"
-        )
-    allowed_field = (
-        "transition_allowed" if "transition_allowed" in reader.fieldnames else None
-    )
-    observed_host_set = set(observed_hosts)
-    allowed_pairs: list[tuple[str, str]] = []
-    for row in reader:
-        source_host = (row.get("source_host") or "").strip()
-        target_host = (row.get("target_host") or "").strip()
-        if not source_host or not target_host:
-            raise ValueError(
-                "host-transition constraint rows must name both source_host and target_host"
-            )
-        if source_host == target_host:
-            raise ValueError(
-                "host-transition constraint rows must connect distinct hosts"
-            )
-        if source_host not in observed_host_set:
-            raise ValueError(
-                "host-transition source host is not present in the analyzed host vocabulary: "
-                f"{source_host}"
-            )
-        if target_host not in observed_host_set:
-            raise ValueError(
-                "host-transition target host is not present in the analyzed host vocabulary: "
-                f"{target_host}"
-            )
-        if allowed_field is not None and not _parse_truthy_cell(
-            row.get(allowed_field, "")
-        ):
-            continue
-        allowed_pairs.append((source_host, target_host))
-    if not allowed_pairs:
-        raise ValueError(
-            "host-transition constraint file must allow at least one directed host transition"
-        )
-    return sorted(set(allowed_pairs))
-
-
-def _parse_truthy_cell(raw: str) -> bool:
-    normalized = raw.strip().lower()
-    if normalized in {"", "0", "false", "no", "forbidden"}:
-        return False
-    if normalized in {"1", "true", "yes", "allowed", "x"}:
-        return True
-    raise ValueError(
-        "host-transition constraint transition_allowed cells must be one of "
-        "0,1,false,true,no,yes,forbidden,allowed,x"
-    )
-
-
-def _transition_certainty_class(
-    *,
-    changed: bool,
-    overlapping_hosts: list[str],
-    parent_host_set: list[str],
-    child_host_set: list[str],
-) -> str:
-    if not changed:
-        return "no_switch"
-    if overlapping_hosts:
-        return "uncertain_switch"
-    if len(parent_host_set) == 1 and len(child_host_set) == 1:
-        return "certain_switch"
-    return "uncertain_switch"
-
-
-def _node_signature(node) -> str:
-    taxa = sorted(_node_descendant_taxa(node))
-    if taxa:
-        return "|".join(taxa)
-    return node.name or "<unnamed>"
-
-
-def _node_descendant_taxa(node) -> list[str]:
-    if not node.children:
-        return [node.name] if node.name is not None else []
-    taxa: list[str] = []
-    for child in node.children:
-        taxa.extend(_node_descendant_taxa(child))
-    return taxa
-
-
-def _stable_float(value: float) -> float:
-    return float(format(round(value, 15), ".15g"))
-
-
-def _format_optional_float(value: float | None) -> str:
-    if value is None:
-        return ""
-    return str(value)
