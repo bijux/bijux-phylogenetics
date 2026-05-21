@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Never
 
 from bijux_phylogenetics.comparative._math import invert_matrix, log_determinant
 from bijux_phylogenetics.comparative.common import (
@@ -137,7 +138,7 @@ def summarize_brownian_covariance_pgls(
 def _reraise_brownian_input_error(
     tree_path: Path,
     error: ComparativeMethodError,
-) -> None:
+) -> Never:
     details = error.details or {}
     failure_reason = details.get("failure_reason")
     evidence = details.get("evidence", {})

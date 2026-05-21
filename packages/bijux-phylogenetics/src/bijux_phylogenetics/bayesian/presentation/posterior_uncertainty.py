@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 from pathlib import Path
+from typing import TypeAlias
 
 from bijux_phylogenetics.bayesian.beast.logs import (
     assess_beast_burnin_sensitivity,
@@ -29,8 +30,9 @@ from bijux_phylogenetics.trees.uncertainty import (
     build_tree_set_uncertainty_figure_package,
 )
 
-
-PosteriorUncertaintyFigurePackageResult = TreeSetUncertaintyFigurePackageResult
+PosteriorUncertaintyFigurePackageResult: TypeAlias = (
+    TreeSetUncertaintyFigurePackageResult
+)
 
 
 @dataclass(slots=True)

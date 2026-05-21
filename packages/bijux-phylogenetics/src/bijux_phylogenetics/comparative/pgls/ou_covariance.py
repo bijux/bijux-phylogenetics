@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 from pathlib import Path
+from typing import Never
 
 from bijux_phylogenetics.comparative._math import (
     invert_matrix,
@@ -490,7 +491,7 @@ def _fit_ou_covariance_model(
     )
 
 
-def _reraise_ou_input_error(tree_path: Path, error: ComparativeMethodError) -> None:
+def _reraise_ou_input_error(tree_path: Path, error: ComparativeMethodError) -> Never:
     details = error.details or {}
     failure_reason = details.get("failure_reason")
     evidence = details.get("evidence", {})

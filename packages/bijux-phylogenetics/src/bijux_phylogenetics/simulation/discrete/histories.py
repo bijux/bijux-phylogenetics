@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 import random
+from typing import TYPE_CHECKING
 
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+
+if TYPE_CHECKING:
+    from ..contracts import DiscreteHistoryRateRow, DiscreteTraitSimulationReport
 
 
 def _quantile(values: list[float], probability: float) -> float:
@@ -27,7 +31,9 @@ def _quantile(values: list[float], probability: float) -> float:
     return _round_float(interpolated)
 
 
-def _normalize_rate_rows(*, states: tuple[str, ...], rate_rows: list) -> list:
+def _normalize_rate_rows(
+    *, states: tuple[str, ...], rate_rows: list[DiscreteHistoryRateRow]
+) -> list[DiscreteHistoryRateRow]:
     from .._statistics import _round_float
     from ..contracts import DiscreteHistoryRateRow
 
@@ -78,7 +84,7 @@ def _sample_discrete_state(
 def _build_rate_lookup(
     *,
     states: tuple[str, ...],
-    rate_rows: list,
+    rate_rows: list[DiscreteHistoryRateRow],
 ) -> dict[str, dict[str, float]]:
     lookup = {
         source_state: {
@@ -183,7 +189,7 @@ def _simulate_discrete_history_once(
     tree_path: Path,
     model: str,
     states: tuple[str, ...],
-    rate_rows: list,
+    rate_rows: list[DiscreteHistoryRateRow],
     transition_rate: float | None,
     fixed_root_state: str | None,
     root_state_probabilities: dict[str, float],
@@ -367,7 +373,7 @@ def _transform_discrete_history_tree(
 
 
 def _summarize_discrete_history_collection(
-    simulations: list,
+    simulations: list[DiscreteTraitSimulationReport],
     *,
     states: tuple[str, ...],
 ):
@@ -456,7 +462,7 @@ def simulate_discrete_histories(
     tree_path: Path,
     *,
     states: list[str],
-    rate_rows: list,
+    rate_rows: list[DiscreteHistoryRateRow],
     root_state: str | None = None,
     root_state_probabilities: dict[str, float] | None = None,
     transform: str | None = None,

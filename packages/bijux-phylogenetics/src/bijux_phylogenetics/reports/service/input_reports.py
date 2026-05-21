@@ -32,7 +32,11 @@ from bijux_phylogenetics.render.html import write_html_report
 from .artifacts import report_sidecar_path, section, write_machine_manifest
 from .ledger import build_input_ledger, serialize_input_ledger, sha256
 from .linkage import annotate_tree_against_table
-from .models import AlignmentReportBuildResult, ReportBuildResult
+from .models import (
+    AlignmentReportBuildResult,
+    ReportBuildResult,
+    ReportInputLedgerEntry,
+)
 from .summary import build_machine_manifest, report_summary_and_limitations
 
 
@@ -676,7 +680,7 @@ def render_phylogenetics_report(
     )
     machine_manifest["reviewer_summary"] = reviewer_summary
     machine_manifest["limitations"] = limitations
-    input_ledger: list = []
+    input_ledger: list[ReportInputLedgerEntry] = []
     machine_manifest["input_ledger"] = serialize_input_ledger(input_ledger)
     machine_manifest_path = write_machine_manifest(
         report_sidecar_path(out_path), machine_manifest

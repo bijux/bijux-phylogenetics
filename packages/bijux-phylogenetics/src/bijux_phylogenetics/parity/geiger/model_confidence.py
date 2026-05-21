@@ -261,10 +261,12 @@ def _confidence_surface(
                 "one finite AICc surface for Akaike-weight review"
             ),
         )
-    raw_weights = {
-        row["model"]: math.exp(-0.5 * _optional_float(row.get("delta_aicc")))  # type: ignore[arg-type]
-        for row in comparable_rows
-    }
+    raw_weights = {}
+    for row in comparable_rows:
+        delta_aicc = _optional_float(row.get("delta_aicc"))
+        if delta_aicc is None:
+            continue
+        raw_weights[row["model"]] = math.exp(-0.5 * delta_aicc)
     weight_total = sum(raw_weights.values())
     weights = {
         model: (raw_weight / weight_total if weight_total else 0.0)

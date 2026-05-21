@@ -1,5 +1,7 @@
 """Runtime identity, error, and result contracts for Bijux Phylogenetics."""
 
+from typing import Any
+
 __all__ = [
     "AlignmentTaxonMismatchError",
     "AncestralReconstructionError",
@@ -85,9 +87,9 @@ def __getattr__(name: str):
             TreeParseError,
             TreeRootingError,
             UnnamedTipError,
+            UnrootedTreeError,
             UnsupportedDistanceTreeMethodError,
             UnsupportedTreeFormatError,
-            UnrootedTreeError,
             WorkflowBudgetError,
         )
 
@@ -137,7 +139,7 @@ def __getattr__(name: str):
             PackageIdentity,
         )
 
-        exports = {
+        exports: dict[str, Any] = {
             "CLI_ALIASES": CLI_ALIASES,
             "CLI_NAME": CLI_NAME,
             "IDENTITY": IDENTITY,
@@ -155,7 +157,7 @@ def __getattr__(name: str):
     }:
         from .results import CommandResult, build_command_result, build_error_result
 
-        exports = {
+        exports: dict[str, Any] = {
             "CommandResult": CommandResult,
             "build_command_result": build_command_result,
             "build_error_result": build_error_result,
@@ -174,7 +176,7 @@ def __getattr__(name: str):
             explanation_payload,
         )
 
-        exports = {
+        exports: dict[str, Any] = {
             "ScientificFailureExplanation": ScientificFailureExplanation,
             "explain_inference_workflow_failure": explain_inference_workflow_failure,
             "explain_phylogenetics_error": explain_phylogenetics_error,

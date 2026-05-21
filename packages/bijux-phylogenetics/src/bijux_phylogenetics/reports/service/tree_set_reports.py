@@ -128,14 +128,12 @@ def render_tree_uncertainty_report(
             methods_report,
         )
         limitations = sorted(
-            dict.fromkeys(
-                [
-                    "consensus support and topology summaries describe the supplied tree set and should not be treated as direct proof of one true history",
-                    "alternative rooted modes, unstable taxa, and conflict-prone clades must remain part of interpretation instead of being collapsed into the consensus tree alone",
-                    *methods_summary_result.warnings,
-                    *([scaled_report_note["reason"]] if scaled_report_mode else []),
-                ]
-            )
+            {
+                "consensus support and topology summaries describe the supplied tree set and should not be treated as direct proof of one true history",
+                "alternative rooted modes, unstable taxa, and conflict-prone clades must remain part of interpretation instead of being collapsed into the consensus tree alone",
+                *methods_summary_result.warnings,
+                *([str(scaled_report_note["reason"])] if scaled_report_mode else []),
+            }
         )
         preview_limit = 5
         clade_frequency_rows, clade_frequency_truncated = truncate_report_rows(
