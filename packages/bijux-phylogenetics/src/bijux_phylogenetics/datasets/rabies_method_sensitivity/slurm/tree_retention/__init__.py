@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-import csv
 import gzip
-import json
 from math import ceil
 from pathlib import Path
 
@@ -12,6 +10,19 @@ from .contracts import (
     RabiesMethodSensitivitySlurmTreeRetentionCheckRow,
     RabiesMethodSensitivitySlurmTreeRetentionFileRow,
     RabiesMethodSensitivitySlurmTreeRetentionReport,
+)
+from .inputs import _add_check, load_tree_retention_inputs
+from .shared import (
+    _COMPRESSED_SUFFIXES,
+    _COMPRESSION_RECOMMENDED_BYTES,
+    _COMPRESSION_RECOMMENDED_TREE_COUNT,
+    _COMPRESSION_REQUIRED_BYTES,
+    _COMPRESSION_REQUIRED_TREE_COUNT,
+    _THINNING_RECOMMENDED_TREE_COUNT,
+    _THINNING_REQUIRED_TREE_COUNT,
+    _THINNING_TARGET_TREE_COUNT,
+    _TREE_FILE_SUFFIXES,
+    _write_tsv,
 )
 
 __all__ = [
@@ -25,84 +36,25 @@ __all__ = [
     "write_rabies_method_sensitivity_slurm_tree_retention_summary_json",
 ]
 
-_CONFIG_FILENAME = "workflow-config.resolved.json"
-_SLURM_STORAGE_CATEGORIES_FILENAME = "slurm-storage-categories.tsv"
-_SLURM_OUTPUT_EXPLOSION_SUMMARY_FILENAME = "slurm-output-explosion-report.json"
-_MEBIBYTE = 1024 * 1024
-_TREE_FILE_SUFFIXES = {
-    ".boottrees",
-    ".contree",
-    ".newick",
-    ".nwk",
-    ".phy",
-    ".tree",
-    ".treefile",
-    ".trees",
-    ".tre",
-}
-_COMPRESSED_SUFFIXES = {".bz2", ".gz", ".xz"}
-_THINNING_RECOMMENDED_TREE_COUNT = 2_000
-_THINNING_REQUIRED_TREE_COUNT = 10_000
-_THINNING_TARGET_TREE_COUNT = 1_000
-_COMPRESSION_RECOMMENDED_TREE_COUNT = 2_000
-_COMPRESSION_REQUIRED_TREE_COUNT = 10_000
-_COMPRESSION_RECOMMENDED_BYTES = 4 * _MEBIBYTE
-_COMPRESSION_REQUIRED_BYTES = 64 * _MEBIBYTE
-
 def build_rabies_method_sensitivity_slurm_tree_retention_report(
     bundle_root: Path,
 ) -> RabiesMethodSensitivitySlurmTreeRetentionReport:
     """Derive safe thinning and compression policies for retained tree-bearing files."""
-    bundle_root = bundle_root.resolve()
-    config = _load_json(bundle_root / _CONFIG_FILENAME)
-    storage_category_rows = _read_tsv_rows(bundle_root / _SLURM_STORAGE_CATEGORIES_FILENAME)
-    output_explosion_summary = _load_json(
-        bundle_root / _SLURM_OUTPUT_EXPLOSION_SUMMARY_FILENAME
-    )
-    checks: list[RabiesMethodSensitivitySlurmTreeRetentionCheckRow] = []
-
-    def add_check(
-        check_id: str,
-        *,
-        surface: str,
-        condition: bool,
-        expected: object,
-        observed: object,
-        detail: str,
-    ) -> None:
-        checks.append(
-            RabiesMethodSensitivitySlurmTreeRetentionCheckRow(
-                check_id=check_id,
-                surface=surface,
-                status="passed" if condition else "failed",
-                expected="" if expected is None else str(expected),
-                observed="" if observed is None else str(observed),
-                detail=detail,
-            )
-        )
-
-    configured_variant_ids = sorted(
-        str(row["variant_id"]) for row in list(config.get("variants", []))
-    )
-    storage_category_by_id = {
-        str(row["category_id"]): row for row in storage_category_rows
-    }
-    add_check(
-        "storage:category-coverage",
-        surface="storage",
-        condition={"logs", "outputs", "posterior_samples", "reports", "trees"}
-        == set(storage_category_by_id),
-        expected=sorted(["logs", "outputs", "posterior_samples", "reports", "trees"]),
-        observed=sorted(storage_category_by_id),
-        detail="tree-retention policy reads the explicit storage-category surface",
-    )
+    loaded_inputs = load_tree_retention_inputs(bundle_root)
+    bundle_root = loaded_inputs.bundle_root
+    config = loaded_inputs.config
+    configured_variant_ids = loaded_inputs.configured_variant_ids
+    output_explosion_summary = loaded_inputs.output_explosion_summary
+    storage_category_by_id = loaded_inputs.storage_category_by_id
+    checks = list(loaded_inputs.checks)
 
     file_rows = tuple(
         _build_file_row(bundle_root=bundle_root, relative_path=relative_path)
         for relative_path in _iter_tree_relative_paths(bundle_root)
     )
     observed_variant_ids = sorted({row.variant_id for row in file_rows})
-    add_check(
+    _add_check(
+        checks,
         "tree-files:variant-coverage",
         surface="tree-files",
         condition=observed_variant_ids == configured_variant_ids,
@@ -132,7 +84,8 @@ def build_rabies_method_sensitivity_slurm_tree_retention_report(
     compression_required_file_count = sum(
         1 for row in file_rows if row.compression_policy == "compress_required"
     )
-    add_check(
+    _add_check(
+        checks,
         "storage:tree-file-count",
         surface="storage",
         condition=int(storage_category_by_id["trees"]["total_file_count"])
@@ -141,7 +94,8 @@ def build_rabies_method_sensitivity_slurm_tree_retention_report(
         observed=tree_artifact_file_count,
         detail="storage tree file count matches the inspected tree-artifact files",
     )
-    add_check(
+    _add_check(
+        checks,
         "storage:tree-byte-count",
         surface="storage",
         condition=int(storage_category_by_id["trees"]["total_byte_count"])
@@ -154,7 +108,8 @@ def build_rabies_method_sensitivity_slurm_tree_retention_report(
         ),
         detail="storage tree byte count matches the inspected tree-artifact files",
     )
-    add_check(
+    _add_check(
+        checks,
         "storage:posterior-file-count",
         surface="storage",
         condition=int(storage_category_by_id["posterior_samples"]["total_file_count"])
@@ -163,7 +118,8 @@ def build_rabies_method_sensitivity_slurm_tree_retention_report(
         observed=posterior_sample_file_count,
         detail="posterior-sample file count matches the inspected tree-bearing sample files",
     )
-    add_check(
+    _add_check(
+        checks,
         "storage:posterior-byte-count",
         surface="storage",
         condition=int(storage_category_by_id["posterior_samples"]["total_byte_count"])
@@ -180,7 +136,8 @@ def build_rabies_method_sensitivity_slurm_tree_retention_report(
         ),
         detail="posterior-sample byte count matches the inspected tree-bearing sample files",
     )
-    add_check(
+    _add_check(
+        checks,
         "output-explosion:tree-bytes",
         surface="output-explosion",
         condition=int(output_explosion_summary["total_tree_byte_count"])
@@ -193,7 +150,8 @@ def build_rabies_method_sensitivity_slurm_tree_retention_report(
         ),
         detail="output-explosion tree bytes match the tree-retention inspection surface",
     )
-    add_check(
+    _add_check(
+        checks,
         "output-explosion:posterior-bytes",
         surface="output-explosion",
         condition=int(output_explosion_summary["total_posterior_sample_byte_count"])
@@ -228,7 +186,8 @@ def build_rabies_method_sensitivity_slurm_tree_retention_report(
         global_issues.append(
             "no retained posterior tree samples were found, so compression remains a forward-looking policy"
         )
-    add_check(
+    _add_check(
+        checks,
         "policy-summary:overall-status",
         surface="policy-summary",
         condition=overall_policy_status
@@ -592,28 +551,3 @@ def _is_tree_bearing_file(relative_path: Path) -> bool:
     if terminal_suffix in _COMPRESSED_SUFFIXES and len(suffixes) >= 2:
         terminal_suffix = suffixes[-2].lower()
     return terminal_suffix in _TREE_FILE_SUFFIXES
-
-
-def _load_json(path: Path) -> dict[str, object]:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _read_tsv_rows(path: Path) -> list[dict[str, str]]:
-    with path.open("r", encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, delimiter="\t")
-        return [dict(row) for row in reader]
-
-
-def _write_tsv(
-    path: Path,
-    *,
-    fieldnames: tuple[str, ...],
-    rows: list[dict[str, object]],
-) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames, delimiter="\t")
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(row)
-    return path
