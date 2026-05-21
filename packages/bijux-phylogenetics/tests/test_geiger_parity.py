@@ -4,6 +4,8 @@ import csv
 import json
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.parity import (
     list_geiger_parity_cases,
     run_geiger_parity_cases,
@@ -64,6 +66,8 @@ from tests.support.geiger_fitdiscrete_sym_reference import (
 from tests.support.geiger_optimizer_triage_reference import (
     geiger_optimizer_triage_reference_payloads,
 )
+
+pytestmark = pytest.mark.slow
 
 
 def test_list_geiger_parity_cases_returns_governed_registry() -> None:
