@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from ...artifacts import preview_report_rows, section
+from ....artifacts import preview_report_rows, section
 from .shared import artifact_link, preview_payload
 
 

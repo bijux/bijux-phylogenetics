@@ -4,7 +4,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from ...artifacts import preview_report_rows, truncate_report_rows
+from ....artifacts import preview_report_rows, truncate_report_rows
 
 
 def artifact_link(

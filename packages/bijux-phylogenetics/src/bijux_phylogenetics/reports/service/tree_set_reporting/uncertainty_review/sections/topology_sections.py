@@ -4,7 +4,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from ...artifacts import section
+from ....artifacts import section
 from .shared import artifact_link, preview_payload
 
 
