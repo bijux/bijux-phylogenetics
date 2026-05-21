@@ -6,7 +6,6 @@ from time import perf_counter
 import tracemalloc
 
 from bijux_phylogenetics.io.newick import dumps_newick
-from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.trees import (
     TreeSetProcessingSummary,
     assess_tree_set_maturity,
@@ -27,12 +26,7 @@ from bijux_phylogenetics.trees import (
     summarize_clade_credibility_conflicts,
     summarize_posterior_topology_diversity,
     summarize_uncertainty_aware_conclusions,
-    write_clade_frequency_table,
-    write_consensus_tree,
-    write_topology_cluster_table,
-    write_tree_distance_distribution_table,
     write_tree_set_uncertainty_methods_summary_text,
-    write_unstable_clade_table,
 )
 from bijux_phylogenetics.trees.uncertainty import (
     build_tree_set_uncertainty_method_report,
@@ -42,12 +36,14 @@ from ..artifacts import (
     preview_report_rows,
     section,
     truncate_report_rows,
-    write_json_artifact,
-    write_tabular_artifact,
 )
 from ..ledger import sha256
 from ..models import TreeUncertaintyReportBuildResult
 from .comparison_report import render_tree_set_comparison_report
+from .uncertainty_artifacts import (
+    finalize_tree_uncertainty_outputs,
+    write_tree_uncertainty_artifacts,
+)
 
 
 def render_tree_uncertainty_report(
@@ -216,73 +212,37 @@ def render_tree_uncertainty_report(
             section_name="tree-set-benchmark",
             truncated_sections=truncated_sections,
         )
-        artifact_paths = {
-            "tree_set_summary": write_json_artifact(
-                artifact_root / "tree-set-summary.json", asdict(summary)
-            ),
-            "methods_summary": methods_summary_result.output_path,
-            "consensus_tree": write_consensus_tree(
-                artifact_root / "consensus-tree.nwk", consensus_tree
-            ),
-            "clade_frequencies": write_clade_frequency_table(
-                artifact_root / "clade-frequencies.tsv", clade_frequencies
-            ),
-            "rf_distance_distribution": write_tree_distance_distribution_table(
-                artifact_root / "rf-distance-distribution.tsv", diversity
-            ),
-            "topology_clusters": write_topology_cluster_table(
-                artifact_root / "topology-clusters.tsv", clusters
-            ),
-            "unstable_taxa": write_tabular_artifact(
-                artifact_root / "unstable-taxa.tsv",
-                [asdict(row) for row in unstable_taxa.taxa],
-            ),
-            "unstable_clades": write_unstable_clade_table(
-                artifact_root / "unstable-clades.tsv", unstable_clades
-            ),
-            "clade_credibility_conflicts": write_json_artifact(
-                artifact_root / "clade-credibility-conflicts.json",
-                scaled_report_note
-                if clade_conflicts is None
-                else asdict(clade_conflicts),
-            ),
-            "uncertainty_aware_conclusions": write_json_artifact(
-                artifact_root / "uncertainty-aware-conclusions.json",
-                scaled_report_note
-                if conclusion_summary is None
-                else asdict(conclusion_summary),
-            ),
-            "thinning_sensitivity": write_tabular_artifact(
-                artifact_root / "thinning-sensitivity.tsv",
-                []
-                if thinning_sensitivity is None
-                else [asdict(row) for row in thinning_sensitivity.rows],
-            ),
-            "consensus_threshold_sensitivity": write_tabular_artifact(
-                artifact_root / "consensus-threshold-sensitivity.tsv",
-                []
-                if consensus_sensitivity is None
-                else [asdict(row) for row in consensus_sensitivity.rows],
-            ),
-            "tree_set_benchmark": write_tabular_artifact(
-                artifact_root / "tree-set-benchmark.tsv",
-                [] if benchmark is None else [asdict(row) for row in benchmark.rows],
-            ),
-            "topological_diversity": write_json_artifact(
-                artifact_root / "topological-diversity.json", asdict(diversity)
-            ),
-            "topology_multimodality": write_json_artifact(
-                artifact_root / "topology-multimodality.json",
-                scaled_report_note if multimodality is None else asdict(multimodality),
-            ),
-            "storage_risk": write_json_artifact(
-                artifact_root / "storage-risk.json", asdict(storage_risk)
-            ),
-            "maturity_gate": write_json_artifact(
-                artifact_root / "maturity-gate.json",
-                scaled_report_note if maturity is None else asdict(maturity),
-            ),
-        }
+        _current, peak = tracemalloc.get_traced_memory()
+        processing = TreeSetProcessingSummary(
+            runtime_seconds=round(perf_counter() - started, 6),
+            peak_memory_bytes=peak,
+            skipped_malformed_tree_count=summary.processing.skipped_malformed_tree_count,
+        )
+        budget_report = build_tree_set_budget_report(
+            budget=budget,
+            peak_memory_bytes=processing.peak_memory_bytes,
+            truncated_section_names=truncated_sections,
+        )
+        artifact_paths = write_tree_uncertainty_artifacts(
+            artifact_root=artifact_root,
+            summary=summary,
+            methods_summary_result=methods_summary_result,
+            consensus_tree=consensus_tree,
+            clade_frequencies=clade_frequencies,
+            diversity=diversity,
+            clusters=clusters,
+            unstable_taxa=unstable_taxa,
+            unstable_clades=unstable_clades,
+            clade_conflicts=clade_conflicts,
+            conclusion_summary=conclusion_summary,
+            thinning_sensitivity=thinning_sensitivity,
+            consensus_sensitivity=consensus_sensitivity,
+            benchmark=benchmark,
+            multimodality=multimodality,
+            storage_risk=storage_risk,
+            maturity=maturity,
+            scaled_report_note=scaled_report_note,
+        )
         sections = [
             section(
                 "methods-summary-text",
@@ -597,17 +557,6 @@ def render_tree_uncertainty_report(
         ]
         core_sections = sections[:11]
         supplemental_sections = sections[11:]
-        _current, peak = tracemalloc.get_traced_memory()
-        processing = TreeSetProcessingSummary(
-            runtime_seconds=round(perf_counter() - started, 6),
-            peak_memory_bytes=peak,
-            skipped_malformed_tree_count=summary.processing.skipped_malformed_tree_count,
-        )
-        budget_report = build_tree_set_budget_report(
-            budget=budget,
-            peak_memory_bytes=processing.peak_memory_bytes,
-            truncated_section_names=truncated_sections,
-        )
         machine_manifest = {
             "report_kind": "tree-uncertainty",
             "title": title,
@@ -619,7 +568,7 @@ def render_tree_uncertainty_report(
             "budget": asdict(budget_report),
             "report_mode": "scaled-summary" if scaled_report_mode else "full-review",
             "artifact_root": str(artifact_root),
-            "linked_artifact_count": len(artifact_paths),
+            "linked_artifact_count": len(artifact_paths) + 1,
             "methods_summary_path": artifact_paths["methods_summary"]
             .relative_to(out_path.parent)
             .as_posix(),
@@ -635,14 +584,6 @@ def render_tree_uncertainty_report(
             "sections": [name for name, _ in core_sections],
             "supplemental_sections": [name for name, _ in supplemental_sections],
         }
-        summary_metrics = [
-            ("tree count", summary.tree_count),
-            ("rooted topologies", summary.rooted_topology_count),
-            ("report mode", "scaled-summary" if scaled_report_mode else "full-review"),
-            ("runtime seconds", processing.runtime_seconds),
-            ("peak memory bytes", processing.peak_memory_bytes),
-            ("linked artifacts", len(artifact_paths)),
-        ]
         artifact_links = [
             (
                 name.replace("_", "-"),
@@ -655,76 +596,31 @@ def render_tree_uncertainty_report(
         machine_manifest["artifact_manifest_path"] = artifact_manifest_path.relative_to(
             out_path.parent
         ).as_posix()
-        machine_manifest["linked_artifact_count"] = len(artifact_paths) + 1
         machine_manifest["linked_artifacts"]["tree_uncertainty_manifest"] = {
             "path": artifact_manifest_path.relative_to(out_path.parent).as_posix(),
             "byte_count": 0,
         }
-        write_json_artifact(artifact_manifest_path, machine_manifest)
-        write_html_report(
-            title=title,
-            sections=sections,
-            out_path=out_path,
-            embedded_json=machine_manifest,
-            summary_metrics=summary_metrics,
-            artifact_links=[
-                *artifact_links,
-                (
-                    "tree-uncertainty-manifest",
-                    artifact_manifest_path.relative_to(out_path.parent).as_posix(),
-                    None,
-                ),
-            ],
-        )
-        html_size_bytes = out_path.stat().st_size
-        linked_artifact_bytes = sum(
-            path.stat().st_size for path in artifact_paths.values()
-        )
-        manifest_size_bytes = artifact_manifest_path.stat().st_size
-        linked_artifact_bytes += manifest_size_bytes
-        total_output_bytes = html_size_bytes + linked_artifact_bytes
-        machine_manifest["linked_artifacts"]["tree_uncertainty_manifest"] = {
-            "path": artifact_manifest_path.relative_to(out_path.parent).as_posix(),
-            "byte_count": manifest_size_bytes,
-        }
-        machine_manifest["html_size_bytes"] = html_size_bytes
-        machine_manifest["linked_artifact_bytes"] = linked_artifact_bytes
-        machine_manifest["total_output_bytes"] = total_output_bytes
-        write_json_artifact(artifact_manifest_path, machine_manifest)
-        write_html_report(
-            title=title,
-            sections=sections,
-            out_path=out_path,
-            embedded_json=machine_manifest,
-            summary_metrics=summary_metrics,
-            artifact_links=[
-                *artifact_links,
-                (
-                    "tree-uncertainty-manifest",
-                    artifact_manifest_path.relative_to(out_path.parent).as_posix(),
-                    f"{artifact_manifest_path.stat().st_size} bytes",
-                ),
-            ],
-        )
-        html_size_bytes = out_path.stat().st_size
-        total_output_bytes = html_size_bytes + linked_artifact_bytes
-        machine_manifest["html_size_bytes"] = html_size_bytes
-        machine_manifest["total_output_bytes"] = total_output_bytes
-        write_json_artifact(artifact_manifest_path, machine_manifest)
-        final_manifest_size_bytes = artifact_manifest_path.stat().st_size
-        if final_manifest_size_bytes != manifest_size_bytes:
-            linked_artifact_bytes = (
-                sum(path.stat().st_size for path in artifact_paths.values())
-                + final_manifest_size_bytes
+        summary_metrics = [
+            ("tree count", summary.tree_count),
+            ("rooted topologies", summary.rooted_topology_count),
+            ("report mode", "scaled-summary" if scaled_report_mode else "full-review"),
+            ("runtime seconds", processing.runtime_seconds),
+            ("peak memory bytes", processing.peak_memory_bytes),
+            ("linked artifacts", len(artifact_paths)),
+        ]
+        machine_manifest, html_size_bytes, linked_artifact_bytes = (
+            finalize_tree_uncertainty_outputs(
+                title=title,
+                out_path=out_path,
+                sections=sections,
+                summary_metrics=summary_metrics,
+                artifact_links=artifact_links,
+                artifact_manifest_path=artifact_manifest_path,
+                artifact_paths=artifact_paths,
+                machine_manifest=machine_manifest,
             )
-            total_output_bytes = html_size_bytes + linked_artifact_bytes
-            machine_manifest["linked_artifacts"]["tree_uncertainty_manifest"] = {
-                "path": artifact_manifest_path.relative_to(out_path.parent).as_posix(),
-                "byte_count": final_manifest_size_bytes,
-            }
-            machine_manifest["linked_artifact_bytes"] = linked_artifact_bytes
-            machine_manifest["total_output_bytes"] = total_output_bytes
-            write_json_artifact(artifact_manifest_path, machine_manifest)
+        )
+        total_output_bytes = int(machine_manifest["total_output_bytes"])
         return TreeUncertaintyReportBuildResult(
             output_path=out_path,
             artifact_root=artifact_root,
