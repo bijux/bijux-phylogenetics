@@ -383,6 +383,7 @@ def validate_comparative_report_manifest_schema(
             "metrics",
             "outputs",
             "report_kind",
+            "reviewer_audit_checklist",
             "summary",
         ),
     )

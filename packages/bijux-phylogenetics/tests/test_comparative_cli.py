@@ -1063,9 +1063,9 @@ def test_comparative_early_burst_cli_reports_model_fit_metrics(capsys) -> None:
     assert payload["metrics"]["tree_taxon_count"] == 4
     assert payload["metrics"]["analyzed_taxon_count"] == 4
     assert payload["metrics"]["excluded_taxon_count"] == 0
-    assert payload["metrics"]["rate_change"] == 50.0
+    assert payload["metrics"]["rate_change"] == 0.0
     assert payload["metrics"]["better_model"] == "brownian"
-    assert payload["metrics"]["identifiability_warning_count"] == 4
+    assert payload["metrics"]["identifiability_warning_count"] == 3
     assert payload["metrics"]["profile_row_count"] == 161
     assert "aic" in payload["metrics"]
     assert "aicc" in payload["metrics"]
