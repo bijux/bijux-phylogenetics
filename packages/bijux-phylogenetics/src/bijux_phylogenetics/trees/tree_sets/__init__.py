@@ -1,9 +1,4 @@
 """Tree-set loading, consensus, support, and distance workflows."""
-
-from .analysis import (
-    compute_tree_distance_matrix,
-    write_tree_distance_matrix,
-)
 from .budgets import (
     build_tree_set_budget_report,
     build_tree_set_workflow_budget,
@@ -35,6 +30,7 @@ from .contracts import (
     TreeSetWorkflowBudget,
     TreeSetWorkflowBudgetReport,
 )
+from .distances import compute_tree_distance_matrix, write_tree_distance_matrix
 from .inventory import load_tree_set
 
 __all__ = [
