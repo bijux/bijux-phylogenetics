@@ -178,81 +178,11 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
     geography_summary = report.biogeography_report.state_report.summary
     migration_summary = report.biogeography_report.event_report.summary
 
-    config_audit_path = _write_workflow_config_audit_table(
-        output_root / "workflow-config-audit.tsv",
-        report.config_audit_rows,
-    )
-    resolved_config_path = _write_resolved_workflow_config(
-        output_root / "workflow-config.resolved.json",
-        report.config,
-    )
-    input_validation_path = _write_input_validation_table(
-        output_root / "input-validation.tsv",
-        workflow=workflow,
-    )
-    alignment_quality_path = _write_alignment_quality_table(
-        output_root / "alignment-quality.tsv",
-        aligned=report.aligned_quality,
-        trimmed=report.trimmed_quality,
-    )
-    alignment_sequence_ranking_path = _write_sequence_ranking_table(
-        output_root / "alignment-sequence-ranking.tsv",
-        report.trimmed_sequence_ranking,
-    )
-
-    alignment_path = _copy_output(
-        workflow.output_paths["alignment"],
-        output_root / workflow.output_paths["alignment"].name,
-    )
-    trimmed_alignment_path = _copy_output(
-        workflow.output_paths["trimmed_alignment"],
-        output_root / workflow.output_paths["trimmed_alignment"].name,
-    )
-    tree_path = _copy_output(
-        report.rooted_tree_path,
-        output_root / report.rooted_tree_path.name,
-    )
-    stable_rooting_report = replace(
-        report.rooting_report, tree_path=Path(tree_path.name)
-    )
-    rooting_report_path = write_tree_rooting_report(
-        output_root / f"{report.dataset.workflow_prefix}.rooting.tsv",
-        stable_rooting_report,
-    )
-    model_table_path = _copy_output(
-        workflow.output_paths["model_table"],
-        output_root / workflow.output_paths["model_table"].name,
-    )
-    support_table_path = _copy_output(
-        workflow.output_paths["support_table"],
-        output_root / workflow.output_paths["support_table"].name,
-    )
-    log_path = _copy_output(
-        workflow.output_paths["log"],
-        output_root / workflow.output_paths["log"].name,
-    )
-    manifest_path = _copy_output(
-        workflow.manifest_path,
-        output_root / workflow.manifest_path.name,
-    )
-    engine_artifact_root = (
-        output_root / "engine-artifacts" / report.dataset.workflow_prefix
-    )
-    shutil.copytree(workflow.engine_artifact_dir, engine_artifact_root)
-
-    clade_report = extract_tree_clades(
-        report.rooted_tree_path,
-        metadata_path=report.dataset.metadata_path,
-        taxon_column="taxon",
-        metadata_columns=list(report.dataset.clade_metadata_columns),
-    )
-    stable_clade_report = _stabilize_clade_report(
-        clade_report,
-        stable_source_path=Path(tree_path.name),
-    )
-    clade_table_path = write_clade_table(
-        output_root / "clade-table.tsv",
-        stable_clade_report,
+    tree_inference = _write_tree_inference_artifacts(output_root, report)
+    bootstrap_review = _write_bootstrap_review_artifacts(
+        output_root,
+        report,
+        rooted_tree_path=tree_inference.tree_path,
     )
 
     bootstrap_output_root = output_root / "bootstrap-review"
@@ -500,42 +430,41 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         clade_row_count=len(stable_clade_report.rows),
         scientific_finding_count=len(scientific_finding_rows),
         bundle_paths={
-            "workflow_summary": workflow_summary_path,
-            "config_audit": config_audit_path,
-            "resolved_config": resolved_config_path,
-            "input_validation": input_validation_path,
-            "alignment_quality": alignment_quality_path,
-            "alignment_sequence_ranking": alignment_sequence_ranking_path,
-            "alignment": alignment_path,
-            "trimmed_alignment": trimmed_alignment_path,
-            "rooted_tree": tree_path,
-            "rooting_report": rooting_report_path,
-            "model_table": model_table_path,
-            "support_table": support_table_path,
-            "clade_table": clade_table_path,
-            "bootstrap_summary": bootstrap_summary_path,
-            "bootstrap_consensus_tree": bootstrap_artifacts.output_paths[
+            "config_audit": tree_inference.config_audit_path,
+            "resolved_config": tree_inference.resolved_config_path,
+            "input_validation": tree_inference.input_validation_path,
+            "alignment_quality": tree_inference.alignment_quality_path,
+            "alignment_sequence_ranking": tree_inference.alignment_sequence_ranking_path,
+            "alignment": tree_inference.alignment_path,
+            "trimmed_alignment": tree_inference.trimmed_alignment_path,
+            "rooted_tree": tree_inference.tree_path,
+            "rooting_report": tree_inference.rooting_report_path,
+            "model_table": tree_inference.model_table_path,
+            "support_table": tree_inference.support_table_path,
+            "clade_table": tree_inference.clade_table_path,
+            "bootstrap_summary": bootstrap_review.summary_path,
+            "bootstrap_consensus_tree": bootstrap_review.artifact_report.output_paths[
                 "consensus_tree"
             ],
-            "bootstrap_clade_frequencies": bootstrap_artifacts.output_paths[
+            "bootstrap_clade_frequencies": bootstrap_review.artifact_report.output_paths[
                 "clade_frequencies"
             ],
-            "bootstrap_unstable_branches": bootstrap_artifacts.output_paths[
+            "bootstrap_unstable_branches": bootstrap_review.artifact_report.output_paths[
                 "unstable_branches"
             ],
-            "bootstrap_unstable_clades": bootstrap_artifacts.output_paths[
+            "bootstrap_unstable_clades": bootstrap_review.artifact_report.output_paths[
                 "unstable_clades"
             ],
-            "bootstrap_distance_matrix": bootstrap_artifacts.output_paths[
+            "bootstrap_distance_matrix": bootstrap_review.artifact_report.output_paths[
                 "distance_matrix"
             ],
-            "bootstrap_topology_clusters": bootstrap_artifacts.output_paths[
+            "bootstrap_topology_clusters": bootstrap_review.artifact_report.output_paths[
                 "topology_clusters"
             ],
-            "bootstrap_tree_comparison_summary": bootstrap_tree_comparison_summary_path,
-            "bootstrap_tree_comparison_table": bootstrap_tree_comparison_table_path,
+            "bootstrap_tree_comparison_summary": bootstrap_review.comparison_summary_path,
+            "bootstrap_tree_comparison_table": bootstrap_review.comparison_table_path,
             "bootstrap_tree_comparison_report": (
-                bootstrap_tree_comparison_report.output_path
+                bootstrap_review.comparison_report.output_path
             ),
             "host_switch_summary": host_switch_summary_path,
             "host_state_nodes": host_state_nodes_path,
@@ -588,29 +517,29 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         maximum_support=workflow.support_summary.maximum_support,
         median_support=workflow.support_summary.median_support,
         weakly_supported_clade_count=workflow.support_summary.weakly_supported_clade_count,
-        clade_row_count=len(stable_clade_report.rows),
-        bootstrap_tree_count=bootstrap_artifacts.summary_report.tree_count,
+        clade_row_count=len(tree_inference.clade_report.rows),
+        bootstrap_tree_count=bootstrap_review.artifact_report.summary_report.tree_count,
         bootstrap_topology_count=(
-            bootstrap_artifacts.summary_report.diversity.rooted_topology_count
+            bootstrap_review.artifact_report.summary_report.diversity.rooted_topology_count
         ),
         bootstrap_unstable_branch_count=(
-            bootstrap_artifacts.summary_report.unstable_branch_count
+            bootstrap_review.artifact_report.summary_report.unstable_branch_count
         ),
         bootstrap_consensus_rooted_rf_distance=(
-            bootstrap_tree_comparison_report.topology.rooted_robinson_foulds_distance
+            bootstrap_review.comparison_report.topology.rooted_robinson_foulds_distance
         ),
         bootstrap_consensus_same_unrooted_topology=(
-            bootstrap_tree_comparison_report.topology.same_unrooted_topology
+            bootstrap_review.comparison_report.topology.same_unrooted_topology
         ),
         bootstrap_consensus_high_support_conflict_count=len(
             [
                 row
-                for row in bootstrap_tree_comparison_report.support.conflicting_clades
+                for row in bootstrap_review.comparison_report.support.conflicting_clades
                 if row.conflict_classification == "high_support_conflict"
             ]
         ),
         bootstrap_consensus_branch_score_distance=(
-            bootstrap_tree_comparison_report.branch_lengths.branch_score.branch_score_distance
+            bootstrap_review.comparison_report.branch_lengths.branch_score.branch_score_distance
         ),
         rooted_outgroup_taxa=tuple(report.rooting_report.rooted_outgroup_taxa),
         root_host=host_summary.root_host,
@@ -642,94 +571,96 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         memory_warning_threshold_bytes=report.config.memory_warning_threshold_bytes,
         workflow_runtime_seconds=report.fasta_to_tree.runtime_seconds,
         bootstrap_review_runtime_seconds=(
-            bootstrap_artifacts.summary_report.processing.runtime_seconds
+            bootstrap_review.artifact_report.summary_report.processing.runtime_seconds
         ),
         bootstrap_review_peak_memory_bytes=(
-            bootstrap_artifacts.summary_report.processing.peak_memory_bytes
+            bootstrap_review.artifact_report.summary_report.processing.peak_memory_bytes
         ),
-        budget_warning_count=len(bootstrap_artifacts.budget_report.warning_messages),
+        budget_warning_count=len(
+            bootstrap_review.artifact_report.budget_report.warning_messages
+        ),
         config_check_count=len(report.config_audit_rows),
-        scientific_finding_count=len(scientific_finding_rows),
-        workflow_summary_path=workflow_summary_path,
-        resource_observations_path=resource_observations_path,
-        config_audit_path=config_audit_path,
-        resolved_config_path=resolved_config_path,
-        input_validation_path=input_validation_path,
-        alignment_quality_path=alignment_quality_path,
-        alignment_sequence_ranking_path=alignment_sequence_ranking_path,
-        alignment_path=alignment_path,
-        trimmed_alignment_path=trimmed_alignment_path,
-        tree_path=tree_path,
-        rooting_report_path=rooting_report_path,
-        model_table_path=model_table_path,
-        support_table_path=support_table_path,
-        log_path=log_path,
-        manifest_path=manifest_path,
-        engine_artifact_root=engine_artifact_root,
-        clade_table_path=clade_table_path,
-        bootstrap_output_root=bootstrap_output_root,
-        bootstrap_summary_path=bootstrap_summary_path,
-        bootstrap_consensus_tree_path=bootstrap_artifacts.output_paths[
+        scientific_finding_count=len(final_bundle.scientific_finding_rows),
+        workflow_summary_path=final_bundle.workflow_summary_path,
+        resource_observations_path=final_bundle.resource_observations_path,
+        config_audit_path=tree_inference.config_audit_path,
+        resolved_config_path=tree_inference.resolved_config_path,
+        input_validation_path=tree_inference.input_validation_path,
+        alignment_quality_path=tree_inference.alignment_quality_path,
+        alignment_sequence_ranking_path=tree_inference.alignment_sequence_ranking_path,
+        alignment_path=tree_inference.alignment_path,
+        trimmed_alignment_path=tree_inference.trimmed_alignment_path,
+        tree_path=tree_inference.tree_path,
+        rooting_report_path=tree_inference.rooting_report_path,
+        model_table_path=tree_inference.model_table_path,
+        support_table_path=tree_inference.support_table_path,
+        log_path=tree_inference.log_path,
+        manifest_path=tree_inference.manifest_path,
+        engine_artifact_root=tree_inference.engine_artifact_root,
+        clade_table_path=tree_inference.clade_table_path,
+        bootstrap_output_root=bootstrap_review.output_root,
+        bootstrap_summary_path=bootstrap_review.summary_path,
+        bootstrap_consensus_tree_path=bootstrap_review.artifact_report.output_paths[
             "consensus_tree"
         ],
-        bootstrap_clade_frequencies_path=bootstrap_artifacts.output_paths[
+        bootstrap_clade_frequencies_path=bootstrap_review.artifact_report.output_paths[
             "clade_frequencies"
         ],
-        bootstrap_unstable_branches_path=bootstrap_artifacts.output_paths[
+        bootstrap_unstable_branches_path=bootstrap_review.artifact_report.output_paths[
             "unstable_branches"
         ],
-        bootstrap_unstable_clades_path=bootstrap_artifacts.output_paths[
+        bootstrap_unstable_clades_path=bootstrap_review.artifact_report.output_paths[
             "unstable_clades"
         ],
-        bootstrap_distance_matrix_path=bootstrap_artifacts.output_paths[
+        bootstrap_distance_matrix_path=bootstrap_review.artifact_report.output_paths[
             "distance_matrix"
         ],
-        bootstrap_topology_clusters_path=bootstrap_artifacts.output_paths[
+        bootstrap_topology_clusters_path=bootstrap_review.artifact_report.output_paths[
             "topology_clusters"
         ],
-        bootstrap_tree_comparison_summary_path=(bootstrap_tree_comparison_summary_path),
-        bootstrap_tree_comparison_table_path=bootstrap_tree_comparison_table_path,
+        bootstrap_tree_comparison_summary_path=(bootstrap_review.comparison_summary_path),
+        bootstrap_tree_comparison_table_path=bootstrap_review.comparison_table_path,
         bootstrap_tree_comparison_report_path=(
-            bootstrap_tree_comparison_report.output_path
+            bootstrap_review.comparison_report.output_path
         ),
-        host_switch_summary_path=host_switch_summary_path,
-        host_state_nodes_path=host_state_nodes_path,
-        host_switch_branches_path=host_switch_branches_path,
-        host_switch_counts_path=host_switch_counts_path,
-        host_switch_fits_path=host_switch_fits_path,
-        host_switch_unsupported_path=host_switch_unsupported_path,
-        host_switch_exclusions_path=host_switch_exclusions_path,
-        biogeography_output_root=biogeography_output_root,
-        biogeography_report_path=biogeography_report_path,
-        biogeography_tree_figure_path=biogeography_tree_figure_path,
-        biogeography_map_path=biogeography_map_path,
-        comparative_traits_path=comparative_traits_path,
-        comparative_tree_path=comparative_tree_path,
-        comparative_repairs_path=comparative_repairs_path,
-        comparative_output_root=comparative_output_root,
-        comparative_report_path=comparative_report_path,
-        comparative_summary_path=comparative_summary_path,
-        comparative_coefficients_path=comparative_coefficients_path,
-        comparative_residuals_path=comparative_residuals_path,
-        comparative_signal_path=comparative_signal_path,
-        comparative_model_comparison_path=comparative_model_comparison_path,
-        comparative_interpretation_path=comparative_interpretation_path,
-        comparative_audit_path=comparative_audit_path,
-        comparative_contrasts_path=comparative_contrasts_path,
-        comparative_model_matrix_path=comparative_model_matrix_path,
-        comparative_categorical_contrasts_path=comparative_categorical_contrasts_path,
-        comparative_lambda_profile_path=comparative_lambda_profile_path,
-        comparative_manifest_path=comparative_manifest_path,
-        conclusion_stability_output_root=conclusion_stability_output_root,
-        conclusion_stability_summary_path=conclusion_stability_summary_path,
-        key_clade_stability_path=key_clade_stability_path,
-        support_value_stability_path=support_value_stability_path,
-        ancestral_state_stability_path=ancestral_state_stability_path,
-        comparative_coefficient_stability_path=(comparative_coefficient_stability_path),
-        conclusion_stability_report_path=conclusion_stability_report_path,
-        scientific_findings_path=scientific_findings_path,
-        final_report_path=final_report_path,
-        final_manifest_path=final_manifest_path,
+        host_switch_summary_path=host_geography.host_switch_summary_path,
+        host_state_nodes_path=host_geography.host_state_nodes_path,
+        host_switch_branches_path=host_geography.host_switch_branches_path,
+        host_switch_counts_path=host_geography.host_switch_counts_path,
+        host_switch_fits_path=host_geography.host_switch_fits_path,
+        host_switch_unsupported_path=host_geography.host_switch_unsupported_path,
+        host_switch_exclusions_path=host_geography.host_switch_exclusions_path,
+        biogeography_output_root=host_geography.biogeography_output_root,
+        biogeography_report_path=host_geography.biogeography_report_path,
+        biogeography_tree_figure_path=host_geography.biogeography_tree_figure_path,
+        biogeography_map_path=host_geography.biogeography_map_path,
+        comparative_traits_path=comparative_bundle.traits_path,
+        comparative_tree_path=comparative_bundle.tree_path,
+        comparative_repairs_path=tree_inference.comparative_repairs_path,
+        comparative_output_root=comparative_bundle.output_root,
+        comparative_report_path=comparative_bundle.report_path,
+        comparative_summary_path=comparative_bundle.summary_path,
+        comparative_coefficients_path=comparative_bundle.coefficients_path,
+        comparative_residuals_path=comparative_bundle.residuals_path,
+        comparative_signal_path=comparative_bundle.signal_path,
+        comparative_model_comparison_path=comparative_bundle.model_comparison_path,
+        comparative_interpretation_path=comparative_bundle.interpretation_path,
+        comparative_audit_path=comparative_bundle.audit_path,
+        comparative_contrasts_path=comparative_bundle.contrasts_path,
+        comparative_model_matrix_path=comparative_bundle.model_matrix_path,
+        comparative_categorical_contrasts_path=comparative_bundle.categorical_contrasts_path,
+        comparative_lambda_profile_path=comparative_bundle.lambda_profile_path,
+        comparative_manifest_path=comparative_bundle.manifest_path,
+        conclusion_stability_output_root=conclusion_stability.output_root,
+        conclusion_stability_summary_path=conclusion_stability.summary_path,
+        key_clade_stability_path=conclusion_stability.key_clade_stability_path,
+        support_value_stability_path=conclusion_stability.support_value_stability_path,
+        ancestral_state_stability_path=conclusion_stability.ancestral_state_stability_path,
+        comparative_coefficient_stability_path=(
+            conclusion_stability.comparative_coefficient_stability_path
+        ),
+        conclusion_stability_report_path=conclusion_stability.report_path,
+        scientific_findings_path=final_bundle.scientific_findings_path,
+        final_report_path=final_bundle.final_report_path,
+        final_manifest_path=final_bundle.final_manifest_path,
     )
-
-
