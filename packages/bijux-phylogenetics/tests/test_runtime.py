@@ -8010,6 +8010,7 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
     assert payload["status"] == "ok"
     assert command_names == [
         "env",
+        "phylo",
         "metadata",
         "traits",
         "prune",
