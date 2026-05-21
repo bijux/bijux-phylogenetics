@@ -19,14 +19,16 @@ from .models import (
     CladeFrequencyDelta,
     PosteriorTreeSetComparisonReport,
 )
-from ..tree_sets.analysis import (
+from ..tree_sets.clade_support import compute_clade_frequency_table
+from ..tree_sets.inventory import (
+    _require_tree_set,
+    _validate_same_taxa,
+)
+from ..tree_sets.topology import (
     _clade_counts,
     _format_clade,
-    _require_tree_set,
     _rooted_topology_id,
     _tree_distance,
-    _validate_same_taxa,
-    compute_clade_frequency_table,
 )
 
 

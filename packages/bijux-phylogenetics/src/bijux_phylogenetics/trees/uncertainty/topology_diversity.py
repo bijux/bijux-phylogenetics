@@ -18,15 +18,15 @@ from .models import (
     TreeTopologyCluster,
     TreeTopologyClusterReport,
 )
-from ..tree_sets.analysis import (
-    TreeSetReport,
+from ..tree_sets.contracts import TreeSetReport
+from ..tree_sets.inventory import (
     _TreeSetAnalysis,
     _analyze_tree_set,
     _require_exact_taxa,
     _require_tree_set,
-    _tree_distance,
     _validate_same_taxa,
 )
+from ..tree_sets.topology import _tree_distance
 
 
 def _shannon_effective_count(frequencies: list[float]) -> float:

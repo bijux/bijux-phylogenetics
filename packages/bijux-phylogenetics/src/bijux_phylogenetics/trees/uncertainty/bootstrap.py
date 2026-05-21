@@ -17,22 +17,30 @@ from .topology_diversity import (
     write_topology_cluster_table,
     write_tree_distance_distribution_table,
 )
-from ..tree_sets.analysis import (
-    TreeSetReport,
-    _TreeSetAnalysis,
-    _analyze_tree_set,
-    _build_clade_frequency_report,
-    _build_consensus_tree_with_threshold,
-    _build_tree_distance_matrix_report,
-    _format_clade,
-    _support_classification,
+from ..tree_sets.budgets import (
     build_tree_set_budget_report,
     build_tree_set_workflow_budget,
     enforce_tree_set_tree_budget,
+)
+from ..tree_sets.clade_support import (
+    _build_clade_frequency_report,
+    _support_classification,
     write_clade_frequency_table,
+)
+from ..tree_sets.consensus import (
+    _build_consensus_tree_with_threshold,
     write_consensus_tree,
+)
+from ..tree_sets.contracts import TreeSetReport
+from ..tree_sets.distances import (
+    _build_tree_distance_matrix_report,
     write_tree_distance_matrix,
 )
+from ..tree_sets.inventory import (
+    _TreeSetAnalysis,
+    _analyze_tree_set,
+)
+from ..tree_sets.topology import _format_clade
 
 
 def summarize_bootstrap_tree_set(

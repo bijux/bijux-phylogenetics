@@ -14,18 +14,22 @@ from .models import (
     UnstableTaxaReport,
     UnstableTaxon,
 )
-from ..tree_sets.analysis import (
+from ..tree_sets.clade_support import (
+    _support_classification,
+    compute_clade_frequency_table,
+)
+from ..tree_sets.inventory import (
     _TreeSetAnalysis,
     _analyze_tree_set,
+    _require_exact_taxa,
+    _require_tree_set,
+    _validate_same_taxa,
+)
+from ..tree_sets.topology import (
     _clade_counts,
     _clade_signature,
     _clades_conflict,
     _format_clade,
-    _require_exact_taxa,
-    _require_tree_set,
-    _support_classification,
-    _validate_same_taxa,
-    compute_clade_frequency_table,
 )
 
 
