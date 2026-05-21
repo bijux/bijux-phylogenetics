@@ -4,13 +4,13 @@ from dataclasses import asdict
 import json
 from math import ceil
 from pathlib import Path
-from typing import Protocol
 
 from .contracts import (
     RabiesMethodSensitivitySlurmAssumptionRow,
     RabiesMethodSensitivitySlurmJobPlanRow,
     RabiesMethodSensitivitySlurmPlanningReport,
 )
+from .interfaces import TaskRecordLike, VariantRunLike, WorkflowReportLike
 
 __all__ = [
     "RabiesMethodSensitivitySlurmAssumptionRow",
@@ -27,39 +27,8 @@ _MINIMUM_MEMORY_MIB = 1024
 _MINIMUM_SCRATCH_MIB = 256
 _MINIMUM_WALLCLOCK_MINUTES = 20
 
-
-class _VariantConfigLike(Protocol):
-    variant_id: str
-    alignment_mode: str
-    trimming_mode: str
-
-
-class _VariantRunLike(Protocol):
-    config: _VariantConfigLike
-    alignment_length: int
-    trimmed_alignment_length: int
-
-
-class _TaskRecordLike(Protocol):
-    variant_id: str
-    output_root: Path
-
-
-class _DatasetLike(Protocol):
-    dataset_id: str
-    workflow_prefix: str
-    taxon_count: int
-
-
-class _WorkflowReportLike(Protocol):
-    dataset: _DatasetLike
-    task_records: tuple[_TaskRecordLike, ...]
-    variant_runs: tuple[_VariantRunLike, ...]
-    iqtree_threads: int
-    bootstrap_replicates: int
-
 def build_rabies_method_sensitivity_slurm_planning_report(
-    report: _WorkflowReportLike,
+    report: WorkflowReportLike,
 ) -> RabiesMethodSensitivitySlurmPlanningReport:
     """Estimate one schedulable Slurm job per declared workflow variant."""
     task_records = {record.variant_id: record for record in report.task_records}
@@ -255,8 +224,8 @@ def _build_job_plan_row(
     dataset_id: str,
     workflow_prefix: str,
     taxon_count: int,
-    variant_run: _VariantRunLike,
-    task_record: _TaskRecordLike,
+    variant_run: VariantRunLike,
+    task_record: TaskRecordLike,
     iqtree_threads: int,
     bootstrap_replicates: int,
 ) -> RabiesMethodSensitivitySlurmJobPlanRow:
