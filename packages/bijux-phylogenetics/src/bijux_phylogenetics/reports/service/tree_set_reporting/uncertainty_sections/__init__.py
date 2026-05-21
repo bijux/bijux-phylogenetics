@@ -6,6 +6,7 @@ from pathlib import Path
 from bijux_phylogenetics.io.newick import dumps_newick
 
 from ...artifacts import preview_report_rows, section
+from .instability_sections import build_instability_sections
 from .shared import artifact_link, preview_payload, truncate_dataclass_rows
 from .topology_sections import build_topology_sections
 
@@ -137,92 +138,27 @@ def build_tree_uncertainty_sections(
             cluster_rows=cluster_rows,
             cluster_truncated=cluster_truncated,
         ),
-        section(
-            "unstable-taxa",
-            {
-                "tree_count": unstable_taxa.tree_count,
-                "row_count": len(unstable_taxa.taxa),
-                "truncated_row_count": unstable_taxa_truncated,
-                "preview_row_count": min(len(unstable_taxa_rows), preview_limit),
-                "preview_rows": preview_report_rows(unstable_taxa_rows, limit=preview_limit),
-                "artifact_path": (
-                    artifact_paths["unstable_taxa"]
-                    .relative_to(out_path.parent)
-                    .as_posix()
-                ),
-            },
-        ),
-        section(
-            "unstable-clades",
-            {
-                "tree_count": unstable_clades.tree_count,
-                "row_count": len(unstable_clades.clades),
-                "truncated_row_count": unstable_clade_truncated,
-                "preview_row_count": min(len(unstable_clade_rows), preview_limit),
-                "preview_rows": preview_report_rows(
-                    unstable_clade_rows, limit=preview_limit
-                ),
-                "artifact_path": (
-                    artifact_paths["unstable_clades"]
-                    .relative_to(out_path.parent)
-                    .as_posix()
-                ),
-            },
-        ),
-        section(
-            "clade-credibility-conflicts",
-            {
-                **(
-                    {
-                        "tree_count": clade_conflicts.tree_count,
-                        "credibility_threshold": clade_conflicts.credibility_threshold,
-                        "high_credibility_clade_count": clade_conflicts.high_credibility_clade_count,
-                        "row_count": len(clade_conflicts.conflicts),
-                        "truncated_row_count": conflict_truncated,
-                        "preview_row_count": min(len(conflict_rows), preview_limit),
-                        "preview_rows": preview_report_rows(
-                            conflict_rows, limit=preview_limit
-                        ),
-                    }
-                    if clade_conflicts is not None
-                    else scaled_report_note
-                ),
-                "artifact_path": (
-                    artifact_paths["clade_credibility_conflicts"]
-                    .relative_to(out_path.parent)
-                    .as_posix()
-                ),
-            },
-        ),
-        section(
-            "uncertainty-aware-conclusions",
-            {
-                **(
-                    {
-                        "tree_count": conclusion_summary.tree_count,
-                        "robust_clade_count": conclusion_summary.robust_clade_count,
-                        "uncertain_clade_count": conclusion_summary.uncertain_clade_count,
-                        "conflicting_clade_count": conclusion_summary.conflicting_clade_count,
-                        "robust_rows": preview_report_rows(robust_rows, limit=preview_limit),
-                        "robust_truncated_row_count": robust_truncated,
-                        "uncertain_rows": preview_report_rows(
-                            uncertain_rows, limit=preview_limit
-                        ),
-                        "uncertain_truncated_row_count": uncertain_truncated,
-                        "conflicting_rows": preview_report_rows(
-                            conflicting_rows, limit=preview_limit
-                        ),
-                        "conflicting_truncated_row_count": conflicting_truncated,
-                    }
-                    if conclusion_summary is not None
-                    else scaled_report_note
-                ),
-                "artifact_path": (
-                    artifact_paths["uncertainty_aware_conclusions"]
-                    .relative_to(out_path.parent)
-                    .as_posix()
-                ),
-            },
+        *build_instability_sections(
+            unstable_taxa=unstable_taxa,
+            unstable_clades=unstable_clades,
+            clade_conflicts=clade_conflicts,
+            conclusion_summary=conclusion_summary,
+            scaled_report_note=scaled_report_note,
+            artifact_paths=artifact_paths,
+            out_path=out_path,
+            preview_limit=preview_limit,
+            unstable_taxa_rows=unstable_taxa_rows,
+            unstable_taxa_truncated=unstable_taxa_truncated,
+            unstable_clade_rows=unstable_clade_rows,
+            unstable_clade_truncated=unstable_clade_truncated,
+            conflict_rows=conflict_rows,
+            conflict_truncated=conflict_truncated,
+            robust_rows=robust_rows,
+            robust_truncated=robust_truncated,
+            uncertain_rows=uncertain_rows,
+            uncertain_truncated=uncertain_truncated,
+            conflicting_rows=conflicting_rows,
+            conflicting_truncated=conflicting_truncated,
         ),
         section(
             "storage-risk",
