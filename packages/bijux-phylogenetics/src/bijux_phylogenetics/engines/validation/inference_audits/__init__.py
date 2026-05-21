@@ -28,6 +28,9 @@ from .contracts import (
 from .contracts import (
     ModelSelectionValidationReport as ModelSelectionValidationReport,
 )
+from .failure_taxonomy import (
+    classify_inference_workflow_failure as classify_inference_workflow_failure,
+)
 from .manifest_validation import (
     validate_bootstrap_tree_set as validate_bootstrap_tree_set,
 )
@@ -56,6 +59,7 @@ __all__ = [
     "MLTreeTaxonValidationReport",
     "ModelSelectionValidationReport",
     "audit_alignment_inference_readiness",
+    "classify_inference_workflow_failure",
     "compare_inferred_tree_to_taxon_metadata",
     "validate_bootstrap_tree_set",
     "validate_ml_tree_contains_expected_taxa",
