@@ -10,7 +10,6 @@ from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 from ..support import (
     SUPPORTED_PUBLICATION_PACKAGE_KIND,
-    artifact_kind,
     checksum,
     entry_checksum,
     entry_path,
@@ -28,6 +27,7 @@ from .contracts import (
     PublicationPackageRevalidationCheckRow,
     PublicationPackageRevalidationResult,
 )
+from .inventory import artifact_row, unexpected_files
 
 _ARTIFACT_COLUMNS = [
     "artifact_scope",
@@ -57,75 +57,6 @@ def _status(*, blocked: bool = False, risk: bool = False) -> str:
     if risk:
         return "risk"
     return "pass"
-
-
-def _artifact_row(
-    *,
-    artifact_scope: str,
-    section: str,
-    relative_path: str,
-    expected_sha256: str | None,
-    expected_size_bytes: int | None,
-    observed_path: Path,
-) -> PublicationPackageRevalidationArtifactRow:
-    if not observed_path.exists():
-        return PublicationPackageRevalidationArtifactRow(
-            artifact_scope=artifact_scope,
-            section=section,
-            kind=artifact_kind(relative_path),
-            relative_path=relative_path,
-            status="blocked",
-            expected_sha256=expected_sha256,
-            observed_sha256=None,
-            expected_size_bytes=expected_size_bytes,
-            observed_size_bytes=None,
-            detail="declared package artifact is missing",
-        )
-    observed_size = observed_path.stat().st_size
-    observed_sha256 = checksum(observed_path)
-    mismatches: list[str] = []
-    if expected_size_bytes is not None and observed_size != expected_size_bytes:
-        mismatches.append(
-            f"stored size {expected_size_bytes} bytes != observed size {observed_size} bytes"
-        )
-    if expected_sha256 is not None and observed_sha256 != expected_sha256:
-        mismatches.append("stored checksum does not match observed checksum")
-    return PublicationPackageRevalidationArtifactRow(
-        artifact_scope=artifact_scope,
-        section=section,
-        kind=artifact_kind(relative_path),
-        relative_path=relative_path,
-        status="blocked" if mismatches else "pass",
-        expected_sha256=expected_sha256,
-        observed_sha256=observed_sha256,
-        expected_size_bytes=expected_size_bytes,
-        observed_size_bytes=observed_size,
-        detail="; ".join(mismatches)
-        if mismatches
-        else "artifact matches stored package record",
-    )
-
-
-def _unexpected_files(
-    *,
-    package_root: Path,
-    expected_relative_paths: set[str],
-    output_root: Path,
-    ignored_prefixes: tuple[str, ...],
-) -> list[str]:
-    unexpected: list[str] = []
-    output_root_resolved = output_root.resolve()
-    for path in sorted(package_root.rglob("*")):
-        if not path.is_file():
-            continue
-        if output_root_resolved in path.resolve().parents:
-            continue
-        relative_path = path.relative_to(package_root).as_posix()
-        if any(relative_path.startswith(prefix) for prefix in ignored_prefixes):
-            continue
-        if relative_path not in expected_relative_paths:
-            unexpected.append(relative_path)
-    return unexpected
 
 
 def _check_row(
@@ -278,7 +209,7 @@ def write_publication_package_revalidation_report(
         if inventory_relative_path
         else package_root
     )
-    inventory_row = _artifact_row(
+    inventory_row = artifact_row(
         artifact_scope="package_control",
         section="package",
         relative_path=inventory_relative_path or manifest_path.name,
@@ -347,7 +278,7 @@ def write_publication_package_revalidation_report(
         if checklist_relative_path
         else package_root
     )
-    checklist_row = _artifact_row(
+    checklist_row = artifact_row(
         artifact_scope="package_control",
         section="package",
         relative_path=checklist_relative_path or manifest_path.name,
@@ -405,7 +336,7 @@ def write_publication_package_revalidation_report(
         if not relative_path:
             continue
         inventory_artifact_rows.append(
-            _artifact_row(
+            artifact_row(
                 artifact_scope="inventory",
                 section=row.get("section", "").strip() or "artifact",
                 relative_path=relative_path,
@@ -463,7 +394,7 @@ def write_publication_package_revalidation_report(
         relative_path,
         expected_sha256,
     ) in manifest_file_entries(manifest):
-        row = _artifact_row(
+        row = artifact_row(
             artifact_scope="manifest_registry",
             section=block_name,
             relative_path=relative_path,
@@ -507,7 +438,7 @@ def write_publication_package_revalidation_report(
     expected_relative_paths = {
         row.relative_path for row in artifact_rows if row.relative_path
     }
-    unexpected_relative_paths = _unexpected_files(
+    unexpected_relative_paths = unexpected_files(
         package_root=package_root,
         expected_relative_paths=expected_relative_paths,
         output_root=output_root,
