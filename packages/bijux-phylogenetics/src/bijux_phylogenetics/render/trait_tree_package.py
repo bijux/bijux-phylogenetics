@@ -16,9 +16,14 @@ from bijux_phylogenetics.render.annotated_trait_tree_package import (
     AnnotatedTraitTreePublicationAudit,
     AnnotatedTraitTreeSummaryRow,
     build_annotation_strips,
+    build_coverage_row,
     build_full_label_map,
+    build_heatmap_summary_row,
+    build_label_summary_row,
     build_numeric_map,
+    build_numeric_summary_row,
     build_string_map,
+    build_string_summary_row,
     require_table,
 )
 from bijux_phylogenetics.render.html import write_html_report
@@ -29,7 +34,6 @@ from bijux_phylogenetics.render.tree_figure_package import (
 from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
 )
-from bijux_phylogenetics.render.svg import AnnotationStrip
 
 
 def _sha256(path: Path) -> str:
@@ -38,145 +42,6 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(65536), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def _coverage_row(
-    *,
-    surface: str,
-    source_kind: str,
-    required: bool,
-    taxa: list[str],
-    observed_taxa: set[str],
-) -> AnnotatedTraitTreeCoverageRow:
-    tree_taxa = set(taxa)
-    missing_taxa = sorted(taxon for taxon in taxa if taxon not in observed_taxa)
-    extra_taxa = sorted(observed_taxa - tree_taxa)
-    covered_taxa = len(tree_taxa & observed_taxa)
-    return AnnotatedTraitTreeCoverageRow(
-        surface=surface,
-        source_kind=source_kind,
-        required=required,
-        visible_taxon_count=len(taxa),
-        observed_taxon_count=len(observed_taxa),
-        covered_taxon_count=covered_taxa,
-        complete=not missing_taxa and not extra_taxa,
-        missing_taxa=missing_taxa,
-        extra_taxa=extra_taxa,
-    )
-
-
-def _label_summary_row(
-    *,
-    labels: dict[str, str],
-    taxa: list[str],
-) -> AnnotatedTraitTreeSummaryRow:
-    unique_labels = sorted(set(labels.values()))
-    return AnnotatedTraitTreeSummaryRow(
-        surface="labels",
-        source_kind="labels",
-        value_kind="text",
-        observed_taxon_count=len(taxa),
-        missing_taxon_count=0,
-        distinct_value_count=len(unique_labels),
-        minimum_numeric_value=None,
-        maximum_numeric_value=None,
-        example_values=unique_labels[:3],
-    )
-
-
-def _string_summary_row(
-    *,
-    surface: str,
-    source_kind: str,
-    values: dict[str, str],
-    taxa: list[str],
-) -> AnnotatedTraitTreeSummaryRow:
-    unique_values = sorted(set(values.values()))
-    return AnnotatedTraitTreeSummaryRow(
-        surface=surface,
-        source_kind=source_kind,
-        value_kind="categorical",
-        observed_taxon_count=len(values),
-        missing_taxon_count=len(taxa)
-        - len({taxon for taxon in taxa if taxon in values}),
-        distinct_value_count=len(unique_values),
-        minimum_numeric_value=None,
-        maximum_numeric_value=None,
-        example_values=unique_values[:4],
-    )
-
-
-def _numeric_summary_row(
-    *,
-    surface: str,
-    source_kind: str,
-    values: dict[str, float],
-    taxa: list[str],
-) -> AnnotatedTraitTreeSummaryRow:
-    observed_values = list(values.values())
-    return AnnotatedTraitTreeSummaryRow(
-        surface=surface,
-        source_kind=source_kind,
-        value_kind="numeric",
-        observed_taxon_count=len(observed_values),
-        missing_taxon_count=len(taxa)
-        - len({taxon for taxon in taxa if taxon in values}),
-        distinct_value_count=len(set(observed_values)),
-        minimum_numeric_value=min(observed_values) if observed_values else None,
-        maximum_numeric_value=max(observed_values) if observed_values else None,
-        example_values=[
-            format(value, ".6g") for value in sorted(set(observed_values))[:4]
-        ],
-    )
-
-
-def _heatmap_summary_row(
-    *,
-    column: AnnotationStrip,
-    taxa: list[str],
-) -> AnnotatedTraitTreeSummaryRow:
-    observed_values = [value for value in column.values.values() if value]
-    if not observed_values:
-        return AnnotatedTraitTreeSummaryRow(
-            surface=column.name,
-            source_kind="heatmap",
-            value_kind="empty",
-            observed_taxon_count=0,
-            missing_taxon_count=len(taxa),
-            distinct_value_count=0,
-            minimum_numeric_value=None,
-            maximum_numeric_value=None,
-            example_values=[],
-        )
-    try:
-        numeric_values = [float(value) for value in observed_values]
-    except ValueError:
-        unique_values = sorted(set(observed_values))
-        return AnnotatedTraitTreeSummaryRow(
-            surface=column.name,
-            source_kind="heatmap",
-            value_kind="categorical",
-            observed_taxon_count=len(observed_values),
-            missing_taxon_count=len(taxa)
-            - len({taxon for taxon in taxa if taxon in column.values}),
-            distinct_value_count=len(unique_values),
-            minimum_numeric_value=None,
-            maximum_numeric_value=None,
-            example_values=unique_values[:4],
-        )
-    unique_values = sorted(set(numeric_values))
-    return AnnotatedTraitTreeSummaryRow(
-        surface=column.name,
-        source_kind="heatmap",
-        value_kind="numeric",
-        observed_taxon_count=len(observed_values),
-        missing_taxon_count=len(taxa)
-        - len({taxon for taxon in taxa if taxon in column.values}),
-        distinct_value_count=len(unique_values),
-        minimum_numeric_value=min(numeric_values),
-        maximum_numeric_value=max(numeric_values),
-        example_values=[format(value, ".6g") for value in unique_values[:4]],
-    )
 
 
 def _coverage_lines(rows: list[AnnotatedTraitTreeCoverageRow]) -> str:
@@ -322,7 +187,7 @@ def build_annotated_trait_tree_package(
     )
 
     coverage_rows = [
-        _coverage_row(
+        build_coverage_row(
             surface="labels",
             source_kind="labels",
             required=True,
@@ -330,11 +195,11 @@ def build_annotated_trait_tree_package(
             observed_taxa=set(labels),
         )
     ]
-    summary_rows = [_label_summary_row(labels=labels, taxa=taxa)]
+    summary_rows = [build_label_summary_row(labels=labels, taxa=taxa)]
 
     if categorical_column is not None:
         coverage_rows.append(
-            _coverage_row(
+            build_coverage_row(
                 surface=categorical_column,
                 source_kind="categorical_trait",
                 required=True,
@@ -343,7 +208,7 @@ def build_annotated_trait_tree_package(
             )
         )
         summary_rows.append(
-            _string_summary_row(
+            build_string_summary_row(
                 surface=categorical_column,
                 source_kind="categorical_trait",
                 values=categorical_traits,
@@ -352,7 +217,7 @@ def build_annotated_trait_tree_package(
         )
     if continuous_column is not None:
         coverage_rows.append(
-            _coverage_row(
+            build_coverage_row(
                 surface=continuous_column,
                 source_kind="continuous_trait",
                 required=True,
@@ -361,7 +226,7 @@ def build_annotated_trait_tree_package(
             )
         )
         summary_rows.append(
-            _numeric_summary_row(
+            build_numeric_summary_row(
                 surface=continuous_column,
                 source_kind="continuous_trait",
                 values=continuous_traits,
@@ -370,7 +235,7 @@ def build_annotated_trait_tree_package(
         )
     for strip in metadata_strips:
         coverage_rows.append(
-            _coverage_row(
+            build_coverage_row(
                 surface=strip.name,
                 source_kind="metadata_strip",
                 required=True,
@@ -379,7 +244,7 @@ def build_annotated_trait_tree_package(
             )
         )
         summary_rows.append(
-            _string_summary_row(
+            build_string_summary_row(
                 surface=strip.name,
                 source_kind="metadata_strip",
                 values=strip.values,
@@ -388,7 +253,7 @@ def build_annotated_trait_tree_package(
         )
     for strip in heatmap_strips:
         coverage_rows.append(
-            _coverage_row(
+            build_coverage_row(
                 surface=strip.name,
                 source_kind="heatmap",
                 required=True,
@@ -396,7 +261,7 @@ def build_annotated_trait_tree_package(
                 observed_taxa=set(strip.values),
             )
         )
-        summary_rows.append(_heatmap_summary_row(column=strip, taxa=taxa))
+        summary_rows.append(build_heatmap_summary_row(column=strip, taxa=taxa))
 
     required_rows = [row for row in coverage_rows if row.required]
     complete_surface_count = sum(1 for row in required_rows if row.complete)
