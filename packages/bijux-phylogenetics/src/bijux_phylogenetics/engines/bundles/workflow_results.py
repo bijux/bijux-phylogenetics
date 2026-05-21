@@ -11,11 +11,15 @@ from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 from ..common import load_engine_manifest
 from ..presentation import render_inference_workflow_report
 from .workflow_result_bundle import (
+    BUNDLE_MANIFEST_NAME,
     WorkflowResultBundleExtraInput,
     WorkflowResultBundleFile,
     WorkflowResultBundleIssue,
     WorkflowResultBundleReport,
     WorkflowResultBundleValidationReport,
+    WORKFLOW_CONFIG_NAME,
+    WORKFLOW_REPORT_NAME,
+    WORKFLOW_RERUN_NAME,
     build_bundle_rerun_payload,
     copy_bundle_file,
     input_label,
@@ -42,11 +46,6 @@ __all__ = [
     "export_workflow_result_bundle",
     "validate_workflow_result_bundle",
 ]
-
-_BUNDLE_MANIFEST_NAME = "bundle.manifest.json"
-_WORKFLOW_REPORT_NAME = "workflow-report.html"
-_WORKFLOW_CONFIG_NAME = "workflow-config.json"
-_WORKFLOW_RERUN_NAME = "workflow-rerun.json"
 
 def export_workflow_result_bundle(
     manifest_path: Path,
@@ -108,7 +107,7 @@ def export_workflow_result_bundle(
             )
         )
 
-    config_path = bundle_root / _WORKFLOW_CONFIG_NAME
+    config_path = bundle_root / WORKFLOW_CONFIG_NAME
     bundle_config_payload = (
         dict(payload.get("config", {}))
         if config_payload is None
@@ -125,7 +124,7 @@ def export_workflow_result_bundle(
         )
     )
 
-    rerun_path = bundle_root / _WORKFLOW_RERUN_NAME
+    rerun_path = bundle_root / WORKFLOW_RERUN_NAME
     rerun_payload = build_bundle_rerun_payload(payload, bundle_root=bundle_root)
     write_bundle_json(rerun_path, rerun_payload)
     files.append(
@@ -330,7 +329,7 @@ def export_workflow_result_bundle(
     if extra_notes:
         notes.extend(extra_notes)
 
-    report_path = bundle_root / "reports" / _WORKFLOW_REPORT_NAME
+    report_path = bundle_root / "reports" / WORKFLOW_REPORT_NAME
     write_bundle_report(
         report_path,
         workflow=workflow,
@@ -380,7 +379,7 @@ def export_workflow_result_bundle(
         )
     )
 
-    bundle_manifest_path = bundle_root / _BUNDLE_MANIFEST_NAME
+    bundle_manifest_path = bundle_root / BUNDLE_MANIFEST_NAME
     bundle_manifest = {
         "workflow": workflow,
         "source_manifest_path": str(Path(manifest_path)),
@@ -445,7 +444,7 @@ def validate_workflow_result_bundle(
 ) -> WorkflowResultBundleValidationReport:
     """Validate one workflow-result bundle for checksum integrity and completeness."""
     issues: list[WorkflowResultBundleIssue] = []
-    bundle_manifest_path = bundle_root / _BUNDLE_MANIFEST_NAME
+    bundle_manifest_path = bundle_root / BUNDLE_MANIFEST_NAME
     if not bundle_manifest_path.exists():
         return WorkflowResultBundleValidationReport(
             bundle_root=bundle_root,
@@ -457,7 +456,7 @@ def validate_workflow_result_bundle(
                     kind="missing-bundle-manifest",
                     label="bundle_manifest",
                     detail=f"bundle manifest not found: {bundle_manifest_path}",
-                    relative_path=Path(_BUNDLE_MANIFEST_NAME),
+                    relative_path=Path(BUNDLE_MANIFEST_NAME),
                 )
             ],
         )

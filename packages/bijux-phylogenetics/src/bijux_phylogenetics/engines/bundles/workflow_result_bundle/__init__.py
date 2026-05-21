@@ -22,13 +22,21 @@ from .source_inventory import required_output_paths as required_output_paths
 from .source_inventory import step_manifest_paths as step_manifest_paths
 from .presentation import render_bundle_readme as render_bundle_readme
 from .presentation import write_bundle_report as write_bundle_report
+from .layout import BUNDLE_MANIFEST_NAME as BUNDLE_MANIFEST_NAME
+from .layout import WORKFLOW_CONFIG_NAME as WORKFLOW_CONFIG_NAME
+from .layout import WORKFLOW_REPORT_NAME as WORKFLOW_REPORT_NAME
+from .layout import WORKFLOW_RERUN_NAME as WORKFLOW_RERUN_NAME
 
 __all__ = [
+    "BUNDLE_MANIFEST_NAME",
     "WorkflowResultBundleExtraInput",
     "WorkflowResultBundleFile",
     "WorkflowResultBundleIssue",
     "WorkflowResultBundleReport",
     "WorkflowResultBundleValidationReport",
+    "WORKFLOW_CONFIG_NAME",
+    "WORKFLOW_REPORT_NAME",
+    "WORKFLOW_RERUN_NAME",
     "copy_bundle_file",
     "input_label",
     "maybe_path",
