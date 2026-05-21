@@ -24,6 +24,7 @@ EXPECTED_ROOT_GATEWAYS = [
     "distance",
     "evidence",
     "parity",
+    "phylo",
     "trees",
 ]
 
