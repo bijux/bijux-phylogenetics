@@ -6,6 +6,7 @@ from .dataset import (
     RabiesMethodSensitivityPanelExportResult,
     RabiesMethodSensitivityVariant,
 )
+from .demo import RabiesMethodSensitivityPanelDemoResult
 from .workflow import (
     RabiesMethodSensitivityCladeRow,
     RabiesMethodSensitivityConclusionRow,
@@ -19,6 +20,7 @@ __all__ = [
     "RabiesMethodSensitivityCladeRow",
     "RabiesMethodSensitivityConclusionRow",
     "RabiesMethodSensitivityPanelDataset",
+    "RabiesMethodSensitivityPanelDemoResult",
     "RabiesMethodSensitivityPanelExportResult",
     "RabiesMethodSensitivityPanelWorkflowBundle",
     "RabiesMethodSensitivityPanelWorkflowReport",
