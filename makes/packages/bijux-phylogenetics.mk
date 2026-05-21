@@ -33,6 +33,7 @@ BUILD_PRE_TARGETS := sync-license-assets-package
 BUILD_TEMP_CLEAN_PATHS := build dist *.egg-info
 BUILD_POST_TARGETS := build-install-smoke
 PACKAGE_NAME := bijux-phylogenetics
+SBOM_REQUIREMENTS_WRITER := -m bijux_phylogenetics_dev.quality.requirements_writer
 
 quality-compileall:
 	@"$(VENV_PYTHON)" -m compileall src | tee "$(PROJECT_ARTIFACTS_DIR)/quality/compileall.log"
