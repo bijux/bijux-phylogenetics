@@ -82,15 +82,11 @@ class _NewickParser:
         )
 
     def _parse_leaf(self) -> TreeNode:
-        label = self._parse_required_label()
-        branch_length = self._parse_optional_branch_length()
-        return TreeNode(name=label, branch_length=branch_length)
-
-    def _parse_required_label(self) -> str:
         label = self._parse_optional_label()
-        if label is None:
+        branch_length = self._parse_optional_branch_length()
+        if label is None and branch_length is None:
             raise self._parse_error("terminal node is missing a label")
-        return label
+        return TreeNode(name=label, branch_length=branch_length)
 
     def _parse_optional_label(self) -> str | None:
         self._skip_whitespace()

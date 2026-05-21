@@ -32,6 +32,15 @@ def test_loads_newick_unescapes_embedded_quotes_in_labels() -> None:
     assert dumps_newick(tree) == "(B:0.2,'O''Brien taxon':0.1);"
 
 
+def test_loads_newick_allows_unnamed_tips_with_branch_lengths() -> None:
+    tree = loads_newick("((:0.1,B:0.2):0.3,C:0.4);")
+
+    unnamed_tip = next(node for node in tree.iter_leaves() if node.name is None)
+
+    assert unnamed_tip.branch_length == 0.1
+    assert tree.tip_count == 3
+
+
 def test_loads_newick_tree_set_reads_multiple_records_from_text() -> None:
     trees = loads_newick_tree_set("((A:0.1,B:0.1):0.2,C:0.3);\n(A:0.1,B:0.2,C:0.3);\n")
 
