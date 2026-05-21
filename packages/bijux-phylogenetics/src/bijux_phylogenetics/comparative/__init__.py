@@ -1,43 +1,6 @@
 """Comparative-analysis methods and helpers."""
 
-from .covariance import (
-    BrownianCovarianceReport,
-    summarize_brownian_covariance,
-    summarize_brownian_covariance_from_tree,
-    write_brownian_covariance_long_table,
-    write_brownian_covariance_matrix_table,
-)
-from .continuous import (
-    BrownianMotionFitReport,
-    ComparativeParameterInterval,
-    ComparativeResidualOutlier,
-    ComparativeResidualSummary,
-    OUIdentifiabilityWarning,
-    OUTraitModelReport,
-    BrownianRegimeBranchRow,
-    BrownianRegimeExclusion,
-    BrownianRegimeFitSummaryReport,
-    BrownianRegimeIdentifiabilityWarning,
-    BrownianRegimeProfileRow,
-    BrownianRegimeRateRow,
-    compare_brownian_and_ou_models,
-    fit_brownian_motion_model,
-    fit_ornstein_uhlenbeck_model,
-    summarize_brownian_regime_rates,
-    write_brownian_regime_branch_table,
-    write_brownian_regime_comparison_table,
-    write_brownian_regime_exclusion_table,
-    write_brownian_regime_profile_table,
-    write_brownian_regime_rate_table,
-    write_brownian_regime_summary_table,
-)
-from .continuous import (
-    BrownianTraitEvolutionExclusion,
-    BrownianTraitEvolutionSummaryReport,
-    summarize_brownian_trait_evolution,
-    write_brownian_trait_evolution_exclusion_table,
-    write_brownian_trait_evolution_summary_table,
-)
+from .public_api.continuous_traits import *
 from .clades import (
     ComparativeCladeResidualReport,
     ComparativeCladeCoefficientChangeRow,
@@ -59,13 +22,6 @@ from .clades import (
     write_comparative_clade_stability_table,
     write_comparative_residual_clade_table,
     write_comparative_residual_taxon_table,
-)
-from .common import (
-    ComparativeDataset,
-    ComparativeReadinessReport,
-    NumericTraitSummary,
-    summarize_numeric_trait,
-    summarize_numeric_trait_readiness,
 )
 from .continuous_mode_recovery import (
     ContinuousModeRecoveryCaseReport,
@@ -108,43 +64,6 @@ from .discrete_mode_recovery import (
     write_discrete_mode_recovery_summary_table,
     write_discrete_mode_recovery_warning_table,
     write_geiger_fitdiscrete_recovery_reference_payload_table,
-)
-from .trait_dependence import (
-    CorrelatedTraitComparisonRow,
-    CorrelatedTraitEvolutionReport,
-    CorrelatedTraitExclusion,
-    CorrelatedTraitObservationRow,
-    summarize_correlated_trait_evolution,
-    write_correlated_trait_comparison_table,
-    write_correlated_trait_exclusion_table,
-    write_correlated_trait_observation_table,
-    write_correlated_trait_summary_table,
-)
-from .covariance import (
-    ComparativeCovarianceAuditReport,
-    CovarianceAuditCandidateRow,
-    CovarianceAuditExcludedTaxon,
-    summarize_comparative_covariance_audit,
-    write_comparative_covariance_audit_candidate_table,
-    write_comparative_covariance_audit_excluded_taxa_table,
-    write_comparative_covariance_audit_summary_table,
-)
-from .disparity import (
-    CladeDisparityRow,
-    ContinuousCladeDisparityReport,
-    DisparityTaxonExclusion,
-    DisparityThroughTimeBinRow,
-    DisparityThroughTimeCurveRow,
-    DisparityThroughTimeReport,
-    render_disparity_through_time_svg,
-    summarize_continuous_clade_disparity,
-    summarize_disparity_through_time,
-    write_continuous_clade_disparity_table,
-    write_continuous_clade_disparity_summary_table,
-    write_disparity_through_time_bin_table,
-    write_disparity_through_time_curve_table,
-    write_disparity_through_time_exclusion_table,
-    write_disparity_through_time_summary_table,
 )
 from .diversification import (
     CladeDiversificationObservation,
@@ -213,17 +132,6 @@ from .discrete_mk import (
     write_discrete_mk_rate_table,
     write_discrete_mk_summary_table,
 )
-from .continuous import (
-    EarlyBurstIdentifiabilityWarning,
-    EarlyBurstRateChangeProfileRow,
-    EarlyBurstTraitEvolutionExclusion,
-    EarlyBurstTraitEvolutionSummaryReport,
-    summarize_early_burst_trait_evolution,
-    write_early_burst_rate_change_profile_table,
-    write_early_burst_trait_evolution_comparison_table,
-    write_early_burst_trait_evolution_exclusion_table,
-    write_early_burst_trait_evolution_summary_table,
-)
 from .evolutionary_modes import (
     ComparativeTreeRescalingReport,
     ContinuousEvolutionaryModeComparisonReport,
@@ -288,13 +196,6 @@ from .regression import (
     write_multivariate_residual_covariance_table,
     write_multivariate_response_coefficient_table,
     write_multivariate_response_model_table,
-)
-from .continuous import (
-    OUTraitEvolutionExclusion,
-    OUTraitEvolutionSummaryReport,
-    summarize_ou_trait_evolution,
-    write_ou_trait_evolution_exclusion_table,
-    write_ou_trait_evolution_summary_table,
 )
 from .pgls import (
     ComparativeFormulaSpecification,
@@ -472,44 +373,6 @@ from .signal import (
     estimate_pagels_lambda,
     evaluate_pagels_lambda_likelihood,
     evaluate_pagels_lambda_likelihood_from_dataset,
-)
-from .traits import (
-    BranchIdentityMetadata,
-    TraitImputationExclusion,
-    TraitImputationHoldoutRow,
-    TraitImputationRow,
-    TraitImputationSummaryReport,
-    TraitOutlierExclusion,
-    TraitOutlierSummaryReport,
-    TraitOutlierTaxonRow,
-    TraitRateThroughTimeExclusion,
-    TraitRateThroughTimeIntervalRow,
-    TraitRateThroughTimeSummaryReport,
-    TraitRegimeBranchRow,
-    TraitRegimeExclusion,
-    TraitRegimeMappingReport,
-    TraitRegimeNodeRow,
-    build_branch_identity_lookup,
-    render_trait_regime_map,
-    resolve_branch_regime_id_column,
-    summarize_trait_imputation,
-    summarize_trait_outliers,
-    summarize_trait_rate_through_time,
-    summarize_trait_regime_mapping,
-    write_trait_imputation_exclusion_table,
-    write_trait_imputation_holdout_table,
-    write_trait_imputation_summary_table,
-    write_trait_imputation_table,
-    write_trait_outlier_exclusion_table,
-    write_trait_outlier_summary_table,
-    write_trait_outlier_taxon_table,
-    write_trait_rate_through_time_exclusion_table,
-    write_trait_rate_through_time_interval_table,
-    write_trait_rate_through_time_summary_table,
-    write_trait_regime_branch_table,
-    write_trait_regime_exclusion_table,
-    write_trait_regime_node_table,
-    write_trait_regime_summary_table,
 )
 
 __all__ = [
