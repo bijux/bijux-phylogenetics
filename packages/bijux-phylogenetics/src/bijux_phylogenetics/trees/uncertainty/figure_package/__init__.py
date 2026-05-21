@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import asdict
-from hashlib import sha256
 import json
 from pathlib import Path
 from time import perf_counter
@@ -48,6 +46,7 @@ from .contracts import (
     TreeSetUncertaintyLegendEntry,
     TreeSetUncertaintyPublicationAudit,
 )
+from .manifest import build_machine_manifest
 from .plots import (
     write_clade_support_plot,
     write_topology_cluster_plot,
@@ -62,18 +61,6 @@ from .publication_review import (
     write_caption,
     write_legend_table,
 )
-
-
-def _sha256(path: Path) -> str:
-    digest = sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def _json_ready(payload: object) -> object:
-    return json.loads(json.dumps(payload, default=str))
 
 
 def build_tree_set_uncertainty_figure_package(
@@ -315,29 +302,24 @@ def build_tree_set_uncertainty_figure_package(
                 ("review", review_path),
             ],
         )
-        machine_manifest = {
-            "report_kind": "tree_set_uncertainty_figure_package",
-            "source_path": str(tree_set_path),
-            "input_checksums": {str(tree_set_path): _sha256(tree_set_path)},
-            "output_paths": [str(path) for path in artifact_paths],
-            "output_checksums": {str(path): _sha256(path) for path in artifact_paths},
-            "reproducibility_manifest_path": str(reproducibility_manifest_path),
-            "reproducibility_manifest_checksum": _sha256(reproducibility_manifest_path),
-            "reproducibility_manifest": reproducibility_manifest,
-            "layout": layout,
-            "plot_row_limit": plot_row_limit,
-            "processing": asdict(processing),
-            "budget": asdict(budget_report),
-            "consensus": _json_ready(asdict(consensus)),
-            "multimodality": _json_ready(asdict(multimodality)),
-            "clade_conflicts": _json_ready(asdict(conflicts)),
-            "conclusions": _json_ready(asdict(conclusions)),
-            "methods_summary": _json_ready(asdict(methods_summary)),
-            "audit": _json_ready(asdict(audit)),
-            "outputs": {"methods_summary_path": str(methods_summary_path)},
-            "metrics": {"methods_summary_warning_count": methods_summary.warning_count},
-            "linked_artifact_count": len(artifact_paths),
-        }
+        machine_manifest = build_machine_manifest(
+            tree_set_path=tree_set_path,
+            artifact_paths=artifact_paths,
+            reproducibility_manifest_path=reproducibility_manifest_path,
+            reproducibility_manifest=reproducibility_manifest,
+            layout=layout,
+            plot_row_limit=plot_row_limit,
+            summary=summary,
+            processing=processing,
+            budget_report=budget_report,
+            consensus=consensus,
+            multimodality=multimodality,
+            conflicts=conflicts,
+            conclusions=conclusions,
+            methods_summary=methods_summary,
+            audit=audit,
+            methods_summary_path=methods_summary_path,
+        )
         manifest_path.write_text(
             json.dumps(machine_manifest, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
