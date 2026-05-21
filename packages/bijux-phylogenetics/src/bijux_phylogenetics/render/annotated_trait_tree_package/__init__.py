@@ -23,6 +23,11 @@ from .inputs import (
     build_string_map,
     require_table,
 )
+from .presentation import (
+    build_coverage_lines,
+    build_summary_lines,
+    write_review_report,
+)
 from .summaries import (
     build_coverage_row,
     build_heatmap_summary_row,
@@ -37,6 +42,7 @@ __all__ = [
     "AnnotatedTraitTreePublicationAudit",
     "AnnotatedTraitTreeSummaryRow",
     "build_annotation_strips",
+    "build_coverage_lines",
     "build_package_manifest",
     "build_coverage_row",
     "build_full_label_map",
@@ -48,8 +54,10 @@ __all__ = [
     "build_string_summary_row",
     "require_table",
     "sha256",
+    "build_summary_lines",
     "write_annotation_coverage_table",
     "write_annotation_summary_table",
     "write_package_manifest",
     "write_package_reproducibility_manifest",
+    "write_review_report",
 ]

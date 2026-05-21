@@ -12,13 +12,13 @@ from bijux_phylogenetics.render.annotated_trait_tree_package import (
     AnnotatedTraitTreePublicationAudit,
     AnnotatedTraitTreeSummaryRow,
     build_annotation_strips,
-    build_package_manifest,
     build_coverage_row,
     build_full_label_map,
     build_heatmap_summary_row,
     build_label_summary_row,
     build_numeric_map,
     build_numeric_summary_row,
+    build_package_manifest,
     build_string_map,
     build_string_summary_row,
     require_table,
@@ -27,40 +27,12 @@ from bijux_phylogenetics.render.annotated_trait_tree_package import (
     write_annotation_summary_table,
     write_package_manifest,
     write_package_reproducibility_manifest,
+    write_review_report,
 )
-from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.tree_figure_package import (
     TreeFigurePackageResult,
     build_tree_figure_package,
 )
-
-
-def _coverage_lines(rows: list[AnnotatedTraitTreeCoverageRow]) -> str:
-    return "\n".join(
-        (
-            f"{row.surface} [{row.source_kind}] complete={row.complete} "
-            f"covered={row.covered_taxon_count}/{row.visible_taxon_count} "
-            f"missing={','.join(row.missing_taxa) if row.missing_taxa else 'none'} "
-            f"extra={','.join(row.extra_taxa) if row.extra_taxa else 'none'}"
-        )
-        for row in rows
-    )
-
-
-def _summary_lines(rows: list[AnnotatedTraitTreeSummaryRow]) -> str:
-    rendered: list[str] = []
-    for row in rows:
-        numeric_range = (
-            ""
-            if row.minimum_numeric_value is None
-            else f" range={format(row.minimum_numeric_value, '.6g')}..{format(row.maximum_numeric_value, '.6g')}"
-        )
-        examples = ",".join(row.example_values) if row.example_values else "none"
-        rendered.append(
-            f"{row.surface} [{row.source_kind}/{row.value_kind}] observed={row.observed_taxon_count} "
-            f"missing={row.missing_taxon_count} distinct={row.distinct_value_count}{numeric_range} examples={examples}"
-        )
-    return "\n".join(rendered)
 
 
 def build_annotated_trait_tree_package(
@@ -338,42 +310,17 @@ def build_annotated_trait_tree_package(
     manifest["reproducibility_manifest"] = reproducibility_manifest
     write_package_manifest(manifest_path, manifest)
 
-    write_html_report(
+    write_review_report(
         title=title,
-        out_path=review_path,
-        embedded_json=manifest,
-        summary_metrics=[
-            ("publication_ready", audit.publication_ready),
-            ("required_surface_count", audit.required_surface_count),
-            ("complete_surface_count", audit.complete_surface_count),
-            ("missing_surface_count", audit.missing_surface_count),
-            ("legend_entry_count", audit.legend_entry_count),
-            ("caption_ready", audit.caption_ready),
-            ("legible", audit.legible),
-        ],
-        artifact_links=[
-            ("figure", figure_package.figure_path.name, "annotated vector figure"),
-            ("caption draft", figure_package.caption_path.name, None),
-            ("legend ledger", figure_package.legend_path.name, None),
-            ("tip annotations", figure_package.annotations_path.name, None),
-            ("annotation coverage", coverage_path.name, None),
-            ("surface summary", summary_path.name, None),
-            ("package manifest", manifest_path.name, None),
-        ],
-        sections=[
-            (
-                "reviewer summary",
-                "\n".join(f"- {line}" for line in audit.reviewer_summary),
-            ),
-            (
-                "publication limitations",
-                "\n".join(f"- {line}" for line in audit.limitations)
-                if audit.limitations
-                else "none",
-            ),
-            ("annotation coverage", _coverage_lines(coverage_rows)),
-            ("annotation surface summary", _summary_lines(summary_rows)),
-        ],
+        review_path=review_path,
+        manifest_path=manifest_path,
+        manifest=manifest,
+        audit=audit,
+        figure_package=figure_package,
+        coverage_path=coverage_path,
+        summary_path=summary_path,
+        coverage_rows=coverage_rows,
+        summary_rows=summary_rows,
     )
 
     return AnnotatedTraitTreePackageResult(
