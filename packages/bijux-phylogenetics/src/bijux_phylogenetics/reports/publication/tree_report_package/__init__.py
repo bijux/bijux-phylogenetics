@@ -1,16 +1,13 @@
 from __future__ import annotations
 
 import csv
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 from hashlib import sha256
 from html import escape
 import json
 from pathlib import Path
 
 from bijux_phylogenetics.diagnostics.validation import (
-    TreeForensicReport,
-    TreeInspectionReport,
-    TreeValidationReport,
     forensic_tree_path,
     inspect_tree_path,
     validate_tree_path,
@@ -22,12 +19,10 @@ from bijux_phylogenetics.evidence.provenance.method_tiers import (
 from bijux_phylogenetics.io.iqtree_support import support_fraction
 from bijux_phylogenetics.render.tree_svg import (
     SupportLabelRenderAudit,
-    TreeRenderResult,
     audit_support_label_rendering,
     render_tree_svg,
 )
 from bijux_phylogenetics.reports.methods import (
-    TreeValidationMethodsSummaryTextResult,
     write_tree_validation_methods_summary_text,
 )
 from bijux_phylogenetics.reports.review import (
@@ -35,70 +30,17 @@ from bijux_phylogenetics.reports.review import (
     write_reviewer_audit_checklist,
 )
 from bijux_phylogenetics.trees import (
-    BranchLengthDistributionReport,
     CladeTableReport,
     CladeTableRow,
     analyze_branch_length_distribution,
     extract_tree_clades,
 )
 
-
-@dataclass(frozen=True, slots=True)
-class TreeSupportRow:
-    node_kind: str
-    node: str
-    node_label: str | None
-    descendant_taxa: tuple[str, ...]
-    support: float | None
-    support_fraction: float | None
-    support_class: str
-    branch_length: float | None
-    root_depth: float | None
-
-
-@dataclass(frozen=True, slots=True)
-class TreeBranchStatisticsRow:
-    branch_count: int
-    defined_branch_count: int
-    missing_branch_count: int
-    zero_length_branch_count: int
-    negative_branch_count: int
-    positive_branch_count: int
-    long_outlier_count: int
-    short_outlier_count: int
-    minimum_branch_length: float | None
-    maximum_branch_length: float | None
-    mean_branch_length: float | None
-    median_branch_length: float | None
-    positive_branch_median: float | None
-
-
-@dataclass(slots=True)
-class TreeReportPackageResult:
-    output_dir: Path
-    report_path: Path
-    figure_path: Path
-    methods_summary_path: Path
-    reviewer_audit_checklist_path: Path
-    support_table_path: Path
-    clade_table_path: Path
-    branch_stats_path: Path
-    manifest_path: Path
-    validation: TreeValidationReport
-    inspection: TreeInspectionReport
-    forensic: TreeForensicReport
-    figure: TreeRenderResult
-    support_audit: SupportLabelRenderAudit
-    clades: CladeTableReport
-    branch_lengths: BranchLengthDistributionReport
-    support_rows: list[TreeSupportRow]
-    branch_stats: TreeBranchStatisticsRow
-    method_tier: MethodTierAssessment
-    reviewer_summary: list[str]
-    limitations: list[str]
-    methods_summary: TreeValidationMethodsSummaryTextResult
-    reviewer_audit_checklist: ReviewerAuditChecklist
-    machine_manifest: dict[str, object]
+from .contracts import (
+    TreeBranchStatisticsRow,
+    TreeReportPackageResult,
+    TreeSupportRow,
+)
 
 
 def _checksum(path: Path) -> str:
