@@ -4,11 +4,7 @@ from pathlib import Path
 import statistics
 import tempfile
 
-from bijux_phylogenetics.ancestral.common import (
-    node_descendant_taxa,
-    node_signature,
-    stable_value,
-)
+from bijux_phylogenetics.ancestral.common import stable_value
 from bijux_phylogenetics.ancestral.tree_set.preparation import (
     load_tree_set_trees,
     prepare_analysis_tree_set,
@@ -17,22 +13,23 @@ from bijux_phylogenetics.ancestral.tree_set.preparation import (
 )
 from bijux_phylogenetics.biogeography.state_models import (
     GeographicExcludedTaxonRow,
-    GeographicStateModelReport,
     summarize_geographic_state_model,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from .migration_event_review import (
+    build_migration_event_rows,
     GeographicMigrationEventReport,
-    GeographicMigrationEventRow,
     GeographicMigrationEventSummary,
     GeographicMigrationTreeRow,
     GeographicMigrationTreeSetEventRow,
-    GeographicMigrationTreeSetEventSummaryRow,
     GeographicMigrationTreeSetReport,
     GeographicMigrationTreeSetSummary,
+    stringify_optional_float,
+    summarize_tree_set_events,
+    tree_depth,
+    tree_set_support_warnings,
 )
 
 
@@ -55,8 +52,8 @@ def summarize_geographic_migration_events(
         allowed_regions=allowed_regions,
     )
     tree = load_tree(tree_path)
-    event_rows = _build_migration_event_rows(base_report, tree)
-    tree_depth = _tree_depth(tree)
+    event_rows = build_migration_event_rows(base_report, tree)
+    tree_depth_value = tree_depth(tree)
     supports = [row.support for row in event_rows]
     summary = GeographicMigrationEventSummary(
         trait=base_report.trait,
@@ -66,7 +63,7 @@ def summarize_geographic_migration_events(
         likelihood_method=base_report.likelihood_method,
         analyzed_taxon_count=base_report.summary.analyzed_taxon_count,
         excluded_taxon_count=base_report.summary.excluded_taxon_count,
-        tree_depth=tree_depth,
+        tree_depth=tree_depth_value,
         event_count=len(event_rows),
         strongly_supported_event_count=sum(
             row.strongly_supported for row in event_rows
@@ -206,11 +203,11 @@ def summarize_geographic_migration_event_tree_set(
                 )
                 for row in report.event_rows
             )
-    event_summaries = _summarize_tree_set_events(
+    event_summaries = summarize_tree_set_events(
         event_rows,
         kept_tree_count=len(analysis_trees),
     )
-    warnings.extend(_tree_set_support_warnings(event_summaries))
+    warnings.extend(tree_set_support_warnings(event_summaries))
     exclusion_rows = [
         GeographicExcludedTaxonRow(
             taxon=row.taxon,
@@ -307,10 +304,10 @@ def write_geographic_migration_event_summary_table(
                     summary.strongly_supported_event_count
                 ),
                 "mean_event_support": str(summary.mean_event_support),
-                "earliest_midpoint_depth": _stringify_optional_float(
+                "earliest_midpoint_depth": stringify_optional_float(
                     summary.earliest_midpoint_depth
                 ),
-                "latest_midpoint_depth": _stringify_optional_float(
+                "latest_midpoint_depth": stringify_optional_float(
                     summary.latest_midpoint_depth
                 ),
                 "warning_count": str(summary.warning_count),
@@ -560,150 +557,6 @@ def write_geographic_migration_tree_set_exclusion_table(
     return _write_geographic_exclusion_rows(path, report.exclusion_rows)
 
 
-def _build_migration_event_rows(
-    base_report: GeographicStateModelReport,
-    tree: PhyloTree,
-) -> list[GeographicMigrationEventRow]:
-    node_by_signature = {node_signature(node): node for node in tree.iter_nodes()}
-    depth_by_node = _node_depths(tree)
-    rows: list[GeographicMigrationEventRow] = []
-    for event in base_report.transition_event_rows:
-        if not event.changed:
-            continue
-        child_node = node_by_signature[event.child_node]
-        child_taxa = node_descendant_taxa(child_node)
-        parent_depth = depth_by_node[event.parent_node]
-        child_depth = depth_by_node[event.child_node]
-        branch_length = stable_value(child_depth - parent_depth)
-        rows.append(
-            GeographicMigrationEventRow(
-                branch_id=event.child_node,
-                parent_node=event.parent_node,
-                child_node=event.child_node,
-                child_descendant_taxa=child_taxa,
-                branch_length=branch_length,
-                parent_depth=parent_depth,
-                child_depth=child_depth,
-                midpoint_depth=stable_value((parent_depth + child_depth) / 2.0),
-                source_region=event.source_region,
-                target_region=event.target_region,
-                support=stable_value(event.support),
-                strongly_supported=event.strongly_supported,
-                confidence_class=_classify_support(event.support),
-            )
-        )
-    return sorted(
-        rows,
-        key=lambda row: (
-            row.midpoint_depth,
-            row.source_region,
-            row.target_region,
-            row.branch_id,
-        ),
-    )
-
-
-def _node_depths(tree: PhyloTree) -> dict[str, float]:
-    depths = {node_signature(tree.root): 0.0}
-
-    def visit(node: TreeNode, depth: float) -> None:
-        for child in node.children:
-            child_depth = stable_value(depth + float(child.branch_length or 0.0))
-            depths[node_signature(child)] = child_depth
-            visit(child, child_depth)
-
-    visit(tree.root, 0.0)
-    return depths
-
-
-def _tree_depth(tree: PhyloTree) -> float:
-    return stable_value(
-        max((distance or 0.0) for distance in tree.root_to_tip_lengths())
-    )
-
-
-def _classify_support(support: float) -> str:
-    if support >= 0.9:
-        return "strong"
-    if support >= 0.6:
-        return "moderate"
-    return "weak"
-
-
-def _summarize_tree_set_events(
-    rows: list[GeographicMigrationTreeSetEventRow],
-    *,
-    kept_tree_count: int,
-) -> list[GeographicMigrationTreeSetEventSummaryRow]:
-    grouped: dict[tuple[str, str, str], list[GeographicMigrationTreeSetEventRow]] = {}
-    for row in rows:
-        grouped.setdefault(
-            (row.branch_id, row.source_region, row.target_region),
-            [],
-        ).append(row)
-    summaries: list[GeographicMigrationTreeSetEventSummaryRow] = []
-    for (branch_id, source_region, target_region), event_rows in sorted(
-        grouped.items()
-    ):
-        presence_fraction = stable_value(len(event_rows) / kept_tree_count)
-        strongly_supported_tree_count = sum(
-            row.strongly_supported for row in event_rows
-        )
-        strongly_supported_tree_fraction = stable_value(
-            strongly_supported_tree_count / len(event_rows)
-        )
-        midpoint_depths = [row.midpoint_depth for row in event_rows]
-        mean_support = stable_value(statistics.fmean(row.support for row in event_rows))
-        if presence_fraction < 1.0:
-            stability_class = "topology_sensitive"
-        elif strongly_supported_tree_fraction < 0.5 or mean_support < 0.5:
-            stability_class = "low_support"
-        else:
-            stability_class = "stable"
-        summaries.append(
-            GeographicMigrationTreeSetEventSummaryRow(
-                branch_id=branch_id,
-                child_descendant_taxa=event_rows[0].child_descendant_taxa,
-                source_region=source_region,
-                target_region=target_region,
-                tree_presence_count=len(event_rows),
-                tree_presence_fraction=presence_fraction,
-                strongly_supported_tree_count=strongly_supported_tree_count,
-                strongly_supported_tree_fraction=strongly_supported_tree_fraction,
-                mean_support=mean_support,
-                lower_95_midpoint_depth=stable_value(
-                    _empirical_quantile(midpoint_depths, 0.025)
-                ),
-                upper_95_midpoint_depth=stable_value(
-                    _empirical_quantile(midpoint_depths, 0.975)
-                ),
-                minimum_parent_depth=stable_value(
-                    min(row.parent_depth for row in event_rows)
-                ),
-                maximum_child_depth=stable_value(
-                    max(row.child_depth for row in event_rows)
-                ),
-                stability_class=stability_class,
-            )
-        )
-    return summaries
-
-
-def _tree_set_support_warnings(
-    summaries: list[GeographicMigrationTreeSetEventSummaryRow],
-) -> list[str]:
-    warnings: list[str] = []
-    if any(row.stability_class == "topology_sensitive" for row in summaries):
-        warnings.append(
-            "one or more inferred geographic movement events are topology-sensitive across retained trees"
-        )
-    if any(row.stability_class == "low_support" for row in summaries):
-        warnings.append(
-            "one or more inferred geographic movement events remain weakly supported across retained trees"
-        )
-    return warnings
-
-
 def _write_geographic_exclusion_rows(
     path: Path,
     rows: list[GeographicExcludedTaxonRow],
@@ -728,22 +581,3 @@ def _write_geographic_exclusion_rows(
             for row in rows
         ],
     )
-
-
-def _stringify_optional_float(value: float | None) -> str:
-    if value is None:
-        return ""
-    return str(value)
-
-
-def _empirical_quantile(values: list[float], probability: float) -> float:
-    ordered = sorted(values)
-    if len(ordered) == 1:
-        return ordered[0]
-    index = (len(ordered) - 1) * probability
-    lower = int(index)
-    upper = min(lower + 1, len(ordered) - 1)
-    if lower == upper:
-        return ordered[lower]
-    fraction = index - lower
-    return ordered[lower] + ((ordered[upper] - ordered[lower]) * fraction)
