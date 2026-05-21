@@ -46,6 +46,9 @@ from .artifact_outputs import (
 from .artifact_outputs import (
     write_inference_comparison_weighted_conflict_table as write_inference_comparison_weighted_conflict_table,
 )
+from .presentation import (
+    rewrite_inference_comparison_report_html as rewrite_inference_comparison_report_html,
+)
 
 __all__ = [
     "InferenceComparisonConclusionRow",
@@ -58,6 +61,7 @@ __all__ = [
     "build_inference_comparison_conflict_rows",
     "build_inference_comparison_shared_clade_rows",
     "build_inference_comparison_weighted_conflict_rows",
+    "rewrite_inference_comparison_report_html",
     "summarize_inference_comparison_conclusions",
     "write_inference_comparison_clade_table",
     "write_inference_comparison_conclusion_table",

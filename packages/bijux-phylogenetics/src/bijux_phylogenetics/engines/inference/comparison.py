@@ -1,19 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import asdict
 from datetime import UTC, datetime
-import json
 from pathlib import Path
 import shutil
 
 from bijux_phylogenetics.compare.influence import analyze_taxon_influence
-from bijux_phylogenetics.compare.presentation import (
-    ComparisonReportBuildResult,
-    build_tree_comparison_report,
-)
+from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
 from bijux_phylogenetics.compare.topology import write_tree_comparison_table
 from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
-from bijux_phylogenetics.render.html import write_html_report
 
 from ..common import build_file_checksums, write_engine_manifest
 from ..validation import compare_inferred_trees_across_engines
@@ -34,6 +28,7 @@ from .tree_inference_comparison import (
     build_inference_comparison_shared_clade_rows,
     build_inference_comparison_weighted_conflict_rows,
     summarize_inference_comparison_conclusions,
+    rewrite_inference_comparison_report_html,
     write_inference_comparison_clade_table,
     write_inference_comparison_conclusion_table,
     write_inference_comparison_summary_table,
@@ -70,87 +65,6 @@ def _copy_output(source: Path, target: Path) -> Path:
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source, target)
     return target
-
-
-def rewrite_inference_comparison_report_html(
-    *,
-    base_report: ComparisonReportBuildResult,
-    summary: InferenceComparisonConclusionSummary,
-    conclusion_rows: list[InferenceComparisonConclusionRow],
-    weighted_conflict_rows: list[InferenceComparisonWeightedConflictRow],
-    taxon_influence_report: TaxonInfluenceReport | None,
-) -> Path:
-    """Rewrite the comparison HTML with reviewer-facing stability synthesis."""
-    sections = [
-        (
-            "comparison-summary",
-            json.dumps(asdict(summary), indent=2, sort_keys=True),
-        ),
-        (
-            "clade-conclusions",
-            json.dumps(
-                [asdict(row) for row in conclusion_rows],
-                indent=2,
-                sort_keys=True,
-            ),
-        ),
-        (
-            "support-weighted-conflicts",
-            json.dumps(
-                [asdict(row) for row in weighted_conflict_rows],
-                indent=2,
-                sort_keys=True,
-            ),
-        ),
-        (
-            "taxon-influence",
-            json.dumps(
-                None
-                if taxon_influence_report is None
-                else asdict(taxon_influence_report),
-                indent=2,
-                sort_keys=True,
-                default=str,
-            ),
-        ),
-        (
-            "topology-metrics",
-            json.dumps(
-                asdict(base_report.topology), indent=2, sort_keys=True, default=str
-            ),
-        ),
-        (
-            "clade-comparison",
-            json.dumps(
-                asdict(base_report.clades), indent=2, sort_keys=True, default=str
-            ),
-        ),
-        (
-            "support-comparison",
-            json.dumps(
-                asdict(base_report.support), indent=2, sort_keys=True, default=str
-            ),
-        ),
-        (
-            "branch-length-comparison",
-            json.dumps(
-                asdict(base_report.branch_lengths),
-                indent=2,
-                sort_keys=True,
-                default=str,
-            ),
-        ),
-    ]
-    return write_html_report(
-        title="Bijux Tree Inference Comparison Report",
-        sections=sections,
-        out_path=base_report.output_path,
-        embedded_json={
-            "summary": asdict(summary),
-            "conclusions": [asdict(row) for row in conclusion_rows],
-            "weighted_conflicts": [asdict(row) for row in weighted_conflict_rows],
-        },
-    )
 
 
 def run_tree_inference_comparison(
