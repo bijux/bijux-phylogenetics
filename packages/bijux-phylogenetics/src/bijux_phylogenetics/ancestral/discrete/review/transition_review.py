@@ -10,12 +10,16 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralReport,
     reconstruct_discrete_ancestral_states,
 )
+from bijux_phylogenetics.ancestral.discrete.state_resolution import (
+    resolve_clade_consensus_state,
+)
 from bijux_phylogenetics.ancestral.tree_set.preparation import (
     load_tree_set_trees,
     prepare_analysis_tree_set,
     shared_taxa,
     validate_burnin_fraction,
 )
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
 from bijux_phylogenetics.phylo.topology.tree import TreeNode
 
@@ -320,6 +324,13 @@ def summarize_ancestral_transition_tree_set(
         dataset_kind="discrete",
     )
     warnings.extend(dataset_warnings)
+    taxon_table = load_taxon_table(traits_path, taxon_column=resolved_taxon_column)
+    analysis_taxon_set = set(analysis_taxa)
+    observed_states_by_taxon = {
+        row[resolved_taxon_column]: row[trait].strip()
+        for row in taxon_table.rows
+        if row[resolved_taxon_column] in analysis_taxon_set and row[trait].strip()
+    }
     exclusions = [
         AncestralTransitionExclusion(taxon=row.taxon, reason=row.reason)
         for row in raw_exclusions
@@ -340,7 +351,7 @@ def summarize_ancestral_transition_tree_set(
                 dumps_newick(analysis_tree) + "\n",
                 encoding="utf-8",
             )
-            report = summarize_ancestral_transitions(
+            reconstruction = reconstruct_discrete_ancestral_states(
                 current_tree_path,
                 traits_path,
                 trait=trait,
@@ -349,7 +360,30 @@ def summarize_ancestral_transition_tree_set(
                 state_ordering=state_ordering,
                 ordered_states=ordered_states,
             )
-            summary = summarize_ancestral_transition_report(report)
+            resolved_branch_rows = _build_transition_branch_rows(
+                reconstruction,
+                observed_states_by_taxon=observed_states_by_taxon,
+            )
+            resolved_transition_rows = _summarize_transition_rows(resolved_branch_rows)
+            changed_rows = [row for row in resolved_branch_rows if row.changed]
+            summary = AncestralTransitionSummary(
+                trait=reconstruction.trait,
+                taxon_column=reconstruction.taxon_column,
+                model=reconstruction.model,
+                state_ordering=reconstruction.state_ordering,
+                analyzed_taxon_count=reconstruction.taxon_count,
+                excluded_taxon_count=len(reconstruction.dropped_missing_taxa),
+                total_branch_count=len(resolved_branch_rows),
+                changed_branch_count=len(changed_rows),
+                certain_change_count=sum(
+                    row.certainty_class == "certain_change" for row in changed_rows
+                ),
+                uncertain_change_count=sum(
+                    row.certainty_class == "uncertain_change" for row in changed_rows
+                ),
+                unique_transition_count=len(resolved_transition_rows),
+                warning_count=len(reconstruction.warnings),
+            )
             tree_rows.append(
                 AncestralTransitionTreeRow(
                     source_tree_index=source_tree_index,
@@ -362,7 +396,7 @@ def summarize_ancestral_transition_tree_set(
                     uncertain_change_count=summary.uncertain_change_count,
                 )
             )
-            for row in report.branch_rows:
+            for row in resolved_branch_rows:
                 branch_rows.append(
                     AncestralTransitionTreeSetBranchRow(
                         source_tree_index=source_tree_index,
@@ -383,7 +417,7 @@ def summarize_ancestral_transition_tree_set(
                         certainty_class=row.certainty_class,
                     )
                 )
-            per_tree_transition_counts[str(source_tree_index)] = report.transition_rows
+            per_tree_transition_counts[str(source_tree_index)] = resolved_transition_rows
     transition_rows = _summarize_transition_rows_across_trees(
         tree_rows=tree_rows,
         per_tree_transition_counts=per_tree_transition_counts,
@@ -756,6 +790,8 @@ def write_ancestral_transition_tree_set_count_table(
 
 def _build_transition_branch_rows(
     report: DiscreteAncestralReport,
+    *,
+    observed_states_by_taxon: dict[str, str] | None = None,
 ) -> list[AncestralTransitionBranchRow]:
     tree = loads_newick(report.analysis_tree_newick)
     estimate_by_node = {estimate.node: estimate for estimate in report.estimates}
@@ -765,26 +801,32 @@ def _build_transition_branch_rows(
         parent_estimate = estimate_by_node[_node_signature(node)]
         for child in node.children:
             child_estimate = estimate_by_node[_node_signature(child)]
+            parent_state = _resolve_transition_state(
+                estimate=parent_estimate,
+                observed_states_by_taxon=observed_states_by_taxon,
+            )
+            child_state = _resolve_transition_state(
+                estimate=child_estimate,
+                observed_states_by_taxon=observed_states_by_taxon,
+            )
             overlapping_states = sorted(
                 set(parent_estimate.state_set) & set(child_estimate.state_set)
             )
-            changed = (
-                parent_estimate.most_likely_state != child_estimate.most_likely_state
-            )
+            changed = parent_state != child_state
             branch_rows.append(
                 AncestralTransitionBranchRow(
                     parent_node=parent_estimate.node,
                     child_node=child_estimate.node,
                     child_descendant_taxa=child_estimate.descendant_taxa,
                     branch_length=child.branch_length,
-                    parent_most_likely_state=parent_estimate.most_likely_state,
-                    child_most_likely_state=child_estimate.most_likely_state,
+                    parent_most_likely_state=parent_state,
+                    child_most_likely_state=child_state,
                     parent_state_set=parent_estimate.state_set,
                     child_state_set=child_estimate.state_set,
                     overlapping_states=overlapping_states,
                     changed=changed,
                     transition=(
-                        f"{parent_estimate.most_likely_state}->{child_estimate.most_likely_state}"
+                        f"{parent_state}->{child_state}"
                         if changed
                         else ""
                     ),
@@ -800,6 +842,21 @@ def _build_transition_branch_rows(
 
     visit(tree.root)
     return branch_rows
+
+
+def _resolve_transition_state(
+    *,
+    estimate,
+    observed_states_by_taxon: dict[str, str] | None,
+) -> str:
+    if observed_states_by_taxon is None:
+        return estimate.most_likely_state
+    return resolve_clade_consensus_state(
+        clade_taxa=estimate.descendant_taxa,
+        candidate_states=estimate.state_set,
+        observed_states_by_taxon=observed_states_by_taxon,
+        fallback_state=estimate.most_likely_state,
+    )
 
 
 def _summarize_transition_rows(

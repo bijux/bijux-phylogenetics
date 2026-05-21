@@ -8,6 +8,10 @@ from bijux_phylogenetics.ancestral.common import stable_value
 from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
 )
+from bijux_phylogenetics.ancestral.discrete.state_resolution import (
+    resolve_clade_consensus_state,
+)
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_discrete_model_name,
 )
@@ -85,6 +89,13 @@ def summarize_discrete_ancestral_tree_set(
         dataset_kind="discrete",
     )
     warnings.extend(dataset_warnings)
+    taxon_table = load_taxon_table(traits_path, taxon_column=resolved_taxon_column)
+    analysis_taxon_set = set(analysis_taxa)
+    observed_states_by_taxon = {
+        row[resolved_taxon_column]: row[trait].strip()
+        for row in taxon_table.rows
+        if row[resolved_taxon_column] in analysis_taxon_set and row[trait].strip()
+    }
     tree_rows = [
         AncestralTreeSetTreeRow(
             source_tree_index=source_tree_index,
@@ -139,7 +150,9 @@ def summarize_discrete_ancestral_tree_set(
                     )
                 )
     clade_summaries = summarize_discrete_clades(
-        node_rows, kept_tree_count=len(tree_rows)
+        node_rows,
+        kept_tree_count=len(tree_rows),
+        observed_states_by_taxon=observed_states_by_taxon,
     )
     if any(row.tree_presence_fraction < 1.0 for row in clade_summaries):
         warnings.append(
@@ -177,6 +190,7 @@ def summarize_discrete_clades(
     rows: list[DiscreteAncestralTreeSetNodeRow],
     *,
     kept_tree_count: int,
+    observed_states_by_taxon: dict[str, str],
 ) -> list[DiscreteAncestralTreeSetCladeSummaryRow]:
     """Summarize comparable discrete clades across retained trees."""
     grouped: dict[str, list[DiscreteAncestralTreeSetNodeRow]] = {}
@@ -187,8 +201,14 @@ def summarize_discrete_clades(
         presence_fraction = stable_value(len(clade_rows) / kept_tree_count)
         state_counts: dict[str, int] = {}
         for row in clade_rows:
-            state_counts[row.most_likely_state] = (
-                state_counts.get(row.most_likely_state, 0) + 1
+            resolved_state = resolve_clade_consensus_state(
+                clade_taxa=row.clade_taxa,
+                candidate_states=row.state_set,
+                observed_states_by_taxon=observed_states_by_taxon,
+                fallback_state=row.most_likely_state,
+            )
+            state_counts[resolved_state] = (
+                state_counts.get(resolved_state, 0) + 1
             )
         dominant_state = max(
             sorted(state_counts),

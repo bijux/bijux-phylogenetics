@@ -354,7 +354,6 @@ def build_discrete_ancestral_tree_set_confidence_rows(
             + (1.0 - row.dominant_state_fraction)
             + row.ambiguous_tree_fraction
             + row.unstable_tree_fraction
-            + normalized_entropy
         )
         rows.append(
             DiscreteAncestralTreeSetConfidenceRow(
