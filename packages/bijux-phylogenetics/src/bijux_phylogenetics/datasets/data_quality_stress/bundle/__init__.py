@@ -1,21 +1,26 @@
 from __future__ import annotations
 
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 from bijux_phylogenetics.phylo.alignment import (
     CodingSequencePreparationReport,
     SequenceCompositionOutlier,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.diagnostics.validation import TreeValidationReport
 
-from .models import (
+from ..models import (
     CatarrhineDataQualityStressPanelWorkflowBundle,
     CatarrhineDataQualityStressPanelWorkflowReport,
     DataQualityRepairAction,
     TraitDuplicateResolution,
     TraitMissingObservation,
+)
+from .shared import (
+    _copy_output,
+    _format_number,
+    _substantive_alignment_warnings,
+    _tree_warning_nodes,
 )
 
 
@@ -158,13 +163,6 @@ def write_catarrhine_data_quality_stress_panel_workflow_bundle(
         cleaned_linkage_path=cleaned_linkage_path,
         cleaned_validation_path=cleaned_validation_path,
     )
-
-
-def _copy_output(source: Path, destination: Path) -> Path:
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    return Path(shutil.copy2(source, destination))
-
-
 def _write_workflow_summary_table(
     path: Path,
     report: CatarrhineDataQualityStressPanelWorkflowReport,
@@ -687,30 +685,3 @@ def _write_cleaned_validation_table(
         columns=["surface", "status", "warning_count", "detail"],
         rows=rows,
     )
-
-
-def _substantive_alignment_warnings(warnings: list[str]) -> list[str]:
-    ignored = {
-        "automatic sequence type defaults to dna from nucleotide-like characters that remain protein-compatible by alphabet alone"
-    }
-    return [warning for warning in warnings if warning not in ignored]
-
-
-def _tree_warning_nodes(
-    report: TreeValidationReport,
-    *,
-    warning_code: str,
-) -> list[str]:
-    affected_nodes = [
-        node
-        for warning in report.warning_details
-        if warning.code == warning_code
-        for node in warning.affected_nodes
-    ]
-    return sorted(dict.fromkeys(affected_nodes))
-
-
-def _format_number(value: float | None) -> str:
-    if value is None:
-        return ""
-    return format(value, ".12g")
