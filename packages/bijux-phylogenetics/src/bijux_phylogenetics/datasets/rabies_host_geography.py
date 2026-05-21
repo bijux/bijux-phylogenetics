@@ -17,13 +17,23 @@ from .rabies_cross_host_geography import (
     load_rabies_cross_host_geography_panel_dataset as _load_dataset,
     write_rabies_cross_host_geography_panel_workflow_bundle as _write_workflow_bundle,
 )
-from .rabies_cross_host_geography.demo import (
+from .rabies_cross_host_geography.demo.builder import (
     _materialize_rabies_cross_host_geography_panel_demo,
-    _build_flagship_answer_summary,
-    _write_demo_overview_html,
-    _write_demo_package_manifest,
-    _write_overview,
+)
+from .rabies_cross_host_geography.demo.inventory import (
     _write_package_artifact_inventory,
+)
+from .rabies_cross_host_geography.demo.manifest import (
+    _write_demo_package_manifest,
+)
+from .rabies_cross_host_geography.demo.overview import (
+    _build_flagship_answer_summary,
+    _write_overview,
+)
+from .rabies_cross_host_geography.demo.presentation import (
+    _write_demo_overview_html,
+)
+from .rabies_cross_host_geography.demo.reproducibility import (
     _write_package_reproducibility_checklist,
 )
 from .rabies_cross_host_geography.workflow import run_rabies_cross_host_geography_panel_workflow as _run_workflow
