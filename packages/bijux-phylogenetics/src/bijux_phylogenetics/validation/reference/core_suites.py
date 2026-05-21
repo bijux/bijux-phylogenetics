@@ -3,10 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.core.dataset import audit_dataset_inputs
-from bijux_phylogenetics.phylo.taxa import (
-    build_taxon_audit_report,
-    build_taxon_mapping_conflict_report,
-)
 from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
@@ -21,6 +17,10 @@ from bijux_phylogenetics.io.fasta.quality import (
 )
 from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.taxa import (
+    build_taxon_audit_report,
+    build_taxon_mapping_conflict_report,
+)
 
 from .models import ReferenceValidationSuiteReport
 from .shared import (

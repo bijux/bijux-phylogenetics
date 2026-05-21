@@ -7,9 +7,17 @@ import tempfile
 from ..registry import _selected_cases, _write_case_file
 from .comparison import (
     load_json as _load_json,
+)
+from .comparison import (
     load_rows_table as _load_rows_table,
+)
+from .comparison import (
     mismatch_reason as _mismatch_reason,
+)
+from .comparison import (
     reference_rows_filename as _reference_rows_filename,
+)
+from .comparison import (
     row_mismatch_reason as _row_mismatch_reason,
 )
 from .dispatch import build_bijux_case_payload
@@ -17,10 +25,20 @@ from .models import PhytoolsParityObservation, PhytoolsParityReport
 from .reporting import build_phytools_parity_report, persist_failure_bundle
 from .runtime import (
     bijux_commit as _bijux_commit,
+)
+from .runtime import (
     bijux_version as _bijux_version,
+)
+from .runtime import (
     failure_root as _failure_root,
+)
+from .runtime import (
     phytools_runner_path as _phytools_runner_path,
+)
+from .runtime import (
     reference_environment as _reference_environment,
+)
+from .runtime import (
     repository_root as _repository_root,
 )
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.phylo.alignment import (
     AlignmentCleaningReport,
     AlignmentComparisonReport,
@@ -9,8 +10,8 @@ from bijux_phylogenetics.phylo.alignment import (
     AlignmentFilterProfile,
     AlignmentGroupRetention,
     AlignmentRecord,
-    AlignmentSummary,
     AlignmentSignalWarning,
+    AlignmentSummary,
     AlignmentTrimReport,
     DuplicateSequenceGroup,
     NearDuplicateSequencePair,
@@ -20,7 +21,6 @@ from bijux_phylogenetics.phylo.alignment import (
     SequenceIdentityMatrix,
     TrimmedAlignmentColumn,
 )
-from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 
 from .core import (
     _GAP_CHARACTERS,
@@ -210,6 +210,7 @@ def _group_retention_after_cleaning(
                 )
             )
     return reports
+
 
 def list_alignment_filter_profiles() -> list[AlignmentFilterProfile]:
     """Return the supported named alignment-cleaning profiles."""

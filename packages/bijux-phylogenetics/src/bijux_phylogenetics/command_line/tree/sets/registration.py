@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from bijux_phylogenetics.command_line.registry import get_command_spec
+
 from .comparison import (
     add_tree_set_comparison_commands,
     run_tree_set_comparison_command,

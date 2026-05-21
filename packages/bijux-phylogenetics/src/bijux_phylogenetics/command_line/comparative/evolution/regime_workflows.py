@@ -106,7 +106,13 @@ def add_regime_workflow_comparative_evolution_commands(
     comparative_regime_map.add_argument(
         "--reconstruction-model",
         default="fitch",
-        choices=("fitch", "equal-rates", "symmetric", "all-rates-different", "meristic"),
+        choices=(
+            "fitch",
+            "equal-rates",
+            "symmetric",
+            "all-rates-different",
+            "meristic",
+        ),
     )
     comparative_regime_map.add_argument(
         "--state-ordering",

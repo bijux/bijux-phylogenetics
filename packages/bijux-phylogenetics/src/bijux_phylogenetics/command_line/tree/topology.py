@@ -7,7 +7,17 @@ from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
+from bijux_phylogenetics.compare.reference import (
+    validate_support_reference_examples,
+    validate_tree_distance_reference_examples,
+)
 from bijux_phylogenetics.io.newick import write_newick
+from bijux_phylogenetics.phylo.topology import (
+    reroot_tree_by_midpoint,
+    root_tree_on_outgroup,
+    unroot_tree,
+    write_tree_rooting_report,
+)
 from bijux_phylogenetics.runtime.results import build_command_result
 from bijux_phylogenetics.trees import (
     analyze_branch_length_distribution,
@@ -16,16 +26,6 @@ from bijux_phylogenetics.trees import (
     write_branch_length_table,
     write_clade_table,
     write_tree_shape_table,
-)
-from bijux_phylogenetics.compare.reference import (
-    validate_support_reference_examples,
-    validate_tree_distance_reference_examples,
-)
-from bijux_phylogenetics.phylo.topology import (
-    reroot_tree_by_midpoint,
-    root_tree_on_outgroup,
-    unroot_tree,
-    write_tree_rooting_report,
 )
 
 
@@ -328,9 +328,7 @@ def run_topology_command(args: Any) -> int:
                 "midpoint_path_length": report.midpoint_path_length,
                 "midpoint_position_kind": report.midpoint_position_kind,
                 "midpoint_anchor_side_taxa": len(report.midpoint_anchor_side_taxa),
-                "midpoint_opposite_side_taxa": len(
-                    report.midpoint_opposite_side_taxa
-                ),
+                "midpoint_opposite_side_taxa": len(report.midpoint_opposite_side_taxa),
                 "midpoint_suitable": report.midpoint_suitable,
                 "warning_count": len(report.warnings),
             },

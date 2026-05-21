@@ -40,7 +40,6 @@ from .tree_set_reports import (
     render_tree_uncertainty_report,
 )
 
-
 __all__ = [
     "AlignmentReportBuildResult",
     "DistanceReportBuildResult",

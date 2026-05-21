@@ -7,15 +7,6 @@ from html import escape
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.trees import (
-    BranchLengthDistributionReport,
-    analyze_branch_length_distribution,
-)
-from bijux_phylogenetics.trees import (
-    CladeTableReport,
-    CladeTableRow,
-    extract_tree_clades,
-)
 from bijux_phylogenetics.diagnostics.validation import (
     TreeForensicReport,
     TreeInspectionReport,
@@ -24,10 +15,16 @@ from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
 )
-from bijux_phylogenetics.io.iqtree_support import support_fraction
 from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
     tree_report_method_tier,
+)
+from bijux_phylogenetics.io.iqtree_support import support_fraction
+from bijux_phylogenetics.render.svg import (
+    SupportLabelRenderAudit,
+    TreeRenderResult,
+    audit_support_label_rendering,
+    render_tree_svg,
 )
 from bijux_phylogenetics.reports.methods import (
     TreeValidationMethodsSummaryTextResult,
@@ -37,11 +34,12 @@ from bijux_phylogenetics.reports.review import (
     ReviewerAuditChecklist,
     write_reviewer_audit_checklist,
 )
-from bijux_phylogenetics.render.svg import (
-    SupportLabelRenderAudit,
-    TreeRenderResult,
-    audit_support_label_rendering,
-    render_tree_svg,
+from bijux_phylogenetics.trees import (
+    BranchLengthDistributionReport,
+    CladeTableReport,
+    CladeTableRow,
+    analyze_branch_length_distribution,
+    extract_tree_clades,
 )
 
 
@@ -371,9 +369,7 @@ def _render_reviewer_audit_table(checklist: ReviewerAuditChecklist) -> str:
     return (
         "<table><thead><tr>"
         "<th>section</th><th>status</th><th>summary</th><th>evidence</th>"
-        "</tr></thead><tbody>"
-        + "".join(rows)
-        + "</tbody></table>"
+        "</tr></thead><tbody>" + "".join(rows) + "</tbody></table>"
     )
 
 

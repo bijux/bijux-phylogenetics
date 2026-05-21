@@ -43,9 +43,7 @@ def add_study_input_supplementary_table_commands(report_subparsers: Any) -> None
         "--alignment", required=True, type=Path
     )
     report_supplementary_alignment_table.add_argument("--filtered-alignment", type=Path)
-    report_supplementary_alignment_table.add_argument(
-        "--out", required=True, type=Path
-    )
+    report_supplementary_alignment_table.add_argument("--out", required=True, type=Path)
     report_supplementary_alignment_table.add_argument(
         "--json", action="store_true", help="Emit the table write result as JSON."
     )

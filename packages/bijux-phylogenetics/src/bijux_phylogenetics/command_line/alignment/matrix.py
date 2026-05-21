@@ -11,17 +11,6 @@ from bijux_phylogenetics.command_line.output import (
     _write_locus_occupancy_taxa_tsv,
 )
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.phylo.alignment.concatenation import concatenate_locus_alignments
-from bijux_phylogenetics.phylo.alignment.occupancy import (
-    build_locus_occupancy_report,
-    filter_locus_occupancy,
-    write_locus_partitions,
-)
-from bijux_phylogenetics.phylo.alignment.partitions import (
-    build_partition_summary_report,
-    parse_locus_partitions,
-    write_partition_summary_table,
-)
 from bijux_phylogenetics.io.fasta import write_fasta_alignment
 from bijux_phylogenetics.io.fasta.cleaning import (
     clean_alignment_with_profile,
@@ -32,6 +21,19 @@ from bijux_phylogenetics.io.fasta.cleaning import (
     write_sequence_identity_matrix,
 )
 from bijux_phylogenetics.io.fasta.records import summarise_fasta
+from bijux_phylogenetics.phylo.alignment.concatenation import (
+    concatenate_locus_alignments,
+)
+from bijux_phylogenetics.phylo.alignment.occupancy import (
+    build_locus_occupancy_report,
+    filter_locus_occupancy,
+    write_locus_partitions,
+)
+from bijux_phylogenetics.phylo.alignment.partitions import (
+    build_partition_summary_report,
+    parse_locus_partitions,
+    write_partition_summary_table,
+)
 from bijux_phylogenetics.runtime.results import build_command_result
 
 
@@ -253,9 +255,13 @@ def run_alignment_matrix_command(args: Any) -> int | None:
         )
         command_outputs: list[Path] = []
         if args.taxa_out is not None:
-            command_outputs.append(_write_locus_occupancy_taxa_tsv(args.taxa_out, report))
+            command_outputs.append(
+                _write_locus_occupancy_taxa_tsv(args.taxa_out, report)
+            )
         if args.loci_out is not None:
-            command_outputs.append(_write_locus_occupancy_loci_tsv(args.loci_out, report))
+            command_outputs.append(
+                _write_locus_occupancy_loci_tsv(args.loci_out, report)
+            )
         if args.matrix_out is not None:
             command_outputs.append(
                 _write_locus_occupancy_matrix_tsv(args.matrix_out, report)
@@ -268,12 +274,14 @@ def run_alignment_matrix_command(args: Any) -> int | None:
             or args.filtered_alignment_out is not None
             or args.filtered_partitions_out is not None
         ):
-            filtered_records, filtered_partitions, filter_report = filter_locus_occupancy(
-                args.alignment,
-                args.partitions,
-                taxon_coverage_threshold=args.taxon_coverage_threshold,
-                locus_coverage_threshold=args.locus_coverage_threshold,
-                minimum_locus_occupancy=args.minimum_locus_occupancy,
+            filtered_records, filtered_partitions, filter_report = (
+                filter_locus_occupancy(
+                    args.alignment,
+                    args.partitions,
+                    taxon_coverage_threshold=args.taxon_coverage_threshold,
+                    locus_coverage_threshold=args.locus_coverage_threshold,
+                    minimum_locus_occupancy=args.minimum_locus_occupancy,
+                )
             )
             if args.filtered_alignment_out is not None:
                 command_outputs.append(

@@ -160,7 +160,9 @@ def run_alignment_input_validation_command(args: Any) -> int | None:
         return 0
     if args.alignment_command == "repair-input":
         if not args.normalize_identifiers and not args.remove_invalid_records:
-            raise ValueError("repair-input requires at least one explicit repair action")
+            raise ValueError(
+                "repair-input requires at least one explicit repair action"
+            )
         records, report = repair_fasta_input(
             args.alignment,
             sequence_type=args.sequence_type,

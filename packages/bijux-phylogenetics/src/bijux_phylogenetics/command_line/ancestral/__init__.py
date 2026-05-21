@@ -10,6 +10,10 @@ from bijux_phylogenetics.command_line.ancestral.presentation import (
     add_presentation_ancestral_commands,
     run_presentation_ancestral_command,
 )
+from bijux_phylogenetics.command_line.ancestral.reconstruction import (
+    add_reconstruction_ancestral_commands,
+    run_reconstruction_ancestral_command,
+)
 from bijux_phylogenetics.command_line.ancestral.sensitivity import (
     add_sensitivity_ancestral_commands,
     run_sensitivity_ancestral_command,
@@ -17,10 +21,6 @@ from bijux_phylogenetics.command_line.ancestral.sensitivity import (
 from bijux_phylogenetics.command_line.ancestral.stability import (
     add_stability_ancestral_commands,
     run_stability_ancestral_command,
-)
-from bijux_phylogenetics.command_line.ancestral.reconstruction import (
-    add_reconstruction_ancestral_commands,
-    run_reconstruction_ancestral_command,
 )
 from bijux_phylogenetics.command_line.registry import get_command_spec
 

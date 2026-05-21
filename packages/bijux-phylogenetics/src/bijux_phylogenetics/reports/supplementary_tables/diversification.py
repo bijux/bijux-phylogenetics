@@ -141,7 +141,9 @@ def _build_diversification_row(
         sampling_metadata_complete=(
             None if sampling_report is None else sampling_report.complete
         ),
-        sampling_column=None if sampling_report is None else sampling_report.sampling_column,
+        sampling_column=None
+        if sampling_report is None
+        else sampling_report.sampling_column,
         sampling_fraction=(
             None if sampling_report is None else sampling_report.sampling_fraction
         ),

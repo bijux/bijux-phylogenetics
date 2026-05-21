@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.report.figure_packages import (
     add_figure_package_report_commands,
     run_figure_package_report_command,
@@ -26,7 +27,6 @@ from bijux_phylogenetics.command_line.report.supplementary_tables import (
     add_supplementary_table_report_commands,
     run_supplementary_table_report_command,
 )
-from bijux_phylogenetics.command_line.registry import get_command_spec
 
 
 def add_report_command(subparsers: Any) -> None:

@@ -3,9 +3,9 @@ from __future__ import annotations
 from copy import deepcopy
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.biopython import tree_from_biophylo, tree_to_biophylo
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import TreeRootingError
 
 from .models import TreeRootingReport

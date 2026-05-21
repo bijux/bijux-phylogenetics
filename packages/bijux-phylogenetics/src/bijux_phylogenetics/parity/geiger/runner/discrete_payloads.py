@@ -32,12 +32,8 @@ def build_bijux_discrete_case_payload(
         taxon_column=case.taxon_column,
         model=case.python_mode,
         transform=case.discrete_transform_name,
-        lambda_bounds=(0.0, 1.0)
-        if case.lambda_bounds is None
-        else case.lambda_bounds,
-        kappa_bounds=(0.0, 1.0)
-        if case.kappa_bounds is None
-        else case.kappa_bounds,
+        lambda_bounds=(0.0, 1.0) if case.lambda_bounds is None else case.lambda_bounds,
+        kappa_bounds=(0.0, 1.0) if case.kappa_bounds is None else case.kappa_bounds,
         delta_bounds=(math.exp(-5.0), 3.0)
         if case.delta_bounds is None
         else case.delta_bounds,
@@ -78,7 +74,9 @@ def build_bijux_discrete_case_payload(
         "parameter_count": report.parameter_count,
         "aic": report.aic,
         "aicc": report.aicc,
-        "parameter_name": None if transform_fit is None else transform_fit.parameter_name,
+        "parameter_name": None
+        if transform_fit is None
+        else transform_fit.parameter_name,
         "parameter_value": (
             None if transform_fit is None else transform_fit.parameter_value
         ),

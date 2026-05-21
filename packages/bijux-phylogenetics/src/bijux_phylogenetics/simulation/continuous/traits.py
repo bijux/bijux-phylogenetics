@@ -4,8 +4,8 @@ from math import exp, sqrt
 from pathlib import Path
 import random
 
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 
 def simulate_brownian_traits(
@@ -201,12 +201,12 @@ def _build_continuous_trait_simulation_report(
         node_signature,
     )
 
+    from .._state_propagation import _tip_values_from_node_map
     from ..contracts import (
         ContinuousTraitSimulationReport,
         SimulatedContinuousNode,
         SimulatedContinuousTrait,
     )
-    from .._state_propagation import _tip_values_from_node_map
 
     values = _tip_values_from_node_map(tree, node_values)
     return ContinuousTraitSimulationReport(
@@ -250,15 +250,15 @@ def _build_speciational_tree(tree: PhyloTree) -> PhyloTree:
 
 
 def _build_continuous_collection_summary_rows(simulations):
-    from ..contracts import ContinuousTraitSimulationSummaryRow
     from .._statistics import (
         _mean,
         _median,
         _round_float,
-        _sample_covariance,
         _sample_correlation,
+        _sample_covariance,
         _sample_standard_deviation,
     )
+    from ..contracts import ContinuousTraitSimulationSummaryRow
 
     if not simulations:
         return []
@@ -305,11 +305,11 @@ def simulate_brownian_trait_collection(
     replicates: int = 128,
     seed: int = 1,
 ):
-    from ..contracts import ContinuousTraitSimulationCollectionReport
     from .._state_propagation import (
         _resolve_brownian_sigma_parameters,
         _simulate_brownian_node_values,
     )
+    from ..contracts import ContinuousTraitSimulationCollectionReport
 
     if replicates < 1:
         raise ValueError(f"replicates must be at least 1, got {replicates}")
@@ -363,11 +363,11 @@ def simulate_speciational_trait_collection(
     replicates: int = 128,
     seed: int = 1,
 ):
-    from ..contracts import ContinuousTraitSimulationCollectionReport
     from .._state_propagation import (
         _resolve_brownian_sigma_parameters,
         _simulate_brownian_node_values,
     )
+    from ..contracts import ContinuousTraitSimulationCollectionReport
 
     if replicates < 1:
         raise ValueError(f"replicates must be at least 1, got {replicates}")

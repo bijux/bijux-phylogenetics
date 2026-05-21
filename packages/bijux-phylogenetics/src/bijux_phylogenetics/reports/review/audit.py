@@ -33,9 +33,7 @@ class ReviewerAuditChecklistWriteResult:
     checklist: ReviewerAuditChecklist
 
 
-def _mapping(
-    payload: dict[str, object], key: str
-) -> dict[str, object]:
+def _mapping(payload: dict[str, object], key: str) -> dict[str, object]:
     value = payload.get(key)
     if isinstance(value, dict):
         return value
@@ -297,9 +295,7 @@ def _ancestral_checklist(manifest: dict[str, object]) -> ReviewerAuditChecklist:
             artifact_paths=_artifact_paths(outputs, "report_path"),
         ),
     ]
-    return ReviewerAuditChecklist(
-        report_kind="ancestral_report_package", items=items
-    )
+    return ReviewerAuditChecklist(report_kind="ancestral_report_package", items=items)
 
 
 def _alignment_checklist(manifest: dict[str, object]) -> ReviewerAuditChecklist:
@@ -327,9 +323,7 @@ def _alignment_checklist(manifest: dict[str, object]) -> ReviewerAuditChecklist:
                 f"reproducibility manifest path: {manifest.get('reproducibility_manifest_path', '')}",
                 f"output artifact count: {len(output_paths)}",
             ],
-            artifact_paths=[
-                str(manifest.get("reproducibility_manifest_path", ""))
-            ],
+            artifact_paths=[str(manifest.get("reproducibility_manifest_path", ""))],
         ),
         ReviewerAuditChecklistItem(
             section="publication_readiness",
@@ -345,7 +339,7 @@ def _alignment_checklist(manifest: dict[str, object]) -> ReviewerAuditChecklist:
             ]
             + _text_list(audit.get("limitations"))[:5],
             artifact_paths=[
-                path for path in output_paths if path.endswith(".html") or path.endswith(".tsv")
+                path for path in output_paths if path.endswith((".html", ".tsv"))
             ][:5],
         ),
         ReviewerAuditChecklistItem(
@@ -366,16 +360,16 @@ def _alignment_checklist(manifest: dict[str, object]) -> ReviewerAuditChecklist:
                 f"site summary visible: {str(bool(audit.get('site_summary_visible'))).lower()}",
                 f"sequence panel visible: {str(bool(audit.get('sequence_panel_visible'))).lower()}",
             ],
-            artifact_paths=[
-                path for path in output_paths if path.endswith(".svg")
-            ][:3],
+            artifact_paths=[path for path in output_paths if path.endswith(".svg")][:3],
         ),
         ReviewerAuditChecklistItem(
             section="interpretation_limits",
             status=_status(risk=bool(_text_list(audit.get("limitations")))),
             summary="alignment limitations were surfaced explicitly for reviewer interpretation",
             evidence=_text_list(audit.get("limitations"))[:8],
-            artifact_paths=[path for path in output_paths if path.endswith(".html")][:1],
+            artifact_paths=[path for path in output_paths if path.endswith(".html")][
+                :1
+            ],
         ),
     ]
     return ReviewerAuditChecklist(
@@ -396,9 +390,7 @@ def build_reviewer_audit_checklist(
         return _ancestral_checklist(manifest)
     if report_kind == "alignment_quality_figure_package":
         return _alignment_checklist(manifest)
-    raise ValueError(
-        "reviewer audit checklist requires a supported package manifest"
-    )
+    raise ValueError("reviewer audit checklist requires a supported package manifest")
 
 
 def write_reviewer_audit_checklist(

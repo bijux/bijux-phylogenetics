@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.phylo.alignment import (
-    AlignmentRecord,
     AlignmentAmbiguousColumnReport,
     AlignmentForensicReport,
     AlignmentLowInformationReport,
@@ -11,6 +10,7 @@ from bijux_phylogenetics.phylo.alignment import (
     AlignmentMissingDataConcentration,
     AlignmentQualityReport,
     AlignmentReadinessReport,
+    AlignmentRecord,
     AlignmentSummary,
     AlignmentSuspiciousRegion,
     AlignmentWindowSummary,
@@ -21,6 +21,13 @@ from bijux_phylogenetics.phylo.alignment import (
     SequenceQualityRankingRow,
 )
 
+from .cleaning import (
+    detect_identical_duplicate_sequences,
+    detect_near_duplicate_sequences,
+)
+from .coding import (
+    inspect_coding_alignment,
+)
 from .core import (
     _GAP_CHARACTERS,
     _detect_sequence_length_outlier_rows,
@@ -31,16 +38,6 @@ from .core import (
     load_fasta_alignment,
     load_fasta_records,
 )
-
-from .cleaning import (
-    detect_identical_duplicate_sequences,
-    detect_near_duplicate_sequences,
-)
-
-from .coding import (
-    inspect_coding_alignment,
-)
-
 from .records import (
     classify_alignment_sequences,
     detect_sequence_length_outliers,
@@ -381,6 +378,7 @@ def _alignment_suspicion_reasons(
             "alignment contains invalid characters for the inferred alphabet"
         )
     return reasons
+
 
 def summarize_alignment_windows(
     path: Path,

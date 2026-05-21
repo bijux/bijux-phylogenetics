@@ -6,6 +6,14 @@ import tempfile
 from bijux_phylogenetics.compare.topology import (
     compare_topology_distance_trees,
 )
+from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
+from bijux_phylogenetics.io.newick import (
+    dumps_newick,
+    load_newick_tree_set,
+    write_newick,
+    write_newick_tree_set,
+)
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.pruning import (
     drop_tree_taxa,
     prune_tree_to_requested_taxa,
@@ -17,16 +25,11 @@ from bijux_phylogenetics.phylo.topology import (
     root_tree_on_outgroup,
     unroot_tree,
 )
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.phylo.topology.tip_distances import compute_tree_tip_distance_matrix
-from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
-from bijux_phylogenetics.io.newick import (
-    dumps_newick,
-    load_newick_tree_set,
-    write_newick,
-    write_newick_tree_set,
+from bijux_phylogenetics.phylo.topology.clades import informative_unrooted_splits
+from bijux_phylogenetics.phylo.topology.tip_distances import (
+    compute_tree_tip_distance_matrix,
 )
-from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,
     compute_consensus_tree,
@@ -35,13 +38,13 @@ from bijux_phylogenetics.trees import (
     extract_tree_clades,
     extract_tree_set_clades,
 )
-from bijux_phylogenetics.phylo.topology.clades import informative_unrooted_splits
 
 from ..registry import ApeParityCase
 
 
 def _node_kind_order(node_kind: str) -> int:
     return {"root": 0, "internal": 1, "tip": 2}.get(node_kind, 9)
+
 
 def _sort_parity_rows(rows: list[dict[str, object]]) -> list[dict[str, object]]:
     return sorted(
@@ -53,6 +56,7 @@ def _sort_parity_rows(rows: list[dict[str, object]]) -> list[dict[str, object]]:
             str(row["node_label"]),
         ),
     )
+
 
 def _clade_rows_to_parity_rows(rows) -> list[dict[str, object]]:
     parity_rows = [
@@ -70,6 +74,7 @@ def _clade_rows_to_parity_rows(rows) -> list[dict[str, object]]:
     ]
     return _sort_parity_rows(parity_rows)
 
+
 def _build_bijux_tree_structure(
     input_fixture: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]], str]:
@@ -77,6 +82,7 @@ def _build_bijux_tree_structure(
     inspection = inspect_tree_path(input_fixture)
     clades = extract_tree_clades(input_fixture)
     return _tree_structure_payload(tree, inspection.rooted, clades.rows)
+
 
 def _tree_structure_payload(
     tree: TreeNode | PhyloTree,
@@ -100,6 +106,7 @@ def _tree_structure_payload(
         ),
     }
     return summary, _clade_rows_to_parity_rows(clade_rows), dumps_newick(phylo_tree)
+
 
 def _build_bijux_tree_set_structure(
     input_fixture: Path,
@@ -131,6 +138,7 @@ def _build_bijux_tree_set_structure(
     }
     return summary, parity_rows, None
 
+
 def _build_bijux_root_outgroup_structure(
     input_fixture: Path,
     *,
@@ -146,6 +154,7 @@ def _build_bijux_root_outgroup_structure(
         clades = extract_tree_clades(rooted_path)
     return _tree_structure_payload(rooted_tree, rooted_tree.rooted, clades.rows)
 
+
 def _build_bijux_unroot_structure(
     input_fixture: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]], str]:
@@ -155,6 +164,7 @@ def _build_bijux_unroot_structure(
         write_newick(unrooted_path, unrooted_tree)
         clades = extract_tree_clades(unrooted_path)
     return _tree_structure_payload(unrooted_tree, unrooted_tree.rooted, clades.rows)
+
 
 def _build_bijux_drop_tip_structure(
     input_fixture: Path,
@@ -174,6 +184,7 @@ def _build_bijux_drop_tip_structure(
     summary["dropped_taxa"] = report.removed_taxa
     summary["absent_requested_taxa"] = report.absent_requested_taxa
     return summary, rows, normalized_text
+
 
 def _build_bijux_keep_tip_structure(
     input_fixture: Path,
@@ -196,6 +207,7 @@ def _build_bijux_keep_tip_structure(
     summary["dropped_taxa"] = report.removed_taxa
     return summary, rows, normalized_text
 
+
 def _build_bijux_extract_clade_structure(
     input_fixture: Path,
     *,
@@ -216,6 +228,7 @@ def _build_bijux_extract_clade_structure(
     summary["matched_node_name"] = report.matched_node_name
     return summary, rows, normalized_text
 
+
 def _build_bijux_mrca_summary(
     input_fixture: Path,
     *,
@@ -233,6 +246,7 @@ def _build_bijux_mrca_summary(
         "matched_tip_count": report.matched_tip_count,
         "is_root": report.is_root,
     }
+
 
 def _build_bijux_monophyly_summary(
     input_fixture: Path,
@@ -263,6 +277,7 @@ def _build_bijux_monophyly_summary(
         "is_root": report.is_root,
     }
 
+
 def _materialize_reference_input(case: ApeParityCase, working_root: Path) -> Path:
     reference_input_path = working_root / "bijux-reference-input.nwk"
     if case.operation == "write-tree-structure":
@@ -274,6 +289,7 @@ def _materialize_reference_input(case: ApeParityCase, working_root: Path) -> Pat
         write_newick_tree_set(reference_input_path, trees)
         return reference_input_path
     return case.input_fixture
+
 
 def _build_bijux_tree_tip_distance_rows(
     input_fixture: Path,
@@ -296,6 +312,7 @@ def _build_bijux_tree_tip_distance_rows(
         }
         for row in report.pairs
     ]
+
 
 def _build_bijux_consensus_rows(
     input_fixture: Path,
@@ -333,6 +350,7 @@ def _build_bijux_consensus_rows(
         ],
         dumps_newick(tree),
     )
+
 
 def _build_bijux_prop_clades_rows(
     reference_tree_path: Path,
@@ -379,6 +397,7 @@ def _build_bijux_prop_clades_rows(
         for row in report.rows
     ]
 
+
 def _inspect_tree_set_rooted_flags(input_fixture: Path) -> tuple[bool, bool]:
     lines = [
         line.strip()
@@ -399,6 +418,7 @@ def _inspect_tree_set_rooted_flags(input_fixture: Path) -> tuple[bool, bool]:
             temporary_path.write_text(f"{line}\n", encoding="utf-8")
             rooted_flags.append(inspect_tree_path(temporary_path).rooted)
     return rooted_flags[0], rooted_flags[1]
+
 
 def _build_bijux_topology_distance_rows(
     input_fixture: Path,

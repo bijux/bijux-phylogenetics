@@ -37,7 +37,9 @@ def render_distance_report(
             section("computed-distance-matrix", asdict(report.matrix)),
             section("distance-quality", asdict(report.quality)),
             section("distance-method-assumptions", asdict(report.assumptions)),
-            section("distance-reference-validation", asdict(report.reference_validation)),
+            section(
+                "distance-reference-validation", asdict(report.reference_validation)
+            ),
             section("neighbor-joining-tree", {"newick": report.built_tree_newick}),
             section("upgma-tree", {"newick": report.alternative_tree_newick}),
             section("distance-tree-comparison", asdict(report.topology_comparison)),

@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from bijux_phylogenetics.benchmark import (
+    run_real_dataset_macroevolution_benchmark_demo as run_real_dataset_macroevolution_benchmark_demo,
+)
 from bijux_phylogenetics.command_line.demo.benchmark_panels import (
     add_benchmark_demo_commands,
     run_benchmark_demo_command,
@@ -14,25 +17,23 @@ from bijux_phylogenetics.command_line.demo.quality_panels import (
     add_quality_demo_commands,
     run_quality_demo_command,
 )
-from bijux_phylogenetics.command_line.demo.recovery_panels import (
-    add_recovery_demo_commands,
-    run_recovery_demo_command,
-)
 from bijux_phylogenetics.command_line.demo.rabies_panels import (
     add_rabies_demo_commands,
     run_rabies_demo_command,
+)
+from bijux_phylogenetics.command_line.demo.recovery_panels import (
+    add_recovery_demo_commands,
+    run_recovery_demo_command,
 )
 from bijux_phylogenetics.command_line.demo.sequence_panels import (
     add_sequence_demo_commands,
     run_sequence_demo_command,
 )
 from bijux_phylogenetics.command_line.registry import get_command_spec
-from bijux_phylogenetics.benchmark import (
-    run_real_dataset_macroevolution_benchmark_demo as run_real_dataset_macroevolution_benchmark_demo,
-)
 from bijux_phylogenetics.datasets import (
     run_rabies_cross_host_geography_panel_demo as run_rabies_cross_host_geography_panel_demo,
 )
+
 
 def add_demo_command(subparsers: Any) -> None:
     demo = subparsers.add_parser(

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 
-
 PAIRWISE_DISTANCE_MODELS = (
     "raw",
     "p-distance",

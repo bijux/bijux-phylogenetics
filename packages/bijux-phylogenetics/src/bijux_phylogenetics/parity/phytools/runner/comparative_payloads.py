@@ -3,16 +3,14 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.regression import (
-    summarize_phylogenetic_anova,
-)
-from bijux_phylogenetics.comparative.regression import (
-    summarize_phylogenetic_residuals,
-)
 from bijux_phylogenetics.comparative.pgls import (
     build_pgls_model_matrix,
     inspect_pgls_inputs,
     run_pgls,
+)
+from bijux_phylogenetics.comparative.regression import (
+    summarize_phylogenetic_anova,
+    summarize_phylogenetic_residuals,
 )
 
 from ..registry import PhytoolsParityCase

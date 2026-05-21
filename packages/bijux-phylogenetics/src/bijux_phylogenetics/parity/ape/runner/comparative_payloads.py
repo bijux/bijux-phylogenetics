@@ -5,14 +5,25 @@ from pathlib import Path
 
 from bijux_phylogenetics.comparative import compute_diversification_gamma_statistic
 from bijux_phylogenetics.comparative.covariance import summarize_brownian_covariance
-from bijux_phylogenetics.comparative.signal import compute_phylogenetic_independent_contrasts
-from bijux_phylogenetics.phylo.branch_lengths.branching_times import compute_tree_branching_times
-from bijux_phylogenetics.phylo.branch_lengths.node_depths import compute_tree_node_depths
-from bijux_phylogenetics.phylo.branch_lengths.ultrametric import assess_tree_ultrametricity
+from bijux_phylogenetics.comparative.signal import (
+    compute_phylogenetic_independent_contrasts,
+)
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_tree_simulation_fixture,
 )
-from bijux_phylogenetics.simulation import simulate_coalescent_trees, simulate_random_trees
+from bijux_phylogenetics.phylo.branch_lengths.branching_times import (
+    compute_tree_branching_times,
+)
+from bijux_phylogenetics.phylo.branch_lengths.node_depths import (
+    compute_tree_node_depths,
+)
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
+    assess_tree_ultrametricity,
+)
+from bijux_phylogenetics.simulation import (
+    simulate_coalescent_trees,
+    simulate_random_trees,
+)
 
 
 def _build_bijux_brownian_covariance_rows(
@@ -47,6 +58,7 @@ def _build_bijux_brownian_covariance_rows(
         for row in report.rows
     ]
 
+
 def _build_bijux_independent_contrast_rows(
     input_fixture: Path,
     *,
@@ -80,6 +92,8 @@ def _build_bijux_independent_contrast_rows(
         "minimum_root_to_tip_depth": report.input_audit.minimum_root_to_tip_depth,
         "maximum_root_to_tip_depth": report.input_audit.maximum_root_to_tip_depth,
     }, rows
+
+
 def _build_bijux_tree_node_depth_rows(
     input_fixture: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
@@ -108,6 +122,7 @@ def _build_bijux_tree_node_depth_rows(
         for row in report.rows
     ]
 
+
 def _build_bijux_branching_time_rows(
     input_fixture: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
@@ -134,6 +149,7 @@ def _build_bijux_branching_time_rows(
         }
         for row in report.rows
     ]
+
 
 def _build_bijux_diversification_gamma_rows(
     input_fixture: Path,
@@ -164,6 +180,7 @@ def _build_bijux_diversification_gamma_rows(
             "gamma_statistic": report.gamma_statistic,
         }
     ]
+
 
 def _build_bijux_tree_simulation_envelope_rows(
     fixture_id: str,
@@ -212,6 +229,7 @@ def _build_bijux_tree_simulation_envelope_rows(
         }
         for row in report.envelope_metrics
     ]
+
 
 def _build_bijux_tree_ultrametric_rows(
     input_fixture: Path,

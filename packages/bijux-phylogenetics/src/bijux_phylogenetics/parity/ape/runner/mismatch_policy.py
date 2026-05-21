@@ -6,6 +6,9 @@ from bijux_phylogenetics.compare.topology import (
     compare_tree_sets_structurally,
     compare_tree_structurally,
 )
+from bijux_phylogenetics.distance import build_tree_from_imported_distance_matrix
+from bijux_phylogenetics.io.newick import load_newick_tree_set
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.pruning import (
     drop_tree_taxa,
     prune_tree_to_requested_taxa,
@@ -15,9 +18,6 @@ from bijux_phylogenetics.phylo.topology import (
     root_tree_on_outgroup,
     unroot_tree,
 )
-from bijux_phylogenetics.distance import build_tree_from_imported_distance_matrix
-from bijux_phylogenetics.io.newick import load_newick_tree_set
-from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.trees import (
     compute_consensus_tree,
     compute_strict_consensus_tree,
@@ -25,7 +25,6 @@ from bijux_phylogenetics.trees import (
 
 from ..registry import ApeParityCase
 from .normalization import (
-    _canonical_newick,
     _clear_branch_lengths,
     _compare_json,
     _load_json,

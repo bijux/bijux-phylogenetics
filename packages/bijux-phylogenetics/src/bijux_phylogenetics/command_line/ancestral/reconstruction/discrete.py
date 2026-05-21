@@ -40,7 +40,13 @@ def add_discrete_reconstruction_commands(ancestral_subparsers: Any) -> None:
     ancestral_discrete.add_argument("--taxon-column")
     ancestral_discrete.add_argument(
         "--model",
-        choices=("fitch", "equal-rates", "symmetric", "all-rates-different", "meristic"),
+        choices=(
+            "fitch",
+            "equal-rates",
+            "symmetric",
+            "all-rates-different",
+            "meristic",
+        ),
         default="fitch",
     )
     ancestral_discrete.add_argument(
@@ -51,7 +57,13 @@ def add_discrete_reconstruction_commands(ancestral_subparsers: Any) -> None:
     )
     ancestral_discrete.add_argument(
         "--compare-model",
-        choices=("fitch", "equal-rates", "symmetric", "all-rates-different", "meristic"),
+        choices=(
+            "fitch",
+            "equal-rates",
+            "symmetric",
+            "all-rates-different",
+            "meristic",
+        ),
         help="Optionally compare this reconstruction directly against another discrete model.",
     )
     ancestral_discrete.add_argument(
@@ -82,9 +94,13 @@ def run_discrete_reconstruction_command(args: Any, *, parser: Any) -> int | None
         return None
 
     if args.state_ordering == "ordered" and args.model == "fitch":
-        parser.error("ordered ancestral discrete reconstruction requires a likelihood model")
+        parser.error(
+            "ordered ancestral discrete reconstruction requires a likelihood model"
+        )
     if args.compare_model == args.model:
-        parser.error("discrete ancestral compare-model must differ from the primary model")
+        parser.error(
+            "discrete ancestral compare-model must differ from the primary model"
+        )
     report = reconstruct_discrete_ancestral_states(
         args.tree,
         args.table,
@@ -134,7 +150,9 @@ def run_discrete_reconstruction_command(args: Any, *, parser: Any) -> int | None
             write_discrete_ancestral_comparison_table(args.comparison_out, comparison)
         )
     if args.exclusions_out is not None:
-        outputs.append(write_discrete_ancestral_exclusion_table(args.exclusions_out, report))
+        outputs.append(
+            write_discrete_ancestral_exclusion_table(args.exclusions_out, report)
+        )
     outputs = _finalize_outputs(
         args,
         command="ancestral",
@@ -197,7 +215,9 @@ def run_discrete_reconstruction_command(args: Any, *, parser: Any) -> int | None
                     if report.baseline_comparison is None
                     else report.baseline_comparison.preferred_model_by_aic
                 ),
-                "comparison_node_count": len(comparison.rows) if comparison is not None else 0,
+                "comparison_node_count": len(comparison.rows)
+                if comparison is not None
+                else 0,
                 "comparison_differing_node_count": (
                     comparison.differing_node_count if comparison is not None else 0
                 ),

@@ -3,6 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from bijux_phylogenetics.command_line.arguments import (
+    _add_manifest_argument,
+)
+from bijux_phylogenetics.command_line.output import _print_result
+from bijux_phylogenetics.command_line.registry import get_command_spec
+from bijux_phylogenetics.command_line.routing import _finalize_outputs
+
 from .alignments import (
     add_simulate_alignment_commands,
     run_simulate_alignment_command,
@@ -28,12 +35,6 @@ from .reference_validation import (
     run_simulate_reference_validation_command,
 )
 from .trees import add_simulate_tree_commands, run_simulate_tree_command
-from bijux_phylogenetics.command_line.arguments import (
-    _add_manifest_argument,
-)
-from bijux_phylogenetics.command_line.output import _print_result
-from bijux_phylogenetics.command_line.registry import get_command_spec
-from bijux_phylogenetics.command_line.routing import _finalize_outputs
 
 
 def add_simulate_command(subparsers: Any) -> None:

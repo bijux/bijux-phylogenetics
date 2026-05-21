@@ -33,8 +33,8 @@ from .runtime import (
     signal_report,
     signal_test_payload,
     source_reference_paths,
-    tree_rescaling_payloads,
     transformed_tree_reports_for_repo,
+    tree_rescaling_payloads,
 )
 
 __all__ = [
@@ -95,7 +95,9 @@ def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, o
         }
     if evidence_id == "evidence-005":
         baseline = baseline_gls_payload(baseline_gls_report(repo_root))
-        estimated = estimated_lambda_pgls_payload(estimated_lambda_pgls_report(repo_root))
+        estimated = estimated_lambda_pgls_payload(
+            estimated_lambda_pgls_report(repo_root)
+        )
         return {
             "schema_version": 1,
             "study_id": STUDY_ID,

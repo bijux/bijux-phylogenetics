@@ -239,7 +239,9 @@ def run_input_report_command(args: Any) -> int | None:
                     metrics={
                         "tree_tip_count": result.taxon_audit.tree_tip_count,
                         "status": result.taxon_audit.status,
-                        "conflict_count": len(result.taxon_audit.mapping_conflicts.rows),
+                        "conflict_count": len(
+                            result.taxon_audit.mapping_conflicts.rows
+                        ),
                         "crosswalk_rows": 0
                         if result.taxon_crosswalk is None
                         else len(result.taxon_crosswalk.rows),

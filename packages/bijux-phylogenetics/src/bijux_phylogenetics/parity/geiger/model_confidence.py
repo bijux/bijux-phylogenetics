@@ -145,7 +145,9 @@ def _build_model_confidence_rows(
         bijux_row = bijux_rows.get(candidate_model)
         reference_weight = reference_confidence.weights.get(candidate_model)
         bijux_weight = bijux_confidence.weights.get(candidate_model)
-        reference_within_aic = reference_confidence.within_delta_aic.get(candidate_model)
+        reference_within_aic = reference_confidence.within_delta_aic.get(
+            candidate_model
+        )
         bijux_within_aic = bijux_confidence.within_delta_aic.get(candidate_model)
         reference_within_aicc = reference_confidence.within_delta_aicc.get(
             candidate_model
@@ -237,7 +239,9 @@ class _ConfidenceSurface:
     uncertainty_language: str
 
 
-def _confidence_surface(rows_by_model: dict[str, dict[str, object]]) -> _ConfidenceSurface:
+def _confidence_surface(
+    rows_by_model: dict[str, dict[str, object]],
+) -> _ConfidenceSurface:
     comparable_rows = [
         row
         for row in rows_by_model.values()
@@ -248,9 +252,9 @@ def _confidence_surface(rows_by_model: dict[str, dict[str, object]]) -> _Confide
     if not comparable_rows:
         return _ConfidenceSurface(
             best_model=None,
-            weights={model: None for model in rows_by_model},
-            within_delta_aic={model: None for model in rows_by_model},
-            within_delta_aicc={model: None for model in rows_by_model},
+            weights=dict.fromkeys(rows_by_model),
+            within_delta_aic=dict.fromkeys(rows_by_model),
+            within_delta_aicc=dict.fromkeys(rows_by_model),
             uncertainty_class="unresolved",
             uncertainty_language=(
                 "model confidence is unresolved because no comparable candidate retained "
@@ -266,10 +270,10 @@ def _confidence_surface(rows_by_model: dict[str, dict[str, object]]) -> _Confide
         model: (raw_weight / weight_total if weight_total else 0.0)
         for model, raw_weight in raw_weights.items()
     }
-    weight_map = {model: None for model in rows_by_model}
+    weight_map = dict.fromkeys(rows_by_model)
     weight_map.update(weights)
-    within_delta_aic = {model: None for model in rows_by_model}
-    within_delta_aicc = {model: None for model in rows_by_model}
+    within_delta_aic = dict.fromkeys(rows_by_model)
+    within_delta_aicc = dict.fromkeys(rows_by_model)
     for row in comparable_rows:
         model = _row_model(row)
         delta_aic = _optional_float(row.get("delta_aic"))

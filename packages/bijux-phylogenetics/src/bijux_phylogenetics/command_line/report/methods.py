@@ -89,9 +89,7 @@ def add_methods_report_commands(report_subparsers: Any) -> None:
         default="equal",
     )
     report_ancestral_methods_summary.add_argument("--fixed-root-state")
-    report_ancestral_methods_summary.add_argument(
-        "--out", required=True, type=Path
-    )
+    report_ancestral_methods_summary.add_argument("--out", required=True, type=Path)
     report_ancestral_methods_summary.add_argument(
         "--json", action="store_true", help="Emit the methods-summary result as JSON."
     )
@@ -102,12 +100,8 @@ def add_methods_report_commands(report_subparsers: Any) -> None:
         help="Write reviewer-facing methods-summary text for profile-driven alignment filtering.",
     )
     report_alignment_filtering_methods_summary.add_argument("alignment", type=Path)
-    report_alignment_filtering_methods_summary.add_argument(
-        "--profile", required=True
-    )
-    report_alignment_filtering_methods_summary.add_argument(
-        "--group-table", type=Path
-    )
+    report_alignment_filtering_methods_summary.add_argument("--profile", required=True)
+    report_alignment_filtering_methods_summary.add_argument("--group-table", type=Path)
     report_alignment_filtering_methods_summary.add_argument(
         "--group-column",
         dest="group_columns",

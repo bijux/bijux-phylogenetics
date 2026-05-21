@@ -119,9 +119,7 @@ def run_rabies_demo_command(args: Any) -> int | None:
                 "artifact_count": len(outputs),
                 "taxon_count": result.dataset.taxon_count,
                 "workflow_trait": result.dataset.workflow_trait,
-                "observed_host_group_count": (
-                    result.dataset.observed_host_group_count
-                ),
+                "observed_host_group_count": (result.dataset.observed_host_group_count),
                 "analysis_constraint_mode": (
                     result.workflow_bundle.analysis_constraint_mode
                 ),
@@ -178,9 +176,7 @@ def run_rabies_demo_command(args: Any) -> int | None:
                 "strongly_supported_transition_count": (
                     result.workflow_bundle.strongly_supported_transition_count
                 ),
-                "migration_event_count": (
-                    result.workflow_bundle.migration_event_count
-                ),
+                "migration_event_count": (result.workflow_bundle.migration_event_count),
                 "strongly_supported_migration_event_count": (
                     result.workflow_bundle.strongly_supported_migration_event_count
                 ),
@@ -279,9 +275,7 @@ def run_rabies_demo_command(args: Any) -> int | None:
                 "max_bootstrap_tree_count": (
                     result.workflow_bundle.max_bootstrap_tree_count
                 ),
-                "max_report_table_rows": (
-                    result.workflow_bundle.max_report_table_rows
-                ),
+                "max_report_table_rows": (result.workflow_bundle.max_report_table_rows),
                 "budget_warning_count": result.workflow_bundle.budget_warning_count,
                 "bootstrap_review_runtime_seconds": (
                     result.workflow_bundle.bootstrap_review_runtime_seconds

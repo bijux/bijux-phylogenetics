@@ -156,7 +156,9 @@ def _evaluate_scale(
         reason
         for dimension, observed, required, label in decisions
         if dimension in applicable_dimensions
-        for reason in [_dimension_decision(observed=observed, required=required, label=label)]
+        for reason in [
+            _dimension_decision(observed=observed, required=required, label=label)
+        ]
         if reason is not None
     ]
     ready = not limiting_dimensions

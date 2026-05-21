@@ -296,7 +296,9 @@ def _run_stochastic_map(args: Any) -> int:
     if args.collection_out is not None:
         outputs.append(write_stochastic_map_collection(args.collection_out, report))
     if args.summary_out is not None:
-        outputs.append(write_stochastic_map_summary_table(args.summary_out, report.summary))
+        outputs.append(
+            write_stochastic_map_summary_table(args.summary_out, report.summary)
+        )
     if args.state_times_out is not None:
         outputs.append(
             write_stochastic_map_state_time_table(args.state_times_out, report.summary)
@@ -427,10 +429,14 @@ def _run_summarize_maps(args: Any) -> int:
     if args.summary_out is not None:
         outputs.append(write_stochastic_map_summary_table(args.summary_out, report))
     if args.state_times_out is not None:
-        outputs.append(write_stochastic_map_state_time_table(args.state_times_out, report))
+        outputs.append(
+            write_stochastic_map_state_time_table(args.state_times_out, report)
+        )
     if args.branch_occupancy_out is not None:
         outputs.append(
-            write_stochastic_map_branch_occupancy_table(args.branch_occupancy_out, report)
+            write_stochastic_map_branch_occupancy_table(
+                args.branch_occupancy_out, report
+            )
         )
     outputs = _finalize_outputs(
         args,

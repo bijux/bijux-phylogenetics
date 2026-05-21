@@ -7,13 +7,13 @@ from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
+from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.phylo.pruning import (
     drop_tree_taxa,
     prune_tree_to_requested_taxa,
     prune_tree_to_taxa,
     write_pruned_taxa,
 )
-from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.runtime.results import build_command_result
 
 

@@ -10,13 +10,13 @@ from bijux_phylogenetics.comparative.assessment import (
     run_comparative_sensitivity_analysis,
 )
 from bijux_phylogenetics.comparative.continuous import compare_brownian_and_ou_models
+from bijux_phylogenetics.comparative.reporting.model_comparison_figures import (
+    build_comparative_model_figure_package,
+)
 from bijux_phylogenetics.comparative.validation import (
     audit_comparative_parameter_uncertainty,
     audit_ou_identifiability_reference_examples,
     validate_comparative_reference_examples,
-)
-from bijux_phylogenetics.comparative.reporting.model_comparison_figures import (
-    build_comparative_model_figure_package,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
 

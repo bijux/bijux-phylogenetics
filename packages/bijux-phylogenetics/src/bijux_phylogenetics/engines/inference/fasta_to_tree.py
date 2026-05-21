@@ -6,14 +6,11 @@ import hashlib
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.alignment import (
-    AlignmentAlphabet,
-    AlignmentRecord,
-    FastaInputValidationReport,
-    FastaRepairReport,
-)
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
-from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
+    MethodTierAssessment,
+    fasta_to_tree_method_tier,
+)
 from bijux_phylogenetics.io.fasta import (
     detect_fasta_sequence_type,
     write_fasta_alignment,
@@ -22,10 +19,13 @@ from bijux_phylogenetics.io.fasta.records import (
     repair_fasta_input,
     validate_fasta_input,
 )
-from bijux_phylogenetics.evidence.provenance.method_tiers import (
-    MethodTierAssessment,
-    fasta_to_tree_method_tier,
+from bijux_phylogenetics.phylo.alignment import (
+    AlignmentAlphabet,
+    AlignmentRecord,
+    FastaInputValidationReport,
+    FastaRepairReport,
 )
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 from ..artifacts.support import BootstrapSupportSummaryReport
 from ..common import build_file_checksums, write_engine_manifest

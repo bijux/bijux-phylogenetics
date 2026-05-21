@@ -5,9 +5,9 @@ import json
 from pathlib import Path
 import re
 
-from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.topology.tree import TreeNode
 
 from .tree_payloads import _sort_parity_rows
 

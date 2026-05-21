@@ -124,9 +124,7 @@ def run_inspect_command(args: Any) -> int:
                     report.suspicious_support_value_ranges
                 ),
                 "root_classification": report.root_state_confidence.classification,
-                "internal_label_conflict_count": len(
-                    report.internal_label_conflicts
-                ),
+                "internal_label_conflict_count": len(report.internal_label_conflicts),
                 "unsafe_external_label_count": len(report.unsafe_external_labels),
             },
             data=report,

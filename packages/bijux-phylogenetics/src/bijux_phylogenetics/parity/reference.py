@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from Bio import Phylo
 import csv
 from dataclasses import dataclass
 import json
 from pathlib import Path
 import re
 import tempfile
+
+from Bio import Phylo
 
 from bijux_phylogenetics.comparative import validate_comparative_reference_examples
 from bijux_phylogenetics.comparative.evolutionary_modes import (
@@ -18,11 +19,11 @@ from bijux_phylogenetics.compare.topology import (
     compare_branch_score_distance,
     compare_robinson_foulds,
 )
-from bijux_phylogenetics.phylo.topology.clades import informative_unrooted_splits
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.io.trees import detect_tree_format
+from bijux_phylogenetics.phylo.topology.clades import informative_unrooted_splits
 from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,
     compute_consensus_tree,

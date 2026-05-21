@@ -21,6 +21,7 @@ def list_ape_parity_cases(fixtures_root: Path | None = None) -> list[ApeParityCa
         *build_sequence_case_catalog(resolver),
     ]
 
+
 def _selected_cases(
     *,
     case_ids: list[str] | None,

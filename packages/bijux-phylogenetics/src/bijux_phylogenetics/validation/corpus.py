@@ -7,26 +7,23 @@ from pathlib import Path
 
 from bijux_phylogenetics.benchmark import (
     BenchmarkObservation,
+    LargeAlignmentScalingWorkflowBenchmark,
+    LargeTreeScalingWorkflowBenchmark,
+    LargeTreeSetScalingWorkflowBenchmark,
+    WorkflowPracticalLimitEntry,
     benchmark_alignment_site_scaling,
     benchmark_large_alignment_scaling,
-    benchmark_large_tree_set_scaling,
     benchmark_large_tree_scaling,
-    benchmark_workflow_practical_limits,
+    benchmark_large_tree_set_scaling,
     benchmark_tree_comparison,
     benchmark_tree_set_consensus,
     benchmark_tree_validation,
-    LargeAlignmentScalingWorkflowBenchmark,
-    LargeTreeSetScalingWorkflowBenchmark,
-    LargeTreeScalingWorkflowBenchmark,
-    WorkflowPracticalLimitEntry,
+    benchmark_workflow_practical_limits,
 )
 from bijux_phylogenetics.core.dataset import DatasetAuditReport, audit_dataset_inputs
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
-from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 from bijux_phylogenetics.io.fasta.records import summarise_fasta
-from bijux_phylogenetics.validation.reference import (
-    build_core_workflow_validation_report,
-)
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
     simulate_brownian_traits,
@@ -34,6 +31,9 @@ from bijux_phylogenetics.simulation import (
     simulate_dna_alignment,
     simulate_ou_traits,
     simulate_protein_alignment,
+)
+from bijux_phylogenetics.validation.reference import (
+    build_core_workflow_validation_report,
 )
 
 

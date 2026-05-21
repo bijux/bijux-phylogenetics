@@ -5,17 +5,15 @@ import tempfile
 
 from bijux_phylogenetics.comparative.pgls import run_pgls
 from bijux_phylogenetics.comparative.regression import (
-    summarize_phylogenetic_logistic,
-)
-from bijux_phylogenetics.comparative.regression import (
     ComparativeRegressionModelExclusion,
     ComparativeRegressionModelRow,
     ComparativeRegressionModelSelectionReport,
     compare_comparative_regression_models,
+    summarize_phylogenetic_logistic,
 )
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.io.newick import dumps_newick
+from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 
 from .columns import comparative_model_table_columns
 from .models import (

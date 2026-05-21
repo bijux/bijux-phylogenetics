@@ -6,8 +6,8 @@ from .ancestral_payloads import (
     _build_bijux_discrete_ancestral_rows,
 )
 from .comparative_payloads import (
-    _build_bijux_brownian_covariance_rows,
     _build_bijux_branching_time_rows,
+    _build_bijux_brownian_covariance_rows,
     _build_bijux_diversification_gamma_rows,
     _build_bijux_independent_contrast_rows,
     _build_bijux_tree_node_depth_rows,

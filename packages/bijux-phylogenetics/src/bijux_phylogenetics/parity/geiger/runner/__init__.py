@@ -4,48 +4,82 @@ from pathlib import Path
 import subprocess  # nosec B404 - parity helpers invoke repository-owned reference commands
 import tempfile
 
-from ..optimizer_triage import build_geiger_optimizer_triage_rows
 from ..boundary_warning_registry import build_geiger_boundary_warning_rows
 from ..likelihood_policy import build_geiger_likelihood_policy_rows
 from ..model_confidence import build_geiger_model_confidence_rows
+from ..optimizer_triage import build_geiger_optimizer_triage_rows
 from ..parameterization_registry import build_geiger_parameterization_registry_rows
 from ..registry import (
     GeigerParityCase,
-    list_geiger_parity_cases as list_geiger_parity_cases,
 )
-from .models import (
-    GeigerParityObservation,
-    GeigerParityReport,
-    GeigerParitySummaryRow as GeigerParitySummaryRow,
+from ..registry import (
+    list_geiger_parity_cases as list_geiger_parity_cases,
 )
 from .comparison import (
     load_json as _load_json,
+)
+from .comparison import (
     load_rows_table as _load_rows_table,
+)
+from .comparison import (
     mismatch_reason as _mismatch_reason,
+)
+from .comparison import (
     optional_payload_string as _optional_payload_string,
+)
+from .comparison import (
     row_mismatch_reason as _row_mismatch_reason,
 )
 from .continuous_payloads import (
     build_bijux_continuous_case_payload as _build_bijux_continuous_case_payload,
+)
+from .continuous_payloads import (
     build_bijux_model_comparison_payload as _build_bijux_model_comparison_payload,
 )
 from .discrete_payloads import (
     build_bijux_discrete_case_payload as _build_bijux_discrete_case_payload,
 )
+from .models import (
+    GeigerParityObservation,
+    GeigerParityReport,
+)
+from .models import (
+    GeigerParitySummaryRow as GeigerParitySummaryRow,
+)
 from .reporting import (
     persist_failure_bundle as _persist_failure_bundle,
+)
+from .reporting import (
     summary_rows as _summary_rows,
+)
+from .reporting import (
     write_geiger_parity_observation_table as write_geiger_parity_observation_table,
+)
+from .reporting import (
     write_geiger_parity_summary_table as write_geiger_parity_summary_table,
 )
 from .runtime import (
     bijux_commit as _bijux_commit,
+)
+from .runtime import (
     bijux_version as _bijux_version,
+)
+from .runtime import (
     failure_root as _failure_root,
+)
+from .runtime import (
     geiger_runner_path as _geiger_runner_path,
+)
+from .runtime import (
     reference_environment as _reference_environment,
+)
+from .runtime import (
     repository_root as _repository_root,
+)
+from .runtime import (
     selected_cases as _selected_cases,
+)
+from .runtime import (
     write_case_file as _write_case_file,
 )
 

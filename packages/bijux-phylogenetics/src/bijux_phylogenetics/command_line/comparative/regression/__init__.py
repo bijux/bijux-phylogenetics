@@ -73,6 +73,7 @@ def run_comparative_modeling_command(
         lambda_value=lambda_value,
     )
 
+
 __all__ = [
     "add_comparative_logistic_command",
     "add_comparative_modeling_commands",

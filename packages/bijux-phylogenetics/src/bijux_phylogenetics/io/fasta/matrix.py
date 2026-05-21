@@ -199,6 +199,7 @@ def _ape_segregating_sequences_from_dna_bin_alignment(
     ]
     return original_sequences, effective_sequences
 
+
 def load_dna_bin_alignment(
     path: Path,
     *,

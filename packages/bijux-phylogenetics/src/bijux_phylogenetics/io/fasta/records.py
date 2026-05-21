@@ -4,6 +4,7 @@ from collections import Counter
 from pathlib import Path
 from statistics import median
 
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment import (
     AlignmentAlphabet,
     AlignmentLinkageReport,
@@ -25,7 +26,6 @@ from bijux_phylogenetics.phylo.alignment import (
     SiteMissingness,
     SiteUncertaintyProfile,
 )
-from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.runtime.errors import (
     AlignmentTaxonMismatchError,
     InvalidAlignmentError,
@@ -102,7 +102,9 @@ def _detect_composition_outlier_sequences_records(
         profile = compute_amino_acid_composition(records, alphabet=alphabet)
         deviations_by_identifier: dict[str, float] = {}
         for record in records:
-            sequence_profile = compute_amino_acid_composition([record], alphabet=alphabet)
+            sequence_profile = compute_amino_acid_composition(
+                [record], alphabet=alphabet
+            )
             deviation = sum(
                 abs(sequence_profile.get(key, 0.0) - profile.get(key, 0.0))
                 for key in set(sequence_profile) | set(profile)

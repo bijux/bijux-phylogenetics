@@ -3,13 +3,28 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
-from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
 from bijux_phylogenetics.io.fasta import (
     infer_alignment_alphabet,
     load_fasta_alignment,
 )
+from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
+from ..artifacts.fasttree import (
+    build_fasttree_low_support_rows,
+    build_fasttree_support_histogram_rows,
+    build_fasttree_support_rows,
+    write_fasttree_support_histogram,
+    write_fasttree_support_table,
+)
+from ..common import (
+    build_file_checksums,
+    execute_engine_command,
+    read_engine_version,
+    resolve_engine_executable,
+    validate_timeout_seconds,
+)
+from ..validation import summarize_fasttree_support_distribution
 from .models import EngineWorkflowReport, ExternalTreeComparisonReport
 from .state import (
     _ensure_inference_ready_alignment,
@@ -23,21 +38,6 @@ from .state import (
     _validate_support_value_count,
     _validate_tree_output,
 )
-from ..common import (
-    build_file_checksums,
-    execute_engine_command,
-    read_engine_version,
-    resolve_engine_executable,
-    validate_timeout_seconds,
-)
-from ..artifacts.fasttree import (
-    build_fasttree_low_support_rows,
-    build_fasttree_support_histogram_rows,
-    build_fasttree_support_rows,
-    write_fasttree_support_histogram,
-    write_fasttree_support_table,
-)
-from ..validation import summarize_fasttree_support_distribution
 
 
 def _fasttree_args(path: Path, sequence_type: AlignmentAlphabet | None) -> list[str]:

@@ -5,9 +5,9 @@ from html import escape
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.diagnostics.assumptions import standardize_support_labels
 from bijux_phylogenetics.diagnostics.validation import _load_tree, inspect_tree_path
+from bijux_phylogenetics.phylo.topology.tree import TreeNode
 
 
 @dataclass(slots=True)

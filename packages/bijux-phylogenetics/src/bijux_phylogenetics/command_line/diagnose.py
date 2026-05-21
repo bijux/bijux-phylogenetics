@@ -81,9 +81,7 @@ def run_diagnose_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
 
     if args.target == "assumptions":
         if args.tree is None:
-            parser.exit(
-                status=2, message="diagnose assumptions requires a tree path\n"
-            )
+            parser.exit(status=2, message="diagnose assumptions requires a tree path\n")
         report = assess_tree_assumptions(
             args.tree,
             metadata_path=args.metadata,

@@ -68,9 +68,7 @@ def run_quality_demo_command(args: Any) -> int | None:
             "duplicate_sequence_identifier_count": (
                 result.workflow_bundle.duplicate_sequence_identifier_count
             ),
-            "illegal_character_count": (
-                result.workflow_bundle.illegal_character_count
-            ),
+            "illegal_character_count": (result.workflow_bundle.illegal_character_count),
             "empty_sequence_count": result.workflow_bundle.empty_sequence_count,
             "raw_sequence_length_outlier_count": (
                 result.workflow_bundle.raw_sequence_length_outlier_count

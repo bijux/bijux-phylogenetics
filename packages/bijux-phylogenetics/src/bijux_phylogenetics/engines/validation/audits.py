@@ -9,9 +9,11 @@ from bijux_phylogenetics.compare.topology import (
     compare_tree_paths,
 )
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
-from bijux_phylogenetics.engines.common import (
-    build_file_checksums,
-    load_engine_manifest,
+from bijux_phylogenetics.engines.artifacts.iqtree import (
+    parse_best_model_file,
+    parse_iqtree_model_selection_summary,
+    parse_log_likelihood_file,
+    resolve_iqtree_model_sidecar,
 )
 from bijux_phylogenetics.engines.artifacts.support import (
     BootstrapSupportNode,
@@ -22,16 +24,10 @@ from bijux_phylogenetics.engines.artifacts.support import (
     ShAlrtSupportSummaryReport,
     WeakBackboneReport,
 )
-from bijux_phylogenetics.engines.artifacts.iqtree import (
-    parse_best_model_file,
-    parse_iqtree_model_selection_summary,
-    parse_log_likelihood_file,
-    resolve_iqtree_model_sidecar,
+from bijux_phylogenetics.engines.common import (
+    build_file_checksums,
+    load_engine_manifest,
 )
-from bijux_phylogenetics.runtime.error_explanations import (
-    explain_inference_workflow_failure,
-)
-from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.fasta.quality import summarize_alignment_readiness
 from bijux_phylogenetics.io.fasta.records import validate_fasta_input
@@ -45,7 +41,13 @@ from bijux_phylogenetics.io.iqtree_support import (
     support_fraction,
 )
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.runtime.error_explanations import (
+    explain_inference_workflow_failure,
+)
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.trees import load_tree_set
+
+
 @dataclass(slots=True)
 class InferenceReadinessDecision:
     workflow: str

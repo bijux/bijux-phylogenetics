@@ -32,12 +32,16 @@ def write_case_file(path: Path, case: ApeParityCase) -> Path:
                 "rf_mode": case.rf_mode,
                 "consensus_method": case.consensus_method,
                 "reference_tree_path": (
-                    None if case.reference_tree_path is None else str(case.reference_tree_path)
+                    None
+                    if case.reference_tree_path is None
+                    else str(case.reference_tree_path)
                 ),
                 "ancestral_model": case.ancestral_model,
                 "trait_fixture_id": case.trait_fixture_id,
                 "trait_table_path": (
-                    None if case.trait_table_path is None else str(case.trait_table_path)
+                    None
+                    if case.trait_table_path is None
+                    else str(case.trait_table_path)
                 ),
                 "trait_name": case.trait_name,
                 "trait_taxon_column": case.trait_taxon_column,

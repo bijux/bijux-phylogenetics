@@ -4,7 +4,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 import re
 
-from bijux_phylogenetics.runtime.errors import EngineUnavailableError, EngineWorkflowError
+from bijux_phylogenetics.runtime.errors import (
+    EngineUnavailableError,
+    EngineWorkflowError,
+)
 
 from ..common import EngineVersionInfo, read_engine_version, resolve_engine_executable
 

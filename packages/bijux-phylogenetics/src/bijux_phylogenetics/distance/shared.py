@@ -6,8 +6,8 @@ from pathlib import Path
 from bijux_phylogenetics.runtime.errors import UnsupportedDistanceTreeMethodError
 
 from .models import (
-    DistanceTreeMethodPolicy,
     DistanceModel,
+    DistanceTreeMethodPolicy,
     GeneticDistanceMatrix,
     PairwiseGeneticDistance,
     UPGMAUltrametricViolation,

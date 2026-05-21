@@ -3,9 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 import random
 
-from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 from bijux_phylogenetics.io.fasta import write_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 
 
 def _simulate_alignment_records(
@@ -17,9 +17,9 @@ def _simulate_alignment_records(
     substitution_rate: float,
     seed: int,
 ):
-    from ..contracts import AlignmentSimulationReport
     from .._state_propagation import _iter_tip_trait_values
     from .._stochastic import _poisson_count
+    from ..contracts import AlignmentSimulationReport
 
     if sequence_length < 1:
         raise ValueError(f"sequence_length must be at least 1, got {sequence_length}")

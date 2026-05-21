@@ -33,12 +33,14 @@ def _build_bijux_dnabin_rows(
         for row in matrix.rows
     ]
 
+
 def _ape_base_frequency_rows(input_fixture: Path) -> list[dict[str, object]]:
     report = compute_alignment_base_frequency_report(input_fixture)
     return [
         {"state": row.state, "frequency": row.frequency}
         for row in report.alignment_rows
     ]
+
 
 def _build_bijux_base_frequency_summary(
     input_fixture: Path,
@@ -54,6 +56,7 @@ def _build_bijux_base_frequency_summary(
         "state_count": len(rows),
     }, rows
 
+
 def _build_bijux_segregating_site_rows(
     input_fixture: Path,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
@@ -63,6 +66,7 @@ def _build_bijux_segregating_site_rows(
         "alignment_length": report.alignment_length,
         "segregating_site_count": len(report.segregating_site_positions),
     }, [{"position": row.position} for row in report.rows]
+
 
 def _build_bijux_distance_rows(
     input_fixture: Path,
@@ -126,6 +130,7 @@ def _build_bijux_distance_rows(
         "infinite_distance_count": infinite_distance_count,
     }, rows
 
+
 def _build_bijux_neighbor_joining_structure(
     input_fixture: Path,
 ) -> tuple[dict[str, object], None, str]:
@@ -135,6 +140,7 @@ def _build_bijux_neighbor_joining_structure(
     )
     summary, _rows, normalized_text = _tree_structure_payload(tree, False, [])
     return summary, None, normalized_text
+
 
 def _build_bijux_translation_rows(
     input_fixture: Path,
@@ -158,4 +164,3 @@ def _build_bijux_translation_rows(
         }
         for row in translated
     ]
-

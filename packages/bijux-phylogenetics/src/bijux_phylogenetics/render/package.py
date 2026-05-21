@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.render.reproducibility import (
     FigureReproducibilityFilter,
     write_figure_reproducibility_manifest,
@@ -231,9 +231,8 @@ def _categorical_legend_entries(
     categories = sorted({value for value in values.values() if value})
     if not categories:
         return []
-    colors = {
-        category: color
-        for category, color in zip(
+    colors = dict(
+        zip(
             categories,
             (
                 "#0f766e",
@@ -247,7 +246,7 @@ def _categorical_legend_entries(
             ),
             strict=False,
         )
-    }
+    )
     return [
         FigureLegendEntry(
             surface=surface,
@@ -350,7 +349,9 @@ def _build_legibility_audit(
 ) -> FigureLegibilityAudit:
     tip_label_font_size_px = 16
     vertical_tip_spacing_px = 56 if render.layout != "circular" else 20
-    longest_visible_label_length = max((len(label) for label in visible_labels), default=0)
+    longest_visible_label_length = max(
+        (len(label) for label in visible_labels), default=0
+    )
     estimated_longest_label_width_px = round(
         longest_visible_label_length * tip_label_font_size_px * 0.58,
         2,
@@ -363,7 +364,10 @@ def _build_legibility_audit(
         warnings.append(
             "the longest visible label likely exceeds the reserved label lane and should be shortened or moved to metadata"
         )
-    if render.layout != "circular" and vertical_tip_spacing_px < tip_label_font_size_px * 2:
+    if (
+        render.layout != "circular"
+        and vertical_tip_spacing_px < tip_label_font_size_px * 2
+    ):
         warnings.append(
             "vertical tip spacing fell below the publication legibility threshold"
         )
@@ -389,9 +393,7 @@ def _build_caption_draft(
     audit: TreeFigureAuditReport,
     legend_entries: list[FigureLegendEntry],
 ) -> FigureCaptionDraft:
-    lead_sentence = (
-        f"{title} shows {render.visible_tip_count} rendered taxa from a source tree with {render.tip_count} total tips using a {render.layout} layout."
-    )
+    lead_sentence = f"{title} shows {render.visible_tip_count} rendered taxa from a source tree with {render.tip_count} total tips using a {render.layout} layout."
     support_sentence = (
         f"Validated branch support labels are shown for {render.rendered_support_count} internal branches."
         if render.rendered_support_count
@@ -402,9 +404,7 @@ def _build_caption_draft(
         if render.has_scale_bar and render.scale_bar_length is not None
         else "A branch-length scale bar is not shown because the selected layout is not branch-length proportional."
     )
-    legend_sentence = (
-        f"The figure legend contains {len(legend_entries)} explicit entries covering rendered trait, metadata, support, and scale surfaces."
-    )
+    legend_sentence = f"The figure legend contains {len(legend_entries)} explicit entries covering rendered trait, metadata, support, and scale surfaces."
     limitation_sentence = (
         "Reviewer-facing audits did not record additional publication limitations."
         if not (audit.limitations or audit.legend_audit.warnings)
@@ -692,7 +692,10 @@ def build_tree_figure_package(
         render=render,
         visible_labels=visible_label_rows,
         has_annotation_columns=bool(
-            categorical_traits or continuous_traits or metadata_strips or heatmap_columns
+            categorical_traits
+            or continuous_traits
+            or metadata_strips
+            or heatmap_columns
         ),
     )
     caption_draft = _build_caption_draft(

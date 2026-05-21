@@ -48,9 +48,7 @@ def add_compare_command(subparsers: Any) -> None:
         default="prune-to-shared",
         help="Either prune both trees to shared taxa or require identical taxon sets.",
     )
-    compare.add_argument(
-        "--json", action="store_true", help="Emit the report as JSON."
-    )
+    compare.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(compare)
 
 
@@ -80,3 +78,4 @@ def run_compare_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         return topology_distance_result
 
     parser.error("compare requires a supported workflow or two tree paths")
+    return 2

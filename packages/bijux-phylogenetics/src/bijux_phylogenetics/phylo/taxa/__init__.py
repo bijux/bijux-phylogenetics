@@ -35,6 +35,7 @@ from .models import (
     TaxonNamespaceReport,
     TaxonNormalizationCollision,
     TaxonNormalizationReport,
+    TaxonomyReference,
     TaxonRankAssignment,
     TaxonRankConsistencyReport,
     TaxonRename,
@@ -43,7 +44,6 @@ from .models import (
     TaxonSynonymResolutionReport,
     TaxonSynonymResolutionRow,
     TaxonSynonymRow,
-    TaxonomyReference,
     UnsafeTaxonName,
 )
 from .normalization import (

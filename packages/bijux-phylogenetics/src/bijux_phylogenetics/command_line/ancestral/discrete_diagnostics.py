@@ -4,16 +4,26 @@ from pathlib import Path
 from typing import Any
 
 from bijux_phylogenetics.ancestral.discrete.review import (
+    summarize_ancestral_transition_report,
+    summarize_ancestral_transition_tree_set,
+    summarize_ancestral_transition_tree_set_report,
+    summarize_ancestral_transitions,
     summarize_irreversible_discrete_reconstruction,
     summarize_irreversible_discrete_report,
+    summarize_ordered_discrete_reconstruction,
+    summarize_ordered_discrete_report,
+    write_ancestral_transition_branch_table,
+    write_ancestral_transition_count_table,
+    write_ancestral_transition_exclusion_table,
+    write_ancestral_transition_summary_table,
+    write_ancestral_transition_tree_set_branch_table,
+    write_ancestral_transition_tree_set_count_table,
+    write_ancestral_transition_tree_set_summary_table,
+    write_ancestral_transition_tree_set_tree_table,
     write_irreversible_discrete_fit_table,
     write_irreversible_discrete_node_table,
     write_irreversible_discrete_summary_table,
     write_irreversible_discrete_transition_table,
-)
-from bijux_phylogenetics.ancestral.discrete.review import (
-    summarize_ordered_discrete_reconstruction,
-    summarize_ordered_discrete_report,
     write_ordered_discrete_fit_table,
     write_ordered_discrete_node_table,
     write_ordered_discrete_summary_table,
@@ -25,20 +35,6 @@ from bijux_phylogenetics.ancestral.sensitivity import (
     write_ancestral_root_assumption_table,
     write_ancestral_root_sensitivity_node_table,
     write_ancestral_root_sensitivity_summary_table,
-)
-from bijux_phylogenetics.ancestral.discrete.review import (
-    summarize_ancestral_transition_report,
-    summarize_ancestral_transition_tree_set,
-    summarize_ancestral_transition_tree_set_report,
-    summarize_ancestral_transitions,
-    write_ancestral_transition_branch_table,
-    write_ancestral_transition_count_table,
-    write_ancestral_transition_exclusion_table,
-    write_ancestral_transition_summary_table,
-    write_ancestral_transition_tree_set_branch_table,
-    write_ancestral_transition_tree_set_count_table,
-    write_ancestral_transition_tree_set_summary_table,
-    write_ancestral_transition_tree_set_tree_table,
 )
 from bijux_phylogenetics.command_line.arguments import (
     _add_manifest_argument,
@@ -146,7 +142,13 @@ def add_discrete_diagnostic_ancestral_commands(ancestral_subparsers: Any) -> Non
     ancestral_transitions.add_argument("--taxon-column")
     ancestral_transitions.add_argument(
         "--model",
-        choices=("fitch", "equal-rates", "symmetric", "all-rates-different", "meristic"),
+        choices=(
+            "fitch",
+            "equal-rates",
+            "symmetric",
+            "all-rates-different",
+            "meristic",
+        ),
         default="fitch",
     )
     ancestral_transitions.add_argument(
@@ -168,9 +170,7 @@ def add_discrete_diagnostic_ancestral_commands(ancestral_subparsers: Any) -> Non
     _add_manifest_argument(ancestral_transitions)
 
 
-def run_discrete_diagnostic_ancestral_command(
-    args: Any, *, parser: Any
-) -> int | None:
+def run_discrete_diagnostic_ancestral_command(args: Any, *, parser: Any) -> int | None:
     if args.ancestral_command == "root-sensitivity":
         report = summarize_ancestral_root_sensitivity(
             args.tree,

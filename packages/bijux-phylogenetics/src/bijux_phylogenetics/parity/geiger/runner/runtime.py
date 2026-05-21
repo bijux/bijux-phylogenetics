@@ -96,12 +96,8 @@ def write_case_file(path: Path, case: GeigerParityCase) -> Path:
         if case.lambda_bounds is None
         else list(case.lambda_bounds),
         "discrete_transform_name": case.discrete_transform_name,
-        "kappa_bounds": None
-        if case.kappa_bounds is None
-        else list(case.kappa_bounds),
-        "delta_bounds": None
-        if case.delta_bounds is None
-        else list(case.delta_bounds),
+        "kappa_bounds": None if case.kappa_bounds is None else list(case.kappa_bounds),
+        "delta_bounds": None if case.delta_bounds is None else list(case.delta_bounds),
         "ou_bounds": None if case.ou_bounds is None else list(case.ou_bounds),
         "early_burst_bounds": None
         if case.early_burst_bounds is None

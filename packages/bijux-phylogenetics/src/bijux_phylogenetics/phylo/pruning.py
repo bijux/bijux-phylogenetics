@@ -4,17 +4,17 @@ from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.alignment import AlignmentRecord
-from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clades
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
+from bijux_phylogenetics.io.fasta import load_fasta_alignment
+from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 from bijux_phylogenetics.phylo.topology import (
     TreeTransformationSummary,
     _summarize_transformation,
 )
+from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clades
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
-from bijux_phylogenetics.io.fasta import load_fasta_alignment
-from bijux_phylogenetics.io.trees import load_tree
 
 
 @dataclass(slots=True)

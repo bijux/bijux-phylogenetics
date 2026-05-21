@@ -88,7 +88,10 @@ def _resolve_correlated_brownian_covariance_matrix(
         )
     if evolutionary_correlation_matrix is None:
         return [
-            [1.0 if row_index == column_index else 0.0 for column_index in range(len(trait_names))]
+            [
+                1.0 if row_index == column_index else 0.0
+                for column_index in range(len(trait_names))
+            ]
             for row_index in range(len(trait_names))
         ]
     correlation_matrix = _normalize_square_matrix(
@@ -170,15 +173,15 @@ def _build_correlated_brownian_collection_summary_rows(
     covariance_matrix: list[list[float]],
     simulations,
 ):
-    from ..contracts import ContinuousTraitSimulationSummaryRow
     from .._statistics import (
         _mean,
         _median,
         _round_float,
-        _sample_covariance,
         _sample_correlation,
+        _sample_covariance,
         _sample_standard_deviation,
     )
+    from ..contracts import ContinuousTraitSimulationSummaryRow
 
     if not simulations:
         return []
@@ -272,11 +275,11 @@ def simulate_correlated_brownian_traits(
 ):
     from bijux_phylogenetics.ancestral.common import node_signature
 
+    from .._statistics import _round_float
     from ..contracts import (
         CorrelatedContinuousTraitSimulationReport,
         SimulatedCorrelatedContinuousTrait,
     )
-    from .._statistics import _round_float
 
     normalized_trait_names = _normalize_trait_names(trait_names)
     normalized_root_states = _normalize_root_states(
@@ -339,10 +342,10 @@ def simulate_correlated_brownian_trait_collection(
     replicates: int = 128,
     seed: int = 1,
 ):
-    from ..contracts import CorrelatedContinuousTraitSimulationCollectionReport
     from .._statistics import (
         _round_float,
     )
+    from ..contracts import CorrelatedContinuousTraitSimulationCollectionReport
 
     if replicates < 1:
         raise ValueError(f"replicates must be at least 1, got {replicates}")

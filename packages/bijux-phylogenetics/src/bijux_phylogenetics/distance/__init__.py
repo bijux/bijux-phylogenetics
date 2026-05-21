@@ -4,6 +4,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.phylo.alignment import DnaBinAlignment
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+
 from .models import (
     AmbiguityPolicy,
     DistanceBootstrapReport,
@@ -15,6 +16,8 @@ from .models import (
     DistanceMethodMaturityGateReport,
     DistanceMethodReport,
     DistanceModel,
+    DistanceModelComparisonReport,
+    DistanceOutlierPair,
     DistanceReferenceObservation,
     DistanceReferenceValidationReport,
     DistanceReproducibilityBundleReport,
@@ -23,7 +26,6 @@ from .models import (
     DistanceTreeReferenceComparisonReport,
     DistanceTreeReferenceObservation,
     DistanceTreeTopologyComparison,
-    DistanceOutlierPair,
     GapHandlingMode,
     GeneticDistanceMatrix,
     GeneticDistanceModelParameters,
@@ -49,9 +51,7 @@ from .shared import (
 )
 
 
-def _load_alignment_for_model(
-    path: Path, *, model: DistanceModel
-):
+def _load_alignment_for_model(path: Path, *, model: DistanceModel):
     from .matrix import _load_alignment_for_model as load_alignment_impl
 
     return load_alignment_impl(path, model=model)
@@ -115,7 +115,6 @@ def assess_distance_method_assumptions_from_genetic_distance_matrix(
     return assess_impl(report, ultrametric_tolerance=ultrametric_tolerance)
 
 
-
 def _bio_distance_matrix(report: GeneticDistanceMatrix):
     from .matrix import _bio_distance_matrix as bio_distance_matrix_impl
 
@@ -143,9 +142,7 @@ def assess_imported_distance_method_assumptions(
         assess_imported_distance_method_assumptions as assess_imported_impl,
     )
 
-    return assess_imported_impl(
-        path, ultrametric_tolerance=ultrametric_tolerance
-    )
+    return assess_imported_impl(path, ultrametric_tolerance=ultrametric_tolerance)
 
 
 def validate_imported_distance_matrix(path: Path) -> ImportedDistanceMatrixReport:
@@ -294,7 +291,6 @@ def compare_distance_tree_to_reference_tree(
     )
 
 
-
 def compute_pairwise_genetic_distance_matrix(
     path: Path,
     *,
@@ -333,6 +329,7 @@ def inspect_distance_matrix_quality(
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
     )
+
 
 def write_genetic_distance_matrix(path: Path, report: GeneticDistanceMatrix) -> Path:
     from .matrix import write_genetic_distance_matrix as write_matrix_impl

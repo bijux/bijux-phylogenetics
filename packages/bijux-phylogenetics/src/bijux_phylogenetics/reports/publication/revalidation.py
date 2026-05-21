@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
+
 from .support import (
     SUPPORTED_PUBLICATION_PACKAGE_KIND,
     artifact_kind,
@@ -22,7 +23,6 @@ from .support import (
     section_counts,
     text,
 )
-
 
 _ARTIFACT_COLUMNS = [
     "artifact_scope",
@@ -97,6 +97,8 @@ class PublicationPackageRevalidationResult:
     risk_check_count: int
     all_original_artifacts_match: bool
     overall_revalidation_status: str
+
+
 def _status(*, blocked: bool = False, risk: bool = False) -> str:
     if blocked:
         return "blocked"
@@ -146,8 +148,12 @@ def _artifact_row(
         observed_sha256=observed_sha256,
         expected_size_bytes=expected_size_bytes,
         observed_size_bytes=observed_size,
-        detail="; ".join(mismatches) if mismatches else "artifact matches stored package record",
+        detail="; ".join(mismatches)
+        if mismatches
+        else "artifact matches stored package record",
     )
+
+
 def _unexpected_files(
     *,
     package_root: Path,
@@ -243,19 +249,19 @@ def _write_html_report(
             "<body>",
             "<main>",
             "  <h1>Publication Package Revalidation</h1>",
-            "  <div class=\"cards\">",
-            f"    <div class=\"card\"><span class=\"label\">report kind</span><span class=\"value\">{escape(result.report_kind)}</span></div>",
-            f"    <div class=\"card\"><span class=\"label\">overall status</span><span class=\"value\">{escape(result.overall_revalidation_status)}</span></div>",
-            f"    <div class=\"card\"><span class=\"label\">original artifacts match</span><span class=\"value\">{str(result.all_original_artifacts_match).lower()}</span></div>",
-            f"    <div class=\"card\"><span class=\"label\">unexpected files</span><span class=\"value\">{result.unexpected_file_count}</span></div>",
+            '  <div class="cards">',
+            f'    <div class="card"><span class="label">report kind</span><span class="value">{escape(result.report_kind)}</span></div>',
+            f'    <div class="card"><span class="label">overall status</span><span class="value">{escape(result.overall_revalidation_status)}</span></div>',
+            f'    <div class="card"><span class="label">original artifacts match</span><span class="value">{str(result.all_original_artifacts_match).lower()}</span></div>',
+            f'    <div class="card"><span class="label">unexpected files</span><span class="value">{result.unexpected_file_count}</span></div>',
             "  </div>",
-            "  <section class=\"panel\">",
+            '  <section class="panel">',
             "    <h2>Package Root</h2>",
             f"    <p><code>{escape(str(result.package_root))}</code></p>",
-            "    <h2 style=\"margin-top: 16px;\">Manifest</h2>",
+            '    <h2 style="margin-top: 16px;">Manifest</h2>',
             f"    <p><code>{escape(str(manifest_path))}</code></p>",
             "  </section>",
-            "  <section class=\"panel\">",
+            '  <section class="panel">',
             "    <h2>Checks</h2>",
             "    <table>",
             "      <thead><tr><th>Section</th><th>Check</th><th>Status</th><th>Summary</th><th>Evidence</th></tr></thead>",
@@ -264,7 +270,7 @@ def _write_html_report(
             "      </tbody>",
             "    </table>",
             "  </section>",
-            "  <section class=\"panel\">",
+            '  <section class="panel">',
             "    <h2>Artifacts</h2>",
             "    <table>",
             "      <thead><tr><th>Artifact</th><th>Scope</th><th>Section</th><th>Status</th><th>Detail</th></tr></thead>",
@@ -315,7 +321,11 @@ def write_publication_package_revalidation_report(
     package_files = mapping(manifest, "package_files")
     inventory_entry = mapping(package_files, "artifact_inventory")
     inventory_relative_path = entry_path(inventory_entry)
-    inventory_path = package_root / inventory_relative_path if inventory_relative_path else package_root
+    inventory_path = (
+        package_root / inventory_relative_path
+        if inventory_relative_path
+        else package_root
+    )
     inventory_row = _artifact_row(
         artifact_scope="package_control",
         section="package",
@@ -344,10 +354,7 @@ def write_publication_package_revalidation_report(
     manifest_section_counts = inventory_entry.get("section_counts")
     inventory_sections_match = (
         isinstance(manifest_section_counts, dict)
-        and {
-            str(key): int(value)
-            for key, value in manifest_section_counts.items()
-        }
+        and {str(key): int(value) for key, value in manifest_section_counts.items()}
         == section_counts(inventory_rows)
         if inventory_rows
         else False
@@ -383,7 +390,11 @@ def write_publication_package_revalidation_report(
 
     checklist_entry = mapping(package_files, "reproducibility_checklist")
     checklist_relative_path = entry_path(checklist_entry)
-    checklist_path = package_root / checklist_relative_path if checklist_relative_path else package_root
+    checklist_path = (
+        package_root / checklist_relative_path
+        if checklist_relative_path
+        else package_root
+    )
     checklist_row = _artifact_row(
         artifact_scope="package_control",
         section="package",
@@ -447,7 +458,9 @@ def write_publication_package_revalidation_report(
                 section=row.get("section", "").strip() or "artifact",
                 relative_path=relative_path,
                 expected_sha256=row.get("sha256", "").strip() or None,
-                expected_size_bytes=entry_size({"size_bytes": row.get("size_bytes", "")}),
+                expected_size_bytes=entry_size(
+                    {"size_bytes": row.get("size_bytes", "")}
+                ),
                 observed_path=package_root / relative_path,
             )
         )
@@ -492,9 +505,12 @@ def write_publication_package_revalidation_report(
 
     manifest_file_rows: list[PublicationPackageRevalidationArtifactRow] = []
     manifest_file_mismatch_count = 0
-    for block_name, entry_name, relative_path, expected_sha256 in manifest_file_entries(
-        manifest
-    ):
+    for (
+        block_name,
+        _entry_name,
+        relative_path,
+        expected_sha256,
+    ) in manifest_file_entries(manifest):
         row = _artifact_row(
             artifact_scope="manifest_registry",
             section=block_name,
@@ -537,9 +553,7 @@ def write_publication_package_revalidation_report(
     )
 
     expected_relative_paths = {
-        row.relative_path
-        for row in artifact_rows
-        if row.relative_path
+        row.relative_path for row in artifact_rows if row.relative_path
     }
     unexpected_relative_paths = _unexpected_files(
         package_root=package_root,

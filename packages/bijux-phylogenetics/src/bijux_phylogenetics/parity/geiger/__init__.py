@@ -5,7 +5,6 @@ from .boundary_warning_registry import (
     write_geiger_boundary_warning_table,
 )
 from .generated_report import (
-    GeneratedGeigerParityReport,
     GeigerBenchmarkSummaryRow,
     GeigerBoundaryWarningSummaryRow,
     GeigerExcludedModelRow,
@@ -13,6 +12,7 @@ from .generated_report import (
     GeigerOptimizerMismatchCategoryRow,
     GeigerSimulationRecoveryRow,
     GeigerToleranceRuleRow,
+    GeneratedGeigerParityReport,
     build_generated_geiger_parity_report,
     write_generated_geiger_parity_report_json,
     write_generated_geiger_parity_report_markdown,

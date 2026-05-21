@@ -3,7 +3,10 @@ from __future__ import annotations
 from dataclasses import asdict
 from pathlib import Path
 
-from bijux_phylogenetics.core.dataset import audit_dataset_inputs, summarize_dataset_readiness
+from bijux_phylogenetics.core.dataset import (
+    audit_dataset_inputs,
+    summarize_dataset_readiness,
+)
 from bijux_phylogenetics.datasets.study_inputs import detect_missing_trait_values
 from bijux_phylogenetics.diagnostics.validation import (
     forensic_tree_path,
@@ -199,9 +202,13 @@ def render_dataset_report(
                 "dataset-reviewer-checklist", asdict(dataset_audit.reviewer_checklist)
             )
         )
-        sections.append(section("dataset-ordering", asdict(dataset_audit.ordering_audit)))
         sections.append(
-            section("dataset-pruning", [asdict(row) for row in dataset_audit.pruning_steps])
+            section("dataset-ordering", asdict(dataset_audit.ordering_audit))
+        )
+        sections.append(
+            section(
+                "dataset-pruning", [asdict(row) for row in dataset_audit.pruning_steps]
+            )
         )
         sections.append(
             section(
@@ -232,9 +239,13 @@ def render_dataset_report(
     if tip_dates_path is not None:
         input_ledger_entries.append((tip_dates_path, "tip_dates", ["dataset_audit"]))
     if calibration_path is not None:
-        input_ledger_entries.append((calibration_path, "calibrations", ["dataset_audit"]))
+        input_ledger_entries.append(
+            (calibration_path, "calibrations", ["dataset_audit"])
+        )
     input_ledger = build_input_ledger(input_ledger_entries)
-    sections.append(section("dataset-input-ledger", serialize_input_ledger(input_ledger)))
+    sections.append(
+        section("dataset-input-ledger", serialize_input_ledger(input_ledger))
+    )
     sections.append(section("limitations", limitations))
     input_paths = [tree_path, metadata_path]
     if traits_path is not None:
@@ -307,14 +318,18 @@ def render_phylo_inputs_report(
     alignment_forensic = build_alignment_forensic_report(alignment_path)
     alignment_low_information = assess_alignment_low_information(alignment_path)
     alignment_duplicate_policy = build_duplicate_sequence_policy_report(alignment_path)
-    alignment_ambiguous_columns = build_ambiguous_alignment_column_report(alignment_path)
+    alignment_ambiguous_columns = build_ambiguous_alignment_column_report(
+        alignment_path
+    )
     alignment_sequence_ranking = build_sequence_quality_ranking(alignment_path)
     alignment_coding = (
         inspect_coding_alignment(alignment_path)
         if alignment.inferred_alphabet in {"dna", "rna"}
         else None
     )
-    alignment_identity_matrix = compute_pairwise_sequence_identity_matrix(alignment_path)
+    alignment_identity_matrix = compute_pairwise_sequence_identity_matrix(
+        alignment_path
+    )
     alignment_linkage = link_alignment_to_tree(tree_path, alignment_path)
     title = "Bijux Phylo Inputs Report"
     reviewer_summary, limitations = report_summary_and_limitations(
@@ -429,7 +444,9 @@ def render_alignment_report(
     alignment_quality = build_alignment_quality_report(alignment_path)
     alignment_low_information = assess_alignment_low_information(alignment_path)
     alignment_duplicate_policy = build_duplicate_sequence_policy_report(alignment_path)
-    alignment_ambiguous_columns = build_ambiguous_alignment_column_report(alignment_path)
+    alignment_ambiguous_columns = build_ambiguous_alignment_column_report(
+        alignment_path
+    )
     alignment_sequence_ranking = build_sequence_quality_ranking(alignment_path)
     alignment_forensic = build_alignment_forensic_report(alignment_path)
     alignment_coding = (
@@ -437,7 +454,9 @@ def render_alignment_report(
         if alignment.inferred_alphabet in {"dna", "rna"}
         else None
     )
-    alignment_identity_matrix = compute_pairwise_sequence_identity_matrix(alignment_path)
+    alignment_identity_matrix = compute_pairwise_sequence_identity_matrix(
+        alignment_path
+    )
     title = "Bijux Alignment Report"
     reviewer_summary = [
         f"alignment quality score: {alignment_quality.quality_score}",
@@ -621,7 +640,9 @@ def render_phylogenetics_report(
     if alignment_coding is not None:
         sections.append(section("alignment-coding", asdict(alignment_coding)))
     if alignment_identity_matrix is not None:
-        sections.append(section("alignment-identity-matrix", asdict(alignment_identity_matrix)))
+        sections.append(
+            section("alignment-identity-matrix", asdict(alignment_identity_matrix))
+        )
     if traits_linkage is not None:
         sections.append(section("traits-linkage", asdict(traits_linkage)))
     if trait_missing_values is not None:

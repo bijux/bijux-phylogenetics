@@ -3,13 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.topology.node_identity import (
     build_ape_internal_node_map,
     build_ape_tip_node_map,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError
-from bijux_phylogenetics.io.trees import load_tree
 
 
 @dataclass(slots=True)

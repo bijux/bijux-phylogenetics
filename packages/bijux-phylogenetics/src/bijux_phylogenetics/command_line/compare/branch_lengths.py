@@ -29,9 +29,7 @@ def run_compare_branch_lengths_command(
         right_path,
         taxon_overlap_policy=args.taxon_overlap_policy,
     )
-    outputs = _finalize_outputs(
-        args, command="compare", inputs=[left_path, right_path]
-    )
+    outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path])
     _print_result(
         build_command_result(
             command="compare",

@@ -71,15 +71,9 @@ def build_figure_reproducibility_manifest(
         "filters": [] if filters is None else [asdict(row) for row in filters],
         "model": _json_ready(model),
         "settings": _json_ready(settings),
-        "generated_figures": [
-            asdict(row) for row in _artifact_rows(generated_figures)
-        ],
-        "generated_tables": [
-            asdict(row) for row in _artifact_rows(generated_tables)
-        ],
-        "linked_artifacts": [
-            asdict(row) for row in _artifact_rows(linked_artifacts)
-        ],
+        "generated_figures": [asdict(row) for row in _artifact_rows(generated_figures)],
+        "generated_tables": [asdict(row) for row in _artifact_rows(generated_tables)],
+        "linked_artifacts": [asdict(row) for row in _artifact_rows(linked_artifacts)],
     }
 
 

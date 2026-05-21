@@ -5,8 +5,8 @@ import math
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     CONTINUOUS_GAUSSIAN_LIKELIHOOD_CONSTANT_POLICY,
-    ContinuousModeSearchControls,
     FITCONTINUOUS_MODEL_RANKING_POLICY,
+    ContinuousModeSearchControls,
     compare_fitcontinuous_model_ranking,
     fit_continuous_evolutionary_mode,
 )
@@ -45,9 +45,7 @@ def build_bijux_continuous_case_payload(
                 else case.coarse_grid_point_count
             ),
             fine_grid_point_count=(
-                81
-                if case.fine_grid_point_count is None
-                else case.fine_grid_point_count
+                81 if case.fine_grid_point_count is None else case.fine_grid_point_count
             ),
             initial_parameter_value=case.initial_parameter_value,
         )
@@ -58,15 +56,9 @@ def build_bijux_continuous_case_payload(
         mode=case.python_mode,
         taxon_column=case.taxon_column,
         search_controls=search_controls,
-        lambda_bounds=(0.0, 1.0)
-        if case.lambda_bounds is None
-        else case.lambda_bounds,
-        kappa_bounds=(0.0, 1.0)
-        if case.kappa_bounds is None
-        else case.kappa_bounds,
-        delta_bounds=(0.0, 3.0)
-        if case.delta_bounds is None
-        else case.delta_bounds,
+        lambda_bounds=(0.0, 1.0) if case.lambda_bounds is None else case.lambda_bounds,
+        kappa_bounds=(0.0, 1.0) if case.kappa_bounds is None else case.kappa_bounds,
+        delta_bounds=(0.0, 3.0) if case.delta_bounds is None else case.delta_bounds,
         ou_bounds=(0.0, 10.0) if case.ou_bounds is None else case.ou_bounds,
         early_burst_bounds=(0.0, 50.0)
         if case.early_burst_bounds is None
@@ -131,15 +123,9 @@ def build_bijux_model_comparison_payload(
         trait=case.trait_name,
         taxon_column=case.taxon_column,
         modes=comparison_modes(case.candidate_model_names),
-        lambda_bounds=(0.0, 1.0)
-        if case.lambda_bounds is None
-        else case.lambda_bounds,
-        kappa_bounds=(0.0, 3.0)
-        if case.kappa_bounds is None
-        else case.kappa_bounds,
-        delta_bounds=(0.0, 3.0)
-        if case.delta_bounds is None
-        else case.delta_bounds,
+        lambda_bounds=(0.0, 1.0) if case.lambda_bounds is None else case.lambda_bounds,
+        kappa_bounds=(0.0, 3.0) if case.kappa_bounds is None else case.kappa_bounds,
+        delta_bounds=(0.0, 3.0) if case.delta_bounds is None else case.delta_bounds,
         ou_bounds=(0.0, 10.0) if case.ou_bounds is None else case.ou_bounds,
         early_burst_bounds=(0.0, 50.0)
         if case.early_burst_bounds is None
@@ -158,7 +144,9 @@ def build_bijux_model_comparison_payload(
         "selected_model": report.better_model,
         "model_ranking": [row.model for row in report.rows],
         "comparable_model_count": sum(1 for row in report.rows if row.comparable),
-        "noncomparable_model_count": sum(1 for row in report.rows if not row.comparable),
+        "noncomparable_model_count": sum(
+            1 for row in report.rows if not row.comparable
+        ),
         "runner_up_model": None if runner_up_row is None else runner_up_row.model,
         "runner_up_aicc_delta": (
             math.nan if runner_up_row is None else runner_up_row.delta_aicc

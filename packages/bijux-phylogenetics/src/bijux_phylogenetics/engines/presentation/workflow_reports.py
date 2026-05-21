@@ -7,10 +7,9 @@ from pathlib import Path
 from bijux_phylogenetics.render.html import write_html_report
 
 from ..artifacts.bootstrap import build_low_support_bootstrap_rows
-from ..common import load_engine_manifest
 from ..artifacts.fasttree import build_fasttree_low_support_rows
 from ..artifacts.sh_alrt import build_conflicting_sh_alrt_support_rows
-from .model_limitations import build_model_selection_limitations_report
+from ..common import load_engine_manifest
 from ..validation import (
     classify_inference_workflow_failure,
     detect_weakly_supported_backbone,
@@ -21,6 +20,7 @@ from ..validation import (
     validate_inference_engine_outputs,
     validate_ml_tree_contains_expected_taxa,
 )
+from .model_limitations import build_model_selection_limitations_report
 
 
 @dataclass(slots=True)

@@ -26,9 +26,7 @@ def run_compare_topology_distance_command(
     return _run_compare_topology_distance(args)
 
 
-def _run_compare_table_command(
-    args: Any, *, parser: argparse.ArgumentParser
-) -> int:
+def _run_compare_table_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
     if args.third is None:
         parser.exit(status=2, message="compare table requires two tree paths\n")
     if args.out is None:

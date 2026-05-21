@@ -7,114 +7,126 @@ from typing import Any
 __all__ = ["build_parser", "main", "run_command"]
 
 from bijux_phylogenetics import __version__
-from bijux_phylogenetics.command_line.registry import get_command_spec
-from bijux_phylogenetics.command_line.output import (
-    _print_commands,
-    _print_result,
-)
-from bijux_phylogenetics.command_line.routing import (
-    _command_inputs,
-    _finalize_outputs,
-)
-from bijux_phylogenetics.command_line.engines import (
-    add_phylo_commands,
-    run_phylo_command,
-)
-from bijux_phylogenetics.command_line.study_inputs.metadata import (
-    add_metadata_commands,
-    run_metadata_command,
-)
-from bijux_phylogenetics.command_line.prune import (
-    add_prune_command,
-    run_prune_command,
+from bijux_phylogenetics.command_line.adapters import (
+    add_adapter_commands,
+    run_adapter_command,
 )
 from bijux_phylogenetics.command_line.alignment import (
     add_alignment_commands,
     run_alignment_command,
 )
-from bijux_phylogenetics.command_line.study_inputs.annotation import (
-    add_annotate_command,
-    run_annotate_command,
+from bijux_phylogenetics.command_line.ancestral import (
+    add_ancestral_commands,
+    run_ancestral_command,
 )
-from bijux_phylogenetics.command_line.comparative import (
-    add_comparative_commands,
-    run_comparative_command,
-)
-from bijux_phylogenetics.command_line.parity import (
-    add_parity_command,
-    run_parity_command,
+from bijux_phylogenetics.command_line.arguments import (
+    _add_manifest_argument,
+    _json_requested,
 )
 from bijux_phylogenetics.command_line.benchmark import (
     add_benchmark_commands,
     run_benchmark_command,
 )
-from bijux_phylogenetics.command_line.simulate import (
-    add_simulate_command,
-    run_simulate_command,
-)
 from bijux_phylogenetics.command_line.biogeography import (
     add_biogeography_commands,
     run_biogeography_command,
 )
-from bijux_phylogenetics.command_line.phylogeography import (
-    add_phylogeography_commands,
-    run_phylogeography_command,
-)
-from bijux_phylogenetics.command_line.ancestral import (
-    add_ancestral_commands,
-    run_ancestral_command,
-)
-from bijux_phylogenetics.command_line.host_association import (
-    add_host_association_commands,
-    run_host_association_command,
-)
-from bijux_phylogenetics.command_line.ecological_niche import (
-    add_ecological_niche_commands,
-    run_ecological_niche_command,
-)
-from bijux_phylogenetics.command_line.discrete_evolution import (
-    add_discrete_evolution_commands,
-    run_discrete_evolution_command,
-)
-from bijux_phylogenetics.command_line.diversification import (
-    add_diversification_commands,
-    run_diversification_command,
+from bijux_phylogenetics.command_line.comparative import (
+    add_comparative_commands,
+    run_comparative_command,
 )
 from bijux_phylogenetics.command_line.compare import (
     add_compare_command,
     run_compare_command,
 )
-from bijux_phylogenetics.command_line.adapters import (
-    add_adapter_commands,
-    run_adapter_command,
-)
-from bijux_phylogenetics.command_line.distance import (
-    add_distance_commands,
-    run_distance_command,
-)
 from bijux_phylogenetics.command_line.demo import (
     add_demo_command,
     run_demo_command,
-)
-from bijux_phylogenetics.command_line.evidence import (
-    add_evidence_command,
-    run_evidence_command,
-)
-from bijux_phylogenetics.command_line.report import (
-    add_report_command,
-    run_report_command,
-)
-from bijux_phylogenetics.command_line.render import (
-    add_render_command,
-    run_render_command,
 )
 from bijux_phylogenetics.command_line.diagnose import (
     add_diagnose_command,
     run_diagnose_command,
 )
+from bijux_phylogenetics.command_line.discrete_evolution import (
+    add_discrete_evolution_commands,
+    run_discrete_evolution_command,
+)
+from bijux_phylogenetics.command_line.distance import (
+    add_distance_commands,
+    run_distance_command,
+)
+from bijux_phylogenetics.command_line.diversification import (
+    add_diversification_commands,
+    run_diversification_command,
+)
+from bijux_phylogenetics.command_line.ecological_niche import (
+    add_ecological_niche_commands,
+    run_ecological_niche_command,
+)
+from bijux_phylogenetics.command_line.engines import (
+    add_phylo_commands,
+    run_phylo_command,
+)
+from bijux_phylogenetics.command_line.evidence import (
+    add_evidence_command,
+    run_evidence_command,
+)
+from bijux_phylogenetics.command_line.host_association import (
+    add_host_association_commands,
+    run_host_association_command,
+)
+from bijux_phylogenetics.command_line.output import (
+    _print_commands,
+    _print_result,
+)
+from bijux_phylogenetics.command_line.parity import (
+    add_parity_command,
+    run_parity_command,
+)
+from bijux_phylogenetics.command_line.phylogeography import (
+    add_phylogeography_commands,
+    run_phylogeography_command,
+)
+from bijux_phylogenetics.command_line.prune import (
+    add_prune_command,
+    run_prune_command,
+)
+from bijux_phylogenetics.command_line.registry import get_command_spec
+from bijux_phylogenetics.command_line.render import (
+    add_render_command,
+    run_render_command,
+)
+from bijux_phylogenetics.command_line.report import (
+    add_report_command,
+    run_report_command,
+)
+from bijux_phylogenetics.command_line.routing import (
+    _command_inputs,
+    _finalize_outputs,
+)
+from bijux_phylogenetics.command_line.simulate import (
+    add_simulate_command,
+    run_simulate_command,
+)
+from bijux_phylogenetics.command_line.study_inputs.annotation import (
+    add_annotate_command,
+    run_annotate_command,
+)
+from bijux_phylogenetics.command_line.study_inputs.metadata import (
+    add_metadata_commands,
+    run_metadata_command,
+)
+from bijux_phylogenetics.command_line.study_inputs.traits import (
+    add_traits_commands,
+    run_traits_command,
+)
+from bijux_phylogenetics.command_line.taxonomy import (
+    add_taxonomy_commands,
+    run_taxonomy_command,
+)
 from bijux_phylogenetics.command_line.tree import (
-    add_tree_inspection_commands,
     add_topology_commands,
+    add_tree_inspection_commands,
     add_tree_normalization_commands,
     add_tree_set_commands,
     run_inspect_command,
@@ -123,18 +135,6 @@ from bijux_phylogenetics.command_line.tree import (
     run_topology_command,
     run_tree_set_command,
     run_validate_command,
-)
-from bijux_phylogenetics.command_line.taxonomy import (
-    add_taxonomy_commands,
-    run_taxonomy_command,
-)
-from bijux_phylogenetics.command_line.study_inputs.traits import (
-    add_traits_commands,
-    run_traits_command,
-)
-from bijux_phylogenetics.command_line.arguments import (
-    _add_manifest_argument,
-    _json_requested,
 )
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError

@@ -619,7 +619,9 @@ def execute_engine_command(
                 incomplete_record.failure_message = (
                     f"{engine_name} {workflow} timed out after {budget} seconds"
                 )
-                incomplete_record.observed_outputs = observe_engine_outputs(output_paths)
+                incomplete_record.observed_outputs = observe_engine_outputs(
+                    output_paths
+                )
                 incomplete_record.missing_output_names = [
                     observation.output_name
                     for observation in incomplete_record.observed_outputs

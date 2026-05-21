@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from bijux_phylogenetics.phylo.branch_lengths.ultrametric import APE_ULTRAMETRIC_TOLERANCE
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
+    APE_ULTRAMETRIC_TOLERANCE,
+)
 
 from .fixtures import ApeParityFixtureResolver
 from .models import ApeParityCase
@@ -27,7 +29,9 @@ def build_comparative_case_catalog(
             function_name="ape::vcv.phylo",
             python_function_name="summarize_brownian_covariance",
             operation="tree-brownian-covariance",
-            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path(
+                "tree", "pectinate_rooted_non_ultrametric"
+            ),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -71,7 +75,9 @@ def build_comparative_case_catalog(
             function_name="ape::ace",
             python_function_name="reconstruct_continuous_ancestral_states",
             operation="tree-continuous-ancestral-states",
-            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path(
+                "tree", "pectinate_rooted_non_ultrametric"
+            ),
             tolerance=1e-12,
             trait_fixture_id="ace_continuous_pectinate",
             trait_table_path=resolver.trait_path("ace_continuous_pectinate"),
@@ -143,7 +149,9 @@ def build_comparative_case_catalog(
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path(
+                "tree", "pectinate_rooted_non_ultrametric"
+            ),
             tolerance=5e-5,
             trait_fixture_id="multistate_discrete_match",
             trait_table_path=resolver.trait_path("multistate_discrete_match"),
@@ -189,7 +197,9 @@ def build_comparative_case_catalog(
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path(
+                "tree", "pectinate_rooted_non_ultrametric"
+            ),
             tolerance=5e-5,
             trait_fixture_id="ace_discrete_sym_pectinate",
             trait_table_path=resolver.trait_path("ace_discrete_sym_pectinate"),
@@ -253,7 +263,9 @@ def build_comparative_case_catalog(
             function_name="ape::ace",
             python_function_name="reconstruct_discrete_ancestral_states",
             operation="tree-discrete-ancestral-states",
-            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path(
+                "tree", "pectinate_rooted_non_ultrametric"
+            ),
             tolerance=5e-5,
             trait_fixture_id="ace_discrete_ard_pectinate",
             trait_table_path=resolver.trait_path("ace_discrete_ard_pectinate"),
@@ -315,7 +327,9 @@ def build_comparative_case_catalog(
             function_name="ape::pic",
             python_function_name="compute_phylogenetic_independent_contrasts",
             operation="tree-independent-contrasts",
-            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path(
+                "tree", "pectinate_rooted_non_ultrametric"
+            ),
             tolerance=1e-12,
             trait_fixture_id="pic_continuous_pectinate",
             trait_table_path=resolver.trait_path("pic_continuous_pectinate"),
@@ -353,7 +367,9 @@ def build_comparative_case_catalog(
             function_name="ape::node.depth.edgelength",
             python_function_name="compute_tree_node_depths",
             operation="tree-node-depth",
-            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path(
+                "tree", "pectinate_rooted_non_ultrametric"
+            ),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -413,7 +429,9 @@ def build_comparative_case_catalog(
             function_name="ape::branching.times",
             python_function_name="compute_tree_branching_times",
             operation="tree-branching-times",
-            input_fixture=resolver.fixture_path("tree", "ultrametric_zero_internal_branch"),
+            input_fixture=resolver.fixture_path(
+                "tree", "ultrametric_zero_internal_branch"
+            ),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -453,7 +471,9 @@ def build_comparative_case_catalog(
             function_name="ape::gammaStat",
             python_function_name="compute_diversification_gamma_statistic",
             operation="tree-diversification-gamma-statistic",
-            input_fixture=resolver.fixture_path("tree", "ultrametric_zero_internal_branch"),
+            input_fixture=resolver.fixture_path(
+                "tree", "ultrametric_zero_internal_branch"
+            ),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -487,7 +507,9 @@ def build_comparative_case_catalog(
             function_name="ape::rcoal",
             python_function_name="simulate_coalescent_trees",
             operation="tree-simulation-envelope",
-            input_fixture=resolver.fixture_path("simulation", "rcoal_rooted_six_taxon_64"),
+            input_fixture=resolver.fixture_path(
+                "simulation", "rcoal_rooted_six_taxon_64"
+            ),
             tolerance=2.2,
         ),
         ApeParityCase(
@@ -497,7 +519,9 @@ def build_comparative_case_catalog(
             function_name="ape::rcoal",
             python_function_name="simulate_coalescent_trees",
             operation="tree-simulation-envelope",
-            input_fixture=resolver.fixture_path("simulation", "rcoal_rooted_twelve_taxon_128"),
+            input_fixture=resolver.fixture_path(
+                "simulation", "rcoal_rooted_twelve_taxon_128"
+            ),
             tolerance=3.0,
         ),
         ApeParityCase(
@@ -518,7 +542,9 @@ def build_comparative_case_catalog(
             function_name="ape::is.ultrametric",
             python_function_name="assess_tree_ultrametricity",
             operation="tree-ultrametricity",
-            input_fixture=resolver.fixture_path("tree", "near_ultrametric_branch_jitter"),
+            input_fixture=resolver.fixture_path(
+                "tree", "near_ultrametric_branch_jitter"
+            ),
             tolerance=APE_ULTRAMETRIC_TOLERANCE,
             ultrametric_option=1,
         ),
@@ -529,7 +555,9 @@ def build_comparative_case_catalog(
             function_name="ape::is.ultrametric",
             python_function_name="assess_tree_ultrametricity",
             operation="tree-ultrametricity",
-            input_fixture=resolver.fixture_path("tree", "near_ultrametric_branch_jitter"),
+            input_fixture=resolver.fixture_path(
+                "tree", "near_ultrametric_branch_jitter"
+            ),
             tolerance=1e-12,
             ultrametric_option=1,
         ),
@@ -540,7 +568,9 @@ def build_comparative_case_catalog(
             function_name="ape::is.ultrametric",
             python_function_name="assess_tree_ultrametricity",
             operation="tree-ultrametricity",
-            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path(
+                "tree", "pectinate_rooted_non_ultrametric"
+            ),
             tolerance=APE_ULTRAMETRIC_TOLERANCE,
             ultrametric_option=1,
         ),

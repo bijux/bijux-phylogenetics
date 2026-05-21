@@ -108,11 +108,17 @@ def _is_explicit_missing(residue: str) -> bool:
 
 def _ambiguity_characters_for_alphabet(alphabet: AlignmentAlphabet) -> set[str]:
     if alphabet == "dna":
-        return {character.lower() for character in _DNA_AMBIGUITY_UPPER} | _DNA_AMBIGUITY_UPPER
+        return {
+            character.lower() for character in _DNA_AMBIGUITY_UPPER
+        } | _DNA_AMBIGUITY_UPPER
     if alphabet == "rna":
-        return {character.lower() for character in _RNA_AMBIGUITY_UPPER} | _RNA_AMBIGUITY_UPPER
+        return {
+            character.lower() for character in _RNA_AMBIGUITY_UPPER
+        } | _RNA_AMBIGUITY_UPPER
     if alphabet == "protein":
-        return {character.lower() for character in _PROTEIN_AMBIGUITY_UPPER} | _PROTEIN_AMBIGUITY_UPPER
+        return {
+            character.lower() for character in _PROTEIN_AMBIGUITY_UPPER
+        } | _PROTEIN_AMBIGUITY_UPPER
     return set()
 
 
@@ -725,9 +731,7 @@ def compute_amino_acid_composition(
 
 def _sequence_gc_fraction(sequence: str) -> float | None:
     comparable = [
-        residue
-        for residue in sequence
-        if residue.upper() in {"A", "C", "G", "T", "U"}
+        residue for residue in sequence if residue.upper() in {"A", "C", "G", "T", "U"}
     ]
     if not comparable:
         return None

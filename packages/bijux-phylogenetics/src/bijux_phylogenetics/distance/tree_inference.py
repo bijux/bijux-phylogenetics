@@ -11,21 +11,29 @@ from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
     compare_tree_paths,
 )
+from bijux_phylogenetics.io.biopython import tree_from_biophylo
+from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 from bijux_phylogenetics.phylo.topology.clades import (
     informative_unrooted_splits,
     robinson_foulds_metrics,
 )
-from bijux_phylogenetics.phylo.topology.neighbor_joining import build_neighbor_joining_tree
+from bijux_phylogenetics.phylo.topology.neighbor_joining import (
+    build_neighbor_joining_tree,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.io.biopython import tree_from_biophylo
-from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,
     compute_consensus_tree,
 )
 
+from .matrix import (
+    _bio_distance_matrix,
+    _distance_lookup,
+    _load_alignment_for_model,
+    compute_pairwise_genetic_distance_matrix,
+)
 from .models import (
     AmbiguityPolicy,
     DistanceBootstrapReport,
@@ -38,12 +46,6 @@ from .models import (
     DistanceTreeTopologyComparison,
     GapHandlingMode,
     GeneticDistanceMatrix,
-)
-from .matrix import (
-    _bio_distance_matrix,
-    _distance_lookup,
-    _load_alignment_for_model,
-    compute_pairwise_genetic_distance_matrix,
 )
 from .quality import (
     assess_distance_method_assumptions_from_genetic_distance_matrix,
@@ -100,7 +102,9 @@ def _build_distance_tree_from_genetic_distance_matrix(
         constructor = DistanceTreeConstructor()
         tree = constructor.upgma(_bio_distance_matrix(report))
     return (
-        tree if method == "neighbor-joining" else tree_from_biophylo(tree, source_format="newick")
+        tree
+        if method == "neighbor-joining"
+        else tree_from_biophylo(tree, source_format="newick")
     ), DistanceTreeBuildReport(
         alignment_path=report.path,
         model=report.model,

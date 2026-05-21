@@ -93,17 +93,13 @@ def run_signal_contrast_command(
                 "taxon_count": report.taxon_count,
                 "contrast_count": len(report.contrasts),
                 "regression_row_count": (
-                    len(regression_report.rows)
-                    if regression_report is not None
-                    else 0
+                    len(regression_report.rows) if regression_report is not None else 0
                 ),
                 "regression_slope": (
                     regression_report.slope if regression_report is not None else None
                 ),
                 "regression_p_value": (
-                    regression_report.p_value
-                    if regression_report is not None
-                    else None
+                    regression_report.p_value if regression_report is not None else None
                 ),
             },
             data={

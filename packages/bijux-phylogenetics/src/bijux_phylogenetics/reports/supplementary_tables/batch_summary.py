@@ -90,14 +90,10 @@ def _serialize_batch_summary_row(
             "" if row.artifact_file_count is None else str(row.artifact_file_count)
         ),
         "linked_artifact_count": (
-            ""
-            if row.linked_artifact_count is None
-            else str(row.linked_artifact_count)
+            "" if row.linked_artifact_count is None else str(row.linked_artifact_count)
         ),
         "linked_artifact_bytes": (
-            ""
-            if row.linked_artifact_bytes is None
-            else str(row.linked_artifact_bytes)
+            "" if row.linked_artifact_bytes is None else str(row.linked_artifact_bytes)
         ),
         "issue_count": str(row.issue_count),
         "issues": stringify_list(row.issues),
@@ -135,7 +131,7 @@ def _maybe_path(value: str | None) -> str | None:
     if value is None:
         return None
     stripped = value.strip()
-    return None if not stripped else stripped
+    return stripped if stripped else None
 
 
 def _build_batch_variant_row(
@@ -210,7 +206,9 @@ def _build_batch_variant_row(
         reproducibility_status=reproducibility_status,
         selected_model=_maybe_path(variant_summary_row.get("selected_model")),
         output_root=_maybe_path(job_status_row.get("output_root"))
-        or _maybe_path(task_record.get("output_root") if isinstance(task_record, dict) else None),
+        or _maybe_path(
+            task_record.get("output_root") if isinstance(task_record, dict) else None
+        ),
         task_log_path=_maybe_path(task_row.get("log_path"))
         or _maybe_path(job_status_row.get("task_log_path")),
         evidence_json_path=_maybe_path(merge_row.get("evidence_json_path"))
@@ -258,9 +256,7 @@ def _build_batch_dataset_row(
     )
     merge_status = str(merge_summary.get("merge_status", "unknown"))
     reproducibility_status = (
-        "passed"
-        if bool(reproducibility_summary.get("all_passed", False))
-        else "failed"
+        "passed" if bool(reproducibility_summary.get("all_passed", False)) else "failed"
     )
     failed_variant_count = len(list(workflow_run.get("failed_variants", [])))
     successful_variant_count = len(list(workflow_run.get("successful_variants", [])))
@@ -276,7 +272,9 @@ def _build_batch_dataset_row(
         warnings.append("reproducibility-status:failed")
     failed_job_count = int(workflow_status_summary.get("failed_job_count", 0))
     stale_job_count = int(workflow_status_summary.get("stale_job_count", 0))
-    stale_output_job_count = int(workflow_status_summary.get("stale_output_job_count", 0))
+    stale_output_job_count = int(
+        workflow_status_summary.get("stale_output_job_count", 0)
+    )
     if failed_job_count > 0:
         issues.append(f"failed-job-count:{failed_job_count}")
     if stale_job_count > 0:
@@ -361,13 +359,19 @@ def write_supplementary_batch_summary_table(
     recovery_rows = _read_bundle_rows(bundle_root / "slurm-failure-recovery-jobs.tsv")
     merge_rows = _read_bundle_rows(bundle_root / "slurm-merge-variants.tsv")
     evidence_rows = _read_bundle_rows(bundle_root / "slurm-job-evidence.tsv")
-    reproducibility_rows = _read_bundle_rows(bundle_root / "reproducibility-variants.tsv")
-    workflow_status_summary = _read_bundle_json(bundle_root / "slurm-workflow-status.json")
+    reproducibility_rows = _read_bundle_rows(
+        bundle_root / "reproducibility-variants.tsv"
+    )
+    workflow_status_summary = _read_bundle_json(
+        bundle_root / "slurm-workflow-status.json"
+    )
     failure_recovery_summary = _read_bundle_json(
         bundle_root / "slurm-failure-recovery-report.json"
     )
     merge_summary = _read_bundle_json(bundle_root / "slurm-merge-report.json")
-    reproducibility_summary = _read_bundle_json(bundle_root / "reproducibility-audit.json")
+    reproducibility_summary = _read_bundle_json(
+        bundle_root / "reproducibility-audit.json"
+    )
 
     workflow_summary = workflow_summary_rows[0]
     dataset_id = str(workflow_summary["dataset_id"])

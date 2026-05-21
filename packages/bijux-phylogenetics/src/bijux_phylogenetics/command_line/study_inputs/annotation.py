@@ -46,7 +46,9 @@ def run_annotate_command(args: Any) -> int:
                     "taxon",
                     "matched",
                     *[
-                        column for column in table.columns if column != table.taxon_column
+                        column
+                        for column in table.columns
+                        if column != table.taxon_column
                     ],
                 ],
                 rows=[

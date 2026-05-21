@@ -215,7 +215,9 @@ def _classify_sequence_coding_behavior_records(
         elif coding_like and terminal_stop_count <= 1:
             note = "sequence is consistent with a coding reading frame"
         elif not divisible_by_three:
-            note = "sequence is not frame-consistent after removing gaps and missing data"
+            note = (
+                "sequence is not frame-consistent after removing gaps and missing data"
+            )
         elif invalid_codon_count:
             note = "sequence contains ambiguous or invalid codons after normalization to coding triplets"
         elif premature_stop_count:
@@ -321,6 +323,7 @@ def _build_translation_codon_observations(
                 )
             )
     return observations
+
 
 def detect_frameshift_like_sequences(path: Path) -> list[FrameshiftLikeSequence]:
     """Detect coding sequences whose comparable length is not divisible by three."""

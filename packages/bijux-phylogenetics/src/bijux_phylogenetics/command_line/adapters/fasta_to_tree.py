@@ -139,7 +139,9 @@ def run_adapter_fasta_to_tree_command(args: Any) -> int | None:
                     else len(report.input_repair.normalized_identifiers)
                 ),
                 "removed_record_count": (
-                    0 if report.input_repair is None else len(report.input_repair.removed_records)
+                    0
+                    if report.input_repair is None
+                    else len(report.input_repair.removed_records)
                 ),
                 "resumed": any(
                     workflow.resumed

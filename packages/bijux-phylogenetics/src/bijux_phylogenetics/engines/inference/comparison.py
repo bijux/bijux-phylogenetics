@@ -6,13 +6,13 @@ import json
 from pathlib import Path
 import shutil
 
-from bijux_phylogenetics.compare.presentation import (
-    ComparisonReportBuildResult,
-    build_tree_comparison_report,
-)
 from bijux_phylogenetics.compare.influence import (
     TaxonInfluenceReport,
     analyze_taxon_influence,
+)
+from bijux_phylogenetics.compare.presentation import (
+    ComparisonReportBuildResult,
+    build_tree_comparison_report,
 )
 from bijux_phylogenetics.compare.topology import (
     BranchLengthComparisonReport,
@@ -20,8 +20,8 @@ from bijux_phylogenetics.compare.topology import (
     TreeComparisonReport,
     write_tree_comparison_table,
 )
-from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
 from bijux_phylogenetics.io.iqtree_support import support_fraction
+from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
 from bijux_phylogenetics.render.html import write_html_report
 
 from ..common import build_file_checksums, write_engine_manifest

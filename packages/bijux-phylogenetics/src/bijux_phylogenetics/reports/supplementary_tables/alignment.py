@@ -2,6 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from bijux_phylogenetics.io.fasta.cleaning import compare_alignment_summaries
+from bijux_phylogenetics.io.fasta.quality import (
+    assess_alignment_low_information,
+    build_alignment_quality_report,
+    build_sequence_quality_ranking,
+)
+from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.phylo.alignment import (
     AlignmentLowInformationReport,
     AlignmentQualityReport,
@@ -10,13 +17,6 @@ from bijux_phylogenetics.phylo.alignment import (
     SequenceQualityRankingRow,
     SequenceUncertaintyProfile,
 )
-from bijux_phylogenetics.io.fasta.cleaning import compare_alignment_summaries
-from bijux_phylogenetics.io.fasta.quality import (
-    assess_alignment_low_information,
-    build_alignment_quality_report,
-    build_sequence_quality_ranking,
-)
-from bijux_phylogenetics.io.fasta.records import summarise_fasta
 
 from .columns import alignment_table_columns
 from .models import (
@@ -140,7 +140,9 @@ def _alignment_sequence_order(
     if filtered_summary is None:
         return ordered
     filtered_only = [
-        identifier for identifier in filtered_summary.ids if identifier not in set(ordered)
+        identifier
+        for identifier in filtered_summary.ids
+        if identifier not in set(ordered)
     ]
     return [*ordered, *filtered_only]
 
@@ -185,7 +187,9 @@ def _build_alignment_row(
         original_quality_score=None
         if original_ranking is None
         else original_ranking.score,
-        duplicate_status=None if original_ranking is None else original_ranking.duplicate_status,
+        duplicate_status=None
+        if original_ranking is None
+        else original_ranking.duplicate_status,
         composition_outlier=None
         if original_ranking is None
         else original_ranking.composition_outlier,
@@ -250,7 +254,9 @@ def write_supplementary_alignment_diagnostics_table(
     original_low_information = assess_alignment_low_information(alignment_path)
     original_ranking = build_sequence_quality_ranking(alignment_path)
     filtered_summary = (
-        None if filtered_alignment_path is None else summarise_fasta(filtered_alignment_path)
+        None
+        if filtered_alignment_path is None
+        else summarise_fasta(filtered_alignment_path)
     )
     filtered_low_information = (
         None

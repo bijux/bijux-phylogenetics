@@ -16,6 +16,7 @@ class _GeigerDiscreteRateRow:
     target_state: str
     rate: float
 
+
 _CONTINUOUS_MEAN_TOLERANCE = 0.12
 _CONTINUOUS_STANDARD_DEVIATION_TOLERANCE = 0.08
 _CONTINUOUS_COVARIANCE_TOLERANCE = 0.08
@@ -152,7 +153,9 @@ def _validate_brownian_reference_case() -> GeigerSimCharReferenceObservation:
         passed=passed,
         notes=[]
         if passed
-        else ["Brownian simulation summary drifted outside the governed geiger envelope"],
+        else [
+            "Brownian simulation summary drifted outside the governed geiger envelope"
+        ],
     )
 
 
@@ -286,10 +289,7 @@ def _continuous_metrics_match(
         ):
             return False
         if (
-            abs(
-                observed_row["standard_deviation"]
-                - expected_row["standard_deviation"]
-            )
+            abs(observed_row["standard_deviation"] - expected_row["standard_deviation"])
             > _CONTINUOUS_STANDARD_DEVIATION_TOLERANCE
         ):
             return False
@@ -335,6 +335,4 @@ def _discrete_tip_state_frequency_metrics_match(
 
 
 def _tree_fixture_path(name: str) -> Path:
-    return (
-        Path(__file__).resolve().parents[4] / "tests" / "fixtures" / "trees" / name
-    )
+    return Path(__file__).resolve().parents[4] / "tests" / "fixtures" / "trees" / name

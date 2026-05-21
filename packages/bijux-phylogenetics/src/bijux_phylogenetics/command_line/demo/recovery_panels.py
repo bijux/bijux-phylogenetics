@@ -80,9 +80,7 @@ def run_recovery_demo_command(args: Any) -> int | None:
                 "selection_review_case_count": (
                     result.workflow_bundle.selection_review_case_count
                 ),
-                "selection_match_count": (
-                    result.workflow_bundle.selection_match_count
-                ),
+                "selection_match_count": (result.workflow_bundle.selection_match_count),
                 "geiger_selection_match_count": (
                     result.workflow_bundle.geiger_selection_match_count
                 ),
@@ -140,9 +138,7 @@ def run_recovery_demo_command(args: Any) -> int | None:
                 "selection_review_case_count": (
                     result.workflow_bundle.selection_review_case_count
                 ),
-                "selection_match_count": (
-                    result.workflow_bundle.selection_match_count
-                ),
+                "selection_match_count": (result.workflow_bundle.selection_match_count),
                 "geiger_selection_match_count": (
                     result.workflow_bundle.geiger_selection_match_count
                 ),
@@ -248,9 +244,7 @@ def run_recovery_demo_command(args: Any) -> int | None:
             "distance_method": result.dataset.distance_method,
             "distance_model": result.dataset.distance_model,
             "rooted_topology_equal": result.workflow_bundle.rooted_topology_equal,
-            "same_unrooted_topology": (
-                result.workflow_bundle.same_unrooted_topology
-            ),
+            "same_unrooted_topology": (result.workflow_bundle.same_unrooted_topology),
             "same_taxa_different_rooting": (
                 result.workflow_bundle.same_taxa_different_rooting
             ),

@@ -15,10 +15,16 @@ from bijux_phylogenetics.reports.publication.tree import (
     summarize_tree_branch_statistics,
     summarize_tree_support,
 )
-from bijux_phylogenetics.trees import analyze_branch_length_distribution, extract_tree_clades
+from bijux_phylogenetics.trees import (
+    analyze_branch_length_distribution,
+    extract_tree_clades,
+)
 
 from .columns import tree_table_columns
-from .models import SupplementaryTreeDiagnosticsRow, SupplementaryTreeDiagnosticsTableResult
+from .models import (
+    SupplementaryTreeDiagnosticsRow,
+    SupplementaryTreeDiagnosticsTableResult,
+)
 from .shared import stringify_list, write_dict_rows
 
 
@@ -73,12 +79,8 @@ def _serialize_tree_row(
             row.support_value_range_warnings
         ),
         "ultrametric": "" if row.ultrametric is None else row.ultrametric,
-        "min_root_to_tip": ""
-        if row.min_root_to_tip is None
-        else row.min_root_to_tip,
-        "max_root_to_tip": ""
-        if row.max_root_to_tip is None
-        else row.max_root_to_tip,
+        "min_root_to_tip": "" if row.min_root_to_tip is None else row.min_root_to_tip,
+        "max_root_to_tip": "" if row.max_root_to_tip is None else row.max_root_to_tip,
         "tree_diameter": "" if row.tree_diameter is None else row.tree_diameter,
         "tree_quality_score": row.tree_quality_score,
         "safe_for_topology_comparison": row.safe_for_topology_comparison,
@@ -191,9 +193,7 @@ def _build_tree_row(
         forensic=forensic,
     )
     support_counts = _support_counts(support_rows)
-    supported_branch_count = sum(
-        1 for row in support_rows if row.support is not None
-    )
+    supported_branch_count = sum(1 for row in support_rows if row.support is not None)
     return SupplementaryTreeDiagnosticsRow(
         tree_source=str(tree_path),
         source_format=inspection.source_format,

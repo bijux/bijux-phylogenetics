@@ -5,24 +5,24 @@ from pathlib import Path
 import random
 
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.newick import (
     dumps_newick,
     write_newick,
     write_newick_tree_set,
 )
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.trees.inspection import summarize_tree_shape_from_tree
 
-from ..contracts import (
-    TreeSimulationEnvelopeMetric,
-    TreeSimulationReport,
-    SimulatedTreeRecord,
-)
 from .._statistics import (
     _mean,
     _median,
     _population_standard_deviation,
     _round_float,
+)
+from ..contracts import (
+    SimulatedTreeRecord,
+    TreeSimulationEnvelopeMetric,
+    TreeSimulationReport,
 )
 
 

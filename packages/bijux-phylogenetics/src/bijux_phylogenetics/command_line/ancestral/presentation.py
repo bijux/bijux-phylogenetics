@@ -9,15 +9,13 @@ from bijux_phylogenetics.ancestral.continuous import (
 from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
 )
-from bijux_phylogenetics.ancestral.presentation import build_ancestral_figure_package
 from bijux_phylogenetics.ancestral.presentation import (
+    build_ancestral_figure_package,
     build_ancestral_report_package,
+    render_ancestral_state_visualization,
 )
 from bijux_phylogenetics.ancestral.presentation.report_rendering import (
     render_ancestral_state_report,
-)
-from bijux_phylogenetics.ancestral.presentation import (
-    render_ancestral_state_visualization,
 )
 from bijux_phylogenetics.command_line.arguments import (
     _add_manifest_argument,

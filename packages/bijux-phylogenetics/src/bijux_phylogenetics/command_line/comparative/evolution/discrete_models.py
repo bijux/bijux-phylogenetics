@@ -132,7 +132,9 @@ def run_discrete_model_comparative_evolution_command(
                     else report.transform_fit.function_evaluation_count
                 ),
                 "transform_warning_count": (
-                    0 if report.transform_fit is None else len(report.transform_fit.warnings)
+                    0
+                    if report.transform_fit is None
+                    else len(report.transform_fit.warnings)
                 ),
                 "overparameterized": report.overparameterized,
                 "transition_rate_count": len(report.transition_rate_rows),

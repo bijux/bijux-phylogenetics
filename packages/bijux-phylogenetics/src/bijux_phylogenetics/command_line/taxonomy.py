@@ -10,23 +10,21 @@ from bijux_phylogenetics.command_line.arguments import (
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.phylo.taxa import (
-    build_taxon_stability_report,
-    build_taxon_workflow_loss_report,
-    load_taxon_run_source,
-)
+from bijux_phylogenetics.io.newick import write_newick
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.taxa import (
     audit_tree_taxon_synonyms,
     build_taxon_audit_report,
+    build_taxon_stability_report,
+    build_taxon_workflow_loss_report,
     export_tree_accepted_names,
     inspect_tree_taxon_namespaces,
     inspect_tree_taxon_rank_consistency,
+    load_taxon_run_source,
     resolve_tree_taxon_synonyms,
     write_accepted_name_mapping,
     write_synonym_resolution_mapping,
 )
-from bijux_phylogenetics.io.newick import write_newick
-from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.runtime.results import build_command_result
 
 

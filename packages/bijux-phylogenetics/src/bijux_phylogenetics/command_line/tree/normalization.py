@@ -7,9 +7,9 @@ from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.phylo.taxa import normalize_tree_taxa, write_taxon_mapping
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.taxa import normalize_tree_taxa, write_taxon_mapping
 from bijux_phylogenetics.runtime.results import build_command_result
 
 
@@ -75,7 +75,9 @@ def run_normalize_taxa_command(args: Any) -> int:
     tree = load_tree(args.tree, source_format=args.format)
     normalized_tree, report = normalize_tree_taxa(tree, policy=args.policy)
     output_path = write_newick(args.out, normalized_tree)
-    mapping_path = args.mapping_out or args.out.with_suffix(f"{args.out.suffix}.mapping.tsv")
+    mapping_path = args.mapping_out or args.out.with_suffix(
+        f"{args.out.suffix}.mapping.tsv"
+    )
     write_taxon_mapping(mapping_path, report.renamed_taxa)
     outputs = _finalize_outputs(
         args,

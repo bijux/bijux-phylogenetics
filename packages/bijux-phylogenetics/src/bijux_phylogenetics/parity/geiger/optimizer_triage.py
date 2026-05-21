@@ -151,7 +151,9 @@ def _build_optimizer_triage_row(
     reference_log_likelihood = _optional_float(
         observation.reference_summary.get("log_likelihood")
     )
-    bijux_log_likelihood = _optional_float(observation.bijux_summary.get("log_likelihood"))
+    bijux_log_likelihood = _optional_float(
+        observation.bijux_summary.get("log_likelihood")
+    )
     same_likelihood = _same_numeric_value(
         reference_log_likelihood,
         bijux_log_likelihood,
@@ -166,7 +168,9 @@ def _build_optimizer_triage_row(
     reference_parameter_name = _optional_text(
         observation.reference_summary.get("parameter_name")
     )
-    bijux_parameter_name = _optional_text(observation.bijux_summary.get("parameter_name"))
+    bijux_parameter_name = _optional_text(
+        observation.bijux_summary.get("parameter_name")
+    )
     reference_parameter_value = _optional_float(
         observation.reference_summary.get("parameter_value")
     )
@@ -193,9 +197,7 @@ def _build_optimizer_triage_row(
     )
     reference_boundary_detected = _boundary_detected(observation.reference_summary)
     bijux_boundary_detected = _boundary_detected(observation.bijux_summary)
-    boundary_solution_detected = (
-        reference_boundary_detected or bijux_boundary_detected
-    )
+    boundary_solution_detected = reference_boundary_detected or bijux_boundary_detected
 
     reference_trace = _optimizer_trace(observation.reference_summary)
     bijux_trace = _optimizer_trace(observation.bijux_summary)
@@ -238,7 +240,9 @@ def _build_optimizer_triage_row(
         reference_boundary_detected=reference_boundary_detected,
         bijux_boundary_detected=bijux_boundary_detected,
         boundary_solution_detected=boundary_solution_detected,
-        reference_trace_row_count=None if reference_trace is None else len(reference_trace),
+        reference_trace_row_count=None
+        if reference_trace is None
+        else len(reference_trace),
         bijux_trace_row_count=None if bijux_trace is None else len(bijux_trace),
         reference_local_optimum_count=reference_local_optimum_count,
         bijux_local_optimum_count=bijux_local_optimum_count,
@@ -471,7 +475,10 @@ def _local_optimum_count(
     if not ordered_points:
         return None
     profile = sorted(
-        {round(parameter, 12): (parameter, log_likelihood) for parameter, log_likelihood in ordered_points}.values(),
+        {
+            round(parameter, 12): (parameter, log_likelihood)
+            for parameter, log_likelihood in ordered_points
+        }.values(),
         key=lambda item: item[0],
     )
     if len(profile) == 1:
@@ -489,10 +496,7 @@ def _local_optimum_count(
             if log_likelihood >= left - tolerance:
                 local_optimum_count += 1
             continue
-        if (
-            log_likelihood >= left - tolerance
-            and log_likelihood >= right - tolerance
-        ):
+        if log_likelihood >= left - tolerance and log_likelihood >= right - tolerance:
             local_optimum_count += 1
     return local_optimum_count
 

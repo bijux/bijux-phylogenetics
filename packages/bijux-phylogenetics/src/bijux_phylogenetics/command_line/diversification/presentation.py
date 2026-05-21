@@ -179,7 +179,9 @@ def _run_methods_summary(args: Any) -> int:
         outputs=[result.output_path],
     )
     warnings = (
-        [] if result.report.sampling_report is None else list(result.report.sampling_report.warnings)
+        []
+        if result.report.sampling_report is None
+        else list(result.report.sampling_report.warnings)
     )
     _print_result(
         build_command_result(

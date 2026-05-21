@@ -8,8 +8,19 @@ import time
 import tracemalloc
 
 from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
-from bijux_phylogenetics.runtime.errors import EngineWorkflowError, InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import (
+    EngineWorkflowError,
+    InvalidAlignmentError,
+)
 
+from ..artifacts.fasttree import (
+    build_fasttree_low_support_rows,
+    build_fasttree_support_histogram_rows,
+    build_fasttree_support_rows,
+    write_fasttree_support_histogram,
+    write_fasttree_support_table,
+)
+from ..artifacts.support import FastTreeSupportNode, FastTreeSupportSummaryReport
 from ..common import (
     EngineIncompleteRunRecord,
     build_file_checksums,
@@ -22,14 +33,6 @@ from ..common import (
     write_engine_manifest,
     write_incomplete_engine_run,
 )
-from ..artifacts.fasttree import (
-    build_fasttree_low_support_rows,
-    build_fasttree_support_histogram_rows,
-    build_fasttree_support_rows,
-    write_fasttree_support_histogram,
-    write_fasttree_support_table,
-)
-from ..artifacts.support import FastTreeSupportNode, FastTreeSupportSummaryReport
 from ..validation import (
     summarize_fasttree_support_distribution,
 )

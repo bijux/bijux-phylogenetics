@@ -271,9 +271,8 @@ def mismatch_reason(
             "excluded_taxon_count",
             "excluded_taxa",
         )
-        if (
-            case.comparative_lambda_value is None
-            or not math.isclose(case.comparative_lambda_value, 1.0, abs_tol=1e-12)
+        if case.comparative_lambda_value is None or not math.isclose(
+            case.comparative_lambda_value, 1.0, abs_tol=1e-12
         ):
             compare_keys = compare_keys + ("lambda_value", "log_likelihood")
     elif case.operation == "phylogenetic-anova":

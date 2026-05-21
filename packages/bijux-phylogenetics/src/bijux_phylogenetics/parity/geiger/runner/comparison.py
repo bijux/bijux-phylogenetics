@@ -175,10 +175,15 @@ def parameter_rows(summary: dict[str, object]) -> list[dict[str, object]]:
         rows.append({"parameter": parameter, "value": value})
     parameter_name = summary.get("parameter_name")
     parameter_value = summary.get("parameter_value")
-    if isinstance(parameter_name, str) and parameter_name and parameter_value not in {
-        None,
-        "",
-    }:
+    if (
+        isinstance(parameter_name, str)
+        and parameter_name
+        and parameter_value
+        not in {
+            None,
+            "",
+        }
+    ):
         rows.append({"parameter": parameter_name, "value": parameter_value})
     return rows
 

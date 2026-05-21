@@ -157,7 +157,9 @@ def _run_compare_models(args: Any) -> int:
     )
     outputs: list[Path | str] = []
     if args.table_out is not None:
-        outputs.append(write_discrete_model_comparison_table(args.table_out, comparison))
+        outputs.append(
+            write_discrete_model_comparison_table(args.table_out, comparison)
+        )
     outputs = _finalize_outputs(
         args,
         command=COMMAND_NAME,

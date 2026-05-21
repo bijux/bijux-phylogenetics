@@ -19,7 +19,10 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
     LocusSegment,
     normalize_partition_data_type,
 )
-from bijux_phylogenetics.runtime.errors import InvalidAlignmentError, InvalidPartitionError
+from bijux_phylogenetics.runtime.errors import (
+    InvalidAlignmentError,
+    InvalidPartitionError,
+)
 
 __all__ = [
     "ConcatenatedAlignmentLocusRow",

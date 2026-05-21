@@ -156,7 +156,9 @@ def run_tree_set_stability_command(args: Any, *, parser: Any) -> int | None:
         "symmetric",
         "all-rates-different",
     }:
-        parser.error("discrete ancestral tree-set reconstruction requires a discrete model")
+        parser.error(
+            "discrete ancestral tree-set reconstruction requires a discrete model"
+        )
     if args.state_ordering == "ordered" and resolved_model == "fitch":
         parser.error(
             "ordered ancestral tree-set discrete reconstruction requires a likelihood model"

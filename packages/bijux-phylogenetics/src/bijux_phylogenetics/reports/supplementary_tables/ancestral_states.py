@@ -31,9 +31,7 @@ def _serialize_ancestral_state_row(
         "model": row.model,
         "estimator": "" if row.estimator is None else row.estimator,
         "state_ordering": "" if row.state_ordering is None else row.state_ordering,
-        "root_prior_mode": (
-            "" if row.root_prior_mode is None else row.root_prior_mode
-        ),
+        "root_prior_mode": ("" if row.root_prior_mode is None else row.root_prior_mode),
         "fixed_root_state": (
             "" if row.fixed_root_state is None else row.fixed_root_state
         ),

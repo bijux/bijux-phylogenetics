@@ -6,11 +6,12 @@ from html import escape
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.compare import compare_tree_structurally, compare_tree_paths
+from bijux_phylogenetics.compare import compare_tree_paths, compare_tree_structurally
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.io.fasta import load_fasta_records
 from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.io.trees import load_tree
+
 from .support import (
     SUPPORTED_PUBLICATION_PACKAGE_KIND,
     artifact_kind,
@@ -22,7 +23,6 @@ from .support import (
     read_tsv_rows,
     text,
 )
-
 
 _ARTIFACT_COLUMNS = [
     "section",
@@ -274,7 +274,9 @@ def _package_artifact_rows(
     right_index = _inventory_index(right_inventory_rows)
     relative_paths = sorted(set(left_index) | set(right_index))
     rows = [
-        _artifact_row(relative_path, left_index.get(relative_path), right_index.get(relative_path))
+        _artifact_row(
+            relative_path, left_index.get(relative_path), right_index.get(relative_path)
+        )
         for relative_path in relative_paths
     ]
     rows.append(
@@ -282,7 +284,9 @@ def _package_artifact_rows(
             section="package",
             kind="manifest",
             relative_path=left_manifest_path.name,
-            status="same" if checksum(left_manifest_path) == checksum(right_manifest_path) else "changed",
+            status="same"
+            if checksum(left_manifest_path) == checksum(right_manifest_path)
+            else "changed",
             left_sha256=checksum(left_manifest_path),
             right_sha256=checksum(right_manifest_path),
             left_size_bytes=left_manifest_path.stat().st_size,
@@ -321,14 +325,8 @@ def _finding_difference_count(
         if left_row is None or right_row is None:
             count += 1
             continue
-        if {
-            key: value
-            for key, value in left_row.items()
-            if key != "finding_id"
-        } != {
-            key: value
-            for key, value in right_row.items()
-            if key != "finding_id"
+        if {key: value for key, value in left_row.items() if key != "finding_id"} != {
+            key: value for key, value in right_row.items() if key != "finding_id"
         }:
             count += 1
     return count
@@ -385,13 +383,13 @@ def _write_html_report(
             "<body>",
             "<main>",
             "  <h1>Publication Package Comparison</h1>",
-            "  <div class=\"cards\">",
-            f"    <div class=\"card\"><span class=\"label\">dataset id</span><span class=\"value\">{escape(result.dataset_id)}</span></div>",
-            f"    <div class=\"card\"><span class=\"label\">overall status</span><span class=\"value\">{escape(result.overall_comparison_status)}</span></div>",
-            f"    <div class=\"card\"><span class=\"label\">changed artifacts</span><span class=\"value\">{result.changed_artifact_count}</span></div>",
-            f"    <div class=\"card\"><span class=\"label\">finding differences</span><span class=\"value\">{result.scientific_finding_difference_count}</span></div>",
+            '  <div class="cards">',
+            f'    <div class="card"><span class="label">dataset id</span><span class="value">{escape(result.dataset_id)}</span></div>',
+            f'    <div class="card"><span class="label">overall status</span><span class="value">{escape(result.overall_comparison_status)}</span></div>',
+            f'    <div class="card"><span class="label">changed artifacts</span><span class="value">{result.changed_artifact_count}</span></div>',
+            f'    <div class="card"><span class="label">finding differences</span><span class="value">{result.scientific_finding_difference_count}</span></div>',
             "  </div>",
-            "  <section class=\"panel\">",
+            '  <section class="panel">',
             "    <h2>Checks</h2>",
             "    <table>",
             "      <thead><tr><th>Section</th><th>Check</th><th>Status</th><th>Summary</th><th>Evidence</th></tr></thead>",
@@ -400,7 +398,7 @@ def _write_html_report(
             "      </tbody>",
             "    </table>",
             "  </section>",
-            "  <section class=\"panel\">",
+            '  <section class="panel">',
             "    <h2>Artifacts</h2>",
             "    <table>",
             "      <thead><tr><th>Artifact</th><th>Kind</th><th>Status</th><th>Detail</th></tr></thead>",
@@ -440,7 +438,9 @@ def write_publication_package_comparison_report(
     right_dataset_id = text(right_manifest.get("dataset_id"))
     dataset_id = left_dataset_id or right_dataset_id
 
-    left_inventory_rows = _inventory_rows_from_manifest(left_package_root, left_manifest)
+    left_inventory_rows = _inventory_rows_from_manifest(
+        left_package_root, left_manifest
+    )
     right_inventory_rows = _inventory_rows_from_manifest(
         right_package_root,
         right_manifest,
@@ -522,8 +522,12 @@ def write_publication_package_comparison_report(
                 f"left-only accessions={len(left_only_accessions)}; right-only accessions={len(right_only_accessions)}; "
                 f"left-only sequences={len(left_only_sequences)}; right-only sequences={len(right_only_sequences)}"
             ),
-            left_artifact_path=left_accession_path.relative_to(left_package_root).as_posix(),
-            right_artifact_path=right_accession_path.relative_to(right_package_root).as_posix(),
+            left_artifact_path=left_accession_path.relative_to(
+                left_package_root
+            ).as_posix(),
+            right_artifact_path=right_accession_path.relative_to(
+                right_package_root
+            ).as_posix(),
         )
     )
 
@@ -541,7 +545,9 @@ def write_publication_package_comparison_report(
                 if not config_differences
                 else " | ".join(
                     f"{key}: {left_value!r} -> {right_value!r}"
-                    for key, (left_value, right_value) in sorted(config_differences.items())
+                    for key, (left_value, right_value) in sorted(
+                        config_differences.items()
+                    )
                 )
             ),
             left_artifact_path=left_config_path,
@@ -549,9 +555,7 @@ def write_publication_package_comparison_report(
         )
     )
 
-    alignment_rows = [
-        row for row in artifact_rows if row.kind == "alignment"
-    ]
+    alignment_rows = [row for row in artifact_rows if row.kind == "alignment"]
     alignment_differences: list[str] = []
     for row in alignment_rows:
         if row.status != "same":
@@ -613,7 +617,9 @@ def write_publication_package_comparison_report(
                 f"structural_parity={str(structural.equivalent).lower()}"
             ),
             left_artifact_path=left_tree_path.relative_to(left_package_root).as_posix(),
-            right_artifact_path=right_tree_path.relative_to(right_package_root).as_posix(),
+            right_artifact_path=right_tree_path.relative_to(
+                right_package_root
+            ).as_posix(),
         )
     )
 
@@ -641,8 +647,16 @@ def write_publication_package_comparison_report(
                 if not model_differences
                 else " | ".join(model_differences)
             ),
-            left_artifact_path=text(mapping(mapping(left_manifest, "workflow_files"), "model_table").get("path")),
-            right_artifact_path=text(mapping(mapping(right_manifest, "workflow_files"), "model_table").get("path")),
+            left_artifact_path=text(
+                mapping(mapping(left_manifest, "workflow_files"), "model_table").get(
+                    "path"
+                )
+            ),
+            right_artifact_path=text(
+                mapping(mapping(right_manifest, "workflow_files"), "model_table").get(
+                    "path"
+                )
+            ),
         )
     )
 
@@ -666,7 +680,8 @@ def write_publication_package_comparison_report(
                 "no figure or report differences"
                 if not figure_or_report_rows
                 else " | ".join(
-                    f"{row.relative_path}: {row.status}" for row in figure_or_report_rows[:10]
+                    f"{row.relative_path}: {row.status}"
+                    for row in figure_or_report_rows[:10]
                 )
             ),
             left_artifact_path="rabies-cross-host-geography-overview.html",
@@ -712,8 +727,12 @@ def write_publication_package_comparison_report(
                 f"short_answer_changed={str(short_answer_changed).lower()}; "
                 f"conclusion count differences={','.join(conclusion_count_differences) or 'none'}"
             ),
-            left_artifact_path=left_findings_path.relative_to(left_package_root).as_posix(),
-            right_artifact_path=right_findings_path.relative_to(right_package_root).as_posix(),
+            left_artifact_path=left_findings_path.relative_to(
+                left_package_root
+            ).as_posix(),
+            right_artifact_path=right_findings_path.relative_to(
+                right_package_root
+            ).as_posix(),
         )
     )
 

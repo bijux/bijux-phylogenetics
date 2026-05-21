@@ -6,12 +6,12 @@ from pathlib import Path
 
 from Bio.Phylo.TreeConstruction import DistanceMatrix
 
-from bijux_phylogenetics.phylo.alignment import AlignmentRecord, DnaBinAlignment
 from bijux_phylogenetics.io.fasta import (
     infer_alignment_alphabet,
     load_fasta_alignment,
 )
 from bijux_phylogenetics.io.fasta.matrix import load_dna_bin_alignment
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord, DnaBinAlignment
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 from .models import (

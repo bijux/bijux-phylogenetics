@@ -14,7 +14,10 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
 from bijux_phylogenetics.phylo.alignment.partitions import (
     write_locus_partitions as _write_locus_partitions,
 )
-from bijux_phylogenetics.runtime.errors import InvalidAlignmentError, InvalidPartitionError
+from bijux_phylogenetics.runtime.errors import (
+    InvalidAlignmentError,
+    InvalidPartitionError,
+)
 
 __all__ = [
     "LocusCoverageRow",

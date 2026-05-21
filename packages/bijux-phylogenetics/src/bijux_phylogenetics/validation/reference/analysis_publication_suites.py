@@ -18,7 +18,13 @@ from bijux_phylogenetics.trees.uncertainty import (
 )
 
 from .models import ReferenceValidationSuiteReport
-from .shared import check, default_fixtures_root, fixture, suite_report, temp_reference_dir
+from .shared import (
+    check,
+    default_fixtures_root,
+    fixture,
+    suite_report,
+    temp_reference_dir,
+)
 
 
 def validate_tree_set_uncertainty_reference_fixtures(
@@ -167,9 +173,7 @@ def validate_tree_set_uncertainty_methods_summary_reference_fixtures(
                     multi_topology_summary.topology_cluster_count
                 ),
                 "unstable_taxon_count": multi_topology_summary.unstable_taxon_count,
-                "multimodal": (
-                    multi_topology_summary.report.multimodality.multimodal
-                ),
+                "multimodal": (multi_topology_summary.report.multimodality.multimodal),
                 "output_present": multi_topology_summary.output_path.exists(),
             },
             notes=[
@@ -194,9 +198,7 @@ def validate_tree_set_uncertainty_methods_summary_reference_fixtures(
                     single_topology_summary.topology_cluster_count
                 ),
                 "unstable_taxon_count": single_topology_summary.unstable_taxon_count,
-                "multimodal": (
-                    single_topology_summary.report.multimodality.multimodal
-                ),
+                "multimodal": (single_topology_summary.report.multimodality.multimodal),
                 "output_present": single_topology_summary.output_path.exists(),
             },
             notes=[
@@ -449,7 +451,9 @@ def validate_comparative_model_figure_reference_fixtures(
         "example_tree_phytools_ultrametric_one_hundred_twenty_eight_taxa.nwk",
     )
     ambiguous_traits = fixture(
-        root, "metadata", "example_traits_phytools_signal_one_hundred_twenty_eight_taxa.tsv"
+        root,
+        "metadata",
+        "example_traits_phytools_signal_one_hundred_twenty_eight_taxa.tsv",
     )
     temp_root = temp_reference_dir("bijux-comparative-model-figure-reference")
     temp_root.mkdir(parents=True, exist_ok=True)

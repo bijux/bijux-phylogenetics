@@ -81,11 +81,7 @@ _MODULE_EXPORTS = {
     ),
 }
 
-__all__ = [
-    export
-    for exports in _MODULE_EXPORTS.values()
-    for export in exports
-]
+__all__ = [export for exports in _MODULE_EXPORTS.values() for export in exports]
 
 _ATTRIBUTE_MODULES = {
     export: module_name

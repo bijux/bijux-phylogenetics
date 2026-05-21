@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.branch_lengths.ultrametric import APE_ULTRAMETRIC_TOLERANCE
 from bijux_phylogenetics.diagnostics.validation import (
     LONG_BRANCH_OUTLIER_FACTOR,
     SHORT_BRANCH_OUTLIER_FACTOR,
@@ -15,6 +14,9 @@ from bijux_phylogenetics.diagnostics.validation import (
     forensic_tree_path,
     inspect_tree_path,
     validate_tree_path,
+)
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
+    APE_ULTRAMETRIC_TOLERANCE,
 )
 
 

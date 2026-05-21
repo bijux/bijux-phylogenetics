@@ -6,6 +6,20 @@ from pathlib import Path
 import re
 
 from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
+from bijux_phylogenetics.diagnostics.validation import validate_tree_path
+from bijux_phylogenetics.io.fasta import (
+    infer_alignment_alphabet,
+    load_fasta_alignment,
+    write_fasta_alignment,
+)
+from bijux_phylogenetics.io.fasta.coding import (
+    back_translate_aligned_coding_sequences,
+    classify_sequence_coding_behavior,
+    prepare_coding_sequences_for_alignment,
+    translate_prepared_coding_sequences,
+)
+from bijux_phylogenetics.io.fasta.records import summarise_fasta
+from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.phylo.alignment import (
     AlignmentAlphabet,
     AlignmentRecord,
@@ -21,60 +35,15 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
     write_locus_partitions,
     write_partition_summary_table,
 )
-from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError, PhylogeneticsError
-from bijux_phylogenetics.io.fasta import (
-    infer_alignment_alphabet,
-    load_fasta_alignment,
-    write_fasta_alignment,
-)
-from bijux_phylogenetics.io.fasta.coding import (
-    back_translate_aligned_coding_sequences,
-    classify_sequence_coding_behavior,
-    prepare_coding_sequences_for_alignment,
-    translate_prepared_coding_sequences,
-)
-from bijux_phylogenetics.io.fasta.records import summarise_fasta
-from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.trees import load_tree_set
 
-from .models import (
-    AlignmentTrimmingSummary,
-    CodonAwareAlignmentWorkflowReport,
-    EngineWorkflowReport,
-    ExternalTreeComparisonReport,
-    IqtreeSupportValue,
-    IqtreeWorkflowSummary,
-    PreparedIqtreePartitions as _PreparedIqtreePartitions,
-)
 from ..artifacts.bootstrap import (
     build_bootstrap_support_histogram_rows,
     build_bootstrap_support_rows,
     build_low_support_bootstrap_rows,
     write_bootstrap_support_histogram,
     write_bootstrap_support_table,
-)
-from ..common import (
-    EngineRunReport,
-    EngineVersionInfo,
-    active_engine_run_is_live,
-    build_engine_output_error,
-    build_file_checksums,
-    cleanup_incomplete_engine_run,
-    clear_incomplete_engine_run,
-    engine_active_marker_path,
-    engine_incomplete_marker_path,
-    execute_engine_command,
-    load_active_engine_run,
-    load_engine_manifest,
-    load_incomplete_engine_run,
-    load_unaligned_fasta,
-    observe_engine_outputs,
-    read_engine_version,
-    resolve_engine_executable,
-    update_incomplete_engine_run,
-    validate_timeout_seconds,
-    write_engine_manifest,
 )
 from ..artifacts.fasttree import (
     build_fasttree_low_support_rows,
@@ -106,14 +75,48 @@ from ..artifacts.support import (
     ShAlrtSupportSummaryReport,
     WeakBackboneReport,
 )
+from ..common import (
+    EngineRunReport,
+    EngineVersionInfo,
+    active_engine_run_is_live,
+    build_engine_output_error,
+    build_file_checksums,
+    cleanup_incomplete_engine_run,
+    clear_incomplete_engine_run,
+    engine_active_marker_path,
+    engine_incomplete_marker_path,
+    execute_engine_command,
+    load_active_engine_run,
+    load_engine_manifest,
+    load_incomplete_engine_run,
+    load_unaligned_fasta,
+    observe_engine_outputs,
+    read_engine_version,
+    resolve_engine_executable,
+    update_incomplete_engine_run,
+    validate_timeout_seconds,
+    write_engine_manifest,
+)
 from ..validation import (
     detect_weakly_supported_backbone,
     summarize_bootstrap_support_distribution,
     summarize_fasttree_support_distribution,
     summarize_sh_alrt_support_distribution,
 )
+from .models import (
+    AlignmentTrimmingSummary,
+    CodonAwareAlignmentWorkflowReport,
+    EngineWorkflowReport,
+    ExternalTreeComparisonReport,
+    IqtreeSupportValue,
+    IqtreeWorkflowSummary,
+)
+from .models import (
+    PreparedIqtreePartitions as _PreparedIqtreePartitions,
+)
 
 _INCOMPLETE_RUN_POLICIES = {"reject", "clean"}
+
 
 def _sidecar(path: Path, label: str) -> Path:
     return path.parent / f"{path.name}.{label}"
@@ -223,7 +226,9 @@ def _record_output_validation_failure(
             f"validation: {error.code}"
         ),
         missing_output_names=[
-            observation.output_name for observation in observations if not observation.exists
+            observation.output_name
+            for observation in observations
+            if not observation.exists
         ],
         observed_outputs=observations,
     )

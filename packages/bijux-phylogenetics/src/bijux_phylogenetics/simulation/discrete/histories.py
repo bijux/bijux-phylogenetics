@@ -4,8 +4,8 @@ from pathlib import Path
 import random
 
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 
 def _quantile(values: list[float], probability: float) -> float:
@@ -20,15 +20,16 @@ def _quantile(values: list[float], probability: float) -> float:
     lower_index = int(position)
     upper_index = min(lower_index + 1, len(ordered_values) - 1)
     fraction = position - lower_index
-    interpolated = ordered_values[lower_index] + (
-        ordered_values[upper_index] - ordered_values[lower_index]
-    ) * fraction
+    interpolated = (
+        ordered_values[lower_index]
+        + (ordered_values[upper_index] - ordered_values[lower_index]) * fraction
+    )
     return _round_float(interpolated)
 
 
 def _normalize_rate_rows(*, states: tuple[str, ...], rate_rows: list) -> list:
-    from ..contracts import DiscreteHistoryRateRow
     from .._statistics import _round_float
+    from ..contracts import DiscreteHistoryRateRow
 
     if not rate_rows:
         raise ValueError("rate_rows must contain at least one transition rate row")
@@ -99,12 +100,12 @@ def _simulate_rate_matrix_state_trajectory(
     rate_lookup: dict[str, dict[str, float]],
     rng: random.Random,
 ):
+    from .._statistics import (
+        _round_float,
+    )
     from ..contracts import (
         SimulatedDiscreteStateSegment,
         SimulatedDiscreteTransitionEvent,
-    )
-    from .._statistics import (
-        _round_float,
     )
 
     current_state = state
@@ -196,13 +197,13 @@ def _simulate_discrete_history_once(
         node_signature,
     )
 
+    from .._state_propagation import _tip_values_from_node_map
     from ..contracts import (
         DiscreteTraitSimulationReport,
         SimulatedDiscreteBranchHistory,
         SimulatedDiscreteNode,
         SimulatedDiscreteTrait,
     )
-    from .._state_propagation import _tip_values_from_node_map
 
     rng = random.Random(seed)  # nosec B311
     node_values: dict[str, str] = {}
@@ -370,8 +371,8 @@ def _summarize_discrete_history_collection(
     *,
     states: tuple[str, ...],
 ):
-    from ..contracts import DiscreteHistorySummaryRow
     from .._statistics import _mean, _round_float
+    from ..contracts import DiscreteHistorySummaryRow
 
     total_transition_counts = [
         float(sum(branch.event_count for branch in simulation.branch_histories))

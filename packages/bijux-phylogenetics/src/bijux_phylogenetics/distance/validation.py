@@ -192,7 +192,8 @@ def _reference_distance_observations() -> list[DistanceReferenceObservation]:
 def _reference_tree_observations() -> list[DistanceTreeReferenceObservation]:
     observations: list[DistanceTreeReferenceObservation] = []
     matrix_path = (
-        _PACKAGE_ROOT / "tests/fixtures/metadata/example_distance_matrix_ultrametric.tsv"
+        _PACKAGE_ROOT
+        / "tests/fixtures/metadata/example_distance_matrix_ultrametric.tsv"
     )
     nj_tree, _ = build_tree_from_imported_distance_matrix(
         matrix_path, method="neighbor-joining"
@@ -212,7 +213,9 @@ def _reference_tree_observations() -> list[DistanceTreeReferenceObservation]:
         )
     )
 
-    upgma_tree, _ = build_tree_from_imported_distance_matrix(matrix_path, method="upgma")
+    upgma_tree, _ = build_tree_from_imported_distance_matrix(
+        matrix_path, method="upgma"
+    )
     upgma_observed_clades = sorted(
         "|".join(sorted(clade))
         for clade in informative_rooted_clades(upgma_tree, set(upgma_tree.tip_names))

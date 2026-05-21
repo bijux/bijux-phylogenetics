@@ -7,9 +7,11 @@ from statistics import median
 
 from Bio.Phylo.TreeConstruction import DistanceMatrix, DistanceTreeConstructor
 
-from bijux_phylogenetics.phylo.topology.neighbor_joining import build_neighbor_joining_tree
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
+from bijux_phylogenetics.phylo.topology.neighbor_joining import (
+    build_neighbor_joining_tree,
+)
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import InvalidDistanceMatrixError
 
 from .models import (

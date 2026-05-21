@@ -7,13 +7,14 @@ from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.datasets.study_inputs import (
     check_tree_and_trait_taxon_names,
     detect_missing_trait_values,
     link_tree_to_traits,
+    load_taxon_table,
     prune_traits_to_tree,
     validate_traits_table,
+    write_taxon_rows,
     write_tree_trait_name_mismatch_table,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
@@ -121,7 +122,9 @@ def run_traits_command(args: Any) -> int:
         )
         declared_outputs: list[Path] = []
         if args.out is not None:
-            declared_outputs.append(write_tree_trait_name_mismatch_table(args.out, report))
+            declared_outputs.append(
+                write_tree_trait_name_mismatch_table(args.out, report)
+            )
         outputs = _finalize_outputs(
             args,
             command="traits",

@@ -65,9 +65,7 @@ def _run_compare_changes_command(args: Any, *, parser: argparse.ArgumentParser) 
     left_path = Path(args.right)
     right_path = Path(args.third)
     report = detect_clade_changes(left_path, right_path)
-    outputs = _finalize_outputs(
-        args, command="compare", inputs=[left_path, right_path]
-    )
+    outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path])
     _print_result(
         build_command_result(
             command="compare",

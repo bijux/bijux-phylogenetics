@@ -13,7 +13,13 @@ from bijux_phylogenetics.render.trait_tree_package import (
 )
 
 from .models import ReferenceValidationSuiteReport
-from .shared import check, default_fixtures_root, fixture, suite_report, temp_reference_dir
+from .shared import (
+    check,
+    default_fixtures_root,
+    fixture,
+    suite_report,
+    temp_reference_dir,
+)
 
 
 def validate_figure_reference_fixtures(
@@ -211,7 +217,9 @@ def validate_time_tree_reference_fixtures(
 ) -> ReferenceValidationSuiteReport:
     """Validate time-tree publication fixtures for visible uncertainty and readiness."""
     root = default_fixtures_root() if fixtures_root is None else fixtures_root
-    posterior_tree_path = fixture(root, "metadata", "beast2_strict_yule_posterior.trees")
+    posterior_tree_path = fixture(
+        root, "metadata", "beast2_strict_yule_posterior.trees"
+    )
     metadata_path = fixture(root, "metadata", "example_metadata.tsv")
     tip_dates_path = fixture(root, "metadata", "example_tip_dates.tsv")
     invalid_tip_dates_path = fixture(root, "metadata", "example_tip_dates_invalid.tsv")
@@ -406,7 +414,9 @@ def validate_biogeography_figure_reference_fixtures(
     root = default_fixtures_root() if fixtures_root is None else fixtures_root
     tree_path = fixture(root, "trees", "example_tree.nwk")
     traits_path = fixture(root, "metadata", "example_traits_geography.tsv")
-    centroids_path = fixture(root, "metadata", "example_geographic_region_centroids.tsv")
+    centroids_path = fixture(
+        root, "metadata", "example_geographic_region_centroids.tsv"
+    )
     temp_root = temp_reference_dir("bijux-biogeography-figure-reference")
     temp_root.mkdir(parents=True, exist_ok=True)
     incomplete_centroids_path = (

@@ -5,8 +5,8 @@ from typing import Any
 
 from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
-from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.command_line.registry import get_command_spec
+from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.datasets.study_inputs import inspect_metadata_table
 from bijux_phylogenetics.runtime.results import build_command_result
 

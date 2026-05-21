@@ -226,7 +226,9 @@ def _all_model_comparison_rows_match_aic_formula(
     comparable_rows = [row for row in rows if row.get("comparable") is True]
     if not comparable_rows:
         return None
-    return all(_model_comparison_row_matches_aic_formula(row) for row in comparable_rows)
+    return all(
+        _model_comparison_row_matches_aic_formula(row) for row in comparable_rows
+    )
 
 
 def _model_comparison_row_matches_aic_formula(row: dict[str, object]) -> bool:

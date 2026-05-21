@@ -59,7 +59,9 @@ def build_geiger_parameterization_registry_rows(
 
     case_by_id = {case.case_id: case for case in list_geiger_parity_cases()}
     return [
-        _build_parameterization_registry_row(observation, case_by_id[observation.case_id])
+        _build_parameterization_registry_row(
+            observation, case_by_id[observation.case_id]
+        )
         for observation in observations
     ]
 
@@ -141,7 +143,9 @@ def _build_parameterization_registry_row(
         else observation.reference_summary.get("parameter_value")
     )
     canonical_bijux_parameter_value = _optional_float(
-        None if observation.bijux_summary is None else observation.bijux_summary.get("parameter_value")
+        None
+        if observation.bijux_summary is None
+        else observation.bijux_summary.get("parameter_value")
     )
     reference_parameter_name, reference_parameter_value = _reference_parameter_surface(
         case,
@@ -155,7 +159,9 @@ def _build_parameterization_registry_row(
     )
     bijux_bounds = _bijux_parameter_bounds(case)
     reference_bounds = _reference_parameter_bounds(case)
-    converted_reference_bounds = _converted_reference_parameter_bounds(case, reference_bounds)
+    converted_reference_bounds = _converted_reference_parameter_bounds(
+        case, reference_bounds
+    )
     parameter_match_after_conversion = _same_numeric_value(
         canonical_reference_parameter_value,
         canonical_bijux_parameter_value,
@@ -168,19 +174,27 @@ def _build_parameterization_registry_row(
     )
     root_state_match = _same_numeric_value(
         _optional_float(
-            None if observation.reference_summary is None else observation.reference_summary.get("root_state")
+            None
+            if observation.reference_summary is None
+            else observation.reference_summary.get("root_state")
         ),
         _optional_float(
-            None if observation.bijux_summary is None else observation.bijux_summary.get("root_state")
+            None
+            if observation.bijux_summary is None
+            else observation.bijux_summary.get("root_state")
         ),
         tolerance=observation.tolerance,
     )
     variance_match = _same_numeric_value(
         _optional_float(
-            None if observation.reference_summary is None else observation.reference_summary.get("rate")
+            None
+            if observation.reference_summary is None
+            else observation.reference_summary.get("rate")
         ),
         _optional_float(
-            None if observation.bijux_summary is None else observation.bijux_summary.get("rate")
+            None
+            if observation.bijux_summary is None
+            else observation.bijux_summary.get("rate")
         ),
         tolerance=observation.tolerance,
     )
@@ -191,7 +205,9 @@ def _build_parameterization_registry_row(
             else observation.reference_summary.get("log_likelihood")
         ),
         _optional_float(
-            None if observation.bijux_summary is None else observation.bijux_summary.get("log_likelihood")
+            None
+            if observation.bijux_summary is None
+            else observation.bijux_summary.get("log_likelihood")
         ),
         tolerance=observation.tolerance,
     )
@@ -225,13 +241,17 @@ def _build_parameterization_registry_row(
         converted_reference_parameter_bounds=converted_reference_bounds,
         parameter_bounds_match_after_conversion=parameter_bounds_match_after_conversion,
         bounds_conversion_rule=_bounds_conversion_rule(case),
-        root_state_parameterization_reference=_root_state_parameterization_reference(case),
+        root_state_parameterization_reference=_root_state_parameterization_reference(
+            case
+        ),
         root_state_parameterization_bijux=_root_state_parameterization_bijux(case),
         root_state_match_within_tolerance=root_state_match,
         variance_parameterization_reference=_variance_parameterization_reference(case),
         variance_parameterization_bijux=_variance_parameterization_bijux(case),
         variance_match_within_tolerance=variance_match,
-        likelihood_constants_policy_reference=_likelihood_constants_policy_reference(case),
+        likelihood_constants_policy_reference=_likelihood_constants_policy_reference(
+            case
+        ),
         likelihood_constants_policy_bijux=_likelihood_constants_policy_bijux(case),
         likelihood_constants_comparison_policy=_likelihood_constants_comparison_policy(
             case

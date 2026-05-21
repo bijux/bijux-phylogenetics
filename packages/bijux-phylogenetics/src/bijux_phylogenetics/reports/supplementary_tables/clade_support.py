@@ -31,7 +31,9 @@ def _serialize_clade_support_row(
         "node_label": "" if row.node_label is None else row.node_label,
         "descendant_taxa": stringify_list(row.descendant_taxa),
         "support": "" if row.support is None else row.support,
-        "support_fraction": "" if row.support_fraction is None else row.support_fraction,
+        "support_fraction": ""
+        if row.support_fraction is None
+        else row.support_fraction,
         "support_class": row.support_class,
         "support_method": row.support_method,
         "branch_length": "" if row.branch_length is None else row.branch_length,
@@ -39,12 +41,8 @@ def _serialize_clade_support_row(
         "supporting_tree_count": ""
         if row.supporting_tree_count is None
         else row.supporting_tree_count,
-        "clade_frequency": ""
-        if row.clade_frequency is None
-        else row.clade_frequency,
-        "support_percent": ""
-        if row.support_percent is None
-        else row.support_percent,
+        "clade_frequency": "" if row.clade_frequency is None else row.clade_frequency,
+        "support_percent": "" if row.support_percent is None else row.support_percent,
         "frequency_method": ""
         if row.frequency_method is None
         else row.frequency_method,
@@ -73,9 +71,7 @@ def _build_clade_support_row(
     return SupplementaryCladeSupportRow(
         tree_source=str(tree_path),
         comparison_tree_set_source=(
-            None
-            if comparison_tree_set_path is None
-            else str(comparison_tree_set_path)
+            None if comparison_tree_set_path is None else str(comparison_tree_set_path)
         ),
         clade_id=support_row.node,
         node_kind=support_row.node_kind,
@@ -90,12 +86,18 @@ def _build_clade_support_row(
         supporting_tree_count=(
             None if frequency_row is None else frequency_row.supporting_tree_count
         ),
-        clade_frequency=None if frequency_row is None else frequency_row.clade_frequency,
-        support_percent=None if frequency_row is None else frequency_row.support_percent,
+        clade_frequency=None
+        if frequency_row is None
+        else frequency_row.clade_frequency,
+        support_percent=None
+        if frequency_row is None
+        else frequency_row.support_percent,
         frequency_method=(
             None if frequency_row is None else "reference-tree-clade-frequency"
         ),
-        frequency_status=None if frequency_row is None else frequency_row.support_status,
+        frequency_status=None
+        if frequency_row is None
+        else frequency_row.support_status,
         frequency_explanation=(
             None if frequency_row is None else frequency_row.explanation
         ),

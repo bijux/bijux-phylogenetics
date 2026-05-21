@@ -26,7 +26,9 @@ def run_compare_influence_command(
     report = analyze_taxon_influence(left_path, right_path)
     output_paths: list[Path | str] = []
     if args.out is not None:
-        output_paths.append(write_taxon_influence_table(args.out, left_path, right_path))
+        output_paths.append(
+            write_taxon_influence_table(args.out, left_path, right_path)
+        )
     outputs = _finalize_outputs(
         args,
         command="compare",

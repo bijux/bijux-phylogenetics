@@ -6,13 +6,6 @@ from html import escape
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.alignment import (
-    AlignmentForensicReport,
-    AlignmentRecord,
-    AlignmentSummary,
-    AlignmentWindowSummary,
-    SequenceQualityRankingRow,
-)
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.fasta.quality import (
@@ -20,12 +13,19 @@ from bijux_phylogenetics.io.fasta.quality import (
     summarize_alignment_windows,
 )
 from bijux_phylogenetics.io.fasta.records import summarise_fasta
+from bijux_phylogenetics.phylo.alignment import (
+    AlignmentForensicReport,
+    AlignmentRecord,
+    AlignmentSummary,
+    AlignmentWindowSummary,
+    SequenceQualityRankingRow,
+)
 from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
 )
 from bijux_phylogenetics.reports.review import (
-    build_reviewer_audit_checklist,
     ReviewerAuditChecklist,
+    build_reviewer_audit_checklist,
     write_reviewer_audit_checklist,
 )
 
@@ -428,7 +428,11 @@ def _write_site_quality_summary(
         ("missing", "#c2410c", [window.missing_fraction for window in windows]),
         ("ambiguity", "#b91c1c", [window.ambiguity_fraction for window in windows]),
         ("variable", "#0f766e", [window.variable_fraction for window in windows]),
-        ("disagreement", "#1d4ed8", [window.disagreement_fraction for window in windows]),
+        (
+            "disagreement",
+            "#1d4ed8",
+            [window.disagreement_fraction for window in windows],
+        ),
     ]
     for label, color, values in metric_specs:
         points = [point(value, x) for x, value in zip(x_positions, values, strict=True)]
@@ -436,9 +440,7 @@ def _write_site_quality_summary(
             f'<path d="{_line_path(points)}" fill="none" stroke="{color}" stroke-width="2.5"/>'
         )
         for x, y in points:
-            lines.append(
-                f'<circle cx="{x:.2f}" cy="{y:.2f}" r="3.2" fill="{color}"/>'
-            )
+            lines.append(f'<circle cx="{x:.2f}" cy="{y:.2f}" r="3.2" fill="{color}"/>')
         legend_y = chart_top + chart_height + 32
         legend_x = 28 + metric_specs.index((label, color, values)) * 170
         lines.extend(
@@ -448,7 +450,11 @@ def _write_site_quality_summary(
             ]
         )
     for x, window in zip(x_positions, windows, strict=True):
-        label = str(window.start) if window.start == window.end else f"{window.start}-{window.end}"
+        label = (
+            str(window.start)
+            if window.start == window.end
+            else f"{window.start}-{window.end}"
+        )
         lines.append(
             f'<text x="{x:.2f}" y="{chart_top + chart_height + 14}" text-anchor="middle" font-family="SFMono-Regular, Consolas, monospace" font-size="10" fill="#475569">{escape(label)}</text>'
         )
@@ -634,9 +640,7 @@ def _build_legend_entries() -> list[AlignmentFigureLegendEntry]:
     ]
 
 
-def _write_legend_table(
-    path: Path, entries: list[AlignmentFigureLegendEntry]
-) -> Path:
+def _write_legend_table(path: Path, entries: list[AlignmentFigureLegendEntry]) -> Path:
     return write_taxon_rows(
         path,
         columns=["surface", "label", "swatch", "detail"],
@@ -693,17 +697,25 @@ def _build_audit(
             "alignment contains invalid characters for the inferred alphabet"
         )
     if forensic.quality.quality_score < 75.0:
-        limitations.append("alignment quality score remains below the reviewer threshold")
+        limitations.append(
+            "alignment quality score remains below the reviewer threshold"
+        )
     if not summary.near_duplicate_scan_performed:
         limitations.append(
             "near-duplicate sequence review was skipped because the alignment exceeded the governed pairwise scan threshold"
         )
     if not heatmap_visible:
-        limitations.append("the package does not currently render the missingness heatmap")
+        limitations.append(
+            "the package does not currently render the missingness heatmap"
+        )
     if not site_summary_visible:
-        limitations.append("the package does not currently render the site-quality summary")
+        limitations.append(
+            "the package does not currently render the site-quality summary"
+        )
     if not sequence_panel_visible:
-        limitations.append("the package does not currently render the sequence-quality panel")
+        limitations.append(
+            "the package does not currently render the sequence-quality panel"
+        )
     if not limitations:
         limitations.append(
             "the current package keeps the key alignment quality figures explicit enough for publication-oriented review"
@@ -793,11 +805,7 @@ def _build_review_html(
         "sequence_panel": sequence_panel_figure_path.read_text(encoding="utf-8"),
     }
     audit_rows = "".join(
-        "<tr><th>"
-        + escape(label)
-        + "</th><td>"
-        + escape(value)
-        + "</td></tr>"
+        "<tr><th>" + escape(label) + "</th><td>" + escape(value) + "</td></tr>"
         for label, value in [
             ("publication_ready", str(audit.publication_ready).lower()),
             ("quality_score", format(audit.quality_score, ".15g")),
@@ -807,9 +815,7 @@ def _build_review_html(
             ("sequence_panel_visible", str(audit.sequence_panel_visible).lower()),
         ]
     )
-    limitation_items = "".join(
-        f"<li>{escape(item)}</li>" for item in audit.limitations
-    )
+    limitation_items = "".join(f"<li>{escape(item)}</li>" for item in audit.limitations)
     checklist_rows = "".join(
         "<tr><td>"
         + escape(item.section)
@@ -859,9 +865,15 @@ def _build_review_html(
             + "</tbody></table>",
             "  </section>",
             '  <section class="grid" style="margin-top: 20px;">',
-            '    <section class="panel"><h2>Missingness Heatmap</h2><div class="figure-shell">' + figures["heatmap"] + "</div></section>",
-            '    <section class="panel"><h2>Site-Quality Summary</h2><div class="figure-shell">' + figures["site_summary"] + "</div></section>",
-            '    <section class="panel"><h2>Sequence-Quality Panel</h2><div class="figure-shell">' + figures["sequence_panel"] + "</div></section>",
+            '    <section class="panel"><h2>Missingness Heatmap</h2><div class="figure-shell">'
+            + figures["heatmap"]
+            + "</div></section>",
+            '    <section class="panel"><h2>Site-Quality Summary</h2><div class="figure-shell">'
+            + figures["site_summary"]
+            + "</div></section>",
+            '    <section class="panel"><h2>Sequence-Quality Panel</h2><div class="figure-shell">'
+            + figures["sequence_panel"]
+            + "</div></section>",
             "  </section>",
             '  <section class="panel" style="margin-top: 20px;">',
             "    <h2>Linked Artifacts</h2>",
@@ -1057,9 +1069,7 @@ def build_alignment_figure_package(
         "output_paths": [str(path) for path in artifact_paths],
         "output_checksums": {str(path): _checksum(path) for path in artifact_paths},
         "reproducibility_manifest_path": str(reproducibility_manifest_path),
-        "reproducibility_manifest_checksum": _checksum(
-            reproducibility_manifest_path
-        ),
+        "reproducibility_manifest_checksum": _checksum(reproducibility_manifest_path),
         "reproducibility_manifest": reproducibility_manifest,
         "settings": {
             "maximum_site_bins": maximum_site_bins,
@@ -1088,8 +1098,8 @@ def build_alignment_figure_package(
         machine_manifest,
     ).checklist
     machine_manifest["output_paths"].append(str(reviewer_audit_checklist_path))
-    machine_manifest["output_checksums"][str(reviewer_audit_checklist_path)] = _checksum(
-        reviewer_audit_checklist_path
+    machine_manifest["output_checksums"][str(reviewer_audit_checklist_path)] = (
+        _checksum(reviewer_audit_checklist_path)
     )
     machine_manifest["reviewer_audit_checklist_path"] = str(
         reviewer_audit_checklist_path

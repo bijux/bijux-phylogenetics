@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-from .models import (
-    CoreWorkflowFailureCase,
-    CoreWorkflowValidationReport,
-    CoreWorkflowValidationRow,
-    LevelOneReleaseGateDecision,
-    LevelOneReleaseGateReport,
-    ReferenceFixtureCheck,
-    ReferenceValidationSuiteReport,
-    WorkflowMaturityClassification,
+from .analysis_publication_suites import (
+    validate_alignment_figure_reference_fixtures,
+    validate_comparative_model_figure_reference_fixtures,
+    validate_diversification_figure_reference_fixtures,
+    validate_tree_set_uncertainty_methods_summary_reference_fixtures,
+    validate_tree_set_uncertainty_reference_fixtures,
 )
 from .core_suites import (
     validate_alignment_quality_reference_fixtures,
@@ -24,6 +21,16 @@ from .governance import (
     write_core_workflow_validation_json,
     write_level_one_release_gate_json,
 )
+from .models import (
+    CoreWorkflowFailureCase,
+    CoreWorkflowValidationReport,
+    CoreWorkflowValidationRow,
+    LevelOneReleaseGateDecision,
+    LevelOneReleaseGateReport,
+    ReferenceFixtureCheck,
+    ReferenceValidationSuiteReport,
+    WorkflowMaturityClassification,
+)
 from .publication_suites import (
     validate_ancestral_figure_reference_fixtures,
     validate_biogeography_figure_reference_fixtures,
@@ -32,13 +39,6 @@ from .publication_suites import (
     validate_trait_tree_reference_fixtures,
 )
 from .report_regression import validate_report_regression_fixtures
-from .analysis_publication_suites import (
-    validate_alignment_figure_reference_fixtures,
-    validate_comparative_model_figure_reference_fixtures,
-    validate_diversification_figure_reference_fixtures,
-    validate_tree_set_uncertainty_methods_summary_reference_fixtures,
-    validate_tree_set_uncertainty_reference_fixtures,
-)
 
 __all__ = [
     "CoreWorkflowFailureCase",

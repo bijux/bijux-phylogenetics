@@ -122,7 +122,8 @@ def run_phylo_command(args: Any) -> int:
                     "selected_workflow_status": (
                         report.selected_workflow_status.readiness_status
                     ),
-                    "metadata_present": report.workflow_config.metadata_path is not None,
+                    "metadata_present": report.workflow_config.metadata_path
+                    is not None,
                     "traits_present": report.workflow_config.traits_path is not None,
                     "alignment_mode": report.workflow_config.alignment_mode,
                     "trimming_mode": report.workflow_config.trimming_mode,

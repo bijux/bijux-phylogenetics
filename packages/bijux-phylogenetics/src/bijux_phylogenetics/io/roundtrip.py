@@ -10,9 +10,9 @@ from bijux_phylogenetics.compare.topology import (
     _compare_branch_lengths_for_trees,
     _compare_tree_objects,
 )
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.biopython import tree_to_biophylo
 from bijux_phylogenetics.io.trees import TreeFormat, detect_tree_format, load_tree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 
 @dataclass(slots=True)

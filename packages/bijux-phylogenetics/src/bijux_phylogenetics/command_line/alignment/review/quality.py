@@ -114,7 +114,9 @@ def run_alignment_quality_command(args: Any) -> int | None:
                     "concentrated_column_count": report.missing_data_concentration.concentrated_column_count,
                     "invalid_character_count": len(report.invalid_characters),
                     "composition_outlier_count": len(report.composition_outliers),
-                    "sequence_length_outlier_count": len(report.sequence_length_outliers),
+                    "sequence_length_outlier_count": len(
+                        report.sequence_length_outliers
+                    ),
                     "duplicate_group_count": len(report.duplicate_sequence_groups),
                     "near_duplicate_count": len(report.near_duplicate_pairs),
                 },
@@ -172,7 +174,9 @@ def run_alignment_quality_command(args: Any) -> int | None:
                 metrics={
                     "sequence_count": report.sequence_count,
                     "alignment_length": report.alignment_length,
-                    "ready_method_count": sum(1 for method in report.methods if method.ready),
+                    "ready_method_count": sum(
+                        1 for method in report.methods if method.ready
+                    ),
                     "blocked_method_count": sum(
                         1 for method in report.methods if not method.ready
                     ),

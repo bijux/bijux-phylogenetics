@@ -43,7 +43,11 @@ class ApeParityFixtureResolver:
         if self.fixtures_root is None:
             return fixture.path
         if fixture_kind == "simulation":
-            return self.fixtures_root / "metadata" / "shared_tree_simulation_fixture_catalog.json"
+            return (
+                self.fixtures_root
+                / "metadata"
+                / "shared_tree_simulation_fixture_catalog.json"
+            )
         return self.fixtures_root / fixture.relative_path
 
     def trait_path(self, fixture_id: str) -> Path:

@@ -117,7 +117,10 @@ def _command_line_api() -> Any:
 
 def run_parity_command(args: Any) -> int:
     command_line_api = _command_line_api()
-    if args.reference_source in {"ape-live", "phytools-live", "geiger-live"} and args.extended:
+    if (
+        args.reference_source in {"ape-live", "phytools-live", "geiger-live"}
+        and args.extended
+    ):
         raise ValueError(
             "--extended is only supported for the checked fixture parity suite"
         )

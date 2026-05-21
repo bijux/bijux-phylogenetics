@@ -125,9 +125,7 @@ def write_tree_inference_methods_summary_text(
     model_selection_summary = _manifest_dict(
         model_selection_workflow, "model_selection_summary"
     )
-    maximum_likelihood_workflow = _manifest_dict(
-        payload, "maximum_likelihood_workflow"
-    )
+    maximum_likelihood_workflow = _manifest_dict(payload, "maximum_likelihood_workflow")
     bootstrap_workflow = _manifest_dict(payload, "bootstrap_workflow")
     support_summary = _manifest_dict(payload, "support_summary")
     output_paths = _manifest_dict(payload, "output_paths")
@@ -143,9 +141,9 @@ def write_tree_inference_methods_summary_text(
             "- input FASTA was repaired before alignment",
             f"- prepared input path: `{prepared_path_text}`",
             "- normalized identifiers: "
-            + f"`{len(_manifest_list(input_repair, 'normalized_identifiers'))}`",
+            f"`{len(_manifest_list(input_repair, 'normalized_identifiers'))}`",
             "- removed invalid records: "
-            + f"`{len(_manifest_list(input_repair, 'removed_records'))}`",
+            f"`{len(_manifest_list(input_repair, 'removed_records'))}`",
         ]
         if input_repair is not None
         else [

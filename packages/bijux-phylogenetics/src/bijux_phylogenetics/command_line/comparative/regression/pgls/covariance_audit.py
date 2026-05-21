@@ -74,11 +74,9 @@ def run_covariance_audit_pgls_command(
     if args.comparative_command != "covariance-audit":
         return None
 
-    resolved_alpha: float | str
-    if args.alpha == "estimate":
-        resolved_alpha = "estimate"
-    else:
-        resolved_alpha = float(args.alpha)
+    resolved_alpha: float | str = (
+        "estimate" if args.alpha == "estimate" else float(args.alpha)
+    )
     report = summarize_comparative_covariance_audit(
         args.tree,
         args.table,

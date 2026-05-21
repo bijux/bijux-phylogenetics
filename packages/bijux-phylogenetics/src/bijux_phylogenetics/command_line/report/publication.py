@@ -12,8 +12,8 @@ from bijux_phylogenetics.reports import (
     write_publication_package_revalidation_report,
     write_reviewer_audit_checklist_from_manifest,
 )
-from bijux_phylogenetics.reports.service import render_tree_report
 from bijux_phylogenetics.reports.publication.tree import build_tree_report_package
+from bijux_phylogenetics.reports.service import render_tree_report
 from bijux_phylogenetics.runtime.results import build_command_result
 
 
@@ -285,9 +285,7 @@ def run_publication_report_command(args: Any) -> int | None:
                         "scientific_finding_difference_count": (
                             result.scientific_finding_difference_count
                         ),
-                        "overall_comparison_status": (
-                            result.overall_comparison_status
-                        ),
+                        "overall_comparison_status": (result.overall_comparison_status),
                     },
                     data=result,
                 ),

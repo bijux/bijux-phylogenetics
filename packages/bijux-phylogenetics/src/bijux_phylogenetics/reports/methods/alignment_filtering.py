@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.alignment import AlignmentCleaningReport
 from bijux_phylogenetics.io.fasta.cleaning import clean_alignment_with_profile
+from bijux_phylogenetics.phylo.alignment import AlignmentCleaningReport
 
 
 @dataclass(slots=True)
@@ -51,14 +51,14 @@ def _filtering_policy_lines(cleaning: AlignmentCleaningReport) -> list[str]:
     if profile.site_missingness_threshold is not None:
         lines.append(
             "- site missingness threshold: "
-            + f"`{format(profile.site_missingness_threshold, '.15g')}`"
+            f"`{format(profile.site_missingness_threshold, '.15g')}`"
         )
     else:
         lines.append("- site missingness threshold: not applied")
     if profile.sequence_missingness_threshold is not None:
         lines.append(
             "- sequence missingness threshold: "
-            + f"`{format(profile.sequence_missingness_threshold, '.15g')}`"
+            f"`{format(profile.sequence_missingness_threshold, '.15g')}`"
         )
     else:
         lines.append("- sequence missingness threshold: not applied")
@@ -68,9 +68,7 @@ def _filtering_policy_lines(cleaning: AlignmentCleaningReport) -> list[str]:
 def _filtering_removal_lines(cleaning: AlignmentCleaningReport) -> list[str]:
     removed_columns = cleaning.trim.removed_columns
     removed_sequences = cleaning.trim.removed_sequences
-    column_reason_counts = _count_reason_values(
-        [row.reason for row in removed_columns]
-    )
+    column_reason_counts = _count_reason_values([row.reason for row in removed_columns])
     sequence_reason_counts = _count_reason_values(
         [row.reason for row in removed_sequences]
     )
@@ -78,8 +76,8 @@ def _filtering_removal_lines(cleaning: AlignmentCleaningReport) -> list[str]:
     if removed_columns:
         lines.append(
             "- removed sites: "
-            + f"`{len(removed_columns)}`"
-            + " ("
+            f"`{len(removed_columns)}`"
+            " ("
             + ", ".join(
                 f"{reason}={count}"
                 for reason, count in sorted(column_reason_counts.items())
@@ -94,8 +92,8 @@ def _filtering_removal_lines(cleaning: AlignmentCleaningReport) -> list[str]:
         )
         lines.append(
             "- removed sequences: "
-            + f"`{len(removed_sequences)}`"
-            + " ("
+            f"`{len(removed_sequences)}`"
+            " ("
             + ", ".join(
                 f"{reason}={count}"
                 for reason, count in sorted(sequence_reason_counts.items())
@@ -113,7 +111,7 @@ def _group_retention_lines(cleaning: AlignmentCleaningReport) -> list[str]:
         return ["- no metadata or trait group-retention audit was requested"]
     return [
         "- group retention "
-        + f"`{row.column}={row.value}`: original `{row.original_count}`, retained `{row.retained_count}`, removed `{row.removed_count}`, removed fraction `{format(row.removed_fraction, '.15g')}`"
+        f"`{row.column}={row.value}`: original `{row.original_count}`, retained `{row.retained_count}`, removed `{row.removed_count}`, removed fraction `{format(row.removed_fraction, '.15g')}`"
         for row in cleaning.group_retention
     ]
 

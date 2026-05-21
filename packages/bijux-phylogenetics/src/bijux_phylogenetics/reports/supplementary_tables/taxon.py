@@ -87,7 +87,9 @@ def _build_supplementary_row(
     )
     reporting_loss_reason = (
         None
-        if not workflow_events or workflow_loss is None or workflow_loss.retained_for_reporting
+        if not workflow_events
+        or workflow_loss is None
+        or workflow_loss.retained_for_reporting
         else f"{workflow_events[0].stage}:{workflow_events[0].reason}"
     )
     return SupplementaryTaxonTableRow(
@@ -124,9 +126,7 @@ def _build_supplementary_row(
         in_traits=False if completeness is None else completeness.in_traits,
         in_tip_dates=False if completeness is None else completeness.in_tip_dates,
         in_geography=False if completeness is None else completeness.in_geography,
-        in_calibrations=False
-        if completeness is None
-        else completeness.in_calibrations,
+        in_calibrations=False if completeness is None else completeness.in_calibrations,
         metadata_values=metadata_values,
         trait_values=trait_values,
     )
@@ -223,7 +223,9 @@ def write_supplementary_taxon_table(
             for row in rows
         ],
     )
-    analysis_included_count = sum(1 for row in rows if row.analysis_status == "included")
+    analysis_included_count = sum(
+        1 for row in rows if row.analysis_status == "included"
+    )
     reporting_retained_count = sum(
         1 for row in rows if row.reporting_status == "retained"
     )

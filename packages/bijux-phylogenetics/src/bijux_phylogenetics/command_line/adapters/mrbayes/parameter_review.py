@@ -124,7 +124,10 @@ def run_mrbayes_parameter_review_command(args: Any) -> int | None:
             trace_path=args.traces,
             burnin_fractions=tuple(args.burnin_fractions),
         )
-        inputs = [args.posterior_trees, *([args.traces] if args.traces is not None else [])]
+        inputs = [
+            args.posterior_trees,
+            *([args.traces] if args.traces is not None else []),
+        ]
         outputs: list[Path | str] = []
         if args.slice_out is not None:
             outputs.append(

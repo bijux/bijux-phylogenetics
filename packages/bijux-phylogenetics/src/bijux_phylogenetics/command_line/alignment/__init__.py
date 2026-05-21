@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from bijux_phylogenetics.command_line.registry import get_command_spec
+
 from .coding import (
     add_alignment_coding_commands,
     run_alignment_coding_command,
@@ -22,7 +24,6 @@ from .review import (
     add_alignment_review_commands,
     run_alignment_review_command,
 )
-from bijux_phylogenetics.command_line.registry import get_command_spec
 
 
 def add_alignment_commands(subparsers: Any) -> None:

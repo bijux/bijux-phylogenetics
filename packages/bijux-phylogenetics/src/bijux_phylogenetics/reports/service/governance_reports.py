@@ -373,9 +373,7 @@ def render_production_scale_readiness_report(
             "workflow_count": len(production_scale_readiness.entries),
             "replicates": production_scale_readiness.replicates,
             "stress_tier_count": len(production_scale_readiness.stress_tiers),
-            "scale_definition_count": len(
-                production_scale_readiness.scale_definitions
-            ),
+            "scale_definition_count": len(production_scale_readiness.scale_definitions),
             "below_small_workflow_count": highest_ready_scale_counts.get(
                 "below-small", 0
             ),

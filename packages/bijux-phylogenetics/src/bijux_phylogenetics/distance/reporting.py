@@ -17,6 +17,10 @@ from bijux_phylogenetics.trees import (
     write_clade_frequency_table,
 )
 
+from .matrix import (
+    compute_pairwise_genetic_distance_matrix,
+    write_genetic_distance_matrix,
+)
 from .models import (
     AmbiguityPolicy,
     DistanceGapPolicyDeltaRow,
@@ -29,10 +33,6 @@ from .models import (
     DistanceModelComparisonRow,
     DistanceReproducibilityBundleReport,
     GapHandlingMode,
-)
-from .matrix import (
-    compute_pairwise_genetic_distance_matrix,
-    write_genetic_distance_matrix,
 )
 from .quality import assess_distance_method_assumptions, inspect_distance_matrix_quality
 from .shared import (

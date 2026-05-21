@@ -9,7 +9,6 @@ from .registration import (
 from .stochastic_maps import add_stochastic_map_commands, run_stochastic_map_command
 from .validation import add_validation_commands, run_validation_command
 
-
 __all__ = [
     "add_discrete_evolution_commands",
     "add_modeling_commands",

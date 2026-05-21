@@ -57,7 +57,9 @@ def suite_report(
     coverage_notes: list[str],
     limitations: list[str],
 ) -> ReferenceValidationSuiteReport:
-    passed_fixture_count = sum(1 for checked_fixture in fixtures if checked_fixture.passed)
+    passed_fixture_count = sum(
+        1 for checked_fixture in fixtures if checked_fixture.passed
+    )
     failed_fixture_count = len(fixtures) - passed_fixture_count
     return ReferenceValidationSuiteReport(
         goal_id=goal_id,

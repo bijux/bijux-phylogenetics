@@ -1,29 +1,33 @@
 """High-level report services."""
 
+from .methods import (
+    AlignmentFilteringMethodsSummaryTextResult,
+    TreeInferenceMethodsSummaryTextResult,
+    TreeValidationMethodsSummaryTextResult,
+    write_alignment_filtering_methods_summary_text,
+    write_tree_inference_methods_summary_text,
+    write_tree_validation_methods_summary_text,
+)
 from .publication import (
     AlignmentFigureAudit,
     AlignmentFigurePackageResult,
-    build_alignment_figure_package,
-)
-from .publication import (
-    TreeBranchStatisticsRow,
-    TreeReportPackageResult,
-    TreeSupportRow,
-    build_tree_report_package,
-    summarize_tree_branch_statistics,
-    summarize_tree_support,
-    write_tree_branch_statistics_table,
-    write_tree_support_table,
-)
-from .publication import (
     PublicationPackageComparisonArtifactRow,
     PublicationPackageComparisonCheckRow,
     PublicationPackageComparisonResult,
     PublicationPackageRevalidationArtifactRow,
     PublicationPackageRevalidationCheckRow,
     PublicationPackageRevalidationResult,
+    TreeBranchStatisticsRow,
+    TreeReportPackageResult,
+    TreeSupportRow,
+    build_alignment_figure_package,
+    build_tree_report_package,
+    summarize_tree_branch_statistics,
+    summarize_tree_support,
     write_publication_package_comparison_report,
     write_publication_package_revalidation_report,
+    write_tree_branch_statistics_table,
+    write_tree_support_table,
 )
 from .review import (
     ReviewerAuditChecklist,
@@ -32,14 +36,6 @@ from .review import (
     build_reviewer_audit_checklist,
     write_reviewer_audit_checklist,
     write_reviewer_audit_checklist_from_manifest,
-)
-from .methods import (
-    AlignmentFilteringMethodsSummaryTextResult,
-    TreeInferenceMethodsSummaryTextResult,
-    TreeValidationMethodsSummaryTextResult,
-    write_alignment_filtering_methods_summary_text,
-    write_tree_inference_methods_summary_text,
-    write_tree_validation_methods_summary_text,
 )
 from .supplementary_tables import (
     SupplementaryAlignmentDiagnosticsRow,

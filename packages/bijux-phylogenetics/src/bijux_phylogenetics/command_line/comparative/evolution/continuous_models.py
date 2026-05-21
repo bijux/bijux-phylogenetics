@@ -8,18 +8,14 @@ from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.comparative.continuous import (
     summarize_brownian_trait_evolution,
+    summarize_early_burst_trait_evolution,
+    summarize_ou_trait_evolution,
     write_brownian_trait_evolution_exclusion_table,
     write_brownian_trait_evolution_summary_table,
-)
-from bijux_phylogenetics.comparative.continuous import (
-    summarize_early_burst_trait_evolution,
     write_early_burst_rate_change_profile_table,
     write_early_burst_trait_evolution_comparison_table,
     write_early_burst_trait_evolution_exclusion_table,
     write_early_burst_trait_evolution_summary_table,
-)
-from bijux_phylogenetics.comparative.continuous import (
-    summarize_ou_trait_evolution,
     write_ou_trait_evolution_exclusion_table,
     write_ou_trait_evolution_summary_table,
 )

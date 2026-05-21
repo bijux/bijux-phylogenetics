@@ -5,7 +5,11 @@ import hashlib
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.datasets.study_inputs import TaxonTable, load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import (
+    TaxonTable,
+    load_taxon_table,
+    write_taxon_rows,
+)
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.package import (
@@ -86,7 +90,9 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _require_table(table: TaxonTable | None, *, path: Path | None, surface: str) -> TaxonTable:
+def _require_table(
+    table: TaxonTable | None, *, path: Path | None, surface: str
+) -> TaxonTable:
     if table is None or path is None:
         raise MetadataJoinError(
             f"annotated trait tree package requires {surface} input table"
@@ -142,7 +148,9 @@ def _build_numeric_map(table: TaxonTable, column: str) -> dict[str, float]:
     return values
 
 
-def _build_annotation_strips(table: TaxonTable, columns: list[str]) -> list[AnnotationStrip]:
+def _build_annotation_strips(
+    table: TaxonTable, columns: list[str]
+) -> list[AnnotationStrip]:
     missing_columns = [column for column in columns if column not in table.columns]
     if missing_columns:
         raise MetadataJoinError(
@@ -218,7 +226,8 @@ def _string_summary_row(
         source_kind=source_kind,
         value_kind="categorical",
         observed_taxon_count=len(values),
-        missing_taxon_count=len(taxa) - len({taxon for taxon in taxa if taxon in values}),
+        missing_taxon_count=len(taxa)
+        - len({taxon for taxon in taxa if taxon in values}),
         distinct_value_count=len(unique_values),
         minimum_numeric_value=None,
         maximum_numeric_value=None,
@@ -239,11 +248,14 @@ def _numeric_summary_row(
         source_kind=source_kind,
         value_kind="numeric",
         observed_taxon_count=len(observed_values),
-        missing_taxon_count=len(taxa) - len({taxon for taxon in taxa if taxon in values}),
+        missing_taxon_count=len(taxa)
+        - len({taxon for taxon in taxa if taxon in values}),
         distinct_value_count=len(set(observed_values)),
         minimum_numeric_value=min(observed_values) if observed_values else None,
         maximum_numeric_value=max(observed_values) if observed_values else None,
-        example_values=[format(value, ".6g") for value in sorted(set(observed_values))[:4]],
+        example_values=[
+            format(value, ".6g") for value in sorted(set(observed_values))[:4]
+        ],
     )
 
 
@@ -274,9 +286,8 @@ def _heatmap_summary_row(
             source_kind="heatmap",
             value_kind="categorical",
             observed_taxon_count=len(observed_values),
-            missing_taxon_count=len(taxa) - len(
-                {taxon for taxon in taxa if taxon in column.values}
-            ),
+            missing_taxon_count=len(taxa)
+            - len({taxon for taxon in taxa if taxon in column.values}),
             distinct_value_count=len(unique_values),
             minimum_numeric_value=None,
             maximum_numeric_value=None,
@@ -288,9 +299,8 @@ def _heatmap_summary_row(
         source_kind="heatmap",
         value_kind="numeric",
         observed_taxon_count=len(observed_values),
-        missing_taxon_count=len(taxa) - len(
-            {taxon for taxon in taxa if taxon in column.values}
-        ),
+        missing_taxon_count=len(taxa)
+        - len({taxon for taxon in taxa if taxon in column.values}),
         distinct_value_count=len(unique_values),
         minimum_numeric_value=min(numeric_values),
         maximum_numeric_value=max(numeric_values),
@@ -713,8 +723,16 @@ def build_annotated_trait_tree_package(
             ("package manifest", manifest_path.name, None),
         ],
         sections=[
-            ("reviewer summary", "\n".join(f"- {line}" for line in audit.reviewer_summary)),
-            ("publication limitations", "\n".join(f"- {line}" for line in audit.limitations) if audit.limitations else "none"),
+            (
+                "reviewer summary",
+                "\n".join(f"- {line}" for line in audit.reviewer_summary),
+            ),
+            (
+                "publication limitations",
+                "\n".join(f"- {line}" for line in audit.limitations)
+                if audit.limitations
+                else "none",
+            ),
             ("annotation coverage", _coverage_lines(coverage_rows)),
             ("annotation surface summary", _summary_lines(summary_rows)),
         ],

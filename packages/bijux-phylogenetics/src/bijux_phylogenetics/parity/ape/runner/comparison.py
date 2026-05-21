@@ -141,10 +141,14 @@ def _determine_reference_mismatch_reason(
         return mismatch_reason
     if case.operation == "tree-discrete-ancestral-states":
         reference_transition_rows = (
-            [] if reference_summary is None else reference_summary.get("transition_rate_rows", [])
+            []
+            if reference_summary is None
+            else reference_summary.get("transition_rate_rows", [])
         )
         bijux_transition_rows = (
-            [] if bijux_summary is None else bijux_summary.get("transition_rate_rows", [])
+            []
+            if bijux_summary is None
+            else bijux_summary.get("transition_rate_rows", [])
         )
         reference_summary_without_transition_rows = (
             {}

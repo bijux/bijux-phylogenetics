@@ -129,9 +129,7 @@ def run_sampling_bias_geography_command(args: Any) -> int | None:
                 "weighting_mode": report.summary.weighting_mode,
                 "region_dominated": report.summary.region_dominated,
                 "dominant_region": report.summary.dominant_region,
-                "dominant_region_fraction": (
-                    report.summary.dominant_region_fraction
-                ),
+                "dominant_region_fraction": (report.summary.dominant_region_fraction),
                 "root_region_changed": report.summary.root_region_changed,
                 "changed_internal_node_count": (
                     report.summary.changed_internal_node_count

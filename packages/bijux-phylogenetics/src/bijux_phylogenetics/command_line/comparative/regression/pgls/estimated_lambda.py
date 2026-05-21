@@ -166,9 +166,7 @@ def run_estimated_lambda_pgls_command(
                 "interaction_term_count": (
                     interaction_coefficients.interaction_term_count
                 ),
-                "interaction_coefficient_row_count": len(
-                    interaction_coefficients.rows
-                ),
+                "interaction_coefficient_row_count": len(interaction_coefficients.rows),
                 "intercept_included": input_report.formula.include_intercept,
                 "model_matrix_row_count": input_report.model_matrix.row_count,
                 "model_matrix_column_count": len(
@@ -188,9 +186,7 @@ def run_estimated_lambda_pgls_command(
                     input_report.model_matrix.encoded_columns
                 )
                 - (1 if input_report.formula.include_intercept else 0),
-                "categorical_predictor_count": len(
-                    input_report.categorical_predictors
-                ),
+                "categorical_predictor_count": len(input_report.categorical_predictors),
                 "transformed_term_count": len(
                     input_report.formula_audit.transformed_terms
                 ),

@@ -5,7 +5,6 @@ from hashlib import sha256
 import json
 from pathlib import Path
 
-
 SUPPORTED_PUBLICATION_PACKAGE_KIND = "rabies_cross_host_geography_package"
 
 

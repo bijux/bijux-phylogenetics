@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import csv
 from dataclasses import asdict, dataclass, is_dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 import json
 from pathlib import Path
 
@@ -176,7 +176,7 @@ def build_generated_geiger_parity_report(
     real_dataset_summary = _load_real_dataset_benchmark_summary()
 
     return GeneratedGeigerParityReport(
-        generated_at_utc=datetime.now(timezone.utc).isoformat(),
+        generated_at_utc=datetime.now(UTC).isoformat(),
         goal_start=251,
         goal_end=289,
         r_version=_first_nonempty_string(
@@ -596,9 +596,10 @@ def _boundary_warning_summaries(
 ) -> list[GeigerBoundaryWarningSummaryRow]:
     case_ids_by_kind: dict[str, set[str]] = {}
     for row in report.boundary_warning_rows:
-        for kind in set(
-            [*row.reference_boundary_warning_kinds, *row.bijux_boundary_warning_kinds]
-        ):
+        for kind in {
+            *row.reference_boundary_warning_kinds,
+            *row.bijux_boundary_warning_kinds,
+        }:
             case_ids_by_kind.setdefault(kind, set()).add(row.case_id)
     return [
         GeigerBoundaryWarningSummaryRow(
@@ -643,9 +644,7 @@ def _goal_coverage_rows(
     large_tree_summary: dict[str, int],
     real_dataset_summary: dict[str, int],
 ) -> list[GeigerGoalCoverageRow]:
-    summary_by_function = {
-        row.function_name: row for row in live_report.summary_rows
-    }
+    summary_by_function = {row.function_name: row for row in live_report.summary_rows}
     live_cases = list_geiger_parity_cases()
     continuous_fixture_count = len(
         {

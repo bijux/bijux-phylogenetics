@@ -8,7 +8,6 @@ import statistics
 
 from bijux_phylogenetics.ancestral.discrete import DiscreteAncestralReport
 from bijux_phylogenetics.ancestral.tree_set import DiscreteAncestralTreeSetReport
-from bijux_phylogenetics.trees import CladeTableReport, CladeTableRow
 from bijux_phylogenetics.comparative.pgls import PGLSResult
 from bijux_phylogenetics.comparative.pgls.posterior_tree import (
     PosteriorTreePGLSCoefficientSummaryRow,
@@ -16,7 +15,11 @@ from bijux_phylogenetics.comparative.pgls.posterior_tree import (
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.render.html import write_html_report
-from bijux_phylogenetics.trees import CladeFrequencyReport
+from bijux_phylogenetics.trees import (
+    CladeFrequencyReport,
+    CladeTableReport,
+    CladeTableRow,
+)
 
 _STABLE_SCORE_THRESHOLD = 0.85
 _WEAK_SCORE_THRESHOLD = 0.6

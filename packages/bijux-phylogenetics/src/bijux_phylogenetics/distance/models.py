@@ -480,4 +480,3 @@ class DistanceReproducibilityBundleReport:
     method: str
     replicates: int
     files: list[Path]
-

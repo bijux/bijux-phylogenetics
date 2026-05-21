@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.alignment import AlignmentForensicReport
 from bijux_phylogenetics.core.dataset import DatasetAuditReport
 from bijux_phylogenetics.diagnostics.validation import (
     TreeForensicReport,
     TreeInspectionReport,
     TreeValidationReport,
 )
+from bijux_phylogenetics.phylo.alignment import AlignmentForensicReport
 
 from .ledger import sha256
 

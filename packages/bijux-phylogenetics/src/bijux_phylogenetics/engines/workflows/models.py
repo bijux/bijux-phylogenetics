@@ -4,12 +4,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from bijux_phylogenetics.compare.presentation import ComparisonReportBuildResult
-from bijux_phylogenetics.phylo.alignment import (
-    AlignmentAlphabet,
-    CodingSequenceExclusion,
-)
-from bijux_phylogenetics.phylo.alignment.partitions import PartitionSummaryReport
-from bijux_phylogenetics.engines.common import EngineRunReport
 from bijux_phylogenetics.engines.artifacts.iqtree import IqtreeModelSelectionSummary
 from bijux_phylogenetics.engines.artifacts.support import (
     BootstrapSupportSummaryReport,
@@ -17,6 +11,12 @@ from bijux_phylogenetics.engines.artifacts.support import (
     ShAlrtSupportSummaryReport,
     WeakBackboneReport,
 )
+from bijux_phylogenetics.engines.common import EngineRunReport
+from bijux_phylogenetics.phylo.alignment import (
+    AlignmentAlphabet,
+    CodingSequenceExclusion,
+)
+from bijux_phylogenetics.phylo.alignment.partitions import PartitionSummaryReport
 
 
 @dataclass(slots=True)

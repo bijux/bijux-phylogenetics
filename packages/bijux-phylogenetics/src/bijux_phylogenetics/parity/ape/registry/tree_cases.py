@@ -75,7 +75,9 @@ def build_tree_case_catalog(
             function_name="ape::read.tree",
             python_function_name="load_tree",
             operation="read-tree-structure",
-            input_fixture=resolver.fixture_path("tree", "malformed_unbalanced_parentheses"),
+            input_fixture=resolver.fixture_path(
+                "tree", "malformed_unbalanced_parentheses"
+            ),
             tolerance=0.0,
             expected_status="parse-error",
         ),
@@ -202,7 +204,9 @@ def build_tree_case_catalog(
             input_fixture=resolver.fixture_path(
                 "tree-set", "prop_clades_duplicate_conflict_tree_set"
             ),
-            reference_tree_path=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
+            reference_tree_path=resolver.fixture_path(
+                "tree", "balanced_rooted_ultrametric"
+            ),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -212,8 +216,12 @@ def build_tree_case_catalog(
             function_name="ape::prop.clades",
             python_function_name="compute_reference_tree_clade_support",
             operation="tree-clade-support",
-            input_fixture=resolver.fixture_path("tree-set", "prop_clades_absent_clade_tree_set"),
-            reference_tree_path=resolver.fixture_path("tree", "cross_pairing_rooted_four_taxon"),
+            input_fixture=resolver.fixture_path(
+                "tree-set", "prop_clades_absent_clade_tree_set"
+            ),
+            reference_tree_path=resolver.fixture_path(
+                "tree", "cross_pairing_rooted_four_taxon"
+            ),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -223,7 +231,9 @@ def build_tree_case_catalog(
             function_name="ape::prop.clades",
             python_function_name="compute_reference_tree_clade_support",
             operation="tree-clade-support",
-            input_fixture=resolver.fixture_path("tree-set", "prop_clades_child_order_tree_set"),
+            input_fixture=resolver.fixture_path(
+                "tree-set", "prop_clades_child_order_tree_set"
+            ),
             reference_tree_path=resolver.fixture_path("tree", "branch_support_labels"),
             tolerance=1e-12,
         ),
@@ -237,7 +247,9 @@ def build_tree_case_catalog(
             input_fixture=resolver.fixture_path(
                 "tree-set", "prop_clades_posterior_six_taxon_tree_set"
             ),
-            reference_tree_path=resolver.fixture_path("tree", "balanced_rooted_six_taxon"),
+            reference_tree_path=resolver.fixture_path(
+                "tree", "balanced_rooted_six_taxon"
+            ),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -250,7 +262,9 @@ def build_tree_case_catalog(
             input_fixture=resolver.fixture_path(
                 "tree-set", "prop_clades_mismatched_taxon_tree_set"
             ),
-            reference_tree_path=resolver.fixture_path("tree", "balanced_rooted_ultrametric"),
+            reference_tree_path=resolver.fixture_path(
+                "tree", "balanced_rooted_ultrametric"
+            ),
             tolerance=0.0,
             expected_status="prop-clades-error",
         ),
@@ -358,7 +372,9 @@ def build_tree_case_catalog(
             function_name="ape::unroot",
             python_function_name="unroot_tree",
             operation="unroot-tree",
-            input_fixture=resolver.fixture_path("tree", "malformed_unbalanced_parentheses"),
+            input_fixture=resolver.fixture_path(
+                "tree", "malformed_unbalanced_parentheses"
+            ),
             tolerance=0.0,
             expected_status="parse-error",
         ),
@@ -580,7 +596,9 @@ def build_tree_case_catalog(
             function_name="ape::getMRCA",
             python_function_name="find_tree_mrca",
             operation="get-tree-mrca",
-            input_fixture=resolver.fixture_path("tree", "pectinate_rooted_non_ultrametric"),
+            input_fixture=resolver.fixture_path(
+                "tree", "pectinate_rooted_non_ultrametric"
+            ),
             tolerance=0.0,
             mrca_taxa=("A", "B", "C"),
         ),

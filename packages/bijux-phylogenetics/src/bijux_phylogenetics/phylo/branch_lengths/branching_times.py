@@ -6,8 +6,13 @@ from pathlib import Path
 from bijux_phylogenetics.phylo.branch_lengths.node_depths import (
     compute_tree_node_depths,
 )
-from bijux_phylogenetics.phylo.branch_lengths.ultrametric import assess_tree_ultrametricity
-from bijux_phylogenetics.runtime.errors import NonUltrametricTreeError, UnrootedTreeError
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
+    assess_tree_ultrametricity,
+)
+from bijux_phylogenetics.runtime.errors import (
+    NonUltrametricTreeError,
+    UnrootedTreeError,
+)
 
 
 @dataclass(slots=True)

@@ -10,7 +10,10 @@ from bijux_phylogenetics.engines.artifacts.iqtree import (
 )
 
 from .columns import model_selection_table_columns
-from .models import SupplementaryModelSelectionRow, SupplementaryModelSelectionTableResult
+from .models import (
+    SupplementaryModelSelectionRow,
+    SupplementaryModelSelectionTableResult,
+)
 from .shared import write_dict_rows
 
 

@@ -172,7 +172,9 @@ def _build_boundary_warning_row(
                 "near-boundary, and flat-likelihood review are meaningful."
             ),
         )
-    reference_assessment = _summary_boundary_assessment(case, observation.reference_summary)
+    reference_assessment = _summary_boundary_assessment(
+        case, observation.reference_summary
+    )
     bijux_assessment = _summary_boundary_assessment(case, observation.bijux_summary)
     return GeigerBoundaryWarningRow(
         case_id=observation.case_id,
@@ -190,16 +192,22 @@ def _build_boundary_warning_row(
             None if bijux_assessment is None else bijux_assessment.upper_bound
         ),
         reference_parameter_value=(
-            None if reference_assessment is None else reference_assessment.parameter_value
+            None
+            if reference_assessment is None
+            else reference_assessment.parameter_value
         ),
         bijux_parameter_value=(
             None if bijux_assessment is None else bijux_assessment.parameter_value
         ),
         reference_hit_lower_boundary=(
-            None if reference_assessment is None else reference_assessment.hit_lower_boundary
+            None
+            if reference_assessment is None
+            else reference_assessment.hit_lower_boundary
         ),
         reference_hit_upper_boundary=(
-            None if reference_assessment is None else reference_assessment.hit_upper_boundary
+            None
+            if reference_assessment is None
+            else reference_assessment.hit_upper_boundary
         ),
         bijux_hit_lower_boundary=(
             None if bijux_assessment is None else bijux_assessment.hit_lower_boundary
@@ -208,10 +216,14 @@ def _build_boundary_warning_row(
             None if bijux_assessment is None else bijux_assessment.hit_upper_boundary
         ),
         reference_near_lower_boundary=(
-            None if reference_assessment is None else reference_assessment.near_lower_boundary
+            None
+            if reference_assessment is None
+            else reference_assessment.near_lower_boundary
         ),
         reference_near_upper_boundary=(
-            None if reference_assessment is None else reference_assessment.near_upper_boundary
+            None
+            if reference_assessment is None
+            else reference_assessment.near_upper_boundary
         ),
         bijux_near_lower_boundary=(
             None if bijux_assessment is None else bijux_assessment.near_lower_boundary
@@ -230,7 +242,9 @@ def _build_boundary_warning_row(
             else bijux_assessment.flat_likelihood_near_boundary
         ),
         reference_boundary_warning_kinds=(
-            [] if reference_assessment is None else reference_assessment.boundary_warning_kinds
+            []
+            if reference_assessment is None
+            else reference_assessment.boundary_warning_kinds
         ),
         bijux_boundary_warning_kinds=(
             [] if bijux_assessment is None else bijux_assessment.boundary_warning_kinds
@@ -256,7 +270,9 @@ def _build_boundary_warning_row(
             else bijux_assessment.stable_conclusion_supported
         ),
         affected_parameter_match=_optional_str(
-            None if reference_assessment is None else reference_assessment.affected_parameter
+            None
+            if reference_assessment is None
+            else reference_assessment.affected_parameter
         )
         == _optional_str(
             None if bijux_assessment is None else bijux_assessment.affected_parameter
@@ -307,13 +323,12 @@ def _summary_boundary_assessment(
         for kind in boundary_warning_kinds
     )
     boundary_dominates_interpretation = (
-        (near_lower_boundary or near_upper_boundary)
-        and (
-            flat_likelihood_near_boundary
-            or any(
-                kind.startswith("boundary_") or kind in _boundary_limit_warning_kinds(case)
-                for kind in boundary_warning_kinds
-            )
+        near_lower_boundary or near_upper_boundary
+    ) and (
+        flat_likelihood_near_boundary
+        or any(
+            kind.startswith("boundary_") or kind in _boundary_limit_warning_kinds(case)
+            for kind in boundary_warning_kinds
         )
     )
     return _BoundaryAssessment(
@@ -351,7 +366,9 @@ def _boundary_warning_kinds(
     ):
         kinds.append(f"boundary_{parameter_name}")
     if _flat_likelihood_from_summary(summary):
-        kinds.append("flat_likelihood_profile" if case.model_name == "EB" else "flat_likelihood")
+        kinds.append(
+            "flat_likelihood_profile" if case.model_name == "EB" else "flat_likelihood"
+        )
     if case.model_name == "OU" and near_lower_boundary:
         kinds.append("weak_pull_to_optimum")
     if case.model_name == "EB" and near_lower_boundary:
@@ -387,7 +404,9 @@ def _flat_likelihood_from_summary(summary: dict[str, object]) -> bool:
             ),
             reverse=True,
         )
-        return len(log_likelihoods) > 1 and (log_likelihoods[0] - log_likelihoods[1]) < 0.5
+        return (
+            len(log_likelihoods) > 1 and (log_likelihoods[0] - log_likelihoods[1]) < 0.5
+        )
     attempt_rows = optimizer_result.get("attempt_rows")
     if not isinstance(attempt_rows, list):
         return False
@@ -427,7 +446,9 @@ def _parameter_bounds(case: GeigerParityCase) -> tuple[float, float] | None:
     if case.model_name == "OU":
         return (0.0, 10.0) if case.ou_bounds is None else case.ou_bounds
     if case.model_name == "EB":
-        return (0.0, 50.0) if case.early_burst_bounds is None else case.early_burst_bounds
+        return (
+            (0.0, 50.0) if case.early_burst_bounds is None else case.early_burst_bounds
+        )
     return None
 
 

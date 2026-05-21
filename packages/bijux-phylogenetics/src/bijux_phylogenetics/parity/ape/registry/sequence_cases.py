@@ -15,7 +15,9 @@ def build_sequence_case_catalog(
             function_name="ape::nj",
             python_function_name="build_tree_from_imported_distance_matrix",
             operation="distance-matrix-neighbor-joining",
-            input_fixture=resolver.fixture_path("distance-matrix", "analytical_three_taxon"),
+            input_fixture=resolver.fixture_path(
+                "distance-matrix", "analytical_three_taxon"
+            ),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -25,7 +27,9 @@ def build_sequence_case_catalog(
             function_name="ape::nj",
             python_function_name="build_tree_from_imported_distance_matrix",
             operation="distance-matrix-neighbor-joining",
-            input_fixture=resolver.fixture_path("distance-matrix", "ultrametric_four_taxon"),
+            input_fixture=resolver.fixture_path(
+                "distance-matrix", "ultrametric_four_taxon"
+            ),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -35,7 +39,9 @@ def build_sequence_case_catalog(
             function_name="ape::nj",
             python_function_name="build_tree_from_imported_distance_matrix",
             operation="distance-matrix-neighbor-joining",
-            input_fixture=resolver.fixture_path("distance-matrix", "nonultrametric_four_taxon"),
+            input_fixture=resolver.fixture_path(
+                "distance-matrix", "nonultrametric_four_taxon"
+            ),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -55,7 +61,9 @@ def build_sequence_case_catalog(
             function_name="ape::as.DNAbin",
             python_function_name="load_dna_bin_alignment",
             operation="dna-dnabin-structure",
-            input_fixture=resolver.fixture_path("dna-alignment", "lowercase_aligned_dna"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "lowercase_aligned_dna"
+            ),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -85,7 +93,9 @@ def build_sequence_case_catalog(
             function_name="ape::base.freq",
             python_function_name="load_fasta_alignment+ape-style-base-frequency",
             operation="dna-base-frequency",
-            input_fixture=resolver.fixture_path("dna-alignment", "lowercase_aligned_dna"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "lowercase_aligned_dna"
+            ),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -105,7 +115,9 @@ def build_sequence_case_catalog(
             function_name="ape::base.freq",
             python_function_name="compute_alignment_base_frequency_report",
             operation="dna-base-frequency",
-            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "dna_with_missing_data"
+            ),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -115,7 +127,9 @@ def build_sequence_case_catalog(
             function_name="ape::base.freq",
             python_function_name="compute_alignment_base_frequency_report",
             operation="dna-base-frequency",
-            input_fixture=resolver.fixture_path("dna-alignment", "all_gap_missing_alignment"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "all_gap_missing_alignment"
+            ),
             tolerance=1e-12,
         ),
         ApeParityCase(
@@ -125,7 +139,9 @@ def build_sequence_case_catalog(
             function_name="ape::seg.sites",
             python_function_name="compute_alignment_segregating_site_report",
             operation="dna-segregating-sites",
-            input_fixture=resolver.fixture_path("dna-alignment", "lowercase_aligned_dna"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "lowercase_aligned_dna"
+            ),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -135,7 +151,9 @@ def build_sequence_case_catalog(
             function_name="ape::seg.sites",
             python_function_name="compute_alignment_segregating_site_report",
             operation="dna-segregating-sites",
-            input_fixture=resolver.fixture_path("dna-alignment", "invariant_aligned_dna"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "invariant_aligned_dna"
+            ),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -145,7 +163,9 @@ def build_sequence_case_catalog(
             function_name="ape::seg.sites",
             python_function_name="compute_alignment_segregating_site_report",
             operation="dna-segregating-sites",
-            input_fixture=resolver.fixture_path("dna-alignment", "one_variable_site_alignment"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "one_variable_site_alignment"
+            ),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -175,7 +195,9 @@ def build_sequence_case_catalog(
             function_name="ape::seg.sites",
             python_function_name="compute_alignment_segregating_site_report",
             operation="dna-segregating-sites",
-            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "dna_with_missing_data"
+            ),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -185,7 +207,9 @@ def build_sequence_case_catalog(
             function_name="ape::seg.sites",
             python_function_name="compute_alignment_segregating_site_report",
             operation="dna-segregating-sites",
-            input_fixture=resolver.fixture_path("dna-alignment", "all_gap_missing_alignment"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "all_gap_missing_alignment"
+            ),
             tolerance=0.0,
         ),
         ApeParityCase(
@@ -255,7 +279,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "high_divergence_sequences"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "high_divergence_sequences"
+            ),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="raw",
@@ -267,7 +293,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "dna_with_missing_data"
+            ),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="raw",
@@ -279,7 +307,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "unequal_length_invalid_input"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "unequal_length_invalid_input"
+            ),
             tolerance=0.0,
             pairwise_deletion=False,
             distance_model="raw",
@@ -352,7 +382,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "high_divergence_sequences"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "high_divergence_sequences"
+            ),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="jc69",
@@ -364,7 +396,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "dna_with_missing_data"
+            ),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="jc69",
@@ -376,7 +410,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "unequal_length_invalid_input"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "unequal_length_invalid_input"
+            ),
             tolerance=0.0,
             pairwise_deletion=False,
             distance_model="jc69",
@@ -449,7 +485,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "high_divergence_sequences"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "high_divergence_sequences"
+            ),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="k80",
@@ -461,7 +499,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "dna_with_missing_data"
+            ),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="k80",
@@ -473,7 +513,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "unequal_length_invalid_input"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "unequal_length_invalid_input"
+            ),
             tolerance=0.0,
             pairwise_deletion=False,
             distance_model="k80",
@@ -546,7 +588,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "high_divergence_sequences"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "high_divergence_sequences"
+            ),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="f81",
@@ -558,7 +602,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "dna_with_missing_data"
+            ),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="f81",
@@ -570,7 +616,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "unequal_length_invalid_input"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "unequal_length_invalid_input"
+            ),
             tolerance=0.0,
             pairwise_deletion=False,
             distance_model="f81",
@@ -643,7 +691,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "high_divergence_sequences"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "high_divergence_sequences"
+            ),
             tolerance=1e-12,
             pairwise_deletion=False,
             distance_model="tn93",
@@ -655,7 +705,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "dna_with_missing_data"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "dna_with_missing_data"
+            ),
             tolerance=1e-12,
             pairwise_deletion=True,
             distance_model="tn93",
@@ -667,7 +719,9 @@ def build_sequence_case_catalog(
             function_name="ape::dist.dna",
             python_function_name="compute_pairwise_genetic_distance_matrix",
             operation="dna-distance",
-            input_fixture=resolver.fixture_path("dna-alignment", "unequal_length_invalid_input"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "unequal_length_invalid_input"
+            ),
             tolerance=0.0,
             pairwise_deletion=False,
             distance_model="tn93",
@@ -680,7 +734,9 @@ def build_sequence_case_catalog(
             function_name="ape::trans",
             python_function_name="translate_coding_alignment",
             operation="dna-translation",
-            input_fixture=resolver.fixture_path("dna-alignment", "coding_valid_reading_frame"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "coding_valid_reading_frame"
+            ),
             tolerance=0.0,
             genetic_code_id=1,
         ),
@@ -691,7 +747,9 @@ def build_sequence_case_catalog(
             function_name="ape::trans",
             python_function_name="translate_coding_alignment",
             operation="dna-translation",
-            input_fixture=resolver.fixture_path("dna-alignment", "coding_ambiguous_codon"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "coding_ambiguous_codon"
+            ),
             tolerance=0.0,
             genetic_code_id=1,
         ),
@@ -702,7 +760,9 @@ def build_sequence_case_catalog(
             function_name="ape::trans",
             python_function_name="translate_coding_alignment",
             operation="dna-translation",
-            input_fixture=resolver.fixture_path("dna-alignment", "coding_internal_stop"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "coding_internal_stop"
+            ),
             tolerance=0.0,
             genetic_code_id=1,
         ),
@@ -713,7 +773,9 @@ def build_sequence_case_catalog(
             function_name="ape::trans",
             python_function_name="translate_coding_alignment",
             operation="dna-translation",
-            input_fixture=resolver.fixture_path("dna-alignment", "coding_terminal_stop"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "coding_terminal_stop"
+            ),
             tolerance=0.0,
             genetic_code_id=1,
         ),
@@ -735,7 +797,9 @@ def build_sequence_case_catalog(
             function_name="ape::trans",
             python_function_name="translate_coding_alignment",
             operation="dna-translation",
-            input_fixture=resolver.fixture_path("dna-alignment", "coding_mitochondrial_triplet"),
+            input_fixture=resolver.fixture_path(
+                "dna-alignment", "coding_mitochondrial_triplet"
+            ),
             tolerance=0.0,
             genetic_code_id=2,
         ),

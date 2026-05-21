@@ -67,7 +67,9 @@ def _raise_medusa_exclusion(args: Any) -> None:
             "rooted": report.validation.rooted,
             "ultrametric": report.validation.ultrametric,
             "sampling_metadata_complete": (
-                None if report.sampling_report is None else report.sampling_report.complete
+                None
+                if report.sampling_report is None
+                else report.sampling_report.complete
             ),
         },
     )
@@ -92,7 +94,9 @@ def _raise_birth_death_exclusion(args: Any) -> None:
             "rooted": report.validation.rooted,
             "ultrametric": report.validation.ultrametric,
             "sampling_metadata_complete": (
-                None if report.sampling_report is None else report.sampling_report.complete
+                None
+                if report.sampling_report is None
+                else report.sampling_report.complete
             ),
         },
     )

@@ -115,7 +115,9 @@ def run_evidence_command(args: Any) -> int:
     if args.evidence_command == "bundle":
         report = bundle_directory(args.inputs, args.outputs, args.out)
         inputs = [*args.inputs, *args.outputs]
-        outputs = _finalize_outputs(args, command="evidence", inputs=inputs, outputs=[args.out])
+        outputs = _finalize_outputs(
+            args, command="evidence", inputs=inputs, outputs=[args.out]
+        )
         _print_result(
             build_command_result(
                 command="evidence",
@@ -293,9 +295,7 @@ def run_evidence_command(args: Any) -> int:
         )
         return 0
 
-    report = rerun_evidence_book_selection(
-        repo_root, args.study_id, args.evidence_ids
-    )
+    report = rerun_evidence_book_selection(repo_root, args.study_id, args.evidence_ids)
     outputs = _finalize_outputs(
         args,
         command="evidence",

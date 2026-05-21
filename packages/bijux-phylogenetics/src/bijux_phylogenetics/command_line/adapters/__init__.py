@@ -3,6 +3,16 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from bijux_phylogenetics.command_line.arguments import (
+    _add_external_adapter_execution_arguments,
+    _add_manifest_argument,
+)
+from bijux_phylogenetics.command_line.output import _print_result
+from bijux_phylogenetics.command_line.registry import get_command_spec
+from bijux_phylogenetics.command_line.routing import _finalize_outputs
+from bijux_phylogenetics.runtime.errors import EngineUnavailableError
+from bijux_phylogenetics.runtime.results import build_command_result
+
 from .alignment_workflows import (
     add_adapter_alignment_workflow_commands,
     run_adapter_alignment_workflow_command,
@@ -19,10 +29,6 @@ from .fasta_to_tree import (
     add_adapter_fasta_to_tree_commands,
     run_adapter_fasta_to_tree_command,
 )
-from .maximum_likelihood import (
-    add_adapter_maximum_likelihood_commands,
-    run_adapter_maximum_likelihood_command,
-)
 from .inference import (
     add_inference_adapter_commands,
     run_inference_adapter_command,
@@ -30,6 +36,10 @@ from .inference import (
 from .inspection import (
     add_adapter_inspection_commands,
     run_adapter_inspection_command,
+)
+from .maximum_likelihood import (
+    add_adapter_maximum_likelihood_commands,
+    run_adapter_maximum_likelihood_command,
 )
 from .mrbayes import (
     add_mrbayes_adapter_commands,
@@ -43,15 +53,6 @@ from .support_estimation import (
     add_adapter_support_estimation_commands,
     run_adapter_support_estimation_command,
 )
-from bijux_phylogenetics.command_line.arguments import (
-    _add_external_adapter_execution_arguments,
-    _add_manifest_argument,
-)
-from bijux_phylogenetics.command_line.output import _print_result
-from bijux_phylogenetics.command_line.registry import get_command_spec
-from bijux_phylogenetics.command_line.routing import _finalize_outputs
-from bijux_phylogenetics.runtime.errors import EngineUnavailableError
-from bijux_phylogenetics.runtime.results import build_command_result
 
 
 def add_adapter_commands(subparsers: Any) -> None:

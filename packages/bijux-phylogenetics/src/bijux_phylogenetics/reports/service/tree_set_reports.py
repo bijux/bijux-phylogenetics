@@ -248,7 +248,9 @@ def render_tree_uncertainty_report(
             ),
             "clade_credibility_conflicts": write_json_artifact(
                 artifact_root / "clade-credibility-conflicts.json",
-                scaled_report_note if clade_conflicts is None else asdict(clade_conflicts),
+                scaled_report_note
+                if clade_conflicts is None
+                else asdict(clade_conflicts),
             ),
             "uncertainty_aware_conclusions": write_json_artifact(
                 artifact_root / "uncertainty-aware-conclusions.json",
@@ -527,7 +529,9 @@ def render_tree_uncertainty_report(
                             "warnings": consensus_sensitivity.warnings,
                             "row_count": len(consensus_sensitivity.rows),
                             "truncated_row_count": consensus_truncated,
-                            "preview_row_count": min(len(consensus_rows), preview_limit),
+                            "preview_row_count": min(
+                                len(consensus_rows), preview_limit
+                            ),
                             "preview_rows": preview_report_rows(
                                 consensus_rows, limit=preview_limit
                             ),
@@ -551,11 +555,15 @@ def render_tree_uncertainty_report(
                             "taxon_counts": benchmark.taxon_counts,
                             "sampled_tree_count": benchmark_tree_count,
                             "sampled_taxon_count": benchmark_taxon_count,
-                            "benchmark_capped": benchmark_tree_count != summary.tree_count
-                            or benchmark_taxon_count != max(len(summary.shared_taxa), 2),
+                            "benchmark_capped": benchmark_tree_count
+                            != summary.tree_count
+                            or benchmark_taxon_count
+                            != max(len(summary.shared_taxa), 2),
                             "row_count": len(benchmark.rows),
                             "truncated_row_count": benchmark_truncated,
-                            "preview_row_count": min(len(benchmark_rows), preview_limit),
+                            "preview_row_count": min(
+                                len(benchmark_rows), preview_limit
+                            ),
                             "preview_rows": preview_report_rows(
                                 benchmark_rows, limit=preview_limit
                             ),
@@ -675,7 +683,9 @@ def render_tree_uncertainty_report(
             ],
         )
         html_size_bytes = out_path.stat().st_size
-        linked_artifact_bytes = sum(path.stat().st_size for path in artifact_paths.values())
+        linked_artifact_bytes = sum(
+            path.stat().st_size for path in artifact_paths.values()
+        )
         manifest_size_bytes = artifact_manifest_path.stat().st_size
         linked_artifact_bytes += manifest_size_bytes
         total_output_bytes = html_size_bytes + linked_artifact_bytes
