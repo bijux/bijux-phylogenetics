@@ -19,6 +19,12 @@ from .io import (
     write_rabies_method_sensitivity_reproducibility_checks_table,
     write_rabies_method_sensitivity_variant_audit_table,
 )
+from .inventory import (
+    _EXPECTED_VARIANT_FILENAMES,
+    _WORKFLOW_MANIFEST_FILENAME,
+    RabiesMethodSensitivityAuditSnapshot,
+    load_rabies_method_sensitivity_audit_snapshot,
+)
 
 __all__ = [
     "RabiesMethodSensitivityReproducibilityAuditReport",
@@ -30,56 +36,6 @@ __all__ = [
     "write_rabies_method_sensitivity_variant_audit_table",
 ]
 
-_WORKFLOW_MANIFEST_FILENAME = "rabies-method-sensitivity.manifest.json"
-_REPORT_MANIFEST_FILENAME = (
-    "report-artifacts/rabies-method-sensitivity-report.manifest.json"
-)
-_CONFIG_FILENAME = "workflow-config.resolved.json"
-_PARALLEL_SUMMARY_FILENAME = "parallel-execution-summary.tsv"
-_VARIANT_SUMMARY_FILENAME = "variant-summary.tsv"
-_SLURM_ARRAY_PARTITIONS_FILENAME = "slurm-array-partitions.tsv"
-_SLURM_ARRAY_MEMBERS_FILENAME = "slurm-array-members.tsv"
-_SLURM_JOB_EVIDENCE_DIRECTORY = "slurm-job-evidence"
-_SLURM_JOB_EVIDENCE_INDEX_FILENAME = "slurm-job-evidence.tsv"
-_SLURM_JOB_EVIDENCE_SUMMARY_FILENAME = "slurm-job-evidence-summary.json"
-_SLURM_STORAGE_CATEGORIES_FILENAME = "slurm-storage-categories.tsv"
-_SLURM_STORAGE_VARIANTS_FILENAME = "slurm-storage-variants.tsv"
-_SLURM_STORAGE_SUMMARY_FILENAME = "slurm-storage-report.json"
-_SLURM_OUTPUT_EXPLOSION_CHECKS_FILENAME = "slurm-output-explosion-checks.tsv"
-_SLURM_OUTPUT_EXPLOSION_VARIANTS_FILENAME = "slurm-output-explosion-variants.tsv"
-_SLURM_OUTPUT_EXPLOSION_SUMMARY_FILENAME = "slurm-output-explosion-report.json"
-_SLURM_TREE_RETENTION_CHECKS_FILENAME = "slurm-tree-retention-checks.tsv"
-_SLURM_TREE_RETENTION_FILES_FILENAME = "slurm-tree-retention-files.tsv"
-_SLURM_TREE_RETENTION_SUMMARY_FILENAME = "slurm-tree-retention-policy.json"
-_SLURM_MERGE_CHECKS_FILENAME = "slurm-merge-checks.tsv"
-_SLURM_MERGE_VARIANTS_FILENAME = "slurm-merge-variants.tsv"
-_SLURM_MERGE_SUMMARY_FILENAME = "slurm-merge-report.json"
-_SLURM_OUTPUT_FRESHNESS_FILENAME = "slurm-output-freshness.tsv"
-_SLURM_OUTPUT_FRESHNESS_CHECKS_FILENAME = "slurm-output-freshness-checks.tsv"
-_SLURM_OUTPUT_FRESHNESS_SUMMARY_FILENAME = "slurm-output-freshness.json"
-_SLURM_JOB_STATUS_FILENAME = "slurm-job-status.tsv"
-_SLURM_PARTITION_STATUS_FILENAME = "slurm-partition-status.tsv"
-_SLURM_WORKFLOW_STATUS_FILENAME = "slurm-workflow-status.json"
-_SLURM_FAILURE_RECOVERY_JOBS_FILENAME = "slurm-failure-recovery-jobs.tsv"
-_SLURM_FAILURE_RECOVERY_PARTITIONS_FILENAME = "slurm-failure-recovery-partitions.tsv"
-_SLURM_FAILURE_RECOVERY_SUMMARY_FILENAME = "slurm-failure-recovery-report.json"
-_TASK_LOGS_DIRECTORY = "parallel-logs"
-_VARIANTS_DIRECTORY = "variants"
-_EXPECTED_VARIANT_FILENAMES = (
-    "fasttree.nwk",
-    "iqtree-support.nwk",
-    "rooted-engine-comparison.tsv",
-    "rooted-fasttree.nwk",
-    "rooted-iqtree-support.nwk",
-    "rooting-summary.tsv",
-    "unrooted-comparison.tsv",
-    "unrooted-conclusions.tsv",
-    "unrooted-conflicting-clades.tsv",
-    "unrooted-shared-clades.tsv",
-    "unrooted-stability-summary.tsv",
-    "unrooted-support-weighted-conflicts.tsv",
-)
-
 def audit_rabies_method_sensitivity_workflow_bundle(
     bundle_root: Path,
     *,
@@ -87,101 +43,44 @@ def audit_rabies_method_sensitivity_workflow_bundle(
     metadata_path: Path,
 ) -> RabiesMethodSensitivityReproducibilityAuditReport:
     """Audit one written bundle against current inputs, settings, and outputs."""
-    bundle_root = bundle_root.resolve()
-    workflow_manifest_path = bundle_root / _WORKFLOW_MANIFEST_FILENAME
-    report_manifest_path = bundle_root / _REPORT_MANIFEST_FILENAME
-    config_path = bundle_root / _CONFIG_FILENAME
-    parallel_summary_path = bundle_root / _PARALLEL_SUMMARY_FILENAME
-    variant_summary_path = bundle_root / _VARIANT_SUMMARY_FILENAME
-    slurm_array_partitions_path = bundle_root / _SLURM_ARRAY_PARTITIONS_FILENAME
-    slurm_array_members_path = bundle_root / _SLURM_ARRAY_MEMBERS_FILENAME
-    slurm_job_evidence_root = bundle_root / _SLURM_JOB_EVIDENCE_DIRECTORY
-    slurm_job_evidence_index_path = bundle_root / _SLURM_JOB_EVIDENCE_INDEX_FILENAME
-    slurm_job_evidence_summary_path = (
-        bundle_root / _SLURM_JOB_EVIDENCE_SUMMARY_FILENAME
-    )
-    slurm_storage_categories_path = bundle_root / _SLURM_STORAGE_CATEGORIES_FILENAME
-    slurm_storage_variants_path = bundle_root / _SLURM_STORAGE_VARIANTS_FILENAME
-    slurm_storage_summary_path = bundle_root / _SLURM_STORAGE_SUMMARY_FILENAME
-    slurm_output_explosion_checks_path = (
-        bundle_root / _SLURM_OUTPUT_EXPLOSION_CHECKS_FILENAME
-    )
-    slurm_output_explosion_variants_path = (
-        bundle_root / _SLURM_OUTPUT_EXPLOSION_VARIANTS_FILENAME
-    )
-    slurm_output_explosion_summary_path = (
-        bundle_root / _SLURM_OUTPUT_EXPLOSION_SUMMARY_FILENAME
-    )
-    slurm_tree_retention_checks_path = (
-        bundle_root / _SLURM_TREE_RETENTION_CHECKS_FILENAME
-    )
-    slurm_tree_retention_files_path = bundle_root / _SLURM_TREE_RETENTION_FILES_FILENAME
-    slurm_tree_retention_summary_path = (
-        bundle_root / _SLURM_TREE_RETENTION_SUMMARY_FILENAME
-    )
-    slurm_merge_checks_path = bundle_root / _SLURM_MERGE_CHECKS_FILENAME
-    slurm_merge_variants_path = bundle_root / _SLURM_MERGE_VARIANTS_FILENAME
-    slurm_merge_summary_path = bundle_root / _SLURM_MERGE_SUMMARY_FILENAME
-    slurm_output_freshness_path = bundle_root / _SLURM_OUTPUT_FRESHNESS_FILENAME
-    slurm_output_freshness_checks_path = (
-        bundle_root / _SLURM_OUTPUT_FRESHNESS_CHECKS_FILENAME
-    )
-    slurm_output_freshness_summary_path = (
-        bundle_root / _SLURM_OUTPUT_FRESHNESS_SUMMARY_FILENAME
-    )
-    slurm_job_status_path = bundle_root / _SLURM_JOB_STATUS_FILENAME
-    slurm_partition_status_path = bundle_root / _SLURM_PARTITION_STATUS_FILENAME
-    slurm_workflow_status_path = bundle_root / _SLURM_WORKFLOW_STATUS_FILENAME
-    slurm_failure_recovery_jobs_path = bundle_root / _SLURM_FAILURE_RECOVERY_JOBS_FILENAME
-    slurm_failure_recovery_partitions_path = (
-        bundle_root / _SLURM_FAILURE_RECOVERY_PARTITIONS_FILENAME
-    )
-    slurm_failure_recovery_summary_path = (
-        bundle_root / _SLURM_FAILURE_RECOVERY_SUMMARY_FILENAME
-    )
-    task_logs_root = bundle_root / _TASK_LOGS_DIRECTORY
-    variants_root = bundle_root / _VARIANTS_DIRECTORY
-
-    workflow_manifest = _load_json(workflow_manifest_path)
-    report_manifest = _load_json(report_manifest_path)
-    resolved_config = _load_json(config_path)
-    parallel_rows = _read_tsv_rows(parallel_summary_path)
-    variant_rows = _read_tsv_rows(variant_summary_path)
-    slurm_array_partition_rows = _read_tsv_rows(slurm_array_partitions_path)
-    slurm_array_member_rows = _read_tsv_rows(slurm_array_members_path)
-    slurm_job_evidence_rows = _read_tsv_rows(slurm_job_evidence_index_path)
-    slurm_job_evidence_summary = _load_json(slurm_job_evidence_summary_path)
-    slurm_storage_category_rows = _read_tsv_rows(slurm_storage_categories_path)
-    slurm_storage_variant_rows = _read_tsv_rows(slurm_storage_variants_path)
-    slurm_storage_summary = _load_json(slurm_storage_summary_path)
-    slurm_output_explosion_check_rows = _read_tsv_rows(
-        slurm_output_explosion_checks_path
-    )
-    slurm_output_explosion_variant_rows = _read_tsv_rows(
-        slurm_output_explosion_variants_path
-    )
-    slurm_output_explosion_summary = _load_json(slurm_output_explosion_summary_path)
-    slurm_tree_retention_check_rows = _read_tsv_rows(slurm_tree_retention_checks_path)
-    slurm_tree_retention_file_rows = _read_tsv_rows(slurm_tree_retention_files_path)
-    slurm_tree_retention_summary = _load_json(slurm_tree_retention_summary_path)
-    slurm_merge_check_rows = _read_tsv_rows(slurm_merge_checks_path)
-    slurm_merge_variant_rows = _read_tsv_rows(slurm_merge_variants_path)
-    slurm_merge_summary = _load_json(slurm_merge_summary_path)
-    slurm_output_freshness_rows = _read_tsv_rows(slurm_output_freshness_path)
-    slurm_output_freshness_check_rows = _read_tsv_rows(
-        slurm_output_freshness_checks_path
-    )
-    slurm_output_freshness_summary = _load_json(
-        slurm_output_freshness_summary_path
-    )
-    slurm_job_status_rows = _read_tsv_rows(slurm_job_status_path)
-    slurm_partition_status_rows = _read_tsv_rows(slurm_partition_status_path)
-    slurm_workflow_status = _load_json(slurm_workflow_status_path)
-    slurm_failure_recovery_job_rows = _read_tsv_rows(slurm_failure_recovery_jobs_path)
-    slurm_failure_recovery_partition_rows = _read_tsv_rows(
-        slurm_failure_recovery_partitions_path
-    )
-    slurm_failure_recovery_summary = _load_json(slurm_failure_recovery_summary_path)
+    snapshot = load_rabies_method_sensitivity_audit_snapshot(bundle_root)
+    bundle_root = snapshot.bundle_root
+    workflow_manifest_path = snapshot.workflow_manifest_path
+    report_manifest_path = snapshot.report_manifest_path
+    config_path = snapshot.config_path
+    task_logs_root = snapshot.task_logs_root
+    variants_root = snapshot.variants_root
+    slurm_job_evidence_root = snapshot.slurm_job_evidence_root
+    workflow_manifest = snapshot.workflow_manifest
+    report_manifest = snapshot.report_manifest
+    resolved_config = snapshot.resolved_config
+    parallel_rows = snapshot.parallel_rows
+    variant_rows = snapshot.variant_rows
+    slurm_array_partition_rows = snapshot.slurm_array_partition_rows
+    slurm_array_member_rows = snapshot.slurm_array_member_rows
+    slurm_job_evidence_rows = snapshot.slurm_job_evidence_rows
+    slurm_job_evidence_summary = snapshot.slurm_job_evidence_summary
+    slurm_storage_category_rows = snapshot.slurm_storage_category_rows
+    slurm_storage_variant_rows = snapshot.slurm_storage_variant_rows
+    slurm_storage_summary = snapshot.slurm_storage_summary
+    slurm_output_explosion_check_rows = snapshot.slurm_output_explosion_check_rows
+    slurm_output_explosion_variant_rows = snapshot.slurm_output_explosion_variant_rows
+    slurm_output_explosion_summary = snapshot.slurm_output_explosion_summary
+    slurm_tree_retention_check_rows = snapshot.slurm_tree_retention_check_rows
+    slurm_tree_retention_file_rows = snapshot.slurm_tree_retention_file_rows
+    slurm_tree_retention_summary = snapshot.slurm_tree_retention_summary
+    slurm_merge_check_rows = snapshot.slurm_merge_check_rows
+    slurm_merge_variant_rows = snapshot.slurm_merge_variant_rows
+    slurm_merge_summary = snapshot.slurm_merge_summary
+    slurm_output_freshness_rows = snapshot.slurm_output_freshness_rows
+    slurm_output_freshness_check_rows = snapshot.slurm_output_freshness_check_rows
+    slurm_output_freshness_summary = snapshot.slurm_output_freshness_summary
+    slurm_job_status_rows = snapshot.slurm_job_status_rows
+    slurm_partition_status_rows = snapshot.slurm_partition_status_rows
+    slurm_workflow_status = snapshot.slurm_workflow_status
+    slurm_failure_recovery_job_rows = snapshot.slurm_failure_recovery_job_rows
+    slurm_failure_recovery_partition_rows = snapshot.slurm_failure_recovery_partition_rows
+    slurm_failure_recovery_summary = snapshot.slurm_failure_recovery_summary
 
     checks: list[RabiesMethodSensitivityReproducibilityCheckRow] = []
     variant_audit_rows: list[RabiesMethodSensitivityVariantAuditRow] = []
