@@ -46,6 +46,18 @@ from .metadata_clustering import (
 from .readiness import (
     audit_alignment_inference_readiness as audit_alignment_inference_readiness,
 )
+from .support_analysis import (
+    detect_weakly_supported_backbone as detect_weakly_supported_backbone,
+)
+from .support_analysis import (
+    summarize_bootstrap_support_distribution as summarize_bootstrap_support_distribution,
+)
+from .support_analysis import (
+    summarize_fasttree_support_distribution as summarize_fasttree_support_distribution,
+)
+from .support_analysis import (
+    summarize_sh_alrt_support_distribution as summarize_sh_alrt_support_distribution,
+)
 
 __all__ = [
     "BootstrapTreeSetValidationReport",
@@ -61,6 +73,10 @@ __all__ = [
     "audit_alignment_inference_readiness",
     "classify_inference_workflow_failure",
     "compare_inferred_tree_to_taxon_metadata",
+    "detect_weakly_supported_backbone",
+    "summarize_bootstrap_support_distribution",
+    "summarize_fasttree_support_distribution",
+    "summarize_sh_alrt_support_distribution",
     "validate_bootstrap_tree_set",
     "validate_ml_tree_contains_expected_taxa",
     "validate_model_selection_against_engine_outputs",
