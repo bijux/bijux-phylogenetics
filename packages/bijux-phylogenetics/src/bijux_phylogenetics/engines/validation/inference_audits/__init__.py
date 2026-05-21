@@ -58,6 +58,12 @@ from .support_analysis import (
 from .support_analysis import (
     summarize_sh_alrt_support_distribution as summarize_sh_alrt_support_distribution,
 )
+from .tree_comparison import (
+    compare_inferred_trees_across_engines as compare_inferred_trees_across_engines,
+)
+from .tree_comparison import (
+    compare_ml_trees_across_models as compare_ml_trees_across_models,
+)
 
 __all__ = [
     "BootstrapTreeSetValidationReport",
@@ -73,6 +79,8 @@ __all__ = [
     "audit_alignment_inference_readiness",
     "classify_inference_workflow_failure",
     "compare_inferred_tree_to_taxon_metadata",
+    "compare_inferred_trees_across_engines",
+    "compare_ml_trees_across_models",
     "detect_weakly_supported_backbone",
     "summarize_bootstrap_support_distribution",
     "summarize_fasttree_support_distribution",
