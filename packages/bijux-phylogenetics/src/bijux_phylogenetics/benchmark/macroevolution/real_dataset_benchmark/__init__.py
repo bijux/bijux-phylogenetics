@@ -31,6 +31,7 @@ from .artifact_outputs import (
 )
 from .review_input import write_alignment_review_traits_table
 from .report_assembly import build_report
+from .overview import write_overview
 
 __all__ = [
     "CONTINUOUS_MODES",
@@ -52,6 +53,7 @@ __all__ = [
     "RealDatasetMacroevolutionSummaryRow",
     "REMOVED_TREE_TAXON",
     "build_report",
+    "write_overview",
     "write_alignment_review_traits_table",
     "write_geiger_real_dataset_reference_payload_table",
     "write_real_dataset_macroevolution_alignment_review_table",

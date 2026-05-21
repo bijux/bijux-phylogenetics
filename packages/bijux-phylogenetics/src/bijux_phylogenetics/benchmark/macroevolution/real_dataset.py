@@ -4,7 +4,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from bijux_phylogenetics.datasets.central_european_seashore_flora import (
-    CentralEuropeanSeashoreFloraDataset,
     export_central_european_seashore_flora_dataset,
     load_central_european_seashore_flora_dataset,
 )
@@ -16,20 +15,41 @@ from .real_dataset_benchmark.artifact_outputs import (
     write_real_dataset_macroevolution_summary_table,
 )
 from .real_dataset_benchmark.contracts import (
+    RealDatasetMacroevolutionAlignmentReviewRow,
     RealDatasetMacroevolutionBenchmarkBundle,
     RealDatasetMacroevolutionBenchmarkDemoResult,
     RealDatasetMacroevolutionBenchmarkReport,
+    RealDatasetMacroevolutionModelRow,
+    RealDatasetMacroevolutionParityRow,
+    RealDatasetMacroevolutionSummaryRow,
 )
 from .real_dataset_benchmark.review_input import (
     write_alignment_review_traits_table as _write_alignment_review_traits_table,
 )
+from .real_dataset_benchmark.overview import (
+    write_overview as _write_overview,
+)
 from .real_dataset_benchmark.report_assembly import (
     build_report as _build_report,
 )
-from .real_dataset_benchmark.shared import (
-    PROVENANCE_CITATION as _PROVENANCE_CITATION,
-    PROVENANCE_DOI as _PROVENANCE_DOI,
-)
+
+__all__ = [
+    "RealDatasetMacroevolutionAlignmentReviewRow",
+    "RealDatasetMacroevolutionBenchmarkBundle",
+    "RealDatasetMacroevolutionBenchmarkDemoResult",
+    "RealDatasetMacroevolutionBenchmarkReport",
+    "RealDatasetMacroevolutionModelRow",
+    "RealDatasetMacroevolutionParityRow",
+    "RealDatasetMacroevolutionSummaryRow",
+    "benchmark_real_dataset_macroevolution",
+    "run_real_dataset_macroevolution_benchmark_demo",
+    "write_geiger_real_dataset_reference_payload_table",
+    "write_real_dataset_macroevolution_alignment_review_table",
+    "write_real_dataset_macroevolution_bundle",
+    "write_real_dataset_macroevolution_model_table",
+    "write_real_dataset_macroevolution_parity_table",
+    "write_real_dataset_macroevolution_summary_table",
+]
 
 
 def benchmark_real_dataset_macroevolution() -> RealDatasetMacroevolutionBenchmarkReport:
@@ -115,31 +135,3 @@ def run_real_dataset_macroevolution_benchmark_demo(
         benchmark_bundle=benchmark_bundle,
         overview_path=overview_path,
     )
-
-
-def _write_overview(
-    path: Path,
-    *,
-    dataset: CentralEuropeanSeashoreFloraDataset,
-    bundle: RealDatasetMacroevolutionBenchmarkBundle,
-) -> Path:
-    lines = [
-        "# Real-Dataset Macroevolution Benchmark Demo",
-        "",
-        f"- dataset id: `{dataset.dataset_id}`",
-        f"- dataset label: `{dataset.label}`",
-        f"- provenance: `{_PROVENANCE_CITATION}`",
-        f"- DOI: `{_PROVENANCE_DOI}`",
-        f"- benchmark bundle directory: `{bundle.output_root.name}`",
-        "",
-        "Generated outputs:",
-        "",
-        f"- review traits input: `{bundle.review_traits_path.relative_to(bundle.output_root.parent)}`",
-        f"- summary ledger: `{bundle.summary_path.relative_to(bundle.output_root.parent)}`",
-        f"- native model table: `{bundle.model_table_path.relative_to(bundle.output_root.parent)}`",
-        f"- alignment review ledger: `{bundle.alignment_review_path.relative_to(bundle.output_root.parent)}`",
-        f"- geiger parity ledger: `{bundle.parity_table_path.relative_to(bundle.output_root.parent)}`",
-        f"- stored geiger reference ledger: `{bundle.geiger_reference_path.relative_to(bundle.output_root.parent)}`",
-    ]
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return path
