@@ -11,6 +11,17 @@ from .contracts import (
     RabiesMethodSensitivitySlurmPlanningReport,
 )
 from .interfaces import TaskRecordLike, VariantRunLike, WorkflowReportLike
+from .shared import (
+    MEBIBYTE,
+    MINIMUM_MEMORY_MIB,
+    MINIMUM_SCRATCH_MIB,
+    MINIMUM_WALLCLOCK_MINUTES,
+    directory_bytes,
+    format_float,
+    format_slurm_time,
+    round_up,
+    write_tsv,
+)
 
 __all__ = [
     "RabiesMethodSensitivitySlurmAssumptionRow",
@@ -21,11 +32,6 @@ __all__ = [
     "write_rabies_method_sensitivity_slurm_job_plan_table",
     "write_rabies_method_sensitivity_slurm_summary_json",
 ]
-
-_MEBIBYTE = 1024 * 1024
-_MINIMUM_MEMORY_MIB = 1024
-_MINIMUM_SCRATCH_MIB = 256
-_MINIMUM_WALLCLOCK_MINUTES = 20
 
 def build_rabies_method_sensitivity_slurm_planning_report(
     report: WorkflowReportLike,
@@ -172,13 +178,13 @@ def write_rabies_method_sensitivity_slurm_job_plan_table(
                 str(row.estimated_scratch_mib),
                 str(row.observed_output_bytes),
                 str(row.estimated_output_mib),
-                _format_float(row.estimated_core_hours),
+                format_float(row.estimated_core_hours),
                 row.bundle_output_directory,
                 row.task_log_path,
                 row.suggested_sbatch_options,
             ]
         )
-    return _write_tsv(path, rows)
+    return write_tsv(path, rows)
 
 
 def write_rabies_method_sensitivity_slurm_assumptions_table(
@@ -189,7 +195,7 @@ def write_rabies_method_sensitivity_slurm_assumptions_table(
     rows = [["assumption_id", "parameter", "value", "rationale"]]
     for row in report.assumptions:
         rows.append([row.assumption_id, row.parameter, row.value, row.rationale])
-    return _write_tsv(path, rows)
+    return write_tsv(path, rows)
 
 
 def write_rabies_method_sensitivity_slurm_summary_json(
@@ -248,7 +254,7 @@ def _build_job_plan_row(
     )
     bootstrap_scale = max(1.0, bootstrap_replicates / 1000)
     estimated_wallclock_minutes = max(
-        _MINIMUM_WALLCLOCK_MINUTES,
+        MINIMUM_WALLCLOCK_MINUTES,
         ceil(
             14
             + dataset_scale
@@ -263,20 +269,20 @@ def _build_job_plan_row(
         + (64 if variant_run.config.trimming_mode == "gappyout" else 0)
     )
     estimated_memory_mib = max(
-        _MINIMUM_MEMORY_MIB, _round_up(memory_request, quantum=256)
+        MINIMUM_MEMORY_MIB, round_up(memory_request, quantum=256)
     )
     resource_class = _classify_resource_class(
         estimated_cpus_per_task=estimated_cpus_per_task,
         estimated_memory_mib=estimated_memory_mib,
         estimated_wallclock_minutes=estimated_wallclock_minutes,
     )
-    observed_output_bytes = _directory_bytes(task_record.output_root)
-    estimated_output_mib = max(1, ceil(observed_output_bytes / _MEBIBYTE))
-    scratch_request = 128 + ceil((observed_output_bytes * 64) / _MEBIBYTE) + ceil(
+    observed_output_bytes = directory_bytes(task_record.output_root)
+    estimated_output_mib = max(1, ceil(observed_output_bytes / MEBIBYTE))
+    scratch_request = 128 + ceil((observed_output_bytes * 64) / MEBIBYTE) + ceil(
         dataset_scale * 32
     )
     estimated_scratch_mib = max(
-        _MINIMUM_SCRATCH_MIB, _round_up(scratch_request, quantum=128)
+        MINIMUM_SCRATCH_MIB, round_up(scratch_request, quantum=128)
     )
     estimated_core_hours = round(
         (estimated_cpus_per_task * estimated_wallclock_minutes) / 60, 2
@@ -299,7 +305,7 @@ def _build_job_plan_row(
         estimated_cpus_per_task=estimated_cpus_per_task,
         estimated_memory_mib=estimated_memory_mib,
         estimated_wallclock_minutes=estimated_wallclock_minutes,
-        slurm_time=_format_slurm_time(estimated_wallclock_minutes),
+        slurm_time=format_slurm_time(estimated_wallclock_minutes),
         estimated_scratch_mib=estimated_scratch_mib,
         observed_output_bytes=observed_output_bytes,
         estimated_output_mib=estimated_output_mib,
@@ -310,29 +316,11 @@ def _build_job_plan_row(
             f"--job-name={job_name} "
             f"--cpus-per-task={estimated_cpus_per_task} "
             f"--mem={estimated_memory_mib}M "
-            f"--time={_format_slurm_time(estimated_wallclock_minutes)} "
+            f"--time={format_slurm_time(estimated_wallclock_minutes)} "
             f"--output=slurm-logs/{variant_run.config.variant_id}.%j.out "
             f"--error=slurm-logs/{variant_run.config.variant_id}.%j.err"
         ),
     )
-
-
-def _directory_bytes(path: Path) -> int:
-    if not path.is_dir():
-        return 0
-    return sum(
-        candidate.stat().st_size for candidate in path.rglob("*") if candidate.is_file()
-    )
-
-
-def _format_float(value: float) -> str:
-    text = f"{value:.2f}"
-    return text.rstrip("0").rstrip(".") if "." in text else text
-
-
-def _format_slurm_time(minutes: int) -> str:
-    hours, remaining_minutes = divmod(minutes, 60)
-    return f"{hours:02d}:{remaining_minutes:02d}:00"
 
 
 def _classify_dataset_size(size_score: int) -> str:
@@ -366,16 +354,3 @@ def _classify_resource_class(
 
 def _method_group_name(alignment_mode: str) -> str:
     return f"mafft-{alignment_mode}"
-
-
-def _round_up(value: int, *, quantum: int) -> int:
-    return ((value + quantum - 1) // quantum) * quantum
-
-
-def _write_tsv(path: Path, rows: list[list[str]]) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        "\n".join("\t".join(row) for row in rows) + "\n",
-        encoding="utf-8",
-    )
-    return path
