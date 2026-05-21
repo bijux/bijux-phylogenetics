@@ -29,6 +29,7 @@ from .artifact_outputs import (
     write_real_dataset_macroevolution_parity_table,
     write_real_dataset_macroevolution_summary_table,
 )
+from .review_input import write_alignment_review_traits_table
 
 __all__ = [
     "CONTINUOUS_MODES",
@@ -49,6 +50,7 @@ __all__ = [
     "RealDatasetMacroevolutionParityRow",
     "RealDatasetMacroevolutionSummaryRow",
     "REMOVED_TREE_TAXON",
+    "write_alignment_review_traits_table",
     "write_geiger_real_dataset_reference_payload_table",
     "write_real_dataset_macroevolution_alignment_review_table",
     "write_real_dataset_macroevolution_model_table",
