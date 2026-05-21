@@ -145,9 +145,7 @@ def _build_rate_rows(
                 absolute_error = None
                 relative_error = None
                 within_tolerance = None
-                interpretation = (
-                    "The fitted transition rate is missing because one or more states were not observed after simulation pruning, so this review row records the omitted estimate explicitly."
-                )
+                interpretation = "The fitted transition rate is missing because one or more states were not observed after simulation pruning, so this review row records the omitted estimate explicitly."
             else:
                 absolute_error = abs(estimated_rate - true_rate)
                 relative_error = (

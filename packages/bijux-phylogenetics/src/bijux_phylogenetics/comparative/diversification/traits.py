@@ -12,7 +12,6 @@ from .models import (
     TraitDependentDiversificationState,
 )
 from .trees import (
-    descendant_taxa,
     find_smallest_covering_node,
     node_age,
     node_depths,

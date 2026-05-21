@@ -146,10 +146,14 @@ def _fit_snapshot_from_discrete_report(
         failure_reason=None,
         selected_model=None,
         parameter_name=(
-            None if report.transform_fit is None else report.transform_fit.parameter_name
+            None
+            if report.transform_fit is None
+            else report.transform_fit.parameter_name
         ),
         parameter_value=(
-            None if report.transform_fit is None else report.transform_fit.parameter_value
+            None
+            if report.transform_fit is None
+            else report.transform_fit.parameter_value
         ),
         parameter_count=report.parameter_count,
         log_likelihood=report.log_likelihood,
@@ -328,7 +332,8 @@ def _build_geiger_model_choice_rows(
             log_likelihood=float(row["log_likelihood"]),
             aic=float(row["aic"]),
             aicc=float(row["aicc"]),
-            overparameterized=int(row["parameter_count"]) >= int(summary["taxon_count"]),
+            overparameterized=int(row["parameter_count"])
+            >= int(summary["taxon_count"]),
             selected=bool(row["selected"]),
         )
         for row in normalized_rows

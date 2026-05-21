@@ -28,11 +28,7 @@ def build_model_figure_review_html(
         "fit": fit_figure_path.read_text(encoding="utf-8"),
     }
     audit_rows = "".join(
-        "<tr><th>"
-        + escape(label)
-        + "</th><td>"
-        + escape(value)
-        + "</td></tr>"
+        "<tr><th>" + escape(label) + "</th><td>" + escape(value) + "</td></tr>"
         for label, value in [
             ("publication_ready", str(audit.publication_ready).lower()),
             ("selected_model", audit.selected_model),
@@ -74,10 +70,18 @@ def build_model_figure_review_html(
             "    <ul>" + limitation_items + "</ul>",
             "  </section>",
             '  <section class="grid" style="margin-top: 20px;">',
-            '    <section class="panel"><h2>Information Criteria</h2><div class="figure-shell">' + figures["criteria"] + "</div></section>",
-            '    <section class="panel"><h2>Likelihood</h2><div class="figure-shell">' + figures["likelihood"] + "</div></section>",
-            '    <section class="panel"><h2>Parameters</h2><div class="figure-shell">' + figures["parameters"] + "</div></section>",
-            '    <section class="panel"><h2>Fit Summary</h2><div class="figure-shell">' + figures["fit"] + "</div></section>",
+            '    <section class="panel"><h2>Information Criteria</h2><div class="figure-shell">'
+            + figures["criteria"]
+            + "</div></section>",
+            '    <section class="panel"><h2>Likelihood</h2><div class="figure-shell">'
+            + figures["likelihood"]
+            + "</div></section>",
+            '    <section class="panel"><h2>Parameters</h2><div class="figure-shell">'
+            + figures["parameters"]
+            + "</div></section>",
+            '    <section class="panel"><h2>Fit Summary</h2><div class="figure-shell">'
+            + figures["fit"]
+            + "</div></section>",
             "  </section>",
             '  <section class="panel" style="margin-top: 20px;">',
             "    <h2>Linked Artifacts</h2>",

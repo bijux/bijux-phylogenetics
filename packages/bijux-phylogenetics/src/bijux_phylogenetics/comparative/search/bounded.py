@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 import math
-from typing import Callable, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
@@ -130,7 +131,9 @@ def run_bounded_maximization(
             coarse_best_parameter = candidate
             coarse_best_objective_value = objective_value
 
-    sorted_coarse_grid = sorted({round(value, 12): value for value in coarse_grid}.values())
+    sorted_coarse_grid = sorted(
+        {round(value, 12): value for value in coarse_grid}.values()
+    )
     winning_bracket = _search_bracket(
         coarse_grid=sorted_coarse_grid,
         anchor_parameter=best_parameter,

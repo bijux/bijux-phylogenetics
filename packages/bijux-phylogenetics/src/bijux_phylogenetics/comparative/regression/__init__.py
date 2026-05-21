@@ -1,15 +1,5 @@
 """Comparative regression workflows and diagnostics."""
 
-from .logistic import (
-    PhylogeneticLogisticCoefficient,
-    PhylogeneticLogisticFittedRow,
-    PhylogeneticLogisticReport,
-    PhylogeneticLogisticWarning,
-    summarize_phylogenetic_logistic,
-    write_phylogenetic_logistic_coefficient_table,
-    write_phylogenetic_logistic_excluded_taxa_table,
-    write_phylogenetic_logistic_fitted_table,
-)
 from .anova import (
     PhylogeneticAnovaExclusion,
     PhylogeneticAnovaGroupSummaryRow,
@@ -22,6 +12,26 @@ from .anova import (
     write_phylogenetic_anova_pairwise_table,
     write_phylogenetic_anova_simulation_table,
     write_phylogenetic_anova_summary_table,
+)
+from .logistic import (
+    PhylogeneticLogisticCoefficient,
+    PhylogeneticLogisticFittedRow,
+    PhylogeneticLogisticReport,
+    PhylogeneticLogisticWarning,
+    summarize_phylogenetic_logistic,
+    write_phylogenetic_logistic_coefficient_table,
+    write_phylogenetic_logistic_excluded_taxa_table,
+    write_phylogenetic_logistic_fitted_table,
+)
+from .model_selection import (
+    ComparativeRegressionModelExclusion,
+    ComparativeRegressionModelRow,
+    ComparativeRegressionModelSelectionReport,
+    ComparativeRegressionPairwiseComparisonRow,
+    compare_comparative_regression_models,
+    write_comparative_regression_excluded_taxa_table,
+    write_comparative_regression_model_ranking_table,
+    write_comparative_regression_pairwise_table,
 )
 from .multivariate import (
     MULTIVARIATE_MISSING_VALUE_POLICY,
@@ -41,16 +51,6 @@ from .multivariate import (
     write_multivariate_residual_covariance_table,
     write_multivariate_response_coefficient_table,
     write_multivariate_response_model_table,
-)
-from .model_selection import (
-    ComparativeRegressionModelExclusion,
-    ComparativeRegressionModelRow,
-    ComparativeRegressionModelSelectionReport,
-    ComparativeRegressionPairwiseComparisonRow,
-    compare_comparative_regression_models,
-    write_comparative_regression_excluded_taxa_table,
-    write_comparative_regression_model_ranking_table,
-    write_comparative_regression_pairwise_table,
 )
 from .residuals import (
     PhylogeneticResidualCoefficientRow,

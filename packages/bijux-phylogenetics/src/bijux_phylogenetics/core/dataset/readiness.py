@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.datasets.study_inputs import inspect_metadata_table, load_taxon_table
 from bijux_phylogenetics.datasets.study_inputs import (
     check_tree_and_trait_taxon_names,
     detect_unusable_trait_columns,
+    inspect_metadata_table,
     link_tree_to_traits,
+    load_taxon_table,
 )
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.io.trees import load_tree

@@ -9,14 +9,14 @@ from Bio.Phylo.BaseTree import Clade
 from Bio.Phylo.BaseTree import Tree as BioTree
 
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.iqtree_support import (
     parse_iqtree_branch_support_label,
     support_fraction,
 )
 from bijux_phylogenetics.io.trees import detect_tree_format
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 
 @dataclass(frozen=True, slots=True)

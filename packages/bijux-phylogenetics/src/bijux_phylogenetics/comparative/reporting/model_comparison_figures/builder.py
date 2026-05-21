@@ -218,9 +218,7 @@ def build_comparative_model_figure_package(
         "output_paths": [str(path) for path in artifact_paths],
         "output_checksums": {str(path): _checksum(path) for path in artifact_paths},
         "reproducibility_manifest_path": str(reproducibility_manifest_path),
-        "reproducibility_manifest_checksum": _checksum(
-            reproducibility_manifest_path
-        ),
+        "reproducibility_manifest_checksum": _checksum(reproducibility_manifest_path),
         "reproducibility_manifest": reproducibility_manifest,
         "settings": {
             "trait": trait,

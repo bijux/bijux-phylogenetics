@@ -10,12 +10,13 @@ from bijux_phylogenetics.bayesian.beast.validation import (
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
 )
-from bijux_phylogenetics.phylo.alignment import AlignmentForensicReport
-from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
-from bijux_phylogenetics.datasets.study_inputs import link_tree_to_traits
+from bijux_phylogenetics.datasets.study_inputs import (
+    load_taxon_table,
+)
 from bijux_phylogenetics.io.fasta.quality import build_alignment_forensic_report
 from bijux_phylogenetics.io.fasta.records import link_alignment_to_tree
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.alignment import AlignmentForensicReport
 
 from .audit_policy import (
     _analysis_decisions,

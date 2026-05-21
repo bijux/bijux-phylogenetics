@@ -7,12 +7,12 @@ from bijux_phylogenetics.comparative.common import (
     ComparativeReadinessReport,
     summarize_numeric_trait_readiness,
 )
-from bijux_phylogenetics.comparative.evolutionary_modes import (
-    fit_continuous_evolutionary_mode,
-)
 from bijux_phylogenetics.comparative.continuous.model_fitting import (
     ComparativeParameterInterval,
     ComparativeResidualSummary,
+)
+from bijux_phylogenetics.comparative.evolutionary_modes import (
+    fit_continuous_evolutionary_mode,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 

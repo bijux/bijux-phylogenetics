@@ -3,13 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import node_signature
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.phylo.branch_lengths.ultrametric import assess_tree_ultrametricity
 from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
 )
-from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
+    assess_tree_ultrametricity,
+)
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import (
     DiversificationAnalysisError,
     NonUltrametricTreeError,

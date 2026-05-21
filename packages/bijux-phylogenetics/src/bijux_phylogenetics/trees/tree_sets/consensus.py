@@ -7,7 +7,7 @@ from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 from .contracts import ConsensusTreeReport
-from .inventory import _TreeSetAnalysis, _analyze_tree_set, _require_exact_taxa
+from .inventory import _analyze_tree_set, _require_exact_taxa, _TreeSetAnalysis
 
 
 def _maximal_nested_clades(

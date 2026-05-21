@@ -18,9 +18,9 @@ from .models import (
     CladeDiversificationObservation,
     CladeDiversificationScanReport,
     DiversificationMethodReport,
+    DiversificationMethodsSummaryTextResult,
     DiversificationModelComparisonReport,
     DiversificationModelComparisonRow,
-    DiversificationMethodsSummaryTextResult,
     LineageThroughTimeReport,
     SamplingFractionReport,
 )
@@ -394,11 +394,15 @@ def _build_audit(
     lineage_curve_visible = plotted_ltt_point_count >= 2
     clade_outlier_surface_visible = plotted_clade_count > 0
     model_comparison_visible = plotted_model_count >= 2
-    legend_complete = {
-        entry.surface for entry in legend_entries
-    } == {"lineage-through-time", "clade-outliers", "model-comparison"}
+    legend_complete = {entry.surface for entry in legend_entries} == {
+        "lineage-through-time",
+        "clade-outliers",
+        "model-comparison",
+    }
     caption_ready = (
-        lineage_curve_visible and clade_outlier_surface_visible and model_comparison_visible
+        lineage_curve_visible
+        and clade_outlier_surface_visible
+        and model_comparison_visible
     )
     sampling_metadata_complete = (
         None if sampling_report is None else sampling_report.complete
@@ -534,11 +538,7 @@ def _build_review_html(
         "models": model_figure_path.read_text(encoding="utf-8"),
     }
     audit_rows = "".join(
-        "<tr><th>"
-        + escape(label)
-        + "</th><td>"
-        + escape(value)
-        + "</td></tr>"
+        "<tr><th>" + escape(label) + "</th><td>" + escape(value) + "</td></tr>"
         for label, value in [
             ("publication_ready", str(audit.publication_ready).lower()),
             ("better_model", audit.better_model),
@@ -588,9 +588,15 @@ def _build_review_html(
             "    <ul>" + limitation_items + "</ul>",
             "  </section>",
             '  <section class="grid" style="margin-top: 20px;">',
-            '    <section class="panel"><h2>Lineage-Through-Time Curve</h2><div class="figure-shell">' + figures["lineage"] + "</div></section>",
-            '    <section class="panel"><h2>Clade-Rate Outliers</h2><div class="figure-shell">' + figures["clades"] + "</div></section>",
-            '    <section class="panel"><h2>Model Comparison</h2><div class="figure-shell">' + figures["models"] + "</div></section>",
+            '    <section class="panel"><h2>Lineage-Through-Time Curve</h2><div class="figure-shell">'
+            + figures["lineage"]
+            + "</div></section>",
+            '    <section class="panel"><h2>Clade-Rate Outliers</h2><div class="figure-shell">'
+            + figures["clades"]
+            + "</div></section>",
+            '    <section class="panel"><h2>Model Comparison</h2><div class="figure-shell">'
+            + figures["models"]
+            + "</div></section>",
             "  </section>",
             '  <section class="panel" style="margin-top: 20px;">',
             "    <h2>Methods Summary</h2>",
@@ -759,9 +765,7 @@ def build_diversification_figure_package(
         "output_paths": [str(path) for path in artifact_paths],
         "output_checksums": {str(path): _checksum(path) for path in artifact_paths},
         "reproducibility_manifest_path": str(reproducibility_manifest_path),
-        "reproducibility_manifest_checksum": _checksum(
-            reproducibility_manifest_path
-        ),
+        "reproducibility_manifest_checksum": _checksum(reproducibility_manifest_path),
         "reproducibility_manifest": reproducibility_manifest,
         "settings": {
             "metadata_path": None if metadata_path is None else str(metadata_path),

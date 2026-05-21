@@ -36,9 +36,7 @@ def rank_model_comparison_rows(
         blocked_models = [row.model for row in comparable_rows]
         for row in comparable_rows:
             row.comparable = False
-            row.comparability_note = (
-                "likelihood constant policy is missing, so AIC and AICc ranking is blocked"
-            )
+            row.comparability_note = "likelihood constant policy is missing, so AIC and AICc ranking is blocked"
         _clear_unranked_rows(rows)
         return None, blocked_models
     policies = {row.likelihood_constant_policy for row in comparable_rows}

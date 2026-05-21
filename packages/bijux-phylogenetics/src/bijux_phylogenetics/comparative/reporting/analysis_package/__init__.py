@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .builder import build_comparative_report_package
 from .contracts import (
     ComparativeAnalysisSummaryRow,
     ComparativeAuditTableRow,
@@ -9,7 +10,7 @@ from .contracts import (
     ComparativeResidualTableRow,
     ComparativeSignalTableRow,
 )
-
+from .presentation import write_comparative_report_html
 from .summaries import (
     summarize_comparative_analysis,
     summarize_comparative_audit,
@@ -28,5 +29,3 @@ from .tables import (
     write_comparative_signal_table,
     write_comparative_summary_table,
 )
-from .presentation import write_comparative_report_html
-from .builder import build_comparative_report_package

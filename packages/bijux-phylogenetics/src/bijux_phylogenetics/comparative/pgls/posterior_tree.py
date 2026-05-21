@@ -14,12 +14,15 @@ from bijux_phylogenetics.comparative.pgls.models import (
     ComparativeFormulaSpecification,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.runtime.errors import ComparativeMethodError, InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import detect_tree_format
+from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+from bijux_phylogenetics.runtime.errors import (
+    ComparativeMethodError,
+    InvalidAlignmentError,
+)
 from bijux_phylogenetics.trees import load_tree_set
 
 

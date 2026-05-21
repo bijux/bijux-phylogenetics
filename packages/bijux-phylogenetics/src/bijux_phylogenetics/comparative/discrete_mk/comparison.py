@@ -9,6 +9,8 @@ from bijux_phylogenetics.ancestral.common import (
 )
 from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_discrete_model_name as _resolve_discrete_model_name,
+)
+from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_state_order as _resolve_state_order,
 )
 from bijux_phylogenetics.comparative.model_selection import (
@@ -158,9 +160,7 @@ def compare_discrete_mk_model_ranking_from_dataset(
         )
         if not math.isfinite(row.aicc):
             row.comparable = False
-            row.comparability_note = (
-                "sample size is too small to compute finite AICc for this parameter count"
-            )
+            row.comparability_note = "sample size is too small to compute finite AICc for this parameter count"
             comparison_warnings.append(
                 f"{resolved_model} is not comparable on AICc because the retained taxon count is too small for a {row.parameter_count}-parameter fit"
             )

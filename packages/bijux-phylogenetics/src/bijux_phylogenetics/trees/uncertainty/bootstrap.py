@@ -5,18 +5,6 @@ from pathlib import Path
 
 from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clade_nodes
 
-from .instability import _build_unstable_clade_report, write_unstable_clade_table
-from .models import (
-    BootstrapTreeSetArtifactReport,
-    BootstrapTreeSetSummaryReport,
-    BootstrapUnstableBranch,
-)
-from .topology_diversity import (
-    _build_posterior_topology_diversity_report,
-    _build_topology_cluster_report,
-    write_topology_cluster_table,
-    write_tree_distance_distribution_table,
-)
 from ..tree_sets.budgets import (
     build_tree_set_budget_report,
     build_tree_set_workflow_budget,
@@ -37,10 +25,22 @@ from ..tree_sets.distances import (
     write_tree_distance_matrix,
 )
 from ..tree_sets.inventory import (
-    _TreeSetAnalysis,
     _analyze_tree_set,
+    _TreeSetAnalysis,
 )
 from ..tree_sets.topology import _format_clade
+from .instability import _build_unstable_clade_report, write_unstable_clade_table
+from .models import (
+    BootstrapTreeSetArtifactReport,
+    BootstrapTreeSetSummaryReport,
+    BootstrapUnstableBranch,
+)
+from .topology_diversity import (
+    _build_posterior_topology_diversity_report,
+    _build_topology_cluster_report,
+    write_topology_cluster_table,
+    write_tree_distance_distribution_table,
+)
 
 
 def summarize_bootstrap_tree_set(

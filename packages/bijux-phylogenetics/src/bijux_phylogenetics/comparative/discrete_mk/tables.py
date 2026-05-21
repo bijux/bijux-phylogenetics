@@ -79,7 +79,9 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
                 "trait": report.trait,
                 "taxon_column": report.taxon_column,
                 "model": report.model,
-                "transform": "" if transform_fit is None else transform_fit.transform_name,
+                "transform": ""
+                if transform_fit is None
+                else transform_fit.transform_name,
                 "transform_parameter_name": (
                     "" if transform_fit is None else transform_fit.parameter_name
                 ),
@@ -144,9 +146,7 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
                     else str(transform_fit.hit_upper_parameter_boundary).lower()
                 ),
                 "transform_warning_count": (
-                    ""
-                    if transform_fit is None
-                    else str(len(transform_fit.warnings))
+                    "" if transform_fit is None else str(len(transform_fit.warnings))
                 ),
                 "transform_tree_is_ultrametric": (
                     ""
@@ -156,12 +156,16 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
                 "transform_tree_minimum_tip_depth": (
                     ""
                     if transform_fit is None
-                    else format(transform_fit.transformed_tree_minimum_tip_depth, ".15g")
+                    else format(
+                        transform_fit.transformed_tree_minimum_tip_depth, ".15g"
+                    )
                 ),
                 "transform_tree_maximum_tip_depth": (
                     ""
                     if transform_fit is None
-                    else format(transform_fit.transformed_tree_maximum_tip_depth, ".15g")
+                    else format(
+                        transform_fit.transformed_tree_maximum_tip_depth, ".15g"
+                    )
                 ),
                 "transform_baseline": (
                     ""

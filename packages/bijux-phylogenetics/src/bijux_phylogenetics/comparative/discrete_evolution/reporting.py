@@ -86,7 +86,6 @@ def _report_limitations(
     return sorted(dict.fromkeys(item.strip() for item in limitations if item.strip()))
 
 
-
 def build_biogeographic_interpretation_report(
     tree_path: Path,
     traits_path: Path,
@@ -447,7 +446,6 @@ def write_discrete_model_comparison_table(
         ],
         rows=rows,
     )
-
 
 
 def render_tree_with_geographic_states(

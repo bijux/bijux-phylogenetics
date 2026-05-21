@@ -2,10 +2,14 @@
 
 from .comparison import (
     compare_discrete_mk_model_ranking as compare_discrete_mk_model_ranking,
+)
+from .comparison import (
     compare_discrete_mk_model_ranking_from_dataset as compare_discrete_mk_model_ranking_from_dataset,
 )
 from .fitting import (
     fit_discrete_mk_model as fit_discrete_mk_model,
+)
+from .fitting import (
     fit_discrete_mk_model_from_dataset as fit_discrete_mk_model_from_dataset,
 )
 from .models import (
@@ -25,6 +29,8 @@ from .models import (
 )
 from .tables import (
     write_discrete_mk_rate_table as write_discrete_mk_rate_table,
+)
+from .tables import (
     write_discrete_mk_summary_table as write_discrete_mk_summary_table,
 )
 

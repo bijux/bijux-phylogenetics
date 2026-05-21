@@ -205,9 +205,12 @@ def build_model_figure_audit(
     likelihood_surface_visible = len(likelihood_rows) == len(comparison_report.rows)
     parameter_surface_visible = len(parameter_rows) >= 5
     fit_surface_visible = len(fit_rows) == len(comparison_report.rows)
-    legend_complete = {
-        entry.surface for entry in legend_entries
-    } == {"information-criteria", "likelihood", "parameters", "fit-summary"}
+    legend_complete = {entry.surface for entry in legend_entries} == {
+        "information-criteria",
+        "likelihood",
+        "parameters",
+        "fit-summary",
+    }
     caption_ready = (
         criteria_surface_visible
         and likelihood_surface_visible
@@ -228,9 +231,11 @@ def build_model_figure_audit(
         else None
     )
     support_distinct = aicc_delta is not None and aicc_delta >= 2.0
-    warning_count = len(brownian.residual_diagnostics.warnings) + len(
-        ou.residual_diagnostics.warnings
-    ) + len(ou.identifiability_warnings)
+    warning_count = (
+        len(brownian.residual_diagnostics.warnings)
+        + len(ou.residual_diagnostics.warnings)
+        + len(ou.identifiability_warnings)
+    )
     publication_ready = (
         criteria_surface_visible
         and likelihood_surface_visible

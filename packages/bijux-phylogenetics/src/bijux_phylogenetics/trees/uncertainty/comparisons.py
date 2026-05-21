@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clade_nodes
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.io.iqtree_support import (
     parse_iqtree_branch_support_label,
 )
@@ -11,14 +9,10 @@ from bijux_phylogenetics.io.iqtree_support import (
     support_fraction as normalize_support_fraction,
 )
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clade_nodes
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
-from .models import (
-    BootstrapPosteriorCladeComparison,
-    BootstrapPosteriorSupportComparisonReport,
-    CladeFrequencyDelta,
-    PosteriorTreeSetComparisonReport,
-)
 from ..tree_sets.clade_support import compute_clade_frequency_table
 from ..tree_sets.inventory import (
     _require_tree_set,
@@ -29,6 +23,12 @@ from ..tree_sets.topology import (
     _format_clade,
     _rooted_topology_id,
     _tree_distance,
+)
+from .models import (
+    BootstrapPosteriorCladeComparison,
+    BootstrapPosteriorSupportComparisonReport,
+    CladeFrequencyDelta,
+    PosteriorTreeSetComparisonReport,
 )
 
 
@@ -69,10 +69,7 @@ def compare_posterior_tree_sets(
         for right in right_trees
     ]
     left_topologies = {_rooted_topology_id(tree, shared_taxa) for tree in left_trees}
-    right_topologies = {
-        _rooted_topology_id(tree, shared_taxa)
-        for tree in right_trees
-    }
+    right_topologies = {_rooted_topology_id(tree, shared_taxa) for tree in right_trees}
     return PosteriorTreeSetComparisonReport(
         left_path=left_path,
         right_path=right_path,

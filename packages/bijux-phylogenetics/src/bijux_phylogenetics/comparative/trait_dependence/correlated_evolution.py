@@ -5,26 +5,26 @@ import math
 from pathlib import Path
 import tempfile
 
+from bijux_phylogenetics.ancestral.discrete.policy import (
+    resolve_discrete_model_name as _resolve_discrete_model_name,
+)
 from bijux_phylogenetics.comparative._math import (
     invert_matrix,
     log_determinant,
     quadratic_form,
     stable_covariance,
 )
+from bijux_phylogenetics.comparative.discrete_evolution import (
+    run_discrete_state_transition_model,
+)
 from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_independent_contrasts,
 )
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.comparative.discrete_evolution import (
-    run_discrete_state_transition_model,
-)
-from bijux_phylogenetics.ancestral.discrete.policy import (
-    resolve_discrete_model_name as _resolve_discrete_model_name,
-)
-from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 _FISHER_95_Z = 1.959963984540054
 _LOG_2PI = math.log(2.0 * math.pi)

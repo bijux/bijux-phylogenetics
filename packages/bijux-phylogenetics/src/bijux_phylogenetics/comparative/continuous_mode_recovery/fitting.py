@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from bijux_phylogenetics.comparative.continuous_mode_recovery.reference_payloads import (
+    GEIGER_FITCONTINUOUS_RECOVERY_REFERENCE_PAYLOADS,
+)
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     ContinuousEvolutionaryModeFitReport,
     fit_continuous_evolutionary_mode,
     transform_tree_for_evolutionary_mode,
-)
-from bijux_phylogenetics.comparative.continuous_mode_recovery.reference_payloads import (
-    GEIGER_FITCONTINUOUS_RECOVERY_REFERENCE_PAYLOADS,
 )
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree

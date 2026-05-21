@@ -51,13 +51,13 @@ from .reporting import (
     write_diversification_model_comparison_table,
 )
 from .sampling import detect_incomplete_taxon_sampling_metadata
-from .trees import (
-    inspect_diversification_time_tree,
-    validate_time_tree_for_diversification,
-)
 from .traits import (
     run_trait_dependent_diversification_analysis,
     write_trait_dependent_diversification_table,
+)
+from .trees import (
+    inspect_diversification_time_tree,
+    validate_time_tree_for_diversification,
 )
 
 __all__ = [

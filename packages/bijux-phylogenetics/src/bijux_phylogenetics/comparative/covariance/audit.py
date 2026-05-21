@@ -24,8 +24,8 @@ from bijux_phylogenetics.datasets.study_inputs import (
     write_taxon_rows,
 )
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
-from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 COVARIANCE_AUDIT_CONDITION_THRESHOLD = 1e12
 COVARIANCE_AUDIT_REGULARIZATION_EPSILON = 1e-8

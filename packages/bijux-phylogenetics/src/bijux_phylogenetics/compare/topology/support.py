@@ -2,22 +2,22 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from bijux_phylogenetics.diagnostics.validation import _load_tree
+from bijux_phylogenetics.io.iqtree_support import support_fraction
 from bijux_phylogenetics.phylo.topology.clades import (
     canonical_clade_id,
     informative_rooted_clade_nodes,
     node_support_value,
     split_sort_key,
 )
-from bijux_phylogenetics.diagnostics.validation import _load_tree
-from bijux_phylogenetics.io.iqtree_support import support_fraction
 
 from .models import (
-    CladeSupportPair,
-    SupportComparisonReport,
-    SupportConflictRow,
     _STRONG_SUPPORT_THRESHOLD,
     _SUPPORT_DISAGREEMENT_THRESHOLD,
     _WEAK_SUPPORT_THRESHOLD,
+    CladeSupportPair,
+    SupportComparisonReport,
+    SupportConflictRow,
 )
 
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.topology.clades import (
     canonical_bipartition,
     informative_unrooted_splits,
@@ -10,7 +11,6 @@ from bijux_phylogenetics.phylo.topology.clades import (
 from bijux_phylogenetics.phylo.topology.node_identity import build_ape_internal_node_map
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
-from bijux_phylogenetics.io.trees import load_tree
 
 from .contracts import (
     CladeFrequency,
@@ -18,7 +18,7 @@ from .contracts import (
     TreeSetCladeSupportReport,
     TreeSetCladeSupportRow,
 )
-from .inventory import _TreeSetAnalysis, _analyze_tree_set, _require_exact_taxa
+from .inventory import _analyze_tree_set, _require_exact_taxa, _TreeSetAnalysis
 from .topology import _format_clade
 
 

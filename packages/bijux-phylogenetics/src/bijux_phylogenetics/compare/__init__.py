@@ -1,5 +1,15 @@
 """Tree comparison workflows."""
 
+from .influence import (
+    TaxonInfluenceReport,
+    TaxonInfluenceRow,
+    analyze_taxon_influence,
+    write_taxon_influence_table,
+)
+from .presentation import (
+    ComparisonReportBuildResult,
+    build_tree_comparison_report,
+)
 from .reference import (
     SupportReferenceObservation,
     SupportReferenceValidationReport,
@@ -7,16 +17,6 @@ from .reference import (
     TreeDistanceReferenceValidationReport,
     validate_support_reference_examples,
     validate_tree_distance_reference_examples,
-)
-from .presentation import (
-    ComparisonReportBuildResult,
-    build_tree_comparison_report,
-)
-from .influence import (
-    TaxonInfluenceReport,
-    TaxonInfluenceRow,
-    analyze_taxon_influence,
-    write_taxon_influence_table,
 )
 from .topology import (
     BranchScoreComparisonReport,
@@ -32,12 +32,12 @@ from .topology import (
     TreeComparisonReport,
     compare_branch_score_distance,
     compare_clade_overlap,
-    compare_topology_distance,
     compare_robinson_foulds,
     compare_support_values,
+    compare_topology_distance,
+    compare_tree_paths,
     compare_tree_sets_structurally,
     compare_tree_structurally,
-    compare_tree_paths,
     prune_trees_to_shared_taxa,
     write_clade_overlap_table,
     write_shared_taxa_pruning_table,
@@ -45,6 +45,7 @@ from .topology import (
     write_support_comparison_table,
     write_topology_distance_split_table,
 )
+
 __all__ = [
     "BranchScoreComparisonReport",
     "CladeOverlapComparisonReport",

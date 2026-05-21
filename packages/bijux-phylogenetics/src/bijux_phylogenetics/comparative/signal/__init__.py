@@ -1,5 +1,12 @@
 """Phylogenetic signal and independent-contrast workflows."""
 
+from .contrasts import (
+    IndependentContrastRegressionReport,
+    IndependentContrastRegressionRow,
+    summarize_independent_contrast_regression,
+    write_independent_contrast_regression_table,
+    write_independent_contrast_table,
+)
 from .core import (
     BlombergKReport,
     IndependentContrast,
@@ -19,13 +26,6 @@ from .core import (
     estimate_pagels_lambda,
     evaluate_pagels_lambda_likelihood,
     evaluate_pagels_lambda_likelihood_from_dataset,
-)
-from .contrasts import (
-    IndependentContrastRegressionReport,
-    IndependentContrastRegressionRow,
-    summarize_independent_contrast_regression,
-    write_independent_contrast_regression_table,
-    write_independent_contrast_table,
 )
 from .review import (
     PhylogeneticSignalSummaryReport,

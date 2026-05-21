@@ -4,7 +4,7 @@ import csv
 from pathlib import Path
 
 from .contracts import TreeDistanceMatrixReport, TreeDistancePair
-from .inventory import _TreeSetAnalysis, _analyze_tree_set, _require_exact_taxa
+from .inventory import _analyze_tree_set, _require_exact_taxa, _TreeSetAnalysis
 from .topology import _tree_distance
 
 

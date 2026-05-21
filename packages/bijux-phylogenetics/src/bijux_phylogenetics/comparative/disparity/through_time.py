@@ -5,13 +5,13 @@ from html import escape
 from pathlib import Path
 from statistics import mean
 
-from bijux_phylogenetics.phylo.topology.node_identity import build_ape_internal_node_map
-from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.datasets.study_inputs import (
     align_tree_and_trait_table,
     validate_traits_table,
+    write_taxon_rows,
 )
+from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
+from bijux_phylogenetics.phylo.topology.node_identity import build_ape_internal_node_map
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
@@ -442,7 +442,9 @@ def write_disparity_through_time_bin_table(
                 "midpoint_time": row.midpoint_time,
                 "point_count": row.point_count,
                 "mean_relative_disparity": (
-                    "" if row.mean_relative_disparity is None else row.mean_relative_disparity
+                    ""
+                    if row.mean_relative_disparity is None
+                    else row.mean_relative_disparity
                 ),
                 "minimum_relative_disparity": (
                     ""
@@ -600,9 +602,7 @@ def _load_continuous_disparity_dataset(
         required_trait_columns=trait_columns,
         drop_missing_for_columns=trait_columns,
     )
-    rows_by_taxon = {
-        row[alignment.taxon_column]: row for row in alignment.rows
-    }
+    rows_by_taxon = {row[alignment.taxon_column]: row for row in alignment.rows}
     analyzed_taxa: list[str] = []
     values_by_taxon: dict[str, list[float]] = {}
     excluded_taxa: list[DisparityTaxonExclusion] = []
@@ -680,7 +680,11 @@ def _validate_dtt_tree(tree: PhyloTree) -> None:
         for node in tree.iter_nodes()
         if node is not tree.root
     )
-    if any(node.branch_length is None for node in tree.iter_nodes() if node is not tree.root):
+    if any(
+        node.branch_length is None
+        for node in tree.iter_nodes()
+        if node is not tree.root
+    ):
         raise ComparativeMethodError(
             "disparity-through-time analysis requires complete branch lengths"
         )
@@ -715,11 +719,17 @@ def _build_clade_disparity_rows(
     depth_lookup = _node_depth_lookup(tree)
     rows: list[CladeDisparityRow] = []
     for ape_node_id, node in build_ape_internal_node_map(tree).items():
-        descendant_taxa = [taxon for taxon in analyzed_taxa if taxon in set(node.descendant_taxa)]
+        descendant_taxa = [
+            taxon for taxon in analyzed_taxa if taxon in set(node.descendant_taxa)
+        ]
         matrix = [values_by_taxon[taxon] for taxon in descendant_taxa]
         branch_length_depth = depth_lookup[node.node_id or ""]
         branching_time = root_age - branch_length_depth
-        parent_depth = branch_length_depth if node is tree.root else depth_lookup[node.parent.node_id or ""]
+        parent_depth = (
+            branch_length_depth
+            if node is tree.root
+            else depth_lookup[node.parent.node_id or ""]
+        )
         stem_branching_time = root_age - parent_depth
         rows.append(
             CladeDisparityRow(
@@ -731,12 +741,16 @@ def _build_clade_disparity_rows(
                 descendant_taxon_count=len(descendant_taxa),
                 branch_length_depth=float(format(branch_length_depth, ".15g")),
                 branching_time=float(format(branching_time, ".15g")),
-                relative_branching_time=float(format(branching_time / root_age, ".15g")),
+                relative_branching_time=float(
+                    format(branching_time / root_age, ".15g")
+                ),
                 stem_branching_time=float(format(stem_branching_time, ".15g")),
                 relative_stem_branching_time=float(
                     format(stem_branching_time / root_age, ".15g")
                 ),
-                disparity=float(format(_average_squared_euclidean_distance(matrix), ".15g")),
+                disparity=float(
+                    format(_average_squared_euclidean_distance(matrix), ".15g")
+                ),
             )
         )
     return rows
@@ -804,7 +818,9 @@ def _node_depth_lookup(tree: PhyloTree) -> dict[str, float]:
         node_id = node.node_id or ""
         current_depth = depths[node_id]
         for child in node.children:
-            depths[child.node_id or ""] = current_depth + float(child.branch_length or 0.0)
+            depths[child.node_id or ""] = current_depth + float(
+                child.branch_length or 0.0
+            )
             visit(child)
 
     visit(tree.root)

@@ -6,17 +6,22 @@ from .inspection import (
     BranchLengthAggregate,
     BranchLengthDistributionReport,
     BranchLengthRow,
-    analyze_branch_length_distribution,
-    analyze_tree_set_branch_lengths,
-    write_branch_length_table,
-)
-from .inspection import (
     CladeMetadataObservation,
     CladeTableReport,
     CladeTableRow,
+    TreeShapeAggregate,
+    TreeShapeReport,
+    TreeShapeRow,
+    analyze_branch_length_distribution,
+    analyze_tree_set_branch_lengths,
     extract_tree_clades,
     extract_tree_set_clades,
+    summarize_tree_set_shapes,
+    summarize_tree_shape,
+    summarize_tree_shape_from_tree,
+    write_branch_length_table,
     write_clade_table,
+    write_tree_shape_table,
 )
 from .tree_sets import (
     CladeFrequency,
@@ -44,15 +49,6 @@ from .tree_sets import (
     write_reference_tree_clade_support_table,
     write_tree_distance_matrix,
 )
-from .inspection import (
-    TreeShapeAggregate,
-    TreeShapeReport,
-    TreeShapeRow,
-    summarize_tree_set_shapes,
-    summarize_tree_shape,
-    summarize_tree_shape_from_tree,
-    write_tree_shape_table,
-)
 from .uncertainty import (
     BootstrapPosteriorCladeComparison,
     BootstrapPosteriorSupportComparisonReport,
@@ -79,6 +75,8 @@ from .uncertainty import (
     TreeSetStorageRiskReport,
     TreeSetThinningSensitivityReport,
     TreeSetThinningSensitivityRow,
+    TreeSetUncertaintyMethodReport,
+    TreeSetUncertaintyMethodsSummaryTextResult,
     TreeTopologyCluster,
     TreeTopologyClusterReport,
     UncertaintyAwareCladeConclusion,
@@ -91,6 +89,8 @@ from .uncertainty import (
     assess_tree_set_storage_risk,
     assess_tree_set_thinning_sensitivity,
     benchmark_tree_set_uncertainty,
+    build_tree_set_uncertainty_method_report,
+    build_tree_set_uncertainty_methods_summary_text,
     cluster_trees_by_topology,
     compare_bootstrap_and_posterior_uncertainty,
     compare_consensus_thresholds,
@@ -109,15 +109,9 @@ from .uncertainty import (
     write_clade_credibility_conflict_table,
     write_topology_cluster_table,
     write_tree_distance_distribution_table,
+    write_tree_set_uncertainty_methods_summary_text,
     write_uncertainty_conclusion_table,
     write_unstable_clade_table,
-)
-from .uncertainty import (
-    TreeSetUncertaintyMethodReport,
-    TreeSetUncertaintyMethodsSummaryTextResult,
-    build_tree_set_uncertainty_method_report,
-    build_tree_set_uncertainty_methods_summary_text,
-    write_tree_set_uncertainty_methods_summary_text,
 )
 
 __all__ = [

@@ -5,12 +5,15 @@ import math
 from pathlib import Path
 from statistics import median
 
-from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.datasets.study_inputs import (
+    load_taxon_table,
+    validate_traits_table,
+    write_taxon_rows,
+)
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.datasets.study_inputs import validate_traits_table
 from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
-from bijux_phylogenetics.io.trees import load_tree
 
 _CONTINUOUS_EXCEPTIONAL_THRESHOLD = 0.65
 _CATEGORICAL_EXCEPTIONAL_THRESHOLD = 0.33

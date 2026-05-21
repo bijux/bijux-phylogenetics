@@ -1,14 +1,5 @@
 from __future__ import annotations
 
-from .brownian import (
-    BrownianCovarianceReport,
-    BrownianCovarianceRow,
-    BROWNIAN_COVARIANCE_CONDITION_THRESHOLD,
-    summarize_brownian_covariance,
-    summarize_brownian_covariance_from_tree,
-    write_brownian_covariance_long_table,
-    write_brownian_covariance_matrix_table,
-)
 from .audit import (
     ComparativeCovarianceAuditReport,
     CovarianceAuditCandidateRow,
@@ -17,6 +8,15 @@ from .audit import (
     write_comparative_covariance_audit_candidate_table,
     write_comparative_covariance_audit_excluded_taxa_table,
     write_comparative_covariance_audit_summary_table,
+)
+from .brownian import (
+    BROWNIAN_COVARIANCE_CONDITION_THRESHOLD,
+    BrownianCovarianceReport,
+    BrownianCovarianceRow,
+    summarize_brownian_covariance,
+    summarize_brownian_covariance_from_tree,
+    write_brownian_covariance_long_table,
+    write_brownian_covariance_matrix_table,
 )
 
 __all__ = [

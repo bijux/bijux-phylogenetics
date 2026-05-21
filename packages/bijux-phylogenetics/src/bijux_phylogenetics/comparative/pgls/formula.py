@@ -4,7 +4,11 @@ import math
 
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
-from .models import ComparativeFormulaSpecification, PGLSPredictorClassification, _FormulaTermDescriptor
+from .models import (
+    ComparativeFormulaSpecification,
+    PGLSPredictorClassification,
+    _FormulaTermDescriptor,
+)
 
 
 def parse_term_descriptor(raw_term: str) -> _FormulaTermDescriptor:

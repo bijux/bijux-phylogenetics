@@ -16,10 +16,12 @@ from bijux_phylogenetics.comparative.common import (
     tip_root_depths,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.phylo.branch_lengths.ultrametric import summarize_ultrametric_tip_depths
-from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
+    summarize_ultrametric_tip_depths,
+)
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 BROWNIAN_COVARIANCE_CONDITION_THRESHOLD = 1e12
 

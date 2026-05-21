@@ -6,23 +6,31 @@ from bijux_phylogenetics.ancestral.common import AncestralDiscreteDataset
 from bijux_phylogenetics.ancestral.discrete import DiscreteOptimizerDiagnostics
 from bijux_phylogenetics.ancestral.discrete.likelihood import (
     fit_discrete_mk_model as _fit_discrete_mk_model,
+)
+from bijux_phylogenetics.ancestral.discrete.likelihood import (
     tree_log_likelihood as _tree_log_likelihood,
 )
 from bijux_phylogenetics.ancestral.discrete.policy import (
     parameter_count as _parameter_count,
-    resolve_allowed_transition_pairs as _resolve_allowed_transition_pairs,
-    resolve_discrete_model_name as _resolve_discrete_model_name,
 )
-from bijux_phylogenetics.comparative.search import (
-    BoundedSearchControls,
-    run_bounded_maximization,
+from bijux_phylogenetics.ancestral.discrete.policy import (
+    resolve_allowed_transition_pairs as _resolve_allowed_transition_pairs,
+)
+from bijux_phylogenetics.ancestral.discrete.policy import (
+    resolve_discrete_model_name as _resolve_discrete_model_name,
 )
 from bijux_phylogenetics.comparative.common import tip_root_depths
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     transform_tree_for_evolutionary_mode,
 )
+from bijux_phylogenetics.comparative.search import (
+    BoundedSearchControls,
+    run_bounded_maximization,
+)
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
+    summarize_ultrametric_tip_depths,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.phylo.branch_lengths.ultrametric import summarize_ultrametric_tip_depths
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 from .models import (
@@ -296,14 +304,16 @@ def fit_discrete_mk_parameterized_transform_surface(
             fine_grid_point_count=DISCRETE_TRANSFORM_FINE_GRID_POINT_COUNT,
             refinement_start_count=DISCRETE_TRANSFORM_REFINEMENT_START_COUNT,
         ),
-        evaluate=lambda parameter_value: evaluate_discrete_mk_transform_search_candidate(
-            dataset,
-            model=model,
-            transform=transform,
-            state_ordering=state_ordering,
-            state_order=state_order,
-            allowed_transition_pairs=allowed_transition_pairs,
-            parameter_value=parameter_value,
+        evaluate=lambda parameter_value: (
+            evaluate_discrete_mk_transform_search_candidate(
+                dataset,
+                model=model,
+                transform=transform,
+                state_ordering=state_ordering,
+                state_order=state_order,
+                allowed_transition_pairs=allowed_transition_pairs,
+                parameter_value=parameter_value,
+            )
         ),
         optimizer_name="governed-two-stage-grid-search",
         parameter_search_strategy="bounded-two-stage-grid-search",
@@ -395,7 +405,13 @@ def evaluate_discrete_mk_transform_candidate(
         root_prior=root_prior,
         root_prior_mode="observed",
     )
-    return transformed_tree, rate_matrix, root_prior, optimizer_diagnostics, log_likelihood
+    return (
+        transformed_tree,
+        rate_matrix,
+        root_prior,
+        optimizer_diagnostics,
+        log_likelihood,
+    )
 
 
 def evaluate_discrete_mk_transform_search_candidate(
@@ -487,9 +503,9 @@ def discrete_transform_warning_rows(
         reverse=True,
     )
     warnings: list[DiscreteMkTransformWarning] = []
-    if math.isclose(parameter_value, lower, rel_tol=0.0, abs_tol=boundary_tolerance) or math.isclose(
-        parameter_value, upper, rel_tol=0.0, abs_tol=boundary_tolerance
-    ):
+    if math.isclose(
+        parameter_value, lower, rel_tol=0.0, abs_tol=boundary_tolerance
+    ) or math.isclose(parameter_value, upper, rel_tol=0.0, abs_tol=boundary_tolerance):
         warnings.append(
             DiscreteMkTransformWarning(
                 kind=(
@@ -513,42 +529,54 @@ def discrete_transform_warning_rows(
                 message=f"discrete Mk {transform} likelihood stays shallow across the bounded search, so branch-length transformation support may be unstable",
             )
         )
-    if transform == "lambda" and parameter_value <= lower + max(boundary_tolerance, 1e-6):
+    if transform == "lambda" and parameter_value <= lower + max(
+        boundary_tolerance, 1e-6
+    ):
         warnings.append(
             DiscreteMkTransformWarning(
                 kind="weak_phylogenetic_signal",
                 message="best-supported discrete Mk lambda remains close to the zero-signal boundary and may be difficult to distinguish from a star-like transition surface",
             )
         )
-    if transform == "lambda" and parameter_value >= upper - max(boundary_tolerance, 1e-6):
+    if transform == "lambda" and parameter_value >= upper - max(
+        boundary_tolerance, 1e-6
+    ):
         warnings.append(
             DiscreteMkTransformWarning(
                 kind="brownian_limit",
                 message="best-supported discrete Mk lambda remains close to the untransformed boundary and may be difficult to distinguish from the original branch-length surface",
             )
         )
-    if transform == "kappa" and parameter_value <= lower + max(boundary_tolerance, 1e-6):
+    if transform == "kappa" and parameter_value <= lower + max(
+        boundary_tolerance, 1e-6
+    ):
         warnings.append(
             DiscreteMkTransformWarning(
                 kind="branch_length_flattening_limit",
                 message="best-supported discrete Mk kappa remains close to the zero-contrast boundary and may be difficult to distinguish from branch-length flattening",
             )
         )
-    if transform == "kappa" and parameter_value >= upper - max(boundary_tolerance, 1e-6):
+    if transform == "kappa" and parameter_value >= upper - max(
+        boundary_tolerance, 1e-6
+    ):
         warnings.append(
             DiscreteMkTransformWarning(
                 kind="branch_length_contrast_limit",
                 message="best-supported discrete Mk kappa remains close to the untransformed branch-length boundary and may be weakly identified",
             )
         )
-    if transform == "delta" and parameter_value <= lower + max(boundary_tolerance, 1e-6):
+    if transform == "delta" and parameter_value <= lower + max(
+        boundary_tolerance, 1e-6
+    ):
         warnings.append(
             DiscreteMkTransformWarning(
                 kind="earliest_change_limit",
                 message="best-supported discrete Mk delta remains close to the earliest-change boundary and may be difficult to distinguish from an extreme root-concentrated transition surface",
             )
         )
-    if transform == "delta" and parameter_value >= upper - max(boundary_tolerance, 1e-6):
+    if transform == "delta" and parameter_value >= upper - max(
+        boundary_tolerance, 1e-6
+    ):
         warnings.append(
             DiscreteMkTransformWarning(
                 kind="late_change_limit",

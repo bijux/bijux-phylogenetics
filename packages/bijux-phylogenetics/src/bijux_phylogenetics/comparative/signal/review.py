@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
+
 from .core import (
     BlombergKReport,
     PagelLambdaReport,
@@ -12,7 +14,6 @@ from .core import (
     compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
 )
-from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 
 @dataclass(slots=True)

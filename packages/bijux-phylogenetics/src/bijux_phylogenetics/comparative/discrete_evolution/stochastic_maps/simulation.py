@@ -7,10 +7,14 @@ import numpy
 from bijux_phylogenetics.ancestral.common import load_discrete_dataset, node_signature
 from bijux_phylogenetics.ancestral.discrete.likelihood import (
     branch_length as _branch_length,
+)
+from bijux_phylogenetics.ancestral.discrete.likelihood import (
     transition_probability_matrix as _transition_probability_matrix,
 )
 from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_discrete_model_name as _resolve_discrete_model_name,
+)
+from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_root_prior as _resolve_root_prior,
 )
 from bijux_phylogenetics.comparative.discrete_mk import (

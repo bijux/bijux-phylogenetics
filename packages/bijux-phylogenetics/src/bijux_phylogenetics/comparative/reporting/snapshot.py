@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from bijux_phylogenetics.comparative.assessment import (
-    ComparativeMethodMaturityReport,
-    ComparativeSensitivityReport,
     assess_comparative_method_maturity,
     run_comparative_sensitivity_analysis,
 )

@@ -1,59 +1,40 @@
 from __future__ import annotations
 
 import json
-import math
 from pathlib import Path
 
-from bijux_phylogenetics.ancestral.common import node_signature
-from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.runtime.errors import (
-    DiversificationAnalysisError,
-)
-from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.render.html import write_html_report
 
+from .clades import (
+    detect_diversification_outlier_clades,
+)
+from .lineage import (
+    compute_lineage_through_time_curve,
+)
 from .models import (
-    CladeDiversificationObservation,
-    CladeDiversificationScanReport,
     DiversificationGammaStatisticReport,
     DiversificationMethodReport,
     DiversificationMethodsSummaryTextResult,
     DiversificationModelComparisonReport,
-    DiversificationModelComparisonRow,
-    DiversificationRateReport,
     DiversificationReportBuildResult,
     GeigerBirthDeathExclusionReport,
-    LineageThroughTimePoint,
-    LineageThroughTimeReport,
     MedusaExclusionReport,
-    SamplingFractionIssue,
-    SamplingFractionReport,
-    TimeTreeValidationReport,
-    TraitDependentDiversificationReport,
-    TraitDependentDiversificationState,
-)
-from .lineage import (
-    compute_lineage_through_time_curve,
-    write_lineage_through_time_table,
 )
 from .rates import (
     compare_diversification_models,
     compute_diversification_gamma_statistic,
     estimate_diversification_rate,
+)
+from .rates import (
     geiger_birth_death_exclusion_reason as _geiger_birth_death_exclusion_reason,
 )
 from .sampling import detect_incomplete_taxon_sampling_metadata
-from .clades import (
-    detect_diversification_outlier_clades,
-    write_clade_diversification_table,
-)
-from .trees import (
-    inspect_diversification_time_tree,
-    validate_time_tree_for_diversification,
-)
 from .traits import (
     run_trait_dependent_diversification_analysis,
-    write_trait_dependent_diversification_table,
+)
+from .trees import (
+    validate_time_tree_for_diversification,
 )
 
 
@@ -263,7 +244,9 @@ def build_diversification_methods_summary_text(
     )
     trait_state_count = 0 if trait_report is None else len(trait_report.states)
     trait_monophyletic_count = (
-        0 if trait_report is None else sum(1 for row in trait_report.states if row.monophyletic)
+        0
+        if trait_report is None
+        else sum(1 for row in trait_report.states if row.monophyletic)
     )
     return (
         "# Diversification Analysis Methods Summary\n\n"
@@ -292,14 +275,14 @@ def build_diversification_methods_summary_text(
             if sampling_report is None
             else (
                 f"- taxon column: `{sampling_report.taxon_column}`\n"
-                + f"- sampling column: `{sampling_report.sampling_column or 'missing'}`\n"
-                + f"- matched taxa with sampling rows: `{len(sampling_report.matched_taxa)}`\n"
-                + f"- tree tips missing sampling rows: `{len(sampling_report.missing_taxa)}`\n"
-                + f"- invalid sampling rows: `{len(sampling_report.invalid_rows)}`\n"
-                + f"- sampling metadata complete: `{'yes' if sampling_report.complete else 'no'}`\n"
-                + f"- mean sampling fraction used for correction: `{sampling_fraction_text}`\n"
-                + f"- heterogeneous sampling fractions: `{'yes' if sampling_report.heterogeneous_values else 'no'}`\n"
-                + f"- sampling warnings: {_bullet_list(sampling_report.warnings)}\n"
+                f"- sampling column: `{sampling_report.sampling_column or 'missing'}`\n"
+                f"- matched taxa with sampling rows: `{len(sampling_report.matched_taxa)}`\n"
+                f"- tree tips missing sampling rows: `{len(sampling_report.missing_taxa)}`\n"
+                f"- invalid sampling rows: `{len(sampling_report.invalid_rows)}`\n"
+                f"- sampling metadata complete: `{'yes' if sampling_report.complete else 'no'}`\n"
+                f"- mean sampling fraction used for correction: `{sampling_fraction_text}`\n"
+                f"- heterogeneous sampling fractions: `{'yes' if sampling_report.heterogeneous_values else 'no'}`\n"
+                f"- sampling warnings: {_bullet_list(sampling_report.warnings)}\n"
             )
         )
         + "\n## Diversification Models And Rates\n\n"
@@ -323,9 +306,9 @@ def build_diversification_methods_summary_text(
             if trait_report is None
             else (
                 f"- trait-linked diversification trait: `{trait_report.trait}`\n"
-                + f"- observed trait states reviewed: `{trait_state_count}`\n"
-                + f"- monophyletic states with interpretable crown ages: `{trait_monophyletic_count}`\n"
-                + f"- trait-linked warnings: {_bullet_list(trait_report.warnings)}\n"
+                f"- observed trait states reviewed: `{trait_state_count}`\n"
+                f"- monophyletic states with interpretable crown ages: `{trait_monophyletic_count}`\n"
+                f"- trait-linked warnings: {_bullet_list(trait_report.warnings)}\n"
             )
         )
         + f"- MEDUSA parity claim: {_medusa_exclusion_reason()}\n"
@@ -489,9 +472,7 @@ def write_diversification_model_comparison_table(
             "log_likelihood": format(row.log_likelihood, ".15g"),
             "aic": format(row.aic, ".15g"),
             "sampling_fraction": format(row.sampling_fraction, ".15g"),
-            "net_diversification_rate": format(
-                row.net_diversification_rate, ".15g"
-            ),
+            "net_diversification_rate": format(row.net_diversification_rate, ".15g"),
             "relative_extinction": format(row.relative_extinction, ".15g"),
             "better_model": str(row.model == report.better_model).lower(),
         }
@@ -511,8 +492,6 @@ def write_diversification_model_comparison_table(
         ],
         rows=rows,
     )
-
-
 
 
 def render_diversification_report(
@@ -610,6 +589,8 @@ def render_diversification_report(
         methods_summary_warning_count=len(
             _diversification_methods_summary_warnings(report)
         ),
-        methods_summary_path=None if methods_summary is None else methods_summary.output_path,
+        methods_summary_path=None
+        if methods_summary is None
+        else methods_summary.output_path,
         report=report,
     )

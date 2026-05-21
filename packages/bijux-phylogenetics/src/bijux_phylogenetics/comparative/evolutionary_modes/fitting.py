@@ -8,6 +8,12 @@ from bijux_phylogenetics.comparative.common import (
     load_comparative_dataset,
     stable_covariance,
 )
+from bijux_phylogenetics.comparative.continuous.model_fitting import (
+    _brownian_parameter_intervals,
+    _build_residual_diagnostics,
+    _comparison_row,
+    _fit_intercept_only_model,
+)
 from bijux_phylogenetics.comparative.evolutionary_modes.models import (
     ALLOWED_EVOLUTIONARY_MODES,
     CONTINUOUS_GAUSSIAN_LIKELIHOOD_COMPARISON_POLICY,
@@ -35,12 +41,6 @@ from bijux_phylogenetics.comparative.evolutionary_modes.tree_transforms import (
     clone_tree,
     identity_covariance_matrix,
     transform_tree,
-)
-from bijux_phylogenetics.comparative.continuous.model_fitting import (
-    _brownian_parameter_intervals,
-    _build_residual_diagnostics,
-    _comparison_row,
-    _fit_intercept_only_model,
 )
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
@@ -288,12 +288,10 @@ def fit_evolutionary_mode_from_dataset(
             )
             for parameter, log_likelihood in search_result.profile
         ]
-        identifiability_warnings = (
-            early_burst_identifiability_warnings_from_profile(
-                parameter_value,
-                search_result.profile,
-                early_burst_bounds,
-            )
+        identifiability_warnings = early_burst_identifiability_warnings_from_profile(
+            parameter_value,
+            search_result.profile,
+            early_burst_bounds,
         )
         assumptions = [
             "Early-burst mode follows the geiger-style branch-rescaling rule before Brownian intercept fitting.",

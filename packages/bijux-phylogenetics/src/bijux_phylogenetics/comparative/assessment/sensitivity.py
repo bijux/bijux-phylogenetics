@@ -144,8 +144,8 @@ def run_comparative_sensitivity_analysis(
 def _write_reduced_comparative_inputs(
     tree_path: Path, taxa: list[str], dropped_taxon: str
 ) -> tuple[Path, list[str]]:
-    from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
     from bijux_phylogenetics.io.newick import write_newick
+    from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 
     kept_taxa = [taxon for taxon in taxa if taxon != dropped_taxon]
     reduced_tree, _ = prune_tree_to_requested_taxa(tree_path, kept_taxa)
@@ -163,7 +163,10 @@ def _write_reduced_trait_table(
     *,
     taxon_column: str,
 ) -> Path:
-    from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
+    from bijux_phylogenetics.datasets.study_inputs import (
+        load_taxon_table,
+        write_taxon_rows,
+    )
 
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     kept_taxa = {taxon for taxon in taxa if taxon != dropped_taxon}

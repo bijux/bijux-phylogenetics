@@ -10,14 +10,14 @@ import tracemalloc
 
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.io.newick import write_newick
+from bijux_phylogenetics.render.reproducibility import (
+    FigureReproducibilityFilter,
+    write_figure_reproducibility_manifest,
+)
 from bijux_phylogenetics.render.svg import (
     TreeRenderResult,
     audit_support_label_rendering,
     render_tree_svg,
-)
-from bijux_phylogenetics.render.reproducibility import (
-    FigureReproducibilityFilter,
-    write_figure_reproducibility_manifest,
 )
 
 from ..tree_sets import (
@@ -346,9 +346,7 @@ def _build_publication_audit(
         unstable_taxon_count == 0 or plotted_unstable_taxon_count > 0
     )
     topology_clusters_visible = plotted_topology_cluster_count > 0
-    legend_complete = {
-        entry.surface for entry in legend_entries
-    } == {
+    legend_complete = {entry.surface for entry in legend_entries} == {
         "consensus-tree",
         "clade-support",
         "unstable-taxa",
@@ -480,11 +478,7 @@ def _build_review_html(
         "topology_clusters": topology_clusters_plot_path.read_text(encoding="utf-8"),
     }
     audit_rows = "".join(
-        "<tr><th>"
-        + escape(label)
-        + "</th><td>"
-        + escape(value)
-        + "</td></tr>"
+        "<tr><th>" + escape(label) + "</th><td>" + escape(value) + "</td></tr>"
         for label, value in [
             ("publication_ready", str(audit.publication_ready).lower()),
             ("support_labels_validated", str(audit.support_labels_validated).lower()),
@@ -493,9 +487,7 @@ def _build_review_html(
             ("topology_clusters_visible", str(audit.topology_clusters_visible).lower()),
         ]
     )
-    limitation_items = "".join(
-        f"<li>{escape(item)}</li>" for item in audit.limitations
-    )
+    limitation_items = "".join(f"<li>{escape(item)}</li>" for item in audit.limitations)
     return "\n".join(
         [
             "<!DOCTYPE html>",
@@ -527,10 +519,18 @@ def _build_review_html(
             "    <ul>" + limitation_items + "</ul>",
             "  </section>",
             '  <section class="grid" style="margin-top: 20px;">',
-            '    <section class="panel"><h2>Consensus Tree</h2><div class="figure-shell">' + figures["consensus"] + "</div></section>",
-            '    <section class="panel"><h2>Clade Support</h2><div class="figure-shell">' + figures["clade_support"] + "</div></section>",
-            '    <section class="panel"><h2>Unstable Taxa</h2><div class="figure-shell">' + figures["unstable_taxa"] + "</div></section>",
-            '    <section class="panel"><h2>Topology Clusters</h2><div class="figure-shell">' + figures["topology_clusters"] + "</div></section>",
+            '    <section class="panel"><h2>Consensus Tree</h2><div class="figure-shell">'
+            + figures["consensus"]
+            + "</div></section>",
+            '    <section class="panel"><h2>Clade Support</h2><div class="figure-shell">'
+            + figures["clade_support"]
+            + "</div></section>",
+            '    <section class="panel"><h2>Unstable Taxa</h2><div class="figure-shell">'
+            + figures["unstable_taxa"]
+            + "</div></section>",
+            '    <section class="panel"><h2>Topology Clusters</h2><div class="figure-shell">'
+            + figures["topology_clusters"]
+            + "</div></section>",
             "  </section>",
             '  <section class="panel" style="margin-top: 20px;">',
             "    <h2>Methods Summary</h2>",
@@ -607,9 +607,7 @@ def build_tree_set_uncertainty_figure_package(
         methods_summary_path = out_dir / "tree-set-uncertainty-methods-summary.md"
         review_path = out_dir / "uncertainty-review.html"
         manifest_path = out_dir / "uncertainty-package-manifest.json"
-        reproducibility_manifest_path = (
-            out_dir / "figure-reproducibility.manifest.json"
-        )
+        reproducibility_manifest_path = out_dir / "figure-reproducibility.manifest.json"
 
         write_newick(consensus_tree_path, consensus_tree)
         support_audit = audit_support_label_rendering(consensus_tree_path)
@@ -803,9 +801,7 @@ def build_tree_set_uncertainty_figure_package(
             "output_paths": [str(path) for path in artifact_paths],
             "output_checksums": {str(path): _sha256(path) for path in artifact_paths},
             "reproducibility_manifest_path": str(reproducibility_manifest_path),
-            "reproducibility_manifest_checksum": _sha256(
-                reproducibility_manifest_path
-            ),
+            "reproducibility_manifest_checksum": _sha256(reproducibility_manifest_path),
             "reproducibility_manifest": reproducibility_manifest,
             "layout": layout,
             "plot_row_limit": plot_row_limit,
@@ -818,9 +814,7 @@ def build_tree_set_uncertainty_figure_package(
             "methods_summary": _json_ready(asdict(methods_summary)),
             "audit": _json_ready(asdict(audit)),
             "outputs": {"methods_summary_path": str(methods_summary_path)},
-            "metrics": {
-                "methods_summary_warning_count": methods_summary.warning_count
-            },
+            "metrics": {"methods_summary_warning_count": methods_summary.warning_count},
             "linked_artifact_count": len(artifact_paths),
         }
         manifest_path.write_text(

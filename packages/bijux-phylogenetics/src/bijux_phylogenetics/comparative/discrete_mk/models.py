@@ -8,8 +8,9 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteOptimizerDiagnostics,
     DiscreteTransitionRateRow,
 )
-from bijux_phylogenetics.comparative.model_selection import ComparativeModelComparisonRow
-
+from bijux_phylogenetics.comparative.model_selection import (
+    ComparativeModelComparisonRow,
+)
 
 DISCRETE_MK_MODEL_COMPARISON_ORDER = (
     "equal-rates",
@@ -19,12 +20,8 @@ DISCRETE_MK_MODEL_COMPARISON_ORDER = (
 DISCRETE_MK_LIKELIHOOD_CONSTANT_POLICY = (
     "continuous-time-markov-pruning-loglikelihood-has-no-extra-normalizing-constant"
 )
-DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY = (
-    "raw-loglikelihood-and-derived-aic-are-directly-comparable-when-all-candidate-mk-models-share-the-owned-pruning-likelihood-policy"
-)
-DISCRETE_MK_MODEL_RANKING_POLICY = (
-    "relative-aic-and-aicc-ranking-is-permitted-only-when-all-candidate-discrete-mk-models-share-one-pruning-likelihood-policy"
-)
+DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY = "raw-loglikelihood-and-derived-aic-are-directly-comparable-when-all-candidate-mk-models-share-the-owned-pruning-likelihood-policy"
+DISCRETE_MK_MODEL_RANKING_POLICY = "relative-aic-and-aicc-ranking-is-permitted-only-when-all-candidate-discrete-mk-models-share-one-pruning-likelihood-policy"
 DISCRETE_MK_MODEL_CONFIDENCE_WEIGHT_BASIS = "AICc"
 DISCRETE_MK_MODEL_CONFIDENCE_DELTA_THRESHOLD = 2.0
 

@@ -3,14 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
-from bijux_phylogenetics.comparative.search import (
-    BoundedSearchControls,
-    run_bounded_maximization,
-)
 from bijux_phylogenetics.comparative.common import (
     ComparativeDataset,
     build_brownian_covariance_matrix,
     stable_covariance,
+)
+from bijux_phylogenetics.comparative.continuous.model_fitting import (
+    _fit_intercept_only_model,
 )
 from bijux_phylogenetics.comparative.evolutionary_modes.models import (
     ContinuousModeBoundaryAssessment,
@@ -22,8 +21,9 @@ from bijux_phylogenetics.comparative.evolutionary_modes.numeric import stable_fl
 from bijux_phylogenetics.comparative.evolutionary_modes.tree_transforms import (
     transform_tree,
 )
-from bijux_phylogenetics.comparative.continuous.model_fitting import (
-    _fit_intercept_only_model,
+from bijux_phylogenetics.comparative.search import (
+    BoundedSearchControls,
+    run_bounded_maximization,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
@@ -53,9 +53,7 @@ def normalized_search_controls(
     search_controls: ContinuousModeSearchControls | None,
 ) -> ContinuousModeSearchControls:
     controls = (
-        ContinuousModeSearchControls()
-        if search_controls is None
-        else search_controls
+        ContinuousModeSearchControls() if search_controls is None else search_controls
     )
     if controls.coarse_grid_point_count < 2:
         raise ComparativeMethodError(
@@ -243,9 +241,9 @@ def ou_identifiability_warnings_from_profile(
             )
         )
     ordered_alphas = sorted(candidate for candidate, _ in profile)
-    if math.isclose(alpha, ordered_alphas[0], rel_tol=0.0, abs_tol=1e-9) or math.isclose(
-        alpha, ordered_alphas[-1], rel_tol=0.0, abs_tol=1e-9
-    ):
+    if math.isclose(
+        alpha, ordered_alphas[0], rel_tol=0.0, abs_tol=1e-9
+    ) or math.isclose(alpha, ordered_alphas[-1], rel_tol=0.0, abs_tol=1e-9):
         warnings.append(
             EvolutionaryModeIdentifiabilityWarning(
                 kind="boundary_alpha",
@@ -290,9 +288,9 @@ def early_burst_identifiability_warnings_from_profile(
     )
     warnings: list[EvolutionaryModeIdentifiabilityWarning] = []
     boundary_tolerance = max(span / 160.0, 1e-9)
-    if math.isclose(rate_change, lower, rel_tol=0.0, abs_tol=boundary_tolerance) or math.isclose(
-        rate_change, upper, rel_tol=0.0, abs_tol=boundary_tolerance
-    ):
+    if math.isclose(
+        rate_change, lower, rel_tol=0.0, abs_tol=boundary_tolerance
+    ) or math.isclose(rate_change, upper, rel_tol=0.0, abs_tol=boundary_tolerance):
         warnings.append(
             EvolutionaryModeIdentifiabilityWarning(
                 kind="boundary_rate_change",
@@ -494,7 +492,9 @@ def continuous_boundary_assessment(
         kind in {"flat_likelihood", "flat_likelihood_profile"}
         for kind in boundary_warning_kinds
     )
-    boundary_dominates_interpretation = (near_lower_boundary or near_upper_boundary) and (
+    boundary_dominates_interpretation = (
+        near_lower_boundary or near_upper_boundary
+    ) and (
         flat_likelihood_near_boundary
         or any(
             kind.startswith("boundary_") or kind in boundary_limit_warning_kinds()

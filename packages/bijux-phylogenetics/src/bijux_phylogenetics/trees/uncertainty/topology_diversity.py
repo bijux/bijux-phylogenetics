@@ -7,6 +7,15 @@ from pathlib import Path
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
+from ..tree_sets.contracts import TreeSetReport
+from ..tree_sets.inventory import (
+    _analyze_tree_set,
+    _require_exact_taxa,
+    _require_tree_set,
+    _TreeSetAnalysis,
+    _validate_same_taxa,
+)
+from ..tree_sets.topology import _tree_distance
 from .instability import _build_unstable_clade_report
 from .models import (
     PosteriorTopologicalDiversityComparisonReport,
@@ -18,15 +27,6 @@ from .models import (
     TreeTopologyCluster,
     TreeTopologyClusterReport,
 )
-from ..tree_sets.contracts import TreeSetReport
-from ..tree_sets.inventory import (
-    _TreeSetAnalysis,
-    _analyze_tree_set,
-    _require_exact_taxa,
-    _require_tree_set,
-    _validate_same_taxa,
-)
-from ..tree_sets.topology import _tree_distance
 
 
 def _shannon_effective_count(frequencies: list[float]) -> float:

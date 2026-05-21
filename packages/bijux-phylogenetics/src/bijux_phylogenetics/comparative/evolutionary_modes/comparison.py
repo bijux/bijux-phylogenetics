@@ -1,14 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 import math
 from pathlib import Path
-from typing import Callable
 
 from bijux_phylogenetics.comparative.common import ComparativeDataset
-from bijux_phylogenetics.comparative.model_selection import (
-    ComparativeModelComparisonRow,
-    rank_model_comparison_rows,
-)
+from bijux_phylogenetics.comparative.continuous.model_fitting import _comparison_row
 from bijux_phylogenetics.comparative.evolutionary_modes.models import (
     ALLOWED_EVOLUTIONARY_MODES,
     FITCONTINUOUS_MODEL_COMPARISON_ORDER,
@@ -20,7 +17,10 @@ from bijux_phylogenetics.comparative.evolutionary_modes.models import (
     LikelihoodRatioTestResult,
 )
 from bijux_phylogenetics.comparative.evolutionary_modes.numeric import stable_float
-from bijux_phylogenetics.comparative.continuous.model_fitting import _comparison_row
+from bijux_phylogenetics.comparative.model_selection import (
+    ComparativeModelComparisonRow,
+    rank_model_comparison_rows,
+)
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 DatasetLoader = Callable[..., ComparativeDataset]
@@ -104,9 +104,7 @@ def compare_selected_continuous_modes(
         )
         if not math.isfinite(row.aicc):
             row.comparable = False
-            row.comparability_note = (
-                "sample size is too small to compute finite AICc for this parameter count"
-            )
+            row.comparability_note = "sample size is too small to compute finite AICc for this parameter count"
             comparison_warnings.append(
                 f"{mode} is not comparable on AICc because the retained taxon count is too small for a {row.parameter_count}-parameter fit"
             )

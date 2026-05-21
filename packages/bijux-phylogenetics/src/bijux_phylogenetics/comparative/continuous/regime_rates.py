@@ -18,7 +18,6 @@ from bijux_phylogenetics.comparative.common import (
     load_comparative_dataset,
     summarize_numeric_trait_readiness,
 )
-from bijux_phylogenetics.comparative.model_selection import ComparativeModelComparisonRow
 from bijux_phylogenetics.comparative.continuous.model_fitting import (
     ComparativeParameterInterval,
     ComparativeResidualOutlier,
@@ -27,14 +26,17 @@ from bijux_phylogenetics.comparative.continuous.model_fitting import (
     _estimate_lambda_for_values,
     fit_brownian_motion_model,
 )
+from bijux_phylogenetics.comparative.model_selection import (
+    ComparativeModelComparisonRow,
+)
 from bijux_phylogenetics.comparative.traits.regime_mapping import (
     build_branch_identity_lookup,
     resolve_branch_regime_id_column,
 )
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
-from bijux_phylogenetics.io.trees import load_tree
 
 _PROFILE_CONFIDENCE_DELTA = 1.920729410347062
 _Z_95 = 1.959963984540054

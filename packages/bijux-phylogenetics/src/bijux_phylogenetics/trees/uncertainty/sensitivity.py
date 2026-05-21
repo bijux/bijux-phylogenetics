@@ -6,6 +6,14 @@ from time import perf_counter
 
 from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clades
 
+from ..tree_sets import (
+    compute_consensus_tree_with_threshold,
+    load_tree_set,
+)
+from ..tree_sets.inventory import (
+    _require_tree_set,
+)
+from ..tree_sets.topology import _rooted_topology_id
 from .comparisons import compare_posterior_tree_sets
 from .instability import (
     detect_unstable_clades,
@@ -24,14 +32,6 @@ from .models import (
     TreeSetThinningSensitivityRow,
 )
 from .topology_diversity import cluster_trees_by_topology
-from ..tree_sets.inventory import (
-    _require_tree_set,
-)
-from ..tree_sets import (
-    compute_consensus_tree_with_threshold,
-    load_tree_set,
-)
-from ..tree_sets.topology import _rooted_topology_id
 
 
 def benchmark_tree_set_uncertainty(

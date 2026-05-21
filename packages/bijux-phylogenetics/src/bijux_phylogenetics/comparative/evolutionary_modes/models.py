@@ -6,7 +6,9 @@ from pathlib import Path
 from bijux_phylogenetics.comparative.continuous.model_fitting import (
     ComparativeResidualSummary,
 )
-from bijux_phylogenetics.comparative.model_selection import ComparativeModelComparisonRow
+from bijux_phylogenetics.comparative.model_selection import (
+    ComparativeModelComparisonRow,
+)
 
 ALLOWED_EVOLUTIONARY_MODES = {
     "brownian",
@@ -43,12 +45,8 @@ FITCONTINUOUS_MODEL_COMPARISON_ORDER = (
 CONTINUOUS_GAUSSIAN_LIKELIHOOD_CONSTANT_POLICY = (
     "full-gaussian-loglikelihood-includes-normalizing-constant"
 )
-CONTINUOUS_GAUSSIAN_LIKELIHOOD_COMPARISON_POLICY = (
-    "raw-loglikelihood-and-derived-aic-are-directly-comparable-when-the-shared-gaussian-constant-policy-matches"
-)
-FITCONTINUOUS_MODEL_RANKING_POLICY = (
-    "relative-aic-and-aicc-ranking-is-permitted-only-when-all-candidate-modes-share-one-gaussian-likelihood-constant-policy"
-)
+CONTINUOUS_GAUSSIAN_LIKELIHOOD_COMPARISON_POLICY = "raw-loglikelihood-and-derived-aic-are-directly-comparable-when-the-shared-gaussian-constant-policy-matches"
+FITCONTINUOUS_MODEL_RANKING_POLICY = "relative-aic-and-aicc-ranking-is-permitted-only-when-all-candidate-modes-share-one-gaussian-likelihood-constant-policy"
 FITCONTINUOUS_MODEL_CONFIDENCE_WEIGHT_BASIS = "AICc"
 FITCONTINUOUS_MODEL_CONFIDENCE_DELTA_THRESHOLD = 2.0
 

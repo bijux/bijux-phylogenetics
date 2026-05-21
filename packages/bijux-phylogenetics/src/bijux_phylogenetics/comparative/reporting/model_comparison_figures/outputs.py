@@ -5,7 +5,10 @@ from pathlib import Path
 
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
-from .contracts import ComparativeModelFigureCaptionDraft, ComparativeModelFigureLegendEntry
+from .contracts import (
+    ComparativeModelFigureCaptionDraft,
+    ComparativeModelFigureLegendEntry,
+)
 
 
 def write_model_figure_table(path: Path, rows: list[object]) -> Path:

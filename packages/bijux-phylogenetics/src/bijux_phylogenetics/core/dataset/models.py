@@ -7,8 +7,8 @@ from bijux_phylogenetics.bayesian.beast.models import (
     FossilCalibrationValidationReport,
     TipDatingValidationReport,
 )
-from bijux_phylogenetics.phylo.alignment import AlignmentForensicReport
 from bijux_phylogenetics.datasets.study_inputs import MetadataColumnCompleteness
+from bijux_phylogenetics.phylo.alignment import AlignmentForensicReport
 
 
 @dataclass(slots=True)
@@ -286,4 +286,3 @@ class DatasetAuditReport:
     risk_score: DatasetRiskScoreReport
     minimal_fix_plan: DatasetMinimalFixPlan
     reviewer_checklist: DatasetReviewerChecklist
-

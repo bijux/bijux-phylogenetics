@@ -12,11 +12,17 @@ from bijux_phylogenetics.ancestral.discrete import (
 )
 from bijux_phylogenetics.ancestral.discrete.likelihood import (
     build_transition_rate_rows as _build_transition_rate_rows,
+)
+from bijux_phylogenetics.ancestral.discrete.likelihood import (
     tree_log_likelihood as _tree_log_likelihood,
 )
 from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_allowed_transition_pairs as _resolve_allowed_transition_pairs,
+)
+from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_discrete_model_name as _resolve_discrete_model_name,
+)
+from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_state_order as _resolve_state_order,
 )
 from bijux_phylogenetics.ancestral.discrete.reconstruction import (
@@ -27,7 +33,9 @@ from bijux_phylogenetics.comparative.model_selection import (
     compute_aic,
     compute_aicc,
 )
-from bijux_phylogenetics.phylo.branch_lengths.ultrametric import summarize_ultrametric_tip_depths
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
+    summarize_ultrametric_tip_depths,
+)
 
 from .models import (
     DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY,
@@ -244,7 +252,9 @@ def fit_discrete_mk_model_from_dataset(
             delta_log_likelihood=log_likelihood - transform_baseline_fit.log_likelihood,
             delta_aic=aic - transform_baseline_fit.aic,
             preferred_transform_by_aic=(
-                resolved_transform if aic <= transform_baseline_fit.aic else "untransformed"
+                resolved_transform
+                if aic <= transform_baseline_fit.aic
+                else "untransformed"
             ),
         )
     overparameterized = _detect_discrete_overparameterization(

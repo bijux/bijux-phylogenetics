@@ -17,10 +17,10 @@ from bijux_phylogenetics.comparative.pgls import (
     run_pgls,
 )
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 MULTIVARIATE_NUMERICAL_TOLERANCE = 1e-12
 MULTIVARIATE_MISSING_VALUE_POLICY = (

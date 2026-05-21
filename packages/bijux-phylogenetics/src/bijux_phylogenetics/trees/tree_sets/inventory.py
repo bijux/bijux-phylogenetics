@@ -5,12 +5,6 @@ from pathlib import Path
 from time import perf_counter
 import tracemalloc
 
-from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clades
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.runtime.errors import (
-    InvalidAlignmentError,
-    UnsupportedTreeFormatError,
-)
 from bijux_phylogenetics.io.newick import (
     dumps_newick,
     iter_newick_tree_records_from_path,
@@ -18,6 +12,12 @@ from bijux_phylogenetics.io.newick import (
     loads_newick,
 )
 from bijux_phylogenetics.io.trees import detect_tree_format
+from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clades
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.runtime.errors import (
+    InvalidAlignmentError,
+    UnsupportedTreeFormatError,
+)
 
 from .contracts import TreeSetProcessingSummary, TreeSetRecord, TreeSetReport
 from .topology import _rooted_topology_id, _unrooted_topology_id

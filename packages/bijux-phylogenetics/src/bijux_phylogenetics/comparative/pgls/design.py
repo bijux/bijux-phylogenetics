@@ -3,8 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
-from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.datasets.study_inputs import validate_traits_table
+from bijux_phylogenetics.datasets.study_inputs import (
+    load_taxon_table,
+    validate_traits_table,
+    write_taxon_rows,
+)
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
@@ -403,7 +406,8 @@ def _build_design_matrix(
             encoded_main_effects[predictor] = categorical_rows
         for interaction in interaction_terms:
             encoded_row.extend(
-                value for _, value in interaction_values(interaction, encoded_main_effects)
+                value
+                for _, value in interaction_values(interaction, encoded_main_effects)
             )
         matrix.append(encoded_row)
     return matrix, encoded_columns

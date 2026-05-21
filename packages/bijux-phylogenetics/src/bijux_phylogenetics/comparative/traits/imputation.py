@@ -12,15 +12,15 @@ from bijux_phylogenetics.comparative._math import (
     quadratic_form,
     stable_covariance,
 )
-from bijux_phylogenetics.comparative.continuous import (
-    BrownianTraitEvolutionSummaryReport,
-    summarize_brownian_trait_evolution,
-)
 from bijux_phylogenetics.comparative.common import (
     ComparativeReadinessReport,
     build_brownian_covariance_matrix,
     load_comparative_dataset,
     summarize_numeric_trait_readiness,
+)
+from bijux_phylogenetics.comparative.continuous import (
+    BrownianTraitEvolutionSummaryReport,
+    summarize_brownian_trait_evolution,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa

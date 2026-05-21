@@ -43,8 +43,6 @@ from ..discrete_mode_recovery import (
     DiscreteModeRecoveryCaseReport,
     DiscreteModeRecoveryExecutionRow,
     DiscreteModeRecoveryModelChoiceRow,
-    DiscreteModeRecoveryParameterComparisonRow,
-    DiscreteModeRecoveryParameterRow,
     DiscreteModeRecoveryRateComparisonRow,
     DiscreteModeRecoveryRateRow,
     DiscreteModeRecoveryReport,

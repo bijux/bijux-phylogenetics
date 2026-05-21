@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-from .sensitivity import (
-    ComparativeSensitivityReport,
-    LeaveOneTaxonOutRow,
-    run_comparative_sensitivity_analysis,
-)
 from .maturity import (
     ComparativeMethodMaturityReport,
     ComparativeResidualDiagnosticSurface,
     ComparativeSensitivitySummary,
     assess_comparative_method_maturity,
+)
+from .sensitivity import (
+    ComparativeSensitivityReport,
+    LeaveOneTaxonOutRow,
+    run_comparative_sensitivity_analysis,
 )
 
 __all__ = [

@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.evidence.provenance.method_tiers import MethodTierAssessment
-
 from ...continuous import BrownianMotionFitReport, OUTraitModelReport
 from ...model_selection import ComparativeModelComparisonReport
 

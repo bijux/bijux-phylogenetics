@@ -22,11 +22,11 @@ from bijux_phylogenetics.comparative.pgls import (
     inspect_pgls_inputs,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
     phylogenetic_logistic_method_tier,
 )
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 _WALD_NORMAL_95_CRITICAL_VALUE = 1.959963984540054
 

@@ -2,20 +2,20 @@
 
 from __future__ import annotations
 
-from .reference_examples import (
-    ComparativeReferenceObservation,
-    ComparativeReferenceValidationReport,
-    validate_comparative_reference_examples,
+from .ou_identifiability import (
+    ComparativeOUIdentifiabilityAudit,
+    ComparativeOUIdentifiabilityCase,
+    audit_ou_identifiability_reference_examples,
 )
 from .parameter_uncertainty import (
     ComparativeParameterIntervalAuditRow,
     ComparativeParameterUncertaintyAudit,
     audit_comparative_parameter_uncertainty,
 )
-from .ou_identifiability import (
-    ComparativeOUIdentifiabilityAudit,
-    ComparativeOUIdentifiabilityCase,
-    audit_ou_identifiability_reference_examples,
+from .reference_examples import (
+    ComparativeReferenceObservation,
+    ComparativeReferenceValidationReport,
+    validate_comparative_reference_examples,
 )
 
 __all__ = [

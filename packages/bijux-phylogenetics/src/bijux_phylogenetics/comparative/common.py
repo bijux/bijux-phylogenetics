@@ -5,15 +5,15 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.comparative._math import stable_covariance
-from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
-from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.datasets.study_inputs import (
     align_tree_and_trait_table,
+    load_taxon_table,
     validate_traits_table,
 )
+from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
-from bijux_phylogenetics.io.trees import load_tree
 
 
 @dataclass(slots=True)
@@ -95,9 +95,7 @@ def summarize_numeric_trait_readiness(
             f"trait column '{trait}' is not available for validation"
         )
 
-    overlapping_rows = {
-        row[table.taxon_column]: row for row in alignment.rows
-    }
+    overlapping_rows = {row[table.taxon_column]: row for row in alignment.rows}
     analysis_taxa: list[str] = []
     pruned_missing_value_taxa: list[str] = []
     pruned_non_numeric_taxa: list[str] = []

@@ -107,9 +107,7 @@ def build_comparative_methods_summary_text(report: ComparativeMethodReport) -> s
     summary = snapshot.summary
     readiness = snapshot.readiness
     formula_audit = snapshot.pgls_inputs.formula_audit
-    selected_row = next(
-        row for row in snapshot.model_comparison.rows if row.selected
-    )
+    selected_row = next(row for row in snapshot.model_comparison.rows if row.selected)
     runner_up_aicc = min(
         row.aicc
         for row in snapshot.model_comparison.rows

@@ -6,9 +6,9 @@ from pathlib import Path
 import random
 
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 
@@ -120,7 +120,8 @@ def summarize_phylogenetic_anova(
     if len(tree.root.children) != 2:
         raise ComparativeMethodError("phylogenetic ANOVA requires a rooted tree")
     if any(
-        node is not tree.root and node.branch_length is None for node in tree.iter_nodes()
+        node is not tree.root and node.branch_length is None
+        for node in tree.iter_nodes()
     ):
         raise ComparativeMethodError(
             "phylogenetic ANOVA requires complete branch lengths"
@@ -186,7 +187,9 @@ def summarize_phylogenetic_anova(
         raise ComparativeMethodError(
             "phylogenetic ANOVA requires at least four taxa after pruning"
         )
-    group_order = sorted({analyzed_groups_by_taxon[taxon] for taxon in analyzed_taxa_tree_order})
+    group_order = sorted(
+        {analyzed_groups_by_taxon[taxon] for taxon in analyzed_taxa_tree_order}
+    )
     if len(group_order) < 2:
         raise ComparativeMethodError(
             "phylogenetic ANOVA requires at least two observed groups after pruning"
@@ -544,9 +547,7 @@ def _anova_summary(
     sum_of_squares_between = sum(
         len(group_taxa)
         * (
-            (
-                sum(values_by_taxon[taxon] for taxon in group_taxa) / len(group_taxa)
-            )
+            (sum(values_by_taxon[taxon] for taxon in group_taxa) / len(group_taxa))
             - grand_mean
         )
         ** 2
@@ -555,9 +556,7 @@ def _anova_summary(
     sum_of_squares_within = sum(
         (
             values_by_taxon[taxon]
-            - (
-                sum(values_by_taxon[item] for item in group_taxa) / len(group_taxa)
-            )
+            - (sum(values_by_taxon[item] for item in group_taxa) / len(group_taxa))
         )
         ** 2
         for group_taxa in taxa_by_group.values()
@@ -585,7 +584,9 @@ def _pairwise_t_statistics(
         for group_name, taxa in taxa_by_group.items()
     }
     sample_variances = {
-        group_name: sum((values_by_taxon[taxon] - means[group_name]) ** 2 for taxon in taxa)
+        group_name: sum(
+            (values_by_taxon[taxon] - means[group_name]) ** 2 for taxon in taxa
+        )
         / (len(taxa) - 1)
         for group_name, taxa in taxa_by_group.items()
     }

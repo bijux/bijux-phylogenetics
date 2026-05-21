@@ -12,6 +12,12 @@ from bijux_phylogenetics.comparative.common import (
     stable_covariance,
     summarize_numeric_trait_readiness,
 )
+from bijux_phylogenetics.comparative.continuous.model_fitting import (
+    ComparativeParameterInterval,
+    ComparativeResidualSummary,
+    _comparison_row,
+    _fit_intercept_only_model,
+)
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     ContinuousEvolutionaryModeComparisonReport,
     LikelihoodRatioTestResult,
@@ -19,12 +25,8 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
     fit_continuous_evolutionary_mode,
     transform_tree_for_evolutionary_mode,
 )
-from bijux_phylogenetics.comparative.model_selection import ComparativeModelComparisonRow
-from bijux_phylogenetics.comparative.continuous.model_fitting import (
-    ComparativeParameterInterval,
-    ComparativeResidualSummary,
-    _comparison_row,
-    _fit_intercept_only_model,
+from bijux_phylogenetics.comparative.model_selection import (
+    ComparativeModelComparisonRow,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 

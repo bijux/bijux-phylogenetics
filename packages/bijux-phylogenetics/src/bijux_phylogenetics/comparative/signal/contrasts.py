@@ -7,12 +7,13 @@ from bijux_phylogenetics.comparative._math import (
     student_t_quantile,
     student_t_two_sided_p_value,
 )
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
+
 from .core import (
     IndependentContrastReport,
     compute_phylogenetic_independent_contrasts,
 )
-from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 
 @dataclass(slots=True)
