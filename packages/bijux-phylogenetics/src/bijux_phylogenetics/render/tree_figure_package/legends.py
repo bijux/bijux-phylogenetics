@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bijux_phylogenetics.render.svg import AnnotationStrip, TreeRenderResult
+from bijux_phylogenetics.render.tree_svg import AnnotationStrip, TreeRenderResult
 
 from .contracts import FigureLegendAudit, FigureLegendEntry
 

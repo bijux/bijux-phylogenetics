@@ -349,7 +349,7 @@ from bijux_phylogenetics.phylogeography import (
 )
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.tree_figure_package import build_tree_figure_package
-from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
+from bijux_phylogenetics.render.tree_svg import AnnotationStrip, render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
     distance_method_limitations,

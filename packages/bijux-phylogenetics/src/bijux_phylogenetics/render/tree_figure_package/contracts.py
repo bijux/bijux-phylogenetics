@@ -3,7 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.render.svg import SupportLabelRenderAudit, TreeRenderResult
+from bijux_phylogenetics.render.tree_svg import (
+    SupportLabelRenderAudit,
+    TreeRenderResult,
+)
 
 
 @dataclass(frozen=True, slots=True)

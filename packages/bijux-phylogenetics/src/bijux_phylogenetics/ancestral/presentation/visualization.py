@@ -13,7 +13,7 @@ import tempfile
 from bijux_phylogenetics.ancestral.common import reconstruction_manifest
 from bijux_phylogenetics.ancestral.continuous import ContinuousAncestralReport
 from bijux_phylogenetics.ancestral.discrete import DiscreteAncestralReport
-from bijux_phylogenetics.render.svg import TreeRenderResult, render_tree_svg
+from bijux_phylogenetics.render.tree_svg import TreeRenderResult, render_tree_svg
 
 try:
     import cairosvg  # type: ignore[import-untyped]

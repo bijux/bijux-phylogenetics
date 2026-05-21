@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from bijux_phylogenetics.biogeography import TimeBinDefinition
-from bijux_phylogenetics.render.svg import AnnotationStrip
+from bijux_phylogenetics.render.tree_svg import AnnotationStrip
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
 from bijux_phylogenetics.simulation import DiscreteHistoryRateRow
 

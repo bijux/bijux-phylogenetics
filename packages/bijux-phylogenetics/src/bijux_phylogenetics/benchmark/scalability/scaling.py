@@ -12,7 +12,7 @@ from bijux_phylogenetics.io.fasta.quality import (
     summarize_alignment_readiness,
 )
 from bijux_phylogenetics.io.newick import write_newick
-from bijux_phylogenetics.render.svg import render_tree_svg
+from bijux_phylogenetics.render.tree_svg import render_tree_svg
 from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
     write_tree_set,

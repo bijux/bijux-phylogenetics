@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from bijux_phylogenetics.phylo.topology.tree import TreeNode
-from bijux_phylogenetics.render.svg import AnnotationStrip
+from bijux_phylogenetics.render.tree_svg import AnnotationStrip
 
 from .contracts import (
     FigureAnnotationCoverage,

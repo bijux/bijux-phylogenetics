@@ -6,7 +6,7 @@ from .contracts import (
     FigureLegendEntry,
     TreeFigureAuditReport,
 )
-from bijux_phylogenetics.render.svg import TreeRenderResult
+from bijux_phylogenetics.render.tree_svg import TreeRenderResult
 
 
 def build_legibility_audit(

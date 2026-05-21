@@ -15,7 +15,7 @@ from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestra
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.render.svg import TreeRenderResult, render_tree_svg
+from bijux_phylogenetics.render.tree_svg import TreeRenderResult, render_tree_svg
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 _DEFAULT_REGIME_COLORS = (

@@ -24,7 +24,7 @@ from bijux_phylogenetics.ancestral.presentation.visualization import (
     render_ancestral_state_visualization,
 )
 from bijux_phylogenetics.render.html import write_html_report
-from bijux_phylogenetics.render.svg import TreeRenderResult
+from bijux_phylogenetics.render.tree_svg import TreeRenderResult
 
 
 @dataclass(slots=True)

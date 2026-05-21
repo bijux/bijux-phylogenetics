@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.render.tree_figure_package import build_tree_figure_package
-from bijux_phylogenetics.render.svg import AnnotationStrip
+from bijux_phylogenetics.render.tree_svg import AnnotationStrip
 
 
 def tree_fixture(name: str) -> Path:

@@ -20,7 +20,7 @@ from bijux_phylogenetics.evidence.provenance.method_tiers import (
     tree_report_method_tier,
 )
 from bijux_phylogenetics.io.iqtree_support import support_fraction
-from bijux_phylogenetics.render.svg import (
+from bijux_phylogenetics.render.tree_svg import (
     SupportLabelRenderAudit,
     TreeRenderResult,
     audit_support_label_rendering,

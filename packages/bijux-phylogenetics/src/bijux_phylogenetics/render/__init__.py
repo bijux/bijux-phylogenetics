@@ -10,7 +10,7 @@ from .reproducibility import (
     build_figure_reproducibility_manifest,
     write_figure_reproducibility_manifest,
 )
-from .svg import AnnotationStrip, TreeRenderResult, render_tree_svg
+from .tree_svg import AnnotationStrip, TreeRenderResult, render_tree_svg
 from .time_tree_svg import (
     TimeTreeNodeInterval,
     TimeTreeRenderResult,

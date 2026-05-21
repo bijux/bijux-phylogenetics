@@ -11,7 +11,7 @@ from bijux_phylogenetics.render.reproducibility import (
     FigureReproducibilityFilter,
     write_figure_reproducibility_manifest,
 )
-from bijux_phylogenetics.render.svg import (
+from bijux_phylogenetics.render.tree_svg import (
     AnnotationStrip,
     SupportLabelRenderAudit,
     audit_support_label_rendering,

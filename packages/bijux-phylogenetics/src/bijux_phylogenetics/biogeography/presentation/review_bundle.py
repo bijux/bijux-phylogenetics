@@ -47,7 +47,7 @@ from bijux_phylogenetics.phylogeography.region_styles import (
 from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
 )
-from bijux_phylogenetics.render.svg import TreeRenderResult
+from bijux_phylogenetics.render.tree_svg import TreeRenderResult
 
 
 @dataclass(frozen=True, slots=True)

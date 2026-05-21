@@ -10,7 +10,7 @@ from bijux_phylogenetics.phylogeography.region_styles import (
     geographic_transition_support_colors,
     geographic_transition_support_details,
 )
-from bijux_phylogenetics.render.svg import TreeRenderResult
+from bijux_phylogenetics.render.tree_svg import TreeRenderResult
 
 
 @dataclass(frozen=True, slots=True)

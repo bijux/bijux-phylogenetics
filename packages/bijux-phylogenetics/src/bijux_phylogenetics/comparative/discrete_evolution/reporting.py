@@ -9,7 +9,7 @@ from bijux_phylogenetics.ancestral.common import node_signature
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.html import write_html_report
-from bijux_phylogenetics.render.svg import TreeRenderResult, render_tree_svg
+from bijux_phylogenetics.render.tree_svg import TreeRenderResult, render_tree_svg
 
 from .analysis import (
     assess_geographic_state_analysis_readiness,
