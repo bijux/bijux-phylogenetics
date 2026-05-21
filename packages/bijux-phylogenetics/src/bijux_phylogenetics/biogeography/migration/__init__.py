@@ -13,7 +13,7 @@ from .chronology import (
     write_dated_biogeography_summary_table,
     write_dated_biogeography_time_bin_table,
 )
-from .events import (
+from .migration_event_review import (
     GeographicMigrationEventReport,
     GeographicMigrationEventRow,
     GeographicMigrationEventSummary,

@@ -4,7 +4,7 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import node_signature, stable_value
-from bijux_phylogenetics.biogeography.migration.events import (
+from bijux_phylogenetics.biogeography.migration.migration_event_review import (
     GeographicMigrationEventReport,
 )
 from bijux_phylogenetics.biogeography.state_models import GeographicStateModelReport

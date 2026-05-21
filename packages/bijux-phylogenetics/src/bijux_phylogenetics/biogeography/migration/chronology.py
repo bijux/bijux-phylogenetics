@@ -9,7 +9,7 @@ from bijux_phylogenetics.ancestral.common import (
     node_signature,
     stable_value,
 )
-from bijux_phylogenetics.biogeography.migration.events import (
+from bijux_phylogenetics.biogeography.migration.migration_event_review import (
     GeographicMigrationEventReport,
     summarize_geographic_migration_events,
 )
