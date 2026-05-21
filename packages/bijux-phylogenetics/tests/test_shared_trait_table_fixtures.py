@@ -497,6 +497,7 @@ def test_shared_trait_table_fixture_catalog_supports_governed_discrete_sym_ace_c
     assert missing_report.dropped_missing_taxa == ["F"]
 
 
+@pytest.mark.slow
 def test_shared_trait_table_fixture_catalog_supports_governed_discrete_ard_ace_cases() -> (
     None
 ):

@@ -94,6 +94,7 @@ def test_shared_phytools_comparative_fixture_catalog_includes_large_ultrametric_
     assert "ultrametric" in large_fixture.tree_fixture.feature_tags
 
 
+@pytest.mark.slow
 def test_shared_phytools_comparative_fixture_catalog_strong_and_weak_signal_cases_behave_as_labeled() -> (
     None
 ):
@@ -374,6 +375,7 @@ def test_shared_phytools_comparative_fixture_catalog_supports_fitmk_sym_cases() 
     assert multistate_missing_report.input_audit.pruned_missing_value_taxa == ["Phy14"]
 
 
+@pytest.mark.slow
 def test_shared_phytools_comparative_fixture_catalog_supports_fitmk_ard_cases() -> None:
     binary_fixture = get_shared_phytools_comparative_fixture(
         "phytools_discrete_ard_binary_twenty_four_taxa"

@@ -523,6 +523,7 @@ def test_write_discrete_mk_summary_table_reports_shared_transform_search_audit(
     )
 
 
+@pytest.mark.slow
 def test_compare_discrete_mk_model_ranking_reports_ranked_model_surface() -> None:
     report = compare_discrete_mk_model_ranking(
         fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),
@@ -685,6 +686,7 @@ def test_fit_discrete_mk_model_marks_governed_geiger_kappa_weak_signal_surface()
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_matches_governed_geiger_sym_kappa_missing_surface() -> (
     None
 ):
@@ -784,6 +786,7 @@ def test_fit_discrete_mk_model_reports_delta_time_sensitive_review_surface() -> 
     assert math.isfinite(report.log_likelihood)
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_matches_governed_geiger_sym_delta_boundary_surface() -> (
     None
 ):
@@ -817,6 +820,7 @@ def test_fit_discrete_mk_model_matches_governed_geiger_sym_delta_boundary_surfac
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_matches_governed_geiger_sym_delta_missing_surface() -> (
     None
 ):
@@ -1045,6 +1049,7 @@ def test_fit_discrete_mk_model_matches_governed_geiger_ard_binary_surface() -> N
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_matches_governed_geiger_ard_missing_surface() -> None:
     fixture_entry = get_shared_geiger_discrete_fixture(
         "geiger_discrete_missing_three_state_twenty_four_taxa"
@@ -1266,6 +1271,7 @@ def test_fit_discrete_mk_model_marks_overparameterized_symmetric_surface(
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_marks_sparse_shared_symmetric_surface() -> None:
     fixture_entry = get_shared_geiger_discrete_fixture(
         "geiger_discrete_sparse_six_state_twenty_four_taxa"

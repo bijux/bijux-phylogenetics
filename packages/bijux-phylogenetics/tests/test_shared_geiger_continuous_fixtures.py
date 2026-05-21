@@ -107,6 +107,7 @@ def test_shared_geiger_continuous_fixture_catalog_includes_large_and_nonultramet
     assert nonultrametric.ultrametric is False
 
 
+@pytest.mark.slow
 def test_shared_geiger_continuous_fixture_catalog_supports_ou_and_early_burst_truth_cases() -> (
     None
 ):
@@ -157,6 +158,7 @@ def test_shared_geiger_continuous_fixture_catalog_supports_ou_and_early_burst_tr
     assert brownian_comparison.rows[0].delta_aicc == 0.0
 
 
+@pytest.mark.slow
 def test_shared_geiger_continuous_fixture_catalog_supports_signal_strength_boundaries() -> (
     None
 ):

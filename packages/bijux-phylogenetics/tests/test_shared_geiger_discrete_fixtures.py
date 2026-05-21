@@ -66,6 +66,7 @@ def test_shared_geiger_discrete_fixture_lookup_resolves_linked_shared_surfaces()
     }
 
 
+@pytest.mark.slow
 def test_shared_geiger_discrete_fixture_catalog_supports_er_sym_and_ard_fits() -> None:
     er_fixture = get_shared_geiger_discrete_fixture(
         "geiger_discrete_er_binary_twenty_four_taxa"
@@ -108,6 +109,7 @@ def test_shared_geiger_discrete_fixture_catalog_supports_er_sym_and_ard_fits() -
     assert ard_report.baseline_comparison is not None
 
 
+@pytest.mark.slow
 def test_shared_geiger_discrete_fixture_catalog_supports_lambda_transform_review() -> (
     None
 ):
@@ -160,6 +162,7 @@ def test_shared_geiger_discrete_fixture_catalog_supports_lambda_transform_review
     assert missing_report.parameter_count == 2
 
 
+@pytest.mark.slow
 def test_shared_geiger_discrete_fixture_catalog_supports_kappa_transform_review() -> (
     None
 ):
@@ -212,6 +215,7 @@ def test_shared_geiger_discrete_fixture_catalog_supports_kappa_transform_review(
     assert missing_report.parameter_count == 4
 
 
+@pytest.mark.slow
 def test_shared_geiger_discrete_fixture_catalog_supports_delta_transform_review() -> (
     None
 ):
@@ -262,6 +266,7 @@ def test_shared_geiger_discrete_fixture_catalog_supports_delta_transform_review(
     assert missing_report.parameter_count == 2
 
 
+@pytest.mark.slow
 def test_shared_geiger_discrete_fixture_catalog_supports_early_burst_review() -> None:
     early_fixture = get_shared_geiger_discrete_fixture(
         "geiger_discrete_early_burst_early_change_twenty_four_taxa"
@@ -327,6 +332,7 @@ def test_shared_geiger_discrete_fixture_catalog_supports_early_burst_review() ->
     assert missing_report.parameter_count == 2
 
 
+@pytest.mark.slow
 def test_shared_geiger_discrete_fixture_catalog_handles_missing_sparse_and_mismatch_cases() -> (
     None
 ):
