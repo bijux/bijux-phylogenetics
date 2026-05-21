@@ -25,6 +25,7 @@ from bijux_phylogenetics.io.fasta.quality import (
     build_alignment_quality_report,
     build_sequence_quality_ranking,
 )
+from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.phylo.topology import root_tree_on_outgroup
 
 from ..config import (
