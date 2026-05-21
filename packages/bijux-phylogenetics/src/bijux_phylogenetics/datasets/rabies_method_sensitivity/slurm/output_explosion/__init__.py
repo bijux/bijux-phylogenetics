@@ -10,14 +10,12 @@ from .contracts import (
     RabiesMethodSensitivitySlurmOutputExplosionReport,
     RabiesMethodSensitivitySlurmOutputExplosionVariantRow,
 )
+from .inputs import _add_check, load_output_explosion_inputs
 from .shared import (
-    _BOOTSTRAP_HIGH_REPLICATES,
-    _BOOTSTRAP_WARNING_REPLICATES,
-    _CATEGORY_IDS,
-    _CONFIG_FILENAME,
     _DOMINANT_VARIANT_OUTPUT_MIB,
     _DOMINANT_VARIANT_OUTPUT_SHARE,
-    _MEBIBYTE,
+    _BOOTSTRAP_HIGH_REPLICATES,
+    _BOOTSTRAP_WARNING_REPLICATES,
     _OUTPUT_HIGH_MIB,
     _OUTPUT_WARNING_MIB,
     _POSTERIOR_HIGH_BYTES,
@@ -26,10 +24,6 @@ from .shared import (
     _POSTERIOR_WARNING_FILES,
     _REPORT_HIGH_BYTES,
     _REPORT_WARNING_BYTES,
-    _SLURM_JOB_PLAN_FILENAME,
-    _SLURM_STORAGE_CATEGORIES_FILENAME,
-    _SLURM_STORAGE_SUMMARY_FILENAME,
-    _SLURM_STORAGE_VARIANTS_FILENAME,
     _STORAGE_HIGH_MIB,
     _STORAGE_WARNING_MIB,
     _TOTAL_OUTPUT_HIGH_MIB,
@@ -41,8 +35,6 @@ from .shared import (
     _TREE_WARNING_BYTES,
     _TREE_WARNING_FILES,
     _format_float,
-    _load_json,
-    _read_tsv_rows,
     _write_tsv,
 )
 
@@ -61,106 +53,19 @@ def build_rabies_method_sensitivity_slurm_output_explosion_report(
     bundle_root: Path,
 ) -> RabiesMethodSensitivitySlurmOutputExplosionReport:
     """Assess whether retained workflow outputs are trending toward an explosion risk."""
-    bundle_root = bundle_root.resolve()
-    config = _load_json(bundle_root / _CONFIG_FILENAME)
-    job_plan_rows = _read_tsv_rows(bundle_root / _SLURM_JOB_PLAN_FILENAME)
-    storage_category_rows = _read_tsv_rows(bundle_root / _SLURM_STORAGE_CATEGORIES_FILENAME)
-    storage_variant_rows = _read_tsv_rows(bundle_root / _SLURM_STORAGE_VARIANTS_FILENAME)
-    storage_summary = _load_json(bundle_root / _SLURM_STORAGE_SUMMARY_FILENAME)
-
-    checks: list[RabiesMethodSensitivitySlurmOutputExplosionCheckRow] = []
-
-    def add_check(
-        check_id: str,
-        *,
-        surface: str,
-        condition: bool,
-        expected: object,
-        observed: object,
-        detail: str,
-    ) -> None:
-        checks.append(
-            RabiesMethodSensitivitySlurmOutputExplosionCheckRow(
-                check_id=check_id,
-                surface=surface,
-                status="passed" if condition else "failed",
-                expected="" if expected is None else str(expected),
-                observed="" if observed is None else str(observed),
-                detail=detail,
-            )
-        )
-
-    configured_variant_ids = sorted(
-        str(row["variant_id"]) for row in list(config.get("variants", []))
-    )
-    job_plan_by_variant = {
-        str(row["variant_id"]): row for row in job_plan_rows
-    }
-    storage_variant_by_variant = {
-        str(row["variant_id"]): row for row in storage_variant_rows
-    }
-    storage_category_by_id = {
-        str(row["category_id"]): row for row in storage_category_rows
-    }
-    add_check(
-        "job-plan:variant-coverage",
-        surface="job-plan",
-        condition=sorted(job_plan_by_variant) == configured_variant_ids,
-        expected=configured_variant_ids,
-        observed=sorted(job_plan_by_variant),
-        detail="job-plan rows cover the configured variant ids",
-    )
-    add_check(
-        "storage:variant-coverage",
-        surface="storage",
-        condition=sorted(storage_variant_by_variant) == configured_variant_ids,
-        expected=configured_variant_ids,
-        observed=sorted(storage_variant_by_variant),
-        detail="storage variant rows cover the configured variant ids",
-    )
-    add_check(
-        "storage:category-coverage",
-        surface="storage",
-        condition=sorted(storage_category_by_id) == _CATEGORY_IDS,
-        expected=_CATEGORY_IDS,
-        observed=sorted(storage_category_by_id),
-        detail="storage category rows cover the explicit retained-output categories",
-    )
-    total_estimated_output_mib = sum(
-        int(row["estimated_output_mib"]) for row in job_plan_rows
-    )
-    add_check(
-        "job-plan:total-output-mib",
-        surface="job-plan",
-        condition=int(storage_summary["variant_count"]) == len(configured_variant_ids),
-        expected=len(configured_variant_ids),
-        observed=storage_summary["variant_count"],
-        detail="storage summary variant_count matches the configured variant count",
-    )
-    add_check(
-        "storage:total-storage-mib",
-        surface="storage",
-        condition=int(storage_summary["total_estimated_storage_mib"])
-        >= int(storage_summary["total_byte_count"]) // _MEBIBYTE,
-        expected="storage summary rounds total retained bytes up into MiB",
-        observed=storage_summary["total_estimated_storage_mib"],
-        detail="storage summary total_estimated_storage_mib is a rounded-up retained-byte estimate",
-    )
-    add_check(
-        "storage:largest-variant",
-        surface="storage",
-        condition=str(storage_summary["largest_variant_id"])
-        == max(
-            storage_variant_rows,
-            key=lambda row: (int(row["total_byte_count"]), str(row["variant_id"])),
-        )["variant_id"],
-        expected=storage_summary["largest_variant_id"],
-        observed=max(
-            storage_variant_rows,
-            key=lambda row: (int(row["total_byte_count"]), str(row["variant_id"])),
-        )["variant_id"],
-        detail="storage summary largest_variant_id matches the written storage-variant rows",
-    )
+    loaded_inputs = load_output_explosion_inputs(bundle_root)
+    bundle_root = loaded_inputs.bundle_root
+    config = loaded_inputs.config
+    configured_variant_ids = loaded_inputs.configured_variant_ids
+    job_plan_rows = loaded_inputs.job_plan_rows
+    storage_category_rows = loaded_inputs.storage_category_rows
+    storage_variant_rows = loaded_inputs.storage_variant_rows
+    storage_summary = loaded_inputs.storage_summary
+    checks = list(loaded_inputs.checks)
+    job_plan_by_variant = loaded_inputs.job_plan_by_variant
+    storage_variant_by_variant = loaded_inputs.storage_variant_by_variant
+    storage_category_by_id = loaded_inputs.storage_category_by_id
+    total_estimated_output_mib = loaded_inputs.total_estimated_output_mib
 
     variant_rows: list[RabiesMethodSensitivitySlurmOutputExplosionVariantRow] = []
     total_output_denom = max(1, total_estimated_output_mib)
@@ -337,7 +242,7 @@ def build_rabies_method_sensitivity_slurm_output_explosion_report(
         warning_detail="review artifact bytes are becoming large enough to pressure retained storage",
         high_detail="review artifact bytes are dominating retained storage",
     )
-    bootstrap_replicates = int(config["bootstrap_replicates"])
+    bootstrap_replicates = loaded_inputs.bootstrap_replicates
     total_tree_file_count = int(storage_trees_row["total_file_count"])
     if (
         bootstrap_replicates >= _BOOTSTRAP_HIGH_REPLICATES
@@ -376,7 +281,8 @@ def build_rabies_method_sensitivity_slurm_output_explosion_report(
         variant_rows,
         key=lambda row: (row.output_share, row.variant_id),
     )
-    add_check(
+    _add_check(
+        checks,
         "risk-summary:variant-counts",
         surface="risk-summary",
         condition=low_risk_variant_count + warning_variant_count + high_risk_variant_count
@@ -385,7 +291,8 @@ def build_rabies_method_sensitivity_slurm_output_explosion_report(
         observed=low_risk_variant_count + warning_variant_count + high_risk_variant_count,
         detail="risk-status counts cover every configured variant exactly once",
     )
-    add_check(
+    _add_check(
+        checks,
         "risk-summary:overall-status",
         surface="risk-summary",
         condition=overall_risk_status
