@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-import hashlib
 from html import escape
 import json
 from pathlib import Path
@@ -18,6 +17,14 @@ from .workflow_result_bundle import (
     WorkflowResultBundleIssue,
     WorkflowResultBundleReport,
     WorkflowResultBundleValidationReport,
+    copy_bundle_file,
+    input_label,
+    maybe_path,
+    output_filename,
+    prepared_input_label,
+    record_bundle_file,
+    sha256_file,
+    write_bundle_json,
 )
 
 __all__ = [
@@ -64,9 +71,9 @@ def export_workflow_result_bundle(
     copied_report_count = 0
 
     workflow_manifest_path = bundle_root / "manifests" / "workflow.manifest.json"
-    _copy_file(Path(manifest_path), workflow_manifest_path)
+    copy_bundle_file(Path(manifest_path), workflow_manifest_path)
     files.append(
-        _record_bundle_file(
+        record_bundle_file(
             role="workflow_manifest",
             label="workflow_manifest",
             bundle_root=bundle_root,
@@ -75,7 +82,7 @@ def export_workflow_result_bundle(
         )
     )
 
-    run_manifest_path = _maybe_path(payload.get("run_manifest_path"))
+    run_manifest_path = maybe_path(payload.get("run_manifest_path"))
     if run_manifest_path is not None:
         if not run_manifest_path.exists():
             raise EngineWorkflowError(
@@ -84,9 +91,9 @@ def export_workflow_result_bundle(
                 details={"path": str(run_manifest_path)},
             )
         bundled_run_manifest = bundle_root / "manifests" / "workflow.run.json"
-        _copy_file(run_manifest_path, bundled_run_manifest)
+        copy_bundle_file(run_manifest_path, bundled_run_manifest)
         files.append(
-            _record_bundle_file(
+            record_bundle_file(
                 role="run_manifest",
                 label="workflow_run_manifest",
                 bundle_root=bundle_root,
@@ -101,9 +108,9 @@ def export_workflow_result_bundle(
         if config_payload is None
         else dict(config_payload)
     )
-    _write_json(config_path, bundle_config_payload)
+    write_bundle_json(config_path, bundle_config_payload)
     files.append(
-        _record_bundle_file(
+        record_bundle_file(
             role="workflow_config",
             label="workflow_config",
             bundle_root=bundle_root,
@@ -114,9 +121,9 @@ def export_workflow_result_bundle(
 
     rerun_path = bundle_root / _WORKFLOW_RERUN_NAME
     rerun_payload = _build_bundle_rerun_payload(payload, bundle_root=bundle_root)
-    _write_json(rerun_path, rerun_payload)
+    write_bundle_json(rerun_path, rerun_payload)
     files.append(
-        _record_bundle_file(
+        record_bundle_file(
             role="workflow_rerun",
             label="workflow_rerun",
             bundle_root=bundle_root,
@@ -127,12 +134,12 @@ def export_workflow_result_bundle(
 
     input_entries: list[dict[str, str]] = []
     for index, input_path in enumerate(_recorded_input_paths(payload), start=1):
-        label = _input_label(index=index, path=input_path)
+        label = input_label(index=index, path=input_path)
         if input_path.exists():
             destination = bundle_root / "inputs" / label
-            _copy_file(input_path, destination)
+            copy_bundle_file(input_path, destination)
             files.append(
-                _record_bundle_file(
+                record_bundle_file(
                     role="input_file",
                     label=label,
                     bundle_root=bundle_root,
@@ -157,14 +164,14 @@ def export_workflow_result_bundle(
             }
         )
 
-    prepared_input_path = _maybe_path(payload.get("prepared_input_path"))
+    prepared_input_path = maybe_path(payload.get("prepared_input_path"))
     if prepared_input_path is not None and prepared_input_path.exists():
-        prepared_label = _prepared_input_label(prepared_input_path)
+        prepared_label = prepared_input_label(prepared_input_path)
         destination = bundle_root / "inputs" / prepared_label
         if not destination.exists():
-            _copy_file(prepared_input_path, destination)
+            copy_bundle_file(prepared_input_path, destination)
             files.append(
-                _record_bundle_file(
+                record_bundle_file(
                     role="input_file",
                     label=prepared_label,
                     bundle_root=bundle_root,
@@ -201,9 +208,9 @@ def export_workflow_result_bundle(
                     "destination": str(destination),
                 },
             )
-        _copy_file(extra_input.source_path, destination)
+        copy_bundle_file(extra_input.source_path, destination)
         files.append(
-            _record_bundle_file(
+            record_bundle_file(
                 role="input_file",
                 label=extra_input.label,
                 bundle_root=bundle_root,
@@ -231,11 +238,11 @@ def export_workflow_result_bundle(
             bundle_root
             / "outputs"
             / "final"
-            / _output_filename(label=label, source_path=source_path)
+            / output_filename(label=label, source_path=source_path)
         )
-        _copy_file(source_path, destination)
+        copy_bundle_file(source_path, destination)
         files.append(
-            _record_bundle_file(
+            record_bundle_file(
                 role="workflow_output",
                 label=label,
                 bundle_root=bundle_root,
@@ -252,9 +259,9 @@ def export_workflow_result_bundle(
         destination = (
             bundle_root / "manifests" / "steps" / f"{step_label}.manifest.json"
         )
-        _copy_file(source_manifest_path, destination)
+        copy_bundle_file(source_manifest_path, destination)
         files.append(
-            _record_bundle_file(
+            record_bundle_file(
                 role="step_manifest",
                 label=step_label,
                 bundle_root=bundle_root,
@@ -275,11 +282,11 @@ def export_workflow_result_bundle(
                 / "outputs"
                 / "engine-artifacts"
                 / step_label
-                / _output_filename(label=output_label, source_path=output_path)
+                / output_filename(label=output_label, source_path=output_path)
             )
-            _copy_file(output_path, step_destination)
+            copy_bundle_file(output_path, step_destination)
             files.append(
-                _record_bundle_file(
+                record_bundle_file(
                     role="step_output",
                     label=f"{step_label}:{output_label}",
                     bundle_root=bundle_root,
@@ -300,7 +307,7 @@ def export_workflow_result_bundle(
             out_path=step_report_path,
         )
         files.append(
-            _record_bundle_file(
+            record_bundle_file(
                 role="step_report",
                 label=step_label,
                 bundle_root=bundle_root,
@@ -335,7 +342,7 @@ def export_workflow_result_bundle(
         },
     )
     files.append(
-        _record_bundle_file(
+        record_bundle_file(
             role="workflow_report",
             label="workflow_report",
             bundle_root=bundle_root,
@@ -358,7 +365,7 @@ def export_workflow_result_bundle(
         encoding="utf-8",
     )
     files.append(
-        _record_bundle_file(
+        record_bundle_file(
             role="bundle_readme",
             label="bundle_readme",
             bundle_root=bundle_root,
@@ -402,7 +409,7 @@ def export_workflow_result_bundle(
         ],
         "notes": notes,
     }
-    _write_json(bundle_manifest_path, bundle_manifest)
+    write_bundle_json(bundle_manifest_path, bundle_manifest)
 
     return WorkflowResultBundleReport(
         bundle_root=bundle_root,
@@ -466,7 +473,7 @@ def validate_workflow_result_bundle(
                 )
             )
             continue
-        observed = _sha256(target)
+        observed = sha256_file(target)
         if observed != str(entry["sha256"]):
             issues.append(
                 WorkflowResultBundleIssue(
@@ -639,7 +646,7 @@ def _build_bundle_rerun_payload(
             {
                 "source_path": str(path),
                 "relative_path": (
-                    bundle_root / "inputs" / _input_label(index=index, path=path)
+                    bundle_root / "inputs" / input_label(index=index, path=path)
                 )
                 .relative_to(bundle_root)
                 .as_posix(),
@@ -902,64 +909,3 @@ def _require_payload_path(
             )
         )
 
-
-def _copy_file(source: Path, destination: Path) -> None:
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source, destination)
-
-
-def _record_bundle_file(
-    *,
-    role: str,
-    label: str,
-    bundle_root: Path,
-    path: Path,
-    source_path: Path | None,
-) -> WorkflowResultBundleFile:
-    relative_path = path.relative_to(bundle_root)
-    return WorkflowResultBundleFile(
-        role=role,
-        label=label,
-        relative_path=relative_path,
-        sha256=_sha256(path),
-        size_bytes=path.stat().st_size,
-        source_path=None if source_path is None else str(source_path),
-    )
-
-
-def _maybe_path(value: object) -> Path | None:
-    if value is None:
-        return None
-    return Path(str(value))
-
-
-def _input_label(*, index: int, path: Path) -> str:
-    return f"{index:02d}-{path.name}"
-
-
-def _prepared_input_label(path: Path) -> str:
-    return f"prepared-{path.name}"
-
-
-def _output_filename(*, label: str, source_path: Path) -> str:
-    return (
-        f"{label}{source_path.suffix}"
-        if source_path.suffix
-        else f"{label}-{source_path.name}"
-    )
-
-
-def _write_json(path: Path, payload: dict[str, object]) -> Path:
-    path.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-    return path
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
