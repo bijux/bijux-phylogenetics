@@ -28,6 +28,11 @@ from .contracts import (
     PublicationPackageRevalidationResult,
 )
 from .inventory import artifact_row, unexpected_files
+from .revalidation_policy import (
+    check_row,
+    overall_revalidation_status as derive_overall_revalidation_status,
+    status,
+)
 
 _ARTIFACT_COLUMNS = [
     "artifact_scope",
@@ -49,33 +54,6 @@ _CHECK_COLUMNS = [
     "evidence",
     "artifact_path",
 ]
-
-
-def _status(*, blocked: bool = False, risk: bool = False) -> str:
-    if blocked:
-        return "blocked"
-    if risk:
-        return "risk"
-    return "pass"
-
-
-def _check_row(
-    *,
-    section: str,
-    check_id: str,
-    status: str,
-    summary: str,
-    evidence: str,
-    artifact_path: str,
-) -> PublicationPackageRevalidationCheckRow:
-    return PublicationPackageRevalidationCheckRow(
-        section=section,
-        check_id=check_id,
-        status=status,
-        summary=summary,
-        evidence=evidence,
-        artifact_path=artifact_path,
-    )
 
 
 def _write_html_report(
@@ -187,10 +165,10 @@ def write_publication_package_revalidation_report(
 
     supported = report_kind == SUPPORTED_PUBLICATION_PACKAGE_KIND
     check_rows.append(
-        _check_row(
+        check_row(
             section="manifest",
             check_id="supported-package-kind",
-            status=_status(blocked=not supported),
+            status=status(blocked=not supported),
             summary=(
                 "package manifest uses the governed rabies study package contract"
                 if supported
@@ -261,10 +239,10 @@ def write_publication_package_revalidation_report(
             f"stored section counts match={str(inventory_sections_match).lower()}"
         )
     check_rows.append(
-        _check_row(
+        check_row(
             section="package",
             check_id="artifact-inventory-preserved",
-            status=_status(blocked=inventory_blocked),
+            status=status(blocked=inventory_blocked),
             summary="artifact inventory still matches the stored package-control record",
             evidence="; ".join(inventory_evidence_parts),
             artifact_path=inventory_relative_path,
@@ -320,10 +298,10 @@ def write_publication_package_revalidation_report(
             f"stored blocked_count={checklist_entry.get('blocked_count', '')}; stored risk_count={checklist_entry.get('risk_count', '')}"
         )
     check_rows.append(
-        _check_row(
+        check_row(
             section="package",
             check_id="reproducibility-checklist-preserved",
-            status=_status(blocked=checklist_blocked),
+            status=status(blocked=checklist_blocked),
             summary="reproducibility checklist still matches the stored package-control record",
             evidence="; ".join(checklist_evidence_parts),
             artifact_path=checklist_relative_path,
@@ -373,10 +351,10 @@ def write_publication_package_revalidation_report(
         or inventory_size_mismatch_count > 0
     )
     check_rows.append(
-        _check_row(
+        check_row(
             section="artifacts",
             check_id="inventory-listed-artifacts-match",
-            status=_status(blocked=inventory_artifact_blocked),
+            status=status(blocked=inventory_artifact_blocked),
             summary="all inventory-listed package inputs and outputs still match the stored package inventory",
             evidence=(
                 f"missing={inventory_missing_count}; checksum_mismatches={inventory_checksum_mismatch_count}; "
@@ -425,10 +403,10 @@ def write_publication_package_revalidation_report(
     artifact_rows.extend(manifest_file_rows)
     artifact_rows.append(manifest_row)
     check_rows.append(
-        _check_row(
+        check_row(
             section="manifest",
             check_id="manifest-declared-files-match",
-            status=_status(blocked=manifest_file_mismatch_count > 0),
+            status=status(blocked=manifest_file_mismatch_count > 0),
             summary="manifest-declared package files still match their stored checksums",
             evidence=f"blocked manifest-declared files={manifest_file_mismatch_count}",
             artifact_path=manifest_path.name,
@@ -445,10 +423,10 @@ def write_publication_package_revalidation_report(
         ignored_prefixes=ignored_package_prefixes(report_kind),
     )
     check_rows.append(
-        _check_row(
+        check_row(
             section="package",
             check_id="unexpected-package-files",
-            status=_status(risk=bool(unexpected_relative_paths)),
+            status=status(risk=bool(unexpected_relative_paths)),
             summary="package root does not contain undeclared extra files",
             evidence=(
                 "no unexpected files detected"
@@ -480,12 +458,9 @@ def write_publication_package_revalidation_report(
     blocked_check_count = sum(1 for row in check_rows if row.status == "blocked")
     risk_check_count = sum(1 for row in check_rows if row.status == "risk")
     all_original_artifacts_match = blocked_check_count == 0
-    overall_revalidation_status = (
-        "blocked"
-        if blocked_check_count > 0
-        else "risk"
-        if risk_check_count > 0
-        else "pass"
+    overall_revalidation_status = derive_overall_revalidation_status(
+        blocked_check_count=blocked_check_count,
+        risk_check_count=risk_check_count,
     )
 
     artifact_table_path = write_taxon_rows(
