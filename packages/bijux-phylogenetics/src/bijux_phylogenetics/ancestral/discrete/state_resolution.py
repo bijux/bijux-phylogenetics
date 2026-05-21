@@ -35,9 +35,7 @@ def resolve_clade_consensus_state(
     best_count = max(state_counts.values(), default=0)
     if best_count <= 0:
         return fallback_state
-    tied_states = [
+    tied_states = sorted(
         state for state, count in state_counts.items() if count == best_count
-    ]
-    if fallback_state in tied_states:
-        return fallback_state
-    return max(tied_states)
+    )
+    return tied_states[0]

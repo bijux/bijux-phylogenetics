@@ -94,7 +94,7 @@ def test_summarize_host_switching_reports_unsupported_unconstrained_claims(
     )
 
     assert report.summary.unsupported_switch_claim_count >= 1
-    assert any(row.claim_resolved for row in report.unsupported_claim_rows)
+    assert any(not row.claim_resolved for row in report.unsupported_claim_rows)
 
 
 @pytest.mark.slow

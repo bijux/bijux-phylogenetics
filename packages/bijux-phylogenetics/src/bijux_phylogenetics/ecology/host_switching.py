@@ -9,6 +9,9 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralReport,
     reconstruct_discrete_ancestral_states,
 )
+from bijux_phylogenetics.ancestral.discrete.state_resolution import (
+    resolve_clade_consensus_state,
+)
 from bijux_phylogenetics.comparative.discrete_evolution import (
     audit_discrete_state_coding,
 )
@@ -170,6 +173,12 @@ def summarize_host_switching(
     constraint_path: Path | None = None,
 ) -> HostSwitchingReport:
     """Model host-state evolution and summarize inferred host switches."""
+    coding_audit = audit_discrete_state_coding(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+    )
     unconstrained_report = reconstruct_discrete_ancestral_states(
         tree_path,
         traits_path,
@@ -177,12 +186,12 @@ def summarize_host_switching(
         taxon_column=taxon_column,
         model=model,
     )
-    exclusion_rows = _build_exclusion_rows(
-        tree_path,
-        traits_path,
-        trait=trait,
-        taxon_column=taxon_column,
-    )
+    observed_hosts_by_taxon = {
+        row.taxon: row.normalized_state
+        for row in coding_audit.rows
+        if row.included and row.normalized_state is not None
+    }
+    exclusion_rows = _build_exclusion_rows(coding_audit)
     allowed_transition_pairs: list[tuple[str, str]] | None = None
     constrained_report: DiscreteAncestralReport | None = None
     if constraint_path is not None:
@@ -213,6 +222,7 @@ def summarize_host_switching(
     branch_rows = _build_branch_rows(
         active_report,
         allowed_transition_pairs=active_allowed_transition_pairs,
+        observed_hosts_by_taxon=observed_hosts_by_taxon,
     )
     count_rows = _build_count_rows(branch_rows)
     fit_rows = _build_fit_rows(
@@ -223,6 +233,7 @@ def summarize_host_switching(
         unconstrained_report=unconstrained_report,
         constrained_report=constrained_report,
         allowed_transition_pairs=active_allowed_transition_pairs,
+        observed_hosts_by_taxon=observed_hosts_by_taxon,
     )
     warnings = list(
         dict.fromkeys(
@@ -579,6 +590,7 @@ def _build_branch_rows(
     report: DiscreteAncestralReport,
     *,
     allowed_transition_pairs: set[tuple[str, str]],
+    observed_hosts_by_taxon: dict[str, str],
 ) -> list[HostSwitchBranchRow]:
     tree = loads_newick(report.analysis_tree_newick)
     estimate_by_node = {estimate.node: estimate for estimate in report.estimates}
@@ -588,17 +600,23 @@ def _build_branch_rows(
         parent_estimate = estimate_by_node[_node_signature(node)]
         for child in node.children:
             child_estimate = estimate_by_node[_node_signature(child)]
+            parent_host = _resolve_host_state(
+                descendant_taxa=parent_estimate.descendant_taxa,
+                candidate_hosts=parent_estimate.state_set,
+                observed_hosts_by_taxon=observed_hosts_by_taxon,
+                fallback_host=parent_estimate.most_likely_state,
+            )
+            child_host = _resolve_host_state(
+                descendant_taxa=child_estimate.descendant_taxa,
+                candidate_hosts=child_estimate.state_set,
+                observed_hosts_by_taxon=observed_hosts_by_taxon,
+                fallback_host=child_estimate.most_likely_state,
+            )
             overlapping_hosts = sorted(
                 set(parent_estimate.state_set) & set(child_estimate.state_set)
             )
-            changed = (
-                parent_estimate.most_likely_state != child_estimate.most_likely_state
-            )
-            transition = (
-                f"{parent_estimate.most_likely_state}->{child_estimate.most_likely_state}"
-                if changed
-                else ""
-            )
+            changed = parent_host != child_host
+            transition = f"{parent_host}->{child_host}" if changed else ""
             branch_rows.append(
                 HostSwitchBranchRow(
                     branch_id=child_estimate.node,
@@ -606,8 +624,8 @@ def _build_branch_rows(
                     child_node=child_estimate.node,
                     child_descendant_taxa=list(child_estimate.descendant_taxa),
                     branch_length=child.branch_length,
-                    parent_most_likely_host=parent_estimate.most_likely_state,
-                    child_most_likely_host=child_estimate.most_likely_state,
+                    parent_most_likely_host=parent_host,
+                    child_most_likely_host=child_host,
                     parent_host_set=list(parent_estimate.state_set),
                     child_host_set=list(child_estimate.state_set),
                     overlapping_hosts=overlapping_hosts,
@@ -623,11 +641,7 @@ def _build_branch_rows(
                     child_confidence=_stable_float(child_estimate.confidence),
                     transition_allowed=(
                         not changed
-                        or (
-                            parent_estimate.most_likely_state,
-                            child_estimate.most_likely_state,
-                        )
-                        in allowed_transition_pairs
+                        or (parent_host, child_host) in allowed_transition_pairs
                     ),
                 )
             )
@@ -713,6 +727,7 @@ def _build_unsupported_claim_rows(
     unconstrained_report: DiscreteAncestralReport,
     constrained_report: DiscreteAncestralReport | None,
     allowed_transition_pairs: set[tuple[str, str]],
+    observed_hosts_by_taxon: dict[str, str],
 ) -> list[UnsupportedHostSwitchClaimRow]:
     if constrained_report is None:
         return []
@@ -721,6 +736,7 @@ def _build_unsupported_claim_rows(
         for row in _build_branch_rows(
             unconstrained_report,
             allowed_transition_pairs=allowed_transition_pairs,
+            observed_hosts_by_taxon=observed_hosts_by_taxon,
         )
         if row.changed and not row.transition_allowed
     }
@@ -729,6 +745,7 @@ def _build_unsupported_claim_rows(
         for row in _build_branch_rows(
             constrained_report,
             allowed_transition_pairs=allowed_transition_pairs,
+            observed_hosts_by_taxon=observed_hosts_by_taxon,
         )
     }
     rows: list[UnsupportedHostSwitchClaimRow] = []
@@ -754,19 +771,7 @@ def _build_unsupported_claim_rows(
     return rows
 
 
-def _build_exclusion_rows(
-    tree_path: Path,
-    traits_path: Path,
-    *,
-    trait: str,
-    taxon_column: str | None,
-) -> list[HostSwitchExclusionRow]:
-    audit = audit_discrete_state_coding(
-        tree_path,
-        traits_path,
-        trait=trait,
-        taxon_column=taxon_column,
-    )
+def _build_exclusion_rows(audit) -> list[HostSwitchExclusionRow]:
     return [
         HostSwitchExclusionRow(
             taxon=row.taxon,
@@ -778,6 +783,21 @@ def _build_exclusion_rows(
         for row in audit.rows
         if not row.included
     ]
+
+
+def _resolve_host_state(
+    *,
+    descendant_taxa: list[str],
+    candidate_hosts: list[str],
+    observed_hosts_by_taxon: dict[str, str],
+    fallback_host: str,
+) -> str:
+    return resolve_clade_consensus_state(
+        clade_taxa=descendant_taxa,
+        candidate_states=candidate_hosts,
+        observed_states_by_taxon=observed_hosts_by_taxon,
+        fallback_state=fallback_host,
+    )
 
 
 def _build_summary(
