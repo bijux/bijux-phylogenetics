@@ -39,6 +39,8 @@ from .input_curation import (
     raise_for_input_blockers as _raise_for_input_blockers,
     shared_analysis_taxa as _shared_analysis_taxa,
 )
+from .report_rows import build_response_coefficient_rows as _build_response_coefficient_rows
+from .report_rows import build_response_model_rows as _build_response_model_rows
 
 
 def run_multivariate_comparative_regression(
@@ -405,55 +407,6 @@ def write_multivariate_excluded_taxa_table(
             for row in report.excluded_taxa
         ],
     )
-
-
-def _build_response_model_rows(
-    response_models: list[PGLSResult],
-) -> list[MultivariateResponseModelRow]:
-    rows: list[MultivariateResponseModelRow] = []
-    for model in response_models:
-        residual_degrees_of_freedom = (
-            model.coefficients[0].degrees_of_freedom if model.coefficients else 0
-        )
-        rows.append(
-            MultivariateResponseModelRow(
-                response=model.response,
-                formula=model.formula.formula,
-                predictor_term_count=len(model.predictors),
-                encoded_term_count=len(model.encoded_columns),
-                taxon_count=model.taxon_count,
-                lambda_value=model.lambda_value,
-                log_likelihood=model.log_likelihood,
-                residual_variance=model.residual_variance,
-                r_squared=model.r_squared,
-                residual_degrees_of_freedom=residual_degrees_of_freedom,
-            )
-        )
-    return rows
-
-
-def _build_response_coefficient_rows(
-    response_models: list[PGLSResult],
-) -> list[MultivariateResponseCoefficientRow]:
-    rows: list[MultivariateResponseCoefficientRow] = []
-    for model in response_models:
-        for coefficient in model.coefficients:
-            rows.append(
-                MultivariateResponseCoefficientRow(
-                    response=model.response,
-                    formula=model.formula.formula,
-                    term=coefficient.name,
-                    estimate=coefficient.estimate,
-                    standard_error=coefficient.standard_error,
-                    test_statistic=coefficient.test_statistic,
-                    p_value=coefficient.p_value,
-                    lower_95_confidence_interval=coefficient.lower_95_confidence_interval,
-                    upper_95_confidence_interval=coefficient.upper_95_confidence_interval,
-                    degrees_of_freedom=coefficient.degrees_of_freedom,
-                    inference_distribution=coefficient.inference_distribution,
-                )
-            )
-    return rows
 
 
 def _build_residual_covariance_rows(
