@@ -8,19 +8,8 @@ from bijux_phylogenetics.datasets.study_inputs import (
     link_tree_to_traits,
     validate_traits_table,
 )
-from bijux_phylogenetics.diagnostics.validation import (
-    inspect_tree_path,
-    validate_tree_path,
-)
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment, write_fasta_alignment
-from bijux_phylogenetics.io.fasta.cleaning import detect_composition_outlier_sequences
-from bijux_phylogenetics.io.fasta.coding import prepare_coding_sequences_for_alignment
-from bijux_phylogenetics.io.fasta.records import (
-    detect_sequence_length_outliers,
-    repair_fasta_input,
-    validate_fasta_input,
-)
 from bijux_phylogenetics.io.newick import write_newick
 
 from ..models import (
@@ -36,6 +25,7 @@ from ..traits import (
     resolve_duplicate_traits,
     selected_trait_rows,
 )
+from .sequence_processing import prepare_sequence_surfaces
 from .shared import apply_branch_length_floor
 
 
@@ -47,45 +37,9 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
     assembled_root = out_dir / "assembled"
     assembled_root.mkdir(parents=True, exist_ok=True)
 
-    raw_sequence_input_validation = validate_fasta_input(
-        dataset.raw_sequence_input_path,
-        sequence_type=dataset.sequence_type,
-    )
-    repaired_sequence_records, raw_sequence_input_repair = repair_fasta_input(
-        dataset.raw_sequence_input_path,
-        sequence_type=dataset.sequence_type,
-        normalize_identifiers=True,
-        remove_invalid_records=True,
-    )
-    provisional_repaired_sequence_path = write_fasta_alignment(
-        assembled_root / "repaired-sequence-input.provisional.fasta",
-        repaired_sequence_records,
-    )
-    raw_sequence_length_outliers = detect_sequence_length_outliers(
-        provisional_repaired_sequence_path
-    )
-    repaired_sequence_input_path = write_fasta_alignment(
-        assembled_root / "repaired-sequence-input.fasta",
-        [
-            record
-            for record in repaired_sequence_records
-            if record.identifier
-            not in {row.identifier for row in raw_sequence_length_outliers}
-        ],
-    )
-    repaired_sequence_input_validation = validate_fasta_input(
-        repaired_sequence_input_path,
-        sequence_type=dataset.sequence_type,
-    )
-    prepared_coding_sequences, coding_sequence_preparation = (
-        prepare_coding_sequences_for_alignment(
-            dataset.raw_coding_sequences_path,
-            sequence_type=dataset.sequence_type,
-        )
-    )
-    prepared_coding_sequences_path = write_fasta_alignment(
-        assembled_root / "prepared-coding-sequences.fasta",
-        prepared_coding_sequences,
+    sequence_surfaces = prepare_sequence_surfaces(
+        dataset=dataset,
+        assembled_root=assembled_root,
     )
     raw_trait_mismatch_linkage = link_tree_to_traits(
         dataset.raw_tree_path,
@@ -102,17 +56,6 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
     except MetadataJoinError as error:
         raw_trait_mismatch_error = str(error)
 
-    raw_alignment_validation = validate_fasta_input(
-        dataset.raw_alignment_path,
-        sequence_type=dataset.sequence_type,
-    )
-    sequence_outliers = detect_composition_outlier_sequences(dataset.raw_alignment_path)
-    raw_tree_inspection = inspect_tree_path(dataset.raw_tree_path)
-    raw_tree_validation = validate_tree_path(
-        dataset.raw_tree_path,
-        allow_negative_branch_lengths=True,
-    )
-
     raw_trait_rows = load_permissive_trait_rows(dataset.raw_traits_path)
     trait_duplicates = resolve_duplicate_traits(raw_trait_rows)
     duplicate_lookup = {row.taxon: row for row in trait_duplicates}
@@ -123,10 +66,6 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
         duplicate_lookup=duplicate_lookup,
     )
 
-    sequence_outlier_taxa = sorted(
-        {row.identifier for row in sequence_outliers if row.identifier}
-    )
-    tree_outlier_taxa = sorted(raw_tree_inspection.long_branch_taxa)
     missing_required_trait_taxa = sorted(
         {
             row.taxon
@@ -136,8 +75,8 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
         }
     )
     excluded_taxa = sorted(
-        set(sequence_outlier_taxa)
-        | set(tree_outlier_taxa)
+        set(sequence_surfaces.sequence_outlier_taxa)
+        | set(sequence_surfaces.tree_outlier_taxa)
         | set(missing_required_trait_taxa)
     )
 
@@ -171,10 +110,9 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
     )
 
     cleaned_trait_validation = validate_traits_table(cleaned_traits_path)
-    cleaned_tree_validation = validate_tree_path(cleaned_tree_path)
-    cleaned_alignment_validation = validate_fasta_input(
-        cleaned_alignment_path,
-        sequence_type=dataset.sequence_type,
+    cleaned_tree_validation = sequence_surfaces.validate_cleaned_tree(cleaned_tree_path)
+    cleaned_alignment_validation = sequence_surfaces.validate_cleaned_alignment(
+        cleaned_alignment_path
     )
     cleaned_linkage = link_tree_to_traits(
         cleaned_tree_path,
@@ -184,29 +122,31 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
     cleaned_taxa = sorted(cleaned_linkage.usable_taxa)
 
     repair_actions = build_repair_actions(
-        raw_sequence_input_repair=raw_sequence_input_repair,
-        raw_sequence_length_outliers=raw_sequence_length_outliers,
-        coding_sequence_preparation=coding_sequence_preparation,
+        raw_sequence_input_repair=sequence_surfaces.raw_sequence_input_repair,
+        raw_sequence_length_outliers=sequence_surfaces.raw_sequence_length_outliers,
+        coding_sequence_preparation=sequence_surfaces.coding_sequence_preparation,
         raw_trait_mismatch_error=raw_trait_mismatch_error,
         trait_duplicates=trait_duplicates,
         missing_required_trait_taxa=missing_required_trait_taxa,
-        sequence_outlier_taxa=sequence_outlier_taxa,
-        tree_outlier_taxa=tree_outlier_taxa,
+        sequence_outlier_taxa=sequence_surfaces.sequence_outlier_taxa,
+        tree_outlier_taxa=sequence_surfaces.tree_outlier_taxa,
         repaired_branch_nodes=repaired_branch_nodes,
     )
     return CatarrhineDataQualityStressPanelWorkflowReport(
         dataset=dataset,
-        raw_sequence_input_validation=raw_sequence_input_validation,
-        raw_sequence_input_repair=raw_sequence_input_repair,
-        raw_sequence_length_outliers=raw_sequence_length_outliers,
-        repaired_sequence_input_validation=repaired_sequence_input_validation,
-        coding_sequence_preparation=coding_sequence_preparation,
+        raw_sequence_input_validation=sequence_surfaces.raw_sequence_input_validation,
+        raw_sequence_input_repair=sequence_surfaces.raw_sequence_input_repair,
+        raw_sequence_length_outliers=sequence_surfaces.raw_sequence_length_outliers,
+        repaired_sequence_input_validation=(
+            sequence_surfaces.repaired_sequence_input_validation
+        ),
+        coding_sequence_preparation=sequence_surfaces.coding_sequence_preparation,
         raw_trait_mismatch_linkage=raw_trait_mismatch_linkage,
         raw_trait_mismatch_error=raw_trait_mismatch_error,
-        raw_alignment_validation=raw_alignment_validation,
-        sequence_outliers=sequence_outliers,
-        raw_tree_inspection=raw_tree_inspection,
-        raw_tree_validation=raw_tree_validation,
+        raw_alignment_validation=sequence_surfaces.raw_alignment_validation,
+        sequence_outliers=sequence_surfaces.sequence_outliers,
+        raw_tree_inspection=sequence_surfaces.raw_tree_inspection,
+        raw_tree_validation=sequence_surfaces.raw_tree_validation,
         trait_duplicates=trait_duplicates,
         missing_traits=missing_traits,
         cleaned_trait_validation=cleaned_trait_validation,
@@ -214,8 +154,8 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
         cleaned_linkage=cleaned_linkage,
         cleaned_alignment_validation=cleaned_alignment_validation,
         cleaned_alignment_records=cleaned_alignment_records,
-        repaired_sequence_input_path=repaired_sequence_input_path,
-        prepared_coding_sequences_path=prepared_coding_sequences_path,
+        repaired_sequence_input_path=sequence_surfaces.repaired_sequence_input_path,
+        prepared_coding_sequences_path=sequence_surfaces.prepared_coding_sequences_path,
         cleaned_tree_path=cleaned_tree_path,
         cleaned_traits_path=cleaned_traits_path,
         cleaned_alignment_path=cleaned_alignment_path,
