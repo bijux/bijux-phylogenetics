@@ -27,6 +27,7 @@ from .layout import WORKFLOW_CONFIG_NAME as WORKFLOW_CONFIG_NAME
 from .layout import WORKFLOW_REPORT_NAME as WORKFLOW_REPORT_NAME
 from .layout import WORKFLOW_RERUN_NAME as WORKFLOW_RERUN_NAME
 from .validation import validate_workflow_result_bundle as validate_workflow_result_bundle
+from .builder import export_workflow_result_bundle as export_workflow_result_bundle
 
 __all__ = [
     "BUNDLE_MANIFEST_NAME",
@@ -51,6 +52,7 @@ __all__ = [
     "required_output_paths",
     "step_manifest_paths",
     "render_bundle_readme",
+    "export_workflow_result_bundle",
     "validate_workflow_result_bundle",
     "write_bundle_report",
     "write_bundle_json",
