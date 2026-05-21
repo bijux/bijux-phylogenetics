@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import asdict
-from hashlib import sha256
-import json
 from pathlib import Path
 
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
@@ -42,24 +39,18 @@ from .artifact_outputs import (
     write_window_table,
 )
 from .heatmap_analysis import build_heatmap_cells
+from .manifest import (
+    attach_reviewer_audit_checklist,
+    build_machine_manifest,
+    build_pre_review_manifest,
+    write_machine_manifest,
+)
 from .publication_review import (
     build_audit,
     build_caption_draft,
     build_review_html,
     write_caption,
 )
-
-
-def _checksum(path: Path) -> str:
-    digest = sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def _json_ready(payload: object) -> object:
-    return json.loads(json.dumps(payload, default=str))
 
 
 def build_alignment_figure_package(
@@ -149,38 +140,18 @@ def build_alignment_figure_package(
         caption_path,
         review_path,
     ]
-    existing_artifact_paths = artifact_paths[:-1]
-    pre_review_manifest = {
-        "report_kind": "alignment_quality_figure_package",
-        "input_path": str(alignment_path),
-        "input_checksum": _checksum(alignment_path),
-        "output_paths": [str(path) for path in artifact_paths],
-        "output_checksums": {
-            str(path): _checksum(path) for path in existing_artifact_paths
-        },
-        "reproducibility_manifest_path": str(reproducibility_manifest_path),
-        "settings": {
-            "maximum_site_bins": maximum_site_bins,
-            "window_size": window_size,
-            "step_size": step_size,
-            "panel_row_limit": panel_row_limit,
-        },
-        "metrics": {
-            "sequence_count": summary.sequence_count,
-            "alignment_length": summary.alignment_length,
-            "quality_score": forensic.quality.quality_score,
-            "publication_ready": audit.publication_ready,
-            "heatmap_row_count": audit.heatmap_row_count,
-            "heatmap_bin_count": audit.heatmap_bin_count,
-            "plotted_window_count": audit.plotted_window_count,
-            "plotted_sequence_count": audit.plotted_sequence_count,
-        },
-        "alignment_summary": _json_ready(asdict(summary)),
-        "alignment_quality": _json_ready(asdict(forensic.quality)),
-        "alignment_readiness": _json_ready(asdict(forensic.readiness)),
-        "alignment_low_information": _json_ready(asdict(forensic.low_information)),
-        "audit": _json_ready(asdict(audit)),
-    }
+    pre_review_manifest = build_pre_review_manifest(
+        alignment_path=alignment_path,
+        artifact_paths=artifact_paths,
+        reproducibility_manifest_path=reproducibility_manifest_path,
+        maximum_site_bins=maximum_site_bins,
+        window_size=window_size,
+        step_size=step_size,
+        panel_row_limit=panel_row_limit,
+        summary=summary,
+        forensic=forensic,
+        audit=audit,
+    )
     reviewer_audit_checklist = build_reviewer_audit_checklist(pre_review_manifest)
     review_path.write_text(
         build_review_html(
@@ -231,50 +202,27 @@ def build_alignment_figure_package(
             ("review", review_path),
         ],
     )
-    machine_manifest = {
-        "report_kind": "alignment_quality_figure_package",
-        "input_path": str(alignment_path),
-        "input_checksum": _checksum(alignment_path),
-        "output_paths": [str(path) for path in artifact_paths],
-        "output_checksums": {str(path): _checksum(path) for path in artifact_paths},
-        "reproducibility_manifest_path": str(reproducibility_manifest_path),
-        "reproducibility_manifest_checksum": _checksum(reproducibility_manifest_path),
-        "reproducibility_manifest": reproducibility_manifest,
-        "settings": {
-            "maximum_site_bins": maximum_site_bins,
-            "window_size": window_size,
-            "step_size": step_size,
-            "panel_row_limit": panel_row_limit,
-        },
-        "metrics": {
-            "sequence_count": summary.sequence_count,
-            "alignment_length": summary.alignment_length,
-            "quality_score": forensic.quality.quality_score,
-            "publication_ready": audit.publication_ready,
-            "heatmap_row_count": audit.heatmap_row_count,
-            "heatmap_bin_count": audit.heatmap_bin_count,
-            "plotted_window_count": audit.plotted_window_count,
-            "plotted_sequence_count": audit.plotted_sequence_count,
-        },
-        "alignment_summary": _json_ready(asdict(summary)),
-        "alignment_quality": _json_ready(asdict(forensic.quality)),
-        "alignment_readiness": _json_ready(asdict(forensic.readiness)),
-        "alignment_low_information": _json_ready(asdict(forensic.low_information)),
-        "audit": _json_ready(asdict(audit)),
-    }
+    machine_manifest = build_machine_manifest(
+        alignment_path=alignment_path,
+        artifact_paths=artifact_paths,
+        reproducibility_manifest_path=reproducibility_manifest_path,
+        reproducibility_manifest=reproducibility_manifest,
+        maximum_site_bins=maximum_site_bins,
+        window_size=window_size,
+        step_size=step_size,
+        panel_row_limit=panel_row_limit,
+        summary=summary,
+        forensic=forensic,
+        audit=audit,
+    )
     reviewer_audit_checklist = write_reviewer_audit_checklist(
         reviewer_audit_checklist_path,
         machine_manifest,
     ).checklist
-    machine_manifest["output_paths"].append(str(reviewer_audit_checklist_path))
-    machine_manifest["output_checksums"][str(reviewer_audit_checklist_path)] = (
-        _checksum(reviewer_audit_checklist_path)
-    )
-    machine_manifest["reviewer_audit_checklist_path"] = str(
-        reviewer_audit_checklist_path
-    )
-    machine_manifest["reviewer_audit_checklist"] = _json_ready(
-        asdict(reviewer_audit_checklist)
+    machine_manifest = attach_reviewer_audit_checklist(
+        machine_manifest=machine_manifest,
+        reviewer_audit_checklist_path=reviewer_audit_checklist_path,
+        reviewer_audit_checklist=reviewer_audit_checklist,
     )
     review_path.write_text(
         build_review_html(
@@ -292,9 +240,9 @@ def build_alignment_figure_package(
         ),
         encoding="utf-8",
     )
-    manifest_path.write_text(
-        json.dumps(machine_manifest, default=str, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
+    write_machine_manifest(
+        manifest_path,
+        machine_manifest,
     )
     return AlignmentFigurePackageResult(
         output_dir=out_dir,
