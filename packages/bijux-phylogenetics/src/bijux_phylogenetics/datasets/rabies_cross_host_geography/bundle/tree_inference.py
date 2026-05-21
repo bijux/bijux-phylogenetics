@@ -7,7 +7,7 @@ import shutil
 from bijux_phylogenetics.datasets.rabies_cross_host_geography.models import (
     RabiesCrossHostGeographyPanelWorkflowReport,
 )
-from bijux_phylogenetics.datasets.rabies_cross_host_geography.workflow import (
+from bijux_phylogenetics.datasets.rabies_cross_host_geography.workflow.tree_transforms import (
     _stabilize_clade_report,
 )
 from bijux_phylogenetics.trees import CladeTableReport, extract_tree_clades, write_clade_table
