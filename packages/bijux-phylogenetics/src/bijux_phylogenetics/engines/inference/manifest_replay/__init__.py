@@ -28,6 +28,12 @@ from .manifest_policy import (
 from .manifest_policy import (
     recorded_input_paths as recorded_input_paths,
 )
+from .workflow_execution import (
+    replay_composite_workflow as replay_composite_workflow,
+)
+from .workflow_execution import (
+    replay_engine_workflow as replay_engine_workflow,
+)
 
 __all__ = [
     "ManifestReplayComparison",
@@ -39,5 +45,7 @@ __all__ = [
     "engine_key_from_name",
     "payload_workflow",
     "path_map",
+    "replay_composite_workflow",
+    "replay_engine_workflow",
     "recorded_input_paths",
 ]
