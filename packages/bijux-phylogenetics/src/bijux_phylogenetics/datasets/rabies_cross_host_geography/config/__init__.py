@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from .panel import (
+from .audit import (
     _build_workflow_config_audit_rows,
     _raise_for_failed_config_audit,
+)
+from .panel import (
     export_rabies_cross_host_geography_panel_dataset,
     load_rabies_cross_host_geography_panel_dataset,
 )
