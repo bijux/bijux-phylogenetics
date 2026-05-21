@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-import csv
 import json
 from pathlib import Path
 
@@ -20,6 +19,19 @@ from .contracts import (
     RabiesMethodSensitivitySlurmPartitionStatusRow,
     RabiesMethodSensitivitySlurmStatusReport,
 )
+from .shared import (
+    _CONFIG_FILENAME,
+    _EXECUTION_RECORD_FILENAME,
+    _SLURM_ARRAY_MEMBERS_FILENAME,
+    _SLURM_ARRAY_PARTITIONS_FILENAME,
+    collect_output_observations,
+    load_json,
+    missing_required_variant_outputs,
+    parse_task_log,
+    read_tsv_rows,
+    relative_bundle_path,
+    write_tsv,
+)
 
 __all__ = [
     "RabiesMethodSensitivitySlurmJobStatusRow",
@@ -31,14 +43,6 @@ __all__ = [
     "write_rabies_method_sensitivity_slurm_status_json",
 ]
 
-_EXECUTION_RECORD_FILENAME = "rabies-method-sensitivity-panel.run.json"
-_CONFIG_FILENAME = "workflow-config.resolved.json"
-_SLURM_ARRAY_PARTITIONS_FILENAME = "slurm-array-partitions.tsv"
-_SLURM_ARRAY_MEMBERS_FILENAME = "slurm-array-members.tsv"
-_TASK_LOGS_DIRECTORY = "parallel-logs"
-_VARIANTS_DIRECTORY = "variants"
-
-
 def build_rabies_method_sensitivity_slurm_status_report(
     bundle_root: Path,
     *,
@@ -46,10 +50,10 @@ def build_rabies_method_sensitivity_slurm_status_report(
 ) -> RabiesMethodSensitivitySlurmStatusReport:
     """Classify planned rabies workflow jobs by real completion state."""
     bundle_root = bundle_root.resolve()
-    config = _load_json(bundle_root / _CONFIG_FILENAME)
+    config = load_json(bundle_root / _CONFIG_FILENAME)
     execution_record_path = bundle_root / _EXECUTION_RECORD_FILENAME
     execution_record = (
-        _load_json(execution_record_path) if execution_record_path.is_file() else {}
+        load_json(execution_record_path) if execution_record_path.is_file() else {}
     )
     active_marker_path = engine_active_marker_path(execution_record_path)
     active_record = load_active_engine_run(execution_record_path)
@@ -57,8 +61,8 @@ def build_rabies_method_sensitivity_slurm_status_report(
     if active_record is not None:
         active_run_state = "live" if active_engine_run_is_live(active_record) else "stale"
 
-    partition_rows = _read_tsv_rows(bundle_root / _SLURM_ARRAY_PARTITIONS_FILENAME)
-    member_rows = _read_tsv_rows(bundle_root / _SLURM_ARRAY_MEMBERS_FILENAME)
+    partition_rows = read_tsv_rows(bundle_root / _SLURM_ARRAY_PARTITIONS_FILENAME)
+    member_rows = read_tsv_rows(bundle_root / _SLURM_ARRAY_MEMBERS_FILENAME)
     freshness_report = build_rabies_method_sensitivity_slurm_output_freshness_report(
         bundle_root,
         dataset=dataset,
@@ -123,7 +127,7 @@ def write_rabies_method_sensitivity_slurm_job_status_table(
     report: RabiesMethodSensitivitySlurmStatusReport,
 ) -> Path:
     """Write one per-job resume-state ledger."""
-    return _write_tsv(
+    return write_tsv(
         path,
         fieldnames=(
             "partition_id",
@@ -176,7 +180,7 @@ def write_rabies_method_sensitivity_slurm_partition_status_table(
     report: RabiesMethodSensitivitySlurmStatusReport,
 ) -> Path:
     """Write one partition-level resume-state ledger."""
-    return _write_tsv(
+    return write_tsv(
         path,
         fieldnames=(
             "partition_id",
@@ -214,11 +218,11 @@ def write_rabies_method_sensitivity_slurm_status_json(
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = asdict(report)
     payload["bundle_root"] = "."
-    payload["execution_record_path"] = _relative_bundle_path(
+    payload["execution_record_path"] = relative_bundle_path(
         report.bundle_root,
         report.execution_record_path,
     )
-    payload["active_marker_path"] = _relative_bundle_path(
+    payload["active_marker_path"] = relative_bundle_path(
         report.bundle_root,
         report.active_marker_path,
     )
@@ -241,13 +245,13 @@ def _build_job_status_row(
     variant_id = str(member_row["variant_id"])
     task_log_path = bundle_root / str(member_row["task_log_path"])
     output_root = bundle_root / str(member_row["bundle_output_directory"])
-    task_log = _parse_task_log(task_log_path) if task_log_path.is_file() else {}
+    task_log = parse_task_log(task_log_path) if task_log_path.is_file() else {}
     task_status = _resolve_task_status(
         execution_task_row=execution_task_row,
         task_log=task_log,
     )
-    output_file_count, output_byte_count = _collect_output_observations(output_root)
-    missing_required_files = _missing_required_variant_outputs(output_root, variant_id)
+    output_file_count, output_byte_count = collect_output_observations(output_root)
+    missing_required_files = missing_required_variant_outputs(output_root, variant_id)
     has_output_evidence = output_root.exists()
     has_terminal_failure = task_status == "failed"
     has_terminal_success = task_status == "succeeded"
@@ -403,81 +407,3 @@ def _resolve_task_status(
         return None
     return str(execution_task_row["status"])
 
-
-def _collect_output_observations(output_root: Path) -> tuple[int, int]:
-    if not output_root.exists():
-        return 0, 0
-    file_paths = sorted(path for path in output_root.rglob("*") if path.is_file())
-    return len(file_paths), sum(path.stat().st_size for path in file_paths)
-
-
-def _missing_required_variant_outputs(
-    output_root: Path,
-    variant_id: str,
-) -> tuple[str, ...]:
-    return tuple(
-        filename
-        for filename in (
-            f"{variant_id}.aln",
-            f"{variant_id}.trimmed.aln",
-            "fasttree.nwk",
-            "iqtree-support.nwk",
-            "rooted-engine-comparison.tsv",
-            "rooted-fasttree.nwk",
-            "rooted-iqtree-support.nwk",
-            "rooting-summary.tsv",
-            "unrooted-comparison.tsv",
-            "unrooted-conclusions.tsv",
-            "unrooted-conflicting-clades.tsv",
-            "unrooted-shared-clades.tsv",
-            "unrooted-stability-summary.tsv",
-            "unrooted-support-weighted-conflicts.tsv",
-        )
-        if not (output_root / filename).is_file()
-    )
-
-
-def _load_json(path: Path) -> dict[str, object]:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _relative_bundle_path(bundle_root: Path, value: Path) -> str:
-    try:
-        return value.relative_to(bundle_root).as_posix()
-    except ValueError:
-        return value.as_posix()
-
-
-def _parse_task_log(path: Path) -> dict[str, str]:
-    payload: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if ":" not in line:
-            continue
-        key, value = line.split(":", 1)
-        payload[key.strip()] = value.strip()
-    return payload
-
-
-def _read_tsv_rows(path: Path) -> list[dict[str, str]]:
-    with path.open("r", encoding="utf-8", newline="") as handle:
-        return list(csv.DictReader(handle, delimiter="\t"))
-
-
-def _write_tsv(
-    path: Path,
-    *,
-    fieldnames: tuple[str, ...],
-    rows: list[dict[str, object]],
-) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames, delimiter="\t")
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(
-                {
-                    key: "" if value is None else value
-                    for key, value in row.items()
-                }
-            )
-    return path
