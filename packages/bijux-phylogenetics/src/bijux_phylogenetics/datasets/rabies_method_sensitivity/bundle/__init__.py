@@ -7,18 +7,9 @@ from ..models import (
     RabiesMethodSensitivityPanelWorkflowBundle,
     RabiesMethodSensitivityPanelWorkflowReport,
 )
-from .package_ledger import (
-    _write_clade_table,
-    _write_conclusion_summary_table,
-    _write_parallel_execution_summary_table,
-    _write_preprocessing_comparison_table,
-    _write_variant_summary_table,
-    _write_workflow_summary_table,
-)
 from .package_manifest import (
     _sha256,
     _write_manifest,
-    _write_resolved_config,
 )
 from .shared import (
     _format_float,
@@ -34,6 +25,7 @@ from .variant_artifacts import (
     _write_rooting_summary_table,
     _write_variant_outputs,
 )
+from .workflow_artifacts import _write_workflow_bundle_artifacts
 from ..reporting import _write_report, _write_report_manifest
 
 
@@ -46,66 +38,32 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         shutil.rmtree(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
 
-    workflow_summary_path = _write_workflow_summary_table(
-        output_root / "workflow-summary.tsv",
+    workflow_artifacts = _write_workflow_bundle_artifacts(
+        output_root,
         report,
-    )
-    variant_summary_path = _write_variant_summary_table(
-        output_root / "variant-summary.tsv",
-        report,
-    )
-    parallel_summary_path = _write_parallel_execution_summary_table(
-        output_root / "parallel-execution-summary.tsv",
-        report,
-    )
-    preprocessing_comparison_path = _write_preprocessing_comparison_table(
-        output_root / "preprocessing-rooted-comparisons.tsv",
-        report.preprocessing_comparison_rows,
-    )
-    stable_clades_path = _write_clade_table(
-        output_root / "stable-clades.tsv",
-        report.stable_clade_rows,
-    )
-    changed_clades_path = _write_clade_table(
-        output_root / "changed-clades.tsv",
-        report.changed_clade_rows,
-    )
-    conclusion_summary_path = _write_conclusion_summary_table(
-        output_root / "method-conclusion-summary.tsv",
-        report.conclusion_rows,
-    )
-    config_path = _write_resolved_config(
-        output_root / "workflow-config.resolved.json",
-        report,
-    )
-    execution_record_path = _copy_output(
-        report.execution_record_path,
-        output_root / report.execution_record_path.name,
-    )
-    task_logs_root = _copy_task_logs(output_root / "parallel-logs", report.task_records)
-    variants_root = _write_variant_outputs(
-        output_root / "variants", report.variant_runs
     )
     slurm_artifacts = _write_slurm_bundle_artifacts(
         output_root,
         report,
-        execution_record_path=execution_record_path,
+        execution_record_path=workflow_artifacts.execution_record_path,
     )
     manifest_path = _write_manifest(
         output_root / "rabies-method-sensitivity.manifest.json",
         report=report,
         bundle_paths={
-            "workflow_summary": workflow_summary_path,
-            "variant_summary": variant_summary_path,
-            "parallel_summary": parallel_summary_path,
-            "preprocessing_comparison": preprocessing_comparison_path,
-            "stable_clades": stable_clades_path,
-            "changed_clades": changed_clades_path,
-            "conclusion_summary": conclusion_summary_path,
-            "config": config_path,
-            "execution_record": execution_record_path,
-            "task_logs_root": task_logs_root,
-            "variants_root": variants_root,
+            "workflow_summary": workflow_artifacts.workflow_summary_path,
+            "variant_summary": workflow_artifacts.variant_summary_path,
+            "parallel_summary": workflow_artifacts.parallel_summary_path,
+            "preprocessing_comparison": (
+                workflow_artifacts.preprocessing_comparison_path
+            ),
+            "stable_clades": workflow_artifacts.stable_clades_path,
+            "changed_clades": workflow_artifacts.changed_clades_path,
+            "conclusion_summary": workflow_artifacts.conclusion_summary_path,
+            "config": workflow_artifacts.config_path,
+            "execution_record": workflow_artifacts.execution_record_path,
+            "task_logs_root": workflow_artifacts.task_logs_root,
+            "variants_root": workflow_artifacts.variants_root,
             "slurm_job_plan": slurm_artifacts.job_plan_path,
             "slurm_assumptions": slurm_artifacts.assumptions_path,
             "slurm_summary": slurm_artifacts.summary_path,
@@ -138,15 +96,17 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         / "rabies-method-sensitivity-report.manifest.json",
         report=report,
         bundle_paths={
-            "workflow_summary": workflow_summary_path,
-            "variant_summary": variant_summary_path,
-            "parallel_summary": parallel_summary_path,
-            "preprocessing_comparison": preprocessing_comparison_path,
-            "stable_clades": stable_clades_path,
-            "changed_clades": changed_clades_path,
-            "conclusion_summary": conclusion_summary_path,
-            "config": config_path,
-            "execution_record": execution_record_path,
+            "workflow_summary": workflow_artifacts.workflow_summary_path,
+            "variant_summary": workflow_artifacts.variant_summary_path,
+            "parallel_summary": workflow_artifacts.parallel_summary_path,
+            "preprocessing_comparison": (
+                workflow_artifacts.preprocessing_comparison_path
+            ),
+            "stable_clades": workflow_artifacts.stable_clades_path,
+            "changed_clades": workflow_artifacts.changed_clades_path,
+            "conclusion_summary": workflow_artifacts.conclusion_summary_path,
+            "config": workflow_artifacts.config_path,
+            "execution_record": workflow_artifacts.execution_record_path,
             "workflow_manifest": manifest_path,
             "slurm_job_plan": slurm_artifacts.job_plan_path,
             "slurm_assumptions": slurm_artifacts.assumptions_path,
@@ -175,15 +135,15 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
     )
     reproducibility_artifacts = _write_reproducibility_artifacts(output_root, report)
     report_linked_files = (
-        workflow_summary_path,
-        variant_summary_path,
-        parallel_summary_path,
-        preprocessing_comparison_path,
-        stable_clades_path,
-        changed_clades_path,
-        conclusion_summary_path,
-        config_path,
-        execution_record_path,
+        workflow_artifacts.workflow_summary_path,
+        workflow_artifacts.variant_summary_path,
+        workflow_artifacts.parallel_summary_path,
+        workflow_artifacts.preprocessing_comparison_path,
+        workflow_artifacts.stable_clades_path,
+        workflow_artifacts.changed_clades_path,
+        workflow_artifacts.conclusion_summary_path,
+        workflow_artifacts.config_path,
+        workflow_artifacts.execution_record_path,
         manifest_path,
         report_manifest_path,
         slurm_artifacts.job_plan_path,
@@ -229,15 +189,17 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         output_root / "rabies-method-sensitivity-report.html",
         report=report,
         bundle_paths={
-            "workflow_summary": workflow_summary_path,
-            "variant_summary": variant_summary_path,
-            "parallel_summary": parallel_summary_path,
-            "preprocessing_comparison": preprocessing_comparison_path,
-            "stable_clades": stable_clades_path,
-            "changed_clades": changed_clades_path,
-            "conclusion_summary": conclusion_summary_path,
-            "config": config_path,
-            "execution_record": execution_record_path,
+            "workflow_summary": workflow_artifacts.workflow_summary_path,
+            "variant_summary": workflow_artifacts.variant_summary_path,
+            "parallel_summary": workflow_artifacts.parallel_summary_path,
+            "preprocessing_comparison": (
+                workflow_artifacts.preprocessing_comparison_path
+            ),
+            "stable_clades": workflow_artifacts.stable_clades_path,
+            "changed_clades": workflow_artifacts.changed_clades_path,
+            "conclusion_summary": workflow_artifacts.conclusion_summary_path,
+            "config": workflow_artifacts.config_path,
+            "execution_record": workflow_artifacts.execution_record_path,
             "workflow_manifest": manifest_path,
             "slurm_job_plan": slurm_artifacts.job_plan_path,
             "slurm_assumptions": slurm_artifacts.assumptions_path,
@@ -321,17 +283,17 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         preprocessing_change_pair_count=preprocessing_change_pair_count,
         rooted_engine_change_variant_count=rooted_engine_change_variant_count,
         serious_conflict_variant_count=serious_conflict_variant_count,
-        execution_record_path=execution_record_path,
+        execution_record_path=workflow_artifacts.execution_record_path,
         parallel_workers=report.parallel_workers,
         execution_mode=report.execution_mode,
-        workflow_summary_path=workflow_summary_path,
-        variant_summary_path=variant_summary_path,
-        parallel_summary_path=parallel_summary_path,
-        preprocessing_comparison_path=preprocessing_comparison_path,
-        stable_clades_path=stable_clades_path,
-        changed_clades_path=changed_clades_path,
-        conclusion_summary_path=conclusion_summary_path,
-        config_path=config_path,
+        workflow_summary_path=workflow_artifacts.workflow_summary_path,
+        variant_summary_path=workflow_artifacts.variant_summary_path,
+        parallel_summary_path=workflow_artifacts.parallel_summary_path,
+        preprocessing_comparison_path=workflow_artifacts.preprocessing_comparison_path,
+        stable_clades_path=workflow_artifacts.stable_clades_path,
+        changed_clades_path=workflow_artifacts.changed_clades_path,
+        conclusion_summary_path=workflow_artifacts.conclusion_summary_path,
+        config_path=workflow_artifacts.config_path,
         manifest_path=manifest_path,
         report_manifest_path=report_manifest_path,
         slurm_job_plan_path=slurm_artifacts.job_plan_path,
@@ -486,6 +448,6 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         report_html_size_bytes=report_html_size_bytes,
         report_linked_artifact_bytes=report_linked_artifact_bytes,
         report_total_output_bytes=report_total_output_bytes,
-        task_logs_root=task_logs_root,
-        variants_root=variants_root,
+        task_logs_root=workflow_artifacts.task_logs_root,
+        variants_root=workflow_artifacts.variants_root,
     )
