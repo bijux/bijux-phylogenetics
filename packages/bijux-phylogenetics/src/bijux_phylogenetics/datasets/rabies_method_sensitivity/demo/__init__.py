@@ -4,17 +4,17 @@ from pathlib import Path
 import shutil
 from tempfile import TemporaryDirectory
 
-from .bundle import write_rabies_method_sensitivity_panel_workflow_bundle
-from .config import (
+from ..bundle import write_rabies_method_sensitivity_panel_workflow_bundle
+from ..config import (
     export_rabies_method_sensitivity_panel_dataset,
     load_rabies_method_sensitivity_panel_dataset,
 )
-from .models import (
+from ..models import (
     RabiesMethodSensitivityPanelDataset,
     RabiesMethodSensitivityPanelDemoResult,
     RabiesMethodSensitivityPanelWorkflowBundle,
 )
-from .workflow import run_rabies_method_sensitivity_panel_workflow
+from ..workflow import run_rabies_method_sensitivity_panel_workflow
 
 __all__ = ["run_rabies_method_sensitivity_panel_demo"]
 
