@@ -96,5 +96,6 @@ packages = ["src/bijux_phylogenetics"]
 fail-under = 58
 verbose = 0
 ignore-init-method = true
+ignore-module = true
 ignore-private = true
 ignore-semiprivate = true

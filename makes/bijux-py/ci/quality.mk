@@ -54,7 +54,14 @@ define run_interrogate_report
 	    if (name !~ /^-+$$/ && cov != "100%") printf("  - %s (%s)\n", name, cov); \
 	  }')"; \
 	  printf '%s\n' "$$OFF" >"$(QUALITY_ARTIFACTS_DIR)/interrogate.offenders.txt"; \
-	  if [ -n "$$OFF" ]; then printf '%s\n' "$$OFF"; else echo "✔ All files 100% documented"; fi; \
+	  if [ $$rc -eq 0 ]; then \
+	    RESULT_LINE="$$(printf '%s\n' "$$OUT" | awk '/^RESULT: / {print; exit}')"; \
+	    if [ -n "$$RESULT_LINE" ]; then printf '%s\n' "$$RESULT_LINE"; else echo "✔ Interrogate coverage passed"; fi; \
+	  elif [ -n "$$OFF" ]; then \
+	    printf '%s\n' "$$OFF"; \
+	  else \
+	    printf '%s\n' "$$OUT"; \
+	  fi; \
 	  exit $$rc
 endef
 

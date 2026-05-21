@@ -2,7 +2,7 @@
 optional_dependencies_dev_groups = ["dev"]
 ignore = ["DEP002", "DEP003"]
 extend_exclude = ["docs", "apis", "artifacts", "site"]
-package_module_name_map = { "bijux-phylogenetics" = "bijux_phylogenetics", "bijux-phylogenetics-dev" = "bijux_phylogenetics_dev", "mkdocs-autorefs" = "mkdocs_autorefs", "mkdocs-git-revision-date-localized-plugin" = "mkdocs_git_revision_date_localized_plugin", "openapi-spec-validator" = "openapi_spec_validator", "pyfakefs" = "pyfakefs", "pytest-mock" = "pytest_mock", "twine" = "twine" }
+package_module_name_map = { "bijux-phylogenetics" = "bijux_phylogenetics", "bijux-phylogenetics-dev" = "bijux_phylogenetics_dev", "mkdocs" = "mkdocs", "mkdocs-autorefs" = "mkdocs_autorefs", "mkdocs-git-revision-date-localized-plugin" = "mkdocs_git_revision_date_localized_plugin", "mkdocs-material" = "material", "openapi-spec-validator" = "openapi_spec_validator", "pyfakefs" = "pyfakefs", "pymdown-extensions" = "pymdownx", "pytest-mock" = "pytest_mock", "twine" = "twine" }
 
 [tool.repo_deptry.packages."bijux-phylogenetics"]
 known_first_party = ["bijux_phylogenetics"]
