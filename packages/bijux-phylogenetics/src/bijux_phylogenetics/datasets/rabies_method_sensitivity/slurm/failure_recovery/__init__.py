@@ -11,16 +11,11 @@ from .contracts import (
     RabiesMethodSensitivitySlurmFailureRecoveryPartitionRow,
     RabiesMethodSensitivitySlurmFailureRecoveryReport,
 )
+from .inputs import load_failure_recovery_inputs
 from .shared import (
-    _CONFIG_FILENAME,
-    _SLURM_JOB_STATUS_FILENAME,
-    _SLURM_PARTITION_STATUS_FILENAME,
-    _SLURM_WORKFLOW_STATUS_FILENAME,
     _TERMINAL_FAILURE_CODES,
-    _load_json,
     _normalize_optional,
     _parse_task_log,
-    _read_tsv_rows,
     _write_tsv,
 )
 
@@ -39,13 +34,10 @@ def build_rabies_method_sensitivity_slurm_failure_recovery_report(
     bundle_root: Path,
 ) -> RabiesMethodSensitivitySlurmFailureRecoveryReport:
     """Classify rerunnable jobs and likely failure causes from governed batch evidence."""
-    bundle_root = bundle_root.resolve()
-    config = _load_json(bundle_root / _CONFIG_FILENAME)
-    job_status_rows = _read_tsv_rows(bundle_root / _SLURM_JOB_STATUS_FILENAME)
-    partition_status_rows = _read_tsv_rows(bundle_root / _SLURM_PARTITION_STATUS_FILENAME)
-    workflow_status = _load_json(bundle_root / _SLURM_WORKFLOW_STATUS_FILENAME)
-
-    checks: list[tuple[str, str, bool, object, object, str]] = []
+    loaded_inputs = load_failure_recovery_inputs(bundle_root)
+    bundle_root = loaded_inputs.bundle_root
+    config = loaded_inputs.config
+    checks = list(loaded_inputs.checks)
 
     def add_check(
         check_id: str,
@@ -58,22 +50,11 @@ def build_rabies_method_sensitivity_slurm_failure_recovery_report(
     ) -> None:
         checks.append((check_id, surface, condition, expected, observed, detail))
 
-    configured_variant_ids = sorted(
-        str(row["variant_id"]) for row in list(config.get("variants", []))
-    )
-    observed_variant_ids = sorted(str(row["variant_id"]) for row in job_status_rows)
-    add_check(
-        "job-status:variant-coverage",
-        surface="job-status",
-        condition=observed_variant_ids == configured_variant_ids,
-        expected=configured_variant_ids,
-        observed=observed_variant_ids,
-        detail="job-status rows cover the configured variant ids",
-    )
+    configured_variant_ids = loaded_inputs.configured_variant_ids
 
     job_rows = tuple(
         _build_job_row(bundle_root=bundle_root, job_status_row=row)
-        for row in job_status_rows
+        for row in loaded_inputs.job_status_rows
     )
     jobs_by_partition: dict[str, list[RabiesMethodSensitivitySlurmFailureRecoveryJobRow]] = {}
     for row in job_rows:
@@ -84,13 +65,13 @@ def build_rabies_method_sensitivity_slurm_failure_recovery_report(
             partition_status_row=partition_row,
             job_rows=jobs_by_partition.get(str(partition_row["partition_id"]), []),
         )
-        for partition_row in partition_status_rows
+        for partition_row in loaded_inputs.partition_status_rows
     )
     add_check(
         "partition-status:coverage",
         surface="partition-status",
-        condition=len(partition_rows) == len(partition_status_rows),
-        expected=len(partition_status_rows),
+        condition=len(partition_rows) == len(loaded_inputs.partition_status_rows),
+        expected=len(loaded_inputs.partition_status_rows),
         observed=len(partition_rows),
         detail="failure-recovery partition rows cover the written partition-status surface",
     )
@@ -139,8 +120,8 @@ def build_rabies_method_sensitivity_slurm_failure_recovery_report(
         dataset_id=str(config["dataset_id"]),
         workflow_prefix=str(config["workflow_prefix"]),
         bundle_root=bundle_root,
-        workflow_status=str(workflow_status["workflow_status"]),
-        active_run_state=str(workflow_status["active_run_state"]),
+        workflow_status=str(loaded_inputs.workflow_status["workflow_status"]),
+        active_run_state=str(loaded_inputs.workflow_status["active_run_state"]),
         overall_recovery_status=overall_recovery_status,
         partition_count=len(partition_rows),
         job_count=len(job_rows),
