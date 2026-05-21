@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from .builder import render_tree_svg
 from .contracts import AnnotationStrip, SupportLabelRenderAudit, TreeRenderResult
+from .render_state import TreeSvgRenderState
 from .shared import (
     Point,
     categorical_color_map,
@@ -31,6 +32,7 @@ __all__ = [
     "Point",
     "SupportLabelRenderAudit",
     "TreeRenderResult",
+    "TreeSvgRenderState",
     "audit_support_label_rendering",
     "categorical_color_map",
     "continuous_color",

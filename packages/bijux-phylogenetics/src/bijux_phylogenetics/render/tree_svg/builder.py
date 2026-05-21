@@ -10,6 +10,7 @@ from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.phylo.topology.tree import TreeNode
 
 from .contracts import AnnotationStrip, TreeRenderResult
+from .render_state import TreeSvgRenderState
 from .shared import (
     Point,
     categorical_color_map as build_categorical_color_map,
@@ -84,18 +85,7 @@ def render_tree_svg(
         width = left_margin + tree_width + right_margin
         height = top_margin + bottom_margin + row_height * max(leaf_count, 1)
 
-    lines: list[str] = []
-    texts: list[str] = []
-    overlays: list[str] = []
-    missing_labels: list[str] = []
-    next_leaf_index = 0
-    rendered_support_count = 0
-    rendered_categorical_trait_count = 0
-    rendered_continuous_trait_count = 0
-    rendered_internal_annotation_count = 0
-    rendered_branch_color_count = 0
-    rendered_internal_pie_count = 0
-    rendered_collapsed_clades = 0
+    state = TreeSvgRenderState()
     validated_support_labels = validated_support_labels or {}
     support_validation_warnings = support_validation_warnings or []
     categorical_traits = categorical_traits or {}
@@ -133,45 +123,37 @@ def render_tree_svg(
         return left_margin + depth * horizontal_step
 
     def visit_rectangular(node: TreeNode, depth: int, distance: float) -> Point:
-        nonlocal next_leaf_index
-        nonlocal rendered_support_count
-        nonlocal rendered_categorical_trait_count
-        nonlocal rendered_continuous_trait_count
-        nonlocal rendered_internal_annotation_count
-        nonlocal rendered_branch_color_count
-        nonlocal rendered_internal_pie_count
-        nonlocal rendered_collapsed_clades
         branch_distance = distance + float(node.branch_length or 0.0)
         x = node_x(depth, branch_distance if node is not tree.root else distance)
         if node.is_leaf() or is_collapsed_node(node, collapsed_clade_names):
-            y = top_margin + next_leaf_index * row_height + row_height / 2
-            next_leaf_index += 1
+            y = top_margin + state.next_leaf_index * row_height + row_height / 2
+            state.next_leaf_index += 1
             label = labels.get(node.name or "", node.name or "")
             if is_collapsed_node(node, collapsed_clade_names):
                 label = (
                     f"{node.name or 'collapsed clade'}"
                     f" ({count_subtree_leaves(node)} tips)"
                 )
-                rendered_collapsed_clades += 1
+                state.rendered_collapsed_clades += 1
                 triangle = (
                     f"{x:.1f},{y - 11:.1f} {x + 24:.1f},{y:.1f} {x:.1f},{y + 11:.1f}"
                 )
-                overlays.append(
+                state.overlays.append(
                     f'<polygon points="{triangle}" fill="#cbd5e1" stroke="#475569" stroke-width="1.5" class="collapsed-clade"/>'
                 )
             elif node.name and node.name not in labels and labels:
-                missing_labels.append(node.name)
+                state.missing_labels.append(node.name)
             label_x = x + 18
-            texts.append(
+            state.texts.append(
                 f'<text x="{label_x:.1f}" y="{y + 5:.1f}" class="tip-label">{escape(label)}</text>'
             )
             trait_value = categorical_traits.get(node.name or "")
             if trait_value:
                 marker_x = left_margin + tree_width + 190
-                overlays.append(
+                state.overlays.append(
                     f'<circle cx="{marker_x:.1f}" cy="{y - 4:.1f}" r="7" fill="{categorical_color_map[trait_value]}" class="trait-marker"/>'
                 )
-                rendered_categorical_trait_count += 1
+                state.rendered_categorical_trait_count += 1
             continuous_value = continuous_traits.get(node.name or "")
             if continuous_value is not None:
                 bar_x = left_margin + tree_width + 210
@@ -182,16 +164,16 @@ def render_tree_svg(
                     / (continuous_max - continuous_min)
                 )
                 fill_width = 52 * max(0.0, min(fill_fraction, 1.0))
-                overlays.append(
+                state.overlays.append(
                     f'<rect x="{bar_x:.1f}" y="{y - 11:.1f}" width="52" height="12" rx="6" fill="#e2e8f0" class="trait-bar-outline"/>'
                     f'<rect x="{bar_x:.1f}" y="{y - 11:.1f}" width="{fill_width:.1f}" height="12" rx="6" fill="{continuous_color(continuous_value, continuous_min, continuous_max)}" class="trait-bar-fill"/>'
                 )
-                rendered_continuous_trait_count += 1
+                state.rendered_continuous_trait_count += 1
             for strip_index, strip in enumerate(metadata_strips):
                 strip_value = strip.values.get(node.name or "")
                 if strip_value:
                     strip_x = left_margin + tree_width + 290 + strip_index * 24
-                    overlays.append(
+                    state.overlays.append(
                         f'<rect x="{strip_x:.1f}" y="{y - 13:.1f}" width="16" height="16" rx="4" fill="{metadata_strip_colors[strip_index][strip_value]}" class="metadata-strip-cell"/>'
                     )
             heatmap_base_x = left_margin + tree_width + 318 + len(metadata_strips) * 24
@@ -206,7 +188,7 @@ def render_tree_svg(
                     if mode == "numeric"
                     else color_map[value]
                 )
-                overlays.append(
+                state.overlays.append(
                     f'<rect x="{cell_x:.1f}" y="{y - 13:.1f}" width="16" height="16" rx="4" fill="{fill}" class="heatmap-cell"/>'
                 )
             return Point(x=x, y=y)
@@ -218,7 +200,7 @@ def render_tree_svg(
         y = sum(point.y for point in child_points) / len(child_points)
         min_y = min(point.y for point in child_points)
         max_y = max(point.y for point in child_points)
-        lines.append(
+        state.lines.append(
             f'<line x1="{x:.1f}" y1="{min_y:.1f}" x2="{x:.1f}" y2="{max_y:.1f}" class="branch"/>'
         )
         for child, child_point in zip(node.children, child_points, strict=False):
@@ -229,25 +211,25 @@ def render_tree_svg(
                 if branch_color is not None
                 else ' class="branch"'
             )
-            lines.append(
+            state.lines.append(
                 f'<line x1="{x:.1f}" y1="{child_point.y:.1f}" x2="{child_point.x:.1f}" y2="{child_point.y:.1f}"{branch_attributes}/>'
             )
             if branch_color is not None:
-                rendered_branch_color_count += 1
+                state.rendered_branch_color_count += 1
         support_label = None
         if show_support_values:
             support_label = validated_support_labels.get(node_signature(node))
             if support_label is None:
                 support_label = coerce_support_label(node.name)
         if support_label is not None and node is not tree.root:
-            texts.append(
+            state.texts.append(
                 f'<text x="{x + 8:.1f}" y="{y - 8:.1f}" class="support-label">{escape(support_label)}</text>'
             )
-            rendered_support_count += 1
+            state.rendered_support_count += 1
         annotation = internal_annotations.get(node_signature(node))
         pie_segments = internal_pies.get(node_signature(node))
         if pie_segments and not node.is_leaf():
-            overlays.extend(
+            state.overlays.extend(
                 svg_pie_slices(
                     x,
                     y,
@@ -256,23 +238,21 @@ def render_tree_svg(
                     internal_pie_colors,
                 )
             )
-            rendered_internal_pie_count += 1
+            state.rendered_internal_pie_count += 1
         if annotation and not node.is_leaf():
             annotation_color = internal_annotation_colors.get(
                 node_signature(node), "#7c3aed"
             )
-            overlays.append(
+            state.overlays.append(
                 f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4.5" fill="{annotation_color}" class="internal-annotation-dot"/>'
             )
-            texts.append(
+            state.texts.append(
                 f'<text x="{x + 10:.1f}" y="{y + 4:.1f}" class="internal-annotation-label">{escape(annotation)}</text>'
             )
-            rendered_internal_annotation_count += 1
+            state.rendered_internal_annotation_count += 1
         return Point(x=x, y=y)
 
     def visit_circular() -> None:
-        nonlocal next_leaf_index
-        nonlocal rendered_support_count
         center_x = width / 2
         center_y = height / 2
         radius = min(width, height) / 2 - 80
@@ -284,12 +264,11 @@ def render_tree_svg(
             return (depth / max(max_depth, 1)) * radius
 
         def assign_angles(node: TreeNode) -> tuple[float, float]:
-            nonlocal next_leaf_index
             if node.is_leaf() or is_collapsed_node(node, collapsed_clade_names):
                 angle = (
-                    2 * math.pi * next_leaf_index / max(leaf_count, 1)
+                    2 * math.pi * state.next_leaf_index / max(leaf_count, 1)
                 ) - math.pi / 2
-                next_leaf_index += 1
+                state.next_leaf_index += 1
                 angle_cache[node.node_id or node_signature(node)] = angle
                 return angle, angle
             ranges = [assign_angles(child) for child in node.children]
@@ -301,13 +280,6 @@ def render_tree_svg(
             return start_angle, end_angle
 
         def draw(node: TreeNode, depth: int, distance: float) -> tuple[float, float]:
-            nonlocal rendered_support_count
-            nonlocal rendered_categorical_trait_count
-            nonlocal rendered_continuous_trait_count
-            nonlocal rendered_internal_annotation_count
-            nonlocal rendered_branch_color_count
-            nonlocal rendered_internal_pie_count
-            nonlocal rendered_collapsed_clades
             branch_distance = distance + float(node.branch_length or 0.0)
             radial = radial_distance(
                 depth, branch_distance if node is not tree.root else distance
@@ -320,12 +292,12 @@ def render_tree_svg(
                         f"{node.name or 'collapsed clade'}"
                         f" ({count_subtree_leaves(node)} tips)"
                     )
-                    rendered_collapsed_clades += 1
+                    state.rendered_collapsed_clades += 1
                 elif node.name and node.name not in labels and labels:
-                    missing_labels.append(node.name)
+                    state.missing_labels.append(node.name)
                 anchor = "start" if math.cos(angle) >= 0 else "end"
                 label_point = polar_point(center_x, center_y, radial + 18, angle)
-                texts.append(
+                state.texts.append(
                     f'<text x="{label_point.x:.1f}" y="{label_point.y + 5:.1f}" text-anchor="{anchor}" class="tip-label">{escape(label)}</text>'
                 )
                 if is_collapsed_node(node, collapsed_clade_names):
@@ -336,23 +308,23 @@ def render_tree_svg(
                     right_point = polar_point(
                         center_x, center_y, radial + 18, angle + 0.08
                     )
-                    overlays.append(
+                    state.overlays.append(
                         f'<polygon points="{node_point.x:.1f},{node_point.y:.1f} {left_point.x:.1f},{left_point.y:.1f} {right_point.x:.1f},{right_point.y:.1f}" fill="#cbd5e1" stroke="#475569" stroke-width="1.5" class="collapsed-clade"/>'
                     )
                 trait_value = categorical_traits.get(node.name or "")
                 if trait_value:
                     marker_point = polar_point(center_x, center_y, radial + 10, angle)
-                    overlays.append(
+                    state.overlays.append(
                         f'<circle cx="{marker_point.x:.1f}" cy="{marker_point.y:.1f}" r="6" fill="{categorical_color_map[trait_value]}" class="trait-marker"/>'
                     )
-                    rendered_categorical_trait_count += 1
+                    state.rendered_categorical_trait_count += 1
                 continuous_value = continuous_traits.get(node.name or "")
                 if continuous_value is not None:
                     marker_point = polar_point(center_x, center_y, radial + 10, angle)
-                    overlays.append(
+                    state.overlays.append(
                         f'<circle cx="{marker_point.x:.1f}" cy="{marker_point.y:.1f}" r="6" fill="{continuous_color(continuous_value, continuous_min, continuous_max)}" class="trait-marker"/>'
                     )
-                    rendered_continuous_trait_count += 1
+                    state.rendered_continuous_trait_count += 1
                 return angle, radial
 
             child_positions = [
@@ -364,7 +336,7 @@ def render_tree_svg(
                 arc_start = polar_point(center_x, center_y, radial, start_angle)
                 arc_end = polar_point(center_x, center_y, radial, end_angle)
                 large_arc = 1 if end_angle - start_angle > math.pi else 0
-                lines.append(
+                state.lines.append(
                     f'<path d="M {arc_start.x:.1f} {arc_start.y:.1f} A {radial:.1f} {radial:.1f} 0 {large_arc} 1 {arc_end.x:.1f} {arc_end.y:.1f}" class="branch"/>'
                 )
             for child in node.children:
@@ -382,11 +354,11 @@ def render_tree_svg(
                     if branch_color is not None
                     else ' class="branch"'
                 )
-                lines.append(
+                state.lines.append(
                     f'<line x1="{radial_start.x:.1f}" y1="{radial_start.y:.1f}" x2="{radial_end.x:.1f}" y2="{radial_end.y:.1f}"{branch_attributes}/>'
                 )
                 if branch_color is not None:
-                    rendered_branch_color_count += 1
+                    state.rendered_branch_color_count += 1
             support_label = None
             if show_support_values:
                 support_label = validated_support_labels.get(node_signature(node))
@@ -397,10 +369,10 @@ def render_tree_svg(
                 support_point = polar_point(
                     center_x, center_y, radial + 14, node_angle
                 )
-                texts.append(
+                state.texts.append(
                     f'<text x="{support_point.x:.1f}" y="{support_point.y + 4:.1f}" class="support-label">{escape(support_label)}</text>'
                 )
-                rendered_support_count += 1
+                state.rendered_support_count += 1
             annotation = internal_annotations.get(node_signature(node))
             pie_segments = internal_pies.get(node_signature(node))
             if pie_segments and not node.is_leaf():
@@ -410,7 +382,7 @@ def render_tree_svg(
                     radial,
                     angle_cache[node.node_id or node_signature(node)],
                 )
-                overlays.extend(
+                state.overlays.extend(
                     svg_pie_slices(
                         node_point.x,
                         node_point.y,
@@ -419,7 +391,7 @@ def render_tree_svg(
                         internal_pie_colors,
                     )
                 )
-                rendered_internal_pie_count += 1
+                state.rendered_internal_pie_count += 1
             if annotation and not node.is_leaf():
                 node_angle = angle_cache[node.node_id or node_signature(node)]
                 annotation_point = polar_point(
@@ -428,16 +400,16 @@ def render_tree_svg(
                 annotation_color = internal_annotation_colors.get(
                     node_signature(node), "#7c3aed"
                 )
-                overlays.append(
+                state.overlays.append(
                     f'<circle cx="{annotation_point.x:.1f}" cy="{annotation_point.y:.1f}" r="4.5" fill="{annotation_color}" class="internal-annotation-dot"/>'
                 )
-                texts.append(
+                state.texts.append(
                     f'<text x="{annotation_point.x + 10:.1f}" y="{annotation_point.y + 4:.1f}" class="internal-annotation-label">{escape(annotation)}</text>'
                 )
-                rendered_internal_annotation_count += 1
+                state.rendered_internal_annotation_count += 1
             return angle_cache[node.node_id or node_signature(node)], radial
 
-        next_leaf_index = 0
+        state.next_leaf_index = 0
         assign_angles(tree.root)
         draw(tree.root, 0, 0.0)
 
@@ -536,9 +508,9 @@ def render_tree_svg(
     .strip-header {{ fill: #475569; font: 11px "Avenir Next", "Segoe UI", sans-serif; }}
   </style>
   <rect x="1" y="1" width="{width - 2}" height="{height - 2}" class="panel" />
-  {"".join(lines)}
-  {"".join(texts)}
-  {"".join(overlays)}
+  {"".join(state.lines)}
+  {"".join(state.texts)}
+  {"".join(state.overlays)}
   {scale_bar}
   {categorical_legend}
   {continuous_legend}
@@ -554,22 +526,22 @@ def render_tree_svg(
         layout=layout,
         tip_count=tree.tip_count,
         visible_tip_count=leaf_count,
-        label_count=len(texts),
+        label_count=len(state.texts),
         has_scale_bar=has_scale_bar,
         scale_bar_length=scale_bar_length,
         max_branch_distance=max_distance
         if layout in {"phylogram", "circular"}
         else None,
-        rendered_support_count=rendered_support_count,
+        rendered_support_count=state.rendered_support_count,
         support_labels_validated=bool(validated_support_labels),
         support_validation_warnings=list(support_validation_warnings),
-        rendered_categorical_trait_count=rendered_categorical_trait_count,
-        rendered_continuous_trait_count=rendered_continuous_trait_count,
+        rendered_categorical_trait_count=state.rendered_categorical_trait_count,
+        rendered_continuous_trait_count=state.rendered_continuous_trait_count,
         rendered_metadata_strip_count=len(metadata_strips),
         rendered_heatmap_column_count=len(heatmap_columns),
-        rendered_internal_annotation_count=rendered_internal_annotation_count,
-        rendered_branch_color_count=rendered_branch_color_count,
-        rendered_internal_pie_count=rendered_internal_pie_count,
-        collapsed_clade_count=rendered_collapsed_clades,
-        missing_metadata_labels=sorted(set(missing_labels)),
+        rendered_internal_annotation_count=state.rendered_internal_annotation_count,
+        rendered_branch_color_count=state.rendered_branch_color_count,
+        rendered_internal_pie_count=state.rendered_internal_pie_count,
+        collapsed_clade_count=state.rendered_collapsed_clades,
+        missing_metadata_labels=sorted(set(state.missing_labels)),
     )
