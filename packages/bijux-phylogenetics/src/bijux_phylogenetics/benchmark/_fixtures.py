@@ -2,22 +2,26 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.alignment.concatenation import concatenate_locus_alignments
+from bijux_phylogenetics.comparative.signal import (
+    compute_phylogenetic_independent_contrasts,
+)
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.engines.inference import (
     run_large_alignment_inference,
 )
 from bijux_phylogenetics.io.newick import write_newick
+from bijux_phylogenetics.phylo.alignment.concatenation import (
+    concatenate_locus_alignments,
+)
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
     write_tree_set,
 )
-from bijux_phylogenetics.trees import compute_consensus_tree
-from bijux_phylogenetics.trees import extract_tree_clades
-from bijux_phylogenetics.trees import analyze_branch_length_distribution
-from bijux_phylogenetics.comparative.signal import (
-    compute_phylogenetic_independent_contrasts,
+from bijux_phylogenetics.trees import (
+    analyze_branch_length_distribution,
+    compute_consensus_tree,
+    extract_tree_clades,
 )
 
 from .contracts import _StressObservationPayload, _StressTierConfig

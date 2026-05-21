@@ -28,7 +28,6 @@ from bijux_phylogenetics.bayesian.posterior_sets.tree_sets import (
     summarize_maximum_clade_credibility_tree,
 )
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, descendant_taxa
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.engines.common import (
     build_file_checksums,
@@ -45,12 +44,6 @@ from bijux_phylogenetics.engines.workflows.state import (
     _resolve_incomplete_workflow_state,
     _resume_existing_workflow,
 )
-from bijux_phylogenetics.runtime.errors import (
-    EngineWorkflowError,
-    InvalidAlignmentError,
-    PhylogeneticsError,
-    TreeParseError,
-)
 from bijux_phylogenetics.io.biopython import loads_biophylo
 from bijux_phylogenetics.io.fasta import (
     infer_alignment_alphabet,
@@ -58,6 +51,13 @@ from bijux_phylogenetics.io.fasta import (
 )
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, descendant_taxa
+from bijux_phylogenetics.runtime.errors import (
+    EngineWorkflowError,
+    InvalidAlignmentError,
+    PhylogeneticsError,
+    TreeParseError,
+)
 from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,
     compute_consensus_tree,
@@ -99,8 +99,10 @@ def _beast_artifact_error(
         payload.update(details)
     return EngineWorkflowError(message, code=code, details=payload)
 
+
 def _beast_output_path(xml_path: Path, *, seed: int, suffix: str) -> Path:
     return xml_path.with_name(f"{xml_path.stem}.{seed}.{suffix}")
+
 
 def _read_delimited_rows(path: Path) -> list[dict[str, str]]:
     delimiter = "," if path.suffix.lower() == ".csv" else "\t"
@@ -113,12 +115,14 @@ def _read_delimited_rows(path: Path) -> list[dict[str, str]]:
             for row in reader
         ]
 
+
 def _named_clades(tree: PhyloTree) -> dict[str, list[str]]:
     named: dict[str, list[str]] = {}
     for node in tree.iter_nodes():
         if node.name:
             named[node.name] = descendant_taxa(node)
     return named
+
 
 def _clade_taxon_sets(tree: PhyloTree) -> set[frozenset[str]]:
     clades: set[frozenset[str]] = set()
@@ -128,11 +132,13 @@ def _clade_taxon_sets(tree: PhyloTree) -> set[frozenset[str]]:
             clades.add(frozenset(taxa))
     return clades
 
+
 def _parse_target_taxa(raw: str) -> list[str]:
     if not raw.strip():
         return []
     normalized = raw.replace(",", "|").replace(";", "|")
     return sorted({token.strip() for token in normalized.split("|") if token.strip()})
+
 
 def _parse_age(
     raw: str,
@@ -186,6 +192,7 @@ def _tip_date_trait_value(report: TipDatingValidationReport) -> str:
     ]
     return ",".join(parts)
 
+
 def _tree_root_age(tree_path: Path) -> float:
     tree = load_tree(tree_path)
     lengths = [length for length in tree.root_to_tip_lengths() if length is not None]
@@ -193,10 +200,12 @@ def _tree_root_age(tree_path: Path) -> float:
         return 0.0
     return round(max(float(length) for length in lengths), 15)
 
+
 def _mean_or_none(values: list[float]) -> float | None:
     if not values:
         return None
     return round(sum(values) / len(values), 6)
+
 
 def _mean_beast_parameter(
     report: BeastLogSummaryReport,
@@ -206,6 +215,7 @@ def _mean_beast_parameter(
         if summary.parameter == parameter:
             return summary.mean
     return None
+
 
 def _classify_beast_parameter(parameter: str) -> str:
     normalized = parameter.lower()
@@ -241,6 +251,7 @@ def _classify_beast_parameter(parameter: str) -> str:
     ):
         return "tree"
     return "other"
+
 
 def _summary_parameters_by_category(
     parameter_summaries: list[BeastLogParameterSummary],

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 GEIGER_REAL_DATASET_MACROEVOLUTION_REFERENCE_PAYLOADS: dict[str, dict[str, object]] = {
     "seed-mass-native-model-table": {
         "dataset_id": "central_european_seashore_flora",

@@ -14,7 +14,6 @@ from bijux_phylogenetics.ancestral.common import (
 from bijux_phylogenetics.biogeography.state_models import (
     GeographicExcludedTaxonRow,
 )
-from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.comparative.discrete_evolution import (
     NodeStateEstimate,
     TransitionEvent,
@@ -29,6 +28,7 @@ from bijux_phylogenetics.comparative.discrete_evolution import (
     _transition_events,
     audit_discrete_state_coding,
 )
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 _MODEL_ALIAS_TO_INTERNAL = {

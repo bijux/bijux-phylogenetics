@@ -137,7 +137,7 @@ class BeastPreparationReport:
     warnings: list[str]
     log_path: Path
     tree_log_path: Path
-    calibrations: list["BeastCalibration"]
+    calibrations: list[BeastCalibration]
 
 
 @dataclass(slots=True)
@@ -377,7 +377,7 @@ class BeastChainMixingReport:
     chain_count: int
     converged: bool
     issues: list[BeastChainMixingIssue]
-    chain_summaries: list["BeastConvergenceReport"]
+    chain_summaries: list[BeastConvergenceReport]
 
 
 @dataclass(slots=True)

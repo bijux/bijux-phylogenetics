@@ -16,8 +16,8 @@ from bijux_phylogenetics.ancestral.tree_set.preparation import (
     shared_taxa,
     validate_burnin_fraction,
 )
-from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
+from bijux_phylogenetics.phylo.topology.tree import TreeNode
 
 
 @dataclass(frozen=True, slots=True)

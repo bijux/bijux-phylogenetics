@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import csv
+from dataclasses import dataclass
 import json
 import math
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from .geiger_reference import (
-    GEIGER_REAL_DATASET_MACROEVOLUTION_REFERENCE_PAYLOADS,
-)
 from bijux_phylogenetics.comparative.discrete_mk import (
     DiscreteMkFitReport,
     fit_discrete_mk_model,
@@ -20,13 +17,21 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
     compare_fitcontinuous_model_ranking,
     fit_continuous_evolutionary_mode,
 )
-from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.datasets.study_inputs import TreeTraitAlignmentReport, align_tree_and_trait_table
 from bijux_phylogenetics.datasets.central_european_seashore_flora import (
     CentralEuropeanSeashoreFloraDataset,
     CentralEuropeanSeashoreFloraDatasetExportResult,
     export_central_european_seashore_flora_dataset,
     load_central_european_seashore_flora_dataset,
+)
+from bijux_phylogenetics.datasets.study_inputs import (
+    TreeTraitAlignmentReport,
+    align_tree_and_trait_table,
+    load_taxon_table,
+    write_taxon_rows,
+)
+
+from .geiger_reference import (
+    GEIGER_REAL_DATASET_MACROEVOLUTION_REFERENCE_PAYLOADS,
 )
 
 _CONTINUOUS_SURFACE_ID = "seed-mass-native-model-table"
@@ -254,7 +259,9 @@ def run_real_dataset_macroevolution_benchmark_demo(
     """Materialize the public plant dataset plus the governed benchmark bundle."""
     dataset = load_central_european_seashore_flora_dataset()
     destination.mkdir(parents=True, exist_ok=True)
-    dataset_export = export_central_european_seashore_flora_dataset(destination / "dataset")
+    dataset_export = export_central_european_seashore_flora_dataset(
+        destination / "dataset"
+    )
     benchmark_bundle = write_real_dataset_macroevolution_bundle(
         destination / "benchmark"
     )
@@ -383,8 +390,12 @@ def write_real_dataset_macroevolution_model_table(
                 "geiger_akaike_weight": _format_float(row.geiger_akaike_weight),
                 "bijux_parameter_name": row.bijux_parameter_name or "",
                 "geiger_parameter_name": row.geiger_parameter_name or "",
-                "bijux_parameter_value": _format_optional_float(row.bijux_parameter_value),
-                "geiger_parameter_value": _format_optional_float(row.geiger_parameter_value),
+                "bijux_parameter_value": _format_optional_float(
+                    row.bijux_parameter_value
+                ),
+                "geiger_parameter_value": _format_optional_float(
+                    row.geiger_parameter_value
+                ),
                 "bijux_rate": _format_optional_float(row.bijux_rate),
                 "geiger_rate": _format_optional_float(row.geiger_rate),
                 "bijux_root_state": _format_optional_float(row.bijux_root_state),
@@ -481,15 +492,21 @@ def write_real_dataset_macroevolution_parity_table(
                 "absolute_aicc_delta": _format_float(row.absolute_aicc_delta),
                 "bijux_parameter_name": row.bijux_parameter_name or "",
                 "geiger_parameter_name": row.geiger_parameter_name or "",
-                "bijux_parameter_value": _format_optional_float(row.bijux_parameter_value),
-                "geiger_parameter_value": _format_optional_float(row.geiger_parameter_value),
+                "bijux_parameter_value": _format_optional_float(
+                    row.bijux_parameter_value
+                ),
+                "geiger_parameter_value": _format_optional_float(
+                    row.geiger_parameter_value
+                ),
                 "absolute_parameter_delta": _format_optional_float(
                     row.absolute_parameter_delta
                 ),
                 "within_log_likelihood_tolerance": row.within_log_likelihood_tolerance,
                 "within_aicc_tolerance": row.within_aicc_tolerance,
                 "within_parameter_tolerance": (
-                    "" if row.within_parameter_tolerance is None else row.within_parameter_tolerance
+                    ""
+                    if row.within_parameter_tolerance is None
+                    else row.within_parameter_tolerance
                 ),
                 "notes": " | ".join(row.notes),
             }
@@ -503,9 +520,7 @@ def write_geiger_real_dataset_reference_payload_table(
     report: RealDatasetMacroevolutionBenchmarkReport,
 ) -> Path:
     """Write the stored local geiger payloads used by the real-dataset benchmark."""
-    surface_ids = {
-        row.surface_id for row in report.summary_rows
-    }
+    surface_ids = {row.surface_id for row in report.summary_rows}
     return write_taxon_rows(
         path,
         columns=["surface_id", "reference_payload_json"],
@@ -657,9 +672,13 @@ def _build_model_rows(
         fit = continuous_fits[row.model]
         geiger_row = geiger_continuous_rows[row.model]
         notes = []
-        if fit.boundary_assessment is not None and fit.boundary_assessment.boundary_warning_kinds:
+        if (
+            fit.boundary_assessment is not None
+            and fit.boundary_assessment.boundary_warning_kinds
+        ):
             notes.append(
-                "boundary-review:" + ",".join(fit.boundary_assessment.boundary_warning_kinds)
+                "boundary-review:"
+                + ",".join(fit.boundary_assessment.boundary_warning_kinds)
             )
         rows.append(
             RealDatasetMacroevolutionModelRow(
@@ -670,7 +689,9 @@ def _build_model_rows(
                 bijux_rank=row.rank or 0,
                 geiger_rank=int(geiger_row["rank"]),
                 bijux_selected=row.selected,
-                geiger_selected=(row.model == native_continuous_reference["selected_model"]),
+                geiger_selected=(
+                    row.model == native_continuous_reference["selected_model"]
+                ),
                 bijux_parameter_count=row.parameter_count,
                 geiger_parameter_count=int(geiger_row["parameter_count"]),
                 bijux_log_likelihood=fit.log_likelihood,
@@ -684,7 +705,9 @@ def _build_model_rows(
                 bijux_parameter_name=fit.parameter_name,
                 geiger_parameter_name=_optional_str(geiger_row.get("parameter_name")),
                 bijux_parameter_value=fit.parameter_value,
-                geiger_parameter_value=_optional_float(geiger_row.get("parameter_value")),
+                geiger_parameter_value=_optional_float(
+                    geiger_row.get("parameter_value")
+                ),
                 bijux_rate=fit.rate,
                 geiger_rate=_optional_float(geiger_row.get("rate")),
                 bijux_root_state=fit.root_state,
@@ -737,7 +760,9 @@ def _build_model_rows(
                 notes=list(fit.input_audit.warnings),
             )
         )
-    _apply_akaike_weights_from_report(rows, surface_id=_DISCRETE_SURFACE_ID, engine="bijux")
+    _apply_akaike_weights_from_report(
+        rows, surface_id=_DISCRETE_SURFACE_ID, engine="bijux"
+    )
     _apply_geiger_akaike_weights(rows, surface_id=_DISCRETE_SURFACE_ID)
     return rows
 
@@ -770,7 +795,8 @@ def _build_parity_rows(
             geiger_parameter_value=row.geiger_parameter_value,
             absolute_parameter_delta=(
                 None
-                if row.bijux_parameter_value is None or row.geiger_parameter_value is None
+                if row.bijux_parameter_value is None
+                or row.geiger_parameter_value is None
                 else abs(row.bijux_parameter_value - row.geiger_parameter_value)
             ),
             within_log_likelihood_tolerance=(
@@ -779,7 +805,8 @@ def _build_parity_rows(
             within_aicc_tolerance=(abs(row.bijux_aicc - row.geiger_aicc) <= 1.0),
             within_parameter_tolerance=(
                 None
-                if row.bijux_parameter_value is None or row.geiger_parameter_value is None
+                if row.bijux_parameter_value is None
+                or row.geiger_parameter_value is None
                 else abs(row.bijux_parameter_value - row.geiger_parameter_value) <= 0.1
             ),
             notes=row.notes,
@@ -828,7 +855,10 @@ def _build_parity_rows(
                 <= 0.5
             ),
             within_aicc_tolerance=(
-                abs(review_continuous_fit.aicc - float(review_continuous_summary["aicc"]))
+                abs(
+                    review_continuous_fit.aicc
+                    - float(review_continuous_summary["aicc"])
+                )
                 <= 1.0
             ),
             within_parameter_tolerance=(
@@ -974,7 +1004,9 @@ def _build_summary_rows(
             selection_matches_geiger=(
                 discrete_selected_model == native_discrete_reference["selected_model"]
             ),
-            bijux_selected_model_akaike_weight=discrete_weights[discrete_selected_model],
+            bijux_selected_model_akaike_weight=discrete_weights[
+                discrete_selected_model
+            ],
             geiger_selected_model_akaike_weight=_geiger_selected_weight(
                 native_discrete_reference
             ),
@@ -1004,7 +1036,9 @@ def _build_summary_rows(
             stable_conclusion_supported=False,
             aligned_taxa_count=len(review_continuous_alignment.aligned_taxa),
             dropped_tree_taxon_count=len(review_continuous_alignment.dropped_tree_taxa),
-            dropped_trait_taxon_count=len(review_continuous_alignment.dropped_trait_taxa),
+            dropped_trait_taxon_count=len(
+                review_continuous_alignment.dropped_trait_taxa
+            ),
             dropped_missing_value_taxon_count=len(
                 review_continuous_alignment.dropped_missing_value_taxa
             ),
@@ -1136,10 +1170,7 @@ def _apply_geiger_akaike_weights(
 
 def _geiger_selected_weight(payload: dict[str, object]) -> float:
     weights = _akaike_weights(
-        {
-            row["model"]: float(row["aicc"])
-            for row in payload["comparison_rows"]
-        }
+        {row["model"]: float(row["aicc"]) for row in payload["comparison_rows"]}
     )
     return weights[str(payload["selected_model"])]
 

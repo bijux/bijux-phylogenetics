@@ -5,9 +5,10 @@ from pathlib import Path
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.comparative.pgls import run_pgls
 from bijux_phylogenetics.compare.topology import compare_tree_paths
-from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
-from bijux_phylogenetics.engines.inference import run_fasta_to_tree_workflow
-from bijux_phylogenetics.engines.inference import run_phylo_workflow_config
+from bijux_phylogenetics.engines.inference import (
+    run_fasta_to_tree_workflow,
+    run_phylo_workflow_config,
+)
 from bijux_phylogenetics.engines.workflows.alignment import (
     run_alignment_trimming,
     run_multiple_sequence_alignment,
@@ -17,6 +18,7 @@ from bijux_phylogenetics.engines.workflows.iqtree import (
     run_maximum_likelihood_tree_inference,
 )
 from bijux_phylogenetics.io.fasta.records import validate_fasta_input
+from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
 from bijux_phylogenetics.reports.service import render_phylogenetics_report
 
 from .workflow_results import (

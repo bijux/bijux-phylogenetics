@@ -14,7 +14,6 @@ from ._shared import (
     load_tree,
     validate_tree_path,
 )
-
 from .models import (
     CalibrationDominanceObservation,
     CalibrationDominanceReport,
@@ -27,6 +26,7 @@ from .models import (
     ValidatedCalibration,
     ValidatedTipDate,
 )
+
 
 def validate_fossil_calibration_table(
     tree_path: Path, calibration_path: Path

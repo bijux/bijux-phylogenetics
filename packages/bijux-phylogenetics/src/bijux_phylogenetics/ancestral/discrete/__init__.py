@@ -23,6 +23,7 @@ from .reporting import (
     write_discrete_ancestral_summary_table,
     write_discrete_ancestral_transition_table,
 )
+
 __all__ = [
     "DiscreteAncestralEstimate",
     "DiscreteAncestralExclusion",

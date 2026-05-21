@@ -314,7 +314,8 @@ def _build_discrete_render_data(
             )
         )
         for estimate in report.estimates
-        if not estimate.is_tip and (publication_annotations or discrete_node_style == "labels")
+        if not estimate.is_tip
+        and (publication_annotations or discrete_node_style == "labels")
     }
     internal_pies = (
         {

@@ -20,8 +20,8 @@ from bijux_phylogenetics.ancestral.sensitivity import (
 )
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_trait_table_fixture,
+    get_shared_tree_fixture,
 )
-from bijux_phylogenetics.datasets.shared_fixtures import get_shared_tree_fixture
 
 
 @dataclass(slots=True)

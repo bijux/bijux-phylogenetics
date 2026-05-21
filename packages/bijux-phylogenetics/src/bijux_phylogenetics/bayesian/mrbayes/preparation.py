@@ -2,6 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from bijux_phylogenetics.engines.workflows.state import (
+    _ensure_inference_ready_alignment,
+)
+from bijux_phylogenetics.io.fasta import (
+    infer_alignment_alphabet,
+    load_fasta_alignment,
+)
 from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
 from bijux_phylogenetics.phylo.alignment.partitions import (
     LocusPartition,
@@ -10,14 +17,7 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
     parse_locus_partitions,
     partition_coordinate_text,
 )
-from bijux_phylogenetics.engines.workflows.state import (
-    _ensure_inference_ready_alignment,
-)
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
-from bijux_phylogenetics.io.fasta import (
-    infer_alignment_alphabet,
-    load_fasta_alignment,
-)
 
 from .models import MrBayesPreparationReport
 

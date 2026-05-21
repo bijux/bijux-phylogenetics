@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
+import tempfile
 
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path

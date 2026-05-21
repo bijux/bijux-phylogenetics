@@ -212,9 +212,7 @@ def summarize_continuous_clades(
                 tree_presence_fraction=presence_fraction,
                 mean_estimate=stable_value(statistics.fmean(estimates)),
                 median_estimate=stable_value(statistics.median(estimates)),
-                standard_deviation=stable_value(
-                    sample_standard_deviation(estimates)
-                ),
+                standard_deviation=stable_value(sample_standard_deviation(estimates)),
                 minimum_estimate=stable_value(min(estimates)),
                 maximum_estimate=stable_value(max(estimates)),
                 lower_95_empirical_estimate=stable_value(empirical_low),

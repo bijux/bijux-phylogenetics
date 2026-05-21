@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 GEIGER_LARGE_TREE_MODEL_FITTING_REFERENCE_PAYLOADS: dict[str, dict[str, object]] = {
     "fitcontinuous-pagel-lambda-100-taxa": {
         "fit_summary": {

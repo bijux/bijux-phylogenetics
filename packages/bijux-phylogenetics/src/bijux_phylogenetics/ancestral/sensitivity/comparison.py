@@ -4,20 +4,20 @@ from dataclasses import dataclass
 from pathlib import Path
 import tempfile
 
-from bijux_phylogenetics.ancestral.continuous import (
-    reconstruct_continuous_ancestral_states,
-)
-from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.ancestral.comparison import (
     compare_continuous_ancestral_models,
     compare_continuous_ancestral_trees,
     compare_discrete_ancestral_reconstructions,
     compare_discrete_ancestral_trees,
 )
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+)
+from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 
 
 @dataclass(slots=True)

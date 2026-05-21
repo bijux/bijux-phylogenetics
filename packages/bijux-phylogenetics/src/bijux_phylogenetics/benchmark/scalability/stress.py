@@ -36,8 +36,12 @@ def benchmark_large_dataset_stress_suite(
                 root=root / "supermatrix", config=config
             ),
             lambda: tree_set_stress_payload(root=root / "tree-set", config=config),
-            lambda: comparative_stress_payload(root=root / "comparative", config=config),
-            lambda: table_generation_stress_payload(root=root / "tables", config=config),
+            lambda: comparative_stress_payload(
+                root=root / "comparative", config=config
+            ),
+            lambda: table_generation_stress_payload(
+                root=root / "tables", config=config
+            ),
         ]
         for workload in workloads:
             payload, runtime_seconds, peak_memory_bytes, memory_observation_kind = (

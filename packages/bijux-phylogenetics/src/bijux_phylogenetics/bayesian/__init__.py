@@ -52,17 +52,6 @@ from .beast import (
     write_beast_log_summary_table,
     write_beast_posterior_tree_set,
 )
-from .posterior_sets.comparison import (
-    BayesianIndependentRunComparisonReport,
-    BayesianMlTreeComparisonReport,
-    BayesianParameterDifference,
-    BayesianPosteriorScenarioComparisonReport,
-    BayesianScenarioAgeDifference,
-    compare_independent_bayesian_runs,
-    compare_ml_tree_to_bayesian_posterior,
-    compare_posterior_tree_sets_by_clock,
-    compare_posterior_tree_sets_by_prior,
-)
 from .evidence import BayesianEvidencePackageReport, build_bayesian_evidence_package
 from .mrbayes import (
     EffectiveSampleSize,
@@ -94,6 +83,17 @@ from .mrbayes import (
     summarize_mrbayes_posterior_trees,
     write_mrbayes_burnin_sensitivity_slice_table,
     write_mrbayes_parameter_summary_table,
+)
+from .posterior_sets.comparison import (
+    BayesianIndependentRunComparisonReport,
+    BayesianMlTreeComparisonReport,
+    BayesianParameterDifference,
+    BayesianPosteriorScenarioComparisonReport,
+    BayesianScenarioAgeDifference,
+    compare_independent_bayesian_runs,
+    compare_ml_tree_to_bayesian_posterior,
+    compare_posterior_tree_sets_by_clock,
+    compare_posterior_tree_sets_by_prior,
 )
 from .posterior_sets.tree_sets import (
     BayesianRunTreeComparison,
@@ -127,11 +127,6 @@ from .presentation.html_reports import (
     render_ml_vs_bayesian_tree_report,
     render_time_tree_readiness_report,
 )
-from .presentation.time_tree_figure_bundle import (
-    TimeTreeFigurePackageResult,
-    TimeTreePublicationAudit,
-    build_time_tree_figure_package,
-)
 from .presentation.posterior_uncertainty import (
     BayesianLimitationsTextResult,
     BayesianMethodsSummaryTextResult,
@@ -141,6 +136,11 @@ from .presentation.posterior_uncertainty import (
     write_bayesian_limitations_text,
     write_bayesian_methods_summary_text,
     write_supplementary_bayesian_diagnostics_table,
+)
+from .presentation.time_tree_figure_bundle import (
+    TimeTreeFigurePackageResult,
+    TimeTreePublicationAudit,
+    build_time_tree_figure_package,
 )
 
 __all__ = [

@@ -9,13 +9,16 @@ import tempfile
 from Bio import Phylo
 
 from bijux_phylogenetics.compare.topology import compare_tree_paths
-from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clades
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.runtime.errors import EngineWorkflowError, InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import detect_tree_format
+from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clades
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.runtime.errors import (
+    EngineWorkflowError,
+    InvalidAlignmentError,
+)
 from bijux_phylogenetics.trees import compare_posterior_tree_sets, load_tree_set
 
 

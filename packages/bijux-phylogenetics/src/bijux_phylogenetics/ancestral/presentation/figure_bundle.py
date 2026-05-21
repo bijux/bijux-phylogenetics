@@ -466,13 +466,13 @@ def _write_publication_review_html(
                 '  <meta name="viewport" content="width=device-width, initial-scale=1">',
                 f"  <title>Bijux Ancestral Figure Review: {report.trait}</title>",
                 "  <style>",
-                "    body { font: 16px/1.5 \"Iowan Old Style\", \"Palatino Linotype\", serif; color: #172033; background: #f7f9fc; margin: 0; padding: 2rem; }",
+                '    body { font: 16px/1.5 "Iowan Old Style", "Palatino Linotype", serif; color: #172033; background: #f7f9fc; margin: 0; padding: 2rem; }',
                 "    main { max-width: 1180px; margin: 0 auto; background: rgba(255,255,255,0.96); border: 1px solid #d7e0ea; border-radius: 24px; padding: 2rem; box-shadow: 0 28px 80px rgba(15,23,42,0.08); }",
-                "    h1, h2 { font-family: \"Avenir Next\", \"Segoe UI\", sans-serif; }",
+                '    h1, h2 { font-family: "Avenir Next", "Segoe UI", sans-serif; }',
                 "    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }",
                 "    th, td { border-bottom: 1px solid #d7e0ea; padding: 0.55rem; text-align: left; vertical-align: top; }",
                 "    ul { margin: 0.5rem 0 0; }",
-                "    .metric { display: inline-block; margin: 0.25rem 0.75rem 0.25rem 0; padding: 0.45rem 0.7rem; border-radius: 999px; background: #e8f0fb; font-family: \"Avenir Next\", \"Segoe UI\", sans-serif; }",
+                '    .metric { display: inline-block; margin: 0.25rem 0.75rem 0.25rem 0; padding: 0.45rem 0.7rem; border-radius: 999px; background: #e8f0fb; font-family: "Avenir Next", "Segoe UI", sans-serif; }',
                 "    .figure-shell { margin-top: 1.5rem; overflow-x: auto; }",
                 "  </style>",
                 "</head>",
@@ -495,7 +495,9 @@ def _write_publication_review_html(
                 (
                     "<p>none</p>"
                     if not audit.limitations
-                    else "<ul>" + "".join(f"<li>{line}</li>" for line in audit.limitations) + "</ul>"
+                    else "<ul>"
+                    + "".join(f"<li>{line}</li>" for line in audit.limitations)
+                    + "</ul>"
                 ),
                 '<div class="figure-shell">',
                 svg_markup,

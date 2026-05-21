@@ -8,7 +8,6 @@ from bijux_phylogenetics.bayesian.posterior_sets.burnin import (
     BurninSensitivityParameterShift,
 )
 from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 
 @dataclass(slots=True)

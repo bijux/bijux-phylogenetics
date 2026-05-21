@@ -79,7 +79,9 @@ def _build_continuous_methods_summary_text(
     ]
     weak_support_count = len(reconstruction.weak_support_nodes)
     root_estimate = _root_internal_estimate(internal_estimates)
-    top_interpretation = internal_estimates[0].interpretation if internal_estimates else ""
+    top_interpretation = (
+        internal_estimates[0].interpretation if internal_estimates else ""
+    )
     downstream_risks = sorted(
         {
             risk
@@ -147,7 +149,9 @@ def _build_discrete_methods_summary_text(
         estimate for estimate in reconstruction.estimates if not estimate.is_tip
     ]
     root_estimate = _root_internal_estimate(internal_estimates)
-    top_interpretation = internal_estimates[0].interpretation if internal_estimates else ""
+    top_interpretation = (
+        internal_estimates[0].interpretation if internal_estimates else ""
+    )
     downstream_risks = sorted(
         {
             risk

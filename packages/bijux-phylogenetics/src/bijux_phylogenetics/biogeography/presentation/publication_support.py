@@ -63,7 +63,9 @@ def build_biogeography_publication_legend_entries(
 ) -> list[BiogeographyPublicationLegendEntry]:
     """Build stable legend entries for tree and map publication surfaces."""
     state_labels = {
-        row.most_likely_region for row in state_report.node_rows if row.most_likely_region
+        row.most_likely_region
+        for row in state_report.node_rows
+        if row.most_likely_region
     }
     state_labels.update(
         row.state_label for row in map_report.marker_rows if row.state_label
@@ -178,10 +180,13 @@ def build_biogeography_publication_audit(
     expected_internal_node_count = state_report.summary.internal_node_count
     node_probabilities_visible = (
         tree_render.rendered_internal_pie_count == expected_internal_node_count
-        and tree_render.rendered_internal_annotation_count == expected_internal_node_count
+        and tree_render.rendered_internal_annotation_count
+        == expected_internal_node_count
     )
     state_labels = {
-        row.most_likely_region for row in state_report.node_rows if row.most_likely_region
+        row.most_likely_region
+        for row in state_report.node_rows
+        if row.most_likely_region
     }
     map_state_labels = {
         row.state_label for row in map_report.marker_rows if row.state_label

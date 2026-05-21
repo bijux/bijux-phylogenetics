@@ -15,7 +15,11 @@ from bijux_phylogenetics.ancestral.discrete import (
 )
 from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_discrete_model_name as _resolve_discrete_model_name,
+)
+from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_root_prior as _resolve_root_prior,
+)
+from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_state_order as _resolve_state_order,
 )
 

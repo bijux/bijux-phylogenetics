@@ -18,9 +18,9 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
     transform_tree_for_evolutionary_mode,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.simulation import (
     simulate_brownian_traits,
     simulate_discrete_traits,
@@ -233,7 +233,7 @@ def benchmark_large_tree_model_fitting(
         limitations=[
             "runtime and peak memory record the owned bijux fit in the active Python process; stored geiger references provide fit-surface comparison rather than same-process memory parity",
             "continuous optimizer_iteration_count records governed profile-evaluation steps because the owned fitcontinuous surface uses bounded one-parameter profile search rather than a separate iterative optimizer counter",
-        "the heavy tier adds one 512-taxon Brownian fit and records threshold review explicitly when that case exceeds the governed runtime or memory budget instead of implying broad large-tree optimizer parity",
+            "the heavy tier adds one 512-taxon Brownian fit and records threshold review explicitly when that case exceeds the governed runtime or memory budget instead of implying broad large-tree optimizer parity",
         ],
     )
 
@@ -355,9 +355,7 @@ def _case_definitions_for_tier(
         return _SMALL_TIER_CASES
     if tier == "heavy":
         return (*_SMALL_TIER_CASES, *_HEAVY_TIER_ONLY_CASES)
-    raise ValueError(
-        f"unsupported tier '{tier}'; expected one of: heavy, small"
-    )
+    raise ValueError(f"unsupported tier '{tier}'; expected one of: heavy, small")
 
 
 def _run_case(
@@ -503,7 +501,9 @@ def _run_continuous_case(
         geiger_aic,
         geiger_aicc,
     ) = _continuous_geiger_fields(geiger_reference)
-    parameter_delta = _optional_delta(fit_report.parameter_value, geiger_parameter_value)
+    parameter_delta = _optional_delta(
+        fit_report.parameter_value, geiger_parameter_value
+    )
     rate_delta = _optional_delta(fit_report.rate, geiger_rate)
     log_likelihood_delta = _optional_delta(
         fit_report.log_likelihood,
@@ -533,15 +533,9 @@ def _run_continuous_case(
     )
     boundary_assessment = fit_report.boundary_assessment
     unstable_review = (
-        (
-            boundary_assessment is not None
-            and boundary_assessment.stable_conclusion_supported is False
-        )
-        or (
-            optimizer_diagnostics is not None
-            and not optimizer_diagnostics.converged
-        )
-    )
+        boundary_assessment is not None
+        and boundary_assessment.stable_conclusion_supported is False
+    ) or (optimizer_diagnostics is not None and not optimizer_diagnostics.converged)
     too_slow_review = performance_threshold_passed is False and (
         runtime_within_threshold is False
     )
@@ -954,7 +948,9 @@ def _run_continuous_fit_subprocess(
         env=environment,
     )
     if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip() or result.stdout.strip() or "subprocess fit failed")
+        raise RuntimeError(
+            result.stderr.strip() or result.stdout.strip() or "subprocess fit failed"
+        )
     return json.loads(result.stdout)
 
 
@@ -1013,7 +1009,9 @@ def _evaluate_threshold(
     optimizer_step_count: int | None,
 ) -> tuple[bool | None, bool | None, bool | None, bool | None]:
     runtime_within_threshold = (
-        None if runtime_seconds is None else runtime_seconds <= threshold.max_runtime_seconds
+        None
+        if runtime_seconds is None
+        else runtime_seconds <= threshold.max_runtime_seconds
     )
     peak_memory_within_threshold = (
         None
@@ -1193,9 +1191,7 @@ def _write_balanced_benchmark_tree(path: Path, taxa: list[str]) -> Path:
                 left.branch_length = round((left.branch_length or 0.0) + 0.1, 15)
                 next_level.append(left)
                 continue
-            next_level.append(
-                TreeNode(children=[left, right], branch_length=0.1)
-            )
+            next_level.append(TreeNode(children=[left, right], branch_length=0.1))
         leaves = next_level
     root = leaves[0]
     root.branch_length = None

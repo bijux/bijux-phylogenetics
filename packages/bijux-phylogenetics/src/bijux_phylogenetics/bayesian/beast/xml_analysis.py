@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from ._shared import (
+    _XML_IDENTIFIER_PATTERN,
     DefusedXmlException,
     ElementTree,
     EngineWorkflowError,
     Path,
     SafeXmlET,
     XmlElement,
-    _XML_IDENTIFIER_PATTERN,
     _beast_artifact_error,
     _ensure_inference_ready_alignment,
     _format_decimal,
@@ -17,7 +17,6 @@ from ._shared import (
     load_fasta_alignment,
     load_tree,
 )
-
 from .models import (
     BeastAnalysisXmlIssue,
     BeastAnalysisXmlLogger,
@@ -27,11 +26,11 @@ from .models import (
     TipDatingValidationReport,
     ValidatedCalibration,
 )
-
 from .validation import (
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
 )
+
 
 def _xml_element(
     tag: str,

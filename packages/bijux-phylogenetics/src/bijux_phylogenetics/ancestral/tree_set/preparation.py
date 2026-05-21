@@ -9,11 +9,11 @@ from bijux_phylogenetics.ancestral.common import (
     load_continuous_dataset,
     load_discrete_dataset,
 )
-from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import detect_tree_format
+from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import (
     AncestralReconstructionError,
     InvalidAlignmentError,

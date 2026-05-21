@@ -6,13 +6,6 @@ from html import escape
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.biogeography.state_models import (
-    GeographicStateModelReport,
-    summarize_geographic_state_model,
-    write_geographic_region_probability_table,
-    write_geographic_state_summary_table,
-    write_geographic_transition_rate_table,
-)
 from bijux_phylogenetics.biogeography.migration import (
     GeographicMigrationEventReport,
     summarize_geographic_migration_events,
@@ -28,11 +21,18 @@ from bijux_phylogenetics.biogeography.presentation.publication_support import (
     write_biogeography_caption,
     write_biogeography_publication_legend,
 )
-from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
+from bijux_phylogenetics.biogeography.state_models import (
+    GeographicStateModelReport,
+    summarize_geographic_state_model,
+    write_geographic_region_probability_table,
+    write_geographic_state_summary_table,
+    write_geographic_transition_rate_table,
+)
 from bijux_phylogenetics.comparative.discrete_evolution import (
     estimate_ancestral_geographic_states,
     render_tree_with_geographic_states,
 )
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylogeography.geographic_map import (
     GeographicMapReport,
@@ -616,9 +616,7 @@ def _build_machine_manifest(
         "output_paths": [str(path) for path in outputs],
         "output_checksums": {str(path): _checksum(path) for path in outputs},
         "reproducibility_manifest_path": str(reproducibility_manifest_path),
-        "reproducibility_manifest_checksum": _checksum(
-            reproducibility_manifest_path
-        ),
+        "reproducibility_manifest_checksum": _checksum(reproducibility_manifest_path),
         "reproducibility_manifest": reproducibility_manifest,
         "metrics": {
             "analyzed_taxon_count": state_report.summary.analyzed_taxon_count,
@@ -857,7 +855,10 @@ def _publication_audit_table(audit: BiogeographyPublicationAudit) -> str:
             ["publication_ready", str(audit.publication_ready).lower()],
             ["legend_complete", str(audit.legend_complete).lower()],
             ["caption_ready", str(audit.caption_ready).lower()],
-            ["node_probabilities_visible", str(audit.node_probabilities_visible).lower()],
+            [
+                "node_probabilities_visible",
+                str(audit.node_probabilities_visible).lower(),
+            ],
             ["transitions_visible", str(audit.transitions_visible).lower()],
             ["map_state_colors_complete", str(audit.map_state_colors_complete).lower()],
             [

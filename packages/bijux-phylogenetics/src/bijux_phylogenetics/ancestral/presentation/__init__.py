@@ -72,16 +72,10 @@ _PUBLIC_SURFACES = (
     ),
 )
 
-__all__ = [
-    name
-    for _, names in _PUBLIC_SURFACES
-    for name in names
-]
+__all__ = [name for _, names in _PUBLIC_SURFACES for name in names]
 
 _NAME_TO_MODULE = {
-    name: module_name
-    for module_name, names in _PUBLIC_SURFACES
-    for name in names
+    name: module_name for module_name, names in _PUBLIC_SURFACES for name in names
 }
 
 
@@ -90,7 +84,9 @@ def __getattr__(name: str):
     try:
         module_name = _NAME_TO_MODULE[name]
     except KeyError as error:
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from error
+        raise AttributeError(
+            f"module {__name__!r} has no attribute {name!r}"
+        ) from error
     value = getattr(import_module(f"{__name__}.{module_name}"), name)
     globals()[name] = value
     return value

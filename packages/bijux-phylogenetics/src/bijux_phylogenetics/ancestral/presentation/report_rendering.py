@@ -368,7 +368,10 @@ def _report_limitations(
         limitations.append(
             f"{len(report.dropped_missing_taxa)} taxa were excluded because the requested trait is missing"
         )
-    if isinstance(report, ContinuousAncestralReport) and report.dropped_non_numeric_taxa:
+    if (
+        isinstance(report, ContinuousAncestralReport)
+        and report.dropped_non_numeric_taxa
+    ):
         limitations.append(
             f"{len(report.dropped_non_numeric_taxa)} taxa were excluded because the requested continuous trait is not numeric"
         )

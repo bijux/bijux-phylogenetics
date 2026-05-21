@@ -30,14 +30,6 @@ from bijux_phylogenetics.ancestral.discrete import (
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
 )
-from bijux_phylogenetics.ancestral.presentation.methods_text import (
-    AncestralMethodsSummaryTextResult,
-    write_ancestral_methods_summary_text,
-)
-from bijux_phylogenetics.ancestral.presentation.report_rendering import (
-    render_ancestral_state_report,
-    write_ancestral_state_table,
-)
 from bijux_phylogenetics.ancestral.discrete.review import (
     AncestralTransitionBranchRow,
     AncestralTransitionCountRow,
@@ -46,6 +38,14 @@ from bijux_phylogenetics.ancestral.discrete.review import (
     write_ancestral_transition_branch_table,
     write_ancestral_transition_count_table,
     write_ancestral_transition_exclusion_table,
+)
+from bijux_phylogenetics.ancestral.presentation.methods_text import (
+    AncestralMethodsSummaryTextResult,
+    write_ancestral_methods_summary_text,
+)
+from bijux_phylogenetics.ancestral.presentation.report_rendering import (
+    render_ancestral_state_report,
+    write_ancestral_state_table,
 )
 from bijux_phylogenetics.ancestral.presentation.visualization import (
     AncestralVisualizationResult,
@@ -285,9 +285,7 @@ def _reviewer_audit_table(checklist: ReviewerAuditChecklist) -> str:
     return (
         "<table><thead><tr>"
         "<th>section</th><th>status</th><th>summary</th><th>evidence</th>"
-        "</tr></thead><tbody>"
-        + "".join(rows)
-        + "</tbody></table>"
+        "</tr></thead><tbody>" + "".join(rows) + "</tbody></table>"
     )
 
 

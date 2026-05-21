@@ -19,21 +19,15 @@ from bijux_phylogenetics.bayesian.beast.validation import (
 from bijux_phylogenetics.bayesian.beast.xml_analysis import (
     summarize_beast_analysis_xml,
 )
-from bijux_phylogenetics.bayesian.posterior_sets.comparison import (
-    compare_independent_bayesian_runs,
-    compare_ml_tree_to_bayesian_posterior,
-)
 from bijux_phylogenetics.bayesian.mrbayes import (
     assess_mrbayes_convergence,
     compute_mrbayes_effective_sample_sizes,
     parse_mrbayes_parameter_traces,
     summarize_mrbayes_posterior_trees,
 )
-from .posterior_uncertainty import (
-    summarize_beast_workflow_evidence,
-    write_bayesian_limitations_text,
-    write_bayesian_methods_summary_text,
-    write_supplementary_bayesian_diagnostics_table,
+from bijux_phylogenetics.bayesian.posterior_sets.comparison import (
+    compare_independent_bayesian_runs,
+    compare_ml_tree_to_bayesian_posterior,
 )
 from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
@@ -41,6 +35,13 @@ from bijux_phylogenetics.evidence.provenance.method_tiers import (
 )
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.trees import compute_clade_frequency_table
+
+from .posterior_uncertainty import (
+    summarize_beast_workflow_evidence,
+    write_bayesian_limitations_text,
+    write_bayesian_methods_summary_text,
+    write_supplementary_bayesian_diagnostics_table,
+)
 
 
 @dataclass(slots=True)

@@ -6,15 +6,16 @@ import tempfile
 
 from bijux_phylogenetics.bayesian.beast.logs import assess_beast_convergence
 from bijux_phylogenetics.bayesian.mrbayes import assess_mrbayes_convergence
+from bijux_phylogenetics.compare.topology import (
+    compare_branch_lengths,
+    compare_tree_paths,
+)
+
 from .tree_sets import (
     BayesianRunTreeComparison,
     compare_bayesian_tree_sets,
     summarize_maximum_clade_credibility_tree,
     summarize_posterior_node_ages,
-)
-from bijux_phylogenetics.compare.topology import (
-    compare_branch_lengths,
-    compare_tree_paths,
 )
 
 

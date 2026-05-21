@@ -6,8 +6,11 @@ from bijux_phylogenetics.ancestral.common import (
     AncestralContinuousDataset,
     stable_value,
 )
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
+    summarize_ultrametric_tip_depths,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.phylo.branch_lengths.ultrametric import summarize_ultrametric_tip_depths
+
 from .models import ContinuousAncestralBrownianFitDiagnostics
 
 _BROWNIAN_CONDITION_THRESHOLD = 1e12

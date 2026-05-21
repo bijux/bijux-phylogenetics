@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from ._shared import (
+    _BEAST_TREE_PATTERN,
+    _BEAST_TREE_STATE_PATTERN,
     EngineWorkflowError,
     InvalidAlignmentError,
     Path,
     PhyloTree,
     TreeParseError,
-    _BEAST_TREE_PATTERN,
-    _BEAST_TREE_STATE_PATTERN,
     _beast_artifact_error,
     compute_clade_frequency_table,
     compute_consensus_tree,
@@ -18,7 +18,6 @@ from ._shared import (
     re,
     summarize_posterior_topology_diversity,
 )
-
 from .models import (
     BeastPosteriorClade,
     BeastPosteriorConsensusReport,
@@ -26,6 +25,7 @@ from .models import (
     BeastPosteriorTreeSample,
     BeastPosteriorTreeSetReport,
 )
+
 
 def parse_beast_posterior_tree_samples(
     path: Path,

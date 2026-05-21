@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import write_ancestral_rows
+
 from .models import (
     ContinuousAncestralExclusion,
     ContinuousAncestralReport,

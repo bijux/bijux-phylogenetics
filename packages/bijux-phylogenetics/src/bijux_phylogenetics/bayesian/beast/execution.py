@@ -16,14 +16,13 @@ from ._shared import (
     resolve_engine_executable,
     validate_timeout_seconds,
 )
-
 from .logs import (
     parse_beast_log,
 )
-
 from .posterior_trees import (
     parse_beast_posterior_tree_samples,
 )
+
 
 def run_beast_posterior_inference(
     xml_path: Path,

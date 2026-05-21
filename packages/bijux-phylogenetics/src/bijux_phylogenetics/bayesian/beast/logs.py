@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from ._shared import (
+    _TABULAR_WARNING_PREFIX_PATTERN,
     DEFAULT_BURNIN_FRACTIONS,
     Path,
     TraceConvergenceReport,
-    _TABULAR_WARNING_PREFIX_PATTERN,
-    _beast_state_field,
     _beast_artifact_error,
+    _beast_state_field,
     _classify_beast_parameter,
     _mean_beast_parameter,
     _normalize_tabular_field,
@@ -21,7 +21,6 @@ from ._shared import (
     summarize_trace_convergence,
     write_taxon_rows,
 )
-
 from .models import (
     BeastBurninSensitivityReport,
     BeastBurninSensitivitySlice,
@@ -36,6 +35,7 @@ from .models import (
     BeastPosteriorClade,
     BeastPosteriorLogValidationReport,
 )
+
 
 def parse_beast_log(path: Path) -> BeastLogReport:
     """Parse a BEAST-style log table into deterministic numeric rows."""
@@ -135,6 +135,8 @@ def _read_tabular_artifact_lines(path: Path) -> list[str]:
                 continue
             lines.append(raw_line.rstrip("\r\n"))
     return lines
+
+
 def _split_tabular_fields(line: str) -> list[str]:
     return [_normalize_tabular_field(field) or "" for field in line.split("\t")]
 

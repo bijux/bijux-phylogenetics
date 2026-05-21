@@ -10,8 +10,8 @@ from bijux_phylogenetics.biogeography.state_models import (
     summarize_geographic_state_model,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 
 @dataclass(frozen=True, slots=True)

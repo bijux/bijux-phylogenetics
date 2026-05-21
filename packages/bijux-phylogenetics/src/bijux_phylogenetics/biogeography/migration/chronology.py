@@ -9,20 +9,20 @@ from bijux_phylogenetics.ancestral.common import (
     node_signature,
     stable_value,
 )
+from bijux_phylogenetics.biogeography.migration import (
+    GeographicMigrationEventReport,
+    summarize_geographic_migration_events,
+)
 from bijux_phylogenetics.biogeography.state_models import (
     GeographicExcludedTaxonRow,
     GeographicStateModelReport,
     summarize_geographic_state_model,
 )
-from bijux_phylogenetics.biogeography.migration import (
-    GeographicMigrationEventReport,
-    summarize_geographic_migration_events,
-)
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
-from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 
 @dataclass(frozen=True, slots=True)

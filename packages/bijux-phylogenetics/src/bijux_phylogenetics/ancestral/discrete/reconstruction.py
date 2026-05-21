@@ -299,7 +299,9 @@ def _reconstruct_fitch_report(
         analysis_tree_newick=dump_pruned_tree(dataset.tree),
         dropped_missing_taxa=dataset.dropped_missing_taxa,
         minimal_change_count=minimal_change_count,
-        parsimonious_root_state_count=len(candidate_sets[node_signature(dataset.tree.root)]),
+        parsimonious_root_state_count=len(
+            candidate_sets[node_signature(dataset.tree.root)]
+        ),
         warnings=warnings,
         unstable_nodes=unstable_nodes,
         weak_support_nodes=weak_support_nodes,

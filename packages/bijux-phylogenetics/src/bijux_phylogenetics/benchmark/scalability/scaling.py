@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
+import tempfile
 
 from bijux_phylogenetics.compare.topology import compare_tree_paths
-from bijux_phylogenetics.distance import build_distance_method_report
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
+from bijux_phylogenetics.distance import build_distance_method_report
 from bijux_phylogenetics.engines.workflows.alignment import run_alignment_trimming
 from bijux_phylogenetics.io.fasta.quality import (
     build_alignment_quality_report,
@@ -189,7 +189,9 @@ def benchmark_large_alignment_scaling(
         sequence_count < 2 or alignment_length < 2
         for _, sequence_count, alignment_length in classes
     ):
-        raise ValueError("alignment size classes must use at least two sequences and two sites")
+        raise ValueError(
+            "alignment size classes must use at least two sequences and two sites"
+        )
 
     diagnostics_observations: list[LargeAlignmentScalingObservation] = []
     trimming_observations: list[LargeAlignmentScalingObservation] = []
@@ -326,7 +328,9 @@ def benchmark_large_tree_set_scaling(
     if not classes:
         raise ValueError("size_classes must contain at least one tree-set size class")
     if any(tree_count < 2 or tip_count < 2 for _, tree_count, tip_count in classes):
-        raise ValueError("tree-set size classes must use at least two trees and two taxa")
+        raise ValueError(
+            "tree-set size classes must use at least two trees and two taxa"
+        )
 
     consensus_observations: list[LargeTreeSetScalingObservation] = []
     rf_observations: list[LargeTreeSetScalingObservation] = []

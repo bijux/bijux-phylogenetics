@@ -187,9 +187,7 @@ def benchmark_workflow_practical_limits(
         replicates=replicates,
         size_classes=tree_set_size_classes,
     )
-    stress_reports = [
-        benchmark_large_dataset_stress_suite(tier=tier) for tier in tiers
-    ]
+    stress_reports = [benchmark_large_dataset_stress_suite(tier=tier) for tier in tiers]
 
     entries = [
         *_large_tree_limit_entries(tree_report),

@@ -14,10 +14,10 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralReport,
     reconstruct_discrete_ancestral_states,
 )
-from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.comparative.discrete_evolution import (
     audit_discrete_state_coding,
 )
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 from .likelihood import GeographicExcludedTaxonRow

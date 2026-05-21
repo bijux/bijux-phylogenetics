@@ -14,9 +14,13 @@ from bijux_phylogenetics.bayesian.posterior_sets.tree_sets import (
     summarize_maximum_clade_credibility_tree,
     write_posterior_tree_subsample,
 )
-from bijux_phylogenetics.datasets.study_inputs import TaxonTable, load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.datasets.study_inputs import (
+    TaxonTable,
+    load_taxon_table,
+    write_taxon_rows,
+)
 from bijux_phylogenetics.io.newick import load_newick_tree_set
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
@@ -197,7 +201,9 @@ def _summarize_time_tree_intervals(tree_set_path: Path) -> list[TimeTreeNodeInte
             age_rows.setdefault(clade, []).append(round(root_age - current_depth, 15))
     ordered_rows: list[TimeTreeNodeInterval] = []
     total_taxa = len(next(iter(taxa_sets)))
-    for clade, ages in sorted(age_rows.items(), key=lambda item: (len(item[0]), sorted(item[0]))):
+    for clade, ages in sorted(
+        age_rows.items(), key=lambda item: (len(item[0]), sorted(item[0]))
+    ):
         ordered = sorted(ages)
         ordered_rows.append(
             TimeTreeNodeInterval(
@@ -273,7 +279,9 @@ def build_time_tree_figure_package(
     )
     readiness = (
         None
-        if tip_dates_path is None and calibration_path is None and alignment_path is None
+        if tip_dates_path is None
+        and calibration_path is None
+        and alignment_path is None
         else assess_time_tree_readiness(
             mcc_tree_path,
             calibration_path=calibration_path,
@@ -471,7 +479,9 @@ def build_time_tree_figure_package(
         ("reviewer summary", "\n".join(f"- {line}" for line in reviewer_summary)),
         (
             "publication limitations",
-            "none" if not limitations else "\n".join(f"- {line}" for line in limitations),
+            "none"
+            if not limitations
+            else "\n".join(f"- {line}" for line in limitations),
         ),
         (
             "node-age intervals",
@@ -516,7 +526,11 @@ def build_time_tree_figure_package(
             ),
         ],
         artifact_links=[
-            ("time-tree figure", figure_path.name, "dated SVG with median ages and HPD intervals"),
+            (
+                "time-tree figure",
+                figure_path.name,
+                "dated SVG with median ages and HPD intervals",
+            ),
             ("retained posterior trees", retained_tree_set_path.name, None),
             ("mcc tree", mcc_tree_path.name, None),
             ("node-age ledger", interval_table_path.name, None),
