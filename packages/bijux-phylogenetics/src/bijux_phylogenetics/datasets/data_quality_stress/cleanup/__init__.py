@@ -8,7 +8,6 @@ from bijux_phylogenetics.datasets.study_inputs import (
     link_tree_to_traits,
     validate_traits_table,
 )
-from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
@@ -24,19 +23,20 @@ from bijux_phylogenetics.io.fasta.records import (
 )
 from bijux_phylogenetics.io.newick import write_newick
 
-from .models import (
+from ..models import (
     CatarrhineDataQualityStressPanelDataset,
     CatarrhineDataQualityStressPanelWorkflowReport,
     DataQualityRepairAction,
     TraitDuplicateResolution,
 )
-from .panel import TREE_BRANCH_FLOOR
-from .traits import (
+from ..panel import TREE_BRANCH_FLOOR
+from ..traits import (
     detect_missing_traits,
     load_permissive_trait_rows,
     resolve_duplicate_traits,
     selected_trait_rows,
 )
+from .shared import apply_branch_length_floor
 
 
 def build_catarrhine_data_quality_stress_panel_workflow_report(
@@ -224,22 +224,6 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
         repair_actions=repair_actions,
         repaired_branch_nodes=repaired_branch_nodes,
     )
-
-
-def apply_branch_length_floor(root: TreeNode, *, floor: float) -> list[str]:
-    repaired_nodes: list[str] = []
-
-    def visit(node: TreeNode, *, is_root: bool) -> None:
-        if not is_root and node.branch_length is not None and node.branch_length <= 0.0:
-            node.branch_length = floor
-            repaired_nodes.append(node.name or "<internal>")
-        for child in node.children:
-            visit(child, is_root=False)
-
-    visit(root, is_root=True)
-    return repaired_nodes
-
-
 def build_repair_actions(
     *,
     raw_sequence_input_repair,
