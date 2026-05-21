@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import csv
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 from hashlib import sha256
 from html import escape
 import json
 from pathlib import Path
+
+from .contracts import AncestralContinuousChangeBranchRow
+from .contracts import AncestralContinuousChangeCountRow
+from .contracts import AncestralReportPackageResult
 
 from bijux_phylogenetics.ancestral.common import node_descendant_taxa, node_signature
 from bijux_phylogenetics.ancestral.continuous import (
@@ -56,61 +60,6 @@ from bijux_phylogenetics.reports.review import (
     ReviewerAuditChecklist,
     write_reviewer_audit_checklist,
 )
-
-
-@dataclass(frozen=True, slots=True)
-class AncestralContinuousChangeBranchRow:
-    parent_node: str
-    child_node: str
-    child_descendant_taxa: tuple[str, ...]
-    branch_length: float | None
-    parent_estimate: float
-    child_estimate: float
-    delta: float
-    absolute_delta: float
-    direction: str
-
-
-@dataclass(frozen=True, slots=True)
-class AncestralContinuousChangeCountRow:
-    direction: str
-    branch_count: int
-    branch_fraction: float
-    mean_delta: float
-    minimum_delta: float
-    maximum_delta: float
-
-
-@dataclass(slots=True)
-class AncestralReportPackageResult:
-    output_dir: Path
-    report_path: Path
-    methods_summary_path: Path
-    reviewer_audit_checklist_path: Path
-    figure_path: Path
-    figure_png_path: Path
-    figure_html_path: Path
-    summary_table_path: Path
-    node_table_path: Path
-    uncertainty_table_path: Path
-    transition_count_table_path: Path
-    transition_branch_table_path: Path
-    exclusion_table_path: Path
-    manifest_path: Path
-    reconstruction_kind: str
-    model: str
-    methods_summary: AncestralMethodsSummaryTextResult
-    summary: ContinuousAncestralSummary | DiscreteAncestralSummary
-    reconstruction: ContinuousAncestralReport | DiscreteAncestralReport
-    figure: AncestralVisualizationResult
-    figure_png: AncestralVisualizationResult
-    figure_html: AncestralVisualizationResult
-    transition_count_rows: list[AncestralContinuousChangeCountRow]
-    transition_branch_rows: list[AncestralContinuousChangeBranchRow]
-    transition_report: AncestralTransitionReport | None
-    exclusions: list[ContinuousAncestralExclusion | DiscreteAncestralExclusion]
-    reviewer_audit_checklist: ReviewerAuditChecklist
-    machine_manifest: dict[str, object]
 
 
 def _checksum(path: Path) -> str:
