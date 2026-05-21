@@ -1,9 +1,7 @@
 # ruff: noqa: F401
 from __future__ import annotations
 
-import hashlib
 from pathlib import Path
-import re
 
 from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
@@ -26,15 +24,7 @@ from bijux_phylogenetics.phylo.alignment import (
     AlignmentSummary,
     CodingSequenceExclusion,
 )
-from bijux_phylogenetics.phylo.alignment.partitions import (
-    LocusPartition,
-    build_partition_summary_report,
-    normalize_partition_data_type,
-    parse_locus_partitions,
-    slice_partition_sequence,
-    write_locus_partitions,
-    write_partition_summary_table,
-)
+from bijux_phylogenetics.phylo.alignment.partitions import LocusPartition
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError, PhylogeneticsError
 from bijux_phylogenetics.trees import load_tree_set
 
@@ -117,20 +107,6 @@ from ..models import (
 
 _INCOMPLETE_RUN_POLICIES = {"reject", "clean"}
 
-
-def _sidecar(path: Path, label: str) -> Path:
-    return path.parent / f"{path.name}.{label}"
-
-
-def _prefix_path(out_dir: Path, prefix: str) -> Path:
-    out_dir.mkdir(parents=True, exist_ok=True)
-    return out_dir / prefix
-
-
-def _manifest_path_from_output(path: Path) -> Path:
-    return _sidecar(path, "manifest.json")
-
-
 def _validate_incomplete_run_policy(policy: str) -> str:
     if policy not in _INCOMPLETE_RUN_POLICIES:
         available = ", ".join(sorted(_INCOMPLETE_RUN_POLICIES))
@@ -203,11 +179,6 @@ def _resolve_incomplete_workflow_state(
             "available_actions": ["resume", "clean"],
         },
     )
-
-
-def _partition_support_path(prefix_path: Path, suffix: str) -> Path:
-    return prefix_path.parent / f"{prefix_path.name}.{suffix}"
-
 
 def _record_output_validation_failure(
     manifest_path: Path,
@@ -503,14 +474,6 @@ def _ensure_inference_ready_alignment(path: Path) -> None:
             f"inference alignment is empty after filtering: {path}"
         )
     summarise_fasta(path)
-
-
-def _partition_alignment_file_name(partition: LocusPartition) -> str:
-    normalized = re.sub(r"[^A-Za-z0-9._-]+", "-", partition.name.strip().lower())
-    normalized = normalized.strip("-._") or "partition"
-    digest = hashlib.sha256(partition.name.encode("utf-8")).hexdigest()[:8]
-    return f"{normalized}-{digest}.fasta"
-
 
 def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport:
     run_payload = payload["run"]
@@ -1247,3 +1210,12 @@ def _resume_has_sh_alrt_review_outputs(report: EngineWorkflowReport) -> bool:
         and report.output_paths.get("support_table") is not None
         and report.output_paths.get("conflicting_support_branches") is not None
     )
+
+
+from .paths import (
+    _manifest_path_from_output,
+    _partition_alignment_file_name,
+    _partition_support_path,
+    _prefix_path,
+    _sidecar,
+)
