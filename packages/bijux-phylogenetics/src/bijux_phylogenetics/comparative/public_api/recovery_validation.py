@@ -105,8 +105,6 @@ __all__ = [
     "DiscreteModeRecoveryCaseReport",
     "DiscreteModeRecoveryExecutionRow",
     "DiscreteModeRecoveryModelChoiceRow",
-    "DiscreteModeRecoveryParameterComparisonRow",
-    "DiscreteModeRecoveryParameterRow",
     "DiscreteModeRecoveryRateComparisonRow",
     "DiscreteModeRecoveryRateRow",
     "DiscreteModeRecoveryReport",
