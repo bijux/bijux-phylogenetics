@@ -8,7 +8,6 @@ from bijux_phylogenetics.datasets.study_inputs import (
     link_tree_to_traits,
     validate_traits_table,
 )
-from bijux_phylogenetics.runtime.errors import MetadataJoinError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment, write_fasta_alignment
 from bijux_phylogenetics.io.newick import write_newick
 
@@ -19,14 +18,9 @@ from ..models import (
     TraitDuplicateResolution,
 )
 from ..panel import TREE_BRANCH_FLOOR
-from ..traits import (
-    detect_missing_traits,
-    load_permissive_trait_rows,
-    resolve_duplicate_traits,
-    selected_trait_rows,
-)
 from .sequence_processing import prepare_sequence_surfaces
 from .shared import apply_branch_length_floor
+from .trait_processing import prepare_trait_surfaces
 
 
 def build_catarrhine_data_quality_stress_panel_workflow_report(
@@ -41,48 +35,18 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
         dataset=dataset,
         assembled_root=assembled_root,
     )
-    raw_trait_mismatch_linkage = link_tree_to_traits(
-        dataset.raw_tree_path,
-        dataset.raw_trait_mismatch_path,
-        strict=False,
-    )
-    raw_trait_mismatch_error: str | None = None
-    try:
-        link_tree_to_traits(
-            dataset.raw_tree_path,
-            dataset.raw_trait_mismatch_path,
-            strict=True,
-        )
-    except MetadataJoinError as error:
-        raw_trait_mismatch_error = str(error)
-
-    raw_trait_rows = load_permissive_trait_rows(dataset.raw_traits_path)
-    trait_duplicates = resolve_duplicate_traits(raw_trait_rows)
-    duplicate_lookup = {row.taxon: row for row in trait_duplicates}
-    cleaned_trait_candidates = selected_trait_rows(raw_trait_rows)
-    missing_traits = detect_missing_traits(
-        raw_trait_rows,
-        required_traits=set(dataset.required_traits),
-        duplicate_lookup=duplicate_lookup,
-    )
-
-    missing_required_trait_taxa = sorted(
-        {
-            row.taxon
-            for row in missing_traits
-            if row.required_for_analysis
-            and row.action == "drop_taxon_from_cleaned_traits"
-        }
+    trait_surfaces = prepare_trait_surfaces(
+        dataset=dataset,
     )
     excluded_taxa = sorted(
         set(sequence_surfaces.sequence_outlier_taxa)
         | set(sequence_surfaces.tree_outlier_taxa)
-        | set(missing_required_trait_taxa)
+        | set(trait_surfaces.missing_required_trait_taxa)
     )
 
     cleaned_trait_rows = [
         dict(row)
-        for row in cleaned_trait_candidates
+        for row in trait_surfaces.cleaned_trait_candidates
         if row["taxon"] not in excluded_taxa
         and all(row[trait] for trait in dataset.required_traits)
     ]
@@ -125,9 +89,9 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
         raw_sequence_input_repair=sequence_surfaces.raw_sequence_input_repair,
         raw_sequence_length_outliers=sequence_surfaces.raw_sequence_length_outliers,
         coding_sequence_preparation=sequence_surfaces.coding_sequence_preparation,
-        raw_trait_mismatch_error=raw_trait_mismatch_error,
-        trait_duplicates=trait_duplicates,
-        missing_required_trait_taxa=missing_required_trait_taxa,
+        raw_trait_mismatch_error=trait_surfaces.raw_trait_mismatch_error,
+        trait_duplicates=trait_surfaces.trait_duplicates,
+        missing_required_trait_taxa=trait_surfaces.missing_required_trait_taxa,
         sequence_outlier_taxa=sequence_surfaces.sequence_outlier_taxa,
         tree_outlier_taxa=sequence_surfaces.tree_outlier_taxa,
         repaired_branch_nodes=repaired_branch_nodes,
@@ -141,14 +105,14 @@ def build_catarrhine_data_quality_stress_panel_workflow_report(
             sequence_surfaces.repaired_sequence_input_validation
         ),
         coding_sequence_preparation=sequence_surfaces.coding_sequence_preparation,
-        raw_trait_mismatch_linkage=raw_trait_mismatch_linkage,
-        raw_trait_mismatch_error=raw_trait_mismatch_error,
+        raw_trait_mismatch_linkage=trait_surfaces.raw_trait_mismatch_linkage,
+        raw_trait_mismatch_error=trait_surfaces.raw_trait_mismatch_error,
         raw_alignment_validation=sequence_surfaces.raw_alignment_validation,
         sequence_outliers=sequence_surfaces.sequence_outliers,
         raw_tree_inspection=sequence_surfaces.raw_tree_inspection,
         raw_tree_validation=sequence_surfaces.raw_tree_validation,
-        trait_duplicates=trait_duplicates,
-        missing_traits=missing_traits,
+        trait_duplicates=trait_surfaces.trait_duplicates,
+        missing_traits=trait_surfaces.missing_traits,
         cleaned_trait_validation=cleaned_trait_validation,
         cleaned_tree_validation=cleaned_tree_validation,
         cleaned_linkage=cleaned_linkage,
