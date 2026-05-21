@@ -4,7 +4,7 @@ import pytest
 
 from bijux_phylogenetics.parity import validate_reference_parity_examples
 
-pytestmark = [pytest.mark.scientific_validation]
+pytestmark = [pytest.mark.scientific_validation, pytest.mark.slow]
 
 
 def test_validate_reference_parity_examples_extended_passes() -> None:

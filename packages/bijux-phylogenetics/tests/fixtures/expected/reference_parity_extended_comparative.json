@@ -90,10 +90,10 @@
       "failure_mode": "model_assumption",
       "expected_output": {
         "aic": 928.5062,
-        "alpha": 5.3344,
+        "alpha": 5.3356,
         "log_likelihood": -461.2531,
-        "rate": 170166.0788,
-        "root_state": 282.7144
+        "rate": 170195.2204,
+        "root_state": 282.7197
       }
     }
   ]
