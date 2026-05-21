@@ -136,8 +136,8 @@ from bijux_phylogenetics.trees import (
     write_bootstrap_tree_set_artifacts,
 )
 
-from .models import *
-from .shared import _checksum, _format_number, _html_list, _support_range_text, _table
+from ..models import *
+from ..shared import _checksum, _format_number, _html_list, _support_range_text, _table
 
 def write_rabies_cross_host_geography_panel_workflow_bundle(
     output_root: Path,
