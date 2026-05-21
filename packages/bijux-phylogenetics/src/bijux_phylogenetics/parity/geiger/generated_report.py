@@ -209,7 +209,7 @@ def build_generated_geiger_parity_report(
             _simulation_recovery_row(
                 continuous_recovery,
                 panel_id="continuous_mode_recovery_panel",
-                governed_value_pass_key="parameter_pass_count",
+                governed_value_success_key="parameter_pass_count",
                 governed_value_row_key="parameter_row_count",
                 governed_comparison_row_key="parameter_comparison_row_count",
                 notes=[
@@ -219,7 +219,7 @@ def build_generated_geiger_parity_report(
             _simulation_recovery_row(
                 discrete_recovery,
                 panel_id="discrete_mode_recovery_panel",
-                governed_value_pass_key="rate_pass_count",
+                governed_value_success_key="rate_pass_count",
                 governed_value_row_key="governed_rate_row_count",
                 governed_comparison_row_key="governed_rate_comparison_row_count",
                 notes=[
@@ -615,7 +615,7 @@ def _simulation_recovery_row(
     payload: dict[str, int],
     *,
     panel_id: str,
-    governed_value_pass_key: str,
+    governed_value_success_key: str,
     governed_value_row_key: str,
     governed_comparison_row_key: str,
     notes: list[str],
@@ -626,7 +626,7 @@ def _simulation_recovery_row(
         selection_review_case_count=payload["selection_review_case_count"],
         bijux_selection_match_count=payload["selection_match_count"],
         geiger_selection_match_count=payload["geiger_selection_match_count"],
-        governed_value_pass_count=payload[governed_value_pass_key],
+        governed_value_pass_count=payload[governed_value_success_key],
         governed_value_row_count=payload[governed_value_row_key],
         governed_comparison_row_count=payload[governed_comparison_row_key],
         expected_warning_case_count=payload["expected_warning_case_count"],

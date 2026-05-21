@@ -5,7 +5,6 @@ import gzip
 from pathlib import Path
 import re
 
-# Model-name regex, not a credential.
 _MODEL_TOKEN_PATTERN = r"[A-Za-z0-9+._-]+"  # nosec B105
 _BEST_MODEL_PATTERNS = (
     re.compile(

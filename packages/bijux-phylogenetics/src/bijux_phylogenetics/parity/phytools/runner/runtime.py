@@ -3,7 +3,10 @@ from __future__ import annotations
 from importlib import metadata
 import os
 from pathlib import Path
-import subprocess  # nosec B404 - parity helpers invoke repository-owned reference commands
+import shutil
+
+# Parity helpers invoke repository-owned reference commands under governed paths.
+import subprocess  # nosec B404
 
 
 def repository_root() -> Path:
@@ -39,8 +42,11 @@ def bijux_version() -> str:
 
 
 def bijux_commit() -> str | None:
-    result = subprocess.run(  # nosec
-        ["git", "rev-parse", "--short", "HEAD"],
+    git_executable = shutil.which("git")
+    if git_executable is None:
+        return None
+    result = subprocess.run(  # nosec B603
+        [git_executable, "rev-parse", "--short", "HEAD"],
         capture_output=True,
         check=False,
         cwd=repository_root(),

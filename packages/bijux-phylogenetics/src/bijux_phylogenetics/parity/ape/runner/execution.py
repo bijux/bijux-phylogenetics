@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from dataclasses import replace
 from pathlib import Path
-import subprocess  # nosec B404 - parity helpers invoke repository-owned reference commands
+
+# Parity helpers invoke repository-owned reference commands under governed paths.
+import subprocess  # nosec B404
 import tempfile
 
 from ..registry import _selected_cases, _write_case_file
@@ -107,7 +109,7 @@ def run_ape_parity_cases(
             process_stderr = ""
             try:
                 # Repository-owned R parity runner.
-                process = subprocess.run(  # nosec
+                process = subprocess.run(  # nosec B603
                     [
                         rscript_executable,
                         str(_ape_runner_path()),

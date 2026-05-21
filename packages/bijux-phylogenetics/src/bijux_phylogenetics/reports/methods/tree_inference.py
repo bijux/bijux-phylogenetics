@@ -67,7 +67,10 @@ def _tree_inference_payload(
                 "tree-inference workflow report did not expose manifest_path"
             )
         return payload, Path(str(manifest_path_value))
-    assert workflow_manifest_path is not None
+    if workflow_manifest_path is None:
+        raise ValueError(
+            "workflow_manifest_path is required when workflow_report is absent"
+        )
     return load_engine_manifest(workflow_manifest_path), workflow_manifest_path
 
 

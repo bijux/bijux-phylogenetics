@@ -257,7 +257,7 @@ def _build_stage_fingerprint(
             "upstream_fingerprints": upstream_fingerprints,
         }
     )
-    digest = hashlib.sha256(  # nosec B324
+    digest = hashlib.sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
     return FastaToTreeStageFingerprint(

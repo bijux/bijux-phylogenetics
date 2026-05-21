@@ -157,19 +157,19 @@ def render_checks_json(contract: dict[str, Any]) -> dict[str, Any]:
         "validation_rules": [
             {
                 "rule_id": "bundle-local-artifacts-present",
-                "pass_when": "reference, analysis, checks, report, and provenance files are all present in the evidence directory",  # nosec B105
+                "success_condition": "reference, analysis, checks, report, and provenance files are all present in the evidence directory",
             },
             {
                 "rule_id": "results-directory-governed",
-                "pass_when": "the evidence-owned results directory contains a manifest and README that inventory local execution products and governed outputs",  # nosec B105
+                "success_condition": "the evidence-owned results directory contains a manifest and README that inventory local execution products and governed outputs",
             },
             {
                 "rule_id": "primary-outputs-present",
-                "pass_when": "the bundle retains its governed machine outputs alongside the authored local artifact surfaces",  # nosec B105
+                "success_condition": "the bundle retains its governed machine outputs alongside the authored local artifact surfaces",
             },
             {
                 "rule_id": "verdict-still-explicit",
-                "pass_when": "the bundle manifest continues to expose the verdict status and summary without hiding mismatches or boundaries",  # nosec B105
+                "success_condition": "the bundle manifest continues to expose the verdict status and summary without hiding mismatches or boundaries",
             },
         ],
     }

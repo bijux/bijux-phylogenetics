@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import json
 import os
 from pathlib import Path
-import subprocess
+import subprocess  # nosec B404
 import sys
 import tempfile
 import textwrap
@@ -939,7 +939,7 @@ def _run_continuous_fit_subprocess(
         ),
     ]
     environment = dict(os.environ)
-    result = subprocess.run(
+    result = subprocess.run(  # nosec B603
         command,
         capture_output=True,
         check=False,

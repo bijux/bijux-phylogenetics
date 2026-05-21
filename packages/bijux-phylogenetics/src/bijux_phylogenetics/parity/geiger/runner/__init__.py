@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-import subprocess  # nosec B404 - parity helpers invoke repository-owned reference commands
+
+# Parity helpers invoke repository-owned reference commands under governed paths.
+import subprocess  # nosec B404
 import tempfile
 
 from ..boundary_warning_registry import build_geiger_boundary_warning_rows
@@ -136,7 +138,7 @@ def run_geiger_parity_cases(
             process_stdout = ""
             process_stderr = ""
             try:
-                process = subprocess.run(  # nosec
+                process = subprocess.run(  # nosec B603
                     [
                         rscript_executable,
                         str(_geiger_runner_path()),

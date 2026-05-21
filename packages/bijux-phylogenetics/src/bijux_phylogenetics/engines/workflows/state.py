@@ -508,7 +508,7 @@ def _ensure_inference_ready_alignment(path: Path) -> None:
 def _partition_alignment_file_name(partition: LocusPartition) -> str:
     normalized = re.sub(r"[^A-Za-z0-9._-]+", "-", partition.name.strip().lower())
     normalized = normalized.strip("-._") or "partition"
-    digest = hashlib.sha1(partition.name.encode("utf-8")).hexdigest()[:8]  # nosec B324
+    digest = hashlib.sha256(partition.name.encode("utf-8")).hexdigest()[:8]
     return f"{normalized}-{digest}.fasta"
 
 

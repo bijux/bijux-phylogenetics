@@ -11,11 +11,9 @@ from bijux_phylogenetics.runtime.errors import (
     UnnamedTipError,
 )
 
-_BRANCH_LENGTH_PATTERN = re.compile(  # nosec B105 - Newick grammar regex
-    r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$"
-)
-_UNQUOTED_LABEL_PATTERN = re.compile(r"^[0-9A-Za-z._-]+$")  # nosec B105 - grammar
-_NUMERIC_LABEL_PATTERN = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$")  # nosec B105 - grammar
+_BRANCH_LENGTH_PATTERN = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$")
+_UNQUOTED_LABEL_PATTERN = re.compile(r"^[0-9A-Za-z._-]+$")
+_NUMERIC_LABEL_PATTERN = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$")
 
 
 class _NewickParser:
