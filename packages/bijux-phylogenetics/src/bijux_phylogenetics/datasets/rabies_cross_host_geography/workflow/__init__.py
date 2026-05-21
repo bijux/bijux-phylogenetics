@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from .comparative_inputs import _build_comparative_trait_rows
 from .execution import (
     _apply_branch_length_floor,
-    _build_comparative_trait_rows,
     _build_conclusion_stability_report,
     _canonicalize_discrete_tree_set_model,
     _run_comparative_pgls_on_tree,

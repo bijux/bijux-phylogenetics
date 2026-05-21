@@ -10,9 +10,11 @@ from bijux_phylogenetics.biogeography.migration import (
 from bijux_phylogenetics.comparative.reporting.analysis_package import (
     build_comparative_report_package,
 )
+from bijux_phylogenetics.datasets.rabies_cross_host_geography.workflow.comparative_inputs import (
+    _build_comparative_trait_rows,
+)
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.datasets.rabies_host_geography import (
-    _build_comparative_trait_rows,
     load_rabies_cross_host_geography_panel_dataset,
 )
 from bijux_phylogenetics.io.artifact_schema import (
