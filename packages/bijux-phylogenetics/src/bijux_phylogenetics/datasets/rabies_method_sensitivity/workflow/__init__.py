@@ -24,11 +24,11 @@ from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError, PhylogeneticsError
 
-from .config import (
+from ..config import (
     _resolve_selected_variant_dataset,
     load_rabies_method_sensitivity_panel_dataset,
 )
-from .models import (
+from ..models import (
     RabiesMethodSensitivityCladeRow,
     RabiesMethodSensitivityConclusionRow,
     RabiesMethodSensitivityPanelDataset,
@@ -38,7 +38,7 @@ from .models import (
     RabiesMethodSensitivityVariant,
     RabiesMethodSensitivityVariantRun,
 )
-from .shared import _WORKFLOW_PREFIX
+from ..shared import _WORKFLOW_PREFIX
 
 __all__ = ["run_rabies_method_sensitivity_panel_workflow"]
 
