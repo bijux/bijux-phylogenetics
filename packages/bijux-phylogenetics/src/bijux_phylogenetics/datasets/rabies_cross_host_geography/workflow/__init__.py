@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from .comparative_inputs import _build_comparative_trait_rows
-from .execution import (
+from .conclusion_stability import (
     _build_conclusion_stability_report,
     _canonicalize_discrete_tree_set_model,
     _run_comparative_pgls_on_tree,
+)
+from .execution import (
     run_rabies_cross_host_geography_panel_workflow,
 )
 from .tree_transforms import (
