@@ -20,6 +20,8 @@ from .source_inventory import payload_workflow as payload_workflow
 from .source_inventory import recorded_input_paths as recorded_input_paths
 from .source_inventory import required_output_paths as required_output_paths
 from .source_inventory import step_manifest_paths as step_manifest_paths
+from .presentation import render_bundle_readme as render_bundle_readme
+from .presentation import write_bundle_report as write_bundle_report
 
 __all__ = [
     "WorkflowResultBundleExtraInput",
@@ -39,5 +41,7 @@ __all__ = [
     "recorded_input_paths",
     "required_output_paths",
     "step_manifest_paths",
+    "render_bundle_readme",
+    "write_bundle_report",
     "write_bundle_json",
 ]
