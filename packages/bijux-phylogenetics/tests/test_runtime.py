@@ -4000,7 +4000,7 @@ def test_cli_distance_explain_reports_limitations(capsys) -> None:
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert payload["metrics"]["limitation_count"] == 4
+    assert payload["metrics"]["limitation_count"] == 5
 
 
 def test_cli_tree_set_consensus_writes_newick(tmp_path: Path, capsys) -> None:
