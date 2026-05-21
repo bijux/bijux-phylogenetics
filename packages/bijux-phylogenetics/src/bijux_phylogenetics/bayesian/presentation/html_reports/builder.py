@@ -36,7 +36,7 @@ from bijux_phylogenetics.evidence.provenance.method_tiers import (
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.trees import compute_clade_frequency_table
 
-from .posterior_uncertainty import (
+from ..posterior_uncertainty import (
     summarize_beast_workflow_evidence,
     write_bayesian_limitations_text,
     write_bayesian_methods_summary_text,
