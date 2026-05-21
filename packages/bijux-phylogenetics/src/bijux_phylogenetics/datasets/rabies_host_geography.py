@@ -36,7 +36,9 @@ from .rabies_cross_host_geography.demo.presentation import (
 from .rabies_cross_host_geography.demo.reproducibility import (
     _write_package_reproducibility_checklist,
 )
-from .rabies_cross_host_geography.workflow import run_rabies_cross_host_geography_panel_workflow as _run_workflow
+from .rabies_cross_host_geography import (
+    run_rabies_cross_host_geography_panel_workflow as _run_workflow,
+)
 
 load_rabies_cross_host_geography_panel_dataset = _load_dataset
 export_rabies_cross_host_geography_panel_dataset = _export_dataset
