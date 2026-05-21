@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_rabies_cross_host_panel_dataset,
@@ -34,6 +36,7 @@ def test_load_rabies_cross_host_panel_dataset_exposes_packaged_surface() -> None
     assert "MG458305" in dataset.source_accessions
 
 
+@pytest.mark.slow
 def test_write_rabies_cross_host_panel_workflow_bundle_matches_packaged_expected_outputs(
     tmp_path: Path,
 ) -> None:
@@ -57,6 +60,7 @@ def test_write_rabies_cross_host_panel_workflow_bundle_matches_packaged_expected
     assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
+@pytest.mark.slow
 def test_run_rabies_cross_host_panel_demo_materializes_dataset_and_workflow(
     tmp_path: Path,
 ) -> None:
@@ -108,6 +112,7 @@ def test_public_runtime_exports_include_rabies_cross_host_panel_surface() -> Non
     )
 
 
+@pytest.mark.slow
 def test_cli_demo_rabies_cross_host_panel_json_output_reports_host_switch_review(
     tmp_path: Path, capsys
 ) -> None:

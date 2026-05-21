@@ -79,6 +79,7 @@ def test_render_tree_uncertainty_report_truncates_budgeted_sections(
     assert report.total_output_bytes >= report.html_size_bytes
 
 
+@pytest.mark.slow
 def test_render_tree_uncertainty_report_scales_to_large_tree_sets(
     tmp_path: Path,
 ) -> None:

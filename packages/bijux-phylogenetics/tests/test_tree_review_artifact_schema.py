@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.datasets.rabies_host_geography import (
     load_rabies_cross_host_geography_panel_dataset,
 )
@@ -50,6 +52,7 @@ def test_clade_table_schema_matches_live_output(tmp_path: Path) -> None:
     assert validate_artifact_schema(path, "clade_table_tsv").valid
 
 
+@pytest.mark.slow
 def test_host_switch_branch_schema_matches_live_output(tmp_path: Path) -> None:
     dataset = load_rabies_cross_host_geography_panel_dataset(DATASET_CONFIG)
     report = summarize_host_switching(
