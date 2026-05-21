@@ -106,16 +106,16 @@ from .large_alignment import (
 from .large_alignment import (
     write_large_alignment_resource_table as write_large_alignment_resource_table,
 )
-from .replay import (
+from .manifest_replay import (
     ManifestReplayComparison as ManifestReplayComparison,
 )
-from .replay import (
+from .manifest_replay import (
     ManifestReplayDrift as ManifestReplayDrift,
 )
-from .replay import (
+from .manifest_replay import (
     ManifestReplayReport as ManifestReplayReport,
 )
-from .replay import (
+from .manifest_replay import (
     replay_workflow_manifest as replay_workflow_manifest,
 )
 from .reproducibility import (

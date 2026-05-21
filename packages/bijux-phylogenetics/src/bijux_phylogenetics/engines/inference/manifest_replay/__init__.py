@@ -1,3 +1,6 @@
+from .builder import (
+    replay_workflow_manifest as replay_workflow_manifest,
+)
 from .contracts import (
     ManifestReplayComparison as ManifestReplayComparison,
 )
@@ -49,6 +52,7 @@ __all__ = [
     "engine_key_from_name",
     "payload_workflow",
     "path_map",
+    "replay_workflow_manifest",
     "replay_composite_workflow",
     "replay_engine_workflow",
     "recorded_input_paths",
