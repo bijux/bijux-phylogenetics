@@ -40,6 +40,9 @@ from .shared import (
 from .shared import (
     tree_set_support_warnings as tree_set_support_warnings,
 )
+from .single_tree_review import (
+    summarize_geographic_migration_events as summarize_geographic_migration_events,
+)
 
 __all__ = [
     "build_migration_event_rows",
@@ -53,6 +56,7 @@ __all__ = [
     "GeographicMigrationTreeSetReport",
     "GeographicMigrationTreeSetSummary",
     "stringify_optional_float",
+    "summarize_geographic_migration_events",
     "summarize_tree_set_events",
     "tree_depth",
     "tree_set_support_warnings",
