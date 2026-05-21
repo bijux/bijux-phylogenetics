@@ -18,6 +18,8 @@ install_runtime_aliases(
     local_submodules=_LOCAL_SUBMODULES,
 )
 
+from bijux_phylogenetics.comparative import ComparativeDataset as ComparativeDataset
+
 for _name in getattr(_runtime_module, "__all__", ()):
     if _name == "__version__":
         continue
@@ -29,6 +31,8 @@ except metadata.PackageNotFoundError:
     __version__ = "0.1.0"
 
 __all__ = list(getattr(_runtime_module, "__all__", ()))
+if "ComparativeDataset" not in __all__:
+    __all__.append("ComparativeDataset")
 
 
 def __getattr__(name: str) -> Any:
