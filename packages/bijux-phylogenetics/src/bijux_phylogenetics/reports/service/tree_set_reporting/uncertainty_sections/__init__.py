@@ -5,7 +5,8 @@ from pathlib import Path
 
 from bijux_phylogenetics.io.newick import dumps_newick
 
-from ...artifacts import preview_report_rows, section, truncate_report_rows
+from ...artifacts import preview_report_rows, section
+from .shared import artifact_link, preview_payload, truncate_dataclass_rows
 
 
 def build_tree_uncertainty_sections(
@@ -37,86 +38,76 @@ def build_tree_uncertainty_sections(
 ) -> tuple[list[tuple[str, object]], list[str]]:
     truncated_sections: list[str] = []
     preview_limit = 5
-    clade_frequency_rows, clade_frequency_truncated = truncate_report_rows(
-        [asdict(row) for row in clade_frequencies.clade_frequencies],
+    clade_frequency_rows, clade_frequency_truncated = truncate_dataclass_rows(
+        rows=clade_frequencies.clade_frequencies,
         limit=budget.max_report_table_rows,
         section_name="clade-frequencies",
         truncated_sections=truncated_sections,
     )
-    rf_rows, rf_truncated = truncate_report_rows(
-        [asdict(row) for row in diversity.rf_distribution],
+    rf_rows, rf_truncated = truncate_dataclass_rows(
+        rows=diversity.rf_distribution,
         limit=budget.max_report_table_rows,
         section_name="rf-distance-distribution",
         truncated_sections=truncated_sections,
     )
-    cluster_rows, cluster_truncated = truncate_report_rows(
-        [asdict(row) for row in clusters.clusters],
+    cluster_rows, cluster_truncated = truncate_dataclass_rows(
+        rows=clusters.clusters,
         limit=budget.max_report_table_rows,
         section_name="topology-clusters",
         truncated_sections=truncated_sections,
     )
-    unstable_taxa_rows, unstable_taxa_truncated = truncate_report_rows(
-        [asdict(row) for row in unstable_taxa.taxa],
+    unstable_taxa_rows, unstable_taxa_truncated = truncate_dataclass_rows(
+        rows=unstable_taxa.taxa,
         limit=budget.max_report_table_rows,
         section_name="unstable-taxa",
         truncated_sections=truncated_sections,
     )
-    unstable_clade_rows, unstable_clade_truncated = truncate_report_rows(
-        [asdict(row) for row in unstable_clades.clades],
+    unstable_clade_rows, unstable_clade_truncated = truncate_dataclass_rows(
+        rows=unstable_clades.clades,
         limit=budget.max_report_table_rows,
         section_name="unstable-clades",
         truncated_sections=truncated_sections,
     )
-    conflict_rows, conflict_truncated = truncate_report_rows(
-        []
-        if clade_conflicts is None
-        else [asdict(row) for row in clade_conflicts.conflicts],
+    conflict_rows, conflict_truncated = truncate_dataclass_rows(
+        rows=[] if clade_conflicts is None else clade_conflicts.conflicts,
         limit=budget.max_report_table_rows,
         section_name="clade-credibility-conflicts",
         truncated_sections=truncated_sections,
     )
-    robust_rows, robust_truncated = truncate_report_rows(
-        []
-        if conclusion_summary is None
-        else [asdict(row) for row in conclusion_summary.robust_clades],
+    robust_rows, robust_truncated = truncate_dataclass_rows(
+        rows=[] if conclusion_summary is None else conclusion_summary.robust_clades,
         limit=budget.max_report_table_rows,
         section_name="uncertainty-aware-conclusions.robust",
         truncated_sections=truncated_sections,
     )
-    uncertain_rows, uncertain_truncated = truncate_report_rows(
-        []
-        if conclusion_summary is None
-        else [asdict(row) for row in conclusion_summary.uncertain_clades],
+    uncertain_rows, uncertain_truncated = truncate_dataclass_rows(
+        rows=[] if conclusion_summary is None else conclusion_summary.uncertain_clades,
         limit=budget.max_report_table_rows,
         section_name="uncertainty-aware-conclusions.uncertain",
         truncated_sections=truncated_sections,
     )
-    conflicting_rows, conflicting_truncated = truncate_report_rows(
-        []
+    conflicting_rows, conflicting_truncated = truncate_dataclass_rows(
+        rows=[]
         if conclusion_summary is None
-        else [asdict(row) for row in conclusion_summary.conflicting_clades],
+        else conclusion_summary.conflicting_clades,
         limit=budget.max_report_table_rows,
         section_name="uncertainty-aware-conclusions.conflicting",
         truncated_sections=truncated_sections,
     )
-    thinning_rows, thinning_truncated = truncate_report_rows(
-        []
-        if thinning_sensitivity is None
-        else [asdict(row) for row in thinning_sensitivity.rows],
+    thinning_rows, thinning_truncated = truncate_dataclass_rows(
+        rows=[] if thinning_sensitivity is None else thinning_sensitivity.rows,
         limit=budget.max_report_table_rows,
         section_name="thinning-sensitivity",
         truncated_sections=truncated_sections,
     )
-    consensus_rows, consensus_truncated = truncate_report_rows(
-        []
-        if consensus_sensitivity is None
-        else [asdict(row) for row in consensus_sensitivity.rows],
+    consensus_rows, consensus_truncated = truncate_dataclass_rows(
+        rows=[] if consensus_sensitivity is None else consensus_sensitivity.rows,
         limit=budget.max_report_table_rows,
         section_name="consensus-threshold-sensitivity",
         truncated_sections=truncated_sections,
     )
-    benchmark_rows, benchmark_truncated = truncate_report_rows(
-        [] if benchmark is None else [asdict(row) for row in benchmark.rows],
+    benchmark_rows, benchmark_truncated = truncate_dataclass_rows(
+        rows=[] if benchmark is None else benchmark.rows,
         limit=budget.max_report_table_rows,
         section_name="tree-set-benchmark",
         truncated_sections=truncated_sections,
@@ -134,16 +125,16 @@ def build_tree_uncertainty_sections(
             {
                 "tree_count": clade_frequencies.tree_count,
                 "shared_taxa": clade_frequencies.shared_taxa,
-                "row_count": len(clade_frequencies.clade_frequencies),
-                "truncated_row_count": clade_frequency_truncated,
-                "preview_row_count": min(len(clade_frequency_rows), preview_limit),
-                "preview_rows": preview_report_rows(
-                    clade_frequency_rows, limit=preview_limit
+                **preview_payload(
+                    rows=clade_frequency_rows,
+                    row_count=len(clade_frequencies.clade_frequencies),
+                    truncated_row_count=clade_frequency_truncated,
+                    preview_limit=preview_limit,
                 ),
-                "artifact_path": (
-                    artifact_paths["clade_frequencies"]
-                    .relative_to(out_path.parent)
-                    .as_posix()
+                "artifact_path": artifact_link(
+                    artifact_paths=artifact_paths,
+                    artifact_key="clade_frequencies",
+                    out_path=out_path,
                 ),
             },
         ),
@@ -152,14 +143,16 @@ def build_tree_uncertainty_sections(
             {
                 "tree_count": diversity.tree_count,
                 "pair_count": diversity.pair_count,
-                "row_count": len(diversity.rf_distribution),
-                "truncated_row_count": rf_truncated,
-                "preview_row_count": min(len(rf_rows), preview_limit),
-                "preview_rows": preview_report_rows(rf_rows, limit=preview_limit),
-                "artifact_path": (
-                    artifact_paths["rf_distance_distribution"]
-                    .relative_to(out_path.parent)
-                    .as_posix()
+                **preview_payload(
+                    rows=rf_rows,
+                    row_count=len(diversity.rf_distribution),
+                    truncated_row_count=rf_truncated,
+                    preview_limit=preview_limit,
+                ),
+                "artifact_path": artifact_link(
+                    artifact_paths=artifact_paths,
+                    artifact_key="rf_distance_distribution",
+                    out_path=out_path,
                 ),
             },
         ),
@@ -168,14 +161,16 @@ def build_tree_uncertainty_sections(
             {
                 "tree_count": clusters.tree_count,
                 "rooted_topology_count": clusters.rooted_topology_count,
-                "row_count": len(clusters.clusters),
-                "truncated_row_count": cluster_truncated,
-                "preview_row_count": min(len(cluster_rows), preview_limit),
-                "preview_rows": preview_report_rows(cluster_rows, limit=preview_limit),
-                "artifact_path": (
-                    artifact_paths["topology_clusters"]
-                    .relative_to(out_path.parent)
-                    .as_posix()
+                **preview_payload(
+                    rows=cluster_rows,
+                    row_count=len(clusters.clusters),
+                    truncated_row_count=cluster_truncated,
+                    preview_limit=preview_limit,
+                ),
+                "artifact_path": artifact_link(
+                    artifact_paths=artifact_paths,
+                    artifact_key="topology_clusters",
+                    out_path=out_path,
                 ),
             },
         ),
@@ -183,10 +178,10 @@ def build_tree_uncertainty_sections(
             "topological-diversity",
             {
                 **asdict(diversity),
-                "artifact_path": (
-                    artifact_paths["topological_diversity"]
-                    .relative_to(out_path.parent)
-                    .as_posix()
+                "artifact_path": artifact_link(
+                    artifact_paths=artifact_paths,
+                    artifact_key="topological_diversity",
+                    out_path=out_path,
                 ),
                 "rf_distribution": (
                     f"{len(diversity.rf_distribution)} rows written to linked TSV"
@@ -198,19 +193,19 @@ def build_tree_uncertainty_sections(
             (
                 {
                     **asdict(multimodality),
-                    "artifact_path": (
-                        artifact_paths["topology_multimodality"]
-                        .relative_to(out_path.parent)
-                        .as_posix()
+                    "artifact_path": artifact_link(
+                        artifact_paths=artifact_paths,
+                        artifact_key="topology_multimodality",
+                        out_path=out_path,
                     ),
                 }
                 if multimodality is not None
                 else {
                     **scaled_report_note,
-                    "artifact_path": (
-                        artifact_paths["topology_multimodality"]
-                        .relative_to(out_path.parent)
-                        .as_posix()
+                    "artifact_path": artifact_link(
+                        artifact_paths=artifact_paths,
+                        artifact_key="topology_multimodality",
+                        out_path=out_path,
                     ),
                 }
             ),
