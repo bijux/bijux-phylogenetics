@@ -3,19 +3,14 @@ from __future__ import annotations
 from dataclasses import asdict
 from pathlib import Path
 
-from bijux_phylogenetics.core.dataset import audit_dataset_inputs
 from bijux_phylogenetics.diagnostics.validation import _load_tree
-from bijux_phylogenetics.phylo.taxa import (
-    build_taxon_audit_report,
-    build_taxon_stability_report,
-    build_taxon_workflow_loss_report,
-    load_taxon_run_source,
-)
+from bijux_phylogenetics.phylo.taxa import build_taxon_audit_report
 from bijux_phylogenetics.render.html import write_html_report
 
 from ..artifacts import report_sidecar_path, section, write_machine_manifest
 from ..ledger import build_input_ledger, serialize_input_ledger, sha256
 from ..models import TaxonReportBuildResult
+from .linked_evidence import build_taxon_linked_evidence
 
 
 def render_taxon_report(
@@ -33,73 +28,19 @@ def render_taxon_report(
     """Build a reviewer-facing taxon audit report."""
     tree = _load_tree(tree_path)
     audit = build_taxon_audit_report(tree, synonym_table_path=synonym_table_path)
-    dataset_audit = (
-        None
-        if metadata_path is None or traits_path is None
-        else audit_dataset_inputs(
-            tree_path,
-            metadata_path,
-            traits_path,
-            alignment_path=alignment_path,
-        )
+    linked_evidence = build_taxon_linked_evidence(
+        tree_path=tree_path,
+        metadata_path=metadata_path,
+        traits_path=traits_path,
+        alignment_path=alignment_path,
+        filtered_alignment_path=filtered_alignment_path,
+        inference_tree_path=inference_tree_path,
+        reported_taxa_path=reported_taxa_path,
     )
-    taxon_crosswalk = None if dataset_audit is None else dataset_audit.crosswalk
-    taxon_exclusions = None if dataset_audit is None else dataset_audit.exclusion_table
-    taxon_workflow_loss = (
-        None
-        if metadata_path is None or traits_path is None
-        else build_taxon_workflow_loss_report(
-            tree_path,
-            metadata_path,
-            traits_path,
-            alignment_path=alignment_path,
-            filtered_alignment_path=filtered_alignment_path,
-            inference_tree_path=inference_tree_path,
-            reported_taxa_path=reported_taxa_path,
-        )
-    )
-    stability_sources = [
-        load_taxon_run_source(label="tree", path=tree_path),
-        *(
-            [load_taxon_run_source(label="metadata", path=metadata_path)]
-            if metadata_path is not None
-            else []
-        ),
-        *(
-            [load_taxon_run_source(label="traits", path=traits_path)]
-            if traits_path is not None
-            else []
-        ),
-        *(
-            [load_taxon_run_source(label="alignment", path=alignment_path)]
-            if alignment_path is not None
-            else []
-        ),
-        *(
-            [
-                load_taxon_run_source(
-                    label="filtered_alignment", path=filtered_alignment_path
-                )
-            ]
-            if filtered_alignment_path is not None
-            else []
-        ),
-        *(
-            [load_taxon_run_source(label="inference_tree", path=inference_tree_path)]
-            if inference_tree_path is not None
-            else []
-        ),
-        *(
-            [load_taxon_run_source(label="reported_taxa", path=reported_taxa_path)]
-            if reported_taxa_path is not None
-            else []
-        ),
-    ]
-    taxon_stability = (
-        build_taxon_stability_report(stability_sources)
-        if len(stability_sources) >= 2
-        else None
-    )
+    taxon_crosswalk = linked_evidence.taxon_crosswalk
+    taxon_exclusions = linked_evidence.taxon_exclusions
+    taxon_workflow_loss = linked_evidence.taxon_workflow_loss
+    taxon_stability = linked_evidence.taxon_stability
     title = "Bijux Taxon Audit Report"
     reviewer_summary = [
         f"taxon audit status: {audit.status}",
