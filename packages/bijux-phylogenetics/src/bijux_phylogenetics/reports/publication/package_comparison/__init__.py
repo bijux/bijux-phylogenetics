@@ -32,6 +32,12 @@ from .inventory import (
     load_sequence_ids,
     package_artifact_rows,
 )
+from .comparison_policy import (
+    check_row,
+    config_differences,
+    finding_difference_count,
+    status,
+)
 
 _ARTIFACT_COLUMNS = [
     "section",
@@ -53,68 +59,6 @@ _CHECK_COLUMNS = [
     "left_artifact_path",
     "right_artifact_path",
 ]
-
-def _status(*, blocked: bool = False, risk: bool = False) -> str:
-    if blocked:
-        return "blocked"
-    if risk:
-        return "risk"
-    return "pass"
-
-
-def _check_row(
-    *,
-    section: str,
-    check_id: str,
-    status: str,
-    summary: str,
-    evidence: str,
-    left_artifact_path: str,
-    right_artifact_path: str,
-) -> PublicationPackageComparisonCheckRow:
-    return PublicationPackageComparisonCheckRow(
-        section=section,
-        check_id=check_id,
-        status=status,
-        summary=summary,
-        evidence=evidence,
-        left_artifact_path=left_artifact_path,
-        right_artifact_path=right_artifact_path,
-    )
-
-
-def _config_differences(
-    left_manifest: dict[str, object],
-    right_manifest: dict[str, object],
-) -> dict[str, tuple[object, object]]:
-    left_config = mapping(left_manifest, "config")
-    right_config = mapping(right_manifest, "config")
-    differences: dict[str, tuple[object, object]] = {}
-    for key in sorted(set(left_config) | set(right_config)):
-        if key in {"path", "checksum"}:
-            continue
-        if left_config.get(key) != right_config.get(key):
-            differences[key] = (left_config.get(key), right_config.get(key))
-    return differences
-
-
-def _finding_difference_count(
-    left_rows: dict[str, dict[str, str]],
-    right_rows: dict[str, dict[str, str]],
-) -> int:
-    count = 0
-    for finding_id in sorted(set(left_rows) | set(right_rows)):
-        left_row = left_rows.get(finding_id)
-        right_row = right_rows.get(finding_id)
-        if left_row is None or right_row is None:
-            count += 1
-            continue
-        if {key: value for key, value in left_row.items() if key != "finding_id"} != {
-            key: value for key, value in right_row.items() if key != "finding_id"
-        }:
-            count += 1
-    return count
-
 
 def _write_html_report(
     path: Path,
@@ -242,10 +186,10 @@ def write_publication_package_comparison_report(
         and right_report_kind == SUPPORTED_PUBLICATION_PACKAGE_KIND
     )
     check_rows.append(
-        _check_row(
+        check_row(
             section="manifest",
             check_id="supported-package-kinds",
-            status=_status(blocked=not supported),
+            status=status(blocked=not supported),
             summary="both package manifests use the governed rabies study package contract",
             evidence=(
                 f"left report_kind={left_report_kind or 'missing'}; "
@@ -257,10 +201,10 @@ def write_publication_package_comparison_report(
     )
     dataset_match = left_dataset_id == right_dataset_id
     check_rows.append(
-        _check_row(
+        check_row(
             section="manifest",
             check_id="same-study-dataset-id",
-            status=_status(blocked=not dataset_match),
+            status=status(blocked=not dataset_match),
             summary="both package versions describe the same governed study dataset",
             evidence=f"left dataset_id={left_dataset_id}; right dataset_id={right_dataset_id}",
             left_artifact_path=left_manifest_path.name,
@@ -290,10 +234,10 @@ def write_publication_package_comparison_report(
     left_only_sequences = sorted(left_sequences - right_sequences)
     right_only_sequences = sorted(right_sequences - left_sequences)
     check_rows.append(
-        _check_row(
+        check_row(
             section="inputs",
             check_id="taxa-and-accessions",
-            status=_status(
+            status=status(
                 risk=bool(
                     left_only_accessions
                     or right_only_accessions
@@ -315,22 +259,26 @@ def write_publication_package_comparison_report(
         )
     )
 
-    config_differences = _config_differences(left_manifest, right_manifest)
+    config_difference_map = config_differences(
+        left_manifest,
+        right_manifest,
+        mapping=mapping,
+    )
     left_config_path = text(mapping(left_manifest, "config").get("path"))
     right_config_path = text(mapping(right_manifest, "config").get("path"))
     check_rows.append(
-        _check_row(
+        check_row(
             section="config",
             check_id="workflow-config",
-            status=_status(risk=bool(config_differences)),
+            status=status(risk=bool(config_difference_map)),
             summary="workflow settings remain stable across study versions",
             evidence=(
                 "no config differences"
-                if not config_differences
+                if not config_difference_map
                 else " | ".join(
                     f"{key}: {left_value!r} -> {right_value!r}"
                     for key, (left_value, right_value) in sorted(
-                        config_differences.items()
+                        config_difference_map.items()
                     )
                 )
             ),
@@ -356,10 +304,10 @@ def write_publication_package_comparison_report(
                 f"sites {left_summary.alignment_length}->{right_summary.alignment_length}"
             )
     check_rows.append(
-        _check_row(
+        check_row(
             section="alignment",
             check_id="alignment-surfaces",
-            status=_status(risk=bool(alignment_differences)),
+            status=status(risk=bool(alignment_differences)),
             summary="alignment inputs and intermediate alignment artifacts remain stable across study versions",
             evidence=(
                 "no alignment differences"
@@ -389,10 +337,10 @@ def write_publication_package_comparison_report(
         or not structural.equivalent
     )
     check_rows.append(
-        _check_row(
+        check_row(
             section="tree",
             check_id="rooted-tree",
-            status=_status(risk=tree_changed),
+            status=status(risk=tree_changed),
             summary="rooted tree topology, rooting, and branch-structure remain stable across study versions",
             evidence=(
                 f"topology_equal={str(topology.topology_equal).lower()}; "
@@ -421,10 +369,10 @@ def write_publication_package_comparison_report(
                 f"{key}: {left_metrics.get(key)!r} -> {right_metrics.get(key)!r}"
             )
     check_rows.append(
-        _check_row(
+        check_row(
             section="models",
             check_id="inference-and-comparative-models",
-            status=_status(risk=bool(model_differences)),
+            status=status(risk=bool(model_differences)),
             summary="selected inference and comparative model surfaces remain stable across study versions",
             evidence=(
                 "no model differences"
@@ -455,10 +403,10 @@ def write_publication_package_comparison_report(
         )
     ]
     check_rows.append(
-        _check_row(
+        check_row(
             section="review-surfaces",
             check_id="figure-and-report-artifacts",
-            status=_status(risk=bool(figure_or_report_rows)),
+            status=status(risk=bool(figure_or_report_rows)),
             summary="reviewer-facing figures and report surfaces remain stable across study versions",
             evidence=(
                 "no figure or report differences"
@@ -481,7 +429,10 @@ def write_publication_package_comparison_report(
     )
     left_findings = load_scientific_findings(left_findings_path)
     right_findings = load_scientific_findings(right_findings_path)
-    finding_difference_count = _finding_difference_count(left_findings, right_findings)
+    scientific_finding_difference_count = finding_difference_count(
+        left_findings,
+        right_findings,
+    )
     short_answer_changed = text(left_manifest.get("short_answer")) != text(
         right_manifest.get("short_answer")
     )
@@ -495,19 +446,19 @@ def write_publication_package_comparison_report(
         if left_metrics.get(key) != right_metrics.get(key)
     ]
     check_rows.append(
-        _check_row(
+        check_row(
             section="conclusions",
             check_id="scientific-findings-and-summary",
-            status=_status(
+            status=status(
                 risk=bool(
-                    finding_difference_count
+                    scientific_finding_difference_count
                     or short_answer_changed
                     or conclusion_count_differences
                 )
             ),
             summary="biological conclusions and their reviewer-facing summaries remain stable across study versions",
             evidence=(
-                f"finding differences={finding_difference_count}; "
+                f"finding differences={scientific_finding_difference_count}; "
                 f"short_answer_changed={str(short_answer_changed).lower()}; "
                 f"conclusion count differences={','.join(conclusion_count_differences) or 'none'}"
             ),
@@ -569,14 +520,14 @@ def write_publication_package_comparison_report(
         changed_artifact_count=changed_artifact_count,
         left_only_artifact_count=left_only_artifact_count,
         right_only_artifact_count=right_only_artifact_count,
-        config_difference_count=len(config_differences),
+        config_difference_count=len(config_difference_map),
         sequence_left_only_count=len(left_only_sequences),
         sequence_right_only_count=len(right_only_sequences),
         accession_left_only_count=len(left_only_accessions),
         accession_right_only_count=len(right_only_accessions),
         alignment_difference_count=len(alignment_differences),
         figure_or_report_difference_count=len(figure_or_report_rows),
-        scientific_finding_difference_count=finding_difference_count,
+        scientific_finding_difference_count=scientific_finding_difference_count,
         overall_comparison_status=overall_comparison_status,
     )
     summary_payload = {
@@ -586,14 +537,14 @@ def write_publication_package_comparison_report(
         "changed_artifact_count": changed_artifact_count,
         "left_only_artifact_count": left_only_artifact_count,
         "right_only_artifact_count": right_only_artifact_count,
-        "config_difference_count": len(config_differences),
+        "config_difference_count": len(config_difference_map),
         "sequence_left_only_count": len(left_only_sequences),
         "sequence_right_only_count": len(right_only_sequences),
         "accession_left_only_count": len(left_only_accessions),
         "accession_right_only_count": len(right_only_accessions),
         "alignment_difference_count": len(alignment_differences),
         "figure_or_report_difference_count": len(figure_or_report_rows),
-        "scientific_finding_difference_count": finding_difference_count,
+        "scientific_finding_difference_count": scientific_finding_difference_count,
         "overall_comparison_status": overall_comparison_status,
     }
     summary_path.write_text(
