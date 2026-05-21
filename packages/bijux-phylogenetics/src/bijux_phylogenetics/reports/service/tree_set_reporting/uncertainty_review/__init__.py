@@ -31,7 +31,7 @@ from bijux_phylogenetics.trees.uncertainty import (
 )
 
 from ...models import TreeUncertaintyReportBuildResult
-from ..uncertainty_artifacts import (
+from .artifact_outputs import (
     finalize_tree_uncertainty_outputs,
     write_tree_uncertainty_artifacts,
 )

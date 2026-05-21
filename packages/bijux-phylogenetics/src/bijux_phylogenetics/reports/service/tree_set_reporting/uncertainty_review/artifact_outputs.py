@@ -12,7 +12,7 @@ from bijux_phylogenetics.trees import (
     write_unstable_clade_table,
 )
 
-from ..artifacts import write_json_artifact, write_tabular_artifact
+from ...artifacts import write_json_artifact, write_tabular_artifact
 
 
 def write_tree_uncertainty_artifacts(
