@@ -10,7 +10,8 @@ from bijux_phylogenetics.engines.common import (
     engine_active_marker_path,
     load_active_engine_run,
 )
-from .freshness import (
+
+from ..freshness import (
     RabiesMethodSensitivitySlurmOutputFreshnessRow,
     build_rabies_method_sensitivity_slurm_output_freshness_report,
 )
