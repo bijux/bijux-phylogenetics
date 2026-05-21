@@ -10,11 +10,11 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteModelBaselineComparison,
     DiscreteTransitionRateRow,
 )
-from bijux_phylogenetics.ancestral.discrete.likelihood import (
-    build_transition_rate_rows as _build_transition_rate_rows,
-)
-from bijux_phylogenetics.ancestral.discrete.likelihood import (
+from bijux_phylogenetics.ancestral.discrete.likelihood.likelihood_math import (
     tree_log_likelihood as _tree_log_likelihood,
+)
+from bijux_phylogenetics.ancestral.discrete.likelihood.rate_matrix import (
+    build_transition_rate_rows as _build_transition_rate_rows,
 )
 from bijux_phylogenetics.ancestral.discrete.policy import (
     resolve_allowed_transition_pairs as _resolve_allowed_transition_pairs,

@@ -12,7 +12,7 @@ from bijux_phylogenetics.ancestral.common import (
     stable_value,
 )
 
-from .likelihood import reconstruct_likelihood_estimates
+from .likelihood.fit_workflow import reconstruct_likelihood_estimates
 from .models import DiscreteAncestralEstimate, DiscreteAncestralReport
 from .policy import rerooting_method_compatibility, resolve_discrete_model_name
 

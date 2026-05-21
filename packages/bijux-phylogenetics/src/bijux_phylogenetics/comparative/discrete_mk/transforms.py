@@ -4,10 +4,10 @@ import math
 
 from bijux_phylogenetics.ancestral.common import AncestralDiscreteDataset
 from bijux_phylogenetics.ancestral.discrete import DiscreteOptimizerDiagnostics
-from bijux_phylogenetics.ancestral.discrete.likelihood import (
+from bijux_phylogenetics.ancestral.discrete.likelihood.fit_workflow import (
     fit_discrete_mk_model as _fit_discrete_mk_model,
 )
-from bijux_phylogenetics.ancestral.discrete.likelihood import (
+from bijux_phylogenetics.ancestral.discrete.likelihood.likelihood_math import (
     tree_log_likelihood as _tree_log_likelihood,
 )
 from bijux_phylogenetics.ancestral.discrete.policy import (
