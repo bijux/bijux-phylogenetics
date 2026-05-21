@@ -36,7 +36,7 @@ from .ornstein_uhlenbeck import (
     write_ou_trait_evolution_exclusion_table,
     write_ou_trait_evolution_summary_table,
 )
-from .regime_rates import (
+from .brownian_regime_review import (
     BrownianRegimeBranchRow,
     BrownianRegimeExclusion,
     BrownianRegimeFitSummaryReport,
