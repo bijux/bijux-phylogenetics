@@ -35,6 +35,7 @@ from .contracts import (
     AlignmentFigurePackageResult,
     AlignmentHeatmapCell,
 )
+from .heatmap_analysis import build_heatmap_cells
 
 
 def _checksum(path: Path) -> str:
@@ -47,108 +48,6 @@ def _checksum(path: Path) -> str:
 
 def _json_ready(payload: object) -> object:
     return json.loads(json.dumps(payload, default=str))
-
-
-def _site_bins(alignment_length: int, *, maximum_bins: int) -> list[tuple[int, int]]:
-    if alignment_length <= 0:
-        return []
-    if maximum_bins <= 0:
-        raise ValueError(f"maximum_bins must be positive, got {maximum_bins}")
-    if alignment_length <= maximum_bins:
-        return [(position, position) for position in range(1, alignment_length + 1)]
-    bin_width = -(-alignment_length // maximum_bins)
-    bins: list[tuple[int, int]] = []
-    start = 1
-    while start <= alignment_length:
-        end = min(start + bin_width - 1, alignment_length)
-        bins.append((start, end))
-        start = end + 1
-    return bins
-
-
-def _mean(values: list[float]) -> float:
-    if not values:
-        return 0.0
-    return round(sum(values) / len(values), 15)
-
-
-def _classify_residue(
-    residue: str,
-    *,
-    alphabet: str,
-) -> tuple[float, float, float]:
-    if residue == "-":
-        return 1.0, 0.0, 0.0
-    if residue == "?":
-        return 0.0, 1.0, 0.0
-    canonical = (
-        {"A", "C", "G", "T"}
-        if alphabet == "dna"
-        else {"A", "C", "G", "U"}
-        if alphabet == "rna"
-        else set("ACDEFGHIKLMNPQRSTVWY")
-    )
-    return (0.0, 0.0, 0.0) if residue.upper() in canonical else (0.0, 0.0, 1.0)
-
-
-def _build_heatmap_cells(
-    summary: AlignmentSummary,
-    records: list[AlignmentRecord],
-    ranking_rows: list[SequenceQualityRankingRow],
-    *,
-    maximum_bins: int,
-) -> tuple[list[AlignmentHeatmapCell], int, int]:
-    bins = _site_bins(summary.alignment_length, maximum_bins=maximum_bins)
-    records_by_id = {record.identifier: record for record in records}
-    cells: list[AlignmentHeatmapCell] = []
-    for row in ranking_rows:
-        record = records_by_id[row.identifier]
-        for start, end in bins:
-            gap_values: list[float] = []
-            missing_values: list[float] = []
-            ambiguity_values: list[float] = []
-            for position in range(start - 1, end):
-                gap_fraction, missing_fraction, ambiguity_fraction = _classify_residue(
-                    record.sequence[position],
-                    alphabet=summary.inferred_alphabet,
-                )
-                gap_values.append(gap_fraction)
-                missing_values.append(missing_fraction)
-                ambiguity_values.append(ambiguity_fraction)
-            cells.append(
-                AlignmentHeatmapCell(
-                    identifier=row.identifier,
-                    bin_start=start,
-                    bin_end=end,
-                    uncertainty_fraction=_mean(
-                        [
-                            gap_fraction + missing_fraction + ambiguity_fraction
-                            for gap_fraction, missing_fraction, ambiguity_fraction in zip(
-                                gap_values,
-                                missing_values,
-                                ambiguity_values,
-                                strict=True,
-                            )
-                        ]
-                    ),
-                    gap_fraction=_mean(gap_values),
-                    missing_fraction=_mean(missing_values),
-                    ambiguity_fraction=_mean(ambiguity_values),
-                )
-            )
-        if not bins:
-            cells.append(
-                AlignmentHeatmapCell(
-                    identifier=row.identifier,
-                    bin_start=1,
-                    bin_end=0,
-                    uncertainty_fraction=0.0,
-                    gap_fraction=0.0,
-                    missing_fraction=0.0,
-                    ambiguity_fraction=0.0,
-                )
-            )
-    return cells, len(ranking_rows), len(bins)
 
 
 def _heatmap_color(fraction: float) -> str:
@@ -849,7 +748,7 @@ def build_alignment_figure_package(
         window_size=window_size,
         step_size=step_size,
     )
-    heatmap_cells, heatmap_row_count, heatmap_bin_count = _build_heatmap_cells(
+    heatmap_cells, heatmap_row_count, heatmap_bin_count = build_heatmap_cells(
         summary,
         records,
         forensic.sequence_ranking.rows,
