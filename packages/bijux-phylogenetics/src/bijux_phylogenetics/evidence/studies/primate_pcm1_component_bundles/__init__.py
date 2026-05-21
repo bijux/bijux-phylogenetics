@@ -6,7 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from .primate_longevity_signal import STUDY_ID
+from ..primate_longevity_signal import STUDY_ID
 
 REFERENCE_SCRIPT_PATH = (
     "evidence-book/studies/primate-longevity-signal/reference/"
