@@ -3,12 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 import shutil
 
-from ..audit import (
-    audit_rabies_method_sensitivity_workflow_bundle,
-    write_rabies_method_sensitivity_reproducibility_audit_json,
-    write_rabies_method_sensitivity_reproducibility_checks_table,
-    write_rabies_method_sensitivity_variant_audit_table,
-)
 from ..models import (
     RabiesMethodSensitivityPanelWorkflowBundle,
     RabiesMethodSensitivityPanelWorkflowReport,
@@ -32,6 +26,7 @@ from .shared import (
     _format_optional_float,
     _write_tsv,
 )
+from .reproducibility_artifacts import _write_reproducibility_artifacts
 from .slurm_artifacts import _write_slurm_bundle_artifacts
 from .variant_artifacts import (
     _copy_output,
@@ -178,29 +173,7 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         },
         sha256=_sha256,
     )
-    reproducibility_report = audit_rabies_method_sensitivity_workflow_bundle(
-        output_root,
-        sequences_path=report.dataset.sequences_path,
-        metadata_path=report.dataset.metadata_path,
-    )
-    reproducibility_checks_path = (
-        write_rabies_method_sensitivity_reproducibility_checks_table(
-            output_root / "reproducibility-checks.tsv",
-            reproducibility_report,
-        )
-    )
-    reproducibility_variant_audit_path = (
-        write_rabies_method_sensitivity_variant_audit_table(
-            output_root / "reproducibility-variants.tsv",
-            reproducibility_report,
-        )
-    )
-    reproducibility_audit_path = (
-        write_rabies_method_sensitivity_reproducibility_audit_json(
-            output_root / "reproducibility-audit.json",
-            reproducibility_report,
-        )
-    )
+    reproducibility_artifacts = _write_reproducibility_artifacts(output_root, report)
     report_linked_files = (
         workflow_summary_path,
         variant_summary_path,
@@ -247,6 +220,9 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_artifacts.failure_recovery_partitions_path,
         slurm_artifacts.failure_recovery_summary_path,
         slurm_artifacts.failure_recovery_report_path,
+        reproducibility_artifacts.checks_path,
+        reproducibility_artifacts.variant_audit_path,
+        reproducibility_artifacts.audit_path,
     )
     report_linked_artifact_count = len(report_linked_files)
     report_path = _write_report(
@@ -297,12 +273,14 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "slurm_failure_recovery_partitions": slurm_artifacts.failure_recovery_partitions_path,
             "slurm_failure_recovery_summary": slurm_artifacts.failure_recovery_summary_path,
             "slurm_failure_recovery_report": slurm_artifacts.failure_recovery_report_path,
-            "reproducibility_checks": reproducibility_checks_path,
-            "reproducibility_variant_audit": reproducibility_variant_audit_path,
-            "reproducibility_audit": reproducibility_audit_path,
+            "reproducibility_checks": reproducibility_artifacts.checks_path,
+            "reproducibility_variant_audit": (
+                reproducibility_artifacts.variant_audit_path
+            ),
+            "reproducibility_audit": reproducibility_artifacts.audit_path,
         },
         report_manifest_path=report_manifest_path,
-        reproducibility_report=reproducibility_report,
+        reproducibility_report=reproducibility_artifacts.report,
         slurm_planning_report=slurm_artifacts.planning_report,
         slurm_array_strategy_report=slurm_artifacts.array_strategy_report,
         slurm_job_evidence_report=slurm_artifacts.job_evidence_report,
@@ -490,13 +468,19 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         slurm_failure_recovery_partition_count=(
             slurm_artifacts.failure_recovery_report.recovery_partition_count
         ),
-        reproducibility_checks_path=reproducibility_checks_path,
-        reproducibility_variant_audit_path=reproducibility_variant_audit_path,
-        reproducibility_audit_path=reproducibility_audit_path,
-        reproducibility_passed=reproducibility_report.all_passed,
-        reproducibility_check_count=reproducibility_report.check_count,
-        reproducibility_failed_check_count=reproducibility_report.failed_check_count,
-        reproducibility_failed_variant_count=reproducibility_report.failed_variant_count,
+        reproducibility_checks_path=reproducibility_artifacts.checks_path,
+        reproducibility_variant_audit_path=(
+            reproducibility_artifacts.variant_audit_path
+        ),
+        reproducibility_audit_path=reproducibility_artifacts.audit_path,
+        reproducibility_passed=reproducibility_artifacts.report.all_passed,
+        reproducibility_check_count=reproducibility_artifacts.report.check_count,
+        reproducibility_failed_check_count=(
+            reproducibility_artifacts.report.failed_check_count
+        ),
+        reproducibility_failed_variant_count=(
+            reproducibility_artifacts.report.failed_variant_count
+        ),
         report_path=report_path,
         report_linked_artifact_count=report_linked_artifact_count,
         report_html_size_bytes=report_html_size_bytes,
@@ -505,4 +489,3 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         task_logs_root=task_logs_root,
         variants_root=variants_root,
     )
-
