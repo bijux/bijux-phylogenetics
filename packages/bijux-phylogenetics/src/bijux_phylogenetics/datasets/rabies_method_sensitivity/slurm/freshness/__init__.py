@@ -96,7 +96,7 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
     bundle_root = bundle_root.resolve()
     resolved_config = _load_json(bundle_root / _CONFIG_FILENAME)
     if dataset is None:
-        from ..config import (
+        from ...config import (
             load_rabies_method_sensitivity_panel_dataset,
         )
 
@@ -198,7 +198,9 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
         )
 
     bundle_input_ok = all(
-        row.status == "passed" and row.surface == "input-checksum" for row in checks if row.surface == "input-checksum"
+        row.status == "passed" and row.surface == "input-checksum"
+        for row in checks
+        if row.surface == "input-checksum"
     )
     bundle_workflow_settings_ok = all(
         row.status == "passed"
@@ -206,7 +208,9 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
         if row.surface in {"workflow-setting", "variant-selection"}
     )
 
-    variant_check_rows_by_variant: dict[str, list[RabiesMethodSensitivityOutputFreshnessCheckRow]] = {}
+    variant_check_rows_by_variant: dict[
+        str, list[RabiesMethodSensitivityOutputFreshnessCheckRow]
+    ] = {}
     for variant_id in selected_variant_ids:
         current_variant = current_variants.get(variant_id)
         recorded_variant = bundle_variant_rows.get(variant_id)
@@ -256,10 +260,14 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
         variant_check_rows_by_variant.setdefault(variant_id, []).append(row)
 
     global_failed_reason_codes = tuple(
-        row.check_id for row in checks if row.scope == "workflow" and row.status == "failed"
+        row.check_id
+        for row in checks
+        if row.scope == "workflow" and row.status == "failed"
     )
     global_failed_reason_detail = "; ".join(
-        row.detail for row in checks if row.scope == "workflow" and row.status == "failed"
+        row.detail
+        for row in checks
+        if row.scope == "workflow" and row.status == "failed"
     )
     freshness_rows = tuple(
         _build_freshness_row(
@@ -278,6 +286,7 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
     failed_check_count = sum(1 for row in checks if row.status == "failed")
     fresh_job_count = sum(1 for row in freshness_rows if row.freshness_status == "fresh")
     stale_job_count = sum(1 for row in freshness_rows if row.freshness_status == "stale")
+
     return RabiesMethodSensitivitySlurmOutputFreshnessReport(
         dataset_id=dataset.dataset_id,
         workflow_prefix=dataset.workflow_prefix,
