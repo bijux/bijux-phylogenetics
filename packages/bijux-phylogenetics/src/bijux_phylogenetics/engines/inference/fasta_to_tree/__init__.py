@@ -10,17 +10,13 @@ from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
     fasta_to_tree_method_tier,
 )
-from bijux_phylogenetics.io.fasta import (
-    detect_fasta_sequence_type,
-    write_fasta_alignment,
-)
+from bijux_phylogenetics.io.fasta import write_fasta_alignment
 from bijux_phylogenetics.io.fasta.records import (
     repair_fasta_input,
     validate_fasta_input,
 )
 from bijux_phylogenetics.phylo.alignment import (
     AlignmentAlphabet,
-    AlignmentRecord,
     FastaInputValidationReport,
     FastaRepairReport,
 )
@@ -49,6 +45,9 @@ from .contracts import FastaToTreeModelRow
 from .contracts import FastaToTreeStageFingerprint
 from .contracts import FastaToTreeSupportRow
 from .contracts import FastaToTreeWorkflowReport
+from .row_builders import build_fasta_to_tree_model_rows
+from .row_builders import build_fasta_to_tree_support_rows
+from .row_builders import infer_unaligned_sequence_type
 
 __all__ = [
     "FastaToTreeModelRow",
@@ -63,61 +62,6 @@ __all__ = [
     "write_fasta_to_tree_model_table",
     "write_fasta_to_tree_support_table",
 ]
-
-
-def infer_unaligned_sequence_type(records: list[tuple[str, str]]) -> AlignmentAlphabet:
-    """Infer a stable sequence type from raw FASTA records before alignment."""
-    report = detect_fasta_sequence_type(
-        Path("<memory>"),
-        records=[
-            AlignmentRecord(identifier=identifier, sequence=sequence)
-            for identifier, sequence in records
-        ],
-    )
-    return "unknown" if report.selected_type is None else report.selected_type
-
-
-def build_fasta_to_tree_model_rows(
-    workflow_report: EngineWorkflowReport,
-    *,
-    validation: ModelSelectionValidationReport,
-    sequence_type: AlignmentAlphabet,
-    alignment_path: Path,
-    trimmed_alignment_path: Path,
-) -> list[FastaToTreeModelRow]:
-    """Convert one model-selection workflow report into a TSV-ready row set."""
-    if workflow_report.selected_model is None:
-        raise ValueError("model-selection workflow report must expose selected_model")
-    return [
-        FastaToTreeModelRow(
-            workflow=workflow_report.workflow,
-            engine_name=workflow_report.engine_name,
-            sequence_type=sequence_type,
-            selected_model=workflow_report.selected_model,
-            report_selected_model=validation.report_selected_model,
-            artifact_selected_model=validation.artifact_selected_model,
-            model_consistent=validation.valid,
-            alignment_path=alignment_path,
-            trimmed_alignment_path=trimmed_alignment_path,
-            manifest_path=workflow_report.manifest_path,
-        )
-    ]
-
-
-def build_fasta_to_tree_support_rows(
-    support_summary: BootstrapSupportSummaryReport,
-) -> list[FastaToTreeSupportRow]:
-    """Convert branch-support summaries into TSV-ready support rows."""
-    return [
-        FastaToTreeSupportRow(
-            node=node.node,
-            descendant_taxa=tuple(node.descendant_taxa),
-            support=node.support,
-            support_fraction=node.support_fraction,
-            is_backbone=node.is_backbone,
-        )
-        for node in support_summary.nodes
-    ]
 
 
 def _serialize_support_taxa(taxa: tuple[str, ...]) -> str:
