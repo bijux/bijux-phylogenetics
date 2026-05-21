@@ -9,10 +9,7 @@ from bijux_phylogenetics.comparative._math import (
     student_t_two_sided_p_value,
 )
 from bijux_phylogenetics.comparative.pgls import (
-    PGLSInputReport,
     PGLSResult,
-    PGLSTaxonExclusion,
-    inspect_pgls_inputs,
     run_pgls,
 )
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
@@ -34,6 +31,13 @@ from .contracts import (
     MultivariateResponseCoefficientRow,
     MultivariateResponseModelRow,
     MultivariateTaxonExclusion,
+)
+from .input_curation import (
+    build_response_formula as _build_response_formula,
+    build_shared_taxon_exclusions as _build_shared_taxon_exclusions,
+    inspect_response_model as _inspect_response_model,
+    raise_for_input_blockers as _raise_for_input_blockers,
+    shared_analysis_taxa as _shared_analysis_taxa,
 )
 
 
@@ -401,108 +405,6 @@ def write_multivariate_excluded_taxa_table(
             for row in report.excluded_taxa
         ],
     )
-
-
-def _build_response_formula(response: str, predictors: list[str]) -> str:
-    return f"{response} ~ {' + '.join(predictors)}"
-
-
-def _inspect_response_model(
-    tree_path: Path,
-    traits_path: Path,
-    *,
-    response: str,
-    predictors: list[str],
-    taxon_column: str,
-) -> PGLSInputReport:
-    return inspect_pgls_inputs(
-        tree_path,
-        traits_path,
-        formula=_build_response_formula(response, predictors),
-        taxon_column=taxon_column,
-    )
-
-
-def _raise_for_input_blockers(reports: list[PGLSInputReport]) -> None:
-    blockers: list[str] = []
-    for report in reports:
-        for blocker in report.blockers:
-            blockers.append(f"{report.formula.response}: {blocker}")
-    if blockers:
-        raise ComparativeMethodError("; ".join(blockers))
-
-
-def _shared_analysis_taxa(reports: list[PGLSInputReport]) -> list[str]:
-    if not reports:
-        return []
-    shared = set(reports[0].analysis_taxa)
-    for report in reports[1:]:
-        shared &= set(report.analysis_taxa)
-    return sorted(shared)
-
-
-def _build_shared_taxon_exclusions(
-    *,
-    overlap_taxa: list[str],
-    responses: list[str],
-    overlap_reports: list[PGLSInputReport],
-) -> list[MultivariateTaxonExclusion]:
-    exclusions_by_response: dict[str, dict[str, PGLSTaxonExclusion]] = {
-        report.formula.response: {
-            exclusion.taxon: exclusion
-            for exclusion in report.formula_audit.excluded_taxa
-        }
-        for report in overlap_reports
-    }
-    excluded_rows: list[MultivariateTaxonExclusion] = []
-    for taxon in overlap_taxa:
-        missing_columns: set[str] = set()
-        blocking_responses: list[str] = []
-        invalid_details: list[str] = []
-        missing_details: list[str] = []
-        other_details: list[str] = []
-        for response in responses:
-            exclusion = exclusions_by_response.get(response, {}).get(taxon)
-            if exclusion is None:
-                continue
-            blocking_responses.append(response)
-            if exclusion.reason == "missing_value":
-                parsed_missing = _parse_missing_columns(exclusion.details)
-                missing_columns.update(parsed_missing)
-                missing_details.append(exclusion.details)
-            elif exclusion.reason == "non_numeric_or_invalid_value":
-                invalid_details.append(exclusion.details)
-            else:
-                other_details.append(exclusion.details)
-        if not blocking_responses:
-            continue
-        if invalid_details:
-            reason = "invalid_required_values"
-            details = "; ".join(sorted(set(invalid_details)))
-        elif missing_columns:
-            reason = "missing_required_values"
-            details = "; ".join(sorted(set(missing_details)))
-        else:
-            reason = "excluded_from_shared_complete_case"
-            details = "; ".join(sorted(set(other_details)))
-        excluded_rows.append(
-            MultivariateTaxonExclusion(
-                taxon=taxon,
-                reason=reason,
-                missing_columns=sorted(missing_columns),
-                blocking_responses=blocking_responses,
-                details=details,
-            )
-        )
-    return excluded_rows
-
-
-def _parse_missing_columns(details: str) -> list[str]:
-    prefix = "taxon is missing required value(s): "
-    if not details.startswith(prefix):
-        return []
-    missing = details.removeprefix(prefix)
-    return [column.strip() for column in missing.split(",") if column.strip()]
 
 
 def _build_response_model_rows(
