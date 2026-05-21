@@ -31,6 +31,21 @@ from .conflict_analysis import (
 from .conflict_analysis import (
     summarize_inference_comparison_conclusions as summarize_inference_comparison_conclusions,
 )
+from .artifact_outputs import (
+    write_inference_comparison_clade_table as write_inference_comparison_clade_table,
+)
+from .artifact_outputs import (
+    write_inference_comparison_conclusion_table as write_inference_comparison_conclusion_table,
+)
+from .artifact_outputs import (
+    write_inference_comparison_summary_table as write_inference_comparison_summary_table,
+)
+from .artifact_outputs import (
+    write_inference_comparison_taxon_influence_table as write_inference_comparison_taxon_influence_table,
+)
+from .artifact_outputs import (
+    write_inference_comparison_weighted_conflict_table as write_inference_comparison_weighted_conflict_table,
+)
 
 __all__ = [
     "InferenceComparisonConclusionRow",
@@ -44,4 +59,9 @@ __all__ = [
     "build_inference_comparison_shared_clade_rows",
     "build_inference_comparison_weighted_conflict_rows",
     "summarize_inference_comparison_conclusions",
+    "write_inference_comparison_clade_table",
+    "write_inference_comparison_conclusion_table",
+    "write_inference_comparison_summary_table",
+    "write_inference_comparison_taxon_influence_table",
+    "write_inference_comparison_weighted_conflict_table",
 ]
