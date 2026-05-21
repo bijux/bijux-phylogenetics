@@ -22,9 +22,9 @@ from .io import (
 from .inventory import (
     _EXPECTED_VARIANT_FILENAMES,
     _WORKFLOW_MANIFEST_FILENAME,
-    RabiesMethodSensitivityAuditSnapshot,
     load_rabies_method_sensitivity_audit_snapshot,
 )
+from .review_context import build_rabies_method_sensitivity_audit_review_context
 
 __all__ = [
     "RabiesMethodSensitivityReproducibilityAuditReport",
@@ -184,31 +184,19 @@ def audit_rabies_method_sensitivity_workflow_bundle(
             detail=f"{key} matches the checksum recorded in the report manifest",
         )
 
-    config_variants = {
-        str(row["variant_id"]): row for row in list(resolved_config.get("variants", []))
-    }
-    manifest_task_records = {
-        str(row["variant_id"]): row for row in list(workflow_manifest.get("task_records", []))
-    }
-    parallel_summary_rows = {
-        str(row["variant_id"]): row for row in parallel_rows
-    }
-    variant_summary_rows = {
-        str(row["variant_id"]): row for row in variant_rows
-    }
-    logged_variants = {
-        path.stem: _parse_task_log(path) for path in sorted(task_logs_root.glob("*.log"))
-    }
-
-    config_variant_ids = sorted(config_variants)
-    manifest_variant_ids = sorted(manifest_task_records)
-    parallel_variant_ids = sorted(parallel_summary_rows)
-    summary_variant_ids = sorted(variant_summary_rows)
-    logged_variant_ids = sorted(logged_variants)
-    written_variant_ids = sorted(
-        path.name for path in variants_root.iterdir() if path.is_dir()
-    )
-    expected_variant_count = len(config_variant_ids)
+    review_context = build_rabies_method_sensitivity_audit_review_context(snapshot)
+    config_variants = review_context.config_variants
+    manifest_task_records = review_context.manifest_task_records
+    parallel_summary_rows = review_context.parallel_summary_rows
+    variant_summary_rows = review_context.variant_summary_rows
+    logged_variants = review_context.logged_variants
+    config_variant_ids = review_context.config_variant_ids
+    manifest_variant_ids = review_context.manifest_variant_ids
+    parallel_variant_ids = review_context.parallel_variant_ids
+    summary_variant_ids = review_context.summary_variant_ids
+    logged_variant_ids = review_context.logged_variant_ids
+    written_variant_ids = review_context.written_variant_ids
+    expected_variant_count = review_context.expected_variant_count
     add_check(
         "variant-sets:manifest",
         surface="variant-sets",
@@ -265,16 +253,10 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         observed=len(variant_rows),
         detail="variant summary row count matches the configured variant count",
     )
-    slurm_partition_ids = {
-        str(row["partition_id"]) for row in slurm_array_partition_rows
-    }
-    slurm_script_paths = {
-        str(row["script_path"]) for row in slurm_array_partition_rows
-    }
-    member_partition_ids = {
-        str(row["partition_id"]) for row in slurm_array_member_rows
-    }
-    member_variant_ids = sorted(str(row["variant_id"]) for row in slurm_array_member_rows)
+    slurm_partition_ids = review_context.slurm_partition_ids
+    slurm_script_paths = review_context.slurm_script_paths
+    member_partition_ids = review_context.member_partition_ids
+    member_variant_ids = review_context.member_variant_ids
     add_check(
         "slurm-arrays:partition-coverage",
         surface="slurm-arrays",
@@ -291,9 +273,7 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         observed=member_variant_ids,
         detail="array member rows cover the configured variant ids",
     )
-    slurm_job_evidence_variant_ids = sorted(
-        str(row["variant_id"]) for row in slurm_job_evidence_rows
-    )
+    slurm_job_evidence_variant_ids = review_context.slurm_job_evidence_variant_ids
     add_check(
         "slurm-job-evidence:job-coverage",
         surface="slurm-job-evidence",
@@ -323,12 +303,8 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         observed=job_evidence_artifact_file_count,
         detail="job-evidence summary total_artifact_file_count matches the written evidence files",
     )
-    slurm_storage_category_ids = sorted(
-        str(row["category_id"]) for row in slurm_storage_category_rows
-    )
-    slurm_storage_variant_ids = sorted(
-        str(row["variant_id"]) for row in slurm_storage_variant_rows
-    )
+    slurm_storage_category_ids = review_context.slurm_storage_category_ids
+    slurm_storage_variant_ids = review_context.slurm_storage_variant_ids
     add_check(
         "slurm-storage:category-coverage",
         surface="slurm-storage",
@@ -386,8 +362,8 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         ),
         detail="storage summary largest-variant fields match the written per-variant storage ledger",
     )
-    slurm_output_explosion_variant_ids = sorted(
-        str(row["variant_id"]) for row in slurm_output_explosion_variant_rows
+    slurm_output_explosion_variant_ids = (
+        review_context.slurm_output_explosion_variant_ids
     )
     add_check(
         "slurm-output-explosion:variant-coverage",
@@ -454,9 +430,7 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         observed=observed_overall_output_explosion_status,
         detail="output-explosion summary overall_risk_status matches the written risk counts",
     )
-    slurm_tree_retention_variant_ids = sorted(
-        {str(row["variant_id"]) for row in slurm_tree_retention_file_rows}
-    )
+    slurm_tree_retention_variant_ids = review_context.slurm_tree_retention_variant_ids
     add_check(
         "slurm-tree-retention:variant-coverage",
         surface="slurm-tree-retention",
@@ -509,9 +483,7 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         observed=observed_tree_retention_status,
         detail="tree-retention summary overall_policy_status matches the written policy counts",
     )
-    slurm_merge_variant_ids = sorted(
-        str(row["variant_id"]) for row in slurm_merge_variant_rows
-    )
+    slurm_merge_variant_ids = review_context.slurm_merge_variant_ids
     add_check(
         "slurm-merge:job-coverage",
         surface="slurm-merge",
@@ -555,8 +527,8 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         observed=slurm_merge_summary["merge_ready"],
         detail="merge summary merge_ready matches the merge-check and merged-variant totals",
     )
-    slurm_output_freshness_variant_ids = sorted(
-        str(row["variant_id"]) for row in slurm_output_freshness_rows
+    slurm_output_freshness_variant_ids = (
+        review_context.slurm_output_freshness_variant_ids
     )
     add_check(
         "slurm-freshness:job-coverage",
@@ -620,24 +592,18 @@ def audit_rabies_method_sensitivity_workflow_bundle(
             observed="present" if script_path.is_file() else "missing",
             detail="array partition table references an existing sbatch script",
         )
-    slurm_job_status_variant_ids = sorted(
-        str(row["variant_id"]) for row in slurm_job_status_rows
+    slurm_job_status_variant_ids = review_context.slurm_job_status_variant_ids
+    slurm_partition_status_ids = review_context.slurm_partition_status_ids
+    slurm_output_freshness_rows_by_variant = (
+        review_context.slurm_output_freshness_rows_by_variant
     )
-    slurm_partition_status_ids = sorted(
-        str(row["partition_id"]) for row in slurm_partition_status_rows
+    slurm_job_evidence_rows_by_variant = (
+        review_context.slurm_job_evidence_rows_by_variant
     )
-    slurm_output_freshness_rows_by_variant = {
-        str(row["variant_id"]): row for row in slurm_output_freshness_rows
-    }
-    slurm_job_evidence_rows_by_variant = {
-        str(row["variant_id"]): row for row in slurm_job_evidence_rows
-    }
-    slurm_merge_rows_by_variant = {
-        str(row["variant_id"]): row for row in slurm_merge_variant_rows
-    }
-    slurm_job_status_rows_by_variant = {
-        str(row["variant_id"]): row for row in slurm_job_status_rows
-    }
+    slurm_merge_rows_by_variant = review_context.slurm_merge_rows_by_variant
+    slurm_job_status_rows_by_variant = (
+        review_context.slurm_job_status_rows_by_variant
+    )
     add_check(
         "slurm-status:job-coverage",
         surface="slurm-status",
@@ -671,8 +637,8 @@ def audit_rabies_method_sensitivity_workflow_bundle(
         observed=len(slurm_partition_status_rows),
         detail="workflow status partition_count matches the number of partition-status rows",
     )
-    slurm_failure_recovery_variant_ids = sorted(
-        {str(row["variant_id"]) for row in slurm_failure_recovery_job_rows}
+    slurm_failure_recovery_variant_ids = (
+        review_context.slurm_failure_recovery_variant_ids
     )
     add_check(
         "slurm-failure-recovery:variant-coverage",
