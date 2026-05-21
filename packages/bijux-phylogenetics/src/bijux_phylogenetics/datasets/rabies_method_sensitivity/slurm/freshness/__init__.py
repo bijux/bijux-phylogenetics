@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-import csv
-import hashlib
 import json
 from pathlib import Path
 
@@ -12,6 +10,14 @@ from .contracts import (
     RabiesMethodSensitivitySlurmOutputFreshnessRow,
 )
 from .interfaces import DatasetLike
+from .shared import (
+    CONFIG_FILENAME,
+    SLURM_ARRAY_MEMBERS_FILENAME,
+    load_json,
+    read_tsv_rows,
+    sha256,
+    write_tsv,
+)
 
 __all__ = [
     "RabiesMethodSensitivityOutputFreshnessCheckRow",
@@ -23,9 +29,6 @@ __all__ = [
     "write_rabies_method_sensitivity_slurm_output_freshness_table",
 ]
 
-_CONFIG_FILENAME = "workflow-config.resolved.json"
-_SLURM_ARRAY_MEMBERS_FILENAME = "slurm-array-members.tsv"
-
 def build_rabies_method_sensitivity_slurm_output_freshness_report(
     bundle_root: Path,
     *,
@@ -33,14 +36,14 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
 ) -> RabiesMethodSensitivitySlurmOutputFreshnessReport:
     """Detect whether bundle outputs still match the current packaged workflow state."""
     bundle_root = bundle_root.resolve()
-    resolved_config = _load_json(bundle_root / _CONFIG_FILENAME)
+    resolved_config = load_json(bundle_root / CONFIG_FILENAME)
     if dataset is None:
         from ...config import (
             load_rabies_method_sensitivity_panel_dataset,
         )
 
         dataset = load_rabies_method_sensitivity_panel_dataset()
-    member_rows = _read_tsv_rows(bundle_root / _SLURM_ARRAY_MEMBERS_FILENAME)
+    member_rows = read_tsv_rows(bundle_root / SLURM_ARRAY_MEMBERS_FILENAME)
     selected_variant_ids = tuple(
         str(value) for value in list(resolved_config.get("selected_variant_ids", []))
     )
@@ -75,8 +78,8 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
         )
 
     input_checksums = {
-        "sequences.fasta": _sha256(dataset.sequences_path),
-        "metadata.csv": _sha256(dataset.metadata_path),
+        "sequences.fasta": sha256(dataset.sequences_path),
+        "metadata.csv": sha256(dataset.metadata_path),
     }
     recorded_input_checksums = {
         str(key): str(value)
@@ -246,7 +249,7 @@ def write_rabies_method_sensitivity_slurm_output_freshness_table(
     report: RabiesMethodSensitivitySlurmOutputFreshnessReport,
 ) -> Path:
     """Write one per-job output-freshness ledger."""
-    return _write_tsv(
+    return write_tsv(
         path,
         fieldnames=(
             "partition_id",
@@ -283,7 +286,7 @@ def write_rabies_method_sensitivity_slurm_output_freshness_checks_table(
     report: RabiesMethodSensitivitySlurmOutputFreshnessReport,
 ) -> Path:
     """Write one check-level ledger for output freshness."""
-    return _write_tsv(
+    return write_tsv(
         path,
         fieldnames=(
             "check_id",
@@ -363,39 +366,3 @@ def _build_freshness_row(
         ),
     )
 
-
-def _load_json(path: Path) -> dict[str, object]:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _read_tsv_rows(path: Path) -> list[dict[str, str]]:
-    with path.open("r", encoding="utf-8", newline="") as handle:
-        return list(csv.DictReader(handle, delimiter="\t"))
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def _write_tsv(
-    path: Path,
-    *,
-    fieldnames: tuple[str, ...],
-    rows: list[dict[str, object]],
-) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames, delimiter="\t")
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(
-                {
-                    key: "" if value is None else value
-                    for key, value in row.items()
-                }
-            )
-    return path
