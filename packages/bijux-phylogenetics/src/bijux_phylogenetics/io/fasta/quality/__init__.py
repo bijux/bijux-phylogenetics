@@ -21,14 +21,14 @@ from bijux_phylogenetics.phylo.alignment import (
     SequenceQualityRankingRow,
 )
 
-from .cleaning import (
+from ..cleaning import (
     detect_identical_duplicate_sequences,
     detect_near_duplicate_sequences,
 )
-from .coding import (
+from ..coding import (
     inspect_coding_alignment,
 )
-from .core import (
+from ..core import (
     _GAP_CHARACTERS,
     _detect_sequence_length_outlier_rows,
     _is_ambiguity_character,
@@ -38,7 +38,7 @@ from .core import (
     load_fasta_alignment,
     load_fasta_records,
 )
-from .records import (
+from ..records import (
     classify_alignment_sequences,
     detect_sequence_length_outliers,
     summarise_fasta,
