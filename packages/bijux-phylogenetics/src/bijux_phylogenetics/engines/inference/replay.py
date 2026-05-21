@@ -12,7 +12,7 @@ from bijux_phylogenetics.compare.topology import (
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 
-from ..common import build_file_checksums, load_engine_manifest, read_engine_version
+from ..common import load_engine_manifest
 from ..workflows.alignment import (
     run_alignment_trimming,
     run_codon_aware_multiple_sequence_alignment,
@@ -33,6 +33,13 @@ from .manifest_replay import (
     ManifestReplayComparison,
     ManifestReplayDrift,
     ManifestReplayReport,
+    collect_engine_version_drift,
+    collect_input_drift,
+    default_replay_out_dir,
+    engine_key_from_name,
+    payload_workflow,
+    path_map,
+    recorded_input_paths,
 )
 from .reproducibility import run_inference_reproducibility_check
 
@@ -42,157 +49,6 @@ __all__ = [
     "ManifestReplayReport",
     "replay_workflow_manifest",
 ]
-
-_ENGINE_VERSION_ARGS: dict[str, tuple[str, ...]] = {
-    "mafft": ("--version",),
-    "trimal": ("--version",),
-    "iqtree": ("--version",),
-    "fasttree": ("-help",),
-    "mrbayes": ("-v",),
-    "beast": ("-version",),
-}
-
-
-
-def _payload_workflow(payload: dict[str, Any]) -> str:
-    workflow = payload.get("workflow")
-    if workflow is None:
-        raise EngineWorkflowError(
-            "manifest replay requires a workflow identifier",
-            code="manifest_replay_missing_workflow",
-        )
-    return str(workflow)
-
-
-def _path_map(values: dict[str, Any]) -> dict[str, Path]:
-    return {str(key): Path(value) for key, value in values.items()}
-
-
-def _recorded_input_paths(payload: dict[str, Any]) -> list[Path]:
-    if "input_paths" in payload:
-        return [Path(path) for path in payload["input_paths"]]
-    return [Path(payload["input_path"])]
-
-
-def _default_replay_out_dir(manifest_path: Path) -> Path:
-    stem = manifest_path.name.removesuffix(".manifest.json")
-    return manifest_path.parent / "replay" / stem
-
-
-def _engine_key_from_name(engine_name: str) -> str:
-    normalized = engine_name.strip().lower()
-    if normalized in {"mafft", "trimal", "iqtree", "fasttree", "mrbayes", "beast"}:
-        return normalized
-    raise EngineWorkflowError(
-        f"unsupported replay engine name: {engine_name}",
-        code="manifest_replay_unknown_engine",
-        details={"engine_name": engine_name},
-    )
-
-
-def _version_drift_for_engine_manifest(
-    payload: dict[str, Any],
-    *,
-    executables: dict[str, str | Path | None],
-) -> list[ManifestReplayDrift]:
-    run_payload = dict(payload["run"])
-    version_payload = dict(run_payload["version"])
-    engine_key = _engine_key_from_name(str(payload["engine_name"]))
-    executable = executables.get(engine_key) or str(run_payload["executable"])
-    version = read_engine_version(
-        str(payload["engine_name"]),
-        executable,
-        version_args=_ENGINE_VERSION_ARGS[engine_key],
-        timeout_seconds=(
-            None
-            if run_payload.get("timeout_seconds") is None
-            else float(run_payload["timeout_seconds"])
-        ),
-    )
-    expected = str(version_payload["text"])
-    observed = version.text
-    return [
-        ManifestReplayDrift(
-            kind="engine-version",
-            label=str(payload["engine_name"]),
-            expected=expected,
-            observed=observed,
-            matched=expected == observed,
-        )
-    ]
-
-
-def _version_drift_for_large_alignment(
-    payload: dict[str, Any],
-    *,
-    executables: dict[str, str | Path | None],
-) -> list[ManifestReplayDrift]:
-    engine_key = _engine_key_from_name(str(payload["engine_name"]))
-    command = [str(item) for item in payload["command"]]
-    executable = executables.get(engine_key) or command[0]
-    version = read_engine_version(
-        str(payload["engine_name"]),
-        executable,
-        version_args=_ENGINE_VERSION_ARGS[engine_key],
-    )
-    expected = str(payload["engine_version_text"])
-    observed = version.text
-    return [
-        ManifestReplayDrift(
-            kind="engine-version",
-            label=str(payload["engine_name"]),
-            expected=expected,
-            observed=observed,
-            matched=expected == observed,
-        )
-    ]
-
-
-def _collect_engine_version_drift(
-    payload: dict[str, Any],
-    *,
-    executables: dict[str, str | Path | None],
-) -> list[ManifestReplayDrift]:
-    if "run" in payload:
-        return _version_drift_for_engine_manifest(payload, executables=executables)
-    if "step_manifests" in payload:
-        drifts: list[ManifestReplayDrift] = []
-        for step_manifest_path in _path_map(dict(payload["step_manifests"])).values():
-            drifts.extend(
-                _version_drift_for_engine_manifest(
-                    load_engine_manifest(step_manifest_path),
-                    executables=executables,
-                )
-            )
-        return drifts
-    if "engine_version_text" in payload and "command" in payload:
-        return _version_drift_for_large_alignment(payload, executables=executables)
-    raise EngineWorkflowError(
-        "manifest replay could not determine engine versions from the manifest",
-        code="manifest_replay_missing_engine_versions",
-    )
-
-
-def _collect_input_drift(payload: dict[str, Any]) -> list[ManifestReplayDrift]:
-    recorded = {
-        str(key): str(value)
-        for key, value in dict(payload.get("input_checksums", {})).items()
-    }
-    observed = build_file_checksums([Path(path) for path in recorded])
-    drifts: list[ManifestReplayDrift] = []
-    for path_text, expected in recorded.items():
-        current = observed.get(path_text)
-        drifts.append(
-            ManifestReplayDrift(
-                kind="input-checksum",
-                label=path_text,
-                expected=expected,
-                observed=current,
-                matched=current == expected,
-            )
-        )
-    return drifts
-
 
 def _copy_input_for_inplace_engine(input_path: Path, replay_out_dir: Path) -> Path:
     replay_out_dir.mkdir(parents=True, exist_ok=True)
@@ -212,14 +68,14 @@ def _replay_engine_workflow(
     replay_out_dir: Path,
     executables: dict[str, str | Path | None],
 ) -> Any:
-    workflow = _payload_workflow(payload)
+    workflow = payload_workflow(payload)
     engine_name = str(payload["engine_name"])
-    engine_key = _engine_key_from_name(engine_name)
+    engine_key = engine_key_from_name(engine_name)
     executable = executables.get(engine_key) or str(dict(payload["run"])["executable"])
     config = dict(payload.get("config", {}))
-    input_paths = _recorded_input_paths(payload)
+    input_paths = recorded_input_paths(payload)
     manifest_path = Path(payload["manifest_path"])
-    output_paths = _path_map(dict(payload["output_paths"]))
+    output_paths = path_map(dict(payload["output_paths"]))
     if workflow == "multiple-sequence-alignment":
         return run_multiple_sequence_alignment(
             input_paths[0],
@@ -441,7 +297,7 @@ def _replay_composite_workflow(
     replay_out_dir: Path,
     executables: dict[str, str | Path | None],
 ) -> Any:
-    workflow = _payload_workflow(payload)
+    workflow = payload_workflow(payload)
     config = dict(payload.get("config", {}))
     input_path = Path(payload["input_path"])
     prefix = str(payload["prefix"])
@@ -590,7 +446,7 @@ def _compare_posterior_outputs(
     payload: dict[str, Any],
     replay_report: Any,
 ) -> list[ManifestReplayComparison]:
-    output_paths = _path_map(dict(payload["output_paths"]))
+    output_paths = path_map(dict(payload["output_paths"]))
     if str(payload["engine_name"]) == "MrBayes":
         from bijux_phylogenetics.bayesian.mrbayes import (
             parse_mrbayes_consensus_tree,
@@ -706,8 +562,8 @@ def _compare_posterior_outputs(
 def _compare_outputs(
     payload: dict[str, Any], replay_report: Any
 ) -> list[ManifestReplayComparison]:
-    workflow = _payload_workflow(payload)
-    output_paths = _path_map(dict(payload["output_paths"]))
+    workflow = payload_workflow(payload)
+    output_paths = path_map(dict(payload["output_paths"]))
     if workflow in {
         "multiple-sequence-alignment",
         "codon-aware-multiple-sequence-alignment",
@@ -834,14 +690,14 @@ def replay_workflow_manifest(
     executables: dict[str, str | Path | None] | None = None,
 ) -> ManifestReplayReport:
     payload = load_engine_manifest(manifest_path)
-    workflow = _payload_workflow(payload)
+    workflow = payload_workflow(payload)
     replay_out_dir = (
-        _default_replay_out_dir(manifest_path) if out_dir is None else out_dir
+        default_replay_out_dir(manifest_path) if out_dir is None else out_dir
     )
     replay_out_dir.mkdir(parents=True, exist_ok=True)
     executable_overrides = {} if executables is None else dict(executables)
 
-    input_drift = _collect_input_drift(payload)
+    input_drift = collect_input_drift(payload)
     input_drift_detected = any(not drift.matched for drift in input_drift)
     if input_drift_detected:
         raise EngineWorkflowError(
@@ -856,7 +712,7 @@ def replay_workflow_manifest(
             },
         )
 
-    engine_version_drift = _collect_engine_version_drift(
+    engine_version_drift = collect_engine_version_drift(
         payload,
         executables=executable_overrides,
     )
