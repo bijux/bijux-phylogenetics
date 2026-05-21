@@ -9,27 +9,25 @@ from bijux_phylogenetics.ancestral.continuous import (
 )
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
-from bijux_phylogenetics.comparative.regression import (
-    summarize_phylogenetic_anova,
-)
-from bijux_phylogenetics.comparative.regression import (
-    summarize_phylogenetic_residuals,
-)
 from bijux_phylogenetics.comparative.pgls import (
     build_pgls_model_matrix,
     run_pgls,
+)
+from bijux_phylogenetics.comparative.regression import (
+    summarize_phylogenetic_anova,
+    summarize_phylogenetic_residuals,
 )
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
 )
-from bijux_phylogenetics.runtime.errors import ComparativeMethodError
-from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_phytools_comparative_fixture,
     list_shared_phytools_comparative_fixtures,
 )
+from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 
 def _read_trait_values(fixture_id: str, trait_name: str) -> list[str]:

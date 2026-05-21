@@ -9,7 +9,9 @@ from bijux_phylogenetics.reports import (
 
 
 def test_supplementary_diversification_table_surfaces_export_publicly() -> None:
-    assert reports_api.SupplementaryDiversificationRow is SupplementaryDiversificationRow
+    assert (
+        reports_api.SupplementaryDiversificationRow is SupplementaryDiversificationRow
+    )
     assert (
         reports_api.SupplementaryDiversificationTableResult
         is SupplementaryDiversificationTableResult

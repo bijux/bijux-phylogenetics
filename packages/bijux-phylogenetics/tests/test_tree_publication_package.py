@@ -55,7 +55,9 @@ def test_build_tree_figure_package_writes_publication_legend_and_caption_artifac
     assert result.legibility_audit.legible is True
     assert len(result.legend_entries) >= 5
     assert legend_lines[0] == "surface\tlabel\tswatch\tdetail"
-    assert any(line.startswith("branch-length\tscale bar\t") for line in legend_lines[1:])
+    assert any(
+        line.startswith("branch-length\tscale bar\t") for line in legend_lines[1:]
+    )
     assert any("validated support labels" in line for line in legend_lines[1:])
     assert "## Draft Caption" in caption
     assert "## Figure Specifications" in caption

@@ -26,9 +26,9 @@ def geiger_optimizer_triage_reference_payloads() -> dict[str, dict[str, object]]
     same_parameters_payload["summary"]["log_likelihood"] = -8.197817992659278
     same_parameters_payload["summary"]["aic"] = 22.395635985318556
     same_parameters_payload["summary"]["aicc"] = 23.595635985318555
-    same_parameters_payload["summary"]["optimizer_result"]["best_log_likelihood"] = (
-        -8.197817992659278
-    )
+    same_parameters_payload["summary"]["optimizer_result"][
+        "best_log_likelihood"
+    ] = -8.197817992659278
     same_parameters_payload["rows"][2]["value"] = -8.197817992659278
     same_parameters_payload["rows"][3]["value"] = 22.395635985318556
     same_parameters_payload["rows"][4]["value"] = 23.595635985318555
@@ -44,9 +44,9 @@ def geiger_optimizer_triage_reference_payloads() -> dict[str, dict[str, object]]
     boundary_payload["summary"]["log_likelihood"] = -12.697817992659278
     boundary_payload["summary"]["aic"] = 31.395635985318556
     boundary_payload["summary"]["aicc"] = 32.595635985318555
-    boundary_payload["summary"]["optimizer_result"]["best_log_likelihood"] = (
-        -12.697817992659278
-    )
+    boundary_payload["summary"]["optimizer_result"][
+        "best_log_likelihood"
+    ] = -12.697817992659278
     boundary_payload["rows"][2]["value"] = -12.697817992659278
     boundary_payload["rows"][3]["value"] = 31.395635985318556
     boundary_payload["rows"][4]["value"] = 32.595635985318555

@@ -5,7 +5,9 @@ from bijux_phylogenetics.validation.reference import (
 )
 
 
-def test_validate_tree_set_uncertainty_reference_fixtures_governs_publication_audits() -> None:
+def test_validate_tree_set_uncertainty_reference_fixtures_governs_publication_audits() -> (
+    None
+):
     report = validate_tree_set_uncertainty_reference_fixtures()
 
     assert report.goal_id == 231

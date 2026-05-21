@@ -5,11 +5,10 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.rabies_method_sensitivity as rabies_method_sensitivity
-import bijux_phylogenetics.datasets.rabies_method_sensitivity.bundle as rabies_method_sensitivity_bundle
 from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     run_rabies_method_sensitivity_panel_workflow,
 )
+import bijux_phylogenetics.datasets.rabies_method_sensitivity.bundle as rabies_method_sensitivity_bundle
 from bijux_phylogenetics.datasets.rabies_method_sensitivity.slurm import (
     build_rabies_method_sensitivity_slurm_planning_report,
 )

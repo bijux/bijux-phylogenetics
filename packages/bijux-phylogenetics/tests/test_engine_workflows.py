@@ -33,12 +33,12 @@ from bijux_phylogenetics.engines import (
 from bijux_phylogenetics.engines.inference import (
     run_inference_reproducibility_check,
 )
+from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.runtime.errors import (
     EngineUnavailableError,
     EngineWorkflowError,
     InvalidAlignmentError,
 )
-from bijux_phylogenetics.io.fasta import load_fasta_alignment
 
 pytestmark = pytest.mark.engine_contract
 
@@ -1180,7 +1180,9 @@ def test_run_model_selection_rejects_or_cleans_incomplete_outputs(
     assert rejected.value.details["failure_reason"] == "engine_required_output_missing"
     assert rejected.value.details["missing_output_names"] == ["iqtree_log"]
     assert rejected.value.details["available_actions"] == ["resume", "clean"]
-    assert rejected.value.details["observed_outputs"] == marker_payload["observed_outputs"]
+    assert (
+        rejected.value.details["observed_outputs"] == marker_payload["observed_outputs"]
+    )
 
     report = run_model_selection(
         input_path,

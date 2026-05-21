@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import bijux_phylogenetics.datasets.rabies_geography as rabies_geography_api
 from bijux_phylogenetics.command_line import main
+import bijux_phylogenetics.datasets.rabies_geography as rabies_geography_api
 from bijux_phylogenetics.datasets.rabies_geography import (
     export_rabies_geographic_transition_panel_dataset,
     load_rabies_geographic_transition_panel_dataset,

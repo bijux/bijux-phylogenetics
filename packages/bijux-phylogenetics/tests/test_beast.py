@@ -39,7 +39,10 @@ from bijux_phylogenetics.bayesian.presentation.html_reports import (
     render_bayesian_diagnostics_report,
     render_calibration_audit_report,
 )
-from bijux_phylogenetics.runtime.errors import EngineUnavailableError, EngineWorkflowError
+from bijux_phylogenetics.runtime.errors import (
+    EngineUnavailableError,
+    EngineWorkflowError,
+)
 from bijux_phylogenetics.trees import compute_consensus_tree
 
 pytestmark = pytest.mark.engine_contract
@@ -672,10 +675,11 @@ def test_run_beast_posterior_inference_rejects_or_cleans_malformed_outputs(
         )
     assert rejected.value.code == "engine_incomplete_outputs_present"
     assert (
-        rejected.value.details["failure_reason"]
-        == "beast_log_invalid_parameter_value"
+        rejected.value.details["failure_reason"] == "beast_log_invalid_parameter_value"
     )
-    assert rejected.value.details["observed_outputs"] == marker_payload["observed_outputs"]
+    assert (
+        rejected.value.details["observed_outputs"] == marker_payload["observed_outputs"]
+    )
 
     report = run_beast_posterior_inference(
         xml_path,

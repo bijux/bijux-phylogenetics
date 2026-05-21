@@ -14,11 +14,11 @@ from bijux_phylogenetics.comparative.discrete_mk import (
     fit_discrete_mk_model_from_dataset,
     write_discrete_mk_summary_table,
 )
-from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_geiger_discrete_fixture,
     get_shared_phytools_comparative_fixture,
 )
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.simulation import (
     simulate_discrete_traits,
     write_discrete_trait_table,
@@ -588,11 +588,7 @@ def test_compare_discrete_mk_model_ranking_marks_infinite_aicc_rows_noncomparabl
     traits_path = tmp_path / "small-traits.tsv"
     tree_path.write_text("((a:1,b:1):1,(c:1,d:1):1);\n", encoding="utf-8")
     traits_path.write_text(
-        "taxon\tstate\n"
-        "a\tnorth\n"
-        "b\tsouth\n"
-        "c\twest\n"
-        "d\tnorth\n",
+        "taxon\tstate\na\tnorth\nb\tsouth\nc\twest\nd\tnorth\n",
         encoding="utf-8",
     )
 
@@ -763,9 +759,7 @@ def test_fit_discrete_mk_model_matches_governed_geiger_er_delta_boundary_surface
     )
 
 
-def test_fit_discrete_mk_model_reports_delta_time_sensitive_review_surface() -> (
-    None
-):
+def test_fit_discrete_mk_model_reports_delta_time_sensitive_review_surface() -> None:
     fixture_entry = get_shared_geiger_discrete_fixture(
         "geiger_discrete_delta_time_sensitive_twenty_four_taxa"
     )
@@ -851,9 +845,7 @@ def test_fit_discrete_mk_model_matches_governed_geiger_sym_delta_missing_surface
     )
 
 
-def test_fit_discrete_mk_model_matches_governed_geiger_er_early_burst_surface() -> (
-    None
-):
+def test_fit_discrete_mk_model_matches_governed_geiger_er_early_burst_surface() -> None:
     fixture_entry = get_shared_geiger_discrete_fixture(
         "geiger_discrete_early_burst_early_change_twenty_four_taxa"
     )
@@ -975,7 +967,9 @@ def test_fit_discrete_mk_model_reports_governed_geiger_early_burst_missing_surfa
     )
 
 
-def test_fit_discrete_mk_model_matches_governed_geiger_sym_three_state_surface() -> None:
+def test_fit_discrete_mk_model_matches_governed_geiger_sym_three_state_surface() -> (
+    None
+):
     fixture_entry = get_shared_geiger_discrete_fixture(
         "geiger_discrete_sym_three_state_twenty_four_taxa"
     )
@@ -1096,8 +1090,9 @@ def test_fit_discrete_mk_model_matches_governed_geiger_ard_missing_surface() -> 
 
 
 @pytest.mark.slow
-def test_fit_discrete_mk_model_marks_governed_geiger_ard_four_state_review_surface(
-) -> None:
+def test_fit_discrete_mk_model_marks_governed_geiger_ard_four_state_review_surface() -> (
+    None
+):
     fixture_entry = get_shared_geiger_discrete_fixture(
         "geiger_discrete_ard_four_state_twenty_four_taxa"
     )

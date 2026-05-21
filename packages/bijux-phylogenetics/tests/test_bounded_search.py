@@ -4,8 +4,8 @@ import math
 
 from bijux_phylogenetics.comparative.search import (
     BoundedSearchControls,
-    run_bounded_maximization,
     run_bounded_golden_section_maximization,
+    run_bounded_maximization,
 )
 
 
@@ -24,7 +24,9 @@ def test_run_bounded_maximization_records_user_start_and_multi_start_count() -> 
 
     assert math.isclose(result.parameter_value, 1.75, rel_tol=0.0, abs_tol=5e-3)
     assert result.payload == result.parameter_value
-    assert result.diagnostics.starting_parameter_policy == "user-provided-first-evaluation"
+    assert (
+        result.diagnostics.starting_parameter_policy == "user-provided-first-evaluation"
+    )
     assert math.isclose(
         result.diagnostics.starting_parameter_value,
         3.0,

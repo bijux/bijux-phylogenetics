@@ -26,7 +26,10 @@ from bijux_phylogenetics.comparative import (
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
-from bijux_phylogenetics.runtime.errors import DiversificationAnalysisError, UnrootedTreeError
+from bijux_phylogenetics.runtime.errors import (
+    DiversificationAnalysisError,
+    UnrootedTreeError,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -229,7 +232,9 @@ def test_summarize_geiger_birth_death_exclusion_reports_reference_contract_gap()
         "crown",
         "epsilon",
     ]
-    assert report.owned_surface == "heuristic-yule-and-birth-death-diversification-summary"
+    assert (
+        report.owned_surface == "heuristic-yule-and-birth-death-diversification-summary"
+    )
     assert report.validation.ultrametric is True
     assert report.sampling_report is not None
     assert "simulation-oriented surface" in report.exclusion_reason

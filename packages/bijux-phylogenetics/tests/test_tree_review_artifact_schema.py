@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.trees import extract_tree_clades, write_clade_table
 from bijux_phylogenetics.datasets.rabies_host_geography import (
     load_rabies_cross_host_geography_panel_dataset,
 )
@@ -15,6 +14,7 @@ from bijux_phylogenetics.io.artifact_schema import (
     validate_clade_table_schema,
     validate_host_switch_branch_table_schema,
 )
+from bijux_phylogenetics.trees import extract_tree_clades, write_clade_table
 
 DATASET_CONFIG = (
     Path(__file__).parent.parent

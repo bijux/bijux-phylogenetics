@@ -84,4 +84,6 @@ def test_build_time_tree_figure_package_blocks_non_ultrametric_tree_sets(
 
     assert result.audit.publication_ready is False
     assert result.audit.ultrametric is False
-    assert any("not ultrametric" in limitation for limitation in result.audit.limitations)
+    assert any(
+        "not ultrametric" in limitation for limitation in result.audit.limitations
+    )

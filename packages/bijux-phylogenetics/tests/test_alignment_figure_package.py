@@ -65,7 +65,9 @@ def test_build_alignment_figure_package_writes_publication_bundle(
     )
     assert len(manifest["reviewer_audit_checklist"]["items"]) == 5
     assert checklist_rows[0] == "section\tstatus\tsummary\tevidence\tartifact_paths"
-    assert any(line.startswith("publication_readiness\t") for line in checklist_rows[1:])
+    assert any(
+        line.startswith("publication_readiness\t") for line in checklist_rows[1:]
+    )
     assert reproducibility["report_kind"] == "alignment_quality_figure_package"
     assert reproducibility["settings"]["maximum_site_bins"] == 120
 

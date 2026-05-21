@@ -5,10 +5,6 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.ancestral.continuous import (
-    reconstruct_continuous_ancestral_states,
-)
-from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.ancestral.comparison import (
     compare_continuous_ancestral_models,
     compare_continuous_ancestral_trees,
@@ -16,6 +12,10 @@ from bijux_phylogenetics.ancestral.comparison import (
     compare_discrete_ancestral_reconstructions,
     compare_discrete_ancestral_trees,
 )
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+)
+from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.ancestral.presentation.report_rendering import (
     render_ancestral_state_report,
     render_ancestral_state_tree,

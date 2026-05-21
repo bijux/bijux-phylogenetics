@@ -25,12 +25,12 @@ from bijux_phylogenetics.parity.geiger.optimizer_triage import (
 from bijux_phylogenetics.parity.geiger.parameterization_registry import (
     GeigerParameterizationRegistryRow,
 )
+from bijux_phylogenetics.parity.geiger.registry import list_geiger_parity_cases
 from bijux_phylogenetics.parity.geiger.runner import (
     GeigerParityObservation,
     GeigerParityReport,
     GeigerParitySummaryRow,
 )
-from bijux_phylogenetics.parity.geiger.registry import list_geiger_parity_cases
 
 
 def test_build_generated_geiger_parity_report_aggregates_live_and_artifact_evidence(
@@ -308,8 +308,7 @@ def test_build_generated_geiger_parity_report_aggregates_live_and_artifact_evide
         for row in report.simulation_recovery_rows
     )
     assert any(
-        row.benchmark_id == "real_dataset_macroevolution"
-        and row.parity_row_count == 10
+        row.benchmark_id == "real_dataset_macroevolution" and row.parity_row_count == 10
         for row in report.benchmark_rows
     )
     assert any(

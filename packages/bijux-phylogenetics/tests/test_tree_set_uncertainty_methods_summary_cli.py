@@ -12,9 +12,7 @@ def fixture(name: str) -> Path:
     return FIXTURES / name
 
 
-def test_cli_tree_set_methods_summary_writes_metrics(
-    tmp_path: Path, capsys
-) -> None:
+def test_cli_tree_set_methods_summary_writes_metrics(tmp_path: Path, capsys) -> None:
     output_path = tmp_path / "tree-set-uncertainty-methods-summary.md"
 
     exit_code = main(
@@ -37,4 +35,3 @@ def test_cli_tree_set_methods_summary_writes_metrics(
     assert payload["metrics"]["unstable_taxon_count"] == 4
     assert payload["metrics"]["multimodal"] is True
     assert output_path.exists()
-

@@ -1,18 +1,18 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import json
 import os
-from dataclasses import replace
 from pathlib import Path
 
+from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
+    load_rabies_method_sensitivity_panel_dataset,
+)
 from bijux_phylogenetics.datasets.rabies_method_sensitivity.slurm.status import (
     build_rabies_method_sensitivity_slurm_status_report,
     write_rabies_method_sensitivity_slurm_job_status_table,
     write_rabies_method_sensitivity_slurm_partition_status_table,
     write_rabies_method_sensitivity_slurm_status_json,
-)
-from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
-    load_rabies_method_sensitivity_panel_dataset,
 )
 from bijux_phylogenetics.engines.common import (
     EngineActiveRunRecord,
@@ -457,9 +457,11 @@ def test_write_rabies_method_sensitivity_slurm_status_artifacts(tmp_path: Path) 
         tmp_path / "slurm-job-status.tsv",
         report,
     )
-    partition_status_path = write_rabies_method_sensitivity_slurm_partition_status_table(
-        tmp_path / "slurm-partition-status.tsv",
-        report,
+    partition_status_path = (
+        write_rabies_method_sensitivity_slurm_partition_status_table(
+            tmp_path / "slurm-partition-status.tsv",
+            report,
+        )
     )
     workflow_status_path = write_rabies_method_sensitivity_slurm_status_json(
         tmp_path / "slurm-workflow-status.json",
@@ -471,7 +473,9 @@ def test_write_rabies_method_sensitivity_slurm_status_artifacts(tmp_path: Path) 
     assert "overall_status" in partition_status_path.read_text(encoding="utf-8")
     payload = json.loads(workflow_status_path.read_text(encoding="utf-8"))
     assert payload["bundle_root"] == "."
-    assert payload["execution_record_path"] == "rabies-method-sensitivity-panel.run.json"
+    assert (
+        payload["execution_record_path"] == "rabies-method-sensitivity-panel.run.json"
+    )
     assert payload["completed_job_count"] == 1
     assert payload["fresh_output_job_count"] == 1
     assert payload["jobs"][0]["status"] == "completed"

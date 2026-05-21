@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
+from bijux_phylogenetics.datasets.shared_fixtures import (
+    get_shared_dna_alignment_fixture,
+    list_shared_dna_alignment_fixtures,
+)
 from bijux_phylogenetics.io.fasta import (
     inspect_coding_alignment,
     load_dna_bin_alignment,
@@ -12,10 +15,7 @@ from bijux_phylogenetics.io.fasta import (
     summarise_fasta,
     translate_coding_alignment,
 )
-from bijux_phylogenetics.datasets.shared_fixtures import (
-    get_shared_dna_alignment_fixture,
-    list_shared_dna_alignment_fixtures,
-)
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 
 def test_shared_dna_alignment_fixture_catalog_covers_required_goal_cases() -> None:

@@ -116,14 +116,20 @@ def test_phylogenetic_anova_writers_emit_review_ledgers(tmp_path: Path) -> None:
         .splitlines()[0]
         .startswith("response\tgroup\ttaxon_column")
     )
-    assert groups_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "group\ttaxon_count\ttaxa\tmean"
+    assert (
+        groups_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("group\ttaxon_count\ttaxa\tmean")
     )
-    assert pairwise_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "left_group\tright_group\tleft_taxon_count"
+    assert (
+        pairwise_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("left_group\tright_group\tleft_taxon_count")
     )
-    assert simulation_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "simulation_index\tf_statistic\tat_or_above_observed"
+    assert (
+        simulation_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("simulation_index\tf_statistic\tat_or_above_observed")
     )
     assert excluded_out.read_text(encoding="utf-8").splitlines() == [
         "taxon\treason\tdetails"

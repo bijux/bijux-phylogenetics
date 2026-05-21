@@ -37,7 +37,10 @@ def test_write_alignment_filtering_methods_summary_text_reports_profile_and_rete
     assert "- removed sites: `4` (missingness-threshold=4)" in result.text
     assert "- removed sequence identities: `D` (missingness-threshold)" in result.text
     assert "- retained alignment length: `8` of `12`" in result.text
-    assert "group retention `region=island`: original `1`, retained `0`, removed `1`, removed fraction `1`" in result.text
+    assert (
+        "group retention `region=island`: original `1`, retained `0`, removed `1`, removed fraction `1`"
+        in result.text
+    )
     assert (
         "cleaning removed most taxa from one or more metadata or trait groups"
         in result.text

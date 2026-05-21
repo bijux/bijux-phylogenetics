@@ -5,11 +5,11 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.comparative.signal import (
+    compute_phylogenetic_signal_test,
     summarize_phylogenetic_signal,
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,
 )
-from bijux_phylogenetics.comparative.signal import compute_phylogenetic_signal_test
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

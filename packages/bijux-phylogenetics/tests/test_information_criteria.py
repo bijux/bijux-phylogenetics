@@ -3,11 +3,11 @@ from __future__ import annotations
 import math
 
 from bijux_phylogenetics.comparative.model_selection import (
+    ComparativeModelComparisonRow,
     compute_aic,
     compute_aicc,
     rank_model_comparison_rows,
 )
-from bijux_phylogenetics.comparative.model_selection import ComparativeModelComparisonRow
 
 
 def test_compute_aicc_returns_infinity_when_correction_is_undefined() -> None:

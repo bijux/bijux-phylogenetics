@@ -21,8 +21,8 @@ from bijux_phylogenetics.ancestral.discrete import (
 )
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_trait_table_fixture,
+    get_shared_tree_fixture,
 )
-from bijux_phylogenetics.datasets.shared_fixtures import get_shared_tree_fixture
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

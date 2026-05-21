@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.primate_comparative as mammals_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_primate_comparative_dataset,
@@ -14,6 +13,7 @@ from bijux_phylogenetics.datasets import (
     run_primate_comparative_workflow,
     write_primate_comparative_workflow_bundle,
 )
+import bijux_phylogenetics.datasets.primate_comparative as mammals_api
 
 from .support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
@@ -101,14 +101,15 @@ def test_export_primate_comparative_dataset_copies_expected_outputs(
 
 
 def test_public_runtime_exports_include_primate_comparative_dataset_surface() -> None:
-    assert mammals_api.load_primate_comparative_dataset is load_primate_comparative_dataset
+    assert (
+        mammals_api.load_primate_comparative_dataset is load_primate_comparative_dataset
+    )
     assert (
         mammals_api.export_primate_comparative_dataset
         is export_primate_comparative_dataset
     )
     assert (
-        mammals_api.run_primate_comparative_workflow
-        is run_primate_comparative_workflow
+        mammals_api.run_primate_comparative_workflow is run_primate_comparative_workflow
     )
     assert (
         mammals_api.write_primate_comparative_workflow_bundle

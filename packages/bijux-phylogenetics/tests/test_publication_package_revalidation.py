@@ -82,8 +82,7 @@ def test_publication_package_revalidation_blocks_on_checksum_drift(
         for row in result.artifact_rows
     )
     assert any(
-        row.check_id == "inventory-listed-artifacts-match"
-        and row.status == "blocked"
+        row.check_id == "inventory-listed-artifacts-match" and row.status == "blocked"
         for row in result.check_rows
     )
 

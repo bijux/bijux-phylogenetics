@@ -11,9 +11,7 @@ def tree_fixture(name: str) -> Path:
     return Path(__file__).parent / "fixtures" / "trees" / name
 
 
-def test_cli_report_reviewer_audit_checklist_writes_tsv(
-    tmp_path: Path, capsys
-) -> None:
+def test_cli_report_reviewer_audit_checklist_writes_tsv(tmp_path: Path, capsys) -> None:
     package_dir = tmp_path / "tree-report-package"
     package_result = build_tree_report_package(
         tree_fixture("example_tree_support_left.nwk"),

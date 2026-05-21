@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-GEIGER_FITCONTINUOUS_BROWNIAN_REFERENCE_PAYLOADS: dict[
-    str, dict[str, object]
-] = {
+GEIGER_FITCONTINUOUS_BROWNIAN_REFERENCE_PAYLOADS: dict[str, dict[str, object]] = {
     "fitcontinuous-bm-example-tree": {
         "summary": {
             "aic": 16.08304146763404,

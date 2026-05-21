@@ -24,8 +24,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_build_continuous_ancestral_methods_summary_text_reports_model_and_uncertainty(
-) -> None:
+def test_build_continuous_ancestral_methods_summary_text_reports_model_and_uncertainty() -> (
+    None
+):
     reconstruction = reconstruct_continuous_ancestral_states(
         fixture("example_tree.nwk"),
         fixture("example_traits_comparative.tsv"),
@@ -70,5 +71,7 @@ def test_write_discrete_ancestral_methods_summary_text_writes_markdown(
     assert "Ancestral Reconstruction Methods Summary" in result.text
     assert "- discrete model: `equal-rates`" in result.text
     assert "- root prior mode: `equal`" in result.text
-    assert "- node uncertainty is reported as marginal state probabilities" in result.text
+    assert (
+        "- node uncertainty is reported as marginal state probabilities" in result.text
+    )
     assert output_path.read_text(encoding="utf-8") == result.text

@@ -109,4 +109,7 @@ def test_benchmark_large_dataset_stress_suite_heavy_tier_meets_large_input_thres
 
 
 def test_public_runtime_exports_stress_suite_surface() -> None:
-    assert benchmark_api.benchmark_large_dataset_stress_suite is benchmark_large_dataset_stress_suite
+    assert (
+        benchmark_api.benchmark_large_dataset_stress_suite
+        is benchmark_large_dataset_stress_suite
+    )

@@ -5,7 +5,9 @@ from bijux_phylogenetics.validation.reference import (
 )
 
 
-def test_validate_biogeography_figure_reference_fixtures_governs_publication_audits() -> None:
+def test_validate_biogeography_figure_reference_fixtures_governs_publication_audits() -> (
+    None
+):
     report = validate_biogeography_figure_reference_fixtures()
 
     assert report.goal_id == 230
@@ -18,9 +20,7 @@ def test_validate_biogeography_figure_reference_fixtures_governs_publication_aud
         is True
     )
     assert (
-        observed["missing_centroid_blocks_publication"].observed[
-            "publication_ready"
-        ]
+        observed["missing_centroid_blocks_publication"].observed["publication_ready"]
         is False
     )
     assert (

@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.known_answer_reference as known_answer_reference_api
 from bijux_phylogenetics.command_line import main
+import bijux_phylogenetics.datasets.known_answer_reference as known_answer_reference_api
 from bijux_phylogenetics.datasets.known_answer_reference import (
     export_known_answer_reference_dataset,
     load_known_answer_reference_dataset,

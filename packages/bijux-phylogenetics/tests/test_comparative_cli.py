@@ -370,7 +370,11 @@ def test_comparative_discrete_mk_cli_reports_lambda_transform_metrics(
             "comparative",
             "discrete-mk",
             str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
-            str(fixture("example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv")),
+            str(
+                fixture(
+                    "example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv"
+                )
+            ),
             "--trait",
             "er_binary_transform_weak_signal",
             "--taxon-column",
@@ -400,7 +404,11 @@ def test_comparative_discrete_mk_cli_reports_kappa_transform_metrics(
             "comparative",
             "discrete-mk",
             str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
-            str(fixture("example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv")),
+            str(
+                fixture(
+                    "example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv"
+                )
+            ),
             "--trait",
             "er_binary_truth",
             "--taxon-column",
@@ -435,7 +443,11 @@ def test_comparative_discrete_mk_cli_reports_delta_transform_metrics(
             "comparative",
             "discrete-mk",
             str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
-            str(fixture("example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv")),
+            str(
+                fixture(
+                    "example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv"
+                )
+            ),
             "--trait",
             "er_binary_delta_time_sensitive",
             "--taxon-column",
@@ -465,7 +477,11 @@ def test_comparative_discrete_mk_cli_reports_early_burst_transform_metrics(
             "comparative",
             "discrete-mk",
             str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
-            str(fixture("example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv")),
+            str(
+                fixture(
+                    "example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv"
+                )
+            ),
             "--trait",
             "er_binary_delta_time_sensitive",
             "--taxon-column",
@@ -1425,14 +1441,20 @@ def test_comparative_phylogenetic_anova_cli_writes_review_ledgers(
         .splitlines()[0]
         .startswith("response\tgroup\ttaxon_column")
     )
-    assert groups_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "group\ttaxon_count\ttaxa\tmean"
+    assert (
+        groups_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("group\ttaxon_count\ttaxa\tmean")
     )
-    assert pairwise_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "left_group\tright_group\tleft_taxon_count"
+    assert (
+        pairwise_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("left_group\tright_group\tleft_taxon_count")
     )
-    assert simulations_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "simulation_index\tf_statistic\tat_or_above_observed"
+    assert (
+        simulations_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("simulation_index\tf_statistic\tat_or_above_observed")
     )
     assert excluded_out.read_text(encoding="utf-8").splitlines() == [
         "taxon\treason\tdetails",

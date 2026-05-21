@@ -12,8 +12,8 @@ from bijux_phylogenetics.benchmark._fixtures import (
     interleaved_taxa,
     write_named_balanced_tree,
 )
-from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.command_line import main
+from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.io.newick import write_newick
 
 

@@ -4,12 +4,12 @@ import json
 
 import pytest
 
-import bijux_phylogenetics.command_line as command_line_api
 from bijux_phylogenetics.benchmark.model_fitting import (
     LargeTreeModelFittingBenchmarkReport,
     LargeTreeModelFittingObservation,
     LargeTreeModelFittingThreshold,
 )
+import bijux_phylogenetics.command_line as command_line_api
 from bijux_phylogenetics.command_line import main
 
 

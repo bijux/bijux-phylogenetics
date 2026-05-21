@@ -3,11 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from bijux_phylogenetics.comparative.reporting import build_comparative_method_report
 from bijux_phylogenetics.comparative.reporting.analysis_package import (
     build_comparative_report_package,
     summarize_comparative_interpretation,
 )
-from bijux_phylogenetics.comparative.reporting import build_comparative_method_report
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

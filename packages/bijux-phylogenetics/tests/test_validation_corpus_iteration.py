@@ -4,17 +4,17 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.validation as validation_api
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_site_scaling,
     benchmark_tree_set_consensus,
 )
+import bijux_phylogenetics.validation as validation_api
 from bijux_phylogenetics.validation import (
     build_broken_benchmark_corpus,
     build_clean_benchmark_corpus,
     build_large_alignment_scaling_benchmark_dashboard,
-    build_large_tree_set_scaling_benchmark_dashboard,
     build_large_tree_scaling_benchmark_dashboard,
+    build_large_tree_set_scaling_benchmark_dashboard,
     build_memory_benchmark_dashboard,
     build_messy_benchmark_corpus,
     build_method_accuracy_dashboard,
@@ -193,11 +193,14 @@ def test_build_workflow_practical_limit_dashboard_tracks_goal_224() -> None:
     assert any(
         entry.workflow == "posterior-tree-set-consensus" for entry in report.entries
     )
-    assert max(
-        entry.tested_taxon_limit
-        for entry in report.entries
-        if entry.tested_taxon_limit is not None
-    ) == 256
+    assert (
+        max(
+            entry.tested_taxon_limit
+            for entry in report.entries
+            if entry.tested_taxon_limit is not None
+        )
+        == 256
+    )
 
 
 @pytest.mark.slow

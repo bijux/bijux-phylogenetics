@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.discrete_evolution import (
     StochasticMapBranchHistory,
     StochasticMapCollectionReport,
@@ -46,10 +45,11 @@ from bijux_phylogenetics.comparative.discrete_evolution import (
     write_stochastic_map_transition_count_matrix,
     write_transition_summary_table,
 )
-from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
+from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_phytools_comparative_fixture,
 )
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

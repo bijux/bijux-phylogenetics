@@ -8,7 +8,6 @@ import pytest
 
 from bijux_phylogenetics.command_line import main
 import bijux_phylogenetics.datasets.rabies_method_sensitivity as rabies_method_sensitivity
-import bijux_phylogenetics.datasets.rabies_method_sensitivity.workflow as rabies_method_sensitivity_workflow
 from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     export_rabies_method_sensitivity_panel_dataset,
     load_rabies_method_sensitivity_panel_dataset,
@@ -16,6 +15,7 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     run_rabies_method_sensitivity_panel_workflow,
     write_rabies_method_sensitivity_panel_workflow_bundle,
 )
+import bijux_phylogenetics.datasets.rabies_method_sensitivity.workflow as rabies_method_sensitivity_workflow
 
 from .support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
@@ -478,18 +478,18 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     assert payload["data"]["workflow_bundle"]["slurm_storage_report_path"] == str(
         output / "workflow" / "slurm-storage-report.html"
     )
-    assert payload["data"]["workflow_bundle"]["slurm_output_explosion_summary_path"] == str(
-        output / "workflow" / "slurm-output-explosion-report.json"
-    )
-    assert payload["data"]["workflow_bundle"]["slurm_output_explosion_report_path"] == str(
-        output / "workflow" / "slurm-output-explosion-report.html"
-    )
-    assert payload["data"]["workflow_bundle"]["slurm_tree_retention_summary_path"] == str(
-        output / "workflow" / "slurm-tree-retention-policy.json"
-    )
-    assert payload["data"]["workflow_bundle"]["slurm_tree_retention_report_path"] == str(
-        output / "workflow" / "slurm-tree-retention-policy.html"
-    )
+    assert payload["data"]["workflow_bundle"][
+        "slurm_output_explosion_summary_path"
+    ] == str(output / "workflow" / "slurm-output-explosion-report.json")
+    assert payload["data"]["workflow_bundle"][
+        "slurm_output_explosion_report_path"
+    ] == str(output / "workflow" / "slurm-output-explosion-report.html")
+    assert payload["data"]["workflow_bundle"][
+        "slurm_tree_retention_summary_path"
+    ] == str(output / "workflow" / "slurm-tree-retention-policy.json")
+    assert payload["data"]["workflow_bundle"][
+        "slurm_tree_retention_report_path"
+    ] == str(output / "workflow" / "slurm-tree-retention-policy.html")
     assert payload["data"]["workflow_bundle"]["slurm_merge_summary_path"] == str(
         output / "workflow" / "slurm-merge-report.json"
     )
@@ -508,12 +508,12 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     assert payload["data"]["workflow_bundle"]["slurm_workflow_status_path"] == str(
         output / "workflow" / "slurm-workflow-status.json"
     )
-    assert payload["data"]["workflow_bundle"]["slurm_failure_recovery_summary_path"] == str(
-        output / "workflow" / "slurm-failure-recovery-report.json"
-    )
-    assert payload["data"]["workflow_bundle"]["slurm_failure_recovery_report_path"] == str(
-        output / "workflow" / "slurm-failure-recovery-report.html"
-    )
+    assert payload["data"]["workflow_bundle"][
+        "slurm_failure_recovery_summary_path"
+    ] == str(output / "workflow" / "slurm-failure-recovery-report.json")
+    assert payload["data"]["workflow_bundle"][
+        "slurm_failure_recovery_report_path"
+    ] == str(output / "workflow" / "slurm-failure-recovery-report.html")
     assert payload["data"]["workflow_bundle"]["reproducibility_checks_path"] == str(
         output / "workflow" / "reproducibility-checks.tsv"
     )

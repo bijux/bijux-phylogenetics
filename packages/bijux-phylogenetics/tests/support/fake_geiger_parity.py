@@ -398,8 +398,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-"""
-        .replace("__GEIGER_AVAILABLE__", "True" if geiger_available else "False")
+""".replace("__GEIGER_AVAILABLE__", "True" if geiger_available else "False")
         .replace("__SUMMARY_OVERRIDES__", summary_payload)
         .replace("__REFERENCE_PAYLOADS__", reference_payload_repr)
     )

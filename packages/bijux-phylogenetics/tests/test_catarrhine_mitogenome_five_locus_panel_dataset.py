@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.phylogenomics as phylogenomics_api
 from bijux_phylogenetics.command_line import main
+import bijux_phylogenetics.datasets.phylogenomics as phylogenomics_api
 from bijux_phylogenetics.datasets.phylogenomics import (
     export_catarrhine_mitogenome_five_locus_panel_dataset,
     load_catarrhine_mitogenome_five_locus_panel_dataset,

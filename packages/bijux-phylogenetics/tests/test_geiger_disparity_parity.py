@@ -13,8 +13,9 @@ from tests.support.geiger_disparity_reference import (
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
-def test_summarize_continuous_clade_disparity_matches_governed_geiger_univariate_reference(
-) -> None:
+def test_summarize_continuous_clade_disparity_matches_governed_geiger_univariate_reference() -> (
+    None
+):
     report = summarize_continuous_clade_disparity(
         FIXTURES / "trees" / "example_tree.nwk",
         FIXTURES / "metadata" / "example_traits_comparative.tsv",
@@ -22,8 +23,12 @@ def test_summarize_continuous_clade_disparity_matches_governed_geiger_univariate
     )
     reference = GEIGER_DISPARITY_REFERENCE_PAYLOADS["example_tree_response_univariate"]
 
-    assert [row.ape_node_id for row in report.clade_rows] == reference["ape_node_id_order"]
-    assert [row.descendant_taxa for row in report.clade_rows] == reference["descendant_taxa"]
+    assert [row.ape_node_id for row in report.clade_rows] == reference[
+        "ape_node_id_order"
+    ]
+    assert [row.descendant_taxa for row in report.clade_rows] == reference[
+        "descendant_taxa"
+    ]
     for observed, expected in zip(
         [row.disparity for row in report.clade_rows],
         reference["clade_disparity"],
@@ -32,8 +37,9 @@ def test_summarize_continuous_clade_disparity_matches_governed_geiger_univariate
         assert math.isclose(observed, expected, rel_tol=1e-12, abs_tol=1e-12)
 
 
-def test_summarize_continuous_clade_disparity_matches_governed_geiger_multivariate_reference(
-) -> None:
+def test_summarize_continuous_clade_disparity_matches_governed_geiger_multivariate_reference() -> (
+    None
+):
     report = summarize_continuous_clade_disparity(
         FIXTURES / "trees" / "example_tree.nwk",
         FIXTURES / "metadata" / "example_traits_comparative.tsv",
@@ -43,8 +49,12 @@ def test_summarize_continuous_clade_disparity_matches_governed_geiger_multivaria
         "example_tree_response_predictor_one_multivariate"
     ]
 
-    assert [row.ape_node_id for row in report.clade_rows] == reference["ape_node_id_order"]
-    assert [row.descendant_taxa for row in report.clade_rows] == reference["descendant_taxa"]
+    assert [row.ape_node_id for row in report.clade_rows] == reference[
+        "ape_node_id_order"
+    ]
+    assert [row.descendant_taxa for row in report.clade_rows] == reference[
+        "descendant_taxa"
+    ]
     for observed, expected in zip(
         [row.disparity for row in report.clade_rows],
         reference["clade_disparity"],

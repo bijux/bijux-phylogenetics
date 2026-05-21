@@ -5,11 +5,13 @@ from typing import Any
 
 import pytest
 
+from bijux_phylogenetics.io.fasta import write_fasta_alignment
 import bijux_phylogenetics.phylo.alignment.concatenation as concatenation_api
-from bijux_phylogenetics.phylo.alignment.concatenation import concatenate_locus_alignments
+from bijux_phylogenetics.phylo.alignment.concatenation import (
+    concatenate_locus_alignments,
+)
 from bijux_phylogenetics.phylo.alignment.partitions import write_locus_partitions
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
-from bijux_phylogenetics.io.fasta import write_fasta_alignment
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -141,4 +143,6 @@ def test_concatenate_locus_alignments_rejects_duplicate_taxa_within_one_locus(
 
 
 def test_package_root_exports_concatenation_workflow() -> None:
-    assert concatenation_api.concatenate_locus_alignments is concatenate_locus_alignments
+    assert (
+        concatenation_api.concatenate_locus_alignments is concatenate_locus_alignments
+    )

@@ -34,8 +34,7 @@ def test_benchmark_large_tree_set_scaling_reports_all_review_workflows() -> None
         "uncertainty-summaries",
     }
     assert all(
-        workflow.scaling_axis == "posterior_samples"
-        for workflow in report.workflows
+        workflow.scaling_axis == "posterior_samples" for workflow in report.workflows
     )
     for workflow in report.workflows:
         assert [row.tree_count for row in workflow.observations] == [8, 12]

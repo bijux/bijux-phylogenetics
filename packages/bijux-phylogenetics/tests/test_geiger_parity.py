@@ -10,14 +10,12 @@ from bijux_phylogenetics.parity import (
     write_geiger_boundary_warning_table,
     write_geiger_likelihood_policy_table,
     write_geiger_model_confidence_table,
-    write_geiger_parity_observation_table,
     write_geiger_optimizer_triage_table,
-    write_geiger_parity_summary_table,
     write_geiger_parameterization_registry_table,
+    write_geiger_parity_observation_table,
+    write_geiger_parity_summary_table,
 )
-from tests.support.geiger_optimizer_triage_reference import (
-    geiger_optimizer_triage_reference_payloads,
-)
+from tests.support.fake_geiger_parity import fake_geiger_rscript
 from tests.support.geiger_fitcontinuous_brownian_reference import (
     GEIGER_FITCONTINUOUS_BROWNIAN_REFERENCE_PAYLOADS,
 )
@@ -42,14 +40,8 @@ from tests.support.geiger_fitcontinuous_ou_reference import (
 from tests.support.geiger_fitcontinuous_white_reference import (
     GEIGER_FITCONTINUOUS_WHITE_REFERENCE_PAYLOADS,
 )
-from tests.support.geiger_fitdiscrete_er_reference import (
-    GEIGER_FITDISCRETE_ER_REFERENCE_PAYLOADS,
-)
-from tests.support.geiger_fitdiscrete_lambda_reference import (
-    GEIGER_FITDISCRETE_LAMBDA_REFERENCE_PAYLOADS,
-)
-from tests.support.geiger_fitdiscrete_kappa_reference import (
-    GEIGER_FITDISCRETE_KAPPA_REFERENCE_PAYLOADS,
+from tests.support.geiger_fitdiscrete_ard_reference import (
+    GEIGER_FITDISCRETE_ARD_REFERENCE_PAYLOADS,
 )
 from tests.support.geiger_fitdiscrete_delta_reference import (
     GEIGER_FITDISCRETE_DELTA_REFERENCE_PAYLOADS,
@@ -57,13 +49,21 @@ from tests.support.geiger_fitdiscrete_delta_reference import (
 from tests.support.geiger_fitdiscrete_early_burst_reference import (
     GEIGER_FITDISCRETE_EARLY_BURST_REFERENCE_PAYLOADS,
 )
-from tests.support.geiger_fitdiscrete_ard_reference import (
-    GEIGER_FITDISCRETE_ARD_REFERENCE_PAYLOADS,
+from tests.support.geiger_fitdiscrete_er_reference import (
+    GEIGER_FITDISCRETE_ER_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitdiscrete_kappa_reference import (
+    GEIGER_FITDISCRETE_KAPPA_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitdiscrete_lambda_reference import (
+    GEIGER_FITDISCRETE_LAMBDA_REFERENCE_PAYLOADS,
 )
 from tests.support.geiger_fitdiscrete_sym_reference import (
     GEIGER_FITDISCRETE_SYM_REFERENCE_PAYLOADS,
 )
-from tests.support.fake_geiger_parity import fake_geiger_rscript
+from tests.support.geiger_optimizer_triage_reference import (
+    geiger_optimizer_triage_reference_payloads,
+)
 
 
 def test_list_geiger_parity_cases_returns_governed_registry() -> None:
@@ -128,73 +128,50 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
     assert cases[20].function_name == "geiger::fitContinuous(model='EB')"
     assert cases[22].function_name == "geiger::fitContinuous(model comparison)"
     assert cases[26].function_name == "geiger::fitDiscrete(model='ER')"
-    assert cases[29].function_name == "geiger::fitDiscrete(model='ER', transform='lambda')"
-    assert cases[32].function_name == "geiger::fitDiscrete(model='ER', transform='kappa')"
-    assert cases[34].function_name == "geiger::fitDiscrete(model='SYM', transform='kappa')"
-    assert cases[35].function_name == "geiger::fitDiscrete(model='ER', transform='delta')"
-    assert cases[36].function_name == "geiger::fitDiscrete(model='SYM', transform='delta')"
+    assert (
+        cases[29].function_name == "geiger::fitDiscrete(model='ER', transform='lambda')"
+    )
+    assert (
+        cases[32].function_name == "geiger::fitDiscrete(model='ER', transform='kappa')"
+    )
+    assert (
+        cases[34].function_name == "geiger::fitDiscrete(model='SYM', transform='kappa')"
+    )
+    assert (
+        cases[35].function_name == "geiger::fitDiscrete(model='ER', transform='delta')"
+    )
+    assert (
+        cases[36].function_name == "geiger::fitDiscrete(model='SYM', transform='delta')"
+    )
     assert cases[38].function_name == "geiger::fitDiscrete(model='ER', transform='EB')"
     assert cases[42].function_name == "geiger::fitDiscrete(model='SYM')"
     assert cases[45].function_name == "geiger::fitDiscrete(model='ARD')"
     assert cases[1].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
     assert cases[2].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
-    assert (
-        cases[3].fixture_id
-        == "geiger_continuous_brownian_signal_twenty_four_taxa"
-    )
+    assert cases[3].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
     assert cases[4].fixture_id == "geiger_continuous_white_noise_twenty_four_taxa"
-    assert (
-        cases[5].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
-    )
-    assert (
-        cases[6].fixture_id
-        == "geiger_continuous_brownian_signal_twenty_four_taxa"
-    )
+    assert cases[5].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
+    assert cases[6].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
     assert cases[7].fixture_id == "geiger_continuous_white_noise_twenty_four_taxa"
-    assert (
-        cases[8].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
-    )
-    assert (
-        cases[9].fixture_id
-        == "geiger_continuous_brownian_signal_twenty_four_taxa"
-    )
-    assert (
-        cases[10].fixture_id
-        == "geiger_continuous_brownian_signal_twenty_four_taxa"
-    )
+    assert cases[8].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
+    assert cases[9].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
+    assert cases[10].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
     assert cases[11].fixture_id == "geiger_continuous_white_noise_twenty_four_taxa"
-    assert (
-        cases[12].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
-    )
-    assert (
-        cases[16].fixture_id
-        == "geiger_continuous_ou_known_truth_twenty_four_taxa"
-    )
-    assert (
-        cases[17].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
-    )
+    assert cases[12].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
+    assert cases[16].fixture_id == "geiger_continuous_ou_known_truth_twenty_four_taxa"
+    assert cases[17].fixture_id == "geiger_continuous_missing_values_twenty_four_taxa"
     assert (
         cases[18].fixture_id
         == "geiger_continuous_nonultrametric_control_twenty_four_taxa"
     )
-    assert (
-        cases[19].fixture_id
-        == "geiger_continuous_ou_known_truth_twenty_four_taxa"
-    )
+    assert cases[19].fixture_id == "geiger_continuous_ou_known_truth_twenty_four_taxa"
     assert (
         cases[20].fixture_id
         == "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
     )
-    assert (
-        cases[21].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
-    )
-    assert (
-        cases[22].fixture_id
-        == "geiger_continuous_brownian_signal_twenty_four_taxa"
-    )
-    assert (
-        cases[23].fixture_id == "geiger_continuous_ou_known_truth_twenty_four_taxa"
-    )
+    assert cases[21].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
+    assert cases[22].fixture_id == "geiger_continuous_brownian_signal_twenty_four_taxa"
+    assert cases[23].fixture_id == "geiger_continuous_ou_known_truth_twenty_four_taxa"
     assert (
         cases[24].fixture_id
         == "geiger_continuous_early_burst_known_truth_twenty_four_taxa"
@@ -208,16 +185,20 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
         cases[28].fixture_id == "geiger_discrete_mismatch_four_state_twenty_four_taxa"
     )
     assert cases[29].fixture_id == "geiger_discrete_er_binary_twenty_four_taxa"
-    assert cases[30].fixture_id == "geiger_discrete_transform_weak_signal_twenty_four_taxa"
+    assert (
+        cases[30].fixture_id == "geiger_discrete_transform_weak_signal_twenty_four_taxa"
+    )
     assert (
         cases[31].fixture_id == "geiger_discrete_lambda_missing_binary_twenty_four_taxa"
     )
-    assert cases[32].fixture_id == "geiger_discrete_kappa_branch_sensitive_twenty_four_taxa"
     assert (
-        cases[33].fixture_id == "geiger_discrete_kappa_weak_signal_twenty_four_taxa"
+        cases[32].fixture_id
+        == "geiger_discrete_kappa_branch_sensitive_twenty_four_taxa"
     )
+    assert cases[33].fixture_id == "geiger_discrete_kappa_weak_signal_twenty_four_taxa"
     assert (
-        cases[34].fixture_id == "geiger_discrete_kappa_missing_three_state_twenty_four_taxa"
+        cases[34].fixture_id
+        == "geiger_discrete_kappa_missing_three_state_twenty_four_taxa"
     )
     assert (
         cases[35].fixture_id
@@ -244,15 +225,15 @@ def test_list_geiger_parity_cases_returns_governed_registry() -> None:
         == "geiger_discrete_early_burst_missing_binary_twenty_four_taxa"
     )
     assert cases[42].fixture_id == "geiger_discrete_sym_three_state_twenty_four_taxa"
-    assert (
-        cases[43].fixture_id == "geiger_discrete_sym_four_state_twenty_four_taxa"
-    )
+    assert cases[43].fixture_id == "geiger_discrete_sym_four_state_twenty_four_taxa"
     assert (
         cases[44].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
     )
     assert cases[45].fixture_id == "geiger_discrete_ard_binary_twenty_four_taxa"
     assert cases[46].fixture_id == "geiger_discrete_ard_four_state_twenty_four_taxa"
-    assert cases[47].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
+    assert (
+        cases[47].fixture_id == "geiger_discrete_missing_three_state_twenty_four_taxa"
+    )
     assert cases[2].comparison_fields[:7] == (
         "taxon_count",
         "trait_name",
@@ -465,7 +446,10 @@ def test_run_geiger_parity_cases_governs_ou_reference_payloads(
         if item.case_id == "fitcontinuous-ou-missing-values-review"
     )
     assert missing_values.reference_summary is not None
-    assert missing_values.reference_summary["aicc"] > missing_values.reference_summary["aic"]
+    assert (
+        missing_values.reference_summary["aicc"]
+        > missing_values.reference_summary["aic"]
+    )
     assert missing_values.reference_summary["missing_value_taxa"] == ["Phy10"]
     assert missing_values.bijux_summary is not None
     assert missing_values.bijux_summary["identifiability_warning_kinds"] == [
@@ -511,10 +495,7 @@ def test_run_geiger_parity_cases_governs_ou_reference_payloads(
     assert bounded.bijux_summary is not None
     assert bounded.bijux_summary["optimizer_result"]["coarse_grid_point_count"] == 61
     assert bounded.bijux_summary["optimizer_result"]["fine_grid_point_count"] == 41
-    assert (
-        bounded.bijux_summary["optimizer_result"]["starting_parameter_value"]
-        == 0.45
-    )
+    assert bounded.bijux_summary["optimizer_result"]["starting_parameter_value"] == 0.45
 
 
 def test_run_geiger_parity_cases_governs_lambda_reference_payloads(
@@ -602,10 +583,7 @@ def test_run_geiger_parity_cases_governs_lambda_reference_payloads(
         bounded.bijux_summary["optimizer_result"]["starting_parameter_policy"]
         == "user-provided-first-evaluation"
     )
-    assert (
-        bounded.bijux_summary["optimizer_result"]["starting_parameter_value"]
-        == 0.35
-    )
+    assert bounded.bijux_summary["optimizer_result"]["starting_parameter_value"] == 0.35
 
 
 def test_run_geiger_parity_cases_governs_white_reference_payloads(
@@ -693,9 +671,7 @@ def test_run_geiger_parity_cases_governs_kappa_reference_payloads(
     assert strong.reference_summary is not None
     assert strong.reference_summary["parameter_value"] > 1.0
     assert strong.bijux_summary is not None
-    assert strong.bijux_summary["identifiability_warning_kinds"] == [
-        "flat_likelihood"
-    ]
+    assert strong.bijux_summary["identifiability_warning_kinds"] == ["flat_likelihood"]
     weak = next(
         item
         for item in report.observations
@@ -750,9 +726,7 @@ def test_run_geiger_parity_cases_governs_delta_reference_payloads(
     assert strong.reference_summary is not None
     assert 1.0 < strong.reference_summary["parameter_value"] < 2.0
     assert strong.bijux_summary is not None
-    assert strong.bijux_summary["identifiability_warning_kinds"] == [
-        "flat_likelihood"
-    ]
+    assert strong.bijux_summary["identifiability_warning_kinds"] == ["flat_likelihood"]
     weak = next(
         item
         for item in report.observations
@@ -1368,9 +1342,9 @@ def test_run_geiger_parity_cases_persists_failure_artifacts_for_mismatches(
     assert (artifact_root / "case.json").is_file()
     assert (artifact_root / "reference-summary.json").is_file()
     assert (artifact_root / "bijux-summary.json").is_file()
-    assert (
-        artifact_root / "mismatch-reason.txt"
-    ).read_text(encoding="utf-8") == "summary_field_mismatch:root_state"
+    assert (artifact_root / "mismatch-reason.txt").read_text(
+        encoding="utf-8"
+    ) == "summary_field_mismatch:root_state"
     stored_summary = json.loads(
         (artifact_root / "reference-summary.json").read_text(encoding="utf-8")
     )
@@ -1645,9 +1619,7 @@ def test_run_geiger_parity_cases_builds_model_confidence_rows(
         failure_root=tmp_path / "geiger-parity-failures",
     )
 
-    rows_by_model = {
-        row.candidate_model: row for row in report.model_confidence_rows
-    }
+    rows_by_model = {row.candidate_model: row for row in report.model_confidence_rows}
     brownian_row = rows_by_model["brownian"]
     assert brownian_row.reference_best_model == "brownian"
     assert brownian_row.bijux_best_model == "brownian"
@@ -1781,9 +1753,7 @@ def test_write_geiger_parity_tables_writes_summary_and_observations(
 
     summary_rows = summary_path.read_text(encoding="utf-8").splitlines()
     assert summary_rows[0].startswith("function_name\tcase_count")
-    assert any(
-        "geiger::fitContinuous(model='OU')" in row for row in summary_rows[1:]
-    )
+    assert any("geiger::fitContinuous(model='OU')" in row for row in summary_rows[1:])
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
     assert len(rows) == 41

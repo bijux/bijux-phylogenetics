@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from bijux_phylogenetics.io.fasta import load_fasta_alignment, write_fasta_alignment
 from bijux_phylogenetics.phylo.alignment.occupancy import (
     build_locus_occupancy_report,
     build_locus_occupancy_report_from_records,
@@ -12,7 +13,6 @@ from bijux_phylogenetics.phylo.alignment.occupancy import (
     write_locus_partitions,
 )
 from bijux_phylogenetics.runtime.errors import InvalidPartitionError
-from bijux_phylogenetics.io.fasta import load_fasta_alignment, write_fasta_alignment
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

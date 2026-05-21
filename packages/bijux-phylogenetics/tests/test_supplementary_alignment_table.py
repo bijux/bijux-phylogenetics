@@ -35,7 +35,9 @@ def test_write_supplementary_alignment_diagnostics_table_tracks_filtering_status
     result = write_supplementary_alignment_diagnostics_table(
         output_path,
         alignment_path=fixture("example_taxon_workflow_alignment.fasta"),
-        filtered_alignment_path=fixture("example_taxon_workflow_filtered_alignment.fasta"),
+        filtered_alignment_path=fixture(
+            "example_taxon_workflow_filtered_alignment.fasta"
+        ),
     )
 
     assert result.output_path == output_path

@@ -20,7 +20,9 @@ def fixture(name: str) -> Path:
 
 
 def test_load_taxon_table_normalizes_trailing_missing_cells_to_empty_strings() -> None:
-    table = load_taxon_table(fixture("example_traits_phylogenetic_residuals_missing.tsv"))
+    table = load_taxon_table(
+        fixture("example_traits_phylogenetic_residuals_missing.tsv")
+    )
 
     brain_mass_by_taxon = {
         row[table.taxon_column]: row["brain_mass"] for row in table.rows

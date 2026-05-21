@@ -20,8 +20,7 @@ def test_tree_report_package_surfaces_export_publicly() -> None:
     assert reports_api.build_tree_report_package is build_tree_report_package
     assert reports_api.summarize_tree_support is summarize_tree_support
     assert (
-        reports_api.summarize_tree_branch_statistics
-        is summarize_tree_branch_statistics
+        reports_api.summarize_tree_branch_statistics is summarize_tree_branch_statistics
     )
     assert reports_api.write_tree_support_table is write_tree_support_table
     assert (

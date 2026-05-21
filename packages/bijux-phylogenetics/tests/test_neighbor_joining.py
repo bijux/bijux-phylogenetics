@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.distance import build_tree_from_imported_distance_matrix
-from bijux_phylogenetics.runtime.errors import InvalidDistanceMatrixError
-from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_distance_matrix_fixture,
 )
+from bijux_phylogenetics.distance import build_tree_from_imported_distance_matrix
+from bijux_phylogenetics.io.newick import dumps_newick
+from bijux_phylogenetics.runtime.errors import InvalidDistanceMatrixError
 
 
 def _write_distance_matrix(path: Path, rows: list[str]) -> Path:

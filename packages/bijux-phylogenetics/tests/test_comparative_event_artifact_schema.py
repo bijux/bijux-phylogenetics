@@ -13,10 +13,10 @@ from bijux_phylogenetics.comparative.reporting.analysis_package import (
 from bijux_phylogenetics.datasets.rabies_cross_host_geography.workflow.comparative_inputs import (
     _build_comparative_trait_rows,
 )
-from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.datasets.rabies_host_geography import (
     load_rabies_cross_host_geography_panel_dataset,
 )
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.io.artifact_schema import (
     validate_artifact_schema,
     validate_comparative_report_manifest_schema,
@@ -93,9 +93,8 @@ def test_comparative_summary_and_manifest_schemas_match_live_output(
     ).valid
     manifest = json.loads(package.manifest_path.read_text(encoding="utf-8"))
     assert package.methods_summary_path.exists()
-    assert (
-        manifest["outputs"]["methods_summary_path"]
-        == str(package.methods_summary_path)
+    assert manifest["outputs"]["methods_summary_path"] == str(
+        package.methods_summary_path
     )
 
 

@@ -9,8 +9,8 @@ from bijux_phylogenetics.bayesian.presentation.posterior_uncertainty import (
     build_posterior_uncertainty_figure_package,
 )
 from bijux_phylogenetics.command_line import main
-from bijux_phylogenetics.runtime.errors import WorkflowBudgetError
 from bijux_phylogenetics.reports.service import render_tree_uncertainty_report
+from bijux_phylogenetics.runtime.errors import WorkflowBudgetError
 from bijux_phylogenetics.trees import write_bootstrap_tree_set_artifacts
 
 FIXTURES = Path(__file__).parent / "fixtures" / "trees"

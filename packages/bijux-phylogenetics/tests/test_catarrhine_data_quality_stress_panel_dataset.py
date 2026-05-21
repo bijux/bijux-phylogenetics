@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import bijux_phylogenetics.datasets.data_quality_stress as data_quality_stress_api
 from bijux_phylogenetics.command_line import main
+import bijux_phylogenetics.datasets.data_quality_stress as data_quality_stress_api
 from bijux_phylogenetics.datasets.data_quality_stress import (
     export_catarrhine_data_quality_stress_panel_dataset,
     load_catarrhine_data_quality_stress_panel_dataset,

@@ -9,7 +9,9 @@ from bijux_phylogenetics.reports import (
 
 
 def test_supplementary_tree_table_surfaces_export_publicly() -> None:
-    assert reports_api.SupplementaryTreeDiagnosticsRow is SupplementaryTreeDiagnosticsRow
+    assert (
+        reports_api.SupplementaryTreeDiagnosticsRow is SupplementaryTreeDiagnosticsRow
+    )
     assert (
         reports_api.SupplementaryTreeDiagnosticsTableResult
         is SupplementaryTreeDiagnosticsTableResult

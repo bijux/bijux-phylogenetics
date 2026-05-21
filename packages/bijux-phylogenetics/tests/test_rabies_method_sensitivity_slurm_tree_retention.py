@@ -50,8 +50,16 @@ def _write_synthetic_bundle(bundle_root: Path) -> None:
         rows=[
             {"category_id": "logs", "total_file_count": 2, "total_byte_count": 4096},
             {"category_id": "outputs", "total_file_count": 4, "total_byte_count": 8192},
-            {"category_id": "posterior_samples", "total_file_count": 1, "total_byte_count": 151000},
-            {"category_id": "reports", "total_file_count": 8, "total_byte_count": 16384},
+            {
+                "category_id": "posterior_samples",
+                "total_file_count": 1,
+                "total_byte_count": 151000,
+            },
+            {
+                "category_id": "reports",
+                "total_file_count": 8,
+                "total_byte_count": 16384,
+            },
             {"category_id": "trees", "total_file_count": 2, "total_byte_count": 152800},
         ],
     )
@@ -65,7 +73,9 @@ def _write_synthetic_bundle(bundle_root: Path) -> None:
     small_tree = bundle_root / "variants" / "auto-gap-threshold" / "iqtree-support.nwk"
     small_tree.parent.mkdir(parents=True, exist_ok=True)
     small_tree.write_text("(a:0.1,b:0.2);\n", encoding="utf-8")
-    big_tree_set = bundle_root / "variants" / "ginsi-gappyout" / "posterior-samples.trees"
+    big_tree_set = (
+        bundle_root / "variants" / "ginsi-gappyout" / "posterior-samples.trees"
+    )
     big_tree_set.parent.mkdir(parents=True, exist_ok=True)
     trees = ["(a:0.1,b:0.2);\n" for _ in range(12000)]
     big_tree_set.write_text("".join(trees), encoding="utf-8")
@@ -86,7 +96,9 @@ def test_build_rabies_method_sensitivity_slurm_tree_retention_report_flags_large
     assert report.thinning_required_file_count == 1
     assert report.compression_required_file_count == 1
     large_row = next(
-        row for row in report.files if row.relative_path.endswith("posterior-samples.trees")
+        row
+        for row in report.files
+        if row.relative_path.endswith("posterior-samples.trees")
     )
     assert large_row.artifact_scope == "posterior_sample"
     assert large_row.tree_count == 12000
@@ -94,8 +106,12 @@ def test_build_rabies_method_sensitivity_slurm_tree_retention_report_flags_large
     assert large_row.compression_policy == "compress_required"
 
 
-def test_build_rabies_method_sensitivity_slurm_tree_retention_report_is_no_action_for_packaged_outputs() -> None:
-    from bijux_phylogenetics.datasets import load_rabies_method_sensitivity_panel_dataset
+def test_build_rabies_method_sensitivity_slurm_tree_retention_report_is_no_action_for_packaged_outputs() -> (
+    None
+):
+    from bijux_phylogenetics.datasets import (
+        load_rabies_method_sensitivity_panel_dataset,
+    )
 
     dataset = load_rabies_method_sensitivity_panel_dataset()
     report = build_rabies_method_sensitivity_slurm_tree_retention_report(

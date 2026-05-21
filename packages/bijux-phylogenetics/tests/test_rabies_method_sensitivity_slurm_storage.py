@@ -94,8 +94,12 @@ def test_build_rabies_method_sensitivity_slurm_storage_report_classifies_categor
     assert ginsi_row.report_file_count == 0
 
 
-def test_build_rabies_method_sensitivity_slurm_storage_report_keeps_zero_posterior_category_for_packaged_outputs() -> None:
-    from bijux_phylogenetics.datasets import load_rabies_method_sensitivity_panel_dataset
+def test_build_rabies_method_sensitivity_slurm_storage_report_keeps_zero_posterior_category_for_packaged_outputs() -> (
+    None
+):
+    from bijux_phylogenetics.datasets import (
+        load_rabies_method_sensitivity_panel_dataset,
+    )
 
     dataset = load_rabies_method_sensitivity_panel_dataset()
     report = build_rabies_method_sensitivity_slurm_storage_report(

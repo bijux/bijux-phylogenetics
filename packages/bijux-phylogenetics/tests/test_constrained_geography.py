@@ -9,7 +9,6 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralEstimate,
     DiscreteTransitionRateRow,
 )
-import bijux_phylogenetics.biogeography.state_models.constrained as constrained_geography_module
 from bijux_phylogenetics.biogeography import (
     summarize_constrained_geographic_model,
     summarize_constrained_geographic_report,
@@ -19,6 +18,7 @@ from bijux_phylogenetics.biogeography import (
     write_constrained_geographic_transition_table,
     write_unsupported_geographic_transition_claim_table,
 )
+import bijux_phylogenetics.biogeography.state_models.constrained as constrained_geography_module
 from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 FIXTURES = Path(__file__).parent / "fixtures"

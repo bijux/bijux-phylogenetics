@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.phylo.topology.clades import (
     canonical_bipartition,
     informative_rooted_clades,
@@ -10,7 +11,6 @@ from bijux_phylogenetics.phylo.topology.clades import (
     tree_has_polytomy,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.io.newick import loads_newick
 
 
 def _balanced_subtree(start: int, stop: int) -> TreeNode:

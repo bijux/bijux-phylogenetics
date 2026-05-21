@@ -16,7 +16,9 @@ def test_cli_report_package_comparison_writes_comparison_bundle(
     monkeypatch,
     capsys,
 ) -> None:
-    left = build_stub_rabies_cross_host_geography_package(tmp_path / "left", monkeypatch)
+    left = build_stub_rabies_cross_host_geography_package(
+        tmp_path / "left", monkeypatch
+    )
     right = build_stub_rabies_cross_host_geography_package(
         tmp_path / "right",
         monkeypatch,

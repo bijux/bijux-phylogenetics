@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.discrete_mode_recovery as discrete_mode_recovery_api
 from bijux_phylogenetics.command_line import main
+import bijux_phylogenetics.datasets.discrete_mode_recovery as discrete_mode_recovery_api
 from bijux_phylogenetics.datasets.discrete_mode_recovery import (
     export_discrete_mode_recovery_panel_dataset,
     load_discrete_mode_recovery_panel_dataset,
@@ -104,9 +104,10 @@ def test_export_discrete_mode_recovery_panel_dataset_copies_expected_outputs(
     assert Path("parameter-comparison.tsv") in expected_files
     assert Path("rate-comparison.tsv") in expected_files
     assert Path("execution-review.tsv") in expected_files
-    assert Path(
-        "simulated-traits/ard-three-state-weak-identification-review.tsv"
-    ) in expected_files
+    assert (
+        Path("simulated-traits/ard-three-state-weak-identification-review.tsv")
+        in expected_files
+    )
     assert Path("geiger-reference.tsv") in expected_files
 
 

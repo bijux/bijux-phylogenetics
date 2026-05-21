@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.phylo.branch_lengths.node_depths import (
     compute_tree_node_depths,
     write_tree_node_depth_table,
@@ -12,7 +13,6 @@ from bijux_phylogenetics.phylo.branch_lengths.node_depths import (
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.phylo.topology import root_tree_on_outgroup
 from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError
-from bijux_phylogenetics.io.newick import write_newick
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

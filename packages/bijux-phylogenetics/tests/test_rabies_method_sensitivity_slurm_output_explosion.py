@@ -65,10 +65,26 @@ def _write_synthetic_bundle(bundle_root: Path) -> None:
         ),
         rows=[
             {"category_id": "logs", "total_file_count": 2, "total_byte_count": 4096},
-            {"category_id": "outputs", "total_file_count": 4, "total_byte_count": 2_097_152},
-            {"category_id": "posterior_samples", "total_file_count": 128, "total_byte_count": 134_217_728},
-            {"category_id": "reports", "total_file_count": 12, "total_byte_count": 16_777_216},
-            {"category_id": "trees", "total_file_count": 96, "total_byte_count": 83_886_080},
+            {
+                "category_id": "outputs",
+                "total_file_count": 4,
+                "total_byte_count": 2_097_152,
+            },
+            {
+                "category_id": "posterior_samples",
+                "total_file_count": 128,
+                "total_byte_count": 134_217_728,
+            },
+            {
+                "category_id": "reports",
+                "total_file_count": 12,
+                "total_byte_count": 16_777_216,
+            },
+            {
+                "category_id": "trees",
+                "total_file_count": 96,
+                "total_byte_count": 83_886_080,
+            },
         ],
     )
     _write_tsv(
@@ -131,14 +147,20 @@ def test_build_rabies_method_sensitivity_slurm_output_explosion_report_detects_h
     assert report.high_risk_variant_count == 1
     assert report.total_estimated_output_mib == 656
     assert report.total_posterior_sample_byte_count == 134_217_728
-    risky_variant = next(row for row in report.variants if row.variant_id == "ginsi-gappyout")
+    risky_variant = next(
+        row for row in report.variants if row.variant_id == "ginsi-gappyout"
+    )
     assert risky_variant.risk_status == "high"
     assert risky_variant.issue_count > 0
     assert any("posterior sample" in issue for issue in risky_variant.issues)
 
 
-def test_build_rabies_method_sensitivity_slurm_output_explosion_report_is_low_risk_for_packaged_outputs() -> None:
-    from bijux_phylogenetics.datasets import load_rabies_method_sensitivity_panel_dataset
+def test_build_rabies_method_sensitivity_slurm_output_explosion_report_is_low_risk_for_packaged_outputs() -> (
+    None
+):
+    from bijux_phylogenetics.datasets import (
+        load_rabies_method_sensitivity_panel_dataset,
+    )
 
     dataset = load_rabies_method_sensitivity_panel_dataset()
     report = build_rabies_method_sensitivity_slurm_output_explosion_report(
@@ -161,9 +183,11 @@ def test_write_rabies_method_sensitivity_slurm_output_explosion_artifacts(
         tmp_path / "slurm-output-explosion-checks.tsv",
         report,
     )
-    variants_path = write_rabies_method_sensitivity_slurm_output_explosion_variants_table(
-        tmp_path / "slurm-output-explosion-variants.tsv",
-        report,
+    variants_path = (
+        write_rabies_method_sensitivity_slurm_output_explosion_variants_table(
+            tmp_path / "slurm-output-explosion-variants.tsv",
+            report,
+        )
     )
     summary_path = write_rabies_method_sensitivity_slurm_output_explosion_summary_json(
         tmp_path / "slurm-output-explosion-report.json",

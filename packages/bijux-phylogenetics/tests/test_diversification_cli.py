@@ -269,12 +269,14 @@ def test_diversification_medusa_cli_reports_explicit_exclusion(capsys) -> None:
         == "geiger_medusa_explicitly_excluded_this_round"
     )
     assert payload["errors"][0]["details"]["sampling_metadata_complete"] is True
-    assert "descriptive clade diversification outlier scan" in payload["errors"][0][
-        "details"
-    ]["supported_surfaces"]
-    assert "stepwise branch-specific rate-shift search" in payload["errors"][0][
-        "details"
-    ]["missing_surfaces"]
+    assert (
+        "descriptive clade diversification outlier scan"
+        in payload["errors"][0]["details"]["supported_surfaces"]
+    )
+    assert (
+        "stepwise branch-specific rate-shift search"
+        in payload["errors"][0]["details"]["missing_surfaces"]
+    )
 
 
 def test_diversification_bd_ms_cli_reports_explicit_exclusion(capsys) -> None:

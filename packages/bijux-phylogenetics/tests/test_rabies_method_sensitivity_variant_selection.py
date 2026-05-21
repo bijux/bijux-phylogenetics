@@ -9,11 +9,11 @@ import pytest
 
 from bijux_phylogenetics.command_line import main
 import bijux_phylogenetics.datasets.rabies_method_sensitivity as rabies_method_sensitivity
-import bijux_phylogenetics.datasets.rabies_method_sensitivity.workflow as rabies_method_sensitivity_workflow
 from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     load_rabies_method_sensitivity_panel_dataset,
     run_rabies_method_sensitivity_panel_workflow,
 )
+import bijux_phylogenetics.datasets.rabies_method_sensitivity.workflow as rabies_method_sensitivity_workflow
 
 
 def _build_stub_dataset(

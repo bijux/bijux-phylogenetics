@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.gnathostome_ortholog_protein_benchmark as vertebrates_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_gnathostome_ortholog_protein_benchmark_dataset,
@@ -14,6 +13,7 @@ from bijux_phylogenetics.datasets import (
     run_gnathostome_ortholog_protein_benchmark_workflow,
     write_gnathostome_ortholog_protein_benchmark_workflow_bundle,
 )
+import bijux_phylogenetics.datasets.gnathostome_ortholog_protein_benchmark as vertebrates_api
 
 from .support.external_engines import require_alignment_engine_executables
 from .support.scientific_output_assertions import (

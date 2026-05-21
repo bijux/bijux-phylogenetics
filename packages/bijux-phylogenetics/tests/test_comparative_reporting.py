@@ -104,8 +104,9 @@ def test_write_comparative_method_report_writes_html(tmp_path: Path) -> None:
     assert "maturity" in out_path.read_text(encoding="utf-8")
 
 
-def test_build_comparative_methods_summary_text_reports_pruning_model_and_diagnostics(
-) -> None:
+def test_build_comparative_methods_summary_text_reports_pruning_model_and_diagnostics() -> (
+    None
+):
     report = build_comparative_method_report(
         fixture("example_tree_six_taxa.nwk"),
         fixture("example_traits_comparative_interaction.tsv"),

@@ -27,9 +27,9 @@ def test_validate_geiger_sim_char_reference_examples_tracks_expected_envelopes()
     brownian = observed_by_case["brownian-internal-long-branch-envelope"]
     assert (
         brownian.expected_metrics
-        == GEIGER_SIM_CHAR_REFERENCE_PAYLOADS[
-            "brownian-internal-long-branch-envelope"
-        ]["expected_metrics"]
+        == GEIGER_SIM_CHAR_REFERENCE_PAYLOADS["brownian-internal-long-branch-envelope"][
+            "expected_metrics"
+        ]
     )
     assert (
         brownian.observed_metrics["tip_distribution"]["A"]["standard_deviation"]
@@ -37,12 +37,15 @@ def test_validate_geiger_sim_char_reference_examples_tracks_expected_envelopes()
     )
 
     speciational = observed_by_case["speciational-internal-long-branch-envelope"]
-    assert abs(
-        speciational.observed_metrics["tip_distribution"]["A"]["standard_deviation"]
-        - speciational.observed_metrics["tip_distribution"]["C"][
-            "standard_deviation"
-        ]
-    ) < 0.15
+    assert (
+        abs(
+            speciational.observed_metrics["tip_distribution"]["A"]["standard_deviation"]
+            - speciational.observed_metrics["tip_distribution"]["C"][
+                "standard_deviation"
+            ]
+        )
+        < 0.15
+    )
 
     discrete = observed_by_case["discrete-rate-matrix-internal-long-branch-envelope"]
     assert discrete.observed_metrics["tip_state_frequency"]["A:1"] > 0.3

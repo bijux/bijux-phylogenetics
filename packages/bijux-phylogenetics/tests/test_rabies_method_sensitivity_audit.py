@@ -81,7 +81,8 @@ def test_audit_rabies_method_sensitivity_workflow_bundle_detects_input_checksum_
     dataset = load_rabies_method_sensitivity_panel_dataset()
     altered_metadata = tmp_path / "metadata.csv"
     altered_metadata.write_text(
-        dataset.metadata_path.read_text(encoding="utf-8") + "bad_taxon,bad_host,bad_region\n",
+        dataset.metadata_path.read_text(encoding="utf-8")
+        + "bad_taxon,bad_host,bad_region\n",
         encoding="utf-8",
     )
 

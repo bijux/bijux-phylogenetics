@@ -47,9 +47,7 @@ def build_stub_rabies_cross_host_geography_package(
     bootstrap_summary_path = (
         workflow_root / "bootstrap-review" / "bootstrap-review.summary.tsv"
     )
-    comparative_report_path = (
-        workflow_root / "comparative" / "comparative-report.html"
-    )
+    comparative_report_path = workflow_root / "comparative" / "comparative-report.html"
     biogeography_report_path = (
         workflow_root / "biogeography" / "biogeography-report.html"
     )
@@ -58,9 +56,7 @@ def build_stub_rabies_cross_host_geography_package(
     )
     biogeography_map_path = workflow_root / "biogeography" / "biogeography-map.svg"
     conclusion_stability_report_path = (
-        workflow_root
-        / "conclusion-stability"
-        / "conclusion-stability-report.html"
+        workflow_root / "conclusion-stability" / "conclusion-stability-report.html"
     )
     for path, contents in (
         (final_report_path, "<html></html>\n"),
@@ -120,9 +116,11 @@ def build_stub_rabies_cross_host_geography_package(
         workflow_summary_path=workflow_summary_path,
         resource_observations_path=resource_observations_path,
         tree_path=workflow_root / "rabies-cross-host-geography-panel.rooted.tree",
-        rooting_report_path=workflow_root / "rabies-cross-host-geography-panel.rooting.tsv",
+        rooting_report_path=workflow_root
+        / "rabies-cross-host-geography-panel.rooting.tsv",
         model_table_path=workflow_root / "rabies-cross-host-geography-panel.model.tsv",
-        support_table_path=workflow_root / "rabies-cross-host-geography-panel.support.tsv",
+        support_table_path=workflow_root
+        / "rabies-cross-host-geography-panel.support.tsv",
         manifest_path=workflow_root / "rabies-cross-host-geography-panel.manifest.json",
         log_path=workflow_root / "rabies-cross-host-geography-panel.log",
         clade_table_path=workflow_root / "clade-table.tsv",
@@ -165,7 +163,9 @@ def build_stub_rabies_cross_host_geography_package(
     ):
         path.parent.mkdir(parents=True, exist_ok=True)
         if path == fake_workflow_bundle.tree_path:
-            path.write_text("(bat_chile_rv108:0.1,fox_canada_rv241:0.2)root;\n", encoding="utf-8")
+            path.write_text(
+                "(bat_chile_rv108:0.1,fox_canada_rv241:0.2)root;\n", encoding="utf-8"
+            )
         else:
             path.write_text("metric\tvalue\n", encoding="utf-8")
 
@@ -202,9 +202,14 @@ def build_stub_rabies_cross_host_geography_package(
             path.parent.mkdir(parents=True, exist_ok=True)
             if not path.exists():
                 if path == fake_workflow_bundle.tree_path:
-                    path.write_text("(bat_chile_rv108:0.1,fox_canada_rv241:0.2)root;\n", encoding="utf-8")
+                    path.write_text(
+                        "(bat_chile_rv108:0.1,fox_canada_rv241:0.2)root;\n",
+                        encoding="utf-8",
+                    )
                 elif path in {alignment_path, trimmed_alignment_path}:
-                    path.write_text(">taxon_a\nACGT\n>taxon_b\nACGT\n", encoding="utf-8")
+                    path.write_text(
+                        ">taxon_a\nACGT\n>taxon_b\nACGT\n", encoding="utf-8"
+                    )
                 elif path == biogeography_tree_figure_path:
                     path.write_text("<svg><text>tree</text></svg>\n", encoding="utf-8")
                 elif path == biogeography_map_path:

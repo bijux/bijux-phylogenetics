@@ -13,6 +13,5 @@ def test_validate_figure_reference_fixtures_governs_publication_audits() -> None
     assert observed["validated_support_figure"].observed["caption_ready"] is True
     assert observed["validated_support_figure"].observed["legible"] is True
     assert (
-        observed["withheld_invalid_support_figure"].observed["legend_complete"]
-        is True
+        observed["withheld_invalid_support_figure"].observed["legend_complete"] is True
     )

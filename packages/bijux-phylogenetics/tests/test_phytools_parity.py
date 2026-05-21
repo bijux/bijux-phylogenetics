@@ -477,9 +477,7 @@ def test_run_phytools_parity_cases_passes_phylogenetic_anova_cases_against_fake_
     assert report.all_passed is True
     assert report.case_count == 2
     assert report.failed_case_count == 0
-    assert [row.function_name for row in report.summary_rows] == [
-        "phytools::phylANOVA"
-    ]
+    assert [row.function_name for row in report.summary_rows] == ["phytools::phylANOVA"]
     assert report.observations[0].reference_rows is not None
 
 

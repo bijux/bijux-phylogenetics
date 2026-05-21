@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import bijux_phylogenetics.reports.publication.comparison as package_comparison_api
 from bijux_phylogenetics.reports import (
     PublicationPackageComparisonArtifactRow,
     PublicationPackageComparisonCheckRow,
     PublicationPackageComparisonResult,
     write_publication_package_comparison_report,
 )
+import bijux_phylogenetics.reports.publication.comparison as package_comparison_api
 
 
 def test_publication_package_comparison_runtime_exports_are_public() -> None:

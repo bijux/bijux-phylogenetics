@@ -10,8 +10,9 @@ from tests.support.geiger_name_check_reference import (
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
-def test_check_tree_and_trait_taxon_names_matches_governed_geiger_mismatch_reference(
-) -> None:
+def test_check_tree_and_trait_taxon_names_matches_governed_geiger_mismatch_reference() -> (
+    None
+):
     report = check_tree_and_trait_taxon_names(
         FIXTURES / "trees" / "example_tree.nwk",
         FIXTURES / "metadata" / "example_traits.tsv",
@@ -23,8 +24,9 @@ def test_check_tree_and_trait_taxon_names_matches_governed_geiger_mismatch_refer
     assert report.data_not_tree == reference["data_not_tree"]
 
 
-def test_check_tree_and_trait_taxon_names_matches_governed_geiger_ok_reference(
-) -> None:
+def test_check_tree_and_trait_taxon_names_matches_governed_geiger_ok_reference() -> (
+    None
+):
     report = check_tree_and_trait_taxon_names(
         FIXTURES / "trees" / "example_tree.nwk",
         FIXTURES / "metadata" / "example_traits_comparative_reordered.tsv",
@@ -41,11 +43,7 @@ def test_check_tree_and_trait_taxon_names_matches_governed_geiger_case_policy(
 ) -> None:
     table_path = tmp_path / "case-sensitive-traits.tsv"
     table_path.write_text(
-        "taxon\tvalue\n"
-        "a\t1.0\n"
-        "B\t2.0\n"
-        "C\t3.0\n"
-        "D\t4.0\n",
+        "taxon\tvalue\na\t1.0\nB\t2.0\nC\t3.0\nD\t4.0\n",
         encoding="utf-8",
     )
 

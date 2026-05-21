@@ -4,9 +4,9 @@ import csv
 
 import pytest
 
-import bijux_phylogenetics.datasets.shared_fixtures as fixtures_api
 from bijux_phylogenetics.ancestral.common import load_discrete_dataset
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
+import bijux_phylogenetics.datasets.shared_fixtures as fixtures_api
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_geiger_discrete_fixture,
     list_shared_geiger_discrete_fixtures,
@@ -26,9 +26,7 @@ def test_shared_geiger_discrete_fixture_catalog_covers_required_goal_cases() -> 
     fixtures = list_shared_geiger_discrete_fixtures()
     feature_tags = {tag for fixture in fixtures for tag in fixture.feature_tags}
     supported_models = {
-        model
-        for fixture in fixtures
-        for model in fixture.supported_model_names
+        model for fixture in fixtures for model in fixture.supported_model_names
     }
 
     assert {
@@ -68,9 +66,7 @@ def test_shared_geiger_discrete_fixture_lookup_resolves_linked_shared_surfaces()
     }
 
 
-def test_shared_geiger_discrete_fixture_catalog_supports_er_sym_and_ard_fits() -> (
-    None
-):
+def test_shared_geiger_discrete_fixture_catalog_supports_er_sym_and_ard_fits() -> None:
     er_fixture = get_shared_geiger_discrete_fixture(
         "geiger_discrete_er_binary_twenty_four_taxa"
     )
@@ -266,9 +262,7 @@ def test_shared_geiger_discrete_fixture_catalog_supports_delta_transform_review(
     assert missing_report.parameter_count == 2
 
 
-def test_shared_geiger_discrete_fixture_catalog_supports_early_burst_review() -> (
-    None
-):
+def test_shared_geiger_discrete_fixture_catalog_supports_early_burst_review() -> None:
     early_fixture = get_shared_geiger_discrete_fixture(
         "geiger_discrete_early_burst_early_change_twenty_four_taxa"
     )
@@ -371,14 +365,20 @@ def test_shared_geiger_discrete_fixture_catalog_handles_missing_sparse_and_misma
     assert sparse_report.parameter_count == 30
     assert sparse_report.overparameterized is True
     assert sparse_report.input_audit.sparse_states == ["f"]
-    assert any("overparameterized" in warning for warning in sparse_report.input_audit.warnings)
+    assert any(
+        "overparameterized" in warning for warning in sparse_report.input_audit.warnings
+    )
     assert len(mismatch_dataset.taxa) == 23
     assert mismatch_dataset.dropped_missing_taxa == []
     assert mismatch_dataset.alignment_report.dropped_tree_taxa == ["Phy9"]
     assert mismatch_dataset.alignment_report.dropped_trait_taxa == ["PhyExtra"]
     assert mismatch_dataset.alignment_report.dropped_missing_value_taxa == []
-    assert "PhyExtra" in _read_taxa("geiger_discrete_mismatch_four_state_twenty_four_taxa")
-    assert "Phy9" not in _read_taxa("geiger_discrete_mismatch_four_state_twenty_four_taxa")
+    assert "PhyExtra" in _read_taxa(
+        "geiger_discrete_mismatch_four_state_twenty_four_taxa"
+    )
+    assert "Phy9" not in _read_taxa(
+        "geiger_discrete_mismatch_four_state_twenty_four_taxa"
+    )
 
 
 def test_shared_geiger_discrete_fixture_catalog_blocks_constant_state_inputs() -> None:

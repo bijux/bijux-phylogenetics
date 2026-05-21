@@ -50,9 +50,7 @@ def test_cli_report_time_tree_package_writes_publication_review_bundle(
     assert payload["metrics"]["ultrametric"] is True
     assert payload["metrics"]["readiness_decision"] == "ready"
     assert payload["data"]["audit"]["publication_ready"] is True
-    assert payload["data"]["manifest_path"].endswith(
-        "time-tree-package.manifest.json"
-    )
+    assert payload["data"]["manifest_path"].endswith("time-tree-package.manifest.json")
     assert (output_dir / "time-tree-review.html").exists()
     assert (output_dir / "node-age-intervals.tsv").exists()
     assert (output_dir / "figure-caption.md").exists()

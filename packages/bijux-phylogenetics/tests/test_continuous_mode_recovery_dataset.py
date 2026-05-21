@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.continuous_mode_recovery as continuous_mode_recovery_api
 from bijux_phylogenetics.command_line import main
+import bijux_phylogenetics.datasets.continuous_mode_recovery as continuous_mode_recovery_api
 from bijux_phylogenetics.datasets.continuous_mode_recovery import (
     export_continuous_mode_recovery_panel_dataset,
     load_continuous_mode_recovery_panel_dataset,
@@ -95,12 +95,12 @@ def test_export_continuous_mode_recovery_panel_dataset_copies_expected_outputs(
     assert Path("workflow-summary.tsv") in expected_files
     assert Path("parameter-comparison.tsv") in expected_files
     assert Path("execution-review.tsv") in expected_files
-    assert Path(
-        "simulated-traits/lambda-transformed-branch-review.tsv"
-    ) in expected_files
-    assert Path(
-        "simulated-traits/delta-transformed-branch-review.tsv"
-    ) in expected_files
+    assert (
+        Path("simulated-traits/lambda-transformed-branch-review.tsv") in expected_files
+    )
+    assert (
+        Path("simulated-traits/delta-transformed-branch-review.tsv") in expected_files
+    )
     assert Path("geiger-reference.tsv") in expected_files
     assert len(expected_files) == 15
 

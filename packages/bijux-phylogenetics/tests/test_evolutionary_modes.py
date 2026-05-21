@@ -6,9 +6,20 @@ from types import SimpleNamespace
 
 import pytest
 
-import bijux_phylogenetics.comparative.evolutionary_modes as evolutionary_modes_module
 from bijux_phylogenetics.ancestral import (
     reconstruct_continuous_evolutionary_mode_states,
+)
+from bijux_phylogenetics.comparative import (
+    ContinuousModeSearchControls,
+    compare_continuous_evolutionary_modes,
+    compare_fitcontinuous_model_ranking,
+    fit_continuous_evolutionary_mode,
+    rescale_tree_early_burst,
+    rescale_tree_ornstein_uhlenbeck,
+    rescale_tree_pagel_delta,
+    rescale_tree_pagel_kappa,
+    rescale_tree_pagel_lambda,
+    rescale_tree_white_noise,
 )
 from bijux_phylogenetics.comparative._math import (
     invert_matrix,
@@ -20,21 +31,10 @@ from bijux_phylogenetics.comparative.common import (
     load_comparative_dataset,
     stable_covariance,
 )
-from bijux_phylogenetics.comparative import (
-    ContinuousModeSearchControls,
-    compare_continuous_evolutionary_modes,
-    compare_fitcontinuous_model_ranking,
-    fit_continuous_evolutionary_mode,
-    rescale_tree_early_burst,
-    rescale_tree_ornstein_uhlenbeck,
-    rescale_tree_pagel_delta,
-    rescale_tree_pagel_lambda,
-    rescale_tree_pagel_kappa,
-    rescale_tree_white_noise,
-)
 from bijux_phylogenetics.comparative.continuous.model_fitting import (
     ComparativeResidualSummary,
 )
+import bijux_phylogenetics.comparative.evolutionary_modes as evolutionary_modes_module
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_geiger_continuous_fixture,
 )
@@ -120,9 +120,7 @@ def test_rescale_tree_pagel_lambda_reports_deterministic_branch_lengths() -> Non
     assert math.isclose(report.transformed_total_branch_length, 1.05)
     assert report.branch_rows[0].node == "A"
     assert math.isclose(report.branch_rows[0].original_branch_length, 0.1)
-    assert math.isclose(
-        report.branch_rows[0].transformed_branch_length, 0.2
-    )
+    assert math.isclose(report.branch_rows[0].transformed_branch_length, 0.2)
 
 
 def test_rescale_tree_pagel_kappa_reports_deterministic_branch_lengths() -> None:
@@ -165,9 +163,7 @@ def test_rescale_tree_white_noise_reports_deterministic_branch_lengths() -> None
     assert math.isclose(report.transformed_total_branch_length, 10.0)
     assert report.branch_rows[0].node == "A"
     assert math.isclose(report.branch_rows[0].original_branch_length, 0.1)
-    assert math.isclose(
-        report.branch_rows[0].transformed_branch_length, 2.5
-    )
+    assert math.isclose(report.branch_rows[0].transformed_branch_length, 2.5)
 
 
 def test_rescale_tree_ornstein_uhlenbeck_rejects_negative_alpha() -> None:
@@ -305,7 +301,9 @@ def test_fit_continuous_evolutionary_mode_supports_white_noise_baseline() -> Non
     assert "identity covariance" in fit.assumptions[0]
 
 
-def test_fit_continuous_evolutionary_mode_white_noise_fits_high_signal_worse_than_brownian() -> None:
+def test_fit_continuous_evolutionary_mode_white_noise_fits_high_signal_worse_than_brownian() -> (
+    None
+):
     fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_brownian_signal_twenty_four_taxa"
     )
@@ -329,8 +327,9 @@ def test_fit_continuous_evolutionary_mode_white_noise_fits_high_signal_worse_tha
     assert white.aic > brownian.aic
 
 
-def test_fit_continuous_evolutionary_mode_brownian_log_likelihood_matches_analytical_known_answer(
-) -> None:
+def test_fit_continuous_evolutionary_mode_brownian_log_likelihood_matches_analytical_known_answer() -> (
+    None
+):
     dataset = load_comparative_dataset(
         EXAMPLE_TREE,
         EXAMPLE_TRAITS,
@@ -372,8 +371,9 @@ def test_fit_continuous_evolutionary_mode_brownian_log_likelihood_matches_analyt
     )
 
 
-def test_fit_continuous_evolutionary_mode_white_noise_log_likelihood_matches_analytical_known_answer(
-) -> None:
+def test_fit_continuous_evolutionary_mode_white_noise_log_likelihood_matches_analytical_known_answer() -> (
+    None
+):
     dataset = load_comparative_dataset(
         EXAMPLE_TREE,
         EXAMPLE_TRAITS,
@@ -479,8 +479,9 @@ def test_fit_continuous_evolutionary_mode_records_bounded_search_controls() -> N
     assert fit.optimizer_diagnostics.hit_upper_boundary is True
 
 
-def test_fit_continuous_evolutionary_mode_rejects_out_of_bounds_initial_parameter_value(
-) -> None:
+def test_fit_continuous_evolutionary_mode_rejects_out_of_bounds_initial_parameter_value() -> (
+    None
+):
     fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_brownian_signal_twenty_four_taxa"
     )
@@ -521,8 +522,9 @@ def test_fit_continuous_evolutionary_mode_rejects_invalid_grid_control_counts() 
         )
 
 
-def test_fit_continuous_evolutionary_mode_rejects_search_controls_for_white_noise(
-) -> None:
+def test_fit_continuous_evolutionary_mode_rejects_search_controls_for_white_noise() -> (
+    None
+):
     fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_white_noise_twenty_four_taxa"
     )
@@ -541,8 +543,9 @@ def test_fit_continuous_evolutionary_mode_rejects_search_controls_for_white_nois
         )
 
 
-def test_fit_continuous_evolutionary_mode_explicitly_excludes_standard_error_review(
-) -> None:
+def test_fit_continuous_evolutionary_mode_explicitly_excludes_standard_error_review() -> (
+    None
+):
     fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_standard_error_review_twenty_four_taxa"
     )
@@ -561,8 +564,9 @@ def test_fit_continuous_evolutionary_mode_explicitly_excludes_standard_error_rev
         )
 
 
-def test_compare_continuous_evolutionary_modes_explicitly_excludes_standard_error_review(
-) -> None:
+def test_compare_continuous_evolutionary_modes_explicitly_excludes_standard_error_review() -> (
+    None
+):
     fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_standard_error_review_twenty_four_taxa"
     )
@@ -681,8 +685,9 @@ def test_compare_fitcontinuous_model_ranking_records_likelihood_policy() -> None
     assert report.noncomparable_likelihood_models == []
 
 
-def test_compare_fitcontinuous_model_ranking_withholds_stable_conclusion_for_boundary_dominated_selection(
-) -> None:
+def test_compare_fitcontinuous_model_ranking_withholds_stable_conclusion_for_boundary_dominated_selection() -> (
+    None
+):
     fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_white_noise_twenty_four_taxa"
     )
@@ -699,7 +704,10 @@ def test_compare_fitcontinuous_model_ranking_withholds_stable_conclusion_for_bou
     assert report.selected_model_boundary_assessment is not None
     assert report.selected_model_boundary_assessment.affected_parameter == "lambda"
     assert report.selected_model_boundary_assessment.hit_lower_boundary is True
-    assert report.selected_model_boundary_assessment.boundary_dominates_interpretation is True
+    assert (
+        report.selected_model_boundary_assessment.boundary_dominates_interpretation
+        is True
+    )
     assert report.stable_conclusion_supported is False
     assert any(
         "stable conclusion support is withheld" in warning
@@ -904,9 +912,7 @@ def test_fit_continuous_evolutionary_mode_reports_ou_aicc_and_missing_value_cont
     ]
 
 
-def test_fit_continuous_evolutionary_mode_supports_pagel_lambda_strong_signal() -> (
-    None
-):
+def test_fit_continuous_evolutionary_mode_supports_pagel_lambda_strong_signal() -> None:
     fixture = get_shared_geiger_continuous_fixture(
         "geiger_continuous_brownian_signal_twenty_four_taxa"
     )

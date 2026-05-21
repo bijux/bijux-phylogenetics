@@ -219,7 +219,9 @@ def test_build_rabies_method_sensitivity_slurm_failure_recovery_report_identifie
     assert report.rerunnable_job_count == 2
     assert report.blocked_job_count == 1
     assert report.recovery_partition_count == 2
-    failed_row = next(row for row in report.jobs if row.variant_id == "auto-gap-threshold")
+    failed_row = next(
+        row for row in report.jobs if row.variant_id == "auto-gap-threshold"
+    )
     assert failed_row.rerunnable is True
     assert failed_row.recovery_action == "rerun_variant"
     assert failed_row.likely_cause_code == "task_timeout"
@@ -230,8 +232,12 @@ def test_build_rabies_method_sensitivity_slurm_failure_recovery_report_identifie
     assert pending_row.recovery_action == "wait_for_live_workflow"
 
 
-def test_build_rabies_method_sensitivity_slurm_failure_recovery_report_is_clean_for_packaged_outputs() -> None:
-    from bijux_phylogenetics.datasets import load_rabies_method_sensitivity_panel_dataset
+def test_build_rabies_method_sensitivity_slurm_failure_recovery_report_is_clean_for_packaged_outputs() -> (
+    None
+):
+    from bijux_phylogenetics.datasets import (
+        load_rabies_method_sensitivity_panel_dataset,
+    )
 
     dataset = load_rabies_method_sensitivity_panel_dataset()
     report = build_rabies_method_sensitivity_slurm_failure_recovery_report(
@@ -254,9 +260,11 @@ def test_write_rabies_method_sensitivity_slurm_failure_recovery_artifacts(
         tmp_path / "slurm-failure-recovery-jobs.tsv",
         report,
     )
-    partitions_path = write_rabies_method_sensitivity_slurm_failure_recovery_partitions_table(
-        tmp_path / "slurm-failure-recovery-partitions.tsv",
-        report,
+    partitions_path = (
+        write_rabies_method_sensitivity_slurm_failure_recovery_partitions_table(
+            tmp_path / "slurm-failure-recovery-partitions.tsv",
+            report,
+        )
     )
     summary_path = write_rabies_method_sensitivity_slurm_failure_recovery_summary_json(
         tmp_path / "slurm-failure-recovery-report.json",

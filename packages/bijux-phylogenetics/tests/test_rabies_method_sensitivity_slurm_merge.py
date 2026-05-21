@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import json
-import shutil
 from pathlib import Path
+import shutil
 
 from bijux_phylogenetics.datasets import (
     build_rabies_method_sensitivity_slurm_merge_report,
@@ -14,8 +14,9 @@ from bijux_phylogenetics.datasets import (
 )
 
 
-def test_build_rabies_method_sensitivity_slurm_merge_report_passes_on_packaged_outputs(
-) -> None:
+def test_build_rabies_method_sensitivity_slurm_merge_report_passes_on_packaged_outputs() -> (
+    None
+):
     dataset = load_rabies_method_sensitivity_panel_dataset()
 
     report = build_rabies_method_sensitivity_slurm_merge_report(

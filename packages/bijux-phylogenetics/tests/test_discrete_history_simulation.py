@@ -54,12 +54,10 @@ def test_simulate_discrete_histories_records_transform_truth_and_changes_branch_
     )
 
     baseline_branch_length = sum(
-        branch.branch_length
-        for branch in baseline.simulations[0].branch_histories
+        branch.branch_length for branch in baseline.simulations[0].branch_histories
     )
     transformed_branch_length = sum(
-        branch.branch_length
-        for branch in transformed.simulations[0].branch_histories
+        branch.branch_length for branch in transformed.simulations[0].branch_histories
     )
 
     assert transformed.transform_name == "kappa"

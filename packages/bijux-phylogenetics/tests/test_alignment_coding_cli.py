@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.command_line import main
-from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 from bijux_phylogenetics.io.fasta import write_fasta_alignment
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 
 FIXTURES = Path(__file__).parent / "fixtures" / "alignments"
 

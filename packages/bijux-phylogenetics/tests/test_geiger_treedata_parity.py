@@ -11,8 +11,9 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 EXAMPLE_TREE = FIXTURES / "trees" / "example_tree.nwk"
 
 
-def test_align_tree_and_trait_table_matches_governed_geiger_treedata_mismatch_reference(
-) -> None:
+def test_align_tree_and_trait_table_matches_governed_geiger_treedata_mismatch_reference() -> (
+    None
+):
     alignment = align_tree_and_trait_table(
         EXAMPLE_TREE,
         FIXTURES / "metadata" / "example_traits.tsv",
@@ -25,8 +26,9 @@ def test_align_tree_and_trait_table_matches_governed_geiger_treedata_mismatch_re
     assert [row["taxon"] for row in alignment.rows] == reference["aligned_taxa"]
 
 
-def test_align_tree_and_trait_table_matches_governed_geiger_treedata_reorder_reference(
-) -> None:
+def test_align_tree_and_trait_table_matches_governed_geiger_treedata_reorder_reference() -> (
+    None
+):
     alignment = align_tree_and_trait_table(
         EXAMPLE_TREE,
         FIXTURES / "metadata" / "example_traits_comparative_reordered.tsv",
@@ -40,8 +42,9 @@ def test_align_tree_and_trait_table_matches_governed_geiger_treedata_reorder_ref
     assert [row["taxon"] for row in alignment.rows] == reference["aligned_taxa"]
 
 
-def test_align_tree_and_trait_table_matches_governed_geiger_treedata_missing_value_reference(
-) -> None:
+def test_align_tree_and_trait_table_matches_governed_geiger_treedata_missing_value_reference() -> (
+    None
+):
     alignment = align_tree_and_trait_table(
         EXAMPLE_TREE,
         FIXTURES / "metadata" / "example_traits_validate.tsv",

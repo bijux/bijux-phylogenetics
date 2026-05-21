@@ -26,7 +26,10 @@ from bijux_phylogenetics.bayesian.posterior_sets.tree_sets import (
     write_posterior_tree_subsample,
     write_posterior_tree_subsample_table,
 )
-from bijux_phylogenetics.runtime.errors import EngineUnavailableError, EngineWorkflowError
+from bijux_phylogenetics.runtime.errors import (
+    EngineUnavailableError,
+    EngineWorkflowError,
+)
 
 pytestmark = pytest.mark.engine_contract
 
@@ -525,7 +528,9 @@ def test_run_mrbayes_posterior_inference_rejects_or_cleans_malformed_outputs(
         rejected.value.details["failure_reason"]
         == "mrbayes_trace_invalid_parameter_value"
     )
-    assert rejected.value.details["observed_outputs"] == marker_payload["observed_outputs"]
+    assert (
+        rejected.value.details["observed_outputs"] == marker_payload["observed_outputs"]
+    )
 
     report = run_mrbayes_posterior_inference(
         nexus_path,

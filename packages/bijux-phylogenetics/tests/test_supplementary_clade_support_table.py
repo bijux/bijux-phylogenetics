@@ -88,6 +88,8 @@ def test_write_supplementary_clade_support_table_joins_tree_set_frequency_rows(
     assert rows[("A", "B", "C", "D")].frequency_status == "fixed"
 
     written_rows = read_tsv(output_path)
-    written_lookup = {tuple(row["descendant_taxa"].split("|")): row for row in written_rows}
+    written_lookup = {
+        tuple(row["descendant_taxa"].split("|")): row for row in written_rows
+    }
     assert written_lookup[("A", "B")]["supporting_tree_count"] == "2"
     assert written_lookup[("A", "B")]["frequency_status"] == "partial-support"

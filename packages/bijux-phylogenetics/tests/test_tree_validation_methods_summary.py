@@ -23,7 +23,9 @@ def test_write_tree_validation_methods_summary_text_reports_thresholds_and_conte
     assert result.blocked_context_count == 2
     assert result.repair_item_count == 0
     assert "Tree Validation Methods Summary" in result.text
-    assert "ultrametricity is evaluated with the APE-compatible tolerance" in result.text
+    assert (
+        "ultrametricity is evaluated with the APE-compatible tolerance" in result.text
+    )
     assert "long terminal branches are flagged when they exceed" in result.text
     assert (
         "- `time tree`: blocked by time trees require ultrametric root-to-tip distances"
@@ -51,4 +53,7 @@ def test_write_tree_validation_methods_summary_text_reports_repair_items(
     assert "downstream-unsafe tip labels detected" in result.text
     assert "`Homo sapiens`" in result.text
     assert "`Mus musculus`" in result.text
-    assert "- `time tree`: blocked by time trees require ultrametric root-to-tip distances" in result.text
+    assert (
+        "- `time tree`: blocked by time trees require ultrametric root-to-tip distances"
+        in result.text
+    )

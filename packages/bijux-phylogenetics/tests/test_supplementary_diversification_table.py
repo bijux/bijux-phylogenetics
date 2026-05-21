@@ -52,8 +52,7 @@ def test_write_supplementary_diversification_table_writes_clade_and_model_review
     assert any(row.clade_classification == "low" for row in result.rows)
     assert all(row.yule_corrected_tip_count == 5.33333333333333 for row in result.rows)
     assert all(
-        row.birth_death_corrected_tip_count == 5.33333333333333
-        for row in result.rows
+        row.birth_death_corrected_tip_count == 5.33333333333333 for row in result.rows
     )
     with output_path.open("r", encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))

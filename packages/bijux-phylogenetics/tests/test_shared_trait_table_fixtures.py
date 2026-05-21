@@ -14,20 +14,20 @@ from bijux_phylogenetics.ancestral.discrete import (
 from bijux_phylogenetics.comparative.covariance import (
     summarize_comparative_covariance_audit,
 )
+from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs
 from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_anova,
 )
-from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs
 from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_independent_contrasts,
 )
-from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
-from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_trait_table_fixture,
+    get_shared_tree_fixture,
     list_shared_trait_table_fixtures,
 )
-from bijux_phylogenetics.datasets.shared_fixtures import get_shared_tree_fixture
+from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 
 def _read_taxa(fixture_id: str) -> list[str]:
@@ -102,7 +102,9 @@ def test_shared_trait_table_fixture_catalog_supports_governed_phytools_panels() 
 def test_shared_trait_table_fixture_catalog_tracks_governed_standard_error_columns() -> (
     None
 ):
-    fixture = get_shared_trait_table_fixture("geiger_continuous_model_panel_twenty_four_taxa")
+    fixture = get_shared_trait_table_fixture(
+        "geiger_continuous_model_panel_twenty_four_taxa"
+    )
 
     assert fixture.standard_error_columns == ("ou_truth_standard_error",)
     assert "ou_truth" in fixture.primary_trait_columns
@@ -261,9 +263,7 @@ def test_shared_trait_table_fixture_catalog_supports_phylogenetic_residual_cases
     assert _read_taxa("phylogenetic_residual_allometry_missing")[-1] == "G"
 
 
-def test_shared_trait_table_fixture_catalog_supports_phylogenetic_anova_cases() -> (
-    None
-):
+def test_shared_trait_table_fixture_catalog_supports_phylogenetic_anova_cases() -> None:
     clean_fixture = get_shared_trait_table_fixture("phylogenetic_anova_group_effect")
     missing_fixture = get_shared_trait_table_fixture(
         "phylogenetic_anova_group_effect_missing"

@@ -12,7 +12,6 @@ from bijux_phylogenetics.reports import (
 )
 from bijux_phylogenetics.reports.publication.tree import build_tree_report_package
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 

@@ -51,9 +51,10 @@ def test_parity_cli_runs_live_geiger_harness_and_writes_tables(
     assert observation_path.exists()
     assert triage_path.exists()
     assert payload["data"]["optimizer_triage_table"] == str(triage_path)
-    assert len(payload["data"]["report"]["optimizer_triage_rows"]) == payload["metrics"][
-        "case_count"
-    ]
+    assert (
+        len(payload["data"]["report"]["optimizer_triage_rows"])
+        == payload["metrics"]["case_count"]
+    )
 
 
 def test_parity_cli_restricts_live_geiger_cases(tmp_path: Path, capsys) -> None:

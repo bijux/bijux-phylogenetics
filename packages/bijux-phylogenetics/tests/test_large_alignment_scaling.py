@@ -33,7 +33,9 @@ def test_benchmark_large_alignment_scaling_reports_all_review_workflows() -> Non
         "distance-analysis",
         "alignment-readiness",
     }
-    assert all(workflow.scaling_axis == "aligned_sites" for workflow in report.workflows)
+    assert all(
+        workflow.scaling_axis == "aligned_sites" for workflow in report.workflows
+    )
     for workflow in report.workflows:
         assert [row.sequence_count for row in workflow.observations] == [4, 6]
         assert [row.alignment_length for row in workflow.observations] == [16, 24]

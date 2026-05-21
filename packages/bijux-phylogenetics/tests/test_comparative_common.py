@@ -11,8 +11,8 @@ from bijux_phylogenetics.comparative.common import (
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
 )
-from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

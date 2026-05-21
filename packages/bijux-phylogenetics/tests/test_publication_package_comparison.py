@@ -17,7 +17,9 @@ def test_publication_package_comparison_passes_on_identical_rabies_packages(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
-    left = build_stub_rabies_cross_host_geography_package(tmp_path / "left", monkeypatch)
+    left = build_stub_rabies_cross_host_geography_package(
+        tmp_path / "left", monkeypatch
+    )
     right = build_stub_rabies_cross_host_geography_package(
         tmp_path / "right",
         monkeypatch,
@@ -49,14 +51,18 @@ def test_publication_package_comparison_flags_input_tree_model_figure_and_conclu
     tmp_path: Path,
     monkeypatch,
 ) -> None:
-    left = build_stub_rabies_cross_host_geography_package(tmp_path / "left", monkeypatch)
+    left = build_stub_rabies_cross_host_geography_package(
+        tmp_path / "left", monkeypatch
+    )
     right = build_stub_rabies_cross_host_geography_package(
         tmp_path / "right",
         monkeypatch,
     )
     with right.dataset_export.sequences_path.open("a", encoding="utf-8") as handle:
         handle.write(">wolf_extra_rv999\nACGT\n")
-    with right.dataset_export.accession_table_path.open("a", encoding="utf-8") as handle:
+    with right.dataset_export.accession_table_path.open(
+        "a", encoding="utf-8"
+    ) as handle:
         handle.write("RV999\thttps://example.org/RV999\n")
     right.workflow_bundle.selected_model = "GTR+F+I"
     right.workflow_bundle.root_host = "canid"
@@ -65,14 +71,14 @@ def test_publication_package_comparison_flags_input_tree_model_figure_and_conclu
         "(bat_chile_rv108:0.1,fox_canada_rv241:0.2,wolf_extra_rv999:0.3)root;\n",
         encoding="utf-8",
     )
-    (right.workflow_bundle.output_root / "rabies-cross-host-geography-panel.aln").write_text(
+    (
+        right.workflow_bundle.output_root / "rabies-cross-host-geography-panel.aln"
+    ).write_text(
         ">taxon_a\nACGT\n>taxon_b\nACGT\n>taxon_c\nACGT\n",
         encoding="utf-8",
     )
     (
-        right.workflow_bundle.output_root
-        / "biogeography"
-        / "biogeography-map.svg"
+        right.workflow_bundle.output_root / "biogeography" / "biogeography-map.svg"
     ).write_text("<svg><text>updated-map</text></svg>\n", encoding="utf-8")
     right.workflow_bundle.scientific_findings_path.write_text(
         "finding_id\tquestion\tclaim\tevidence\tcaution\tsource_artifact\n"

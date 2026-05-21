@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.avian_reproductive_traits as birds_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_avian_reproductive_trait_dataset,
@@ -14,6 +13,7 @@ from bijux_phylogenetics.datasets import (
     run_avian_reproductive_trait_workflow,
     write_avian_reproductive_trait_workflow_bundle,
 )
+import bijux_phylogenetics.datasets.avian_reproductive_traits as birds_api
 
 from .support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
@@ -112,7 +112,10 @@ def test_export_avian_reproductive_trait_dataset_copies_expected_outputs(
 def test_public_runtime_exports_include_avian_reproductive_trait_dataset_surface() -> (
     None
 ):
-    assert birds_api.load_avian_reproductive_trait_dataset is load_avian_reproductive_trait_dataset
+    assert (
+        birds_api.load_avian_reproductive_trait_dataset
+        is load_avian_reproductive_trait_dataset
+    )
     assert (
         birds_api.export_avian_reproductive_trait_dataset
         is export_avian_reproductive_trait_dataset
@@ -125,7 +128,9 @@ def test_public_runtime_exports_include_avian_reproductive_trait_dataset_surface
         birds_api.write_avian_reproductive_trait_workflow_bundle
         is write_avian_reproductive_trait_workflow_bundle
     )
-    assert birds_api.run_avian_reproductive_trait_demo is run_avian_reproductive_trait_demo
+    assert (
+        birds_api.run_avian_reproductive_trait_demo is run_avian_reproductive_trait_demo
+    )
 
 
 @pytest.mark.slow

@@ -3,11 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.trees import extract_tree_clades
 from bijux_phylogenetics.reports.publication.tree import (
     build_tree_report_package,
     summarize_tree_support,
 )
+from bijux_phylogenetics.trees import extract_tree_clades
 
 
 def tree_fixture(name: str) -> Path:
@@ -44,9 +44,9 @@ def test_build_tree_report_package_writes_html_svg_and_tsv_outputs(
     assert "Branch-Length Stats" in html
 
     support_lines = result.support_table_path.read_text(encoding="utf-8").splitlines()
-    checklist_lines = (
-        result.reviewer_audit_checklist_path.read_text(encoding="utf-8").splitlines()
-    )
+    checklist_lines = result.reviewer_audit_checklist_path.read_text(
+        encoding="utf-8"
+    ).splitlines()
     assert support_lines[0].startswith("node_kind\tnode\tnode_label\tdescendant_taxa")
     assert checklist_lines[0] == "section\tstatus\tsummary\tevidence\tartifact_paths"
     assert any(line.startswith("validity\t") for line in checklist_lines[1:])

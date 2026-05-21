@@ -12,8 +12,9 @@ from tests.support.geiger_dtt_reference import GEIGER_DTT_REFERENCE_PAYLOADS
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
-def test_summarize_continuous_clade_disparity_matches_governed_geiger_univariate_reference(
-) -> None:
+def test_summarize_continuous_clade_disparity_matches_governed_geiger_univariate_reference() -> (
+    None
+):
     report = summarize_continuous_clade_disparity(
         FIXTURES / "trees" / "example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
         FIXTURES
@@ -32,8 +33,9 @@ def test_summarize_continuous_clade_disparity_matches_governed_geiger_univariate
         assert math.isclose(observed, expected, rel_tol=1e-12, abs_tol=1e-12)
 
 
-def test_summarize_disparity_through_time_matches_governed_geiger_univariate_reference(
-) -> None:
+def test_summarize_disparity_through_time_matches_governed_geiger_univariate_reference() -> (
+    None
+):
     report = summarize_disparity_through_time(
         FIXTURES / "trees" / "example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
         FIXTURES
@@ -49,7 +51,9 @@ def test_summarize_disparity_through_time_matches_governed_geiger_univariate_ref
         reference["relative_disparity"],
         strict=True,
     ):
-        assert math.isclose(row.relative_time, expected_time, rel_tol=1e-12, abs_tol=1e-12)
+        assert math.isclose(
+            row.relative_time, expected_time, rel_tol=1e-12, abs_tol=1e-12
+        )
         assert math.isclose(
             row.relative_disparity,
             expected_disparity,
@@ -58,8 +62,9 @@ def test_summarize_disparity_through_time_matches_governed_geiger_univariate_ref
         )
 
 
-def test_summarize_disparity_through_time_matches_governed_geiger_multivariate_reference(
-) -> None:
+def test_summarize_disparity_through_time_matches_governed_geiger_multivariate_reference() -> (
+    None
+):
     report = summarize_disparity_through_time(
         FIXTURES / "trees" / "example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
         FIXTURES
@@ -83,7 +88,9 @@ def test_summarize_disparity_through_time_matches_governed_geiger_multivariate_r
         reference["relative_disparity"],
         strict=True,
     ):
-        assert math.isclose(row.relative_time, expected_time, rel_tol=1e-12, abs_tol=1e-12)
+        assert math.isclose(
+            row.relative_time, expected_time, rel_tol=1e-12, abs_tol=1e-12
+        )
         assert math.isclose(
             row.relative_disparity,
             expected_disparity,

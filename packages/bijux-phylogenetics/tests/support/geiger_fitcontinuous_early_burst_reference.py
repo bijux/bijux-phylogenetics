@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-GEIGER_FITCONTINUOUS_EARLY_BURST_REFERENCE_PAYLOADS: dict[
-    str, dict[str, object]
-] = {
+GEIGER_FITCONTINUOUS_EARLY_BURST_REFERENCE_PAYLOADS: dict[str, dict[str, object]] = {
     "fitcontinuous-eb-early-burst-rate-recovery": {
         "summary": {
             "aic": -183.46471378541474,

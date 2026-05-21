@@ -26,8 +26,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_summarize_continuous_clade_disparity_reports_method_formula_and_ranges(
-) -> None:
+def test_summarize_continuous_clade_disparity_reports_method_formula_and_ranges() -> (
+    None
+):
     report = summarize_continuous_clade_disparity(
         fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),
         fixture("example_traits_geiger_continuous_model_panel_twenty_four_taxa.tsv"),
@@ -41,8 +42,9 @@ def test_summarize_continuous_clade_disparity_reports_method_formula_and_ranges(
     assert report.maximum_clade_disparity >= report.root_disparity
 
 
-def test_summarize_continuous_clade_disparity_matches_known_simple_clade_partitions(
-) -> None:
+def test_summarize_continuous_clade_disparity_matches_known_simple_clade_partitions() -> (
+    None
+):
     report = summarize_continuous_clade_disparity(
         fixture("example_tree.nwk"),
         fixture("example_traits_comparative.tsv"),
@@ -61,8 +63,9 @@ def test_summarize_continuous_clade_disparity_matches_known_simple_clade_partiti
         assert math.isclose(value, target, rel_tol=1e-12, abs_tol=1e-12)
 
 
-def test_summarize_continuous_clade_disparity_supports_known_multivariate_clades(
-) -> None:
+def test_summarize_continuous_clade_disparity_supports_known_multivariate_clades() -> (
+    None
+):
     report = summarize_continuous_clade_disparity(
         fixture("example_tree.nwk"),
         fixture("example_traits_comparative.tsv"),

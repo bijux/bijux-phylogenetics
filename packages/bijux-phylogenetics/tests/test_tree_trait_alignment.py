@@ -61,9 +61,9 @@ def test_align_tree_and_trait_table_can_prune_requested_missing_values() -> None
     assert alignment.tree.tip_names == ["A", "B", "D"]
     assert [row["taxon"] for row in alignment.rows] == ["A", "B", "D"]
     assert alignment.report.dropped_missing_value_taxa == ["C"]
-    assert [(item.taxon, item.trait) for item in alignment.report.missing_value_calls] == [
-        ("C", "status")
-    ]
+    assert [
+        (item.taxon, item.trait) for item in alignment.report.missing_value_calls
+    ] == [("C", "status")]
     assert (
         alignment.report.missing_value_policy
         == "drop-overlapping-missing-values-for-requested-traits"

@@ -58,8 +58,9 @@ def test_build_diversification_figure_package_writes_publication_bundle(
     assert "Diversification model comparison" in result.model_figure_path.read_text(
         encoding="utf-8"
     )
-    assert "Diversification Analysis Methods Summary" in result.methods_summary_path.read_text(
-        encoding="utf-8"
+    assert (
+        "Diversification Analysis Methods Summary"
+        in result.methods_summary_path.read_text(encoding="utf-8")
     )
     assert "publication_ready" in result.review_path.read_text(encoding="utf-8")
     assert "Methods Summary" in result.review_path.read_text(encoding="utf-8")

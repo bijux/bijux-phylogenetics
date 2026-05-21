@@ -9,7 +9,9 @@ from bijux_phylogenetics.reports import (
 
 
 def test_supplementary_comparative_model_table_surfaces_export_publicly() -> None:
-    assert reports_api.SupplementaryComparativeModelRow is SupplementaryComparativeModelRow
+    assert (
+        reports_api.SupplementaryComparativeModelRow is SupplementaryComparativeModelRow
+    )
     assert (
         reports_api.SupplementaryComparativeModelTableResult
         is SupplementaryComparativeModelTableResult

@@ -36,7 +36,9 @@ def test_pgls_prunes_missing_numeric_cells_instead_of_rejecting_the_column() -> 
 
     assert input_report.ready is True
     assert input_report.analysis_taxa == ["A", "B", "C", "D", "F"]
-    assert [(row.taxon, row.reason) for row in input_report.formula_audit.excluded_taxa] == [
+    assert [
+        (row.taxon, row.reason) for row in input_report.formula_audit.excluded_taxa
+    ] == [
         ("E", "missing_value"),
     ]
     assert model.taxa == ["A", "B", "C", "D", "F"]

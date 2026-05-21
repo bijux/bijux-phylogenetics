@@ -5,7 +5,6 @@ from statistics import median
 
 import pytest
 
-import bijux_phylogenetics.datasets.shared_fixtures as fixtures_api
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     compare_fitcontinuous_model_ranking,
@@ -14,10 +13,13 @@ from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     estimate_pagels_lambda,
 )
-from bijux_phylogenetics.phylo.branch_lengths.ultrametric import assess_tree_ultrametricity
+import bijux_phylogenetics.datasets.shared_fixtures as fixtures_api
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_geiger_continuous_fixture,
     list_shared_geiger_continuous_fixtures,
+)
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
+    assess_tree_ultrametricity,
 )
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
@@ -36,9 +38,7 @@ def test_shared_geiger_continuous_fixture_catalog_covers_required_goal_cases() -
     fixtures = list_shared_geiger_continuous_fixtures()
     feature_tags = {tag for fixture in fixtures for tag in fixture.feature_tags}
     supported_models = {
-        model
-        for fixture in fixtures
-        for model in fixture.supported_model_names
+        model for fixture in fixtures for model in fixture.supported_model_names
     }
 
     assert {

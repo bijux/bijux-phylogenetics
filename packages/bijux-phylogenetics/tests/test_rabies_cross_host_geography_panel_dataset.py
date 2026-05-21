@@ -7,7 +7,6 @@ from types import SimpleNamespace
 
 import pytest
 
-import bijux_phylogenetics.datasets.rabies_host_geography as rabies_host_geography_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     RabiesCrossHostGeographyPanelDemoResult,
@@ -19,6 +18,7 @@ from bijux_phylogenetics.datasets import (
     run_rabies_cross_host_geography_panel_workflow,
     write_rabies_cross_host_geography_panel_workflow_bundle,
 )
+import bijux_phylogenetics.datasets.rabies_host_geography as rabies_host_geography_api
 
 from .support.external_engines import require_alignment_engine_executables
 from .support.scientific_output_assertions import (
@@ -284,13 +284,12 @@ def test_run_rabies_cross_host_geography_panel_demo_materializes_dataset_and_wor
     assert package_manifest["package_files"]["reproducibility_checklist"]["path"] == (
         "rabies-cross-host-geography-reproducibility-checklist.tsv"
     )
-    assert package_manifest["package_files"]["artifact_inventory"]["artifact_count"] == (
-        len(inventory_rows)
-    )
-    assert (
-        package_manifest["package_files"]["reproducibility_checklist"]["item_count"]
-        == len(checklist_rows)
-    )
+    assert package_manifest["package_files"]["artifact_inventory"][
+        "artifact_count"
+    ] == (len(inventory_rows))
+    assert package_manifest["package_files"]["reproducibility_checklist"][
+        "item_count"
+    ] == len(checklist_rows)
     assert any(
         row["relative_path"] == "workflow/rabies-cross-host-geography-report.html"
         for row in inventory_rows
@@ -354,16 +353,12 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
     bootstrap_summary_path = (
         workflow_root / "bootstrap-review" / "bootstrap-review.summary.tsv"
     )
-    comparative_report_path = (
-        workflow_root / "comparative" / "comparative-report.html"
-    )
+    comparative_report_path = workflow_root / "comparative" / "comparative-report.html"
     biogeography_report_path = (
         workflow_root / "biogeography" / "biogeography-report.html"
     )
     conclusion_stability_report_path = (
-        workflow_root
-        / "conclusion-stability"
-        / "conclusion-stability-report.html"
+        workflow_root / "conclusion-stability" / "conclusion-stability-report.html"
     )
     for path, contents in (
         (final_report_path, "<html></html>\n"),
@@ -413,9 +408,11 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
         workflow_summary_path=workflow_summary_path,
         resource_observations_path=resource_observations_path,
         tree_path=workflow_root / "rabies-cross-host-geography-panel.rooted.tree",
-        rooting_report_path=workflow_root / "rabies-cross-host-geography-panel.rooting.tsv",
+        rooting_report_path=workflow_root
+        / "rabies-cross-host-geography-panel.rooting.tsv",
         model_table_path=workflow_root / "rabies-cross-host-geography-panel.model.tsv",
-        support_table_path=workflow_root / "rabies-cross-host-geography-panel.support.tsv",
+        support_table_path=workflow_root
+        / "rabies-cross-host-geography-panel.support.tsv",
         manifest_path=workflow_root / "rabies-cross-host-geography-panel.manifest.json",
         log_path=workflow_root / "rabies-cross-host-geography-panel.log",
         clade_table_path=workflow_root / "clade-table.tsv",
@@ -462,6 +459,7 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
         "bijux_phylogenetics.datasets.rabies_host_geography.run_rabies_cross_host_geography_panel_workflow",
         lambda *args, **kwargs: fake_workflow_report,
     )
+
     def _fake_write_bundle(*args, **kwargs):
         for path in (
             final_report_path,

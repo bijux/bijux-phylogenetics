@@ -39,8 +39,7 @@ def test_benchmark_large_tree_model_fitting_small_tier_reports_governed_cases() 
     assert continuous.taxon_count == 100
     assert continuous.runtime_seconds is not None and continuous.runtime_seconds > 0.0
     assert (
-        continuous.peak_memory_bytes is not None
-        and continuous.peak_memory_bytes >= 0
+        continuous.peak_memory_bytes is not None and continuous.peak_memory_bytes >= 0
     )
     assert continuous.optimizer_iteration_count == 10
     assert continuous.performance_threshold_passed is True

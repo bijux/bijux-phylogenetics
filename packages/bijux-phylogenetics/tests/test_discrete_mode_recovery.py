@@ -47,9 +47,16 @@ def test_run_discrete_mode_recovery_governs_packaged_bijux_and_geiger_review_cas
     }
     assert case_by_id["er-three-state-rate-recovery"].selected_model == "equal-rates"
     assert case_by_id["sym-three-state-rate-recovery"].selected_model == "symmetric"
-    assert case_by_id["ard-three-state-weak-identification-review"].selection_matches_expectation is None
     assert (
-        case_by_id["ard-three-state-weak-identification-review"].expected_warning_kinds_present
+        case_by_id[
+            "ard-three-state-weak-identification-review"
+        ].selection_matches_expectation
+        is None
+    )
+    assert (
+        case_by_id[
+            "ard-three-state-weak-identification-review"
+        ].expected_warning_kinds_present
         is True
     )
     assert any(
@@ -58,11 +65,15 @@ def test_run_discrete_mode_recovery_governs_packaged_bijux_and_geiger_review_cas
         if row.recovery_engine == "bijux"
     )
     assert (
-        case_by_id["ard-five-state-overparameterized-review"].overparameterized_review_matches_expectation
+        case_by_id[
+            "ard-five-state-overparameterized-review"
+        ].overparameterized_review_matches_expectation
         is True
     )
     assert (
-        case_by_id["ard-five-state-overparameterized-review"].expected_warning_kinds_present
+        case_by_id[
+            "ard-five-state-overparameterized-review"
+        ].expected_warning_kinds_present
         is True
     )
     assert any(
@@ -152,10 +163,10 @@ def test_discrete_mode_recovery_writers_emit_paired_benchmark_ledgers(
     )
     assert any(
         row.startswith(
-            "sym-three-state-rate-recovery\tsymmetric\t\tgeiger\tall-rates-different\t"
-        )
-        or row.startswith(
-            "sym-three-state-rate-recovery\tsymmetric\t\tgeiger\tsymmetric\t"
+            (
+                "sym-three-state-rate-recovery\tsymmetric\t\tgeiger\tall-rates-different\t",
+                "sym-three-state-rate-recovery\tsymmetric\t\tgeiger\tsymmetric\t",
+            )
         )
         for row in rate_rows[1:]
     )
@@ -163,9 +174,7 @@ def test_discrete_mode_recovery_writers_emit_paired_benchmark_ledgers(
         "case_id\tgenerating_model\ttransform\tsource_state\ttarget_state\ttrue_rate"
     )
     assert any(
-        row.startswith(
-            "er-three-state-rate-recovery\tequal-rates\t\tcentral\tnorth\t"
-        )
+        row.startswith("er-three-state-rate-recovery\tequal-rates\t\tcentral\tnorth\t")
         for row in rate_comparison_rows[1:]
     )
     assert model_choice_rows[0].startswith(
@@ -193,14 +202,18 @@ def test_discrete_mode_recovery_writers_emit_paired_benchmark_ledgers(
         )
         for row in warning_rows[1:]
     )
-    assert geiger_payload_rows[0] == "case_id\tfit_summary_json\tcomparison_summary_json"
+    assert (
+        geiger_payload_rows[0] == "case_id\tfit_summary_json\tcomparison_summary_json"
+    )
     assert any(
         row.startswith("er-three-state-rate-recovery\t")
         for row in geiger_payload_rows[1:]
     )
 
 
-def test_geiger_fitdiscrete_recovery_reference_payload_exposes_governed_case_summary() -> None:
+def test_geiger_fitdiscrete_recovery_reference_payload_exposes_governed_case_summary() -> (
+    None
+):
     payload = geiger_fitdiscrete_recovery_reference_payload(
         "er-three-state-rate-recovery"
     )

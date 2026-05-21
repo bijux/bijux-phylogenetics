@@ -125,7 +125,9 @@ def test_summarize_continuous_clade_disparity_reports_geiger_style_root_row() ->
     assert report.clade_rows[0].node_kind == "root"
     assert report.clade_rows[0].descendant_taxon_count == 24
     assert math.isclose(report.root_age, 1.6918111678463008)
-    assert math.isclose(report.clade_rows[0].disparity, 0.015837416289029, rel_tol=1e-12)
+    assert math.isclose(
+        report.clade_rows[0].disparity, 0.015837416289029, rel_tol=1e-12
+    )
 
 
 def test_summarize_disparity_through_time_matches_geiger_univariate_curve() -> None:
@@ -143,7 +145,9 @@ def test_summarize_disparity_through_time_matches_geiger_univariate_curve() -> N
         _GEIGER_DTT_UNIVARIATE,
         strict=True,
     ):
-        assert math.isclose(row.relative_time, expected_time, rel_tol=1e-6, abs_tol=1e-6)
+        assert math.isclose(
+            row.relative_time, expected_time, rel_tol=1e-6, abs_tol=1e-6
+        )
         assert math.isclose(
             row.relative_disparity,
             expected_disparity,
@@ -167,7 +171,9 @@ def test_summarize_disparity_through_time_matches_geiger_multivariate_curve() ->
         _GEIGER_DTT_MULTIVARIATE,
         strict=True,
     ):
-        assert math.isclose(row.relative_time, expected_time, rel_tol=1e-6, abs_tol=1e-6)
+        assert math.isclose(
+            row.relative_time, expected_time, rel_tol=1e-6, abs_tol=1e-6
+        )
         assert math.isclose(
             row.relative_disparity,
             expected_disparity,
@@ -181,9 +187,9 @@ def test_summarize_disparity_through_time_prunes_missing_traits_and_supports_bin
 ) -> None:
     table_path = tmp_path / "dtt-missing.tsv"
     table_path.write_text(
-        fixture(
-            "example_traits_geiger_continuous_model_panel_twenty_four_taxa.tsv"
-        ).read_text(encoding="utf-8").replace("Phy10\t0.631983", "Phy10\t"),
+        fixture("example_traits_geiger_continuous_model_panel_twenty_four_taxa.tsv")
+        .read_text(encoding="utf-8")
+        .replace("Phy10\t0.631983", "Phy10\t"),
         encoding="utf-8",
     )
 
@@ -195,9 +201,14 @@ def test_summarize_disparity_through_time_prunes_missing_traits_and_supports_bin
     )
 
     assert report.analyzed_taxon_count == 23
-    assert any(row.taxon == "Phy10" and row.reason == "missing_trait_value" for row in report.excluded_taxa)
+    assert any(
+        row.taxon == "Phy10" and row.reason == "missing_trait_value"
+        for row in report.excluded_taxa
+    )
     assert len(report.time_bin_rows) == 4
-    assert sum(row.point_count for row in report.time_bin_rows) == len(report.curve_rows)
+    assert sum(row.point_count for row in report.time_bin_rows) == len(
+        report.curve_rows
+    )
 
 
 def test_disparity_through_time_writers_emit_tables_and_svg(tmp_path: Path) -> None:
@@ -220,7 +231,9 @@ def test_disparity_through_time_writers_emit_tables_and_svg(tmp_path: Path) -> N
         clade_path,
         summarize_continuous_clade_disparity(
             fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),
-            fixture("example_traits_geiger_continuous_model_panel_twenty_four_taxa.tsv"),
+            fixture(
+                "example_traits_geiger_continuous_model_panel_twenty_four_taxa.tsv"
+            ),
             trait_columns=["ou_truth", "early_burst_truth"],
         ),
     )

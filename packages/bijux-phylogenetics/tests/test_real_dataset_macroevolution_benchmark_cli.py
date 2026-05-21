@@ -5,8 +5,6 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.command_line as command_line_api
-import bijux_phylogenetics.command_line.demo as demo_command_module
 from bijux_phylogenetics.benchmark.macroevolution import (
     RealDatasetMacroevolutionAlignmentReviewRow,
     RealDatasetMacroevolutionBenchmarkBundle,
@@ -16,7 +14,9 @@ from bijux_phylogenetics.benchmark.macroevolution import (
     RealDatasetMacroevolutionParityRow,
     RealDatasetMacroevolutionSummaryRow,
 )
+import bijux_phylogenetics.command_line as command_line_api
 from bijux_phylogenetics.command_line import main
+import bijux_phylogenetics.command_line.demo as demo_command_module
 from bijux_phylogenetics.datasets.central_european_seashore_flora import (
     CentralEuropeanSeashoreFloraDataset,
     CentralEuropeanSeashoreFloraDatasetExportResult,
@@ -227,7 +227,9 @@ def test_cli_demo_real_dataset_macroevolution_reports_metrics(
         lambda destination: result,
     )
 
-    exit_code = main(["demo", "real-dataset-macroevolution", "--out", str(tmp_path), "--json"])
+    exit_code = main(
+        ["demo", "real-dataset-macroevolution", "--out", str(tmp_path), "--json"]
+    )
     payload = json.loads(capsys.readouterr().out)
 
     assert exit_code == 0

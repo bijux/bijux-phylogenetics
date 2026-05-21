@@ -8,8 +8,8 @@ from bijux_phylogenetics.compare.topology import (
     compare_topology_distance_trees,
     write_topology_distance_split_table,
 )
-from bijux_phylogenetics.io.newick import load_newick_tree_set, write_newick
 from bijux_phylogenetics.datasets.shared_fixtures import get_shared_tree_set_fixture
+from bijux_phylogenetics.io.newick import load_newick_tree_set, write_newick
 
 
 def _fixture_pair(tmp_path: Path, fixture_id: str) -> tuple[Path, Path]:

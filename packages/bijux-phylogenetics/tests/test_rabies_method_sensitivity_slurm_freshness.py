@@ -55,7 +55,9 @@ def test_build_rabies_method_sensitivity_slurm_output_freshness_report_detects_i
         row for row in report.checks if row.check_id == "input-checksum:metadata.csv"
     )
     assert metadata_check.status == "failed"
-    assert all("input-checksum:metadata.csv" in row.stale_reason_codes for row in report.jobs)
+    assert all(
+        "input-checksum:metadata.csv" in row.stale_reason_codes for row in report.jobs
+    )
 
 
 def test_build_rabies_method_sensitivity_slurm_output_freshness_report_detects_variant_setting_drift(
@@ -80,7 +82,10 @@ def test_build_rabies_method_sensitivity_slurm_output_freshness_report_detects_v
     stale_rows = [row for row in report.jobs if row.freshness_status == "stale"]
     assert [row.variant_id for row in stale_rows] == [dataset.variants[0].variant_id]
     assert stale_rows[0].variant_settings_match is False
-    assert f"variant-setting:{dataset.variants[0].variant_id}" in stale_rows[0].stale_reason_codes
+    assert (
+        f"variant-setting:{dataset.variants[0].variant_id}"
+        in stale_rows[0].stale_reason_codes
+    )
 
 
 def test_write_rabies_method_sensitivity_slurm_output_freshness_artifacts(

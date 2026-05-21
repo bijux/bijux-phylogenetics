@@ -18,9 +18,7 @@ def traits_fixture(name: str) -> Path:
     return Path(__file__).parent / "fixtures" / "metadata" / name
 
 
-def test_cli_render_reports_publication_package_metrics(
-    tmp_path: Path, capsys
-) -> None:
+def test_cli_render_reports_publication_package_metrics(tmp_path: Path, capsys) -> None:
     output = tmp_path / "annotated.svg"
     package_dir = tmp_path / "tree-publication-package"
     exit_code = main(

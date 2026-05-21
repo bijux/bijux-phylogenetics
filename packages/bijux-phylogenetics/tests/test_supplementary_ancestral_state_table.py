@@ -82,8 +82,7 @@ def test_write_supplementary_ancestral_state_table_writes_discrete_uncertainty_a
     assert all(row.estimate_value is None for row in result.rows)
     assert any(row.warning_count > 0 for row in result.rows)
     assert any(
-        "one or more discrete states are represented by fewer than two taxa"
-        in warning
+        "one or more discrete states are represented by fewer than two taxa" in warning
         for row in result.rows
         for warning in row.warnings
     )

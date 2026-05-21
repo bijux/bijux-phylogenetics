@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from bijux_phylogenetics.trees import extract_tree_set_clades
-from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_tree_set_fixture,
     list_shared_tree_set_fixtures,
 )
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
+from bijux_phylogenetics.trees import extract_tree_set_clades
 
 
 def test_shared_tree_set_fixture_catalog_covers_governed_multiple_tree_case() -> None:

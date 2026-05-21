@@ -41,19 +41,6 @@ from bijux_phylogenetics.biogeography import (
     summarize_constrained_geographic_model,
     write_geographic_transition_event_table,
 )
-from bijux_phylogenetics.trees import (
-    BranchLengthAggregate,
-    BranchLengthDistributionReport,
-    analyze_branch_length_distribution,
-    analyze_tree_set_branch_lengths,
-    write_branch_length_table,
-)
-from bijux_phylogenetics.trees import (
-    CladeTableReport,
-    extract_tree_clades,
-    extract_tree_set_clades,
-    write_clade_table,
-)
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.comparative import (
     BranchIdentityMetadata,
@@ -177,14 +164,14 @@ from bijux_phylogenetics.comparative.evidence import (
     SUPPORTED_EVIDENCE_API_LOCATORS,
     resolve_supported_evidence_api,
 )
-from bijux_phylogenetics.compare.reference import (
-    validate_support_reference_examples,
-    validate_tree_distance_reference_examples,
-)
 from bijux_phylogenetics.compare.influence import (
     analyze_taxon_influence,
 )
 from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
+from bijux_phylogenetics.compare.reference import (
+    validate_support_reference_examples,
+    validate_tree_distance_reference_examples,
+)
 from bijux_phylogenetics.compare.topology import (
     BranchScoreComparisonReport,
     CladeOverlapComparisonReport,
@@ -192,19 +179,13 @@ from bijux_phylogenetics.compare.topology import (
     compare_branch_score_distance,
     compare_clade_overlap,
     compare_clade_sets,
-    compare_topology_distance,
     compare_robinson_foulds,
     compare_support_values,
+    compare_topology_distance,
     compare_tree_paths,
     detect_clade_changes,
     prune_trees_to_shared_taxa,
     write_clade_overlap_table,
-)
-from bijux_phylogenetics.phylo.alignment import AlignmentRecord, AlignmentSummary
-from bijux_phylogenetics.phylo.branch_lengths.branching_times import (
-    TreeBranchingTimeReport,
-    compute_tree_branching_times,
-    write_tree_branching_time_table,
 )
 from bijux_phylogenetics.core.dataset import (
     audit_dataset_inputs,
@@ -217,57 +198,14 @@ from bijux_phylogenetics.core.dataset import (
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
-from bijux_phylogenetics.datasets.study_inputs import inspect_metadata_table, join_table_to_taxa
-from bijux_phylogenetics.phylo.branch_lengths.node_depths import (
-    TreeNodeDepthReport,
-    compute_tree_node_depths,
-)
-from bijux_phylogenetics.phylo.pruning import (
-    drop_tree_taxa,
-    prune_alignment_to_tree,
-    prune_tree_to_alignment,
-    prune_tree_to_requested_taxa,
-    prune_tree_to_taxa,
-)
-from bijux_phylogenetics.phylo.taxa import (
-    inspect_tree_taxa_safety,
-    inspect_tree_taxon_identity,
-    normalize_tree_taxa,
-    write_taxon_mapping,
-)
-from bijux_phylogenetics.phylo.topology import (
-    assess_tree_monophyly,
-    collapse_branches_below_length,
-    extract_named_clade,
-    extract_tree_clade_by_descendant_taxa,
-    extract_tree_clade_by_node_id,
-    find_tree_mrca,
-    ladderize_tree,
-    reroot_tree_by_midpoint,
-    root_tree_on_outgroup,
-    rotate_all_internal_nodes,
-    rotate_named_node,
-    sort_tree_tips_alphabetically,
-    unroot_tree,
-    write_tree_rooting_report,
-)
 from bijux_phylogenetics.datasets.study_inputs import (
     detect_missing_trait_values,
     detect_unusable_trait_columns,
+    inspect_metadata_table,
+    join_table_to_taxa,
     link_tree_to_traits,
     prune_traits_to_tree,
     validate_traits_table,
-)
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TaxonLabel, TreeNode
-from bijux_phylogenetics.phylo.topology.tip_distances import (
-    TipDistanceMatrixReport,
-    compute_tree_tip_distance_matrix,
-    write_tree_tip_distance_matrix,
-)
-from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
-    APE_ULTRAMETRIC_TOLERANCE,
-    TreeUltrametricReport,
-    assess_tree_ultrametricity,
 )
 from bijux_phylogenetics.diagnostics.assumptions import (
     assess_tree_assumptions,
@@ -297,34 +235,16 @@ from bijux_phylogenetics.distance import (
     validate_imported_distance_matrix,
 )
 from bijux_phylogenetics.ecology import (
+    summarize_host_switching,
     summarize_niche_transitions,
+    write_host_switch_summary_table,
     write_niche_transition_summary_table,
-)
-from bijux_phylogenetics.runtime.errors import (
-    AlignmentTaxonMismatchError,
-    DuplicateTaxonError,
-    EngineUnavailableError,
-    InvalidAlignmentError,
-    InvalidBranchLengthError,
-    InvalidDistanceMatrixError,
-    MetadataJoinError,
-    NonUltrametricTreeError,
-    TreeParseError,
-    TreeRootingError,
-    UnnamedTipError,
-    UnrootedTreeError,
-    UnsupportedTreeFormatError,
 )
 from bijux_phylogenetics.evidence.bundles import (
     bundle_directory,
     bundle_file_paths,
     validate_bundle,
 )
-from bijux_phylogenetics.ecology import (
-    summarize_host_switching,
-    write_host_switch_summary_table,
-)
-from bijux_phylogenetics.runtime.identity import IDENTITY
 from bijux_phylogenetics.io.fasta import (
     assess_alignment_low_information,
     build_alignment_forensic_report,
@@ -372,22 +292,61 @@ from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.roundtrip import validate_tree_roundtrip
 from bijux_phylogenetics.io.trees import detect_tree_format
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord, AlignmentSummary
+from bijux_phylogenetics.phylo.branch_lengths.branching_times import (
+    TreeBranchingTimeReport,
+    compute_tree_branching_times,
+    write_tree_branching_time_table,
+)
+from bijux_phylogenetics.phylo.branch_lengths.node_depths import (
+    TreeNodeDepthReport,
+    compute_tree_node_depths,
+)
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
+    APE_ULTRAMETRIC_TOLERANCE,
+    TreeUltrametricReport,
+    assess_tree_ultrametricity,
+)
+from bijux_phylogenetics.phylo.pruning import (
+    drop_tree_taxa,
+    prune_alignment_to_tree,
+    prune_tree_to_alignment,
+    prune_tree_to_requested_taxa,
+    prune_tree_to_taxa,
+)
+from bijux_phylogenetics.phylo.taxa import (
+    inspect_tree_taxa_safety,
+    inspect_tree_taxon_identity,
+    normalize_tree_taxa,
+    write_taxon_mapping,
+)
+from bijux_phylogenetics.phylo.topology import (
+    assess_tree_monophyly,
+    collapse_branches_below_length,
+    extract_named_clade,
+    extract_tree_clade_by_descendant_taxa,
+    extract_tree_clade_by_node_id,
+    find_tree_mrca,
+    ladderize_tree,
+    reroot_tree_by_midpoint,
+    root_tree_on_outgroup,
+    rotate_all_internal_nodes,
+    rotate_named_node,
+    sort_tree_tips_alphabetically,
+    unroot_tree,
+    write_tree_rooting_report,
+)
+from bijux_phylogenetics.phylo.topology.tip_distances import (
+    TipDistanceMatrixReport,
+    compute_tree_tip_distance_matrix,
+    write_tree_tip_distance_matrix,
+)
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TaxonLabel, TreeNode
 from bijux_phylogenetics.phylogeography import (
     render_geographic_map_html,
     summarize_continuous_phylogeography,
     write_coordinate_movement_summary_table,
 )
-from bijux_phylogenetics.validation import (
-    build_core_workflow_validation_report,
-    build_level_one_release_gate_report,
-    validate_alignment_quality_reference_fixtures,
-    validate_dataset_audit_reference_fixtures,
-    validate_figure_reference_fixtures,
-    validate_report_regression_fixtures,
-    validate_taxon_naming_reference_fixtures,
-    validate_tree_reference_fixtures,
-)
-from bijux_phylogenetics.validation import build_release_truth_report
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
@@ -407,7 +366,29 @@ from bijux_phylogenetics.reports.service import (
     render_tree_uncertainty_report,
     render_workflow_validation_report,
 )
+from bijux_phylogenetics.runtime.errors import (
+    AlignmentTaxonMismatchError,
+    DuplicateTaxonError,
+    EngineUnavailableError,
+    InvalidAlignmentError,
+    InvalidBranchLengthError,
+    InvalidDistanceMatrixError,
+    MetadataJoinError,
+    NonUltrametricTreeError,
+    TreeParseError,
+    TreeRootingError,
+    UnnamedTipError,
+    UnrootedTreeError,
+    UnsupportedTreeFormatError,
+)
+from bijux_phylogenetics.runtime.identity import IDENTITY
 from bijux_phylogenetics.trees import (
+    BranchLengthAggregate,
+    BranchLengthDistributionReport,
+    CladeTableReport,
+    TreeShapeReport,
+    analyze_branch_length_distribution,
+    analyze_tree_set_branch_lengths,
     cluster_trees_by_topology,
     compare_bootstrap_and_posterior_uncertainty,
     compare_posterior_topological_diversity,
@@ -419,18 +400,30 @@ from bijux_phylogenetics.trees import (
     detect_posterior_topology_multimodality,
     detect_unstable_clades,
     detect_unstable_taxa,
+    extract_tree_clades,
+    extract_tree_set_clades,
     load_tree_set,
     summarize_clade_credibility_conflicts,
-    summarize_uncertainty_aware_conclusions,
-    write_clade_credibility_conflict_table,
-    write_topology_cluster_table,
-    write_uncertainty_conclusion_table,
-)
-from bijux_phylogenetics.trees import (
-    TreeShapeReport,
     summarize_tree_set_shapes,
     summarize_tree_shape,
+    summarize_uncertainty_aware_conclusions,
+    write_branch_length_table,
+    write_clade_credibility_conflict_table,
+    write_clade_table,
+    write_topology_cluster_table,
     write_tree_shape_table,
+    write_uncertainty_conclusion_table,
+)
+from bijux_phylogenetics.validation import (
+    build_core_workflow_validation_report,
+    build_level_one_release_gate_report,
+    build_release_truth_report,
+    validate_alignment_quality_reference_fixtures,
+    validate_dataset_audit_reference_fixtures,
+    validate_figure_reference_fixtures,
+    validate_report_regression_fixtures,
+    validate_taxon_naming_reference_fixtures,
+    validate_tree_reference_fixtures,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -538,14 +531,14 @@ def test_package_root_exposes_curated_domain_gateways() -> None:
 def test_public_package_exports_alignment_and_topology_workflows() -> None:
     import bijux_phylogenetics.biogeography as biogeography_api
     import bijux_phylogenetics.compare as compare_module_api
-    import bijux_phylogenetics.phylo.branch_lengths.branching_times as branching_times_api
-    import bijux_phylogenetics.phylo.branch_lengths.node_depths as node_depth_api
-    import bijux_phylogenetics.phylo.topology.tree as tree_api
-    import bijux_phylogenetics.phylo.topology.tip_distances as tree_distance_api
-    import bijux_phylogenetics.phylo.branch_lengths.ultrametric as ultrametric_api
     import bijux_phylogenetics.distance as distance_api
     import bijux_phylogenetics.ecology as ecology_api
     import bijux_phylogenetics.io.fasta as fasta_api
+    import bijux_phylogenetics.phylo.branch_lengths.branching_times as branching_times_api
+    import bijux_phylogenetics.phylo.branch_lengths.node_depths as node_depth_api
+    import bijux_phylogenetics.phylo.branch_lengths.ultrametric as ultrametric_api
+    import bijux_phylogenetics.phylo.topology.tip_distances as tree_distance_api
+    import bijux_phylogenetics.phylo.topology.tree as tree_api
     import bijux_phylogenetics.phylogeography as phylogeography_api
     import bijux_phylogenetics.trees as trees_api
 
@@ -575,14 +568,19 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         distance_api.summarize_distance_bootstrap_support
         is summarize_distance_bootstrap_support
     )
-    assert distance_api.validate_imported_distance_matrix is validate_imported_distance_matrix
+    assert (
+        distance_api.validate_imported_distance_matrix
+        is validate_imported_distance_matrix
+    )
 
     assert compare_module_api.BranchScoreComparisonReport is BranchScoreComparisonReport
     assert (
-        compare_module_api.CladeOverlapComparisonReport
-        is CladeOverlapComparisonReport
+        compare_module_api.CladeOverlapComparisonReport is CladeOverlapComparisonReport
     )
-    assert compare_module_api.compare_branch_score_distance is compare_branch_score_distance
+    assert (
+        compare_module_api.compare_branch_score_distance
+        is compare_branch_score_distance
+    )
     assert compare_module_api.compare_clade_overlap is compare_clade_overlap
     assert compare_module_api.analyze_taxon_influence is analyze_taxon_influence
     assert compare_module_api.compare_topology_distance is compare_topology_distance
@@ -615,8 +613,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
 
     assert branching_times_api.TreeBranchingTimeReport is TreeBranchingTimeReport
     assert (
-        branching_times_api.compute_tree_branching_times
-        is compute_tree_branching_times
+        branching_times_api.compute_tree_branching_times is compute_tree_branching_times
     )
     assert (
         branching_times_api.write_tree_branching_time_table
@@ -655,8 +652,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     )
     assert ecology_api.summarize_host_switching is summarize_host_switching
     assert (
-        ecology_api.write_host_switch_summary_table
-        is write_host_switch_summary_table
+        ecology_api.write_host_switch_summary_table is write_host_switch_summary_table
     )
     assert ecology_api.summarize_niche_transitions is summarize_niche_transitions
     assert (
@@ -667,9 +663,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         phylogeography_api.summarize_continuous_phylogeography
         is summarize_continuous_phylogeography
     )
-    assert (
-        phylogeography_api.render_geographic_map_html is render_geographic_map_html
-    )
+    assert phylogeography_api.render_geographic_map_html is render_geographic_map_html
     assert (
         phylogeography_api.write_coordinate_movement_summary_table
         is write_coordinate_movement_summary_table
@@ -683,8 +677,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
 
     assert comparative_api.BranchIdentityMetadata is BranchIdentityMetadata
     assert (
-        comparative_api.CorrelatedTraitEvolutionReport
-        is CorrelatedTraitEvolutionReport
+        comparative_api.CorrelatedTraitEvolutionReport is CorrelatedTraitEvolutionReport
     )
     assert comparative_api.TraitRegimeMappingReport is TraitRegimeMappingReport
     assert comparative_api.build_branch_identity_lookup is build_branch_identity_lookup
@@ -713,7 +706,9 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         comparative_api.summarize_phylogenetic_logistic
         is summarize_phylogenetic_logistic
     )
-    assert comparative_api.summarize_phylogenetic_signal is summarize_phylogenetic_signal
+    assert (
+        comparative_api.summarize_phylogenetic_signal is summarize_phylogenetic_signal
+    )
     assert comparative_api.compute_blombergs_k is compute_blombergs_k
     assert comparative_api.fit_discrete_mk_model is fit_discrete_mk_model
     assert (
@@ -736,8 +731,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is summarize_brownian_regime_rates
     )
     assert (
-        comparative_api.summarize_trait_regime_mapping
-        is summarize_trait_regime_mapping
+        comparative_api.summarize_trait_regime_mapping is summarize_trait_regime_mapping
     )
     assert (
         comparative_api.summarize_brownian_trait_evolution
@@ -753,20 +747,13 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         comparative_api.summarize_trait_rate_through_time
         is summarize_trait_rate_through_time
     )
-    assert (
-        comparative_api.summarize_ou_covariance_pgls
-        is summarize_ou_covariance_pgls
-    )
-    assert (
-        comparative_api.summarize_ou_trait_evolution
-        is summarize_ou_trait_evolution
-    )
+    assert comparative_api.summarize_ou_covariance_pgls is summarize_ou_covariance_pgls
+    assert comparative_api.summarize_ou_trait_evolution is summarize_ou_trait_evolution
 
     assert benchmark_api.benchmark_tree_validation is benchmark_tree_validation
     assert benchmark_api.benchmark_tree_comparison is benchmark_tree_comparison
     assert (
-        benchmark_api.benchmark_alignment_diagnostics
-        is benchmark_alignment_diagnostics
+        benchmark_api.benchmark_alignment_diagnostics is benchmark_alignment_diagnostics
     )
 
     assert bayesian_api.BeastAnalysisXmlReport is BeastAnalysisXmlReport
@@ -775,14 +762,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.MrBayesParameterDiagnosticsReport
         is MrBayesParameterDiagnosticsReport
     )
-    assert bayesian_api.assess_beast_burnin_sensitivity is assess_beast_burnin_sensitivity
+    assert (
+        bayesian_api.assess_beast_burnin_sensitivity is assess_beast_burnin_sensitivity
+    )
     assert bayesian_api.assess_beast_convergence is assess_beast_convergence
     assert (
         bayesian_api.assess_mrbayes_burnin_sensitivity
         is assess_mrbayes_burnin_sensitivity
     )
     assert bayesian_api.assess_mrbayes_convergence is assess_mrbayes_convergence
-    assert bayesian_api.build_bayesian_evidence_package is build_bayesian_evidence_package
+    assert (
+        bayesian_api.build_bayesian_evidence_package is build_bayesian_evidence_package
+    )
     assert (
         bayesian_api.build_posterior_uncertainty_figure_package
         is build_posterior_uncertainty_figure_package
@@ -796,14 +787,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.parse_beast_posterior_tree_samples
         is parse_beast_posterior_tree_samples
     )
-    assert (
-        bayesian_api.parse_mrbayes_consensus_tree
-        is parse_mrbayes_consensus_tree
-    )
+    assert bayesian_api.parse_mrbayes_consensus_tree is parse_mrbayes_consensus_tree
     assert bayesian_api.run_beast_posterior_inference is run_beast_posterior_inference
     assert (
-        bayesian_api.run_mrbayes_posterior_inference
-        is run_mrbayes_posterior_inference
+        bayesian_api.run_mrbayes_posterior_inference is run_mrbayes_posterior_inference
     )
     assert bayesian_api.summarize_beast_log is summarize_beast_log
     assert (
@@ -828,12 +815,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is DiscreteMkModelComparisonReport
     )
     assert (
-        comparative_api.BrownianRegimeFitSummaryReport
-        is BrownianRegimeFitSummaryReport
+        comparative_api.BrownianRegimeFitSummaryReport is BrownianRegimeFitSummaryReport
     )
     assert (
-        comparative_api.ComparativeReportPackageResult
-        is ComparativeReportPackageResult
+        comparative_api.ComparativeReportPackageResult is ComparativeReportPackageResult
     )
     assert (
         comparative_api.EarlyBurstTraitEvolutionSummaryReport
@@ -841,14 +826,15 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     )
     assert comparative_api.CladeTraitSummaryReport is CladeTraitSummaryReport
     assert comparative_api.TraitOutlierSummaryReport is TraitOutlierSummaryReport
-    assert comparative_api.write_comparative_audit_table is write_comparative_audit_table
+    assert (
+        comparative_api.write_comparative_audit_table is write_comparative_audit_table
+    )
     assert (
         comparative_api.write_comparative_coefficient_table
         is write_comparative_coefficient_table
     )
     assert (
-        comparative_api.write_comparative_signal_table
-        is write_comparative_signal_table
+        comparative_api.write_comparative_signal_table is write_comparative_signal_table
     )
     assert (
         comparative_api.write_trait_outlier_summary_table

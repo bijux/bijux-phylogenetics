@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.influenza_a_ha_reference as viruses_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_influenza_a_ha_reference_dataset,
@@ -14,6 +13,7 @@ from bijux_phylogenetics.datasets import (
     run_influenza_a_ha_reference_workflow,
     write_influenza_a_ha_reference_workflow_bundle,
 )
+import bijux_phylogenetics.datasets.influenza_a_ha_reference as viruses_api
 
 from .support.external_engines import require_alignment_engine_executables
 from .support.scientific_output_assertions import (
@@ -119,7 +119,10 @@ def test_public_runtime_exports_include_influenza_a_ha_reference_dataset_surface
         viruses_api.write_influenza_a_ha_reference_workflow_bundle
         is write_influenza_a_ha_reference_workflow_bundle
     )
-    assert viruses_api.run_influenza_a_ha_reference_demo is run_influenza_a_ha_reference_demo
+    assert (
+        viruses_api.run_influenza_a_ha_reference_demo
+        is run_influenza_a_ha_reference_demo
+    )
 
 
 @pytest.mark.slow

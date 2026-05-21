@@ -60,11 +60,7 @@ def test_check_tree_and_trait_taxon_names_is_case_sensitive_by_policy(
 ) -> None:
     table_path = tmp_path / "case-sensitive-traits.tsv"
     table_path.write_text(
-        "taxon\tvalue\n"
-        "a\t1.0\n"
-        "B\t2.0\n"
-        "C\t3.0\n"
-        "D\t4.0\n",
+        "taxon\tvalue\na\t1.0\nB\t2.0\nC\t3.0\nD\t4.0\n",
         encoding="utf-8",
     )
 

@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.central_european_seashore_flora as plants_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_central_european_seashore_flora_dataset,
@@ -14,6 +13,7 @@ from bijux_phylogenetics.datasets import (
     run_central_european_seashore_flora_workflow,
     write_central_european_seashore_flora_workflow_bundle,
 )
+import bijux_phylogenetics.datasets.central_european_seashore_flora as plants_api
 
 from .support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,

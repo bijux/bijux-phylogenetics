@@ -30,7 +30,9 @@ def test_run_continuous_mode_recovery_governs_packaged_bijux_and_geiger_review_c
     workflow_report = run_continuous_mode_recovery_panel_workflow()
     scenarios = [case.scenario for case in workflow_report.recovery_report.case_reports]
 
-    report = run_continuous_mode_recovery(dataset.default_tree_path, scenarios, artifacts_root=tmp_path / "artifacts")
+    report = run_continuous_mode_recovery(
+        dataset.default_tree_path, scenarios, artifacts_root=tmp_path / "artifacts"
+    )
 
     case_by_id = {case.scenario.case_id: case for case in report.case_reports}
     assert set(case_by_id) == {
@@ -47,7 +49,9 @@ def test_run_continuous_mode_recovery_governs_packaged_bijux_and_geiger_review_c
     assert case_by_id["ou-parameter-recovery"].selected_model == "ornstein-uhlenbeck"
     assert case_by_id["ou-parameter-recovery"].geiger_selected_model == "brownian"
     assert case_by_id["early-burst-rate-recovery"].selected_model == "early-burst"
-    assert case_by_id["early-burst-rate-recovery"].geiger_selected_model == "early-burst"
+    assert (
+        case_by_id["early-burst-rate-recovery"].geiger_selected_model == "early-burst"
+    )
     assert case_by_id["weak-ou-identifiability"].selected_model == "brownian"
     assert case_by_id["weak-ou-identifiability"].geiger_selected_model == "brownian"
     assert case_by_id["lambda-transformed-branch-review"].selected_model == (
@@ -70,9 +74,18 @@ def test_run_continuous_mode_recovery_governs_packaged_bijux_and_geiger_review_c
     )
     assert case_by_id["weak-ou-identifiability"].parameter_rows == []
     assert case_by_id["weak-ou-identifiability"].expected_warning_kinds_present is True
-    assert case_by_id["lambda-transformed-branch-review"].expected_warning_kinds_present is True
-    assert case_by_id["kappa-transformed-branch-review"].expected_warning_kinds_present is True
-    assert case_by_id["delta-transformed-branch-review"].expected_warning_kinds_present is True
+    assert (
+        case_by_id["lambda-transformed-branch-review"].expected_warning_kinds_present
+        is True
+    )
+    assert (
+        case_by_id["kappa-transformed-branch-review"].expected_warning_kinds_present
+        is True
+    )
+    assert (
+        case_by_id["delta-transformed-branch-review"].expected_warning_kinds_present
+        is True
+    )
     assert all(
         row.case_id != "weak-ou-identifiability"
         for row in case_by_id["weak-ou-identifiability"].parameter_comparison_rows
@@ -94,9 +107,11 @@ def test_continuous_mode_recovery_writers_emit_paired_benchmark_ledgers(
         tmp_path / "parameter-recovery.tsv",
         report,
     )
-    parameter_comparison_path = write_continuous_mode_recovery_parameter_comparison_table(
-        tmp_path / "parameter-comparison.tsv",
-        report,
+    parameter_comparison_path = (
+        write_continuous_mode_recovery_parameter_comparison_table(
+            tmp_path / "parameter-comparison.tsv",
+            report,
+        )
     )
     model_choice_path = write_continuous_mode_recovery_model_choice_table(
         tmp_path / "model-choice.tsv",
@@ -127,8 +142,7 @@ def test_continuous_mode_recovery_writers_emit_paired_benchmark_ledgers(
 
     assert summary_rows[0].startswith("case_id\tlabel\ttree_path\tgenerating_model")
     assert any(
-        row.startswith("lambda-transformed-branch-review\t")
-        for row in summary_rows[1:]
+        row.startswith("lambda-transformed-branch-review\t") for row in summary_rows[1:]
     )
     assert parameter_rows[0].startswith(
         "case_id\tgenerating_model\trecovery_engine\tfitted_model"
@@ -143,9 +157,7 @@ def test_continuous_mode_recovery_writers_emit_paired_benchmark_ledgers(
         "case_id\tgenerating_model\tparameter\ttrue_value"
     )
     assert any(
-        row.startswith(
-            "early-burst-rate-recovery\tearly-burst\trate_change\t"
-        )
+        row.startswith("early-burst-rate-recovery\tearly-burst\trate_change\t")
         for row in parameter_comparison_rows[1:]
     )
     assert model_choice_rows[0].startswith(
@@ -173,17 +185,18 @@ def test_continuous_mode_recovery_writers_emit_paired_benchmark_ledgers(
         )
         for row in warning_rows[1:]
     )
-    assert geiger_payload_rows[0] == "case_id\tfit_summary_json\tcomparison_summary_json"
+    assert (
+        geiger_payload_rows[0] == "case_id\tfit_summary_json\tcomparison_summary_json"
+    )
     assert any(
-        row.startswith("brownian-sigma-recovery\t")
-        for row in geiger_payload_rows[1:]
+        row.startswith("brownian-sigma-recovery\t") for row in geiger_payload_rows[1:]
     )
 
 
-def test_geiger_fitcontinuous_recovery_reference_payload_exposes_governed_case_summary() -> None:
-    payload = geiger_fitcontinuous_recovery_reference_payload(
-        "brownian-sigma-recovery"
-    )
+def test_geiger_fitcontinuous_recovery_reference_payload_exposes_governed_case_summary() -> (
+    None
+):
+    payload = geiger_fitcontinuous_recovery_reference_payload("brownian-sigma-recovery")
     assert payload["fit_summary"]["model_name"] == "BM"
     assert payload["comparison_summary"]["selected_model"] == "brownian"
 

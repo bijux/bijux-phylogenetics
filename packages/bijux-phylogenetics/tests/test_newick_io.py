@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import pytest
 
-from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError, TreeParseError
 from bijux_phylogenetics.io.newick import (
     dumps_newick,
     iter_newick_tree_records,
     loads_newick,
     loads_newick_tree_set,
 )
+from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError, TreeParseError
 
 
 def test_loads_newick_preserves_numeric_support_metadata() -> None:

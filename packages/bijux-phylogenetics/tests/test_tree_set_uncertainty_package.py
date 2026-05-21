@@ -58,8 +58,9 @@ def test_build_tree_set_uncertainty_figure_package_writes_publication_bundle(
     )
     assert reproducibility["report_kind"] == "tree_set_uncertainty_figure_package"
     assert reproducibility["generated_figures"][0]["label"] == "consensus_tree"
-    assert "Tree-Set Uncertainty Methods Summary" in result.methods_summary_path.read_text(
-        encoding="utf-8"
+    assert (
+        "Tree-Set Uncertainty Methods Summary"
+        in result.methods_summary_path.read_text(encoding="utf-8")
     )
     assert "Methods Summary" in result.review_path.read_text(encoding="utf-8")
 
@@ -68,10 +69,14 @@ def test_build_tree_set_uncertainty_figure_package_keeps_empty_instability_panel
     tmp_path: Path,
 ) -> None:
     tree_set_path = tmp_path / "single-topology-tree-set.nwk"
-    source_tree = FIXTURES.joinpath("example_tree_set_left.nwk").read_text(
-        encoding="utf-8"
-    ).splitlines()[0]
-    tree_set_path.write_text("\n".join([source_tree, source_tree, source_tree]) + "\n", encoding="utf-8")
+    source_tree = (
+        FIXTURES.joinpath("example_tree_set_left.nwk")
+        .read_text(encoding="utf-8")
+        .splitlines()[0]
+    )
+    tree_set_path.write_text(
+        "\n".join([source_tree, source_tree, source_tree]) + "\n", encoding="utf-8"
+    )
 
     result = build_tree_set_uncertainty_figure_package(
         tree_set_path,

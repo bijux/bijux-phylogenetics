@@ -42,7 +42,9 @@ def _build_planning_report(tmp_path: Path):
         task_records=(
             SimpleNamespace(variant_id="auto-gap-threshold", output_root=auto_gap_root),
             SimpleNamespace(variant_id="auto-gappyout", output_root=auto_gappyout_root),
-            SimpleNamespace(variant_id="ginsi-gap-threshold", output_root=ginsi_gap_root),
+            SimpleNamespace(
+                variant_id="ginsi-gap-threshold", output_root=ginsi_gap_root
+            ),
             SimpleNamespace(
                 variant_id="ginsi-gappyout", output_root=ginsi_gappyout_root
             ),
