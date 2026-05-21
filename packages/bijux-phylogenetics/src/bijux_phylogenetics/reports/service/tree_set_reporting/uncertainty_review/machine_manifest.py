@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from pathlib import Path
 
-from ..ledger import sha256
+from ...ledger import sha256
 
 
 def build_tree_uncertainty_manifest(

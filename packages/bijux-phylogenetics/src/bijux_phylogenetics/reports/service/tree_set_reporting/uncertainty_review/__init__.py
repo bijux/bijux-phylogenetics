@@ -35,7 +35,7 @@ from .artifact_outputs import (
     finalize_tree_uncertainty_outputs,
     write_tree_uncertainty_artifacts,
 )
-from ..uncertainty_manifest import build_tree_uncertainty_manifest
+from .machine_manifest import build_tree_uncertainty_manifest
 from ..uncertainty_sections import build_tree_uncertainty_sections
 
 
