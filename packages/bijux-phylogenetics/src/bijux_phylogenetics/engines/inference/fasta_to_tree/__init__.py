@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-import hashlib
-import json
 from pathlib import Path
 
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
@@ -48,6 +46,7 @@ from .contracts import FastaToTreeWorkflowReport
 from .row_builders import build_fasta_to_tree_model_rows
 from .row_builders import build_fasta_to_tree_support_rows
 from .row_builders import infer_unaligned_sequence_type
+from .stage_fingerprints import build_stage_fingerprint
 from .workflow_layout import _artifact_prefix
 from .workflow_layout import _copy_output
 from .workflow_layout import _display_command
@@ -72,54 +71,6 @@ __all__ = [
 
 def _serialize_support_taxa(taxa: tuple[str, ...]) -> str:
     return ",".join(taxa)
-
-
-def _normalize_stage_fingerprint_payload(value: object) -> object:
-    if isinstance(value, Path):
-        return str(value)
-    if isinstance(value, dict):
-        return {
-            str(key): _normalize_stage_fingerprint_payload(item)
-            for key, item in sorted(value.items())
-        }
-    if isinstance(value, (list, tuple)):
-        return [_normalize_stage_fingerprint_payload(item) for item in value]
-    return value
-
-
-def _build_stage_fingerprint(
-    *,
-    stage: str,
-    input_checksums: dict[str, str],
-    output_checksums: dict[str, str],
-    config: dict[str, object],
-    engine_versions: dict[str, str],
-    upstream_fingerprints: dict[str, str],
-    resumed: bool,
-) -> FastaToTreeStageFingerprint:
-    payload = _normalize_stage_fingerprint_payload(
-        {
-            "stage": stage,
-            "input_checksums": input_checksums,
-            "output_checksums": output_checksums,
-            "config": config,
-            "engine_versions": engine_versions,
-            "upstream_fingerprints": upstream_fingerprints,
-        }
-    )
-    digest = hashlib.sha256(
-        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
-    return FastaToTreeStageFingerprint(
-        stage=stage,
-        fingerprint=digest,
-        input_checksums=input_checksums,
-        output_checksums=output_checksums,
-        config=config,
-        engine_versions=engine_versions,
-        upstream_fingerprints=upstream_fingerprints,
-        resumed=resumed,
-    )
 
 
 def write_fasta_to_tree_model_table(
@@ -606,7 +557,7 @@ def run_fasta_to_tree_workflow(
         if prepared_input_path == input_path
         else build_file_checksums([prepared_input_path])
     )
-    validation_stage = _build_stage_fingerprint(
+    validation_stage = build_stage_fingerprint(
         stage="fasta_validation",
         input_checksums=build_file_checksums([input_path]),
         output_checksums=validation_output_checksums,
@@ -619,7 +570,7 @@ def run_fasta_to_tree_workflow(
         upstream_fingerprints={},
         resumed=False,
     )
-    alignment_stage = _build_stage_fingerprint(
+    alignment_stage = build_stage_fingerprint(
         stage="alignment",
         input_checksums=alignment_workflow.input_checksums,
         output_checksums=alignment_workflow.output_checksums,
@@ -631,7 +582,7 @@ def run_fasta_to_tree_workflow(
         upstream_fingerprints={"fasta_validation": validation_stage.fingerprint},
         resumed=alignment_workflow.resumed,
     )
-    trimming_stage = _build_stage_fingerprint(
+    trimming_stage = build_stage_fingerprint(
         stage="trimming",
         input_checksums=trimming_workflow.input_checksums,
         output_checksums=trimming_workflow.output_checksums,
@@ -644,7 +595,7 @@ def run_fasta_to_tree_workflow(
         upstream_fingerprints={"alignment": alignment_stage.fingerprint},
         resumed=trimming_workflow.resumed,
     )
-    model_selection_stage = _build_stage_fingerprint(
+    model_selection_stage = build_stage_fingerprint(
         stage="model_selection",
         input_checksums=model_selection_workflow.input_checksums,
         output_checksums=model_selection_workflow.output_checksums,
@@ -660,7 +611,7 @@ def run_fasta_to_tree_workflow(
         upstream_fingerprints={"trimming": trimming_stage.fingerprint},
         resumed=model_selection_workflow.resumed,
     )
-    inference_stage = _build_stage_fingerprint(
+    inference_stage = build_stage_fingerprint(
         stage="inference",
         input_checksums=maximum_likelihood_workflow.input_checksums,
         output_checksums=maximum_likelihood_workflow.output_checksums,
@@ -680,7 +631,7 @@ def run_fasta_to_tree_workflow(
         },
         resumed=maximum_likelihood_workflow.resumed,
     )
-    support_stage = _build_stage_fingerprint(
+    support_stage = build_stage_fingerprint(
         stage="support",
         input_checksums=bootstrap_workflow.input_checksums,
         output_checksums=bootstrap_workflow.output_checksums,
@@ -709,7 +660,7 @@ def run_fasta_to_tree_workflow(
             final_outputs["support_table"],
         ]
     )
-    report_stage = _build_stage_fingerprint(
+    report_stage = build_stage_fingerprint(
         stage="report",
         input_checksums=build_file_checksums(
             [
