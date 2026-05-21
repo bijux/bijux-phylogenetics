@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from .builder import render_tree_svg
 from .contracts import AnnotationStrip, SupportLabelRenderAudit, TreeRenderResult
 from .shared import (
     Point,
@@ -45,5 +46,6 @@ __all__ = [
     "node_signature",
     "node_signature_taxa",
     "polar_point",
+    "render_tree_svg",
     "svg_pie_slices",
 ]
