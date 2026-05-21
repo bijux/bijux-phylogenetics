@@ -7,9 +7,9 @@ from pathlib import Path
 
 from bijux_phylogenetics.render.html import write_html_report
 
-from .audit import RabiesMethodSensitivityReproducibilityAuditReport
-from .models import RabiesMethodSensitivityPanelWorkflowReport
-from .slurm import (
+from ..audit import RabiesMethodSensitivityReproducibilityAuditReport
+from ..models import RabiesMethodSensitivityPanelWorkflowReport
+from ..slurm import (
     RabiesMethodSensitivitySlurmArrayStrategyReport,
     RabiesMethodSensitivitySlurmFailureRecoveryReport,
     RabiesMethodSensitivitySlurmJobEvidenceReport,
