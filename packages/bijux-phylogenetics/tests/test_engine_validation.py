@@ -557,7 +557,7 @@ def test_compare_inferred_trees_across_engines_reports_engine_labels(
     )
     fasttree_executable = _fake_fasttree_tree(
         tmp_path / "fasttree-engine",
-        tree_newick="((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3);",
+        tree_newick="((A:0.1,B:0.1)0.98:0.3,(C:0.1,D:0.1)0.62:0.3);",
     )
     ml = run_maximum_likelihood_tree_inference(
         fixture("example_alignment.fasta"),
