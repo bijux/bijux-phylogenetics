@@ -21,6 +21,7 @@ from .contracts import (
     TreeFigureAuditReport,
     TreeFigurePackageResult,
 )
+from .builder import build_tree_figure_package
 from .legends import build_legend_audit, build_legend_entries
 from .review import build_caption_draft, build_legibility_audit
 
@@ -34,6 +35,7 @@ __all__ = [
     "FigureTableConsistencyReport",
     "TreeFigureAuditReport",
     "TreeFigurePackageResult",
+    "build_tree_figure_package",
     "build_legend_audit",
     "build_legend_entries",
     "build_caption_draft",
