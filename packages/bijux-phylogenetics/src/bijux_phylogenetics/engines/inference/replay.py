@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 import shutil
 from typing import Any
@@ -30,6 +29,11 @@ from ..workflows.iqtree import (
 from .comparison import run_tree_inference_comparison
 from .fasta_to_tree import run_fasta_to_tree_workflow
 from .large_alignment import run_large_alignment_inference
+from .manifest_replay import (
+    ManifestReplayComparison,
+    ManifestReplayDrift,
+    ManifestReplayReport,
+)
 from .reproducibility import run_inference_reproducibility_check
 
 __all__ = [
@@ -48,36 +52,6 @@ _ENGINE_VERSION_ARGS: dict[str, tuple[str, ...]] = {
     "beast": ("-version",),
 }
 
-
-@dataclass(slots=True)
-class ManifestReplayDrift:
-    kind: str
-    label: str
-    expected: str
-    observed: str | None
-    matched: bool
-
-
-@dataclass(slots=True)
-class ManifestReplayComparison:
-    label: str
-    status: str
-    detail: str
-
-
-@dataclass(slots=True)
-class ManifestReplayReport:
-    manifest_path: Path
-    workflow: str
-    replay_out_dir: Path
-    replay_manifest_path: Path
-    input_drift: list[ManifestReplayDrift]
-    engine_version_drift: list[ManifestReplayDrift]
-    comparisons: list[ManifestReplayComparison]
-    input_drift_detected: bool
-    engine_version_drift_detected: bool
-    outputs_equivalent: bool
-    notes: list[str]
 
 
 def _payload_workflow(payload: dict[str, Any]) -> str:
