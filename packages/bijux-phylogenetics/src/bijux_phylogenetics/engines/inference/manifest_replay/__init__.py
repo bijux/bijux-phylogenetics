@@ -28,6 +28,9 @@ from .manifest_policy import (
 from .manifest_policy import (
     recorded_input_paths as recorded_input_paths,
 )
+from .output_comparison import (
+    compare_outputs as compare_outputs,
+)
 from .workflow_execution import (
     replay_composite_workflow as replay_composite_workflow,
 )
@@ -41,6 +44,7 @@ __all__ = [
     "ManifestReplayReport",
     "collect_engine_version_drift",
     "collect_input_drift",
+    "compare_outputs",
     "default_replay_out_dir",
     "engine_key_from_name",
     "payload_workflow",
