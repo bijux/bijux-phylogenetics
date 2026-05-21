@@ -1,14 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict
-from hashlib import sha256
-import json
 from pathlib import Path
-
-from bijux_phylogenetics.render.reproducibility import (
-    FigureReproducibilityFilter,
-    write_figure_reproducibility_manifest,
-)
 
 from ..clades import write_clade_diversification_table
 from ..lineage import write_lineage_through_time_table
@@ -28,6 +20,7 @@ from .figure_surfaces import (
     write_ltt_svg,
     write_model_comparison_svg,
 )
+from .package_manifests import write_package_manifests
 from .review_assets import (
     build_audit,
     build_caption_draft,
@@ -36,18 +29,6 @@ from .review_assets import (
     write_caption,
     write_legend_table,
 )
-
-
-def _checksum(path: Path) -> str:
-    digest = sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def _json_ready(payload: object) -> object:
-    return json.loads(json.dumps(payload, default=str))
 
 
 def build_diversification_figure_package(
@@ -133,105 +114,44 @@ def build_diversification_figure_package(
         ),
         encoding="utf-8",
     )
-    artifact_paths = [
-        lineage_figure_path,
-        clade_figure_path,
-        model_figure_path,
-        lineage_table_path,
-        clade_table_path,
-        model_table_path,
-        legend_path,
-        caption_path,
-        methods_summary_path,
-        review_path,
-    ]
-    reproducibility_manifest = write_figure_reproducibility_manifest(
-        reproducibility_manifest_path,
-        report_kind="diversification_figure_package",
-        input_files=[
-            ("tree", tree_path),
-            *([("metadata", metadata_path)] if metadata_path is not None else []),
-        ],
-        generated_figures=[
-            ("lineage_through_time", lineage_figure_path),
-            ("clade_outliers", clade_figure_path),
-            ("model_comparison", model_figure_path),
-        ],
-        generated_tables=[
-            ("lineage_through_time", lineage_table_path),
-            ("clade_outliers", clade_table_path),
-            ("model_comparison", model_table_path),
-        ],
-        filters=[
-            FigureReproducibilityFilter(
-                name="min_tip_count",
-                value=str(min_tip_count),
-                detail="exclude clades smaller than the configured minimum tip count from outlier review",
-            )
-        ],
-        model={
-            "kind": "diversification",
-            "name": model,
-            "selected_model": model_report.better_model,
-            "candidate_models": [row.model for row in model_report.rows],
-        },
-        settings={
-            "taxon_column": taxon_column,
-            "sampling_column": sampling_column,
-            "metadata_path": None if metadata_path is None else str(metadata_path),
-            "tip_count": lineage_report.tip_count,
-        },
-        linked_artifacts=[
-            ("legend", legend_path),
-            ("caption", caption_path),
-            ("methods_summary", methods_summary_path),
-            ("review", review_path),
-        ],
-    )
-    machine_manifest = {
-        "report_kind": "diversification_figure_package",
-        "input_path": str(tree_path),
-        "input_checksum": _checksum(tree_path),
-        "output_paths": [str(path) for path in artifact_paths],
-        "output_checksums": {str(path): _checksum(path) for path in artifact_paths},
-        "reproducibility_manifest_path": str(reproducibility_manifest_path),
-        "reproducibility_manifest_checksum": _checksum(reproducibility_manifest_path),
-        "reproducibility_manifest": reproducibility_manifest,
-        "settings": {
-            "metadata_path": None if metadata_path is None else str(metadata_path),
-            "taxon_column": taxon_column,
-            "sampling_column": sampling_column,
-            "min_tip_count": min_tip_count,
-            "model": model,
-            "methods_summary_path": str(methods_summary_path),
-        },
-        "metrics": {
-            "tip_count": lineage_report.tip_count,
-            "root_age": lineage_report.root_age,
-            "publication_ready": audit.publication_ready,
-            "sampling_metadata_complete": audit.sampling_metadata_complete,
-            "plotted_ltt_point_count": audit.plotted_ltt_point_count,
-            "plotted_clade_count": audit.plotted_clade_count,
-            "highlighted_outlier_count": audit.highlighted_outlier_count,
-            "plotted_model_count": audit.plotted_model_count,
-            "better_model": audit.better_model,
-            "methods_summary_warning_count": methods_summary.warning_count,
-        },
-        "outputs": {
-            "methods_summary_path": str(methods_summary_path),
-        },
-        "lineage_report": _json_ready(asdict(lineage_report)),
-        "clade_report": _json_ready(asdict(clade_report)),
-        "model_report": _json_ready(asdict(model_report)),
-        "sampling_report": None
-        if sampling_report is None
-        else _json_ready(asdict(sampling_report)),
-        "methods_summary": _json_ready(asdict(methods_summary)),
-        "audit": _json_ready(asdict(audit)),
-    }
-    manifest_path.write_text(
-        json.dumps(machine_manifest, default=str, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
+    reproducibility_manifest, machine_manifest = write_package_manifests(
+        result=DiversificationFigurePackageResult(
+            output_dir=out_dir,
+            lineage_figure_path=lineage_figure_path,
+            clade_figure_path=clade_figure_path,
+            model_figure_path=model_figure_path,
+            lineage_table_path=lineage_table_path,
+            clade_table_path=clade_table_path,
+            model_table_path=model_table_path,
+            legend_path=legend_path,
+            caption_path=caption_path,
+            methods_summary_path=methods_summary_path,
+            review_path=review_path,
+            manifest_path=manifest_path,
+            reproducibility_manifest_path=reproducibility_manifest_path,
+            lineage_report=lineage_report,
+            clade_report=clade_report,
+            model_report=model_report,
+            sampling_report=sampling_report,
+            methods_report=methods_report,
+            methods_summary=methods_summary,
+            legend_entries=legend_entries,
+            caption_draft=caption_draft,
+            audit=audit,
+            machine_manifest={},
+        ),
+        tree_path=tree_path,
+        metadata_path=metadata_path,
+        taxon_column=taxon_column,
+        sampling_column=sampling_column,
+        min_tip_count=min_tip_count,
+        model=model,
+        lineage_report=lineage_report,
+        clade_report=clade_report,
+        sampling_report=sampling_report,
+        methods_report=methods_report,
+        methods_summary=methods_summary,
+        audit=audit,
     )
     return DiversificationFigurePackageResult(
         output_dir=out_dir,
