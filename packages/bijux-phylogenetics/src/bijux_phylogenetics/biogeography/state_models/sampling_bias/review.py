@@ -11,9 +11,6 @@ from bijux_phylogenetics.ancestral.common import (
     node_signature,
     stable_value,
 )
-from bijux_phylogenetics.biogeography.state_models import (
-    GeographicExcludedTaxonRow,
-)
 from bijux_phylogenetics.comparative.discrete_evolution import (
     NodeStateEstimate,
     TransitionEvent,
@@ -30,6 +27,8 @@ from bijux_phylogenetics.comparative.discrete_evolution import (
 )
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
+
+from ..likelihood import GeographicExcludedTaxonRow
 
 _MODEL_ALIAS_TO_INTERNAL = {
     "er": "equal-rates",
