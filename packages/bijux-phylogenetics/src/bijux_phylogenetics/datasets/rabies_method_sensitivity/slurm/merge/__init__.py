@@ -11,19 +11,8 @@ from .contracts import (
     RabiesMethodSensitivitySlurmMergeReport,
     RabiesMethodSensitivitySlurmMergeVariantRow,
 )
+from .inputs import load_slurm_merge_inputs
 from .shared import (
-    _CHANGED_CLADES_FILENAME,
-    _CONFIG_FILENAME,
-    _CONCLUSION_SUMMARY_FILENAME,
-    _PREPROCESSING_COMPARISONS_FILENAME,
-    _SLURM_JOB_EVIDENCE_FILENAME,
-    _SLURM_JOB_STATUS_FILENAME,
-    _SLURM_OUTPUT_FRESHNESS_FILENAME,
-    _STABLE_CLADES_FILENAME,
-    _VARIANT_SUMMARY_FILENAME,
-    _WORKFLOW_SUMMARY_FILENAME,
-    _load_json,
-    _read_tsv_rows,
     _write_tsv,
 )
 
@@ -42,21 +31,21 @@ def build_rabies_method_sensitivity_slurm_merge_report(
     bundle_root: Path,
 ) -> RabiesMethodSensitivitySlurmMergeReport:
     """Assess whether distributed batch outputs merge into one coherent result."""
-    bundle_root = bundle_root.resolve()
-    config = _load_json(bundle_root / _CONFIG_FILENAME)
-    workflow_summary_rows = _read_tsv_rows(bundle_root / _WORKFLOW_SUMMARY_FILENAME)
-    variant_summary_rows = _read_tsv_rows(bundle_root / _VARIANT_SUMMARY_FILENAME)
-    preprocessing_rows = _read_tsv_rows(bundle_root / _PREPROCESSING_COMPARISONS_FILENAME)
-    stable_clade_rows = _read_tsv_rows(bundle_root / _STABLE_CLADES_FILENAME)
-    changed_clade_rows = _read_tsv_rows(bundle_root / _CHANGED_CLADES_FILENAME)
-    conclusion_rows = _read_tsv_rows(bundle_root / _CONCLUSION_SUMMARY_FILENAME)
-    slurm_job_status_rows = _read_tsv_rows(bundle_root / _SLURM_JOB_STATUS_FILENAME)
-    slurm_output_freshness_rows = _read_tsv_rows(
-        bundle_root / _SLURM_OUTPUT_FRESHNESS_FILENAME
-    )
-    slurm_job_evidence_rows = _read_tsv_rows(bundle_root / _SLURM_JOB_EVIDENCE_FILENAME)
-
-    checks: list[RabiesMethodSensitivitySlurmMergeCheckRow] = []
+    loaded_inputs = load_slurm_merge_inputs(bundle_root)
+    bundle_root = loaded_inputs.bundle_root
+    config = loaded_inputs.config
+    checks = list(loaded_inputs.checks)
+    workflow_summary = loaded_inputs.workflow_summary
+    configured_variant_ids = loaded_inputs.configured_variant_ids
+    variant_summary_rows = loaded_inputs.variant_summary_rows
+    preprocessing_rows = loaded_inputs.preprocessing_rows
+    stable_clade_rows = loaded_inputs.stable_clade_rows
+    changed_clade_rows = loaded_inputs.changed_clade_rows
+    conclusion_rows = loaded_inputs.conclusion_rows
+    variant_summary_by_variant = loaded_inputs.variant_summary_by_variant
+    job_status_by_variant = loaded_inputs.job_status_by_variant
+    freshness_by_variant = loaded_inputs.freshness_by_variant
+    job_evidence_by_variant = loaded_inputs.job_evidence_by_variant
 
     def add_check(
         check_id: str,
@@ -77,61 +66,6 @@ def build_rabies_method_sensitivity_slurm_merge_report(
                 detail=detail,
             )
         )
-
-    workflow_summary = workflow_summary_rows[0]
-    configured_variant_ids = [
-        str(row["variant_id"]) for row in list(config.get("variants", []))
-    ]
-    variant_summary_by_variant = {
-        str(row["variant_id"]): row for row in variant_summary_rows
-    }
-    job_status_by_variant = {
-        str(row["variant_id"]): row for row in slurm_job_status_rows
-    }
-    freshness_by_variant = {
-        str(row["variant_id"]): row for row in slurm_output_freshness_rows
-    }
-    job_evidence_by_variant = {
-        str(row["variant_id"]): row for row in slurm_job_evidence_rows
-    }
-    summary_variant_ids = sorted(variant_summary_by_variant)
-    job_status_variant_ids = sorted(job_status_by_variant)
-    freshness_variant_ids = sorted(freshness_by_variant)
-    job_evidence_variant_ids = sorted(job_evidence_by_variant)
-    expected_variant_ids = sorted(configured_variant_ids)
-
-    add_check(
-        "variant-coverage:variant-summary",
-        surface="variant-coverage",
-        condition=expected_variant_ids == summary_variant_ids,
-        expected=expected_variant_ids,
-        observed=summary_variant_ids,
-        detail="variant summary rows cover the configured variant ids",
-    )
-    add_check(
-        "variant-coverage:job-status",
-        surface="variant-coverage",
-        condition=expected_variant_ids == job_status_variant_ids,
-        expected=expected_variant_ids,
-        observed=job_status_variant_ids,
-        detail="job-status rows cover the configured variant ids",
-    )
-    add_check(
-        "variant-coverage:freshness",
-        surface="variant-coverage",
-        condition=expected_variant_ids == freshness_variant_ids,
-        expected=expected_variant_ids,
-        observed=freshness_variant_ids,
-        detail="freshness rows cover the configured variant ids",
-    )
-    add_check(
-        "variant-coverage:job-evidence",
-        surface="variant-coverage",
-        condition=expected_variant_ids == job_evidence_variant_ids,
-        expected=expected_variant_ids,
-        observed=job_evidence_variant_ids,
-        detail="job-evidence rows cover the configured variant ids",
-    )
 
     stable_clade_count = len(stable_clade_rows)
     changed_clade_count = len(changed_clade_rows)
