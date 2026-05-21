@@ -11,6 +11,7 @@ from .artifact_outputs import (
     write_large_tree_model_fitting_observation_table,
     write_large_tree_model_fitting_summary_table,
 )
+from .measurement import measure_continuous_fit
 
 __all__ = [
     "LargeTreeModelFittingBenchmarkBundle",
@@ -18,6 +19,7 @@ __all__ = [
     "LargeTreeModelFittingObservation",
     "LargeTreeModelFittingThreshold",
     "case_definitions_for_tier",
+    "measure_continuous_fit",
     "write_large_tree_model_fitting_observation_table",
     "write_large_tree_model_fitting_summary_table",
 ]
