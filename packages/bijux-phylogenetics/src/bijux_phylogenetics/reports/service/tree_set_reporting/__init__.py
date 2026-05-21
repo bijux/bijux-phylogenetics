@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import asdict
 from pathlib import Path
 from time import perf_counter
 import tracemalloc
@@ -31,13 +30,13 @@ from bijux_phylogenetics.trees.uncertainty import (
     build_tree_set_uncertainty_method_report,
 )
 
-from ..ledger import sha256
 from ..models import TreeUncertaintyReportBuildResult
 from .comparison_report import render_tree_set_comparison_report
 from .uncertainty_artifacts import (
     finalize_tree_uncertainty_outputs,
     write_tree_uncertainty_artifacts,
 )
+from .uncertainty_manifest import build_tree_uncertainty_manifest
 from .uncertainty_sections import build_tree_uncertainty_sections
 
 
@@ -180,49 +179,23 @@ def render_tree_uncertainty_report(
             peak_memory_bytes=processing.peak_memory_bytes,
             truncated_section_names=truncated_sections,
         )
-        machine_manifest = {
-            "report_kind": "tree-uncertainty",
-            "title": title,
-            "source_path": str(tree_set_path),
-            "input_checksum": sha256(tree_set_path),
-            "tree_count": summary.tree_count,
-            "rooted_topology_count": summary.rooted_topology_count,
-            "processing": asdict(processing),
-            "budget": asdict(budget_report),
-            "report_mode": "scaled-summary" if scaled_report_mode else "full-review",
-            "artifact_root": str(artifact_root),
-            "linked_artifact_count": len(artifact_paths) + 1,
-            "methods_summary_path": artifact_paths["methods_summary"]
-            .relative_to(out_path.parent)
-            .as_posix(),
-            "methods_summary_warning_count": methods_summary_result.warning_count,
-            "limitations": limitations,
-            "linked_artifacts": {
-                name: {
-                    "path": path.relative_to(out_path.parent).as_posix(),
-                    "byte_count": path.stat().st_size,
-                }
-                for name, path in artifact_paths.items()
-            },
-            "sections": [name for name, _ in core_sections],
-            "supplemental_sections": [name for name, _ in supplemental_sections],
-        }
-        artifact_links = [
-            (
-                name.replace("_", "-"),
-                path.relative_to(out_path.parent).as_posix(),
-                f"{path.stat().st_size} bytes",
+        machine_manifest, artifact_links, artifact_manifest_path = (
+            build_tree_uncertainty_manifest(
+                title=title,
+                tree_set_path=tree_set_path,
+                out_path=out_path,
+                artifact_root=artifact_root,
+                summary=summary,
+                processing=processing,
+                budget_report=budget_report,
+                scaled_report_mode=scaled_report_mode,
+                methods_summary_result=methods_summary_result,
+                limitations=limitations,
+                artifact_paths=artifact_paths,
+                core_sections=core_sections,
+                supplemental_sections=supplemental_sections,
             )
-            for name, path in artifact_paths.items()
-        ]
-        artifact_manifest_path = artifact_root / "tree-uncertainty.manifest.json"
-        machine_manifest["artifact_manifest_path"] = artifact_manifest_path.relative_to(
-            out_path.parent
-        ).as_posix()
-        machine_manifest["linked_artifacts"]["tree_uncertainty_manifest"] = {
-            "path": artifact_manifest_path.relative_to(out_path.parent).as_posix(),
-            "byte_count": 0,
-        }
+        )
         summary_metrics = [
             ("tree count", summary.tree_count),
             ("rooted topologies", summary.rooted_topology_count),
