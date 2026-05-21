@@ -1,13 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import asdict
-import hashlib
-import json
 from pathlib import Path
 
 from bijux_phylogenetics.datasets.study_inputs import (
     load_taxon_table,
-    write_taxon_rows,
 )
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.annotated_trait_tree_package import (
@@ -16,6 +12,7 @@ from bijux_phylogenetics.render.annotated_trait_tree_package import (
     AnnotatedTraitTreePublicationAudit,
     AnnotatedTraitTreeSummaryRow,
     build_annotation_strips,
+    build_package_manifest,
     build_coverage_row,
     build_full_label_map,
     build_heatmap_summary_row,
@@ -25,23 +22,17 @@ from bijux_phylogenetics.render.annotated_trait_tree_package import (
     build_string_map,
     build_string_summary_row,
     require_table,
+    sha256,
+    write_annotation_coverage_table,
+    write_annotation_summary_table,
+    write_package_manifest,
+    write_package_reproducibility_manifest,
 )
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.tree_figure_package import (
     TreeFigurePackageResult,
     build_tree_figure_package,
 )
-from bijux_phylogenetics.render.reproducibility import (
-    write_figure_reproducibility_manifest,
-)
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _coverage_lines(rows: list[AnnotatedTraitTreeCoverageRow]) -> str:
@@ -298,143 +289,54 @@ def build_annotated_trait_tree_package(
         limitations=limitations,
     )
 
-    write_taxon_rows(
-        coverage_path,
-        columns=[
-            "surface",
-            "source_kind",
-            "required",
-            "visible_taxon_count",
-            "observed_taxon_count",
-            "covered_taxon_count",
-            "complete",
-            "missing_taxa",
-            "extra_taxa",
-        ],
-        rows=[
-            {
-                "surface": row.surface,
-                "source_kind": row.source_kind,
-                "required": row.required,
-                "visible_taxon_count": row.visible_taxon_count,
-                "observed_taxon_count": row.observed_taxon_count,
-                "covered_taxon_count": row.covered_taxon_count,
-                "complete": row.complete,
-                "missing_taxa": "|".join(row.missing_taxa),
-                "extra_taxa": "|".join(row.extra_taxa),
-            }
-            for row in coverage_rows
-        ],
-    )
-    write_taxon_rows(
-        summary_path,
-        columns=[
-            "surface",
-            "source_kind",
-            "value_kind",
-            "observed_taxon_count",
-            "missing_taxon_count",
-            "distinct_value_count",
-            "minimum_numeric_value",
-            "maximum_numeric_value",
-            "example_values",
-        ],
-        rows=[
-            {
-                "surface": row.surface,
-                "source_kind": row.source_kind,
-                "value_kind": row.value_kind,
-                "observed_taxon_count": row.observed_taxon_count,
-                "missing_taxon_count": row.missing_taxon_count,
-                "distinct_value_count": row.distinct_value_count,
-                "minimum_numeric_value": row.minimum_numeric_value,
-                "maximum_numeric_value": row.maximum_numeric_value,
-                "example_values": "|".join(row.example_values),
-            }
-            for row in summary_rows
-        ],
-    )
+    write_annotation_coverage_table(coverage_path, coverage_rows)
+    write_annotation_summary_table(summary_path, summary_rows)
 
-    manifest = {
-        "report_kind": "annotated_trait_tree_package",
-        "title": title,
-        "tree_path": str(tree_path),
-        "metadata_path": None if metadata_path is None else str(metadata_path),
-        "traits_path": None if traits_path is None else str(traits_path),
-        "taxon_column": taxon_column,
-        "label_column": label_column,
-        "categorical_column": categorical_column,
-        "continuous_column": continuous_column,
-        "metadata_strip_columns": metadata_strip_columns,
-        "heatmap_columns": heatmap_columns,
-        "layout": layout,
-        "show_support_values": show_support_values,
-        "input_checksums": {
-            str(path): _sha256(path)
-            for path in (tree_path, metadata_path, traits_path)
-            if path is not None
-        },
-        "figure_package_manifest_path": str(figure_package.manifest_path),
-        "figure_package_manifest_checksum": _sha256(figure_package.manifest_path),
-        "coverage_path": str(coverage_path),
-        "coverage_checksum": _sha256(coverage_path),
-        "summary_path": str(summary_path),
-        "summary_checksum": _sha256(summary_path),
-        "review_path": str(review_path),
-        "audit": asdict(audit),
-        "coverage_rows": [asdict(row) for row in coverage_rows],
-        "summary_rows": [asdict(row) for row in summary_rows],
-    }
-    reproducibility_manifest = write_figure_reproducibility_manifest(
+    manifest = build_package_manifest(
+        title=title,
+        tree_path=tree_path,
+        metadata_path=metadata_path,
+        traits_path=traits_path,
+        taxon_column=taxon_column,
+        label_column=label_column,
+        categorical_column=categorical_column,
+        continuous_column=continuous_column,
+        metadata_strip_columns=metadata_strip_columns,
+        heatmap_columns=heatmap_columns,
+        layout=layout,
+        show_support_values=show_support_values,
+        figure_package=figure_package,
+        coverage_path=coverage_path,
+        summary_path=summary_path,
+        review_path=review_path,
+        audit=audit,
+        coverage_rows=coverage_rows,
+        summary_rows=summary_rows,
+    )
+    reproducibility_manifest = write_package_reproducibility_manifest(
         reproducibility_manifest_path,
-        report_kind="annotated_trait_tree_package",
-        input_files=[
-            ("tree", tree_path),
-            *([] if metadata_path is None else [("metadata", metadata_path)]),
-            *([] if traits_path is None else [("traits", traits_path)]),
-        ],
-        generated_figures=[("annotated_trait_tree", figure_package.figure_path)],
-        generated_tables=[
-            ("tree_legend", figure_package.legend_path),
-            ("tree_annotations", figure_package.annotations_path),
-            ("annotation_coverage", coverage_path),
-            ("annotation_surface_summary", summary_path),
-        ],
-        filters=None,
-        model={
-            "kind": "none",
-            "name": None,
-            "detail": "the annotated trait tree package overlays supplied labels and trait metadata without fitting a new statistical model",
-        },
-        settings={
-            "title": title,
-            "taxon_column": taxon_column,
-            "label_column": label_column,
-            "categorical_column": categorical_column,
-            "continuous_column": continuous_column,
-            "metadata_strip_columns": metadata_strip_columns,
-            "heatmap_columns": heatmap_columns,
-            "layout": layout,
-            "show_support_values": show_support_values,
-        },
-        linked_artifacts=[
-            ("tree_caption", figure_package.caption_path),
-            ("tree_figure_manifest", figure_package.manifest_path),
-            (
-                "tree_figure_reproducibility_manifest",
-                figure_package.reproducibility_manifest_path,
-            ),
-        ],
+        title=title,
+        tree_path=tree_path,
+        metadata_path=metadata_path,
+        traits_path=traits_path,
+        taxon_column=taxon_column,
+        label_column=label_column,
+        categorical_column=categorical_column,
+        continuous_column=continuous_column,
+        metadata_strip_columns=metadata_strip_columns,
+        heatmap_columns=heatmap_columns,
+        layout=layout,
+        show_support_values=show_support_values,
+        figure_package=figure_package,
+        coverage_path=coverage_path,
+        summary_path=summary_path,
     )
     manifest["reproducibility_manifest_path"] = str(reproducibility_manifest_path)
-    manifest["reproducibility_manifest_checksum"] = _sha256(
+    manifest["reproducibility_manifest_checksum"] = sha256(
         reproducibility_manifest_path
     )
     manifest["reproducibility_manifest"] = reproducibility_manifest
-    manifest_path.write_text(
-        json.dumps(manifest, default=str, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    write_package_manifest(manifest_path, manifest)
 
     write_html_report(
         title=title,
