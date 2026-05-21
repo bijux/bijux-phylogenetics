@@ -5,7 +5,7 @@ import math
 from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clades
 
 from .imported import build_tree_from_imported_distance_matrix
-from .matrix import compute_pairwise_genetic_distance_matrix
+from .genetic_distance_matrix import compute_pairwise_genetic_distance_matrix
 from .models import (
     DistanceReferenceObservation,
     DistanceReferenceValidationReport,

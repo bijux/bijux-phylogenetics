@@ -17,7 +17,7 @@ from bijux_phylogenetics.trees import (
     write_clade_frequency_table,
 )
 
-from .matrix import (
+from .genetic_distance_matrix import (
     compute_pairwise_genetic_distance_matrix,
     write_genetic_distance_matrix,
 )

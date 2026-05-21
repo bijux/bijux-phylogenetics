@@ -4,7 +4,7 @@ import math
 from pathlib import Path
 from statistics import median
 
-from .matrix import (
+from .genetic_distance_matrix import (
     _build_alignment_distance_lookup,
     compute_pairwise_genetic_distance_matrix,
 )

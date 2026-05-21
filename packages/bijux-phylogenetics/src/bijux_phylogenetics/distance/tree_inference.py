@@ -28,7 +28,7 @@ from bijux_phylogenetics.trees import (
     compute_consensus_tree,
 )
 
-from .matrix import (
+from .genetic_distance_matrix import (
     _bio_distance_matrix,
     _distance_lookup,
     _load_alignment_for_model,
