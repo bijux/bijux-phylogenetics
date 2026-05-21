@@ -10,6 +10,7 @@ from .artifacts import (
     write_package_manifest,
     write_package_reproducibility_manifest,
 )
+from .builder import build_annotated_trait_tree_package
 from .contracts import (
     AnnotatedTraitTreeCoverageRow,
     AnnotatedTraitTreePackageResult,
@@ -42,6 +43,7 @@ __all__ = [
     "AnnotatedTraitTreePublicationAudit",
     "AnnotatedTraitTreeSummaryRow",
     "build_annotation_strips",
+    "build_annotated_trait_tree_package",
     "build_coverage_lines",
     "build_package_manifest",
     "build_coverage_row",
