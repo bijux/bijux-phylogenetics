@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
-from bijux_phylogenetics.io.fasta import load_fasta_alignment
+from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 from bijux_phylogenetics.phylo.topology import (
