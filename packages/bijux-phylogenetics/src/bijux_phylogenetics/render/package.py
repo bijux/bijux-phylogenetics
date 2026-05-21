@@ -7,10 +7,15 @@ from pathlib import Path
 
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.render.reproducibility import (
     FigureReproducibilityFilter,
     write_figure_reproducibility_manifest,
+)
+from bijux_phylogenetics.render.tree_figure_package.audits import (
+    build_collapsed_clade_summaries,
+    build_surface_coverage,
+    build_table_consistency,
+    visible_tip_taxa,
 )
 from bijux_phylogenetics.render.tree_figure_package.contracts import (
     FigureAnnotationCoverage,
@@ -38,56 +43,6 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(65536), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def _descendant_taxa(node: TreeNode) -> list[str]:
-    if node.is_leaf():
-        return [node.name] if node.name is not None else []
-    taxa: list[str] = []
-    for child in node.children:
-        taxa.extend(_descendant_taxa(child))
-    return sorted(taxa)
-
-
-def _visible_tip_taxa(node: TreeNode, collapsed: set[str]) -> list[str]:
-    if node.is_leaf():
-        return [node.name] if node.name is not None else []
-    if node.name is not None and node.name in collapsed:
-        return [node.name]
-    taxa: list[str] = []
-    for child in node.children:
-        taxa.extend(_visible_tip_taxa(child, collapsed))
-    return taxa
-
-
-def _iter_collapsed_nodes(node: TreeNode, collapsed: set[str]) -> list[TreeNode]:
-    if node.is_leaf():
-        return []
-    matches: list[TreeNode] = []
-    if node.name is not None and node.name in collapsed:
-        matches.append(node)
-    else:
-        for child in node.children:
-            matches.extend(_iter_collapsed_nodes(child, collapsed))
-    return matches
-
-
-def _surface_coverage(
-    *,
-    surface: str,
-    visible_taxa: list[str],
-    observed_taxa: set[str],
-) -> FigureAnnotationCoverage:
-    visible_taxa_set = set(visible_taxa)
-    missing_taxa = sorted(taxon for taxon in visible_taxa if taxon not in observed_taxa)
-    extra_taxa = sorted(observed_taxa - visible_taxa_set)
-    return FigureAnnotationCoverage(
-        surface=surface,
-        aligned=not missing_taxa and not extra_taxa,
-        covered_taxa=len(visible_taxa_set & observed_taxa),
-        missing_taxa=missing_taxa,
-        extra_taxa=extra_taxa,
-    )
 
 
 def _legend_audit(
@@ -328,70 +283,6 @@ def _build_caption_draft(
     )
 
 
-def _collapsed_clade_summaries(
-    *,
-    tree,
-    collapsed: set[str],
-    metadata_strips: list[AnnotationStrip],
-) -> list[FigureCollapsedCladeSummary]:
-    summaries: list[FigureCollapsedCladeSummary] = []
-    for node in _iter_collapsed_nodes(tree.root, collapsed):
-        taxa = _descendant_taxa(node)
-        metadata_summaries: list[str] = []
-        for strip in metadata_strips:
-            counts: dict[str, int] = {}
-            for taxon in taxa:
-                value = strip.values.get(taxon)
-                if value:
-                    counts[value] = counts.get(value, 0) + 1
-            if counts:
-                summary = ", ".join(
-                    f"{value}={counts[value]}" for value in sorted(counts)
-                )
-                metadata_summaries.append(f"{strip.name}: {summary}")
-        summaries.append(
-            FigureCollapsedCladeSummary(
-                clade_name=node.name or "collapsed clade",
-                descendant_count=len(taxa),
-                descendant_taxa=taxa,
-                metadata_summaries=metadata_summaries,
-            )
-        )
-    return summaries
-
-
-def _table_consistency(
-    *,
-    visible_taxa: list[str],
-    labels: dict[str, str],
-    annotation_rows: list[dict[str, str]],
-) -> FigureTableConsistencyReport:
-    rows_by_taxon = {row["taxon"]: row for row in annotation_rows}
-    visible_taxa_set = set(visible_taxa)
-    missing_from_table = sorted(
-        taxon for taxon in visible_taxa if taxon not in rows_by_taxon
-    )
-    extra_in_table = sorted(set(rows_by_taxon) - visible_taxa_set)
-    label_mismatches: list[str] = []
-    for taxon in visible_taxa:
-        row = rows_by_taxon.get(taxon)
-        if row is None:
-            continue
-        expected_label = labels.get(taxon, taxon)
-        if row.get("label") != expected_label:
-            label_mismatches.append(
-                f"{taxon}: expected '{expected_label}' but found '{row.get('label', '')}'"
-            )
-    return FigureTableConsistencyReport(
-        consistent=not missing_from_table
-        and not extra_in_table
-        and not label_mismatches,
-        missing_from_table=missing_from_table,
-        extra_in_table=extra_in_table,
-        label_mismatches=label_mismatches,
-    )
-
-
 def build_tree_figure_package(
     tree_path: Path,
     *,
@@ -448,7 +339,7 @@ def build_tree_figure_package(
     continuous_traits = continuous_traits or {}
     metadata_strips = metadata_strips or []
     heatmap_columns = heatmap_columns or []
-    visible_taxa = _visible_tip_taxa(tree.root, collapsed_clade_names)
+    visible_taxa = visible_tip_taxa(tree.root, collapsed_clade_names)
 
     annotation_columns = ["taxon", "label", "categorical_trait", "continuous_trait"]
     annotation_columns.extend(strip.name for strip in metadata_strips)
@@ -471,7 +362,7 @@ def build_tree_figure_package(
     write_taxon_rows(annotations_path, columns=annotation_columns, rows=annotation_rows)
 
     annotation_coverage = [
-        _surface_coverage(
+        build_surface_coverage(
             surface="labels",
             visible_taxa=visible_taxa,
             observed_taxa=set(labels),
@@ -479,7 +370,7 @@ def build_tree_figure_package(
     ]
     if categorical_traits:
         annotation_coverage.append(
-            _surface_coverage(
+            build_surface_coverage(
                 surface="categorical traits",
                 visible_taxa=visible_taxa,
                 observed_taxa={
@@ -489,7 +380,7 @@ def build_tree_figure_package(
         )
     if continuous_traits:
         annotation_coverage.append(
-            _surface_coverage(
+            build_surface_coverage(
                 surface="continuous traits",
                 visible_taxa=visible_taxa,
                 observed_taxa=set(continuous_traits),
@@ -497,7 +388,7 @@ def build_tree_figure_package(
         )
     for strip in metadata_strips:
         annotation_coverage.append(
-            _surface_coverage(
+            build_surface_coverage(
                 surface=f"metadata strip: {strip.name}",
                 visible_taxa=visible_taxa,
                 observed_taxa={taxon for taxon, value in strip.values.items() if value},
@@ -505,7 +396,7 @@ def build_tree_figure_package(
         )
     for column in heatmap_columns:
         annotation_coverage.append(
-            _surface_coverage(
+            build_surface_coverage(
                 surface=f"heatmap column: {column.name}",
                 visible_taxa=visible_taxa,
                 observed_taxa={
@@ -514,7 +405,7 @@ def build_tree_figure_package(
             )
         )
 
-    collapsed_summaries = _collapsed_clade_summaries(
+    collapsed_summaries = build_collapsed_clade_summaries(
         tree=tree,
         collapsed=collapsed_clade_names,
         metadata_strips=metadata_strips,
@@ -526,7 +417,7 @@ def build_tree_figure_package(
         metadata_strips=metadata_strips,
         heatmap_columns=heatmap_columns,
     )
-    table_consistency = _table_consistency(
+    table_consistency = build_table_consistency(
         visible_taxa=tree.tip_names,
         labels=labels,
         annotation_rows=annotation_rows,
