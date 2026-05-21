@@ -5,13 +5,15 @@ from html import escape
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.diagnostics.assumptions import standardize_support_labels
-from bijux_phylogenetics.diagnostics.validation import _load_tree, inspect_tree_path
+from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.phylo.topology.tree import TreeNode
 from bijux_phylogenetics.render.tree_svg import (
     AnnotationStrip,
     SupportLabelRenderAudit,
     TreeRenderResult,
+    audit_support_label_rendering,
+    coerce_support_label,
+    format_branch_value,
 )
 
 
@@ -68,19 +70,6 @@ def _nice_scale_bar_length(max_distance: float) -> float:
         if candidate <= max_distance / 3:
             return candidate
     return base / 10
-
-
-def _format_branch_value(value: float) -> str:
-    return format(round(value, 15), ".15g")
-
-
-def _coerce_support_label(raw: str | None) -> str | None:
-    if raw is None or not raw.strip():
-        return None
-    try:
-        return _format_branch_value(float(raw))
-    except ValueError:
-        return None
 
 
 def _polar_point(
@@ -179,35 +168,6 @@ def _node_signature_taxa(node: TreeNode) -> list[str]:
     for child in node.children:
         taxa.extend(_node_signature_taxa(child))
     return taxa
-
-
-def audit_support_label_rendering(tree_path: Path) -> SupportLabelRenderAudit:
-    """Audit whether support labels can be rendered safely for reviewer-facing figures."""
-    inspection = inspect_tree_path(tree_path)
-    if inspection.suspicious_support_value_ranges:
-        return SupportLabelRenderAudit(
-            validated=False,
-            labels_by_node={},
-            warnings=[
-                "support labels were withheld because one or more values fall outside interpretable support ranges",
-                *inspection.suspicious_support_value_ranges,
-            ],
-        )
-
-    standardized = standardize_support_labels(tree_path)
-    labels_by_node = {
-        row.node: _format_branch_value(row.support_percent) for row in standardized
-    }
-    warnings: list[str] = []
-    if inspection.mixed_support_scales:
-        warnings.append(
-            "support labels were standardized from mixed input scales before rendering"
-        )
-    return SupportLabelRenderAudit(
-        validated=True,
-        labels_by_node=labels_by_node,
-        warnings=warnings,
-    )
 
 
 def _count_visible_leaves(node: TreeNode, collapsed_clades: set[str]) -> int:
@@ -448,7 +408,7 @@ def render_tree_svg(
         if show_support_values:
             support_label = validated_support_labels.get(_node_signature(node))
             if support_label is None:
-                support_label = _coerce_support_label(node.name)
+                support_label = coerce_support_label(node.name)
         if support_label is not None and node is not tree.root:
             texts.append(
                 f'<text x="{x + 8:.1f}" y="{y - 8:.1f}" class="support-label">{escape(support_label)}</text>'
@@ -598,7 +558,7 @@ def render_tree_svg(
             if show_support_values:
                 support_label = validated_support_labels.get(_node_signature(node))
                 if support_label is None:
-                    support_label = _coerce_support_label(node.name)
+                    support_label = coerce_support_label(node.name)
             if support_label is not None and node is not tree.root:
                 node_angle = angle_cache[node.node_id or _node_signature(node)]
                 support_point = _polar_point(
@@ -666,7 +626,7 @@ def render_tree_svg(
             f'<line x1="{scale_start:.1f}" y1="{scale_y:.1f}" x2="{scale_end:.1f}" y2="{scale_y:.1f}" class="scale-bar"/>'
             f'<line x1="{scale_start:.1f}" y1="{scale_y - 6:.1f}" x2="{scale_start:.1f}" y2="{scale_y + 6:.1f}" class="scale-bar"/>'
             f'<line x1="{scale_end:.1f}" y1="{scale_y - 6:.1f}" x2="{scale_end:.1f}" y2="{scale_y + 6:.1f}" class="scale-bar"/>'
-            f'<text x="{(scale_start + scale_end) / 2:.1f}" y="{scale_y - 10:.1f}" class="scale-label">{escape(_format_branch_value(scale_length))}</text>'
+            f'<text x="{(scale_start + scale_end) / 2:.1f}" y="{scale_y - 10:.1f}" class="scale-label">{escape(format_branch_value(scale_length))}</text>'
         )
 
     categorical_legend = ""
@@ -696,8 +656,8 @@ def render_tree_svg(
             f'<stop offset="100%" stop-color="{_continuous_color(continuous_max, continuous_min, continuous_max)}"/>'
             f"</linearGradient></defs>"
             f'<rect x="{legend_x:.1f}" y="{legend_y:.1f}" width="120" height="12" rx="6" fill="url(#continuous-trait-gradient)"/>'
-            f'<text x="{legend_x:.1f}" y="{legend_y + 28:.1f}" class="legend-label">{escape(_format_branch_value(continuous_min))}</text>'
-            f'<text x="{legend_x + 88:.1f}" y="{legend_y + 28:.1f}" class="legend-label">{escape(_format_branch_value(continuous_max))}</text>'
+            f'<text x="{legend_x:.1f}" y="{legend_y + 28:.1f}" class="legend-label">{escape(format_branch_value(continuous_min))}</text>'
+            f'<text x="{legend_x + 88:.1f}" y="{legend_y + 28:.1f}" class="legend-label">{escape(format_branch_value(continuous_max))}</text>'
         )
 
     metadata_strip_headers = ""
