@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 import json
-import math
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -41,29 +40,29 @@ from .real_dataset_benchmark.contracts import (
     RealDatasetMacroevolutionParityRow,
     RealDatasetMacroevolutionSummaryRow,
 )
-
-_CONTINUOUS_SURFACE_ID = "seed-mass-native-model-table"
-_DISCRETE_SURFACE_ID = "lifeform-native-model-table"
-_CONTINUOUS_REVIEW_SURFACE_ID = "seed-mass-alignment-review"
-_DISCRETE_REVIEW_SURFACE_ID = "lifeform-alignment-review"
-_CONTINUOUS_MODES = (
-    "brownian",
-    "white-noise",
-    "pagel-lambda",
-    "ornstein-uhlenbeck",
-    "early-burst",
+from .real_dataset_benchmark.shared import (
+    CONTINUOUS_MISSING_VALUE_TAXON as _CONTINUOUS_MISSING_VALUE_TAXON,
+    CONTINUOUS_MODES as _CONTINUOUS_MODES,
+    CONTINUOUS_REVIEW_SURFACE_ID as _CONTINUOUS_REVIEW_SURFACE_ID,
+    CONTINUOUS_SURFACE_ID as _CONTINUOUS_SURFACE_ID,
+    DISCRETE_MISSING_VALUE_TAXON as _DISCRETE_MISSING_VALUE_TAXON,
+    DISCRETE_MODELS as _DISCRETE_MODELS,
+    DISCRETE_REVIEW_SURFACE_ID as _DISCRETE_REVIEW_SURFACE_ID,
+    DISCRETE_SURFACE_ID as _DISCRETE_SURFACE_ID,
+    EXTRA_TRAIT_TAXON as _EXTRA_TRAIT_TAXON,
+    PROVENANCE_CITATION as _PROVENANCE_CITATION,
+    PROVENANCE_DOI as _PROVENANCE_DOI,
+    REMOVED_TREE_TAXON as _REMOVED_TREE_TAXON,
+    akaike_weights as _akaike_weights,
+    apply_akaike_weights_from_report as _apply_akaike_weights_from_report,
+    apply_geiger_akaike_weights as _apply_geiger_akaike_weights,
+    format_float as _format_float,
+    format_optional_float as _format_optional_float,
+    geiger_selected_weight as _geiger_selected_weight,
+    optional_float as _optional_float,
+    optional_str as _optional_str,
+    selected_model_from_aicc as _selected_model_from_aicc,
 )
-_DISCRETE_MODELS = ("equal-rates", "symmetric", "all-rates-different")
-_REMOVED_TREE_TAXON = "Triglochin_maritimum"
-_EXTRA_TRAIT_TAXON = "unmatched_review_taxon"
-_CONTINUOUS_MISSING_VALUE_TAXON = "Juncus_maritimus"
-_DISCRETE_MISSING_VALUE_TAXON = "Juncus_gerardii"
-_PROVENANCE_CITATION = (
-    "Vandelook, Filip; Janssens, Steven B.; Matthies, Diethart (2018). "
-    "Data from: Ecological niche and phylogeny explain distribution of seed mass "
-    "in the Central European flora. Dryad."
-)
-_PROVENANCE_DOI = "10.5061/dryad.0st06f0"
 
 
 def benchmark_real_dataset_macroevolution() -> RealDatasetMacroevolutionBenchmarkReport:
@@ -998,76 +997,7 @@ def _write_overview(
     return path
 
 
-def _akaike_weights(aicc_by_model: dict[str, float]) -> dict[str, float]:
-    finite_rows = {
-        model: value for model, value in aicc_by_model.items() if math.isfinite(value)
-    }
-    minimum = min(finite_rows.values())
-    unnormalized = {
-        model: math.exp(-0.5 * (value - minimum))
-        for model, value in finite_rows.items()
-    }
-    total = sum(unnormalized.values())
-    return {model: weight / total for model, weight in unnormalized.items()}
-
-
-def _selected_model_from_aicc(aicc_by_model: dict[str, float]) -> str:
-    return min(aicc_by_model.items(), key=lambda item: item[1])[0]
-
-
-def _apply_akaike_weights_from_report(
-    rows: list[RealDatasetMacroevolutionModelRow],
-    *,
-    surface_id: str,
-    engine: str,
-) -> None:
-    surface_rows = [row for row in rows if row.surface_id == surface_id]
-    if engine == "bijux":
-        weights = _akaike_weights({row.model: row.bijux_aicc for row in surface_rows})
-        for row in surface_rows:
-            row.bijux_akaike_weight = weights[row.model]
-        return
-    weights = _akaike_weights({row.model: row.geiger_aicc for row in surface_rows})
-    for row in surface_rows:
-        row.geiger_akaike_weight = weights[row.model]
-
-
-def _apply_geiger_akaike_weights(
-    rows: list[RealDatasetMacroevolutionModelRow],
-    *,
-    surface_id: str,
-) -> None:
-    _apply_akaike_weights_from_report(rows, surface_id=surface_id, engine="geiger")
-
-
-def _geiger_selected_weight(payload: dict[str, object]) -> float:
-    weights = _akaike_weights(
-        {row["model"]: float(row["aicc"]) for row in payload["comparison_rows"]}
-    )
-    return weights[str(payload["selected_model"])]
-
-
 def _representative_discrete_rate(report: DiscreteMkFitReport) -> float | None:
     if report.model != "equal-rates" or not report.transition_rate_rows:
         return None
     return report.transition_rate_rows[0].rate
-
-
-def _optional_float(value: object) -> float | None:
-    if value in (None, "", []):
-        return None
-    return float(value)
-
-
-def _optional_str(value: object) -> str | None:
-    if value in (None, "", []):
-        return None
-    return str(value)
-
-
-def _format_float(value: float) -> str:
-    return f"{value:.12f}"
-
-
-def _format_optional_float(value: float | None) -> str:
-    return "" if value is None else _format_float(value)
