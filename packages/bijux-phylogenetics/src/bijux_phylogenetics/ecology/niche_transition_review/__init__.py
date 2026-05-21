@@ -23,12 +23,13 @@ from .contracts import (
     NicheTransitionReport,
     NicheTransitionSummary,
 )
-
-_MODEL_ALIAS_TO_INTERNAL = {
-    "er": "equal-rates",
-    "sym": "symmetric",
-    "ard": "all-rates-different",
-}
+from .shared import (
+    format_optional_float,
+    node_signature,
+    resolve_internal_model,
+    stable_float,
+    transition_certainty_class,
+)
 
 
 def summarize_niche_transitions(
@@ -40,7 +41,7 @@ def summarize_niche_transitions(
     model: str = "er",
 ) -> NicheTransitionReport:
     """Fit one ecological niche transition model and summarize clade shifts."""
-    internal_model = _resolve_internal_model(model)
+    internal_model = resolve_internal_model(model)
     reconstruction = reconstruct_discrete_ancestral_states(
         tree_path,
         traits_path,
@@ -255,7 +256,7 @@ def write_niche_transition_branch_table(
                 "parent_node": row.parent_node,
                 "child_node": row.child_node,
                 "child_descendant_taxa": ",".join(row.child_descendant_taxa),
-                "branch_length": _format_optional_float(row.branch_length),
+                "branch_length": format_optional_float(row.branch_length),
                 "parent_most_likely_niche": row.parent_most_likely_niche,
                 "child_most_likely_niche": row.child_most_likely_niche,
                 "parent_niche_set": ",".join(row.parent_niche_set),
@@ -394,7 +395,7 @@ def _build_node_rows(report: DiscreteAncestralReport) -> list[NicheStateNodeRow]
             descendant_taxa=list(estimate.descendant_taxa),
             most_likely_niche=estimate.most_likely_state,
             niche_probabilities=dict(sorted(estimate.state_probabilities.items())),
-            confidence=_stable_float(estimate.confidence),
+            confidence=stable_float(estimate.confidence),
             ambiguous=estimate.ambiguous,
             is_root=estimate.node == root_node,
         )
@@ -410,7 +411,7 @@ def _build_rate_rows(report: DiscreteAncestralReport) -> list[NicheTransitionRat
             target_niche=row.target_state,
             transition_allowed=row.transition_allowed,
             step_distance=row.step_distance,
-            rate=_stable_float(row.rate),
+            rate=stable_float(row.rate),
         )
         for row in report.transition_rate_rows
     ]
@@ -424,16 +425,16 @@ def _build_branch_rows(
     branch_rows: list[NicheTransitionBranchRow] = []
 
     def visit(node) -> None:
-        parent_estimate = estimate_by_node[_node_signature(node)]
+        parent_estimate = estimate_by_node[node_signature(node)]
         for child in node.children:
-            child_estimate = estimate_by_node[_node_signature(child)]
+            child_estimate = estimate_by_node[node_signature(child)]
             overlapping_niches = sorted(
                 set(parent_estimate.state_set) & set(child_estimate.state_set)
             )
             changed = (
                 parent_estimate.most_likely_state != child_estimate.most_likely_state
             )
-            support = _stable_float(
+            support = stable_float(
                 min(parent_estimate.confidence, child_estimate.confidence)
             )
             branch_rows.append(
@@ -454,7 +455,7 @@ def _build_branch_rows(
                         if changed
                         else ""
                     ),
-                    certainty_class=_transition_certainty_class(
+                    certainty_class=transition_certainty_class(
                         changed=changed,
                         overlapping_niches=overlapping_niches,
                         parent_niche_set=parent_estimate.state_set,
@@ -462,8 +463,8 @@ def _build_branch_rows(
                     ),
                     support=support,
                     strongly_supported=support >= 0.9 and changed,
-                    parent_confidence=_stable_float(parent_estimate.confidence),
-                    child_confidence=_stable_float(child_estimate.confidence),
+                    parent_confidence=stable_float(parent_estimate.confidence),
+                    child_confidence=stable_float(child_estimate.confidence),
                 )
             )
             visit(child)
@@ -544,7 +545,7 @@ def _build_clade_rows(
             and set(other.descendant_taxa).issubset(descendant_taxa)
             for other in non_root_rows
         )
-        shift_burden_score = _stable_float(
+        shift_burden_score = stable_float(
             certain_transition_count
             + 0.5 * uncertain_transition_count
             + 0.25 * strongly_supported_transition_count
@@ -650,9 +651,9 @@ def _build_summary(
         observed_niche_count=len(reconstruction.observed_states),
         internal_node_count=len(node_rows),
         ambiguous_internal_node_count=sum(row.ambiguous for row in node_rows),
-        log_likelihood=_stable_float(reconstruction.log_likelihood or 0.0),
+        log_likelihood=stable_float(reconstruction.log_likelihood or 0.0),
         parameter_count=reconstruction.parameter_count or 0,
-        aic=_stable_float(reconstruction.aic or 0.0),
+        aic=stable_float(reconstruction.aic or 0.0),
         transition_rate_row_count=len(rate_rows),
         changed_branch_count=sum(row.total_transition_count for row in count_rows),
         certain_transition_count=sum(
@@ -669,48 +670,6 @@ def _build_summary(
             row.contains_repeated_shifts for row in clade_rows
         ),
         root_niche=root_estimate.most_likely_state,
-        root_confidence=_stable_float(root_estimate.confidence),
+        root_confidence=stable_float(root_estimate.confidence),
         warning_count=len(reconstruction.warnings),
     )
-
-
-def _resolve_internal_model(model: str) -> str:
-    try:
-        return _MODEL_ALIAS_TO_INTERNAL[model]
-    except KeyError as error:
-        raise ValueError(
-            "ecological niche transition model must be one of: er, sym, ard"
-        ) from error
-
-
-def _transition_certainty_class(
-    *,
-    changed: bool,
-    overlapping_niches: list[str],
-    parent_niche_set: list[str],
-    child_niche_set: list[str],
-) -> str:
-    if not changed:
-        return "no_transition"
-    if overlapping_niches:
-        return "uncertain_transition"
-    if len(parent_niche_set) == 1 and len(child_niche_set) == 1:
-        return "certain_transition"
-    return "uncertain_transition"
-
-
-def _format_optional_float(value: float | None) -> str:
-    if value is None:
-        return ""
-    return str(_stable_float(value))
-
-
-def _stable_float(value: float) -> float:
-    normalized = round(float(value), 8)
-    return 0.0 if normalized == -0.0 else normalized
-
-
-def _node_signature(node) -> str:
-    if node.is_leaf():
-        return node.name
-    return "|".join(sorted(leaf.name for leaf in node.iter_leaves()))
