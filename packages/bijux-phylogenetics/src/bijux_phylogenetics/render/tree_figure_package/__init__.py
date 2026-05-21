@@ -22,6 +22,7 @@ from .contracts import (
     TreeFigurePackageResult,
 )
 from .legends import build_legend_audit, build_legend_entries
+from .review import build_caption_draft, build_legibility_audit
 
 __all__ = [
     "FigureAnnotationCoverage",
@@ -35,7 +36,9 @@ __all__ = [
     "TreeFigurePackageResult",
     "build_legend_audit",
     "build_legend_entries",
+    "build_caption_draft",
     "build_collapsed_clade_summaries",
+    "build_legibility_audit",
     "build_surface_coverage",
     "build_table_consistency",
     "descendant_taxa",
