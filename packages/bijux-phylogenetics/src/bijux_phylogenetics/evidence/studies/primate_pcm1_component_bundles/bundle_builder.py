@@ -81,7 +81,10 @@ def build_bundle_manifest(
         "freshness": {
             "last_generated_on": date.today().isoformat(),
             "governed_code_paths": [
-                "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles.py"
+                "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/definitions.py",
+                "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/study_context.py",
+                "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/report_payloads.py",
+                "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/bundle_builder.py",
             ],
             "source_basis_locators": [entry["locator"] for entry in source_basis],
         },

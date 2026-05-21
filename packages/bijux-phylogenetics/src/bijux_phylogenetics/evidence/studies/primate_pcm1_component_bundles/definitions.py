@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ..primate_longevity_signal import STUDY_ID
+from ..primate_longevity_signal import STUDY_ID as PRIMATE_LONGEVITY_SIGNAL_STUDY_ID
+
+STUDY_ID = PRIMATE_LONGEVITY_SIGNAL_STUDY_ID
 
 REFERENCE_SCRIPT_PATH = (
     "evidence-book/studies/primate-longevity-signal/reference/"
