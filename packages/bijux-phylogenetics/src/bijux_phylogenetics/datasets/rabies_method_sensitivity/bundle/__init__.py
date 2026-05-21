@@ -10,13 +10,13 @@ from ..models import (
 from .finalization import _build_workflow_bundle
 from .manifest_artifacts import _write_bundle_manifest_artifacts
 from .report_artifacts import _write_bundle_report_artifacts
+from .reproducibility_artifacts import _write_reproducibility_artifacts
 from .shared import (
     _format_float,
     _format_optional_bool,
     _format_optional_float,
     _write_tsv,
 )
-from .reproducibility_artifacts import _write_reproducibility_artifacts
 from .slurm_artifacts import _write_slurm_bundle_artifacts
 from .variant_artifacts import (
     _copy_output,

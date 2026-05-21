@@ -4,8 +4,12 @@ from pathlib import Path
 
 from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 
-from ..models import RabiesCrossHostGeographyPanelDataset, _SOURCE_ACCESSIONS
-from .audit import _build_workflow_config_audit_rows, _raise_for_failed_config_audit, _read_observed_groups
+from ..models import _SOURCE_ACCESSIONS, RabiesCrossHostGeographyPanelDataset
+from .audit import (
+    _build_workflow_config_audit_rows,
+    _raise_for_failed_config_audit,
+    _read_observed_groups,
+)
 from .workflow_config import _load_workflow_config
 
 

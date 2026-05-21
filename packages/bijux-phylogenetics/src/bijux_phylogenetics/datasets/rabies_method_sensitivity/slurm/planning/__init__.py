@@ -6,9 +6,9 @@ from .artifact_outputs import (
     write_rabies_method_sensitivity_slurm_summary_json,
 )
 from .contracts import (
+    RabiesMethodSensitivitySlurmAssumptionRow,
     RabiesMethodSensitivitySlurmJobPlanRow,
     RabiesMethodSensitivitySlurmPlanningReport,
-    RabiesMethodSensitivitySlurmAssumptionRow,
 )
 from .report_builder import build_rabies_method_sensitivity_slurm_planning_report
 

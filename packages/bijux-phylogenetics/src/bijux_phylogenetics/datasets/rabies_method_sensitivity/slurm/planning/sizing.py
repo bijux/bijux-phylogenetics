@@ -38,9 +38,7 @@ def build_job_plan_row(
         (taxon_count * max(variant_run.trimmed_alignment_length, 1)) / 10000,
     )
     alignment_factor = 2.0 if variant_run.config.alignment_mode == "ginsi" else 1.0
-    trimming_factor = (
-        1.15 if variant_run.config.trimming_mode == "gappyout" else 1.0
-    )
+    trimming_factor = 1.15 if variant_run.config.trimming_mode == "gappyout" else 1.0
     bootstrap_scale = max(1.0, bootstrap_replicates / 1000)
     estimated_wallclock_minutes = max(
         MINIMUM_WALLCLOCK_MINUTES,
@@ -67,8 +65,8 @@ def build_job_plan_row(
     )
     observed_output_bytes = directory_bytes(task_record.output_root)
     estimated_output_mib = max(1, ceil(observed_output_bytes / MEBIBYTE))
-    scratch_request = 128 + ceil((observed_output_bytes * 64) / MEBIBYTE) + ceil(
-        dataset_scale * 32
+    scratch_request = (
+        128 + ceil((observed_output_bytes * 64) / MEBIBYTE) + ceil(dataset_scale * 32)
     )
     estimated_scratch_mib = max(
         MINIMUM_SCRATCH_MIB, round_up(scratch_request, quantum=128)
@@ -76,7 +74,9 @@ def build_job_plan_row(
     estimated_core_hours = round(
         (estimated_cpus_per_task * estimated_wallclock_minutes) / 60, 2
     )
-    task_log_path = Path("parallel-logs", f"{variant_run.config.variant_id}.log").as_posix()
+    task_log_path = Path(
+        "parallel-logs", f"{variant_run.config.variant_id}.log"
+    ).as_posix()
     return RabiesMethodSensitivitySlurmJobPlanRow(
         dataset_id=dataset_id,
         variant_id=variant_run.config.variant_id,
@@ -99,7 +99,9 @@ def build_job_plan_row(
         observed_output_bytes=observed_output_bytes,
         estimated_output_mib=estimated_output_mib,
         estimated_core_hours=estimated_core_hours,
-        bundle_output_directory=Path("variants", variant_run.config.variant_id).as_posix(),
+        bundle_output_directory=Path(
+            "variants", variant_run.config.variant_id
+        ).as_posix(),
         task_log_path=task_log_path,
         suggested_sbatch_options=(
             f"--job-name={job_name} "

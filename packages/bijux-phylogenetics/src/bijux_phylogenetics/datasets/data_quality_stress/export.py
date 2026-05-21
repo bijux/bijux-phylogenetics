@@ -8,8 +8,8 @@ from .panel import (
     RAW_ALIGNMENT_NAME,
     RAW_CODING_SEQUENCE_NAME,
     RAW_SEQUENCE_INPUT_NAME,
-    RAW_TRAITS_NAME,
     RAW_TRAIT_MISMATCH_NAME,
+    RAW_TRAITS_NAME,
     RAW_TREE_NAME,
     load_catarrhine_data_quality_stress_panel_dataset,
 )

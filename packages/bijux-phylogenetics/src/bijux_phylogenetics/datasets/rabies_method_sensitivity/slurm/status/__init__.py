@@ -21,5 +21,3 @@ __all__ = [
     "write_rabies_method_sensitivity_slurm_partition_status_table",
     "write_rabies_method_sensitivity_slurm_status_json",
 ]
-
-

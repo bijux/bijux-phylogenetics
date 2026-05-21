@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.compare.topology import compare_tree_paths, write_tree_comparison_table
+from bijux_phylogenetics.compare.topology import (
+    compare_tree_paths,
+    write_tree_comparison_table,
+)
 from bijux_phylogenetics.engines.inference import run_tree_inference_comparison
 from bijux_phylogenetics.engines.workflows.alignment import (
     run_alignment_trimming,

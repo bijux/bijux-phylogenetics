@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
 
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
-from bijux_phylogenetics.io.trees import load_tree
 
 from .models import TableValue, TaxonTable
 from .tables import load_taxon_table, write_taxon_rows
@@ -431,7 +431,9 @@ def align_tree_and_trait_table(
         row = rows_by_taxon.get(taxon)
         if row is None:
             continue
-        missing_columns = [column for column in missing_value_columns if not row[column]]
+        missing_columns = [
+            column for column in missing_value_columns if not row[column]
+        ]
         if missing_columns:
             dropped_missing_value_taxa.append(taxon)
             missing_value_calls.extend(

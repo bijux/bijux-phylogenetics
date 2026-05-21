@@ -56,7 +56,9 @@ def build_tree_retention_file_row(
             "tree-set size is large enough that interval thinning is required"
         )
     if compression_policy == "compress_recommended":
-        issues.append("tree-set size is large enough that gzip compression is recommended")
+        issues.append(
+            "tree-set size is large enough that gzip compression is recommended"
+        )
     elif compression_policy == "compress_required":
         issues.append("tree-set size is large enough that gzip compression is required")
     if tree_count <= 1 and artifact_scope == "tree_artifact":

@@ -3,16 +3,17 @@ from __future__ import annotations
 from pathlib import Path
 import shutil
 
+from ..models import (
+    RabiesCrossHostGeographyPanelWorkflowBundle,
+    RabiesCrossHostGeographyPanelWorkflowReport,
+)
 from .bootstrap_bundle import _write_bootstrap_review_artifacts
 from .comparative_bundle import _write_comparative_bundle_artifacts
 from .finalization import _write_final_bundle_artifacts
 from .host_geography import _write_host_geography_artifacts
 from .stability_bundle import _write_conclusion_stability_artifacts
 from .tree_inference import _write_tree_inference_artifacts
-from ..models import (
-    RabiesCrossHostGeographyPanelWorkflowBundle,
-    RabiesCrossHostGeographyPanelWorkflowReport,
-)
+
 
 def write_rabies_cross_host_geography_panel_workflow_bundle(
     output_root: Path,
@@ -234,7 +235,9 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         bootstrap_topology_clusters_path=bootstrap_review.artifact_report.output_paths[
             "topology_clusters"
         ],
-        bootstrap_tree_comparison_summary_path=(bootstrap_review.comparison_summary_path),
+        bootstrap_tree_comparison_summary_path=(
+            bootstrap_review.comparison_summary_path
+        ),
         bootstrap_tree_comparison_table_path=bootstrap_review.comparison_table_path,
         bootstrap_tree_comparison_report_path=(
             bootstrap_review.comparison_report.output_path

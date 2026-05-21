@@ -85,9 +85,7 @@ def _write_demo_package_manifest(
             ),
             "comparative_formula": config.comparative_formula,
             "comparative_response": config.comparative_response,
-            "comparative_branch_length_floor": (
-                config.comparative_branch_length_floor
-            ),
+            "comparative_branch_length_floor": (config.comparative_branch_length_floor),
             "timeout_seconds": config.timeout_seconds,
             "max_bootstrap_tree_count": config.max_bootstrap_tree_count,
             "max_report_table_rows": config.max_report_table_rows,

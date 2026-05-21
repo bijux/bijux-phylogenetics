@@ -43,7 +43,9 @@ class SequenceCleanupSurfaces:
     sequence_outlier_taxa: list[str]
     tree_outlier_taxa: list[str]
 
-    def validate_cleaned_alignment(self, cleaned_alignment_path: Path) -> FastaInputValidationReport:
+    def validate_cleaned_alignment(
+        self, cleaned_alignment_path: Path
+    ) -> FastaInputValidationReport:
         return validate_fasta_input(
             cleaned_alignment_path,
             sequence_type=self.sequence_type,

@@ -7,12 +7,10 @@ from bijux_phylogenetics.ancestral.continuous import ContinuousAncestralReport
 from bijux_phylogenetics.ancestral.discrete import DiscreteAncestralReport
 from bijux_phylogenetics.comparative.continuous import (
     BrownianTraitEvolutionSummaryReport,
+    OUTraitEvolutionSummaryReport,
 )
 from bijux_phylogenetics.comparative.discrete_evolution import (
     DiscreteStateEvolutionReport,
-)
-from bijux_phylogenetics.comparative.continuous import (
-    OUTraitEvolutionSummaryReport,
 )
 from bijux_phylogenetics.compare.topology import TreeComparisonReport
 from bijux_phylogenetics.distance import DistanceTreeBuildReport

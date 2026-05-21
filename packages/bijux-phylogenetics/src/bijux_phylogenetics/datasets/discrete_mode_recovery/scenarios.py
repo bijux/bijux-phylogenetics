@@ -69,7 +69,9 @@ def _load_scenarios(
                     row.get("early_burst_bounds", ""),
                     default=(-10.0, 10.0),
                 ),
-                expected_overparameterized=(row["expected_overparameterized"] == "true"),
+                expected_overparameterized=(
+                    row["expected_overparameterized"] == "true"
+                ),
                 expected_warning_kinds=_split_items(row["expected_warning_kinds"]),
                 notes=row["notes"],
             )
@@ -97,7 +99,7 @@ def _optional_float(value: str) -> float | None:
 
 
 def _optional_string(value: str) -> str | None:
-    return None if not value else value
+    return value if value else None
 
 
 def _parse_parameter_tolerances(value: str) -> dict[str, float]:

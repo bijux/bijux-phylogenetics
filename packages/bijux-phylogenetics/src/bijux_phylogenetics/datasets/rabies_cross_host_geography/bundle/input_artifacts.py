@@ -5,11 +5,11 @@ from pathlib import Path
 import shutil
 
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
+from bijux_phylogenetics.engines.inference import FastaToTreeWorkflowReport
 from bijux_phylogenetics.phylo.alignment import (
     AlignmentQualityReport,
     SequenceQualityRankingReport,
 )
-from bijux_phylogenetics.engines.inference import FastaToTreeWorkflowReport
 
 from ..models import (
     RabiesComparativeBranchRepair,

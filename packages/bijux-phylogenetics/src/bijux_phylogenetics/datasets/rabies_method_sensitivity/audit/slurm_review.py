@@ -41,7 +41,8 @@ def record_rabies_method_sensitivity_slurm_checks(
     add_check(
         "slurm-arrays:partition-coverage",
         surface="slurm-arrays",
-        condition=bool(slurm_partition_ids) and slurm_partition_ids == member_partition_ids,
+        condition=bool(slurm_partition_ids)
+        and slurm_partition_ids == member_partition_ids,
         expected=sorted(slurm_partition_ids),
         observed=sorted(member_partition_ids),
         detail="array member rows cover the same partition ids as the partition summary",
@@ -114,7 +115,8 @@ def record_rabies_method_sensitivity_slurm_checks(
         surface="slurm-storage",
         condition=int(snapshot.slurm_storage_summary["total_file_count"])
         == storage_total_file_count
-        and int(snapshot.slurm_storage_summary["total_byte_count"]) == storage_total_byte_count,
+        and int(snapshot.slurm_storage_summary["total_byte_count"])
+        == storage_total_byte_count,
         expected=(
             int(snapshot.slurm_storage_summary["total_file_count"]),
             int(snapshot.slurm_storage_summary["total_byte_count"]),
@@ -143,7 +145,9 @@ def record_rabies_method_sensitivity_slurm_checks(
         ),
         detail="storage summary largest-variant fields match the written per-variant storage ledger",
     )
-    slurm_output_explosion_variant_ids = review_context.slurm_output_explosion_variant_ids
+    slurm_output_explosion_variant_ids = (
+        review_context.slurm_output_explosion_variant_ids
+    )
     add_check(
         "slurm-output-explosion:variant-coverage",
         surface="slurm-output-explosion",
@@ -228,7 +232,9 @@ def record_rabies_method_sensitivity_slurm_checks(
         detail="tree-retention summary check_count matches the written check rows",
     )
     observed_tree_set_file_count = sum(
-        1 for row in snapshot.slurm_tree_retention_file_rows if int(row["tree_count"]) > 1
+        1
+        for row in snapshot.slurm_tree_retention_file_rows
+        if int(row["tree_count"]) > 1
     )
     add_check(
         "slurm-tree-retention:tree-set-count",
@@ -242,15 +248,28 @@ def record_rabies_method_sensitivity_slurm_checks(
     observed_tree_retention_status = "required"
     if (
         int(snapshot.slurm_tree_retention_summary["failed_check_count"]) == 0
-        and int(snapshot.slurm_tree_retention_summary["thinning_required_file_count"]) == 0
-        and int(snapshot.slurm_tree_retention_summary["compression_required_file_count"]) == 0
-        and int(snapshot.slurm_tree_retention_summary["thinning_recommended_file_count"]) == 0
-        and int(snapshot.slurm_tree_retention_summary["compression_recommended_file_count"]) == 0
+        and int(snapshot.slurm_tree_retention_summary["thinning_required_file_count"])
+        == 0
+        and int(
+            snapshot.slurm_tree_retention_summary["compression_required_file_count"]
+        )
+        == 0
+        and int(
+            snapshot.slurm_tree_retention_summary["thinning_recommended_file_count"]
+        )
+        == 0
+        and int(
+            snapshot.slurm_tree_retention_summary["compression_recommended_file_count"]
+        )
+        == 0
     ):
         observed_tree_retention_status = "no_action"
     elif int(snapshot.slurm_tree_retention_summary["failed_check_count"]) == 0 and (
         int(snapshot.slurm_tree_retention_summary["thinning_required_file_count"]) == 0
-        and int(snapshot.slurm_tree_retention_summary["compression_required_file_count"]) == 0
+        and int(
+            snapshot.slurm_tree_retention_summary["compression_required_file_count"]
+        )
+        == 0
     ):
         observed_tree_retention_status = "recommended"
     add_check(
@@ -297,7 +316,8 @@ def record_rabies_method_sensitivity_slurm_checks(
     add_check(
         "slurm-merge:merge-ready",
         surface="slurm-merge",
-        condition=bool(snapshot.slurm_merge_summary["merge_ready"]) == (
+        condition=bool(snapshot.slurm_merge_summary["merge_ready"])
+        == (
             int(snapshot.slurm_merge_summary["failed_check_count"]) == 0
             and merged_variant_count == len(config_variant_ids)
         ),
@@ -306,7 +326,9 @@ def record_rabies_method_sensitivity_slurm_checks(
         observed=snapshot.slurm_merge_summary["merge_ready"],
         detail="merge summary merge_ready matches the merge-check and merged-variant totals",
     )
-    slurm_output_freshness_variant_ids = review_context.slurm_output_freshness_variant_ids
+    slurm_output_freshness_variant_ids = (
+        review_context.slurm_output_freshness_variant_ids
+    )
     add_check(
         "slurm-freshness:job-coverage",
         surface="slurm-freshness",
@@ -352,9 +374,8 @@ def record_rabies_method_sensitivity_slurm_checks(
     add_check(
         "slurm-freshness:all-outputs-fresh",
         surface="slurm-freshness",
-        condition=bool(snapshot.slurm_output_freshness_summary["all_outputs_fresh"]) == (
-            freshness_failed_check_count == 0 and freshness_stale_job_count == 0
-        ),
+        condition=bool(snapshot.slurm_output_freshness_summary["all_outputs_fresh"])
+        == (freshness_failed_check_count == 0 and freshness_stale_job_count == 0),
         expected=freshness_failed_check_count == 0 and freshness_stale_job_count == 0,
         observed=snapshot.slurm_output_freshness_summary["all_outputs_fresh"],
         detail="output-freshness summary all_outputs_fresh matches the written checks and per-job statuses",
@@ -371,8 +392,12 @@ def record_rabies_method_sensitivity_slurm_checks(
         )
     slurm_job_status_variant_ids = review_context.slurm_job_status_variant_ids
     slurm_partition_status_ids = review_context.slurm_partition_status_ids
-    slurm_output_freshness_rows_by_variant = review_context.slurm_output_freshness_rows_by_variant
-    slurm_job_evidence_rows_by_variant = review_context.slurm_job_evidence_rows_by_variant
+    slurm_output_freshness_rows_by_variant = (
+        review_context.slurm_output_freshness_rows_by_variant
+    )
+    slurm_job_evidence_rows_by_variant = (
+        review_context.slurm_job_evidence_rows_by_variant
+    )
     slurm_merge_rows_by_variant = review_context.slurm_merge_rows_by_variant
     slurm_job_status_rows_by_variant = review_context.slurm_job_status_rows_by_variant
     add_check(
@@ -409,7 +434,9 @@ def record_rabies_method_sensitivity_slurm_checks(
         observed=len(snapshot.slurm_partition_status_rows),
         detail="workflow status partition_count matches the number of partition-status rows",
     )
-    slurm_failure_recovery_variant_ids = review_context.slurm_failure_recovery_variant_ids
+    slurm_failure_recovery_variant_ids = (
+        review_context.slurm_failure_recovery_variant_ids
+    )
     add_check(
         "slurm-failure-recovery:variant-coverage",
         surface="slurm-failure-recovery",
@@ -428,7 +455,9 @@ def record_rabies_method_sensitivity_slurm_checks(
         detail="failure-recovery summary partition_count matches the written partition rows",
     )
     observed_rerunnable_job_count = sum(
-        1 for row in snapshot.slurm_failure_recovery_job_rows if str(row["rerunnable"]) == "true"
+        1
+        for row in snapshot.slurm_failure_recovery_job_rows
+        if str(row["rerunnable"]) == "true"
     )
     add_check(
         "slurm-failure-recovery:rerunnable-count",
@@ -447,7 +476,9 @@ def record_rabies_method_sensitivity_slurm_checks(
     add_check(
         "slurm-failure-recovery:overall-status",
         surface="slurm-failure-recovery",
-        condition=str(snapshot.slurm_failure_recovery_summary["overall_recovery_status"])
+        condition=str(
+            snapshot.slurm_failure_recovery_summary["overall_recovery_status"]
+        )
         == observed_failure_recovery_status,
         expected=snapshot.slurm_failure_recovery_summary["overall_recovery_status"],
         observed=observed_failure_recovery_status,
@@ -467,8 +498,12 @@ def record_rabies_method_sensitivity_slurm_checks(
                 and str(freshness_row["freshness_status"])
                 == str(job_status_row["output_freshness_status"])
             ),
-            expected=None if freshness_row is None else freshness_row["freshness_status"],
-            observed=None if job_status_row is None else job_status_row["output_freshness_status"],
+            expected=None
+            if freshness_row is None
+            else freshness_row["freshness_status"],
+            observed=None
+            if job_status_row is None
+            else job_status_row["output_freshness_status"],
             detail="job-status rows expose the same output-freshness status as the freshness ledger",
         )
         add_check(
@@ -505,14 +540,22 @@ def record_rabies_method_sensitivity_slurm_checks(
                 and str(merge_row["output_freshness_status"])
                 == str(freshness_row["freshness_status"])
             ),
-            expected=None if freshness_row is None else freshness_row["freshness_status"],
-            observed=None if merge_row is None else merge_row["output_freshness_status"],
+            expected=None
+            if freshness_row is None
+            else freshness_row["freshness_status"],
+            observed=None
+            if merge_row is None
+            else merge_row["output_freshness_status"],
             detail="merge-variant rows expose the same freshness status as the freshness ledger",
         )
         if job_evidence_row is None:
             continue
-        evidence_json_path = snapshot.bundle_root / str(job_evidence_row["evidence_json_path"])
-        evidence_html_path = snapshot.bundle_root / str(job_evidence_row["evidence_html_path"])
+        evidence_json_path = snapshot.bundle_root / str(
+            job_evidence_row["evidence_json_path"]
+        )
+        evidence_html_path = snapshot.bundle_root / str(
+            job_evidence_row["evidence_html_path"]
+        )
         add_check(
             f"slurm-job-evidence:json:{variant_id}",
             surface="slurm-job-evidence",

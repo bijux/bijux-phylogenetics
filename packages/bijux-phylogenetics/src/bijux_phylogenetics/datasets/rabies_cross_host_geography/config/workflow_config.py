@@ -25,13 +25,12 @@ from ..models import (
     _MEMORY_WARNING_THRESHOLD_BYTES,
     _OUTGROUP_TAXA,
     _SEQUENCE_TYPE,
-    _TRIMMING_MODE,
     _TRIM_GAP_THRESHOLD,
+    _TRIMMING_MODE,
     _WORKFLOW_PREFIX,
     _WORKFLOW_TIMEOUT_SECONDS,
     RabiesCrossHostGeographyPanelWorkflowConfig,
 )
-
 from .resources import _default_workflow_config_path
 
 

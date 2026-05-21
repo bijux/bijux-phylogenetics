@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.compare.presentation import ComparisonReportBuildResult
 from bijux_phylogenetics.comparative.reporting.analysis_package import (
     ComparativeAnalysisSummaryRow,
     ComparativeInterpretationRow,
 )
+from bijux_phylogenetics.compare.presentation import ComparisonReportBuildResult
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 from ..models import (
@@ -30,13 +30,9 @@ def _build_scientific_finding_rows(
         "Does the bootstrap consensus preserve the rooted ML conclusion?"
     )
     if bootstrap_tree_comparison_report.topology.topology_equal:
-        bootstrap_claim = (
-            "The bootstrap consensus preserves the rooted ML topology on the shared taxon set."
-        )
+        bootstrap_claim = "The bootstrap consensus preserves the rooted ML topology on the shared taxon set."
     else:
-        bootstrap_claim = (
-            "The bootstrap consensus differs from the rooted ML topology after support-driven summarization."
-        )
+        bootstrap_claim = "The bootstrap consensus differs from the rooted ML topology after support-driven summarization."
     comparative_claim = next(
         (
             row.claim

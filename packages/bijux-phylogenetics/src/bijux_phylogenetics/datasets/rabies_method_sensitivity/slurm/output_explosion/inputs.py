@@ -38,16 +38,18 @@ def load_output_explosion_inputs(bundle_root: Path) -> OutputExplosionInputs:
     bundle_root = bundle_root.resolve()
     config = _load_json(bundle_root / _CONFIG_FILENAME)
     job_plan_rows = _read_tsv_rows(bundle_root / _SLURM_JOB_PLAN_FILENAME)
-    storage_category_rows = _read_tsv_rows(bundle_root / _SLURM_STORAGE_CATEGORIES_FILENAME)
-    storage_variant_rows = _read_tsv_rows(bundle_root / _SLURM_STORAGE_VARIANTS_FILENAME)
+    storage_category_rows = _read_tsv_rows(
+        bundle_root / _SLURM_STORAGE_CATEGORIES_FILENAME
+    )
+    storage_variant_rows = _read_tsv_rows(
+        bundle_root / _SLURM_STORAGE_VARIANTS_FILENAME
+    )
     storage_summary = _load_json(bundle_root / _SLURM_STORAGE_SUMMARY_FILENAME)
 
     configured_variant_ids = sorted(
         str(row["variant_id"]) for row in list(config.get("variants", []))
     )
-    job_plan_by_variant = {
-        str(row["variant_id"]): row for row in job_plan_rows
-    }
+    job_plan_by_variant = {str(row["variant_id"]): row for row in job_plan_rows}
     storage_variant_by_variant = {
         str(row["variant_id"]): row for row in storage_variant_rows
     }

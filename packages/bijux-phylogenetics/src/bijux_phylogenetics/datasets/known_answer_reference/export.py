@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
+import shutil
 
 from .models import KnownAnswerReferenceExportResult
 from .panel import load_known_answer_reference_dataset

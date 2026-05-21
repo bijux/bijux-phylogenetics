@@ -35,9 +35,7 @@ def _report_bundle_paths(
         "workflow_summary": workflow_artifacts.workflow_summary_path,
         "variant_summary": workflow_artifacts.variant_summary_path,
         "parallel_summary": workflow_artifacts.parallel_summary_path,
-        "preprocessing_comparison": (
-            workflow_artifacts.preprocessing_comparison_path
-        ),
+        "preprocessing_comparison": (workflow_artifacts.preprocessing_comparison_path),
         "stable_clades": workflow_artifacts.stable_clades_path,
         "changed_clades": workflow_artifacts.changed_clades_path,
         "conclusion_summary": workflow_artifacts.conclusion_summary_path,

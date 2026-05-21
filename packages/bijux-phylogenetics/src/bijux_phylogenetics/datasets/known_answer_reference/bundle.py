@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
+import shutil
 
 from bijux_phylogenetics.ancestral.continuous import (
     write_continuous_ancestral_summary_table,
@@ -13,14 +13,12 @@ from bijux_phylogenetics.ancestral.discrete import (
 )
 from bijux_phylogenetics.comparative.continuous import (
     write_brownian_trait_evolution_summary_table,
+    write_ou_trait_evolution_summary_table,
 )
 from bijux_phylogenetics.comparative.discrete_evolution import (
     DiscreteStateEvolutionReport,
     write_node_state_probability_table,
     write_transition_summary_table,
-)
-from bijux_phylogenetics.comparative.continuous import (
-    write_ou_trait_evolution_summary_table,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.ecology import (

@@ -20,7 +20,9 @@ def build_rabies_method_sensitivity_slurm_tree_retention_report(
     checks = list(loaded_inputs.checks)
 
     file_rows = tuple(
-        build_tree_retention_file_row(bundle_root=bundle_root, relative_path=relative_path)
+        build_tree_retention_file_row(
+            bundle_root=bundle_root, relative_path=relative_path
+        )
         for relative_path in iter_tree_relative_paths(bundle_root)
     )
     observed_variant_ids = sorted({row.variant_id for row in file_rows})
@@ -144,10 +146,7 @@ def build_rabies_method_sensitivity_slurm_tree_retention_report(
     overall_policy_status = "no_action"
     if thinning_required_file_count > 0 or compression_required_file_count > 0:
         overall_policy_status = "required"
-    elif (
-        thinning_recommended_file_count > 0
-        or compression_recommended_file_count > 0
-    ):
+    elif thinning_recommended_file_count > 0 or compression_recommended_file_count > 0:
         overall_policy_status = "recommended"
     if tree_set_file_count == 0:
         global_issues.append(

@@ -132,10 +132,14 @@ def build_rabies_method_sensitivity_slurm_output_explosion_report(
         checks,
         "risk-summary:variant-counts",
         surface="risk-summary",
-        condition=low_risk_variant_count + warning_variant_count + high_risk_variant_count
+        condition=low_risk_variant_count
+        + warning_variant_count
+        + high_risk_variant_count
         == len(variant_rows),
         expected=len(variant_rows),
-        observed=low_risk_variant_count + warning_variant_count + high_risk_variant_count,
+        observed=low_risk_variant_count
+        + warning_variant_count
+        + high_risk_variant_count,
         detail="risk-status counts cover every configured variant exactly once",
     )
     _add_check(
@@ -176,8 +180,12 @@ def build_rabies_method_sensitivity_slurm_output_explosion_report(
         total_estimated_storage_mib=int(storage_summary["total_estimated_storage_mib"]),
         total_tree_byte_count=int(storage_trees_row["total_byte_count"]),
         total_tree_file_count=int(storage_trees_row["total_file_count"]),
-        total_posterior_sample_byte_count=int(storage_posterior_row["total_byte_count"]),
-        total_posterior_sample_file_count=int(storage_posterior_row["total_file_count"]),
+        total_posterior_sample_byte_count=int(
+            storage_posterior_row["total_byte_count"]
+        ),
+        total_posterior_sample_file_count=int(
+            storage_posterior_row["total_file_count"]
+        ),
         total_report_byte_count=int(storage_reports_row["total_byte_count"]),
         largest_variant_id=largest_variant.variant_id,
         largest_variant_output_share=largest_variant.output_share,
@@ -194,7 +202,11 @@ def _derive_overall_risk_status(
     high_risk_variant_count: int,
     global_severity: str,
 ) -> str:
-    if failed_check_count > 0 or high_risk_variant_count > 0 or global_severity == "high":
+    if (
+        failed_check_count > 0
+        or high_risk_variant_count > 0
+        or global_severity == "high"
+    ):
         return "high"
     if warning_variant_count > 0 or global_severity == "warning":
         return "warning"

@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from bijux_phylogenetics.phylo.alignment import AlignmentSummary
 from bijux_phylogenetics.engines.inference import run_fasta_to_tree_workflow
 from bijux_phylogenetics.io.fasta import load_fasta_records, write_fasta_alignment
 from bijux_phylogenetics.io.fasta.cleaning import trim_alignment
@@ -12,6 +11,7 @@ from bijux_phylogenetics.io.fasta.records import (
     summarise_fasta,
     summarise_records_as_alignment_summary,
 )
+from bijux_phylogenetics.phylo.alignment import AlignmentSummary
 
 from .models import (
     PleistoceneBearCytbFragmentDataset,

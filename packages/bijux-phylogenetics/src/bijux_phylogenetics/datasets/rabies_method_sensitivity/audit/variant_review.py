@@ -33,37 +33,75 @@ def build_rabies_method_sensitivity_variant_audit_rows(
             issues.append("task log is missing")
 
         expected_output_root = Path("variants", variant_id).as_posix()
-        if manifest_row is not None and str(manifest_row.get("output_root")) != expected_output_root:
-            issues.append("workflow manifest output_root differs from the expected variant directory")
-        if parallel_row is not None and str(parallel_row.get("log_path")) != Path("parallel-logs", f"{variant_id}.log").as_posix():
-            issues.append("parallel summary log_path differs from the expected task log path")
-        if log_row is not None and str(log_row.get("output_root")) != expected_output_root:
-            issues.append("task log output_root differs from the expected variant directory")
+        if (
+            manifest_row is not None
+            and str(manifest_row.get("output_root")) != expected_output_root
+        ):
+            issues.append(
+                "workflow manifest output_root differs from the expected variant directory"
+            )
+        if (
+            parallel_row is not None
+            and str(parallel_row.get("log_path"))
+            != Path("parallel-logs", f"{variant_id}.log").as_posix()
+        ):
+            issues.append(
+                "parallel summary log_path differs from the expected task log path"
+            )
+        if (
+            log_row is not None
+            and str(log_row.get("output_root")) != expected_output_root
+        ):
+            issues.append(
+                "task log output_root differs from the expected variant directory"
+            )
         if manifest_row is not None and str(manifest_row.get("status")) != "succeeded":
             issues.append("workflow manifest does not record the variant as succeeded")
         if parallel_row is not None and str(parallel_row.get("status")) != "succeeded":
-            issues.append("parallel execution summary does not record the variant as succeeded")
+            issues.append(
+                "parallel execution summary does not record the variant as succeeded"
+            )
         if log_row is not None and str(log_row.get("status")) != "succeeded":
             issues.append("task log does not record the variant as succeeded")
 
         for field_name in ("alignment_mode", "trimming_mode"):
             expected_value = str(config_row[field_name])
             if log_row is not None and str(log_row.get(field_name)) != expected_value:
-                issues.append(f"task log {field_name} does not match the resolved config")
-            if summary_row is not None and str(summary_row.get(field_name)) != expected_value:
-                issues.append(f"variant summary {field_name} does not match the resolved config")
+                issues.append(
+                    f"task log {field_name} does not match the resolved config"
+                )
+            if (
+                summary_row is not None
+                and str(summary_row.get(field_name)) != expected_value
+            ):
+                issues.append(
+                    f"variant summary {field_name} does not match the resolved config"
+                )
 
-        expected_trim_gap_threshold = _format_float(float(config_row["trim_gap_threshold"]))
-        if log_row is not None and str(log_row.get("trim_gap_threshold")) != expected_trim_gap_threshold:
-            issues.append("task log trim_gap_threshold does not match the resolved config")
-        if summary_row is not None and str(summary_row.get("trim_gap_threshold")) != expected_trim_gap_threshold:
+        expected_trim_gap_threshold = _format_float(
+            float(config_row["trim_gap_threshold"])
+        )
+        if (
+            log_row is not None
+            and str(log_row.get("trim_gap_threshold")) != expected_trim_gap_threshold
+        ):
+            issues.append(
+                "task log trim_gap_threshold does not match the resolved config"
+            )
+        if (
+            summary_row is not None
+            and str(summary_row.get("trim_gap_threshold"))
+            != expected_trim_gap_threshold
+        ):
             issues.append(
                 "variant summary trim_gap_threshold does not match the resolved config"
             )
 
-        variant_output_paths = sorted(
-            path for path in variant_root.iterdir() if path.is_file()
-        ) if variant_root.is_dir() else []
+        variant_output_paths = (
+            sorted(path for path in variant_root.iterdir() if path.is_file())
+            if variant_root.is_dir()
+            else []
+        )
         variant_filenames = tuple(path.name for path in variant_output_paths)
         missing_required_files = tuple(
             name

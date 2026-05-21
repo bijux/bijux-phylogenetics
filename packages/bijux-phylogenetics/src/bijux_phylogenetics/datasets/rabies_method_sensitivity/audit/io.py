@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import asdict
 import csv
+from dataclasses import asdict
 import hashlib
 import json
 from pathlib import Path
@@ -115,8 +115,6 @@ def _write_tsv(
         writer.writeheader()
         for row in rows:
             writer.writerow(
-                {
-                    key: "" if value is None else value for key, value in row.items()
-                }
+                {key: "" if value is None else value for key, value in row.items()}
             )
     return path

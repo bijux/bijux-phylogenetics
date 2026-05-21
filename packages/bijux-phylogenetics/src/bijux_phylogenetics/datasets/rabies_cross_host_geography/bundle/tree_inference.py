@@ -10,8 +10,12 @@ from bijux_phylogenetics.datasets.rabies_cross_host_geography.models import (
 from bijux_phylogenetics.datasets.rabies_cross_host_geography.workflow.tree_transforms import (
     _stabilize_clade_report,
 )
-from bijux_phylogenetics.trees import CladeTableReport, extract_tree_clades, write_clade_table
 from bijux_phylogenetics.phylo.topology import write_tree_rooting_report
+from bijux_phylogenetics.trees import (
+    CladeTableReport,
+    extract_tree_clades,
+    write_clade_table,
+)
 
 from .input_artifacts import (
     _copy_output,

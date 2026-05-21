@@ -59,8 +59,12 @@ def build_rabies_method_sensitivity_slurm_merge_report(
 
     stable_clade_count = len(stable_clade_rows)
     changed_clade_count = len(changed_clade_rows)
-    preprocessing_change_pair_count = count_preprocessing_change_pairs(preprocessing_rows)
-    serious_conflict_variant_count = count_serious_conflict_variants(variant_summary_rows)
+    preprocessing_change_pair_count = count_preprocessing_change_pairs(
+        preprocessing_rows
+    )
+    serious_conflict_variant_count = count_serious_conflict_variants(
+        variant_summary_rows
+    )
     rooted_engine_change_variant_count = count_rooted_engine_change_variants(
         variant_summary_rows
     )

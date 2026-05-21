@@ -41,7 +41,9 @@ def build_rabies_method_sensitivity_slurm_status_report(
     active_record = load_active_engine_run(execution_record_path)
     active_run_state = "absent"
     if active_record is not None:
-        active_run_state = "live" if active_engine_run_is_live(active_record) else "stale"
+        active_run_state = (
+            "live" if active_engine_run_is_live(active_record) else "stale"
+        )
 
     partition_rows = read_tsv_rows(bundle_root / _SLURM_ARRAY_PARTITIONS_FILENAME)
     member_rows = read_tsv_rows(bundle_root / _SLURM_ARRAY_MEMBERS_FILENAME)
@@ -49,9 +51,7 @@ def build_rabies_method_sensitivity_slurm_status_report(
         bundle_root,
         dataset=dataset,
     )
-    freshness_rows_by_variant = {
-        row.variant_id: row for row in freshness_report.jobs
-    }
+    freshness_rows_by_variant = {row.variant_id: row for row in freshness_report.jobs}
     execution_task_rows = {
         str(row["variant_id"]): row
         for row in list(execution_record.get("task_records", []))

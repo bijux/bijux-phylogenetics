@@ -39,7 +39,9 @@ def build_failure_recovery_job_row(
         recovery_action = "wait_for_live_workflow"
         recovery_scope = "workflow"
         likely_cause_code = "workflow_still_running"
-        likely_cause_detail = "the workflow is still active and this job should not be rerun yet"
+        likely_cause_detail = (
+            "the workflow is still active and this job should not be rerun yet"
+        )
         prerequisite = "wait_for_terminal_state"
     elif current_status == "failed":
         rerunnable = True
@@ -62,7 +64,9 @@ def build_failure_recovery_job_row(
         rerunnable = True
         recovery_action = "rerun_variant"
         likely_cause_code = "unknown_state"
-        likely_cause_detail = "job state could not be classified cleanly from the governed evidence"
+        likely_cause_detail = (
+            "job state could not be classified cleanly from the governed evidence"
+        )
         prerequisite = "inspect_status_ledgers_then_rerun"
 
     return RabiesMethodSensitivitySlurmFailureRecoveryJobRow(
@@ -106,7 +110,13 @@ def build_failure_recovery_partition_row(
     elif rerunnable_job_count > 0:
         recovery_action = "rerun_selected_jobs"
     likely_cause_codes = tuple(
-        sorted({row.likely_cause_code for row in job_rows if row.likely_cause_code != "none"})
+        sorted(
+            {
+                row.likely_cause_code
+                for row in job_rows
+                if row.likely_cause_code != "none"
+            }
+        )
     )
     return RabiesMethodSensitivitySlurmFailureRecoveryPartitionRow(
         partition_id=str(partition_status_row["partition_id"]),
@@ -149,11 +159,17 @@ def classify_terminal_failure(
             return (code, "engine reported success but durable outputs were missing")
         if code == "stale_running_marker":
             return (code, "a stale running marker blocked a clean variant completion")
-        return (code, "variant execution failed and the task log recorded a terminal error")
+        return (
+            code,
+            "variant execution failed and the task log recorded a terminal error",
+        )
     if error_message is not None and "No such file" in error_message:
         return ("missing_input", "required input or intermediate files were missing")
     if error_message is not None and "timeout" in error_message.lower():
-        return ("task_timeout", "engine execution timed out before the variant finished")
+        return (
+            "task_timeout",
+            "engine execution timed out before the variant finished",
+        )
     if error_message is not None and "killed" in error_message.lower():
         return ("task_terminated", "engine execution was terminated before completion")
     return ("task_failure", "task log recorded a terminal variant failure")
@@ -165,7 +181,9 @@ def classify_stale_recovery(
     evidence_class = str(job_status_row["evidence_class"])
     freshness_status = str(job_status_row["output_freshness_status"])
     freshness_codes = {
-        code for code in str(job_status_row["output_freshness_reason_codes"]).split(",") if code
+        code
+        for code in str(job_status_row["output_freshness_reason_codes"]).split(",")
+        if code
     }
     if freshness_status == "stale":
         return (

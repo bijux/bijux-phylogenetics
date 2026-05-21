@@ -10,7 +10,9 @@ from .contracts import (
     RabiesMethodSensitivitySlurmOutputFreshnessReport,
     RabiesMethodSensitivitySlurmOutputFreshnessRow,
 )
-from .report_builder import build_rabies_method_sensitivity_slurm_output_freshness_report
+from .report_builder import (
+    build_rabies_method_sensitivity_slurm_output_freshness_report,
+)
 
 __all__ = [
     "RabiesMethodSensitivityOutputFreshnessCheckRow",

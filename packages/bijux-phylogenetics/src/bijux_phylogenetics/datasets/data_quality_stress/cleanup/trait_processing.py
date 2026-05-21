@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from bijux_phylogenetics.datasets.study_inputs import TraitLinkageReport
+from bijux_phylogenetics.datasets.study_inputs import (
+    TraitLinkageReport,
+    link_tree_to_traits,
+)
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
 
 from ..models import (
@@ -16,7 +19,6 @@ from ..traits import (
     resolve_duplicate_traits,
     selected_trait_rows,
 )
-from bijux_phylogenetics.datasets.study_inputs import link_tree_to_traits
 
 
 @dataclass(slots=True)

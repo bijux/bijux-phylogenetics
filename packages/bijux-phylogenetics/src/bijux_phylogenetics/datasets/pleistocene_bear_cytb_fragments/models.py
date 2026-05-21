@@ -3,13 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.engines.inference import FastaToTreeWorkflowReport
+from bijux_phylogenetics.io.fasta import AlignmentRecord
 from bijux_phylogenetics.phylo.alignment import (
     AlignmentQualityReport,
     AlignmentSummary,
     AlignmentTrimReport,
 )
-from bijux_phylogenetics.engines.inference import FastaToTreeWorkflowReport
-from bijux_phylogenetics.io.fasta import AlignmentRecord
 
 
 @dataclass(slots=True)

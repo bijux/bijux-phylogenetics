@@ -38,9 +38,6 @@ def write_tsv(
         writer.writeheader()
         for row in rows:
             writer.writerow(
-                {
-                    key: "" if value is None else value
-                    for key, value in row.items()
-                }
+                {key: "" if value is None else value for key, value in row.items()}
             )
     return path

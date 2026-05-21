@@ -119,12 +119,14 @@ def _write_slurm_bundle_artifacts(
         output_root / "slurm-planning-summary.json",
         planning_report,
     )
-    array_strategy_report = (
-        build_rabies_method_sensitivity_slurm_array_strategy_report(planning_report)
+    array_strategy_report = build_rabies_method_sensitivity_slurm_array_strategy_report(
+        planning_report
     )
-    array_partitions_path = write_rabies_method_sensitivity_slurm_array_partitions_table(
-        output_root / "slurm-array-partitions.tsv",
-        array_strategy_report,
+    array_partitions_path = (
+        write_rabies_method_sensitivity_slurm_array_partitions_table(
+            output_root / "slurm-array-partitions.tsv",
+            array_strategy_report,
+        )
     )
     array_members_path = write_rabies_method_sensitivity_slurm_array_members_table(
         output_root / "slurm-array-members.tsv",
@@ -144,9 +146,11 @@ def _write_slurm_bundle_artifacts(
             dataset=report.dataset,
         )
     )
-    output_freshness_path = write_rabies_method_sensitivity_slurm_output_freshness_table(
-        output_root / "slurm-output-freshness.tsv",
-        output_freshness_report,
+    output_freshness_path = (
+        write_rabies_method_sensitivity_slurm_output_freshness_table(
+            output_root / "slurm-output-freshness.tsv",
+            output_freshness_report,
+        )
     )
     output_freshness_checks_path = (
         write_rabies_method_sensitivity_slurm_output_freshness_checks_table(
@@ -168,9 +172,11 @@ def _write_slurm_bundle_artifacts(
         output_root / "slurm-job-status.tsv",
         status_report,
     )
-    partition_status_path = write_rabies_method_sensitivity_slurm_partition_status_table(
-        output_root / "slurm-partition-status.tsv",
-        status_report,
+    partition_status_path = (
+        write_rabies_method_sensitivity_slurm_partition_status_table(
+            output_root / "slurm-partition-status.tsv",
+            status_report,
+        )
     )
     workflow_status_path = write_rabies_method_sensitivity_slurm_status_json(
         output_root / "slurm-workflow-status.json",
@@ -240,9 +246,11 @@ def _write_slurm_bundle_artifacts(
             storage_report,
         )
     )
-    storage_variants_path = write_rabies_method_sensitivity_slurm_storage_variants_table(
-        output_root / "slurm-storage-variants.tsv",
-        storage_report,
+    storage_variants_path = (
+        write_rabies_method_sensitivity_slurm_storage_variants_table(
+            output_root / "slurm-storage-variants.tsv",
+            storage_report,
+        )
     )
     storage_summary_path = write_rabies_method_sensitivity_slurm_storage_summary_json(
         output_root / "slurm-storage-report.json",
@@ -279,8 +287,8 @@ def _write_slurm_bundle_artifacts(
             output_explosion_report,
         )
     )
-    tree_retention_report = (
-        build_rabies_method_sensitivity_slurm_tree_retention_report(output_root)
+    tree_retention_report = build_rabies_method_sensitivity_slurm_tree_retention_report(
+        output_root
     )
     tree_retention_checks_path = (
         write_rabies_method_sensitivity_slurm_tree_retention_checks_table(

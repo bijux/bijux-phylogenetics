@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import TypeAlias
 
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
@@ -13,8 +14,7 @@ from ..models import (
     RabiesMethodSensitivityVariantRun,
 )
 
-
-type VariantWorkflowRunner = Callable[..., RabiesMethodSensitivityVariantRun]
+VariantWorkflowRunner: TypeAlias = Callable[..., RabiesMethodSensitivityVariantRun]
 
 
 def _run_workflow_tasks(

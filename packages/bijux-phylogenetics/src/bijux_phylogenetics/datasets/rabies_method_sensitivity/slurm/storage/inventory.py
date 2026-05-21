@@ -60,9 +60,7 @@ def classify_variant_file(filename: str) -> str:
 def _looks_like_posterior_sample(filename: str) -> bool:
     if filename.endswith((".trees", ".state", ".trace", ".p", ".t")):
         return True
-    return any(
-        token in filename for token in ("posterior", "mcmc", "beast", "mrbayes")
-    )
+    return any(token in filename for token in ("posterior", "mcmc", "beast", "mrbayes"))
 
 
 def _empty_category_totals() -> dict[str, int]:

@@ -3,10 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.compare.presentation import ComparisonReportBuildResult
 from bijux_phylogenetics.comparative.reporting.analysis_package import (
     ComparativeAnalysisSummaryRow,
 )
+from bijux_phylogenetics.compare.presentation import ComparisonReportBuildResult
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.trees import BootstrapTreeSetArtifactReport
 
@@ -93,7 +93,9 @@ def _write_workflow_summary_table(
         "conclusion_stable_count": str(
             report.conclusion_stability_report.summary.stable_count
         ),
-        "conclusion_weak_count": str(report.conclusion_stability_report.summary.weak_count),
+        "conclusion_weak_count": str(
+            report.conclusion_stability_report.summary.weak_count
+        ),
         "conclusion_unstable_count": str(
             report.conclusion_stability_report.summary.unstable_count
         ),

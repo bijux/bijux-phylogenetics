@@ -13,8 +13,17 @@ from .rabies_cross_host_geography import (
     RabiesCrossHostGeographyPanelWorkflowReport,
     RabiesScientificFindingRow,
     RabiesWorkflowConfigAuditRow,
+)
+from .rabies_cross_host_geography import (
     export_rabies_cross_host_geography_panel_dataset as _export_dataset,
+)
+from .rabies_cross_host_geography import (
     load_rabies_cross_host_geography_panel_dataset as _load_dataset,
+)
+from .rabies_cross_host_geography import (
+    run_rabies_cross_host_geography_panel_workflow as _run_workflow,
+)
+from .rabies_cross_host_geography import (
     write_rabies_cross_host_geography_panel_workflow_bundle as _write_workflow_bundle,
 )
 from .rabies_cross_host_geography.demo.builder import (
@@ -35,9 +44,6 @@ from .rabies_cross_host_geography.demo.presentation import (
 )
 from .rabies_cross_host_geography.demo.reproducibility import (
     _write_package_reproducibility_checklist,
-)
-from .rabies_cross_host_geography import (
-    run_rabies_cross_host_geography_panel_workflow as _run_workflow,
 )
 
 load_rabies_cross_host_geography_panel_dataset = _load_dataset

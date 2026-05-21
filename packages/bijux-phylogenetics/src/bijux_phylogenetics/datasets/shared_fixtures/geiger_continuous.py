@@ -48,9 +48,7 @@ def _fixtures_root() -> Path:
 
 def _catalog_path() -> Path:
     return (
-        _fixtures_root()
-        / "metadata"
-        / "shared_geiger_continuous_fixture_catalog.json"
+        _fixtures_root() / "metadata" / "shared_geiger_continuous_fixture_catalog.json"
     )
 
 
@@ -88,8 +86,7 @@ def get_shared_geiger_continuous_fixture(
             return fixture
     supported = ", ".join(
         sorted(
-            fixture.fixture_id
-            for fixture in list_shared_geiger_continuous_fixtures()
+            fixture.fixture_id for fixture in list_shared_geiger_continuous_fixtures()
         )
     )
     raise ValueError(

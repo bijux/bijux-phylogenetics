@@ -84,9 +84,7 @@ def build_rabies_method_sensitivity_slurm_planning_report(
         total_estimated_core_hours=round(
             sum(row.estimated_core_hours for row in rows), 2
         ),
-        maximum_estimated_memory_mib=max(
-            row.estimated_memory_mib for row in rows
-        ),
+        maximum_estimated_memory_mib=max(row.estimated_memory_mib for row in rows),
         maximum_estimated_wallclock_minutes=max(
             row.estimated_wallclock_minutes for row in rows
         ),

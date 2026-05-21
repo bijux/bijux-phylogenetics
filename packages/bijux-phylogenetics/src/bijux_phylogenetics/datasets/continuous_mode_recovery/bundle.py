@@ -93,9 +93,11 @@ def write_continuous_mode_recovery_panel_workflow_bundle(
         output_root / "parameter-recovery.tsv",
         report.recovery_report,
     )
-    parameter_comparison_path = write_continuous_mode_recovery_parameter_comparison_table(
-        output_root / "parameter-comparison.tsv",
-        report.recovery_report,
+    parameter_comparison_path = (
+        write_continuous_mode_recovery_parameter_comparison_table(
+            output_root / "parameter-comparison.tsv",
+            report.recovery_report,
+        )
     )
     model_choice_path = write_continuous_mode_recovery_model_choice_table(
         output_root / "model-choice.tsv",

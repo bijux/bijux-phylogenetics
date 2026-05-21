@@ -75,16 +75,13 @@ def _build_report_sections(
             "reproducibility-audit",
             "\n".join(
                 [
-                    f"all passed: {str(getattr(reproducibility_report, 'all_passed')).lower()}",
-                    f"top-level checks: {getattr(reproducibility_report, 'check_count')}",
+                    f"all passed: {str(reproducibility_report.all_passed).lower()}",
+                    f"top-level checks: {reproducibility_report.check_count}",
                     (
                         "failed top-level checks: "
-                        f"{getattr(reproducibility_report, 'failed_check_count')}"
+                        f"{reproducibility_report.failed_check_count}"
                     ),
-                    (
-                        "failed variants: "
-                        f"{getattr(reproducibility_report, 'failed_variant_count')}"
-                    ),
+                    (f"failed variants: {reproducibility_report.failed_variant_count}"),
                 ]
             ),
         ),
@@ -128,10 +125,7 @@ def _build_report_sections(
                         "largest partition size: "
                         f"{slurm_array_strategy_report.largest_partition_size}"
                     ),
-                    (
-                        "partition scripts: "
-                        f"{slurm_array_strategy_report.script_count}"
-                    ),
+                    (f"partition scripts: {slurm_array_strategy_report.script_count}"),
                     (
                         "total array jobs: "
                         f"{slurm_array_strategy_report.total_job_count}"
@@ -257,14 +251,8 @@ def _build_report_sections(
                         "mergeable variants: "
                         f"{slurm_merge_report.mergeable_variant_count}"
                     ),
-                    (
-                        "failed merge checks: "
-                        f"{slurm_merge_report.failed_check_count}"
-                    ),
-                    (
-                        "merged stable clades: "
-                        f"{slurm_merge_report.stable_clade_count}"
-                    ),
+                    (f"failed merge checks: {slurm_merge_report.failed_check_count}"),
+                    (f"merged stable clades: {slurm_merge_report.stable_clade_count}"),
                     (
                         "merged changed clades: "
                         f"{slurm_merge_report.changed_clade_count}"
@@ -280,18 +268,9 @@ def _build_report_sections(
                         "all outputs fresh: "
                         f"{str(slurm_output_freshness_report.all_outputs_fresh).lower()}"
                     ),
-                    (
-                        "fresh jobs: "
-                        f"{slurm_output_freshness_report.fresh_job_count}"
-                    ),
-                    (
-                        "stale jobs: "
-                        f"{slurm_output_freshness_report.stale_job_count}"
-                    ),
-                    (
-                        "freshness checks: "
-                        f"{slurm_output_freshness_report.check_count}"
-                    ),
+                    (f"fresh jobs: {slurm_output_freshness_report.fresh_job_count}"),
+                    (f"stale jobs: {slurm_output_freshness_report.stale_job_count}"),
+                    (f"freshness checks: {slurm_output_freshness_report.check_count}"),
                     (
                         "failed freshness checks: "
                         f"{slurm_output_freshness_report.failed_check_count}"
@@ -439,16 +418,10 @@ def _build_report_embedded_json(
         "stable_clade_count": len(report.stable_clade_rows),
         "changed_clade_count": len(report.changed_clade_rows),
         "report_manifest_path": _relative_bundle_path(path, report_manifest_path),
-        "reproducibility_passed": getattr(reproducibility_report, "all_passed"),
-        "reproducibility_check_count": getattr(
-            reproducibility_report, "check_count"
-        ),
-        "reproducibility_failed_check_count": getattr(
-            reproducibility_report, "failed_check_count"
-        ),
-        "reproducibility_failed_variant_count": getattr(
-            reproducibility_report, "failed_variant_count"
-        ),
+        "reproducibility_passed": reproducibility_report.all_passed,
+        "reproducibility_check_count": reproducibility_report.check_count,
+        "reproducibility_failed_check_count": reproducibility_report.failed_check_count,
+        "reproducibility_failed_variant_count": reproducibility_report.failed_variant_count,
         "slurm_job_count": slurm_planning_report.job_count,
         "slurm_total_estimated_core_hours": (
             slurm_planning_report.total_estimated_core_hours
@@ -606,8 +579,8 @@ def _build_report_summary_metrics(
         ),
         (
             "reproducibility passed",
-            str(getattr(reproducibility_report, "all_passed")).lower(),
+            str(reproducibility_report.all_passed).lower(),
         ),
-        ("reproducibility checks", getattr(reproducibility_report, "check_count")),
+        ("reproducibility checks", reproducibility_report.check_count),
         ("linked artifacts", report_manifest["linked_artifact_count"]),
     ]

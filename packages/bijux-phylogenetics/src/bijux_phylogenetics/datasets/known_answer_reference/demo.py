@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
+import shutil
 
 from .bundle import write_known_answer_reference_workflow_bundle
 from .export import export_known_answer_reference_dataset

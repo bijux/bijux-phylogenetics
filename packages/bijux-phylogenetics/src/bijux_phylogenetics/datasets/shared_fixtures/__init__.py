@@ -10,6 +10,11 @@ from .distance_matrices import (
     get_shared_distance_matrix_fixture,
     list_shared_distance_matrix_fixtures,
 )
+from .dna_alignments import (
+    SharedDnaAlignmentFixture,
+    get_shared_dna_alignment_fixture,
+    list_shared_dna_alignment_fixtures,
+)
 from .geiger_continuous import (
     SharedGeigerContinuousFixture,
     get_shared_geiger_continuous_fixture,
@@ -20,17 +25,11 @@ from .geiger_discrete import (
     get_shared_geiger_discrete_fixture,
     list_shared_geiger_discrete_fixtures,
 )
-from .dna_alignments import (
-    SharedDnaAlignmentFixture,
-    get_shared_dna_alignment_fixture,
-    list_shared_dna_alignment_fixtures,
-)
 from .trait_tables import (
     SharedTraitTableFixture,
     get_shared_trait_table_fixture,
     list_shared_trait_table_fixtures,
 )
-from .trees import SharedTreeFixture, get_shared_tree_fixture, list_shared_tree_fixtures
 from .tree_sets import (
     SharedTreeSetFixture,
     get_shared_tree_set_fixture,
@@ -41,6 +40,7 @@ from .tree_simulations import (
     get_shared_tree_simulation_fixture,
     list_shared_tree_simulation_fixtures,
 )
+from .trees import SharedTreeFixture, get_shared_tree_fixture, list_shared_tree_fixtures
 
 __all__ = [
     "SharedDistanceMatrixFixture",

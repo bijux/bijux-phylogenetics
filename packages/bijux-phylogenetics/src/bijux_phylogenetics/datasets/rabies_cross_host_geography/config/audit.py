@@ -5,7 +5,10 @@ from pathlib import Path
 
 from bijux_phylogenetics.io.fasta import load_permissive_fasta_records
 
-from ..models import RabiesCrossHostGeographyPanelWorkflowConfig, RabiesWorkflowConfigAuditRow
+from ..models import (
+    RabiesCrossHostGeographyPanelWorkflowConfig,
+    RabiesWorkflowConfigAuditRow,
+)
 from ..shared import _format_number
 
 

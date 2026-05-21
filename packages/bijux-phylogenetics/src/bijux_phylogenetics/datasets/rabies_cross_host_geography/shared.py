@@ -27,10 +27,15 @@ def _table(
             f"<p><em>Showing the first {max_rows} of {len(rows)} rows. "
             "Use the linked TSV artifacts for the full table.</em></p>"
         )
-    return truncation_note + f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>"
+    return (
+        truncation_note
+        + f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>"
+    )
 
 
-def _support_range_text(minimum_support: float | None, maximum_support: float | None) -> str:
+def _support_range_text(
+    minimum_support: float | None, maximum_support: float | None
+) -> str:
     if minimum_support is None or maximum_support is None:
         return "not available"
     return f"{_format_number(minimum_support)}-{_format_number(maximum_support)}"

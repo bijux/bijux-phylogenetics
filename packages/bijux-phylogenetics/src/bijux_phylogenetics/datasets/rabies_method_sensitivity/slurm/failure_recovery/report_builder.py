@@ -39,7 +39,9 @@ def build_rabies_method_sensitivity_slurm_failure_recovery_report(
         build_failure_recovery_job_row(bundle_root=bundle_root, job_status_row=row)
         for row in loaded_inputs.job_status_rows
     )
-    jobs_by_partition: dict[str, list[RabiesMethodSensitivitySlurmFailureRecoveryJobRow]] = {}
+    jobs_by_partition: dict[
+        str, list[RabiesMethodSensitivitySlurmFailureRecoveryJobRow]
+    ] = {}
     for row in job_rows:
         jobs_by_partition.setdefault(row.partition_id, []).append(row)
 
@@ -62,7 +64,9 @@ def build_rabies_method_sensitivity_slurm_failure_recovery_report(
     blocked_job_count = sum(
         1 for row in job_rows if row.recovery_action == "wait_for_live_workflow"
     )
-    no_action_job_count = sum(1 for row in job_rows if row.recovery_action == "no_action")
+    no_action_job_count = sum(
+        1 for row in job_rows if row.recovery_action == "no_action"
+    )
     failed_job_count = sum(1 for row in job_rows if row.current_status == "failed")
     stale_job_count = sum(1 for row in job_rows if row.current_status == "stale")
     pending_job_count = sum(1 for row in job_rows if row.current_status == "pending")

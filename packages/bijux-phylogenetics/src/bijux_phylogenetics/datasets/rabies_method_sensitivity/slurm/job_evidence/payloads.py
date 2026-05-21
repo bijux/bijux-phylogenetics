@@ -6,7 +6,6 @@ from pathlib import Path
 import shutil
 
 from .contracts import (
-    InferenceComparisonLike,
     RabiesMethodSensitivitySlurmJobEvidenceRow,
     TaskRecordLike,
     VariantRunLike,

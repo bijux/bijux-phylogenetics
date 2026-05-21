@@ -19,19 +19,19 @@ if TYPE_CHECKING:
         PosteriorTreePGLSReport,
     )
     from bijux_phylogenetics.comparative.reporting import ComparativeMethodReport
-    from bijux_phylogenetics.phylo.alignment import (
-        AlignmentQualityReport,
-        SequenceQualityRankingReport,
-    )
-    from bijux_phylogenetics.phylo.topology import TreeRootingReport
     from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
         RabiesMethodSensitivityPanelWorkflowReport,
     )
     from bijux_phylogenetics.diagnostics.conclusion_stability import (
         ConclusionStabilityReport,
     )
-    from bijux_phylogenetics.engines.inference import FastaToTreeWorkflowReport
     from bijux_phylogenetics.ecology import HostSwitchingReport
+    from bijux_phylogenetics.engines.inference import FastaToTreeWorkflowReport
+    from bijux_phylogenetics.phylo.alignment import (
+        AlignmentQualityReport,
+        SequenceQualityRankingReport,
+    )
+    from bijux_phylogenetics.phylo.topology import TreeRootingReport
 
 _DATASET_ID = "rabies_cross_host_geography_panel"
 _DATASET_LABEL = "Rabies cross-host geography panel"

@@ -46,7 +46,9 @@ def build_job_status_row(
     elif has_terminal_success and missing_required_files:
         status = "stale"
         evidence_class = "incomplete-success-output"
-        detail = "success was recorded but one or more required durable outputs are missing"
+        detail = (
+            "success was recorded but one or more required durable outputs are missing"
+        )
     elif active_run_state == "live":
         status = "pending"
         evidence_class = (
@@ -60,9 +62,7 @@ def build_job_status_row(
     elif has_stale_marker or has_output_evidence or task_log_path.is_file():
         status = "stale"
         evidence_class = (
-            "stale-running-marker"
-            if has_stale_marker
-            else "abandoned-partial-output"
+            "stale-running-marker" if has_stale_marker else "abandoned-partial-output"
         )
         detail = (
             "a dead running marker remains without a live workflow owner"
@@ -77,7 +77,9 @@ def build_job_status_row(
     if task_status is None and workflow_status == "failed" and status == "pending":
         status = "stale"
         evidence_class = "failed-workflow-gap"
-        detail = "the workflow ended in failure before this job reached a terminal record"
+        detail = (
+            "the workflow ended in failure before this job reached a terminal record"
+        )
     if (
         freshness_row is not None
         and freshness_row.freshness_status == "stale"

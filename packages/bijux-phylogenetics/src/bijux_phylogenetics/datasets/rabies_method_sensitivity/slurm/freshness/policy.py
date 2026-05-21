@@ -195,7 +195,9 @@ def build_freshness_row(
         part
         for part in [
             global_failed_reason_detail,
-            "; ".join(row.detail for row in variant_check_rows if row.status == "failed"),
+            "; ".join(
+                row.detail for row in variant_check_rows if row.status == "failed"
+            ),
         ]
         if part
     )

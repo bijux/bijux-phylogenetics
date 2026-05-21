@@ -81,9 +81,7 @@ def _package_inventory_rows(
             }
         )
     workflow_paths = sorted(
-        path
-        for path in workflow_bundle.output_root.rglob("*")
-        if path.is_file()
+        path for path in workflow_bundle.output_root.rglob("*") if path.is_file()
     )
     for path in workflow_paths:
         rows.append(

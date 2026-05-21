@@ -51,7 +51,9 @@ def write_discrete_mode_recovery_panel_workflow_bundle(
         for case in report.recovery_report.case_reports
         for row in case.parameter_rows
     ]
-    governed_parameter_rows = [row for row in parameter_rows if row.tolerance is not None]
+    governed_parameter_rows = [
+        row for row in parameter_rows if row.tolerance is not None
+    ]
     parameter_comparison_rows = [
         row
         for case in report.recovery_report.case_reports

@@ -5,7 +5,13 @@ from pathlib import Path
 from .contracts import RabiesMethodSensitivitySlurmOutputFreshnessReport
 from .interfaces import DatasetLike
 from .policy import build_freshness_row, evaluate_freshness_checks
-from .shared import CONFIG_FILENAME, SLURM_ARRAY_MEMBERS_FILENAME, load_json, read_tsv_rows, sha256
+from .shared import (
+    CONFIG_FILENAME,
+    SLURM_ARRAY_MEMBERS_FILENAME,
+    load_json,
+    read_tsv_rows,
+    sha256,
+)
 
 
 def build_rabies_method_sensitivity_slurm_output_freshness_report(
@@ -67,8 +73,12 @@ def build_rabies_method_sensitivity_slurm_output_freshness_report(
         for member_row in member_rows
     )
     failed_check_count = sum(1 for row in checks if row.status == "failed")
-    fresh_job_count = sum(1 for row in freshness_rows if row.freshness_status == "fresh")
-    stale_job_count = sum(1 for row in freshness_rows if row.freshness_status == "stale")
+    fresh_job_count = sum(
+        1 for row in freshness_rows if row.freshness_status == "fresh"
+    )
+    stale_job_count = sum(
+        1 for row in freshness_rows if row.freshness_status == "stale"
+    )
 
     return RabiesMethodSensitivitySlurmOutputFreshnessReport(
         dataset_id=dataset.dataset_id,

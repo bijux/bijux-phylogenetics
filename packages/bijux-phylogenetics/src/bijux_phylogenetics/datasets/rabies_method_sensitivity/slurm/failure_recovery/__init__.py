@@ -10,8 +10,12 @@ from .contracts import (
     RabiesMethodSensitivitySlurmFailureRecoveryPartitionRow,
     RabiesMethodSensitivitySlurmFailureRecoveryReport,
 )
-from .presentation import write_rabies_method_sensitivity_slurm_failure_recovery_html_report
-from .report_builder import build_rabies_method_sensitivity_slurm_failure_recovery_report
+from .presentation import (
+    write_rabies_method_sensitivity_slurm_failure_recovery_html_report,
+)
+from .report_builder import (
+    build_rabies_method_sensitivity_slurm_failure_recovery_report,
+)
 
 __all__ = [
     "RabiesMethodSensitivitySlurmFailureRecoveryJobRow",

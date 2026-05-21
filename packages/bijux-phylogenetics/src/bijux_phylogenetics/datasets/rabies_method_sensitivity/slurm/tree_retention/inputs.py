@@ -26,7 +26,9 @@ class TreeRetentionInputs:
 def load_tree_retention_inputs(bundle_root: Path) -> TreeRetentionInputs:
     bundle_root = bundle_root.resolve()
     config = _load_json(bundle_root / _CONFIG_FILENAME)
-    storage_category_rows = _read_tsv_rows(bundle_root / _SLURM_STORAGE_CATEGORIES_FILENAME)
+    storage_category_rows = _read_tsv_rows(
+        bundle_root / _SLURM_STORAGE_CATEGORIES_FILENAME
+    )
     output_explosion_summary = _load_json(
         bundle_root / _SLURM_OUTPUT_EXPLOSION_SUMMARY_FILENAME
     )

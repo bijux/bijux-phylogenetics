@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
+import shutil
 
 from ..models import (
     CatarrhineDataQualityStressPanelWorkflowBundle,
@@ -11,7 +11,6 @@ from .cleaned_review import (
     _write_cleaned_linkage_table,
     _write_cleaned_validation_table,
 )
-from .shared import _copy_output
 from .sequence_review import (
     _write_coding_sequence_exclusions_table,
     _write_raw_sequence_findings_table,
@@ -19,6 +18,7 @@ from .sequence_review import (
     _write_repaired_sequence_validation_table,
     _write_sequence_outliers_table,
 )
+from .shared import _copy_output
 from .trait_review import (
     _write_raw_trait_linkage_table,
     _write_trait_duplicates_table,

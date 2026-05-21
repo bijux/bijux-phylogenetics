@@ -3,16 +3,16 @@ from __future__ import annotations
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from bijux_phylogenetics.ancestral.continuous import reconstruct_continuous_ancestral_states
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+)
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.comparative.continuous import (
     summarize_brownian_trait_evolution,
+    summarize_ou_trait_evolution,
 )
 from bijux_phylogenetics.comparative.discrete_evolution import (
     estimate_ancestral_geographic_states,
-)
-from bijux_phylogenetics.comparative.continuous import (
-    summarize_ou_trait_evolution,
 )
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.distance import build_distance_tree

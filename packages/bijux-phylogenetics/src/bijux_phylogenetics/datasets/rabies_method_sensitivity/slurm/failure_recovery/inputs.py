@@ -28,7 +28,9 @@ def load_failure_recovery_inputs(bundle_root: Path) -> FailureRecoveryInputs:
     bundle_root = bundle_root.resolve()
     config = _load_json(bundle_root / _CONFIG_FILENAME)
     job_status_rows = _read_tsv_rows(bundle_root / _SLURM_JOB_STATUS_FILENAME)
-    partition_status_rows = _read_tsv_rows(bundle_root / _SLURM_PARTITION_STATUS_FILENAME)
+    partition_status_rows = _read_tsv_rows(
+        bundle_root / _SLURM_PARTITION_STATUS_FILENAME
+    )
     workflow_status = _load_json(bundle_root / _SLURM_WORKFLOW_STATUS_FILENAME)
 
     configured_variant_ids = sorted(

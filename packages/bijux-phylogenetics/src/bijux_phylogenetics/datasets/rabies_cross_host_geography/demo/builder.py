@@ -15,7 +15,6 @@ from ..models import (
     RabiesCrossHostGeographyPanelDemoResult,
     RabiesCrossHostGeographyPanelExportResult,
     RabiesCrossHostGeographyPanelWorkflowBundle,
-    RabiesCrossHostGeographyPanelWorkflowConfig,
     RabiesCrossHostGeographyPanelWorkflowReport,
 )
 from ..workflow import run_rabies_cross_host_geography_panel_workflow
@@ -94,13 +93,15 @@ def _materialize_rabies_cross_host_geography_panel_demo(
         artifact_inventory_path=artifact_inventory_path,
         reproducibility_checklist_path=reproducibility_checklist_path,
     )
-    artifact_inventory_path, artifact_inventory_rows = _write_package_artifact_inventory(
-        artifact_inventory_path,
-        output_root=output_root,
-        dataset_export=dataset_export,
-        workflow_bundle=workflow_bundle,
-        overview_path=overview_path,
-        overview_html_path=overview_html_path,
+    artifact_inventory_path, artifact_inventory_rows = (
+        _write_package_artifact_inventory(
+            artifact_inventory_path,
+            output_root=output_root,
+            dataset_export=dataset_export,
+            workflow_bundle=workflow_bundle,
+            overview_path=overview_path,
+            overview_html_path=overview_html_path,
+        )
     )
     reproducibility_checklist_path, checklist_rows = (
         _write_package_reproducibility_checklist(

@@ -32,7 +32,9 @@ def _write_bootstrap_tree_comparison_summary(
         "rooted_normalized_rf": _format_number(
             comparison_report.topology.rooted_normalized_robinson_foulds
         ),
-        "topology_equal": "true" if comparison_report.topology.topology_equal else "false",
+        "topology_equal": "true"
+        if comparison_report.topology.topology_equal
+        else "false",
         "same_unrooted_topology": (
             "true" if comparison_report.topology.same_unrooted_topology else "false"
         ),
@@ -46,7 +48,9 @@ def _write_bootstrap_tree_comparison_summary(
             if comparison_report.topology.same_topology_different_branch_lengths
             else "false"
         ),
-        "support_conflict_count": str(len(comparison_report.support.conflicting_clades)),
+        "support_conflict_count": str(
+            len(comparison_report.support.conflicting_clades)
+        ),
         "high_support_conflict_count": str(high_support_conflict_count),
         "branch_score_distance": _format_number(
             comparison_report.branch_lengths.branch_score.branch_score_distance

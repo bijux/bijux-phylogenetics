@@ -90,9 +90,7 @@ def build_rabies_method_sensitivity_slurm_array_strategy_report(
     partition_rows: list[RabiesMethodSensitivitySlurmArrayPartitionRow] = []
     member_rows: list[RabiesMethodSensitivitySlurmArrayMemberRow] = []
     for dataset_size_class, method_group, resource_class in sorted(grouped_jobs):
-        partition_id = (
-            f"{dataset_size_class}-{method_group}-{resource_class}"
-        )
+        partition_id = f"{dataset_size_class}-{method_group}-{resource_class}"
         jobs = sorted(
             grouped_jobs[(dataset_size_class, method_group, resource_class)],
             key=lambda row: row.variant_id,
@@ -110,9 +108,7 @@ def build_rabies_method_sensitivity_slurm_array_strategy_report(
                 script_path=script_path,
                 variant_ids=tuple(job.variant_id for job in jobs),
                 trimming_modes=tuple(sorted({job.trimming_mode for job in jobs})),
-                maximum_cpus_per_task=max(
-                    job.estimated_cpus_per_task for job in jobs
-                ),
+                maximum_cpus_per_task=max(job.estimated_cpus_per_task for job in jobs),
                 maximum_memory_mib=max(job.estimated_memory_mib for job in jobs),
                 maximum_wallclock_minutes=max(
                     job.estimated_wallclock_minutes for job in jobs
@@ -121,9 +117,7 @@ def build_rabies_method_sensitivity_slurm_array_strategy_report(
                     sum(job.estimated_core_hours for job in jobs),
                     2,
                 ),
-                suggested_sbatch_command=(
-                    f"sbatch --array={array_spec} {script_path}"
-                ),
+                suggested_sbatch_command=(f"sbatch --array={array_spec} {script_path}"),
             )
         )
         for array_index, job in enumerate(jobs):
@@ -277,7 +271,9 @@ def write_rabies_method_sensitivity_slurm_array_partition_scripts(
 ) -> Path:
     """Write one executable sbatch script per partition."""
     output_root.mkdir(parents=True, exist_ok=True)
-    members_by_partition: dict[str, list[RabiesMethodSensitivitySlurmArrayMemberRow]] = {}
+    members_by_partition: dict[
+        str, list[RabiesMethodSensitivitySlurmArrayMemberRow]
+    ] = {}
     for member in report.members:
         members_by_partition.setdefault(member.partition_id, []).append(member)
     for partition in report.partitions:
@@ -327,7 +323,7 @@ def write_rabies_method_sensitivity_slurm_array_partition_scripts(
                 ),
                 'output_root="${array_root}/'
                 f'{partition.partition_id}/${{variant_id}}"',
-                'exec bijux-phylogenetics demo rabies-method-sensitivity-panel \\',
+                "exec bijux-phylogenetics demo rabies-method-sensitivity-panel \\",
                 '  --out "${output_root}" \\',
                 '  --variant-id "${variant_id}" \\',
                 "  --parallel-workers 1 \\",

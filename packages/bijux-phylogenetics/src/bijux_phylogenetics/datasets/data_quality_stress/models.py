@@ -3,6 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.datasets.study_inputs import (
+    TraitLinkageReport,
+    TraitValidationReport,
+)
+from bijux_phylogenetics.diagnostics.validation import (
+    TreeInspectionReport,
+    TreeValidationReport,
+)
 from bijux_phylogenetics.phylo.alignment import (
     AlignmentRecord,
     CodingSequencePreparationReport,
@@ -10,11 +18,6 @@ from bijux_phylogenetics.phylo.alignment import (
     FastaRepairReport,
     SequenceCompositionOutlier,
     SequenceLengthOutlier,
-)
-from bijux_phylogenetics.datasets.study_inputs import TraitLinkageReport, TraitValidationReport
-from bijux_phylogenetics.diagnostics.validation import (
-    TreeInspectionReport,
-    TreeValidationReport,
 )
 
 

@@ -67,7 +67,9 @@ def write_rabies_method_sensitivity_slurm_job_evidence_summary_json(
         "execution_mode": report.execution_mode,
         "parallel_workers": report.parallel_workers,
         "bundle_root": ".",
-        "evidence_root": _relative_bundle_path(report.bundle_root, report.evidence_root),
+        "evidence_root": _relative_bundle_path(
+            report.bundle_root, report.evidence_root
+        ),
         "job_count": report.job_count,
         "completed_job_count": report.completed_job_count,
         "failed_job_count": report.failed_job_count,
@@ -84,7 +86,9 @@ def write_rabies_method_sensitivity_slurm_job_evidence_summary_json(
     return path
 
 
-def _serialize_row(row: RabiesMethodSensitivitySlurmJobEvidenceRow) -> dict[str, object]:
+def _serialize_row(
+    row: RabiesMethodSensitivitySlurmJobEvidenceRow,
+) -> dict[str, object]:
     return {
         "partition_id": row.partition_id,
         "array_index": row.array_index,

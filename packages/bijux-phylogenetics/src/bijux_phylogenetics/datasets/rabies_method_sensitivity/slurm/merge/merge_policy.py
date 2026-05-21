@@ -20,9 +20,7 @@ def count_serious_conflict_variants(
     variant_summary_rows: list[dict[str, str]],
 ) -> int:
     return sum(
-        1
-        for row in variant_summary_rows
-        if int(row["serious_conflict_count"]) > 0
+        1 for row in variant_summary_rows if int(row["serious_conflict_count"]) > 0
     )
 
 
@@ -80,8 +78,12 @@ def build_merge_variant_rows(
             evidence_status = "missing"
             issues.append("job-evidence row is missing")
         else:
-            evidence_json_path = bundle_root / str(job_evidence_row["evidence_json_path"])
-            evidence_html_path = bundle_root / str(job_evidence_row["evidence_html_path"])
+            evidence_json_path = bundle_root / str(
+                job_evidence_row["evidence_json_path"]
+            )
+            evidence_html_path = bundle_root / str(
+                job_evidence_row["evidence_html_path"]
+            )
             if not evidence_json_path.is_file():
                 evidence_status = "missing"
                 issues.append("job evidence JSON is missing")
@@ -94,7 +96,9 @@ def build_merge_variant_rows(
                 variant_id=variant_id,
                 merge_status=merge_status,
                 job_status=(
-                    "missing" if job_status_row is None else str(job_status_row["status"])
+                    "missing"
+                    if job_status_row is None
+                    else str(job_status_row["status"])
                 ),
                 output_freshness_status=(
                     "missing"
@@ -104,7 +108,9 @@ def build_merge_variant_rows(
                 evidence_status=evidence_status,
                 included_in_merge=not issues,
                 selected_model=(
-                    "" if variant_summary_row is None else str(variant_summary_row["selected_model"])
+                    ""
+                    if variant_summary_row is None
+                    else str(variant_summary_row["selected_model"])
                 ),
                 serious_conflict_count=(
                     0
@@ -127,10 +133,14 @@ def build_merge_variant_rows(
                 issue_count=len(issues),
                 issues=tuple(issues),
                 evidence_json_path=(
-                    "" if job_evidence_row is None else str(job_evidence_row["evidence_json_path"])
+                    ""
+                    if job_evidence_row is None
+                    else str(job_evidence_row["evidence_json_path"])
                 ),
                 evidence_html_path=(
-                    "" if job_evidence_row is None else str(job_evidence_row["evidence_html_path"])
+                    ""
+                    if job_evidence_row is None
+                    else str(job_evidence_row["evidence_html_path"])
                 ),
             )
         )

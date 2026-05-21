@@ -6,8 +6,8 @@ from pathlib import Path
 from .contracts import RabiesMethodSensitivitySlurmMergeCheckRow
 from .shared import (
     _CHANGED_CLADES_FILENAME,
-    _CONFIG_FILENAME,
     _CONCLUSION_SUMMARY_FILENAME,
+    _CONFIG_FILENAME,
     _PREPROCESSING_COMPARISONS_FILENAME,
     _SLURM_JOB_EVIDENCE_FILENAME,
     _SLURM_JOB_STATUS_FILENAME,
@@ -43,7 +43,9 @@ def load_slurm_merge_inputs(bundle_root: Path) -> SlurmMergeInputs:
     config = _load_json(bundle_root / _CONFIG_FILENAME)
     workflow_summary_rows = _read_tsv_rows(bundle_root / _WORKFLOW_SUMMARY_FILENAME)
     variant_summary_rows = _read_tsv_rows(bundle_root / _VARIANT_SUMMARY_FILENAME)
-    preprocessing_rows = _read_tsv_rows(bundle_root / _PREPROCESSING_COMPARISONS_FILENAME)
+    preprocessing_rows = _read_tsv_rows(
+        bundle_root / _PREPROCESSING_COMPARISONS_FILENAME
+    )
     stable_clade_rows = _read_tsv_rows(bundle_root / _STABLE_CLADES_FILENAME)
     changed_clade_rows = _read_tsv_rows(bundle_root / _CHANGED_CLADES_FILENAME)
     conclusion_rows = _read_tsv_rows(bundle_root / _CONCLUSION_SUMMARY_FILENAME)

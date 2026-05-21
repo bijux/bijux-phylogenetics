@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
+import shutil
 
 from .bundle import write_discrete_mode_recovery_panel_workflow_bundle
 from .export import export_discrete_mode_recovery_panel_dataset
@@ -21,7 +21,9 @@ def run_discrete_mode_recovery_panel_demo(
         shutil.rmtree(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
     workflow_report = run_discrete_mode_recovery_panel_workflow()
-    dataset_export = export_discrete_mode_recovery_panel_dataset(output_root / "dataset")
+    dataset_export = export_discrete_mode_recovery_panel_dataset(
+        output_root / "dataset"
+    )
     workflow_bundle = write_discrete_mode_recovery_panel_workflow_bundle(
         output_root / "workflow",
         workflow_report,

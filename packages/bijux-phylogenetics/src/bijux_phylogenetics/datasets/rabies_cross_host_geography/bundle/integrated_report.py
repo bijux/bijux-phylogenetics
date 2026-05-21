@@ -4,11 +4,11 @@ from html import escape
 from pathlib import Path
 
 from bijux_phylogenetics.biogeography import BiogeographyReportPackageResult
-from bijux_phylogenetics.compare.presentation import ComparisonReportBuildResult
 from bijux_phylogenetics.comparative.reporting.analysis_package import (
     ComparativeAnalysisSummaryRow,
     ComparativeInterpretationRow,
 )
+from bijux_phylogenetics.compare.presentation import ComparisonReportBuildResult
 from bijux_phylogenetics.ecology import HostSwitchingReport
 from bijux_phylogenetics.engines.inference import FastaToTreeWorkflowReport
 from bijux_phylogenetics.trees import BootstrapTreeSetArtifactReport

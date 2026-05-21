@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
+import shutil
 from tempfile import TemporaryDirectory
 
 from .bundle import write_catarrhine_data_quality_stress_panel_workflow_bundle

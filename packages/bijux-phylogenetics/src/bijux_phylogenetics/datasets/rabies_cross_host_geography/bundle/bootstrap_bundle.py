@@ -11,7 +11,10 @@ from bijux_phylogenetics.compare.topology import write_tree_comparison_table
 from bijux_phylogenetics.datasets.rabies_cross_host_geography.models import (
     RabiesCrossHostGeographyPanelWorkflowReport,
 )
-from bijux_phylogenetics.trees import BootstrapTreeSetArtifactReport, write_bootstrap_tree_set_artifacts
+from bijux_phylogenetics.trees import (
+    BootstrapTreeSetArtifactReport,
+    write_bootstrap_tree_set_artifacts,
+)
 
 from .bootstrap_review import (
     _stabilize_bundle_report_paths,
