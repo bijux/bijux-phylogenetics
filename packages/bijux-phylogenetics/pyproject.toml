@@ -43,11 +43,6 @@ dev = [
     "pytest-cov>=6.2.1,<8.0",
     "pytest-timeout>=2.4.0,<3.0",
     "hatch>=1.14.0,<2.0",
-    "mkdocs>=1.6.1",
-    "mkdocs-autorefs>=1.4.2",
-    "mkdocs-git-revision-date-localized-plugin>=1.4.7",
-    "mkdocs-material>=9.6.12",
-    "pymdown-extensions>=10.15",
     "pydantic>=2.12,<3.0",
     "ruff>=0.13.0,<1.0",
     "mypy>=1.18.2,<3.0",
@@ -61,6 +56,13 @@ dev = [
     "radon>=6.0.1,<7.0",
     "types-defusedxml>=0.7.0.20240218,<1.0",
     "twine>=6.2.0,<7.0",
+]
+docs = [
+    "mkdocs>=1.6.1",
+    "mkdocs-autorefs>=1.4.2",
+    "mkdocs-git-revision-date-localized-plugin>=1.4.7",
+    "mkdocs-material>=9.6.12",
+    "pymdown-extensions>=10.15",
 ]
 
 [project.scripts]
