@@ -14,26 +14,20 @@ from bijux_phylogenetics.bayesian.beast.validation import assess_time_tree_readi
 from bijux_phylogenetics.bayesian.beast.xml_analysis import (
     summarize_beast_analysis_xml,
 )
-from bijux_phylogenetics.bayesian.posterior_sets.comparison import (
-    compare_independent_bayesian_runs,
-    compare_ml_tree_to_bayesian_posterior,
-)
 from bijux_phylogenetics.evidence.provenance.method_tiers import bayesian_report_method_tier
 from bijux_phylogenetics.render.html import write_html_report
 
 from .calibration_audit import render_calibration_audit_report
 from .contracts import (
     BayesianDiagnosticsReportBuildResult,
-    BayesianMlComparisonReportBuildResult,
-    BayesianRunComparisonReportBuildResult,
     TimeTreeReadinessReportBuildResult,
 )
+from .ml_comparison_report import render_ml_vs_bayesian_tree_report
 from .posterior_report import render_bayesian_posterior_report
+from .run_comparison_report import render_bayesian_run_comparison_report
 from .report_policy import (
     method_tier_section,
     method_tier_summary_metrics,
-    ml_vs_bayesian_limitations,
-    run_comparison_limitations,
 )
 from ..posterior_uncertainty import (
     summarize_beast_workflow_evidence,
@@ -41,110 +35,6 @@ from ..posterior_uncertainty import (
     write_bayesian_methods_summary_text,
     write_supplementary_bayesian_diagnostics_table,
 )
-
-
-
-def render_bayesian_run_comparison_report(
-    *,
-    left_tree_set_path: Path,
-    right_tree_set_path: Path,
-    left_trace_path: Path,
-    right_trace_path: Path,
-    out_path: Path,
-    trace_kind: str = "mrbayes",
-    burnin_fraction: float = 0.25,
-    ess_threshold: float = 200.0,
-    mean_shift_threshold: float = 0.5,
-) -> BayesianRunComparisonReportBuildResult:
-    """Render a deterministic HTML report comparing two Bayesian runs."""
-    comparison = compare_independent_bayesian_runs(
-        left_tree_set_path,
-        right_tree_set_path,
-        left_trace_path=left_trace_path,
-        right_trace_path=right_trace_path,
-        trace_kind=trace_kind,
-        burnin_fraction=burnin_fraction,
-        ess_threshold=ess_threshold,
-        mean_shift_threshold=mean_shift_threshold,
-    )
-    title = "Bijux Bayesian Run Comparison Report"
-    method_tier = bayesian_report_method_tier("bayesian-run-comparison")
-    limitations = run_comparison_limitations(comparison.warnings)
-    sections = [
-        method_tier_section(method_tier),
-        (
-            "run-comparison",
-            json.dumps(asdict(comparison), default=str, indent=2, sort_keys=True),
-        ),
-        (
-            "tree-comparison",
-            json.dumps(
-                asdict(comparison.tree_comparison),
-                default=str,
-                indent=2,
-                sort_keys=True,
-            ),
-        ),
-        (
-            "left-convergence",
-            json.dumps(
-                asdict(comparison.left_convergence),
-                default=str,
-                indent=2,
-                sort_keys=True,
-            ),
-        ),
-        (
-            "right-convergence",
-            json.dumps(
-                asdict(comparison.right_convergence),
-                default=str,
-                indent=2,
-                sort_keys=True,
-            ),
-        ),
-        (
-            "parameter-differences",
-            json.dumps(
-                [asdict(row) for row in comparison.parameter_differences],
-                indent=2,
-                sort_keys=True,
-            ),
-        ),
-        ("limitations", json.dumps(limitations, indent=2)),
-    ]
-    machine_manifest = {
-        "report_kind": "bayesian-run-comparison",
-        "title": title,
-        "left_tree_set_path": str(left_tree_set_path),
-        "right_tree_set_path": str(right_tree_set_path),
-        "left_trace_path": str(left_trace_path),
-        "right_trace_path": str(right_trace_path),
-        "trace_kind": trace_kind,
-        "warning_count": len(comparison.warnings),
-        "limitations": limitations,
-        "sections": [name for name, _ in sections],
-    }
-    write_html_report(
-        title=title,
-        sections=sections,
-        out_path=out_path,
-        embedded_json=machine_manifest,
-        summary_metrics=method_tier_summary_metrics(method_tier),
-    )
-    return BayesianRunComparisonReportBuildResult(
-        output_path=out_path,
-        report_kind="bayesian-run-comparison",
-        title=title,
-        left_tree_set_path=left_tree_set_path,
-        right_tree_set_path=right_tree_set_path,
-        left_trace_path=left_trace_path,
-        right_trace_path=right_trace_path,
-        trace_kind=trace_kind,
-        warning_count=len(comparison.warnings),
-        method_tier=method_tier,
-        machine_manifest=machine_manifest,
-    )
 
 
 def render_bayesian_diagnostics_report(
@@ -417,71 +307,6 @@ def _strip_beast_output_suffix(file_name: str) -> str:
             return parts[0]
         return stem
     return file_name
-
-
-def render_ml_vs_bayesian_tree_report(
-    *,
-    ml_tree_path: Path,
-    posterior_tree_path: Path,
-    out_path: Path,
-    burnin_fraction: float = 0.25,
-) -> BayesianMlComparisonReportBuildResult:
-    """Render a reviewer-facing comparison between one ML tree and one Bayesian MCC summary."""
-    comparison = compare_ml_tree_to_bayesian_posterior(
-        ml_tree_path,
-        posterior_tree_path,
-        burnin_fraction=burnin_fraction,
-    )
-    title = "Bijux ML Versus Bayesian Tree Report"
-    method_tier = bayesian_report_method_tier("ml-vs-bayesian-tree")
-    limitations = ml_vs_bayesian_limitations(comparison.warnings)
-    sections = [
-        method_tier_section(method_tier),
-        (
-            "ml-versus-bayesian-summary",
-            json.dumps(asdict(comparison), default=str, indent=2, sort_keys=True),
-        ),
-        (
-            "topology-comparison",
-            json.dumps(
-                asdict(comparison.topology), default=str, indent=2, sort_keys=True
-            ),
-        ),
-        (
-            "branch-length-comparison",
-            json.dumps(
-                asdict(comparison.branch_lengths), default=str, indent=2, sort_keys=True
-            ),
-        ),
-        ("limitations", json.dumps(limitations, indent=2)),
-    ]
-    machine_manifest = {
-        "report_kind": "ml-vs-bayesian-tree",
-        "title": title,
-        "ml_tree_path": str(ml_tree_path),
-        "posterior_tree_path": str(posterior_tree_path),
-        "warning_count": len(comparison.warnings),
-        "limitations": limitations,
-        "sections": [name for name, _ in sections],
-    }
-    write_html_report(
-        title=title,
-        sections=sections,
-        out_path=out_path,
-        embedded_json=machine_manifest,
-        summary_metrics=method_tier_summary_metrics(method_tier),
-    )
-    return BayesianMlComparisonReportBuildResult(
-        output_path=out_path,
-        report_kind="ml-vs-bayesian-tree",
-        title=title,
-        ml_tree_path=ml_tree_path,
-        posterior_tree_path=posterior_tree_path,
-        warning_count=len(comparison.warnings),
-        method_tier=method_tier,
-        machine_manifest=machine_manifest,
-    )
-
 
 def render_time_tree_readiness_report(
     *,
