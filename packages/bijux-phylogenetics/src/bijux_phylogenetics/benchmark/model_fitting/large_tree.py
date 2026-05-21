@@ -16,7 +16,6 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
     fit_continuous_evolutionary_mode,
     transform_tree_for_evolutionary_mode,
 )
-from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
@@ -29,6 +28,10 @@ from bijux_phylogenetics.simulation import (
 
 from .geiger_reference import (
     GEIGER_LARGE_TREE_MODEL_FITTING_REFERENCE_PAYLOADS,
+)
+from .large_tree_model_fitting.artifact_outputs import (
+    write_large_tree_model_fitting_observation_table,
+    write_large_tree_model_fitting_summary_table,
 )
 from .large_tree_model_fitting.case_definitions import (
     ContinuousCaseDefinition as _ContinuousCaseDefinition,
@@ -102,87 +105,6 @@ def write_large_tree_model_fitting_bundle(
         output_root=output_root,
         summary_path=summary_path,
         observation_table_path=observation_table_path,
-    )
-
-
-def write_large_tree_model_fitting_summary_table(
-    path: Path,
-    report: LargeTreeModelFittingBenchmarkReport,
-) -> Path:
-    """Write the stable benchmark summary counts for one governed tier."""
-    return write_taxon_rows(
-        path,
-        columns=[
-            "tier",
-            "case_count",
-            "geiger_match_case_count",
-            "threshold_pass_case_count",
-            "too_slow_case_count",
-            "unstable_case_count",
-            "limitations",
-        ],
-        rows=[
-            {
-                "tier": report.tier,
-                "case_count": report.case_count,
-                "geiger_match_case_count": report.geiger_match_case_count,
-                "threshold_pass_case_count": report.threshold_pass_case_count,
-                "too_slow_case_count": report.too_slow_case_count,
-                "unstable_case_count": report.unstable_case_count,
-                "limitations": " | ".join(report.limitations),
-            }
-        ],
-    )
-
-
-def write_large_tree_model_fitting_observation_table(
-    path: Path,
-    report: LargeTreeModelFittingBenchmarkReport,
-) -> Path:
-    """Write one stable observation row per governed large-tree benchmark case."""
-    return write_taxon_rows(
-        path,
-        columns=[
-            "case_id",
-            "tier",
-            "trait_kind",
-            "fit_surface",
-            "taxon_count",
-            "status",
-            "converged",
-            "stable_conclusion_supported",
-            "unstable_review",
-            "too_slow_review",
-            "performance_threshold_passed",
-            "matches_geiger_reference",
-            "geiger_reference_available",
-            "notes",
-        ],
-        rows=[
-            {
-                "case_id": row.case_id,
-                "tier": row.tier,
-                "trait_kind": row.trait_kind,
-                "fit_surface": row.fit_surface,
-                "taxon_count": row.taxon_count,
-                "status": row.status,
-                "converged": _format_optional_bool(row.converged),
-                "stable_conclusion_supported": _format_optional_bool(
-                    row.stable_conclusion_supported
-                ),
-                "unstable_review": row.unstable_review,
-                "too_slow_review": row.too_slow_review,
-                "performance_threshold_passed": _format_optional_bool(
-                    row.performance_threshold_passed
-                ),
-                "matches_geiger_reference": _format_optional_bool(
-                    row.matches_geiger_reference
-                ),
-                "geiger_reference_available": row.geiger_reference_available,
-                "notes": " | ".join(row.notes),
-            }
-            for row in report.observations
-        ],
     )
 
 
@@ -1002,12 +924,6 @@ def _optional_string(value: object) -> str | None:
     if isinstance(value, str):
         return value
     return None
-
-
-def _format_optional_bool(value: bool | None) -> str:
-    if value is None:
-        return ""
-    return "True" if value else "False"
 
 
 def _benchmark_taxa(count: int) -> list[str]:
