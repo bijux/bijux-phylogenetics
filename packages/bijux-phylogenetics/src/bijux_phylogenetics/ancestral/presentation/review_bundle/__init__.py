@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import csv
 from dataclasses import asdict
 from hashlib import sha256
 from html import escape
 import json
 from pathlib import Path
 
+from .artifact_outputs import write_continuous_change_branch_table
+from .artifact_outputs import write_continuous_change_count_table
 from .continuous_changes import summarize_continuous_change_branches
 from .continuous_changes import summarize_continuous_change_counts
 from .contracts import AncestralContinuousChangeBranchRow
@@ -68,51 +69,6 @@ def _checksum(path: Path) -> str:
         for chunk in iter(lambda: handle.read(65536), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def _table_delimiter(path: Path) -> str:
-    return "," if path.suffix.lower() == ".csv" else "\t"
-
-
-def write_continuous_change_count_table(
-    path: Path,
-    rows: list[AncestralContinuousChangeCountRow],
-) -> Path:
-    fieldnames = list(asdict(rows[0]).keys())
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=fieldnames,
-            delimiter=_table_delimiter(path),
-        )
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(asdict(row))
-    return path
-
-
-def write_continuous_change_branch_table(
-    path: Path,
-    rows: list[AncestralContinuousChangeBranchRow],
-) -> Path:
-    fieldnames = list(asdict(rows[0]).keys())
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=fieldnames,
-            delimiter=_table_delimiter(path),
-        )
-        writer.writeheader()
-        for row in rows:
-            payload = asdict(row)
-            payload["child_descendant_taxa"] = "|".join(row.child_descendant_taxa)
-            payload["branch_length"] = (
-                "" if row.branch_length is None else row.branch_length
-            )
-            writer.writerow(payload)
-    return path
 
 
 def _json_script(payload: dict[str, object]) -> str:
