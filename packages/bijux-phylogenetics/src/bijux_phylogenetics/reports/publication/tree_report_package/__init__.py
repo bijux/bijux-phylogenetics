@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import asdict
-from hashlib import sha256
-import json
 from pathlib import Path
 
 from bijux_phylogenetics.diagnostics.validation import (
@@ -49,14 +46,11 @@ from .review_context import (
     summarize_tree_support,
 )
 from .presentation import write_tree_report_html
-
-
-def _checksum(path: Path) -> str:
-    digest = sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+from .manifest import (
+    attach_reviewer_audit_checklist,
+    build_machine_manifest,
+    write_machine_manifest,
+)
 
 
 def build_tree_report_package(
@@ -109,47 +103,38 @@ def build_tree_report_package(
     write_clade_table(clade_table_path, clades)
     write_tree_branch_statistics_table(branch_stats_path, branch_stats)
 
-    machine_manifest = {
-        "report_kind": "tree_package",
-        "title": title,
-        "input_path": str(tree_path),
-        "input_checksum": _checksum(tree_path),
-        "outputs": {
-            "report_path": str(report_path),
-            "figure_path": str(figure_path),
-            "methods_summary_path": str(methods_summary_path),
-            "reviewer_audit_checklist_path": str(reviewer_audit_checklist_path),
-            "support_table_path": str(support_table_path),
-            "clade_table_path": str(clade_table_path),
-            "branch_stats_path": str(branch_stats_path),
-        },
-        "metrics": {
-            "tip_count": inspection.tip_count,
-            "node_count": inspection.node_count,
-            "clade_count": inspection.clade_count,
-            "supported_branch_count": sum(
-                1 for row in support_rows if row.support is not None
-            ),
-            "long_outlier_count": branch_stats.long_outlier_count,
-            "short_outlier_count": branch_stats.short_outlier_count,
-            "rendered_support_count": figure.rendered_support_count,
-        },
-        "reviewer_summary": reviewer_summary,
-        "limitations": limitations,
-        "methods_summary_text": methods_summary.text,
-        "validation": asdict(validation),
-        "inspection": asdict(inspection),
-        "forensic": asdict(forensic),
-        "support_audit": asdict(support_audit),
-    }
+    machine_manifest = build_machine_manifest(
+        tree_path=tree_path,
+        title=title,
+        report_path=report_path,
+        figure_path=figure_path,
+        methods_summary_path=methods_summary_path,
+        reviewer_audit_checklist_path=reviewer_audit_checklist_path,
+        support_table_path=support_table_path,
+        clade_table_path=clade_table_path,
+        branch_stats_path=branch_stats_path,
+        validation=validation,
+        inspection=inspection,
+        forensic=forensic,
+        figure=figure,
+        support_audit=support_audit,
+        methods_summary=methods_summary,
+        support_rows=support_rows,
+        branch_stats=branch_stats,
+        reviewer_summary=reviewer_summary,
+        limitations=limitations,
+    )
     reviewer_audit_checklist = write_reviewer_audit_checklist(
         reviewer_audit_checklist_path,
         machine_manifest,
     ).checklist
-    machine_manifest["reviewer_audit_checklist"] = asdict(reviewer_audit_checklist)
-    manifest_path.write_text(
-        json.dumps(machine_manifest, default=str, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
+    machine_manifest = attach_reviewer_audit_checklist(
+        machine_manifest=machine_manifest,
+        reviewer_audit_checklist=reviewer_audit_checklist,
+    )
+    write_machine_manifest(
+        manifest_path,
+        machine_manifest,
     )
     write_tree_report_html(
         path=report_path,
