@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.datasets.study_inputs import (
-    TaxonTable,
     load_taxon_table,
     write_taxon_rows,
 )
@@ -16,6 +15,11 @@ from bijux_phylogenetics.render.annotated_trait_tree_package import (
     AnnotatedTraitTreePackageResult,
     AnnotatedTraitTreePublicationAudit,
     AnnotatedTraitTreeSummaryRow,
+    build_annotation_strips,
+    build_full_label_map,
+    build_numeric_map,
+    build_string_map,
+    require_table,
 )
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.tree_figure_package import (
@@ -26,7 +30,6 @@ from bijux_phylogenetics.render.reproducibility import (
     write_figure_reproducibility_manifest,
 )
 from bijux_phylogenetics.render.svg import AnnotationStrip
-from bijux_phylogenetics.runtime.errors import MetadataJoinError
 
 
 def _sha256(path: Path) -> str:
@@ -35,85 +38,6 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(65536), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def _require_table(
-    table: TaxonTable | None, *, path: Path | None, surface: str
-) -> TaxonTable:
-    if table is None or path is None:
-        raise MetadataJoinError(
-            f"annotated trait tree package requires {surface} input table"
-        )
-    return table
-
-
-def _build_full_label_map(
-    *,
-    taxa: list[str],
-    metadata_table: TaxonTable | None,
-    label_column: str | None,
-) -> dict[str, str]:
-    labels = {taxon: taxon for taxon in taxa}
-    if label_column is None:
-        return labels
-    table = _require_table(
-        metadata_table,
-        path=None if metadata_table is None else metadata_table.path,
-        surface="a metadata table for label rendering",
-    )
-    if label_column not in table.columns:
-        raise MetadataJoinError(
-            f"metadata table does not contain label column '{label_column}'"
-        )
-    for row in table.rows:
-        taxon = row[table.taxon_column]
-        if row[label_column]:
-            labels[taxon] = row[label_column]
-    return labels
-
-
-def _build_string_map(table: TaxonTable, column: str) -> dict[str, str]:
-    if column not in table.columns:
-        raise MetadataJoinError(f"table does not contain column '{column}'")
-    return {row[table.taxon_column]: row[column] for row in table.rows if row[column]}
-
-
-def _build_numeric_map(table: TaxonTable, column: str) -> dict[str, float]:
-    if column not in table.columns:
-        raise MetadataJoinError(f"table does not contain column '{column}'")
-    values: dict[str, float] = {}
-    for row in table.rows:
-        raw_value = row[column]
-        if not raw_value:
-            continue
-        try:
-            values[row[table.taxon_column]] = float(raw_value)
-        except ValueError as error:
-            raise MetadataJoinError(
-                f"column '{column}' contains a non-numeric value for taxon '{row[table.taxon_column]}'"
-            ) from error
-    return values
-
-
-def _build_annotation_strips(
-    table: TaxonTable, columns: list[str]
-) -> list[AnnotationStrip]:
-    missing_columns = [column for column in columns if column not in table.columns]
-    if missing_columns:
-        raise MetadataJoinError(
-            f"table does not contain columns: {', '.join(missing_columns)}"
-        )
-    return [
-        AnnotationStrip(
-            name=column,
-            values={
-                row[table.taxon_column]: row[column]
-                for row in table.rows
-                if row[column]
-            },
-        )
-        for column in columns
-    ]
 
 
 def _coverage_row(
@@ -334,15 +258,15 @@ def build_annotated_trait_tree_package(
         else None
     )
 
-    labels = _build_full_label_map(
+    labels = build_full_label_map(
         taxa=taxa,
         metadata_table=metadata_table,
         label_column=label_column,
     )
     categorical_traits: dict[str, str] = {}
     if categorical_column is not None:
-        categorical_traits = _build_string_map(
-            _require_table(
+        categorical_traits = build_string_map(
+            require_table(
                 traits_table,
                 path=traits_path,
                 surface="a trait table for categorical trait rendering",
@@ -351,8 +275,8 @@ def build_annotated_trait_tree_package(
         )
     continuous_traits: dict[str, float] = {}
     if continuous_column is not None:
-        continuous_traits = _build_numeric_map(
-            _require_table(
+        continuous_traits = build_numeric_map(
+            require_table(
                 traits_table,
                 path=traits_path,
                 surface="a trait table for continuous trait rendering",
@@ -360,8 +284,8 @@ def build_annotated_trait_tree_package(
             continuous_column,
         )
     metadata_strips = (
-        _build_annotation_strips(
-            _require_table(
+        build_annotation_strips(
+            require_table(
                 metadata_table,
                 path=metadata_path,
                 surface="a metadata table for metadata strip rendering",
@@ -372,8 +296,8 @@ def build_annotated_trait_tree_package(
         else []
     )
     heatmap_strips = (
-        _build_annotation_strips(
-            _require_table(
+        build_annotation_strips(
+            require_table(
                 traits_table,
                 path=traits_path,
                 surface="a trait table for heatmap rendering",

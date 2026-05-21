@@ -8,10 +8,22 @@ from .contracts import (
     AnnotatedTraitTreePublicationAudit,
     AnnotatedTraitTreeSummaryRow,
 )
+from .inputs import (
+    build_annotation_strips,
+    build_full_label_map,
+    build_numeric_map,
+    build_string_map,
+    require_table,
+)
 
 __all__ = [
     "AnnotatedTraitTreeCoverageRow",
     "AnnotatedTraitTreePackageResult",
     "AnnotatedTraitTreePublicationAudit",
     "AnnotatedTraitTreeSummaryRow",
+    "build_annotation_strips",
+    "build_full_label_map",
+    "build_numeric_map",
+    "build_string_map",
+    "require_table",
 ]
