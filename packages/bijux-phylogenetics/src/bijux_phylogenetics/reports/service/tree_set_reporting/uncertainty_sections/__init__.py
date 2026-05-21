@@ -5,7 +5,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.io.newick import dumps_newick
 
-from ..artifacts import preview_report_rows, section, truncate_report_rows
+from ...artifacts import preview_report_rows, section, truncate_report_rows
 
 
 def build_tree_uncertainty_sections(
