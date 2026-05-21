@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .bundle import RabiesMethodSensitivityPanelWorkflowBundle
 from .dataset import (
     RabiesMethodSensitivityPanelDataset,
     RabiesMethodSensitivityPanelExportResult,
@@ -19,6 +20,7 @@ __all__ = [
     "RabiesMethodSensitivityConclusionRow",
     "RabiesMethodSensitivityPanelDataset",
     "RabiesMethodSensitivityPanelExportResult",
+    "RabiesMethodSensitivityPanelWorkflowBundle",
     "RabiesMethodSensitivityPanelWorkflowReport",
     "RabiesMethodSensitivityPreprocessingComparisonRow",
     "RabiesMethodSensitivityTaskRecord",
