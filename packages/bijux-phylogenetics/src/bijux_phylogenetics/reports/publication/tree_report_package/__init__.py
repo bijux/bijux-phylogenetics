@@ -16,7 +16,6 @@ from bijux_phylogenetics.evidence.provenance.method_tiers import (
     MethodTierAssessment,
     tree_report_method_tier,
 )
-from bijux_phylogenetics.io.iqtree_support import support_fraction
 from bijux_phylogenetics.render.tree_svg import (
     SupportLabelRenderAudit,
     audit_support_label_rendering,
@@ -41,6 +40,11 @@ from .contracts import (
     TreeReportPackageResult,
     TreeSupportRow,
 )
+from .review_context import (
+    build_reviewer_summary,
+    summarize_tree_branch_statistics,
+    summarize_tree_support,
+)
 
 
 def _checksum(path: Path) -> str:
@@ -53,59 +57,6 @@ def _checksum(path: Path) -> str:
 
 def _table_delimiter(path: Path) -> str:
     return "," if path.suffix.lower() == ".csv" else "\t"
-
-
-def _support_class(value: float | None) -> str:
-    fraction = support_fraction(value)
-    if fraction is None:
-        return "missing"
-    if fraction >= 0.95:
-        return "strong"
-    if fraction >= 0.80:
-        return "moderate"
-    return "weak"
-
-
-def summarize_tree_support(clades: CladeTableReport) -> list[TreeSupportRow]:
-    rows: list[TreeSupportRow] = []
-    for row in clades.rows:
-        if row.node_kind == "tip":
-            continue
-        rows.append(
-            TreeSupportRow(
-                node_kind=row.node_kind,
-                node=row.clade_id,
-                node_label=row.node_label,
-                descendant_taxa=tuple(row.taxa),
-                support=row.support,
-                support_fraction=row.support_fraction,
-                support_class=_support_class(row.support),
-                branch_length=row.branch_length,
-                root_depth=row.root_depth,
-            )
-        )
-    return rows
-
-
-def summarize_tree_branch_statistics(
-    branch_lengths: BranchLengthDistributionReport,
-) -> TreeBranchStatisticsRow:
-    aggregate = branch_lengths.aggregate
-    return TreeBranchStatisticsRow(
-        branch_count=aggregate.branch_count,
-        defined_branch_count=aggregate.defined_branch_count,
-        missing_branch_count=aggregate.missing_branch_count,
-        zero_length_branch_count=aggregate.zero_length_branch_count,
-        negative_branch_count=aggregate.negative_branch_count,
-        positive_branch_count=aggregate.positive_branch_count,
-        long_outlier_count=aggregate.long_outlier_count,
-        short_outlier_count=aggregate.short_outlier_count,
-        minimum_branch_length=aggregate.minimum_branch_length,
-        maximum_branch_length=aggregate.maximum_branch_length,
-        mean_branch_length=aggregate.mean_branch_length,
-        median_branch_length=aggregate.median_branch_length,
-        positive_branch_median=aggregate.positive_branch_median,
-    )
 
 
 def write_tree_support_table(path: Path, rows: list[TreeSupportRow]) -> Path:
@@ -154,41 +105,6 @@ def write_tree_branch_statistics_table(
         writer.writeheader()
         writer.writerow(asdict(row))
     return path
-
-
-def _reviewer_summary(
-    *,
-    inspection: TreeInspectionReport,
-    support_rows: list[TreeSupportRow],
-    branch_stats: TreeBranchStatisticsRow,
-    support_audit: SupportLabelRenderAudit,
-) -> tuple[list[str], list[str]]:
-    supported_rows = [row for row in support_rows if row.support is not None]
-    strong_rows = [row for row in support_rows if row.support_class == "strong"]
-    limitations: list[str] = []
-    if not support_audit.validated:
-        limitations.append(
-            "support labels were withheld from the rendered figure because the input support surface was not safe to standardize"
-        )
-    if branch_stats.missing_branch_count:
-        limitations.append(
-            "branch-length summaries include missing lengths, so weighted interpretation is incomplete"
-        )
-    if branch_stats.negative_branch_count:
-        limitations.append(
-            "negative branch lengths remain in the source tree and should be corrected before downstream weighted analysis"
-        )
-    summary = [
-        f"tree quality score: {inspection.tree_quality_score}",
-        f"tip count: {inspection.tip_count}",
-        f"internal clade count: {sum(1 for row in support_rows if row.node_kind == 'internal')}",
-        f"supported branch count: {len(supported_rows)}",
-        f"strong-support branch count: {len(strong_rows)}",
-        f"long-branch outlier count: {branch_stats.long_outlier_count}",
-    ]
-    if support_audit.validated and support_audit.warnings:
-        summary.extend(support_audit.warnings)
-    return summary, limitations
 
 
 def _json_script(payload: dict[str, object]) -> str:
@@ -588,7 +504,7 @@ def build_tree_report_package(
         tree_path=tree_path,
     )
     method_tier = tree_report_method_tier()
-    reviewer_summary, limitations = _reviewer_summary(
+    reviewer_summary, limitations = build_reviewer_summary(
         inspection=inspection,
         support_rows=support_rows,
         branch_stats=branch_stats,
