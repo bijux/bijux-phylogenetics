@@ -13,6 +13,7 @@ def _entries_by_workflow(report):
     return {entry.workflow: entry for entry in report.entries}
 
 
+@pytest.mark.slow
 def test_benchmark_workflow_practical_limits_reports_governed_limits() -> None:
     report = benchmark_workflow_practical_limits(
         replicates=1,
@@ -73,6 +74,7 @@ def test_benchmark_workflow_practical_limits_rejects_empty_stress_tiers() -> Non
         )
 
 
+@pytest.mark.slow
 def test_cli_benchmark_workflow_practical_limits_reports_entry_metrics(
     capsys: pytest.CaptureFixture[str],
 ) -> None:

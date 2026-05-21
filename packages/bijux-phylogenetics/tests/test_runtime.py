@@ -7699,6 +7699,7 @@ def test_render_level_one_release_gate_report_writes_traceability_sections(
     assert "Bijux Level 1 Release Gate Report" in text
 
 
+@pytest.mark.slow
 def test_build_release_truth_report_aggregates_test_counts_and_release_surfaces(
     tmp_path: Path,
 ) -> None:
@@ -7739,6 +7740,7 @@ def test_build_release_truth_report_aggregates_test_counts_and_release_surfaces(
     assert len(report.stress_suite.observations) == 5
 
 
+@pytest.mark.slow
 def test_render_release_truth_report_writes_release_sections(
     tmp_path: Path,
 ) -> None:
@@ -8858,6 +8860,7 @@ def test_cli_report_release_gate_json_output_uses_gate_contract(
     assert payload["metrics"]["excluded_taxa"] == 3
 
 
+@pytest.mark.slow
 def test_cli_report_release_truth_json_output_uses_release_contract(
     tmp_path: Path, capsys
 ) -> None:

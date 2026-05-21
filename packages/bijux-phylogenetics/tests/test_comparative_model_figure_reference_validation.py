@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import pytest
+
 from bijux_phylogenetics.validation.reference import (
     validate_comparative_model_figure_reference_fixtures,
 )
 
 
+@pytest.mark.slow
 def test_validate_comparative_model_figure_reference_fixtures_governs_publication_audits() -> (
     None
 ):

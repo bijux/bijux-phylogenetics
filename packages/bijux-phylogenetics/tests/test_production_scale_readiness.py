@@ -13,6 +13,7 @@ def _entries_by_workflow(report):
     return {entry.workflow: entry for entry in report.entries}
 
 
+@pytest.mark.slow
 def test_build_production_scale_readiness_report_classifies_workflow_specific_scales() -> (
     None
 ):

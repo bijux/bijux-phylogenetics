@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 import bijux_phylogenetics.validation as validation_api
 from bijux_phylogenetics.validation import (
     aggregate_pytest_junit_reports,
@@ -53,6 +55,7 @@ def test_parse_pytest_junit_report_counts_pass_fail_skip_and_error(
     assert summary.error_tests == 1
 
 
+@pytest.mark.slow
 def test_aggregate_and_build_release_truth_report_uses_actual_runtime_surfaces(
     tmp_path: Path,
 ) -> None:

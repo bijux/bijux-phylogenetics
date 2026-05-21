@@ -11,6 +11,7 @@ from bijux_phylogenetics.reports.service import (
 )
 
 
+@pytest.mark.slow
 def test_render_production_scale_readiness_report_writes_scale_sections(
     tmp_path: Path,
 ) -> None:
@@ -46,6 +47,7 @@ def test_render_production_scale_readiness_report_writes_scale_sections(
     assert "Bijux Production-Scale Readiness Report" in text
 
 
+@pytest.mark.slow
 def test_cli_report_production_scale_readiness_json_output_uses_scale_contract(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],

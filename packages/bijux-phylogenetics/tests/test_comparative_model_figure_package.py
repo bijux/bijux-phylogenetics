@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.comparative import build_comparative_model_figure_package
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -78,6 +80,7 @@ def test_build_comparative_model_figure_package_writes_publication_bundle(
     assert reproducibility["model"]["name"] == "brownian"
 
 
+@pytest.mark.slow
 def test_build_comparative_model_figure_package_blocks_ambiguous_support(
     tmp_path: Path,
 ) -> None:

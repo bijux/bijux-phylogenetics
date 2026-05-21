@@ -173,6 +173,7 @@ def test_build_large_tree_set_scaling_benchmark_dashboard_tracks_goal_223() -> N
     )
 
 
+@pytest.mark.slow
 def test_build_workflow_practical_limit_dashboard_tracks_goal_224() -> None:
     report = build_workflow_practical_limit_dashboard(
         replicates=1,
@@ -355,6 +356,7 @@ def test_write_validation_corpus_json_serializes_large_tree_set_scaling_dashboar
     assert '"pairwise-rf-diversity"' in text
 
 
+@pytest.mark.slow
 def test_write_validation_corpus_json_serializes_workflow_practical_limit_dashboard(
     tmp_path: Path,
 ) -> None:
