@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import csv
 from dataclasses import asdict
 from html import escape
 import json
@@ -8,14 +7,11 @@ from pathlib import Path
 
 from bijux_phylogenetics.compare import compare_tree_paths, compare_tree_structurally
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.io.fasta import load_fasta_records
 from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.io.trees import load_tree
 
 from ..support import (
     SUPPORTED_PUBLICATION_PACKAGE_KIND,
-    artifact_kind,
-    checksum,
     entry_path,
     ignored_package_prefixes,
     mapping,
@@ -28,6 +24,13 @@ from .contracts import (
     PublicationPackageComparisonArtifactRow,
     PublicationPackageComparisonCheckRow,
     PublicationPackageComparisonResult,
+)
+from .inventory import (
+    inventory_rows_from_manifest,
+    load_accession_ids,
+    load_scientific_findings,
+    load_sequence_ids,
+    package_artifact_rows,
 )
 
 _ARTIFACT_COLUMNS = [
@@ -59,103 +62,6 @@ def _status(*, blocked: bool = False, risk: bool = False) -> str:
     return "pass"
 
 
-def _inventory_index(rows: list[dict[str, str]]) -> dict[str, dict[str, str]]:
-    return {
-        row["relative_path"]: row
-        for row in rows
-        if row.get("relative_path", "").strip()
-    }
-
-
-def _artifact_row(
-    relative_path: str,
-    left_row: dict[str, str] | None,
-    right_row: dict[str, str] | None,
-) -> PublicationPackageComparisonArtifactRow:
-    left_sha = None if left_row is None else left_row.get("sha256", "").strip() or None
-    right_sha = (
-        None if right_row is None else right_row.get("sha256", "").strip() or None
-    )
-    left_size = (
-        None
-        if left_row is None or not left_row.get("size_bytes", "").strip()
-        else int(left_row["size_bytes"])
-    )
-    right_size = (
-        None
-        if right_row is None or not right_row.get("size_bytes", "").strip()
-        else int(right_row["size_bytes"])
-    )
-    section = (
-        left_row.get("section", "").strip()
-        if left_row is not None
-        else right_row.get("section", "").strip()
-        if right_row is not None
-        else "artifact"
-    )
-    kind = (
-        left_row.get("kind", "").strip()
-        if left_row is not None
-        else right_row.get("kind", "").strip()
-        if right_row is not None
-        else artifact_kind(relative_path)
-    )
-    if left_row is None:
-        return PublicationPackageComparisonArtifactRow(
-            section=section,
-            kind=kind,
-            relative_path=relative_path,
-            status="right_only",
-            left_sha256=None,
-            right_sha256=right_sha,
-            left_size_bytes=None,
-            right_size_bytes=right_size,
-            detail="artifact appears only in the right package version",
-        )
-    if right_row is None:
-        return PublicationPackageComparisonArtifactRow(
-            section=section,
-            kind=kind,
-            relative_path=relative_path,
-            status="left_only",
-            left_sha256=left_sha,
-            right_sha256=None,
-            left_size_bytes=left_size,
-            right_size_bytes=None,
-            detail="artifact appears only in the left package version",
-        )
-    if left_sha == right_sha and left_size == right_size:
-        return PublicationPackageComparisonArtifactRow(
-            section=section,
-            kind=kind,
-            relative_path=relative_path,
-            status="same",
-            left_sha256=left_sha,
-            right_sha256=right_sha,
-            left_size_bytes=left_size,
-            right_size_bytes=right_size,
-            detail="artifact matches across both package versions",
-        )
-    detail_parts: list[str] = []
-    if left_sha != right_sha:
-        detail_parts.append("checksum changed")
-    if left_size != right_size:
-        detail_parts.append(
-            f"size changed from {left_size if left_size is not None else 'missing'} to {right_size if right_size is not None else 'missing'} bytes"
-        )
-    return PublicationPackageComparisonArtifactRow(
-        section=section,
-        kind=kind,
-        relative_path=relative_path,
-        status="changed",
-        left_sha256=left_sha,
-        right_sha256=right_sha,
-        left_size_bytes=left_size,
-        right_size_bytes=right_size,
-        detail="; ".join(detail_parts),
-    )
-
-
 def _check_row(
     *,
     section: str,
@@ -175,73 +81,6 @@ def _check_row(
         left_artifact_path=left_artifact_path,
         right_artifact_path=right_artifact_path,
     )
-
-
-def _load_accession_ids(path: Path) -> set[str]:
-    with path.open("r", encoding="utf-8", newline="") as handle:
-        return {
-            row["accession"].strip()
-            for row in csv.DictReader(handle, delimiter="\t")
-            if row.get("accession", "").strip()
-        }
-
-
-def _load_sequence_ids(path: Path) -> set[str]:
-    return {record.identifier for record in load_fasta_records(path)}
-
-
-def _load_scientific_findings(path: Path) -> dict[str, dict[str, str]]:
-    with path.open("r", encoding="utf-8", newline="") as handle:
-        return {
-            row["finding_id"]: row
-            for row in csv.DictReader(handle, delimiter="\t")
-            if row.get("finding_id", "").strip()
-        }
-
-
-def _inventory_rows_from_manifest(
-    package_root: Path,
-    manifest: dict[str, object],
-) -> list[dict[str, str]]:
-    inventory_entry = mapping(mapping(manifest, "package_files"), "artifact_inventory")
-    inventory_path = package_root / entry_path(inventory_entry)
-    return read_tsv_rows(inventory_path)
-
-
-def _package_artifact_rows(
-    *,
-    left_inventory_rows: list[dict[str, str]],
-    right_inventory_rows: list[dict[str, str]],
-    left_manifest_path: Path,
-    right_manifest_path: Path,
-) -> list[PublicationPackageComparisonArtifactRow]:
-    left_index = _inventory_index(left_inventory_rows)
-    right_index = _inventory_index(right_inventory_rows)
-    relative_paths = sorted(set(left_index) | set(right_index))
-    rows = [
-        _artifact_row(
-            relative_path, left_index.get(relative_path), right_index.get(relative_path)
-        )
-        for relative_path in relative_paths
-    ]
-    rows.append(
-        PublicationPackageComparisonArtifactRow(
-            section="package",
-            kind="manifest",
-            relative_path=left_manifest_path.name,
-            status="same"
-            if checksum(left_manifest_path) == checksum(right_manifest_path)
-            else "changed",
-            left_sha256=checksum(left_manifest_path),
-            right_sha256=checksum(right_manifest_path),
-            left_size_bytes=left_manifest_path.stat().st_size,
-            right_size_bytes=right_manifest_path.stat().st_size,
-            detail="package manifest checksum matches"
-            if checksum(left_manifest_path) == checksum(right_manifest_path)
-            else "package manifest checksum changed",
-        )
-    )
-    return rows
 
 
 def _config_differences(
@@ -383,14 +222,14 @@ def write_publication_package_comparison_report(
     right_dataset_id = text(right_manifest.get("dataset_id"))
     dataset_id = left_dataset_id or right_dataset_id
 
-    left_inventory_rows = _inventory_rows_from_manifest(
+    left_inventory_rows = inventory_rows_from_manifest(
         left_package_root, left_manifest
     )
-    right_inventory_rows = _inventory_rows_from_manifest(
+    right_inventory_rows = inventory_rows_from_manifest(
         right_package_root,
         right_manifest,
     )
-    artifact_rows = _package_artifact_rows(
+    artifact_rows = package_artifact_rows(
         left_inventory_rows=left_inventory_rows,
         right_inventory_rows=right_inventory_rows,
         left_manifest_path=left_manifest_path,
@@ -435,8 +274,8 @@ def write_publication_package_comparison_report(
     right_accession_path = right_package_root / entry_path(
         mapping(mapping(right_manifest, "dataset_files"), "source_accessions")
     )
-    left_accessions = _load_accession_ids(left_accession_path)
-    right_accessions = _load_accession_ids(right_accession_path)
+    left_accessions = load_accession_ids(left_accession_path)
+    right_accessions = load_accession_ids(right_accession_path)
     left_only_accessions = sorted(left_accessions - right_accessions)
     right_only_accessions = sorted(right_accessions - left_accessions)
 
@@ -446,8 +285,8 @@ def write_publication_package_comparison_report(
     right_sequences_path = right_package_root / entry_path(
         mapping(mapping(right_manifest, "dataset_files"), "sequences")
     )
-    left_sequences = _load_sequence_ids(left_sequences_path)
-    right_sequences = _load_sequence_ids(right_sequences_path)
+    left_sequences = load_sequence_ids(left_sequences_path)
+    right_sequences = load_sequence_ids(right_sequences_path)
     left_only_sequences = sorted(left_sequences - right_sequences)
     right_only_sequences = sorted(right_sequences - left_sequences)
     check_rows.append(
@@ -640,8 +479,8 @@ def write_publication_package_comparison_report(
     right_findings_path = right_package_root / entry_path(
         mapping(mapping(right_manifest, "workflow_files"), "scientific_findings")
     )
-    left_findings = _load_scientific_findings(left_findings_path)
-    right_findings = _load_scientific_findings(right_findings_path)
+    left_findings = load_scientific_findings(left_findings_path)
+    right_findings = load_scientific_findings(right_findings_path)
     finding_difference_count = _finding_difference_count(left_findings, right_findings)
     short_answer_changed = text(left_manifest.get("short_answer")) != text(
         right_manifest.get("short_answer")
