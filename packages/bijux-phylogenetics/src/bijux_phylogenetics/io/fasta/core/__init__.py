@@ -63,3 +63,19 @@ from .alignment_io import (
     _detect_invalid_alignment_characters_records as _detect_invalid_alignment_characters_records,
     _normalize_fasta_identifier as _normalize_fasta_identifier,
 )
+
+__all__ = [
+    "AlignmentAlphabet",
+    "AlignmentRecord",
+    "compute_amino_acid_composition",
+    "compute_nucleotide_composition",
+    "compute_per_sequence_gc_content",
+    "compute_whole_alignment_gc_content",
+    "detect_fasta_sequence_type",
+    "detect_invalid_alignment_characters",
+    "infer_alignment_alphabet",
+    "load_fasta_alignment",
+    "load_fasta_records",
+    "load_permissive_fasta_records",
+    "write_fasta_alignment",
+]

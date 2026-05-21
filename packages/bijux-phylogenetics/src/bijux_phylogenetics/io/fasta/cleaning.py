@@ -22,11 +22,11 @@ from bijux_phylogenetics.phylo.alignment import (
     TrimmedAlignmentColumn,
 )
 
-from .core import (
+from .core.alignment_io import load_fasta_alignment
+from .core.character_policy import (
     _GAP_CHARACTERS,
     _is_explicit_missing,
     _validate_fraction_threshold,
-    load_fasta_alignment,
 )
 from .records import (
     _detect_composition_outlier_sequences_records,

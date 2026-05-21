@@ -31,29 +31,35 @@ from bijux_phylogenetics.runtime.errors import (
     InvalidAlignmentError,
 )
 
-from .core import (
-    _GAP_CHARACTERS,
-    _build_fasta_input_summary_from_scan,
-    _build_fasta_sequence_type_report,
+from .core.alignment_io import (
+    _normalize_fasta_identifier,
+    detect_invalid_alignment_characters,
+    load_fasta_alignment,
+    load_permissive_fasta_records,
+)
+from .core.character_policy import (
     _compatible_raw_sequence_types,
-    _detect_sequence_length_outlier_rows,
+    _GAP_CHARACTERS,
     _is_ambiguity_character,
     _is_explicit_missing,
     _is_missing_like,
-    _normalize_fasta_identifier,
-    _robust_z_score,
-    _scan_raw_fasta,
     _validate_fraction_threshold,
+)
+from .core.composition import (
     compute_amino_acid_composition,
     compute_nucleotide_composition,
     compute_per_sequence_gc_content,
     compute_whole_alignment_gc_content,
-    detect_fasta_sequence_type,
-    detect_invalid_alignment_characters,
     infer_alignment_alphabet,
-    load_fasta_alignment,
-    load_permissive_fasta_records,
 )
+from .core.input_validation import (
+    _build_fasta_input_summary_from_scan,
+    _build_fasta_sequence_type_report,
+    _detect_sequence_length_outlier_rows,
+    detect_fasta_sequence_type,
+    _robust_z_score,
+)
+from .core.raw_scan import _scan_raw_fasta
 
 _MAX_DEFAULT_NEAR_DUPLICATE_SEQUENCE_COUNT = 256
 

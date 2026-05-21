@@ -14,11 +14,8 @@ from bijux_phylogenetics.phylo.alignment import (
 )
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
-from .core import (
-    infer_alignment_alphabet,
-    load_fasta_alignment,
-    write_fasta_alignment,
-)
+from .core.alignment_io import load_fasta_alignment, write_fasta_alignment
+from .core.composition import infer_alignment_alphabet
 from .records import (
     _detect_composition_outlier_sequences_records,
 )

@@ -21,14 +21,13 @@ from bijux_phylogenetics.phylo.alignment import (
 )
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
-from .core import (
+from .core.alignment_io import load_fasta_alignment, load_fasta_records
+from .core.character_policy import (
     _DNA_CHARACTERS_UPPER,
     _GAP_CHARACTERS,
     _is_explicit_missing,
-    detect_fasta_sequence_type,
-    load_fasta_alignment,
-    load_fasta_records,
 )
+from .core.input_validation import detect_fasta_sequence_type
 from .matrix import (
     _records_from_dnabin_alignment,
     load_dna_bin_alignment,
