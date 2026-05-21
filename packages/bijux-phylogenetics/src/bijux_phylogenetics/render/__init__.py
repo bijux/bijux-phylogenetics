@@ -1,6 +1,5 @@
 """Rendering helpers for phylogenetics reports and tree figures."""
 
-from .package import TreeFigurePackageResult, build_tree_figure_package
 from .reproducibility import (
     FigureReproducibilityArtifact,
     FigureReproducibilityFilter,
@@ -13,6 +12,7 @@ from .time_tree_svg import (
     TimeTreeRenderResult,
     render_time_tree_svg,
 )
+from .tree_figure_package import TreeFigurePackageResult, build_tree_figure_package
 from .trait_tree_package import (
     AnnotatedTraitTreePackageResult,
     build_annotated_trait_tree_package,

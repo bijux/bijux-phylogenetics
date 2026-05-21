@@ -7,7 +7,7 @@ from bijux_phylogenetics.bayesian import build_time_tree_figure_package
 from bijux_phylogenetics.biogeography.presentation import (
     build_biogeography_report_package,
 )
-from bijux_phylogenetics.render.package import build_tree_figure_package
+from bijux_phylogenetics.render.tree_figure_package import build_tree_figure_package
 from bijux_phylogenetics.render.trait_tree_package import (
     build_annotated_trait_tree_package,
 )

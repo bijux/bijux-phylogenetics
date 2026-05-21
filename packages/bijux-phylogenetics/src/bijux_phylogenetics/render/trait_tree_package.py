@@ -12,7 +12,7 @@ from bijux_phylogenetics.datasets.study_inputs import (
 )
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.html import write_html_report
-from bijux_phylogenetics.render.package import (
+from bijux_phylogenetics.render.tree_figure_package import (
     TreeFigurePackageResult,
     build_tree_figure_package,
 )

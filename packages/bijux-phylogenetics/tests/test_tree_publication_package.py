@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.render.package import build_tree_figure_package
+from bijux_phylogenetics.render.tree_figure_package import build_tree_figure_package
 from bijux_phylogenetics.render.svg import AnnotationStrip
 
 
