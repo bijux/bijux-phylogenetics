@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from bijux_phylogenetics.parity.geiger.generated_parity_report.builder import (
+from bijux_phylogenetics.parity.geiger.generated_parity_report import (
     build_generated_geiger_parity_report,
-)
-from bijux_phylogenetics.parity.geiger.generated_parity_report.contracts import (
     GeigerBenchmarkSummaryRow,
     GeigerBoundaryWarningSummaryRow,
     GeigerExcludedModelRow,
@@ -12,8 +10,6 @@ from bijux_phylogenetics.parity.geiger.generated_parity_report.contracts import 
     GeigerSimulationRecoveryRow,
     GeigerToleranceRuleRow,
     GeneratedGeigerParityReport,
-)
-from bijux_phylogenetics.parity.geiger.generated_parity_report.presentation import (
     write_generated_geiger_parity_report_json,
     write_generated_geiger_parity_report_markdown,
 )
