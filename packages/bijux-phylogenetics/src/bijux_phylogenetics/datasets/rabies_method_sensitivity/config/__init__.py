@@ -7,12 +7,12 @@ import shutil
 
 from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 
-from .models import (
+from ..models import (
     RabiesMethodSensitivityPanelDataset,
     RabiesMethodSensitivityPanelExportResult,
     RabiesMethodSensitivityVariant,
 )
-from .shared import (
+from ..shared import (
     _DATASET_ID,
     _DATASET_LABEL,
     _SEQUENCE_TYPE,
