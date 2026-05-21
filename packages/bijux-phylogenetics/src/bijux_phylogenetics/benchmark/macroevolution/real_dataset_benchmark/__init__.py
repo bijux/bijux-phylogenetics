@@ -29,6 +29,11 @@ from .artifact_outputs import (
     write_real_dataset_macroevolution_parity_table,
     write_real_dataset_macroevolution_summary_table,
 )
+from .builder import (
+    benchmark_real_dataset_macroevolution,
+    run_real_dataset_macroevolution_benchmark_demo,
+    write_real_dataset_macroevolution_bundle,
+)
 from .review_input import write_alignment_review_traits_table
 from .report_assembly import build_report
 from .overview import write_overview
@@ -52,11 +57,14 @@ __all__ = [
     "RealDatasetMacroevolutionParityRow",
     "RealDatasetMacroevolutionSummaryRow",
     "REMOVED_TREE_TAXON",
+    "benchmark_real_dataset_macroevolution",
     "build_report",
+    "run_real_dataset_macroevolution_benchmark_demo",
     "write_overview",
     "write_alignment_review_traits_table",
     "write_geiger_real_dataset_reference_payload_table",
     "write_real_dataset_macroevolution_alignment_review_table",
+    "write_real_dataset_macroevolution_bundle",
     "write_real_dataset_macroevolution_model_table",
     "write_real_dataset_macroevolution_parity_table",
     "write_real_dataset_macroevolution_summary_table",
