@@ -1,8 +1,8 @@
 {
-  "debt_count": 7,
+  "debt_count": 16,
   "debt_kind_counts": {
     "coverage_gap": 4,
-    "unresolved_mismatch": 3
+    "unresolved_mismatch": 12
   },
   "debts": [
     {
@@ -52,13 +52,39 @@
       "study_id": "primate-longevity-signal"
     },
     {
+      "debt_id": "primate-pgls-and-signal-evidence-001-ancestral-brownian-first-five",
+      "debt_kind": "unresolved_mismatch",
+      "detail": "brownian_first_five_estimates remains unresolved with observed absolute difference None.",
+      "evidence": [
+        "verdict=mismatch_unexplained",
+        "r_value=[262.350022499711, 295.392237823336, 369.773311672215, 411.2760353975, 334.804088053515]",
+        "bijux_value=[262.35, 295.3922, 369.7733, 411.276, 334.8041]"
+      ],
+      "evidence_id": "evidence-001",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+      "study_id": "primate-pgls-and-signal"
+    },
+    {
+      "debt_id": "primate-pgls-and-signal-evidence-001-ancestral-brownian-recent-five",
+      "debt_kind": "unresolved_mismatch",
+      "detail": "brownian_recent_five_estimates remains unresolved with observed absolute difference None.",
+      "evidence": [
+        "verdict=mismatch_unexplained",
+        "r_value=[192.371916302131, 189.874069323138, 171.574858834618, 174, 214.8]",
+        "bijux_value=[192.3719, 189.8741, 171.5749, 174.0, 214.8]"
+      ],
+      "evidence_id": "evidence-001",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+      "study_id": "primate-pgls-and-signal"
+    },
+    {
       "debt_id": "primate-pgls-and-signal-evidence-001-ancestral-eb-first-five",
       "debt_kind": "unresolved_mismatch",
       "detail": "early_burst_first_five_estimates remains unresolved with observed absolute difference None.",
       "evidence": [
         "verdict=mismatch_unexplained",
-        "r_value=[282.721, 336.8289, 355.3926, 386.4737, 341.7363]",
-        "bijux_value=[260.1962, 285.3532, 371.7088, 415.4058, 334.0808]"
+        "r_value=[282.721003635748, 336.828890951664, 355.392585511741, 386.473721532351, 341.736336661997]",
+        "bijux_value=[262.35, 268.7938, 324.9443, 387.4761, 353.8869]"
       ],
       "evidence_id": "evidence-001",
       "relative_path": "studies/primate-pgls-and-signal/evidence-001",
@@ -70,8 +96,60 @@
       "detail": "early_burst_recent_five_estimates remains unresolved with observed absolute difference None.",
       "evidence": [
         "verdict=mismatch_unexplained",
-        "r_value=[190.3015, 187.9457, 171.7538, 174, 214.8]",
-        "bijux_value=[192.7689, 190.2801, 171.5387, 174.0, 214.8]"
+        "r_value=[190.301546647852, 187.945676006467, 171.753821601142, 174, 214.8]",
+        "bijux_value=[205.799, 202.3003, 182.0545, 177.8185, 213.5094]"
+      ],
+      "evidence_id": "evidence-001",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+      "study_id": "primate-pgls-and-signal"
+    },
+    {
+      "debt_id": "primate-pgls-and-signal-evidence-001-brownian-eb-lrt-statistic",
+      "debt_kind": "unresolved_mismatch",
+      "detail": "brownian_vs_early_burst_statistic remains unresolved with observed absolute difference 30.340684573422.",
+      "evidence": [
+        "verdict=mismatch_unexplained",
+        "r_value=30.340684573422",
+        "bijux_value=0.0"
+      ],
+      "evidence_id": "evidence-001",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+      "study_id": "primate-pgls-and-signal"
+    },
+    {
+      "debt_id": "primate-pgls-and-signal-evidence-001-early-burst-2-total-branch-length",
+      "debt_kind": "unresolved_mismatch",
+      "detail": "early_burst_2_total_branch_length remains unresolved with observed absolute difference None.",
+      "evidence": [
+        "verdict=mismatch_unexplained",
+        "r_value=87.5076762141263",
+        "bijux_value=4.1181"
+      ],
+      "evidence_id": "evidence-001",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+      "study_id": "primate-pgls-and-signal"
+    },
+    {
+      "debt_id": "primate-pgls-and-signal-evidence-001-early-burst-log-likelihood",
+      "debt_kind": "unresolved_mismatch",
+      "detail": "early_burst_log_likelihood remains unresolved with observed absolute difference 15.170304341821.",
+      "evidence": [
+        "verdict=mismatch_unexplained",
+        "r_value=-461.253095658179",
+        "bijux_value=-476.4234"
+      ],
+      "evidence_id": "evidence-001",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+      "study_id": "primate-pgls-and-signal"
+    },
+    {
+      "debt_id": "primate-pgls-and-signal-evidence-001-early-burst-rate-change",
+      "debt_kind": "unresolved_mismatch",
+      "detail": "early_burst_rate_change remains unresolved with observed absolute difference 10.6718757865625.",
+      "evidence": [
+        "verdict=mismatch_unexplained",
+        "r_value=10.6718757865625",
+        "bijux_value=0.0"
       ],
       "evidence_id": "evidence-001",
       "relative_path": "studies/primate-pgls-and-signal/evidence-001",
@@ -80,11 +158,50 @@
     {
       "debt_id": "primate-pgls-and-signal-evidence-001-estimated-diagnostic-fitted-correlation",
       "debt_kind": "unresolved_mismatch",
-      "detail": "abs_residual_fitted_correlation remains unresolved with observed absolute difference 0.093400238282203.",
+      "detail": "abs_residual_fitted_correlation remains unresolved with observed absolute difference 0.095590356776682.",
       "evidence": [
         "verdict=mismatch_unexplained",
-        "r_value=0.2056",
-        "bijux_value=0.112199761717797"
+        "r_value=0.205562548325984",
+        "bijux_value=0.109972191549302"
+      ],
+      "evidence_id": "evidence-001",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+      "study_id": "primate-pgls-and-signal"
+    },
+    {
+      "debt_id": "primate-pgls-and-signal-evidence-001-late-burst-minus-2-total-branch-length",
+      "debt_kind": "unresolved_mismatch",
+      "detail": "late_burst_minus_2_total_branch_length remains unresolved with observed absolute difference None.",
+      "evidence": [
+        "verdict=mismatch_unexplained",
+        "r_value=4.11805690444875",
+        "bijux_value=87.5077"
+      ],
+      "evidence_id": "evidence-001",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+      "study_id": "primate-pgls-and-signal"
+    },
+    {
+      "debt_id": "primate-pgls-and-signal-evidence-001-ou-alpha-1-total-branch-length",
+      "debt_kind": "unresolved_mismatch",
+      "detail": "ou_alpha_1_total_branch_length remains unresolved with observed absolute difference None.",
+      "evidence": [
+        "verdict=mismatch_unexplained",
+        "r_value=11.8428761446323",
+        "bijux_value=11.8429"
+      ],
+      "evidence_id": "evidence-001",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+      "study_id": "primate-pgls-and-signal"
+    },
+    {
+      "debt_id": "primate-pgls-and-signal-evidence-001-ou-alpha-10-total-branch-length",
+      "debt_kind": "unresolved_mismatch",
+      "detail": "ou_alpha_10_total_branch_length remains unresolved with observed absolute difference None.",
+      "evidence": [
+        "verdict=mismatch_unexplained",
+        "r_value=3.20350911964606",
+        "bijux_value=3.2035"
       ],
       "evidence_id": "evidence-001",
       "relative_path": "studies/primate-pgls-and-signal/evidence-001",
