@@ -176,6 +176,45 @@ def test_phylogenetic_signal_reports_pruned_missing_values_explicitly() -> None:
     )
 
 
+@pytest.mark.parametrize(
+    ("runner", "extra_kwargs"),
+    [
+        (
+            compute_blombergs_k,
+            {},
+        ),
+        (
+            estimate_pagels_lambda,
+            {},
+        ),
+        (
+            compute_phylogenetic_signal_test,
+            {"permutations": 9, "seed": 17},
+        ),
+    ],
+)
+def test_signal_methods_report_pruned_missing_values_explicitly(
+    runner,
+    extra_kwargs: dict[str, int],
+) -> None:
+    report = runner(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_brownian_missing.tsv"),
+        trait="response_growth",
+        **extra_kwargs,
+    )
+
+    assert report.taxon_count == 4
+    assert report.input_audit.missing_value_policy == (
+        "prune-overlapping-missing-values"
+    )
+    assert report.input_audit.pruned_missing_value_taxa == ["B"]
+    assert (
+        "one or more overlapping taxa have missing trait values and will be pruned"
+        in report.input_audit.warnings
+    )
+
+
 def test_independent_contrasts_reports_pruned_missing_values_explicitly() -> None:
     report = compute_phylogenetic_independent_contrasts(
         fixture("example_tree_six_taxa.nwk"),
@@ -212,6 +251,38 @@ def test_phylogenetic_signal_accepts_rooted_non_ultrametric_tree_by_policy() -> 
         fixture("example_traits_comparative.tsv"),
         trait="response",
     )
+    assert report.input_audit.tree_is_ultrametric is False
+    assert report.input_audit.ultrametric_policy == (
+        "accept-rooted-trees-and-report-ultrametricity"
+    )
+    assert report.input_audit.minimum_root_to_tip_depth == 0.2
+    assert report.input_audit.maximum_root_to_tip_depth == 1.1
+
+
+@pytest.mark.parametrize(
+    ("runner", "extra_kwargs"),
+    [
+        (
+            compute_blombergs_k,
+            {},
+        ),
+        (
+            compute_phylogenetic_signal_test,
+            {"permutations": 9, "seed": 5},
+        ),
+    ],
+)
+def test_signal_methods_accept_rooted_non_ultrametric_tree_by_policy(
+    runner,
+    extra_kwargs: dict[str, int],
+) -> None:
+    report = runner(
+        fixture("example_tree_internal_long_branch.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        trait="response",
+        **extra_kwargs,
+    )
+
     assert report.input_audit.tree_is_ultrametric is False
     assert report.input_audit.ultrametric_policy == (
         "accept-rooted-trees-and-report-ultrametricity"
@@ -321,6 +392,42 @@ def test_phylogenetic_signal_rejects_constant_trait_values(tmp_path: Path) -> No
             permutations=7,
             seed=3,
         )
+    assert str(error.value) == (
+        "phylogenetic signal requires at least two distinct numeric trait values after pruning"
+    )
+
+
+@pytest.mark.parametrize(
+    ("runner", "extra_kwargs"),
+    [
+        (
+            compute_blombergs_k,
+            {},
+        ),
+        (
+            estimate_pagels_lambda,
+            {},
+        ),
+    ],
+)
+def test_signal_estimates_reject_constant_trait_values(
+    tmp_path: Path,
+    runner,
+    extra_kwargs: dict[str, int],
+) -> None:
+    traits_path = tmp_path / "constant-traits.tsv"
+    traits_path.write_text(
+        "taxon\tresponse\nA\t2.0\nB\t2.0\nC\t2.0\nD\t2.0\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ComparativeMethodError) as error:
+        runner(
+            fixture("example_tree.nwk"),
+            traits_path,
+            trait="response",
+            **extra_kwargs,
+        )
+
     assert str(error.value) == (
         "phylogenetic signal requires at least two distinct numeric trait values after pruning"
     )
