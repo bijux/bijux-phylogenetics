@@ -10,6 +10,7 @@ from bijux_phylogenetics.comparative.pgls import PGLSInputReport, PGLSResult
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 from .contracts import (
+    MULTIVARIATE_LAMBDA_DIVERGENCE_WARNING_THRESHOLD,
     MULTIVARIATE_NEAR_SINGULAR_CONDITION_THRESHOLD,
     MULTIVARIATE_NUMERICAL_TOLERANCE,
     MULTIVARIATE_WEAK_SAMPLE_RESIDUAL_DF_THRESHOLD,
@@ -134,6 +135,15 @@ def build_multivariate_warnings(
         warnings.append(
             "shared multivariate regression retains weak residual degrees of freedom, so response-specific coefficients and residual covariance estimates may be unstable"
         )
+    lambda_span = response_lambda_span(response_models)
+    if lambda_span >= MULTIVARIATE_LAMBDA_DIVERGENCE_WARNING_THRESHOLD:
+        minimum_lambda = min(model.lambda_value for model in response_models)
+        maximum_lambda = max(model.lambda_value for model in response_models)
+        warnings.append(
+            "response models resolved materially different Pagel lambda values "
+            f"({format(minimum_lambda, '.15g')} to {format(maximum_lambda, '.15g')}), "
+            "so shared residual covariance and correlation compare residuals fit under different phylogenetic error assumptions"
+        )
     if covariance_diagnostics.is_near_singular:
         warnings.append(
             "residual covariance matrix is singular or near-singular within the multivariate numerical tolerance"
@@ -150,6 +160,13 @@ def deduplicate_preserving_order(values: list[str]) -> list[str]:
         seen.add(value)
         ordered.append(value)
     return ordered
+
+
+def response_lambda_span(response_models: list[PGLSResult]) -> float:
+    if not response_models:
+        return 0.0
+    lambda_values = [model.lambda_value for model in response_models]
+    return max(lambda_values) - min(lambda_values)
 
 
 def covariance_and_correlation(
