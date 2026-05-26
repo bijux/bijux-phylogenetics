@@ -3,13 +3,16 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from bijux_phylogenetics.datasets.shared_fixtures import (
+    get_shared_beast_posterior_fixture,
+)
 from bijux_phylogenetics.engines import run_model_selection
 from bijux_phylogenetics.engines.validation.matrix import (
     ExternalEngineValidationCase,
     ExternalEngineValidationMatrixReport,
-    build_beast_artifact_validation_case,
     build_external_engine_validation_case,
     build_external_engine_validation_matrix,
+    build_governed_beast_fixture_validation_case,
     merge_external_engine_validation_matrices,
     write_external_engine_validation_matrix,
 )
@@ -104,15 +107,13 @@ def test_build_external_engine_validation_case_from_workflow_records_run_metadat
     assert payload["cases"][0]["manifest_path"] == str(workflow.manifest_path)
 
 
-def test_build_beast_artifact_validation_case_parses_real_fixture_outputs(
+def test_build_governed_beast_fixture_validation_case_parses_real_fixture_outputs(
     tmp_path: Path,
 ) -> None:
-    case = build_beast_artifact_validation_case(
+    fixture_entry = get_shared_beast_posterior_fixture("strict_yule_real_posterior")
+    case = build_governed_beast_fixture_validation_case(
         "beast fixture parser acceptance",
-        xml_path=fixture("beast2_strict_yule_posterior.xml"),
-        log_path=fixture("beast2_strict_yule_posterior.log"),
-        tree_path=fixture("beast2_strict_yule_posterior.trees"),
-        burnin_fraction=0.1,
+        fixture_entry,
     )
     matrix = build_external_engine_validation_matrix([case])
     output_path = write_external_engine_validation_matrix(
@@ -137,6 +138,8 @@ def test_build_beast_artifact_validation_case_parses_real_fixture_outputs(
     assert len(case.output_checksums) == 3
     assert any("kept rows" in note for note in case.notes)
     assert any("kept after burn-in" in note for note in case.notes)
+    assert any("consensus and maximum clade credibility" in note for note in case.notes)
+    assert any("ESS and interval summaries" in note for note in case.notes)
     assert payload["engine_names"] == ["BEAST"]
     assert payload["cases"][0]["output_paths"]["analysis_xml"].endswith(
         "beast2_strict_yule_posterior.xml"
