@@ -143,6 +143,12 @@ and messy benchmark corpora through `bijux_phylogenetics.validation`
 so validation, warning-rich behavior, and failure signatures can be audited
 from library code as well as tests.
 
+The `engine_outputs/` fixture surface is the governed parser-stress corpus for
+external tool outputs. It intentionally carries normal, warning-heavy,
+truncated, malformed, and version-variant BEAST, MrBayes, and IQ-TREE parser
+artifacts so external-output hardening stays tied to durable files instead of
+ad hoc inline strings.
+
 The `metadata/beast2_strict_yule_posterior.xml`, `.log`, and `.trees` files
 are the governed real-artifact BEAST corpus used by the Bayesian validation
 matrix whenever a live `beast` executable is not present locally. They are not
