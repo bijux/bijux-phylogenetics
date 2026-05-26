@@ -70,11 +70,30 @@ def run_mrbayes_posterior_inference(
     )
     command = [resolved, nexus_path.name]
 
+    def _validate_consistent_posterior_taxa() -> None:
+        _consensus_tree, consensus_report = parse_mrbayes_consensus_tree(consensus_path)
+        _summary_tree, tree_report = summarize_mrbayes_posterior_trees(
+            tree_path,
+            burnin_fraction=0.25,
+        )
+        if sorted(consensus_report.tip_names) == sorted(tree_report.shared_taxa):
+            return
+        raise _mrbayes_artifact_error(
+            f"MrBayes posterior outputs disagree on sampled taxa: {consensus_path}",
+            code="mrbayes_outputs_inconsistent_taxa",
+            path=consensus_path,
+            artifact_kind="mrbayes-consensus-tree",
+            details={
+                "posterior_trees_path": str(tree_path),
+                "consensus_tree_taxa": sorted(consensus_report.tip_names),
+                "posterior_tree_taxa": sorted(tree_report.shared_taxa),
+            },
+        )
+
     def validate_outputs() -> None:
         parse_mrbayes_parameter_traces(trace_path)
         parse_mrbayes_mcmc_diagnostics(mcmc_path)
-        parse_mrbayes_consensus_tree(consensus_path)
-        summarize_mrbayes_posterior_trees(tree_path, burnin_fraction=0.25)
+        _validate_consistent_posterior_taxa()
 
     return run_bayesian_posterior_execution(
         engine_name="MrBayes",

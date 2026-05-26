@@ -261,6 +261,61 @@ mcmc_path.write_text(
     )
 
 
+def _fake_mrbayes_inconsistent_taxa(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv[1:] or "-v" in sys.argv[1:]:
+    print("MrBayes v3.2.7a fixture")
+    raise SystemExit(0)
+
+nexus_path = Path(sys.argv[1])
+trace_path = Path(f"{nexus_path}.run1.p")
+tree_path = Path(f"{nexus_path}.run1.t")
+mcmc_path = Path(f"{nexus_path}.mcmc")
+consensus_path = Path(f"{nexus_path}.con.tre")
+trace_path.write_text(
+    "Gen\\tLnL\\tTL\\talpha\\n"
+    "0\\t-110.0\\t0.40\\t0.90\\n"
+    "100\\t-108.0\\t0.41\\t0.95\\n"
+    "200\\t-107.0\\t0.42\\t1.00\\n"
+    "300\\t-106.5\\t0.43\\t1.05\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree gen2 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree gen3 = [&R] ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\\n"
+    "tree gen4 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+mcmc_path.write_text(
+    "[ID: 1]\\n"
+    "[   Gen -- Generation]\\n"
+    "Gen\\tMove$acc_run1\\tSwap(1<>2)$acc(1)\\tAvgStdDev(s)\\n"
+    "100\\t0.5\\t0.75\\t0.20\\n"
+    "200\\tNA\\t1.0\\t0.10\\n",
+    encoding="utf-8",
+)
+consensus_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree con_50_majrule = [&R] ((A[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1,B[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1)"
+    "[&prob=0.75,prob(percent)=\\\"75\\\"]:0.2,(C[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1,E[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1)"
+    "[&prob=0.5,prob(percent)=\\\"50\\\"]:0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
 def _fake_mrbayes_killed(path: Path) -> Path:
     return _write_executable(
         path,
@@ -568,6 +623,24 @@ def test_run_mrbayes_posterior_inference_reports_structured_missing_outputs(
             "path": str(Path(f"{nexus_path}.con.tre")),
         }
     ]
+
+
+def test_run_mrbayes_posterior_inference_rejects_inconsistent_taxa(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mrbayes_inconsistent_taxa(tmp_path / "mb-inconsistent")
+    nexus_path = tmp_path / "analysis.nex"
+    prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
+
+    with pytest.raises(EngineWorkflowError) as error:
+        run_mrbayes_posterior_inference(
+            nexus_path,
+            executable=executable,
+        )
+
+    assert error.value.code == "mrbayes_outputs_inconsistent_taxa"
+    assert error.value.details["consensus_tree_taxa"] == ["A", "B", "C", "E"]
+    assert error.value.details["posterior_tree_taxa"] == ["A", "B", "C", "D"]
 
 
 def test_parse_mrbayes_traces_and_compute_effective_sample_sizes(
