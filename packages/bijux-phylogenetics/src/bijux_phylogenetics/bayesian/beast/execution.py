@@ -81,12 +81,33 @@ def run_beast_posterior_inference(
         xml_path.name,
     ]
 
-    def validate_outputs() -> None:
-        parse_beast_log(posterior_log_path)
-        parse_beast_posterior_tree_samples(
+    def _validate_consistent_posterior_states() -> None:
+        from ._shared import _beast_artifact_error
+
+        log_report = parse_beast_log(posterior_log_path)
+        tree_report = parse_beast_posterior_tree_samples(
             posterior_trees_path,
             burnin_fraction=0.0,
         )
+        log_states = {row.state for row in log_report.rows}
+        tree_states = set(tree_report.sampled_states)
+        if tree_states.issubset(log_states):
+            return
+        raise _beast_artifact_error(
+            f"BEAST posterior outputs disagree on sampled states: {posterior_trees_path}",
+            code="beast_outputs_inconsistent_states",
+            path=posterior_trees_path,
+            artifact_kind="beast-posterior-trees",
+            details={
+                "log_path": str(posterior_log_path),
+                "log_states": sorted(log_states),
+                "tree_states": sorted(tree_states),
+                "missing_log_states": sorted(tree_states - log_states),
+            },
+        )
+
+    def validate_outputs() -> None:
+        _validate_consistent_posterior_states()
 
     return run_bayesian_posterior_execution(
         engine_name="BEAST",

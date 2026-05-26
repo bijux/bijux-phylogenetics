@@ -225,6 +225,40 @@ log_path.write_text(
     )
 
 
+def _fake_beast_inconsistent_states(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "-version" in args:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+xml_path = Path(args[-1])
+seed = args[args.index("-seed") + 1]
+log_path = xml_path.with_name(f"{xml_path.stem}.{seed}.log")
+tree_path = xml_path.with_name(f"{xml_path.stem}.{seed}.trees")
+log_path.write_text(
+    "Sample\\tposterior\\tlikelihood\\tprior\\ttreeHeight\\tclockRate\\tbirthRate\\n"
+    "0\\t-120.0\\t-80.0\\t-40.0\\t1.1\\t0.01\\t0.2\\n"
+    "20\\t-118.0\\t-79.0\\t-39.0\\t1.0\\t0.011\\t0.21\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "Begin trees;\\n"
+    "tree STATE_0 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree STATE_40 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "End;\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
 def _fake_beast_killed(path: Path) -> Path:
     return _write_executable(
         path,
@@ -727,6 +761,33 @@ def test_run_beast_posterior_inference_reports_structured_missing_outputs(
             "path": str(xml_path.with_name("strict-yule.1.trees")),
         }
     ]
+
+
+def test_run_beast_posterior_inference_rejects_inconsistent_sampled_states(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_beast_inconsistent_states(tmp_path / "beast-inconsistent")
+    xml_path = tmp_path / "strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        xml_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    with pytest.raises(EngineWorkflowError) as error:
+        run_beast_posterior_inference(
+            xml_path,
+            executable=executable,
+            seed=1,
+        )
+
+    assert error.value.code == "beast_outputs_inconsistent_states"
+    assert error.value.details["log_states"] == [0, 20]
+    assert error.value.details["tree_states"] == [0, 40]
+    assert error.value.details["missing_log_states"] == [40]
 
 
 def test_prepare_beast_time_tree_analysis_requires_tree_for_calibrations(
