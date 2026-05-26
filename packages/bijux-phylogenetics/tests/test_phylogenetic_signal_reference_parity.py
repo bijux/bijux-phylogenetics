@@ -26,15 +26,49 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_blombergs_k_matches_core_phytools_reference() -> None:
-    observation = _reference_observation(
-        fixture("reference_parity_core.json"),
-        case="blomberg-k-example-tree",
-    )
+@pytest.mark.parametrize(
+    ("fixture_name", "case", "tree_name", "traits_name", "trait", "taxon_column"),
+    [
+        (
+            "reference_parity_core.json",
+            "blomberg-k-example-tree",
+            "example_tree.nwk",
+            "example_traits_comparative.tsv",
+            "response",
+            None,
+        ),
+        (
+            "reference_parity_extended_comparative.json",
+            "blomberg-k-strong-signal-twenty-four-taxa",
+            "example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
+            "example_traits_phytools_signal_twenty_four_taxa.tsv",
+            "signal_strong",
+            "taxon",
+        ),
+        (
+            "reference_parity_extended_comparative.json",
+            "blomberg-k-weak-signal-twenty-four-taxa",
+            "example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
+            "example_traits_phytools_signal_twenty_four_taxa.tsv",
+            "signal_weak",
+            "taxon",
+        ),
+    ],
+)
+def test_blombergs_k_matches_governed_phytools_reference(
+    fixture_name: str,
+    case: str,
+    tree_name: str,
+    traits_name: str,
+    trait: str,
+    taxon_column: str | None,
+) -> None:
+    observation = _reference_observation(fixture(fixture_name), case=case)
     report = compute_blombergs_k(
-        fixture("example_tree.nwk"),
-        fixture("example_traits_comparative.tsv"),
-        trait="response",
+        fixture(tree_name),
+        fixture(traits_name),
+        trait=trait,
+        taxon_column=taxon_column,
     )
     tolerance = float(observation["tolerance"])
     assert math.isclose(
@@ -45,15 +79,49 @@ def test_blombergs_k_matches_core_phytools_reference() -> None:
     )
 
 
-def test_pagels_lambda_matches_core_phytools_reference() -> None:
-    observation = _reference_observation(
-        fixture("reference_parity_core.json"),
-        case="pagel-lambda-example-tree",
-    )
+@pytest.mark.parametrize(
+    ("fixture_name", "case", "tree_name", "traits_name", "trait", "taxon_column"),
+    [
+        (
+            "reference_parity_core.json",
+            "pagel-lambda-example-tree",
+            "example_tree.nwk",
+            "example_traits_comparative.tsv",
+            "response",
+            None,
+        ),
+        (
+            "reference_parity_extended_comparative.json",
+            "pagel-lambda-non-ultrametric-strong-signal-twenty-four-taxa",
+            "example_tree_phytools_non_ultrametric_twenty_four_taxa.nwk",
+            "example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv",
+            "signal_strong",
+            "taxon",
+        ),
+        (
+            "reference_parity_extended_comparative.json",
+            "pagel-lambda-weak-signal-twenty-four-taxa",
+            "example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
+            "example_traits_phytools_signal_twenty_four_taxa.tsv",
+            "signal_weak",
+            "taxon",
+        ),
+    ],
+)
+def test_pagels_lambda_matches_governed_phytools_reference(
+    fixture_name: str,
+    case: str,
+    tree_name: str,
+    traits_name: str,
+    trait: str,
+    taxon_column: str | None,
+) -> None:
+    observation = _reference_observation(fixture(fixture_name), case=case)
     report = estimate_pagels_lambda(
-        fixture("example_tree.nwk"),
-        fixture("example_traits_comparative.tsv"),
-        trait="response",
+        fixture(tree_name),
+        fixture(traits_name),
+        trait=trait,
+        taxon_column=taxon_column,
     )
     tolerance = float(observation["tolerance"])
     assert math.isclose(
