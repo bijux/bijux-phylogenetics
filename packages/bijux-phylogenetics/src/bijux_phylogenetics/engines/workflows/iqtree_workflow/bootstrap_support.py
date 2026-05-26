@@ -26,6 +26,7 @@ from ...validation.audits import (
 from ...validation.preflight import require_external_engine_surface
 from ..models import EngineWorkflowReport
 from ..state import (
+    _validate_complete_support_coverage,
     _ensure_inference_ready_alignment,
     _persist_workflow_report,
     _prefix_path,
@@ -34,6 +35,7 @@ from ..state import (
     _resume_existing_workflow,
     _resume_has_bootstrap_review_outputs,
     _validate_iqtree_required_artifacts,
+    _validate_matching_tree_taxa,
     _validate_support_value_count,
     _validate_tree_output,
     _validate_tree_set_output,
@@ -182,6 +184,15 @@ def run_bootstrap_support_estimation(
             output_name="bootstrap_trees",
             artifact_kind="bootstrap-tree-set",
         )
+        _validate_matching_tree_taxa(
+            engine_name="iqtree",
+            workflow="bootstrap-support",
+            reference_tree_path=support_tree_path,
+            comparison_tree_set_path=bootstrap_tree_path,
+            reference_output_name="support_tree",
+            comparison_output_name="bootstrap_trees",
+            artifact_kind="bootstrap-tree-set",
+        )
         selected_model = _validate_iqtree_model_result(
             prefix_path,
             workflow="bootstrap-support",
@@ -202,6 +213,15 @@ def run_bootstrap_support_estimation(
             output_name="support_tree",
             artifact_kind="bootstrap-supported-tree",
             support_value_count=bootstrap_support_summary.supported_node_count,
+            support_kind="bootstrap support",
+        )
+        _validate_complete_support_coverage(
+            engine_name="iqtree",
+            workflow="bootstrap-support",
+            path=support_tree_path,
+            output_name="support_tree",
+            artifact_kind="bootstrap-supported-tree",
+            annotated_branch_count=bootstrap_support_summary.supported_node_count,
             support_kind="bootstrap support",
         )
         weak_backbone_report = detect_weakly_supported_backbone(support_tree_path)

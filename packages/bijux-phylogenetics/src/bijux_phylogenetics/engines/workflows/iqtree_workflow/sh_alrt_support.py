@@ -24,6 +24,7 @@ from ...validation.audits import (
 from ...validation.preflight import require_external_engine_surface
 from ..models import EngineWorkflowReport
 from ..state import (
+    _validate_complete_support_coverage,
     _ensure_inference_ready_alignment,
     _persist_workflow_report,
     _prefix_path,
@@ -32,6 +33,7 @@ from ..state import (
     _resume_existing_workflow,
     _resume_has_sh_alrt_review_outputs,
     _validate_iqtree_required_artifacts,
+    _validate_matching_tree_taxa,
     _validate_support_value_count,
     _validate_tree_output,
     _validate_tree_set_output,
@@ -184,6 +186,15 @@ def run_sh_alrt_support_estimation(
             output_name="bootstrap_trees",
             artifact_kind="bootstrap-tree-set",
         )
+        _validate_matching_tree_taxa(
+            engine_name="iqtree",
+            workflow="sh-alrt-support",
+            reference_tree_path=support_tree_path,
+            comparison_tree_set_path=bootstrap_tree_path,
+            reference_output_name="support_tree",
+            comparison_output_name="bootstrap_trees",
+            artifact_kind="bootstrap-tree-set",
+        )
         selected_model = _validate_iqtree_model_result(
             prefix_path,
             workflow="sh-alrt-support",
@@ -206,6 +217,15 @@ def run_sh_alrt_support_estimation(
             support_value_count=bootstrap_support_summary.supported_node_count,
             support_kind="ultrafast bootstrap support",
         )
+        _validate_complete_support_coverage(
+            engine_name="iqtree",
+            workflow="sh-alrt-support",
+            path=support_tree_path,
+            output_name="support_tree",
+            artifact_kind="sh-alrt-supported-tree",
+            annotated_branch_count=bootstrap_support_summary.supported_node_count,
+            support_kind="ultrafast bootstrap support",
+        )
         sh_alrt_support_summary = summarize_sh_alrt_support_distribution(
             support_tree_path
         )
@@ -218,6 +238,15 @@ def run_sh_alrt_support_estimation(
             support_value_count=sh_alrt_support_summary.annotated_node_count,
             support_kind="sh-alrt support",
         )
+        _validate_complete_support_coverage(
+            engine_name="iqtree",
+            workflow="sh-alrt-support",
+            path=support_tree_path,
+            output_name="support_tree",
+            artifact_kind="sh-alrt-supported-tree",
+            annotated_branch_count=sh_alrt_support_summary.annotated_node_count,
+            support_kind="sh-alrt support",
+        )
         _validate_support_value_count(
             engine_name="iqtree",
             workflow="sh-alrt-support",
@@ -225,6 +254,15 @@ def run_sh_alrt_support_estimation(
             output_name="support_tree",
             artifact_kind="sh-alrt-supported-tree",
             support_value_count=sh_alrt_support_summary.fully_scored_node_count,
+            support_kind="joint sh-alrt and ultrafast bootstrap support",
+        )
+        _validate_complete_support_coverage(
+            engine_name="iqtree",
+            workflow="sh-alrt-support",
+            path=support_tree_path,
+            output_name="support_tree",
+            artifact_kind="sh-alrt-supported-tree",
+            annotated_branch_count=sh_alrt_support_summary.fully_scored_node_count,
             support_kind="joint sh-alrt and ultrafast bootstrap support",
         )
     except PhylogeneticsError as error:

@@ -17,6 +17,8 @@ from ..state import (
     _persist_workflow_report,
     _prefix_path,
     _record_output_validation_failure,
+    _validate_complete_support_coverage,
+    _validate_matching_tree_taxa,
     _require_nonempty_text_output,
     _resolve_incomplete_workflow_state,
     _resume_existing_workflow,
@@ -121,6 +123,15 @@ def run_bootstrap_consensus_tree(
             output_name="consensus_tree",
             artifact_kind="bootstrap-consensus-tree",
         )
+        _validate_matching_tree_taxa(
+            engine_name="iqtree",
+            workflow="bootstrap-consensus",
+            reference_tree_path=consensus_tree_path,
+            comparison_tree_set_path=bootstrap_trees_path,
+            reference_output_name="consensus_tree",
+            comparison_output_name="bootstrap_trees",
+            artifact_kind="bootstrap-tree-set",
+        )
         iqtree_summary = _build_iqtree_summary(
             prefix_path,
             default_selected_model=None,
@@ -133,6 +144,15 @@ def run_bootstrap_consensus_tree(
             output_name="consensus_tree",
             artifact_kind="bootstrap-consensus-tree",
             support_value_count=iqtree_summary.support_value_count,
+            support_kind="bootstrap consensus support",
+        )
+        _validate_complete_support_coverage(
+            engine_name="iqtree",
+            workflow="bootstrap-consensus",
+            path=consensus_tree_path,
+            output_name="consensus_tree",
+            artifact_kind="bootstrap-consensus-tree",
+            annotated_branch_count=iqtree_summary.support_value_count,
             support_kind="bootstrap consensus support",
         )
         model_selection_summary = _build_iqtree_model_selection_summary(prefix_path)
