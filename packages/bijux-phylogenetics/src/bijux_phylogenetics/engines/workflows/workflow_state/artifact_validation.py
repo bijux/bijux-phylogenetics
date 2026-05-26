@@ -6,6 +6,7 @@ from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.fasta.records import summarise_fasta
 from bijux_phylogenetics.io.newick import loads_newick
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment import AlignmentSummary
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 from bijux_phylogenetics.trees import load_tree_set
@@ -153,6 +154,80 @@ def _validate_support_value_count(
         output_name=output_name,
         artifact_kind=artifact_kind,
         details={"support_kind": support_kind},
+    )
+
+
+def _validate_complete_support_coverage(
+    *,
+    engine_name: str,
+    workflow: str,
+    path: Path,
+    output_name: str,
+    artifact_kind: str,
+    annotated_branch_count: int,
+    support_kind: str,
+) -> None:
+    expected_branch_count = _count_supported_internal_branches(path)
+    if annotated_branch_count == expected_branch_count:
+        return
+    raise build_engine_output_error(
+        f"{engine_name} {workflow} exposed incomplete {support_kind} coverage in '{output_name}': {path}",
+        code="engine_support_values_incomplete",
+        engine_name=engine_name,
+        workflow=workflow,
+        path=path,
+        output_name=output_name,
+        artifact_kind=artifact_kind,
+        details={
+            "support_kind": support_kind,
+            "expected_supported_branch_count": expected_branch_count,
+            "observed_supported_branch_count": annotated_branch_count,
+        },
+    )
+
+
+def _validate_matching_tree_taxa(
+    *,
+    engine_name: str,
+    workflow: str,
+    reference_tree_path: Path,
+    comparison_tree_set_path: Path,
+    reference_output_name: str,
+    comparison_output_name: str,
+    artifact_kind: str,
+) -> None:
+    reference_tree = load_tree(reference_tree_path)
+    tree_set_report = load_tree_set(comparison_tree_set_path)
+    expected_taxa = sorted(reference_tree.tip_names)
+    if (
+        tree_set_report.shared_taxa == expected_taxa
+        and tree_set_report.taxa_union == expected_taxa
+    ):
+        return
+    raise build_engine_output_error(
+        f"{engine_name} {workflow} produced inconsistent taxa across '{reference_output_name}' and '{comparison_output_name}'",
+        code="engine_output_taxa_mismatch",
+        engine_name=engine_name,
+        workflow=workflow,
+        path=comparison_tree_set_path,
+        output_name=comparison_output_name,
+        artifact_kind=artifact_kind,
+        details={
+            "reference_tree_path": str(reference_tree_path),
+            "reference_output_name": reference_output_name,
+            "expected_taxa": expected_taxa,
+            "shared_tree_set_taxa": tree_set_report.shared_taxa,
+            "tree_set_taxa_union": tree_set_report.taxa_union,
+        },
+    )
+
+
+def _count_supported_internal_branches(path: Path) -> int:
+    tree = load_tree(path)
+    return sum(
+        1
+        for node in tree.iter_nodes()
+        if node is not tree.root and not node.is_leaf()
     )
 
 

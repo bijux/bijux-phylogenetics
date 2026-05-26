@@ -101,7 +101,9 @@ from .paths import (
     _sidecar,
 )
 from .artifact_validation import (
+    _validate_complete_support_coverage,
     _ensure_inference_ready_alignment,
+    _validate_matching_tree_taxa,
     _require_nonempty_text_output,
     _validate_alignment_output,
     _validate_iqtree_required_artifacts,
