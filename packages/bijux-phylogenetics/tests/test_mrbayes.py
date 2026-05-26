@@ -751,6 +751,39 @@ def test_parse_real_mrbayes_output_fixture() -> None:
     )
 
 
+def test_parse_mrbayes_tree_and_consensus_accept_version_variant_fixtures() -> None:
+    tree_report = parse_mrbayes_posterior_tree_samples(
+        fixture("engine_outputs/mrbayes/posterior-tree-version-variant.run1.t")
+    )
+    consensus_tree, consensus_report = parse_mrbayes_consensus_tree(
+        fixture("engine_outputs/mrbayes/consensus-version-variant.con.tre")
+    )
+
+    assert tree_report.tree_count == 1
+    assert tree_report.rooted_tree_count == 0
+    assert tree_report.sampled_generations == [10]
+    assert tree_report.tip_names == ["Taxon A", "Taxon B's sample", "Taxon_C"]
+    assert "Taxon B''s sample" in tree_report.trees[0].newick
+    assert consensus_tree.tip_names == ["Taxon A", "Taxon B's sample", "Taxon_C"]
+    assert consensus_report.annotated_node_count == 2
+    assert consensus_report.minimum_posterior_probability == pytest.approx(0.75)
+    assert consensus_report.maximum_posterior_probability_percent == pytest.approx(
+        100.0
+    )
+
+
+def test_parse_mrbayes_posterior_tree_samples_reports_invalid_translate_fixture(
+) -> None:
+    with pytest.raises(EngineWorkflowError) as error:
+        parse_mrbayes_posterior_tree_samples(
+            fixture("engine_outputs/mrbayes/posterior-tree-invalid-translate.run1.t")
+        )
+
+    assert error.value.code == "mrbayes_tree_invalid_translate_block"
+    assert error.value.details["artifact_kind"] == "mrbayes-posterior-trees"
+    assert error.value.details["expected_section"] == "translate block"
+
+
 def test_subsample_mrbayes_posterior_tree_set_preserves_generation_metadata(
     tmp_path: Path,
 ) -> None:

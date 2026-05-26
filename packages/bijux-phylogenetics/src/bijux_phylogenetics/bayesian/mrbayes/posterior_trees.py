@@ -4,6 +4,10 @@ from pathlib import Path
 import re
 
 from bijux_phylogenetics.io.biopython import loads_biophylo
+from bijux_phylogenetics.io.nexus_translate import (
+    parse_nexus_translate_map,
+    translate_nexus_tip_labels,
+)
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError, TreeParseError
@@ -25,8 +29,14 @@ _MRBAYES_TREE_PATTERN = re.compile(
     r"tree\s+([^\s=]+)\s*=\s*(.+?);", flags=re.IGNORECASE | re.DOTALL
 )
 _MRBAYES_TREE_GENERATION_PATTERN = re.compile(r"(\d+)$")
-_MRBAYES_PROBABILITY_PATTERN = re.compile(r"prob=([0-9.eE+-]+)")
-_MRBAYES_PROBABILITY_PERCENT_PATTERN = re.compile(r'prob\(percent\)="([0-9.eE+-]+)"')
+_MRBAYES_PROBABILITY_PATTERN = re.compile(
+    r'prob\s*=\s*"?(?P<value>[0-9.eE+-]+)"?',
+    flags=re.IGNORECASE,
+)
+_MRBAYES_PROBABILITY_PERCENT_PATTERN = re.compile(
+    r'prob\s*\(\s*percent\s*\)\s*=\s*"?(?P<value>[0-9.eE+-]+)"?',
+    flags=re.IGNORECASE,
+)
 
 
 def _extract_mrbayes_tree_entries(text: str) -> list[tuple[str, str]]:
@@ -37,49 +47,6 @@ def _extract_mrbayes_tree_entries(text: str) -> list[tuple[str, str]]:
     if not entries:
         raise EngineWorkflowError("MrBayes tree file contains no tree entries")
     return entries
-
-
-def _split_nexus_translate_entries(raw_block: str) -> list[str]:
-    entries: list[str] = []
-    current: list[str] = []
-    in_single_quote = False
-    for character in raw_block:
-        if character == "'":
-            in_single_quote = not in_single_quote
-        if character == "," and not in_single_quote:
-            candidate = "".join(current).strip()
-            if candidate:
-                entries.append(candidate)
-            current = []
-            continue
-        current.append(character)
-    tail = "".join(current).strip()
-    if tail:
-        entries.append(tail)
-    return entries
-
-
-def _parse_nexus_translate_map(text: str) -> dict[str, str]:
-    lowered = text.lower()
-    marker = "translate"
-    start = lowered.find(marker)
-    if start == -1:
-        return {}
-    remainder = text[start + len(marker) :]
-    end = remainder.find(";")
-    if end == -1:
-        raise EngineWorkflowError(
-            "MrBayes tree file has an unterminated translate block"
-        )
-    block = remainder[:end]
-    mapping: dict[str, str] = {}
-    for entry in _split_nexus_translate_entries(block):
-        parts = entry.split(None, 1)
-        if len(parts) != 2:
-            continue
-        key, value = parts
-        mapping[key.strip()] = value.strip().strip("'")
-    return mapping
 
 
 def _strip_square_bracket_comments(text: str) -> str:
@@ -95,18 +62,6 @@ def _strip_square_bracket_comments(text: str) -> str:
         if depth == 0:
             stripped.append(character)
     return "".join(stripped)
-
-
-def _translate_mrbayes_tip_labels(newick: str, mapping: dict[str, str]) -> str:
-    if not mapping:
-        return newick
-
-    def replace(match: re.Match[str]) -> str:
-        token = match.group(1)
-        translated = mapping.get(token, token)
-        return match.group(0).replace(token, translated)
-
-    return re.sub(r"(?<=[(,])\s*([A-Za-z0-9_.-]+)(?=\s*[:),])", replace, newick)
 
 
 def _detect_mrbayes_rooted_flag(tree_text: str) -> bool | None:
@@ -128,7 +83,7 @@ def _parse_mrbayes_tree_text(
 ) -> tuple[str, PhyloTree, bool | None]:
     rooted = _detect_mrbayes_rooted_flag(tree_text)
     stripped = _strip_square_bracket_comments(tree_text).strip()
-    translated = _translate_mrbayes_tip_labels(stripped, translation)
+    translated = translate_nexus_tip_labels(stripped, translation)
     tree = loads_biophylo(f"{translated};", source_format="newick")
     return dumps_newick(tree), tree, rooted
 
@@ -154,7 +109,19 @@ def parse_mrbayes_posterior_tree_samples(path: Path) -> MrBayesPosteriorTreeSetR
             artifact_kind="mrbayes-posterior-trees",
             details={"expected_section": "trees block"},
         ) from error
-    translation = _parse_nexus_translate_map(text)
+    try:
+        translation = parse_nexus_translate_map(text)
+    except ValueError as error:
+        raise _mrbayes_artifact_error(
+            f"MrBayes posterior tree file contains an invalid translate block: {path}",
+            code="mrbayes_tree_invalid_translate_block",
+            path=path,
+            artifact_kind="mrbayes-posterior-trees",
+            details={
+                "cause": str(error),
+                "expected_section": "translate block",
+            },
+        ) from error
     samples: list[MrBayesPosteriorTreeSample] = []
     for tree_name, tree_text in entries:
         try:
@@ -211,7 +178,19 @@ def parse_mrbayes_consensus_tree(
             details={"expected_section": "consensus tree"},
         )
     text = path.read_text(encoding="utf-8")
-    translation = _parse_nexus_translate_map(text)
+    try:
+        translation = parse_nexus_translate_map(text)
+    except ValueError as error:
+        raise _mrbayes_artifact_error(
+            f"MrBayes consensus tree file contains an invalid translate block: {path}",
+            code="mrbayes_consensus_invalid_translate_block",
+            path=path,
+            artifact_kind="mrbayes-consensus-tree",
+            details={
+                "cause": str(error),
+                "expected_section": "translate block",
+            },
+        ) from error
     try:
         entries = _extract_mrbayes_tree_entries(text)
     except EngineWorkflowError as error:
@@ -248,11 +227,11 @@ def parse_mrbayes_consensus_tree(
             },
         ) from error
     posterior_probabilities = [
-        float(match.group(1))
+        float(match.group("value"))
         for match in _MRBAYES_PROBABILITY_PATTERN.finditer(tree_text)
     ]
     posterior_probability_percents = [
-        float(match.group(1))
+        float(match.group("value"))
         for match in _MRBAYES_PROBABILITY_PERCENT_PATTERN.finditer(tree_text)
     ]
     report = MrBayesConsensusTreeReport(
