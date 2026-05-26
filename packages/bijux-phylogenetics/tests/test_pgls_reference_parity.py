@@ -150,6 +150,35 @@ def test_run_pgls_matches_interaction_brownian_reference_case() -> None:
 
 
 @pytest.mark.slow
+def test_run_pgls_matches_primate_fixed_reference_lambda_case() -> None:
+    repository_root = Path(__file__).resolve().parents[3]
+    reference = _extended_reference_case("pgls-primate-longevity-fixed-reference-lambda")
+    report = run_pgls(
+        repository_root
+        / "evidence-book"
+        / "studies"
+        / "primate-longevity-signal"
+        / "datasets"
+        / "reference_trimmed_primatetree.nwk",
+        repository_root
+        / "evidence-book"
+        / "studies"
+        / "primate-longevity-signal"
+        / "datasets"
+        / "reference_primate.csv",
+        response="longevity",
+        predictors=["social_group_size"],
+        taxon_column="species",
+        lambda_value=float(reference["lambda_value"]),
+    )
+    _assert_pgls_matches_reference(
+        report,
+        reference["expected_output"],
+        tolerance=float(reference["tolerance"]),
+    )
+
+
+@pytest.mark.slow
 def test_run_pgls_matches_primate_estimated_lambda_reference_case() -> None:
     repository_root = Path(__file__).resolve().parents[3]
     reference = _extended_reference_case("pgls-primate-longevity-estimated-lambda")

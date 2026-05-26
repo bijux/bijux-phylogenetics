@@ -229,7 +229,7 @@ def test_run_pgls_matches_primate_reference_when_lambda_is_fixed() -> None:
         / "pagel-lambda-regression-parity.json"
     )
     reference = json.loads(parity_fixture.read_text(encoding="utf-8"))
-    lambda_value = reference["r_estimated_lambda"]["lambda_value"]
+    lambda_value = reference["r_fixed_reference_lambda"]["lambda_value"]
     report = run_pgls(
         repository_root
         / "evidence-book"
@@ -249,34 +249,53 @@ def test_run_pgls_matches_primate_reference_when_lambda_is_fixed() -> None:
         lambda_value=lambda_value,
     )
     coefficients = {row.name: row for row in report.coefficients}
+    fixed_reference = reference["r_fixed_reference_lambda"]
     assert math.isclose(report.lambda_value, lambda_value, abs_tol=1e-12)
     assert math.isclose(
         report.log_likelihood,
-        reference["r_estimated_lambda"]["log_likelihood"],
+        fixed_reference["log_likelihood"],
+        rel_tol=5e-4,
+        abs_tol=5e-4,
+    )
+    assert math.isclose(
+        report.aic,
+        fixed_reference["aic"],
         rel_tol=5e-4,
         abs_tol=5e-4,
     )
     assert math.isclose(
         coefficients["intercept"].estimate,
-        reference["r_estimated_lambda"]["coefficients"]["intercept"],
+        fixed_reference["coefficients"]["intercept"],
         rel_tol=5e-4,
         abs_tol=5e-4,
     )
     assert math.isclose(
         coefficients["social_group_size"].estimate,
-        reference["r_estimated_lambda"]["coefficients"]["social_group_size"],
+        fixed_reference["coefficients"]["social_group_size"],
+        rel_tol=5e-4,
+        abs_tol=5e-4,
+    )
+    assert math.isclose(
+        coefficients["intercept"].standard_error,
+        fixed_reference["standard_errors"]["intercept"],
+        rel_tol=5e-4,
+        abs_tol=5e-4,
+    )
+    assert math.isclose(
+        coefficients["social_group_size"].standard_error,
+        fixed_reference["standard_errors"]["social_group_size"],
         rel_tol=5e-4,
         abs_tol=5e-4,
     )
     assert math.isclose(
         coefficients["intercept"].p_value,
-        reference["r_estimated_lambda"]["p_values"]["intercept"],
+        fixed_reference["p_values"]["intercept"],
         rel_tol=5e-4,
         abs_tol=5e-7,
     )
     assert math.isclose(
         coefficients["social_group_size"].p_value,
-        reference["r_estimated_lambda"]["p_values"]["social_group_size"],
+        fixed_reference["p_values"]["social_group_size"],
         rel_tol=5e-4,
         abs_tol=5e-6,
     )

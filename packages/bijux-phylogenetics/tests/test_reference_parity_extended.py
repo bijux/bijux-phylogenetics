@@ -10,7 +10,7 @@ pytestmark = [pytest.mark.scientific_validation, pytest.mark.slow]
 def test_validate_reference_parity_examples_extended_passes() -> None:
     report = validate_reference_parity_examples(include_extended=True)
     assert report.all_passed is True
-    assert report.case_count == 20
+    assert report.case_count == 21
     assert report.failed_case_count == 0
     assert report.covered_methods == [
         "blombergs-k",
@@ -43,7 +43,7 @@ def test_validate_reference_parity_examples_extended_passes() -> None:
     )
     assert posterior_row.case_count == 2
     assert posterior_row.suite == "mixed"
-    assert pgls_row.case_count == 4
+    assert pgls_row.case_count == 5
     assert pgls_row.suite == "mixed"
     assert pagel_row.case_count == 2
     assert pagel_row.suite == "mixed"
@@ -56,11 +56,22 @@ def test_validate_reference_parity_examples_extended_passes() -> None:
         for row in report.observations
         if row.case == "pgls-primate-longevity-estimated-lambda"
     )
+    primate_fixed = next(
+        row
+        for row in report.observations
+        if row.case == "pgls-primate-longevity-fixed-reference-lambda"
+    )
     assert primate_estimated.observed_output["aic"] <= 896.25
     assert primate_estimated.observed_output["lambda_value"] >= 0.75
     assert (
         primate_estimated.observed_output[
             "coefficient.social_group_size.standard_error"
         ]
+        > 0.0
+    )
+    assert primate_fixed.observed_output["aic"] < primate_estimated.observed_output["aic"]
+    assert primate_fixed.observed_output["lambda_value"] >= 0.75
+    assert (
+        primate_fixed.observed_output["coefficient.social_group_size.standard_error"]
         > 0.0
     )
