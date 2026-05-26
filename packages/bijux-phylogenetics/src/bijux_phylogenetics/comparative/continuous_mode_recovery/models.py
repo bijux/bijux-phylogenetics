@@ -175,6 +175,7 @@ class _RecoveryFitSnapshot:
     failure_reason: str | None
     parameter_name: str | None
     parameter_value: float | None
+    root_state: float | None
     rate: float | None
     optimizer_name: str | None
     converged: bool | None

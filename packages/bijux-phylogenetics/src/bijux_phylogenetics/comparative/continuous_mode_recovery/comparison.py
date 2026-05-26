@@ -230,6 +230,8 @@ def _estimate_for_parameter(
 ) -> float | None:
     if parameter == "sigma_squared":
         return snapshot.rate
+    if parameter == "theta":
+        return snapshot.root_state
     if snapshot.parameter_name == parameter:
         return snapshot.parameter_value
     return None

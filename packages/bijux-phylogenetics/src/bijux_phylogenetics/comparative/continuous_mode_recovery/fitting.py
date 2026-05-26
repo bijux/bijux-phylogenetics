@@ -125,6 +125,7 @@ def _recovery_fit_snapshot_from_report(
         failure_reason=None,
         parameter_name=report.parameter_name,
         parameter_value=report.parameter_value,
+        root_state=report.root_state,
         rate=report.rate,
         optimizer_name=(
             None
@@ -190,6 +191,7 @@ def _build_geiger_fit_snapshot(
         failure_reason=None,
         parameter_name=_optional_string(summary.get("parameter_name")),
         parameter_value=_optional_float(summary.get("parameter_value")),
+        root_state=_optional_float(summary.get("root_state")),
         rate=_optional_float(summary.get("rate")),
         optimizer_name=optimizer_name,
         converged=converged,
