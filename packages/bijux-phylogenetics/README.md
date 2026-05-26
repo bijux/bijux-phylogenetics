@@ -1043,6 +1043,19 @@ explicitly, because the shared residual covariance and correlation then
 compare residuals fit under different phylogenetic error assumptions rather
 than one common lambda surface.
 
+`comparative covariance-audit` is the pre-fit review surface for Brownian
+trait models, OU trait models, and PGLS covariance choices when reviewers
+need to know whether the tree and trait overlap can support comparative
+fitting before they trust any coefficient or likelihood. It reports matched
+and missing taxa, duplicate taxon keys, zero-length and negative branch
+counts, matrix dimension, matrix rank, condition number, and the governed
+solve path. `fit_strategy=exact` means the raw covariance is already positive
+definite and well-conditioned enough for direct inversion. `fit_strategy=`
+`regularization` means the raw covariance is singular or ill-conditioned and
+the governed diagonal stabilization path would be required before inversion.
+`fit_strategy=failure` means blockers or unrecoverable covariance invalidity
+stop fitting before any model coefficient should be interpreted.
+
 `comparative discrete-mk` is the governed standalone discrete trait-evolution
 fit surface for one rooted tree and one categorical tip trait when reviewers
 need the fitted ER, SYM, or ARD likelihood surface directly rather than one
