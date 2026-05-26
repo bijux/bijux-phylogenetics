@@ -22,7 +22,10 @@ artifacts and installed external engines, not only with fake runners:
   under the pytest temporary directory.
 - `test_bayesian_engine_validation_matrix.py` exercises a real MrBayes run and
   records BEAST either from a live executable run when available or from the
-  governed checked-in BEAST XML/log/tree corpus when the executable is absent.
+  governed checked-in BEAST posterior corpus when the executable is absent.
+  That governed corpus now includes the prepared XML, posterior log, posterior
+  trees, consensus tree, maximum clade credibility tree, and checked burn-in or
+  ESS reference summaries under one durable shared fixture owner.
 - `test_external_engine_validation_matrix.py` merges those governed alignment
   and Bayesian cases into one reviewer-facing matrix over MAFFT, trimAl,
   IQ-TREE, FastTree, MrBayes, and BEAST.

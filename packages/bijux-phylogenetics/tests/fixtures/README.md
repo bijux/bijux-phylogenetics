@@ -149,5 +149,11 @@ matrix whenever a live `beast` executable is not present locally. They are not
 toy parser strings; they are the checked evidence surface for real BEAST output
 structure.
 
+That BEAST corpus is also cataloged at
+`metadata/shared_beast_posterior_fixture_catalog.json`, including the governed
+consensus tree, maximum clade credibility tree, burn-in counts, and posterior
+summary references that anchor BEAST validation, publication, and reviewer
+evidence surfaces to one durable fixture owner.
+
 Tests should resolve files through the local `fixture(...)` helper rather than
 assuming a flat directory layout.
