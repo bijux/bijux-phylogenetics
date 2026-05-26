@@ -21,8 +21,11 @@ from bijux_phylogenetics.engines import (
 )
 from bijux_phylogenetics.engines.validation.matrix import (
     ExternalEngineValidationCase,
-    build_beast_artifact_validation_case,
     build_external_engine_validation_case,
+    build_governed_beast_fixture_validation_case,
+)
+from bijux_phylogenetics.datasets.shared_fixtures import (
+    get_shared_beast_posterior_fixture,
 )
 
 from .external_engines import (
@@ -111,12 +114,9 @@ def build_real_alignment_validation_cases(
 def _build_beast_validation_case(tmp_path: Path) -> ExternalEngineValidationCase:
     executable = real_beast_executable()
     if executable is None:
-        return build_beast_artifact_validation_case(
+        return build_governed_beast_fixture_validation_case(
             "beast fixture parser acceptance",
-            xml_path=fixture("beast2_strict_yule_posterior.xml"),
-            log_path=fixture("beast2_strict_yule_posterior.log"),
-            tree_path=fixture("beast2_strict_yule_posterior.trees"),
-            burnin_fraction=0.1,
+            get_shared_beast_posterior_fixture("strict_yule_real_posterior"),
         )
     xml_path = tmp_path / "live-strict-yule.xml"
     prepare_beast_time_tree_analysis(
