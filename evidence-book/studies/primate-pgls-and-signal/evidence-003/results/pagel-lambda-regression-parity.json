@@ -1,48 +1,112 @@
 {
   "bijux_estimated_lambda": {
+    "aic": 896.138296324527,
     "coefficients": {
-      "intercept": 250.105945368603,
-      "social_group_size": 1.61904779942812
+      "intercept": 249.95843497104,
+      "social_group_size": 1.66214823566609
     },
     "diagnostics": {
-      "abs_residual_fitted_correlation": 0.112199761717797,
-      "max_abs_z_residual": 2.98146003868482,
+      "abs_residual_fitted_correlation": 0.109972191549302,
+      "max_abs_z_residual": 2.98631530647783,
       "outlier_count_abs_z_ge_2": 4,
-      "qq_correlation": 0.977832436449786,
-      "residual_mean": 43.1604392484416,
-      "residual_sd": 112.343581157334,
-      "residual_variance": 12621.0802272544
+      "qq_correlation": 0.977685033649863,
+      "residual_mean": 42.6665002202872,
+      "residual_sd": 112.113772315026,
+      "residual_variance": 12569.4979427056
     },
-    "lambda_value": 0.805,
-    "log_likelihood": -444.155346705612,
+    "lambda_value": 0.76865646856019,
+    "log_likelihood": -444.069148162264,
     "p_values": {
-      "intercept": 1.94054461299942e-06,
-      "social_group_size": 0.0176077892959636
+      "intercept": 3.44325093304398e-06,
+      "social_group_size": 0.0168886064118261
     },
-    "r_squared": 0.0568922214933538
+    "r_squared": 0.0630379860114777,
+    "standard_errors": {
+      "intercept": 49.7282721257287,
+      "social_group_size": 0.67975150416116
+    }
+  },
+  "bijux_fixed_reference_lambda": {
+    "aic": 894.138296324528,
+    "coefficients": {
+      "intercept": 249.958434911554,
+      "social_group_size": 1.66214825503763
+    },
+    "diagnostics": {
+      "abs_residual_fitted_correlation": 0.109972190524549,
+      "max_abs_z_residual": 2.9863153086369,
+      "outlier_count_abs_z_ge_2": 4,
+      "qq_correlation": 0.977685033583303,
+      "residual_mean": 42.6664999914728,
+      "residual_sd": 112.113772212775,
+      "residual_variance": 12569.497919778
+    },
+    "lambda_value": 0.768656451898616,
+    "log_likelihood": -444.069148162264,
+    "p_values": {
+      "intercept": 3.44324934209439e-06,
+      "social_group_size": 0.0168886050849197
+    },
+    "r_squared": 0.0630379887881253,
+    "standard_errors": {
+      "intercept": 49.7282709322746,
+      "social_group_size": 0.679751503543842
+    }
   },
   "evidence_id": "evidence-003",
   "r_estimated_lambda": {
+    "aic": 896.13829632447,
     "coefficients": {
-      "intercept": 249.9584,
-      "social_group_size": 1.6621
+      "intercept": 249.9584349618,
+      "social_group_size": 1.66214823716133
     },
     "diagnostics": {
-      "abs_residual_fitted_correlation": 0.2056,
-      "max_abs_z_residual": 2.6925,
+      "abs_residual_fitted_correlation": 0.205562548325984,
+      "max_abs_z_residual": 2.69248024938595,
       "outlier_count_abs_z_ge_2": 3,
-      "qq_correlation": 0.9802,
-      "residual_mean": 0.1775,
-      "residual_sd": 0.9908,
-      "residual_variance": 0.9816
+      "qq_correlation": 0.980223544138575,
+      "residual_mean": 0.17747904227692,
+      "residual_sd": 0.990751756730887,
+      "residual_variance": 0.981589043465338
     },
-    "lambda_value": 0.7687,
-    "log_likelihood": -444.0691,
+    "lambda_value": 0.768656451898616,
+    "log_likelihood": -444.069148162235,
     "p_values": {
-      "intercept": 3.4433e-06,
-      "social_group_size": 0.0169
+      "intercept": 3.44325081102684e-06,
+      "social_group_size": 0.0168886063098727
     },
-    "r_squared": 0.063
+    "r_squared": 0.0630379861996699,
+    "standard_errors": {
+      "intercept": 49.7282720332178,
+      "social_group_size": 0.679751504116516
+    }
+  },
+  "r_fixed_reference_lambda": {
+    "aic": 894.13829632447,
+    "coefficients": {
+      "intercept": 249.9584349618,
+      "social_group_size": 1.66214823716133
+    },
+    "diagnostics": {
+      "abs_residual_fitted_correlation": 0.205562548325984,
+      "max_abs_z_residual": 2.69248024938595,
+      "outlier_count_abs_z_ge_2": 3,
+      "qq_correlation": 0.980223544138575,
+      "residual_mean": 0.17747904227692,
+      "residual_sd": 0.990751756730887,
+      "residual_variance": 0.981589043465338
+    },
+    "lambda_value": 0.768656451898616,
+    "log_likelihood": -444.069148162235,
+    "p_values": {
+      "intercept": 3.44325081102684e-06,
+      "social_group_size": 0.0168886063098727
+    },
+    "r_squared": 0.0630379861996699,
+    "standard_errors": {
+      "intercept": 49.7282720332178,
+      "social_group_size": 0.679751504116516
+    }
   },
   "schema_version": 1,
   "study_id": "primate-pgls-and-signal"

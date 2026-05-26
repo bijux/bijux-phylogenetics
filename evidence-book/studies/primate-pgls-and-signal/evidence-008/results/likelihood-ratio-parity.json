@@ -1,12 +1,12 @@
 {
   "bijux_likelihood_ratio_tests": {
     "brownian_vs_early_burst": {
-      "p_value": 3.6245194e-08,
-      "statistic": 30.3406
+      "p_value": 1.0,
+      "statistic": 0.0
     },
     "brownian_vs_ornstein_uhlenbeck": {
-      "p_value": 3.6244797e-08,
-      "statistic": 30.3407
+      "p_value": 3.6245004e-08,
+      "statistic": 30.3406
     },
     "ornstein_uhlenbeck_vs_early_burst": {
       "p_value": 1.0,
@@ -16,16 +16,16 @@
   "evidence_id": "evidence-008",
   "r_likelihood_ratio_tests": {
     "brownian_vs_early_burst": {
-      "p_value": 3.6244e-08,
-      "statistic": 30.3407
+      "p_value": 3.62443412142454e-08,
+      "statistic": 30.340684573422
     },
     "brownian_vs_ornstein_uhlenbeck": {
-      "p_value": 3.6244e-08,
-      "statistic": 30.3407
+      "p_value": 3.62443497481859e-08,
+      "statistic": 30.340684116704
     },
     "ornstein_uhlenbeck_vs_early_burst": {
-      "p_value": 0.9995,
-      "statistic": 4.5672e-07
+      "p_value": 0.999460782359342,
+      "statistic": 4.56717998531531e-07
     }
   },
   "schema_version": 1,

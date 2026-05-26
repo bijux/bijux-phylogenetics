@@ -13,9 +13,9 @@
   "evidence_title": "Primate Pagel-lambda regression parity bundle",
   "freshness": {
     "governed_code_paths": [
-      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pgls_and_signal.py"
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pgls_and_signal"
     ],
-    "last_generated_on": "2026-05-11",
+    "last_generated_on": "2026-05-27",
     "source_basis_locators": [
       "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
       "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
@@ -39,8 +39,10 @@
   ],
   "report_keys": [
     "bijux_estimated_lambda",
+    "bijux_fixed_reference_lambda",
     "evidence_id",
     "r_estimated_lambda",
+    "r_fixed_reference_lambda",
     "schema_version",
     "study_id"
   ],
