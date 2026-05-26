@@ -72,6 +72,15 @@ def test_run_continuous_mode_recovery_governs_packaged_bijux_and_geiger_review_c
     assert case_by_id["delta-transformed-branch-review"].geiger_selected_model == (
         "pagel-kappa"
     )
+    ou_theta_rows = [
+        row
+        for row in case_by_id["ou-parameter-recovery"].parameter_rows
+        if row.parameter == "theta"
+    ]
+    assert len(ou_theta_rows) == 2
+    assert {row.recovery_engine for row in ou_theta_rows} == {"bijux", "geiger"}
+    assert all(row.within_tolerance for row in ou_theta_rows)
+    assert all(row.true_value == 2.8 for row in ou_theta_rows)
     assert case_by_id["weak-ou-identifiability"].parameter_rows == []
     assert case_by_id["weak-ou-identifiability"].expected_warning_kinds_present is True
     assert (
@@ -155,6 +164,10 @@ def test_continuous_mode_recovery_writers_emit_paired_benchmark_ledgers(
     )
     assert parameter_comparison_rows[0].startswith(
         "case_id\tgenerating_model\tparameter\ttrue_value"
+    )
+    assert any(
+        row.startswith("ou-parameter-recovery\tornstein-uhlenbeck\ttheta\t2.8\t")
+        for row in parameter_comparison_rows[1:]
     )
     assert any(
         row.startswith("early-burst-rate-recovery\tearly-burst\trate_change\t")
