@@ -259,6 +259,118 @@ def _classify_engine_support(
     )
 
 
+def _inspect_engine_status(
+    policy: EngineSupportPolicy,
+    *,
+    requested_executable: str,
+) -> ExternalEnginePreflightStatus:
+    try:
+        resolved = Path(resolve_engine_executable(requested_executable))
+        version = read_engine_version(
+            policy.display_name,
+            resolved,
+            version_args=policy.version_args,
+        )
+    except EngineUnavailableError as error:
+        return ExternalEnginePreflightStatus(
+            engine_id=policy.engine_id,
+            engine_name=policy.display_name,
+            requested_executable=requested_executable,
+            executable_path=None,
+            available=False,
+            version_text=None,
+            parsed_version=None,
+            support_status="missing",
+            compatible=False,
+            issues=[error.message],
+        )
+    return _classify_engine_support(
+        policy,
+        resolved_path=resolved,
+        version=version,
+        requested_executable=requested_executable,
+    )
+
+
+def _build_workflow_preflight_status(
+    policy: WorkflowSupportPolicy,
+    *,
+    by_engine_id: dict[str, ExternalEnginePreflightStatus],
+) -> WorkflowPreflightStatus:
+    blocking_engines = [
+        engine_id
+        for engine_id in policy.required_engines
+        if by_engine_id[engine_id].support_status in {"missing", "unsupported"}
+    ]
+    caution_engines = [
+        engine_id
+        for engine_id in policy.required_engines
+        if by_engine_id[engine_id].support_status == "untested"
+    ]
+    if blocking_engines:
+        readiness_status = "blocked"
+        notes = [
+            f"{_policy_by_engine_id(engine_id).display_name}: {by_engine_id[engine_id].issues[0]}"
+            for engine_id in blocking_engines
+        ]
+    elif caution_engines:
+        readiness_status = "caution"
+        notes = [
+            f"{_policy_by_engine_id(engine_id).display_name}: {by_engine_id[engine_id].issues[0]}"
+            for engine_id in caution_engines
+        ]
+    else:
+        readiness_status = "ready"
+        notes = []
+    return WorkflowPreflightStatus(
+        workflow_id=policy.workflow_id,
+        summary=policy.summary,
+        required_engines=[
+            _policy_by_engine_id(engine_id).display_name
+            for engine_id in policy.required_engines
+        ],
+        readiness_status=readiness_status,
+        runnable=readiness_status != "blocked",
+        blocking_engines=[
+            _policy_by_engine_id(engine_id).display_name
+            for engine_id in blocking_engines
+        ],
+        caution_engines=[
+            _policy_by_engine_id(engine_id).display_name
+            for engine_id in caution_engines
+        ],
+        notes=notes,
+    )
+
+
+def inspect_external_engine_surface(
+    *,
+    workflow_id: str,
+    summary: str,
+    required_engines: tuple[str, ...],
+    executables: dict[str, str | Path | None] | None = None,
+) -> tuple[list[ExternalEnginePreflightStatus], WorkflowPreflightStatus]:
+    """Inspect one concrete external-engine workflow surface without scanning every engine."""
+    configured = {} if executables is None else dict(executables)
+    statuses: list[ExternalEnginePreflightStatus] = []
+    by_engine_id: dict[str, ExternalEnginePreflightStatus] = {}
+    for engine_id in required_engines:
+        policy = _policy_by_engine_id(engine_id)
+        requested = str(configured.get(engine_id) or policy.default_executable)
+        status = _inspect_engine_status(policy, requested_executable=requested)
+        statuses.append(status)
+        by_engine_id[engine_id] = status
+    workflow_status = _build_workflow_preflight_status(
+        WorkflowSupportPolicy(
+            workflow_id=workflow_id,
+            summary=summary,
+            required_engines=required_engines,
+        ),
+        by_engine_id=by_engine_id,
+    )
+    return statuses, workflow_status
+
+
 def inspect_external_engine_preflight(
     *,
     executables: dict[str, str | Path | None] | None = None,
@@ -270,33 +382,7 @@ def inspect_external_engine_preflight(
     by_engine_id: dict[str, ExternalEnginePreflightStatus] = {}
     for policy in _ENGINE_POLICIES:
         requested = str(configured.get(policy.engine_id) or policy.default_executable)
-        try:
-            resolved = Path(resolve_engine_executable(requested))
-            version = read_engine_version(
-                policy.display_name,
-                resolved,
-                version_args=policy.version_args,
-            )
-        except EngineUnavailableError as error:
-            status = ExternalEnginePreflightStatus(
-                engine_id=policy.engine_id,
-                engine_name=policy.display_name,
-                requested_executable=requested,
-                executable_path=None,
-                available=False,
-                version_text=None,
-                parsed_version=None,
-                support_status="missing",
-                compatible=False,
-                issues=[error.message],
-            )
-        else:
-            status = _classify_engine_support(
-                policy,
-                resolved_path=resolved,
-                version=version,
-                requested_executable=requested,
-            )
+        status = _inspect_engine_status(policy, requested_executable=requested)
         statuses.append(status)
         by_engine_id[policy.engine_id] = status
 
@@ -305,51 +391,8 @@ def inspect_external_engine_preflight(
     for policy in _WORKFLOW_POLICIES:
         if selected_workflow == policy.workflow_id:
             selected_seen = True
-        blocking_engines = [
-            engine_id
-            for engine_id in policy.required_engines
-            if by_engine_id[engine_id].support_status in {"missing", "unsupported"}
-        ]
-        caution_engines = [
-            engine_id
-            for engine_id in policy.required_engines
-            if by_engine_id[engine_id].support_status == "untested"
-        ]
-        if blocking_engines:
-            readiness_status = "blocked"
-            notes = [
-                f"{_policy_by_engine_id(engine_id).display_name}: {by_engine_id[engine_id].issues[0]}"
-                for engine_id in blocking_engines
-            ]
-        elif caution_engines:
-            readiness_status = "caution"
-            notes = [
-                f"{_policy_by_engine_id(engine_id).display_name}: {by_engine_id[engine_id].issues[0]}"
-                for engine_id in caution_engines
-            ]
-        else:
-            readiness_status = "ready"
-            notes = []
         workflows.append(
-            WorkflowPreflightStatus(
-                workflow_id=policy.workflow_id,
-                summary=policy.summary,
-                required_engines=[
-                    _policy_by_engine_id(engine_id).display_name
-                    for engine_id in policy.required_engines
-                ],
-                readiness_status=readiness_status,
-                runnable=readiness_status != "blocked",
-                blocking_engines=[
-                    _policy_by_engine_id(engine_id).display_name
-                    for engine_id in blocking_engines
-                ],
-                caution_engines=[
-                    _policy_by_engine_id(engine_id).display_name
-                    for engine_id in caution_engines
-                ],
-                notes=notes,
-            )
+            _build_workflow_preflight_status(policy, by_engine_id=by_engine_id)
         )
     if not selected_seen:
         available = ", ".join(list_external_engine_workflows())
@@ -395,3 +438,36 @@ def require_preflight_workflow(
         )
     available = ", ".join(policy.workflow_id for policy in _WORKFLOW_POLICIES)
     raise ValueError(f"unknown workflow '{workflow_id}', expected one of: {available}")
+
+
+def require_external_engine_surface(
+    *,
+    workflow_id: str,
+    summary: str,
+    required_engines: tuple[str, ...],
+    executables: dict[str, str | Path | None] | None = None,
+    preserve_missing_error: bool = False,
+) -> WorkflowPreflightStatus:
+    """Require one concrete external-engine workflow surface to be runnable."""
+    statuses, workflow_status = inspect_external_engine_surface(
+        workflow_id=workflow_id,
+        summary=summary,
+        required_engines=required_engines,
+        executables=executables,
+    )
+    if workflow_status.runnable:
+        return workflow_status
+    if preserve_missing_error and len(statuses) == 1:
+        status = statuses[0]
+        if status.support_status == "missing":
+            raise EngineUnavailableError(status.issues[0])
+    raise EngineWorkflowError(
+        f"workflow '{workflow_status.workflow_id}' is blocked by external engine availability or compatibility",
+        code="engine_preflight_workflow_blocked",
+        details={
+            "workflow_id": workflow_status.workflow_id,
+            "blocking_engines": workflow_status.blocking_engines,
+            "required_engines": workflow_status.required_engines,
+            "notes": workflow_status.notes,
+        },
+    )

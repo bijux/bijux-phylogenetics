@@ -137,10 +137,16 @@ from .preflight import (
     WorkflowPreflightStatus as WorkflowPreflightStatus,
 )
 from .preflight import (
+    inspect_external_engine_surface as inspect_external_engine_surface,
+)
+from .preflight import (
     inspect_external_engine_preflight as inspect_external_engine_preflight,
 )
 from .preflight import (
     list_external_engine_workflows as list_external_engine_workflows,
+)
+from .preflight import (
+    require_external_engine_surface as require_external_engine_surface,
 )
 from .preflight import (
     require_preflight_workflow as require_preflight_workflow,
@@ -182,8 +188,10 @@ __all__ = [
     "compare_ml_trees_across_models",
     "detect_weakly_supported_backbone",
     "inspect_external_engine_preflight",
+    "inspect_external_engine_surface",
     "list_external_engine_workflows",
     "merge_external_engine_validation_matrices",
+    "require_external_engine_surface",
     "require_preflight_workflow",
     "run_alignment_engine_validation_matrix",
     "run_bayesian_engine_validation_matrix",

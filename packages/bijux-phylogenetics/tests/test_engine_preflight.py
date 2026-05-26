@@ -6,6 +6,8 @@ import pytest
 
 from bijux_phylogenetics.engines.validation.preflight import (
     inspect_external_engine_preflight,
+    inspect_external_engine_surface,
+    require_external_engine_surface,
     require_preflight_workflow,
 )
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
@@ -144,3 +146,43 @@ def test_engine_preflight_marks_older_versions_unsupported(
     assert mrbayes.compatible is False
     assert workflow.runnable is False
     assert workflow.blocking_engines == ["MrBayes"]
+
+
+def test_engine_preflight_inspects_direct_surface_requirements(
+    fake_engine_metadata,
+) -> None:
+    statuses, workflow = inspect_external_engine_surface(
+        workflow_id="maximum-likelihood-tree",
+        summary="IQ-TREE maximum-likelihood tree-inference workflow.",
+        required_engines=("iqtree",),
+        executables={"iqtree": "iqtree2"},
+    )
+
+    assert [status.engine_id for status in statuses] == ["iqtree"]
+    assert statuses[0].support_status == "tested"
+    assert workflow.workflow_id == "maximum-likelihood-tree"
+    assert workflow.required_engines == ["IQ-TREE"]
+    assert workflow.readiness_status == "ready"
+
+
+def test_engine_preflight_blocks_direct_surface_when_engine_is_unsupported(
+    fake_engine_metadata,
+) -> None:
+    fake_engine_metadata["iqtree2"] = (
+        "IQ-TREE multicore version 1.6.0",
+        "/opt/tools/iqtree2",
+    )
+
+    with pytest.raises(
+        EngineWorkflowError,
+        match="workflow 'maximum-likelihood-tree' is blocked",
+    ) as error:
+        require_external_engine_surface(
+            workflow_id="maximum-likelihood-tree",
+            summary="IQ-TREE maximum-likelihood tree-inference workflow.",
+            required_engines=("iqtree",),
+            executables={"iqtree": "iqtree2"},
+        )
+
+    assert error.value.code == "engine_preflight_workflow_blocked"
+    assert error.value.details["blocking_engines"] == ["IQ-TREE"]
