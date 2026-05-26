@@ -1639,11 +1639,15 @@ def test_comparative_covariance_audit_cli_reports_pgls_profile_metrics(
     assert payload["metrics"]["covariance_model"] == "pagel-lambda"
     assert payload["metrics"]["matrix_dimension"] == 4
     assert payload["metrics"]["matrix_rank"] == 4
-    assert payload["metrics"]["fit_strategy"] == "regularization"
+    assert payload["metrics"]["fit_strategy"] == "exact"
     assert payload["metrics"]["singular"] is False
     assert payload["metrics"]["near_singular"] is False
     assert payload["metrics"]["matched_taxon_count"] == 4
+    assert payload["metrics"]["missing_from_traits_count"] == 0
+    assert payload["metrics"]["extra_trait_taxon_count"] == 0
     assert payload["metrics"]["analysis_taxon_count"] == 4
+    assert payload["metrics"]["zero_length_branch_count"] == 0
+    assert payload["metrics"]["negative_branch_length_count"] == 0
     assert payload["metrics"]["candidate_row_count"] == 101
     assert payload["metrics"]["blocker_count"] == 0
 
@@ -1676,6 +1680,64 @@ def test_comparative_covariance_audit_cli_reports_duplicate_trait_blockers(
     assert payload["metrics"]["blocker_count"] == 1
     assert payload["data"]["duplicate_trait_taxa"] == ["A"]
     assert payload["data"]["blockers"] == ["trait table contains duplicate taxon keys"]
+
+
+def test_comparative_covariance_audit_cli_reports_taxon_overlap_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "covariance-audit",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits.tsv")),
+            "--analysis",
+            "brownian-trait",
+            "--trait",
+            "value",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["fit_strategy"] == "exact"
+    assert payload["metrics"]["matched_taxon_count"] == 3
+    assert payload["metrics"]["missing_from_traits_count"] == 1
+    assert payload["metrics"]["extra_trait_taxon_count"] == 1
+    assert payload["metrics"]["analysis_taxon_count"] == 3
+    assert payload["data"]["missing_from_traits"] == ["D"]
+    assert payload["data"]["extra_trait_taxa"] == ["E"]
+
+
+def test_comparative_covariance_audit_cli_reports_zero_length_regularization(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "covariance-audit",
+            str(fixture("example_tree_zero_lengths.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--analysis",
+            "pgls",
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-value",
+            "1.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["fit_strategy"] == "regularization"
+    assert payload["metrics"]["zero_length_branch_count"] == 3
+    assert payload["metrics"]["negative_branch_length_count"] == 0
+    assert payload["metrics"]["matrix_rank"] == 3
+    assert payload["metrics"]["singular"] is True
+    assert payload["metrics"]["near_singular"] is True
+    assert "tree contains zero-length branches" in payload["warnings"]
 
 
 def test_comparative_covariance_audit_cli_writes_review_ledgers(
