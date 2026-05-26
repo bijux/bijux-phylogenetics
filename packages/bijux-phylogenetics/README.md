@@ -1157,6 +1157,16 @@ is intentional: `selected_workflow_status` answers whether the chosen workflow
 can run now, while `overall_status` still reflects the health of the broader
 external-engine environment.
 
+That diagnostic surface is not optional glue anymore. The governed direct run
+surfaces such as `adapter align`, `adapter trim`, `adapter model-select`,
+`adapter infer-ml`, `adapter bootstrap`, `adapter infer-fast`,
+`adapter fasta-to-tree`, `adapter beast-run`, `adapter mrbayes-run`, and the
+Python workflow APIs now run the same compatibility gate before they start
+writing workflow outputs. Missing executables still raise the engine-specific
+availability error on single-engine surfaces, while unsupported versions or
+multi-engine blockers fail as one explicit preflight workflow block instead of
+surfacing halfway through a run.
+
 Every governed external-engine workflow now writes a durable manifest that
 captures the workflow identifier, input checksums, structured config, resolved
 engine commands, detected engine versions, seeds, runtime, and output
