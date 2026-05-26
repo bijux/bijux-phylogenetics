@@ -285,6 +285,11 @@ def iter_newick_tree_records_from_path(path: Path):
     yield from iter_newick_tree_records(path.read_text(encoding="utf-8"))
 
 
+def quote_newick_label(label: str) -> str:
+    """Quote one tip or node label for safe Newick reuse."""
+    return _format_label(label)
+
+
 def _sort_key(node: TreeNode) -> tuple[str, int]:
     tip_names = sorted(name for name in node.descendant_taxa if name)
     return (tip_names[0] if tip_names else "", len(tip_names))
