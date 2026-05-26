@@ -33,6 +33,7 @@ from ..common import (
     write_engine_manifest,
     write_incomplete_engine_run,
 )
+from ..validation.preflight import require_external_engine_surface
 from ..validation import (
     summarize_fasttree_support_distribution,
 )
@@ -576,6 +577,13 @@ def run_large_alignment_inference(
 ) -> LargeAlignmentInferenceWorkflowReport:
     """Run governed large-alignment inference with streaming preflight and resource reporting."""
     validate_timeout_seconds(timeout_seconds)
+    require_external_engine_surface(
+        workflow_id="large-alignment-inference",
+        summary="FastTree large-alignment inference workflow.",
+        required_engines=("fasttree",),
+        executables={"fasttree": executable},
+        preserve_missing_error=True,
+    )
     out_dir.mkdir(parents=True, exist_ok=True)
     root = out_dir / prefix
     tree_path = _tree_path(root)

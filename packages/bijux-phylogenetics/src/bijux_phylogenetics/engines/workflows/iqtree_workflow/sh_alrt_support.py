@@ -17,10 +17,11 @@ from ...common import (
     resolve_engine_executable,
     validate_timeout_seconds,
 )
-from ...validation import (
+from ...validation.audits import (
     summarize_bootstrap_support_distribution,
     summarize_sh_alrt_support_distribution,
 )
+from ...validation.preflight import require_external_engine_surface
 from ..models import EngineWorkflowReport
 from ..state import (
     _ensure_inference_ready_alignment,
@@ -71,6 +72,13 @@ def run_sh_alrt_support_estimation(
     _validate_ufboot_replicates(bootstrap_replicates)
     _ensure_inference_ready_alignment(input_path)
     validate_timeout_seconds(timeout_seconds)
+    require_external_engine_surface(
+        workflow_id="sh-alrt-support",
+        summary="IQ-TREE SH-aLRT and UFBoot support workflow.",
+        required_engines=("iqtree",),
+        executables={"iqtree": executable},
+        preserve_missing_error=True,
+    )
     prefix_path = _prefix_path(out_dir, prefix)
     manifest_path = prefix_path.with_suffix(".manifest.json")
     version = read_engine_version(

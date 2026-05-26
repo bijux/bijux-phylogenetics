@@ -24,7 +24,8 @@ from ..common import (
     resolve_engine_executable,
     validate_timeout_seconds,
 )
-from ..validation import summarize_fasttree_support_distribution
+from ..validation.audits import summarize_fasttree_support_distribution
+from ..validation.preflight import require_external_engine_surface
 from .models import EngineWorkflowReport, ExternalTreeComparisonReport
 from .state import (
     _ensure_inference_ready_alignment,
@@ -64,6 +65,13 @@ def run_fast_tree_inference(
     """Run a fast approximate tree inference engine against an aligned FASTA file."""
     _ensure_inference_ready_alignment(input_path)
     validate_timeout_seconds(timeout_seconds)
+    require_external_engine_surface(
+        workflow_id="fast-approximate-tree",
+        summary="FastTree approximate tree-inference workflow.",
+        required_engines=("fasttree",),
+        executables={"fasttree": executable},
+        preserve_missing_error=True,
+    )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     support_table_path = _sidecar(out_path, "support.tsv")
     low_support_branches_path = _sidecar(out_path, "low-support.tsv")

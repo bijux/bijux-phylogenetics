@@ -11,6 +11,7 @@ from ...common import (
     resolve_engine_executable,
     validate_timeout_seconds,
 )
+from ...validation.preflight import require_external_engine_surface
 from ..models import EngineWorkflowReport
 from ..state import (
     _persist_workflow_report,
@@ -48,6 +49,13 @@ def run_bootstrap_consensus_tree(
     if not bootstrap_trees_path.exists():
         raise FileNotFoundError(bootstrap_trees_path)
     validate_timeout_seconds(timeout_seconds)
+    require_external_engine_surface(
+        workflow_id="bootstrap-consensus",
+        summary="IQ-TREE bootstrap-consensus workflow.",
+        required_engines=("iqtree",),
+        executables={"iqtree": executable},
+        preserve_missing_error=True,
+    )
     prefix_path = _prefix_path(out_dir, prefix)
     manifest_path = prefix_path.with_suffix(".manifest.json")
     version = read_engine_version(

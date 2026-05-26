@@ -97,12 +97,13 @@ from ..common import (
     validate_timeout_seconds,
     write_engine_manifest,
 )
-from ..validation import (
+from ..validation.audits import (
     detect_weakly_supported_backbone,
     summarize_bootstrap_support_distribution,
     summarize_fasttree_support_distribution,
     summarize_sh_alrt_support_distribution,
 )
+from ..validation.preflight import require_external_engine_surface
 from .models import (
     AlignmentTrimmingSummary,
     CodonAwareAlignmentWorkflowReport,
@@ -210,6 +211,13 @@ def run_multiple_sequence_alignment(
     """Run a multiple-sequence alignment engine against an unaligned FASTA file."""
     load_unaligned_fasta(input_path)
     validate_timeout_seconds(timeout_seconds)
+    require_external_engine_surface(
+        workflow_id="multiple-sequence-alignment",
+        summary="MAFFT multiple-sequence-alignment workflow.",
+        required_engines=("mafft",),
+        executables={"mafft": executable},
+        preserve_missing_error=True,
+    )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path = _manifest_path_from_output(out_path)
     mode_args = resolve_mafft_alignment_mode(mode)
@@ -295,6 +303,13 @@ def run_codon_aware_multiple_sequence_alignment(
 ) -> CodonAwareAlignmentWorkflowReport:
     """Align coding nucleotide sequences through a translated amino-acid guide."""
     validate_timeout_seconds(timeout_seconds)
+    require_external_engine_surface(
+        workflow_id="codon-aware-multiple-sequence-alignment",
+        summary="MAFFT codon-aware multiple-sequence-alignment workflow.",
+        required_engines=("mafft",),
+        executables={"mafft": executable},
+        preserve_missing_error=True,
+    )
     prepared_records, preparation = prepare_coding_sequences_for_alignment(
         input_path,
         sequence_type=sequence_type,
@@ -447,6 +462,13 @@ def run_alignment_trimming(
     """Run an external alignment trimming engine against an aligned FASTA file."""
     load_fasta_alignment(input_path)
     validate_timeout_seconds(timeout_seconds)
+    require_external_engine_surface(
+        workflow_id="alignment-trimming",
+        summary="trimAl alignment-trimming workflow.",
+        required_engines=("trimal",),
+        executables={"trimal": executable},
+        preserve_missing_error=True,
+    )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     input_summary = summarise_fasta(input_path)
     manifest_path = _manifest_path_from_output(out_path)

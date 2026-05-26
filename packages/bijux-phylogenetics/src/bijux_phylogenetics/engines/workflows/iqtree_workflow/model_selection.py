@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
-from bijux_phylogenetics.runtime.errors import EngineWorkflowError, PhylogeneticsError
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 from ...artifacts.iqtree import write_iqtree_model_candidates_table
 from ...common import (
@@ -14,6 +14,7 @@ from ...common import (
     resolve_engine_executable,
     validate_timeout_seconds,
 )
+from ...validation.preflight import require_external_engine_surface
 from ..models import EngineWorkflowReport
 from ..state import (
     _ensure_inference_ready_alignment,
@@ -52,6 +53,13 @@ def run_model_selection(
     """Run a model-selection workflow on an aligned FASTA file."""
     _ensure_inference_ready_alignment(input_path)
     validate_timeout_seconds(timeout_seconds)
+    require_external_engine_surface(
+        workflow_id="model-selection",
+        summary="IQ-TREE model-selection workflow.",
+        required_engines=("iqtree",),
+        executables={"iqtree": executable},
+        preserve_missing_error=True,
+    )
     prefix_path = _prefix_path(out_dir, prefix)
     manifest_path = prefix_path.with_suffix(".manifest.json")
     version = read_engine_version(

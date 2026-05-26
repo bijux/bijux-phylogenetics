@@ -19,8 +19,11 @@ from ...common import (
     resolve_engine_executable,
     validate_timeout_seconds,
 )
-from ...validation import detect_weakly_supported_backbone
-from ...validation import summarize_bootstrap_support_distribution
+from ...validation.audits import (
+    detect_weakly_supported_backbone,
+    summarize_bootstrap_support_distribution,
+)
+from ...validation.preflight import require_external_engine_surface
 from ..models import EngineWorkflowReport
 from ..state import (
     _ensure_inference_ready_alignment,
@@ -70,6 +73,13 @@ def run_bootstrap_support_estimation(
     _validate_ufboot_replicates(replicates)
     _ensure_inference_ready_alignment(input_path)
     validate_timeout_seconds(timeout_seconds)
+    require_external_engine_surface(
+        workflow_id="bootstrap-support",
+        summary="IQ-TREE bootstrap-support workflow.",
+        required_engines=("iqtree",),
+        executables={"iqtree": executable},
+        preserve_missing_error=True,
+    )
     prefix_path = _prefix_path(out_dir, prefix)
     manifest_path = prefix_path.with_suffix(".manifest.json")
     version = read_engine_version(
