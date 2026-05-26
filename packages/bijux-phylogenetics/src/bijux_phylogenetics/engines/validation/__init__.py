@@ -112,6 +112,21 @@ from .matrix import (
 from .matrix import (
     write_external_engine_validation_matrix as write_external_engine_validation_matrix,
 )
+from .matrix_workflows import (
+    AlignmentValidationMatrixInputs as AlignmentValidationMatrixInputs,
+)
+from .matrix_workflows import (
+    BayesianValidationMatrixInputs as BayesianValidationMatrixInputs,
+)
+from .matrix_workflows import (
+    run_alignment_engine_validation_matrix as run_alignment_engine_validation_matrix,
+)
+from .matrix_workflows import (
+    run_bayesian_engine_validation_matrix as run_bayesian_engine_validation_matrix,
+)
+from .matrix_workflows import (
+    run_external_engine_validation_matrix as run_external_engine_validation_matrix,
+)
 from .preflight import (
     ExternalEnginePreflightReport as ExternalEnginePreflightReport,
 )
@@ -155,6 +170,8 @@ __all__ = [
     "WeakBackboneReport",
     "WorkflowPreflightStatus",
     "audit_alignment_inference_readiness",
+    "AlignmentValidationMatrixInputs",
+    "BayesianValidationMatrixInputs",
     "build_beast_artifact_validation_case",
     "build_external_engine_validation_case",
     "build_external_engine_validation_matrix",
@@ -168,6 +185,9 @@ __all__ = [
     "list_external_engine_workflows",
     "merge_external_engine_validation_matrices",
     "require_preflight_workflow",
+    "run_alignment_engine_validation_matrix",
+    "run_bayesian_engine_validation_matrix",
+    "run_external_engine_validation_matrix",
     "summarize_bootstrap_support_distribution",
     "summarize_fasttree_support_distribution",
     "summarize_sh_alrt_support_distribution",
