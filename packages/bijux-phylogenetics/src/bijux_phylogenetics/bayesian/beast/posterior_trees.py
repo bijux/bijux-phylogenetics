@@ -25,6 +25,10 @@ from .models import (
     BeastPosteriorTreeSample,
     BeastPosteriorTreeSetReport,
 )
+from bijux_phylogenetics.io.nexus_translate import (
+    parse_nexus_translate_map,
+    translate_nexus_tip_labels,
+)
 
 
 def parse_beast_posterior_tree_samples(
@@ -54,7 +58,19 @@ def parse_beast_posterior_tree_samples(
     burnin_tree_count, kept_entries = _split_beast_tree_entries(
         entries, burnin_fraction=burnin_fraction, path=path
     )
-    translation = _parse_nexus_translate_map(text)
+    try:
+        translation = parse_nexus_translate_map(text)
+    except ValueError as error:
+        raise _beast_artifact_error(
+            f"BEAST posterior tree file contains an invalid translate block: {path}",
+            code="beast_tree_invalid_translate_block",
+            path=path,
+            artifact_kind="beast-posterior-trees",
+            details={
+                "cause": str(error),
+                "expected_section": "translate block",
+            },
+        ) from error
     samples: list[BeastPosteriorTreeSample] = []
     trees: list[PhyloTree] = []
     for tree_name, tree_text in kept_entries:
@@ -269,7 +285,7 @@ def _parse_beast_tree_text(
         _extract_beast_tree_annotations(tree_text)
     )
     stripped = _strip_square_bracket_comments(tree_text).strip()
-    translated = _translate_nexus_tip_labels(stripped, translation)
+    translated = translate_nexus_tip_labels(stripped, translation)
     tree = loads_biophylo(f"{translated};", source_format="newick")
     return (
         dumps_newick(tree),
@@ -332,37 +348,6 @@ def _informative_tree_clades(
     return clades
 
 
-def _parse_nexus_translate_map(text: str) -> dict[str, str]:
-    translate_match = re.search(
-        r"translate\s+(.+?);", text, flags=re.IGNORECASE | re.DOTALL
-    )
-    if translate_match is None:
-        return {}
-    mapping: dict[str, str] = {}
-    for raw_line in translate_match.group(1).splitlines():
-        line = raw_line.strip().rstrip(",")
-        if not line:
-            continue
-        parts = line.split(None, 1)
-        if len(parts) != 2:
-            continue
-        source, label = parts
-        mapping[source] = label.rstrip(",")
-    return mapping
-
-
-def _translate_nexus_tip_labels(newick: str, mapping: dict[str, str]) -> str:
-    if not mapping:
-        return newick
-
-    def replace(match: re.Match[str]) -> str:
-        token = match.group(1)
-        translated = mapping.get(token, token)
-        return match.group(0).replace(token, translated)
-
-    return re.sub(r"(?<=[(,])\s*([A-Za-z0-9_.-]+)(?=\s*[:),])", replace, newick)
-
-
 def _extract_beast_tree_annotations(
     tree_text: str,
 ) -> tuple[dict[str, str], list[str], int]:
@@ -399,18 +384,36 @@ def _split_beast_annotation_tokens(text: str) -> list[str]:
     tokens: list[str] = []
     current: list[str] = []
     brace_depth = 0
-    for char in text:
+    quote_character: str | None = None
+    index = 0
+    while index < len(text):
+        char = text[index]
+        if char in {"'", '"'}:
+            if quote_character is None:
+                quote_character = char
+            elif char == quote_character:
+                if (
+                    quote_character == "'"
+                    and index + 1 < len(text)
+                    and text[index + 1] == "'"
+                ):
+                    current.append("''")
+                    index += 2
+                    continue
+                quote_character = None
         if char == "{":
             brace_depth += 1
         elif char == "}" and brace_depth:
             brace_depth -= 1
-        if char == "," and brace_depth == 0:
+        if char == "," and brace_depth == 0 and quote_character is None:
             token = "".join(current).strip()
             if token:
                 tokens.append(token)
             current = []
+            index += 1
             continue
         current.append(char)
+        index += 1
     token = "".join(current).strip()
     if token:
         tokens.append(token)

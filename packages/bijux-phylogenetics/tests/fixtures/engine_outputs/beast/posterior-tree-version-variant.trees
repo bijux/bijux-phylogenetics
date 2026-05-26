@@ -1,0 +1,9 @@
+#NEXUS
+Begin trees;
+  Translate
+    1 'Taxon A',
+    2 'Taxon B''s sample',
+    3 Taxon_C
+  ;
+tree STATE_10 = [&R] ((1[&region="North, Sea"]:0.1,2:0.1)[&posterior=0.95]:0.2,3:0.3):0.0[&note='founder''s clade'];
+End;

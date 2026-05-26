@@ -1069,6 +1069,36 @@ def test_parse_beast_posterior_tree_samples_reads_annotation_rich_beast_fixture(
     assert sample.annotation_values["rate_95%_HPD"] == "{0.5,0.9}"
 
 
+def test_parse_beast_posterior_tree_samples_accepts_quoted_translate_labels_fixture(
+) -> None:
+    report = parse_beast_posterior_tree_samples(
+        fixture("engine_outputs/beast/posterior-tree-version-variant.trees"),
+        burnin_fraction=0.0,
+    )
+
+    sample = report.trees[0]
+    assert report.sampled_states == [10]
+    assert sample.tip_names == ["Taxon A", "Taxon B's sample", "Taxon_C"]
+    assert "Taxon A" in sample.newick
+    assert "Taxon B''s sample" in sample.newick
+    assert sample.annotation_values["region"] == '"North, Sea"'
+    assert sample.annotation_values["note"] == "'founder''s clade'"
+
+
+def test_parse_beast_posterior_tree_samples_reports_invalid_translate_fixture() -> (
+    None
+):
+    with pytest.raises(EngineWorkflowError) as error:
+        parse_beast_posterior_tree_samples(
+            fixture("engine_outputs/beast/posterior-tree-invalid-translate.trees"),
+            burnin_fraction=0.0,
+        )
+
+    assert error.value.code == "beast_tree_invalid_translate_block"
+    assert error.value.details["artifact_kind"] == "beast-posterior-trees"
+    assert error.value.details["expected_section"] == "translate block"
+
+
 def test_parse_beast_posterior_tree_samples_reports_structured_parse_errors(
     tmp_path: Path,
 ) -> None:
