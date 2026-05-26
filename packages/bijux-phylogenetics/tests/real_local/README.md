@@ -19,16 +19,19 @@ artifacts and installed external engines, not only with fake runners:
   gate honestly blocks `beast-posterior` when no BEAST executable is available.
 - `test_alignment_engine_validation_matrix.py` exercises MAFFT, trimAl,
   IQ-TREE, and FastTree on small real inputs and writes one matrix JSON artifact
-  under the pytest temporary directory.
+  under the pytest temporary directory through the product-owned
+  `run_alignment_engine_validation_matrix()` surface.
 - `test_bayesian_engine_validation_matrix.py` exercises a real MrBayes run and
   records BEAST either from a live executable run when available or from the
   governed checked-in BEAST posterior corpus when the executable is absent.
   That governed corpus now includes the prepared XML, posterior log, posterior
   trees, consensus tree, maximum clade credibility tree, and checked burn-in or
-  ESS reference summaries under one durable shared fixture owner.
+  ESS reference summaries under one durable shared fixture owner, all routed
+  through `run_bayesian_engine_validation_matrix()`.
 - `test_external_engine_validation_matrix.py` merges those governed alignment
   and Bayesian cases into one reviewer-facing matrix over MAFFT, trimAl,
-  IQ-TREE, FastTree, MrBayes, and BEAST.
+  IQ-TREE, FastTree, MrBayes, and BEAST through
+  `run_external_engine_validation_matrix()`.
 - `test_bayesian_execution_lane.py` also proves that `adapter beast-run
   --resume` and `adapter mrbayes-run --resume` only reuse one verified
   completed manifest when the installed executable, checked inputs, and

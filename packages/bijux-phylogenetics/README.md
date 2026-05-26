@@ -1119,6 +1119,14 @@ errors such as `engine_required_output_missing`, `engine_output_empty`,
 `engine_model_result_missing`, and `engine_support_values_missing` before any
 workflow manifest or reviewer-facing report is written.
 
+The same reviewer-facing engine evidence now has one product-owned matrix
+surface under `bijux_phylogenetics.engines.validation`. Use
+`run_alignment_engine_validation_matrix()` for MAFFT, trimAl, IQ-TREE, and
+FastTree, `run_bayesian_engine_validation_matrix()` for MrBayes plus live or
+governed-fallback BEAST validation, and `run_external_engine_validation_matrix()`
+to merge both families into one JSON report written by
+`write_external_engine_validation_matrix()`.
+
 The external-engine and release-install trust surface now has three distinct
 verification lanes. Fast `engine_contract` tests keep fake-executable and
 parser behavior stable in routine verification. `tests/real_local` carries the
