@@ -1,17 +1,14 @@
 from __future__ import annotations
 
+from bijux_phylogenetics.bayesian.posterior_execution import (
+    run_bayesian_posterior_execution,
+)
+from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
+
 from ._shared import (
-    EngineWorkflowReport,
     Path,
-    PhylogeneticsError,
     _beast_artifact_error,
     _beast_output_path,
-    _persist_workflow_report,
-    _record_output_validation_failure,
-    _resolve_incomplete_workflow_state,
-    _resume_existing_workflow,
-    build_file_checksums,
-    execute_engine_command,
     read_engine_version,
     resolve_engine_executable,
     validate_timeout_seconds,
@@ -69,53 +66,29 @@ def run_beast_posterior_inference(
         str(seed),
         xml_path.name,
     ]
-    if resume:
-        resumed = _resume_existing_workflow(
-            manifest_path=manifest_path,
-            input_paths=[xml_path],
-            expected_command=command,
-            expected_version=version,
+
+    def validate_outputs() -> None:
+        parse_beast_log(posterior_log_path)
+        parse_beast_posterior_tree_samples(
+            posterior_trees_path,
+            burnin_fraction=0.0,
         )
-        if resumed is not None:
-            return resumed
-    incomplete_notes = _resolve_incomplete_workflow_state(
-        manifest_path=manifest_path,
-        incomplete_run_policy=incomplete_run_policy,
-    )
-    run = execute_engine_command(
+
+    return run_bayesian_posterior_execution(
         engine_name="BEAST",
-        workflow="posterior-tree-inference",
         executable=resolved,
         version=version,
-        command_args=command[1:],
-        work_dir=xml_path.parent,
-        stdout_path=stdout_path,
-        stderr_path=stderr_path,
-        output_paths={
-            "posterior_log": posterior_log_path,
-            "posterior_trees": posterior_trees_path,
-        },
-        manifest_path=manifest_path,
-        timeout_seconds=timeout_seconds,
-    )
-    try:
-        parse_beast_log(posterior_log_path)
-        parse_beast_posterior_tree_samples(posterior_trees_path, burnin_fraction=0.0)
-    except PhylogeneticsError as error:
-        _record_output_validation_failure(manifest_path, run, error)
-        raise
-    report = EngineWorkflowReport(
-        workflow="posterior-tree-inference",
-        engine_name="BEAST",
+        command=command,
         input_paths=[xml_path],
         output_paths={
             "posterior_log": posterior_log_path,
             "posterior_trees": posterior_trees_path,
         },
-        run=run,
         manifest_path=manifest_path,
-        input_checksums=build_file_checksums([xml_path]),
-        output_checksums={},
+        stdout_path=stdout_path,
+        stderr_path=stderr_path,
+        work_dir=xml_path.parent,
+        timeout_seconds=timeout_seconds,
         config={
             "threads": threads,
             "seed": seed,
@@ -131,7 +104,8 @@ def run_beast_posterior_inference(
                 if overwrite
                 else []
             ),
-            *incomplete_notes,
         ],
+        resume=resume,
+        incomplete_run_policy=incomplete_run_policy,
+        validate_outputs=validate_outputs,
     )
-    return _persist_workflow_report(report)
