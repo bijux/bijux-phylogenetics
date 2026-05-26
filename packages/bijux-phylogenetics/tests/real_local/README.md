@@ -33,6 +33,11 @@ artifacts and installed external engines, not only with fake runners:
   --resume` and `adapter mrbayes-run --resume` only reuse one verified
   completed manifest when the installed executable, checked inputs, and
   recorded outputs still match.
+- `test_bayesian_timeout_resume_safety.py` is the fixture-backed contract lane
+  for the shared Bayesian posterior safety runtime. It keeps BEAST and
+  MrBayes identical on timeout markers, killed-process markers, malformed
+  output rejection, missing-executable handling, clean restart, and verified
+  resume behavior.
 
 Each matrix case records the reviewer-facing engine name, validation name,
 validation mode, executable path when one was used, version text, command,
