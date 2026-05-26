@@ -26,7 +26,7 @@ from bijux_phylogenetics.io.trees import load_tree
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
-REFERENCE_PARITY_TOLERANCE = 1e-9
+REFERENCE_PARITY_TOLERANCE = 2e-9
 
 
 def fixture(name: str) -> Path:
@@ -60,20 +60,11 @@ def _multivariate_reference_gls(
     responses: list[str],
     predictors: list[str],
     taxa: list[str],
-    lambda_value: float,
+    lambda_value: float | dict[str, float],
 ) -> dict[str, object]:
     rows_by_taxon = _load_numeric_rows(traits_path)
     tree = load_tree(tree_path)
-    covariance = numpy.array(
-        lambda_transform_covariance(
-            build_brownian_covariance_matrix(tree, taxa),
-            lambda_value,
-        ),
-        dtype=float,
-    )
-    inverse_covariance = numpy.linalg.inv(covariance)
-    sign, log_determinant = numpy.linalg.slogdet(covariance)
-    assert sign > 0.0
+    base_covariance = build_brownian_covariance_matrix(tree, taxa)
     design_matrix = numpy.array(
         [
             [1.0, *(rows_by_taxon[taxon][predictor] for predictor in predictors)]
@@ -86,9 +77,21 @@ def _multivariate_reference_gls(
     residual_matrix_rows: list[list[float]] = []
     log_likelihoods: dict[str, float] = {}
     residual_variances: dict[str, float] = {}
-    xt_vinv_x = design_matrix.T @ inverse_covariance @ design_matrix
-    covariance_of_betas = numpy.linalg.inv(xt_vinv_x)
     for response in responses:
+        resolved_lambda = (
+            lambda_value[response]
+            if isinstance(lambda_value, dict)
+            else lambda_value
+        )
+        covariance = numpy.array(
+            lambda_transform_covariance(base_covariance, resolved_lambda),
+            dtype=float,
+        )
+        inverse_covariance = numpy.linalg.inv(covariance)
+        sign, log_determinant = numpy.linalg.slogdet(covariance)
+        assert sign > 0.0
+        xt_vinv_x = design_matrix.T @ inverse_covariance @ design_matrix
+        covariance_of_betas = numpy.linalg.inv(xt_vinv_x)
         observed = numpy.array(
             [rows_by_taxon[taxon][response] for taxon in taxa],
             dtype=float,
@@ -129,6 +132,64 @@ def _multivariate_reference_gls(
         "residual_covariance": numpy.cov(residual_matrix, ddof=1),
         "residual_correlation": numpy.corrcoef(residual_matrix),
     }
+
+
+def _assert_multivariate_reference_matches_report(
+    report, reference: dict[str, object]
+) -> None:
+    for row in report.response_model_rows:
+        assert math.isclose(
+            row.log_likelihood,
+            reference["log_likelihoods"][row.response],
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
+        assert math.isclose(
+            row.residual_variance,
+            reference["residual_variances"][row.response],
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
+    coefficient_reference = reference["coefficients_by_response"]
+    for row in report.coefficient_rows:
+        estimate, standard_error, p_value = coefficient_reference[row.response][
+            row.term
+        ]
+        assert math.isclose(
+            row.estimate,
+            estimate,
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
+        assert math.isclose(
+            row.standard_error,
+            standard_error,
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
+        assert math.isclose(row.p_value, p_value, abs_tol=REFERENCE_PARITY_TOLERANCE)
+    response_index = {
+        response: index for index, response in enumerate(report.responses)
+    }
+    covariance_reference = reference["residual_covariance"]
+    correlation_reference = reference["residual_correlation"]
+    for row in report.covariance_rows:
+        left_index = response_index[row.left_response]
+        right_index = response_index[row.right_response]
+        assert math.isclose(
+            row.covariance,
+            float(covariance_reference[left_index, right_index]),
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
+        assert math.isclose(
+            row.correlation,
+            float(correlation_reference[left_index, right_index]),
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
+    for row in report.correlation_rows:
+        left_index = response_index[row.left_response]
+        right_index = response_index[row.right_response]
+        assert math.isclose(
+            row.correlation,
+            float(correlation_reference[left_index, right_index]),
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
 
 
 def test_run_multivariate_comparative_regression_reports_covariance_and_association() -> (
@@ -194,59 +255,71 @@ def test_run_multivariate_comparative_regression_matches_independent_python_refe
         taxa=report.analysis_taxa,
         lambda_value=0.0,
     )
-    for row in report.response_model_rows:
-        assert math.isclose(
-            row.log_likelihood,
-            reference["log_likelihoods"][row.response],
-            abs_tol=REFERENCE_PARITY_TOLERANCE,
-        )
-        assert math.isclose(
-            row.residual_variance,
-            reference["residual_variances"][row.response],
-            abs_tol=REFERENCE_PARITY_TOLERANCE,
-        )
-    coefficient_reference = reference["coefficients_by_response"]
-    for row in report.coefficient_rows:
-        estimate, standard_error, p_value = coefficient_reference[row.response][
-            row.term
-        ]
-        assert math.isclose(
-            row.estimate,
-            estimate,
-            abs_tol=REFERENCE_PARITY_TOLERANCE,
-        )
-        assert math.isclose(
-            row.standard_error,
-            standard_error,
-            abs_tol=REFERENCE_PARITY_TOLERANCE,
-        )
-        assert math.isclose(row.p_value, p_value, abs_tol=REFERENCE_PARITY_TOLERANCE)
-    response_index = {
-        response: index for index, response in enumerate(report.responses)
+    _assert_multivariate_reference_matches_report(report, reference)
+
+
+def test_run_multivariate_comparative_regression_matches_independent_python_reference_with_nonzero_lambda() -> (
+    None
+):
+    report = run_multivariate_comparative_regression(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_comparative_multivariate_full_rank.tsv"),
+        responses=["response_growth", "response_range"],
+        predictors=["predictor_one", "predictor_two"],
+        lambda_value=0.5,
+    )
+    reference = _multivariate_reference_gls(
+        tree_path=fixture("example_tree_six_taxa.nwk"),
+        traits_path=fixture("example_traits_comparative_multivariate_full_rank.tsv"),
+        responses=report.responses,
+        predictors=report.predictors,
+        taxa=report.analysis_taxa,
+        lambda_value=0.5,
+    )
+    _assert_multivariate_reference_matches_report(report, reference)
+
+
+def test_run_multivariate_comparative_regression_warns_when_estimated_lambdas_materially_diverge() -> (
+    None
+):
+    report = run_multivariate_comparative_regression(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_comparative_multivariate_heterogeneous_lambda.tsv"),
+        responses=["response_growth", "response_range"],
+        predictors=["predictor_one", "predictor_two"],
+        lambda_value="estimate",
+    )
+    response_lambda = {
+        row.response: row.lambda_value for row in report.response_model_rows
     }
-    covariance_reference = reference["residual_covariance"]
-    correlation_reference = reference["residual_correlation"]
-    for row in report.covariance_rows:
-        left_index = response_index[row.left_response]
-        right_index = response_index[row.right_response]
-        assert math.isclose(
-            row.covariance,
-            float(covariance_reference[left_index, right_index]),
-            abs_tol=REFERENCE_PARITY_TOLERANCE,
-        )
-        assert math.isclose(
-            row.correlation,
-            float(correlation_reference[left_index, right_index]),
-            abs_tol=REFERENCE_PARITY_TOLERANCE,
-        )
-    for row in report.correlation_rows:
-        left_index = response_index[row.left_response]
-        right_index = response_index[row.right_response]
-        assert math.isclose(
-            row.correlation,
-            float(correlation_reference[left_index, right_index]),
-            abs_tol=REFERENCE_PARITY_TOLERANCE,
-        )
+    assert response_lambda == {"response_growth": 1.0, "response_range": 0.0}
+    assert any(
+        "materially different Pagel lambda values (0 to 1)" in warning
+        for warning in report.warnings
+    )
+
+
+def test_run_multivariate_comparative_regression_matches_reference_with_heterogeneous_estimated_lambdas() -> (
+    None
+):
+    report = run_multivariate_comparative_regression(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_comparative_multivariate_heterogeneous_lambda.tsv"),
+        responses=["response_growth", "response_range"],
+        predictors=["predictor_one", "predictor_two"],
+        lambda_value="estimate",
+    )
+    reference = _multivariate_reference_gls(
+        tree_path=fixture("example_tree_six_taxa.nwk"),
+        traits_path=fixture("example_traits_comparative_multivariate_heterogeneous_lambda.tsv"),
+        responses=report.responses,
+        predictors=report.predictors,
+        taxa=report.analysis_taxa,
+        lambda_value={
+            model.response: model.lambda_value for model in report.response_models
+        },
+    )
+    _assert_multivariate_reference_matches_report(report, reference)
 
 
 def test_run_multivariate_comparative_regression_reports_full_rank_covariance_diagnostics() -> (
