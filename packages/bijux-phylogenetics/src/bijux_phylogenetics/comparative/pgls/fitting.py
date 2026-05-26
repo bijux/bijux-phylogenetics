@@ -367,7 +367,14 @@ def _estimate_lambda_for_pgls(
         min(1.0, coarse_best_lambda + coarse_step),
         fine_step,
     )
-    resolved_lambda = max(fine_values, key=log_likelihood_at_lambda)
+    fine_best_lambda = max(fine_values, key=log_likelihood_at_lambda)
+    lower_bound = max(0.0, fine_best_lambda - fine_step)
+    upper_bound = min(1.0, fine_best_lambda + fine_step)
+    resolved_lambda = _maximize_bounded_log_likelihood(
+        log_likelihood_at_lambda,
+        lower_bound=lower_bound,
+        upper_bound=upper_bound,
+    )
     best_log_likelihood = log_likelihood_at_lambda(resolved_lambda)
     threshold = best_log_likelihood - confidence_interval_drop
     profile_rows = [
@@ -395,6 +402,48 @@ def _estimate_lambda_for_pgls(
         upper_95_confidence_interval=upper_bound,
         profile_rows=profile_rows,
     )
+
+
+def _maximize_bounded_log_likelihood(
+    log_likelihood_at_lambda: Callable[[float], float],
+    *,
+    lower_bound: float,
+    upper_bound: float,
+    tolerance: float = 1e-9,
+    max_iterations: int = 80,
+) -> float:
+    if upper_bound <= lower_bound:
+        return lower_bound
+    inverse_phi = (math.sqrt(5.0) - 1.0) / 2.0
+    left = lower_bound
+    right = upper_bound
+    interior_left = right - inverse_phi * (right - left)
+    interior_right = left + inverse_phi * (right - left)
+    left_value = log_likelihood_at_lambda(interior_left)
+    right_value = log_likelihood_at_lambda(interior_right)
+    for _ in range(max_iterations):
+        if abs(right - left) <= tolerance:
+            break
+        if left_value <= right_value:
+            left = interior_left
+            interior_left = interior_right
+            left_value = right_value
+            interior_right = left + inverse_phi * (right - left)
+            right_value = log_likelihood_at_lambda(interior_right)
+        else:
+            right = interior_right
+            interior_right = interior_left
+            right_value = left_value
+            interior_left = right - inverse_phi * (right - left)
+            left_value = log_likelihood_at_lambda(interior_left)
+    candidate_values = {
+        lower_bound: log_likelihood_at_lambda(lower_bound),
+        upper_bound: log_likelihood_at_lambda(upper_bound),
+        interior_left: left_value,
+        interior_right: right_value,
+        (left + right) / 2.0: log_likelihood_at_lambda((left + right) / 2.0),
+    }
+    return max(candidate_values, key=candidate_values.get)
 
 
 def _lambda_log_likelihood(
