@@ -161,3 +161,20 @@ if "-m" in args:
 raise SystemExit(2)
 """,
     )
+
+
+def fake_fasttree(path: Path, *, version: str = "2.2") -> Path:
+    return write_executable(
+        path,
+        f"""#!/usr/bin/env python3
+import sys
+
+args = sys.argv[1:]
+if not args or "-help" in args:
+    print("FastTree Version {version} fixture")
+    raise SystemExit(0)
+
+print("((A:0.1,B:0.1)0.98:0.3,(C:0.1,D:0.1)0.62:0.3);")
+print("warning: fasttree fixture approximate support only", file=sys.stderr)
+""",
+    )
