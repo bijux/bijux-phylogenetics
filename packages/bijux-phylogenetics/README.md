@@ -1217,7 +1217,11 @@ engine-version drift when the local executable no longer matches the manifest,
 and compares replayed outputs with tolerant workflow-specific checks instead of
 requiring byte-identical files. Tree workflows compare topology and support
 semantically, while alignment and model-selection workflows compare the durable
-scientific result for that workflow surface.
+scientific result for that workflow surface. When the manifest already records
+one concrete engine path, replay reuses that path by default instead of
+guessing a generic `mafft`, `iqtree2`, `FastTree`, `mb`, or `beast` binary.
+Pass explicit executable overrides only when you intentionally want to test one
+different local engine install against the recorded workflow evidence.
 
 Use `phylo bundle` when you need one portable handoff directory for review or
 bundle-local reruns.
