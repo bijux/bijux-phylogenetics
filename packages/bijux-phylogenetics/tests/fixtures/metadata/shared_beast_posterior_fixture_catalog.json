@@ -1,0 +1,21 @@
+{
+  "catalog_name": "shared_beast_posterior_fixtures",
+  "fixtures": [
+    {
+      "fixture_id": "strict_yule_real_posterior",
+      "analysis_xml_relative_path": "metadata/beast2_strict_yule_posterior.xml",
+      "posterior_log_relative_path": "metadata/beast2_strict_yule_posterior.log",
+      "posterior_trees_relative_path": "metadata/beast2_strict_yule_posterior.trees",
+      "consensus_tree_relative_path": "expected/beast2_strict_yule_posterior/beast2_strict_yule_posterior.consensus-10pct.nwk",
+      "mcc_tree_relative_path": "expected/beast2_strict_yule_posterior/beast2_strict_yule_posterior.mcc-10pct.nwk",
+      "reference_json_relative_path": "expected/beast2_strict_yule_posterior/beast2_strict_yule_posterior.reference.json",
+      "beast_version": "2.7",
+      "recommended_burnin_fraction": 0.1,
+      "posterior_row_count": 101,
+      "posterior_tree_count": 101,
+      "shared_taxa": ["A", "B", "C", "D"],
+      "feature_tags": ["real-artifact", "analysis-xml", "posterior-log", "posterior-trees", "consensus", "mcc", "burnin-calibrated", "ess-anchored"],
+      "notes": "Checked-in real BEAST 2 strict-clock Yule posterior corpus with governed XML, posterior log, posterior trees, consensus tree, maximum clade credibility tree, and summary references for parser, publication, and reviewer-facing validation coverage."
+    }
+  ]
+}

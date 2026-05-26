@@ -5,6 +5,16 @@ from .comparative import (
     get_shared_phytools_comparative_fixture,
     list_shared_phytools_comparative_fixtures,
 )
+from .beast_posteriors import (
+    SharedBeastPosteriorBurninReference,
+    SharedBeastPosteriorConsensusReference,
+    SharedBeastPosteriorFixture,
+    SharedBeastPosteriorMccReference,
+    SharedBeastPosteriorParameterReference,
+    SharedBeastPosteriorReference,
+    get_shared_beast_posterior_fixture,
+    list_shared_beast_posterior_fixtures,
+)
 from .distance_matrices import (
     SharedDistanceMatrixFixture,
     get_shared_distance_matrix_fixture,
@@ -43,6 +53,12 @@ from .tree_simulations import (
 from .trees import SharedTreeFixture, get_shared_tree_fixture, list_shared_tree_fixtures
 
 __all__ = [
+    "SharedBeastPosteriorBurninReference",
+    "SharedBeastPosteriorConsensusReference",
+    "SharedBeastPosteriorFixture",
+    "SharedBeastPosteriorMccReference",
+    "SharedBeastPosteriorParameterReference",
+    "SharedBeastPosteriorReference",
     "SharedDistanceMatrixFixture",
     "SharedDnaAlignmentFixture",
     "SharedGeigerContinuousFixture",
@@ -52,6 +68,7 @@ __all__ = [
     "SharedTreeFixture",
     "SharedTreeSetFixture",
     "SharedTreeSimulationFixture",
+    "get_shared_beast_posterior_fixture",
     "get_shared_distance_matrix_fixture",
     "get_shared_dna_alignment_fixture",
     "get_shared_geiger_continuous_fixture",
@@ -61,6 +78,7 @@ __all__ = [
     "get_shared_tree_fixture",
     "get_shared_tree_set_fixture",
     "get_shared_tree_simulation_fixture",
+    "list_shared_beast_posterior_fixtures",
     "list_shared_distance_matrix_fixtures",
     "list_shared_dna_alignment_fixtures",
     "list_shared_geiger_continuous_fixtures",
