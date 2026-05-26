@@ -24,6 +24,7 @@ from ...validation import (
     summarize_bootstrap_support_distribution,
     validate_model_selection_against_engine_outputs,
 )
+from ...validation.preflight import require_external_engine_surface
 from ...workflows.alignment import (
     run_alignment_trimming,
     run_multiple_sequence_alignment,
@@ -68,6 +69,16 @@ def run_fasta_to_tree_workflow(
 ) -> FastaToTreeWorkflowReport:
     """Run alignment, trimming, model selection, ML inference, and bootstrap support in one workflow."""
     started_at = datetime.now(UTC)
+    require_external_engine_surface(
+        workflow_id="fasta-to-tree",
+        summary="Canonical FASTA-to-tree workflow over MAFFT, trimAl, and IQ-TREE.",
+        required_engines=("mafft", "trimal", "iqtree"),
+        executables={
+            "mafft": mafft_executable,
+            "trimal": trimal_executable,
+            "iqtree": iqtree_executable,
+        },
+    )
     workflow_prefix = input_path.stem if prefix is None else prefix
     engine_artifact_dir = out_dir / "engine-artifacts" / workflow_prefix
     input_validation = validate_fasta_input(input_path, sequence_type=sequence_type)

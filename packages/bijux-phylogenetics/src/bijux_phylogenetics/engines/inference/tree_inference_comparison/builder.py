@@ -11,6 +11,7 @@ from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
 
 from ...common import build_file_checksums, write_engine_manifest
 from ...validation import compare_inferred_trees_across_engines
+from ...validation.preflight import require_external_engine_surface
 from ...workflows.fasttree import run_fast_tree_inference
 from ...workflows.iqtree import (
     run_bootstrap_support_estimation,
@@ -61,6 +62,15 @@ def run_tree_inference_comparison(
 ) -> InferenceComparisonWorkflowReport:
     """Run IQ-TREE and FastTree on one alignment and compare the inferred trees."""
     started_at = datetime.now(UTC)
+    require_external_engine_surface(
+        workflow_id="tree-inference-comparison",
+        summary="Paired IQ-TREE and FastTree tree-inference comparison workflow.",
+        required_engines=("iqtree", "fasttree"),
+        executables={
+            "iqtree": iqtree_executable,
+            "fasttree": fasttree_executable,
+        },
+    )
     workflow_prefix = prefix
     out_dir.mkdir(parents=True, exist_ok=True)
     engine_artifact_dir = out_dir / "engine-artifacts" / workflow_prefix
