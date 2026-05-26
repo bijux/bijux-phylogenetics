@@ -104,6 +104,9 @@ from .matrix import (
     build_external_engine_validation_matrix as build_external_engine_validation_matrix,
 )
 from .matrix import (
+    build_governed_beast_fixture_validation_case as build_governed_beast_fixture_validation_case,
+)
+from .matrix import (
     merge_external_engine_validation_matrices as merge_external_engine_validation_matrices,
 )
 from .matrix import (
@@ -155,6 +158,7 @@ __all__ = [
     "build_beast_artifact_validation_case",
     "build_external_engine_validation_case",
     "build_external_engine_validation_matrix",
+    "build_governed_beast_fixture_validation_case",
     "classify_inference_workflow_failure",
     "compare_inferred_tree_to_taxon_metadata",
     "compare_inferred_trees_across_engines",

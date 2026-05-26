@@ -1,10 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 import json
+import math
 from pathlib import Path
+import shutil
+import tempfile
 
+from bijux_phylogenetics.datasets.shared_fixtures import (
+    SharedBeastPosteriorFixture,
+)
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 
 from ..common import build_file_checksums, utc_now_text
@@ -158,6 +164,192 @@ def build_beast_artifact_validation_case(
             f"beast posterior trees kept after burn-in: {tree_report.kept_tree_count}",
         ],
     )
+
+
+def build_governed_beast_fixture_validation_case(
+    validation_name: str,
+    fixture: SharedBeastPosteriorFixture,
+    *,
+    burnin_fraction: float | None = None,
+) -> ExternalEngineValidationCase:
+    """Build one reviewer-facing validation row from the governed BEAST posterior corpus."""
+    from bijux_phylogenetics.bayesian.beast.logs import (
+        summarize_beast_log,
+    )
+    from bijux_phylogenetics.bayesian.beast.posterior_trees import (
+        parse_beast_posterior_tree_samples,
+        summarize_beast_posterior_trees,
+    )
+    from bijux_phylogenetics.bayesian.posterior_sets.tree_sets import (
+        summarize_maximum_clade_credibility_tree,
+    )
+
+    selected_burnin = (
+        fixture.recommended_burnin_fraction
+        if burnin_fraction is None
+        else burnin_fraction
+    )
+    reference = fixture.load_reference()
+    if selected_burnin not in reference.burnin_reference:
+        supported = ", ".join(
+            format(value, ".15g") for value in sorted(reference.burnin_reference)
+        )
+        raise EngineWorkflowError(
+            "governed BEAST posterior fixture reference is unavailable for "
+            f"burn-in fraction {selected_burnin}; expected one of: {supported}"
+        )
+    case = build_beast_artifact_validation_case(
+        validation_name,
+        xml_path=fixture.analysis_xml_path,
+        log_path=fixture.posterior_log_path,
+        tree_path=fixture.posterior_trees_path,
+        burnin_fraction=selected_burnin,
+    )
+    expected_counts = reference.burnin_reference[selected_burnin]
+    log_summary = summarize_beast_log(
+        fixture.posterior_log_path,
+        burnin_fraction=selected_burnin,
+    )
+    tree_report = parse_beast_posterior_tree_samples(
+        fixture.posterior_trees_path,
+        burnin_fraction=selected_burnin,
+    )
+    if log_summary.burnin_row_count != expected_counts.burnin_row_count:
+        raise EngineWorkflowError(
+            "governed BEAST posterior fixture burn-in rows do not match the "
+            f"checked reference for {selected_burnin}: "
+            f"observed {log_summary.burnin_row_count}, "
+            f"expected {expected_counts.burnin_row_count}"
+        )
+    if log_summary.kept_row_count != expected_counts.kept_row_count:
+        raise EngineWorkflowError(
+            "governed BEAST posterior fixture retained log rows do not match the "
+            f"checked reference for {selected_burnin}: "
+            f"observed {log_summary.kept_row_count}, "
+            f"expected {expected_counts.kept_row_count}"
+        )
+    if tree_report.burnin_tree_count != expected_counts.burnin_tree_count:
+        raise EngineWorkflowError(
+            "governed BEAST posterior fixture burn-in trees do not match the "
+            f"checked reference for {selected_burnin}: "
+            f"observed {tree_report.burnin_tree_count}, "
+            f"expected {expected_counts.burnin_tree_count}"
+        )
+    if tree_report.kept_tree_count != expected_counts.kept_tree_count:
+        raise EngineWorkflowError(
+            "governed BEAST posterior fixture retained trees do not match the "
+            f"checked reference for {selected_burnin}: "
+            f"observed {tree_report.kept_tree_count}, "
+            f"expected {expected_counts.kept_tree_count}"
+        )
+    with tempfile.TemporaryDirectory(prefix="bijux-beast-reference-") as temp_dir:
+        temp_tree_path = Path(temp_dir) / fixture.posterior_trees_path.name
+        shutil.copyfile(fixture.posterior_trees_path, temp_tree_path)
+        _consensus_tree, consensus = summarize_beast_posterior_trees(
+            temp_tree_path,
+            burnin_fraction=selected_burnin,
+        )
+        _mcc_tree, mcc = summarize_maximum_clade_credibility_tree(
+            temp_tree_path,
+            burnin_fraction=selected_burnin,
+        )
+    if selected_burnin == reference.consensus_reference.burnin_fraction:
+        _assert_beast_reference_close(
+            observed=consensus.minimum_posterior_probability,
+            expected=reference.consensus_reference.minimum_posterior_probability,
+            label="minimum posterior probability",
+        )
+        _assert_beast_reference_close(
+            observed=consensus.maximum_posterior_probability,
+            expected=reference.consensus_reference.maximum_posterior_probability,
+            label="maximum posterior probability",
+        )
+        if (
+            consensus.annotated_node_count
+            != reference.consensus_reference.annotated_node_count
+        ):
+            raise EngineWorkflowError(
+                "governed BEAST consensus annotation counts do not match the "
+                f"checked reference for {selected_burnin}"
+            )
+        if consensus.consensus_newick != reference.consensus_reference.newick:
+            raise EngineWorkflowError(
+                "governed BEAST consensus topology does not match the checked "
+                f"reference for {selected_burnin}"
+            )
+        if mcc.selected_tree_index != reference.mcc_reference.selected_tree_index:
+            raise EngineWorkflowError(
+                "governed BEAST maximum clade credibility tree selection does not "
+                f"match the checked reference for {selected_burnin}"
+            )
+        _assert_beast_reference_close(
+            observed=mcc.clade_credibility_score,
+            expected=reference.mcc_reference.clade_credibility_score,
+            label="clade credibility score",
+        )
+        if mcc.mcc_newick != reference.mcc_reference.newick:
+            raise EngineWorkflowError(
+                "governed BEAST maximum clade credibility topology does not match "
+                f"the checked reference for {selected_burnin}"
+            )
+        parameter_summaries = {
+            row.parameter: row for row in log_summary.parameter_summaries
+        }
+        for parameter, expected in reference.parameter_reference.items():
+            observed = parameter_summaries[parameter]
+            _assert_beast_reference_close(
+                observed=observed.effective_sample_size,
+                expected=expected.effective_sample_size,
+                label=f"{parameter} ESS",
+            )
+            _assert_beast_reference_close(
+                observed=observed.mean,
+                expected=expected.mean,
+                label=f"{parameter} mean",
+            )
+            _assert_beast_reference_close(
+                observed=observed.median,
+                expected=expected.median,
+                label=f"{parameter} median",
+            )
+            _assert_beast_reference_close(
+                observed=observed.hpd_95_lower,
+                expected=expected.hpd_95_lower,
+                label=f"{parameter} HPD lower",
+            )
+            _assert_beast_reference_close(
+                observed=observed.hpd_95_upper,
+                expected=expected.hpd_95_upper,
+                label=f"{parameter} HPD upper",
+            )
+    return replace(
+        case,
+        notes=[
+            *case.notes,
+            f"governed beast fixture id: {fixture.fixture_id}",
+            f"governed beast shared taxa: {', '.join(fixture.shared_taxa)}",
+            (
+                "governed beast consensus and maximum clade credibility summaries "
+                "match the checked posterior reference bundle"
+            ),
+            (
+                "governed beast posterior parameter ESS and interval summaries "
+                "match the checked reference bundle"
+            ),
+        ],
+    )
+
+
+def _assert_beast_reference_close(
+    *,
+    observed: float | None,
+    expected: float,
+    label: str,
+) -> None:
+    if observed is None or not math.isclose(observed, expected, rel_tol=1e-9, abs_tol=1e-6):
+        raise EngineWorkflowError(
+            f"governed BEAST reference mismatch for {label}: observed {observed}, expected {expected}"
+        )
 
 
 def build_external_engine_validation_matrix(
