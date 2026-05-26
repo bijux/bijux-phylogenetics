@@ -27,6 +27,8 @@ from .manifest_policy import (
     engine_key_from_name,
     path_map,
     payload_workflow,
+    recorded_command_executable,
+    recorded_composite_executable,
     recorded_input_paths,
 )
 
@@ -292,11 +294,14 @@ def replay_composite_workflow(
                 if payload.get("sequence_type") is None
                 else str(payload["sequence_type"])
             ),
-            mafft_executable=executables.get("mafft") or "mafft",
+            mafft_executable=executables.get("mafft")
+            or recorded_composite_executable(payload, engine_key="mafft"),
             alignment_mode=str(payload["alignment_mode"]),
-            trimal_executable=executables.get("trimal") or "trimal",
+            trimal_executable=executables.get("trimal")
+            or recorded_composite_executable(payload, engine_key="trimal"),
             trimming_mode=str(payload["trimming_mode"]),
-            iqtree_executable=executables.get("iqtree") or "iqtree2",
+            iqtree_executable=executables.get("iqtree")
+            or recorded_composite_executable(payload, engine_key="iqtree"),
             iqtree_seed=int(payload["iqtree_seed"]),
             iqtree_threads=int(payload["iqtree_threads"]),
             trim_gap_threshold=float(payload["trim_gap_threshold"]),
@@ -319,7 +324,8 @@ def replay_composite_workflow(
                 if payload.get("sequence_type") is None
                 else str(payload["sequence_type"])
             ),
-            executable=executables.get("fasttree") or "FastTree",
+            executable=executables.get("fasttree")
+            or recorded_command_executable(payload),
             timeout_seconds=(
                 None
                 if payload.get("timeout_seconds") is None
@@ -336,8 +342,10 @@ def replay_composite_workflow(
                 if payload.get("sequence_type") is None
                 else str(payload["sequence_type"])
             ),
-            iqtree_executable=executables.get("iqtree") or "iqtree2",
-            fasttree_executable=executables.get("fasttree") or "FastTree",
+            iqtree_executable=executables.get("iqtree")
+            or recorded_composite_executable(payload, engine_key="iqtree"),
+            fasttree_executable=executables.get("fasttree")
+            or recorded_composite_executable(payload, engine_key="fasttree"),
             iqtree_seed=int(payload["iqtree_seed"]),
             iqtree_threads=int(payload["iqtree_threads"]),
             bootstrap_replicates=int(payload["bootstrap_replicates"]),
@@ -358,7 +366,8 @@ def replay_composite_workflow(
                 if payload.get("sequence_type") is None
                 else str(payload["sequence_type"])
             ),
-            executable=executables.get("iqtree") or "iqtree2",
+            executable=executables.get("iqtree")
+            or recorded_composite_executable(payload, engine_key="iqtree"),
             repeats=int(payload["repeat_count"]),
             bootstrap_replicates=int(payload["bootstrap_replicates"]),
             seed=int(payload["iqtree_seed"]),

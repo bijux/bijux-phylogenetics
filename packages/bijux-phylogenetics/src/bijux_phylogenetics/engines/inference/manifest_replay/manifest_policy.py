@@ -54,6 +54,67 @@ def engine_key_from_name(engine_name: str) -> str:
     )
 
 
+def recorded_manifest_executable(payload: dict[str, Any]) -> str:
+    run_payload = dict(payload["run"])
+    executable = run_payload.get("executable")
+    if executable is None:
+        raise EngineWorkflowError(
+            "manifest replay requires one recorded executable path",
+            code="manifest_replay_missing_executable",
+            details={"workflow": payload_workflow(payload)},
+        )
+    return str(executable)
+
+
+def recorded_command_executable(payload: dict[str, Any]) -> str:
+    command = [str(item) for item in payload["command"]]
+    if not command:
+        raise EngineWorkflowError(
+            "manifest replay requires one recorded command line",
+            code="manifest_replay_missing_command",
+            details={"workflow": payload_workflow(payload)},
+        )
+    return command[0]
+
+
+def recorded_composite_executable(
+    payload: dict[str, Any],
+    *,
+    engine_key: str,
+) -> str:
+    step_manifests = path_map(dict(payload.get("step_manifests", {})))
+    matching_executables: list[str] = []
+    for manifest_path in step_manifests.values():
+        step_payload = load_engine_manifest(manifest_path)
+        if "run" not in step_payload:
+            continue
+        step_engine_key = engine_key_from_name(str(step_payload["engine_name"]))
+        if step_engine_key != engine_key:
+            continue
+        matching_executables.append(recorded_manifest_executable(step_payload))
+    if not matching_executables:
+        raise EngineWorkflowError(
+            "manifest replay could not locate one recorded executable for the requested engine",
+            code="manifest_replay_missing_step_executable",
+            details={
+                "workflow": payload_workflow(payload),
+                "engine_name": engine_key,
+            },
+        )
+    first = matching_executables[0]
+    if any(candidate != first for candidate in matching_executables[1:]):
+        raise EngineWorkflowError(
+            "manifest replay found inconsistent recorded executables for one engine family",
+            code="manifest_replay_inconsistent_step_executables",
+            details={
+                "workflow": payload_workflow(payload),
+                "engine_name": engine_key,
+                "executables": matching_executables,
+            },
+        )
+    return first
+
+
 def version_drift_for_engine_manifest(
     payload: dict[str, Any],
     *,

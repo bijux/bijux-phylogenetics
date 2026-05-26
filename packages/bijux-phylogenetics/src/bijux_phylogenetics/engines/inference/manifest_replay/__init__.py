@@ -23,6 +23,15 @@ from .manifest_policy import (
     engine_key_from_name as engine_key_from_name,
 )
 from .manifest_policy import (
+    recorded_command_executable as recorded_command_executable,
+)
+from .manifest_policy import (
+    recorded_composite_executable as recorded_composite_executable,
+)
+from .manifest_policy import (
+    recorded_manifest_executable as recorded_manifest_executable,
+)
+from .manifest_policy import (
     payload_workflow as payload_workflow,
 )
 from .manifest_policy import (
@@ -50,6 +59,9 @@ __all__ = [
     "compare_outputs",
     "default_replay_out_dir",
     "engine_key_from_name",
+    "recorded_command_executable",
+    "recorded_composite_executable",
+    "recorded_manifest_executable",
     "payload_workflow",
     "path_map",
     "replay_workflow_manifest",
