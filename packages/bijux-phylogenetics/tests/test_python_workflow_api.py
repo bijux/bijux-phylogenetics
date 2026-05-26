@@ -29,6 +29,7 @@ from bijux_phylogenetics.api import (
     run_tree_inference_workflow,
     run_trimming_workflow,
 )
+from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 
 pytestmark = pytest.mark.engine_contract
 
@@ -76,6 +77,22 @@ def _write_workflow_config(
         ),
         encoding="utf-8",
     )
+    return path
+
+
+def _write_unsupported_iqtree(path: Path) -> Path:
+    path.write_text(
+        (
+            "#!/usr/bin/env python3\n"
+            "import sys\n"
+            "if '--version' in sys.argv:\n"
+            "    print('IQ-TREE multicore version 1.6.0')\n"
+            "    raise SystemExit(0)\n"
+            "raise SystemExit(1)\n"
+        ),
+        encoding="utf-8",
+    )
+    path.chmod(0o755)
     return path
 
 
@@ -197,6 +214,57 @@ def test_python_workflow_api_runs_sequence_to_tree_and_configured_workflows(
         configured_result.bundle_report.bundle_manifest_path.read_text(encoding="utf-8")
     )
     assert bundle_manifest["workflow"] == "fasta-to-tree"
+
+
+def test_python_workflow_api_blocks_unsupported_iqtree_before_tree_inference(
+    tmp_path: Path,
+) -> None:
+    iqtree_executable = _write_unsupported_iqtree(tmp_path / "iqtree-unsupported")
+
+    with pytest.raises(
+        EngineWorkflowError,
+        match="workflow 'maximum-likelihood-tree' is blocked",
+    ) as error:
+        run_tree_inference_workflow(
+            fixture("alignments/example_alignment.fasta"),
+            out_dir=tmp_path / "inference",
+            model="GTR+G",
+            executable=iqtree_executable,
+            sequence_type="dna",
+        )
+
+    assert error.value.code == "engine_preflight_workflow_blocked"
+    assert error.value.details["blocking_engines"] == ["IQ-TREE"]
+    assert (tmp_path / "inference").exists() is False
+
+
+def test_python_workflow_api_blocks_missing_iqtree_before_sequence_to_tree_starts(
+    tmp_path: Path,
+) -> None:
+    from tests.support.fake_external_engines import fake_mafft, fake_trimal
+
+    input_path = fixture("alignments/example_sequences_raw.fasta")
+    mafft_executable = fake_mafft(tmp_path / "mafft-fixture")
+    trimal_executable = fake_trimal(tmp_path / "trimal-fixture")
+    missing_iqtree = tmp_path / "missing-iqtree"
+
+    with pytest.raises(
+        EngineWorkflowError,
+        match="workflow 'fasta-to-tree' is blocked",
+    ) as error:
+        run_sequence_to_tree_workflow(
+            input_path,
+            out_dir=tmp_path / "workflow",
+            prefix="python-surface",
+            mafft_executable=mafft_executable,
+            trimal_executable=trimal_executable,
+            iqtree_executable=missing_iqtree,
+            sequence_type="dna",
+        )
+
+    assert error.value.code == "engine_preflight_workflow_blocked"
+    assert error.value.details["blocking_engines"] == ["IQ-TREE"]
+    assert (tmp_path / "workflow").exists() is False
 
 
 def test_python_workflow_api_runs_tree_comparative_and_ancestral_workflows() -> None:
