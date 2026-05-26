@@ -629,13 +629,22 @@ def _assess_covariance_candidate(
     near_singular = singular or condition_number >= COVARIANCE_AUDIT_CONDITION_THRESHOLD
     fit_condition_number: float | None = None
     actual_fit_strategy = fit_strategy
-    if fit_strategy == "regularization":
+    if positive_definite_before_fit and not near_singular:
+        actual_fit_strategy = "exact"
+        fit_strategy_details = (
+            "raw covariance is positive definite and well-conditioned enough for direct inversion without stabilization"
+        )
+    elif fit_strategy == "regularization":
         stabilized = stable_covariance(
             covariance_matrix,
             epsilon=COVARIANCE_AUDIT_REGULARIZATION_EPSILON,
         )
         if _is_positive_definite(stabilized):
             fit_condition_number = matrix_condition_number(stabilized)
+            fit_strategy_details = (
+                fit_strategy_details
+                + "; raw covariance is singular or ill-conditioned enough to require stabilization before inversion"
+            )
         else:
             actual_fit_strategy = "failure"
             fit_strategy_details = (

@@ -43,13 +43,13 @@ def test_summarize_comparative_covariance_audit_reports_pgls_profile_surface() -
     assert report.analysis_taxa == ["A", "B", "C", "D"]
     assert report.matrix_dimension == 4
     assert report.matrix_rank == 4
-    assert report.fit_strategy == "regularization"
+    assert report.fit_strategy == "exact"
     assert report.singular is False
     assert report.near_singular is False
     assert len(report.candidate_rows) == 101
     assert report.candidate_rows[0].candidate_label == "lambda=0.00"
     assert report.candidate_rows[-1].candidate_label == "lambda=1.00"
-    assert all(row.fit_strategy == "regularization" for row in report.candidate_rows)
+    assert all(row.fit_strategy == "exact" for row in report.candidate_rows)
     assert report.blockers == []
 
 
@@ -99,6 +99,48 @@ def test_summarize_comparative_covariance_audit_detects_invalid_branch_lengths()
     assert any("negative branch lengths" in blocker for blocker in report.blockers)
 
 
+def test_summarize_comparative_covariance_audit_reports_taxon_overlap_mismatches() -> (
+    None
+):
+    report = summarize_comparative_covariance_audit(
+        fixture("example_tree.nwk"),
+        fixture("example_traits.tsv"),
+        analysis="brownian-trait",
+        trait="value",
+    )
+    assert report.tree_taxon_count == 4
+    assert report.trait_taxon_count == 4
+    assert report.matched_taxa == ["A", "B", "C"]
+    assert report.missing_from_traits == ["D"]
+    assert report.extra_trait_taxa == ["E"]
+    assert report.analysis_taxa == ["A", "B", "C"]
+    assert report.fit_strategy == "exact"
+    assert report.blockers == []
+
+
+def test_summarize_comparative_covariance_audit_reports_zero_length_regularization() -> (
+    None
+):
+    report = summarize_comparative_covariance_audit(
+        fixture("example_tree_zero_lengths.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        analysis="pgls",
+        response="response",
+        predictors=["predictor_one"],
+        lambda_value=1.0,
+    )
+    assert report.fit_strategy == "regularization"
+    assert report.zero_length_branch_count == 3
+    assert report.matrix_dimension == 4
+    assert report.matrix_rank == 3
+    assert report.singular is True
+    assert report.near_singular is True
+    assert any("zero-length branches" in warning for warning in report.warnings)
+    assert report.candidate_rows[0].fit_strategy == "regularization"
+    assert report.candidate_rows[0].positive_definite_before_fit is False
+    assert math.isfinite(report.candidate_rows[0].fit_condition_number or math.inf)
+
+
 def test_summarize_comparative_covariance_audit_reports_ou_alpha_candidates() -> None:
     report = summarize_comparative_covariance_audit(
         fixture("example_tree.nwk"),
@@ -112,11 +154,11 @@ def test_summarize_comparative_covariance_audit_reports_ou_alpha_candidates() ->
     assert report.analysis_label == "response"
     assert report.matrix_dimension == 4
     assert report.matrix_rank == 4
-    assert report.fit_strategy == "regularization"
+    assert report.fit_strategy == "exact"
     assert len(report.candidate_rows) == 8
     assert all(row.parameter_name == "alpha" for row in report.candidate_rows)
     assert all(row.parameter_value is not None for row in report.candidate_rows)
-    assert all(math.isfinite(row.fit_condition_number) for row in report.candidate_rows)
+    assert all(row.fit_strategy == "exact" for row in report.candidate_rows)
 
 
 def test_write_comparative_covariance_audit_tables_write_rows(tmp_path: Path) -> None:
