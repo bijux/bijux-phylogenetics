@@ -26,6 +26,8 @@ from .runtime import (
     coverage_boundary_payload,
     estimated_lambda_pgls_payload,
     estimated_lambda_pgls_report,
+    fixed_reference_lambda_pgls_payload,
+    fixed_reference_lambda_pgls_report,
     likelihood_ratio_test_payloads,
     load_r_reference_results,
     mode_comparison_report,
@@ -80,6 +82,10 @@ def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, o
             "schema_version": 1,
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
+            "r_fixed_reference_lambda": r_results["fixed_reference_lambda_pgls"],
+            "bijux_fixed_reference_lambda": fixed_reference_lambda_pgls_payload(
+                fixed_reference_lambda_pgls_report(repo_root)
+            ),
             "r_estimated_lambda": r_results["estimated_lambda_pgls"],
             "bijux_estimated_lambda": estimated_lambda_pgls_payload(
                 estimated_lambda_pgls_report(repo_root)

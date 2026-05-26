@@ -235,6 +235,7 @@ def ancestral_reconstruction_payload(
 @cache
 def load_python_results(repo_root: Path) -> dict[str, object]:
     baseline = baseline_gls_report(repo_root)
+    fixed_reference = fixed_reference_lambda_pgls_report(repo_root)
     estimated = estimated_lambda_pgls_report(repo_root)
     signal = signal_report(repo_root)
     brownian_fit, ou_fit, early_burst_fit = continuous_mode_fit_reports(repo_root)
@@ -252,6 +253,9 @@ def load_python_results(repo_root: Path) -> dict[str, object]:
     return {
         "source_contract": source_contract_payload(baseline),
         "baseline_gls": baseline_gls_payload(baseline),
+        "fixed_reference_lambda_pgls": fixed_reference_lambda_pgls_payload(
+            fixed_reference
+        ),
         "estimated_lambda_pgls": estimated_lambda_pgls_payload(estimated),
         "signal_test": signal_test_payload(signal),
         "tree_rescaling": tree_rescaling_payloads(transformed_tree_reports),
@@ -280,6 +284,23 @@ def baseline_gls_report(repo_root: Path):
         predictors=["social_group_size"],
         taxon_column="species",
         lambda_value=0.0,
+    )
+
+
+@cache
+def fixed_reference_lambda_pgls_report(repo_root: Path):
+    tree_path, traits_path = source_reference_paths(repo_root)
+    reference_results = load_r_reference_results(repo_root)
+    lambda_value = float(
+        reference_results["fixed_reference_lambda_pgls"]["lambda_value"]
+    )
+    return run_pgls(
+        tree_path,
+        traits_path,
+        response="longevity",
+        predictors=["social_group_size"],
+        taxon_column="species",
+        lambda_value=lambda_value,
     )
 
 
@@ -390,35 +411,39 @@ def source_contract_payload(baseline) -> dict[str, object]:
     }
 
 
-def baseline_gls_payload(baseline) -> dict[str, object]:
+def _gls_like_payload(report) -> dict[str, object]:
     return {
         "coefficients": {
-            row.name: rounded(row.estimate) for row in baseline.coefficients
+            row.name: rounded(row.estimate) for row in report.coefficients
         },
-        "p_values": {row.name: rounded(row.p_value) for row in baseline.coefficients},
-        "log_likelihood": rounded(baseline.log_likelihood),
-        "r_squared": rounded(baseline.r_squared),
+        "standard_errors": {
+            row.name: rounded(row.standard_error) for row in report.coefficients
+        },
+        "p_values": {row.name: rounded(row.p_value) for row in report.coefficients},
+        "log_likelihood": rounded(report.log_likelihood),
+        "aic": rounded(report.aic),
+        "r_squared": rounded(report.r_squared),
         "diagnostics": diagnostic_summary_from_series(
-            baseline.fitted_values,
-            baseline.residuals,
+            report.fitted_values,
+            report.residuals,
         ),
     }
+
+
+def baseline_gls_payload(baseline) -> dict[str, object]:
+    return _gls_like_payload(baseline)
+
+
+def fixed_reference_lambda_pgls_payload(fixed_report) -> dict[str, object]:
+    payload = _gls_like_payload(fixed_report)
+    payload["lambda_value"] = rounded(fixed_report.lambda_value)
+    return payload
 
 
 def estimated_lambda_pgls_payload(estimated) -> dict[str, object]:
-    return {
-        "lambda_value": rounded(estimated.lambda_value),
-        "coefficients": {
-            row.name: rounded(row.estimate) for row in estimated.coefficients
-        },
-        "p_values": {row.name: rounded(row.p_value) for row in estimated.coefficients},
-        "log_likelihood": rounded(estimated.log_likelihood),
-        "r_squared": rounded(estimated.r_squared),
-        "diagnostics": diagnostic_summary_from_series(
-            estimated.fitted_values,
-            estimated.residuals,
-        ),
-    }
+    payload = _gls_like_payload(estimated)
+    payload["lambda_value"] = rounded(estimated.lambda_value)
+    return payload
 
 
 def signal_test_payload(signal) -> dict[str, object]:

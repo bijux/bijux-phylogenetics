@@ -439,6 +439,113 @@ def build_primate_pgls_signal_scalar_parity_table(
             ),
         ),
         comparison_row_tolerance(
+            row_id="fixed-reference-lambda-value",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="fixed_reference_lambda_value",
+            r_value=r_results["fixed_reference_lambda_pgls"]["lambda_value"],
+            bijux_value=python_results["fixed_reference_lambda_pgls"]["lambda_value"],
+            tolerance_abs_diff=5e-4,
+        ),
+        comparison_row_tolerance(
+            row_id="fixed-reference-pgls-intercept",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="fixed_reference_intercept",
+            r_value=r_results["fixed_reference_lambda_pgls"]["coefficients"][
+                "intercept"
+            ],
+            bijux_value=python_results["fixed_reference_lambda_pgls"]["coefficients"][
+                "intercept"
+            ],
+            tolerance_abs_diff=5e-4,
+        ),
+        comparison_row_tolerance(
+            row_id="fixed-reference-pgls-slope",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="fixed_reference_social_group_size",
+            r_value=r_results["fixed_reference_lambda_pgls"]["coefficients"][
+                "social_group_size"
+            ],
+            bijux_value=python_results["fixed_reference_lambda_pgls"]["coefficients"][
+                "social_group_size"
+            ],
+            tolerance_abs_diff=5e-4,
+        ),
+        comparison_row_tolerance(
+            row_id="fixed-reference-pgls-intercept-standard-error",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="fixed_reference_intercept_standard_error",
+            r_value=r_results["fixed_reference_lambda_pgls"]["standard_errors"][
+                "intercept"
+            ],
+            bijux_value=python_results["fixed_reference_lambda_pgls"][
+                "standard_errors"
+            ]["intercept"],
+            tolerance_abs_diff=5e-4,
+        ),
+        comparison_row_tolerance(
+            row_id="fixed-reference-pgls-slope-standard-error",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="fixed_reference_social_group_size_standard_error",
+            r_value=r_results["fixed_reference_lambda_pgls"]["standard_errors"][
+                "social_group_size"
+            ],
+            bijux_value=python_results["fixed_reference_lambda_pgls"][
+                "standard_errors"
+            ]["social_group_size"],
+            tolerance_abs_diff=5e-4,
+        ),
+        comparison_row_tolerance(
+            row_id="fixed-reference-pgls-intercept-p-value",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="fixed_reference_intercept_p_value",
+            r_value=r_results["fixed_reference_lambda_pgls"]["p_values"][
+                "intercept"
+            ],
+            bijux_value=python_results["fixed_reference_lambda_pgls"]["p_values"][
+                "intercept"
+            ],
+            tolerance_abs_diff=5e-6,
+        ),
+        comparison_row_tolerance(
+            row_id="fixed-reference-pgls-slope-p-value",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="fixed_reference_social_group_size_p_value",
+            r_value=r_results["fixed_reference_lambda_pgls"]["p_values"][
+                "social_group_size"
+            ],
+            bijux_value=python_results["fixed_reference_lambda_pgls"]["p_values"][
+                "social_group_size"
+            ],
+            tolerance_abs_diff=5e-6,
+        ),
+        comparison_row_tolerance(
+            row_id="fixed-reference-pgls-log-likelihood",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="fixed_reference_log_likelihood",
+            r_value=r_results["fixed_reference_lambda_pgls"]["log_likelihood"],
+            bijux_value=python_results["fixed_reference_lambda_pgls"][
+                "log_likelihood"
+            ],
+            tolerance_abs_diff=5e-4,
+        ),
+        comparison_row_tolerance(
+            row_id="fixed-reference-pgls-aic",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="fixed_reference_aic",
+            r_value=r_results["fixed_reference_lambda_pgls"]["aic"],
+            bijux_value=python_results["fixed_reference_lambda_pgls"]["aic"],
+            tolerance_abs_diff=5e-4,
+        ),
+        comparison_row_tolerance(
             row_id="estimated-lambda-value",
             family_id="phylogenetic-regression",
             fragment_id="pagel-lambda-regression",
@@ -472,6 +579,32 @@ def build_primate_pgls_signal_scalar_parity_table(
             tolerance_abs_diff=0.1,
         ),
         comparison_row_tolerance(
+            row_id="estimated-pgls-intercept-standard-error",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="intercept_standard_error",
+            r_value=r_results["estimated_lambda_pgls"]["standard_errors"][
+                "intercept"
+            ],
+            bijux_value=python_results["estimated_lambda_pgls"]["standard_errors"][
+                "intercept"
+            ],
+            tolerance_abs_diff=0.1,
+        ),
+        comparison_row_tolerance(
+            row_id="estimated-pgls-slope-standard-error",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="social_group_size_standard_error",
+            r_value=r_results["estimated_lambda_pgls"]["standard_errors"][
+                "social_group_size"
+            ],
+            bijux_value=python_results["estimated_lambda_pgls"]["standard_errors"][
+                "social_group_size"
+            ],
+            tolerance_abs_diff=0.02,
+        ),
+        comparison_row_tolerance(
             row_id="estimated-pgls-log-likelihood",
             family_id="phylogenetic-regression",
             fragment_id="pagel-lambda-regression",
@@ -479,6 +612,39 @@ def build_primate_pgls_signal_scalar_parity_table(
             r_value=r_results["estimated_lambda_pgls"]["log_likelihood"],
             bijux_value=python_results["estimated_lambda_pgls"]["log_likelihood"],
             tolerance_abs_diff=0.25,
+        ),
+        comparison_row_tolerance(
+            row_id="estimated-pgls-aic",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="aic",
+            r_value=r_results["estimated_lambda_pgls"]["aic"],
+            bijux_value=python_results["estimated_lambda_pgls"]["aic"],
+            tolerance_abs_diff=0.25,
+        ),
+        comparison_row_tolerance(
+            row_id="estimated-pgls-intercept-p-value",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="intercept_p_value",
+            r_value=r_results["estimated_lambda_pgls"]["p_values"]["intercept"],
+            bijux_value=python_results["estimated_lambda_pgls"]["p_values"][
+                "intercept"
+            ],
+            tolerance_abs_diff=5e-6,
+        ),
+        comparison_row_tolerance(
+            row_id="estimated-pgls-slope-p-value",
+            family_id="phylogenetic-regression",
+            fragment_id="pagel-lambda-regression",
+            metric_name="social_group_size_p_value",
+            r_value=r_results["estimated_lambda_pgls"]["p_values"][
+                "social_group_size"
+            ],
+            bijux_value=python_results["estimated_lambda_pgls"]["p_values"][
+                "social_group_size"
+            ],
+            tolerance_abs_diff=5e-6,
         ),
         comparison_row_equivalence(
             row_id="estimated-pgls-slope-significance",
