@@ -1899,11 +1899,18 @@ goal: it currently covers `phytools::phylosig(method='lambda')`,
 weak-signal, non-ultrametric, discrete-state, and missing-value comparative
 fixtures. The live lambda lane includes one
 non-ultrametric case that tracks the live `phytools` likelihood surface within
-tolerance. The owned signal surface now also exposes fixed-lambda likelihood
-evaluation, likelihood-ratio reporting against the zero-signal boundary, and
-bounded optimizer diagnostics instead of reducing Pagel's lambda to one opaque
-scalar. The owned K-test surface now also keeps seeded permutation p-values
-plus explicit null-distribution summaries. The owned discrete Mk surface now
+tolerance, and the governed checked-in parity surface now also covers strong
+and weak twenty-four-taxon `phytools::phylosig` lambda and K references. The
+owned signal surface also keeps its input policy explicit across all three
+entrypoints: rooted non-ultrametric trees are accepted and reported, missing
+overlapping trait values are pruned and listed, seeded permutation p-values
+stay reproducible, and constant post-pruning trait vectors fail with one clear
+comparative-method error instead of returning misleading scalar summaries. The
+owned signal surface now also exposes fixed-lambda likelihood evaluation,
+likelihood-ratio reporting against the zero-signal boundary, and optimizer
+diagnostics instead of reducing Pagel's lambda to one opaque scalar. The owned
+K-test surface now also keeps seeded permutation p-values plus explicit
+null-distribution summaries. The owned discrete Mk surface now
 also exposes one flat-root `fitMk`-style likelihood contract with ER rate
 fitting, SYM pairwise-rate fitting, log-likelihood, AIC, AICc,
 missing-value pruning audit, ER baseline comparison metrics, and one directed
