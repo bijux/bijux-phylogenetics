@@ -1032,6 +1032,17 @@ Brownian null simulation, emits group, pairwise, simulation, and exclusion
 ledgers, keeps unequal group sizes explicit, and warns when one or more
 groups have fewer than three taxa after pruning.
 
+`comparative multivariate` is the owned shared-taxon review surface for
+multiple continuous responses under one predictor design. It writes
+response-model, coefficient, residual-covariance, residual-correlation,
+residual-association, and exclusion ledgers, keeps the shared complete-case
+missing-value policy explicit, and warns when residual degrees of freedom are
+weak or the residual covariance matrix is singular. When estimated
+response-level Pagel lambda fits diverge materially, the report now says so
+explicitly, because the shared residual covariance and correlation then
+compare residuals fit under different phylogenetic error assumptions rather
+than one common lambda surface.
+
 `comparative discrete-mk` is the governed standalone discrete trait-evolution
 fit surface for one rooted tree and one categorical tip trait when reviewers
 need the fitted ER, SYM, or ARD likelihood surface directly rather than one
