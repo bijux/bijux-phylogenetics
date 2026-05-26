@@ -87,6 +87,84 @@
       }
     },
     {
+      "case": "pagel-lambda-non-ultrametric-strong-signal-twenty-four-taxa",
+      "method": "pagels-lambda",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree_phytools_non_ultrametric_twenty_four_taxa.nwk",
+        "tests/fixtures/metadata/example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv"
+      ],
+      "trait": "signal_strong",
+      "taxon_column": "taxon",
+      "reference_tool": "phytools",
+      "reference_version": "2.5.2",
+      "reference_source": "phytools::phylosig(method='lambda') on the governed strong-signal non-ultrametric twenty-four-taxon fixture",
+      "tolerance": 0.0005,
+      "tolerance_reason": "The governed non-ultrametric strong-signal lambda case sits at the Brownian boundary, so a small tolerance absorbs boundary-profile rounding while still rejecting materially different likelihood behavior.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "lambda_value": 0.9999266862564143,
+        "log_likelihood": -27.528337843167698
+      }
+    },
+    {
+      "case": "pagel-lambda-weak-signal-twenty-four-taxa",
+      "method": "pagels-lambda",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
+        "tests/fixtures/metadata/example_traits_phytools_signal_twenty_four_taxa.tsv"
+      ],
+      "trait": "signal_weak",
+      "taxon_column": "taxon",
+      "reference_tool": "phytools",
+      "reference_version": "2.5.2",
+      "reference_source": "phytools::phylosig(method='lambda') on the governed weak-signal twenty-four-taxon fixture",
+      "tolerance": 0.001,
+      "tolerance_reason": "The governed weak-signal lambda case sits near the zero-signal boundary, so the tolerance absorbs boundary rounding while still rejecting materially different likelihood support.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "lambda_value": 7.33736799610782e-05,
+        "log_likelihood": -35.82077682773808
+      }
+    },
+    {
+      "case": "blomberg-k-strong-signal-twenty-four-taxa",
+      "method": "blombergs-k",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
+        "tests/fixtures/metadata/example_traits_phytools_signal_twenty_four_taxa.tsv"
+      ],
+      "trait": "signal_strong",
+      "taxon_column": "taxon",
+      "reference_tool": "phytools",
+      "reference_version": "2.5.2",
+      "reference_source": "phytools::phylosig(method='K') on the governed strong-signal twenty-four-taxon fixture",
+      "tolerance": 1e-06,
+      "tolerance_reason": "Blomberg's K is deterministic on the governed strong-signal fixture, so only floating-point linear algebra drift is allowed.",
+      "failure_mode": "numerical_tolerance",
+      "expected_output": {
+        "k": 0.881409594863313
+      }
+    },
+    {
+      "case": "blomberg-k-weak-signal-twenty-four-taxa",
+      "method": "blombergs-k",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
+        "tests/fixtures/metadata/example_traits_phytools_signal_twenty_four_taxa.tsv"
+      ],
+      "trait": "signal_weak",
+      "taxon_column": "taxon",
+      "reference_tool": "phytools",
+      "reference_version": "2.5.2",
+      "reference_source": "phytools::phylosig(method='K') on the governed weak-signal twenty-four-taxon fixture",
+      "tolerance": 1e-06,
+      "tolerance_reason": "Blomberg's K is deterministic on the governed weak-signal fixture, so only floating-point linear algebra drift is allowed.",
+      "failure_mode": "numerical_tolerance",
+      "expected_output": {
+        "k": 0.03137456576480431
+      }
+    },
+    {
       "case": "brownian-primate-longevity-intercept-only",
       "method": "brownian-trait-model",
       "input_fixtures": [
