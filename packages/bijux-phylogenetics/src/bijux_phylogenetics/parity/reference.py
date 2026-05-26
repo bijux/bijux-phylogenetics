@@ -14,7 +14,10 @@ from bijux_phylogenetics.comparative.evolutionary_modes import (
     fit_continuous_evolutionary_mode,
 )
 from bijux_phylogenetics.comparative.pgls import build_pgls_model_matrix, run_pgls
-from bijux_phylogenetics.comparative.signal import estimate_pagels_lambda
+from bijux_phylogenetics.comparative.signal import (
+    compute_blombergs_k,
+    estimate_pagels_lambda,
+)
 from bijux_phylogenetics.compare.topology import (
     compare_branch_score_distance,
     compare_robinson_foulds,
@@ -528,6 +531,39 @@ def _extended_primate_pagels_lambda_observation(
     }
 
 
+def _extended_signal_pagels_lambda_observation(
+    input_paths: list[Path],
+    *,
+    trait: str,
+    taxon_column: str,
+) -> dict[str, float]:
+    report = estimate_pagels_lambda(
+        input_paths[0],
+        input_paths[1],
+        trait=trait,
+        taxon_column=taxon_column,
+    )
+    return {
+        "lambda_value": report.lambda_value,
+        "log_likelihood": report.log_likelihood,
+    }
+
+
+def _extended_signal_blombergs_k_observation(
+    input_paths: list[Path],
+    *,
+    trait: str,
+    taxon_column: str,
+) -> dict[str, float]:
+    report = compute_blombergs_k(
+        input_paths[0],
+        input_paths[1],
+        trait=trait,
+        taxon_column=taxon_column,
+    )
+    return {"k": report.k}
+
+
 def _extended_primate_brownian_mode_observation(
     input_paths: list[Path],
 ) -> dict[str, float]:
@@ -570,6 +606,34 @@ def _build_extended_comparative_observations() -> tuple[
 ]:
     fixture = _load_fixture_document("reference_parity_extended_comparative.json")
     observed_builders = {
+        "pagel-lambda-non-ultrametric-strong-signal-twenty-four-taxa": (
+            lambda input_paths: _extended_signal_pagels_lambda_observation(
+                input_paths,
+                trait="signal_strong",
+                taxon_column="taxon",
+            )
+        ),
+        "pagel-lambda-weak-signal-twenty-four-taxa": (
+            lambda input_paths: _extended_signal_pagels_lambda_observation(
+                input_paths,
+                trait="signal_weak",
+                taxon_column="taxon",
+            )
+        ),
+        "blomberg-k-strong-signal-twenty-four-taxa": (
+            lambda input_paths: _extended_signal_blombergs_k_observation(
+                input_paths,
+                trait="signal_strong",
+                taxon_column="taxon",
+            )
+        ),
+        "blomberg-k-weak-signal-twenty-four-taxa": (
+            lambda input_paths: _extended_signal_blombergs_k_observation(
+                input_paths,
+                trait="signal_weak",
+                taxon_column="taxon",
+            )
+        ),
         "pgls-primate-longevity-estimated-lambda": (
             _extended_primate_pgls_estimated_lambda_observation
         ),
