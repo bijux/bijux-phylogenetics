@@ -5,26 +5,48 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.engines.validation.matrix import (
-    build_external_engine_validation_matrix,
+from bijux_phylogenetics.engines.validation import (
+    BayesianValidationMatrixInputs,
+    run_bayesian_engine_validation_matrix,
     write_external_engine_validation_matrix,
 )
 
-from ..support.engine_validation_matrix_cases import (
-    build_real_bayesian_validation_cases,
-)
 from ..support.external_engines import (
     real_beast_executable,
+    require_bayesian_validation_matrix_executables,
 )
 
 pytestmark = [pytest.mark.real_local, pytest.mark.engine_real]
+
+FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
+
+
+def fixture(name: str) -> Path:
+    direct = FIXTURES / name
+    if direct.exists():
+        return direct
+    for group in ("trees", "alignments", "metadata", "expected"):
+        candidate = FIXTURES / group / name
+        if candidate.exists():
+            return candidate
+    raise FileNotFoundError(name)
 
 
 def test_bayesian_engine_validation_matrix_collects_real_and_governed_cases(
     tmp_path: Path,
 ) -> None:
-    matrix = build_external_engine_validation_matrix(
-        build_real_bayesian_validation_cases(tmp_path)
+    executables = require_bayesian_validation_matrix_executables()
+    matrix = run_bayesian_engine_validation_matrix(
+        inputs=BayesianValidationMatrixInputs(
+            mrbayes_alignment_path=fixture("alignments/example_multilocus_alignment.fasta"),
+            mrbayes_partition_path=fixture(
+                "alignments/example_multilocus_partitions.txt"
+            ),
+            beast_alignment_path=fixture("example_alignment.fasta"),
+        ),
+        out_dir=tmp_path,
+        mrbayes_executable=executables["mrbayes"],
+        beast_executable=real_beast_executable(),
     )
     output_path = write_external_engine_validation_matrix(
         tmp_path / "bayesian-engine-validation-matrix.json",
