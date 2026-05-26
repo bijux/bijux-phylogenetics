@@ -153,11 +153,11 @@ def test_cli_demo_continuous_mode_recovery_panel_json_output_reports_metrics(
     assert payload["metrics"]["selection_review_case_count"] == 4
     assert payload["metrics"]["selection_match_count"] == 4
     assert payload["metrics"]["geiger_selection_match_count"] == 3
-    assert payload["metrics"]["parameter_pass_count"] == 20
-    assert payload["metrics"]["parameter_row_count"] == 20
-    assert payload["metrics"]["parameter_comparison_row_count"] == 10
+    assert payload["metrics"]["parameter_pass_count"] == 22
+    assert payload["metrics"]["parameter_row_count"] == 22
+    assert payload["metrics"]["parameter_comparison_row_count"] == 11
     assert payload["metrics"]["parameter_closer_to_truth_count_bijux"] == 6
-    assert payload["metrics"]["parameter_closer_to_truth_count_geiger"] == 4
+    assert payload["metrics"]["parameter_closer_to_truth_count_geiger"] == 5
     assert payload["metrics"]["expected_warning_case_count"] == 6
     assert payload["metrics"]["expected_warning_present_count"] == 6
     assert payload["metrics"]["reference_output_count"] == 15
