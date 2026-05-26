@@ -2706,6 +2706,40 @@ def test_comparative_multivariate_cli_reports_full_rank_covariance_metrics(
     assert payload["metrics"]["residual_covariance_near_singular"] is False
 
 
+def test_comparative_multivariate_cli_reports_heterogeneous_lambda_warning(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "multivariate",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(
+                fixture(
+                    "example_traits_comparative_multivariate_heterogeneous_lambda.tsv"
+                )
+            ),
+            "--responses",
+            "response_growth",
+            "response_range",
+            "--predictors",
+            "predictor_one",
+            "predictor_two",
+            "--lambda-value",
+            "estimate",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["warning_count"] == 1
+    assert payload["data"]["response_model_rows"][0]["lambda_value"] == 1.0
+    assert payload["data"]["response_model_rows"][1]["lambda_value"] == 0.0
+    assert payload["data"]["warnings"] == [
+        "response models resolved materially different Pagel lambda values (0 to 1), so shared residual covariance and correlation compare residuals fit under different phylogenetic error assumptions"
+    ]
+
+
 def test_comparative_multivariate_cli_writes_review_ledgers(
     tmp_path: Path, capsys
 ) -> None:
