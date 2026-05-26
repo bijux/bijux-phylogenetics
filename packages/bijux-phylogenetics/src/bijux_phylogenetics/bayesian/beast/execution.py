@@ -1,17 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 from bijux_phylogenetics.bayesian.posterior_execution import (
     run_bayesian_posterior_execution,
-)
-from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
-
-from ._shared import (
-    Path,
-    _beast_artifact_error,
-    _beast_output_path,
-    read_engine_version,
-    resolve_engine_executable,
-    validate_timeout_seconds,
 )
 from .logs import (
     parse_beast_log,
@@ -19,6 +12,9 @@ from .logs import (
 from .posterior_trees import (
     parse_beast_posterior_tree_samples,
 )
+
+if TYPE_CHECKING:
+    from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
 
 
 def run_beast_posterior_inference(
@@ -33,6 +29,17 @@ def run_beast_posterior_inference(
     incomplete_run_policy: str = "reject",
 ) -> EngineWorkflowReport:
     """Run a prepared BEAST XML analysis and validate the primary posterior outputs."""
+    from ._shared import (
+        _beast_artifact_error,
+        _beast_output_path,
+        read_engine_version,
+        resolve_engine_executable,
+        validate_timeout_seconds,
+    )
+    from bijux_phylogenetics.engines.validation.preflight import (
+        require_external_engine_surface,
+    )
+
     if not xml_path.exists():
         raise _beast_artifact_error(
             f"BEAST analysis XML file was not found: {xml_path}",
@@ -45,6 +52,13 @@ def run_beast_posterior_inference(
         raise ValueError(f"threads must be positive, got {threads}")
     if seed < 1:
         raise ValueError(f"seed must be positive, got {seed}")
+    require_external_engine_surface(
+        workflow_id="beast-posterior",
+        summary="BEAST posterior inference workflow.",
+        required_engines=("beast",),
+        executables={"beast": executable},
+        preserve_missing_error=True,
+    )
     resolved = resolve_engine_executable(executable)
     manifest_path = xml_path.with_suffix(".manifest.json")
     stdout_path = xml_path.with_suffix(".stdout.log")

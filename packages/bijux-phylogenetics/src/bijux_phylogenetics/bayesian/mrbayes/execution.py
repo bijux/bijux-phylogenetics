@@ -1,16 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from bijux_phylogenetics.bayesian.posterior_execution import (
     run_bayesian_posterior_execution,
 )
-from bijux_phylogenetics.engines.common import (
-    read_engine_version,
-    resolve_engine_executable,
-    validate_timeout_seconds,
-)
-from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
 
 from .artifacts import _mrbayes_artifact_error
 from .posterior_trees import (
@@ -22,6 +17,9 @@ from .tabular import (
     parse_mrbayes_parameter_traces,
 )
 
+if TYPE_CHECKING:
+    from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
+
 
 def run_mrbayes_posterior_inference(
     nexus_path: Path,
@@ -32,6 +30,15 @@ def run_mrbayes_posterior_inference(
     incomplete_run_policy: str = "reject",
 ) -> EngineWorkflowReport:
     """Run a MrBayes posterior tree inference workflow from a prepared NEXUS file."""
+    from bijux_phylogenetics.engines.common import (
+        read_engine_version,
+        resolve_engine_executable,
+        validate_timeout_seconds,
+    )
+    from bijux_phylogenetics.engines.validation.preflight import (
+        require_external_engine_surface,
+    )
+
     if not nexus_path.exists():
         raise _mrbayes_artifact_error(
             f"MrBayes analysis NEXUS file was not found: {nexus_path}",
@@ -41,6 +48,13 @@ def run_mrbayes_posterior_inference(
             details={"expected_section": "analysis nexus file"},
         )
     validate_timeout_seconds(timeout_seconds)
+    require_external_engine_surface(
+        workflow_id="mrbayes-posterior",
+        summary="MrBayes posterior inference workflow.",
+        required_engines=("mrbayes",),
+        executables={"mrbayes": executable},
+        preserve_missing_error=True,
+    )
     resolved = resolve_engine_executable(executable)
     prefix_path = nexus_path.with_suffix("")
     trace_path = Path(f"{nexus_path}.run1.p")

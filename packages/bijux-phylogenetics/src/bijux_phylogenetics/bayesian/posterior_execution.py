@@ -2,21 +2,13 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from bijux_phylogenetics.engines.common import (
-    EngineVersionInfo,
-    build_file_checksums,
-    execute_engine_command,
-)
-from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
-from bijux_phylogenetics.engines.workflows.state import (
-    _persist_workflow_report,
-    _record_output_validation_failure,
-    _resolve_incomplete_workflow_state,
-    _resume_existing_workflow,
-)
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
+
+if TYPE_CHECKING:
+    from bijux_phylogenetics.engines.common import EngineVersionInfo
+    from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
 
 PosteriorOutputValidator = Callable[[], None]
 
@@ -42,6 +34,18 @@ def run_bayesian_posterior_execution(
     workflow: str = "posterior-tree-inference",
 ) -> EngineWorkflowReport:
     """Run one Bayesian posterior workflow with identical resume safety rules."""
+    from bijux_phylogenetics.engines.common import (
+        build_file_checksums,
+        execute_engine_command,
+    )
+    from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
+    from bijux_phylogenetics.engines.workflows.state import (
+        _persist_workflow_report,
+        _record_output_validation_failure,
+        _resolve_incomplete_workflow_state,
+        _resume_existing_workflow,
+    )
+
     if resume:
         resumed = _resume_existing_workflow(
             manifest_path=manifest_path,

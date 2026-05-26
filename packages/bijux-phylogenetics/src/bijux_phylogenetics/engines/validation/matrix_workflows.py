@@ -3,27 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.bayesian.beast.execution import (
-    run_beast_posterior_inference,
-)
-from bijux_phylogenetics.bayesian.beast.xml_analysis import (
-    prepare_beast_time_tree_analysis,
-)
-from bijux_phylogenetics.bayesian.mrbayes import (
-    prepare_mrbayes_analysis,
-    run_mrbayes_posterior_inference,
-)
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_beast_posterior_fixture,
 )
-from bijux_phylogenetics.engines.workflows import (
-    run_alignment_trimming,
-    run_bootstrap_support_estimation,
-    run_fast_tree_inference,
-    run_model_selection,
-    run_multiple_sequence_alignment,
-)
-
 from .matrix import (
     ExternalEngineValidationMatrixReport,
     build_external_engine_validation_case,
@@ -57,6 +39,14 @@ def run_alignment_engine_validation_matrix(
     fasttree_executable: str | Path,
 ) -> ExternalEngineValidationMatrixReport:
     """Run the governed real-engine alignment matrix and collect reviewer metadata."""
+    from bijux_phylogenetics.engines.workflows import (
+        run_alignment_trimming,
+        run_bootstrap_support_estimation,
+        run_fast_tree_inference,
+        run_model_selection,
+        run_multiple_sequence_alignment,
+    )
+
     mafft_report = run_multiple_sequence_alignment(
         inputs.raw_sequence_path,
         out_dir / "alignment" / "real-mafft-alignment.fasta",
@@ -130,6 +120,17 @@ def run_bayesian_engine_validation_matrix(
     governed_beast_fixture_id: str = "strict_yule_real_posterior",
 ) -> ExternalEngineValidationMatrixReport:
     """Run the governed Bayesian matrix with live MrBayes and live-or-governed BEAST."""
+    from bijux_phylogenetics.bayesian.beast.execution import (
+        run_beast_posterior_inference,
+    )
+    from bijux_phylogenetics.bayesian.beast.xml_analysis import (
+        prepare_beast_time_tree_analysis,
+    )
+    from bijux_phylogenetics.bayesian.mrbayes import (
+        prepare_mrbayes_analysis,
+        run_mrbayes_posterior_inference,
+    )
+
     nexus_path = out_dir / "partitioned-analysis.nex"
     prepare_mrbayes_analysis(
         inputs.mrbayes_alignment_path,
