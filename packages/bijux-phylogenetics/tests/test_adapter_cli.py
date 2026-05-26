@@ -213,6 +213,21 @@ print("warning: iqtree fixture tree inference", file=sys.stderr)
     )
 
 
+def _unsupported_iqtree(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+
+if "--version" in sys.argv:
+    print("IQ-TREE multicore version 1.6.0")
+    raise SystemExit(0)
+
+raise SystemExit(1)
+""",
+    )
+
+
 def _fake_iqtree_without_support_labels(path: Path) -> Path:
     return _write_executable(
         path,
@@ -939,6 +954,35 @@ def test_adapter_model_select_and_compare_cli_produce_outputs(
     assert comparison_path.exists()
 
 
+def test_adapter_model_select_cli_blocks_unsupported_iqtree_before_output_setup(
+    tmp_path: Path, capsys
+) -> None:
+    iqtree = _unsupported_iqtree(tmp_path / "iqtree-unsupported")
+    input_path = fixture("alignments/example_alignment.fasta")
+    out_dir = tmp_path / "blocked-model-selection"
+
+    exit_code = main(
+        [
+            "adapter",
+            "model-select",
+            str(input_path),
+            "--out-dir",
+            str(out_dir),
+            "--executable",
+            str(iqtree),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == "engine_preflight_workflow_blocked"
+    assert payload["errors"][0]["details"]["workflow_id"] == "model-selection"
+    assert payload["errors"][0]["details"]["blocking_engines"] == ["IQ-TREE"]
+    assert out_dir.exists() is False
+
+
 def test_adapter_compare_engines_cli_reports_conflicts_and_outputs(
     tmp_path: Path, capsys
 ) -> None:
@@ -1438,6 +1482,43 @@ def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
     }.issubset(outputs)
     assert Path(payload["data"]["output_paths"]["tree"]).exists()
     assert Path(payload["data"]["manifest_path"]).exists()
+
+
+def test_adapter_fasta_to_tree_cli_blocks_missing_iqtree_before_alignment_starts(
+    tmp_path: Path, capsys
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    missing_iqtree = tmp_path / "missing-iqtree"
+    input_path = fixture("alignments/example_sequences_raw.fasta")
+    out_dir = tmp_path / "blocked-fasta-to-tree"
+
+    exit_code = main(
+        [
+            "adapter",
+            "fasta-to-tree",
+            str(input_path),
+            "--out-dir",
+            str(out_dir),
+            "--prefix",
+            "example",
+            "--mafft-executable",
+            str(mafft),
+            "--trimal-executable",
+            str(trimal),
+            "--iqtree-executable",
+            str(missing_iqtree),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == "engine_preflight_workflow_blocked"
+    assert payload["errors"][0]["details"]["workflow_id"] == "fasta-to-tree"
+    assert payload["errors"][0]["details"]["blocking_engines"] == ["IQ-TREE"]
+    assert out_dir.exists() is False
 
 
 def test_adapter_fasta_to_tree_cli_passes_named_mafft_mode_to_alignment_step(
