@@ -2,21 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from bijux_phylogenetics.bayesian.posterior_execution import (
+    run_bayesian_posterior_execution,
+)
 from bijux_phylogenetics.engines.common import (
-    build_file_checksums,
-    execute_engine_command,
     read_engine_version,
     resolve_engine_executable,
     validate_timeout_seconds,
 )
 from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
-from bijux_phylogenetics.engines.workflows.state import (
-    _persist_workflow_report,
-    _record_output_validation_failure,
-    _resolve_incomplete_workflow_state,
-    _resume_existing_workflow,
-)
-from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 from .artifacts import _mrbayes_artifact_error
 from .posterior_trees import (
@@ -61,48 +55,18 @@ def run_mrbayes_posterior_inference(
         timeout_seconds=timeout_seconds,
     )
     command = [resolved, nexus_path.name]
-    if resume:
-        resumed = _resume_existing_workflow(
-            manifest_path=manifest_path,
-            input_paths=[nexus_path],
-            expected_command=command,
-            expected_version=version,
-        )
-        if resumed is not None:
-            return resumed
-    incomplete_notes = _resolve_incomplete_workflow_state(
-        manifest_path=manifest_path,
-        incomplete_run_policy=incomplete_run_policy,
-    )
-    run = execute_engine_command(
-        engine_name="MrBayes",
-        workflow="posterior-tree-inference",
-        executable=resolved,
-        version=version,
-        command_args=command[1:],
-        work_dir=nexus_path.parent,
-        stdout_path=prefix_path.with_suffix(".stdout.log"),
-        stderr_path=prefix_path.with_suffix(".stderr.log"),
-        output_paths={
-            "posterior_trees": tree_path,
-            "parameter_traces": trace_path,
-            "mcmc_diagnostics": mcmc_path,
-            "consensus_tree": consensus_path,
-        },
-        manifest_path=manifest_path,
-        timeout_seconds=timeout_seconds,
-    )
-    try:
+
+    def validate_outputs() -> None:
         parse_mrbayes_parameter_traces(trace_path)
         parse_mrbayes_mcmc_diagnostics(mcmc_path)
         parse_mrbayes_consensus_tree(consensus_path)
         summarize_mrbayes_posterior_trees(tree_path, burnin_fraction=0.25)
-    except PhylogeneticsError as error:
-        _record_output_validation_failure(manifest_path, run, error)
-        raise
-    report = EngineWorkflowReport(
-        workflow="posterior-tree-inference",
+
+    return run_bayesian_posterior_execution(
         engine_name="MrBayes",
+        executable=resolved,
+        version=version,
+        command=command,
         input_paths=[nexus_path],
         output_paths={
             "posterior_trees": tree_path,
@@ -110,16 +74,18 @@ def run_mrbayes_posterior_inference(
             "mcmc_diagnostics": mcmc_path,
             "consensus_tree": consensus_path,
         },
-        run=run,
         manifest_path=manifest_path,
-        input_checksums=build_file_checksums([nexus_path]),
-        output_checksums={},
+        stdout_path=prefix_path.with_suffix(".stdout.log"),
+        stderr_path=prefix_path.with_suffix(".stderr.log"),
+        work_dir=nexus_path.parent,
+        timeout_seconds=timeout_seconds,
         config={
             "timeout_seconds": timeout_seconds,
         },
         notes=[
             "MrBayes posterior trees, parameter traces, consensus tree, and MCMC diagnostics validated after engine execution",
-            *incomplete_notes,
         ],
+        resume=resume,
+        incomplete_run_policy=incomplete_run_policy,
+        validate_outputs=validate_outputs,
     )
-    return _persist_workflow_report(report)
