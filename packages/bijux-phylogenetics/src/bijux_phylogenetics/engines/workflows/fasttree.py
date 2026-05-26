@@ -28,6 +28,7 @@ from ..validation.audits import summarize_fasttree_support_distribution
 from ..validation.preflight import require_external_engine_surface
 from .models import EngineWorkflowReport, ExternalTreeComparisonReport
 from .state import (
+    _validate_complete_support_coverage,
     _ensure_inference_ready_alignment,
     _manifest_path_from_output,
     _persist_workflow_report,
@@ -127,6 +128,15 @@ def run_fast_tree_inference(
             output_name="tree",
             artifact_kind="fast-approximate-tree",
             support_value_count=fasttree_support_summary.annotated_node_count,
+            support_kind="FastTree local support",
+        )
+        _validate_complete_support_coverage(
+            engine_name="FastTree",
+            workflow="fast-approximate-tree",
+            path=out_path,
+            output_name="tree",
+            artifact_kind="fast-approximate-tree",
+            annotated_branch_count=fasttree_support_summary.annotated_node_count,
             support_kind="FastTree local support",
         )
     except PhylogeneticsError as error:
