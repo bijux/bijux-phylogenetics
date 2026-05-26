@@ -452,9 +452,10 @@ review stay visible before larger production claims are made.
 For governed continuous `fitContinuous` recovery review, use
 `demo continuous-mode-recovery-panel`. It reruns a deterministic seven-case
 panel across two rooted trees, writes Bijux-versus-stored-`geiger`
-parameter-recovery ledgers, records execution and warning review rows, and
-keeps weak-identifiability transformed-model cases explicit instead of forcing
-them into binary pass-or-fail claims.
+parameter-recovery ledgers, including the OU optimum/root-state recovery
+surface, records execution and warning review rows, and keeps
+weak-identifiability transformed-model cases explicit instead of forcing them
+into binary pass-or-fail claims.
 
 The same packaged panel is available as a typed Python surface under
 `bijux_phylogenetics.datasets.continuous_mode_recovery`. Use

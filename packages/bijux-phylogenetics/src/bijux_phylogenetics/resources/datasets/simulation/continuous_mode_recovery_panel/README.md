@@ -13,8 +13,8 @@ The governed `expected/` bundle contains these reviewer-facing artifacts:
 
 - `workflow-summary.tsv`: one package-level metrics row for the panel.
 - `recovery-summary.tsv`: one recovery summary row per governed case.
-- `parameter-recovery.tsv`: one truth-versus-fit parameter row per engine and parameter.
-- `parameter-comparison.tsv`: one paired Bijux-versus-`geiger` comparison row per governed parameter.
+- `parameter-recovery.tsv`: one truth-versus-fit parameter row per engine and parameter, including OU optimum/root-state recovery.
+- `parameter-comparison.tsv`: one paired Bijux-versus-`geiger` comparison row per governed parameter, including the OU optimum/root-state surface.
 - `model-choice.tsv`: candidate-model ranking rows for both recovery engines.
 - `execution-review.tsv`: fit and model-comparison execution status rows.
 - `warning-review.tsv`: governed identifiability and boundary-warning rows.
