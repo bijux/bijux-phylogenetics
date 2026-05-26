@@ -142,6 +142,7 @@ from .state import (
     _validate_tree_set_output,
     _write_coding_exclusion_table,
     _write_coding_summary_table,
+    _write_alignment_trimming_summary_table,
 )
 
 _MAFFT_ALIGNMENT_MODE_ARGUMENTS: dict[str, tuple[str, ...]] = {
@@ -471,6 +472,7 @@ def run_alignment_trimming(
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     input_summary = summarise_fasta(input_path)
+    trimming_summary_path = _sidecar(out_path, "retained-sites.tsv")
     manifest_path = _manifest_path_from_output(out_path)
     mode_args = resolve_trimal_trimming_mode(mode, gap_threshold=gap_threshold)
     version = read_engine_version(
@@ -528,6 +530,17 @@ def run_alignment_trimming(
             input_summary=input_summary,
             trimmed_summary=trimmed_summary,
         )
+        _write_alignment_trimming_summary_table(
+            trimming_summary_path,
+            summary=trimming_summary,
+        )
+        _require_nonempty_text_output(
+            trimming_summary_path,
+            engine_name="trimal",
+            workflow="alignment-trimming",
+            output_name="trimming_summary",
+            artifact_kind="trimmed-alignment-retained-sites",
+        )
     except PhylogeneticsError as error:
         _record_output_validation_failure(manifest_path, run, error)
         raise
@@ -535,7 +548,10 @@ def run_alignment_trimming(
         workflow="alignment-trimming",
         engine_name="trimal",
         input_paths=[input_path],
-        output_paths={"trimmed_alignment": out_path},
+        output_paths={
+            "trimmed_alignment": out_path,
+            "trimming_summary": trimming_summary_path,
+        },
         run=run,
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([input_path]),

@@ -113,6 +113,7 @@ from .artifact_validation import (
 )
 from .coding_alignment import (
     _build_alignment_trimming_summary,
+    _write_alignment_trimming_summary_table,
     _write_coding_exclusion_table,
     _write_coding_summary_table,
 )

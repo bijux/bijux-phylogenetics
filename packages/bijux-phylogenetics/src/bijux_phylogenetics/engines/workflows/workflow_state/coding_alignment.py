@@ -98,6 +98,35 @@ def _write_coding_summary_table(
     return path
 
 
+def _write_alignment_trimming_summary_table(
+    path: Path,
+    *,
+    summary: AlignmentTrimmingSummary,
+) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rows = [
+        "metric\tvalue",
+        f"mode\t{summary.mode}",
+        (
+            "gap_threshold\t"
+            if summary.gap_threshold is None
+            else f"gap_threshold\t{summary.gap_threshold:.6f}"
+        ),
+        f"input_alignment_length\t{summary.input_alignment_length}",
+        f"trimmed_alignment_length\t{summary.trimmed_alignment_length}",
+        f"retained_site_count\t{summary.retained_site_count}",
+        f"removed_site_count\t{summary.removed_site_count}",
+        f"retained_site_fraction\t{summary.retained_site_fraction:.12g}",
+        f"removed_site_fraction\t{summary.removed_site_fraction:.12g}",
+        f"input_gap_fraction\t{summary.input_gap_fraction:.12g}",
+        f"trimmed_gap_fraction\t{summary.trimmed_gap_fraction:.12g}",
+        f"input_gap_percentage\t{summary.input_gap_percentage:.12g}",
+        f"trimmed_gap_percentage\t{summary.trimmed_gap_percentage:.12g}",
+    ]
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    return path
+
+
 def _build_alignment_trimming_summary(
     *,
     mode: str,
