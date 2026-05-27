@@ -296,12 +296,14 @@ bijux-phylogenetics alignment distance-matrix alignment.fasta --model raw --gap-
 bijux-phylogenetics alignment distance-matrix alignment.fasta --model f81 --components-out distance-components.tsv --parameters-out distance-parameters.tsv --out distances.tsv
 bijux-phylogenetics alignment distance-quality alignment.fasta --model jukes-cantor --json
 bijux-phylogenetics alignment distance-saturation alignment.fasta --model jukes-cantor --json
+bijux-phylogenetics alignment distance-ultrametricity alignment.fasta --model p-distance --tolerance 1e-6 --json
 bijux-phylogenetics alignment distance-suitability alignment.fasta --model jukes-cantor --json
 bijux-phylogenetics alignment distance-assumptions alignment.fasta --model p-distance --json
 bijux-phylogenetics alignment build-tree alignment.fasta --method bionj --out bionj-tree.nwk
 bijux-phylogenetics alignment build-tree alignment.fasta --method neighbor-joining --missing-distance-policy nearest-valid --out alignment-tree.nwk
 bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out upgma-tree.nwk
 bijux-phylogenetics alignment build-tree alignment.fasta --method complete-linkage --out complete-linkage-tree.nwk
+bijux-phylogenetics distance ultrametricity distances.tsv --tolerance 1e-6 --json
 bijux-phylogenetics distance build-tree distances.tsv --method neighbor-joining --missing-distance-policy triangle-bound --out distance-tree.nwk
 bijux-phylogenetics distance minimum-evolution matrix.tsv fixed-topology.nwk --out fitted-tree.nwk
 bijux-phylogenetics distance fitch-margoliash matrix.tsv fixed-topology.nwk --out fitted-tree.nwk --json
@@ -2140,6 +2142,11 @@ That same tree-building lane now also owns missing-distance handling through
 one explicit policy engine. Alignment-derived and imported matrices can reject
 incomplete pairs or impute them by mean distance, nearest valid distance, or
 the tightest available triangle bound before distance-tree inference runs.
+The distance diagnostics surface now also owns explicit ultrametricity testing
+for raw matrices through the three-point condition, with governed violating
+triple rows, the maximum observed deviation, and the applied tolerance instead
+of relying on row-sum heuristics or on whether one later UPGMA tree happens to
+be ultrametric after clustering.
 Imported distance matrices can also start from one owned NJ or BIONJ tree and
 be hill-climbed by rooted NNI under the owned balanced minimum-evolution
 objective, with governed search traces that record each accepted objective
