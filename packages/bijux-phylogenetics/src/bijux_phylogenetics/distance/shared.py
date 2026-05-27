@@ -60,6 +60,16 @@ def list_distance_tree_method_policies() -> list[DistanceTreeMethodPolicy]:
             ],
         ),
         DistanceTreeMethodPolicy(
+            method="wpgma",
+            supported=True,
+            reference_surface=None,
+            support_scope="owned-runtime",
+            summary="WPGMA is supported as an owned runtime method that uses equal cluster weighting during average-linkage updates.",
+            limitations=[
+                "wpgma still assumes an ultrametric clock-like process and can overweight small clusters relative to upgma's taxon-count weighting",
+            ],
+        ),
+        DistanceTreeMethodPolicy(
             method="bionj",
             supported=False,
             reference_surface="ape::bionj",

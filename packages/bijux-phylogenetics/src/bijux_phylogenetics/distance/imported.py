@@ -28,6 +28,7 @@ from .shared import (
     _require_supported_distance_tree_method,
 )
 from .upgma import build_upgma_tree
+from .wpgma import build_wpgma_tree
 
 
 def _distance_rows(entries: list[ImportedDistanceEntry]) -> list[ImportedDistanceEntry]:
@@ -447,6 +448,11 @@ def build_tree_from_imported_distance_matrix(
         )
     elif method_policy.method == "upgma":
         tree, _ = build_upgma_tree(
+            validation.identifiers,
+            _distance_lookup_from_imported(validation, entries),
+        )
+    else:
+        tree, _ = build_wpgma_tree(
             validation.identifiers,
             _distance_lookup_from_imported(validation, entries),
         )

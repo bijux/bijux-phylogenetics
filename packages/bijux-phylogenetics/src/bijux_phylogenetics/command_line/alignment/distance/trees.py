@@ -27,7 +27,7 @@ from .shared import (
 def add_distance_tree_commands(alignment_subparsers: Any) -> None:
     alignment_build_tree = alignment_subparsers.add_parser(
         "build-tree",
-        help="Build a neighbor-joining or UPGMA tree from a DNA distance matrix.",
+        help="Build a neighbor-joining, UPGMA, or WPGMA tree from a DNA distance matrix.",
     )
     alignment_build_tree.add_argument("alignment", type=Path)
     _add_distance_tree_method_argument(alignment_build_tree)

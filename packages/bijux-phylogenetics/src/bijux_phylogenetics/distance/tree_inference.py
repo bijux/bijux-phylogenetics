@@ -49,6 +49,7 @@ from .quality import (
 )
 from .shared import _require_supported_distance_tree_method
 from .upgma import build_upgma_tree
+from .wpgma import build_wpgma_tree
 
 
 def build_distance_tree(
@@ -95,8 +96,10 @@ def _build_distance_tree_from_genetic_distance_matrix(
         raise InvalidAlignmentError("distance tree building requires at least two taxa")
     if method == "neighbor-joining":
         tree = build_neighbor_joining_tree(report.identifiers, _distance_lookup(report))
-    else:
+    elif method == "upgma":
         tree, _ = build_upgma_tree(report.identifiers, _distance_lookup(report))
+    else:
+        tree, _ = build_wpgma_tree(report.identifiers, _distance_lookup(report))
     return tree, DistanceTreeBuildReport(
         alignment_path=report.path,
         model=report.model,
