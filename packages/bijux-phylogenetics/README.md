@@ -214,6 +214,7 @@ differences.
 - compute per-character and aggregate consistency index across supported parsimony methods, exclude constant characters by explicit `0/0` policy, keep nonconstant uninformative characters in the score, and leave arbitrary Sankoff step-matrix minima outside the current owned surface
 - compute per-character and aggregate retention index for unordered Fitch-style methods, emit `null` plus explicit zero-range reasons when `max = min`, and avoid claiming ordered, irreversible, or arbitrary step-matrix maxima that the package does not yet own
 - compute per-character and aggregate rescaled consistency index on the common supported CI and RI method set, emit rows with `character_id`, `ci`, `ri`, `rc`, and `undefined_reason`, and derive RC directly from the tested CI and RI outputs instead of recomputing separate logic
+- run one generic finite-state Felsenstein pruning kernel over rooted trees, keep the conditional-likelihood recursion independent from any one Mk trait surface, and use the same postorder owner as the native foundation for upcoming DNA and protein maximum-likelihood models
 - reconstruct continuous ancestral states under Brownian or OU-style trait models
 - reconstruct discrete ancestral states under Fitch parsimony or likelihood-style ER, SYM, and ARD models with explicit ambiguity and low-confidence reporting, root-prior controls, and fitted transition-rate ledgers
 - validate discrete ancestral likelihood surfaces against governed `ape::ace` references plus root-prior, ordered, irreversible, and ambiguity policy checks
