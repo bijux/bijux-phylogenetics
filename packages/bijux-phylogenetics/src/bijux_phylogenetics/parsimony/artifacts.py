@@ -6,6 +6,7 @@ from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.reports.service.artifacts import write_json_artifact
 
 from .models import (
+    CaminSokalScoreReport,
     DolloScoreReport,
     FitchScoreReport,
     SankoffScoreReport,
@@ -466,6 +467,101 @@ def write_dollo_artifacts(
         report,
     )
     run_json_path = write_dollo_run_json(out_dir / "run.json", report)
+    return {
+        "steps_path": steps_path,
+        "branch_changes_path": branch_changes_path,
+        "run_json_path": run_json_path,
+    }
+
+
+def write_camin_sokal_steps_table(path: Path, report: CaminSokalScoreReport) -> Path:
+    """Write one deterministic per-character Camin-Sokal summary table."""
+    return write_taxon_rows(
+        path,
+        columns=["character_id", "derived_taxon_count", "gain_count", "root_state"],
+        rows=[
+            {
+                "character_id": row.character_id,
+                "derived_taxon_count": row.derived_taxon_count,
+                "gain_count": row.gain_count,
+                "root_state": row.root_state,
+            }
+            for row in report.step_rows
+        ],
+    )
+
+
+def write_camin_sokal_branch_change_table(
+    path: Path,
+    report: CaminSokalScoreReport,
+) -> Path:
+    """Write one deterministic irreversible Camin-Sokal branch-change table."""
+    return write_taxon_rows(
+        path,
+        columns=["character_id", "change_kind", "node", "node_name", "descendant_taxa"],
+        rows=[
+            {
+                "character_id": row.character_id,
+                "change_kind": row.change_kind,
+                "node": row.node,
+                "node_name": row.node_name,
+                "descendant_taxa": "|".join(row.descendant_taxa),
+            }
+            for row in report.branch_change_rows
+        ],
+    )
+
+
+def write_camin_sokal_run_json(path: Path, report: CaminSokalScoreReport) -> Path:
+    """Write one machine-readable Camin-Sokal run payload."""
+    return write_json_artifact(
+        path,
+        {
+            "algorithm": report.algorithm,
+            "tree_path": None if report.tree_path is None else str(report.tree_path),
+            "matrix_path": None
+            if report.matrix_path is None
+            else str(report.matrix_path),
+            "taxon_column": report.taxon_column,
+            "taxon_count": report.taxon_count,
+            "character_count": report.character_count,
+            "root_state": report.root_state,
+            "total_gains": report.total_gains,
+            "step_rows": [
+                {
+                    "character_id": row.character_id,
+                    "derived_taxon_count": row.derived_taxon_count,
+                    "gain_count": row.gain_count,
+                    "root_state": row.root_state,
+                }
+                for row in report.step_rows
+            ],
+            "branch_change_rows": [
+                {
+                    "character_id": row.character_id,
+                    "change_kind": row.change_kind,
+                    "node": row.node,
+                    "node_name": row.node_name,
+                    "descendant_taxa": row.descendant_taxa,
+                }
+                for row in report.branch_change_rows
+            ],
+        },
+    )
+
+
+def write_camin_sokal_artifacts(
+    out_dir: Path,
+    report: CaminSokalScoreReport,
+) -> dict[str, Path]:
+    """Write the governed Camin-Sokal artifact family."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    steps_path = write_camin_sokal_steps_table(out_dir / "steps.tsv", report)
+    branch_changes_path = write_camin_sokal_branch_change_table(
+        out_dir / "branch_changes.tsv",
+        report,
+    )
+    run_json_path = write_camin_sokal_run_json(out_dir / "run.json", report)
     return {
         "steps_path": steps_path,
         "branch_changes_path": branch_changes_path,

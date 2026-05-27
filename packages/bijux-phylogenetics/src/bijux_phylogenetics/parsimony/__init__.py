@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from .artifacts import (
+    write_camin_sokal_artifacts,
+    write_camin_sokal_branch_change_table,
+    write_camin_sokal_run_json,
+    write_camin_sokal_steps_table,
     write_dollo_artifacts,
     write_dollo_branch_change_table,
     write_dollo_run_json,
@@ -19,6 +23,7 @@ from .artifacts import (
     write_wagner_run_json,
     write_wagner_steps_table,
 )
+from .camin_sokal import score_camin_sokal
 from .cost_matrix import load_sankoff_cost_matrix
 from .dollo import score_dollo
 from .fitch import (
@@ -26,6 +31,9 @@ from .fitch import (
 )
 from .matrix import load_fitch_character_matrix, load_parsimony_character_matrix
 from .models import (
+    CaminSokalBranchChange,
+    CaminSokalCharacterScore,
+    CaminSokalScoreReport,
     DolloBranchChange,
     DolloCharacterScore,
     DolloScoreReport,
@@ -47,6 +55,9 @@ from .sankoff import score_sankoff
 from .wagner import score_wagner
 
 __all__ = [
+    "CaminSokalBranchChange",
+    "CaminSokalCharacterScore",
+    "CaminSokalScoreReport",
     "DolloBranchChange",
     "DolloCharacterScore",
     "DolloScoreReport",
@@ -58,6 +69,7 @@ __all__ = [
     "load_parsimony_character_matrix",
     "load_sankoff_cost_matrix",
     "ParsimonyCharacterMatrix",
+    "score_camin_sokal",
     "score_dollo",
     "score_fitch",
     "score_sankoff",
@@ -67,6 +79,10 @@ __all__ = [
     "SankoffNodeCost",
     "SankoffNodeSelection",
     "SankoffScoreReport",
+    "write_camin_sokal_artifacts",
+    "write_camin_sokal_branch_change_table",
+    "write_camin_sokal_run_json",
+    "write_camin_sokal_steps_table",
     "write_dollo_artifacts",
     "write_dollo_branch_change_table",
     "write_dollo_run_json",

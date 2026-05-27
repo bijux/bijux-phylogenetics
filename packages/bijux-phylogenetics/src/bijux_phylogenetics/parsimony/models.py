@@ -200,3 +200,40 @@ class DolloScoreReport:
     total_losses: int
     step_rows: list[DolloCharacterScore]
     branch_change_rows: list[DolloBranchChange]
+
+
+@dataclass(frozen=True, slots=True)
+class CaminSokalCharacterScore:
+    """Per-character irreversible Camin-Sokal summary row."""
+
+    character_id: str
+    derived_taxon_count: int
+    gain_count: int
+    root_state: str
+
+
+@dataclass(frozen=True, slots=True)
+class CaminSokalBranchChange:
+    """Per-branch irreversible Camin-Sokal change row."""
+
+    character_id: str
+    change_kind: str
+    node: str
+    node_name: str | None
+    descendant_taxa: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class CaminSokalScoreReport:
+    """Complete irreversible Camin-Sokal scoring report over one tree and binary matrix."""
+
+    algorithm: str
+    tree_path: Path | None
+    matrix_path: Path | None
+    taxon_column: str
+    taxon_count: int
+    character_count: int
+    root_state: str
+    total_gains: int
+    step_rows: list[CaminSokalCharacterScore]
+    branch_change_rows: list[CaminSokalBranchChange]
