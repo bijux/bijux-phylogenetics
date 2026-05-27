@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from bijux_phylogenetics.distance import (
     assess_distance_method_assumptions,
     assess_distance_method_maturity,
@@ -26,8 +24,6 @@ from bijux_phylogenetics.distance import (
 )
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.reports.service import render_distance_report
-from bijux_phylogenetics.runtime.errors import UnsupportedDistanceTreeMethodError
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 
@@ -50,7 +46,7 @@ def test_validate_distance_reference_examples_passes() -> None:
     assert len(report.tree_observations) == 2
 
 
-def test_distance_tree_method_policies_explicitly_exclude_bionj() -> None:
+def test_distance_tree_method_policies_support_bionj() -> None:
     policies = {row.method: row for row in list_distance_tree_method_policies()}
     assert set(policies) == {
         "bionj",
@@ -64,25 +60,22 @@ def test_distance_tree_method_policies_explicitly_exclude_bionj() -> None:
     assert policies["single-linkage"].supported is True
     assert policies["complete-linkage"].supported is True
     assert policies["neighbor-joining"].reference_surface == "ape::nj"
+    assert policies["bionj"].supported is True
+    assert policies["bionj"].reference_surface == "ape::bionj"
+    assert policies["bionj"].support_scope == "owned-runtime"
     assert policies["upgma"].supported is True
     assert policies["wpgma"].supported is True
-    assert policies["bionj"].supported is False
-    assert policies["bionj"].reference_surface == "ape::bionj"
-    assert policies["bionj"].support_scope == "explicitly-excluded"
 
 
-def test_resolve_distance_tree_method_policy_rejects_excluded_bionj() -> None:
-    policy = resolve_distance_tree_method_policy("neighbor-joining")
-    assert policy.method == "neighbor-joining"
-
-    with pytest.raises(UnsupportedDistanceTreeMethodError) as error:
-        build_distance_tree(
-            fixture("example_alignment_distance.fasta"),
-            method="bionj",
-        )
-    assert error.value.code == "unsupported_distance_tree_method_error"
-    assert "out of scope for this round" in error.value.message
-    assert error.value.details["reference_surface"] == "ape::bionj"
+def test_resolve_distance_tree_method_policy_supports_bionj() -> None:
+    policy = resolve_distance_tree_method_policy("bionj")
+    assert policy.method == "bionj"
+    tree, report = build_distance_tree(
+        fixture("example_alignment_distance.fasta"),
+        method="bionj",
+    )
+    assert tree.rooted is False
+    assert report.method == "bionj"
 
 
 def test_compute_pairwise_genetic_distance_matrix_supports_kimura_two_parameter() -> (
