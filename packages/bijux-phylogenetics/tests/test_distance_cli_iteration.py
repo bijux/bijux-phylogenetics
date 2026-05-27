@@ -545,6 +545,68 @@ def test_cli_distance_taxon_jackknife_writes_rebuilt_tree_artifacts(
     assert run_payload["rows"][2]["affected_clades"] == []
 
 
+def test_cli_distance_method_comparison_writes_tree_rf_and_warning_artifacts(
+    tmp_path: Path, capsys
+) -> None:
+    out_dir = tmp_path / "method-comparison"
+    exit_code = main(
+        [
+            "distance",
+            "method-comparison",
+            str(fixture("example_distance_matrix_bionj_noisy.tsv")),
+            "--out-dir",
+            str(out_dir),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    score_lines = (out_dir / "method_scores.tsv").read_text(encoding="utf-8").splitlines()
+    rf_lines = (out_dir / "rf_matrix.tsv").read_text(encoding="utf-8").splitlines()
+    warning_lines = (out_dir / "assumption_warnings.tsv").read_text(
+        encoding="utf-8"
+    ).splitlines()
+    run_payload = json.loads((out_dir / "run.json").read_text(encoding="utf-8"))
+    assert exit_code == 0
+    assert (out_dir / "neighbor-joining.nwk").read_text(encoding="utf-8") == (
+        "((A:1.125,(B:1,C:2)Inner1:5.375)Inner2:5.375,D:4.625,E:-2.625)Inner3;\n"
+    )
+    assert (out_dir / "bionj.nwk").read_text(encoding="utf-8") == (
+        "((A:2,(B:1,C:2)Inner1:5.66666666666667)Inner2:4.5,D:6.02,E:-4.02)Inner3;\n"
+    )
+    assert score_lines[:3] == [
+        "method\tpatristic_residual_sum_squares\tbalanced_minimum_evolution_score\tordinary_least_squares_residual_sum_squares\tordinary_least_squares_negative_branch_count\ttree_newick",
+        "neighbor-joining\t168.09375\t28.25\t165.75\t1\t((A:1.125,(B:1,C:2)Inner1:5.375)Inner2:5.375,D:4.625,E:-2.625)Inner3;",
+        "bionj\t194.315733333\t28.25\t165.75\t1\t((A:2,(B:1,C:2)Inner1:5.66666666666667)Inner2:4.5,D:6.02,E:-4.02)Inner3;",
+    ]
+    assert rf_lines == [
+        "method\tneighbor-joining\tbionj\tupgma\twpgma",
+        "neighbor-joining\t0\t0\t3\t3",
+        "bionj\t0\t0\t3\t3",
+        "upgma\t3\t3\t0\t0",
+        "wpgma\t3\t3\t0\t0",
+    ]
+    assert warning_lines[:4] == [
+        "warning_rank\tscope\tmethod\twarning",
+        "1\tmatrix\t\tdistance matrix violates triangle inequality for one or more taxon triples",
+        "2\tmatrix\t\tpairwise distances are not ultrametric, so UPGMA's strict clock-like assumption is violated",
+        "3\tmethod\tbionj\tbionj remains a distance-summary method rather than a full likelihood inference",
+    ]
+    assert payload["metrics"]["criterion"] == "distance-method-comparison"
+    assert payload["metrics"]["taxon_count"] == 5
+    assert payload["metrics"]["method_count"] == 4
+    assert payload["metrics"]["warning_count"] == 8
+    assert run_payload["compared_methods"] == [
+        "neighbor-joining",
+        "bionj",
+        "upgma",
+        "wpgma",
+    ]
+    assert run_payload["rf_rows"][0]["left_method"] == "neighbor-joining"
+    assert run_payload["rf_rows"][0]["right_method"] == "bionj"
+    assert run_payload["rows"][2]["method"] == "upgma"
+    assert run_payload["warning_rows"][-1]["method"] == "wpgma"
+
+
 def test_cli_distance_bme_nni_search_writes_governed_artifacts(
     tmp_path: Path, capsys
 ) -> None:
