@@ -18,11 +18,15 @@ from .models import (
     GapHandlingMode,
     GeneticDistanceMatrix,
     LowInformationPair,
+    UPGMAUltrametricViolation,
 )
-from .shared import _iter_ultrametric_violations
 from .saturation import (
     diagnose_distance_saturation_from_genetic_distance_matrix,
     saturated_pairs_from_diagnostics,
+)
+from .ultrametricity import (
+    diagnose_distance_ultrametricity,
+    diagnose_distance_ultrametricity_from_genetic_distance_matrix,
 )
 
 
@@ -41,19 +45,17 @@ def assess_distance_method_assumptions(
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
     )
-    distances = _build_alignment_distance_lookup(matrix)
-    expected_pairs = (len(matrix.identifiers) * (len(matrix.identifiers) - 1)) // 2
-    violations = _iter_ultrametric_violations(
-        matrix.identifiers,
-        distances,
+    diagnostics = diagnose_distance_ultrametricity(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
         tolerance=ultrametric_tolerance,
     )
+    distances = _build_alignment_distance_lookup(matrix)
     warnings: list[str] = []
-    if len(distances) < expected_pairs:
-        warnings.append(
-            "UPGMA clock-assumption auditing is incomplete because one or more pairwise distances are undefined under the selected model"
-        )
-    if violations:
+    warnings.extend(diagnostics.warnings)
+    if diagnostics.violating_triples:
         warnings.append(
             "pairwise distances are not ultrametric, so UPGMA's strict clock-like assumption is violated"
         )
@@ -70,9 +72,9 @@ def assess_distance_method_assumptions(
             "UPGMA assumes the pairwise distances are ultrametric and therefore consistent with a clock-like process",
             "UPGMA can mis-cluster taxa when rates vary among lineages even if the matrix remains symmetric and complete",
         ],
-        ultrametric_compatible=not violations,
+        ultrametric_compatible=diagnostics.ultrametric,
         ultrametric_tolerance=ultrametric_tolerance,
-        upgma_ultrametric_violations=violations,
+        upgma_ultrametric_violations=_upgma_violations_from_diagnostics(diagnostics),
         warnings=warnings,
     )
 
@@ -84,18 +86,12 @@ def assess_distance_method_assumptions_from_genetic_distance_matrix(
 ) -> DistanceMethodAssumptionReport:
     """Audit core distance-tree assumptions from one in-memory distance matrix."""
     distances = _build_alignment_distance_lookup(report)
-    expected_pairs = (len(report.identifiers) * (len(report.identifiers) - 1)) // 2
-    violations = _iter_ultrametric_violations(
-        report.identifiers,
-        distances,
+    diagnostics = diagnose_distance_ultrametricity_from_genetic_distance_matrix(
+        report,
         tolerance=ultrametric_tolerance,
     )
-    warnings = list(report.warnings)
-    if len(distances) < expected_pairs:
-        warnings.append(
-            "UPGMA clock-assumption auditing is incomplete because one or more pairwise distances are undefined under the selected model"
-        )
-    if violations:
+    warnings = list(diagnostics.warnings)
+    if diagnostics.violating_triples:
         warnings.append(
             "pairwise distances are not ultrametric, so UPGMA's strict clock-like assumption is violated"
         )
@@ -112,11 +108,32 @@ def assess_distance_method_assumptions_from_genetic_distance_matrix(
             "UPGMA assumes the pairwise distances are ultrametric and therefore consistent with a clock-like process",
             "UPGMA can mis-cluster taxa when rates vary among lineages even if the matrix remains symmetric and complete",
         ],
-        ultrametric_compatible=not violations,
+        ultrametric_compatible=diagnostics.ultrametric,
         ultrametric_tolerance=ultrametric_tolerance,
-        upgma_ultrametric_violations=violations,
+        upgma_ultrametric_violations=_upgma_violations_from_diagnostics(diagnostics),
         warnings=warnings,
     )
+
+
+def _upgma_violations_from_diagnostics(
+    report,
+) -> list[UPGMAUltrametricViolation]:
+    return [
+        UPGMAUltrametricViolation(
+            left_identifier=row.left_identifier,
+            middle_identifier=row.middle_identifier,
+            right_identifier=row.right_identifier,
+            smallest_distance=min(
+                row.left_middle_distance,
+                row.left_right_distance,
+                row.middle_right_distance,
+            ),
+            middle_distance=row.second_largest_distance,
+            largest_distance=row.largest_distance,
+            deviation=row.violation,
+        )
+        for row in report.violating_triples
+    ]
 
 
 def inspect_distance_matrix_quality(

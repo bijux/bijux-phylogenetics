@@ -25,9 +25,9 @@ from .models import (
     MissingDistancePolicyReport,
     NonMetricDistanceObservation,
     SaturatedDistancePair,
+    UPGMAUltrametricViolation,
 )
 from .shared import (
-    _iter_ultrametric_violations,
     _pair_key,
     _require_supported_distance_tree_method,
 )
@@ -35,6 +35,7 @@ from .complete_linkage import build_complete_linkage_tree
 from .single_linkage import build_single_linkage_tree
 from .upgma import build_upgma_tree
 from .wpgma import build_wpgma_tree
+from .ultrametricity import diagnose_imported_distance_matrix_ultrametricity
 
 
 def _distance_rows(entries: list[ImportedDistanceEntry]) -> list[ImportedDistanceEntry]:
@@ -163,20 +164,13 @@ def assess_imported_distance_method_assumptions(
 ) -> DistanceMethodAssumptionReport:
     """Audit clock-like compatibility and core distance-tree assumptions for an imported matrix."""
     validation = validate_imported_distance_matrix(path)
-    distances = _symmetric_distances(load_imported_distance_matrix(path))
-    violations = (
-        []
-        if not validation.complete
-        or not validation.symmetric
-        or not validation.nonnegative
-        else _iter_ultrametric_violations(
-            validation.identifiers,
-            distances,
-            tolerance=ultrametric_tolerance,
-        )
+    diagnostics = diagnose_imported_distance_matrix_ultrametricity(
+        path,
+        tolerance=ultrametric_tolerance,
     )
-    warnings = list(validation.warnings)
-    if violations:
+    distances = _symmetric_distances(load_imported_distance_matrix(path))
+    warnings = list(diagnostics.warnings)
+    if diagnostics.violating_triples:
         warnings.append(
             "pairwise distances are not ultrametric, so UPGMA's strict clock-like assumption is violated"
         )
@@ -193,11 +187,32 @@ def assess_imported_distance_method_assumptions(
             "UPGMA assumes the imported matrix is ultrametric and therefore compatible with a clock-like process",
             "UPGMA can enforce an ultrametric tree even when the source matrix does not satisfy that assumption",
         ],
-        ultrametric_compatible=not violations,
+        ultrametric_compatible=diagnostics.ultrametric,
         ultrametric_tolerance=ultrametric_tolerance,
-        upgma_ultrametric_violations=violations,
+        upgma_ultrametric_violations=_upgma_violations_from_diagnostics(diagnostics),
         warnings=warnings,
     )
+
+
+def _upgma_violations_from_diagnostics(
+    report,
+) -> list[UPGMAUltrametricViolation]:
+    return [
+        UPGMAUltrametricViolation(
+            left_identifier=row.left_identifier,
+            middle_identifier=row.middle_identifier,
+            right_identifier=row.right_identifier,
+            smallest_distance=min(
+                row.left_middle_distance,
+                row.left_right_distance,
+                row.middle_right_distance,
+            ),
+            middle_distance=row.second_largest_distance,
+            largest_distance=row.largest_distance,
+            deviation=row.violation,
+        )
+        for row in report.violating_triples
+    ]
 
 
 def validate_imported_distance_matrix(path: Path) -> ImportedDistanceMatrixReport:
