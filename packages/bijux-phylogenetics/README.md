@@ -296,6 +296,7 @@ bijux-phylogenetics alignment distance-matrix alignment.fasta --model raw --gap-
 bijux-phylogenetics alignment distance-matrix alignment.fasta --model f81 --components-out distance-components.tsv --parameters-out distance-parameters.tsv --out distances.tsv
 bijux-phylogenetics alignment distance-quality alignment.fasta --model jukes-cantor --json
 bijux-phylogenetics alignment distance-saturation alignment.fasta --model jukes-cantor --json
+bijux-phylogenetics alignment distance-additivity alignment.fasta --model p-distance --out-dir artifacts/distance-additivity --json
 bijux-phylogenetics alignment distance-ultrametricity alignment.fasta --model p-distance --tolerance 1e-6 --json
 bijux-phylogenetics alignment distance-suitability alignment.fasta --model jukes-cantor --json
 bijux-phylogenetics alignment distance-assumptions alignment.fasta --model p-distance --json
@@ -303,6 +304,7 @@ bijux-phylogenetics alignment build-tree alignment.fasta --method bionj --out bi
 bijux-phylogenetics alignment build-tree alignment.fasta --method neighbor-joining --missing-distance-policy nearest-valid --out alignment-tree.nwk
 bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out upgma-tree.nwk
 bijux-phylogenetics alignment build-tree alignment.fasta --method complete-linkage --out complete-linkage-tree.nwk
+bijux-phylogenetics distance additivity distances.tsv --out-dir artifacts/distance-additivity --json
 bijux-phylogenetics distance ultrametricity distances.tsv --tolerance 1e-6 --json
 bijux-phylogenetics distance build-tree distances.tsv --method neighbor-joining --missing-distance-policy triangle-bound --out distance-tree.nwk
 bijux-phylogenetics distance minimum-evolution matrix.tsv fixed-topology.nwk --out fitted-tree.nwk
@@ -2147,6 +2149,11 @@ for raw matrices through the three-point condition, with governed violating
 triple rows, the maximum observed deviation, and the applied tolerance instead
 of relying on row-sum heuristics or on whether one later UPGMA tree happens to
 be ultrametric after clustering.
+That same diagnostics family now also owns quartet additivity review through
+the four-point condition, with governed `four_point_violations.tsv` output that
+records each violating quartet, the three competing pair-sum totals, the
+best-supported split, and the violation magnitude instead of collapsing the
+matrix to one opaque “valid” boolean.
 Imported distance matrices can also start from one owned NJ or BIONJ tree and
 be hill-climbed by rooted NNI under the owned balanced minimum-evolution
 objective, with governed search traces that record each accepted objective
