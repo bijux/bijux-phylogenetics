@@ -34,12 +34,13 @@ from bijux_phylogenetics.phylo.likelihood.topology_search import (
     validate_nucleotide_topology_search_tree,
 )
 from bijux_phylogenetics.phylo.topology import rooted_topology_fingerprint
+from bijux_phylogenetics.phylo.topology.random_bifurcating import (
+    generate_random_bifurcating_tree,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.simulation.trees import simulate_random_tree
 
 _SUPPORTED_LIKELIHOOD_MULTI_START_METHODS = frozenset({"nni", "spr"})
 _SUPPORTED_START_TREE_SOURCE_POLICIES = frozenset({"input-tree-plus-random-tree"})
-_RANDOM_START_TAXON_PREFIX = "GeneratedTaxon"
 _MAX_RANDOM_START_ATTEMPTS = 10_000
 
 
@@ -344,22 +345,12 @@ def build_random_likelihood_start_tree(
     seed: int,
 ) -> PhyloTree:
     """Generate one rooted random start tree and relabel its tips to the target taxa."""
-    if len(ordered_taxa) < 2:
-        raise ValueError("random likelihood start trees require at least two taxa")
-    random_tree, _report = simulate_random_tree(
-        tip_count=len(ordered_taxa),
+    random_tree, _report = generate_random_bifurcating_tree(
+        ordered_taxa,
         seed=seed,
-        taxon_prefix=_RANDOM_START_TAXON_PREFIX,
+        branch_length_policy="uniform",
     )
-    label_map = {
-        f"{_RANDOM_START_TAXON_PREFIX}{index}": taxon
-        for index, taxon in enumerate(ordered_taxa, start=1)
-    }
-    for leaf in random_tree.iter_leaves():
-        if leaf.name is None:
-            raise ValueError("random start tree contains an unnamed tip")
-        leaf.name = label_map[leaf.name]
-    return random_tree.refresh()
+    return random_tree
 
 
 def select_best_likelihood_multi_start_run(
