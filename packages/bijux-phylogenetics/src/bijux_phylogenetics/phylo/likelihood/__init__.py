@@ -20,6 +20,24 @@ from .jc69 import (
 from .jc69 import (
     optimize_jc69_branch_lengths_from_alignment as optimize_jc69_branch_lengths_from_alignment,
 )
+from .k80 import (
+    evaluate_k80_tree_likelihood as evaluate_k80_tree_likelihood,
+)
+from .k80 import (
+    evaluate_k80_tree_likelihood_from_alignment as evaluate_k80_tree_likelihood_from_alignment,
+)
+from .k80 import (
+    k80_rate_matrix as k80_rate_matrix,
+)
+from .k80 import (
+    k80_transition_probability_matrix as k80_transition_probability_matrix,
+)
+from .k80 import (
+    optimize_k80_kappa as optimize_k80_kappa,
+)
+from .k80 import (
+    optimize_k80_kappa_from_alignment as optimize_k80_kappa_from_alignment,
+)
 from .models import (
     Jc69BranchLengthOptimizationReport as Jc69BranchLengthOptimizationReport,
 )
@@ -28,6 +46,12 @@ from .models import (
 )
 from .models import (
     Jc69TreeLikelihoodReport as Jc69TreeLikelihoodReport,
+)
+from .models import (
+    K80KappaOptimizationReport as K80KappaOptimizationReport,
+)
+from .models import (
+    K80TreeLikelihoodReport as K80TreeLikelihoodReport,
 )
 from .patterns import (
     AlignmentSitePattern as AlignmentSitePattern,
@@ -70,14 +94,22 @@ __all__ = [
     "Jc69BranchLengthOptimizationReport",
     "Jc69BranchLengthOptimizationStep",
     "Jc69TreeLikelihoodReport",
+    "K80KappaOptimizationReport",
+    "K80TreeLikelihoodReport",
     "alignment_site_columns",
     "compress_alignment_site_patterns",
     "compress_alignment_site_patterns_from_records",
+    "evaluate_k80_tree_likelihood",
+    "evaluate_k80_tree_likelihood_from_alignment",
     "evaluate_jc69_tree_likelihood",
     "evaluate_jc69_tree_likelihood_from_alignment",
+    "k80_rate_matrix",
+    "k80_transition_probability_matrix",
     "jc69_rate_matrix",
     "jc69_transition_probability_matrix",
     "log_likelihood_from_root_prior",
+    "optimize_k80_kappa",
+    "optimize_k80_kappa_from_alignment",
     "optimize_jc69_branch_lengths",
     "optimize_jc69_branch_lengths_from_alignment",
     "postorder_conditional_likelihoods",
