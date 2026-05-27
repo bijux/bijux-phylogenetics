@@ -13,6 +13,7 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.distance import (
     assess_imported_distance_method_assumptions,
     build_tree_from_imported_distance_matrix,
+    compute_patristic_residual_diagnostics_from_imported_distance_matrix,
     fit_fitch_margoliash_tree_from_imported_distance_matrix,
     fit_minimum_evolution_tree_from_imported_distance_matrix,
     fit_nonnegative_least_squares_tree_from_imported_distance_matrix,
@@ -22,6 +23,7 @@ from bijux_phylogenetics.distance import (
     validate_distance_reference_examples,
     validate_imported_distance_matrix,
     write_balanced_minimum_evolution_nni_artifacts,
+    write_patristic_residual_artifacts,
 )
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.reports.service import (
@@ -137,6 +139,20 @@ def add_distance_commands(subparsers: Any) -> None:
         help="Emit the nonnegative least-squares fit as JSON.",
     )
     _add_manifest_argument(distance_nonnegative_least_squares)
+
+    distance_patristic_residuals = distance_subparsers.add_parser(
+        "patristic-residuals",
+        help="Compare one imported distance matrix against one tree's patristic distances and export ranked residual diagnostics.",
+    )
+    distance_patristic_residuals.add_argument("matrix", type=Path)
+    distance_patristic_residuals.add_argument("tree", type=Path)
+    distance_patristic_residuals.add_argument("--out-dir", required=True, type=Path)
+    distance_patristic_residuals.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the patristic residual diagnostics as JSON.",
+    )
+    _add_manifest_argument(distance_patristic_residuals)
 
     distance_bme_nni = distance_subparsers.add_parser(
         "bme-nni-search",
@@ -410,6 +426,35 @@ def run_distance_command(args: Any) -> int:
                     "residual_sum_squares": report.residual_sum_squares,
                     "condition_number": report.condition_number,
                     "active_constraint_count": report.active_constraint_count,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+    if args.distance_command == "patristic-residuals":
+        report = compute_patristic_residual_diagnostics_from_imported_distance_matrix(
+            args.matrix,
+            args.tree,
+        )
+        artifact_paths = write_patristic_residual_artifacts(args.out_dir, report)
+        outputs = _finalize_outputs(
+            args,
+            command="distance",
+            inputs=[args.matrix, args.tree],
+            outputs=list(artifact_paths.values()),
+        )
+        _print_result(
+            build_command_result(
+                command="distance",
+                inputs=[args.matrix, args.tree],
+                outputs=outputs,
+                metrics={
+                    "criterion": "patristic-residuals",
+                    "taxon_count": len(report.taxa),
+                    "pair_count": report.pair_count,
+                    "residual_sum_squares": report.residual_sum_squares,
+                    "max_absolute_residual": report.max_absolute_residual,
                 },
                 data=report,
             ),

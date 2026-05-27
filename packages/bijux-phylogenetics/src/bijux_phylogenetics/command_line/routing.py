@@ -128,6 +128,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return [args.matrix, args.tree, args.out]
         if args.distance_command == "nonnegative-least-squares":
             return [args.matrix, args.tree, args.out]
+        if args.distance_command == "patristic-residuals":
+            return [args.matrix, args.tree, args.out_dir]
         if args.distance_command == "bme-nni-search":
             return [args.matrix, args.out_dir]
         if args.distance_command == "report":
