@@ -48,3 +48,34 @@ class Jc69BranchLengthOptimizationReport:
     lower_branch_length_bound: float
     upper_branch_length_bound: float
     steps: list[Jc69BranchLengthOptimizationStep]
+
+
+@dataclass(slots=True)
+class K80TreeLikelihoodReport:
+    """Native K80 likelihood report for one fixed topology and alignment."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    kappa: float
+    log_likelihood: float
+
+
+@dataclass(slots=True)
+class K80KappaOptimizationReport:
+    """Fixed-topology K80 kappa optimization summary."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    tree_newick: str
+    initial_kappa: float
+    optimized_kappa: float
+    initial_log_likelihood: float
+    optimized_log_likelihood: float
+    function_evaluation_count: int
+    converged: bool
+    lower_kappa_bound: float
+    upper_kappa_bound: float
