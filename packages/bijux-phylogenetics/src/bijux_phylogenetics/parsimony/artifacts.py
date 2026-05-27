@@ -717,6 +717,37 @@ def write_parsimony_reconstruction_node_state_table(
     )
 
 
+def write_parsimony_ancestral_state_table(
+    path: Path,
+    report: ParsimonyReconstructionReport,
+) -> Path:
+    """Write one deterministic ancestral-state export table for a parsimony reconstruction."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "node_id",
+            "clade_id",
+            "character_id",
+            "possible_states",
+            "chosen_state",
+            "method",
+            "ambiguous",
+        ],
+        rows=[
+            {
+                "node_id": row.node_id,
+                "clade_id": row.clade_id,
+                "character_id": row.character_id,
+                "possible_states": "|".join(row.possible_states),
+                "chosen_state": row.chosen_state,
+                "method": row.method,
+                "ambiguous": row.ambiguous,
+            }
+            for row in report.ancestral_state_rows
+        ],
+    )
+
+
 def write_parsimony_reconstruction_branch_change_table(
     path: Path,
     report: ParsimonyReconstructionReport,
@@ -794,6 +825,18 @@ def write_parsimony_reconstruction_run_json(
                 }
                 for row in report.node_state_rows
             ],
+            "ancestral_state_rows": [
+                {
+                    "node_id": row.node_id,
+                    "clade_id": row.clade_id,
+                    "character_id": row.character_id,
+                    "possible_states": row.possible_states,
+                    "chosen_state": row.chosen_state,
+                    "method": row.method,
+                    "ambiguous": row.ambiguous,
+                }
+                for row in report.ancestral_state_rows
+            ],
             "branch_change_rows": [
                 {
                     "character_id": row.character_id,
@@ -822,6 +865,10 @@ def write_parsimony_reconstruction_artifacts(
         out_dir / "resolved_states.tsv",
         report,
     )
+    ancestral_states_path = write_parsimony_ancestral_state_table(
+        out_dir / "ancestral_states.tsv",
+        report,
+    )
     branch_changes_path = write_parsimony_reconstruction_branch_change_table(
         out_dir / "branch_changes.tsv",
         report,
@@ -830,6 +877,7 @@ def write_parsimony_reconstruction_artifacts(
     return {
         "steps_path": steps_path,
         "node_states_path": node_states_path,
+        "ancestral_states_path": ancestral_states_path,
         "branch_changes_path": branch_changes_path,
         "run_json_path": run_json_path,
     }
