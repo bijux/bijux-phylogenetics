@@ -22,6 +22,7 @@ from bijux_phylogenetics.engines import (
 from bijux_phylogenetics.parsimony import (
     bootstrap_parsimony,
     consistency_index,
+    jackknife_parsimony,
     load_fitch_character_matrix,
     load_parsimony_character_weights,
     load_parsimony_character_matrix,
@@ -36,8 +37,9 @@ from bijux_phylogenetics.parsimony import (
     score_sankoff,
     score_wagner,
     tree_length,
-    write_parsimony_consistency_artifacts,
     write_parsimony_bootstrap_artifacts,
+    write_parsimony_consistency_artifacts,
+    write_parsimony_jackknife_artifacts,
     write_parsimony_reconstruction_artifacts,
     write_parsimony_rescaled_consistency_artifacts,
     write_parsimony_retention_artifacts,
@@ -278,6 +280,64 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the bootstrap report as JSON."
     )
     _add_manifest_argument(phylo_parsimony_bootstrap)
+    phylo_parsimony_jackknife = phylo_parsimony_subparsers.add_parser(
+        "jackknife",
+        help="Subsample one character matrix without replacement, infer exact small-taxon replicate trees, and map clade support by clade identity.",
+    )
+    phylo_parsimony_jackknife.add_argument("matrix_path", type=Path)
+    phylo_parsimony_jackknife.add_argument(
+        "--method",
+        required=True,
+        choices=[
+            "fitch",
+            "wagner",
+            "sankoff",
+            "dollo",
+            "camin-sokal",
+            "acctran",
+            "deltran",
+        ],
+    )
+    phylo_parsimony_jackknife.add_argument("--taxon-column")
+    phylo_parsimony_jackknife.add_argument(
+        "--replicate-count",
+        required=True,
+        type=int,
+        help="Number of jackknife replicate trees to infer.",
+    )
+    phylo_parsimony_jackknife.add_argument(
+        "--seed",
+        required=True,
+        type=int,
+        help="Deterministic random seed for without-replacement character subsampling.",
+    )
+    phylo_parsimony_jackknife.add_argument(
+        "--retain-probability",
+        type=float,
+        default=0.75,
+        help="Per-character retention probability for jackknife subsampling without replacement.",
+    )
+    phylo_parsimony_jackknife.add_argument(
+        "--cost-matrix",
+        dest="cost_matrix_path",
+        type=Path,
+        help="Required when --method sankoff is selected.",
+    )
+    phylo_parsimony_jackknife.add_argument(
+        "--allow-asymmetric-costs",
+        action="store_true",
+        help="Allow asymmetric Sankoff transition costs when --method sankoff is selected.",
+    )
+    phylo_parsimony_jackknife.add_argument(
+        "--state-order",
+        help="Comma-separated explicit ordered state labels for Wagner jackknife scoring.",
+    )
+    _add_parsimony_character_weights_argument(phylo_parsimony_jackknife)
+    phylo_parsimony_jackknife.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_jackknife.add_argument(
+        "--json", action="store_true", help="Emit the jackknife report as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_jackknife)
     phylo_parsimony_tree_length = phylo_parsimony_subparsers.add_parser(
         "tree-length",
         help="Summarize per-character and total tree length for one parsimony scoring method.",
@@ -584,6 +644,44 @@ def run_phylo_command(args: Any) -> int:
                 "reference_score": report.reference_score,
                 "support_row_count": len(report.clade_support_rows),
             }
+        elif args.phylo_parsimony_command == "jackknife":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            character_weights = _load_parsimony_character_weights_argument(args)
+            cost_matrix = (
+                load_sankoff_cost_matrix(
+                    args.cost_matrix_path,
+                    allow_asymmetric_costs=args.allow_asymmetric_costs,
+                )
+                if getattr(args, "cost_matrix_path", None) is not None
+                else None
+            )
+            state_order = _split_state_order(getattr(args, "state_order", None))
+            report = jackknife_parsimony(
+                matrix,
+                method=args.method,
+                replicate_count=args.replicate_count,
+                random_seed=args.seed,
+                retain_probability=args.retain_probability,
+                state_order=state_order,
+                cost_matrix=cost_matrix,
+                allow_asymmetric_costs=args.allow_asymmetric_costs,
+                character_weights=character_weights,
+            )
+            artifact_paths = write_parsimony_jackknife_artifacts(args.out_dir, report)
+            metrics = {
+                "algorithm": report.algorithm,
+                "method": report.method,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "replicate_count": report.replicate_count,
+                "retain_probability": report.retain_probability,
+                "candidate_tree_count": report.candidate_tree_count,
+                "reference_score": report.reference_score,
+                "support_row_count": len(report.clade_support_rows),
+            }
         elif args.phylo_parsimony_command == "tree-length":
             matrix = load_parsimony_character_matrix(
                 args.matrix_path,
@@ -707,6 +805,10 @@ def run_phylo_command(args: Any) -> int:
                 if hasattr(args, "cost_matrix_path")
                 and (
                     args.phylo_parsimony_command == "sankoff"
+                    or (
+                        args.phylo_parsimony_command == "jackknife"
+                        and getattr(args, "cost_matrix_path", None) is not None
+                    )
                     or (
                         args.phylo_parsimony_command == "bootstrap"
                         and getattr(args, "cost_matrix_path", None) is not None
