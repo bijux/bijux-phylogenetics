@@ -300,6 +300,7 @@ bijux-phylogenetics alignment distance-assumptions alignment.fasta --model p-dis
 bijux-phylogenetics alignment build-tree alignment.fasta --method bionj --out bionj-tree.nwk
 bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out upgma-tree.nwk
 bijux-phylogenetics alignment build-tree alignment.fasta --method complete-linkage --out complete-linkage-tree.nwk
+bijux-phylogenetics distance minimum-evolution matrix.tsv fixed-topology.nwk --out fitted-tree.nwk
 bijux-phylogenetics alignment compare-distance-to-tree alignment.fasta inferred-tree.nwk --method neighbor-joining --json
 bijux-phylogenetics alignment bootstrap-tree alignment.fasta --method neighbor-joining --replicates 200 --support-out artifacts/distance-support.tsv --tree-set-out artifacts/distance-bootstrap.trees --json
 bijux-phylogenetics alignment distance-support-summary alignment.fasta --method neighbor-joining --replicates 50 --json
@@ -2102,6 +2103,9 @@ single-linkage, complete-linkage, UPGMA, or WPGMA tree.
 Within that clustering lane, UPGMA, WPGMA, single-linkage, and
 complete-linkage now route through one shared agglomerative engine with
 explicit method-specific update rules instead of carrying separate merge loops.
+Fixed topologies can also be re-fitted against imported distance matrices and
+scored by total fitted branch length through the owned minimum-evolution
+surface, which ignores any pre-existing branch lengths on the input tree.
 The owned tree-manipulation core now also lives directly on `PhyloTree`.
 Outgroup rooting, unrooting, keep-tip pruning, drop-tip pruning, clade
 extraction, MRCA lookup, and monophyly review all run through one native
