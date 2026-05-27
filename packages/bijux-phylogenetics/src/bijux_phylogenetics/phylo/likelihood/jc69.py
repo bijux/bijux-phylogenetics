@@ -13,8 +13,6 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
     UNIFORM_DNA_ROOT_PRIOR,
     normalize_unambiguous_dna_records,
     one_hot_dna_leaf_vector,
-    validate_explicit_branch_lengths,
-    validate_tree_taxa_against_patterns,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
     Jc69BranchLengthOptimizationReport,
@@ -34,6 +32,10 @@ from bijux_phylogenetics.phylo.likelihood.pruning import (
 )
 from bijux_phylogenetics.phylo.likelihood.sites import (
     sum_compressed_site_pattern_log_likelihoods,
+)
+from bijux_phylogenetics.phylo.likelihood.validation import (
+    validate_explicit_branch_lengths,
+    validate_tree_taxa_against_patterns,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError

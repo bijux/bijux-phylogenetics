@@ -18,8 +18,6 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
     one_hot_dna_leaf_vector,
     validate_dna_base_frequencies,
     validate_dna_exchangeabilities,
-    validate_explicit_branch_lengths,
-    validate_tree_taxa_against_patterns,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
     GtrExchangeabilityOptimizationReport,
@@ -39,6 +37,10 @@ from bijux_phylogenetics.phylo.likelihood.pruning import (
 )
 from bijux_phylogenetics.phylo.likelihood.sites import (
     sum_compressed_site_pattern_log_likelihoods,
+)
+from bijux_phylogenetics.phylo.likelihood.validation import (
+    validate_explicit_branch_lengths,
+    validate_tree_taxa_against_patterns,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
