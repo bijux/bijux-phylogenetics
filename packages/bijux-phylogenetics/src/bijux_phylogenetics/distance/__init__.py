@@ -6,48 +6,53 @@ from bijux_phylogenetics.phylo.alignment import DnaBinAlignment
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 from .models import (
-    AmbiguityPolicy,
-    DistanceBootstrapReport,
-    DistanceBootstrapSupportSummary,
-    DistanceGapPolicySensitivityReport,
-    DistanceMatrixQualityReport,
-    DistanceMethodAssessment,
-    DistanceMethodAssumptionReport,
-    DistanceMethodMaturityGateReport,
-    DistanceMethodReport,
-    DistanceModel,
-    DistanceModelComparisonReport,
-    DistanceOutlierPair,
-    DistanceReferenceObservation,
-    DistanceReferenceValidationReport,
-    DistanceReproducibilityBundleReport,
-    DistanceTreeBuildReport,
-    DistanceTreeMethodPolicy,
-    DistanceTreeReferenceComparisonReport,
-    DistanceTreeReferenceObservation,
-    DistanceTreeTopologyComparison,
-    GapHandlingMode,
-    GeneticDistanceMatrix,
-    GeneticDistanceModelParameters,
-    ImportedDistanceEntry,
-    ImportedDistanceMatrixQualityReport,
-    ImportedDistanceMatrixReport,
-    ImportedDistanceTreeBuildReport,
-    LowInformationPair,
-    NonMetricDistanceObservation,
-    SaturatedDistancePair,
-    UPGMAUltrametricViolation,
+    AmbiguityPolicy as AmbiguityPolicy,
+    DistanceBootstrapReport as DistanceBootstrapReport,
+    DistanceBootstrapSupportSummary as DistanceBootstrapSupportSummary,
+    DistanceGapPolicySensitivityReport as DistanceGapPolicySensitivityReport,
+    DistanceMatrixQualityReport as DistanceMatrixQualityReport,
+    DistanceMethodAssessment as DistanceMethodAssessment,
+    DistanceMethodAssumptionReport as DistanceMethodAssumptionReport,
+    DistanceMethodMaturityGateReport as DistanceMethodMaturityGateReport,
+    DistanceMethodReport as DistanceMethodReport,
+    DistanceModel as DistanceModel,
+    DistanceModelComparisonReport as DistanceModelComparisonReport,
+    DistanceOutlierPair as DistanceOutlierPair,
+    DistanceReferenceObservation as DistanceReferenceObservation,
+    DistanceReferenceValidationReport as DistanceReferenceValidationReport,
+    DistanceReproducibilityBundleReport as DistanceReproducibilityBundleReport,
+    DistanceTreeBuildReport as DistanceTreeBuildReport,
+    DistanceTreeMethodPolicy as DistanceTreeMethodPolicy,
+    DistanceTreeReferenceComparisonReport as DistanceTreeReferenceComparisonReport,
+    DistanceTreeReferenceObservation as DistanceTreeReferenceObservation,
+    DistanceTreeTopologyComparison as DistanceTreeTopologyComparison,
+    GapHandlingMode as GapHandlingMode,
+    GeneticDistanceMatrix as GeneticDistanceMatrix,
+    GeneticDistanceModelParameters as GeneticDistanceModelParameters,
+    ImportedDistanceEntry as ImportedDistanceEntry,
+    ImportedDistanceMatrixQualityReport as ImportedDistanceMatrixQualityReport,
+    ImportedDistanceMatrixReport as ImportedDistanceMatrixReport,
+    ImportedDistanceTreeBuildReport as ImportedDistanceTreeBuildReport,
+    LowInformationPair as LowInformationPair,
+    NonMetricDistanceObservation as NonMetricDistanceObservation,
+    SaturatedDistancePair as SaturatedDistancePair,
+    UPGMAUltrametricViolation as UPGMAUltrametricViolation,
 )
 from .shared import (
-    _allowed_models_for_alphabet,
-    _file_sha256,
-    _iter_ultrametric_violations,
-    _normalize_distance_model,
-    _pair_key,
-    _require_supported_distance_tree_method,
-    _unique_genetic_distance_pairs,
-    list_distance_tree_method_policies,
-    resolve_distance_tree_method_policy,
+    _allowed_models_for_alphabet as _allowed_models_for_alphabet,
+    _file_sha256 as _file_sha256,
+    _iter_ultrametric_violations as _iter_ultrametric_violations,
+    _normalize_distance_model as _normalize_distance_model,
+    _pair_key as _pair_key,
+    _require_supported_distance_tree_method as _require_supported_distance_tree_method,
+    _unique_genetic_distance_pairs as _unique_genetic_distance_pairs,
+    list_distance_tree_method_policies as list_distance_tree_method_policies,
+    resolve_distance_tree_method_policy as resolve_distance_tree_method_policy,
+)
+from .upgma import (
+    UPGMABuildReport as UPGMABuildReport,
+    UPGMAClusterHeightRow as UPGMAClusterHeightRow,
+    UPGMAMergeRow as UPGMAMergeRow,
 )
 
 
@@ -125,6 +130,15 @@ def _distance_lookup(report: GeneticDistanceMatrix) -> dict[tuple[str, str], flo
     from .matrix import _distance_lookup as distance_lookup_impl
 
     return distance_lookup_impl(report)
+
+
+def build_upgma_tree(
+    identifiers: list[str],
+    distance_lookup: dict[tuple[str, str], float],
+) -> tuple[PhyloTree, UPGMABuildReport]:
+    from .upgma import build_upgma_tree as build_upgma_impl
+
+    return build_upgma_impl(identifiers, distance_lookup)
 
 
 def load_imported_distance_matrix(path: Path) -> list[ImportedDistanceEntry]:
