@@ -14,6 +14,24 @@ from .f81 import (
 from .f81 import (
     f81_transition_probability_matrix as f81_transition_probability_matrix,
 )
+from .hky85 import (
+    evaluate_hky85_tree_likelihood as evaluate_hky85_tree_likelihood,
+)
+from .hky85 import (
+    evaluate_hky85_tree_likelihood_from_alignment as evaluate_hky85_tree_likelihood_from_alignment,
+)
+from .hky85 import (
+    hky85_rate_matrix as hky85_rate_matrix,
+)
+from .hky85 import (
+    hky85_transition_probability_matrix as hky85_transition_probability_matrix,
+)
+from .hky85 import (
+    optimize_hky85_kappa as optimize_hky85_kappa,
+)
+from .hky85 import (
+    optimize_hky85_kappa_from_alignment as optimize_hky85_kappa_from_alignment,
+)
 from .jc69 import (
     evaluate_jc69_tree_likelihood as evaluate_jc69_tree_likelihood,
 )
@@ -52,6 +70,12 @@ from .k80 import (
 )
 from .models import (
     F81TreeLikelihoodReport as F81TreeLikelihoodReport,
+)
+from .models import (
+    Hky85KappaOptimizationReport as Hky85KappaOptimizationReport,
+)
+from .models import (
+    Hky85TreeLikelihoodReport as Hky85TreeLikelihoodReport,
 )
 from .models import (
     Jc69BranchLengthOptimizationReport as Jc69BranchLengthOptimizationReport,
@@ -107,6 +131,8 @@ __all__ = [
     "CompressedAlignmentSitePatterns",
     "F81TreeLikelihoodReport",
     "FiniteStatePruningPass",
+    "Hky85KappaOptimizationReport",
+    "Hky85TreeLikelihoodReport",
     "Jc69BranchLengthOptimizationReport",
     "Jc69BranchLengthOptimizationStep",
     "Jc69TreeLikelihoodReport",
@@ -117,17 +143,23 @@ __all__ = [
     "compress_alignment_site_patterns_from_records",
     "evaluate_f81_tree_likelihood",
     "evaluate_f81_tree_likelihood_from_alignment",
+    "evaluate_hky85_tree_likelihood",
+    "evaluate_hky85_tree_likelihood_from_alignment",
     "evaluate_k80_tree_likelihood",
     "evaluate_k80_tree_likelihood_from_alignment",
     "evaluate_jc69_tree_likelihood",
     "evaluate_jc69_tree_likelihood_from_alignment",
     "f81_rate_matrix",
     "f81_transition_probability_matrix",
+    "hky85_rate_matrix",
+    "hky85_transition_probability_matrix",
     "k80_rate_matrix",
     "k80_transition_probability_matrix",
     "jc69_rate_matrix",
     "jc69_transition_probability_matrix",
     "log_likelihood_from_root_prior",
+    "optimize_hky85_kappa",
+    "optimize_hky85_kappa_from_alignment",
     "optimize_k80_kappa",
     "optimize_k80_kappa_from_alignment",
     "optimize_jc69_branch_lengths",
