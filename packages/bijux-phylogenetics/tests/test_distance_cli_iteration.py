@@ -146,6 +146,32 @@ def test_cli_distance_minimum_evolution_writes_fitted_tree(
     assert payload["metrics"]["minimum_evolution_score"] == 28.0
 
 
+def test_cli_distance_fitch_margoliash_writes_fitted_tree(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "fitch-margoliash-tree.nwk"
+    exit_code = main(
+        [
+            "distance",
+            "fitch-margoliash",
+            str(fixture("example_distance_matrix_fitch_margoliash_five_taxon.tsv")),
+            str(fixture("example_tree_minimum_evolution_five_taxon.nwk")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((A:1.186387219954,B:0.813612780046):3.461532690732,C:1.538467309268,(D:4.498139020967,E:8.501860979033):6.564266585263);\n"
+    )
+    assert payload["metrics"]["criterion"] == "fitch-margoliash"
+    assert payload["metrics"]["weighting_power"] == 2.0
+    assert payload["metrics"]["residual_sum_squares"] == 4.562310999055
+    assert payload["metrics"]["weighted_residual_sum_squares"] == 0.020472720566
+
+
 def test_cli_distance_bme_nni_search_writes_governed_artifacts(
     tmp_path: Path, capsys
 ) -> None:
