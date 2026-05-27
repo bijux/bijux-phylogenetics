@@ -24,6 +24,7 @@ from bijux_phylogenetics.parsimony import (
     load_parsimony_character_matrix,
     load_sankoff_cost_matrix,
     reconstruct_acctran,
+    reconstruct_deltran,
     score_camin_sokal,
     score_dollo,
     score_fitch,
@@ -190,6 +191,18 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the parsimony reconstruction as JSON."
     )
     _add_manifest_argument(phylo_parsimony_acctran)
+    phylo_parsimony_deltran = phylo_parsimony_subparsers.add_parser(
+        "deltran",
+        help="Resolve one unordered parsimony reconstruction toward later branches with DELTRAN.",
+    )
+    phylo_parsimony_deltran.add_argument("tree_path", type=Path)
+    phylo_parsimony_deltran.add_argument("matrix_path", type=Path)
+    phylo_parsimony_deltran.add_argument("--taxon-column")
+    phylo_parsimony_deltran.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_deltran.add_argument(
+        "--json", action="store_true", help="Emit the parsimony reconstruction as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_deltran)
 
 
 def run_phylo_command(args: Any) -> int:
@@ -277,6 +290,22 @@ def run_phylo_command(args: Any) -> int:
                 taxon_column=args.taxon_column,
             )
             report = reconstruct_acctran(args.tree_path, matrix)
+            artifact_paths = write_parsimony_reconstruction_artifacts(
+                args.out_dir,
+                report,
+            )
+            metrics = {
+                "algorithm": report.algorithm,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "total_steps": report.total_steps,
+            }
+        elif args.phylo_parsimony_command == "deltran":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            report = reconstruct_deltran(args.tree_path, matrix)
             artifact_paths = write_parsimony_reconstruction_artifacts(
                 args.out_dir,
                 report,
