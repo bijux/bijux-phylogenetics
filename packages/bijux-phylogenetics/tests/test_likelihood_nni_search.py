@@ -1,0 +1,185 @@
+from __future__ import annotations
+
+import json
+import math
+from pathlib import Path
+
+import bijux_phylogenetics.parsimony as parsimony_api
+from bijux_phylogenetics.phylo.likelihood import (
+    search_nucleotide_likelihood_nni_from_alignment,
+)
+from bijux_phylogenetics.phylo.likelihood import (
+    write_nucleotide_likelihood_nni_artifacts,
+)
+
+FIXTURES = Path(__file__).parent / "fixtures"
+
+
+def fixture(group: str, name: str) -> Path:
+    return FIXTURES / group / name
+
+
+def test_likelihood_nni_search_uses_likelihood_objective_and_reaches_local_optimum(
+    monkeypatch,
+) -> None:
+    def fail_if_called(*_args, **_kwargs):
+        raise AssertionError("parsimony NNI must not be reused by likelihood NNI search")
+
+    monkeypatch.setattr(parsimony_api, "search_parsimony_nni", fail_if_called)
+
+    report = search_nucleotide_likelihood_nni_from_alignment(
+        fixture("trees", "jc69_likelihood_nni_start_tree_4_taxa.nwk"),
+        fixture("alignments", "jc69_likelihood_nni_alignment_4_taxa.fasta"),
+        model_name="jc69",
+        upper_branch_length_bound=1.0,
+    )
+
+    assert report.algorithm == "nucleotide-likelihood-nni-search"
+    assert report.model_name == "JC69"
+    assert report.taxon_count == 4
+    assert report.site_count == 12
+    assert report.pattern_count == 2
+    assert report.input_tree_newick == "(((A:0.1,C:0.1):0.1,B:0.1):0.1,D:0.1);"
+    assert report.branch_reoptimization_policy == "coordinate-branch-lengths"
+    assert report.substitution_parameter_policy == "fixed-from-model"
+    assert report.substitution_parameter_values == {}
+    assert report.substitution_parameter_warnings == []
+    assert report.start_tree_newick == (
+        "(((A:2.43539016857288e-10,C:0.999999999756461):2.43539016857288e-10,"
+        "B:2.43539016857288e-10):0.999999999756461,D:0.999999999756461);"
+    )
+    assert math.isclose(
+        report.start_log_likelihood,
+        -54.442517349645854,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert report.final_tree_newick == (
+        "((A:2.43539016857288e-10,B:2.43539016857288e-10):0.999999999756461,"
+        "(C:2.43539016857288e-10,D:2.43539016857288e-10):0.999999999756461);"
+    )
+    assert math.isclose(
+        report.final_log_likelihood,
+        -34.13524969797671,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert report.accepted_move_count == 2
+    assert report.evaluated_neighbor_count == 12
+    assert report.total_branch_optimization_pass_count == 27
+    assert report.total_branch_function_evaluation_count == 7627
+    assert report.stopping_reason == "no-improving-neighbor"
+    assert [
+        (
+            row.event_index,
+            row.event_kind,
+            row.iteration,
+            row.pivot_branch_id,
+            row.sibling_clade_id,
+            row.exchanged_clade_id,
+            row.branch_reoptimization_policy,
+            row.branch_optimization_pass_count,
+            row.branch_function_evaluation_count,
+            row.stopping_reason,
+        )
+        for row in report.trace_rows
+    ] == [
+        (
+            1,
+            "start",
+            0,
+            None,
+            None,
+            None,
+            "coordinate-branch-lengths",
+            2,
+            565,
+            None,
+        ),
+        (
+            2,
+            "accepted-move",
+            1,
+            "A|C",
+            "B",
+            "C",
+            "coordinate-branch-lengths",
+            3,
+            847,
+            None,
+        ),
+        (
+            3,
+            "accepted-move",
+            2,
+            "A|B|C",
+            "D",
+            "A|B",
+            "coordinate-branch-lengths",
+            2,
+            565,
+            None,
+        ),
+        (
+            4,
+            "final",
+            2,
+            None,
+            None,
+            None,
+            "coordinate-branch-lengths",
+            0,
+            0,
+            "no-improving-neighbor",
+        ),
+    ]
+    assert math.isclose(
+        report.trace_rows[1].log_likelihood_delta or 0.0,
+        17.499717347003227,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        report.trace_rows[2].log_likelihood_delta or 0.0,
+        2.8075503046659165,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert report.trace_rows[-1].tree_after_newick == report.final_tree_newick
+
+
+def test_write_nucleotide_likelihood_nni_artifacts_materializes_governed_output_family(
+    tmp_path: Path,
+) -> None:
+    report = search_nucleotide_likelihood_nni_from_alignment(
+        fixture("trees", "jc69_likelihood_nni_start_tree_4_taxa.nwk"),
+        fixture("alignments", "jc69_likelihood_nni_alignment_4_taxa.fasta"),
+        model_name="jc69",
+        upper_branch_length_bound=1.0,
+    )
+
+    outputs = write_nucleotide_likelihood_nni_artifacts(
+        tmp_path / "likelihood-nni-run",
+        report,
+    )
+
+    assert set(outputs) == {
+        "input_tree_path",
+        "start_tree_path",
+        "final_tree_path",
+        "trace_path",
+        "run_json_path",
+    }
+    assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
+        "event_index\tevent_kind\titeration\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tbranch_reoptimization_policy\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tstopping_reason\n"
+    )
+    payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
+    assert payload["algorithm"] == "nucleotide-likelihood-nni-search"
+    assert payload["model_name"] == "JC69"
+    assert payload["branch_reoptimization_policy"] == "coordinate-branch-lengths"
+    assert payload["substitution_parameter_policy"] == "fixed-from-model"
+    assert payload["accepted_move_count"] == 2
+    assert payload["evaluated_neighbor_count"] == 12
+    assert payload["total_branch_optimization_pass_count"] == 27
+    assert payload["total_branch_function_evaluation_count"] == 7627
+    assert payload["stopping_reason"] == "no-improving-neighbor"
