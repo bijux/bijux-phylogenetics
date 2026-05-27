@@ -177,8 +177,8 @@ def optimize_gtr_exchangeabilities(
     ) = None,
     lower_exchangeability_bound: float = 0.05,
     upper_exchangeability_bound: float = 20.0,
-    max_coordinate_passes: int = 12,
-    improvement_tolerance: float = 1e-9,
+    max_coordinate_passes: int = 24,
+    improvement_tolerance: float = 1e-5,
 ) -> GtrExchangeabilityOptimizationReport:
     """Optimize one fixed-topology GTR exchangeability surface with AC anchored at one."""
     if lower_exchangeability_bound <= 0.0:
@@ -289,8 +289,8 @@ def optimize_gtr_exchangeabilities_from_alignment(
     ) = None,
     lower_exchangeability_bound: float = 0.05,
     upper_exchangeability_bound: float = 20.0,
-    max_coordinate_passes: int = 12,
-    improvement_tolerance: float = 1e-9,
+    max_coordinate_passes: int = 24,
+    improvement_tolerance: float = 1e-5,
 ) -> GtrExchangeabilityOptimizationReport:
     """Optimize GTR exchangeabilities from one tree path and one alignment path."""
     return optimize_gtr_exchangeabilities(
