@@ -3,11 +3,18 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
+from bijux_phylogenetics.io.newick import loads_newick, write_newick, write_newick_tree_set
 from bijux_phylogenetics.reports.service.artifacts import write_json_artifact
+from bijux_phylogenetics.trees import (
+    compute_clade_frequency_table,
+    compute_consensus_tree,
+    write_clade_frequency_table,
+)
 
 from .models import (
     CaminSokalScoreReport,
     DolloScoreReport,
+    ParsimonyBootstrapReport,
     FitchScoreReport,
     ParsimonyConsistencyIndexReport,
     ParsimonyReconstructionReport,
@@ -1212,5 +1219,184 @@ def write_parsimony_rescaled_consistency_artifacts(
     )
     return {
         "indices_path": indices_path,
+        "run_json_path": run_json_path,
+    }
+
+
+def write_parsimony_bootstrap_replicate_scores_table(
+    path: Path,
+    report: ParsimonyBootstrapReport,
+) -> Path:
+    """Write one deterministic exact-search bootstrap replicate score table."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "replicate_index",
+            "best_score",
+            "optimal_tree_count",
+            "tree_newick",
+        ],
+        rows=[
+            {
+                "replicate_index": row.replicate_index,
+                "best_score": row.best_score,
+                "optimal_tree_count": row.optimal_tree_count,
+                "tree_newick": row.tree_newick,
+            }
+            for row in report.replicate_rows
+        ],
+    )
+
+
+def write_parsimony_bootstrap_replicate_draws_table(
+    path: Path,
+    report: ParsimonyBootstrapReport,
+) -> Path:
+    """Write one deterministic bootstrap character-draw ledger."""
+    return write_taxon_rows(
+        path,
+        columns=["replicate_index", "draw_index", "source_character_id"],
+        rows=[
+            {
+                "replicate_index": row.replicate_index,
+                "draw_index": draw_index,
+                "source_character_id": source_character_id,
+            }
+            for row in report.replicate_rows
+            for draw_index, source_character_id in enumerate(
+                row.sampled_character_ids,
+                start=1,
+            )
+        ],
+    )
+
+
+def write_parsimony_bootstrap_clade_support_table(
+    path: Path,
+    report: ParsimonyBootstrapReport,
+) -> Path:
+    """Write one deterministic reference-tree bootstrap support table."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "branch_id",
+            "node_name",
+            "descendant_taxa",
+            "supporting_tree_count",
+            "clade_frequency",
+            "support_percent",
+        ],
+        rows=[
+            {
+                "branch_id": row.branch_id,
+                "node_name": row.node_name,
+                "descendant_taxa": "|".join(row.descendant_taxa),
+                "supporting_tree_count": row.supporting_tree_count,
+                "clade_frequency": row.clade_frequency,
+                "support_percent": row.support_percent,
+            }
+            for row in report.clade_support_rows
+        ],
+    )
+
+
+def write_parsimony_bootstrap_run_json(
+    path: Path,
+    report: ParsimonyBootstrapReport,
+) -> Path:
+    """Write one machine-readable exact-search parsimony bootstrap payload."""
+    return write_json_artifact(
+        path,
+        {
+            "algorithm": report.algorithm,
+            "method": report.method,
+            "matrix_path": None
+            if report.matrix_path is None
+            else str(report.matrix_path),
+            "cost_matrix_path": None
+            if report.cost_matrix_path is None
+            else str(report.cost_matrix_path),
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "taxon_column": report.taxon_column,
+            "taxon_count": report.taxon_count,
+            "character_count": report.character_count,
+            "replicate_count": report.replicate_count,
+            "random_seed": report.random_seed,
+            "candidate_tree_count": report.candidate_tree_count,
+            "max_exact_taxa": report.max_exact_taxa,
+            "reference_score": report.reference_score,
+            "reference_optimal_tree_count": report.reference_optimal_tree_count,
+            "reference_tree_newick": report.reference_tree_newick,
+            "replicate_rows": [
+                {
+                    "replicate_index": row.replicate_index,
+                    "sampled_character_ids": row.sampled_character_ids,
+                    "best_score": row.best_score,
+                    "optimal_tree_count": row.optimal_tree_count,
+                    "tree_newick": row.tree_newick,
+                }
+                for row in report.replicate_rows
+            ],
+            "clade_support_rows": [
+                {
+                    "branch_id": row.branch_id,
+                    "node_name": row.node_name,
+                    "descendant_taxa": row.descendant_taxa,
+                    "supporting_tree_count": row.supporting_tree_count,
+                    "clade_frequency": row.clade_frequency,
+                    "support_percent": row.support_percent,
+                }
+                for row in report.clade_support_rows
+            ],
+        },
+    )
+
+
+def write_parsimony_bootstrap_artifacts(
+    out_dir: Path,
+    report: ParsimonyBootstrapReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one parsimony bootstrap run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    reference_tree_path = write_newick(
+        out_dir / "reference_tree.nwk",
+        loads_newick(report.reference_tree_newick),
+    )
+    replicate_trees_path = write_newick_tree_set(
+        out_dir / "replicate_trees.nwk",
+        [loads_newick(row.tree_newick) for row in report.replicate_rows],
+    )
+    replicate_scores_path = write_parsimony_bootstrap_replicate_scores_table(
+        out_dir / "replicate_scores.tsv",
+        report,
+    )
+    replicate_draws_path = write_parsimony_bootstrap_replicate_draws_table(
+        out_dir / "replicate_draws.tsv",
+        report,
+    )
+    clade_support_path = write_parsimony_bootstrap_clade_support_table(
+        out_dir / "clade_support.tsv",
+        report,
+    )
+    consensus_tree, clade_frequency_report = (
+        compute_consensus_tree(replicate_trees_path)[0],
+        compute_clade_frequency_table(replicate_trees_path),
+    )
+    consensus_tree_path = write_newick(out_dir / "consensus_tree.nwk", consensus_tree)
+    clade_frequencies_path = write_clade_frequency_table(
+        out_dir / "clade_frequencies.tsv",
+        clade_frequency_report,
+    )
+    run_json_path = write_parsimony_bootstrap_run_json(out_dir / "run.json", report)
+    return {
+        "reference_tree_path": reference_tree_path,
+        "replicate_trees_path": replicate_trees_path,
+        "replicate_scores_path": replicate_scores_path,
+        "replicate_draws_path": replicate_draws_path,
+        "clade_support_path": clade_support_path,
+        "consensus_tree_path": consensus_tree_path,
+        "clade_frequencies_path": clade_frequencies_path,
         "run_json_path": run_json_path,
     }

@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 from .artifacts import (
+    write_parsimony_bootstrap_artifacts,
+    write_parsimony_bootstrap_clade_support_table,
+    write_parsimony_bootstrap_replicate_draws_table,
+    write_parsimony_bootstrap_replicate_scores_table,
+    write_parsimony_bootstrap_run_json,
     write_parsimony_consistency_artifacts,
     write_parsimony_consistency_index_table,
     write_parsimony_consistency_run_json,
@@ -41,6 +46,7 @@ from .artifacts import (
     write_wagner_run_json,
     write_wagner_steps_table,
 )
+from .bootstrap import bootstrap_parsimony
 from .camin_sokal import score_camin_sokal
 from .consistency import consistency_index
 from .cost_matrix import load_sankoff_cost_matrix
@@ -66,6 +72,9 @@ from .models import (
     ParsimonyConsistencyIndexReport,
     ParsimonyCharacterWeights,
     ParsimonyAncestralState,
+    ParsimonyBootstrapCladeSupport,
+    ParsimonyBootstrapReplicate,
+    ParsimonyBootstrapReport,
     ParsimonyReconstructionBranchChange,
     ParsimonyReconstructionCharacterScore,
     ParsimonyReconstructionNodeState,
@@ -98,6 +107,7 @@ __all__ = [
     "CaminSokalBranchChange",
     "CaminSokalCharacterScore",
     "CaminSokalScoreReport",
+    "bootstrap_parsimony",
     "consistency_index",
     "DolloBranchChange",
     "DolloCharacterScore",
@@ -116,6 +126,9 @@ __all__ = [
     "ParsimonyConsistencyIndexReport",
     "ParsimonyCharacterWeights",
     "ParsimonyAncestralState",
+    "ParsimonyBootstrapCladeSupport",
+    "ParsimonyBootstrapReplicate",
+    "ParsimonyBootstrapReport",
     "ParsimonyReconstructionBranchChange",
     "ParsimonyReconstructionCharacterScore",
     "ParsimonyReconstructionNodeState",
@@ -152,6 +165,11 @@ __all__ = [
     "write_parsimony_consistency_run_json",
     "write_parsimony_reconstruction_artifacts",
     "write_parsimony_ancestral_state_table",
+    "write_parsimony_bootstrap_artifacts",
+    "write_parsimony_bootstrap_clade_support_table",
+    "write_parsimony_bootstrap_replicate_draws_table",
+    "write_parsimony_bootstrap_replicate_scores_table",
+    "write_parsimony_bootstrap_run_json",
     "write_parsimony_reconstruction_branch_change_table",
     "write_parsimony_reconstruction_node_state_table",
     "write_parsimony_reconstruction_run_json",
