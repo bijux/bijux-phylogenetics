@@ -9,6 +9,9 @@ from .artifacts import (
     write_parsimony_reconstruction_node_state_table,
     write_parsimony_reconstruction_run_json,
     write_parsimony_reconstruction_steps_table,
+    write_parsimony_retention_artifacts,
+    write_parsimony_retention_index_table,
+    write_parsimony_retention_run_json,
     write_parsimony_tree_length_artifacts,
     write_parsimony_tree_length_run_json,
     write_parsimony_tree_length_scores_table,
@@ -61,6 +64,8 @@ from .models import (
     ParsimonyReconstructionCharacterScore,
     ParsimonyReconstructionNodeState,
     ParsimonyReconstructionReport,
+    ParsimonyRetentionCharacterIndex,
+    ParsimonyRetentionIndexReport,
     ParsimonyTreeLengthCharacterScore,
     ParsimonyTreeLengthReport,
     SankoffCharacterScore,
@@ -73,6 +78,7 @@ from .models import (
     WagnerScoreReport,
 )
 from .reconstruction import reconstruct_acctran, reconstruct_deltran
+from .retention import retention_index
 from .sankoff import score_sankoff
 from .tree_length import load_parsimony_character_weights, tree_length
 from .wagner import score_wagner
@@ -100,6 +106,8 @@ __all__ = [
     "ParsimonyReconstructionCharacterScore",
     "ParsimonyReconstructionNodeState",
     "ParsimonyReconstructionReport",
+    "ParsimonyRetentionCharacterIndex",
+    "ParsimonyRetentionIndexReport",
     "ParsimonyTreeLengthCharacterScore",
     "ParsimonyTreeLengthReport",
     "reconstruct_acctran",
@@ -109,6 +117,7 @@ __all__ = [
     "score_fitch",
     "score_sankoff",
     "score_wagner",
+    "retention_index",
     "tree_length",
     "load_parsimony_character_weights",
     "SankoffCharacterScore",
@@ -128,6 +137,9 @@ __all__ = [
     "write_parsimony_reconstruction_node_state_table",
     "write_parsimony_reconstruction_run_json",
     "write_parsimony_reconstruction_steps_table",
+    "write_parsimony_retention_artifacts",
+    "write_parsimony_retention_index_table",
+    "write_parsimony_retention_run_json",
     "write_parsimony_tree_length_artifacts",
     "write_parsimony_tree_length_run_json",
     "write_parsimony_tree_length_scores_table",

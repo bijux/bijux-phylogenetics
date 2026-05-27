@@ -359,3 +359,38 @@ class ParsimonyConsistencyIndexReport:
     consistency_index: float | None
     undefined_reason: str | None
     character_rows: list[ParsimonyConsistencyCharacterIndex]
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyRetentionCharacterIndex:
+    """Per-character retention-index row."""
+
+    character_id: str
+    character_kind: str
+    observed_states: list[str]
+    minimum_possible_steps: float
+    maximum_possible_steps: float
+    observed_steps: float
+    retention_index: float | None
+    undefined_reason: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyRetentionIndexReport:
+    """Complete retention-index summary over one matrix and parsimony method."""
+
+    algorithm: str
+    method: str
+    tree_path: Path | None
+    matrix_path: Path | None
+    taxon_column: str
+    taxon_count: int
+    character_count: int
+    included_character_count: int
+    excluded_character_count: int
+    minimum_possible_steps_total: float
+    maximum_possible_steps_total: float
+    observed_steps_total: float
+    retention_index: float | None
+    undefined_reason: str | None
+    character_rows: list[ParsimonyRetentionCharacterIndex]
