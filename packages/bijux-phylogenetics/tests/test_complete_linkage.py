@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.distance.single_linkage as single_linkage_module
+import bijux_phylogenetics.distance.extremal_linkage as extremal_linkage_module
 from bijux_phylogenetics.distance import (
     build_complete_linkage_tree,
     build_single_linkage_tree,
@@ -105,7 +105,7 @@ def test_build_complete_linkage_tree_differs_from_single_linkage_on_compact_clus
     ]
 
 
-def test_build_complete_linkage_tree_does_not_delegate_to_single_linkage(
+def test_build_complete_linkage_tree_routes_through_shared_agglomerative_engine(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     identifiers, lookup = _lookup_from_imported_matrix(
@@ -113,16 +113,15 @@ def test_build_complete_linkage_tree_does_not_delegate_to_single_linkage(
     )
 
     def _boom(*_args: object, **_kwargs: object) -> object:
-        raise AssertionError("complete-linkage must not call single-linkage builder")
+        raise AssertionError("complete-linkage must call the shared agglomerative engine")
 
     monkeypatch.setattr(
-        single_linkage_module,
-        "build_single_linkage_tree",
+        extremal_linkage_module,
+        "build_agglomerative_clustering_tree",
         _boom,
     )
-    tree, report = build_complete_linkage_tree(identifiers, lookup)
-    assert dumps_newick(tree).endswith(";")
-    assert report.merge_history[-1].pair_distance == 11.0
+    with pytest.raises(AssertionError, match="shared agglomerative engine"):
+        build_complete_linkage_tree(identifiers, lookup)
 
 
 def test_build_tree_from_imported_distance_matrix_supports_complete_linkage() -> None:

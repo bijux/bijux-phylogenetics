@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+import bijux_phylogenetics.distance.average_linkage as average_linkage_module
 from bijux_phylogenetics.distance import (
     build_tree_from_imported_distance_matrix,
     build_upgma_tree,
@@ -133,3 +134,22 @@ def test_build_tree_from_imported_distance_matrix_rejects_asymmetric_wpgma_input
         )
     assert error.value.code == "invalid_distance_matrix_error"
     assert "asymmetric directional entries" in str(error.value)
+
+
+def test_build_wpgma_tree_routes_through_shared_agglomerative_engine(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    identifiers, lookup = _lookup_from_imported_matrix(
+        fixture("example_distance_matrix_wpgma_uneven_cluster.tsv")
+    )
+
+    def _boom(*_args: object, **_kwargs: object) -> object:
+        raise AssertionError("wpgma must call the shared agglomerative engine")
+
+    monkeypatch.setattr(
+        average_linkage_module,
+        "build_agglomerative_clustering_tree",
+        _boom,
+    )
+    with pytest.raises(AssertionError, match="shared agglomerative engine"):
+        build_wpgma_tree(identifiers, lookup)
