@@ -146,6 +146,53 @@ def test_cli_distance_minimum_evolution_writes_fitted_tree(
     assert payload["metrics"]["minimum_evolution_score"] == 28.0
 
 
+def test_cli_distance_bme_nni_search_writes_governed_artifacts(
+    tmp_path: Path, capsys
+) -> None:
+    out_dir = tmp_path / "bme-nni-search"
+    exit_code = main(
+        [
+            "distance",
+            "bme-nni-search",
+            str(
+                fixture(
+                    "example_distance_matrix_balanced_minimum_evolution_nni_five_taxon.tsv"
+                )
+            ),
+            "--start-method",
+            "bionj",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert (out_dir / "start_tree.nwk").read_text(encoding="utf-8") == (
+        "(((A,E)Inner1,D)Inner2,B,C)Inner3;\n"
+    )
+    assert (out_dir / "final_tree.nwk").read_text(encoding="utf-8") == (
+        "(((A,D)Inner1,E)Inner2,B,C)Inner3;\n"
+    )
+    assert (out_dir / "search_trace.tsv").read_text(encoding="utf-8") == (
+        "event_index\tevent_kind\titeration\tscore_before\tscore_after\tscore_delta\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tstopping_reason\n"
+        "1\tstart\t0\t\t34\t\t\t(((A,E)Inner1,D)Inner2,B,C)Inner3;\t\t\t\t\n"
+        "2\taccepted-move\t1\t34\t33.75\t-0.25\t(((A,E)Inner1,D)Inner2,B,C)Inner3;\t(((A,D)Inner1,E)Inner2,B,C)Inner3;\tA|E\tD\tE\t\n"
+        "3\tfinal\t1\t\t33.75\t\t\t(((A,D)Inner1,E)Inner2,B,C)Inner3;\t\t\t\tno-improving-neighbor\n"
+    )
+    run_payload = json.loads((out_dir / "run.json").read_text(encoding="utf-8"))
+    assert run_payload["algorithm"] == "balanced-minimum-evolution-nni-search"
+    assert run_payload["start_method"] == "bionj"
+    assert run_payload["accepted_move_count"] == 1
+    assert run_payload["final_score"] == 33.75
+    assert payload["metrics"]["algorithm"] == "balanced-minimum-evolution-nni-search"
+    assert payload["metrics"]["start_method"] == "bionj"
+    assert payload["metrics"]["accepted_move_count"] == 1
+    assert payload["metrics"]["start_score"] == 34.0
+    assert payload["metrics"]["final_score"] == 33.75
+    assert payload["metrics"]["stopping_reason"] == "no-improving-neighbor"
+
+
 def test_cli_alignment_bootstrap_tree_writes_outputs(tmp_path: Path, capsys) -> None:
     support_path = tmp_path / "support.tsv"
     tree_set_path = tmp_path / "bootstrap.trees"
