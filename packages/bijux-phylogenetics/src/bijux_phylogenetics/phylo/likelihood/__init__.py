@@ -239,6 +239,12 @@ from .patterns import (
 from .patterns import (
     compress_alignment_site_patterns_from_records as compress_alignment_site_patterns_from_records,
 )
+from .posteriors import (
+    compute_marginal_state_posteriors as compute_marginal_state_posteriors,
+)
+from .posteriors import (
+    FiniteStateMarginalPosteriorPass as FiniteStateMarginalPosteriorPass,
+)
 from .pruning import (
     FiniteStatePruningPass as FiniteStatePruningPass,
 )
