@@ -15,6 +15,7 @@ from bijux_phylogenetics.distance import (
     build_tree_from_imported_distance_matrix,
     fit_fitch_margoliash_tree_from_imported_distance_matrix,
     fit_minimum_evolution_tree_from_imported_distance_matrix,
+    fit_ordinary_least_squares_tree_from_imported_distance_matrix,
     inspect_imported_distance_matrix_quality,
     search_balanced_minimum_evolution_nni_from_imported_distance_matrix,
     validate_distance_reference_examples,
@@ -107,6 +108,20 @@ def add_distance_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the Fitch-Margoliash fit as JSON."
     )
     _add_manifest_argument(distance_fitch_margoliash)
+
+    distance_ordinary_least_squares = distance_subparsers.add_parser(
+        "ordinary-least-squares",
+        help="Fit one fixed tree topology to an imported distance matrix by ordinary least squares.",
+    )
+    distance_ordinary_least_squares.add_argument("matrix", type=Path)
+    distance_ordinary_least_squares.add_argument("tree", type=Path)
+    distance_ordinary_least_squares.add_argument("--out", required=True, type=Path)
+    distance_ordinary_least_squares.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the ordinary least-squares fit as JSON.",
+    )
+    _add_manifest_argument(distance_ordinary_least_squares)
 
     distance_bme_nni = distance_subparsers.add_parser(
         "bme-nni-search",
@@ -317,6 +332,38 @@ def run_distance_command(args: Any) -> int:
                     "weighting_power": report.weighting_power,
                     "residual_sum_squares": report.residual_sum_squares,
                     "weighted_residual_sum_squares": report.weighted_residual_sum_squares,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+    if args.distance_command == "ordinary-least-squares":
+        tree, report = fit_ordinary_least_squares_tree_from_imported_distance_matrix(
+            args.matrix,
+            args.tree,
+        )
+        output_path = write_newick(args.out, tree)
+        outputs = _finalize_outputs(
+            args,
+            command="distance",
+            inputs=[args.matrix, args.tree],
+            outputs=[output_path],
+        )
+        _print_result(
+            build_command_result(
+                command="distance",
+                inputs=[args.matrix, args.tree],
+                outputs=outputs,
+                metrics={
+                    "criterion": "ordinary-least-squares",
+                    "taxon_count": len(report.taxa),
+                    "pair_count": report.pair_count,
+                    "branch_count": report.branch_count,
+                    "residual_sum_squares": report.residual_sum_squares,
+                    "matrix_rank": report.matrix_rank,
+                    "condition_number": report.condition_number,
+                    "negative_branch_count": report.negative_branch_count,
                 },
                 data=report,
             ),
