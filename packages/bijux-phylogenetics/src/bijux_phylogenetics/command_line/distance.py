@@ -13,6 +13,7 @@ from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.distance import (
+    compare_distance_tree_methods_from_imported_distance_matrix,
     analyze_distance_taxon_jackknife_from_imported_distance_matrix,
     analyze_distance_taxon_influence_from_imported_distance_matrix,
     assess_imported_distance_method_assumptions,
@@ -29,6 +30,7 @@ from bijux_phylogenetics.distance import (
     validate_distance_reference_examples,
     validate_imported_distance_matrix,
     write_distance_additivity_artifacts,
+    write_distance_method_comparison_artifacts,
     write_balanced_minimum_evolution_nni_artifacts,
     write_distance_taxon_jackknife_artifacts,
     write_distance_taxon_influence_artifacts,
@@ -217,6 +219,20 @@ def add_distance_commands(subparsers: Any) -> None:
         help="Emit the distance taxon jackknife diagnostics as JSON.",
     )
     _add_manifest_argument(distance_taxon_jackknife)
+
+    distance_method_comparison = distance_subparsers.add_parser(
+        "method-comparison",
+        help="Build the owned distance-tree methods on one matrix and compare their topologies, residuals, and fixed-topology scores.",
+    )
+    distance_method_comparison.add_argument("matrix", type=Path)
+    _add_missing_distance_policy_argument(distance_method_comparison)
+    distance_method_comparison.add_argument("--out-dir", required=True, type=Path)
+    distance_method_comparison.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the distance method comparison report as JSON.",
+    )
+    _add_manifest_argument(distance_method_comparison)
 
     distance_bme_nni = distance_subparsers.add_parser(
         "bme-nni-search",
@@ -646,6 +662,37 @@ def run_distance_command(args: Any) -> int:
                     "topology_changed_taxon_count": sum(
                         1 for row in report.rows if row.topology_changed
                     ),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+    if args.distance_command == "method-comparison":
+        report = compare_distance_tree_methods_from_imported_distance_matrix(
+            args.matrix,
+            missing_distance_policy=args.missing_distance_policy,
+        )
+        artifact_paths = write_distance_method_comparison_artifacts(
+            args.out_dir,
+            report,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="distance",
+            inputs=[args.matrix],
+            outputs=list(artifact_paths.values()),
+        )
+        _print_result(
+            build_command_result(
+                command="distance",
+                inputs=[args.matrix],
+                outputs=outputs,
+                metrics={
+                    "criterion": "distance-method-comparison",
+                    "taxon_count": len(report.taxa),
+                    "method_count": len(report.compared_methods),
+                    "warning_count": len(report.warning_rows),
                 },
                 data=report,
             ),
