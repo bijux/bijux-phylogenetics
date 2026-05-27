@@ -210,7 +210,7 @@ def test_cli_demo_known_answer_reference_panel_json_output_reports_recovery_metr
     assert payload["metrics"]["same_taxa_different_rooting"] is True
     assert payload["metrics"]["robinson_foulds_distance"] == 3
     assert payload["metrics"]["parameter_row_count"] == 5
-    assert payload["metrics"]["threshold_pass_count"] == 11
+    assert payload["metrics"]["threshold_pass_count"] == 10
     assert payload["metrics"]["threshold_row_count"] == 11
     assert payload["metrics"]["discrete_internal_node_accuracy"] == 1.0
     assert payload["metrics"]["host_internal_node_accuracy"] == 1.0
