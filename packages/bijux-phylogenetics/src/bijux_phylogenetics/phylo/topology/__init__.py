@@ -68,6 +68,7 @@ _EXPORTS = {
     "TipDistanceMatrixReport": "tip_distances",
     "TipDistanceMatrixRow": "tip_distances",
     "compute_tree_tip_distance_matrix": "tip_distances",
+    "summarize_tree_tip_distances": "tip_distances",
     "write_tree_tip_distance_long_table": "tip_distances",
     "write_tree_tip_distance_matrix": "tip_distances",
     "_clone_node": "transformation",

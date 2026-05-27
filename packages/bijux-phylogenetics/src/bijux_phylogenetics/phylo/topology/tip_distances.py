@@ -23,7 +23,7 @@ class TipDistanceMatrixRow:
 class TipDistanceMatrixReport:
     """Deterministic pairwise tip-distance matrix for one tree."""
 
-    tree_path: Path
+    tree_path: Path | None
     identifiers: list[str]
     rooted: bool | None
     matrix: list[list[float]]
@@ -104,18 +104,17 @@ def _root_distance_lookup(
     return distances
 
 
-def compute_tree_tip_distance_matrix(
-    path: Path,
+def summarize_tree_tip_distances(
+    tree: PhyloTree,
     *,
+    tree_path: Path | None = None,
     missing_branch_length_policy: MissingBranchLengthPolicy = "error",
 ) -> TipDistanceMatrixReport:
-    """Compute a deterministic pairwise tip-distance matrix for one tree."""
+    """Compute one deterministic pairwise tip-distance matrix for one in-memory tree."""
     if missing_branch_length_policy not in {"error", "unit-length"}:
         raise ValueError(
             "missing_branch_length_policy must be 'error' or 'unit-length'"
         )
-
-    tree = load_tree(path)
     identifiers = list(tree.tip_names)
     expected_branch_length_count = sum(
         1 for node in tree.iter_nodes() if node is not tree.root
@@ -182,7 +181,7 @@ def compute_tree_tip_distance_matrix(
         for right_index in range(len(identifiers))
     )
     return TipDistanceMatrixReport(
-        tree_path=path,
+        tree_path=tree_path,
         identifiers=identifiers,
         rooted=_interpreted_rooted_state(tree),
         matrix=matrix,
@@ -194,6 +193,20 @@ def compute_tree_tip_distance_matrix(
         pair_count=len(pairs),
         diagonal_zero=diagonal_zero,
         symmetric=symmetric,
+    )
+
+
+def compute_tree_tip_distance_matrix(
+    path: Path,
+    *,
+    missing_branch_length_policy: MissingBranchLengthPolicy = "error",
+) -> TipDistanceMatrixReport:
+    """Compute a deterministic pairwise tip-distance matrix for one tree path."""
+    tree = load_tree(path)
+    return summarize_tree_tip_distances(
+        tree,
+        tree_path=path,
+        missing_branch_length_policy=missing_branch_length_policy,
     )
 
 
