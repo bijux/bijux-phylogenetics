@@ -1,0 +1,6 @@
+taxon	c1_terminal_be	c2_split_bd	c3_split_cd
+A	0	0	0
+B	1	1	0
+C	0	0	1
+D	0	1	1
+E	1	0	0
