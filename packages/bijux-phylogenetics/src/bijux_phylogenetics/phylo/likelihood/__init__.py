@@ -147,6 +147,15 @@ from .gamma import (
     build_discrete_gamma_rate_categories as build_discrete_gamma_rate_categories,
 )
 from .models import (
+    CandidateTreeSiteLikelihoodMatrixReport as CandidateTreeSiteLikelihoodMatrixReport,
+)
+from .models import (
+    CandidateTreeSiteLikelihoodRow as CandidateTreeSiteLikelihoodRow,
+)
+from .models import (
+    CandidateTreeSiteLikelihoodSummary as CandidateTreeSiteLikelihoodSummary,
+)
+from .models import (
     BranchLengthOptimizationRow as BranchLengthOptimizationRow,
 )
 from .models import (
@@ -474,6 +483,9 @@ from .spr_search import (
 __all__ = [
     "AlignmentSitePattern",
     "BranchLengthOptimizationRow",
+    "CandidateTreeSiteLikelihoodMatrixReport",
+    "CandidateTreeSiteLikelihoodRow",
+    "CandidateTreeSiteLikelihoodSummary",
     "CompressedAlignmentSitePatterns",
     "DiscreteGammaRateCategory",
     "DiscreteGammaInvariantMixtureSiteLikelihood",

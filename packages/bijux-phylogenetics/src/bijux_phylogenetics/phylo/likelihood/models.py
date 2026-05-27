@@ -466,6 +466,48 @@ class NucleotideLikelihoodMultiStartSearchReport:
 
 
 @dataclass(slots=True)
+class CandidateTreeSiteLikelihoodSummary:
+    """One candidate-tree summary inside a shared site-likelihood matrix workflow."""
+
+    candidate_tree_id: str
+    candidate_tree_label: str
+    tree_newick: str
+    log_likelihood: float
+
+
+@dataclass(slots=True)
+class CandidateTreeSiteLikelihoodRow:
+    """One candidate-tree by site log-likelihood matrix row."""
+
+    candidate_tree_id: str
+    candidate_tree_label: str
+    tree_newick: str
+    pattern_id: str
+    pattern_weight: int
+    site_position: int
+    site_states: tuple[str, ...]
+    log_likelihood: float
+
+
+@dataclass(slots=True)
+class CandidateTreeSiteLikelihoodMatrixReport:
+    """Expanded candidate-tree by site likelihood matrix for one shared alignment/model."""
+
+    model_name: str
+    tree_set_path: str | None
+    alignment_path: str | None
+    taxa: list[str]
+    tree_count: int
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    expansion_policy: str
+    parameter_values: dict[str, float]
+    candidate_trees: list[CandidateTreeSiteLikelihoodSummary]
+    matrix_rows: list[CandidateTreeSiteLikelihoodRow]
+
+
+@dataclass(slots=True)
 class SiteLogLikelihoodRow:
     """One expanded site log-likelihood row from one compressed-pattern evaluation."""
 
