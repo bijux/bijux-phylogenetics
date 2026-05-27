@@ -446,6 +446,30 @@ from .substitution_model_selection import (
 from .substitution_model_selection import (
     default_substitution_model_selection_candidates as default_substitution_model_selection_candidates,
 )
+from .candidate_tree_site_likelihood_matrix import (
+    evaluate_nucleotide_candidate_tree_site_likelihood_matrix as evaluate_nucleotide_candidate_tree_site_likelihood_matrix,
+)
+from .candidate_tree_site_likelihood_matrix import (
+    evaluate_nucleotide_candidate_tree_site_likelihood_matrix_from_alignment as evaluate_nucleotide_candidate_tree_site_likelihood_matrix_from_alignment,
+)
+from .candidate_tree_site_likelihood_matrix import (
+    resolve_candidate_tree_alignment_records as resolve_candidate_tree_alignment_records,
+)
+from .candidate_tree_site_likelihood_matrix import (
+    resolve_candidate_tree_records as resolve_candidate_tree_records,
+)
+from .candidate_tree_site_likelihood_matrix import (
+    write_candidate_tree_likelihood_summary_table as write_candidate_tree_likelihood_summary_table,
+)
+from .candidate_tree_site_likelihood_matrix import (
+    write_candidate_tree_site_likelihood_matrix_artifacts as write_candidate_tree_site_likelihood_matrix_artifacts,
+)
+from .candidate_tree_site_likelihood_matrix import (
+    write_candidate_tree_site_likelihood_matrix_run_json as write_candidate_tree_site_likelihood_matrix_run_json,
+)
+from .candidate_tree_site_likelihood_matrix import (
+    write_candidate_tree_site_likelihood_matrix_table as write_candidate_tree_site_likelihood_matrix_table,
+)
 from .nni_search import (
     search_nucleotide_likelihood_nni as search_nucleotide_likelihood_nni,
 )
@@ -542,6 +566,8 @@ __all__ = [
     "compress_alignment_site_patterns_from_records",
     "compute_joint_state_assignment",
     "default_substitution_model_selection_candidates",
+    "evaluate_nucleotide_candidate_tree_site_likelihood_matrix",
+    "evaluate_nucleotide_candidate_tree_site_likelihood_matrix_from_alignment",
     "evaluate_f81_tree_likelihood",
     "evaluate_f81_tree_likelihood_from_alignment",
     "evaluate_empirical_protein_tree_likelihood",
@@ -612,6 +638,8 @@ __all__ = [
     "reconstruct_nucleotide_marginal_ancestral_sequences",
     "reconstruct_nucleotide_marginal_ancestral_sequences_from_alignment",
     "reconstruct_nucleotide_marginal_ancestral_sequences_from_report",
+    "resolve_candidate_tree_alignment_records",
+    "resolve_candidate_tree_records",
     "summarize_marginal_ancestral_sites",
     "sum_alignment_site_log_likelihoods",
     "sum_compressed_site_pattern_log_likelihoods",
@@ -626,6 +654,10 @@ __all__ = [
     "validate_nucleotide_site_log_likelihood_model",
     "validate_likelihood_spr_evaluation_budget",
     "validate_nucleotide_substitution_optimization_model",
+    "write_candidate_tree_likelihood_summary_table",
+    "write_candidate_tree_site_likelihood_matrix_artifacts",
+    "write_candidate_tree_site_likelihood_matrix_run_json",
+    "write_candidate_tree_site_likelihood_matrix_table",
     "write_marginal_ancestral_sequence_fasta",
     "write_marginal_ancestral_sequence_uncertainty_table",
     "write_nucleotide_likelihood_multi_start_artifacts",
