@@ -665,3 +665,60 @@ class ParsimonySprSearchReport:
     evaluated_neighbor_count: int
     stopping_reason: str
     trace_rows: list[ParsimonySprTraceRow]
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyRatchetCycle:
+    """One deterministic ratchet cycle over perturbed then restored character weights."""
+
+    cycle_index: int
+    start_score: float
+    start_tree_newick: str
+    perturbed_character_ids: list[str]
+    perturbation_factor: float
+    perturbed_score: float
+    perturbed_tree_newick: str
+    perturbed_accepted_move_count: int
+    restored_score: float
+    restored_tree_newick: str
+    restored_accepted_move_count: int
+    best_score_after_cycle: float
+    best_tree_after_cycle: str
+    best_tree_improved: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyRatchetBestTreeHistory:
+    """One deterministic best-tree history row across ratchet cycles."""
+
+    history_index: int
+    cycle_index: int
+    best_score: float
+    best_tree_newick: str
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyRatchetReport:
+    """Complete parsimony ratchet report over one starting tree and character matrix."""
+
+    algorithm: str
+    method: str
+    tree_path: Path | None
+    matrix_path: Path | None
+    cost_matrix_path: Path | None
+    weights_path: Path | None
+    taxon_column: str
+    taxon_count: int
+    character_count: int
+    cycle_count: int
+    random_seed: int
+    perturbed_character_count: int
+    perturbation_factor: float
+    start_tree_newick: str
+    start_score: float
+    final_tree_newick: str
+    final_score: float
+    best_tree_newick: str
+    best_score: float
+    cycle_rows: list[ParsimonyRatchetCycle]
+    best_tree_history_rows: list[ParsimonyRatchetBestTreeHistory]
