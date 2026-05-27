@@ -4,7 +4,12 @@ import math
 
 import numpy
 
+from bijux_phylogenetics.phylo.likelihood.pruning import (
+    log_likelihood_from_root_prior,
+    postorder_conditional_likelihoods,
+)
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import AlignmentTaxonMismatchError
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
@@ -255,3 +260,31 @@ def one_hot_dna_leaf_vector(
     vector = numpy.zeros(4, dtype=float)
     vector[DNA_STATE_INDEX[states_by_taxon[node_name]]] = 1.0
     return vector
+
+
+def evaluate_fixed_topology_dna_site_log_likelihood(
+    tree: PhyloTree,
+    states: tuple[str, ...],
+    *,
+    taxon_order: list[str],
+    model_name: str,
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...],
+    transition_matrix_for_child,
+) -> float:
+    """Evaluate one DNA site log likelihood on one fixed topology."""
+    states_by_taxon = dict(zip(taxon_order, states, strict=True))
+    pruning_pass = postorder_conditional_likelihoods(
+        tree,
+        state_count=len(DNA_STATE_ORDER),
+        leaf_likelihood=lambda node: one_hot_dna_leaf_vector(
+            states_by_taxon,
+            model_name=model_name,
+            node_name=node.name,
+        ),
+        transition_matrix_for_child=transition_matrix_for_child,
+    )
+    return log_likelihood_from_root_prior(
+        tree,
+        pruning_pass,
+        root_prior=root_prior,
+    )
