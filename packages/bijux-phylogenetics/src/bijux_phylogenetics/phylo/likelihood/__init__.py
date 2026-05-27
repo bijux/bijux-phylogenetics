@@ -2,6 +2,15 @@
 
 from __future__ import annotations
 
+from .models import (
+    Jc69BranchLengthOptimizationReport as Jc69BranchLengthOptimizationReport,
+)
+from .models import (
+    Jc69BranchLengthOptimizationStep as Jc69BranchLengthOptimizationStep,
+)
+from .models import (
+    Jc69TreeLikelihoodReport as Jc69TreeLikelihoodReport,
+)
 from .patterns import (
     AlignmentSitePattern as AlignmentSitePattern,
 )
@@ -40,6 +49,9 @@ __all__ = [
     "AlignmentSitePattern",
     "CompressedAlignmentSitePatterns",
     "FiniteStatePruningPass",
+    "Jc69BranchLengthOptimizationReport",
+    "Jc69BranchLengthOptimizationStep",
+    "Jc69TreeLikelihoodReport",
     "alignment_site_columns",
     "compress_alignment_site_patterns",
     "compress_alignment_site_patterns_from_records",
