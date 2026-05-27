@@ -6,14 +6,17 @@ from pathlib import Path
 from bijux_phylogenetics.datasets.continuous_mode_recovery import (
     ContinuousModeRecoveryPanelDataset,
     ContinuousModeRecoveryPanelExportResult,
+    ContinuousModeRecoveryPanelWorkflowReport,
 )
 from bijux_phylogenetics.datasets.discrete_mode_recovery import (
     DiscreteModeRecoveryPanelDataset,
     DiscreteModeRecoveryPanelExportResult,
+    DiscreteModeRecoveryPanelWorkflowReport,
 )
 from bijux_phylogenetics.datasets.known_answer_reference import (
     KnownAnswerReferenceDataset,
     KnownAnswerReferenceExportResult,
+    KnownAnswerReferenceWorkflowReport,
 )
 
 
@@ -79,6 +82,9 @@ class MacroevolutionRecoverySuiteWorkflowReport:
     continuous_component: MacroevolutionRecoverySuiteComponentSummary
     discrete_component: MacroevolutionRecoverySuiteComponentSummary
     known_answer_component: MacroevolutionRecoverySuiteComponentSummary
+    continuous_panel_workflow: ContinuousModeRecoveryPanelWorkflowReport
+    discrete_panel_workflow: DiscreteModeRecoveryPanelWorkflowReport
+    known_answer_panel_workflow: KnownAnswerReferenceWorkflowReport
     sim_char_case_count: int
     sim_char_all_passed: bool
 
