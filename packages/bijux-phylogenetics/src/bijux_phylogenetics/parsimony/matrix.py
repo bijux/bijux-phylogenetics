@@ -10,7 +10,7 @@ from .models import FitchCharacterMatrix
 _UNKNOWN_STATE_MARKERS = frozenset({"", "?", "-", ".", "na", "n/a", "null"})
 
 
-def load_fitch_character_matrix(
+def load_parsimony_character_matrix(
     path: Path,
     *,
     taxon_column: str | None = None,
@@ -53,3 +53,12 @@ def load_fitch_character_matrix(
         character_ids=character_ids,
         states_by_taxon=states_by_taxon,
     )
+
+
+def load_fitch_character_matrix(
+    path: Path,
+    *,
+    taxon_column: str | None = None,
+) -> FitchCharacterMatrix:
+    """Backward-compatible alias for the parsimony character-matrix loader."""
+    return load_parsimony_character_matrix(path, taxon_column=taxon_column)
