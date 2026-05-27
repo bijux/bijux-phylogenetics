@@ -37,23 +37,65 @@ def test_build_generated_geiger_parity_report_aggregates_live_and_artifact_evide
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setattr(
-        "bijux_phylogenetics.parity.geiger.generated_report._load_recovery_summary",
-        lambda path: {
-            "dataset_id": path.parent.parent.name,
-            "case_count": 4 if "discrete" in str(path) else 7,
-            "selection_review_case_count": 2 if "discrete" in str(path) else 4,
-            "selection_match_count": 2 if "discrete" in str(path) else 4,
-            "geiger_selection_match_count": 2 if "discrete" in str(path) else 3,
-            "parameter_pass_count": 0 if "discrete" in str(path) else 22,
-            "parameter_row_count": 0 if "discrete" in str(path) else 22,
-            "parameter_comparison_row_count": 0 if "discrete" in str(path) else 11,
-            "rate_pass_count": 20,
-            "governed_rate_row_count": 24,
-            "governed_rate_comparison_row_count": 12,
+    def _mock_recovery_summary(path: Path) -> dict[str, int | str]:
+        path_text = str(path)
+        if "macroevolution_recovery_suite" in path_text:
+            return {
+                "dataset_id": "macroevolution_recovery_suite",
+                "component_count": 3,
+                "geiger_component_count": 2,
+                "case_count": 11,
+                "geiger_case_count": 11,
+                "max_taxon_count": 24,
+                "selection_review_case_count": 6,
+                "selection_match_count": 6,
+                "geiger_selection_match_count": 5,
+                "governed_value_pass_count": 42,
+                "governed_value_row_count": 46,
+                "governed_comparison_row_count": 23,
+                "expected_warning_case_count": 8,
+                "expected_warning_present_count": 8,
+                "truth_threshold_pass_count": 11,
+                "truth_threshold_row_count": 11,
+                "sim_char_case_count": 3,
+                "requirement_pass_count": 11,
+                "requirement_row_count": 11,
+            }
+        if "discrete" in path_text:
+            return {
+                "dataset_id": "discrete_mode_recovery_panel",
+                "case_count": 4,
+                "selection_review_case_count": 2,
+                "selection_match_count": 2,
+                "geiger_selection_match_count": 2,
+                "parameter_pass_count": 0,
+                "parameter_row_count": 0,
+                "parameter_comparison_row_count": 0,
+                "rate_pass_count": 20,
+                "governed_rate_row_count": 24,
+                "governed_rate_comparison_row_count": 12,
+                "expected_warning_case_count": 2,
+                "expected_warning_present_count": 2,
+            }
+        return {
+            "dataset_id": "continuous_mode_recovery_panel",
+            "case_count": 7,
+            "selection_review_case_count": 4,
+            "selection_match_count": 4,
+            "geiger_selection_match_count": 3,
+            "parameter_pass_count": 22,
+            "parameter_row_count": 22,
+            "parameter_comparison_row_count": 11,
+            "rate_pass_count": 0,
+            "governed_rate_row_count": 0,
+            "governed_rate_comparison_row_count": 0,
             "expected_warning_case_count": 2,
             "expected_warning_present_count": 2,
-        },
+        }
+
+    monkeypatch.setattr(
+        "bijux_phylogenetics.parity.geiger.generated_report._load_recovery_summary",
+        _mock_recovery_summary,
     )
     monkeypatch.setattr(
         "bijux_phylogenetics.parity.geiger.generated_report._load_sim_char_summary",
@@ -305,6 +347,12 @@ def test_build_generated_geiger_parity_report_aggregates_live_and_artifact_evide
         row.panel_id == "continuous_mode_recovery_panel"
         and row.case_count == 7
         and row.geiger_selection_match_count == 3
+        for row in report.simulation_recovery_rows
+    )
+    assert any(
+        row.panel_id == "macroevolution_recovery_suite"
+        and row.case_count == 11
+        and row.governed_value_pass_count == 42
         for row in report.simulation_recovery_rows
     )
     assert any(
