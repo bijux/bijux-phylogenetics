@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from bijux_phylogenetics.command_line import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -233,7 +231,8 @@ def test_cli_alignment_distance_maturity_json_output(capsys) -> None:
     }
 
 
-def test_cli_alignment_build_tree_reports_explicit_bionj_exclusion_json(capsys) -> None:
+def test_cli_alignment_build_tree_supports_bionj_json(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "distance-tree.nwk"
     exit_code = main(
         [
             "alignment",
@@ -242,36 +241,38 @@ def test_cli_alignment_build_tree_reports_explicit_bionj_exclusion_json(capsys) 
             "--method",
             "bionj",
             "--out",
-            "artifacts/distance-tree.nwk",
+            str(output_path),
             "--json",
         ]
     )
     payload = json.loads(capsys.readouterr().out)
-    assert exit_code == 2
-    assert payload["errors"][0]["code"] == "unsupported_distance_tree_method_error"
-    assert payload["errors"][0]["message"].startswith(
-        "BIONJ is explicitly out of scope"
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((A:0.0625,B:0.0625)Inner1:0.4375,C:0.0625,D:0.0625)Inner2;\n"
     )
-    assert payload["errors"][0]["details"]["reference_surface"] == "ape::bionj"
+    assert payload["metrics"]["method"] == "bionj"
 
 
-def test_cli_distance_build_tree_reports_explicit_bionj_exclusion(capsys) -> None:
-    with pytest.raises(SystemExit) as error:
-        main(
-            [
-                "distance",
-                "build-tree",
-                str(fixture("example_distance_matrix.tsv")),
-                "--method",
-                "bionj",
-                "--out",
-                "artifacts/imported-distance-tree.nwk",
-            ]
-        )
-    error_text = capsys.readouterr().err
-    assert error.value.code == 2
-    assert "unsupported_distance_tree_method_error" in error_text
-    assert "ape::bionj" in error_text
+def test_cli_distance_build_tree_supports_bionj(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "distance-tree.nwk"
+    exit_code = main(
+        [
+            "distance",
+            "build-tree",
+            str(fixture("example_distance_matrix_bionj_noisy.tsv")),
+            "--method",
+            "bionj",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((A:2,(B:1,C:2)Inner1:5.66666666666667)Inner2:4.5,D:6.02,E:-4.02)Inner3;\n"
+    )
+    assert payload["metrics"]["method"] == "bionj"
 
 
 def test_cli_distance_reference_json_output(capsys) -> None:

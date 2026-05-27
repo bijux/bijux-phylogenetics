@@ -3768,6 +3768,18 @@ def test_build_tree_from_imported_distance_matrix_constructs_neighbor_joining_tr
     assert report.taxon_count == 3
 
 
+def test_build_tree_from_imported_distance_matrix_constructs_bionj_tree() -> None:
+    tree, report = build_tree_from_imported_distance_matrix(
+        fixture("example_distance_matrix_bionj_noisy.tsv"),
+        method="bionj",
+    )
+    assert dumps_newick(tree) == (
+        "((A:2,(B:1,C:2)Inner1:5.66666666666667)Inner2:4.5,D:6.02,E:-4.02)Inner3;"
+    )
+    assert report.method == "bionj"
+    assert report.taxon_count == 5
+
+
 def test_build_tree_from_imported_distance_matrix_rejects_asymmetric_input() -> None:
     try:
         build_tree_from_imported_distance_matrix(
@@ -3784,7 +3796,7 @@ def test_distance_method_limitations_explain_approximate_methods() -> None:
     limitations = distance_method_limitations()
     assert len(limitations) == 5
     assert limitations[0].startswith("distance methods collapse")
-    assert "BIONJ is explicitly excluded" in limitations[-1]
+    assert "bionj remains a distance-summary method" in limitations[-1].lower()
 
 
 def test_render_distance_report_embeds_limitations_and_validation(
@@ -3832,6 +3844,19 @@ def test_build_distance_tree_constructs_neighbor_joining_tree() -> None:
         == "((A:0.0625,B:0.0625)Inner1:0.4375,C:0.0625,D:0.0625)Inner2;"
     )
     assert report.method == "neighbor-joining"
+    assert report.taxon_count == 4
+
+
+def test_build_distance_tree_constructs_bionj_tree() -> None:
+    tree, report = build_distance_tree(
+        fixture("example_alignment_distance.fasta"),
+        method="bionj",
+    )
+    assert (
+        dumps_newick(tree)
+        == "((A:0.0625,B:0.0625)Inner1:0.4375,C:0.0625,D:0.0625)Inner2;"
+    )
+    assert report.method == "bionj"
     assert report.taxon_count == 4
 
 
@@ -3954,6 +3979,29 @@ def test_cli_alignment_build_tree_writes_newick(tmp_path: Path, capsys) -> None:
         "((A:0.0625,B:0.0625)Inner2:0.21875,(C:0.0625,D:0.0625)Inner1:0.21875)Inner3;\n"
     )
     assert payload["metrics"]["method"] == "upgma"
+
+
+def test_cli_alignment_build_tree_writes_bionj_newick(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "distance-tree.nwk"
+    exit_code = main(
+        [
+            "alignment",
+            "build-tree",
+            str(fixture("example_alignment_distance.fasta")),
+            "--method",
+            "bionj",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((A:0.0625,B:0.0625)Inner1:0.4375,C:0.0625,D:0.0625)Inner2;\n"
+    )
+    assert payload["metrics"]["method"] == "bionj"
 
 
 def test_cli_alignment_build_tree_writes_wpgma_newick(tmp_path: Path, capsys) -> None:
