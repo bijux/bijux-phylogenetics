@@ -37,6 +37,35 @@ def test_cli_alignment_distance_quality_json_output(capsys) -> None:
     assert payload["metrics"]["saturated_pair_count"] > 0
 
 
+def test_cli_alignment_distance_saturation_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "distance-saturation",
+            str(fixture("example_alignment_distance_saturated.fasta")),
+            "--model",
+            "jc69",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["warning_pair_count"] == 2
+    assert payload["metrics"]["blocking_warning_count"] == 2
+    assert payload["metrics"]["blocks_tree_inference"] is True
+    assert [
+        (
+            row["left_identifier"],
+            row["right_identifier"],
+            row["warning_kind"],
+        )
+        for row in payload["data"]["warning_rows"]
+    ] == [
+        ("A", "B", "undefined-corrected-distance"),
+        ("B", "C", "infinite-corrected-distance"),
+    ]
+
+
 def test_cli_alignment_distance_assumptions_json_output(capsys) -> None:
     exit_code = main(
         [
