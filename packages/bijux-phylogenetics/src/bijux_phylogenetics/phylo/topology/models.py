@@ -148,3 +148,24 @@ class TreeRootingReport:
 class _TopologyComparison:
     topology_equal: bool
     same_unrooted_topology: bool
+
+
+@dataclass(slots=True)
+class RandomBifurcatingTreeReport:
+    """Explicit record of one seeded random bifurcating tree generation."""
+
+    algorithm: str
+    seed: int
+    branch_length_policy: str
+    requested_taxa: list[str]
+    tip_order: list[str]
+    tip_count: int
+    internal_node_count: int
+    rooted: bool | None
+    strictly_bifurcating: bool
+    all_requested_taxa_present_once: bool
+    missing_requested_taxa: list[str]
+    duplicate_generated_taxa: list[str]
+    unexpected_generated_taxa: list[str]
+    validation_errors: list[str]
+    tree_newick: str
