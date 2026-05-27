@@ -85,6 +85,37 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
     assert k80_rows["kappa"].hit_upper_bound is False
     assert k80_report.optimized_log_likelihood > k80_report.initial_log_likelihood
 
+    f81_report = optimize_nucleotide_substitution_parameters_from_alignment(
+        fixture("trees", "f81_aic_bias_tree_2_taxa.nwk"),
+        fixture("alignments", "f81_aic_bias_alignment_2_taxa.fasta"),
+        model_name="f81",
+    )
+
+    assert f81_report.model_name == "F81"
+    assert f81_report.tree_newick == "(A:0.1,B:0.2);"
+    assert f81_report.site_count == 21
+    assert f81_report.pattern_count == 5
+    assert f81_report.parameter_count == 3
+    assert f81_report.base_frequency_source == "estimated"
+    assert f81_report.parameter_rows == []
+    assert f81_report.fixed_parameter_values == {}
+    assert f81_report.optimization_pass_count == 0
+    assert f81_report.function_evaluation_count == 1
+    assert f81_report.converged is True
+    assert f81_report.warnings == []
+    assert math.isclose(
+        f81_report.initial_log_likelihood,
+        f81_report.optimized_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        f81_report.initial_aic,
+        f81_report.optimized_aic,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
     hky85_report = optimize_nucleotide_substitution_parameters_from_alignment(
         fixture("trees", "hky85_kappa_optimization_tree_2_taxa.nwk"),
         fixture("alignments", "hky85_kappa_optimization_alignment_2_taxa.fasta"),

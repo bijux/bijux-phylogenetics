@@ -11,6 +11,9 @@ from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.dna import (
     normalize_dna_exchangeabilities_by_anchor,
 )
+from bijux_phylogenetics.phylo.likelihood.f81 import (
+    evaluate_f81_tree_likelihood,
+)
 from bijux_phylogenetics.phylo.likelihood.gtr import (
     optimize_gtr_exchangeabilities,
 )
@@ -30,7 +33,7 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 _NUCLEOTIDE_SUBSTITUTION_OPTIMIZATION_MODELS = frozenset(
-    {"jc69", "k80", "hky85", "gtr"}
+    {"jc69", "k80", "f81", "hky85", "gtr"}
 )
 _DEFAULT_KAPPA_BOUNDS = (0.05, 20.0)
 _DEFAULT_EXCHANGEABILITY_BOUNDS = (0.05, 20.0)
@@ -87,6 +90,18 @@ def optimize_nucleotide_substitution_parameters(
         )
     if normalized_model_name == "k80":
         return _optimize_k80_substitution_parameters(
+            tree,
+            records,
+            base_frequencies=base_frequencies,
+            initial_kappa=initial_kappa,
+            lower_kappa_bound=lower_kappa_bound,
+            upper_kappa_bound=upper_kappa_bound,
+            initial_exchangeabilities=initial_exchangeabilities,
+            lower_exchangeability_bound=lower_exchangeability_bound,
+            upper_exchangeability_bound=upper_exchangeability_bound,
+        )
+    if normalized_model_name == "f81":
+        return _optimize_f81_substitution_parameters(
             tree,
             records,
             base_frequencies=base_frequencies,
@@ -331,6 +346,87 @@ def _optimize_k80_substitution_parameters(
         optimization_pass_count=1,
         converged=optimization_report.converged,
         warnings=warnings,
+    )
+
+
+def _optimize_f81_substitution_parameters(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    base_frequencies: dict[str, float] | numpy.ndarray | None,
+    initial_kappa: float | None,
+    lower_kappa_bound: float | None,
+    upper_kappa_bound: float | None,
+    initial_exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+        | None
+    ),
+    lower_exchangeability_bound: float | None,
+    upper_exchangeability_bound: float | None,
+) -> NucleotideSubstitutionParameterOptimizationReport:
+    _reject_irrelevant_parameter(
+        "F81 substitution optimization",
+        "initial_kappa",
+        initial_kappa,
+    )
+    _reject_irrelevant_parameter(
+        "F81 substitution optimization",
+        "lower_kappa_bound",
+        lower_kappa_bound,
+    )
+    _reject_irrelevant_parameter(
+        "F81 substitution optimization",
+        "upper_kappa_bound",
+        upper_kappa_bound,
+    )
+    _reject_irrelevant_parameter(
+        "F81 substitution optimization",
+        "initial_exchangeabilities",
+        initial_exchangeabilities,
+    )
+    _reject_irrelevant_parameter(
+        "F81 substitution optimization",
+        "lower_exchangeability_bound",
+        lower_exchangeability_bound,
+    )
+    _reject_irrelevant_parameter(
+        "F81 substitution optimization",
+        "upper_exchangeability_bound",
+        upper_exchangeability_bound,
+    )
+
+    evaluation_report = evaluate_f81_tree_likelihood(
+        tree,
+        records,
+        base_frequencies=base_frequencies,
+    )
+    log_likelihood = evaluation_report.log_likelihood
+    return NucleotideSubstitutionParameterOptimizationReport(
+        model_name="F81",
+        taxa=evaluation_report.taxa,
+        site_count=evaluation_report.site_count,
+        pattern_count=evaluation_report.pattern_count,
+        tree_newick=evaluation_report.tree_newick,
+        parameter_count=evaluation_report.parameter_count,
+        base_frequency_source=evaluation_report.base_frequency_source,
+        base_frequency_a=evaluation_report.base_frequency_a,
+        base_frequency_c=evaluation_report.base_frequency_c,
+        base_frequency_g=evaluation_report.base_frequency_g,
+        base_frequency_t=evaluation_report.base_frequency_t,
+        fixed_parameter_values={},
+        parameter_rows=[],
+        initial_log_likelihood=log_likelihood,
+        optimized_log_likelihood=log_likelihood,
+        initial_aic=evaluation_report.aic,
+        optimized_aic=evaluation_report.aic,
+        function_evaluation_count=1,
+        optimization_pass_count=0,
+        converged=True,
+        warnings=[],
     )
 
 
