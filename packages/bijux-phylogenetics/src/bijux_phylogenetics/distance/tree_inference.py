@@ -18,6 +18,7 @@ from bijux_phylogenetics.phylo.topology.clades import (
 from bijux_phylogenetics.phylo.topology.neighbor_joining import (
     build_neighbor_joining_tree,
 )
+from bijux_phylogenetics.phylo.topology.bionj import build_bionj_tree
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.trees import (
@@ -98,6 +99,8 @@ def _build_distance_tree_from_genetic_distance_matrix(
         raise InvalidAlignmentError("distance tree building requires at least two taxa")
     if method == "neighbor-joining":
         tree = build_neighbor_joining_tree(report.identifiers, _distance_lookup(report))
+    elif method == "bionj":
+        tree = build_bionj_tree(report.identifiers, _distance_lookup(report))
     elif method == "upgma":
         tree, _ = build_upgma_tree(report.identifiers, _distance_lookup(report))
     elif method == "wpgma":

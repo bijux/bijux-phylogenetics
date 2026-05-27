@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.phylo.alignment import DnaBinAlignment
+from bijux_phylogenetics.phylo.topology.bionj import build_bionj_tree as _build_bionj_tree_impl
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 from .models import (
@@ -154,6 +155,13 @@ def build_upgma_tree(
     from .upgma import build_upgma_tree as build_upgma_impl
 
     return build_upgma_impl(identifiers, distance_lookup)
+
+
+def build_bionj_tree(
+    identifiers: list[str],
+    distance_lookup: dict[tuple[str, str], float],
+) -> PhyloTree:
+    return _build_bionj_tree_impl(identifiers, distance_lookup)
 
 
 def build_wpgma_tree(

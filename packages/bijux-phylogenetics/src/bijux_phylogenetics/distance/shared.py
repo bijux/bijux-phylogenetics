@@ -50,6 +50,16 @@ def list_distance_tree_method_policies() -> list[DistanceTreeMethodPolicy]:
             ],
         ),
         DistanceTreeMethodPolicy(
+            method="bionj",
+            supported=True,
+            reference_surface="ape::bionj",
+            support_scope="owned-runtime",
+            summary="BIONJ is supported as an owned runtime distance-tree method that uses variance-aware joining to stabilize noisy reductions relative to classic neighbor-joining.",
+            limitations=[
+                "bionj remains a distance-summary method rather than a full likelihood inference",
+            ],
+        ),
+        DistanceTreeMethodPolicy(
             method="upgma",
             supported=True,
             reference_surface=None,
@@ -87,16 +97,6 @@ def list_distance_tree_method_policies() -> list[DistanceTreeMethodPolicy]:
             summary="complete-linkage is supported as an owned runtime clustering method that updates intercluster distance by maximum pairwise distance.",
             limitations=[
                 "complete-linkage can exaggerate late compact-cluster separation because one distant pair controls each merged cluster distance",
-            ],
-        ),
-        DistanceTreeMethodPolicy(
-            method="bionj",
-            supported=False,
-            reference_surface="ape::bionj",
-            support_scope="explicitly-excluded",
-            summary="BIONJ is explicitly out of scope for this round, and ape::bionj does not have an owned Bijux runtime or governed ape parity lane.",
-            limitations=[
-                "request neighbor-joining when a governed ape-parity distance-tree workflow is required in this round",
             ],
         ),
     ]

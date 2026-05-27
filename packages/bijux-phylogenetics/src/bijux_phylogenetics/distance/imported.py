@@ -8,6 +8,7 @@ from statistics import median
 from bijux_phylogenetics.phylo.topology.neighbor_joining import (
     build_neighbor_joining_tree,
 )
+from bijux_phylogenetics.phylo.topology.bionj import build_bionj_tree
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import InvalidDistanceMatrixError
 
@@ -445,6 +446,11 @@ def build_tree_from_imported_distance_matrix(
     assumptions = assess_imported_distance_method_assumptions(path)
     if method_policy.method == "neighbor-joining":
         tree = build_neighbor_joining_tree(
+            validation.identifiers,
+            _distance_lookup_from_imported(validation, entries),
+        )
+    elif method_policy.method == "bionj":
+        tree = build_bionj_tree(
             validation.identifiers,
             _distance_lookup_from_imported(validation, entries),
         )
