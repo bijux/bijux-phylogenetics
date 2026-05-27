@@ -494,6 +494,7 @@ def test_package_root_exposes_curated_domain_gateways() -> None:
     import bijux_phylogenetics.datasets as datasets_api
     import bijux_phylogenetics.distance as distance_api
     import bijux_phylogenetics.evidence as evidence_api
+    import bijux_phylogenetics.parsimony as parsimony_api
     import bijux_phylogenetics.parity as parity_api
     import bijux_phylogenetics.phylo as phylo_api
     import bijux_phylogenetics.trees as trees_api
@@ -508,6 +509,7 @@ def test_package_root_exposes_curated_domain_gateways() -> None:
         "datasets",
         "distance",
         "evidence",
+        "parsimony",
         "parity",
         "phylo",
         "trees",
@@ -520,6 +522,7 @@ def test_package_root_exposes_curated_domain_gateways() -> None:
     assert bijux_phylogenetics.datasets is datasets_api
     assert bijux_phylogenetics.distance is distance_api
     assert bijux_phylogenetics.evidence is evidence_api
+    assert bijux_phylogenetics.parsimony is parsimony_api
     assert bijux_phylogenetics.parity is parity_api
     assert bijux_phylogenetics.phylo is phylo_api
     assert bijux_phylogenetics.trees is trees_api
