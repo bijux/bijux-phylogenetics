@@ -21,6 +21,7 @@ from bijux_phylogenetics.engines import (
 )
 from bijux_phylogenetics.parsimony import (
     load_fitch_character_matrix,
+    load_parsimony_character_weights,
     load_parsimony_character_matrix,
     load_sankoff_cost_matrix,
     reconstruct_acctran,
@@ -30,7 +31,9 @@ from bijux_phylogenetics.parsimony import (
     score_fitch,
     score_sankoff,
     score_wagner,
+    tree_length,
     write_parsimony_reconstruction_artifacts,
+    write_parsimony_tree_length_artifacts,
     write_camin_sokal_artifacts,
     write_dollo_artifacts,
     write_fitch_artifacts,
@@ -203,6 +206,47 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the parsimony reconstruction as JSON."
     )
     _add_manifest_argument(phylo_parsimony_deltran)
+    phylo_parsimony_tree_length = phylo_parsimony_subparsers.add_parser(
+        "tree-length",
+        help="Summarize per-character and total tree length for one parsimony scoring method.",
+    )
+    phylo_parsimony_tree_length.add_argument("tree_path", type=Path)
+    phylo_parsimony_tree_length.add_argument("matrix_path", type=Path)
+    phylo_parsimony_tree_length.add_argument(
+        "--method",
+        required=True,
+        choices=[
+            "fitch",
+            "wagner",
+            "sankoff",
+            "dollo",
+            "camin-sokal",
+            "acctran",
+            "deltran",
+        ],
+    )
+    phylo_parsimony_tree_length.add_argument("--taxon-column")
+    phylo_parsimony_tree_length.add_argument(
+        "--cost-matrix",
+        dest="cost_matrix_path",
+        type=Path,
+        help="Required when --method sankoff is selected.",
+    )
+    phylo_parsimony_tree_length.add_argument(
+        "--state-order",
+        help="Comma-separated explicit ordered state labels for Wagner tree length.",
+    )
+    phylo_parsimony_tree_length.add_argument(
+        "--character-weights",
+        dest="character_weights_path",
+        type=Path,
+        help="Optional TSV with character_id and weight columns.",
+    )
+    phylo_parsimony_tree_length.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_tree_length.add_argument(
+        "--json", action="store_true", help="Emit the tree-length report as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_tree_length)
 
 
 def run_phylo_command(args: Any) -> int:
@@ -316,6 +360,39 @@ def run_phylo_command(args: Any) -> int:
                 "character_count": report.character_count,
                 "total_steps": report.total_steps,
             }
+        elif args.phylo_parsimony_command == "tree-length":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            character_weights = (
+                load_parsimony_character_weights(args.character_weights_path)
+                if getattr(args, "character_weights_path", None) is not None
+                else None
+            )
+            cost_matrix = (
+                load_sankoff_cost_matrix(args.cost_matrix_path)
+                if getattr(args, "cost_matrix_path", None) is not None
+                else None
+            )
+            state_order = _split_state_order(getattr(args, "state_order", None))
+            report = tree_length(
+                args.tree_path,
+                matrix,
+                method=args.method,
+                state_order=state_order,
+                cost_matrix=cost_matrix,
+                character_weights=character_weights,
+            )
+            artifact_paths = write_parsimony_tree_length_artifacts(args.out_dir, report)
+            metrics = {
+                "algorithm": report.algorithm,
+                "method": report.method,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "raw_total_score": report.raw_total_score,
+                "total_score": report.total_score,
+            }
         else:
             raise EngineWorkflowError(
                 "unknown phylo parsimony command",
@@ -330,7 +407,19 @@ def run_phylo_command(args: Any) -> int:
                 *(
                     [args.cost_matrix_path]
                     if hasattr(args, "cost_matrix_path")
-                    and args.phylo_parsimony_command == "sankoff"
+                    and (
+                        args.phylo_parsimony_command == "sankoff"
+                        or (
+                            args.phylo_parsimony_command == "tree-length"
+                            and getattr(args, "cost_matrix_path", None) is not None
+                        )
+                    )
+                    else []
+                ),
+                *(
+                    [args.character_weights_path]
+                    if hasattr(args, "character_weights_path")
+                    and getattr(args, "character_weights_path", None) is not None
                     else []
                 ),
             ],
