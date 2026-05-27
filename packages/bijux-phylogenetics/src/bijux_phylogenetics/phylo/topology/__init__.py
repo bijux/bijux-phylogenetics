@@ -26,6 +26,7 @@ _EXPORTS = {
     "TreeOrderingReport": "models",
     "TreeRootingReport": "models",
     "TreeTransformationSummary": "models",
+    "build_bionj_tree": "bionj",
     "build_neighbor_joining_tree": "neighbor_joining",
     "_order_tree": "ordering",
     "_rotate_all_nodes": "ordering",
