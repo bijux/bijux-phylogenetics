@@ -13,5 +13,5 @@ ard-three-state-weak-identification-review	bijux	model-comparison	candidate-set	
 ard-three-state-weak-identification-review	geiger	model-comparison	candidate-set	ok	equal-rates					false	0	
 ard-five-state-overparameterized-review	bijux	fit	all-rates-different	ok		nelder-mead	false	true	false	true	4	
 ard-five-state-overparameterized-review	geiger	fit	all-rates-different	ok		subplex	true			true	1	
-ard-five-state-overparameterized-review	bijux	model-comparison	candidate-set	ok	equal-rates					false	1	
+ard-five-state-overparameterized-review	bijux	model-comparison	candidate-set	ok	equal-rates					false	0	
 ard-five-state-overparameterized-review	geiger	model-comparison	candidate-set	ok	all-rates-different					false	1	
