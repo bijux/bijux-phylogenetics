@@ -144,3 +144,61 @@ class Hky85KappaOptimizationReport:
     converged: bool
     lower_kappa_bound: float
     upper_kappa_bound: float
+
+
+@dataclass(slots=True)
+class GtrTreeLikelihoodReport:
+    """Native GTR likelihood report for one fixed topology and alignment."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    base_frequency_source: str
+    base_frequency_a: float
+    base_frequency_c: float
+    base_frequency_g: float
+    base_frequency_t: float
+    exchangeability_anchor: str
+    exchangeability_ac: float
+    exchangeability_ag: float
+    exchangeability_at: float
+    exchangeability_cg: float
+    exchangeability_ct: float
+    exchangeability_gt: float
+    parameter_count: int
+    log_likelihood: float
+    aic: float
+
+
+@dataclass(slots=True)
+class GtrExchangeabilityOptimizationReport:
+    """Fixed-topology GTR exchangeability optimization summary."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    tree_newick: str
+    base_frequency_source: str
+    base_frequency_a: float
+    base_frequency_c: float
+    base_frequency_g: float
+    base_frequency_t: float
+    exchangeability_anchor: str
+    exchangeability_ac: float
+    exchangeability_ag: float
+    exchangeability_at: float
+    exchangeability_cg: float
+    exchangeability_ct: float
+    exchangeability_gt: float
+    parameter_count: int
+    initial_log_likelihood: float
+    optimized_log_likelihood: float
+    initial_aic: float
+    optimized_aic: float
+    function_evaluation_count: int
+    optimization_pass_count: int
+    converged: bool
+    lower_exchangeability_bound: float
+    upper_exchangeability_bound: float
