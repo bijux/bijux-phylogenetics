@@ -52,10 +52,11 @@ def test_validate_distance_reference_examples_passes() -> None:
 
 def test_distance_tree_method_policies_explicitly_exclude_bionj() -> None:
     policies = {row.method: row for row in list_distance_tree_method_policies()}
-    assert set(policies) == {"bionj", "neighbor-joining", "upgma"}
+    assert set(policies) == {"bionj", "neighbor-joining", "upgma", "wpgma"}
     assert policies["neighbor-joining"].supported is True
     assert policies["neighbor-joining"].reference_surface == "ape::nj"
     assert policies["upgma"].supported is True
+    assert policies["wpgma"].supported is True
     assert policies["bionj"].supported is False
     assert policies["bionj"].reference_surface == "ape::bionj"
     assert policies["bionj"].support_scope == "explicitly-excluded"
