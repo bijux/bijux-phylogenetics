@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from .artifacts import (
+    write_parsimony_consistency_artifacts,
+    write_parsimony_consistency_index_table,
+    write_parsimony_consistency_run_json,
     write_parsimony_reconstruction_artifacts,
     write_parsimony_reconstruction_branch_change_table,
     write_parsimony_reconstruction_node_state_table,
@@ -32,6 +35,7 @@ from .artifacts import (
     write_wagner_steps_table,
 )
 from .camin_sokal import score_camin_sokal
+from .consistency import consistency_index
 from .cost_matrix import load_sankoff_cost_matrix
 from .dollo import score_dollo
 from .fitch import (
@@ -50,6 +54,8 @@ from .models import (
     FitchNodeStateSet,
     FitchScoreReport,
     ParsimonyCharacterMatrix,
+    ParsimonyConsistencyCharacterIndex,
+    ParsimonyConsistencyIndexReport,
     ParsimonyCharacterWeights,
     ParsimonyReconstructionBranchChange,
     ParsimonyReconstructionCharacterScore,
@@ -75,6 +81,7 @@ __all__ = [
     "CaminSokalBranchChange",
     "CaminSokalCharacterScore",
     "CaminSokalScoreReport",
+    "consistency_index",
     "DolloBranchChange",
     "DolloCharacterScore",
     "DolloScoreReport",
@@ -86,6 +93,8 @@ __all__ = [
     "load_parsimony_character_matrix",
     "load_sankoff_cost_matrix",
     "ParsimonyCharacterMatrix",
+    "ParsimonyConsistencyCharacterIndex",
+    "ParsimonyConsistencyIndexReport",
     "ParsimonyCharacterWeights",
     "ParsimonyReconstructionBranchChange",
     "ParsimonyReconstructionCharacterScore",
@@ -111,6 +120,9 @@ __all__ = [
     "write_camin_sokal_branch_change_table",
     "write_camin_sokal_run_json",
     "write_camin_sokal_steps_table",
+    "write_parsimony_consistency_artifacts",
+    "write_parsimony_consistency_index_table",
+    "write_parsimony_consistency_run_json",
     "write_parsimony_reconstruction_artifacts",
     "write_parsimony_reconstruction_branch_change_table",
     "write_parsimony_reconstruction_node_state_table",

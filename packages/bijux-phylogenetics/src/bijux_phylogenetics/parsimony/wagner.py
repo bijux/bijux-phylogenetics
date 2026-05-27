@@ -72,7 +72,7 @@ def score_wagner(
                 for states_by_character in resolved_matrix.states_by_taxon.values()
             }
         )
-        resolved_state_order = _resolve_character_state_order(
+        resolved_state_order = resolve_wagner_character_state_order(
             character_id=character_id,
             observed_states=observed_states,
             state_order=state_order,
@@ -132,7 +132,7 @@ def score_wagner(
     )
 
 
-def _resolve_character_state_order(
+def resolve_wagner_character_state_order(
     *,
     character_id: str,
     observed_states: list[str],

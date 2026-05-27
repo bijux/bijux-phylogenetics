@@ -9,6 +9,7 @@ from .models import (
     CaminSokalScoreReport,
     DolloScoreReport,
     FitchScoreReport,
+    ParsimonyConsistencyIndexReport,
     ParsimonyReconstructionReport,
     ParsimonyTreeLengthReport,
     SankoffScoreReport,
@@ -805,5 +806,92 @@ def write_parsimony_tree_length_artifacts(
     run_json_path = write_parsimony_tree_length_run_json(out_dir / "run.json", report)
     return {
         "scores_path": scores_path,
+        "run_json_path": run_json_path,
+    }
+
+
+def write_parsimony_consistency_index_table(
+    path: Path,
+    report: ParsimonyConsistencyIndexReport,
+) -> Path:
+    """Write one deterministic per-character consistency-index table."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "character_id",
+            "character_kind",
+            "observed_states",
+            "minimum_possible_steps",
+            "observed_steps",
+            "consistency_index",
+            "undefined_reason",
+        ],
+        rows=[
+            {
+                "character_id": row.character_id,
+                "character_kind": row.character_kind,
+                "observed_states": "|".join(row.observed_states),
+                "minimum_possible_steps": row.minimum_possible_steps,
+                "observed_steps": row.observed_steps,
+                "consistency_index": row.consistency_index,
+                "undefined_reason": row.undefined_reason,
+            }
+            for row in report.character_rows
+        ],
+    )
+
+
+def write_parsimony_consistency_run_json(
+    path: Path,
+    report: ParsimonyConsistencyIndexReport,
+) -> Path:
+    """Write one machine-readable consistency-index payload."""
+    return write_json_artifact(
+        path,
+        {
+            "algorithm": report.algorithm,
+            "method": report.method,
+            "tree_path": None if report.tree_path is None else str(report.tree_path),
+            "matrix_path": None
+            if report.matrix_path is None
+            else str(report.matrix_path),
+            "taxon_column": report.taxon_column,
+            "taxon_count": report.taxon_count,
+            "character_count": report.character_count,
+            "included_character_count": report.included_character_count,
+            "excluded_character_count": report.excluded_character_count,
+            "minimum_possible_steps_total": report.minimum_possible_steps_total,
+            "observed_steps_total": report.observed_steps_total,
+            "consistency_index": report.consistency_index,
+            "undefined_reason": report.undefined_reason,
+            "character_rows": [
+                {
+                    "character_id": row.character_id,
+                    "character_kind": row.character_kind,
+                    "observed_states": row.observed_states,
+                    "minimum_possible_steps": row.minimum_possible_steps,
+                    "observed_steps": row.observed_steps,
+                    "consistency_index": row.consistency_index,
+                    "undefined_reason": row.undefined_reason,
+                }
+                for row in report.character_rows
+            ],
+        },
+    )
+
+
+def write_parsimony_consistency_artifacts(
+    out_dir: Path,
+    report: ParsimonyConsistencyIndexReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one consistency-index run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    indices_path = write_parsimony_consistency_index_table(
+        out_dir / "character_indices.tsv",
+        report,
+    )
+    run_json_path = write_parsimony_consistency_run_json(out_dir / "run.json", report)
+    return {
+        "indices_path": indices_path,
         "run_json_path": run_json_path,
     }

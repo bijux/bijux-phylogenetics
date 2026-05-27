@@ -326,3 +326,36 @@ class ParsimonyTreeLengthReport:
     raw_total_score: float
     total_score: float
     step_rows: list[ParsimonyTreeLengthCharacterScore]
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyConsistencyCharacterIndex:
+    """Per-character consistency-index row."""
+
+    character_id: str
+    character_kind: str
+    observed_states: list[str]
+    minimum_possible_steps: float
+    observed_steps: float
+    consistency_index: float | None
+    undefined_reason: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyConsistencyIndexReport:
+    """Complete consistency-index summary over one matrix and parsimony method."""
+
+    algorithm: str
+    method: str
+    tree_path: Path | None
+    matrix_path: Path | None
+    taxon_column: str
+    taxon_count: int
+    character_count: int
+    included_character_count: int
+    excluded_character_count: int
+    minimum_possible_steps_total: float
+    observed_steps_total: float
+    consistency_index: float | None
+    undefined_reason: str | None
+    character_rows: list[ParsimonyConsistencyCharacterIndex]
