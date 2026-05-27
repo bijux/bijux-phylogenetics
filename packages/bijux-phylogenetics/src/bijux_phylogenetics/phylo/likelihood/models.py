@@ -98,3 +98,49 @@ class F81TreeLikelihoodReport:
     parameter_count: int
     log_likelihood: float
     aic: float
+
+
+@dataclass(slots=True)
+class Hky85TreeLikelihoodReport:
+    """Native HKY85 likelihood report for one fixed topology and alignment."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    base_frequency_source: str
+    base_frequency_a: float
+    base_frequency_c: float
+    base_frequency_g: float
+    base_frequency_t: float
+    kappa: float
+    parameter_count: int
+    log_likelihood: float
+    aic: float
+
+
+@dataclass(slots=True)
+class Hky85KappaOptimizationReport:
+    """Fixed-topology HKY85 kappa optimization summary."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    tree_newick: str
+    base_frequency_source: str
+    base_frequency_a: float
+    base_frequency_c: float
+    base_frequency_g: float
+    base_frequency_t: float
+    initial_kappa: float
+    optimized_kappa: float
+    parameter_count: int
+    initial_log_likelihood: float
+    optimized_log_likelihood: float
+    initial_aic: float
+    optimized_aic: float
+    function_evaluation_count: int
+    converged: bool
+    lower_kappa_bound: float
+    upper_kappa_bound: float
