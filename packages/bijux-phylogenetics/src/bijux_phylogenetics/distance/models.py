@@ -288,6 +288,53 @@ class DistanceTaxonJackknifeReport:
 
 
 @dataclass(frozen=True, slots=True)
+class DistanceMethodComparisonRow:
+    """One distance-tree method scored against the same imported distance matrix."""
+
+    method: str
+    tree_newick: str
+    patristic_residual_sum_squares: float
+    balanced_minimum_evolution_score: float
+    ordinary_least_squares_residual_sum_squares: float
+    ordinary_least_squares_negative_branch_count: int
+    assumption_warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class DistanceMethodRfRow:
+    """One pairwise rooted RF comparison across two distance-tree methods."""
+
+    left_method: str
+    right_method: str
+    rooted_robinson_foulds_distance: int
+    rooted_normalized_robinson_foulds: float
+
+
+@dataclass(frozen=True, slots=True)
+class DistanceMethodWarningRow:
+    """One explicit matrix-level or method-level assumption warning."""
+
+    warning_rank: int
+    scope: str
+    method: str | None
+    warning: str
+
+
+@dataclass(slots=True)
+class DistanceMethodComparisonReport:
+    """Compare owned distance-tree methods and fixed-topology scores on one matrix."""
+
+    source_path: Path
+    source_kind: str
+    missing_distance_policy: MissingDistancePolicy
+    taxa: list[str]
+    compared_methods: list[str]
+    rows: list[DistanceMethodComparisonRow]
+    rf_rows: list[DistanceMethodRfRow]
+    warning_rows: list[DistanceMethodWarningRow]
+
+
+@dataclass(frozen=True, slots=True)
 class DistanceUltrametricityViolation:
     """One taxon triple whose pairwise distances violate the three-point condition."""
 
