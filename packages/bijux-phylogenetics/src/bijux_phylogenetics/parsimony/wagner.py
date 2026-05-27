@@ -20,7 +20,7 @@ from .models import (
 @dataclass(frozen=True, slots=True)
 class _CharacterStateOrder:
     labels: list[str]
-    indices: dict[str, int]
+    coordinates: dict[str, int]
 
 
 def score_wagner(
@@ -168,7 +168,7 @@ def _resolve_character_state_order(
         labels = list(state_order)
         return _CharacterStateOrder(
             labels=labels,
-            indices={state: index for index, state in enumerate(labels)},
+            coordinates={state: index for index, state in enumerate(labels)},
         )
     try:
         ordered_pairs = sorted((int(state), state) for state in observed_states)
@@ -184,7 +184,7 @@ def _resolve_character_state_order(
     labels = [state for _, state in ordered_pairs]
     return _CharacterStateOrder(
         labels=labels,
-        indices={state: index for index, state in enumerate(labels)},
+        coordinates={state: value for value, state in ordered_pairs},
     )
 
 
@@ -215,12 +215,14 @@ def _score_character(
         ]
         node_costs[node_key] = {}
         for parent_state in state_order.labels:
-            parent_index = state_order.indices[parent_state]
+            parent_coordinate = state_order.coordinates[parent_state]
             total_cost = 0
             for child_cost_vector in child_cost_vectors:
                 total_cost += min(
                     child_cost_vector[child_state]
-                    + abs(parent_index - state_order.indices[child_state])
+                    + abs(
+                        parent_coordinate - state_order.coordinates[child_state]
+                    )
                     for child_state in state_order.labels
                 )
             node_costs[node_key][parent_state] = total_cost
