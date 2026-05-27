@@ -261,6 +261,12 @@ from .models import (
     NucleotideSubstitutionParameterOptimizationReport as NucleotideSubstitutionParameterOptimizationReport,
 )
 from .models import (
+    NucleotideLikelihoodMultiStartRunSummary as NucleotideLikelihoodMultiStartRunSummary,
+)
+from .models import (
+    NucleotideLikelihoodMultiStartSearchReport as NucleotideLikelihoodMultiStartSearchReport,
+)
+from .models import (
     NucleotideLikelihoodNniSearchReport as NucleotideLikelihoodNniSearchReport,
 )
 from .models import (
@@ -457,6 +463,8 @@ __all__ = [
     "MarginalAncestralStateProbabilityRow",
     "NestedLikelihoodRatioModelFit",
     "NestedLikelihoodRatioTestReport",
+    "NucleotideLikelihoodMultiStartRunSummary",
+    "NucleotideLikelihoodMultiStartSearchReport",
     "NucleotideLikelihoodNniSearchReport",
     "NucleotideLikelihoodNniTraceRow",
     "NucleotideLikelihoodSprSearchReport",

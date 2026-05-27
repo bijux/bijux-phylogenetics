@@ -414,6 +414,58 @@ class NucleotideLikelihoodSprSearchReport:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodMultiStartRunSummary:
+    """One independently searched start tree inside a multi-start likelihood workflow."""
+
+    search_algorithm: str
+    start_tree_source_kind: str
+    start_tree_source_label: str
+    start_tree_generation_seed: int | None
+    start_tree_newick: str
+    start_log_likelihood: float
+    final_tree_newick: str
+    final_log_likelihood: float
+    final_topology_fingerprint: str
+    accepted_move_count: int
+    evaluated_neighbor_count: int
+    branch_reoptimization_policy: str
+    substitution_parameter_policy: str
+    substitution_parameter_values: dict[str, float]
+    substitution_parameter_warnings: list[str]
+    total_branch_optimization_pass_count: int
+    total_branch_function_evaluation_count: int
+    stopping_reason: str
+    best_run: bool
+
+
+@dataclass(slots=True)
+class NucleotideLikelihoodMultiStartSearchReport:
+    """Complete rooted nucleotide likelihood multi-start search summary."""
+
+    algorithm: str
+    model_name: str
+    local_search_method: str
+    tree_path: str | None
+    alignment_path: str | None
+    taxon_count: int
+    site_count: int
+    pattern_count: int
+    input_tree_newick: str
+    start_tree_source_policy: str
+    input_tree_included: bool
+    generated_start_tree_count: int
+    start_tree_count: int
+    start_tree_seed: int
+    evaluation_budget: int | None
+    branch_reoptimization_policy: str
+    best_run_source_label: str
+    best_final_tree_newick: str
+    best_final_log_likelihood: float
+    best_final_topology_fingerprint: str
+    run_summaries: list[NucleotideLikelihoodMultiStartRunSummary]
+
+
+@dataclass(slots=True)
 class SiteLogLikelihoodRow:
     """One expanded site log-likelihood row from one compressed-pattern evaluation."""
 
