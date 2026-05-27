@@ -305,6 +305,19 @@ class ParsimonyReconstructionNodeState:
 
 
 @dataclass(frozen=True, slots=True)
+class ParsimonyAncestralState:
+    """Per-node ancestral-state export row for one parsimony reconstruction."""
+
+    node_id: str
+    clade_id: str
+    character_id: str
+    possible_states: list[str]
+    chosen_state: str
+    method: str
+    ambiguous: bool
+
+
+@dataclass(frozen=True, slots=True)
 class ParsimonyReconstructionBranchChange:
     """Per-branch resolved parsimony change row for one character."""
 
@@ -333,6 +346,7 @@ class ParsimonyReconstructionReport:
     total_weighted_score: float
     step_rows: list[ParsimonyReconstructionCharacterScore]
     node_state_rows: list[ParsimonyReconstructionNodeState]
+    ancestral_state_rows: list[ParsimonyAncestralState]
     branch_change_rows: list[ParsimonyReconstructionBranchChange]
 
 

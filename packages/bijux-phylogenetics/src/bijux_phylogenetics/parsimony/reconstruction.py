@@ -12,6 +12,7 @@ from .matrix import load_parsimony_character_matrix
 from .models import (
     FitchCharacterMatrix,
     ParsimonyCharacterWeights,
+    ParsimonyAncestralState,
     ParsimonyReconstructionBranchChange,
     ParsimonyReconstructionCharacterScore,
     ParsimonyReconstructionNodeState,
@@ -113,6 +114,7 @@ def _reconstruct_parsimony_report(
     node_depths = _node_depths(resolved_tree.root)
     step_rows: list[ParsimonyReconstructionCharacterScore] = []
     node_state_rows: list[ParsimonyReconstructionNodeState] = []
+    ancestral_state_rows: list[ParsimonyAncestralState] = []
     branch_change_rows: list[ParsimonyReconstructionBranchChange] = []
     total_steps = 0
     total_weighted_score = 0.0
@@ -131,6 +133,11 @@ def _reconstruct_parsimony_report(
             states=observed_states,
             node_depths=node_depths,
             algorithm=algorithm,
+        )
+        possible_state_sets = _possible_state_sets(
+            resolved_tree.root,
+            character_id=character_id,
+            states_by_taxon=resolved_matrix.states_by_taxon,
         )
         root_signature = node_signature(resolved_tree.root)
         root_state = min(
@@ -170,12 +177,13 @@ def _reconstruct_parsimony_report(
         )
         for node in preorder_nodes:
             signature = node_signature(node)
+            descendant_taxa = node_descendant_taxa(node)
             node_state_rows.append(
                 ParsimonyReconstructionNodeState(
                     character_id=character_id,
                     node=signature,
                     node_name=node.name,
-                    descendant_taxa=node_descendant_taxa(node),
+                    descendant_taxa=descendant_taxa,
                     resolved_state=assigned_states[signature],
                     is_tip=node.is_leaf(),
                     observed_state=(
@@ -185,6 +193,18 @@ def _reconstruct_parsimony_report(
                     ),
                 )
             )
+            if not node.is_leaf():
+                ancestral_state_rows.append(
+                    ParsimonyAncestralState(
+                        node_id=signature,
+                        clade_id="|".join(descendant_taxa),
+                        character_id=character_id,
+                        possible_states=sorted(possible_state_sets[signature]),
+                        chosen_state=assigned_states[signature],
+                        method=algorithm,
+                        ambiguous=len(possible_state_sets[signature]) > 1,
+                    )
+                )
     return ParsimonyReconstructionReport(
         algorithm=algorithm,
         tree_path=tree_path,
@@ -197,6 +217,7 @@ def _reconstruct_parsimony_report(
         total_weighted_score=total_weighted_score,
         step_rows=step_rows,
         node_state_rows=node_state_rows,
+        ancestral_state_rows=ancestral_state_rows,
         branch_change_rows=branch_change_rows,
     )
 
@@ -257,6 +278,35 @@ def _compute_dynamic_rows(
     return dynamic_rows
 
 
+def _possible_state_sets(
+    root: TreeNode,
+    *,
+    character_id: str,
+    states_by_taxon: dict[str, dict[str, str]],
+) -> dict[str, set[str]]:
+    candidate_sets: dict[str, set[str]] = {}
+    for node in root.iter_nodes(order="postorder"):
+        signature = node_signature(node)
+        if node.is_leaf():
+            if node.name is None:
+                raise ParsimonyAnalysisError(
+                    "parsimony reconstruction requires every leaf to have a taxon label",
+                    code="parsimony_tree_unnamed_tip",
+                )
+            candidate_sets[signature] = {states_by_taxon[node.name][character_id]}
+            continue
+        child_sets = [set(candidate_sets[node_signature(child)]) for child in node.children]
+        candidate = child_sets[0]
+        for child_set in child_sets[1:]:
+            intersection = candidate & child_set
+            if intersection:
+                candidate = intersection
+            else:
+                candidate |= child_set
+        candidate_sets[signature] = candidate
+    return candidate_sets
+
+
 def _assign_child_states(
     node: TreeNode,
     *,
@@ -271,8 +321,16 @@ def _assign_child_states(
 ) -> None:
     for child in node.children:
         child_signature = node_signature(child)
+        possible_states = _possible_child_states(
+            parent_state=parent_state,
+            child_signature=child_signature,
+            states=states,
+            dynamic_rows=dynamic_rows,
+            node_depths=node_depths,
+            algorithm=algorithm,
+        )
         child_state = min(
-            states,
+            possible_states,
             key=lambda state: _child_objective(
                 parent_state=parent_state,
                 child_state=state,
@@ -330,6 +388,41 @@ def _child_objective(
         child_secondary + (branch_secondary if branch_change else 0),
         child_state,
     )
+
+
+def _possible_child_states(
+    *,
+    parent_state: str,
+    child_signature: str,
+    states: list[str],
+    dynamic_rows: dict[str, dict[str, tuple[int, int]]],
+    node_depths: dict[str, int],
+    algorithm: str,
+) -> list[str]:
+    best_objective = min(
+        _child_objective(
+            parent_state=parent_state,
+            child_state=state,
+            child_signature=child_signature,
+            dynamic_rows=dynamic_rows,
+            node_depths=node_depths,
+            algorithm=algorithm,
+        )[:2]
+        for state in states
+    )
+    return [
+        state
+        for state in states
+        if _child_objective(
+            parent_state=parent_state,
+            child_state=state,
+            child_signature=child_signature,
+            dynamic_rows=dynamic_rows,
+            node_depths=node_depths,
+            algorithm=algorithm,
+        )[:2]
+        == best_objective
+    ]
 
 
 def _node_depths(root: TreeNode) -> dict[str, int]:
