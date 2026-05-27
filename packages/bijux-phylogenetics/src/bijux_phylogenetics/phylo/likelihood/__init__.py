@@ -14,6 +14,24 @@ from .f81 import (
 from .f81 import (
     f81_transition_probability_matrix as f81_transition_probability_matrix,
 )
+from .gtr import (
+    evaluate_gtr_tree_likelihood as evaluate_gtr_tree_likelihood,
+)
+from .gtr import (
+    evaluate_gtr_tree_likelihood_from_alignment as evaluate_gtr_tree_likelihood_from_alignment,
+)
+from .gtr import (
+    gtr_rate_matrix as gtr_rate_matrix,
+)
+from .gtr import (
+    gtr_transition_probability_matrix as gtr_transition_probability_matrix,
+)
+from .gtr import (
+    optimize_gtr_exchangeabilities as optimize_gtr_exchangeabilities,
+)
+from .gtr import (
+    optimize_gtr_exchangeabilities_from_alignment as optimize_gtr_exchangeabilities_from_alignment,
+)
 from .hky85 import (
     evaluate_hky85_tree_likelihood as evaluate_hky85_tree_likelihood,
 )
@@ -70,6 +88,12 @@ from .k80 import (
 )
 from .models import (
     F81TreeLikelihoodReport as F81TreeLikelihoodReport,
+)
+from .models import (
+    GtrExchangeabilityOptimizationReport as GtrExchangeabilityOptimizationReport,
+)
+from .models import (
+    GtrTreeLikelihoodReport as GtrTreeLikelihoodReport,
 )
 from .models import (
     Hky85KappaOptimizationReport as Hky85KappaOptimizationReport,
@@ -131,6 +155,8 @@ __all__ = [
     "CompressedAlignmentSitePatterns",
     "F81TreeLikelihoodReport",
     "FiniteStatePruningPass",
+    "GtrExchangeabilityOptimizationReport",
+    "GtrTreeLikelihoodReport",
     "Hky85KappaOptimizationReport",
     "Hky85TreeLikelihoodReport",
     "Jc69BranchLengthOptimizationReport",
@@ -143,6 +169,8 @@ __all__ = [
     "compress_alignment_site_patterns_from_records",
     "evaluate_f81_tree_likelihood",
     "evaluate_f81_tree_likelihood_from_alignment",
+    "evaluate_gtr_tree_likelihood",
+    "evaluate_gtr_tree_likelihood_from_alignment",
     "evaluate_hky85_tree_likelihood",
     "evaluate_hky85_tree_likelihood_from_alignment",
     "evaluate_k80_tree_likelihood",
@@ -151,6 +179,8 @@ __all__ = [
     "evaluate_jc69_tree_likelihood_from_alignment",
     "f81_rate_matrix",
     "f81_transition_probability_matrix",
+    "gtr_rate_matrix",
+    "gtr_transition_probability_matrix",
     "hky85_rate_matrix",
     "hky85_transition_probability_matrix",
     "k80_rate_matrix",
@@ -158,6 +188,8 @@ __all__ = [
     "jc69_rate_matrix",
     "jc69_transition_probability_matrix",
     "log_likelihood_from_root_prior",
+    "optimize_gtr_exchangeabilities",
+    "optimize_gtr_exchangeabilities_from_alignment",
     "optimize_hky85_kappa",
     "optimize_hky85_kappa_from_alignment",
     "optimize_k80_kappa",
