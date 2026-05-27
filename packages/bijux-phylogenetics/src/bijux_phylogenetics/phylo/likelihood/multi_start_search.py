@@ -1,0 +1,405 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+import math
+from pathlib import Path
+
+import numpy
+
+from bijux_phylogenetics.io.newick import dumps_newick
+from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.models import (
+    NucleotideLikelihoodMultiStartRunSummary,
+    NucleotideLikelihoodMultiStartSearchReport,
+    NucleotideLikelihoodNniSearchReport,
+    NucleotideLikelihoodSprSearchReport,
+)
+from bijux_phylogenetics.phylo.likelihood.nni_search import (
+    search_nucleotide_likelihood_nni,
+)
+from bijux_phylogenetics.phylo.likelihood.spr_search import (
+    search_nucleotide_likelihood_spr,
+)
+from bijux_phylogenetics.phylo.likelihood.topology_search import (
+    normalize_nucleotide_topology_search_records,
+    resolve_nucleotide_topology_search_records,
+    resolve_nucleotide_topology_search_tree,
+    validate_branch_reoptimization_policy,
+    validate_nucleotide_topology_search_tree,
+)
+from bijux_phylogenetics.phylo.topology import rooted_topology_fingerprint
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+from bijux_phylogenetics.simulation.trees import simulate_random_tree
+
+_SUPPORTED_LIKELIHOOD_MULTI_START_METHODS = frozenset({"nni", "spr"})
+_SUPPORTED_START_TREE_SOURCE_POLICIES = frozenset({"input-tree-plus-random-tree"})
+_RANDOM_START_TAXON_PREFIX = "GeneratedTaxon"
+_MAX_RANDOM_START_ATTEMPTS = 10_000
+
+
+@dataclass(frozen=True, slots=True)
+class _StartTreeCandidate:
+    """One prepared likelihood multi-start tree with an explicit provenance label."""
+
+    source_kind: str
+    source_label: str
+    generation_seed: int | None
+    tree: PhyloTree
+
+
+def search_nucleotide_likelihood_multi_start(
+    tree: PhyloTree | Path,
+    records: list[AlignmentRecord] | Path,
+    *,
+    model_name: str,
+    local_search_method: str = "nni",
+    start_tree_count: int = 4,
+    start_tree_source_policy: str = "input-tree-plus-random-tree",
+    start_tree_seed: int = 1,
+    branch_reoptimization_policy: str = "coordinate-branch-lengths",
+    evaluation_budget: int | None = None,
+    kappa: float | None = None,
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+        | None
+    ) = None,
+    lower_branch_length_bound: float = 0.0,
+    upper_branch_length_bound: float = 5.0,
+    improvement_tolerance: float = 1e-9,
+    max_coordinate_passes: int = 12,
+) -> NucleotideLikelihoodMultiStartSearchReport:
+    """Search a nucleotide likelihood surface from multiple independent rooted starts."""
+    resolved_tree, resolved_tree_path = resolve_nucleotide_topology_search_tree(tree)
+    resolved_records, resolved_alignment_path = resolve_nucleotide_topology_search_records(
+        records
+    )
+    normalized_local_search_method = validate_likelihood_multi_start_method(
+        local_search_method
+    )
+    validated_start_tree_count = validate_likelihood_multi_start_start_tree_count(
+        start_tree_count
+    )
+    validated_start_tree_source_policy = validate_likelihood_multi_start_source_policy(
+        start_tree_source_policy
+    )
+    validated_branch_reoptimization_policy = validate_branch_reoptimization_policy(
+        branch_reoptimization_policy
+    )
+    validated_evaluation_budget = validate_likelihood_multi_start_evaluation_budget(
+        normalized_local_search_method,
+        evaluation_budget,
+    )
+    validate_nucleotide_topology_search_tree(
+        resolved_tree,
+        workflow_name="nucleotide likelihood multi-start search",
+    )
+    _normalized_records, compressed_patterns = normalize_nucleotide_topology_search_records(
+        resolved_records,
+        owner_name="nucleotide likelihood multi-start search",
+    )
+    start_tree_candidates = build_likelihood_multi_start_candidates(
+        resolved_tree,
+        start_tree_count=validated_start_tree_count,
+        start_tree_source_policy=validated_start_tree_source_policy,
+        start_tree_seed=start_tree_seed,
+    )
+    run_summaries: list[NucleotideLikelihoodMultiStartRunSummary] = []
+    local_reports: list[
+        NucleotideLikelihoodNniSearchReport | NucleotideLikelihoodSprSearchReport
+    ] = []
+    for candidate in start_tree_candidates:
+        local_report = _run_local_search(
+            candidate.tree,
+            resolved_records,
+            model_name=model_name,
+            local_search_method=normalized_local_search_method,
+            branch_reoptimization_policy=validated_branch_reoptimization_policy,
+            evaluation_budget=validated_evaluation_budget,
+            kappa=kappa,
+            base_frequencies=base_frequencies,
+            exchangeabilities=exchangeabilities,
+            lower_branch_length_bound=lower_branch_length_bound,
+            upper_branch_length_bound=upper_branch_length_bound,
+            improvement_tolerance=improvement_tolerance,
+            max_coordinate_passes=max_coordinate_passes,
+        )
+        local_reports.append(local_report)
+        run_summaries.append(
+            NucleotideLikelihoodMultiStartRunSummary(
+                search_algorithm=local_report.algorithm,
+                start_tree_source_kind=candidate.source_kind,
+                start_tree_source_label=candidate.source_label,
+                start_tree_generation_seed=candidate.generation_seed,
+                start_tree_newick=local_report.start_tree_newick,
+                start_log_likelihood=local_report.start_log_likelihood,
+                final_tree_newick=local_report.final_tree_newick,
+                final_log_likelihood=local_report.final_log_likelihood,
+                final_topology_fingerprint=rooted_topology_fingerprint_from_newick(
+                    local_report.final_tree_newick
+                ),
+                accepted_move_count=local_report.accepted_move_count,
+                evaluated_neighbor_count=local_report.evaluated_neighbor_count,
+                branch_reoptimization_policy=local_report.branch_reoptimization_policy,
+                substitution_parameter_policy=local_report.substitution_parameter_policy,
+                substitution_parameter_values=dict(local_report.substitution_parameter_values),
+                substitution_parameter_warnings=list(
+                    local_report.substitution_parameter_warnings
+                ),
+                total_branch_optimization_pass_count=local_report.total_branch_optimization_pass_count,
+                total_branch_function_evaluation_count=local_report.total_branch_function_evaluation_count,
+                stopping_reason=local_report.stopping_reason,
+                best_run=False,
+            )
+        )
+    best_run_index = select_best_likelihood_multi_start_run(run_summaries)
+    run_summaries[best_run_index].best_run = True
+    best_run = run_summaries[best_run_index]
+    first_local_report = local_reports[0]
+    return NucleotideLikelihoodMultiStartSearchReport(
+        algorithm="nucleotide-likelihood-multi-start-search",
+        model_name=first_local_report.model_name,
+        local_search_method=normalized_local_search_method,
+        tree_path=None if resolved_tree_path is None else str(resolved_tree_path),
+        alignment_path=None
+        if resolved_alignment_path is None
+        else str(resolved_alignment_path),
+        taxon_count=len(compressed_patterns.taxon_order),
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        input_tree_newick=dumps_newick(resolved_tree),
+        start_tree_source_policy=validated_start_tree_source_policy,
+        input_tree_included=True,
+        generated_start_tree_count=validated_start_tree_count - 1,
+        start_tree_count=validated_start_tree_count,
+        start_tree_seed=start_tree_seed,
+        evaluation_budget=validated_evaluation_budget,
+        branch_reoptimization_policy=validated_branch_reoptimization_policy,
+        best_run_source_label=best_run.start_tree_source_label,
+        best_final_tree_newick=best_run.final_tree_newick,
+        best_final_log_likelihood=best_run.final_log_likelihood,
+        best_final_topology_fingerprint=best_run.final_topology_fingerprint,
+        run_summaries=run_summaries,
+    )
+
+
+def validate_likelihood_multi_start_method(local_search_method: str) -> str:
+    """Validate the bounded set of local search engines used inside restarts."""
+    normalized_local_search_method = local_search_method.strip().lower()
+    if normalized_local_search_method not in _SUPPORTED_LIKELIHOOD_MULTI_START_METHODS:
+        raise ValueError(
+            "local_search_method must be one of "
+            + ", ".join(sorted(_SUPPORTED_LIKELIHOOD_MULTI_START_METHODS))
+        )
+    return normalized_local_search_method
+
+
+def validate_likelihood_multi_start_start_tree_count(start_tree_count: int) -> int:
+    """Require at least one input tree plus one independent generated restart."""
+    if start_tree_count < 2:
+        raise ValueError("start_tree_count must be at least two for multi-start search")
+    return start_tree_count
+
+
+def validate_likelihood_multi_start_source_policy(start_tree_source_policy: str) -> str:
+    """Validate the supported start-tree generation policy."""
+    normalized_policy = start_tree_source_policy.strip().lower()
+    if normalized_policy not in _SUPPORTED_START_TREE_SOURCE_POLICIES:
+        raise ValueError(
+            "start_tree_source_policy must be one of "
+            + ", ".join(sorted(_SUPPORTED_START_TREE_SOURCE_POLICIES))
+        )
+    return normalized_policy
+
+
+def validate_likelihood_multi_start_evaluation_budget(
+    local_search_method: str,
+    evaluation_budget: int | None,
+) -> int | None:
+    """Validate restart-level forwarding of optional SPR neighbor budgets."""
+    if local_search_method == "nni":
+        if evaluation_budget is not None:
+            raise ValueError(
+                "evaluation_budget is supported only when local_search_method is 'spr'"
+            )
+        return None
+    if evaluation_budget is None:
+        return None
+    if evaluation_budget < 1:
+        raise ValueError("evaluation_budget must be at least one when provided")
+    return evaluation_budget
+
+
+def build_likelihood_multi_start_candidates(
+    input_tree: PhyloTree,
+    *,
+    start_tree_count: int,
+    start_tree_source_policy: str,
+    start_tree_seed: int,
+) -> list[_StartTreeCandidate]:
+    """Build one deterministic distinct start tree family over one input taxon scope."""
+    validated_policy = validate_likelihood_multi_start_source_policy(
+        start_tree_source_policy
+    )
+    if validated_policy != "input-tree-plus-random-tree":
+        raise ValueError(
+            "start_tree_source_policy must be one of "
+            + ", ".join(sorted(_SUPPORTED_START_TREE_SOURCE_POLICIES))
+        )
+    ordered_taxa = sorted(input_tree.tip_names)
+    candidates = [
+        _StartTreeCandidate(
+            source_kind="input-tree",
+            source_label="input-tree",
+            generation_seed=None,
+            tree=input_tree.copy().refresh(),
+        )
+    ]
+    seen_start_tree_newicks = {dumps_newick(candidates[0].tree)}
+    next_seed = start_tree_seed
+    attempt_count = 0
+    while len(candidates) < start_tree_count:
+        attempt_count += 1
+        if attempt_count > _MAX_RANDOM_START_ATTEMPTS:
+            raise ValueError(
+                "could not generate enough distinct random start trees for multi-start search"
+            )
+        random_tree = build_random_likelihood_start_tree(ordered_taxa, seed=next_seed)
+        next_seed += 1
+        candidate_newick = dumps_newick(random_tree)
+        if candidate_newick in seen_start_tree_newicks:
+            continue
+        seen_start_tree_newicks.add(candidate_newick)
+        candidates.append(
+            _StartTreeCandidate(
+                source_kind="random-tree",
+                source_label=f"random-tree-seed-{next_seed - 1}",
+                generation_seed=next_seed - 1,
+                tree=random_tree,
+            )
+        )
+    return candidates
+
+
+def build_random_likelihood_start_tree(
+    ordered_taxa: list[str],
+    *,
+    seed: int,
+) -> PhyloTree:
+    """Generate one rooted random start tree and relabel its tips to the target taxa."""
+    if len(ordered_taxa) < 2:
+        raise ValueError("random likelihood start trees require at least two taxa")
+    random_tree, _report = simulate_random_tree(
+        tip_count=len(ordered_taxa),
+        seed=seed,
+        taxon_prefix=_RANDOM_START_TAXON_PREFIX,
+    )
+    label_map = {
+        f"{_RANDOM_START_TAXON_PREFIX}{index}": taxon
+        for index, taxon in enumerate(ordered_taxa, start=1)
+    }
+    for leaf in random_tree.iter_leaves():
+        if leaf.name is None:
+            raise ValueError("random start tree contains an unnamed tip")
+        leaf.name = label_map[leaf.name]
+    return random_tree.refresh()
+
+
+def select_best_likelihood_multi_start_run(
+    run_summaries: list[NucleotideLikelihoodMultiStartRunSummary],
+) -> int:
+    """Choose the deterministic best run by likelihood, topology fingerprint, and tree text."""
+    if not run_summaries:
+        raise ValueError("run_summaries must not be empty")
+    best_index = 0
+    best_run = run_summaries[0]
+    for index, candidate in enumerate(run_summaries[1:], start=1):
+        if _prefer_multi_start_run(candidate, best_run):
+            best_index = index
+            best_run = candidate
+    return best_index
+
+
+def rooted_topology_fingerprint_from_newick(tree_newick: str) -> str:
+    """Fingerprint one rooted topology from a deterministic Newick record."""
+    from bijux_phylogenetics.io.newick import loads_newick
+
+    return rooted_topology_fingerprint(loads_newick(tree_newick))
+
+
+def _prefer_multi_start_run(
+    left: NucleotideLikelihoodMultiStartRunSummary,
+    right: NucleotideLikelihoodMultiStartRunSummary,
+) -> bool:
+    if (
+        left.final_log_likelihood > right.final_log_likelihood
+        and not math.isclose(left.final_log_likelihood, right.final_log_likelihood)
+    ):
+        return True
+    if (
+        right.final_log_likelihood > left.final_log_likelihood
+        and not math.isclose(left.final_log_likelihood, right.final_log_likelihood)
+    ):
+        return False
+    if left.final_topology_fingerprint != right.final_topology_fingerprint:
+        return left.final_topology_fingerprint < right.final_topology_fingerprint
+    if left.final_tree_newick != right.final_tree_newick:
+        return left.final_tree_newick < right.final_tree_newick
+    return left.start_tree_source_label < right.start_tree_source_label
+
+
+def _run_local_search(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    model_name: str,
+    local_search_method: str,
+    branch_reoptimization_policy: str,
+    evaluation_budget: int | None,
+    kappa: float | None,
+    base_frequencies: dict[str, float] | numpy.ndarray | None,
+    exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+        | None
+    ),
+    lower_branch_length_bound: float,
+    upper_branch_length_bound: float,
+    improvement_tolerance: float,
+    max_coordinate_passes: int,
+) -> NucleotideLikelihoodNniSearchReport | NucleotideLikelihoodSprSearchReport:
+    if local_search_method == "nni":
+        return search_nucleotide_likelihood_nni(
+            tree,
+            records,
+            model_name=model_name,
+            branch_reoptimization_policy=branch_reoptimization_policy,
+            kappa=kappa,
+            base_frequencies=base_frequencies,
+            exchangeabilities=exchangeabilities,
+            lower_branch_length_bound=lower_branch_length_bound,
+            upper_branch_length_bound=upper_branch_length_bound,
+            improvement_tolerance=improvement_tolerance,
+            max_coordinate_passes=max_coordinate_passes,
+        )
+    return search_nucleotide_likelihood_spr(
+        tree,
+        records,
+        model_name=model_name,
+        branch_reoptimization_policy=branch_reoptimization_policy,
+        evaluation_budget=evaluation_budget,
+        kappa=kappa,
+        base_frequencies=base_frequencies,
+        exchangeabilities=exchangeabilities,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        improvement_tolerance=improvement_tolerance,
+        max_coordinate_passes=max_coordinate_passes,
+    )
