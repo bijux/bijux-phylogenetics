@@ -54,6 +54,11 @@ from .upgma import (
     UPGMAClusterHeightRow as UPGMAClusterHeightRow,
     UPGMAMergeRow as UPGMAMergeRow,
 )
+from .wpgma import (
+    WPGMABuildReport as WPGMABuildReport,
+    WPGMAClusterHeightRow as WPGMAClusterHeightRow,
+    WPGMAMergeRow as WPGMAMergeRow,
+)
 
 
 def _load_alignment_for_model(path: Path, *, model: DistanceModel):
@@ -139,6 +144,15 @@ def build_upgma_tree(
     from .upgma import build_upgma_tree as build_upgma_impl
 
     return build_upgma_impl(identifiers, distance_lookup)
+
+
+def build_wpgma_tree(
+    identifiers: list[str],
+    distance_lookup: dict[tuple[str, str], float],
+) -> tuple[PhyloTree, WPGMABuildReport]:
+    from .wpgma import build_wpgma_tree as build_wpgma_impl
+
+    return build_wpgma_impl(identifiers, distance_lookup)
 
 
 def load_imported_distance_matrix(path: Path) -> list[ImportedDistanceEntry]:
