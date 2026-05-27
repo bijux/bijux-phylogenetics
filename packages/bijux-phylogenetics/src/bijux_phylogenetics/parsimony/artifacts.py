@@ -756,25 +756,27 @@ def write_parsimony_reconstruction_branch_change_table(
     return write_taxon_rows(
         path,
         columns=[
+            "branch_id",
             "character_id",
             "parent_node",
-            "parent_state",
-            "node",
-            "node_name",
-            "descendant_taxa",
+            "child_node",
+            "child_node_name",
+            "child_descendant_taxa",
             "change_from",
             "change_to",
+            "ambiguous",
         ],
         rows=[
             {
+                "branch_id": row.branch_id,
                 "character_id": row.character_id,
                 "parent_node": row.parent_node,
-                "parent_state": row.parent_state,
-                "node": row.node,
-                "node_name": row.node_name,
-                "descendant_taxa": "|".join(row.descendant_taxa),
+                "child_node": row.child_node,
+                "child_node_name": row.child_node_name,
+                "child_descendant_taxa": "|".join(row.child_descendant_taxa),
                 "change_from": row.change_from,
                 "change_to": row.change_to,
+                "ambiguous": row.ambiguous,
             }
             for row in report.branch_change_rows
         ],
@@ -840,13 +842,15 @@ def write_parsimony_reconstruction_run_json(
             "branch_change_rows": [
                 {
                     "character_id": row.character_id,
+                    "branch_id": row.branch_id,
                     "parent_node": row.parent_node,
                     "parent_state": row.parent_state,
-                    "node": row.node,
-                    "node_name": row.node_name,
-                    "descendant_taxa": row.descendant_taxa,
+                    "child_node": row.child_node,
+                    "child_node_name": row.child_node_name,
+                    "child_descendant_taxa": row.child_descendant_taxa,
                     "change_from": row.change_from,
                     "change_to": row.change_to,
+                    "ambiguous": row.ambiguous,
                 }
                 for row in report.branch_change_rows
             ],
