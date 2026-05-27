@@ -19,6 +19,11 @@ from bijux_phylogenetics.engines import (
     run_phylo_workflow_config,
     validate_workflow_result_bundle,
 )
+from bijux_phylogenetics.parsimony import (
+    load_fitch_character_matrix,
+    score_fitch,
+    write_fitch_artifacts,
+)
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 from bijux_phylogenetics.runtime.results import build_command_result
 
@@ -88,6 +93,27 @@ def add_phylo_commands(subparsers: Any) -> None:
     )
     _add_manifest_argument(phylo_validate_bundle)
 
+    phylo_parsimony = phylo_subparsers.add_parser(
+        "parsimony",
+        help="Score governed character matrices on a tree with explicit parsimony methods.",
+    )
+    phylo_parsimony_subparsers = phylo_parsimony.add_subparsers(
+        dest="phylo_parsimony_command",
+        required=True,
+    )
+    phylo_parsimony_fitch = phylo_parsimony_subparsers.add_parser(
+        "fitch",
+        help="Score one unordered discrete character matrix on one tree with Fitch parsimony.",
+    )
+    phylo_parsimony_fitch.add_argument("tree_path", type=Path)
+    phylo_parsimony_fitch.add_argument("matrix_path", type=Path)
+    phylo_parsimony_fitch.add_argument("--taxon-column")
+    phylo_parsimony_fitch.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_fitch.add_argument(
+        "--json", action="store_true", help="Emit the parsimony report as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_fitch)
+
 
 def run_phylo_command(args: Any) -> int:
     executables = {
@@ -98,6 +124,40 @@ def run_phylo_command(args: Any) -> int:
         "mrbayes": getattr(args, "mrbayes_executable", None),
         "beast": getattr(args, "beast_executable", None),
     }
+    if args.phylo_command == "parsimony":
+        if args.phylo_parsimony_command != "fitch":
+            raise EngineWorkflowError(
+                "unknown phylo parsimony command",
+                code="phylo_parsimony_command_unknown",
+            )
+        matrix = load_fitch_character_matrix(
+            args.matrix_path,
+            taxon_column=args.taxon_column,
+        )
+        report = score_fitch(args.tree_path, matrix)
+        artifact_paths = write_fitch_artifacts(args.out_dir, report)
+        outputs = _finalize_outputs(
+            args,
+            command="phylo",
+            inputs=[args.tree_path, args.matrix_path],
+            outputs=list(artifact_paths.values()),
+        )
+        _print_result(
+            build_command_result(
+                command="phylo",
+                inputs=[args.tree_path, args.matrix_path],
+                outputs=outputs,
+                metrics={
+                    "algorithm": report.algorithm,
+                    "taxon_count": report.taxon_count,
+                    "character_count": report.character_count,
+                    "total_steps": report.total_steps,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
     if args.phylo_command == "run":
         report = run_phylo_workflow_config(args.config_path)
         outputs = _finalize_outputs(
