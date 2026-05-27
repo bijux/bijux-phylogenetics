@@ -244,7 +244,7 @@ differences.
 - compute raw or p-distance, Jukes-Cantor, Kimura 2-parameter, Felsenstein 81, Tamura-Nei 93, or amino-acid p-distance matrices with explicit gap-handling, ambiguity policies, and model-parameter reporting
 - compute rooted or unrooted pairwise tip-distance matrices from branch-length trees with explicit taxon order and owned wide or long-form exports
 - audit saturated pairs, unusually divergent pairs, and low-information pairs before distance-based tree building
-- build Neighbor-Joining or owned rooted-ultrametric UPGMA trees from computed distance matrices, bootstrap site-resampled trees, summarize clade support, and write reproducibility bundles
+- build Neighbor-Joining or owned rooted-ultrametric UPGMA and WPGMA trees from computed distance matrices, bootstrap site-resampled trees, summarize clade support, and write reproducibility bundles
 - validate imported long-form distance matrices, detect nonmetric violations, and build trees from imported distances
 - audit NJ and UPGMA method assumptions, including explicit UPGMA ultrametric-clock violations for computed or imported distance matrices
 - load posterior tree sets, compute consensus trees, and export clade-frequency or pairwise tree-distance summaries
