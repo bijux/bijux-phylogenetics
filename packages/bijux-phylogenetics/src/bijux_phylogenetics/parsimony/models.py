@@ -625,3 +625,43 @@ class ParsimonyNniSearchReport:
     evaluated_neighbor_count: int
     stopping_reason: str
     trace_rows: list[ParsimonyNniTraceRow]
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonySprTraceRow:
+    """One deterministic event row in a rooted parsimony SPR search trace."""
+
+    event_index: int
+    event_kind: str
+    iteration: int
+    score_before: float | None
+    score_after: float
+    score_delta: float | None
+    tree_before_newick: str | None
+    tree_after_newick: str
+    pruned_clade_id: str | None
+    regraft_target_branch_id: str | None
+    stopping_reason: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonySprSearchReport:
+    """Complete rooted SPR parsimony hill-climb report over one starting tree."""
+
+    algorithm: str
+    method: str
+    tree_path: Path | None
+    matrix_path: Path | None
+    cost_matrix_path: Path | None
+    weights_path: Path | None
+    taxon_column: str
+    taxon_count: int
+    character_count: int
+    start_tree_newick: str
+    start_score: float
+    final_tree_newick: str
+    final_score: float
+    accepted_move_count: int
+    evaluated_neighbor_count: int
+    stopping_reason: str
+    trace_rows: list[ParsimonySprTraceRow]
