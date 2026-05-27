@@ -86,6 +86,35 @@ def test_cli_alignment_distance_ultrametricity_json_output(capsys) -> None:
     assert payload["metrics"]["ultrametric"] is False
 
 
+def test_cli_alignment_distance_additivity_writes_governed_artifacts(
+    tmp_path: Path, capsys
+) -> None:
+    out_dir = tmp_path / "distance-additivity"
+    exit_code = main(
+        [
+            "alignment",
+            "distance-additivity",
+            str(fixture("example_alignment_distance.fasta")),
+            "--model",
+            "p-distance",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["tested_quartet_count"] == 1
+    assert payload["metrics"]["violating_quartet_count"] == 1
+    assert payload["metrics"]["max_violation"] == 0.25
+    assert payload["metrics"]["additive"] is False
+    table_lines = (out_dir / "four_point_violations.tsv").read_text(
+        encoding="utf-8"
+    ).splitlines()
+    assert table_lines[1] == "A|B|C|D\t0.25\t1\t1.25\tA,B|C,D\t0.25"
+    assert (out_dir / "run.json").exists()
+
+
 def test_cli_alignment_distance_assumptions_json_output(capsys) -> None:
     exit_code = main(
         [
@@ -117,6 +146,33 @@ def test_cli_distance_ultrametricity_json_output(capsys) -> None:
     assert payload["metrics"]["max_violation"] == 3.0
     assert payload["metrics"]["tolerance"] == 1e-6
     assert payload["metrics"]["ultrametric"] is False
+
+
+def test_cli_distance_additivity_writes_governed_artifacts(
+    tmp_path: Path, capsys
+) -> None:
+    out_dir = tmp_path / "distance-additivity"
+    exit_code = main(
+        [
+            "distance",
+            "additivity",
+            str(fixture("example_distance_matrix_equal_row_sum_nonultrametric.tsv")),
+            "--out-dir",
+            str(out_dir),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["tested_quartet_count"] == 1
+    assert payload["metrics"]["violating_quartet_count"] == 1
+    assert payload["metrics"]["max_violation"] == 6.0
+    assert payload["metrics"]["additive"] is False
+    table_lines = (out_dir / "four_point_violations.tsv").read_text(
+        encoding="utf-8"
+    ).splitlines()
+    assert table_lines[1] == "A|B|C|D\t2\t8\t14\tA,B|C,D\t6"
+    assert (out_dir / "run.json").exists()
 
 
 def test_cli_distance_build_tree_supports_wpgma(tmp_path: Path, capsys) -> None:
