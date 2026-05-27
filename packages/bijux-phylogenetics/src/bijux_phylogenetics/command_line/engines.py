@@ -161,6 +161,11 @@ def add_phylo_commands(subparsers: Any) -> None:
     phylo_parsimony_sankoff.add_argument("matrix_path", type=Path)
     phylo_parsimony_sankoff.add_argument("cost_matrix_path", type=Path)
     phylo_parsimony_sankoff.add_argument("--taxon-column")
+    phylo_parsimony_sankoff.add_argument(
+        "--allow-asymmetric-costs",
+        action="store_true",
+        help="Allow asymmetric Sankoff transition costs instead of requiring symmetry.",
+    )
     _add_parsimony_character_weights_argument(phylo_parsimony_sankoff)
     phylo_parsimony_sankoff.add_argument("--out-dir", required=True, type=Path)
     phylo_parsimony_sankoff.add_argument(
@@ -244,6 +249,11 @@ def add_phylo_commands(subparsers: Any) -> None:
         dest="cost_matrix_path",
         type=Path,
         help="Required when --method sankoff is selected.",
+    )
+    phylo_parsimony_tree_length.add_argument(
+        "--allow-asymmetric-costs",
+        action="store_true",
+        help="Allow asymmetric Sankoff transition costs when --method sankoff is selected.",
     )
     phylo_parsimony_tree_length.add_argument(
         "--state-order",
@@ -380,11 +390,15 @@ def run_phylo_command(args: Any) -> int:
                 taxon_column=args.taxon_column,
             )
             character_weights = _load_parsimony_character_weights_argument(args)
-            cost_matrix = load_sankoff_cost_matrix(args.cost_matrix_path)
+            cost_matrix = load_sankoff_cost_matrix(
+                args.cost_matrix_path,
+                allow_asymmetric_costs=args.allow_asymmetric_costs,
+            )
             report = score_sankoff(
                 args.tree_path,
                 matrix,
                 cost_matrix,
+                allow_asymmetric_costs=args.allow_asymmetric_costs,
                 character_weights=character_weights,
             )
             artifact_paths = write_sankoff_artifacts(args.out_dir, report)
@@ -394,6 +408,7 @@ def run_phylo_command(args: Any) -> int:
                 "character_count": report.character_count,
                 "total_cost": report.total_cost,
                 "total_weighted_score": report.total_weighted_score,
+                "validation_warning_count": len(report.validation_warnings),
             }
         elif args.phylo_parsimony_command == "dollo":
             matrix = load_parsimony_character_matrix(
@@ -490,7 +505,10 @@ def run_phylo_command(args: Any) -> int:
                 else None
             )
             cost_matrix = (
-                load_sankoff_cost_matrix(args.cost_matrix_path)
+                load_sankoff_cost_matrix(
+                    args.cost_matrix_path,
+                    allow_asymmetric_costs=args.allow_asymmetric_costs,
+                )
                 if getattr(args, "cost_matrix_path", None) is not None
                 else None
             )
@@ -501,6 +519,7 @@ def run_phylo_command(args: Any) -> int:
                 method=args.method,
                 state_order=state_order,
                 cost_matrix=cost_matrix,
+                allow_asymmetric_costs=args.allow_asymmetric_costs,
                 character_weights=character_weights,
             )
             artifact_paths = write_parsimony_tree_length_artifacts(args.out_dir, report)
@@ -645,6 +664,7 @@ def run_phylo_command(args: Any) -> int:
                 outputs=outputs,
                 metrics=metrics,
                 data=report,
+                warnings=_parsimony_warning_messages(report),
             ),
             json_output=args.json,
         )
@@ -849,3 +869,8 @@ def _load_parsimony_character_weights_argument(args: Any):
     if weights_path is None:
         return None
     return load_parsimony_character_weights(weights_path)
+
+
+def _parsimony_warning_messages(report: Any) -> list[str]:
+    validation_warnings = getattr(report, "validation_warnings", [])
+    return [warning.message for warning in validation_warnings]
