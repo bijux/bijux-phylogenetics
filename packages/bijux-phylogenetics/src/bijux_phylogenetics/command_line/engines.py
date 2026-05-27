@@ -130,6 +130,7 @@ def add_phylo_commands(subparsers: Any) -> None:
     phylo_parsimony_fitch.add_argument("tree_path", type=Path)
     phylo_parsimony_fitch.add_argument("matrix_path", type=Path)
     phylo_parsimony_fitch.add_argument("--taxon-column")
+    _add_parsimony_character_weights_argument(phylo_parsimony_fitch)
     phylo_parsimony_fitch.add_argument("--out-dir", required=True, type=Path)
     phylo_parsimony_fitch.add_argument(
         "--json", action="store_true", help="Emit the parsimony report as JSON."
@@ -146,6 +147,7 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--state-order",
         help="Comma-separated explicit ordered state labels such as low,medium,high.",
     )
+    _add_parsimony_character_weights_argument(phylo_parsimony_wagner)
     phylo_parsimony_wagner.add_argument("--out-dir", required=True, type=Path)
     phylo_parsimony_wagner.add_argument(
         "--json", action="store_true", help="Emit the parsimony report as JSON."
@@ -159,6 +161,7 @@ def add_phylo_commands(subparsers: Any) -> None:
     phylo_parsimony_sankoff.add_argument("matrix_path", type=Path)
     phylo_parsimony_sankoff.add_argument("cost_matrix_path", type=Path)
     phylo_parsimony_sankoff.add_argument("--taxon-column")
+    _add_parsimony_character_weights_argument(phylo_parsimony_sankoff)
     phylo_parsimony_sankoff.add_argument("--out-dir", required=True, type=Path)
     phylo_parsimony_sankoff.add_argument(
         "--json", action="store_true", help="Emit the parsimony report as JSON."
@@ -171,6 +174,7 @@ def add_phylo_commands(subparsers: Any) -> None:
     phylo_parsimony_dollo.add_argument("tree_path", type=Path)
     phylo_parsimony_dollo.add_argument("matrix_path", type=Path)
     phylo_parsimony_dollo.add_argument("--taxon-column")
+    _add_parsimony_character_weights_argument(phylo_parsimony_dollo)
     phylo_parsimony_dollo.add_argument("--out-dir", required=True, type=Path)
     phylo_parsimony_dollo.add_argument(
         "--json", action="store_true", help="Emit the parsimony report as JSON."
@@ -183,6 +187,7 @@ def add_phylo_commands(subparsers: Any) -> None:
     phylo_parsimony_camin_sokal.add_argument("tree_path", type=Path)
     phylo_parsimony_camin_sokal.add_argument("matrix_path", type=Path)
     phylo_parsimony_camin_sokal.add_argument("--taxon-column")
+    _add_parsimony_character_weights_argument(phylo_parsimony_camin_sokal)
     phylo_parsimony_camin_sokal.add_argument("--out-dir", required=True, type=Path)
     phylo_parsimony_camin_sokal.add_argument(
         "--json", action="store_true", help="Emit the parsimony report as JSON."
@@ -195,6 +200,7 @@ def add_phylo_commands(subparsers: Any) -> None:
     phylo_parsimony_acctran.add_argument("tree_path", type=Path)
     phylo_parsimony_acctran.add_argument("matrix_path", type=Path)
     phylo_parsimony_acctran.add_argument("--taxon-column")
+    _add_parsimony_character_weights_argument(phylo_parsimony_acctran)
     phylo_parsimony_acctran.add_argument("--out-dir", required=True, type=Path)
     phylo_parsimony_acctran.add_argument(
         "--json", action="store_true", help="Emit the parsimony reconstruction as JSON."
@@ -207,6 +213,7 @@ def add_phylo_commands(subparsers: Any) -> None:
     phylo_parsimony_deltran.add_argument("tree_path", type=Path)
     phylo_parsimony_deltran.add_argument("matrix_path", type=Path)
     phylo_parsimony_deltran.add_argument("--taxon-column")
+    _add_parsimony_character_weights_argument(phylo_parsimony_deltran)
     phylo_parsimony_deltran.add_argument("--out-dir", required=True, type=Path)
     phylo_parsimony_deltran.add_argument(
         "--json", action="store_true", help="Emit the parsimony reconstruction as JSON."
@@ -332,48 +339,73 @@ def run_phylo_command(args: Any) -> int:
                 args.matrix_path,
                 taxon_column=args.taxon_column,
             )
-            report = score_fitch(args.tree_path, matrix)
+            character_weights = _load_parsimony_character_weights_argument(args)
+            report = score_fitch(
+                args.tree_path,
+                matrix,
+                character_weights=character_weights,
+            )
             artifact_paths = write_fitch_artifacts(args.out_dir, report)
             metrics = {
                 "algorithm": report.algorithm,
                 "taxon_count": report.taxon_count,
                 "character_count": report.character_count,
                 "total_steps": report.total_steps,
+                "total_weighted_score": report.total_weighted_score,
             }
         elif args.phylo_parsimony_command == "wagner":
             matrix = load_parsimony_character_matrix(
                 args.matrix_path,
                 taxon_column=args.taxon_column,
             )
+            character_weights = _load_parsimony_character_weights_argument(args)
             state_order = _split_state_order(getattr(args, "state_order", None))
-            report = score_wagner(args.tree_path, matrix, state_order=state_order)
+            report = score_wagner(
+                args.tree_path,
+                matrix,
+                state_order=state_order,
+                character_weights=character_weights,
+            )
             artifact_paths = write_wagner_artifacts(args.out_dir, report)
             metrics = {
                 "algorithm": report.algorithm,
                 "taxon_count": report.taxon_count,
                 "character_count": report.character_count,
                 "total_cost": report.total_cost,
+                "total_weighted_score": report.total_weighted_score,
             }
         elif args.phylo_parsimony_command == "sankoff":
             matrix = load_parsimony_character_matrix(
                 args.matrix_path,
                 taxon_column=args.taxon_column,
             )
+            character_weights = _load_parsimony_character_weights_argument(args)
             cost_matrix = load_sankoff_cost_matrix(args.cost_matrix_path)
-            report = score_sankoff(args.tree_path, matrix, cost_matrix)
+            report = score_sankoff(
+                args.tree_path,
+                matrix,
+                cost_matrix,
+                character_weights=character_weights,
+            )
             artifact_paths = write_sankoff_artifacts(args.out_dir, report)
             metrics = {
                 "algorithm": report.algorithm,
                 "taxon_count": report.taxon_count,
                 "character_count": report.character_count,
                 "total_cost": report.total_cost,
+                "total_weighted_score": report.total_weighted_score,
             }
         elif args.phylo_parsimony_command == "dollo":
             matrix = load_parsimony_character_matrix(
                 args.matrix_path,
                 taxon_column=args.taxon_column,
             )
-            report = score_dollo(args.tree_path, matrix)
+            character_weights = _load_parsimony_character_weights_argument(args)
+            report = score_dollo(
+                args.tree_path,
+                matrix,
+                character_weights=character_weights,
+            )
             artifact_paths = write_dollo_artifacts(args.out_dir, report)
             metrics = {
                 "algorithm": report.algorithm,
@@ -381,13 +413,19 @@ def run_phylo_command(args: Any) -> int:
                 "character_count": report.character_count,
                 "total_gains": report.total_gains,
                 "total_losses": report.total_losses,
+                "total_weighted_score": report.total_weighted_score,
             }
         elif args.phylo_parsimony_command == "camin-sokal":
             matrix = load_parsimony_character_matrix(
                 args.matrix_path,
                 taxon_column=args.taxon_column,
             )
-            report = score_camin_sokal(args.tree_path, matrix)
+            character_weights = _load_parsimony_character_weights_argument(args)
+            report = score_camin_sokal(
+                args.tree_path,
+                matrix,
+                character_weights=character_weights,
+            )
             artifact_paths = write_camin_sokal_artifacts(args.out_dir, report)
             metrics = {
                 "algorithm": report.algorithm,
@@ -395,13 +433,19 @@ def run_phylo_command(args: Any) -> int:
                 "character_count": report.character_count,
                 "root_state": report.root_state,
                 "total_gains": report.total_gains,
+                "total_weighted_score": report.total_weighted_score,
             }
         elif args.phylo_parsimony_command == "acctran":
             matrix = load_parsimony_character_matrix(
                 args.matrix_path,
                 taxon_column=args.taxon_column,
             )
-            report = reconstruct_acctran(args.tree_path, matrix)
+            character_weights = _load_parsimony_character_weights_argument(args)
+            report = reconstruct_acctran(
+                args.tree_path,
+                matrix,
+                character_weights=character_weights,
+            )
             artifact_paths = write_parsimony_reconstruction_artifacts(
                 args.out_dir,
                 report,
@@ -411,13 +455,19 @@ def run_phylo_command(args: Any) -> int:
                 "taxon_count": report.taxon_count,
                 "character_count": report.character_count,
                 "total_steps": report.total_steps,
+                "total_weighted_score": report.total_weighted_score,
             }
         elif args.phylo_parsimony_command == "deltran":
             matrix = load_parsimony_character_matrix(
                 args.matrix_path,
                 taxon_column=args.taxon_column,
             )
-            report = reconstruct_deltran(args.tree_path, matrix)
+            character_weights = _load_parsimony_character_weights_argument(args)
+            report = reconstruct_deltran(
+                args.tree_path,
+                matrix,
+                character_weights=character_weights,
+            )
             artifact_paths = write_parsimony_reconstruction_artifacts(
                 args.out_dir,
                 report,
@@ -427,6 +477,7 @@ def run_phylo_command(args: Any) -> int:
                 "taxon_count": report.taxon_count,
                 "character_count": report.character_count,
                 "total_steps": report.total_steps,
+                "total_weighted_score": report.total_weighted_score,
             }
         elif args.phylo_parsimony_command == "tree-length":
             matrix = load_parsimony_character_matrix(
@@ -575,7 +626,19 @@ def run_phylo_command(args: Any) -> int:
                     *(
                         [args.cost_matrix_path]
                         if hasattr(args, "cost_matrix_path")
-                        and args.phylo_parsimony_command == "sankoff"
+                        and (
+                            args.phylo_parsimony_command == "sankoff"
+                            or (
+                                args.phylo_parsimony_command == "tree-length"
+                                and getattr(args, "cost_matrix_path", None) is not None
+                            )
+                        )
+                        else []
+                    ),
+                    *(
+                        [args.character_weights_path]
+                        if hasattr(args, "character_weights_path")
+                        and getattr(args, "character_weights_path", None) is not None
                         else []
                     ),
                 ],
@@ -770,3 +833,19 @@ def _split_state_order(raw: str | None) -> list[str] | None:
         return None
     values = [value.strip() for value in raw.split(",")]
     return [value for value in values if value]
+
+
+def _add_parsimony_character_weights_argument(parser: Any) -> None:
+    parser.add_argument(
+        "--character-weights",
+        dest="character_weights_path",
+        type=Path,
+        help="Optional TSV with character_id and weight columns.",
+    )
+
+
+def _load_parsimony_character_weights_argument(args: Any):
+    weights_path = getattr(args, "character_weights_path", None)
+    if weights_path is None:
+        return None
+    return load_parsimony_character_weights(weights_path)
