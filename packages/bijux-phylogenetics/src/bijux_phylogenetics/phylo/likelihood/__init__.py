@@ -2,6 +2,18 @@
 
 from __future__ import annotations
 
+from .f81 import (
+    evaluate_f81_tree_likelihood as evaluate_f81_tree_likelihood,
+)
+from .f81 import (
+    evaluate_f81_tree_likelihood_from_alignment as evaluate_f81_tree_likelihood_from_alignment,
+)
+from .f81 import (
+    f81_rate_matrix as f81_rate_matrix,
+)
+from .f81 import (
+    f81_transition_probability_matrix as f81_transition_probability_matrix,
+)
 from .jc69 import (
     evaluate_jc69_tree_likelihood as evaluate_jc69_tree_likelihood,
 )
@@ -37,6 +49,9 @@ from .k80 import (
 )
 from .k80 import (
     optimize_k80_kappa_from_alignment as optimize_k80_kappa_from_alignment,
+)
+from .models import (
+    F81TreeLikelihoodReport as F81TreeLikelihoodReport,
 )
 from .models import (
     Jc69BranchLengthOptimizationReport as Jc69BranchLengthOptimizationReport,
@@ -90,6 +105,7 @@ from .sites import (
 __all__ = [
     "AlignmentSitePattern",
     "CompressedAlignmentSitePatterns",
+    "F81TreeLikelihoodReport",
     "FiniteStatePruningPass",
     "Jc69BranchLengthOptimizationReport",
     "Jc69BranchLengthOptimizationStep",
@@ -99,10 +115,14 @@ __all__ = [
     "alignment_site_columns",
     "compress_alignment_site_patterns",
     "compress_alignment_site_patterns_from_records",
+    "evaluate_f81_tree_likelihood",
+    "evaluate_f81_tree_likelihood_from_alignment",
     "evaluate_k80_tree_likelihood",
     "evaluate_k80_tree_likelihood_from_alignment",
     "evaluate_jc69_tree_likelihood",
     "evaluate_jc69_tree_likelihood_from_alignment",
+    "f81_rate_matrix",
+    "f81_transition_probability_matrix",
     "k80_rate_matrix",
     "k80_transition_probability_matrix",
     "jc69_rate_matrix",
