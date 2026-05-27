@@ -23,9 +23,11 @@ from bijux_phylogenetics.parsimony import (
     load_fitch_character_matrix,
     load_parsimony_character_matrix,
     load_sankoff_cost_matrix,
+    score_dollo,
     score_fitch,
     score_sankoff,
     score_wagner,
+    write_dollo_artifacts,
     write_fitch_artifacts,
     write_sankoff_artifacts,
     write_wagner_artifacts,
@@ -148,6 +150,18 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the parsimony report as JSON."
     )
     _add_manifest_argument(phylo_parsimony_sankoff)
+    phylo_parsimony_dollo = phylo_parsimony_subparsers.add_parser(
+        "dollo",
+        help="Score one binary character matrix on one tree with Dollo parsimony.",
+    )
+    phylo_parsimony_dollo.add_argument("tree_path", type=Path)
+    phylo_parsimony_dollo.add_argument("matrix_path", type=Path)
+    phylo_parsimony_dollo.add_argument("--taxon-column")
+    phylo_parsimony_dollo.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_dollo.add_argument(
+        "--json", action="store_true", help="Emit the parsimony report as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_dollo)
 
 
 def run_phylo_command(args: Any) -> int:
@@ -200,6 +214,20 @@ def run_phylo_command(args: Any) -> int:
                 "taxon_count": report.taxon_count,
                 "character_count": report.character_count,
                 "total_cost": report.total_cost,
+            }
+        elif args.phylo_parsimony_command == "dollo":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            report = score_dollo(args.tree_path, matrix)
+            artifact_paths = write_dollo_artifacts(args.out_dir, report)
+            metrics = {
+                "algorithm": report.algorithm,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "total_gains": report.total_gains,
+                "total_losses": report.total_losses,
             }
         else:
             raise EngineWorkflowError(
