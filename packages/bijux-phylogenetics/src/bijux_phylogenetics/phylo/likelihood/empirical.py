@@ -20,16 +20,19 @@ from bijux_phylogenetics.phylo.likelihood.invariant import (
     validate_invariant_proportion_bounds,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
+    BranchLengthOptimizationRow,
     DiscreteGammaInvariantMixtureSiteLikelihood,
     DiscreteGammaRateCategory,
     DiscreteGammaSiteLikelihood,
     InvariantMixtureSiteLikelihood,
+    ProteinEmpiricalBranchLengthOptimizationReport,
     ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport,
     ProteinEmpiricalDiscreteGammaTreeLikelihoodReport,
     ProteinEmpiricalInvariantMixtureTreeLikelihoodReport,
     ProteinEmpiricalMatrixTreeLikelihoodReport,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
+    run_bounded_coordinate_likelihood_search,
     run_bounded_likelihood_search,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
@@ -46,7 +49,27 @@ from bijux_phylogenetics.phylo.likelihood.protein import (
     validate_protein_root_prior,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
+from bijux_phylogenetics.phylo.likelihood.validation import validate_explicit_branch_lengths
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError
+
+_EMPIRICAL_BRANCH_OPTIMIZATION_MODELS = frozenset(
+    {
+        "fixed-rate",
+        "discrete-gamma",
+        "invariant",
+        "discrete-gamma-invariant",
+    }
+)
+
+
+def validate_empirical_branch_optimization_model(likelihood_model: str) -> str:
+    if likelihood_model not in _EMPIRICAL_BRANCH_OPTIMIZATION_MODELS:
+        raise ValueError(
+            "empirical protein branch optimization likelihood_model must be one of "
+            f"{sorted(_EMPIRICAL_BRANCH_OPTIMIZATION_MODELS)}"
+        )
+    return likelihood_model
 
 
 def evaluate_empirical_protein_tree_likelihood(
@@ -107,6 +130,200 @@ def evaluate_empirical_protein_tree_likelihood_from_alignment(
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+    )
+
+
+def optimize_empirical_protein_branch_lengths(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    likelihood_model: str,
+    alpha: float | None = None,
+    invariant_proportion: float | None = None,
+    category_count: int = 4,
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    matrix_label: str = "empirical",
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+    lower_branch_length_bound: float = 0.0,
+    upper_branch_length_bound: float = 5.0,
+    improvement_tolerance: float = 1e-9,
+    max_coordinate_passes: int = 12,
+) -> ProteinEmpiricalBranchLengthOptimizationReport:
+    """Optimize branch lengths on one fixed topology under one selected empirical protein model."""
+    validated_likelihood_model = validate_empirical_branch_optimization_model(
+        likelihood_model
+    )
+    if lower_branch_length_bound < 0.0:
+        raise InvalidBranchLengthError(
+            "empirical protein branch-length lower bound must be nonnegative"
+        )
+    if upper_branch_length_bound <= lower_branch_length_bound:
+        raise InvalidBranchLengthError(
+            "empirical protein branch-length bounds must be strictly increasing"
+        )
+    if max_coordinate_passes < 1:
+        raise ValueError("max_coordinate_passes must be at least one")
+
+    normalized_records = normalize_unambiguous_protein_records(
+        records,
+        model_name="empirical protein branch optimization",
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+    )
+    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    if root_prior is None:
+        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
+        root_prior_source = "uniform"
+    else:
+        validated_root_prior = validate_protein_root_prior(
+            root_prior,
+            model_name="empirical protein branch optimization",
+        )
+        root_prior_source = "provided"
+    validated_rate_matrix = validate_empirical_protein_rate_matrix(
+        rate_matrix,
+        model_name="empirical protein branch optimization",
+    )
+    validated_alpha, validated_invariant_proportion = _validate_empirical_branch_optimization_parameters(
+        likelihood_model=validated_likelihood_model,
+        alpha=alpha,
+        invariant_proportion=invariant_proportion,
+        category_count=category_count,
+    )
+    categories = None
+    if validated_alpha is not None:
+        categories = build_discrete_gamma_rate_categories(
+            alpha=validated_alpha,
+            category_count=category_count,
+        )
+
+    working_tree = tree.copy()
+    validate_explicit_branch_lengths(
+        working_tree,
+        model_name="empirical protein branch optimization",
+    )
+    edge_nodes = [child for _parent, child in working_tree.iter_edges()]
+    initial_tree_newick = dumps_newick(tree)
+    initial_values: dict[str, float] = {}
+    bounds_by_name: dict[str, tuple[float, float]] = {}
+    for node in edge_nodes:
+        if node.node_id is None:
+            raise ValueError("tree node is missing a stable node_id")
+        branch_length = float(node.branch_length or 0.0)
+        if not (
+            lower_branch_length_bound <= branch_length <= upper_branch_length_bound
+        ):
+            raise InvalidBranchLengthError(
+                "empirical protein branch optimization requires every starting branch length to lie within the declared bounds"
+            )
+        initial_values[node.node_id] = branch_length
+        bounds_by_name[node.node_id] = (
+            lower_branch_length_bound,
+            upper_branch_length_bound,
+        )
+
+    def evaluate_candidate(
+        branch_lengths_by_id: dict[str, float],
+    ) -> tuple[float, float]:
+        _assign_branch_lengths(working_tree, branch_lengths_by_id)
+        log_likelihood = _evaluate_empirical_protein_branch_optimization_objective(
+            working_tree,
+            compressed_patterns,
+            validated_rate_matrix=validated_rate_matrix,
+            likelihood_model=validated_likelihood_model,
+            alpha=validated_alpha,
+            invariant_proportion=validated_invariant_proportion,
+            categories=categories,
+            root_prior=validated_root_prior,
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+        )
+        return log_likelihood, log_likelihood
+
+    initial_log_likelihood, _ = evaluate_candidate(dict(initial_values))
+    search_result = run_bounded_coordinate_likelihood_search(
+        initial_values=initial_values,
+        bounds_by_name=bounds_by_name,
+        evaluate=evaluate_candidate,
+        improvement_tolerance=improvement_tolerance,
+        max_coordinate_passes=max_coordinate_passes,
+    )
+    optimized_branch_lengths = dict(search_result.parameter_values)
+    _assign_branch_lengths(working_tree, optimized_branch_lengths)
+    optimized_log_likelihood = float(search_result.objective_value)
+    branches = [
+        BranchLengthOptimizationRow(
+            branch_id=node.node_id or "",
+            child_name=node.name,
+            descendant_taxa=node.descendant_taxa,
+            initial_branch_length=initial_values[node.node_id or ""],
+            optimized_branch_length=optimized_branch_lengths[node.node_id or ""],
+        )
+        for node in edge_nodes
+    ]
+    return ProteinEmpiricalBranchLengthOptimizationReport(
+        taxa=compressed_patterns.taxon_order,
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        branch_count=len(edge_nodes),
+        initial_tree_newick=initial_tree_newick,
+        optimized_tree_newick=dumps_newick(working_tree),
+        state_count=len(PROTEIN_STATE_ORDER),
+        matrix_label=matrix_label,
+        root_prior_source=root_prior_source,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        likelihood_model=validated_likelihood_model,
+        alpha=validated_alpha,
+        invariant_proportion=validated_invariant_proportion,
+        initial_log_likelihood=float(initial_log_likelihood),
+        optimized_log_likelihood=optimized_log_likelihood,
+        optimization_pass_count=search_result.optimization_pass_count,
+        function_evaluation_count=search_result.function_evaluation_count,
+        converged=search_result.converged,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        branches=branches,
+    )
+
+
+def optimize_empirical_protein_branch_lengths_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    likelihood_model: str,
+    alpha: float | None = None,
+    invariant_proportion: float | None = None,
+    category_count: int = 4,
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    matrix_label: str = "empirical",
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+    lower_branch_length_bound: float = 0.0,
+    upper_branch_length_bound: float = 5.0,
+    improvement_tolerance: float = 1e-9,
+    max_coordinate_passes: int = 12,
+) -> ProteinEmpiricalBranchLengthOptimizationReport:
+    """Optimize one fixed topology from one tree path and one alignment path."""
+    return optimize_empirical_protein_branch_lengths(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        rate_matrix=rate_matrix,
+        likelihood_model=likelihood_model,
+        alpha=alpha,
+        invariant_proportion=invariant_proportion,
+        category_count=category_count,
+        root_prior=root_prior,
+        matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        improvement_tolerance=improvement_tolerance,
+        max_coordinate_passes=max_coordinate_passes,
     )
 
 
@@ -701,6 +918,142 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
         missing_policy=missing_policy,
         log_likelihood=log_likelihood,
     )
+
+
+def _assign_branch_lengths(
+    tree: PhyloTree,
+    branch_lengths_by_id: dict[str, float],
+) -> None:
+    for _parent, child in tree.iter_edges():
+        if child.node_id is None:
+            raise ValueError("tree node is missing a stable node_id")
+        child.branch_length = branch_lengths_by_id[child.node_id]
+
+
+def _validate_empirical_branch_optimization_parameters(
+    *,
+    likelihood_model: str,
+    alpha: float | None,
+    invariant_proportion: float | None,
+    category_count: int,
+) -> tuple[float | None, float | None]:
+    validated_alpha: float | None = None
+    validated_invariant_proportion: float | None = None
+    if likelihood_model in {"discrete-gamma", "discrete-gamma-invariant"}:
+        if alpha is None:
+            raise ValueError(
+                f"likelihood_model '{likelihood_model}' requires one alpha value"
+            )
+        build_discrete_gamma_rate_categories(
+            alpha=alpha,
+            category_count=category_count,
+        )
+        validated_alpha = float(alpha)
+    elif alpha is not None:
+        raise ValueError(
+            f"likelihood_model '{likelihood_model}' does not accept alpha"
+        )
+    if likelihood_model in {"invariant", "discrete-gamma-invariant"}:
+        if invariant_proportion is None:
+            raise ValueError(
+                f"likelihood_model '{likelihood_model}' requires one invariant_proportion value"
+            )
+        validated_invariant_proportion = validate_invariant_proportion(
+            invariant_proportion,
+            model_name="empirical protein branch optimization",
+        )
+    elif invariant_proportion is not None:
+        raise ValueError(
+            f"likelihood_model '{likelihood_model}' does not accept invariant_proportion"
+        )
+    return validated_alpha, validated_invariant_proportion
+
+
+def _evaluate_empirical_protein_branch_optimization_objective(
+    tree: PhyloTree,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    *,
+    validated_rate_matrix: numpy.ndarray,
+    likelihood_model: str,
+    alpha: float | None,
+    invariant_proportion: float | None,
+    categories: list[DiscreteGammaRateCategory] | None,
+    root_prior: numpy.ndarray,
+    gap_policy: str,
+    missing_policy: str,
+) -> float:
+    if likelihood_model == "fixed-rate":
+        return _evaluate_empirical_protein_tree_likelihood_from_patterns(
+            tree,
+            compressed_patterns,
+            rate_matrix=validated_rate_matrix,
+            root_prior=root_prior,
+            root_prior_source="provided",
+            matrix_label="empirical",
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+        ).log_likelihood
+    if likelihood_model == "discrete-gamma":
+        if alpha is None:
+            raise ValueError("discrete-gamma objective requires alpha")
+        return _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_patterns(
+            tree,
+            compressed_patterns,
+            rate_matrix=validated_rate_matrix,
+            alpha=alpha,
+            category_count=len(categories or []),
+            root_prior=root_prior,
+            root_prior_source="provided",
+            matrix_label="empirical",
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+        ).log_likelihood
+    if likelihood_model == "invariant":
+        if invariant_proportion is None:
+            raise ValueError("invariant objective requires invariant_proportion")
+        transition_by_node_id = _empirical_transition_by_node_id(
+            tree,
+            validated_rate_matrix,
+        )
+        return _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patterns(
+            tree,
+            compressed_patterns,
+            root_prior=root_prior,
+            root_prior_source="provided",
+            matrix_label="empirical",
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+            invariant_proportion=invariant_proportion,
+            initial_invariant_proportion=invariant_proportion,
+            lower_invariant_proportion_bound=invariant_proportion,
+            upper_invariant_proportion_bound=invariant_proportion,
+            transition_by_node_id=transition_by_node_id,
+            function_evaluation_count=1,
+            converged=True,
+        ).log_likelihood
+    if likelihood_model == "discrete-gamma-invariant":
+        if alpha is None or invariant_proportion is None or categories is None:
+            raise ValueError("discrete-gamma-invariant objective requires alpha and invariant proportion")
+        return _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
+            tree,
+            compressed_patterns,
+            validated_rate_matrix=validated_rate_matrix,
+            alpha=alpha,
+            categories=categories,
+            root_prior=root_prior,
+            root_prior_source="provided",
+            matrix_label="empirical",
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+            invariant_proportion=invariant_proportion,
+            initial_invariant_proportion=invariant_proportion,
+            lower_invariant_proportion_bound=invariant_proportion,
+            upper_invariant_proportion_bound=invariant_proportion,
+            function_evaluation_count=1,
+            converged=True,
+            emit_boundary_warnings=False,
+        ).log_likelihood
+    raise ValueError(f"unsupported empirical branch optimization model '{likelihood_model}'")
 
 
 def _empirical_transition_by_node_id(
