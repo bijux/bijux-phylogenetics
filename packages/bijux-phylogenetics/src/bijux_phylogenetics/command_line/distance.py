@@ -13,6 +13,7 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.distance import (
     assess_imported_distance_method_assumptions,
     build_tree_from_imported_distance_matrix,
+    fit_fitch_margoliash_tree_from_imported_distance_matrix,
     fit_minimum_evolution_tree_from_imported_distance_matrix,
     inspect_imported_distance_matrix_quality,
     search_balanced_minimum_evolution_nni_from_imported_distance_matrix,
@@ -88,6 +89,24 @@ def add_distance_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the minimum-evolution score as JSON."
     )
     _add_manifest_argument(distance_minimum_evolution)
+
+    distance_fitch_margoliash = distance_subparsers.add_parser(
+        "fitch-margoliash",
+        help="Fit one fixed tree topology to an imported distance matrix by classical Fitch-Margoliash weighted least squares.",
+    )
+    distance_fitch_margoliash.add_argument("matrix", type=Path)
+    distance_fitch_margoliash.add_argument("tree", type=Path)
+    distance_fitch_margoliash.add_argument("--out", required=True, type=Path)
+    distance_fitch_margoliash.add_argument(
+        "--weighting-power",
+        type=float,
+        default=2.0,
+        help="Power used in the classical Fitch-Margoliash pair weight d^(-p).",
+    )
+    distance_fitch_margoliash.add_argument(
+        "--json", action="store_true", help="Emit the Fitch-Margoliash fit as JSON."
+    )
+    _add_manifest_argument(distance_fitch_margoliash)
 
     distance_bme_nni = distance_subparsers.add_parser(
         "bme-nni-search",
@@ -266,6 +285,38 @@ def run_distance_command(args: Any) -> int:
                     "pair_count": report.pair_count,
                     "branch_count": report.branch_count,
                     "minimum_evolution_score": report.minimum_evolution_score,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+    if args.distance_command == "fitch-margoliash":
+        tree, report = fit_fitch_margoliash_tree_from_imported_distance_matrix(
+            args.matrix,
+            args.tree,
+            weighting_power=args.weighting_power,
+        )
+        output_path = write_newick(args.out, tree)
+        outputs = _finalize_outputs(
+            args,
+            command="distance",
+            inputs=[args.matrix, args.tree],
+            outputs=[output_path],
+        )
+        _print_result(
+            build_command_result(
+                command="distance",
+                inputs=[args.matrix, args.tree],
+                outputs=outputs,
+                metrics={
+                    "criterion": "fitch-margoliash",
+                    "taxon_count": len(report.taxa),
+                    "pair_count": report.pair_count,
+                    "branch_count": report.branch_count,
+                    "weighting_power": report.weighting_power,
+                    "residual_sum_squares": report.residual_sum_squares,
+                    "weighted_residual_sum_squares": report.weighted_residual_sum_squares,
                 },
                 data=report,
             ),
