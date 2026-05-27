@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import node_descendant_taxa, node_signature
@@ -10,35 +11,59 @@ from .fitch import _leaf_taxa, _resolve_tree
 from .matrix import load_parsimony_character_matrix
 from .models import (
     FitchCharacterMatrix,
+    ParsimonyCharacterWeights,
     ParsimonyReconstructionBranchChange,
     ParsimonyReconstructionCharacterScore,
     ParsimonyReconstructionNodeState,
     ParsimonyReconstructionReport,
 )
+from .weights import resolve_parsimony_character_weights
 
 
 def reconstruct_acctran(
     tree: PhyloTree | Path,
     matrix: FitchCharacterMatrix | Path,
+    *,
+    character_weights: (
+        ParsimonyCharacterWeights | Mapping[str, float] | Path | None
+    ) = None,
 ) -> ParsimonyReconstructionReport:
     """Resolve unordered parsimony ambiguities toward earlier branches with ACCTRAN."""
-    return _reconstruct_parsimony_report(tree, matrix, algorithm="acctran")
+    return _reconstruct_parsimony_report(
+        tree,
+        matrix,
+        algorithm="acctran",
+        character_weights=character_weights,
+    )
 
 
 def reconstruct_deltran(
     tree: PhyloTree | Path,
     matrix: FitchCharacterMatrix | Path,
+    *,
+    character_weights: (
+        ParsimonyCharacterWeights | Mapping[str, float] | Path | None
+    ) = None,
 ) -> ParsimonyReconstructionReport:
     """Resolve unordered parsimony ambiguities toward later branches with DELTRAN."""
-    return _reconstruct_parsimony_report(tree, matrix, algorithm="deltran")
+    return _reconstruct_parsimony_report(
+        tree,
+        matrix,
+        algorithm="deltran",
+        character_weights=character_weights,
+    )
 
 
 def _reconstruct_deltran(
     tree: PhyloTree | Path,
     matrix: FitchCharacterMatrix | Path,
+    *,
+    character_weights: (
+        ParsimonyCharacterWeights | Mapping[str, float] | Path | None
+    ) = None,
 ) -> ParsimonyReconstructionReport:
     """Backward-compatible internal alias for DELTRAN reconstruction."""
-    return reconstruct_deltran(tree, matrix)
+    return reconstruct_deltran(tree, matrix, character_weights=character_weights)
 
 
 def _reconstruct_parsimony_report(
@@ -46,6 +71,9 @@ def _reconstruct_parsimony_report(
     matrix: FitchCharacterMatrix | Path,
     *,
     algorithm: str,
+    character_weights: (
+        ParsimonyCharacterWeights | Mapping[str, float] | Path | None
+    ) = None,
 ) -> ParsimonyReconstructionReport:
     resolved_tree, tree_path = _resolve_tree(tree)
     resolved_matrix = (
@@ -54,6 +82,10 @@ def _reconstruct_parsimony_report(
         else load_parsimony_character_matrix(matrix)
     )
     matrix_path = resolved_matrix.matrix_path
+    resolved_weights = resolve_parsimony_character_weights(
+        resolved_matrix.character_ids,
+        character_weights,
+    )
     leaf_taxa = _leaf_taxa(resolved_tree)
     missing_from_matrix = sorted(set(leaf_taxa) - set(resolved_matrix.states_by_taxon))
     extra_in_matrix = sorted(set(resolved_matrix.states_by_taxon) - set(leaf_taxa))
@@ -83,6 +115,7 @@ def _reconstruct_parsimony_report(
     node_state_rows: list[ParsimonyReconstructionNodeState] = []
     branch_change_rows: list[ParsimonyReconstructionBranchChange] = []
     total_steps = 0
+    total_weighted_score = 0.0
     preorder_nodes = list(resolved_tree.iter_nodes(order="preorder"))
     for character_id in resolved_matrix.character_ids:
         observed_states = sorted(
@@ -110,6 +143,9 @@ def _reconstruct_parsimony_report(
         )
         step_count = int(dynamic_rows[root_signature][root_state][0])
         total_steps += step_count
+        character_weight = resolved_weights.weights_by_character[character_id]
+        weighted_score = step_count * character_weight
+        total_weighted_score += weighted_score
         assigned_states = {root_signature: root_state}
         _assign_child_states(
             resolved_tree.root,
@@ -128,6 +164,8 @@ def _reconstruct_parsimony_report(
                 step_count=step_count,
                 observed_states=observed_states,
                 root_state=root_state,
+                character_weight=character_weight,
+                weighted_score=weighted_score,
             )
         )
         for node in preorder_nodes:
@@ -155,6 +193,8 @@ def _reconstruct_parsimony_report(
         taxon_count=len(leaf_taxa),
         character_count=resolved_matrix.character_count,
         total_steps=total_steps,
+        weights_path=resolved_weights.weights_path,
+        total_weighted_score=total_weighted_score,
         step_rows=step_rows,
         node_state_rows=node_state_rows,
         branch_change_rows=branch_change_rows,

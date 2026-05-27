@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import node_descendant_taxa, node_signature
@@ -13,7 +14,9 @@ from .models import (
     DolloCharacterScore,
     DolloScoreReport,
     FitchCharacterMatrix,
+    ParsimonyCharacterWeights,
 )
+from .weights import resolve_parsimony_character_weights
 
 _BINARY_STATES = frozenset({"0", "1"})
 
@@ -21,6 +24,10 @@ _BINARY_STATES = frozenset({"0", "1"})
 def score_dollo(
     tree: PhyloTree | Path,
     matrix: FitchCharacterMatrix | Path,
+    *,
+    character_weights: (
+        ParsimonyCharacterWeights | Mapping[str, float] | Path | None
+    ) = None,
 ) -> DolloScoreReport:
     """Score one binary character matrix on one tree with Dollo parsimony."""
     resolved_tree, tree_path = _resolve_tree(tree)
@@ -30,6 +37,10 @@ def score_dollo(
         else load_parsimony_character_matrix(matrix)
     )
     matrix_path = resolved_matrix.matrix_path
+    resolved_weights = resolve_parsimony_character_weights(
+        resolved_matrix.character_ids,
+        character_weights,
+    )
     leaf_taxa = _leaf_taxa(resolved_tree)
     missing_from_matrix = sorted(set(leaf_taxa) - set(resolved_matrix.states_by_taxon))
     extra_in_matrix = sorted(set(resolved_matrix.states_by_taxon) - set(leaf_taxa))
@@ -58,7 +69,9 @@ def score_dollo(
     branch_change_rows: list[DolloBranchChange] = []
     total_gains = 0
     total_losses = 0
+    total_weighted_score = 0.0
     for character_id in resolved_matrix.character_ids:
+        character_weight = resolved_weights.weights_by_character[character_id]
         observed_states = {
             states_by_character[character_id]
             for states_by_character in resolved_matrix.states_by_taxon.values()
@@ -82,12 +95,15 @@ def score_dollo(
             step_rows.append(
                 DolloCharacterScore(
                     character_id=character_id,
+                    step_count=0,
                     derived_taxon_count=0,
                     gain_node=None,
                     gain_node_name=None,
                     gain_descendant_taxa=[],
                     total_losses=0,
                     impossible_state_warning=None,
+                    character_weight=character_weight,
+                    weighted_score=0.0,
                 )
             )
             continue
@@ -107,6 +123,9 @@ def score_dollo(
         )
         loss_nodes = _loss_nodes_for_gain(gain_node, derived_taxa=derived_taxa)
         total_losses += len(loss_nodes)
+        step_count = 1 + len(loss_nodes)
+        weighted_score = step_count * character_weight
+        total_weighted_score += weighted_score
         for loss_node in loss_nodes:
             branch_change_rows.append(
                 DolloBranchChange(
@@ -120,12 +139,15 @@ def score_dollo(
         step_rows.append(
             DolloCharacterScore(
                 character_id=character_id,
+                step_count=step_count,
                 derived_taxon_count=len(derived_taxa),
                 gain_node=gain_signature,
                 gain_node_name=gain_node.name,
                 gain_descendant_taxa=gain_descendant_taxa,
                 total_losses=len(loss_nodes),
                 impossible_state_warning=None,
+                character_weight=character_weight,
+                weighted_score=weighted_score,
             )
         )
     return DolloScoreReport(
@@ -137,6 +159,8 @@ def score_dollo(
         character_count=resolved_matrix.character_count,
         total_gains=total_gains,
         total_losses=total_losses,
+        weights_path=resolved_weights.weights_path,
+        total_weighted_score=total_weighted_score,
         step_rows=step_rows,
         branch_change_rows=branch_change_rows,
     )
