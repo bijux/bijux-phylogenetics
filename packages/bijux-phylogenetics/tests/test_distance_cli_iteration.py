@@ -225,6 +225,44 @@ def test_cli_distance_nonnegative_least_squares_writes_fitted_tree(
     assert payload["metrics"]["active_constraint_count"] == 1
 
 
+def test_cli_distance_patristic_residuals_writes_ranked_artifacts(
+    tmp_path: Path, capsys
+) -> None:
+    out_dir = tmp_path / "patristic-residuals"
+    exit_code = main(
+        [
+            "distance",
+            "patristic-residuals",
+            str(fixture("example_distance_matrix_minimum_evolution_five_taxon.tsv")),
+            str(fixture("example_tree_minimum_evolution_five_taxon.nwk")),
+            "--out-dir",
+            str(out_dir),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    residual_lines = (out_dir / "distance_residuals.tsv").read_text(
+        encoding="utf-8"
+    ).splitlines()
+    run_payload = json.loads((out_dir / "run.json").read_text(encoding="utf-8"))
+    assert exit_code == 0
+    assert residual_lines[:4] == [
+        "left_identifier\tright_identifier\tobserved_distance\tfitted_distance\tresidual\tabsolute_residual\trank",
+        "A\tD\t16\t36\t-20\t20\t1",
+        "A\tC\t8\t27\t-19\t19\t2",
+        "A\tE\t17\t36\t-19\t19\t3",
+    ]
+    assert payload["metrics"]["criterion"] == "patristic-residuals"
+    assert payload["metrics"]["pair_count"] == 10
+    assert payload["metrics"]["residual_sum_squares"] == 2626.0
+    assert payload["metrics"]["max_absolute_residual"] == 20.0
+    assert run_payload["pair_count"] == 10
+    assert run_payload["residual_sum_squares"] == 2626.0
+    assert run_payload["rows"][0]["left_identifier"] == "A"
+    assert run_payload["rows"][0]["right_identifier"] == "D"
+    assert run_payload["rows"][0]["rank"] == 1
+
+
 def test_cli_distance_bme_nni_search_writes_governed_artifacts(
     tmp_path: Path, capsys
 ) -> None:
