@@ -104,6 +104,31 @@ class MinimumEvolutionScoreReport:
 
 
 @dataclass(frozen=True, slots=True)
+class FitchMargoliashBranchFit:
+    """One fitted branch length from a Fitch-Margoliash weighted least-squares fit."""
+
+    branch_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+    fitted_branch_length: float
+
+
+@dataclass(slots=True)
+class FitchMargoliashFitReport:
+    """Weighted least-squares branch fit and RSS summary for one fixed topology."""
+
+    taxa: list[str]
+    pair_count: int
+    branch_count: int
+    weighting_power: float
+    residual_sum_squares: float
+    weighted_residual_sum_squares: float
+    matrix_rank: int
+    negative_branch_count: int
+    branch_fits: list[FitchMargoliashBranchFit]
+
+
+@dataclass(frozen=True, slots=True)
 class BalancedMinimumEvolutionNniTraceRow:
     """One deterministic event row in a rooted BME NNI search trace."""
 

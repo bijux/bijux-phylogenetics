@@ -29,6 +29,8 @@ from .models import (
     DistanceTreeReferenceComparisonReport as DistanceTreeReferenceComparisonReport,
     DistanceTreeReferenceObservation as DistanceTreeReferenceObservation,
     DistanceTreeTopologyComparison as DistanceTreeTopologyComparison,
+    FitchMargoliashBranchFit as FitchMargoliashBranchFit,
+    FitchMargoliashFitReport as FitchMargoliashFitReport,
     GapHandlingMode as GapHandlingMode,
     GeneticDistanceMatrix as GeneticDistanceMatrix,
     GeneticDistanceModelParameters as GeneticDistanceModelParameters,
@@ -264,6 +266,40 @@ def fit_minimum_evolution_tree_from_imported_distance_matrix(
     )
 
     return fit_impl(matrix_path, tree_path)
+
+
+def fit_fitch_margoliash_tree(
+    tree: PhyloTree,
+    identifiers: list[str],
+    distance_lookup: dict[tuple[str, str], float],
+    *,
+    weighting_power: float = 2.0,
+) -> tuple[PhyloTree, FitchMargoliashFitReport]:
+    from .fitch_margoliash import fit_fitch_margoliash_tree as fit_impl
+
+    return fit_impl(
+        tree,
+        identifiers,
+        distance_lookup,
+        weighting_power=weighting_power,
+    )
+
+
+def fit_fitch_margoliash_tree_from_imported_distance_matrix(
+    matrix_path: Path,
+    tree_path: Path,
+    *,
+    weighting_power: float = 2.0,
+) -> tuple[PhyloTree, FitchMargoliashFitReport]:
+    from .fitch_margoliash import (
+        fit_fitch_margoliash_tree_from_imported_distance_matrix as fit_impl,
+    )
+
+    return fit_impl(
+        matrix_path,
+        tree_path,
+        weighting_power=weighting_power,
+    )
 
 
 def score_balanced_minimum_evolution(
