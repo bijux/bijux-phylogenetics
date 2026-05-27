@@ -1,8 +1,23 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import numpy
 
+from bijux_phylogenetics.phylo.likelihood.patterns import CompressedAlignmentSitePatterns
+from bijux_phylogenetics.phylo.likelihood.pruning import (
+    log_likelihood_from_root_prior,
+    postorder_conditional_likelihoods,
+)
+from bijux_phylogenetics.phylo.likelihood.sites import (
+    sum_compressed_site_pattern_log_likelihoods,
+)
+from bijux_phylogenetics.phylo.likelihood.validation import (
+    validate_explicit_branch_lengths,
+    validate_tree_taxa_against_patterns,
+)
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import AlignmentTaxonMismatchError
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
@@ -116,6 +131,76 @@ def validate_protein_missing_policy(
     return missing_policy
 
 
+def validate_protein_root_prior(
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...],
+    *,
+    model_name: str,
+) -> numpy.ndarray:
+    vector = numpy.asarray(root_prior, dtype=float)
+    if vector.shape != (len(PROTEIN_STATE_ORDER),):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood requires exactly twenty root-prior entries in protein state order"
+        )
+    if not numpy.all(numpy.isfinite(vector)):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood root prior must contain only finite values"
+        )
+    if numpy.any(vector < 0.0):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood root prior must be nonnegative"
+        )
+    total = float(vector.sum())
+    if total <= 0.0:
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood root prior must sum to a positive value"
+        )
+    return vector / total
+
+
+def validate_empirical_protein_rate_matrix(
+    rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    *,
+    model_name: str,
+    row_sum_tolerance: float = 1e-9,
+) -> numpy.ndarray:
+    candidate = numpy.asarray(rate_matrix, dtype=float)
+    state_count = len(PROTEIN_STATE_ORDER)
+    if candidate.shape != (state_count, state_count):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood requires one 20x20 empirical protein rate matrix"
+        )
+    if not numpy.all(numpy.isfinite(candidate)):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood empirical protein rate matrix must contain only finite values"
+        )
+    off_diagonal = candidate.copy()
+    numpy.fill_diagonal(off_diagonal, 0.0)
+    if numpy.any(off_diagonal < 0.0):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood empirical protein rate matrix must not contain negative off-diagonal rates"
+        )
+    diagonal = numpy.diag(candidate)
+    if numpy.any(diagonal > row_sum_tolerance):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood empirical protein rate matrix diagonal must be zero or negative"
+        )
+    row_sums = candidate.sum(axis=1)
+    if not numpy.allclose(
+        row_sums,
+        numpy.zeros(state_count, dtype=float),
+        rtol=0.0,
+        atol=row_sum_tolerance,
+    ):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood empirical protein rate matrix rows must sum to zero"
+        )
+    if not numpy.any(off_diagonal > 0.0):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood empirical protein rate matrix must contain at least one positive off-diagonal rate"
+        )
+    return candidate.copy()
+
+
 def protein_leaf_likelihood_vector(
     states_by_taxon: dict[str, str],
     *,
@@ -154,4 +239,52 @@ def protein_leaf_likelihood_vector(
         return numpy.ones(len(PROTEIN_STATE_ORDER), dtype=float)
     raise InvalidAlignmentError(
         f"{model_name} likelihood encountered unsupported amino-acid state '{state}' at taxon '{node_name}'"
+    )
+
+
+def evaluate_fixed_topology_protein_likelihood_from_patterns(
+    tree: PhyloTree,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    *,
+    model_name: str,
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...],
+    transition_matrix_for_child: Callable[[object], numpy.ndarray],
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+) -> float:
+    """Evaluate one fixed-topology protein CTMC likelihood on compressed patterns."""
+    validate_explicit_branch_lengths(tree, model_name=model_name)
+    validate_tree_taxa_against_patterns(
+        tree,
+        compressed_patterns,
+        model_name=model_name,
+    )
+    validated_root_prior = validate_protein_root_prior(
+        root_prior,
+        model_name=model_name,
+    )
+
+    def site_log_likelihood(states: tuple[str, ...]) -> float:
+        states_by_taxon = dict(zip(compressed_patterns.taxon_order, states, strict=True))
+        pruning_pass = postorder_conditional_likelihoods(
+            tree,
+            state_count=len(PROTEIN_STATE_ORDER),
+            leaf_likelihood=lambda node: protein_leaf_likelihood_vector(
+                states_by_taxon,
+                model_name=model_name,
+                node_name=node.name,
+                gap_policy=gap_policy,
+                missing_policy=missing_policy,
+            ),
+            transition_matrix_for_child=transition_matrix_for_child,
+        )
+        return log_likelihood_from_root_prior(
+            tree,
+            pruning_pass,
+            root_prior=validated_root_prior,
+        )
+
+    return sum_compressed_site_pattern_log_likelihoods(
+        compressed_patterns,
+        site_log_likelihood=site_log_likelihood,
     )

@@ -19,19 +19,8 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.likelihood.protein import (
     PROTEIN_STATE_ORDER,
     UNIFORM_PROTEIN_ROOT_PRIOR,
+    evaluate_fixed_topology_protein_likelihood_from_patterns,
     normalize_unambiguous_protein_records,
-    protein_leaf_likelihood_vector,
-)
-from bijux_phylogenetics.phylo.likelihood.pruning import (
-    log_likelihood_from_root_prior,
-    postorder_conditional_likelihoods,
-)
-from bijux_phylogenetics.phylo.likelihood.sites import (
-    sum_compressed_site_pattern_log_likelihoods,
-)
-from bijux_phylogenetics.phylo.likelihood.validation import (
-    validate_explicit_branch_lengths,
-    validate_tree_taxa_against_patterns,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
@@ -106,44 +95,22 @@ def _evaluate_protein_poisson_tree_likelihood_from_patterns(
     gap_policy: str,
     missing_policy: str,
 ) -> ProteinPoissonTreeLikelihoodReport:
-    validate_explicit_branch_lengths(tree, model_name="protein Poisson")
-    validate_tree_taxa_against_patterns(
-        tree,
-        compressed_patterns,
-        model_name="protein Poisson",
-    )
     transition_by_node_id = {
         child.node_id: protein_poisson_transition_probability_matrix(
             max(float(child.branch_length or 0.0), 0.0)
         )
         for _parent, child in tree.iter_edges()
     }
-
-    def site_log_likelihood(states: tuple[str, ...]) -> float:
-        states_by_taxon = dict(zip(compressed_patterns.taxon_order, states, strict=True))
-        pruning_pass = postorder_conditional_likelihoods(
-            tree,
-            state_count=len(PROTEIN_STATE_ORDER),
-            leaf_likelihood=lambda node: protein_leaf_likelihood_vector(
-                states_by_taxon,
-                model_name="protein Poisson",
-                node_name=node.name,
-                gap_policy=gap_policy,
-                missing_policy=missing_policy,
-            ),
-            transition_matrix_for_child=lambda child: transition_by_node_id[
-                child.node_id or ""
-            ],
-        )
-        return log_likelihood_from_root_prior(
-            tree,
-            pruning_pass,
-            root_prior=UNIFORM_PROTEIN_ROOT_PRIOR,
-        )
-
-    log_likelihood = sum_compressed_site_pattern_log_likelihoods(
+    log_likelihood = evaluate_fixed_topology_protein_likelihood_from_patterns(
+        tree,
         compressed_patterns,
-        site_log_likelihood=site_log_likelihood,
+        model_name="protein Poisson",
+        root_prior=UNIFORM_PROTEIN_ROOT_PRIOR,
+        transition_matrix_for_child=lambda child: transition_by_node_id[
+            child.node_id or ""
+        ],
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
     )
     return ProteinPoissonTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
