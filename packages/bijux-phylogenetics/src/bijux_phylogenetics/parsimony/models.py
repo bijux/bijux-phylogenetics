@@ -490,3 +490,49 @@ class ParsimonyRescaledConsistencyIndexReport:
     rc: float | None
     undefined_reason: str | None
     character_rows: list[ParsimonyRescaledConsistencyCharacterIndex]
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyBootstrapReplicate:
+    """One exact-search bootstrap replicate and its sampled characters."""
+
+    replicate_index: int
+    sampled_character_ids: list[str]
+    best_score: float
+    optimal_tree_count: int
+    tree_newick: str
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyBootstrapCladeSupport:
+    """One clade-identity bootstrap support row on the reference tree."""
+
+    branch_id: str
+    node_name: str | None
+    descendant_taxa: list[str]
+    supporting_tree_count: int
+    clade_frequency: float
+    support_percent: float
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyBootstrapReport:
+    """Complete exact-search parsimony bootstrap report over one character matrix."""
+
+    algorithm: str
+    method: str
+    matrix_path: Path | None
+    cost_matrix_path: Path | None
+    weights_path: Path | None
+    taxon_column: str
+    taxon_count: int
+    character_count: int
+    replicate_count: int
+    random_seed: int
+    candidate_tree_count: int
+    max_exact_taxa: int
+    reference_score: float
+    reference_optimal_tree_count: int
+    reference_tree_newick: str
+    replicate_rows: list[ParsimonyBootstrapReplicate]
+    clade_support_rows: list[ParsimonyBootstrapCladeSupport]
