@@ -237,6 +237,45 @@ class ProteinEmpiricalMatrixTreeLikelihoodReport:
 
 
 @dataclass(slots=True)
+class BranchLengthOptimizationRow:
+    """One branch-length change recorded from one fixed-topology optimization run."""
+
+    branch_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+    initial_branch_length: float
+    optimized_branch_length: float
+
+
+@dataclass(slots=True)
+class ProteinEmpiricalBranchLengthOptimizationReport:
+    """Fixed-topology branch-length optimization summary for one empirical protein model."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    branch_count: int
+    initial_tree_newick: str
+    optimized_tree_newick: str
+    state_count: int
+    matrix_label: str
+    root_prior_source: str
+    gap_policy: str
+    missing_policy: str
+    likelihood_model: str
+    alpha: float | None
+    invariant_proportion: float | None
+    initial_log_likelihood: float
+    optimized_log_likelihood: float
+    optimization_pass_count: int
+    function_evaluation_count: int
+    converged: bool
+    lower_branch_length_bound: float
+    upper_branch_length_bound: float
+    branches: list[BranchLengthOptimizationRow]
+
+
+@dataclass(slots=True)
 class DiscreteGammaRateCategory:
     """One discrete-gamma rate category with one stable weight."""
 
