@@ -312,3 +312,47 @@ class ProteinEmpiricalInvariantMixtureTreeLikelihoodReport:
     lower_invariant_proportion_bound: float
     upper_invariant_proportion_bound: float
     site_likelihoods: list[InvariantMixtureSiteLikelihood]
+
+
+@dataclass(slots=True)
+class DiscreteGammaInvariantMixtureSiteLikelihood:
+    """One emitted site row under one combined discrete-gamma invariant mixture."""
+
+    pattern_id: str
+    site_position: int
+    category_likelihoods: list[float]
+    invariant_component_likelihood: float
+    variable_component_likelihood: float
+    mixture_likelihood: float
+    log_likelihood: float
+
+
+@dataclass(slots=True)
+class ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport:
+    """Empirical protein likelihood report with active gamma and invariant mixture."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    state_count: int
+    matrix_label: str
+    root_prior_source: str
+    gap_policy: str
+    missing_policy: str
+    alpha: float
+    category_count: int
+    category_rates: list[DiscreteGammaRateCategory]
+    initial_invariant_proportion: float
+    invariant_proportion: float
+    initial_log_likelihood: float
+    log_likelihood: float
+    function_evaluation_count: int
+    converged: bool
+    lower_invariant_proportion_bound: float
+    upper_invariant_proportion_bound: float
+    hit_lower_invariant_proportion_boundary: bool
+    hit_upper_invariant_proportion_boundary: bool
+    boundary_warnings: list[str]
+    site_likelihoods: list[DiscreteGammaInvariantMixtureSiteLikelihood]
