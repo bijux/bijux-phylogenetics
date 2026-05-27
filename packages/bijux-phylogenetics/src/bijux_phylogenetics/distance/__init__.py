@@ -18,11 +18,15 @@ from .models import (
     DistanceGapPolicySensitivityReport as DistanceGapPolicySensitivityReport,
     DistanceMatrixQualityReport as DistanceMatrixQualityReport,
     DistanceMethodAssessment as DistanceMethodAssessment,
+    DistanceMethodComparisonReport as DistanceMethodComparisonReport,
+    DistanceMethodComparisonRow as DistanceMethodComparisonRow,
     DistanceMethodAssumptionReport as DistanceMethodAssumptionReport,
     DistanceMethodMaturityGateReport as DistanceMethodMaturityGateReport,
     DistanceMethodReport as DistanceMethodReport,
+    DistanceMethodRfRow as DistanceMethodRfRow,
     DistanceModel as DistanceModel,
     DistanceModelComparisonReport as DistanceModelComparisonReport,
+    DistanceMethodWarningRow as DistanceMethodWarningRow,
     DistanceOutlierPair as DistanceOutlierPair,
     DistanceReferenceObservation as DistanceReferenceObservation,
     DistanceReferenceValidationReport as DistanceReferenceValidationReport,
@@ -590,6 +594,32 @@ def write_distance_taxon_jackknife_artifacts(
 ) -> dict[str, Path]:
     from .taxon_jackknife import (
         write_distance_taxon_jackknife_artifacts as write_impl,
+    )
+
+    return write_impl(out_dir, report)
+
+
+def compare_distance_tree_methods_from_imported_distance_matrix(
+    matrix_path: Path,
+    *,
+    missing_distance_policy: MissingDistancePolicy = "reject",
+) -> DistanceMethodComparisonReport:
+    from .method_comparison import (
+        compare_distance_tree_methods_from_imported_distance_matrix as compare_impl,
+    )
+
+    return compare_impl(
+        matrix_path,
+        missing_distance_policy=missing_distance_policy,
+    )
+
+
+def write_distance_method_comparison_artifacts(
+    out_dir: Path,
+    report: DistanceMethodComparisonReport,
+) -> dict[str, Path]:
+    from .method_comparison import (
+        write_distance_method_comparison_artifacts as write_impl,
     )
 
     return write_impl(out_dir, report)
