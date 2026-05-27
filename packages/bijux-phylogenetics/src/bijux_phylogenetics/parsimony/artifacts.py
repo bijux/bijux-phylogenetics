@@ -208,6 +208,14 @@ def write_wagner_run_json(path: Path, report: WagnerScoreReport) -> Path:
             if report.weights_path is None
             else str(report.weights_path),
             "total_weighted_score": report.total_weighted_score,
+            "validation_warnings": [
+                {
+                    "code": warning.code,
+                    "message": warning.message,
+                    "details": warning.details,
+                }
+                for warning in report.validation_warnings
+            ],
             "step_rows": [
                 {
                     "character_id": row.character_id,
@@ -353,6 +361,14 @@ def write_sankoff_run_json(path: Path, report: SankoffScoreReport) -> Path:
             if report.weights_path is None
             else str(report.weights_path),
             "total_weighted_score": report.total_weighted_score,
+            "validation_warnings": [
+                {
+                    "code": warning.code,
+                    "message": warning.message,
+                    "details": warning.details,
+                }
+                for warning in report.validation_warnings
+            ],
             "step_rows": [
                 {
                     "character_id": row.character_id,

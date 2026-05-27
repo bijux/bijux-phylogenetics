@@ -49,6 +49,7 @@ def tree_length(
     method: str,
     state_order: list[str] | None = None,
     cost_matrix: SankoffCostMatrix | Path | None = None,
+    allow_asymmetric_costs: bool = False,
     character_weights: ParsimonyCharacterWeights | Path | None = None,
 ) -> ParsimonyTreeLengthReport:
     """Score one tree length surface with optional explicit per-character weights."""
@@ -94,12 +95,16 @@ def tree_length(
         resolved_cost_matrix = (
             cost_matrix
             if isinstance(cost_matrix, SankoffCostMatrix)
-            else load_sankoff_cost_matrix(cost_matrix)
+            else load_sankoff_cost_matrix(
+                cost_matrix,
+                allow_asymmetric_costs=allow_asymmetric_costs,
+            )
         )
         score_report = score_sankoff(
             tree,
             resolved_matrix,
             resolved_cost_matrix,
+            allow_asymmetric_costs=allow_asymmetric_costs,
             character_weights=resolved_weights,
         )
         raw_scores = {

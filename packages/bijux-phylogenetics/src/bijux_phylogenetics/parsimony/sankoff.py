@@ -7,7 +7,7 @@ from bijux_phylogenetics.ancestral.common import node_descendant_taxa, node_sign
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import ParsimonyAnalysisError
 
-from .cost_matrix import load_sankoff_cost_matrix
+from .cost_matrix import load_sankoff_cost_matrix, validate_sankoff_cost_matrix
 from .fitch import _leaf_taxa, _resolve_tree
 from .matrix import load_parsimony_character_matrix
 from .models import (
@@ -27,6 +27,7 @@ def score_sankoff(
     matrix: FitchCharacterMatrix | Path,
     cost_matrix: SankoffCostMatrix | Path,
     *,
+    allow_asymmetric_costs: bool = False,
     character_weights: (
         ParsimonyCharacterWeights | Mapping[str, float] | Path | None
     ) = None,
@@ -41,8 +42,18 @@ def score_sankoff(
     resolved_cost_matrix = (
         cost_matrix
         if isinstance(cost_matrix, SankoffCostMatrix)
-        else load_sankoff_cost_matrix(cost_matrix)
+        else load_sankoff_cost_matrix(
+            cost_matrix,
+            observed_states=_observed_states_across_matrix(resolved_matrix),
+            allow_asymmetric_costs=allow_asymmetric_costs,
+        )
     )
+    if isinstance(cost_matrix, SankoffCostMatrix):
+        resolved_cost_matrix = validate_sankoff_cost_matrix(
+            resolved_cost_matrix,
+            observed_states=_observed_states_across_matrix(resolved_matrix),
+            allow_asymmetric_costs=allow_asymmetric_costs,
+        )
     matrix_path = resolved_matrix.matrix_path
     cost_matrix_path = resolved_cost_matrix.matrix_path
     resolved_weights = resolve_parsimony_character_weights(
@@ -86,17 +97,6 @@ def score_sankoff(
                 for states_by_character in resolved_matrix.states_by_taxon.values()
             }
         )
-        missing_states = sorted(set(observed_states) - set(resolved_cost_matrix.states))
-        if missing_states:
-            raise ParsimonyAnalysisError(
-                "sankoff scoring requires every observed state to exist in the cost matrix",
-                code="parsimony_cost_matrix_missing_states",
-                details={
-                    "character_id": character_id,
-                    "missing_states": missing_states,
-                    "cost_matrix_states": resolved_cost_matrix.states,
-                },
-            )
         node_cost_vectors = _score_character(
             resolved_tree.root,
             character_id=character_id,
@@ -164,9 +164,20 @@ def score_sankoff(
         total_cost=total_cost,
         weights_path=resolved_weights.weights_path,
         total_weighted_score=total_weighted_score,
+        validation_warnings=resolved_cost_matrix.validation_warnings,
         step_rows=step_rows,
         node_cost_rows=node_cost_rows,
         node_selection_rows=node_selection_rows,
+    )
+
+
+def _observed_states_across_matrix(matrix: FitchCharacterMatrix) -> list[str]:
+    return sorted(
+        {
+            state
+            for states_by_character in matrix.states_by_taxon.values()
+            for state in states_by_character.values()
+        }
     )
 
 
