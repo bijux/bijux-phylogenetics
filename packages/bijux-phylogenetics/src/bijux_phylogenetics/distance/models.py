@@ -129,6 +129,32 @@ class FitchMargoliashFitReport:
 
 
 @dataclass(frozen=True, slots=True)
+class OrdinaryLeastSquaresBranchFit:
+    """One fitted branch length from an ordinary least-squares fixed-topology fit."""
+
+    branch_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+    fitted_branch_length: float
+
+
+@dataclass(slots=True)
+class OrdinaryLeastSquaresFitReport:
+    """Unweighted fixed-topology least-squares fit with residual matrix diagnostics."""
+
+    taxa: list[str]
+    pair_count: int
+    branch_count: int
+    residual_sum_squares: float
+    matrix_rank: int
+    condition_number: float
+    negative_branch_count: int
+    fitted_distance_matrix: list[list[float]]
+    residual_matrix: list[list[float]]
+    branch_fits: list[OrdinaryLeastSquaresBranchFit]
+
+
+@dataclass(frozen=True, slots=True)
 class BalancedMinimumEvolutionNniTraceRow:
     """One deterministic event row in a rooted BME NNI search trace."""
 

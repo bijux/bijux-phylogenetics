@@ -42,6 +42,8 @@ from .models import (
     MinimumEvolutionBranchFit as MinimumEvolutionBranchFit,
     MinimumEvolutionScoreReport as MinimumEvolutionScoreReport,
     NonMetricDistanceObservation as NonMetricDistanceObservation,
+    OrdinaryLeastSquaresBranchFit as OrdinaryLeastSquaresBranchFit,
+    OrdinaryLeastSquaresFitReport as OrdinaryLeastSquaresFitReport,
     SaturatedDistancePair as SaturatedDistancePair,
     UPGMAUltrametricViolation as UPGMAUltrametricViolation,
 )
@@ -300,6 +302,27 @@ def fit_fitch_margoliash_tree_from_imported_distance_matrix(
         tree_path,
         weighting_power=weighting_power,
     )
+
+
+def fit_ordinary_least_squares_tree(
+    tree: PhyloTree,
+    identifiers: list[str],
+    distance_lookup: dict[tuple[str, str], float],
+) -> tuple[PhyloTree, OrdinaryLeastSquaresFitReport]:
+    from .ordinary_least_squares import fit_ordinary_least_squares_tree as fit_impl
+
+    return fit_impl(tree, identifiers, distance_lookup)
+
+
+def fit_ordinary_least_squares_tree_from_imported_distance_matrix(
+    matrix_path: Path,
+    tree_path: Path,
+) -> tuple[PhyloTree, OrdinaryLeastSquaresFitReport]:
+    from .ordinary_least_squares import (
+        fit_ordinary_least_squares_tree_from_imported_distance_matrix as fit_impl,
+    )
+
+    return fit_impl(matrix_path, tree_path)
 
 
 def score_balanced_minimum_evolution(
