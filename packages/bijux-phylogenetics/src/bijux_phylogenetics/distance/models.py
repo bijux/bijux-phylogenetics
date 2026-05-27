@@ -80,6 +80,29 @@ class DistanceTreeBuildReport:
     assumptions: DistanceMethodAssumptionReport
 
 
+@dataclass(frozen=True, slots=True)
+class MinimumEvolutionBranchFit:
+    """One fitted branch length for a fixed-topology minimum-evolution score."""
+
+    branch_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+    fitted_branch_length: float
+
+
+@dataclass(slots=True)
+class MinimumEvolutionScoreReport:
+    """Minimum-evolution score and fitted branch lengths for one fixed topology."""
+
+    taxa: list[str]
+    pair_count: int
+    branch_count: int
+    minimum_evolution_score: float
+    total_fitted_branch_length: float
+    negative_branch_count: int
+    branch_fits: list[MinimumEvolutionBranchFit]
+
+
 @dataclass(slots=True)
 class DistanceTreeTopologyComparison:
     """Topology comparison between NJ and UPGMA trees built from one alignment."""

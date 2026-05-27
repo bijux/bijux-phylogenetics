@@ -35,6 +35,8 @@ from .models import (
     ImportedDistanceMatrixReport as ImportedDistanceMatrixReport,
     ImportedDistanceTreeBuildReport as ImportedDistanceTreeBuildReport,
     LowInformationPair as LowInformationPair,
+    MinimumEvolutionBranchFit as MinimumEvolutionBranchFit,
+    MinimumEvolutionScoreReport as MinimumEvolutionScoreReport,
     NonMetricDistanceObservation as NonMetricDistanceObservation,
     SaturatedDistancePair as SaturatedDistancePair,
     UPGMAUltrametricViolation as UPGMAUltrametricViolation,
@@ -239,6 +241,27 @@ def build_tree_from_imported_distance_matrix(
     )
 
     return build_imported_tree_impl(path, method=method)
+
+
+def fit_minimum_evolution_tree(
+    tree: PhyloTree,
+    identifiers: list[str],
+    distance_lookup: dict[tuple[str, str], float],
+) -> tuple[PhyloTree, MinimumEvolutionScoreReport]:
+    from .minimum_evolution import fit_minimum_evolution_tree as fit_impl
+
+    return fit_impl(tree, identifiers, distance_lookup)
+
+
+def fit_minimum_evolution_tree_from_imported_distance_matrix(
+    matrix_path: Path,
+    tree_path: Path,
+) -> tuple[PhyloTree, MinimumEvolutionScoreReport]:
+    from .minimum_evolution import (
+        fit_minimum_evolution_tree_from_imported_distance_matrix as fit_impl,
+    )
+
+    return fit_impl(matrix_path, tree_path)
 
 
 def build_distance_tree(
