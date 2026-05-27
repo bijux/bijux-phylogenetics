@@ -198,13 +198,13 @@ differences.
 - fit standalone Brownian or OU continuous-trait models with confidence intervals, residual diagnostics, model comparison, and leave-one-taxon-out sensitivity
 - fit phylogenetic generalized least-squares models with numeric, categorical, and interaction predictors through explicit formula auditing
 - adjust repeated comparative hypothesis tests with Benjamini-Hochberg correction and emit integrated comparative audit, influence, tree-comparison, pruning-comparison, and reviewer-facing report outputs
-- score unordered discrete character matrices on one tree with Fitch parsimony, emit per-character step ledgers plus per-node candidate-state sets, and fail explicitly on missing taxa, unknown states, or empty matrices
-- score ordered discrete character matrices on one tree with Wagner parsimony, emit weighted per-character costs plus internal-node ordered cost vectors, and require either ordinal labels or one explicit state order
-- score discrete character matrices on one tree with Sankoff parsimony under one user-supplied transition-cost matrix, emit minimum-cost ledgers plus per-node cost vectors and optimal-state tie sets, and reject negative, non-square, missing-state, or inconsistent-label cost matrices
-- score binary character matrices on one tree with Dollo parsimony, emit one-gain and many-loss branch ledgers, and fail explicitly when multistate traits have not been binarized first
-- score binary character matrices on one rooted tree with irreversible Camin-Sokal parsimony, assume ancestral absence, allow repeated `0→1` gains, forbid `1→0` reversals, emit exact gain-branch ledgers, and fail explicitly when multistate traits have not been binarized first
-- reconstruct unordered parsimony ambiguities with ACCTRAN, emit resolved node states plus branch-change ledgers, and prefer earlier branch placements over later ones while preserving the same minimum tree length
-- reconstruct unordered parsimony ambiguities with DELTRAN, emit resolved node states plus branch-change ledgers, and delay ambiguous changes toward terminal branches while preserving the same minimum tree length
+- score unordered discrete character matrices on one tree with Fitch parsimony, emit per-character step ledgers plus per-node candidate-state sets, accept explicit per-character weight tables, and fail explicitly on missing taxa, unknown states, empty matrices, or invalid weights
+- score ordered discrete character matrices on one tree with Wagner parsimony, emit weighted per-character costs plus internal-node ordered cost vectors, accept explicit per-character weight tables, and require either ordinal labels or one explicit state order
+- score discrete character matrices on one tree with Sankoff parsimony under one user-supplied transition-cost matrix, emit minimum-cost ledgers plus per-node cost vectors and optimal-state tie sets, accept explicit per-character weight tables, and reject negative, non-square, missing-state, or inconsistent-label cost matrices
+- score binary character matrices on one tree with Dollo parsimony, emit one-gain and many-loss branch ledgers, accept explicit per-character weight tables, and fail explicitly when multistate traits have not been binarized first
+- score binary character matrices on one rooted tree with irreversible Camin-Sokal parsimony, assume ancestral absence, allow repeated `0→1` gains, forbid `1→0` reversals, emit exact gain-branch ledgers, accept explicit per-character weight tables, and fail explicitly when multistate traits have not been binarized first
+- reconstruct unordered parsimony ambiguities with ACCTRAN, emit resolved node states plus branch-change ledgers, accept explicit per-character weight tables, and prefer earlier branch placements over later ones while preserving the same minimum tree length
+- reconstruct unordered parsimony ambiguities with DELTRAN, emit resolved node states plus branch-change ledgers, accept explicit per-character weight tables, and delay ambiguous changes toward terminal branches while preserving the same minimum tree length
 - summarize generic parsimony tree length with per-character raw scores, explicit character weights, and one governed total score across Fitch, Wagner, Sankoff, Dollo, Camin-Sokal, ACCTRAN, or DELTRAN methods
 - compute per-character and aggregate consistency index across supported parsimony methods, exclude constant characters by explicit `0/0` policy, keep nonconstant uninformative characters in the score, and leave arbitrary Sankoff step-matrix minima outside the current owned surface
 - compute per-character and aggregate retention index for unordered Fitch-style methods, emit `null` plus explicit zero-range reasons when `max = min`, and avoid claiming ordered, irreversible, or arbitrary step-matrix maxima that the package does not yet own
@@ -311,13 +311,13 @@ bijux-phylogenetics report release-gate --out artifacts/level-1-release-gate.htm
 bijux-phylogenetics report release-truth --test-report artifacts/pytest/full-suite.xml --real-engine-test-report artifacts/pytest/real-engine.xml --out artifacts/release-truth-report.html --json
 bijux-phylogenetics report supplementary-alignment-table --alignment alignment.fasta --filtered-alignment filtered-alignment.fasta --out artifacts/supplementary-alignment.tsv --json
 bijux-phylogenetics report supplementary-ancestral-state-table --tree tree.nwk --traits traits.tsv --trait habitat --reconstruction-kind discrete --model equal-rates --out artifacts/supplementary-ancestral-states.tsv --json
-bijux-phylogenetics phylo parsimony fitch tree.nwk discrete-character-matrix.tsv --out-dir artifacts/parsimony-fitch --json
-bijux-phylogenetics phylo parsimony wagner tree.nwk ordered-character-matrix.tsv --state-order low,medium,high,very_high --out-dir artifacts/parsimony-wagner --json
-bijux-phylogenetics phylo parsimony sankoff tree.nwk discrete-character-matrix.tsv transition-costs.tsv --out-dir artifacts/parsimony-sankoff --json
-bijux-phylogenetics phylo parsimony dollo tree.nwk binary-character-matrix.tsv --out-dir artifacts/parsimony-dollo --json
-bijux-phylogenetics phylo parsimony camin-sokal tree.nwk binary-character-matrix.tsv --out-dir artifacts/parsimony-camin-sokal --json
-bijux-phylogenetics phylo parsimony acctran tree.nwk discrete-character-matrix.tsv --out-dir artifacts/parsimony-acctran --json
-bijux-phylogenetics phylo parsimony deltran tree.nwk discrete-character-matrix.tsv --out-dir artifacts/parsimony-deltran --json
+bijux-phylogenetics phylo parsimony fitch tree.nwk discrete-character-matrix.tsv --character-weights character-weights.tsv --out-dir artifacts/parsimony-fitch --json
+bijux-phylogenetics phylo parsimony wagner tree.nwk ordered-character-matrix.tsv --state-order low,medium,high,very_high --character-weights character-weights.tsv --out-dir artifacts/parsimony-wagner --json
+bijux-phylogenetics phylo parsimony sankoff tree.nwk discrete-character-matrix.tsv transition-costs.tsv --character-weights character-weights.tsv --out-dir artifacts/parsimony-sankoff --json
+bijux-phylogenetics phylo parsimony dollo tree.nwk binary-character-matrix.tsv --character-weights character-weights.tsv --out-dir artifacts/parsimony-dollo --json
+bijux-phylogenetics phylo parsimony camin-sokal tree.nwk binary-character-matrix.tsv --character-weights character-weights.tsv --out-dir artifacts/parsimony-camin-sokal --json
+bijux-phylogenetics phylo parsimony acctran tree.nwk discrete-character-matrix.tsv --character-weights character-weights.tsv --out-dir artifacts/parsimony-acctran --json
+bijux-phylogenetics phylo parsimony deltran tree.nwk discrete-character-matrix.tsv --character-weights character-weights.tsv --out-dir artifacts/parsimony-deltran --json
 bijux-phylogenetics phylo parsimony tree-length tree.nwk discrete-character-matrix.tsv --method fitch --character-weights character-weights.tsv --out-dir artifacts/parsimony-tree-length --json
 bijux-phylogenetics phylo parsimony consistency-index tree.nwk discrete-character-matrix.tsv --method fitch --out-dir artifacts/parsimony-consistency --json
 bijux-phylogenetics phylo parsimony retention-index tree.nwk discrete-character-matrix.tsv --method fitch --out-dir artifacts/parsimony-retention --json
