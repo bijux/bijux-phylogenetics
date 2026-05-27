@@ -4,39 +4,24 @@ from dataclasses import asdict
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.phylo.topology.clades import robinson_foulds_metrics
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-
 from .imported import (
     load_imported_distance_matrix,
     validate_imported_distance_matrix,
 )
-from .missing_distance_policy import apply_missing_distance_policy
 from .models import (
     DistanceTaxonInfluenceReport,
     DistanceTaxonInfluenceRow,
-    ImportedDistanceEntry,
     MissingDistancePolicy,
 )
-from .patristic_residuals import compute_patristic_residual_diagnostics
-from .shared import _build_distance_tree_from_lookup, _pair_key
-
-_ROUND_DIGITS = 12
-
-
-def _defined_distance_lookup_from_entries(
-    entries: list[ImportedDistanceEntry],
-) -> dict[tuple[str, str], float]:
-    defined_lookup: dict[tuple[str, str], float] = {}
-    for entry in entries:
-        if entry.left_identifier == entry.right_identifier:
-            continue
-        defined_lookup.setdefault(
-            _pair_key(entry.left_identifier, entry.right_identifier),
-            float(entry.distance),
-        )
-    return defined_lookup
+from .shared import _pair_key
+from .taxon_leave_one_out import (
+    ROUND_DIGITS,
+    defined_distance_lookup_from_entries,
+    prune_tree_to_identifiers_or_raise,
+    resolve_tree_and_residuals,
+    rooted_rf_metrics,
+    subset_defined_lookup,
+)
 
 
 def _raw_missing_pair_counts(
@@ -52,74 +37,6 @@ def _raw_missing_pair_counts(
             missing_pair_counts[left_identifier] += 1
             missing_pair_counts[right_identifier] += 1
     return missing_pair_counts
-
-
-def _subset_defined_lookup(
-    identifiers: list[str],
-    defined_lookup: dict[tuple[str, str], float],
-) -> dict[tuple[str, str], float]:
-    retained = set(identifiers)
-    return {
-        pair: distance
-        for pair, distance in defined_lookup.items()
-        if pair[0] in retained and pair[1] in retained
-    }
-
-
-def _prune_reference_tree(
-    reference_tree_path: Path,
-    identifiers: list[str],
-) -> PhyloTree:
-    pruned_tree, pruning_report = prune_tree_to_requested_taxa(
-        reference_tree_path,
-        identifiers,
-    )
-    if pruning_report.absent_requested_taxa:
-        missing = ", ".join(pruning_report.absent_requested_taxa)
-        raise ValueError(
-            "reference tree is missing one or more matrix taxa required for taxon influence analysis: "
-            + missing
-        )
-    return pruned_tree
-
-
-def _rooted_rf_metrics(
-    tree: PhyloTree,
-    reference_tree: PhyloTree,
-) -> tuple[int, float]:
-    shared_taxa = set(tree.tip_names) & set(reference_tree.tip_names)
-    metrics = robinson_foulds_metrics(
-        tree,
-        reference_tree,
-        shared_taxa,
-        rf_mode="rooted",
-    )
-    return metrics.distance, round(metrics.normalized_distance, _ROUND_DIGITS)
-
-
-def _resolve_tree_and_residuals(
-    identifiers: list[str],
-    defined_lookup: dict[tuple[str, str], float],
-    *,
-    method: str,
-    missing_distance_policy: MissingDistancePolicy,
-) -> tuple[PhyloTree, float]:
-    resolved_lookup, _policy_report = apply_missing_distance_policy(
-        identifiers,
-        defined_lookup,
-        policy=missing_distance_policy,
-    )
-    tree = _build_distance_tree_from_lookup(
-        identifiers,
-        resolved_lookup,
-        method=method,
-    )
-    residuals = compute_patristic_residual_diagnostics(
-        tree,
-        identifiers,
-        resolved_lookup,
-    )
-    return tree, residuals.residual_sum_squares
 
 
 def _rank_taxon_influence_rows(
@@ -180,16 +97,19 @@ def analyze_distance_taxon_influence_from_imported_distance_matrix(
             "distance taxon influence analysis requires at least four taxa"
         )
     entries = load_imported_distance_matrix(matrix_path)
-    defined_lookup = _defined_distance_lookup_from_entries(entries)
+    defined_lookup = defined_distance_lookup_from_entries(entries)
     raw_missing_pair_counts = _raw_missing_pair_counts(
         validation.identifiers,
         defined_lookup,
     )
-    baseline_reference_tree = _prune_reference_tree(
+    baseline_reference_tree = prune_tree_to_identifiers_or_raise(
         reference_tree_path,
         validation.identifiers,
+        missing_taxa_message_prefix=(
+            "reference tree is missing one or more matrix taxa required for taxon influence analysis: "
+        ),
     )
-    baseline_tree, baseline_rss = _resolve_tree_and_residuals(
+    baseline_tree, baseline_rss = resolve_tree_and_residuals(
         validation.identifiers,
         defined_lookup,
         method=method,
@@ -198,16 +118,22 @@ def analyze_distance_taxon_influence_from_imported_distance_matrix(
     (
         baseline_rooted_rf_distance,
         baseline_rooted_normalized_rf,
-    ) = _rooted_rf_metrics(baseline_tree, baseline_reference_tree)
+    ) = rooted_rf_metrics(baseline_tree, baseline_reference_tree)
 
     rows: list[DistanceTaxonInfluenceRow] = []
     for taxon in validation.identifiers:
         retained_taxa = [
             identifier for identifier in validation.identifiers if identifier != taxon
         ]
-        reduced_lookup = _subset_defined_lookup(retained_taxa, defined_lookup)
-        reduced_reference_tree = _prune_reference_tree(reference_tree_path, retained_taxa)
-        leave_one_out_tree, leave_one_out_rss = _resolve_tree_and_residuals(
+        reduced_lookup = subset_defined_lookup(retained_taxa, defined_lookup)
+        reduced_reference_tree = prune_tree_to_identifiers_or_raise(
+            reference_tree_path,
+            retained_taxa,
+            missing_taxa_message_prefix=(
+                "reference tree is missing one or more matrix taxa required for taxon influence analysis: "
+            ),
+        )
+        leave_one_out_tree, leave_one_out_rss = resolve_tree_and_residuals(
             retained_taxa,
             reduced_lookup,
             method=method,
@@ -216,14 +142,14 @@ def analyze_distance_taxon_influence_from_imported_distance_matrix(
         (
             leave_one_out_rooted_rf_distance,
             leave_one_out_rooted_normalized_rf,
-        ) = _rooted_rf_metrics(leave_one_out_tree, reduced_reference_tree)
-        rss_improvement = round(baseline_rss - leave_one_out_rss, _ROUND_DIGITS)
+        ) = rooted_rf_metrics(leave_one_out_tree, reduced_reference_tree)
+        rss_improvement = round(baseline_rss - leave_one_out_rss, ROUND_DIGITS)
         rooted_rf_improvement = (
             baseline_rooted_rf_distance - leave_one_out_rooted_rf_distance
         )
         normalized_rf_improvement = round(
             baseline_rooted_normalized_rf - leave_one_out_rooted_normalized_rf,
-            _ROUND_DIGITS,
+            ROUND_DIGITS,
         )
         rows.append(
             DistanceTaxonInfluenceRow(

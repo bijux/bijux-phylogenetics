@@ -333,6 +333,19 @@ def prune_tree_to_requested_taxa(
     )
 
 
+def prune_tree_object_to_requested_taxa(
+    tree: PhyloTree,
+    requested_taxa: list[str],
+) -> PhyloTree:
+    """Prune one in-memory tree to an explicit requested taxon list."""
+    requested_set = set(requested_taxa)
+    pruned_tree, _retained_tips, _removed_tips = _prune_tree_against_taxa(
+        tree,
+        requested_set,
+    )
+    return pruned_tree
+
+
 def drop_tree_taxa(
     tree_path: Path,
     excluded_taxa: list[str],
