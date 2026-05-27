@@ -155,6 +155,41 @@ class OrdinaryLeastSquaresFitReport:
 
 
 @dataclass(frozen=True, slots=True)
+class NonnegativeLeastSquaresBranchFit:
+    """One fitted branch length from a nonnegative least-squares fixed-topology fit."""
+
+    branch_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+    fitted_branch_length: float
+
+
+@dataclass(frozen=True, slots=True)
+class NonnegativeLeastSquaresActiveConstraint:
+    """One branch pinned to zero by the active nonnegative constraint set."""
+
+    branch_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+
+
+@dataclass(slots=True)
+class NonnegativeLeastSquaresFitReport:
+    """Fixed-topology NNLS fit with explicit active zero constraints."""
+
+    taxa: list[str]
+    pair_count: int
+    branch_count: int
+    residual_sum_squares: float
+    condition_number: float
+    active_constraint_count: int
+    fitted_distance_matrix: list[list[float]]
+    residual_matrix: list[list[float]]
+    branch_fits: list[NonnegativeLeastSquaresBranchFit]
+    active_constraints: list[NonnegativeLeastSquaresActiveConstraint]
+
+
+@dataclass(frozen=True, slots=True)
 class BalancedMinimumEvolutionNniTraceRow:
     """One deterministic event row in a rooted BME NNI search trace."""
 

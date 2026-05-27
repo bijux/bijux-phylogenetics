@@ -42,6 +42,9 @@ from .models import (
     MinimumEvolutionBranchFit as MinimumEvolutionBranchFit,
     MinimumEvolutionScoreReport as MinimumEvolutionScoreReport,
     NonMetricDistanceObservation as NonMetricDistanceObservation,
+    NonnegativeLeastSquaresActiveConstraint as NonnegativeLeastSquaresActiveConstraint,
+    NonnegativeLeastSquaresBranchFit as NonnegativeLeastSquaresBranchFit,
+    NonnegativeLeastSquaresFitReport as NonnegativeLeastSquaresFitReport,
     OrdinaryLeastSquaresBranchFit as OrdinaryLeastSquaresBranchFit,
     OrdinaryLeastSquaresFitReport as OrdinaryLeastSquaresFitReport,
     SaturatedDistancePair as SaturatedDistancePair,
@@ -320,6 +323,29 @@ def fit_ordinary_least_squares_tree_from_imported_distance_matrix(
 ) -> tuple[PhyloTree, OrdinaryLeastSquaresFitReport]:
     from .ordinary_least_squares import (
         fit_ordinary_least_squares_tree_from_imported_distance_matrix as fit_impl,
+    )
+
+    return fit_impl(matrix_path, tree_path)
+
+
+def fit_nonnegative_least_squares_tree(
+    tree: PhyloTree,
+    identifiers: list[str],
+    distance_lookup: dict[tuple[str, str], float],
+) -> tuple[PhyloTree, NonnegativeLeastSquaresFitReport]:
+    from .nonnegative_least_squares import (
+        fit_nonnegative_least_squares_tree as fit_impl,
+    )
+
+    return fit_impl(tree, identifiers, distance_lookup)
+
+
+def fit_nonnegative_least_squares_tree_from_imported_distance_matrix(
+    matrix_path: Path,
+    tree_path: Path,
+) -> tuple[PhyloTree, NonnegativeLeastSquaresFitReport]:
+    from .nonnegative_least_squares import (
+        fit_nonnegative_least_squares_tree_from_imported_distance_matrix as fit_impl,
     )
 
     return fit_impl(matrix_path, tree_path)
