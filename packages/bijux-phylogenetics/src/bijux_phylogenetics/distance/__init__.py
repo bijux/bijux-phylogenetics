@@ -11,6 +11,7 @@ from .models import (
     DistanceAdditivityDiagnosticsReport as DistanceAdditivityDiagnosticsReport,
     BalancedMinimumEvolutionNniSearchReport as BalancedMinimumEvolutionNniSearchReport,
     BalancedMinimumEvolutionNniTraceRow as BalancedMinimumEvolutionNniTraceRow,
+    DistanceBootstrapReplicateRow as DistanceBootstrapReplicateRow,
     DistanceBootstrapReport as DistanceBootstrapReport,
     DistanceBootstrapSupportSummary as DistanceBootstrapSupportSummary,
     DistanceFourPointViolation as DistanceFourPointViolation,
@@ -698,6 +699,14 @@ def write_distance_bootstrap_support(
     )
 
     return write_support_impl(path, report)
+
+
+def write_distance_bootstrap_draws(path: Path, report: DistanceBootstrapReport) -> Path:
+    from .tree_inference import (
+        write_distance_bootstrap_draws as write_draws_impl,
+    )
+
+    return write_draws_impl(path, report)
 
 
 def summarize_distance_bootstrap_support(

@@ -34,6 +34,7 @@ from .missing_distance_policy import apply_missing_distance_policy
 from .models import (
     AmbiguityPolicy,
     DistanceBootstrapReport,
+    DistanceBootstrapReplicateRow,
     DistanceBootstrapSupportRow,
     DistanceBootstrapSupportSummary,
     DistanceMethodAssumptionReport,
@@ -227,16 +228,18 @@ def compare_distance_tree_topologies(
     )
 
 
-def _resampled_records(
+def _bootstrap_resample_alignment_columns(
     records: list[AlignmentRecord], *, rng: random.Random
-) -> list[AlignmentRecord]:
-    positions = [
+) -> tuple[list[int], list[AlignmentRecord]]:
+    sampled_site_indices = [
         rng.randrange(len(records[0].sequence)) for _ in range(len(records[0].sequence))
     ]
-    return [
+    return sampled_site_indices, [
         AlignmentRecord(
             identifier=record.identifier,
-            sequence="".join(record.sequence[position] for position in positions),
+            sequence="".join(
+                record.sequence[position] for position in sampled_site_indices
+            ),
         )
         for record in records
     ]
@@ -281,8 +284,12 @@ def bootstrap_distance_trees(
     rng = random.Random(seed)  # nosec B311
     temp_dir = Path(tempfile.mkdtemp(prefix="bijux-distance-bootstrap-"))
     trees: list[PhyloTree] = []
+    replicate_rows: list[DistanceBootstrapReplicateRow] = []
     for index in range(replicates):
-        replicate_records = _resampled_records(records, rng=rng)
+        sampled_site_indices, replicate_records = _bootstrap_resample_alignment_columns(
+            records,
+            rng=rng,
+        )
         replicate_path = temp_dir / f"replicate-{index + 1}.fasta"
         _write_bootstrap_alignment(replicate_path, replicate_records)
         tree, _ = build_distance_tree(
@@ -293,6 +300,13 @@ def bootstrap_distance_trees(
             ambiguity_policy=ambiguity_policy,
         )
         trees.append(tree)
+        replicate_rows.append(
+            DistanceBootstrapReplicateRow(
+                replicate_index=index + 1,
+                sampled_site_indices=sampled_site_indices,
+                tree_newick=dumps_newick(tree),
+            )
+        )
     tree_set_path = temp_dir / "bootstrap.trees"
     from bijux_phylogenetics.simulation import write_tree_set
 
@@ -309,6 +323,7 @@ def bootstrap_distance_trees(
         seed=seed,
         tree_count=len(trees),
         consensus_newick=dumps_newick(consensus_tree),
+        replicate_rows=replicate_rows,
         support=[
             DistanceBootstrapSupportRow(
                 clade=row.clade,
@@ -329,6 +344,24 @@ def write_distance_bootstrap_support(
     lines.extend(
         f"{row.clade}\t{row.tree_count}\t{format(row.frequency, '.15g')}"
         for row in report.support
+    )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def write_distance_bootstrap_draws(
+    path: Path, report: DistanceBootstrapReport
+) -> Path:
+    """Write one deterministic bootstrap draw ledger."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["replicate_index\tsampled_site_indices\ttree_newick"]
+    lines.extend(
+        (
+            f"{row.replicate_index}\t"
+            + ",".join(str(index) for index in row.sampled_site_indices)
+            + f"\t{row.tree_newick}"
+        )
+        for row in report.replicate_rows
     )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path

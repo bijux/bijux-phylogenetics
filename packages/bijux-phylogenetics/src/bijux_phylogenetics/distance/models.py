@@ -648,6 +648,15 @@ class DistanceBootstrapSupportRow:
     frequency: float
 
 
+@dataclass(frozen=True, slots=True)
+class DistanceBootstrapReplicateRow:
+    """One bootstrap replicate draw with its rebuilt distance-tree outcome."""
+
+    replicate_index: int
+    sampled_site_indices: list[int]
+    tree_newick: str
+
+
 @dataclass(slots=True)
 class DistanceBootstrapReport:
     """Bootstrap summary for a distance-based tree-building workflow."""
@@ -661,6 +670,7 @@ class DistanceBootstrapReport:
     seed: int
     tree_count: int
     consensus_newick: str
+    replicate_rows: list[DistanceBootstrapReplicateRow]
     support: list[DistanceBootstrapSupportRow]
 
 
