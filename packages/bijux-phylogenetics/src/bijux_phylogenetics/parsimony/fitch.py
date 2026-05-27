@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import node_descendant_taxa, node_signature
@@ -8,12 +9,23 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import ParsimonyAnalysisError
 
 from .matrix import load_fitch_character_matrix
-from .models import FitchCharacterMatrix, FitchCharacterScore, FitchNodeStateSet, FitchScoreReport
+from .models import (
+    FitchCharacterMatrix,
+    FitchCharacterScore,
+    FitchNodeStateSet,
+    FitchScoreReport,
+    ParsimonyCharacterWeights,
+)
+from .weights import resolve_parsimony_character_weights
 
 
 def score_fitch(
     tree: PhyloTree | Path,
     matrix: FitchCharacterMatrix | Path,
+    *,
+    character_weights: (
+        ParsimonyCharacterWeights | Mapping[str, float] | Path | None
+    ) = None,
 ) -> FitchScoreReport:
     """Score one taxon-by-character matrix on one tree with unordered Fitch parsimony."""
     resolved_tree, tree_path = _resolve_tree(tree)
@@ -23,6 +35,10 @@ def score_fitch(
         else load_fitch_character_matrix(matrix)
     )
     matrix_path = resolved_matrix.matrix_path
+    resolved_weights = resolve_parsimony_character_weights(
+        resolved_matrix.character_ids,
+        character_weights,
+    )
     leaf_taxa = _leaf_taxa(resolved_tree)
     missing_from_matrix = sorted(set(leaf_taxa) - set(resolved_matrix.states_by_taxon))
     extra_in_matrix = sorted(set(resolved_matrix.states_by_taxon) - set(leaf_taxa))
@@ -50,6 +66,7 @@ def score_fitch(
     step_rows: list[FitchCharacterScore] = []
     node_state_rows: list[FitchNodeStateSet] = []
     total_steps = 0
+    total_weighted_score = 0.0
     preorder_nodes = list(resolved_tree.iter_nodes(order="preorder"))
     for character_id in resolved_matrix.character_ids:
         candidate_sets, step_count = _score_character(
@@ -58,6 +75,9 @@ def score_fitch(
             states_by_taxon=resolved_matrix.states_by_taxon,
         )
         total_steps += step_count
+        character_weight = resolved_weights.weights_by_character[character_id]
+        weighted_score = step_count * character_weight
+        total_weighted_score += weighted_score
         observed_states = sorted(
             {
                 states_by_character[character_id]
@@ -69,6 +89,8 @@ def score_fitch(
                 character_id=character_id,
                 step_count=step_count,
                 observed_states=observed_states,
+                character_weight=character_weight,
+                weighted_score=weighted_score,
             )
         )
         for node in preorder_nodes:
@@ -96,9 +118,13 @@ def score_fitch(
         taxon_count=len(leaf_taxa),
         character_count=resolved_matrix.character_count,
         total_steps=total_steps,
+        weights_path=resolved_weights.weights_path,
+        total_weighted_score=total_weighted_score,
         step_rows=step_rows,
         node_state_rows=node_state_rows,
     )
+
+
 def _resolve_tree(tree: PhyloTree | Path) -> tuple[PhyloTree, Path | None]:
     if isinstance(tree, Path):
         return load_tree(tree), tree

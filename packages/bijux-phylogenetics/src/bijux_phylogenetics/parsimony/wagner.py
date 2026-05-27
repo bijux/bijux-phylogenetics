@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -11,10 +12,12 @@ from .fitch import _leaf_taxa, _resolve_tree
 from .matrix import load_parsimony_character_matrix
 from .models import (
     FitchCharacterMatrix,
+    ParsimonyCharacterWeights,
     WagnerCharacterScore,
     WagnerNodeCost,
     WagnerScoreReport,
 )
+from .weights import resolve_parsimony_character_weights
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,6 +31,9 @@ def score_wagner(
     matrix: FitchCharacterMatrix | Path,
     *,
     state_order: list[str] | None = None,
+    character_weights: (
+        ParsimonyCharacterWeights | Mapping[str, float] | Path | None
+    ) = None,
 ) -> WagnerScoreReport:
     """Score one discrete character matrix on one tree with ordered Wagner parsimony."""
     resolved_tree, tree_path = _resolve_tree(tree)
@@ -37,6 +43,10 @@ def score_wagner(
         else load_parsimony_character_matrix(matrix)
     )
     matrix_path = resolved_matrix.matrix_path
+    resolved_weights = resolve_parsimony_character_weights(
+        resolved_matrix.character_ids,
+        character_weights,
+    )
     leaf_taxa = _leaf_taxa(resolved_tree)
     missing_from_matrix = sorted(set(leaf_taxa) - set(resolved_matrix.states_by_taxon))
     extra_in_matrix = sorted(set(resolved_matrix.states_by_taxon) - set(leaf_taxa))
@@ -64,6 +74,7 @@ def score_wagner(
     step_rows: list[WagnerCharacterScore] = []
     node_cost_rows: list[WagnerNodeCost] = []
     total_cost = 0
+    total_weighted_score = 0.0
     preorder_nodes = list(resolved_tree.iter_nodes(order="preorder"))
     for character_id in resolved_matrix.character_ids:
         observed_states = sorted(
@@ -92,6 +103,9 @@ def score_wagner(
             if root_cost_vector[state] == character_cost
         ]
         total_cost += character_cost
+        character_weight = resolved_weights.weights_by_character[character_id]
+        weighted_score = character_cost * character_weight
+        total_weighted_score += weighted_score
         step_rows.append(
             WagnerCharacterScore(
                 character_id=character_id,
@@ -99,6 +113,8 @@ def score_wagner(
                 observed_states=observed_states,
                 state_order=resolved_state_order.labels,
                 optimal_root_states=optimal_root_states,
+                character_weight=character_weight,
+                weighted_score=weighted_score,
             )
         )
         for node in preorder_nodes:
@@ -127,6 +143,8 @@ def score_wagner(
         taxon_count=len(leaf_taxa),
         character_count=resolved_matrix.character_count,
         total_cost=total_cost,
+        weights_path=resolved_weights.weights_path,
+        total_weighted_score=total_weighted_score,
         step_rows=step_rows,
         node_cost_rows=node_cost_rows,
     )

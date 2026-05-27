@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import node_descendant_taxa, node_signature
@@ -11,18 +12,24 @@ from .fitch import _leaf_taxa, _resolve_tree
 from .matrix import load_parsimony_character_matrix
 from .models import (
     FitchCharacterMatrix,
+    ParsimonyCharacterWeights,
     SankoffCostMatrix,
     SankoffCharacterScore,
     SankoffNodeCost,
     SankoffNodeSelection,
     SankoffScoreReport,
 )
+from .weights import resolve_parsimony_character_weights
 
 
 def score_sankoff(
     tree: PhyloTree | Path,
     matrix: FitchCharacterMatrix | Path,
     cost_matrix: SankoffCostMatrix | Path,
+    *,
+    character_weights: (
+        ParsimonyCharacterWeights | Mapping[str, float] | Path | None
+    ) = None,
 ) -> SankoffScoreReport:
     """Score one discrete character matrix on one tree with Sankoff parsimony."""
     resolved_tree, tree_path = _resolve_tree(tree)
@@ -38,6 +45,10 @@ def score_sankoff(
     )
     matrix_path = resolved_matrix.matrix_path
     cost_matrix_path = resolved_cost_matrix.matrix_path
+    resolved_weights = resolve_parsimony_character_weights(
+        resolved_matrix.character_ids,
+        character_weights,
+    )
     leaf_taxa = _leaf_taxa(resolved_tree)
     missing_from_matrix = sorted(set(leaf_taxa) - set(resolved_matrix.states_by_taxon))
     extra_in_matrix = sorted(set(resolved_matrix.states_by_taxon) - set(leaf_taxa))
@@ -66,6 +77,7 @@ def score_sankoff(
     node_cost_rows: list[SankoffNodeCost] = []
     node_selection_rows: list[SankoffNodeSelection] = []
     total_cost = 0.0
+    total_weighted_score = 0.0
     preorder_nodes = list(resolved_tree.iter_nodes(order="preorder"))
     for character_id in resolved_matrix.character_ids:
         observed_states = sorted(
@@ -95,12 +107,17 @@ def score_sankoff(
         root_cost_vector = node_cost_vectors[root_key]
         character_cost = min(root_cost_vector.values())
         total_cost += character_cost
+        character_weight = resolved_weights.weights_by_character[character_id]
+        weighted_score = character_cost * character_weight
+        total_weighted_score += weighted_score
         step_rows.append(
             SankoffCharacterScore(
                 character_id=character_id,
                 minimum_cost=character_cost,
                 observed_states=observed_states,
                 matrix_states=resolved_cost_matrix.states,
+                character_weight=character_weight,
+                weighted_score=weighted_score,
             )
         )
         for node in preorder_nodes:
@@ -145,6 +162,8 @@ def score_sankoff(
         taxon_count=len(leaf_taxa),
         character_count=resolved_matrix.character_count,
         total_cost=total_cost,
+        weights_path=resolved_weights.weights_path,
+        total_weighted_score=total_weighted_score,
         step_rows=step_rows,
         node_cost_rows=node_cost_rows,
         node_selection_rows=node_selection_rows,
