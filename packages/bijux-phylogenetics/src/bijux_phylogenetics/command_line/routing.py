@@ -120,6 +120,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return [args.matrix]
         if args.distance_command == "build-tree":
             return [args.matrix, args.out]
+        if args.distance_command == "minimum-evolution":
+            return [args.matrix, args.tree, args.out]
         if args.distance_command == "report":
             return [args.matrix, args.out]
         return [args.matrix]

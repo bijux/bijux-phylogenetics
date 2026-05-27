@@ -13,6 +13,7 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.distance import (
     assess_imported_distance_method_assumptions,
     build_tree_from_imported_distance_matrix,
+    fit_minimum_evolution_tree_from_imported_distance_matrix,
     inspect_imported_distance_matrix_quality,
     validate_distance_reference_examples,
     validate_imported_distance_matrix,
@@ -64,7 +65,7 @@ def add_distance_commands(subparsers: Any) -> None:
 
     distance_build_tree = distance_subparsers.add_parser(
         "build-tree",
-        help="Build a Neighbor-Joining or UPGMA tree from an imported distance matrix.",
+        help="Build one owned distance tree from an imported distance matrix.",
     )
     distance_build_tree.add_argument("matrix", type=Path)
     _add_distance_tree_method_argument(distance_build_tree)
@@ -73,6 +74,18 @@ def add_distance_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the build report as JSON."
     )
     _add_manifest_argument(distance_build_tree)
+
+    distance_minimum_evolution = distance_subparsers.add_parser(
+        "minimum-evolution",
+        help="Fit one fixed tree topology to an imported distance matrix and score it by total fitted branch length.",
+    )
+    distance_minimum_evolution.add_argument("matrix", type=Path)
+    distance_minimum_evolution.add_argument("tree", type=Path)
+    distance_minimum_evolution.add_argument("--out", required=True, type=Path)
+    distance_minimum_evolution.add_argument(
+        "--json", action="store_true", help="Emit the minimum-evolution score as JSON."
+    )
+    _add_manifest_argument(distance_minimum_evolution)
 
     distance_report = distance_subparsers.add_parser(
         "report",
@@ -205,6 +218,35 @@ def run_distance_command(args: Any) -> int:
                     "method": report.method,
                     "taxon_count": report.taxon_count,
                     "pair_count": report.pair_count,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+    if args.distance_command == "minimum-evolution":
+        tree, report = fit_minimum_evolution_tree_from_imported_distance_matrix(
+            args.matrix,
+            args.tree,
+        )
+        output_path = write_newick(args.out, tree)
+        outputs = _finalize_outputs(
+            args,
+            command="distance",
+            inputs=[args.matrix, args.tree],
+            outputs=[output_path],
+        )
+        _print_result(
+            build_command_result(
+                command="distance",
+                inputs=[args.matrix, args.tree],
+                outputs=outputs,
+                metrics={
+                    "criterion": "minimum-evolution",
+                    "taxon_count": len(report.taxa),
+                    "pair_count": report.pair_count,
+                    "branch_count": report.branch_count,
+                    "minimum_evolution_score": report.minimum_evolution_score,
                 },
                 data=report,
             ),
