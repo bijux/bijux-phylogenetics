@@ -2098,6 +2098,9 @@ from Python through `build_distance_tree_from_genetic_distance_matrix(...)`,
 so one loaded `GeneticDistanceMatrix` no longer has to restart from a
 path-based alignment or table wrapper before recovering one NJ, single-linkage,
 complete-linkage, UPGMA, or WPGMA tree.
+Within that clustering lane, UPGMA, WPGMA, single-linkage, and
+complete-linkage now route through one shared agglomerative engine with
+explicit method-specific update rules instead of carrying separate merge loops.
 The owned tree-manipulation core now also lives directly on `PhyloTree`.
 Outgroup rooting, unrooting, keep-tip pruning, drop-tip pruning, clade
 extraction, MRCA lookup, and monophyly review all run through one native
