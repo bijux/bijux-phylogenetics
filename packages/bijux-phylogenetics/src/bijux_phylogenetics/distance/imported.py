@@ -5,10 +5,6 @@ import math
 from pathlib import Path
 from statistics import median
 
-from bijux_phylogenetics.phylo.topology.neighbor_joining import (
-    build_neighbor_joining_tree,
-)
-from bijux_phylogenetics.phylo.topology.bionj import build_bionj_tree
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import InvalidDistanceMatrixError
 
@@ -29,12 +25,9 @@ from .models import (
 )
 from .shared import (
     _pair_key,
+    _build_distance_tree_from_lookup,
     _require_supported_distance_tree_method,
 )
-from .complete_linkage import build_complete_linkage_tree
-from .single_linkage import build_single_linkage_tree
-from .upgma import build_upgma_tree
-from .wpgma import build_wpgma_tree
 from .ultrametricity import diagnose_imported_distance_matrix_ultrametricity
 
 
@@ -465,18 +458,11 @@ def build_tree_from_imported_distance_matrix(
         entries,
         missing_distance_policy=missing_distance_policy,
     )
-    if method_policy.method == "neighbor-joining":
-        tree = build_neighbor_joining_tree(validation.identifiers, distance_lookup)
-    elif method_policy.method == "bionj":
-        tree = build_bionj_tree(validation.identifiers, distance_lookup)
-    elif method_policy.method == "upgma":
-        tree, _ = build_upgma_tree(validation.identifiers, distance_lookup)
-    elif method_policy.method == "wpgma":
-        tree, _ = build_wpgma_tree(validation.identifiers, distance_lookup)
-    elif method_policy.method == "complete-linkage":
-        tree, _ = build_complete_linkage_tree(validation.identifiers, distance_lookup)
-    else:
-        tree, _ = build_single_linkage_tree(validation.identifiers, distance_lookup)
+    tree = _build_distance_tree_from_lookup(
+        validation.identifiers,
+        distance_lookup,
+        method=method_policy.method,
+    )
     return tree, ImportedDistanceTreeBuildReport(
         matrix_path=path,
         method=method_policy.method,

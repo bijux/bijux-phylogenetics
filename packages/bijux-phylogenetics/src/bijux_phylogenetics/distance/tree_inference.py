@@ -15,10 +15,6 @@ from bijux_phylogenetics.phylo.topology.clades import (
     informative_unrooted_splits,
     robinson_foulds_metrics,
 )
-from bijux_phylogenetics.phylo.topology.neighbor_joining import (
-    build_neighbor_joining_tree,
-)
-from bijux_phylogenetics.phylo.topology.bionj import build_bionj_tree
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import (
     InvalidAlignmentError,
@@ -55,10 +51,7 @@ from .quality import (
 )
 from .saturation import diagnose_distance_saturation_from_genetic_distance_matrix
 from .shared import _require_supported_distance_tree_method
-from .complete_linkage import build_complete_linkage_tree
-from .single_linkage import build_single_linkage_tree
-from .upgma import build_upgma_tree
-from .wpgma import build_wpgma_tree
+from .shared import _build_distance_tree_from_lookup
 
 
 def _block_tree_inference_on_saturated_distances(
@@ -140,18 +133,11 @@ def _build_distance_tree_from_genetic_distance_matrix(
             code=getattr(error, "code", None),
             details=getattr(error, "details", None),
         ) from error
-    if method == "neighbor-joining":
-        tree = build_neighbor_joining_tree(report.identifiers, distance_lookup)
-    elif method == "bionj":
-        tree = build_bionj_tree(report.identifiers, distance_lookup)
-    elif method == "upgma":
-        tree, _ = build_upgma_tree(report.identifiers, distance_lookup)
-    elif method == "wpgma":
-        tree, _ = build_wpgma_tree(report.identifiers, distance_lookup)
-    elif method == "complete-linkage":
-        tree, _ = build_complete_linkage_tree(report.identifiers, distance_lookup)
-    else:
-        tree, _ = build_single_linkage_tree(report.identifiers, distance_lookup)
+    tree = _build_distance_tree_from_lookup(
+        report.identifiers,
+        distance_lookup,
+        method=method,
+    )
     return tree, DistanceTreeBuildReport(
         alignment_path=report.path,
         model=report.model,

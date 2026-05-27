@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import UnsupportedDistanceTreeMethodError
 
 from .models import (
@@ -139,6 +140,41 @@ def _require_supported_distance_tree_method(method: str) -> DistanceTreeMethodPo
             "reference_surface": policy.reference_surface,
         },
     )
+
+
+def _build_distance_tree_from_lookup(
+    identifiers: list[str],
+    distance_lookup: dict[tuple[str, str], float],
+    *,
+    method: str,
+) -> PhyloTree:
+    """Build one supported distance tree directly from resolved pairwise distances."""
+    from bijux_phylogenetics.phylo.topology.bionj import build_bionj_tree
+    from bijux_phylogenetics.phylo.topology.neighbor_joining import (
+        build_neighbor_joining_tree,
+    )
+
+    from .complete_linkage import build_complete_linkage_tree
+    from .single_linkage import build_single_linkage_tree
+    from .upgma import build_upgma_tree
+    from .wpgma import build_wpgma_tree
+
+    method_policy = _require_supported_distance_tree_method(method)
+    if method_policy.method == "neighbor-joining":
+        return build_neighbor_joining_tree(identifiers, distance_lookup)
+    if method_policy.method == "bionj":
+        return build_bionj_tree(identifiers, distance_lookup)
+    if method_policy.method == "upgma":
+        tree, _ = build_upgma_tree(identifiers, distance_lookup)
+        return tree
+    if method_policy.method == "wpgma":
+        tree, _ = build_wpgma_tree(identifiers, distance_lookup)
+        return tree
+    if method_policy.method == "complete-linkage":
+        tree, _ = build_complete_linkage_tree(identifiers, distance_lookup)
+        return tree
+    tree, _ = build_single_linkage_tree(identifiers, distance_lookup)
+    return tree
 
 
 def _allowed_models_for_alphabet(alphabet: str) -> set[str]:
