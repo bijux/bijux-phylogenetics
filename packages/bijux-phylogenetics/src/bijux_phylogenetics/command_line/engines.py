@@ -22,9 +22,12 @@ from bijux_phylogenetics.engines import (
 from bijux_phylogenetics.parsimony import (
     load_fitch_character_matrix,
     load_parsimony_character_matrix,
+    load_sankoff_cost_matrix,
     score_fitch,
+    score_sankoff,
     score_wagner,
     write_fitch_artifacts,
+    write_sankoff_artifacts,
     write_wagner_artifacts,
 )
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
@@ -132,6 +135,19 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the parsimony report as JSON."
     )
     _add_manifest_argument(phylo_parsimony_wagner)
+    phylo_parsimony_sankoff = phylo_parsimony_subparsers.add_parser(
+        "sankoff",
+        help="Score one discrete character matrix on one tree with a user-supplied Sankoff cost matrix.",
+    )
+    phylo_parsimony_sankoff.add_argument("tree_path", type=Path)
+    phylo_parsimony_sankoff.add_argument("matrix_path", type=Path)
+    phylo_parsimony_sankoff.add_argument("cost_matrix_path", type=Path)
+    phylo_parsimony_sankoff.add_argument("--taxon-column")
+    phylo_parsimony_sankoff.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_sankoff.add_argument(
+        "--json", action="store_true", help="Emit the parsimony report as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_sankoff)
 
 
 def run_phylo_command(args: Any) -> int:
@@ -171,6 +187,20 @@ def run_phylo_command(args: Any) -> int:
                 "character_count": report.character_count,
                 "total_cost": report.total_cost,
             }
+        elif args.phylo_parsimony_command == "sankoff":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            cost_matrix = load_sankoff_cost_matrix(args.cost_matrix_path)
+            report = score_sankoff(args.tree_path, matrix, cost_matrix)
+            artifact_paths = write_sankoff_artifacts(args.out_dir, report)
+            metrics = {
+                "algorithm": report.algorithm,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "total_cost": report.total_cost,
+            }
         else:
             raise EngineWorkflowError(
                 "unknown phylo parsimony command",
@@ -179,13 +209,31 @@ def run_phylo_command(args: Any) -> int:
         outputs = _finalize_outputs(
             args,
             command="phylo",
-            inputs=[args.tree_path, args.matrix_path],
+            inputs=[
+                args.tree_path,
+                args.matrix_path,
+                *(
+                    [args.cost_matrix_path]
+                    if hasattr(args, "cost_matrix_path")
+                    and args.phylo_parsimony_command == "sankoff"
+                    else []
+                ),
+            ],
             outputs=list(artifact_paths.values()),
         )
         _print_result(
             build_command_result(
                 command="phylo",
-                inputs=[args.tree_path, args.matrix_path],
+                inputs=[
+                    args.tree_path,
+                    args.matrix_path,
+                    *(
+                        [args.cost_matrix_path]
+                        if hasattr(args, "cost_matrix_path")
+                        and args.phylo_parsimony_command == "sankoff"
+                        else []
+                    ),
+                ],
                 outputs=outputs,
                 metrics=metrics,
                 data=report,
