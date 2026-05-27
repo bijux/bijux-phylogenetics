@@ -276,6 +276,12 @@ from .models import (
     SiteLogLikelihoodRow as SiteLogLikelihoodRow,
 )
 from .models import (
+    SubstitutionModelSelectionReport as SubstitutionModelSelectionReport,
+)
+from .models import (
+    SubstitutionModelSelectionRow as SubstitutionModelSelectionRow,
+)
+from .models import (
     SubstitutionParameterOptimizationRow as SubstitutionParameterOptimizationRow,
 )
 from .patterns import (
@@ -365,6 +371,15 @@ from .substitution_parameters import (
 from .substitution_parameters import (
     validate_nucleotide_substitution_optimization_model as validate_nucleotide_substitution_optimization_model,
 )
+from .substitution_model_selection import (
+    compare_nucleotide_substitution_models as compare_nucleotide_substitution_models,
+)
+from .substitution_model_selection import (
+    compare_nucleotide_substitution_models_from_alignment as compare_nucleotide_substitution_models_from_alignment,
+)
+from .substitution_model_selection import (
+    default_substitution_model_selection_candidates as default_substitution_model_selection_candidates,
+)
 
 __all__ = [
     "AlignmentSitePattern",
@@ -405,13 +420,18 @@ __all__ = [
     "ProteinEmpiricalMatrixTreeLikelihoodReport",
     "ProteinPoissonTreeLikelihoodReport",
     "SiteLogLikelihoodRow",
+    "SubstitutionModelSelectionReport",
+    "SubstitutionModelSelectionRow",
     "SubstitutionParameterOptimizationRow",
     "InvariantMixtureSiteLikelihood",
     "alignment_site_columns",
     "build_discrete_gamma_rate_categories",
+    "compare_nucleotide_substitution_models",
+    "compare_nucleotide_substitution_models_from_alignment",
     "compress_alignment_site_patterns",
     "compress_alignment_site_patterns_from_records",
     "compute_joint_state_assignment",
+    "default_substitution_model_selection_candidates",
     "evaluate_f81_tree_likelihood",
     "evaluate_f81_tree_likelihood_from_alignment",
     "evaluate_empirical_protein_tree_likelihood",
