@@ -1,0 +1,5 @@
+taxon	char01_ab_split	char02_ab_split	char03_ab_split	char04_ac_conflict	char05_ad_conflict
+A	0	0	0	0	0
+B	0	0	0	1	1
+C	1	1	1	0	1
+D	1	1	1	1	0
