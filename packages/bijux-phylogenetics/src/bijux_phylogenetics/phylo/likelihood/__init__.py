@@ -14,6 +14,12 @@ from .f81 import (
 from .f81 import (
     f81_transition_probability_matrix as f81_transition_probability_matrix,
 )
+from .empirical import (
+    evaluate_empirical_protein_tree_likelihood as evaluate_empirical_protein_tree_likelihood,
+)
+from .empirical import (
+    evaluate_empirical_protein_tree_likelihood_from_alignment as evaluate_empirical_protein_tree_likelihood_from_alignment,
+)
 from .gtr import (
     evaluate_gtr_tree_likelihood as evaluate_gtr_tree_likelihood,
 )
@@ -88,6 +94,9 @@ from .k80 import (
 )
 from .models import (
     ProteinPoissonTreeLikelihoodReport as ProteinPoissonTreeLikelihoodReport,
+)
+from .models import (
+    ProteinEmpiricalMatrixTreeLikelihoodReport as ProteinEmpiricalMatrixTreeLikelihoodReport,
 )
 from .poisson import (
     evaluate_protein_poisson_tree_likelihood as evaluate_protein_poisson_tree_likelihood,
@@ -179,12 +188,15 @@ __all__ = [
     "Jc69TreeLikelihoodReport",
     "K80KappaOptimizationReport",
     "K80TreeLikelihoodReport",
+    "ProteinEmpiricalMatrixTreeLikelihoodReport",
     "ProteinPoissonTreeLikelihoodReport",
     "alignment_site_columns",
     "compress_alignment_site_patterns",
     "compress_alignment_site_patterns_from_records",
     "evaluate_f81_tree_likelihood",
     "evaluate_f81_tree_likelihood_from_alignment",
+    "evaluate_empirical_protein_tree_likelihood",
+    "evaluate_empirical_protein_tree_likelihood_from_alignment",
     "evaluate_gtr_tree_likelihood",
     "evaluate_gtr_tree_likelihood_from_alignment",
     "evaluate_hky85_tree_likelihood",
