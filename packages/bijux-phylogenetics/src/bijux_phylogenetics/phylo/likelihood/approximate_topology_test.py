@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass
+import json
 import math
 from pathlib import Path
 import random
 
 import numpy
 
+from bijux_phylogenetics.io.newick import loads_newick, write_newick_tree_set
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.candidate_tree_site_likelihood_matrix import (
     evaluate_nucleotide_candidate_tree_site_likelihood_matrix,
@@ -326,3 +328,178 @@ class CandidateTreeSiteLikelihoodVector:
     tree_newick: str
     log_likelihood: float
     site_log_likelihoods: tuple[float, ...]
+
+
+def write_approximate_topology_test_summary_table(
+    path: Path,
+    report: ApproximateTopologyTestReport,
+) -> Path:
+    """Write one candidate-tree approximate topology test summary table."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "candidate_tree_id",
+        "candidate_tree_label",
+        "observed_log_likelihood",
+        "observed_delta_log_likelihood",
+        "observed_best_tree",
+        "resampling_win_count",
+        "resampling_frequency",
+        "p_like_statistic",
+        "resampling_mean_delta_log_likelihood",
+        "resampling_min_delta_log_likelihood",
+        "resampling_max_delta_log_likelihood",
+        "caution_label",
+        "tree_newick",
+    ]
+    rows = ["\t".join(columns)]
+    for row in report.summary_rows:
+        rows.append(
+            "\t".join(
+                [
+                    row.candidate_tree_id,
+                    row.candidate_tree_label,
+                    repr(row.observed_log_likelihood),
+                    repr(row.observed_delta_log_likelihood),
+                    str(row.observed_best_tree),
+                    str(row.resampling_win_count),
+                    repr(row.resampling_frequency),
+                    repr(row.p_like_statistic),
+                    repr(row.resampling_mean_delta_log_likelihood),
+                    repr(row.resampling_min_delta_log_likelihood),
+                    repr(row.resampling_max_delta_log_likelihood),
+                    row.caution_label,
+                    row.tree_newick,
+                ]
+            )
+        )
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    return path
+
+
+def write_approximate_topology_test_resampling_table(
+    path: Path,
+    report: ApproximateTopologyTestReport,
+) -> Path:
+    """Write one resampling-distribution table for an approximate topology test."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "replicate_index",
+        "candidate_tree_id",
+        "candidate_tree_label",
+        "resampled_log_likelihood",
+        "observed_best_tree_id",
+        "observed_best_tree_label",
+        "observed_best_resampled_log_likelihood",
+        "resampled_delta_log_likelihood",
+        "candidate_matches_or_beats_observed_best",
+    ]
+    rows = ["\t".join(columns)]
+    for row in report.resampling_rows:
+        rows.append(
+            "\t".join(
+                [
+                    str(row.replicate_index),
+                    row.candidate_tree_id,
+                    row.candidate_tree_label,
+                    repr(row.resampled_log_likelihood),
+                    row.observed_best_tree_id,
+                    row.observed_best_tree_label,
+                    repr(row.observed_best_resampled_log_likelihood),
+                    repr(row.resampled_delta_log_likelihood),
+                    str(row.candidate_matches_or_beats_observed_best),
+                ]
+            )
+        )
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    return path
+
+
+def write_approximate_topology_test_run_json(
+    path: Path,
+    report: ApproximateTopologyTestReport,
+) -> Path:
+    """Write one machine-readable approximate topology test payload."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "algorithm": report.algorithm,
+        "model_name": report.model_name,
+        "tree_set_path": report.tree_set_path,
+        "alignment_path": report.alignment_path,
+        "taxa": report.taxa,
+        "tree_count": report.tree_count,
+        "site_count": report.site_count,
+        "pattern_count": report.pattern_count,
+        "compression_used": report.compression_used,
+        "expansion_policy": report.expansion_policy,
+        "parameter_values": report.parameter_values,
+        "resampling_method": report.resampling_method,
+        "resampling_replicate_count": report.resampling_replicate_count,
+        "resampling_seed": report.resampling_seed,
+        "observed_best_tree_id": report.observed_best_tree_id,
+        "observed_best_tree_label": report.observed_best_tree_label,
+        "caution_label": report.caution_label,
+        "summary_rows": [
+            {
+                "candidate_tree_id": row.candidate_tree_id,
+                "candidate_tree_label": row.candidate_tree_label,
+                "tree_newick": row.tree_newick,
+                "observed_log_likelihood": row.observed_log_likelihood,
+                "observed_delta_log_likelihood": row.observed_delta_log_likelihood,
+                "observed_best_tree": row.observed_best_tree,
+                "resampling_win_count": row.resampling_win_count,
+                "resampling_frequency": row.resampling_frequency,
+                "p_like_statistic": row.p_like_statistic,
+                "resampling_mean_delta_log_likelihood": row.resampling_mean_delta_log_likelihood,
+                "resampling_min_delta_log_likelihood": row.resampling_min_delta_log_likelihood,
+                "resampling_max_delta_log_likelihood": row.resampling_max_delta_log_likelihood,
+                "caution_label": row.caution_label,
+            }
+            for row in report.summary_rows
+        ],
+        "resampling_rows": [
+            {
+                "replicate_index": row.replicate_index,
+                "candidate_tree_id": row.candidate_tree_id,
+                "candidate_tree_label": row.candidate_tree_label,
+                "resampled_log_likelihood": row.resampled_log_likelihood,
+                "observed_best_tree_id": row.observed_best_tree_id,
+                "observed_best_tree_label": row.observed_best_tree_label,
+                "observed_best_resampled_log_likelihood": row.observed_best_resampled_log_likelihood,
+                "resampled_delta_log_likelihood": row.resampled_delta_log_likelihood,
+                "candidate_matches_or_beats_observed_best": row.candidate_matches_or_beats_observed_best,
+            }
+            for row in report.resampling_rows
+        ],
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def write_approximate_topology_test_artifacts(
+    out_dir: Path,
+    report: ApproximateTopologyTestReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one approximate topology test."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    candidate_tree_path = write_newick_tree_set(
+        out_dir / "candidate_trees.nwk",
+        [loads_newick(row.tree_newick) for row in report.summary_rows],
+    )
+    summary_path = write_approximate_topology_test_summary_table(
+        out_dir / "topology_test_summary.tsv",
+        report,
+    )
+    resampling_path = write_approximate_topology_test_resampling_table(
+        out_dir / "resampling_distribution.tsv",
+        report,
+    )
+    run_json_path = write_approximate_topology_test_run_json(
+        out_dir / "run.json",
+        report,
+    )
+    return {
+        "candidate_tree_path": candidate_tree_path,
+        "summary_path": summary_path,
+        "resampling_path": resampling_path,
+        "run_json_path": run_json_path,
+    }
