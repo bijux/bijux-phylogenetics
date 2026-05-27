@@ -536,3 +536,51 @@ class ParsimonyBootstrapReport:
     reference_tree_newick: str
     replicate_rows: list[ParsimonyBootstrapReplicate]
     clade_support_rows: list[ParsimonyBootstrapCladeSupport]
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyJackknifeReplicate:
+    """One exact-search jackknife replicate and its retained characters."""
+
+    replicate_index: int
+    retained_character_count: int
+    retained_character_ids: list[str]
+    best_score: float
+    optimal_tree_count: int
+    tree_newick: str
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyJackknifeCladeSupport:
+    """One clade-identity jackknife support row on the reference tree."""
+
+    branch_id: str
+    node_name: str | None
+    descendant_taxa: list[str]
+    supporting_tree_count: int
+    clade_frequency: float
+    support_percent: float
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyJackknifeReport:
+    """Complete exact-search parsimony jackknife report over one character matrix."""
+
+    algorithm: str
+    method: str
+    matrix_path: Path | None
+    cost_matrix_path: Path | None
+    weights_path: Path | None
+    taxon_column: str
+    taxon_count: int
+    character_count: int
+    replicate_count: int
+    random_seed: int
+    retain_probability: float
+    candidate_tree_count: int
+    max_exact_taxa: int
+    reference_score: float
+    reference_optimal_tree_count: int
+    reference_tree_newick: str
+    replicate_rows: list[ParsimonyJackknifeReplicate]
+    clade_support_rows: list[ParsimonyJackknifeCladeSupport]
