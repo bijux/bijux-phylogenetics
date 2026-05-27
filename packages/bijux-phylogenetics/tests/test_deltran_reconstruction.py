@@ -63,6 +63,44 @@ def test_reconstruct_deltran_delays_ambiguous_changes_toward_terminal_branches()
     assert resolved_states[("char01_ambiguous", "D|E")] == "0"
     assert resolved_states[("char01_ambiguous", "C")] == "1"
     assert resolved_states[("char01_ambiguous", "E")] == "1"
+    ancestral_rows = {
+        (row.character_id, row.node_id): (
+            row.clade_id,
+            row.possible_states,
+            row.chosen_state,
+            row.method,
+            row.ambiguous,
+        )
+        for row in deltran_report.ancestral_state_rows
+    }
+    assert ancestral_rows[("char01_ambiguous", "A|B|C|D|E")] == (
+        "A|B|C|D|E",
+        ["0", "1"],
+        "0",
+        "deltran",
+        True,
+    )
+    assert ancestral_rows[("char01_ambiguous", "A|B")] == (
+        "A|B",
+        ["0"],
+        "0",
+        "deltran",
+        False,
+    )
+    assert ancestral_rows[("char01_ambiguous", "C|D|E")] == (
+        "C|D|E",
+        ["1"],
+        "0",
+        "deltran",
+        False,
+    )
+    assert ancestral_rows[("char01_ambiguous", "D|E")] == (
+        "D|E",
+        ["0", "1"],
+        "0",
+        "deltran",
+        True,
+    )
 
 
 def test_write_deltran_artifacts_materializes_governed_output_family(
@@ -78,6 +116,7 @@ def test_write_deltran_artifacts_materializes_governed_output_family(
     assert set(outputs) == {
         "steps_path",
         "node_states_path",
+        "ancestral_states_path",
         "branch_changes_path",
         "run_json_path",
     }
@@ -87,6 +126,9 @@ def test_write_deltran_artifacts_materializes_governed_output_family(
     assert outputs["node_states_path"].read_text(encoding="utf-8").startswith(
         "character_id\tnode\tnode_name\tdescendant_taxa\tresolved_state\tis_tip\tobserved_state\n"
     )
+    assert outputs["ancestral_states_path"].read_text(encoding="utf-8").startswith(
+        "node_id\tclade_id\tcharacter_id\tpossible_states\tchosen_state\tmethod\tambiguous\n"
+    )
     assert outputs["branch_changes_path"].read_text(encoding="utf-8").startswith(
         "character_id\tparent_node\tparent_state\tnode\tnode_name\tdescendant_taxa\tchange_from\tchange_to\n"
     )
@@ -94,3 +136,41 @@ def test_write_deltran_artifacts_materializes_governed_output_family(
     assert payload["algorithm"] == "deltran"
     assert payload["total_steps"] == 2
     assert payload["total_weighted_score"] == 2.0
+    assert payload["ancestral_state_rows"] == [
+        {
+            "ambiguous": True,
+            "character_id": "char01_ambiguous",
+            "chosen_state": "0",
+            "clade_id": "A|B|C|D|E",
+            "method": "deltran",
+            "node_id": "A|B|C|D|E",
+            "possible_states": ["0", "1"],
+        },
+        {
+            "ambiguous": False,
+            "character_id": "char01_ambiguous",
+            "chosen_state": "0",
+            "clade_id": "A|B",
+            "method": "deltran",
+            "node_id": "A|B",
+            "possible_states": ["0"],
+        },
+        {
+            "ambiguous": False,
+            "character_id": "char01_ambiguous",
+            "chosen_state": "0",
+            "clade_id": "C|D|E",
+            "method": "deltran",
+            "node_id": "C|D|E",
+            "possible_states": ["1"],
+        },
+        {
+            "ambiguous": True,
+            "character_id": "char01_ambiguous",
+            "chosen_state": "0",
+            "clade_id": "D|E",
+            "method": "deltran",
+            "node_id": "D|E",
+            "possible_states": ["0", "1"],
+        },
+    ]
