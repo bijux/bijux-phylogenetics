@@ -3,12 +3,13 @@ from __future__ import annotations
 import numpy
 
 from bijux_phylogenetics.ancestral.common import node_signature
+from bijux_phylogenetics.phylo.likelihood.posteriors import (
+    compute_marginal_state_posteriors,
+)
 from bijux_phylogenetics.phylo.likelihood.pruning import (
-    postorder_conditional_likelihoods,
     transition_probability_matrix,
 )
 
-from ..policy import normalize_array
 from .likelihood_math import branch_length
 
 
@@ -30,7 +31,7 @@ def estimate_marginal_state_probabilities(
             transition_cache[cached_branch_length] = cached
         return cached
 
-    pruning_pass = postorder_conditional_likelihoods(
+    posterior_pass = compute_marginal_state_posteriors(
         tree,
         state_count=len(state_order),
         leaf_likelihood=lambda node: _leaf_likelihood_vector(
@@ -40,45 +41,18 @@ def estimate_marginal_state_probabilities(
             node_name=node.name,
         ),
         transition_matrix_for_child=lambda child: transition(branch_length(child)),
+        root_prior=root_prior,
     )
-    posterior_by_node = {
-        node_signature(node): pruning_pass.conditional_for_node(node)
-        for node in tree.iter_nodes(order="preorder")
-    }
-    root_signature = node_signature(tree.root)
-    posterior_by_node[root_signature] = normalize_array(
-        root_prior * posterior_by_node[root_signature]
-    )
-
-    def preorder(node) -> None:
-        parent_signature = node_signature(node)
-        if node.is_leaf():
-            return
-        parent_probabilities = posterior_by_node[parent_signature]
-        for child in node.children:
-            if child.is_leaf():
-                continue
-            child_signature = node_signature(child)
-            branch_transition = transition(branch_length(child))
-            child_probabilities = posterior_by_node[child_signature]
-            denominator = child_probabilities @ branch_transition
-            updated = (parent_probabilities / denominator) @ branch_transition
-            posterior_by_node[child_signature] = normalize_array(
-                updated * child_probabilities
-            )
-            preorder(child)
-
-    preorder(tree.root)
     return {
-        node: {
+        node_signature(current_node): {
             state: float(format(probability, ".15g"))
             for state, probability in zip(
                 state_order,
-                normalize_array(probabilities),
+                posterior_pass.posterior_for_node(current_node),
                 strict=True,
             )
         }
-        for node, probabilities in posterior_by_node.items()
+        for current_node in tree.iter_nodes(order="preorder")
     }
 
 
