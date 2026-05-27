@@ -301,6 +301,7 @@ bijux-phylogenetics alignment build-tree alignment.fasta --method bionj --out bi
 bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out upgma-tree.nwk
 bijux-phylogenetics alignment build-tree alignment.fasta --method complete-linkage --out complete-linkage-tree.nwk
 bijux-phylogenetics distance minimum-evolution matrix.tsv fixed-topology.nwk --out fitted-tree.nwk
+bijux-phylogenetics distance fitch-margoliash matrix.tsv fixed-topology.nwk --out fitted-tree.nwk --json
 bijux-phylogenetics distance bme-nni-search matrix.tsv --start-method bionj --out-dir artifacts/distance-bme-nni --json
 bijux-phylogenetics alignment compare-distance-to-tree alignment.fasta inferred-tree.nwk --method neighbor-joining --json
 bijux-phylogenetics alignment bootstrap-tree alignment.fasta --method neighbor-joining --replicates 200 --support-out artifacts/distance-support.tsv --tree-set-out artifacts/distance-bootstrap.trees --json
@@ -2107,6 +2108,10 @@ explicit method-specific update rules instead of carrying separate merge loops.
 Fixed topologies can also be re-fitted against imported distance matrices and
 scored by total fitted branch length through the owned minimum-evolution
 surface, which ignores any pre-existing branch lengths on the input tree.
+That fixed-topology lane now also includes owned classical
+Fitch-Margoliash weighted least-squares fitting, which fits branch lengths by
+distance-weighted residual minimization instead of reusing the unweighted OLS
+solution when weighted fitting is requested.
 Imported distance matrices can also start from one owned NJ or BIONJ tree and
 be hill-climbed by rooted NNI under the owned balanced minimum-evolution
 objective, with governed search traces that record each accepted objective
