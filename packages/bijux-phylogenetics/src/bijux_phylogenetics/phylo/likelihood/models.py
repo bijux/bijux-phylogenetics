@@ -301,6 +301,71 @@ class MarginalAncestralSequenceProbabilityReport:
 
 
 @dataclass(slots=True)
+class MarginalAncestralSiteSummaryRow:
+    """One internal-node posterior summary for one site across all DNA states."""
+
+    node_id: str
+    node_name: str | None
+    descendant_taxa: list[str]
+    pattern_id: str
+    site_position: int
+    most_likely_state: str
+    max_posterior_probability: float
+    posterior_probability_a: float
+    posterior_probability_c: float
+    posterior_probability_g: float
+    posterior_probability_t: float
+
+
+@dataclass(slots=True)
+class MarginalAncestralSequenceExportRecord:
+    """One FASTA-ready ancestral sequence for one internal node."""
+
+    node_id: str
+    node_name: str | None
+    descendant_taxa: list[str]
+    sequence: str
+
+
+@dataclass(slots=True)
+class MarginalAncestralSequenceUncertaintyRow:
+    """One node-site export summary under one explicit low-confidence policy."""
+
+    node_id: str
+    node_name: str | None
+    descendant_taxa: list[str]
+    pattern_id: str
+    site_position: int
+    exported_state: str
+    most_likely_state: str
+    max_posterior_probability: float
+    low_confidence: bool
+    posterior_probability_a: float
+    posterior_probability_c: float
+    posterior_probability_g: float
+    posterior_probability_t: float
+
+
+@dataclass(slots=True)
+class MarginalAncestralSequenceFastaExportReport:
+    """FASTA-oriented marginal ancestral sequence export with uncertainty rows."""
+
+    model_name: str
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    internal_node_count: int
+    compression_used: bool
+    expansion_policy: str
+    tree_newick: str
+    parameter_values: dict[str, float]
+    posterior_probability_threshold: float
+    low_confidence_state_symbol: str
+    sequence_records: list[MarginalAncestralSequenceExportRecord]
+    uncertainty_rows: list[MarginalAncestralSequenceUncertaintyRow]
+
+
+@dataclass(slots=True)
 class ProteinPoissonTreeLikelihoodReport:
     """Native 20-state protein Poisson likelihood report for one fixed topology."""
 
