@@ -250,6 +250,38 @@ class DistanceUltrametricityDiagnosticsReport:
 
 
 @dataclass(frozen=True, slots=True)
+class DistanceFourPointViolation:
+    """One quartet whose pairwise distances violate the four-point condition."""
+
+    first_identifier: str
+    second_identifier: str
+    third_identifier: str
+    fourth_identifier: str
+    split_ab_cd_sum: float
+    split_ac_bd_sum: float
+    split_ad_bc_sum: float
+    best_split: str
+    violation_magnitude: float
+
+
+@dataclass(slots=True)
+class DistanceAdditivityDiagnosticsReport:
+    """Four-point additivity diagnostics for one pairwise distance matrix."""
+
+    source_path: Path | None
+    source_kind: str
+    taxon_count: int
+    defined_pair_count: int
+    tested_quartet_count: int
+    skipped_quartet_count: int
+    tolerance: float
+    additive: bool
+    max_violation: float
+    violating_quartets: list[DistanceFourPointViolation]
+    warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
 class BalancedMinimumEvolutionNniTraceRow:
     """One deterministic event row in a rooted BME NNI search trace."""
 

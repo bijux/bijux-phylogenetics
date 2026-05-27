@@ -8,10 +8,12 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 from .models import (
     AmbiguityPolicy as AmbiguityPolicy,
+    DistanceAdditivityDiagnosticsReport as DistanceAdditivityDiagnosticsReport,
     BalancedMinimumEvolutionNniSearchReport as BalancedMinimumEvolutionNniSearchReport,
     BalancedMinimumEvolutionNniTraceRow as BalancedMinimumEvolutionNniTraceRow,
     DistanceBootstrapReport as DistanceBootstrapReport,
     DistanceBootstrapSupportSummary as DistanceBootstrapSupportSummary,
+    DistanceFourPointViolation as DistanceFourPointViolation,
     DistanceGapPolicySensitivityReport as DistanceGapPolicySensitivityReport,
     DistanceMatrixQualityReport as DistanceMatrixQualityReport,
     DistanceMethodAssessment as DistanceMethodAssessment,
@@ -317,6 +319,56 @@ def diagnose_imported_distance_matrix_ultrametricity(
     )
 
     return diagnose_impl(path, tolerance=tolerance)
+
+
+def diagnose_distance_additivity(
+    path: Path,
+    *,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+    tolerance: float = 1e-6,
+) -> DistanceAdditivityDiagnosticsReport:
+    from .additivity import diagnose_distance_additivity as diagnose_impl
+
+    return diagnose_impl(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+        tolerance=tolerance,
+    )
+
+
+def diagnose_distance_additivity_from_genetic_distance_matrix(
+    report: GeneticDistanceMatrix,
+    *,
+    tolerance: float = 1e-6,
+) -> DistanceAdditivityDiagnosticsReport:
+    from .additivity import (
+        diagnose_distance_additivity_from_genetic_distance_matrix as diagnose_impl,
+    )
+
+    return diagnose_impl(report, tolerance=tolerance)
+
+
+def diagnose_imported_distance_matrix_additivity(
+    path: Path,
+    *,
+    tolerance: float = 1e-6,
+) -> DistanceAdditivityDiagnosticsReport:
+    from .additivity import diagnose_imported_distance_matrix_additivity as diagnose_impl
+
+    return diagnose_impl(path, tolerance=tolerance)
+
+
+def write_distance_additivity_artifacts(
+    out_dir: Path,
+    report: DistanceAdditivityDiagnosticsReport,
+) -> dict[str, Path]:
+    from .additivity import write_distance_additivity_artifacts as write_impl
+
+    return write_impl(out_dir, report)
 
 
 def apply_missing_distance_policy(
