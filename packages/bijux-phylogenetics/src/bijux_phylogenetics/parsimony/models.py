@@ -99,3 +99,64 @@ class WagnerScoreReport:
     total_cost: int
     step_rows: list[WagnerCharacterScore]
     node_cost_rows: list[WagnerNodeCost]
+
+
+@dataclass(frozen=True, slots=True)
+class SankoffCostMatrix:
+    """Validated state-to-state Sankoff transition-cost matrix."""
+
+    matrix_path: Path | None
+    states: list[str]
+    costs: dict[str, dict[str, float]]
+
+
+@dataclass(frozen=True, slots=True)
+class SankoffCharacterScore:
+    """Per-character Sankoff minimum-cost row."""
+
+    character_id: str
+    minimum_cost: float
+    observed_states: list[str]
+    matrix_states: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class SankoffNodeCost:
+    """Per-node Sankoff cost-vector row for one candidate state."""
+
+    character_id: str
+    node: str
+    node_name: str | None
+    descendant_taxa: list[str]
+    state: str
+    cost: float
+    is_optimal_state: bool
+
+
+@dataclass(frozen=True, slots=True)
+class SankoffNodeSelection:
+    """Per-node Sankoff optimal-state selection row."""
+
+    character_id: str
+    node: str
+    node_name: str | None
+    descendant_taxa: list[str]
+    optimal_states: list[str]
+    tie_states: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class SankoffScoreReport:
+    """Complete Sankoff scoring report over one tree, matrix, and cost matrix."""
+
+    algorithm: str
+    tree_path: Path | None
+    matrix_path: Path | None
+    cost_matrix_path: Path | None
+    taxon_column: str
+    taxon_count: int
+    character_count: int
+    total_cost: float
+    step_rows: list[SankoffCharacterScore]
+    node_cost_rows: list[SankoffNodeCost]
+    node_selection_rows: list[SankoffNodeSelection]
