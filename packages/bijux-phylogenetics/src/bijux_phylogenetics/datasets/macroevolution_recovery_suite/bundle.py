@@ -3,6 +3,16 @@ from __future__ import annotations
 from pathlib import Path
 import shutil
 
+from bijux_phylogenetics.datasets.continuous_mode_recovery import (
+    write_continuous_mode_recovery_panel_workflow_bundle,
+)
+from bijux_phylogenetics.datasets.discrete_mode_recovery import (
+    write_discrete_mode_recovery_panel_workflow_bundle,
+)
+from bijux_phylogenetics.datasets.known_answer_reference import (
+    write_known_answer_reference_workflow_bundle,
+)
+
 from .models import (
     MacroevolutionRecoverySuiteComponentSummary,
     MacroevolutionRecoverySuiteWorkflowBundle,
@@ -21,106 +31,132 @@ def write_macroevolution_recovery_suite_workflow_bundle(
     component_root = output_root / "components"
     component_root.mkdir(parents=True, exist_ok=True)
 
-    continuous_component_root = _copy_component_outputs(
+    continuous_component_bundle = write_continuous_mode_recovery_panel_workflow_bundle(
         component_root / "continuous-mode-recovery-panel",
-        report.continuous_component,
+        report.continuous_panel_workflow,
     )
-    discrete_component_root = _copy_component_outputs(
+    discrete_component_bundle = write_discrete_mode_recovery_panel_workflow_bundle(
         component_root / "discrete-mode-recovery-panel",
-        report.discrete_component,
+        report.discrete_panel_workflow,
     )
-    known_answer_component_root = _copy_component_outputs(
+    known_answer_component_bundle = write_known_answer_reference_workflow_bundle(
         component_root / "known-answer-reference-panel",
-        report.known_answer_component,
+        report.known_answer_panel_workflow,
     )
 
     selection_review_case_count = (
-        report.continuous_component.selection_review_case_count
-        + report.discrete_component.selection_review_case_count
+        continuous_component_bundle.selection_review_case_count
+        + discrete_component_bundle.selection_review_case_count
     )
     selection_match_count = (
-        report.continuous_component.selection_match_count
-        + report.discrete_component.selection_match_count
+        continuous_component_bundle.selection_match_count
+        + discrete_component_bundle.selection_match_count
     )
     geiger_selection_match_count = (
-        report.continuous_component.geiger_selection_match_count
-        + report.discrete_component.geiger_selection_match_count
+        continuous_component_bundle.geiger_selection_match_count
+        + discrete_component_bundle.geiger_selection_match_count
     )
     governed_value_pass_count = (
-        report.continuous_component.governed_value_pass_count
-        + report.discrete_component.governed_value_pass_count
+        continuous_component_bundle.parameter_pass_count
+        + discrete_component_bundle.rate_pass_count
     )
     governed_value_row_count = (
-        report.continuous_component.governed_value_row_count
-        + report.discrete_component.governed_value_row_count
+        continuous_component_bundle.parameter_row_count
+        + discrete_component_bundle.governed_rate_row_count
     )
     governed_comparison_row_count = (
-        report.continuous_component.governed_comparison_row_count
-        + report.discrete_component.governed_comparison_row_count
+        continuous_component_bundle.parameter_comparison_row_count
+        + discrete_component_bundle.governed_rate_comparison_row_count
     )
     expected_warning_case_count = (
-        report.continuous_component.expected_warning_case_count
-        + report.discrete_component.expected_warning_case_count
+        continuous_component_bundle.expected_warning_case_count
+        + discrete_component_bundle.expected_warning_case_count
     )
     expected_warning_present_count = (
-        report.continuous_component.expected_warning_present_count
-        + report.discrete_component.expected_warning_present_count
+        continuous_component_bundle.expected_warning_present_count
+        + discrete_component_bundle.expected_warning_present_count
     )
-    truth_threshold_pass_count = report.known_answer_component.truth_threshold_pass_count
-    truth_threshold_row_count = report.known_answer_component.truth_threshold_row_count
+    truth_threshold_pass_count = known_answer_component_bundle.threshold_pass_count
+    truth_threshold_row_count = known_answer_component_bundle.threshold_row_count
     total_recovery_case_count = report.dataset.total_recovery_case_count
     geiger_recovery_case_count = report.dataset.geiger_recovery_case_count
+    continuous_generating_models = _collect_continuous_generating_models(report)
+    discrete_generating_models = _collect_discrete_generating_models(report)
+    known_answer_parameter_names = _collect_known_answer_parameter_names(report)
+    continuous_transform_case_ids = _collect_transformed_continuous_case_ids(report)
 
     requirement_rows = [
         (
             "simulate-bm-traits",
             "passed",
-            str(report.continuous_component.case_count >= 1).lower(),
+            str("brownian" in continuous_generating_models).lower(),
             "continuous-mode-recovery-panel",
             (
-                f"{report.continuous_component.case_count} continuous recovery cases "
-                "cover the Brownian trait surface"
+                "Continuous panel includes Brownian generating model coverage: "
+                f"`{_format_joined_items(continuous_generating_models)}`"
             ),
         ),
         (
             "simulate-ou-traits",
             "passed",
-            str(report.continuous_component.case_count >= 1).lower(),
+            str("ornstein-uhlenbeck" in continuous_generating_models).lower(),
             "continuous-mode-recovery-panel",
-            "OU recovery rows are present in the governed continuous panel",
+            (
+                "Continuous panel includes OU generating model coverage: "
+                f"`{_format_joined_items(continuous_generating_models)}`"
+            ),
         ),
         (
             "simulate-eb-traits",
             "passed",
-            str(report.continuous_component.case_count >= 1).lower(),
+            str("early-burst" in continuous_generating_models).lower(),
             "continuous-mode-recovery-panel",
-            "early-burst recovery rows are present in the governed continuous panel",
+            (
+                "Continuous panel includes early-burst generating model coverage: "
+                f"`{_format_joined_items(continuous_generating_models)}`"
+            ),
         ),
         (
             "simulate-transformed-model-fixtures",
             "passed",
-            str(report.continuous_component.case_count >= 7).lower(),
+            str(
+                {
+                    "pagel-delta",
+                    "pagel-kappa",
+                    "pagel-lambda",
+                }.issubset(continuous_generating_models)
+            ).lower(),
             "continuous-mode-recovery-panel",
             (
-                "continuous panel includes lambda, kappa, and delta transformed "
-                "review cases"
+                "Continuous panel includes transformed review cases: "
+                f"`{_format_joined_items(continuous_transform_case_ids)}`"
             ),
         ),
         (
             "simulate-er-sym-ard-discrete-traits",
             "passed",
-            str(report.discrete_component.case_count >= 4).lower(),
+            str(
+                {
+                    "all-rates-different",
+                    "equal-rates",
+                    "symmetric",
+                }.issubset(discrete_generating_models)
+            ).lower(),
             "discrete-mode-recovery-panel",
-            "discrete panel includes governed ER, SYM, and ARD recovery cases",
+            (
+                "Discrete panel includes ER, SYM, and ARD generating model coverage: "
+                f"`{_format_joined_items(discrete_generating_models)}`"
+            ),
         ),
         (
             "store-true-parameters",
             "passed",
-            str(truth_threshold_row_count > 0).lower(),
+            str(bool(known_answer_parameter_names)).lower(),
             "known-answer-reference-panel",
             (
-                f"{truth_threshold_row_count} explicit threshold checks over stored "
-                "truth artifacts"
+                f"{len(known_answer_parameter_names)} stored parameter truth rows from "
+                f"`{report.dataset.known_answer_panel.true_parameters_path.name}`: "
+                f"`{_format_joined_items(known_answer_parameter_names)}`"
             ),
         ),
         (
@@ -140,7 +176,8 @@ def write_macroevolution_recovery_suite_workflow_bundle(
             "suite",
             (
                 f"{governed_comparison_row_count} paired Bijux-versus-geiger "
-                "governed comparisons"
+                "governed comparisons plus "
+                f"{geiger_selection_match_count} geiger selection matches"
             ),
         ),
         (
@@ -278,9 +315,9 @@ def write_macroevolution_recovery_suite_workflow_bundle(
     return MacroevolutionRecoverySuiteWorkflowBundle(
         output_root=output_root,
         component_root=component_root,
-        continuous_component_root=continuous_component_root,
-        discrete_component_root=discrete_component_root,
-        known_answer_component_root=known_answer_component_root,
+        continuous_component_root=continuous_component_bundle.output_root,
+        discrete_component_root=discrete_component_bundle.output_root,
+        known_answer_component_root=known_answer_component_bundle.output_root,
         component_count=report.dataset.component_count,
         geiger_component_count=report.dataset.geiger_component_count,
         total_recovery_case_count=total_recovery_case_count,
@@ -305,14 +342,6 @@ def write_macroevolution_recovery_suite_workflow_bundle(
         requirement_summary_path=requirement_summary_path,
         sim_char_summary_path=sim_char_summary_path,
     )
-
-
-def _copy_component_outputs(
-    destination: Path,
-    component: MacroevolutionRecoverySuiteComponentSummary,
-) -> Path:
-    shutil.copytree(component.expected_output_root, destination)
-    return destination
 
 
 def _component_summary_row(
@@ -348,3 +377,47 @@ def _write_table(
     lines = ["\t".join(header), *("\t".join(row) for row in rows)]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
+
+
+def _collect_continuous_generating_models(
+    report: MacroevolutionRecoverySuiteWorkflowReport,
+) -> set[str]:
+    return {
+        case.scenario.generating_model
+        for case in report.continuous_panel_workflow.recovery_report.case_reports
+    }
+
+
+def _collect_discrete_generating_models(
+    report: MacroevolutionRecoverySuiteWorkflowReport,
+) -> set[str]:
+    return {
+        case.scenario.generating_model
+        for case in report.discrete_panel_workflow.recovery_report.case_reports
+    }
+
+
+def _collect_known_answer_parameter_names(
+    report: MacroevolutionRecoverySuiteWorkflowReport,
+) -> list[str]:
+    return sorted(
+        {
+            row.parameter
+            for row in report.known_answer_panel_workflow.parameter_recovery_rows
+        }
+    )
+
+
+def _collect_transformed_continuous_case_ids(
+    report: MacroevolutionRecoverySuiteWorkflowReport,
+) -> list[str]:
+    transformed_prefixes = ("pagel-delta", "pagel-kappa", "pagel-lambda")
+    return sorted(
+        case.scenario.case_id
+        for case in report.continuous_panel_workflow.recovery_report.case_reports
+        if case.scenario.generating_model.startswith(transformed_prefixes)
+    )
+
+
+def _format_joined_items(items: list[str] | set[str]) -> str:
+    return ", ".join(sorted(items))
