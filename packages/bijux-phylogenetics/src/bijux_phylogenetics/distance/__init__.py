@@ -30,6 +30,8 @@ from .models import (
     DistanceTreeMethodPolicy as DistanceTreeMethodPolicy,
     DistanceTreeReferenceComparisonReport as DistanceTreeReferenceComparisonReport,
     DistanceTreeReferenceObservation as DistanceTreeReferenceObservation,
+    DistanceTaxonInfluenceReport as DistanceTaxonInfluenceReport,
+    DistanceTaxonInfluenceRow as DistanceTaxonInfluenceRow,
     DistanceTreeTopologyComparison as DistanceTreeTopologyComparison,
     DistanceUltrametricityDiagnosticsReport as DistanceUltrametricityDiagnosticsReport,
     DistanceUltrametricityViolation as DistanceUltrametricityViolation,
@@ -527,6 +529,36 @@ def write_patristic_residual_artifacts(
 ) -> dict[str, Path]:
     from .patristic_residuals import (
         write_patristic_residual_artifacts as write_impl,
+    )
+
+    return write_impl(out_dir, report)
+
+
+def analyze_distance_taxon_influence_from_imported_distance_matrix(
+    matrix_path: Path,
+    reference_tree_path: Path,
+    *,
+    method: str,
+    missing_distance_policy: MissingDistancePolicy = "reject",
+) -> DistanceTaxonInfluenceReport:
+    from .taxon_influence import (
+        analyze_distance_taxon_influence_from_imported_distance_matrix as analyze_impl,
+    )
+
+    return analyze_impl(
+        matrix_path,
+        reference_tree_path,
+        method=method,
+        missing_distance_policy=missing_distance_policy,
+    )
+
+
+def write_distance_taxon_influence_artifacts(
+    out_dir: Path,
+    report: DistanceTaxonInfluenceReport,
+) -> dict[str, Path]:
+    from .taxon_influence import (
+        write_distance_taxon_influence_artifacts as write_impl,
     )
 
     return write_impl(out_dir, report)

@@ -218,6 +218,43 @@ class PatristicResidualDiagnosticsReport:
 
 
 @dataclass(frozen=True, slots=True)
+class DistanceTaxonInfluenceRow:
+    """One leave-one-taxon-out distance-tree influence observation."""
+
+    taxon: str
+    retained_taxa: list[str]
+    raw_missing_pair_count: int
+    baseline_residual_sum_squares: float
+    leave_one_out_residual_sum_squares: float
+    residual_sum_squares_improvement: float
+    baseline_rooted_robinson_foulds_distance: int
+    leave_one_out_rooted_robinson_foulds_distance: int
+    rooted_robinson_foulds_improvement: int
+    baseline_rooted_normalized_robinson_foulds: float
+    leave_one_out_rooted_normalized_robinson_foulds: float
+    rooted_normalized_robinson_foulds_improvement: float
+    topology_improved: bool
+    residual_improved: bool
+    influence_rank: int
+
+
+@dataclass(slots=True)
+class DistanceTaxonInfluenceReport:
+    """Rank leave-one-out taxon effects on one distance-tree fit and reference match."""
+
+    source_path: Path
+    source_kind: str
+    reference_tree_path: Path
+    method: str
+    missing_distance_policy: MissingDistancePolicy
+    taxa: list[str]
+    baseline_residual_sum_squares: float
+    baseline_rooted_robinson_foulds_distance: int
+    baseline_rooted_normalized_robinson_foulds: float
+    rows: list[DistanceTaxonInfluenceRow]
+
+
+@dataclass(frozen=True, slots=True)
 class DistanceUltrametricityViolation:
     """One taxon triple whose pairwise distances violate the three-point condition."""
 
