@@ -260,6 +260,12 @@ from .models import (
 from .models import (
     NucleotideSubstitutionParameterOptimizationReport as NucleotideSubstitutionParameterOptimizationReport,
 )
+from .models import (
+    NucleotideLikelihoodNniSearchReport as NucleotideLikelihoodNniSearchReport,
+)
+from .models import (
+    NucleotideLikelihoodNniTraceRow as NucleotideLikelihoodNniTraceRow,
+)
 from .nested_likelihood_ratio import (
     evaluate_nucleotide_nested_likelihood_ratio_test as evaluate_nucleotide_nested_likelihood_ratio_test,
 )
@@ -380,6 +386,21 @@ from .substitution_model_selection import (
 from .substitution_model_selection import (
     default_substitution_model_selection_candidates as default_substitution_model_selection_candidates,
 )
+from .nni_search import (
+    search_nucleotide_likelihood_nni as search_nucleotide_likelihood_nni,
+)
+from .nni_search import (
+    search_nucleotide_likelihood_nni_from_alignment as search_nucleotide_likelihood_nni_from_alignment,
+)
+from .nni_search import (
+    write_nucleotide_likelihood_nni_artifacts as write_nucleotide_likelihood_nni_artifacts,
+)
+from .nni_search import (
+    write_nucleotide_likelihood_nni_run_json as write_nucleotide_likelihood_nni_run_json,
+)
+from .nni_search import (
+    write_nucleotide_likelihood_nni_trace_table as write_nucleotide_likelihood_nni_trace_table,
+)
 
 __all__ = [
     "AlignmentSitePattern",
@@ -412,6 +433,8 @@ __all__ = [
     "MarginalAncestralStateProbabilityRow",
     "NestedLikelihoodRatioModelFit",
     "NestedLikelihoodRatioTestReport",
+    "NucleotideLikelihoodNniSearchReport",
+    "NucleotideLikelihoodNniTraceRow",
     "NucleotideSubstitutionParameterOptimizationReport",
     "ProteinEmpiricalDiscreteGammaTreeLikelihoodReport",
     "ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport",
@@ -489,6 +512,8 @@ __all__ = [
     "postorder_conditional_likelihoods",
     "protein_poisson_rate_matrix",
     "protein_poisson_transition_probability_matrix",
+    "search_nucleotide_likelihood_nni",
+    "search_nucleotide_likelihood_nni_from_alignment",
     "evaluate_nucleotide_site_log_likelihoods",
     "evaluate_nucleotide_site_log_likelihoods_from_alignment",
     "reconstruct_nucleotide_marginal_ancestral_sequences",
@@ -505,5 +530,8 @@ __all__ = [
     "validate_nucleotide_substitution_optimization_model",
     "write_marginal_ancestral_sequence_fasta",
     "write_marginal_ancestral_sequence_uncertainty_table",
+    "write_nucleotide_likelihood_nni_artifacts",
+    "write_nucleotide_likelihood_nni_run_json",
+    "write_nucleotide_likelihood_nni_trace_table",
     "write_site_log_likelihood_table",
 ]
