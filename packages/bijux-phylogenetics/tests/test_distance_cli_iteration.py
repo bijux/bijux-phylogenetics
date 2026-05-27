@@ -122,6 +122,30 @@ def test_cli_distance_build_tree_supports_complete_linkage(
     assert payload["metrics"]["method"] == "complete-linkage"
 
 
+def test_cli_distance_minimum_evolution_writes_fitted_tree(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "minimum-evolution-tree.nwk"
+    exit_code = main(
+        [
+            "distance",
+            "minimum-evolution",
+            str(fixture("example_distance_matrix_minimum_evolution_five_taxon.tsv")),
+            str(fixture("example_tree_minimum_evolution_five_taxon.nwk")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((A:1,B:2):3,C:4,(D:5,E:6):7);\n"
+    )
+    assert payload["metrics"]["criterion"] == "minimum-evolution"
+    assert payload["metrics"]["minimum_evolution_score"] == 28.0
+
+
 def test_cli_alignment_bootstrap_tree_writes_outputs(tmp_path: Path, capsys) -> None:
     support_path = tmp_path / "support.tsv"
     tree_set_path = tmp_path / "bootstrap.trees"
