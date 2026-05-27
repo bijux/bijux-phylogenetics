@@ -275,6 +275,15 @@ from .site_log_likelihoods import (
 from .site_log_likelihoods import (
     validate_nucleotide_site_log_likelihood_model as validate_nucleotide_site_log_likelihood_model,
 )
+from .marginal_ancestral_probabilities import (
+    evaluate_nucleotide_marginal_ancestral_probabilities as evaluate_nucleotide_marginal_ancestral_probabilities,
+)
+from .marginal_ancestral_probabilities import (
+    evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment as evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment,
+)
+from .marginal_ancestral_probabilities import (
+    validate_nucleotide_marginal_ancestral_probability_model as validate_nucleotide_marginal_ancestral_probability_model,
+)
 from .substitution_parameters import (
     optimize_nucleotide_substitution_parameters as optimize_nucleotide_substitution_parameters,
 )
@@ -334,6 +343,8 @@ __all__ = [
     "evaluate_hky85_tree_likelihood_from_alignment",
     "evaluate_k80_tree_likelihood",
     "evaluate_k80_tree_likelihood_from_alignment",
+    "evaluate_nucleotide_marginal_ancestral_probabilities",
+    "evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment",
     "evaluate_protein_poisson_tree_likelihood",
     "evaluate_protein_poisson_tree_likelihood_from_alignment",
     "evaluate_jc69_tree_likelihood",
@@ -373,6 +384,7 @@ __all__ = [
     "sum_alignment_site_log_likelihoods",
     "sum_compressed_site_pattern_log_likelihoods",
     "transition_probability_matrix",
+    "validate_nucleotide_marginal_ancestral_probability_model",
     "validate_nucleotide_site_log_likelihood_model",
     "validate_nucleotide_substitution_optimization_model",
     "write_site_log_likelihood_table",
