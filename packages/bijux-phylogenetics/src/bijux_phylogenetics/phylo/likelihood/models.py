@@ -217,3 +217,20 @@ class ProteinPoissonTreeLikelihoodReport:
     gap_policy: str
     missing_policy: str
     log_likelihood: float
+
+
+@dataclass(slots=True)
+class ProteinEmpiricalMatrixTreeLikelihoodReport:
+    """Native empirical 20-state protein likelihood report for one fixed topology."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    state_count: int
+    matrix_label: str
+    root_prior_source: str
+    gap_policy: str
+    missing_policy: str
+    log_likelihood: float
