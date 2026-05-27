@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from .artifacts import (
+    write_dollo_artifacts,
+    write_dollo_branch_change_table,
+    write_dollo_run_json,
+    write_dollo_steps_table,
     write_fitch_artifacts,
     write_fitch_node_state_set_table,
     write_fitch_run_json,
@@ -16,11 +20,15 @@ from .artifacts import (
     write_wagner_steps_table,
 )
 from .cost_matrix import load_sankoff_cost_matrix
+from .dollo import score_dollo
 from .fitch import (
     score_fitch,
 )
 from .matrix import load_fitch_character_matrix, load_parsimony_character_matrix
 from .models import (
+    DolloBranchChange,
+    DolloCharacterScore,
+    DolloScoreReport,
     FitchCharacterMatrix,
     FitchCharacterScore,
     FitchNodeStateSet,
@@ -39,6 +47,9 @@ from .sankoff import score_sankoff
 from .wagner import score_wagner
 
 __all__ = [
+    "DolloBranchChange",
+    "DolloCharacterScore",
+    "DolloScoreReport",
     "FitchCharacterMatrix",
     "FitchCharacterScore",
     "FitchNodeStateSet",
@@ -47,6 +58,7 @@ __all__ = [
     "load_parsimony_character_matrix",
     "load_sankoff_cost_matrix",
     "ParsimonyCharacterMatrix",
+    "score_dollo",
     "score_fitch",
     "score_sankoff",
     "score_wagner",
@@ -55,6 +67,10 @@ __all__ = [
     "SankoffNodeCost",
     "SankoffNodeSelection",
     "SankoffScoreReport",
+    "write_dollo_artifacts",
+    "write_dollo_branch_change_table",
+    "write_dollo_run_json",
+    "write_dollo_steps_table",
     "write_fitch_artifacts",
     "write_fitch_node_state_set_table",
     "write_fitch_run_json",

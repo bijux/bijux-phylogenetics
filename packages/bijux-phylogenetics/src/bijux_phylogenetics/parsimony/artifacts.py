@@ -5,7 +5,12 @@ from pathlib import Path
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.reports.service.artifacts import write_json_artifact
 
-from .models import FitchScoreReport, SankoffScoreReport, WagnerScoreReport
+from .models import (
+    DolloScoreReport,
+    FitchScoreReport,
+    SankoffScoreReport,
+    WagnerScoreReport,
+)
 
 
 def write_fitch_steps_table(path: Path, report: FitchScoreReport) -> Path:
@@ -358,5 +363,111 @@ def write_sankoff_artifacts(
         "steps_path": steps_path,
         "node_costs_path": node_costs_path,
         "node_selection_path": node_selection_path,
+        "run_json_path": run_json_path,
+    }
+
+
+def write_dollo_steps_table(path: Path, report: DolloScoreReport) -> Path:
+    """Write one deterministic per-character Dollo summary table."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "character_id",
+            "derived_taxon_count",
+            "gain_node",
+            "gain_node_name",
+            "gain_descendant_taxa",
+            "total_losses",
+            "impossible_state_warning",
+        ],
+        rows=[
+            {
+                "character_id": row.character_id,
+                "derived_taxon_count": row.derived_taxon_count,
+                "gain_node": row.gain_node,
+                "gain_node_name": row.gain_node_name,
+                "gain_descendant_taxa": "|".join(row.gain_descendant_taxa),
+                "total_losses": row.total_losses,
+                "impossible_state_warning": row.impossible_state_warning,
+            }
+            for row in report.step_rows
+        ],
+    )
+
+
+def write_dollo_branch_change_table(path: Path, report: DolloScoreReport) -> Path:
+    """Write one deterministic Dollo gain/loss branch table."""
+    return write_taxon_rows(
+        path,
+        columns=["character_id", "change_kind", "node", "node_name", "descendant_taxa"],
+        rows=[
+            {
+                "character_id": row.character_id,
+                "change_kind": row.change_kind,
+                "node": row.node,
+                "node_name": row.node_name,
+                "descendant_taxa": "|".join(row.descendant_taxa),
+            }
+            for row in report.branch_change_rows
+        ],
+    )
+
+
+def write_dollo_run_json(path: Path, report: DolloScoreReport) -> Path:
+    """Write one machine-readable Dollo run payload."""
+    return write_json_artifact(
+        path,
+        {
+            "algorithm": report.algorithm,
+            "tree_path": None if report.tree_path is None else str(report.tree_path),
+            "matrix_path": None
+            if report.matrix_path is None
+            else str(report.matrix_path),
+            "taxon_column": report.taxon_column,
+            "taxon_count": report.taxon_count,
+            "character_count": report.character_count,
+            "total_gains": report.total_gains,
+            "total_losses": report.total_losses,
+            "step_rows": [
+                {
+                    "character_id": row.character_id,
+                    "derived_taxon_count": row.derived_taxon_count,
+                    "gain_node": row.gain_node,
+                    "gain_node_name": row.gain_node_name,
+                    "gain_descendant_taxa": row.gain_descendant_taxa,
+                    "total_losses": row.total_losses,
+                    "impossible_state_warning": row.impossible_state_warning,
+                }
+                for row in report.step_rows
+            ],
+            "branch_change_rows": [
+                {
+                    "character_id": row.character_id,
+                    "change_kind": row.change_kind,
+                    "node": row.node,
+                    "node_name": row.node_name,
+                    "descendant_taxa": row.descendant_taxa,
+                }
+                for row in report.branch_change_rows
+            ],
+        },
+    )
+
+
+def write_dollo_artifacts(
+    out_dir: Path,
+    report: DolloScoreReport,
+) -> dict[str, Path]:
+    """Write the governed Dollo artifact family."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    steps_path = write_dollo_steps_table(out_dir / "steps.tsv", report)
+    branch_changes_path = write_dollo_branch_change_table(
+        out_dir / "branch_changes.tsv",
+        report,
+    )
+    run_json_path = write_dollo_run_json(out_dir / "run.json", report)
+    return {
+        "steps_path": steps_path,
+        "branch_changes_path": branch_changes_path,
         "run_json_path": run_json_path,
     }

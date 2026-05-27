@@ -160,3 +160,43 @@ class SankoffScoreReport:
     step_rows: list[SankoffCharacterScore]
     node_cost_rows: list[SankoffNodeCost]
     node_selection_rows: list[SankoffNodeSelection]
+
+
+@dataclass(frozen=True, slots=True)
+class DolloCharacterScore:
+    """Per-character Dollo summary row."""
+
+    character_id: str
+    derived_taxon_count: int
+    gain_node: str | None
+    gain_node_name: str | None
+    gain_descendant_taxa: list[str]
+    total_losses: int
+    impossible_state_warning: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class DolloBranchChange:
+    """Per-branch Dollo change row."""
+
+    character_id: str
+    change_kind: str
+    node: str
+    node_name: str | None
+    descendant_taxa: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class DolloScoreReport:
+    """Complete Dollo scoring report over one tree and binary matrix."""
+
+    algorithm: str
+    tree_path: Path | None
+    matrix_path: Path | None
+    taxon_column: str
+    taxon_count: int
+    character_count: int
+    total_gains: int
+    total_losses: int
+    step_rows: list[DolloCharacterScore]
+    branch_change_rows: list[DolloBranchChange]
