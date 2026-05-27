@@ -70,7 +70,7 @@ def evaluate_nucleotide_site_log_likelihoods(
         base_frequencies=base_frequencies,
         exchangeabilities=exchangeabilities,
     )
-    return _evaluate_selected_dna_site_log_likelihoods_from_patterns(
+    return evaluate_selected_dna_site_log_likelihoods_from_patterns(
         tree,
         compressed_patterns,
         model_name=specification.model_name,
@@ -111,7 +111,7 @@ def evaluate_nucleotide_site_log_likelihoods_from_alignment(
     )
 
 
-def _evaluate_selected_dna_site_log_likelihoods_from_patterns(
+def evaluate_selected_dna_site_log_likelihoods_from_patterns(
     tree: PhyloTree,
     compressed_patterns: CompressedAlignmentSitePatterns,
     *,
