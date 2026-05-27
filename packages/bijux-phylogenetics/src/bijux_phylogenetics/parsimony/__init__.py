@@ -14,6 +14,9 @@ from .artifacts import (
     write_parsimony_nni_artifacts,
     write_parsimony_nni_run_json,
     write_parsimony_nni_trace_table,
+    write_parsimony_spr_artifacts,
+    write_parsimony_spr_run_json,
+    write_parsimony_spr_trace_table,
     write_parsimony_consistency_artifacts,
     write_parsimony_consistency_index_table,
     write_parsimony_consistency_run_json,
@@ -66,6 +69,7 @@ from .fitch import (
 from .jackknife import jackknife_parsimony
 from .matrix import load_fitch_character_matrix, load_parsimony_character_matrix
 from .nni import search_parsimony_nni
+from .spr import search_parsimony_spr
 from .models import (
     CaminSokalBranchChange,
     CaminSokalCharacterScore,
@@ -90,6 +94,8 @@ from .models import (
     ParsimonyJackknifeReport,
     ParsimonyNniSearchReport,
     ParsimonyNniTraceRow,
+    ParsimonySprSearchReport,
+    ParsimonySprTraceRow,
     ParsimonyReconstructionBranchChange,
     ParsimonyReconstructionCharacterScore,
     ParsimonyReconstructionNodeState,
@@ -134,6 +140,7 @@ __all__ = [
     "load_fitch_character_matrix",
     "jackknife_parsimony",
     "search_parsimony_nni",
+    "search_parsimony_spr",
     "load_parsimony_character_matrix",
     "load_sankoff_cost_matrix",
     "validate_sankoff_cost_matrix",
@@ -151,6 +158,8 @@ __all__ = [
     "ParsimonyJackknifeReport",
     "ParsimonyNniSearchReport",
     "ParsimonyNniTraceRow",
+    "ParsimonySprSearchReport",
+    "ParsimonySprTraceRow",
     "ParsimonyReconstructionBranchChange",
     "ParsimonyReconstructionCharacterScore",
     "ParsimonyReconstructionNodeState",
@@ -200,6 +209,9 @@ __all__ = [
     "write_parsimony_nni_artifacts",
     "write_parsimony_nni_run_json",
     "write_parsimony_nni_trace_table",
+    "write_parsimony_spr_artifacts",
+    "write_parsimony_spr_run_json",
+    "write_parsimony_spr_trace_table",
     "write_parsimony_reconstruction_branch_change_table",
     "write_parsimony_reconstruction_node_state_table",
     "write_parsimony_reconstruction_run_json",
