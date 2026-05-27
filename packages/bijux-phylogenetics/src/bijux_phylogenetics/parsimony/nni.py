@@ -6,6 +6,11 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.io.newick import dumps_newick
+from bijux_phylogenetics.phylo.topology.rooted_nni import (
+    RootedNniMoveCandidate,
+    apply_rooted_nni_move,
+    iter_rooted_nni_move_candidates,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 from .models import (
@@ -16,34 +21,18 @@ from .models import (
     SankoffCostMatrix,
 )
 from .topology_search import (
-    require_topology_search_node_id,
     resolve_topology_search_cost_matrix,
     resolve_topology_search_matrix,
     resolve_topology_search_method,
     resolve_topology_search_tree,
     resolve_topology_search_weights,
     score_topology_search_tree,
-    topology_search_clade_id,
-    topology_search_node_sort_key,
     topology_search_prefer_score,
     validate_topology_search_tree,
 )
-
-
-@dataclass(frozen=True, slots=True)
-class _NniMoveCandidate:
-    parent_node_id: str
-    child_node_id: str
-    sibling_node_id: str
-    exchanged_child_node_id: str
-    pivot_branch_id: str
-    sibling_clade_id: str
-    exchanged_clade_id: str
-
-
 @dataclass(frozen=True, slots=True)
 class _ScoredNniMove:
-    candidate: _NniMoveCandidate
+    candidate: RootedNniMoveCandidate
     tree: PhyloTree
     score: float
     newick: str
@@ -115,8 +104,8 @@ def search_parsimony_nni(
     evaluated_neighbor_count = 0
     while True:
         improving_move: _ScoredNniMove | None = None
-        for candidate in _iter_nni_move_candidates(current_tree):
-            neighbor_tree = _apply_nni_move(current_tree, candidate)
+        for candidate in iter_rooted_nni_move_candidates(current_tree):
+            neighbor_tree = apply_rooted_nni_move(current_tree, candidate)
             neighbor_score = score_topology_search_tree(
                 neighbor_tree,
                 resolved_matrix,
@@ -207,46 +196,3 @@ def search_parsimony_nni(
         stopping_reason=stopping_reason,
         trace_rows=trace_rows,
     )
-def _iter_nni_move_candidates(tree: PhyloTree):
-    for parent in tree.iter_internal_nodes(order="preorder"):
-        if len(parent.children) != 2:
-            continue
-        sorted_parent_children = sorted(parent.children, key=topology_search_node_sort_key)
-        for child in sorted_parent_children:
-            if child.is_leaf() or len(child.children) != 2:
-                continue
-            sibling = next(
-                candidate
-                for candidate in sorted_parent_children
-                if candidate is not child
-            )
-            sorted_child_children = sorted(
-                child.children,
-                key=topology_search_node_sort_key,
-            )
-            for exchanged_child in sorted_child_children:
-                yield _NniMoveCandidate(
-                    parent_node_id=require_topology_search_node_id(parent),
-                    child_node_id=require_topology_search_node_id(child),
-                    sibling_node_id=require_topology_search_node_id(sibling),
-                    exchanged_child_node_id=require_topology_search_node_id(
-                        exchanged_child
-                    ),
-                    pivot_branch_id=topology_search_clade_id(child),
-                    sibling_clade_id=topology_search_clade_id(sibling),
-                    exchanged_clade_id=topology_search_clade_id(exchanged_child),
-                )
-
-
-def _apply_nni_move(tree: PhyloTree, candidate: _NniMoveCandidate) -> PhyloTree:
-    swapped_tree = tree.copy().refresh()
-    parent = swapped_tree.node_by_id(candidate.parent_node_id)
-    child = swapped_tree.node_by_id(candidate.child_node_id)
-    sibling = swapped_tree.node_by_id(candidate.sibling_node_id)
-    exchanged_child = swapped_tree.node_by_id(candidate.exchanged_child_node_id)
-    remaining_child = next(
-        branch for branch in child.children if branch is not exchanged_child
-    )
-    child.replace_children([remaining_child, sibling])
-    parent.replace_children([child, exchanged_child])
-    return swapped_tree.refresh()
