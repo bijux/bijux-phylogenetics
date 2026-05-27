@@ -18,6 +18,9 @@ from bijux_phylogenetics.datasets.discrete_mode_recovery import (
 from bijux_phylogenetics.datasets.known_answer_reference import (
     run_known_answer_reference_demo,
 )
+from bijux_phylogenetics.datasets.macroevolution_recovery_suite import (
+    run_macroevolution_recovery_suite_demo,
+)
 
 
 def add_recovery_demo_commands(demo_subparsers: Any) -> None:
@@ -50,6 +53,16 @@ def add_recovery_demo_commands(demo_subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_known_answer)
+
+    demo_macroevolution_suite = demo_subparsers.add_parser(
+        "macroevolution-recovery-suite",
+        help="Materialize the governed macroevolution recovery suite and rerun the bundled component recovery outputs.",
+    )
+    demo_macroevolution_suite.add_argument("--out", required=True, type=Path)
+    demo_macroevolution_suite.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
+    _add_manifest_argument(demo_macroevolution_suite)
 
 
 def run_recovery_demo_command(args: Any) -> int | None:
@@ -178,6 +191,70 @@ def run_recovery_demo_command(args: Any) -> int | None:
                 ),
                 "expected_warning_present_count": (
                     result.workflow_bundle.expected_warning_present_count
+                ),
+                "reference_output_count": count_expected_output_files(
+                    result.dataset_export.expected_output_root
+                ),
+            },
+            data=result,
+            output_root=result.output_root,
+        )
+
+    if args.demo_command == "macroevolution-recovery-suite":
+        result = run_macroevolution_recovery_suite_demo(args.out)
+        outputs = [
+            result.dataset_export.readme_path,
+            result.workflow_bundle.workflow_summary_path,
+            result.workflow_bundle.component_summary_path,
+            result.workflow_bundle.requirement_summary_path,
+            result.workflow_bundle.sim_char_summary_path,
+            result.overview_path,
+        ]
+        return emit_demo_result(
+            args,
+            outputs=outputs,
+            metrics={
+                "artifact_count": len(outputs),
+                "component_count": result.workflow_bundle.component_count,
+                "geiger_component_count": (
+                    result.workflow_bundle.geiger_component_count
+                ),
+                "case_count": result.workflow_bundle.total_recovery_case_count,
+                "geiger_case_count": (
+                    result.workflow_bundle.geiger_recovery_case_count
+                ),
+                "max_taxon_count": result.workflow_bundle.max_taxon_count,
+                "selection_review_case_count": (
+                    result.workflow_bundle.selection_review_case_count
+                ),
+                "selection_match_count": (
+                    result.workflow_bundle.selection_match_count
+                ),
+                "geiger_selection_match_count": (
+                    result.workflow_bundle.geiger_selection_match_count
+                ),
+                "governed_value_pass_count": (
+                    result.workflow_bundle.governed_value_pass_count
+                ),
+                "governed_value_row_count": (
+                    result.workflow_bundle.governed_value_row_count
+                ),
+                "governed_comparison_row_count": (
+                    result.workflow_bundle.governed_comparison_row_count
+                ),
+                "truth_threshold_pass_count": (
+                    result.workflow_bundle.truth_threshold_pass_count
+                ),
+                "truth_threshold_row_count": (
+                    result.workflow_bundle.truth_threshold_row_count
+                ),
+                "sim_char_case_count": result.workflow_bundle.sim_char_case_count,
+                "sim_char_all_passed": result.workflow_bundle.sim_char_all_passed,
+                "requirement_pass_count": (
+                    result.workflow_bundle.requirement_pass_count
+                ),
+                "requirement_row_count": (
+                    result.workflow_bundle.requirement_row_count
                 ),
                 "reference_output_count": count_expected_output_files(
                     result.dataset_export.expected_output_root
