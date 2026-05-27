@@ -147,6 +147,15 @@ from .gamma import (
     build_discrete_gamma_rate_categories as build_discrete_gamma_rate_categories,
 )
 from .models import (
+    ApproximateTopologyTestReport as ApproximateTopologyTestReport,
+)
+from .models import (
+    ApproximateTopologyTestResamplingRow as ApproximateTopologyTestResamplingRow,
+)
+from .models import (
+    ApproximateTopologyTestSummaryRow as ApproximateTopologyTestSummaryRow,
+)
+from .models import (
     CandidateTreeSiteLikelihoodMatrixReport as CandidateTreeSiteLikelihoodMatrixReport,
 )
 from .models import (
@@ -506,6 +515,9 @@ from .spr_search import (
 
 __all__ = [
     "AlignmentSitePattern",
+    "ApproximateTopologyTestReport",
+    "ApproximateTopologyTestResamplingRow",
+    "ApproximateTopologyTestSummaryRow",
     "BranchLengthOptimizationRow",
     "CandidateTreeSiteLikelihoodMatrixReport",
     "CandidateTreeSiteLikelihoodRow",

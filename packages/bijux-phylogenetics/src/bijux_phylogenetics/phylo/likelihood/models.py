@@ -508,6 +508,65 @@ class CandidateTreeSiteLikelihoodMatrixReport:
 
 
 @dataclass(slots=True)
+class ApproximateTopologyTestSummaryRow:
+    """One candidate-tree summary row inside a site-resampled topology comparison."""
+
+    candidate_tree_id: str
+    candidate_tree_label: str
+    tree_newick: str
+    observed_log_likelihood: float
+    observed_delta_log_likelihood: float
+    observed_best_tree: bool
+    resampling_win_count: int
+    resampling_frequency: float
+    p_like_statistic: float
+    resampling_mean_delta_log_likelihood: float
+    resampling_min_delta_log_likelihood: float
+    resampling_max_delta_log_likelihood: float
+    caution_label: str
+
+
+@dataclass(slots=True)
+class ApproximateTopologyTestResamplingRow:
+    """One resampled candidate-tree delta row in an approximate topology comparison."""
+
+    replicate_index: int
+    candidate_tree_id: str
+    candidate_tree_label: str
+    resampled_log_likelihood: float
+    observed_best_tree_id: str
+    observed_best_tree_label: str
+    observed_best_resampled_log_likelihood: float
+    resampled_delta_log_likelihood: float
+    candidate_matches_or_beats_observed_best: bool
+
+
+@dataclass(slots=True)
+class ApproximateTopologyTestReport:
+    """Site-resampled approximate topology comparison across candidate trees."""
+
+    algorithm: str
+    model_name: str
+    tree_set_path: str | None
+    alignment_path: str | None
+    taxa: list[str]
+    tree_count: int
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    expansion_policy: str
+    parameter_values: dict[str, float]
+    resampling_method: str
+    resampling_replicate_count: int
+    resampling_seed: int
+    observed_best_tree_id: str
+    observed_best_tree_label: str
+    caution_label: str
+    summary_rows: list[ApproximateTopologyTestSummaryRow]
+    resampling_rows: list[ApproximateTopologyTestResamplingRow]
+
+
+@dataclass(slots=True)
 class SiteLogLikelihoodRow:
     """One expanded site log-likelihood row from one compressed-pattern evaluation."""
 
