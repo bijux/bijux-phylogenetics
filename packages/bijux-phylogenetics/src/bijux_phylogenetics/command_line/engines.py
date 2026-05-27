@@ -32,6 +32,7 @@ from bijux_phylogenetics.parsimony import (
     rescaled_consistency_index,
     retention_index,
     search_parsimony_nni,
+    run_parsimony_ratchet,
     search_parsimony_spr,
     score_camin_sokal,
     score_dollo,
@@ -43,6 +44,7 @@ from bijux_phylogenetics.parsimony import (
     write_parsimony_consistency_artifacts,
     write_parsimony_jackknife_artifacts,
     write_parsimony_nni_artifacts,
+    write_parsimony_ratchet_artifacts,
     write_parsimony_spr_artifacts,
     write_parsimony_reconstruction_artifacts,
     write_parsimony_rescaled_consistency_artifacts,
@@ -424,6 +426,71 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the SPR search report as JSON."
     )
     _add_manifest_argument(phylo_parsimony_spr_search)
+    phylo_parsimony_ratchet = phylo_parsimony_subparsers.add_parser(
+        "ratchet",
+        help="Run one deterministic parsimony ratchet with temporary character reweighting and restored rooted SPR search.",
+    )
+    phylo_parsimony_ratchet.add_argument("tree_path", type=Path)
+    phylo_parsimony_ratchet.add_argument("matrix_path", type=Path)
+    phylo_parsimony_ratchet.add_argument(
+        "--method",
+        required=True,
+        choices=[
+            "fitch",
+            "wagner",
+            "sankoff",
+            "dollo",
+            "camin-sokal",
+            "acctran",
+            "deltran",
+        ],
+    )
+    phylo_parsimony_ratchet.add_argument("--taxon-column")
+    phylo_parsimony_ratchet.add_argument(
+        "--cycle-count",
+        required=True,
+        type=int,
+        help="Number of ratchet perturbation cycles to run.",
+    )
+    phylo_parsimony_ratchet.add_argument(
+        "--seed",
+        required=True,
+        type=int,
+        help="Deterministic random seed for ratchet character perturbations.",
+    )
+    phylo_parsimony_ratchet.add_argument(
+        "--perturbed-character-count",
+        required=True,
+        type=int,
+        help="Number of characters to upweight temporarily per cycle.",
+    )
+    phylo_parsimony_ratchet.add_argument(
+        "--perturbation-factor",
+        type=float,
+        default=2.0,
+        help="Temporary multiplicative weight factor applied to the perturbed characters.",
+    )
+    phylo_parsimony_ratchet.add_argument(
+        "--cost-matrix",
+        dest="cost_matrix_path",
+        type=Path,
+        help="Required when --method sankoff is selected.",
+    )
+    phylo_parsimony_ratchet.add_argument(
+        "--allow-asymmetric-costs",
+        action="store_true",
+        help="Allow asymmetric Sankoff transition costs when --method sankoff is selected.",
+    )
+    phylo_parsimony_ratchet.add_argument(
+        "--state-order",
+        help="Comma-separated explicit ordered state labels for Wagner ratchet scoring.",
+    )
+    _add_parsimony_character_weights_argument(phylo_parsimony_ratchet)
+    phylo_parsimony_ratchet.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_ratchet.add_argument(
+        "--json", action="store_true", help="Emit the ratchet report as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_ratchet)
     phylo_parsimony_tree_length = phylo_parsimony_subparsers.add_parser(
         "tree-length",
         help="Summarize per-character and total tree length for one parsimony scoring method.",
@@ -840,6 +907,49 @@ def run_phylo_command(args: Any) -> int:
                 "evaluated_neighbor_count": report.evaluated_neighbor_count,
                 "stopping_reason": report.stopping_reason,
             }
+        elif args.phylo_parsimony_command == "ratchet":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            character_weights = _load_parsimony_character_weights_argument(args)
+            cost_matrix = (
+                load_sankoff_cost_matrix(
+                    args.cost_matrix_path,
+                    allow_asymmetric_costs=args.allow_asymmetric_costs,
+                )
+                if getattr(args, "cost_matrix_path", None) is not None
+                else None
+            )
+            state_order = _split_state_order(getattr(args, "state_order", None))
+            report = run_parsimony_ratchet(
+                args.tree_path,
+                matrix,
+                method=args.method,
+                cycle_count=args.cycle_count,
+                random_seed=args.seed,
+                perturbed_character_count=args.perturbed_character_count,
+                perturbation_factor=args.perturbation_factor,
+                state_order=state_order,
+                cost_matrix=cost_matrix,
+                allow_asymmetric_costs=args.allow_asymmetric_costs,
+                character_weights=character_weights,
+            )
+            artifact_paths = write_parsimony_ratchet_artifacts(args.out_dir, report)
+            metrics = {
+                "algorithm": report.algorithm,
+                "method": report.method,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "cycle_count": report.cycle_count,
+                "random_seed": report.random_seed,
+                "perturbed_character_count": report.perturbed_character_count,
+                "perturbation_factor": report.perturbation_factor,
+                "start_score": report.start_score,
+                "final_score": report.final_score,
+                "best_score": report.best_score,
+                "best_tree_history_count": len(report.best_tree_history_rows),
+            }
         elif args.phylo_parsimony_command == "tree-length":
             matrix = load_parsimony_character_matrix(
                 args.matrix_path,
@@ -981,6 +1091,10 @@ def run_phylo_command(args: Any) -> int:
                     )
                     or (
                         args.phylo_parsimony_command == "spr-search"
+                        and getattr(args, "cost_matrix_path", None) is not None
+                    )
+                    or (
+                        args.phylo_parsimony_command == "ratchet"
                         and getattr(args, "cost_matrix_path", None) is not None
                     )
                 )
