@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import numpy
 
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
@@ -11,6 +13,14 @@ from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError
 
 DNA_STATE_ORDER = ("A", "C", "G", "T")
 DNA_STATE_INDEX = {state: index for index, state in enumerate(DNA_STATE_ORDER)}
+DNA_TRANSITION_PAIRS = frozenset(
+    {
+        ("A", "G"),
+        ("G", "A"),
+        ("C", "T"),
+        ("T", "C"),
+    }
+)
 UNIFORM_DNA_ROOT_PRIOR = numpy.full(4, 0.25, dtype=float)
 
 
@@ -93,6 +103,55 @@ def validate_dna_base_frequencies(
             f"{model_name} likelihood base frequencies must sum to a positive value"
         )
     return vector / total
+
+
+def normalize_dna_rate_matrix(
+    off_diagonal_rates: numpy.ndarray,
+    *,
+    stationary_frequencies: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...],
+    model_name: str,
+) -> numpy.ndarray:
+    candidate = numpy.asarray(off_diagonal_rates, dtype=float)
+    if candidate.shape != (len(DNA_STATE_ORDER), len(DNA_STATE_ORDER)):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood rate matrix must be 4x4 in A/C/G/T order"
+        )
+    if not numpy.all(numpy.isfinite(candidate)):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood rate matrix must contain only finite values"
+        )
+    if numpy.any(candidate < 0.0):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood rate matrix must not contain negative off-diagonal rates"
+        )
+    rate_matrix = candidate.copy()
+    numpy.fill_diagonal(rate_matrix, 0.0)
+    for row_index in range(rate_matrix.shape[0]):
+        rate_matrix[row_index, row_index] = -float(numpy.sum(rate_matrix[row_index, :]))
+    stationary = validate_dna_base_frequencies(
+        stationary_frequencies,
+        model_name=model_name,
+    )
+    expected_rate = -float(numpy.sum(stationary * numpy.diag(rate_matrix)))
+    if expected_rate <= 0.0 or not math.isfinite(expected_rate):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood requires a positive finite expected substitution rate"
+        )
+    return rate_matrix / expected_rate
+
+
+def is_dna_transition(left_state: str, right_state: str) -> bool:
+    return (left_state, right_state) in DNA_TRANSITION_PAIRS
+
+
+def validate_positive_kappa(
+    kappa: float,
+    *,
+    model_name: str,
+) -> float:
+    if not math.isfinite(kappa) or kappa <= 0.0:
+        raise ValueError(f"{model_name} kappa must be a finite positive value")
+    return float(kappa)
 
 
 def validate_explicit_branch_lengths(

@@ -12,8 +12,10 @@ from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.dna import (
     DNA_STATE_ORDER,
     UNIFORM_DNA_ROOT_PRIOR,
+    is_dna_transition,
     normalize_unambiguous_dna_records,
     one_hot_dna_leaf_vector,
+    validate_positive_kappa,
     validate_explicit_branch_lengths,
     validate_tree_taxa_against_patterns,
 )
@@ -37,19 +39,9 @@ from bijux_phylogenetics.phylo.likelihood.sites import (
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
-_TRANSITION_PAIRS = frozenset(
-    {
-        ("A", "G"),
-        ("G", "A"),
-        ("C", "T"),
-        ("T", "C"),
-    }
-)
-
-
 def k80_rate_matrix(kappa: float) -> numpy.ndarray:
     """Return the normalized K80 rate matrix with expected rate one."""
-    _validate_positive_kappa(kappa)
+    validate_positive_kappa(kappa, model_name="K80")
     transversion_rate = 1.0 / (kappa + 2.0)
     transition_rate = kappa * transversion_rate
     rate_matrix = numpy.zeros((4, 4), dtype=float)
@@ -60,7 +52,7 @@ def k80_rate_matrix(kappa: float) -> numpy.ndarray:
                 continue
             rate = (
                 transition_rate
-                if (left_state, right_state) in _TRANSITION_PAIRS
+                if is_dna_transition(left_state, right_state)
                 else transversion_rate
             )
             rate_matrix[left_index, right_index] = rate
@@ -75,7 +67,7 @@ def k80_transition_probability_matrix(
     kappa: float,
 ) -> numpy.ndarray:
     """Return the native closed-form K80 transition matrix for one branch."""
-    _validate_positive_kappa(kappa)
+    validate_positive_kappa(kappa, model_name="K80")
     if branch_length <= 0.0:
         return numpy.eye(4, dtype=float)
     transversion_rate = 1.0 / (kappa + 2.0)
@@ -103,7 +95,7 @@ def k80_transition_probability_matrix(
                 continue
             transition_matrix[left_index, right_index] = (
                 transition_probability
-                if (left_state, right_state) in _TRANSITION_PAIRS
+                if is_dna_transition(left_state, right_state)
                 else transversion_probability
             )
     return transition_matrix
@@ -148,9 +140,9 @@ def optimize_k80_kappa(
     upper_kappa_bound: float = 20.0,
 ) -> K80KappaOptimizationReport:
     """Optimize one fixed-topology K80 kappa on fixed branch lengths."""
-    _validate_positive_kappa(initial_kappa)
-    _validate_positive_kappa(lower_kappa_bound)
-    _validate_positive_kappa(upper_kappa_bound)
+    validate_positive_kappa(initial_kappa, model_name="K80")
+    validate_positive_kappa(lower_kappa_bound, model_name="K80")
+    validate_positive_kappa(upper_kappa_bound, model_name="K80")
     if upper_kappa_bound <= lower_kappa_bound:
         raise ValueError("K80 kappa bounds must be strictly increasing")
 
@@ -220,7 +212,7 @@ def _evaluate_k80_tree_likelihood_from_patterns(
     *,
     kappa: float,
 ) -> K80TreeLikelihoodReport:
-    _validate_positive_kappa(kappa)
+    validate_positive_kappa(kappa, model_name="K80")
     validate_explicit_branch_lengths(tree, model_name="K80")
     validate_tree_taxa_against_patterns(
         tree,
@@ -269,8 +261,3 @@ def _evaluate_k80_tree_likelihood_from_patterns(
         kappa=kappa,
         log_likelihood=log_likelihood,
     )
-
-
-def _validate_positive_kappa(kappa: float) -> None:
-    if not math.isfinite(kappa) or kappa <= 0.0:
-        raise ValueError("K80 kappa must be a finite positive value")
