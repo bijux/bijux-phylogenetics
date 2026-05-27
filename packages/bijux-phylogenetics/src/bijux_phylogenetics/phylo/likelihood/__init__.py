@@ -20,6 +20,12 @@ from .empirical import (
 from .empirical import (
     evaluate_empirical_protein_tree_likelihood_from_alignment as evaluate_empirical_protein_tree_likelihood_from_alignment,
 )
+from .empirical import (
+    evaluate_empirical_protein_tree_likelihood_with_discrete_gamma as evaluate_empirical_protein_tree_likelihood_with_discrete_gamma,
+)
+from .empirical import (
+    evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment as evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment,
+)
 from .gtr import (
     evaluate_gtr_tree_likelihood as evaluate_gtr_tree_likelihood,
 )
@@ -92,8 +98,20 @@ from .k80 import (
 from .k80 import (
     optimize_k80_kappa_from_alignment as optimize_k80_kappa_from_alignment,
 )
+from .gamma import (
+    build_discrete_gamma_rate_categories as build_discrete_gamma_rate_categories,
+)
 from .models import (
     ProteinPoissonTreeLikelihoodReport as ProteinPoissonTreeLikelihoodReport,
+)
+from .models import (
+    DiscreteGammaRateCategory as DiscreteGammaRateCategory,
+)
+from .models import (
+    DiscreteGammaSiteLikelihood as DiscreteGammaSiteLikelihood,
+)
+from .models import (
+    ProteinEmpiricalDiscreteGammaTreeLikelihoodReport as ProteinEmpiricalDiscreteGammaTreeLikelihoodReport,
 )
 from .models import (
     ProteinEmpiricalMatrixTreeLikelihoodReport as ProteinEmpiricalMatrixTreeLikelihoodReport,
@@ -177,6 +195,8 @@ from .sites import (
 __all__ = [
     "AlignmentSitePattern",
     "CompressedAlignmentSitePatterns",
+    "DiscreteGammaRateCategory",
+    "DiscreteGammaSiteLikelihood",
     "F81TreeLikelihoodReport",
     "FiniteStatePruningPass",
     "GtrExchangeabilityOptimizationReport",
@@ -188,15 +208,19 @@ __all__ = [
     "Jc69TreeLikelihoodReport",
     "K80KappaOptimizationReport",
     "K80TreeLikelihoodReport",
+    "ProteinEmpiricalDiscreteGammaTreeLikelihoodReport",
     "ProteinEmpiricalMatrixTreeLikelihoodReport",
     "ProteinPoissonTreeLikelihoodReport",
     "alignment_site_columns",
+    "build_discrete_gamma_rate_categories",
     "compress_alignment_site_patterns",
     "compress_alignment_site_patterns_from_records",
     "evaluate_f81_tree_likelihood",
     "evaluate_f81_tree_likelihood_from_alignment",
     "evaluate_empirical_protein_tree_likelihood",
     "evaluate_empirical_protein_tree_likelihood_from_alignment",
+    "evaluate_empirical_protein_tree_likelihood_with_discrete_gamma",
+    "evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment",
     "evaluate_gtr_tree_likelihood",
     "evaluate_gtr_tree_likelihood_from_alignment",
     "evaluate_hky85_tree_likelihood",
