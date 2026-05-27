@@ -205,6 +205,7 @@ differences.
 - score binary character matrices on one rooted tree with irreversible Camin-Sokal parsimony, assume ancestral absence, allow repeated `0→1` gains, forbid `1→0` reversals, emit exact gain-branch ledgers, and fail explicitly when multistate traits have not been binarized first
 - reconstruct unordered parsimony ambiguities with ACCTRAN, emit resolved node states plus branch-change ledgers, and prefer earlier branch placements over later ones while preserving the same minimum tree length
 - reconstruct unordered parsimony ambiguities with DELTRAN, emit resolved node states plus branch-change ledgers, and delay ambiguous changes toward terminal branches while preserving the same minimum tree length
+- summarize generic parsimony tree length with per-character raw scores, explicit character weights, and one governed total score across Fitch, Wagner, Sankoff, Dollo, Camin-Sokal, ACCTRAN, or DELTRAN methods
 - reconstruct continuous ancestral states under Brownian or OU-style trait models
 - reconstruct discrete ancestral states under Fitch parsimony or likelihood-style ER, SYM, and ARD models with explicit ambiguity and low-confidence reporting, root-prior controls, and fitted transition-rate ledgers
 - validate discrete ancestral likelihood surfaces against governed `ape::ace` references plus root-prior, ordered, irreversible, and ambiguity policy checks
@@ -314,6 +315,7 @@ bijux-phylogenetics phylo parsimony dollo tree.nwk binary-character-matrix.tsv -
 bijux-phylogenetics phylo parsimony camin-sokal tree.nwk binary-character-matrix.tsv --out-dir artifacts/parsimony-camin-sokal --json
 bijux-phylogenetics phylo parsimony acctran tree.nwk discrete-character-matrix.tsv --out-dir artifacts/parsimony-acctran --json
 bijux-phylogenetics phylo parsimony deltran tree.nwk discrete-character-matrix.tsv --out-dir artifacts/parsimony-deltran --json
+bijux-phylogenetics phylo parsimony tree-length tree.nwk discrete-character-matrix.tsv --method fitch --character-weights character-weights.tsv --out-dir artifacts/parsimony-tree-length --json
 bijux-phylogenetics report supplementary-batch-summary-table --workflow-bundle-root workflow/ --out artifacts/supplementary-batch-summary.tsv --json
 bijux-phylogenetics report supplementary-clade-support-table --tree tree.nwk --comparison-tree-set posterior-trees.nwk --out artifacts/supplementary-clade-support.tsv --json
 bijux-phylogenetics report supplementary-comparative-model-table --tree tree.nwk --traits traits.tsv --formula 'response ~ predictor_one' --formula 'response ~ predictor_one + predictor_two' --lambda-value 0.0 --out artifacts/supplementary-comparative-model.tsv --json
