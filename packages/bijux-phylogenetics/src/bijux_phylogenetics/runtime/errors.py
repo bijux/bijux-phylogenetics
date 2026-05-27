@@ -96,6 +96,10 @@ class AncestralReconstructionError(PhylogeneticsError):
     code = "ancestral_reconstruction_error"
 
 
+class ParsimonyAnalysisError(PhylogeneticsError):
+    code = "parsimony_analysis_error"
+
+
 class DiversificationAnalysisError(PhylogeneticsError):
     code = "diversification_analysis_error"
 
