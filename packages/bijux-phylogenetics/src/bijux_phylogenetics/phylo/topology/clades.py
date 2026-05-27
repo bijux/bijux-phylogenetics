@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
+import json
 
 from bijux_phylogenetics.io.iqtree_support import parse_iqtree_branch_support_label
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
@@ -185,3 +187,30 @@ def split_sort_key(signature: frozenset[str]) -> tuple[int, tuple[str, ...]]:
     """Sort clades and splits deterministically for ledgers and reports."""
     ordered_taxa = tuple(sorted(signature))
     return (len(ordered_taxa), ordered_taxa)
+
+
+def rooted_topology_signature_ids(
+    tree: PhyloTree,
+    shared_taxa: set[str] | None = None,
+) -> tuple[str, ...]:
+    """Render one rooted tree topology as sorted informative clade identifiers."""
+    clades = informative_rooted_clades(tree, shared_taxa)
+    return tuple(
+        canonical_clade_id(signature)
+        for signature in sorted(clades, key=split_sort_key)
+    )
+
+
+def rooted_topology_fingerprint(
+    tree: PhyloTree,
+    shared_taxa: set[str] | None = None,
+) -> str:
+    """Hash one rooted topology independent of branch lengths and child order."""
+    taxon_scope = sorted(tree.tip_names) if shared_taxa is None else sorted(shared_taxa)
+    payload = {
+        "taxa": taxon_scope,
+        "informative_rooted_clades": rooted_topology_signature_ids(tree, shared_taxa),
+    }
+    return hashlib.sha256(
+        json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    ).hexdigest()

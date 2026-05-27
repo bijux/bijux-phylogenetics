@@ -12,6 +12,8 @@ _EXPORTS = {
     "informative_unrooted_splits": "clades",
     "node_support_value": "clades",
     "robinson_foulds_metrics": "clades",
+    "rooted_topology_fingerprint": "clades",
+    "rooted_topology_signature_ids": "clades",
     "split_sort_key": "clades",
     "tree_has_polytomy": "clades",
     "ape_node_id_for_node": "node_identity",

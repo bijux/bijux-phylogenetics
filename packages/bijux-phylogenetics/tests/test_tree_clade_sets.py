@@ -7,6 +7,8 @@ from bijux_phylogenetics.phylo.topology.clades import (
     informative_unrooted_splits,
     node_support_value,
     robinson_foulds_metrics,
+    rooted_topology_fingerprint,
+    rooted_topology_signature_ids,
     split_sort_key,
     tree_has_polytomy,
 )
@@ -53,6 +55,23 @@ def test_unrooted_splits_are_canonical_and_ignore_root_orientation() -> None:
 
     assert informative_unrooted_splits(left) == {frozenset({"A", "B"})}
     assert informative_unrooted_splits(right) == {frozenset({"A", "B"})}
+
+
+def test_rooted_topology_fingerprint_ignores_branch_lengths_and_child_order() -> None:
+    left = loads_newick("(((A:0.1,B:0.2):0.3,C:0.4):0.5,D:0.6);")
+    right = loads_newick("((C:9.0,(B:8.0,A:7.0):6.0):5.0,D:4.0);")
+
+    assert rooted_topology_signature_ids(left) == ("A|B", "A|B|C")
+    assert rooted_topology_signature_ids(right) == ("A|B", "A|B|C")
+    assert rooted_topology_fingerprint(left) == rooted_topology_fingerprint(right)
+    assert len(rooted_topology_fingerprint(left)) == 64
+
+
+def test_rooted_topology_fingerprint_changes_when_rooted_clades_change() -> None:
+    left = loads_newick("(((A:1,B:1):1,C:1):1,D:1);")
+    right = loads_newick("(((A:1,C:1):1,B:1):1,D:1);")
+
+    assert rooted_topology_fingerprint(left) != rooted_topology_fingerprint(right)
 
 
 def test_node_support_value_prefers_native_confidence_and_iqtree_composite() -> None:
