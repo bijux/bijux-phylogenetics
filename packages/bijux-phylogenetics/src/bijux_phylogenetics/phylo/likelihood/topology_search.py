@@ -310,6 +310,37 @@ def optimize_selected_nucleotide_branch_lengths(
     )
 
 
+def reoptimize_nucleotide_topology_tree(
+    tree: PhyloTree,
+    *,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    resolved_surface: ResolvedNucleotideTopologySearchSurface,
+    branch_reoptimization_policy: str,
+    lower_branch_length_bound: float,
+    upper_branch_length_bound: float,
+    improvement_tolerance: float,
+    max_coordinate_passes: int,
+) -> BranchReoptimizationResult:
+    """Reoptimize one topology-search tree under one resolved likelihood surface."""
+    validated_branch_reoptimization_policy = validate_branch_reoptimization_policy(
+        branch_reoptimization_policy
+    )
+    if validated_branch_reoptimization_policy not in _SUPPORTED_BRANCH_REOPTIMIZATION_POLICIES:
+        raise ValueError(
+            "branch_reoptimization_policy must be one of "
+            + ", ".join(sorted(_SUPPORTED_BRANCH_REOPTIMIZATION_POLICIES))
+        )
+    return optimize_selected_nucleotide_branch_lengths(
+        tree,
+        compressed_patterns,
+        specification=resolved_surface.specification,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        improvement_tolerance=improvement_tolerance,
+        max_coordinate_passes=max_coordinate_passes,
+    )
+
+
 def assign_branch_lengths(tree: PhyloTree, branch_lengths_by_id: dict[str, float]) -> None:
     """Assign one branch-length vector to one refreshed tree by node identity."""
     for _parent, child in tree.iter_edges():

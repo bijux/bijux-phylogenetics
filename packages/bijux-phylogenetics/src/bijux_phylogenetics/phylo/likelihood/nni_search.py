@@ -14,8 +14,8 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 from bijux_phylogenetics.phylo.likelihood.topology_search import (
     BranchReoptimizationResult,
     normalize_nucleotide_topology_search_records,
-    optimize_selected_nucleotide_branch_lengths,
     prefer_higher_likelihood,
+    reoptimize_nucleotide_topology_tree,
     resolve_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_surface,
     resolve_nucleotide_topology_search_tree,
@@ -27,8 +27,6 @@ from bijux_phylogenetics.phylo.topology.rooted_nni import (
     iter_rooted_nni_move_candidates,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-
-_SUPPORTED_BRANCH_REOPTIMIZATION_POLICIES = frozenset({"coordinate-branch-lengths"})
 
 
 def search_nucleotide_likelihood_nni(
@@ -77,7 +75,7 @@ def search_nucleotide_likelihood_nni(
         exchangeabilities=exchangeabilities,
     )
     input_tree_newick = dumps_newick(resolved_tree)
-    start_result = _reoptimize_tree(
+    start_result = reoptimize_nucleotide_topology_tree(
         resolved_tree,
         compressed_patterns=compressed_patterns,
         resolved_surface=resolved_surface,
@@ -119,7 +117,7 @@ def search_nucleotide_likelihood_nni(
         improving_newick: str | None = None
         for candidate in iter_rooted_nni_move_candidates(current_tree):
             neighbor_tree = apply_rooted_nni_move(current_tree, candidate)
-            neighbor_result = _reoptimize_tree(
+            neighbor_result = reoptimize_nucleotide_topology_tree(
                 neighbor_tree,
                 compressed_patterns=compressed_patterns,
                 resolved_surface=resolved_surface,
@@ -405,30 +403,3 @@ def write_nucleotide_likelihood_nni_artifacts(
         "trace_path": trace_path,
         "run_json_path": run_json_path,
     }
-
-
-def _reoptimize_tree(
-    tree: PhyloTree,
-    *,
-    compressed_patterns,
-    resolved_surface,
-    branch_reoptimization_policy: str,
-    lower_branch_length_bound: float,
-    upper_branch_length_bound: float,
-    improvement_tolerance: float,
-    max_coordinate_passes: int,
-) -> BranchReoptimizationResult:
-    if branch_reoptimization_policy not in _SUPPORTED_BRANCH_REOPTIMIZATION_POLICIES:
-        raise ValueError(
-            "branch_reoptimization_policy must be one of "
-            + ", ".join(sorted(_SUPPORTED_BRANCH_REOPTIMIZATION_POLICIES))
-        )
-    return optimize_selected_nucleotide_branch_lengths(
-        tree,
-        compressed_patterns,
-        specification=resolved_surface.specification,
-        lower_branch_length_bound=lower_branch_length_bound,
-        upper_branch_length_bound=upper_branch_length_bound,
-        improvement_tolerance=improvement_tolerance,
-        max_coordinate_passes=max_coordinate_passes,
-    )
