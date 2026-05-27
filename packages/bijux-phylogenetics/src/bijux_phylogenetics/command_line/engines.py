@@ -21,8 +21,11 @@ from bijux_phylogenetics.engines import (
 )
 from bijux_phylogenetics.parsimony import (
     load_fitch_character_matrix,
+    load_parsimony_character_matrix,
     score_fitch,
+    score_wagner,
     write_fitch_artifacts,
+    write_wagner_artifacts,
 )
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 from bijux_phylogenetics.runtime.results import build_command_result
@@ -113,6 +116,22 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the parsimony report as JSON."
     )
     _add_manifest_argument(phylo_parsimony_fitch)
+    phylo_parsimony_wagner = phylo_parsimony_subparsers.add_parser(
+        "wagner",
+        help="Score one ordered discrete character matrix on one tree with Wagner parsimony.",
+    )
+    phylo_parsimony_wagner.add_argument("tree_path", type=Path)
+    phylo_parsimony_wagner.add_argument("matrix_path", type=Path)
+    phylo_parsimony_wagner.add_argument("--taxon-column")
+    phylo_parsimony_wagner.add_argument(
+        "--state-order",
+        help="Comma-separated explicit ordered state labels such as low,medium,high.",
+    )
+    phylo_parsimony_wagner.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_wagner.add_argument(
+        "--json", action="store_true", help="Emit the parsimony report as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_wagner)
 
 
 def run_phylo_command(args: Any) -> int:
@@ -125,17 +144,38 @@ def run_phylo_command(args: Any) -> int:
         "beast": getattr(args, "beast_executable", None),
     }
     if args.phylo_command == "parsimony":
-        if args.phylo_parsimony_command != "fitch":
+        if args.phylo_parsimony_command == "fitch":
+            matrix = load_fitch_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            report = score_fitch(args.tree_path, matrix)
+            artifact_paths = write_fitch_artifacts(args.out_dir, report)
+            metrics = {
+                "algorithm": report.algorithm,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "total_steps": report.total_steps,
+            }
+        elif args.phylo_parsimony_command == "wagner":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            state_order = _split_state_order(getattr(args, "state_order", None))
+            report = score_wagner(args.tree_path, matrix, state_order=state_order)
+            artifact_paths = write_wagner_artifacts(args.out_dir, report)
+            metrics = {
+                "algorithm": report.algorithm,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "total_cost": report.total_cost,
+            }
+        else:
             raise EngineWorkflowError(
                 "unknown phylo parsimony command",
                 code="phylo_parsimony_command_unknown",
             )
-        matrix = load_fitch_character_matrix(
-            args.matrix_path,
-            taxon_column=args.taxon_column,
-        )
-        report = score_fitch(args.tree_path, matrix)
-        artifact_paths = write_fitch_artifacts(args.out_dir, report)
         outputs = _finalize_outputs(
             args,
             command="phylo",
@@ -147,12 +187,7 @@ def run_phylo_command(args: Any) -> int:
                 command="phylo",
                 inputs=[args.tree_path, args.matrix_path],
                 outputs=outputs,
-                metrics={
-                    "algorithm": report.algorithm,
-                    "taxon_count": report.taxon_count,
-                    "character_count": report.character_count,
-                    "total_steps": report.total_steps,
-                },
+                metrics=metrics,
                 data=report,
             ),
             json_output=args.json,
@@ -335,3 +370,10 @@ def run_phylo_command(args: Any) -> int:
         json_output=args.json,
     )
     return 0
+
+
+def _split_state_order(raw: str | None) -> list[str] | None:
+    if raw is None:
+        return None
+    values = [value.strip() for value in raw.split(",")]
+    return [value for value in values if value]
