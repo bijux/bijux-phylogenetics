@@ -27,6 +27,7 @@ from bijux_phylogenetics.parsimony import (
     load_sankoff_cost_matrix,
     reconstruct_acctran,
     reconstruct_deltran,
+    rescaled_consistency_index,
     retention_index,
     score_camin_sokal,
     score_dollo,
@@ -36,6 +37,7 @@ from bijux_phylogenetics.parsimony import (
     tree_length,
     write_parsimony_consistency_artifacts,
     write_parsimony_reconstruction_artifacts,
+    write_parsimony_rescaled_consistency_artifacts,
     write_parsimony_retention_artifacts,
     write_parsimony_tree_length_artifacts,
     write_camin_sokal_artifacts,
@@ -296,6 +298,23 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the retention-index report as JSON."
     )
     _add_manifest_argument(phylo_parsimony_retention)
+    phylo_parsimony_rescaled_consistency = phylo_parsimony_subparsers.add_parser(
+        "rescaled-consistency-index",
+        help="Compute per-character and aggregate rescaled consistency index from tested CI and RI surfaces.",
+    )
+    phylo_parsimony_rescaled_consistency.add_argument("tree_path", type=Path)
+    phylo_parsimony_rescaled_consistency.add_argument("matrix_path", type=Path)
+    phylo_parsimony_rescaled_consistency.add_argument(
+        "--method",
+        required=True,
+        choices=["fitch", "acctran", "deltran"],
+    )
+    phylo_parsimony_rescaled_consistency.add_argument("--taxon-column")
+    phylo_parsimony_rescaled_consistency.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_rescaled_consistency.add_argument(
+        "--json", action="store_true", help="Emit the rescaled-consistency report as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_rescaled_consistency)
 
 
 def run_phylo_command(args: Any) -> int:
@@ -489,6 +508,30 @@ def run_phylo_command(args: Any) -> int:
                 "maximum_possible_steps_total": report.maximum_possible_steps_total,
                 "observed_steps_total": report.observed_steps_total,
                 "retention_index": report.retention_index,
+                "undefined_reason": report.undefined_reason,
+            }
+        elif args.phylo_parsimony_command == "rescaled-consistency-index":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            report = rescaled_consistency_index(
+                args.tree_path,
+                matrix,
+                method=args.method,
+            )
+            artifact_paths = write_parsimony_rescaled_consistency_artifacts(
+                args.out_dir,
+                report,
+            )
+            metrics = {
+                "algorithm": report.algorithm,
+                "method": report.method,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "ci": report.ci,
+                "ri": report.ri,
+                "rc": report.rc,
                 "undefined_reason": report.undefined_reason,
             }
         else:
