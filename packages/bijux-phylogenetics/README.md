@@ -303,6 +303,7 @@ bijux-phylogenetics alignment build-tree alignment.fasta --method complete-linka
 bijux-phylogenetics distance minimum-evolution matrix.tsv fixed-topology.nwk --out fitted-tree.nwk
 bijux-phylogenetics distance fitch-margoliash matrix.tsv fixed-topology.nwk --out fitted-tree.nwk --json
 bijux-phylogenetics distance ordinary-least-squares matrix.tsv fixed-topology.nwk --out fitted-tree.nwk --json
+bijux-phylogenetics distance nonnegative-least-squares matrix.tsv fixed-topology.nwk --out fitted-tree.nwk --json
 bijux-phylogenetics distance bme-nni-search matrix.tsv --start-method bionj --out-dir artifacts/distance-bme-nni --json
 bijux-phylogenetics alignment compare-distance-to-tree alignment.fasta inferred-tree.nwk --method neighbor-joining --json
 bijux-phylogenetics alignment bootstrap-tree alignment.fasta --method neighbor-joining --replicates 200 --support-out artifacts/distance-support.tsv --tree-set-out artifacts/distance-bootstrap.trees --json
@@ -2117,6 +2118,10 @@ The same owned fixed-topology lane now exposes ordinary least squares as a
 first-class report surface with fitted branch lengths, a residual matrix, RSS,
 matrix rank, condition number, and explicit negative-branch reporting instead
 of silently clipping unconstrained solutions.
+That same lane now also exposes nonnegative least-squares fitting as a
+separate owned surface, which constrains every branch length to zero or above
+and reports the active zero-constraint branches instead of reusing the
+unconstrained OLS solution.
 Imported distance matrices can also start from one owned NJ or BIONJ tree and
 be hill-climbed by rooted NNI under the owned balanced minimum-evolution
 objective, with governed search traces that record each accepted objective
