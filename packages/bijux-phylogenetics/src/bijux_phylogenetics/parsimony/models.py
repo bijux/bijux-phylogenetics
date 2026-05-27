@@ -237,3 +237,56 @@ class CaminSokalScoreReport:
     total_gains: int
     step_rows: list[CaminSokalCharacterScore]
     branch_change_rows: list[CaminSokalBranchChange]
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyReconstructionCharacterScore:
+    """Per-character unordered parsimony reconstruction summary row."""
+
+    character_id: str
+    step_count: int
+    observed_states: list[str]
+    root_state: str
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyReconstructionNodeState:
+    """Per-node resolved parsimony state row for one character."""
+
+    character_id: str
+    node: str
+    node_name: str | None
+    descendant_taxa: list[str]
+    resolved_state: str
+    is_tip: bool
+    observed_state: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyReconstructionBranchChange:
+    """Per-branch resolved parsimony change row for one character."""
+
+    character_id: str
+    parent_node: str
+    parent_state: str
+    node: str
+    node_name: str | None
+    descendant_taxa: list[str]
+    change_from: str
+    change_to: str
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyReconstructionReport:
+    """Complete unordered parsimony reconstruction report over one tree and matrix."""
+
+    algorithm: str
+    tree_path: Path | None
+    matrix_path: Path | None
+    taxon_column: str
+    taxon_count: int
+    character_count: int
+    total_steps: int
+    step_rows: list[ParsimonyReconstructionCharacterScore]
+    node_state_rows: list[ParsimonyReconstructionNodeState]
+    branch_change_rows: list[ParsimonyReconstructionBranchChange]

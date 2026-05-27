@@ -9,6 +9,7 @@ from .models import (
     CaminSokalScoreReport,
     DolloScoreReport,
     FitchScoreReport,
+    ParsimonyReconstructionReport,
     SankoffScoreReport,
     WagnerScoreReport,
 )
@@ -564,6 +565,169 @@ def write_camin_sokal_artifacts(
     run_json_path = write_camin_sokal_run_json(out_dir / "run.json", report)
     return {
         "steps_path": steps_path,
+        "branch_changes_path": branch_changes_path,
+        "run_json_path": run_json_path,
+    }
+
+
+def write_parsimony_reconstruction_steps_table(
+    path: Path,
+    report: ParsimonyReconstructionReport,
+) -> Path:
+    """Write one deterministic per-character parsimony reconstruction summary table."""
+    return write_taxon_rows(
+        path,
+        columns=["character_id", "step_count", "observed_states", "root_state"],
+        rows=[
+            {
+                "character_id": row.character_id,
+                "step_count": row.step_count,
+                "observed_states": "|".join(row.observed_states),
+                "root_state": row.root_state,
+            }
+            for row in report.step_rows
+        ],
+    )
+
+
+def write_parsimony_reconstruction_node_state_table(
+    path: Path,
+    report: ParsimonyReconstructionReport,
+) -> Path:
+    """Write one deterministic resolved-node-state table for a parsimony reconstruction."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "character_id",
+            "node",
+            "node_name",
+            "descendant_taxa",
+            "resolved_state",
+            "is_tip",
+            "observed_state",
+        ],
+        rows=[
+            {
+                "character_id": row.character_id,
+                "node": row.node,
+                "node_name": row.node_name,
+                "descendant_taxa": "|".join(row.descendant_taxa),
+                "resolved_state": row.resolved_state,
+                "is_tip": row.is_tip,
+                "observed_state": row.observed_state,
+            }
+            for row in report.node_state_rows
+        ],
+    )
+
+
+def write_parsimony_reconstruction_branch_change_table(
+    path: Path,
+    report: ParsimonyReconstructionReport,
+) -> Path:
+    """Write one deterministic branch-change table for a parsimony reconstruction."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "character_id",
+            "parent_node",
+            "parent_state",
+            "node",
+            "node_name",
+            "descendant_taxa",
+            "change_from",
+            "change_to",
+        ],
+        rows=[
+            {
+                "character_id": row.character_id,
+                "parent_node": row.parent_node,
+                "parent_state": row.parent_state,
+                "node": row.node,
+                "node_name": row.node_name,
+                "descendant_taxa": "|".join(row.descendant_taxa),
+                "change_from": row.change_from,
+                "change_to": row.change_to,
+            }
+            for row in report.branch_change_rows
+        ],
+    )
+
+
+def write_parsimony_reconstruction_run_json(
+    path: Path,
+    report: ParsimonyReconstructionReport,
+) -> Path:
+    """Write one machine-readable parsimony reconstruction payload."""
+    return write_json_artifact(
+        path,
+        {
+            "algorithm": report.algorithm,
+            "tree_path": None if report.tree_path is None else str(report.tree_path),
+            "matrix_path": None
+            if report.matrix_path is None
+            else str(report.matrix_path),
+            "taxon_column": report.taxon_column,
+            "taxon_count": report.taxon_count,
+            "character_count": report.character_count,
+            "total_steps": report.total_steps,
+            "step_rows": [
+                {
+                    "character_id": row.character_id,
+                    "step_count": row.step_count,
+                    "observed_states": row.observed_states,
+                    "root_state": row.root_state,
+                }
+                for row in report.step_rows
+            ],
+            "node_state_rows": [
+                {
+                    "character_id": row.character_id,
+                    "node": row.node,
+                    "node_name": row.node_name,
+                    "descendant_taxa": row.descendant_taxa,
+                    "resolved_state": row.resolved_state,
+                    "is_tip": row.is_tip,
+                    "observed_state": row.observed_state,
+                }
+                for row in report.node_state_rows
+            ],
+            "branch_change_rows": [
+                {
+                    "character_id": row.character_id,
+                    "parent_node": row.parent_node,
+                    "parent_state": row.parent_state,
+                    "node": row.node,
+                    "node_name": row.node_name,
+                    "descendant_taxa": row.descendant_taxa,
+                    "change_from": row.change_from,
+                    "change_to": row.change_to,
+                }
+                for row in report.branch_change_rows
+            ],
+        },
+    )
+
+
+def write_parsimony_reconstruction_artifacts(
+    out_dir: Path,
+    report: ParsimonyReconstructionReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one parsimony reconstruction."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    steps_path = write_parsimony_reconstruction_steps_table(out_dir / "steps.tsv", report)
+    node_states_path = write_parsimony_reconstruction_node_state_table(
+        out_dir / "resolved_states.tsv",
+        report,
+    )
+    branch_changes_path = write_parsimony_reconstruction_branch_change_table(
+        out_dir / "branch_changes.tsv",
+        report,
+    )
+    run_json_path = write_parsimony_reconstruction_run_json(out_dir / "run.json", report)
+    return {
+        "steps_path": steps_path,
+        "node_states_path": node_states_path,
         "branch_changes_path": branch_changes_path,
         "run_json_path": run_json_path,
     }
