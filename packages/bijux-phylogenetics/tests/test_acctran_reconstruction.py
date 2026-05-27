@@ -41,18 +41,34 @@ def test_reconstruct_acctran_resolves_ambiguous_changes_toward_earlier_branches(
         ("char01_ambiguous", 2, "0"),
     ]
     assert [
-        (row.character_id, row.node, row.change_from, row.change_to)
+        (
+            row.branch_id,
+            row.parent_node,
+            row.child_node,
+            row.character_id,
+            row.change_from,
+            row.change_to,
+            row.ambiguous,
+        )
         for row in acctran_report.branch_change_rows
     ] == [
-        ("char01_ambiguous", "C|D|E", "0", "1"),
-        ("char01_ambiguous", "D", "1", "0"),
+        ("C|D|E", "A|B|C|D|E", "C|D|E", "char01_ambiguous", "0", "1", False),
+        ("D", "D|E", "D", "char01_ambiguous", "1", "0", False),
     ]
     assert [
-        (row.character_id, row.node, row.change_from, row.change_to)
+        (
+            row.branch_id,
+            row.parent_node,
+            row.child_node,
+            row.character_id,
+            row.change_from,
+            row.change_to,
+            row.ambiguous,
+        )
         for row in deltran_report.branch_change_rows
     ] == [
-        ("char01_ambiguous", "C", "0", "1"),
-        ("char01_ambiguous", "E", "0", "1"),
+        ("C", "C|D|E", "C", "char01_ambiguous", "0", "1", False),
+        ("E", "D|E", "E", "char01_ambiguous", "0", "1", False),
     ]
     resolved_states = {
         (row.character_id, row.node): row.resolved_state
@@ -130,12 +146,38 @@ def test_write_acctran_artifacts_materializes_governed_output_family(
         "node_id\tclade_id\tcharacter_id\tpossible_states\tchosen_state\tmethod\tambiguous\n"
     )
     assert outputs["branch_changes_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tparent_node\tparent_state\tnode\tnode_name\tdescendant_taxa\tchange_from\tchange_to\n"
+        "branch_id\tcharacter_id\tparent_node\tchild_node\tchild_node_name\tchild_descendant_taxa\tchange_from\tchange_to\tambiguous\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "acctran"
     assert payload["total_steps"] == 2
     assert payload["total_weighted_score"] == 2.0
+    assert payload["branch_change_rows"] == [
+        {
+            "ambiguous": False,
+            "branch_id": "C|D|E",
+            "character_id": "char01_ambiguous",
+            "change_from": "0",
+            "change_to": "1",
+            "child_descendant_taxa": ["C", "D", "E"],
+            "child_node": "C|D|E",
+            "child_node_name": None,
+            "parent_node": "A|B|C|D|E",
+            "parent_state": "0",
+        },
+        {
+            "ambiguous": False,
+            "branch_id": "D",
+            "character_id": "char01_ambiguous",
+            "change_from": "1",
+            "change_to": "0",
+            "child_descendant_taxa": ["D"],
+            "child_node": "D",
+            "child_node_name": "D",
+            "parent_node": "D|E",
+            "parent_state": "1",
+        },
+    ]
     assert payload["ancestral_state_rows"] == [
         {
             "ambiguous": True,
@@ -173,4 +215,26 @@ def test_write_acctran_artifacts_materializes_governed_output_family(
             "node_id": "D|E",
             "possible_states": ["0", "1"],
         },
+    ]
+
+
+def test_reconstruct_acctran_marks_ambiguous_branch_change_mapping() -> None:
+    report = reconstruct_acctran(
+        fixture("branch_change_mapping_tree_4_taxa.nwk"),
+        fixture("branch_change_mapping_multistate_matrix.tsv"),
+    )
+
+    assert [
+        (
+            row.branch_id,
+            row.parent_node,
+            row.child_node,
+            row.change_from,
+            row.change_to,
+            row.ambiguous,
+        )
+        for row in report.branch_change_rows
+    ] == [
+        ("C|D", "A|B|C|D", "C|D", "0", "1", True),
+        ("D", "C|D", "D", "1", "2", False),
     ]
