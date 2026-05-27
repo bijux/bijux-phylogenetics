@@ -126,3 +126,30 @@ def invariant_mixture_site_likelihood(
         validated_invariant_proportion * invariant_component_likelihood
         + ((1.0 - validated_invariant_proportion) * variable_component_likelihood)
     )
+
+
+def invariant_proportion_boundary_warnings(
+    *,
+    invariant_proportion: float,
+    lower_invariant_proportion_bound: float,
+    upper_invariant_proportion_bound: float,
+    boundary_tolerance: float = 1e-9,
+) -> tuple[bool, bool, list[str]]:
+    hit_lower_boundary = math.isclose(
+        invariant_proportion,
+        lower_invariant_proportion_bound,
+        rel_tol=0.0,
+        abs_tol=boundary_tolerance,
+    )
+    hit_upper_boundary = math.isclose(
+        invariant_proportion,
+        upper_invariant_proportion_bound,
+        rel_tol=0.0,
+        abs_tol=boundary_tolerance,
+    )
+    warnings: list[str] = []
+    if hit_lower_boundary:
+        warnings.append("invariant proportion hit lower search boundary")
+    if hit_upper_boundary:
+        warnings.append("invariant proportion hit upper search boundary")
+    return hit_lower_boundary, hit_upper_boundary, warnings
