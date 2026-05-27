@@ -299,8 +299,10 @@ bijux-phylogenetics alignment distance-saturation alignment.fasta --model jukes-
 bijux-phylogenetics alignment distance-suitability alignment.fasta --model jukes-cantor --json
 bijux-phylogenetics alignment distance-assumptions alignment.fasta --model p-distance --json
 bijux-phylogenetics alignment build-tree alignment.fasta --method bionj --out bionj-tree.nwk
+bijux-phylogenetics alignment build-tree alignment.fasta --method neighbor-joining --missing-distance-policy nearest-valid --out alignment-tree.nwk
 bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out upgma-tree.nwk
 bijux-phylogenetics alignment build-tree alignment.fasta --method complete-linkage --out complete-linkage-tree.nwk
+bijux-phylogenetics distance build-tree distances.tsv --method neighbor-joining --missing-distance-policy triangle-bound --out distance-tree.nwk
 bijux-phylogenetics distance minimum-evolution matrix.tsv fixed-topology.nwk --out fitted-tree.nwk
 bijux-phylogenetics distance fitch-margoliash matrix.tsv fixed-topology.nwk --out fitted-tree.nwk --json
 bijux-phylogenetics distance ordinary-least-squares matrix.tsv fixed-topology.nwk --out fitted-tree.nwk --json
@@ -2134,6 +2136,10 @@ pair-level saturation diagnostics through `alignment distance-saturation`.
 JC69, K80, and TN93 corrected distances that become undefined or tend to
 infinity now produce governed pair warnings and block distance-tree inference
 before NJ, BIONJ, or linkage builders are called.
+That same tree-building lane now also owns missing-distance handling through
+one explicit policy engine. Alignment-derived and imported matrices can reject
+incomplete pairs or impute them by mean distance, nearest valid distance, or
+the tightest available triangle bound before distance-tree inference runs.
 Imported distance matrices can also start from one owned NJ or BIONJ tree and
 be hill-climbed by rooted NNI under the owned balanced minimum-evolution
 objective, with governed search traces that record each accepted objective
