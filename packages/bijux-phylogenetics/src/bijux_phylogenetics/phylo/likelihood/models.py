@@ -272,6 +272,35 @@ class FixedTopologySiteLogLikelihoodReport:
 
 
 @dataclass(slots=True)
+class MarginalAncestralStateProbabilityRow:
+    """One internal-node posterior probability for one site and one state."""
+
+    node_id: str
+    node_name: str | None
+    descendant_taxa: list[str]
+    pattern_id: str
+    site_position: int
+    state: str
+    posterior_probability: float
+
+
+@dataclass(slots=True)
+class MarginalAncestralSequenceProbabilityReport:
+    """Expanded internal-node marginal sequence posterior report."""
+
+    model_name: str
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    internal_node_count: int
+    compression_used: bool
+    expansion_policy: str
+    tree_newick: str
+    parameter_values: dict[str, float]
+    posterior_rows: list[MarginalAncestralStateProbabilityRow]
+
+
+@dataclass(slots=True)
 class ProteinPoissonTreeLikelihoodReport:
     """Native 20-state protein Poisson likelihood report for one fixed topology."""
 

@@ -210,6 +210,12 @@ from .models import (
     FixedTopologySiteLogLikelihoodReport as FixedTopologySiteLogLikelihoodReport,
 )
 from .models import (
+    MarginalAncestralSequenceProbabilityReport as MarginalAncestralSequenceProbabilityReport,
+)
+from .models import (
+    MarginalAncestralStateProbabilityRow as MarginalAncestralStateProbabilityRow,
+)
+from .models import (
     NucleotideSubstitutionParameterOptimizationReport as NucleotideSubstitutionParameterOptimizationReport,
 )
 from .models import (
