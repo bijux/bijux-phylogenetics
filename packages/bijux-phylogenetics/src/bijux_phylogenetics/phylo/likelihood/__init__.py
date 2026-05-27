@@ -207,7 +207,13 @@ from .models import (
     K80TreeLikelihoodReport as K80TreeLikelihoodReport,
 )
 from .models import (
+    FixedTopologySiteLogLikelihoodReport as FixedTopologySiteLogLikelihoodReport,
+)
+from .models import (
     NucleotideSubstitutionParameterOptimizationReport as NucleotideSubstitutionParameterOptimizationReport,
+)
+from .models import (
+    SiteLogLikelihoodRow as SiteLogLikelihoodRow,
 )
 from .models import (
     SubstitutionParameterOptimizationRow as SubstitutionParameterOptimizationRow,
@@ -245,6 +251,18 @@ from .sites import (
 from .sites import (
     sum_compressed_site_pattern_log_likelihoods as sum_compressed_site_pattern_log_likelihoods,
 )
+from .sites import (
+    write_site_log_likelihood_table as write_site_log_likelihood_table,
+)
+from .site_log_likelihoods import (
+    evaluate_nucleotide_site_log_likelihoods as evaluate_nucleotide_site_log_likelihoods,
+)
+from .site_log_likelihoods import (
+    evaluate_nucleotide_site_log_likelihoods_from_alignment as evaluate_nucleotide_site_log_likelihoods_from_alignment,
+)
+from .site_log_likelihoods import (
+    validate_nucleotide_site_log_likelihood_model as validate_nucleotide_site_log_likelihood_model,
+)
 from .substitution_parameters import (
     optimize_nucleotide_substitution_parameters as optimize_nucleotide_substitution_parameters,
 )
@@ -264,6 +282,7 @@ __all__ = [
     "DiscreteGammaSiteLikelihood",
     "F81TreeLikelihoodReport",
     "FiniteStatePruningPass",
+    "FixedTopologySiteLogLikelihoodReport",
     "GtrExchangeabilityOptimizationReport",
     "GtrTreeLikelihoodReport",
     "Hky85KappaOptimizationReport",
@@ -280,6 +299,7 @@ __all__ = [
     "ProteinEmpiricalInvariantMixtureTreeLikelihoodReport",
     "ProteinEmpiricalMatrixTreeLikelihoodReport",
     "ProteinPoissonTreeLikelihoodReport",
+    "SiteLogLikelihoodRow",
     "SubstitutionParameterOptimizationRow",
     "InvariantMixtureSiteLikelihood",
     "alignment_site_columns",
@@ -336,8 +356,12 @@ __all__ = [
     "postorder_conditional_likelihoods",
     "protein_poisson_rate_matrix",
     "protein_poisson_transition_probability_matrix",
+    "evaluate_nucleotide_site_log_likelihoods",
+    "evaluate_nucleotide_site_log_likelihoods_from_alignment",
     "sum_alignment_site_log_likelihoods",
     "sum_compressed_site_pattern_log_likelihoods",
     "transition_probability_matrix",
+    "validate_nucleotide_site_log_likelihood_model",
     "validate_nucleotide_substitution_optimization_model",
+    "write_site_log_likelihood_table",
 ]
