@@ -44,6 +44,57 @@ def normalize_unambiguous_dna_records(
     return normalized_records
 
 
+def estimate_empirical_dna_base_frequencies(
+    records: list[AlignmentRecord],
+) -> numpy.ndarray:
+    counts = numpy.zeros(len(DNA_STATE_ORDER), dtype=float)
+    for record in records:
+        for symbol in record.sequence.upper():
+            counts[DNA_STATE_INDEX[symbol]] += 1.0
+    total = float(counts.sum())
+    if total <= 0.0:
+        raise InvalidAlignmentError(
+            "DNA likelihood base-frequency estimation requires at least one resolved nucleotide"
+        )
+    return counts / total
+
+
+def validate_dna_base_frequencies(
+    base_frequencies: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...],
+    *,
+    model_name: str,
+) -> numpy.ndarray:
+    if isinstance(base_frequencies, dict):
+        if set(base_frequencies) != set(DNA_STATE_ORDER):
+            raise InvalidAlignmentError(
+                f"{model_name} likelihood requires base frequencies for exactly A, C, G, and T"
+            )
+        vector = numpy.array(
+            [float(base_frequencies[state]) for state in DNA_STATE_ORDER],
+            dtype=float,
+        )
+    else:
+        vector = numpy.asarray(base_frequencies, dtype=float)
+    if vector.shape != (len(DNA_STATE_ORDER),):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood requires exactly four base frequencies in A/C/G/T order"
+        )
+    if not numpy.all(numpy.isfinite(vector)):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood base frequencies must all be finite"
+        )
+    if numpy.any(vector < 0.0):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood base frequencies must be nonnegative"
+        )
+    total = float(vector.sum())
+    if total <= 0.0:
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood base frequencies must sum to a positive value"
+        )
+    return vector / total
+
+
 def validate_explicit_branch_lengths(
     tree: PhyloTree,
     *,
