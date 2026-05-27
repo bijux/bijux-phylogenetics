@@ -134,7 +134,7 @@ def test_write_fitch_artifacts_materializes_governed_output_family(
 
     assert set(outputs) == {"steps_path", "node_state_sets_path", "run_json_path"}
     assert outputs["steps_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tstep_count\tobserved_states\n"
+        "character_id\tstep_count\tobserved_states\tcharacter_weight\tweighted_score\n"
     )
     assert outputs["node_state_sets_path"].read_text(encoding="utf-8").startswith(
         "character_id\tnode\tnode_name\tdescendant_taxa\tis_tip\tobserved_state\tstate_set\n"
@@ -142,3 +142,4 @@ def test_write_fitch_artifacts_materializes_governed_output_family(
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "unordered-fitch"
     assert payload["total_steps"] == 2
+    assert payload["total_weighted_score"] == 2.0

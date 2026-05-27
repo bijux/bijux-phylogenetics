@@ -23,12 +23,20 @@ def write_fitch_steps_table(path: Path, report: FitchScoreReport) -> Path:
     """Write one deterministic per-character Fitch tree-length table."""
     return write_taxon_rows(
         path,
-        columns=["character_id", "step_count", "observed_states"],
+        columns=[
+            "character_id",
+            "step_count",
+            "observed_states",
+            "character_weight",
+            "weighted_score",
+        ],
         rows=[
             {
                 "character_id": row.character_id,
                 "step_count": row.step_count,
                 "observed_states": "|".join(row.observed_states),
+                "character_weight": row.character_weight,
+                "weighted_score": row.weighted_score,
             }
             for row in report.step_rows
         ],
@@ -77,11 +85,17 @@ def write_fitch_run_json(path: Path, report: FitchScoreReport) -> Path:
             "taxon_count": report.taxon_count,
             "character_count": report.character_count,
             "total_steps": report.total_steps,
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "total_weighted_score": report.total_weighted_score,
             "step_rows": [
                 {
                     "character_id": row.character_id,
                     "step_count": row.step_count,
                     "observed_states": row.observed_states,
+                    "character_weight": row.character_weight,
+                    "weighted_score": row.weighted_score,
                 }
                 for row in report.step_rows
             ],
@@ -130,6 +144,8 @@ def write_wagner_steps_table(path: Path, report: WagnerScoreReport) -> Path:
             "observed_states",
             "state_order",
             "optimal_root_states",
+            "character_weight",
+            "weighted_score",
         ],
         rows=[
             {
@@ -138,6 +154,8 @@ def write_wagner_steps_table(path: Path, report: WagnerScoreReport) -> Path:
                 "observed_states": "|".join(row.observed_states),
                 "state_order": "|".join(row.state_order),
                 "optimal_root_states": "|".join(row.optimal_root_states),
+                "character_weight": row.character_weight,
+                "weighted_score": row.weighted_score,
             }
             for row in report.step_rows
         ],
@@ -186,6 +204,10 @@ def write_wagner_run_json(path: Path, report: WagnerScoreReport) -> Path:
             "taxon_count": report.taxon_count,
             "character_count": report.character_count,
             "total_cost": report.total_cost,
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "total_weighted_score": report.total_weighted_score,
             "step_rows": [
                 {
                     "character_id": row.character_id,
@@ -193,6 +215,8 @@ def write_wagner_run_json(path: Path, report: WagnerScoreReport) -> Path:
                     "observed_states": row.observed_states,
                     "state_order": row.state_order,
                     "optimal_root_states": row.optimal_root_states,
+                    "character_weight": row.character_weight,
+                    "weighted_score": row.weighted_score,
                 }
                 for row in report.step_rows
             ],
@@ -232,13 +256,22 @@ def write_sankoff_steps_table(path: Path, report: SankoffScoreReport) -> Path:
     """Write one deterministic per-character Sankoff minimum-cost table."""
     return write_taxon_rows(
         path,
-        columns=["character_id", "minimum_cost", "observed_states", "matrix_states"],
+        columns=[
+            "character_id",
+            "minimum_cost",
+            "observed_states",
+            "matrix_states",
+            "character_weight",
+            "weighted_score",
+        ],
         rows=[
             {
                 "character_id": row.character_id,
                 "minimum_cost": row.minimum_cost,
                 "observed_states": "|".join(row.observed_states),
                 "matrix_states": "|".join(row.matrix_states),
+                "character_weight": row.character_weight,
+                "weighted_score": row.weighted_score,
             }
             for row in report.step_rows
         ],
@@ -316,12 +349,18 @@ def write_sankoff_run_json(path: Path, report: SankoffScoreReport) -> Path:
             "taxon_count": report.taxon_count,
             "character_count": report.character_count,
             "total_cost": report.total_cost,
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "total_weighted_score": report.total_weighted_score,
             "step_rows": [
                 {
                     "character_id": row.character_id,
                     "minimum_cost": row.minimum_cost,
                     "observed_states": row.observed_states,
                     "matrix_states": row.matrix_states,
+                    "character_weight": row.character_weight,
+                    "weighted_score": row.weighted_score,
                 }
                 for row in report.step_rows
             ],
@@ -385,6 +424,9 @@ def write_dollo_steps_table(path: Path, report: DolloScoreReport) -> Path:
             "gain_descendant_taxa",
             "total_losses",
             "impossible_state_warning",
+            "step_count",
+            "character_weight",
+            "weighted_score",
         ],
         rows=[
             {
@@ -395,6 +437,9 @@ def write_dollo_steps_table(path: Path, report: DolloScoreReport) -> Path:
                 "gain_descendant_taxa": "|".join(row.gain_descendant_taxa),
                 "total_losses": row.total_losses,
                 "impossible_state_warning": row.impossible_state_warning,
+                "step_count": row.step_count,
+                "character_weight": row.character_weight,
+                "weighted_score": row.weighted_score,
             }
             for row in report.step_rows
         ],
@@ -434,6 +479,10 @@ def write_dollo_run_json(path: Path, report: DolloScoreReport) -> Path:
             "character_count": report.character_count,
             "total_gains": report.total_gains,
             "total_losses": report.total_losses,
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "total_weighted_score": report.total_weighted_score,
             "step_rows": [
                 {
                     "character_id": row.character_id,
@@ -443,6 +492,9 @@ def write_dollo_run_json(path: Path, report: DolloScoreReport) -> Path:
                     "gain_descendant_taxa": row.gain_descendant_taxa,
                     "total_losses": row.total_losses,
                     "impossible_state_warning": row.impossible_state_warning,
+                    "step_count": row.step_count,
+                    "character_weight": row.character_weight,
+                    "weighted_score": row.weighted_score,
                 }
                 for row in report.step_rows
             ],
@@ -483,13 +535,22 @@ def write_camin_sokal_steps_table(path: Path, report: CaminSokalScoreReport) -> 
     """Write one deterministic per-character Camin-Sokal summary table."""
     return write_taxon_rows(
         path,
-        columns=["character_id", "derived_taxon_count", "gain_count", "root_state"],
+        columns=[
+            "character_id",
+            "derived_taxon_count",
+            "gain_count",
+            "root_state",
+            "character_weight",
+            "weighted_score",
+        ],
         rows=[
             {
                 "character_id": row.character_id,
                 "derived_taxon_count": row.derived_taxon_count,
                 "gain_count": row.gain_count,
                 "root_state": row.root_state,
+                "character_weight": row.character_weight,
+                "weighted_score": row.weighted_score,
             }
             for row in report.step_rows
         ],
@@ -532,12 +593,18 @@ def write_camin_sokal_run_json(path: Path, report: CaminSokalScoreReport) -> Pat
             "character_count": report.character_count,
             "root_state": report.root_state,
             "total_gains": report.total_gains,
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "total_weighted_score": report.total_weighted_score,
             "step_rows": [
                 {
                     "character_id": row.character_id,
                     "derived_taxon_count": row.derived_taxon_count,
                     "gain_count": row.gain_count,
                     "root_state": row.root_state,
+                    "character_weight": row.character_weight,
+                    "weighted_score": row.weighted_score,
                 }
                 for row in report.step_rows
             ],
@@ -581,13 +648,22 @@ def write_parsimony_reconstruction_steps_table(
     """Write one deterministic per-character parsimony reconstruction summary table."""
     return write_taxon_rows(
         path,
-        columns=["character_id", "step_count", "observed_states", "root_state"],
+        columns=[
+            "character_id",
+            "step_count",
+            "observed_states",
+            "root_state",
+            "character_weight",
+            "weighted_score",
+        ],
         rows=[
             {
                 "character_id": row.character_id,
                 "step_count": row.step_count,
                 "observed_states": "|".join(row.observed_states),
                 "root_state": row.root_state,
+                "character_weight": row.character_weight,
+                "weighted_score": row.weighted_score,
             }
             for row in report.step_rows
         ],
@@ -675,12 +751,18 @@ def write_parsimony_reconstruction_run_json(
             "taxon_count": report.taxon_count,
             "character_count": report.character_count,
             "total_steps": report.total_steps,
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "total_weighted_score": report.total_weighted_score,
             "step_rows": [
                 {
                     "character_id": row.character_id,
                     "step_count": row.step_count,
                     "observed_states": row.observed_states,
                     "root_state": row.root_state,
+                    "character_weight": row.character_weight,
+                    "weighted_score": row.weighted_score,
                 }
                 for row in report.step_rows
             ],

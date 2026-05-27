@@ -106,7 +106,7 @@ def test_write_camin_sokal_artifacts_materializes_governed_output_family(
 
     assert set(outputs) == {"steps_path", "branch_changes_path", "run_json_path"}
     assert outputs["steps_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tderived_taxon_count\tgain_count\troot_state\n"
+        "character_id\tderived_taxon_count\tgain_count\troot_state\tcharacter_weight\tweighted_score\n"
     )
     assert outputs["branch_changes_path"].read_text(encoding="utf-8").startswith(
         "character_id\tchange_kind\tnode\tnode_name\tdescendant_taxa\n"
@@ -115,3 +115,4 @@ def test_write_camin_sokal_artifacts_materializes_governed_output_family(
     assert payload["algorithm"] == "camin-sokal"
     assert payload["root_state"] == "0"
     assert payload["total_gains"] == 3
+    assert payload["total_weighted_score"] == 3.0

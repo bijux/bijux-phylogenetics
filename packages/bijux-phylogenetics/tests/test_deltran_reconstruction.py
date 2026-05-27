@@ -82,7 +82,7 @@ def test_write_deltran_artifacts_materializes_governed_output_family(
         "run_json_path",
     }
     assert outputs["steps_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tstep_count\tobserved_states\troot_state\n"
+        "character_id\tstep_count\tobserved_states\troot_state\tcharacter_weight\tweighted_score\n"
     )
     assert outputs["node_states_path"].read_text(encoding="utf-8").startswith(
         "character_id\tnode\tnode_name\tdescendant_taxa\tresolved_state\tis_tip\tobserved_state\n"
@@ -93,3 +93,4 @@ def test_write_deltran_artifacts_materializes_governed_output_family(
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "deltran"
     assert payload["total_steps"] == 2
+    assert payload["total_weighted_score"] == 2.0

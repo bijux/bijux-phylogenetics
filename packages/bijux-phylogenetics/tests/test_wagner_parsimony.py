@@ -107,7 +107,7 @@ def test_write_wagner_artifacts_materializes_governed_output_family(
 
     assert set(outputs) == {"steps_path", "node_costs_path", "run_json_path"}
     assert outputs["steps_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tweighted_step_count\tobserved_states\tstate_order\toptimal_root_states\n"
+        "character_id\tweighted_step_count\tobserved_states\tstate_order\toptimal_root_states\tcharacter_weight\tweighted_score\n"
     )
     assert outputs["node_costs_path"].read_text(encoding="utf-8").startswith(
         "character_id\tnode\tnode_name\tdescendant_taxa\tstate\tcost\tis_optimal_state\n"
@@ -115,3 +115,4 @@ def test_write_wagner_artifacts_materializes_governed_output_family(
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "ordered-wagner"
     assert payload["total_cost"] == 6
+    assert payload["total_weighted_score"] == 6.0

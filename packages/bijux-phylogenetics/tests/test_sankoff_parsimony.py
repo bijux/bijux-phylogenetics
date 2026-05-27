@@ -134,7 +134,7 @@ def test_write_sankoff_artifacts_materializes_governed_output_family(
         "run_json_path",
     }
     assert outputs["steps_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tminimum_cost\tobserved_states\tmatrix_states\n"
+        "character_id\tminimum_cost\tobserved_states\tmatrix_states\tcharacter_weight\tweighted_score\n"
     )
     assert outputs["node_costs_path"].read_text(encoding="utf-8").startswith(
         "character_id\tnode\tnode_name\tdescendant_taxa\tstate\tcost\tis_optimal_state\n"
@@ -145,3 +145,4 @@ def test_write_sankoff_artifacts_materializes_governed_output_family(
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "sankoff"
     assert payload["total_cost"] == 3.0
+    assert payload["total_weighted_score"] == 3.0
