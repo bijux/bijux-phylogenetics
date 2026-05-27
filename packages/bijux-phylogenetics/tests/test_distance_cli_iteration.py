@@ -452,6 +452,52 @@ def test_cli_distance_patristic_residuals_writes_ranked_artifacts(
     assert run_payload["rows"][0]["rank"] == 1
 
 
+def test_cli_distance_taxon_influence_writes_ranked_artifacts(
+    tmp_path: Path, capsys
+) -> None:
+    out_dir = tmp_path / "taxon-influence"
+    exit_code = main(
+        [
+            "distance",
+            "taxon-influence",
+            str(
+                fixture(
+                    "example_distance_matrix_taxon_influence_missing_noisy_five_taxon.tsv"
+                )
+            ),
+            str(fixture("example_tree_minimum_evolution_five_taxon.nwk")),
+            "--method",
+            "neighbor-joining",
+            "--missing-distance-policy",
+            "mean-impute",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    influence_lines = (out_dir / "taxon_influence.tsv").read_text(
+        encoding="utf-8"
+    ).splitlines()
+    run_payload = json.loads((out_dir / "run.json").read_text(encoding="utf-8"))
+    assert exit_code == 0
+    assert influence_lines[:3] == [
+        "influence_rank\ttaxon\tretained_taxa\traw_missing_pair_count\tbaseline_residual_sum_squares\tleave_one_out_residual_sum_squares\tresidual_sum_squares_improvement\tbaseline_rooted_robinson_foulds_distance\tleave_one_out_rooted_robinson_foulds_distance\trooted_robinson_foulds_improvement\tbaseline_rooted_normalized_robinson_foulds\tleave_one_out_rooted_normalized_robinson_foulds\trooted_normalized_robinson_foulds_improvement\ttopology_improved\tresidual_improved",
+        "1\tB\tA|C|D|E\t0\t20.6342592593\t1.21\t19.4242592593\t4\t2\t2\t1\t1\t0\ttrue\ttrue",
+        "2\tA\tB|C|D|E\t1\t20.6342592593\t2.25\t18.3842592593\t4\t2\t2\t1\t1\t0\ttrue\ttrue",
+    ]
+    assert payload["metrics"]["criterion"] == "distance-taxon-influence"
+    assert payload["metrics"]["taxon_count"] == 5
+    assert payload["metrics"]["baseline_residual_sum_squares"] == 20.634259259263
+    assert payload["metrics"]["baseline_rooted_robinson_foulds_distance"] == 4
+    assert payload["metrics"]["top_taxon"] == "B"
+    assert run_payload["baseline_residual_sum_squares"] == 20.634259259263
+    assert run_payload["rows"][0]["taxon"] == "B"
+    assert run_payload["rows"][0]["raw_missing_pair_count"] == 0
+    assert run_payload["rows"][1]["taxon"] == "A"
+    assert run_payload["rows"][1]["raw_missing_pair_count"] == 1
+
+
 def test_cli_distance_bme_nni_search_writes_governed_artifacts(
     tmp_path: Path, capsys
 ) -> None:
