@@ -79,3 +79,22 @@ class K80KappaOptimizationReport:
     converged: bool
     lower_kappa_bound: float
     upper_kappa_bound: float
+
+
+@dataclass(slots=True)
+class F81TreeLikelihoodReport:
+    """Native F81 likelihood report for one fixed topology and alignment."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    base_frequency_source: str
+    base_frequency_a: float
+    base_frequency_c: float
+    base_frequency_g: float
+    base_frequency_t: float
+    parameter_count: int
+    log_likelihood: float
+    aic: float
