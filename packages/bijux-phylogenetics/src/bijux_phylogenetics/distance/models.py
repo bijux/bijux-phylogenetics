@@ -190,6 +190,32 @@ class NonnegativeLeastSquaresFitReport:
 
 
 @dataclass(frozen=True, slots=True)
+class PatristicResidualRow:
+    """One observed-versus-tree distance residual for a unique taxon pair."""
+
+    left_identifier: str
+    right_identifier: str
+    observed_distance: float
+    fitted_distance: float
+    residual: float
+    absolute_residual: float
+    rank: int
+
+
+@dataclass(slots=True)
+class PatristicResidualDiagnosticsReport:
+    """Observed-versus-tree patristic residual diagnostics for one distance matrix."""
+
+    matrix_path: Path | None
+    tree_path: Path | None
+    taxa: list[str]
+    pair_count: int
+    residual_sum_squares: float
+    max_absolute_residual: float
+    rows: list[PatristicResidualRow]
+
+
+@dataclass(frozen=True, slots=True)
 class BalancedMinimumEvolutionNniTraceRow:
     """One deterministic event row in a rooted BME NNI search trace."""
 

@@ -47,6 +47,8 @@ from .models import (
     NonnegativeLeastSquaresFitReport as NonnegativeLeastSquaresFitReport,
     OrdinaryLeastSquaresBranchFit as OrdinaryLeastSquaresBranchFit,
     OrdinaryLeastSquaresFitReport as OrdinaryLeastSquaresFitReport,
+    PatristicResidualDiagnosticsReport as PatristicResidualDiagnosticsReport,
+    PatristicResidualRow as PatristicResidualRow,
     SaturatedDistancePair as SaturatedDistancePair,
     UPGMAUltrametricViolation as UPGMAUltrametricViolation,
 )
@@ -349,6 +351,40 @@ def fit_nonnegative_least_squares_tree_from_imported_distance_matrix(
     )
 
     return fit_impl(matrix_path, tree_path)
+
+
+def compute_patristic_residual_diagnostics(
+    tree: PhyloTree,
+    identifiers: list[str],
+    distance_lookup: dict[tuple[str, str], float],
+) -> PatristicResidualDiagnosticsReport:
+    from .patristic_residuals import (
+        compute_patristic_residual_diagnostics as compute_impl,
+    )
+
+    return compute_impl(tree, identifiers, distance_lookup)
+
+
+def compute_patristic_residual_diagnostics_from_imported_distance_matrix(
+    matrix_path: Path,
+    tree_path: Path,
+) -> PatristicResidualDiagnosticsReport:
+    from .patristic_residuals import (
+        compute_patristic_residual_diagnostics_from_imported_distance_matrix as compute_impl,
+    )
+
+    return compute_impl(matrix_path, tree_path)
+
+
+def write_patristic_residual_artifacts(
+    out_dir: Path,
+    report: PatristicResidualDiagnosticsReport,
+) -> dict[str, Path]:
+    from .patristic_residuals import (
+        write_patristic_residual_artifacts as write_impl,
+    )
+
+    return write_impl(out_dir, report)
 
 
 def score_balanced_minimum_evolution(
