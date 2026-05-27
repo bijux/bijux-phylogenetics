@@ -110,6 +110,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return [args.alignment]
         if args.alignment_command == "distance-saturation":
             return [args.alignment]
+        if args.alignment_command == "distance-additivity":
+            return [args.alignment, args.out_dir]
         if args.alignment_command == "distance-suitability":
             return [args.alignment]
         if args.alignment_command == "distance-assumptions":
@@ -126,6 +128,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "distance":
         if args.distance_command == "validate":
             return [args.matrix]
+        if args.distance_command == "additivity":
+            return [args.matrix, args.out_dir]
         if args.distance_command == "build-tree":
             return [args.matrix, args.out]
         if args.distance_command == "minimum-evolution":

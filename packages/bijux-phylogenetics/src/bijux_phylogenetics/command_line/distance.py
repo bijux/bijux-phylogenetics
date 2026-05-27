@@ -16,6 +16,7 @@ from bijux_phylogenetics.distance import (
     assess_imported_distance_method_assumptions,
     build_tree_from_imported_distance_matrix,
     compute_patristic_residual_diagnostics_from_imported_distance_matrix,
+    diagnose_imported_distance_matrix_additivity,
     diagnose_imported_distance_matrix_ultrametricity,
     fit_fitch_margoliash_tree_from_imported_distance_matrix,
     fit_minimum_evolution_tree_from_imported_distance_matrix,
@@ -25,6 +26,7 @@ from bijux_phylogenetics.distance import (
     search_balanced_minimum_evolution_nni_from_imported_distance_matrix,
     validate_distance_reference_examples,
     validate_imported_distance_matrix,
+    write_distance_additivity_artifacts,
     write_balanced_minimum_evolution_nni_artifacts,
     write_patristic_residual_artifacts,
 )
@@ -83,6 +85,18 @@ def add_distance_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the ultrametricity diagnostics as JSON."
     )
     _add_manifest_argument(distance_ultrametricity)
+
+    distance_additivity = distance_subparsers.add_parser(
+        "additivity",
+        help="Test quartet additivity through the four-point condition across all comparable imported-matrix quartets.",
+    )
+    distance_additivity.add_argument("matrix", type=Path)
+    _add_ultrametric_tolerance_argument(distance_additivity)
+    distance_additivity.add_argument("--out-dir", required=True, type=Path)
+    distance_additivity.add_argument(
+        "--json", action="store_true", help="Emit the additivity diagnostics as JSON."
+    )
+    _add_manifest_argument(distance_additivity)
 
     distance_build_tree = distance_subparsers.add_parser(
         "build-tree",
@@ -218,6 +232,38 @@ def add_distance_commands(subparsers: Any) -> None:
 
 
 def run_distance_command(args: Any) -> int:
+    if args.distance_command == "additivity":
+        report = diagnose_imported_distance_matrix_additivity(
+            args.matrix,
+            tolerance=args.tolerance,
+        )
+        artifact_paths = write_distance_additivity_artifacts(args.out_dir, report)
+        outputs = _finalize_outputs(
+            args,
+            command="distance",
+            inputs=[args.matrix],
+            outputs=list(artifact_paths.values()),
+        )
+        _print_result(
+            build_command_result(
+                command="distance",
+                inputs=[args.matrix],
+                outputs=outputs,
+                warnings=report.warnings,
+                metrics={
+                    "taxon_count": report.taxon_count,
+                    "tested_quartet_count": report.tested_quartet_count,
+                    "violating_quartet_count": len(report.violating_quartets),
+                    "max_violation": report.max_violation,
+                    "tolerance": report.tolerance,
+                    "additive": report.additive,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
     if args.distance_command == "ultrametricity":
         report = diagnose_imported_distance_matrix_ultrametricity(
             args.matrix,

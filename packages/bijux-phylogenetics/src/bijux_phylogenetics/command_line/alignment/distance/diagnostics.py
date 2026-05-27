@@ -7,10 +7,12 @@ from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.distance import (
+    diagnose_distance_additivity,
     diagnose_distance_saturation,
     diagnose_distance_ultrametricity,
     assess_distance_method_assumptions,
     inspect_distance_matrix_quality,
+    write_distance_additivity_artifacts,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
 
@@ -50,6 +52,21 @@ def add_distance_diagnostic_commands(alignment_subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the saturation diagnostics as JSON."
     )
     _add_manifest_argument(alignment_distance_saturation)
+
+    alignment_distance_additivity = alignment_subparsers.add_parser(
+        "distance-additivity",
+        help="Test quartet additivity through the four-point condition across all comparable alignment taxon quartets.",
+    )
+    alignment_distance_additivity.add_argument("alignment", type=Path)
+    add_distance_model_option(alignment_distance_additivity)
+    add_gap_handling_option(alignment_distance_additivity)
+    add_ambiguity_policy_option(alignment_distance_additivity)
+    _add_ultrametric_tolerance_argument(alignment_distance_additivity)
+    alignment_distance_additivity.add_argument("--out-dir", required=True, type=Path)
+    alignment_distance_additivity.add_argument(
+        "--json", action="store_true", help="Emit the additivity diagnostics as JSON."
+    )
+    _add_manifest_argument(alignment_distance_additivity)
 
     alignment_distance_ultrametricity = alignment_subparsers.add_parser(
         "distance-ultrametricity",
@@ -93,6 +110,41 @@ def add_distance_diagnostic_commands(alignment_subparsers: Any) -> None:
 
 
 def run_distance_diagnostic_command(args: Any) -> int | None:
+    if args.alignment_command == "distance-additivity":
+        report = diagnose_distance_additivity(
+            args.alignment,
+            model=args.model,
+            gap_handling=args.gap_handling,
+            ambiguity_policy=args.ambiguity_policy,
+            tolerance=args.tolerance,
+        )
+        artifact_paths = write_distance_additivity_artifacts(args.out_dir, report)
+        outputs = _finalize_outputs(
+            args,
+            command="alignment",
+            inputs=[args.alignment],
+            outputs=list(artifact_paths.values()),
+        )
+        _print_result(
+            build_command_result(
+                command="alignment",
+                inputs=[args.alignment],
+                outputs=outputs,
+                warnings=report.warnings,
+                metrics={
+                    "taxon_count": report.taxon_count,
+                    "tested_quartet_count": report.tested_quartet_count,
+                    "violating_quartet_count": len(report.violating_quartets),
+                    "max_violation": report.max_violation,
+                    "tolerance": report.tolerance,
+                    "additive": report.additive,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
     if args.alignment_command == "distance-ultrametricity":
         report = diagnose_distance_ultrametricity(
             args.alignment,
