@@ -407,6 +407,24 @@ from .nni_search import (
 from .nni_search import (
     write_nucleotide_likelihood_nni_trace_table as write_nucleotide_likelihood_nni_trace_table,
 )
+from .spr_search import (
+    search_nucleotide_likelihood_spr as search_nucleotide_likelihood_spr,
+)
+from .spr_search import (
+    search_nucleotide_likelihood_spr_from_alignment as search_nucleotide_likelihood_spr_from_alignment,
+)
+from .spr_search import (
+    validate_likelihood_spr_evaluation_budget as validate_likelihood_spr_evaluation_budget,
+)
+from .spr_search import (
+    write_nucleotide_likelihood_spr_artifacts as write_nucleotide_likelihood_spr_artifacts,
+)
+from .spr_search import (
+    write_nucleotide_likelihood_spr_run_json as write_nucleotide_likelihood_spr_run_json,
+)
+from .spr_search import (
+    write_nucleotide_likelihood_spr_trace_table as write_nucleotide_likelihood_spr_trace_table,
+)
 
 __all__ = [
     "AlignmentSitePattern",
@@ -522,6 +540,8 @@ __all__ = [
     "protein_poisson_transition_probability_matrix",
     "search_nucleotide_likelihood_nni",
     "search_nucleotide_likelihood_nni_from_alignment",
+    "search_nucleotide_likelihood_spr",
+    "search_nucleotide_likelihood_spr_from_alignment",
     "evaluate_nucleotide_site_log_likelihoods",
     "evaluate_nucleotide_site_log_likelihoods_from_alignment",
     "reconstruct_nucleotide_marginal_ancestral_sequences",
@@ -535,11 +555,15 @@ __all__ = [
     "validate_nucleotide_joint_ancestral_sequence_model",
     "validate_nucleotide_marginal_ancestral_probability_model",
     "validate_nucleotide_site_log_likelihood_model",
+    "validate_likelihood_spr_evaluation_budget",
     "validate_nucleotide_substitution_optimization_model",
     "write_marginal_ancestral_sequence_fasta",
     "write_marginal_ancestral_sequence_uncertainty_table",
     "write_nucleotide_likelihood_nni_artifacts",
     "write_nucleotide_likelihood_nni_run_json",
     "write_nucleotide_likelihood_nni_trace_table",
+    "write_nucleotide_likelihood_spr_artifacts",
+    "write_nucleotide_likelihood_spr_run_json",
+    "write_nucleotide_likelihood_spr_trace_table",
     "write_site_log_likelihood_table",
 ]

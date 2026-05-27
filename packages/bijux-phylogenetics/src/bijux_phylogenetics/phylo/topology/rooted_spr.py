@@ -83,11 +83,23 @@ def apply_rooted_spr_move(
     candidate: RootedSprMoveCandidate,
 ) -> PhyloTree:
     """Return one copied rooted tree with the selected SPR move applied."""
+    tree_has_explicit_branch_lengths = any(
+        child.branch_length is not None for _parent, child in tree.iter_edges()
+    )
     remainder_tree, pruned_subtree = prune_rooted_spr_subtree(
         tree,
         candidate.pruned_node_id,
     )
     if candidate.regraft_target_branch_id == _ROOT_REGRAFT_BRANCH_ID:
+        if tree_has_explicit_branch_lengths:
+            if remainder_tree.root.branch_length is None:
+                remainder_tree.root.branch_length = _seed_missing_rooted_spr_branch_length(
+                    pruned_subtree
+                )
+            if pruned_subtree.branch_length is None:
+                pruned_subtree.branch_length = _seed_missing_rooted_spr_branch_length(
+                    remainder_tree.root
+                )
         return PhyloTree(
             root=TreeNode(children=[remainder_tree.root, pruned_subtree]),
             source_format=remainder_tree.source_format,
@@ -98,7 +110,16 @@ def apply_rooted_spr_move(
         candidate.regraft_target_branch_id,
     )
     target_parent = regraft_target.parent
+    original_target_branch_length = regraft_target.branch_length
     inserted = TreeNode(children=[regraft_target, pruned_subtree])
+    if tree_has_explicit_branch_lengths:
+        if original_target_branch_length is not None:
+            inserted.branch_length = original_target_branch_length / 2.0
+            regraft_target.branch_length = original_target_branch_length / 2.0
+        else:
+            seeded_length = _seed_missing_rooted_spr_branch_length(pruned_subtree)
+            inserted.branch_length = seeded_length
+            regraft_target.branch_length = seeded_length
     if target_parent is None:
         return PhyloTree(
             root=inserted,
@@ -146,3 +167,10 @@ def _find_node_by_clade_id(tree: PhyloTree, clade_id: str) -> TreeNode:
         if rooted_spr_clade_id(node) == clade_id:
             return node
     raise KeyError(f"tree does not contain clade_id '{clade_id}'")
+
+
+def _seed_missing_rooted_spr_branch_length(node: TreeNode) -> float:
+    branch_length = node.branch_length
+    if branch_length is not None:
+        return branch_length
+    return 0.0
