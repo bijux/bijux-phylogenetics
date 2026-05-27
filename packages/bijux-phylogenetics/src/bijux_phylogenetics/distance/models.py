@@ -218,6 +218,38 @@ class PatristicResidualDiagnosticsReport:
 
 
 @dataclass(frozen=True, slots=True)
+class DistanceUltrametricityViolation:
+    """One taxon triple whose pairwise distances violate the three-point condition."""
+
+    left_identifier: str
+    middle_identifier: str
+    right_identifier: str
+    left_middle_distance: float
+    left_right_distance: float
+    middle_right_distance: float
+    second_largest_distance: float
+    largest_distance: float
+    violation: float
+
+
+@dataclass(slots=True)
+class DistanceUltrametricityDiagnosticsReport:
+    """Three-point ultrametricity diagnostics for one pairwise distance matrix."""
+
+    source_path: Path | None
+    source_kind: str
+    taxon_count: int
+    defined_pair_count: int
+    tested_triple_count: int
+    skipped_triple_count: int
+    tolerance: float
+    ultrametric: bool
+    max_violation: float
+    violating_triples: list[DistanceUltrametricityViolation]
+    warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
 class BalancedMinimumEvolutionNniTraceRow:
     """One deterministic event row in a rooted BME NNI search trace."""
 

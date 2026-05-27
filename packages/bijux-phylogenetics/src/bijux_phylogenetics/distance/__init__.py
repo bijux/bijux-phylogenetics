@@ -29,6 +29,8 @@ from .models import (
     DistanceTreeReferenceComparisonReport as DistanceTreeReferenceComparisonReport,
     DistanceTreeReferenceObservation as DistanceTreeReferenceObservation,
     DistanceTreeTopologyComparison as DistanceTreeTopologyComparison,
+    DistanceUltrametricityDiagnosticsReport as DistanceUltrametricityDiagnosticsReport,
+    DistanceUltrametricityViolation as DistanceUltrametricityViolation,
     FitchMargoliashBranchFit as FitchMargoliashBranchFit,
     FitchMargoliashFitReport as FitchMargoliashFitReport,
     GapHandlingMode as GapHandlingMode,
@@ -272,6 +274,49 @@ def diagnose_distance_saturation_from_genetic_distance_matrix(
     )
 
     return diagnose_impl(report)
+
+
+def diagnose_distance_ultrametricity(
+    path: Path,
+    *,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+    tolerance: float = 1e-6,
+) -> DistanceUltrametricityDiagnosticsReport:
+    from .ultrametricity import diagnose_distance_ultrametricity as diagnose_impl
+
+    return diagnose_impl(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+        tolerance=tolerance,
+    )
+
+
+def diagnose_distance_ultrametricity_from_genetic_distance_matrix(
+    report: GeneticDistanceMatrix,
+    *,
+    tolerance: float = 1e-6,
+) -> DistanceUltrametricityDiagnosticsReport:
+    from .ultrametricity import (
+        diagnose_distance_ultrametricity_from_genetic_distance_matrix as diagnose_impl,
+    )
+
+    return diagnose_impl(report, tolerance=tolerance)
+
+
+def diagnose_imported_distance_matrix_ultrametricity(
+    path: Path,
+    *,
+    tolerance: float = 1e-6,
+) -> DistanceUltrametricityDiagnosticsReport:
+    from .ultrametricity import (
+        diagnose_imported_distance_matrix_ultrametricity as diagnose_impl,
+    )
+
+    return diagnose_impl(path, tolerance=tolerance)
 
 
 def apply_missing_distance_policy(
