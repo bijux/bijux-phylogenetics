@@ -199,6 +199,32 @@ def test_cli_distance_ordinary_least_squares_writes_fitted_tree(
     assert payload["metrics"]["negative_branch_count"] == 0
 
 
+def test_cli_distance_nonnegative_least_squares_writes_fitted_tree(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "nonnegative-least-squares-tree.nwk"
+    exit_code = main(
+        [
+            "distance",
+            "nonnegative-least-squares",
+            str(fixture("example_distance_matrix_ordinary_least_squares_negative_branch_five_taxon.tsv")),
+            str(fixture("example_tree_minimum_evolution_five_taxon.nwk")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((A:0.777777777778,B:3.777777777778):0,C:6.444444444444,(D:2.666666666667,E:7.333333333333):7.333333333333);\n"
+    )
+    assert payload["metrics"]["criterion"] == "nonnegative-least-squares"
+    assert payload["metrics"]["residual_sum_squares"] == 57.777777777778
+    assert payload["metrics"]["condition_number"] == 4.08308918215
+    assert payload["metrics"]["active_constraint_count"] == 1
+
+
 def test_cli_distance_bme_nni_search_writes_governed_artifacts(
     tmp_path: Path, capsys
 ) -> None:
