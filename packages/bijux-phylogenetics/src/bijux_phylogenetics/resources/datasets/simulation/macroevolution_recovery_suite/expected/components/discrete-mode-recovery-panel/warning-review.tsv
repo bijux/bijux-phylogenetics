@@ -1,0 +1,10 @@
+case_id	recovery_engine	fitted_model	kind	message
+sym-three-state-rate-recovery	bijux	symmetric	optimizer_boundary	One or more fitted discrete Mk rates hit an optimizer bound.
+ard-three-state-weak-identification-review	bijux	all-rates-different	optimizer_not_converged	The discrete Mk optimizer did not converge and should be interpreted cautiously.
+ard-three-state-weak-identification-review	bijux	all-rates-different	optimizer_boundary	One or more fitted discrete Mk rates hit an optimizer bound.
+ard-three-state-weak-identification-review	bijux	all-rates-different	equal_rates_preferred	The equal-rates baseline remains preferred by AIC over the fitted discrete Mk model.
+ard-five-state-overparameterized-review	bijux	all-rates-different	overparameterized	The discrete Mk fit is overparameterized relative to the analyzed taxon count.
+ard-five-state-overparameterized-review	bijux	all-rates-different	optimizer_not_converged	The discrete Mk optimizer did not converge and should be interpreted cautiously.
+ard-five-state-overparameterized-review	bijux	all-rates-different	optimizer_boundary	One or more fitted discrete Mk rates hit an optimizer bound.
+ard-five-state-overparameterized-review	bijux	all-rates-different	equal_rates_preferred	The equal-rates baseline remains preferred by AIC over the fitted discrete Mk model.
+ard-five-state-overparameterized-review	geiger	all-rates-different	overparameterized	The stored geiger discrete fit is overparameterized relative to the analyzed taxon count.

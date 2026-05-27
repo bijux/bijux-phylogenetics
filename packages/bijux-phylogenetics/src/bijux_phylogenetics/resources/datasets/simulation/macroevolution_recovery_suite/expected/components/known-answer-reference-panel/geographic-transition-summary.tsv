@@ -1,0 +1,15 @@
+parent_node	child_node	source_state	target_state	changed	support	strongly_supported
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	north	north	false	0.984615384615385	false
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	SimTaxon1|SimTaxon2	north	north	false	0.984615384615385	false
+SimTaxon1|SimTaxon2	SimTaxon1	north	north	false	1.0	false
+SimTaxon1|SimTaxon2	SimTaxon2	north	north	false	1.0	false
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	SimTaxon3|SimTaxon4	north	south	true	0.5	false
+SimTaxon3|SimTaxon4	SimTaxon3	south	south	false	1.0	false
+SimTaxon3|SimTaxon4	SimTaxon4	south	south	false	1.0	false
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	north	north	false	0.992248062015504	false
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon5	north	east	true	0.666666666666667	false
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon6|SimTaxon7|SimTaxon8	north	north	false	0.992248062015504	false
+SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon6|SimTaxon7	north	north	false	1.0	false
+SimTaxon6|SimTaxon7	SimTaxon6	north	north	false	1.0	false
+SimTaxon6|SimTaxon7	SimTaxon7	north	north	false	1.0	false
+SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon8	north	north	false	1.0	false

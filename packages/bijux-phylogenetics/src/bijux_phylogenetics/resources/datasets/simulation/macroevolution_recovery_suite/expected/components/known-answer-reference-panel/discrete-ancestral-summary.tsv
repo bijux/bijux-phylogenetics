@@ -1,0 +1,2 @@
+trait	taxon_column	model	state_ordering	analyzed_taxon_count	excluded_taxon_count	internal_node_count	ambiguous_internal_node_count	unstable_node_count	weak_support_node_count	observed_state_count	sparse_state_count	minimal_change_count	parsimonious_root_state_count	root_node	root_most_likely_state	root_confidence	warning_count
+state	taxon	equal-rates	unordered	8	0	7	2	0	0	3	0			SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	state_a	0.821198908473034	0

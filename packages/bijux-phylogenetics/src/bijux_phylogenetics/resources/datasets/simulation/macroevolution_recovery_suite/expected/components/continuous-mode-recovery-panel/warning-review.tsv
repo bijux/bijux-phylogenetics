@@ -1,0 +1,9 @@
+case_id	recovery_engine	fitted_model	kind	message
+ou-parameter-recovery	bijux	ornstein-uhlenbeck	flat_likelihood	OU likelihood surface is shallow across alpha values, so model choice may be unstable
+ou-parameter-recovery	bijux	ornstein-uhlenbeck	weak_pull_to_optimum	best-supported OU alpha is weak and may be difficult to distinguish from Brownian motion
+early-burst-rate-recovery	bijux	early-burst	flat_likelihood_profile	early-burst likelihood stays shallow across rate-change values, so model choice may be unstable
+weak-ou-identifiability	bijux	ornstein-uhlenbeck	flat_likelihood	OU likelihood surface is shallow across alpha values, so model choice may be unstable
+weak-ou-identifiability	bijux	ornstein-uhlenbeck	weak_pull_to_optimum	best-supported OU alpha is weak and may be difficult to distinguish from Brownian motion
+lambda-transformed-branch-review	bijux	pagel-lambda	flat_likelihood	Pagel-lambda likelihood stays shallow across the bounded search, so the covariance scaling may be unstable
+kappa-transformed-branch-review	bijux	pagel-kappa	flat_likelihood	Pagel-kappa likelihood stays shallow across the bounded search, so branch-length transformation support may be unstable
+delta-transformed-branch-review	bijux	pagel-delta	flat_likelihood	Pagel-delta likelihood stays shallow across the bounded search, so temporal concentration support may be unstable

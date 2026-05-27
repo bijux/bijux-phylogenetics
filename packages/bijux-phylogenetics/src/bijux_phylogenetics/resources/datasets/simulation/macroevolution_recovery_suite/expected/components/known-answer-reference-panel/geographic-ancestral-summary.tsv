@@ -1,0 +1,2 @@
+trait	model	taxon_count	state_count	transition_count	strongly_supported_transition_count	root_state	root_confidence	warning_count
+region_group	equal-rates	8	3	2	0	north	1	3

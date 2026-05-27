@@ -1,0 +1,12 @@
+requirement_id	status	passed	evidence_surface	detail
+simulate-bm-traits	passed	true	continuous-mode-recovery-panel	7 continuous recovery cases cover the Brownian trait surface
+simulate-ou-traits	passed	true	continuous-mode-recovery-panel	OU recovery rows are present in the governed continuous panel
+simulate-eb-traits	passed	true	continuous-mode-recovery-panel	early-burst recovery rows are present in the governed continuous panel
+simulate-transformed-model-fixtures	passed	true	continuous-mode-recovery-panel	continuous panel includes lambda, kappa, and delta transformed review cases
+simulate-er-sym-ard-discrete-traits	passed	true	discrete-mode-recovery-panel	discrete panel includes governed ER, SYM, and ARD recovery cases
+store-true-parameters	passed	true	known-answer-reference-panel	11 explicit threshold checks over stored truth artifacts
+run-recovery-benchmark	passed	true	suite	22 governed recovery evaluations across suite components
+compare-recovery-against-geiger	passed	true	suite	23 paired Bijux-versus-geiger governed comparisons
+pass-goal-280-sim-char	passed	true	geiger-sim-char-reference	3 governed sim.char parity cases
+pass-goal-281-fitcontinuous-recovery	passed	true	continuous-mode-recovery-panel	22/22 continuous governed rows within tolerance
+pass-goal-282-fitdiscrete-recovery	passed	true	discrete-mode-recovery-panel	20/24 discrete governed rows within tolerance

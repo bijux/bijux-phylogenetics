@@ -1,0 +1,6 @@
+parameter	true_value	estimated_value	absolute_error	relative_error	interpretation
+continuous_root_state	1.25	1.24228514199229	0.00771485800770999	0.00617188640616799	Brownian root-state estimate recovered from observed tip values on the true tree.
+continuous_sigma_squared	0.0225	0.02269933709696	0.00019933709696	0.00885942653155555	Brownian evolutionary rate recovered from observed tip values on the true tree.
+ou_alpha	2.339434	2.339434	0	0	OU alpha recovered from the governed OU tip trait on the true tree.
+ou_theta	1.35	1.33009081442164	0.0199091855783602	0.0147475448728594	OU optimum recovered from the governed OU tip trait on the true tree.
+ou_sigma_squared	0.0324	0.0187556000204173	0.0136443999795827	0.42112345615996	OU sigma-squared recovered from the governed OU tip trait on the true tree.
