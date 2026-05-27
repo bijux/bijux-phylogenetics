@@ -11,6 +11,7 @@ from .models import (
     FitchScoreReport,
     ParsimonyConsistencyIndexReport,
     ParsimonyReconstructionReport,
+    ParsimonyRescaledConsistencyIndexReport,
     ParsimonyRetentionIndexReport,
     ParsimonyTreeLengthReport,
     SankoffScoreReport,
@@ -983,6 +984,82 @@ def write_parsimony_retention_artifacts(
         report,
     )
     run_json_path = write_parsimony_retention_run_json(out_dir / "run.json", report)
+    return {
+        "indices_path": indices_path,
+        "run_json_path": run_json_path,
+    }
+
+
+def write_parsimony_rescaled_consistency_index_table(
+    path: Path,
+    report: ParsimonyRescaledConsistencyIndexReport,
+) -> Path:
+    """Write one deterministic per-character rescaled-consistency table."""
+    return write_taxon_rows(
+        path,
+        columns=["character_id", "ci", "ri", "rc", "undefined_reason"],
+        rows=[
+            {
+                "character_id": row.character_id,
+                "ci": row.ci,
+                "ri": row.ri,
+                "rc": row.rc,
+                "undefined_reason": row.undefined_reason,
+            }
+            for row in report.character_rows
+        ],
+    )
+
+
+def write_parsimony_rescaled_consistency_run_json(
+    path: Path,
+    report: ParsimonyRescaledConsistencyIndexReport,
+) -> Path:
+    """Write one machine-readable rescaled-consistency payload."""
+    return write_json_artifact(
+        path,
+        {
+            "algorithm": report.algorithm,
+            "method": report.method,
+            "tree_path": None if report.tree_path is None else str(report.tree_path),
+            "matrix_path": None
+            if report.matrix_path is None
+            else str(report.matrix_path),
+            "taxon_column": report.taxon_column,
+            "taxon_count": report.taxon_count,
+            "character_count": report.character_count,
+            "ci": report.ci,
+            "ri": report.ri,
+            "rc": report.rc,
+            "undefined_reason": report.undefined_reason,
+            "character_rows": [
+                {
+                    "character_id": row.character_id,
+                    "ci": row.ci,
+                    "ri": row.ri,
+                    "rc": row.rc,
+                    "undefined_reason": row.undefined_reason,
+                }
+                for row in report.character_rows
+            ],
+        },
+    )
+
+
+def write_parsimony_rescaled_consistency_artifacts(
+    out_dir: Path,
+    report: ParsimonyRescaledConsistencyIndexReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one rescaled-consistency run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    indices_path = write_parsimony_rescaled_consistency_index_table(
+        out_dir / "character_indices.tsv",
+        report,
+    )
+    run_json_path = write_parsimony_rescaled_consistency_run_json(
+        out_dir / "run.json",
+        report,
+    )
     return {
         "indices_path": indices_path,
         "run_json_path": run_json_path,
