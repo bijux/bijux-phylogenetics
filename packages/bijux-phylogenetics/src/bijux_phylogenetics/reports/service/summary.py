@@ -99,5 +99,5 @@ def distance_method_limitations() -> list[str]:
         "different evolutionary histories can yield similar pairwise distances, so topology is not uniquely identified by the matrix alone",
         "UPGMA additionally assumes an ultrametric clock-like process and can misplace taxa when rates vary across lineages",
         "Neighbor-Joining is often useful for quick structure, but it is still a summary approximation rather than a full likelihood inference",
-        "BIONJ is explicitly excluded for this round, so governed distance-tree workflows are limited to Neighbor-Joining, UPGMA, and WPGMA",
+        "BIONJ is explicitly excluded for this round, so governed distance-tree workflows are limited to Neighbor-Joining, single-linkage, UPGMA, and WPGMA",
     ]

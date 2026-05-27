@@ -244,7 +244,7 @@ differences.
 - compute raw or p-distance, Jukes-Cantor, Kimura 2-parameter, Felsenstein 81, Tamura-Nei 93, or amino-acid p-distance matrices with explicit gap-handling, ambiguity policies, and model-parameter reporting
 - compute rooted or unrooted pairwise tip-distance matrices from branch-length trees with explicit taxon order and owned wide or long-form exports
 - audit saturated pairs, unusually divergent pairs, and low-information pairs before distance-based tree building
-- build Neighbor-Joining or owned rooted-ultrametric UPGMA and WPGMA trees from computed distance matrices, bootstrap site-resampled trees, summarize clade support, and write reproducibility bundles
+- build Neighbor-Joining, single-linkage, or owned rooted-ultrametric UPGMA and WPGMA trees from computed distance matrices, bootstrap site-resampled trees, summarize clade support, and write reproducibility bundles
 - validate imported long-form distance matrices, detect nonmetric violations, and build trees from imported distances
 - audit NJ and UPGMA method assumptions, including explicit UPGMA ultrametric-clock violations for computed or imported distance matrices
 - load posterior tree sets, compute consensus trees, and export clade-frequency or pairwise tree-distance summaries
@@ -2095,7 +2095,7 @@ resolves tied joins by stable taxon ordering so distance-tree recovery stays
 reproducible. The same owned distance-tree core is now also reusable directly
 from Python through `build_distance_tree_from_genetic_distance_matrix(...)`,
 so one loaded `GeneticDistanceMatrix` no longer has to restart from a
-path-based alignment or table wrapper before recovering one NJ or UPGMA tree.
+path-based alignment or table wrapper before recovering one NJ, single-linkage, UPGMA, or WPGMA tree.
 The owned tree-manipulation core now also lives directly on `PhyloTree`.
 Outgroup rooting, unrooting, keep-tip pruning, drop-tip pruning, clade
 extraction, MRCA lookup, and monophyly review all run through one native
