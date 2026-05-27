@@ -88,6 +88,7 @@ from .retention import retention_index
 from .sankoff import score_sankoff
 from .tree_length import load_parsimony_character_weights, tree_length
 from .wagner import score_wagner
+from .weights import resolve_parsimony_character_weights
 
 __all__ = [
     "CaminSokalBranchChange",
@@ -104,6 +105,7 @@ __all__ = [
     "load_fitch_character_matrix",
     "load_parsimony_character_matrix",
     "load_sankoff_cost_matrix",
+    "resolve_parsimony_character_weights",
     "ParsimonyCharacterMatrix",
     "ParsimonyConsistencyCharacterIndex",
     "ParsimonyConsistencyIndexReport",

@@ -29,6 +29,8 @@ class FitchCharacterScore:
     character_id: str
     step_count: int
     observed_states: list[str]
+    character_weight: float
+    weighted_score: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,6 +57,8 @@ class FitchScoreReport:
     taxon_count: int
     character_count: int
     total_steps: int
+    weights_path: Path | None
+    total_weighted_score: float
     step_rows: list[FitchCharacterScore]
     node_state_rows: list[FitchNodeStateSet]
 
@@ -79,6 +83,8 @@ class WagnerCharacterScore:
     observed_states: list[str]
     state_order: list[str]
     optimal_root_states: list[str]
+    character_weight: float
+    weighted_score: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -105,6 +111,8 @@ class WagnerScoreReport:
     taxon_count: int
     character_count: int
     total_cost: int
+    weights_path: Path | None
+    total_weighted_score: float
     step_rows: list[WagnerCharacterScore]
     node_cost_rows: list[WagnerNodeCost]
 
@@ -126,6 +134,8 @@ class SankoffCharacterScore:
     minimum_cost: float
     observed_states: list[str]
     matrix_states: list[str]
+    character_weight: float
+    weighted_score: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -165,6 +175,8 @@ class SankoffScoreReport:
     taxon_count: int
     character_count: int
     total_cost: float
+    weights_path: Path | None
+    total_weighted_score: float
     step_rows: list[SankoffCharacterScore]
     node_cost_rows: list[SankoffNodeCost]
     node_selection_rows: list[SankoffNodeSelection]
@@ -175,12 +187,15 @@ class DolloCharacterScore:
     """Per-character Dollo summary row."""
 
     character_id: str
+    step_count: int
     derived_taxon_count: int
     gain_node: str | None
     gain_node_name: str | None
     gain_descendant_taxa: list[str]
     total_losses: int
     impossible_state_warning: str | None
+    character_weight: float
+    weighted_score: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -206,6 +221,8 @@ class DolloScoreReport:
     character_count: int
     total_gains: int
     total_losses: int
+    weights_path: Path | None
+    total_weighted_score: float
     step_rows: list[DolloCharacterScore]
     branch_change_rows: list[DolloBranchChange]
 
@@ -218,6 +235,8 @@ class CaminSokalCharacterScore:
     derived_taxon_count: int
     gain_count: int
     root_state: str
+    character_weight: float
+    weighted_score: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -243,6 +262,8 @@ class CaminSokalScoreReport:
     character_count: int
     root_state: str
     total_gains: int
+    weights_path: Path | None
+    total_weighted_score: float
     step_rows: list[CaminSokalCharacterScore]
     branch_change_rows: list[CaminSokalBranchChange]
 
@@ -255,6 +276,8 @@ class ParsimonyReconstructionCharacterScore:
     step_count: int
     observed_states: list[str]
     root_state: str
+    character_weight: float
+    weighted_score: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -295,6 +318,8 @@ class ParsimonyReconstructionReport:
     taxon_count: int
     character_count: int
     total_steps: int
+    weights_path: Path | None
+    total_weighted_score: float
     step_rows: list[ParsimonyReconstructionCharacterScore]
     node_state_rows: list[ParsimonyReconstructionNodeState]
     branch_change_rows: list[ParsimonyReconstructionBranchChange]
