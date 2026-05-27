@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+from typing import NamedTuple
 
 import numpy
 
@@ -31,6 +32,14 @@ class FixedTopologyLeastSquaresFit:
     objective_sum_squares: float
     matrix_rank: int
     singular_values: list[float]
+
+
+class LeastSquaresSystem(NamedTuple):
+    ordered_pairs: list[tuple[str, str]]
+    incidence: numpy.ndarray
+    observed: numpy.ndarray
+    weight_vector: numpy.ndarray
+    descendant_sets: list[set[str]]
 
 
 def _ordered_branch_nodes(tree: PhyloTree) -> list[TreeNode]:
@@ -74,14 +83,14 @@ def _validate_pair_weights(
     return resolved_weights
 
 
-def fit_fixed_topology_branch_lengths(
+def build_fixed_topology_least_squares_system(
     tree: PhyloTree,
     identifiers: list[str],
     distance_lookup: dict[tuple[str, str], float],
     *,
     pair_weights: dict[tuple[str, str], float] | None = None,
-) -> FixedTopologyLeastSquaresFit:
-    """Fit branch lengths for one fixed topology against one full distance matrix."""
+) -> tuple[list[TreeNode], LeastSquaresSystem]:
+    """Build one validated weighted least-squares system for a fixed topology."""
     validate_fixed_topology_distance_input(tree, identifiers, distance_lookup)
 
     branch_nodes = _ordered_branch_nodes(tree)
@@ -101,24 +110,58 @@ def fit_fixed_topology_branch_lengths(
             ]
         )
         observed_distances.append(distance_lookup[(left_identifier, right_identifier)])
-
-    incidence = numpy.array(incidence_rows, dtype=float)
-    observed = numpy.array(observed_distances, dtype=float)
-    weight_vector = numpy.array(
-        [resolved_pair_weights[pair] for pair in ordered_pairs],
-        dtype=float,
+    return branch_nodes, LeastSquaresSystem(
+        ordered_pairs=ordered_pairs,
+        incidence=numpy.array(incidence_rows, dtype=float),
+        observed=numpy.array(observed_distances, dtype=float),
+        weight_vector=numpy.array(
+            [resolved_pair_weights[pair] for pair in ordered_pairs],
+            dtype=float,
+        ),
+        descendant_sets=descendant_sets,
     )
-    weighted_incidence = incidence * numpy.sqrt(weight_vector)[:, numpy.newaxis]
-    weighted_observed = observed * numpy.sqrt(weight_vector)
+
+
+def solve_weighted_least_squares(
+    system: LeastSquaresSystem,
+) -> tuple[numpy.ndarray, numpy.ndarray, int, list[float]]:
+    """Solve one weighted least-squares system and return coefficients and fit diagnostics."""
+    weighted_incidence = system.incidence * numpy.sqrt(system.weight_vector)[:, numpy.newaxis]
+    weighted_observed = system.observed * numpy.sqrt(system.weight_vector)
     solution, _residuals, rank, singular_values = numpy.linalg.lstsq(
         weighted_incidence,
         weighted_observed,
         rcond=None,
     )
-    predicted = incidence @ solution
-    residuals = observed - predicted
+    predicted = system.incidence @ solution
+    return (
+        solution,
+        predicted,
+        int(rank),
+        [round(float(value), _FIT_ROUND_DIGITS) for value in singular_values.tolist()],
+    )
+
+
+def fit_fixed_topology_branch_lengths(
+    tree: PhyloTree,
+    identifiers: list[str],
+    distance_lookup: dict[tuple[str, str], float],
+    *,
+    pair_weights: dict[tuple[str, str], float] | None = None,
+) -> FixedTopologyLeastSquaresFit:
+    """Fit branch lengths for one fixed topology against one full distance matrix."""
+    branch_nodes, system = build_fixed_topology_least_squares_system(
+        tree,
+        identifiers,
+        distance_lookup,
+        pair_weights=pair_weights,
+    )
+    solution, predicted, rank, singular_values = solve_weighted_least_squares(system)
+    residuals = system.observed - predicted
     residual_sum_squares = float(numpy.dot(residuals, residuals))
-    objective_sum_squares = float(numpy.dot(weight_vector * residuals, residuals))
+    objective_sum_squares = float(
+        numpy.dot(system.weight_vector * residuals, residuals)
+    )
 
     fitted_tree = tree.copy()
     fitted_branch_nodes = _ordered_branch_nodes(fitted_tree)
@@ -131,25 +174,25 @@ def fit_fixed_topology_branch_lengths(
 
     fitted_pair_distances = {
         pair: round(float(distance), _FIT_ROUND_DIGITS)
-        for pair, distance in zip(ordered_pairs, predicted, strict=True)
+        for pair, distance in zip(system.ordered_pairs, predicted, strict=True)
     }
     observed_pair_distances = {
         pair: round(float(distance_lookup[pair]), _FIT_ROUND_DIGITS)
-        for pair in ordered_pairs
+        for pair in system.ordered_pairs
     }
     pair_residuals = {
         pair: round(float(residual), _FIT_ROUND_DIGITS)
-        for pair, residual in zip(ordered_pairs, residuals, strict=True)
+        for pair, residual in zip(system.ordered_pairs, residuals, strict=True)
     }
     rounded_pair_weights = {
         pair: round(float(weight), _FIT_ROUND_DIGITS)
-        for pair, weight in resolved_pair_weights.items()
+        for pair, weight in zip(system.ordered_pairs, system.weight_vector, strict=True)
     }
     return FixedTopologyLeastSquaresFit(
         fitted_tree=fitted_tree,
         ordered_taxa=list(identifiers),
-        ordered_pairs=list(ordered_pairs),
-        pair_count=len(ordered_pairs),
+        ordered_pairs=list(system.ordered_pairs),
+        pair_count=len(system.ordered_pairs),
         branch_count=len(fitted_branch_nodes),
         branch_nodes=fitted_branch_nodes,
         observed_pair_distances=observed_pair_distances,
@@ -158,9 +201,6 @@ def fit_fixed_topology_branch_lengths(
         pair_weights=rounded_pair_weights,
         residual_sum_squares=round(residual_sum_squares, _FIT_ROUND_DIGITS),
         objective_sum_squares=round(objective_sum_squares, _FIT_ROUND_DIGITS),
-        matrix_rank=int(rank),
-        singular_values=[
-            round(float(value), _FIT_ROUND_DIGITS)
-            for value in singular_values.tolist()
-        ],
+        matrix_rank=rank,
+        singular_values=singular_values,
     )
