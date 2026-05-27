@@ -122,6 +122,13 @@ def list_public_dataset_surfaces() -> list[PublicDatasetSurface]:
             category="reference",
             summary="Owned simulation truth suite spanning topology, parameters, node states, and branch events.",
         ),
+        PublicDatasetSurface(
+            dataset_id="macroevolution_recovery_suite",
+            label="Macroevolution recovery suite",
+            demo_command="macroevolution-recovery-suite",
+            category="reference",
+            summary="Unified governed recovery suite over continuous, discrete, and truth-anchored macroevolution simulations.",
+        ),
     ]
 
 

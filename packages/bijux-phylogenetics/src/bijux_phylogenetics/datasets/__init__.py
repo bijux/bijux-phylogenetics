@@ -85,6 +85,21 @@ _PUBLIC_SURFACES = (
         ),
     ),
     (
+        "macroevolution_recovery_suite",
+        (
+            "MacroevolutionRecoverySuiteDataset",
+            "MacroevolutionRecoverySuiteDemoResult",
+            "MacroevolutionRecoverySuiteExportResult",
+            "MacroevolutionRecoverySuiteWorkflowBundle",
+            "MacroevolutionRecoverySuiteWorkflowReport",
+            "export_macroevolution_recovery_suite_dataset",
+            "load_macroevolution_recovery_suite_dataset",
+            "run_macroevolution_recovery_suite_demo",
+            "run_macroevolution_recovery_suite_workflow",
+            "write_macroevolution_recovery_suite_workflow_bundle",
+        ),
+    ),
+    (
         "known_answer_reference",
         (
             "KnownAnswerContinuousNodeRecoveryRow",
