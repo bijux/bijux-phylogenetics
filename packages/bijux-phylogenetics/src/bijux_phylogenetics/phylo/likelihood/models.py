@@ -245,6 +245,36 @@ class NucleotideSubstitutionParameterOptimizationReport:
 
 
 @dataclass(slots=True)
+class NestedLikelihoodRatioModelFit:
+    """One fitted nucleotide model summary used in one nested likelihood-ratio test."""
+
+    model_name: str
+    parameter_count: int
+    log_likelihood: float
+    aic: float
+    parameter_values: dict[str, float]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class NestedLikelihoodRatioTestReport:
+    """One declared nested fixed-topology nucleotide likelihood-ratio test report."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    tree_newick: str
+    null_fit: NestedLikelihoodRatioModelFit
+    alternative_fit: NestedLikelihoodRatioModelFit
+    likelihood_ratio_statistic: float
+    degrees_of_freedom: int
+    p_value: float
+    p_value_method: str
+    boundary_caveat: str
+    warnings: list[str]
+
+
+@dataclass(slots=True)
 class SiteLogLikelihoodRow:
     """One expanded site log-likelihood row from one compressed-pattern evaluation."""
 
