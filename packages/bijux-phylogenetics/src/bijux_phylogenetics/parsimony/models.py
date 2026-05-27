@@ -124,6 +124,16 @@ class SankoffCostMatrix:
     matrix_path: Path | None
     states: list[str]
     costs: dict[str, dict[str, float]]
+    validation_warnings: list["SankoffCostMatrixWarning"]
+
+
+@dataclass(frozen=True, slots=True)
+class SankoffCostMatrixWarning:
+    """Structured nonfatal warning surfaced while validating one Sankoff cost matrix."""
+
+    code: str
+    message: str
+    details: dict[str, object]
 
 
 @dataclass(frozen=True, slots=True)
@@ -177,6 +187,7 @@ class SankoffScoreReport:
     total_cost: float
     weights_path: Path | None
     total_weighted_score: float
+    validation_warnings: list[SankoffCostMatrixWarning]
     step_rows: list[SankoffCharacterScore]
     node_cost_rows: list[SankoffNodeCost]
     node_selection_rows: list[SankoffNodeSelection]

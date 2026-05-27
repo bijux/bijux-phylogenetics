@@ -43,6 +43,7 @@ from .artifacts import (
 from .camin_sokal import score_camin_sokal
 from .consistency import consistency_index
 from .cost_matrix import load_sankoff_cost_matrix
+from .cost_matrix import validate_sankoff_cost_matrix
 from .dollo import score_dollo
 from .fitch import (
     score_fitch,
@@ -75,6 +76,7 @@ from .models import (
     ParsimonyTreeLengthReport,
     SankoffCharacterScore,
     SankoffCostMatrix,
+    SankoffCostMatrixWarning,
     SankoffNodeCost,
     SankoffNodeSelection,
     SankoffScoreReport,
@@ -105,6 +107,7 @@ __all__ = [
     "load_fitch_character_matrix",
     "load_parsimony_character_matrix",
     "load_sankoff_cost_matrix",
+    "validate_sankoff_cost_matrix",
     "resolve_parsimony_character_weights",
     "ParsimonyCharacterMatrix",
     "ParsimonyConsistencyCharacterIndex",
@@ -133,6 +136,7 @@ __all__ = [
     "load_parsimony_character_weights",
     "SankoffCharacterScore",
     "SankoffCostMatrix",
+    "SankoffCostMatrixWarning",
     "SankoffNodeCost",
     "SankoffNodeSelection",
     "SankoffScoreReport",
