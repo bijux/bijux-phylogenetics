@@ -264,27 +264,52 @@ def evaluate_fixed_topology_protein_likelihood_from_patterns(
         model_name=model_name,
     )
 
-    def site_log_likelihood(states: tuple[str, ...]) -> float:
-        states_by_taxon = dict(zip(compressed_patterns.taxon_order, states, strict=True))
-        pruning_pass = postorder_conditional_likelihoods(
-            tree,
-            state_count=len(PROTEIN_STATE_ORDER),
-            leaf_likelihood=lambda node: protein_leaf_likelihood_vector(
-                states_by_taxon,
-                model_name=model_name,
-                node_name=node.name,
-                gap_policy=gap_policy,
-                missing_policy=missing_policy,
-            ),
-            transition_matrix_for_child=transition_matrix_for_child,
-        )
-        return log_likelihood_from_root_prior(
-            tree,
-            pruning_pass,
-            root_prior=validated_root_prior,
-        )
-
     return sum_compressed_site_pattern_log_likelihoods(
         compressed_patterns,
-        site_log_likelihood=site_log_likelihood,
+        site_log_likelihood=lambda states: evaluate_fixed_topology_protein_site_log_likelihood(
+            tree,
+            states,
+            taxon_order=compressed_patterns.taxon_order,
+            model_name=model_name,
+            root_prior=validated_root_prior,
+            transition_matrix_for_child=transition_matrix_for_child,
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+        ),
+    )
+
+
+def evaluate_fixed_topology_protein_site_log_likelihood(
+    tree: PhyloTree,
+    states: tuple[str, ...],
+    *,
+    taxon_order: list[str],
+    model_name: str,
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...],
+    transition_matrix_for_child: Callable[[object], numpy.ndarray],
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+) -> float:
+    """Evaluate one protein site log likelihood on one fixed topology."""
+    states_by_taxon = dict(zip(taxon_order, states, strict=True))
+    validated_root_prior = validate_protein_root_prior(
+        root_prior,
+        model_name=model_name,
+    )
+    pruning_pass = postorder_conditional_likelihoods(
+        tree,
+        state_count=len(PROTEIN_STATE_ORDER),
+        leaf_likelihood=lambda node: protein_leaf_likelihood_vector(
+            states_by_taxon,
+            model_name=model_name,
+            node_name=node.name,
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+        ),
+        transition_matrix_for_child=transition_matrix_for_child,
+    )
+    return log_likelihood_from_root_prior(
+        tree,
+        pruning_pass,
+        root_prior=validated_root_prior,
     )
