@@ -5,13 +5,10 @@ import random
 from statistics import median
 import tempfile
 
-from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
-
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
     compare_tree_paths,
 )
-from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.phylo.alignment import AlignmentRecord
 from bijux_phylogenetics.phylo.topology.clades import (
@@ -29,7 +26,6 @@ from bijux_phylogenetics.trees import (
 )
 
 from .genetic_distance_matrix import (
-    _bio_distance_matrix,
     _distance_lookup,
     _load_alignment_for_model,
     compute_pairwise_genetic_distance_matrix,
@@ -52,6 +48,7 @@ from .quality import (
     inspect_distance_matrix_quality,
 )
 from .shared import _require_supported_distance_tree_method
+from .upgma import build_upgma_tree
 
 
 def build_distance_tree(
@@ -99,13 +96,8 @@ def _build_distance_tree_from_genetic_distance_matrix(
     if method == "neighbor-joining":
         tree = build_neighbor_joining_tree(report.identifiers, _distance_lookup(report))
     else:
-        constructor = DistanceTreeConstructor()
-        tree = constructor.upgma(_bio_distance_matrix(report))
-    return (
-        tree
-        if method == "neighbor-joining"
-        else tree_from_biophylo(tree, source_format="newick")
-    ), DistanceTreeBuildReport(
+        tree, _ = build_upgma_tree(report.identifiers, _distance_lookup(report))
+    return tree, DistanceTreeBuildReport(
         alignment_path=report.path,
         model=report.model,
         gap_handling=report.gap_handling,
