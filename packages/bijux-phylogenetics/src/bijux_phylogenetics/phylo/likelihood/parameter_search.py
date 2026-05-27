@@ -19,6 +19,18 @@ class BoundedLikelihoodSearchResult(Generic[_PayloadT]):
     converged: bool
 
 
+@dataclass(slots=True)
+class BoundedCoordinateLikelihoodSearchResult(Generic[_PayloadT]):
+    """Best result from one bounded coordinate-wise likelihood search."""
+
+    parameter_values: dict[str, float]
+    payload: _PayloadT
+    objective_value: float
+    function_evaluation_count: int
+    optimization_pass_count: int
+    converged: bool
+
+
 def run_bounded_likelihood_search(
     *,
     lower_bound: float,
@@ -86,4 +98,79 @@ def run_bounded_likelihood_search(
         objective_value=best_objective,
         function_evaluation_count=len(cache),
         converged=(upper_bound - lower_bound) <= tolerance,
+    )
+
+
+def run_bounded_coordinate_likelihood_search(
+    *,
+    initial_values: dict[str, float],
+    bounds_by_name: dict[str, tuple[float, float]],
+    evaluate: Callable[[dict[str, float]], tuple[_PayloadT, float]],
+    improvement_tolerance: float = 1e-9,
+    max_coordinate_passes: int = 12,
+) -> BoundedCoordinateLikelihoodSearchResult[_PayloadT]:
+    """Maximize one bounded likelihood-like objective by coordinate search."""
+    if max_coordinate_passes < 1:
+        raise ValueError("coordinate likelihood search requires at least one pass")
+    if improvement_tolerance < 0.0:
+        raise ValueError("coordinate likelihood search improvement_tolerance must be nonnegative")
+    if set(initial_values) != set(bounds_by_name):
+        raise ValueError("initial_values and bounds_by_name must have identical parameter names")
+
+    current_values = {
+        name: float(value)
+        for name, value in initial_values.items()
+    }
+    for name, (lower_bound, upper_bound) in bounds_by_name.items():
+        if upper_bound <= lower_bound:
+            raise ValueError(
+                f"coordinate likelihood search requires increasing bounds for '{name}'"
+            )
+        if not (lower_bound <= current_values[name] <= upper_bound):
+            raise ValueError(
+                f"initial coordinate value for '{name}' must lie within its bounds"
+            )
+
+    current_payload, current_objective = evaluate(dict(current_values))
+    function_evaluation_count = 1
+    optimization_pass_count = 0
+    converged = False
+
+    for optimization_pass in range(1, max_coordinate_passes + 1):
+        optimization_pass_count = optimization_pass
+        improved = False
+        for name in current_values:
+            lower_bound, upper_bound = bounds_by_name[name]
+
+            def evaluate_coordinate(
+                candidate_value: float,
+            ) -> tuple[_PayloadT, float]:
+                candidate_values = dict(current_values)
+                candidate_values[name] = candidate_value
+                return evaluate(candidate_values)
+
+            search_result = run_bounded_likelihood_search(
+                lower_bound=lower_bound,
+                upper_bound=upper_bound,
+                evaluate=evaluate_coordinate,
+            )
+            function_evaluation_count += search_result.function_evaluation_count
+            if search_result.objective_value > (
+                current_objective + improvement_tolerance
+            ):
+                current_values[name] = search_result.parameter_value
+                current_payload = search_result.payload
+                current_objective = search_result.objective_value
+                improved = True
+        if not improved:
+            converged = True
+            break
+
+    return BoundedCoordinateLikelihoodSearchResult(
+        parameter_values=dict(current_values),
+        payload=current_payload,
+        objective_value=current_objective,
+        function_evaluation_count=function_evaluation_count,
+        optimization_pass_count=optimization_pass_count,
+        converged=converged,
     )

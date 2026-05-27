@@ -13,6 +13,14 @@ from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError
 
 DNA_STATE_ORDER = ("A", "C", "G", "T")
 DNA_STATE_INDEX = {state: index for index, state in enumerate(DNA_STATE_ORDER)}
+DNA_EXCHANGEABILITY_ORDER = (
+    ("A", "C"),
+    ("A", "G"),
+    ("A", "T"),
+    ("C", "G"),
+    ("C", "T"),
+    ("G", "T"),
+)
 DNA_TRANSITION_PAIRS = frozenset(
     {
         ("A", "G"),
@@ -103,6 +111,89 @@ def validate_dna_base_frequencies(
             f"{model_name} likelihood base frequencies must sum to a positive value"
         )
     return vector / total
+
+
+def validate_dna_exchangeabilities(
+    exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+    ),
+    *,
+    model_name: str,
+) -> numpy.ndarray:
+    if isinstance(exchangeabilities, dict):
+        if set(exchangeabilities) == set(DNA_EXCHANGEABILITY_ORDER):
+            vector = numpy.array(
+                [
+                    float(exchangeabilities[pair])
+                    for pair in DNA_EXCHANGEABILITY_ORDER
+                ],
+                dtype=float,
+            )
+        elif set(exchangeabilities) == {
+            "".join(pair) for pair in DNA_EXCHANGEABILITY_ORDER
+        }:
+            vector = numpy.array(
+                [
+                    float(exchangeabilities["".join(pair)])
+                    for pair in DNA_EXCHANGEABILITY_ORDER
+                ],
+                dtype=float,
+            )
+        else:
+            raise InvalidAlignmentError(
+                f"{model_name} likelihood requires exchangeabilities for exactly AC, AG, AT, CG, CT, and GT"
+            )
+    else:
+        vector = numpy.asarray(exchangeabilities, dtype=float)
+    if vector.shape != (len(DNA_EXCHANGEABILITY_ORDER),):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood requires exactly six exchangeabilities in AC/AG/AT/CG/CT/GT order"
+        )
+    if not numpy.all(numpy.isfinite(vector)):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood exchangeabilities must all be finite"
+        )
+    if numpy.any(vector < 0.0):
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood exchangeabilities must be nonnegative"
+        )
+    if float(vector.sum()) <= 0.0:
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood exchangeabilities must contain at least one positive value"
+        )
+    return vector.astype(float, copy=True)
+
+
+def normalize_dna_exchangeabilities_by_anchor(
+    exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+    ),
+    *,
+    model_name: str,
+    anchor_pair: tuple[str, str] = ("A", "C"),
+) -> numpy.ndarray:
+    vector = validate_dna_exchangeabilities(
+        exchangeabilities,
+        model_name=model_name,
+    )
+    try:
+        anchor_index = DNA_EXCHANGEABILITY_ORDER.index(anchor_pair)
+    except ValueError as error:
+        raise ValueError(f"unsupported DNA exchangeability anchor {anchor_pair}") from error
+    anchor_value = float(vector[anchor_index])
+    if anchor_value <= 0.0:
+        raise InvalidAlignmentError(
+            f"{model_name} likelihood requires a positive {''.join(anchor_pair)} exchangeability anchor"
+        )
+    return vector / anchor_value
 
 
 def normalize_dna_rate_matrix(
