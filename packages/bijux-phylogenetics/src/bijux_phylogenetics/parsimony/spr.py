@@ -5,7 +5,12 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.io.newick import dumps_newick
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.phylo.topology import (
+    RootedSprMoveCandidate,
+    apply_rooted_spr_move,
+    iter_rooted_spr_move_candidates,
+)
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 from .models import (
     FitchCharacterMatrix,
@@ -21,27 +26,14 @@ from .topology_search import (
     resolve_topology_search_tree,
     resolve_topology_search_weights,
     score_topology_search_tree,
-    topology_search_clade_id,
-    topology_search_node_sort_key,
     topology_search_prefer_score,
     validate_topology_search_tree,
 )
 
-_ROOT_REGRAFT_BRANCH_ID = "root"
-
-
-@dataclass(frozen=True, slots=True)
-class _SprMoveCandidate:
-    pruned_node_id: str
-    pruned_clade_id: str
-    pruned_descendant_taxa: tuple[str, ...]
-    regraft_target_branch_id: str
-    regraft_target_descendant_taxa: tuple[str, ...] | None
-
 
 @dataclass(frozen=True, slots=True)
 class _ScoredSprMove:
-    candidate: _SprMoveCandidate
+    candidate: RootedSprMoveCandidate
     tree: PhyloTree
     score: float
     newick: str
@@ -113,8 +105,8 @@ def search_parsimony_spr(
     while True:
         improving_move: _ScoredSprMove | None = None
         seen_neighbor_newicks: set[str] = set()
-        for candidate in _iter_spr_move_candidates(current_tree):
-            neighbor_tree = _apply_spr_move(current_tree, candidate)
+        for candidate in iter_rooted_spr_move_candidates(current_tree):
+            neighbor_tree = apply_rooted_spr_move(current_tree, candidate)
             neighbor_newick = dumps_newick(neighbor_tree)
             if neighbor_newick in seen_neighbor_newicks:
                 continue
@@ -205,93 +197,4 @@ def search_parsimony_spr(
     )
 
 
-def _iter_spr_move_candidates(tree: PhyloTree):
-    seen_candidates: set[tuple[str, str]] = set()
-    sorted_prune_nodes = sorted(
-        (node for node in tree.iter_nodes(order="preorder") if node is not tree.root),
-        key=topology_search_node_sort_key,
-    )
-    for prune_node in sorted_prune_nodes:
-        pruned_clade_id = topology_search_clade_id(prune_node)
-        remainder_tree, _pruned_subtree = _prune_subtree(tree, prune_node.node_id)
-        regraft_targets = [
-            (_ROOT_REGRAFT_BRANCH_ID, None),
-            *[
-                (
-                    topology_search_clade_id(target_node),
-                    tuple(sorted(target_node.descendant_taxa)),
-                )
-                for target_node in sorted(
-                    remainder_tree.iter_nodes(order="preorder"),
-                    key=topology_search_node_sort_key,
-                )
-            ],
-        ]
-        for regraft_target_branch_id, regraft_target_descendant_taxa in regraft_targets:
-            signature = (pruned_clade_id, regraft_target_branch_id)
-            if signature in seen_candidates:
-                continue
-            seen_candidates.add(signature)
-            yield _SprMoveCandidate(
-                pruned_node_id=prune_node.node_id,
-                pruned_clade_id=pruned_clade_id,
-                pruned_descendant_taxa=tuple(sorted(prune_node.descendant_taxa)),
-                regraft_target_branch_id=regraft_target_branch_id,
-                regraft_target_descendant_taxa=regraft_target_descendant_taxa,
-            )
-
-
-def _apply_spr_move(tree: PhyloTree, candidate: _SprMoveCandidate) -> PhyloTree:
-    remainder_tree, pruned_subtree = _prune_subtree(tree, candidate.pruned_node_id)
-    if candidate.regraft_target_branch_id == _ROOT_REGRAFT_BRANCH_ID:
-        return PhyloTree(
-            root=TreeNode(children=[remainder_tree.root, pruned_subtree]),
-            source_format=remainder_tree.source_format,
-            rooted=True,
-        ).refresh()
-    regraft_target = _find_node_by_clade_id(
-        remainder_tree,
-        candidate.regraft_target_branch_id,
-    )
-    target_parent = regraft_target.parent
-    inserted = TreeNode(children=[regraft_target, pruned_subtree])
-    if target_parent is None:
-        return PhyloTree(
-            root=inserted,
-            source_format=remainder_tree.source_format,
-            rooted=True,
-        ).refresh()
-    target_parent.replace_children(
-        [child if child is not regraft_target else inserted for child in target_parent.children]
-    )
-    return remainder_tree.refresh()
-
-
-def _prune_subtree(tree: PhyloTree, prune_node_id: str) -> tuple[PhyloTree, TreeNode]:
-    working_tree = tree.copy().refresh()
-    prune_node = working_tree.node_by_id(prune_node_id)
-    parent = prune_node.parent
-    if parent is None:
-        raise AssertionError("SPR prune node must not be the root")
-    sibling = next(child for child in parent.children if child is not prune_node)
-    grandparent = parent.parent
-    detached_subtree = prune_node.copy()
-    if grandparent is None:
-        sibling.parent = None
-        remainder_tree = PhyloTree(
-            root=sibling,
-            source_format=working_tree.source_format,
-            rooted=True,
-        )
-        return remainder_tree.refresh(), detached_subtree
-    grandparent.replace_children(
-        [child if child is not parent else sibling for child in grandparent.children]
-    )
-    return working_tree.refresh(), detached_subtree
-
-
-def _find_node_by_clade_id(tree: PhyloTree, clade_id: str) -> TreeNode:
-    for node in tree.iter_nodes(order="preorder"):
-        if topology_search_clade_id(node) == clade_id:
-            return node
-    raise KeyError(f"tree does not contain clade_id '{clade_id}'")
+_iter_spr_move_candidates = iter_rooted_spr_move_candidates
