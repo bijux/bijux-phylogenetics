@@ -20,6 +20,7 @@ from bijux_phylogenetics.engines import (
     validate_workflow_result_bundle,
 )
 from bijux_phylogenetics.parsimony import (
+    consistency_index,
     load_fitch_character_matrix,
     load_parsimony_character_weights,
     load_parsimony_character_matrix,
@@ -32,6 +33,7 @@ from bijux_phylogenetics.parsimony import (
     score_sankoff,
     score_wagner,
     tree_length,
+    write_parsimony_consistency_artifacts,
     write_parsimony_reconstruction_artifacts,
     write_parsimony_tree_length_artifacts,
     write_camin_sokal_artifacts,
@@ -247,6 +249,34 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the tree-length report as JSON."
     )
     _add_manifest_argument(phylo_parsimony_tree_length)
+    phylo_parsimony_consistency = phylo_parsimony_subparsers.add_parser(
+        "consistency-index",
+        help="Compute per-character and aggregate consistency index for one supported parsimony method.",
+    )
+    phylo_parsimony_consistency.add_argument("tree_path", type=Path)
+    phylo_parsimony_consistency.add_argument("matrix_path", type=Path)
+    phylo_parsimony_consistency.add_argument(
+        "--method",
+        required=True,
+        choices=[
+            "fitch",
+            "wagner",
+            "dollo",
+            "camin-sokal",
+            "acctran",
+            "deltran",
+        ],
+    )
+    phylo_parsimony_consistency.add_argument("--taxon-column")
+    phylo_parsimony_consistency.add_argument(
+        "--state-order",
+        help="Comma-separated explicit ordered state labels for Wagner consistency index.",
+    )
+    phylo_parsimony_consistency.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_consistency.add_argument(
+        "--json", action="store_true", help="Emit the consistency-index report as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_consistency)
 
 
 def run_phylo_command(args: Any) -> int:
@@ -392,6 +422,31 @@ def run_phylo_command(args: Any) -> int:
                 "character_count": report.character_count,
                 "raw_total_score": report.raw_total_score,
                 "total_score": report.total_score,
+            }
+        elif args.phylo_parsimony_command == "consistency-index":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            state_order = _split_state_order(getattr(args, "state_order", None))
+            report = consistency_index(
+                args.tree_path,
+                matrix,
+                method=args.method,
+                state_order=state_order,
+            )
+            artifact_paths = write_parsimony_consistency_artifacts(args.out_dir, report)
+            metrics = {
+                "algorithm": report.algorithm,
+                "method": report.method,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "included_character_count": report.included_character_count,
+                "excluded_character_count": report.excluded_character_count,
+                "minimum_possible_steps_total": report.minimum_possible_steps_total,
+                "observed_steps_total": report.observed_steps_total,
+                "consistency_index": report.consistency_index,
+                "undefined_reason": report.undefined_reason,
             }
         else:
             raise EngineWorkflowError(
