@@ -498,6 +498,53 @@ def test_cli_distance_taxon_influence_writes_ranked_artifacts(
     assert run_payload["rows"][1]["raw_missing_pair_count"] == 1
 
 
+def test_cli_distance_taxon_jackknife_writes_rebuilt_tree_artifacts(
+    tmp_path: Path, capsys
+) -> None:
+    out_dir = tmp_path / "taxon-jackknife"
+    exit_code = main(
+        [
+            "distance",
+            "taxon-jackknife",
+            str(
+                fixture(
+                    "example_distance_matrix_taxon_influence_missing_noisy_five_taxon.tsv"
+                )
+            ),
+            "--method",
+            "neighbor-joining",
+            "--missing-distance-policy",
+            "mean-impute",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    jackknife_lines = (out_dir / "taxon_jackknife.tsv").read_text(
+        encoding="utf-8"
+    ).splitlines()
+    run_payload = json.loads((out_dir / "run.json").read_text(encoding="utf-8"))
+    assert exit_code == 0
+    assert (out_dir / "baseline_tree.nwk").read_text(encoding="utf-8") == (
+        "(((A:0.722222222222223,C:7.27777777777778)Inner1:5.58333333333333,E:5.58333333333333)Inner2:1.91666666666667,B:-3.75,D:4.75)Inner3;\n"
+    )
+    assert jackknife_lines[:3] == [
+        "removed_taxon\tretained_taxa\trooted_robinson_foulds_distance\trooted_normalized_robinson_foulds\tpruned_baseline_residual_sum_squares\trebuilt_residual_sum_squares\tresidual_sum_squares_change\taffected_clades\ttopology_changed\tpruned_baseline_tree_newick\trebuilt_tree_newick",
+        "A\tB|C|D|E\t2\t1\t6.87962962963\t2.25\t4.62962962963\tB|C;C|E\ttrue\t(B:-3.75,(C:12.8611111111111,E:5.58333333333333)Inner2:1.91666666666667,D:4.75)Inner3;\t((B:-3.25,C:13.25)Inner1:0.75,D:4.25,E:6.75)Inner2;",
+        "B\tA|C|D|E\t1\t0.333333333333\t21.902808642\t1.21\t20.692808642\tA|C|E\ttrue\t(((A:0.722222222222223,C:7.27777777777778)Inner1:5.58333333333333,E:5.58333333333333)Inner2:1.91666666666667,D:4.75)Inner3;\t((A:1.95,C:6.05)Inner1:7.95,D:5.55,E:5.45)Inner2;",
+    ]
+    assert payload["metrics"]["criterion"] == "distance-taxon-jackknife"
+    assert payload["metrics"]["taxon_count"] == 5
+    assert payload["metrics"]["baseline_residual_sum_squares"] == 20.634259259263
+    assert payload["metrics"]["topology_changed_taxon_count"] == 3
+    assert run_payload["baseline_residual_sum_squares"] == 20.634259259263
+    assert run_payload["rows"][0]["removed_taxon"] == "A"
+    assert run_payload["rows"][0]["affected_clades"] == ["B|C", "C|E"]
+    assert run_payload["rows"][2]["removed_taxon"] == "C"
+    assert run_payload["rows"][2]["affected_clades"] == []
+
+
 def test_cli_distance_bme_nni_search_writes_governed_artifacts(
     tmp_path: Path, capsys
 ) -> None:
