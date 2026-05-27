@@ -103,6 +103,38 @@ def test_cli_distance_build_tree_supports_wpgma(tmp_path: Path, capsys) -> None:
     assert payload["metrics"]["method"] == "wpgma"
 
 
+def test_cli_distance_build_tree_reports_missing_distance_imputation(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "distance-tree.nwk"
+    exit_code = main(
+        [
+            "distance",
+            "build-tree",
+            str(fixture("example_distance_matrix_missing_pair_four_taxon.tsv")),
+            "--method",
+            "neighbor-joining",
+            "--missing-distance-policy",
+            "triangle-bound",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8").endswith(";\n")
+    assert payload["metrics"]["missing_distance_policy"] == "triangle-bound"
+    assert payload["metrics"]["imputed_pair_count"] == 1
+    assert payload["data"]["missing_distance_policy_report"]["missing_pairs"] == ["A/C"]
+    assert (
+        payload["data"]["missing_distance_policy_report"]["imputed_rows"][0][
+            "imputed_distance"
+        ]
+        == 5.0
+    )
+
+
 def test_cli_distance_build_tree_supports_single_linkage(
     tmp_path: Path, capsys
 ) -> None:
@@ -149,6 +181,40 @@ def test_cli_distance_build_tree_supports_complete_linkage(
         "(((A:1,D:1)Inner2:2.5,E:3.5)Inner3:2,(B:1,C:1)Inner1:4.5)Inner4;\n"
     )
     assert payload["metrics"]["method"] == "complete-linkage"
+
+
+def test_cli_alignment_build_tree_reports_missing_distance_imputation(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "alignment-distance-tree.nwk"
+    exit_code = main(
+        [
+            "alignment",
+            "build-tree",
+            str(fixture("example_alignment_distance_missing_pair.fasta")),
+            "--method",
+            "neighbor-joining",
+            "--model",
+            "p-distance",
+            "--missing-distance-policy",
+            "nearest-valid",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8").endswith(";\n")
+    assert payload["metrics"]["missing_distance_policy"] == "nearest-valid"
+    assert payload["metrics"]["imputed_pair_count"] == 1
+    assert payload["data"]["missing_distance_policy_report"]["missing_pairs"] == ["A/C"]
+    assert (
+        payload["data"]["missing_distance_policy_report"]["imputed_rows"][0][
+            "imputed_distance"
+        ]
+        == 0.5
+    )
 
 
 def test_cli_distance_minimum_evolution_writes_fitted_tree(
