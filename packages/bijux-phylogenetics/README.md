@@ -295,6 +295,7 @@ bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequenc
 bijux-phylogenetics alignment distance-matrix alignment.fasta --model raw --gap-handling complete-deletion --out distances.tsv
 bijux-phylogenetics alignment distance-matrix alignment.fasta --model f81 --components-out distance-components.tsv --parameters-out distance-parameters.tsv --out distances.tsv
 bijux-phylogenetics alignment distance-quality alignment.fasta --model jukes-cantor --json
+bijux-phylogenetics alignment distance-saturation alignment.fasta --model jukes-cantor --json
 bijux-phylogenetics alignment distance-suitability alignment.fasta --model jukes-cantor --json
 bijux-phylogenetics alignment distance-assumptions alignment.fasta --model p-distance --json
 bijux-phylogenetics alignment build-tree alignment.fasta --method bionj --out bionj-tree.nwk
@@ -2128,6 +2129,11 @@ diagnostics, which compare one observed distance matrix against one supplied
 tree's branch-length-implied tip distances and export ranked
 `distance_residuals.tsv` rows for every unique taxon pair instead of only one
 global RSS summary.
+The alignment-side corrected-distance lane now also exposes explicit
+pair-level saturation diagnostics through `alignment distance-saturation`.
+JC69, K80, and TN93 corrected distances that become undefined or tend to
+infinity now produce governed pair warnings and block distance-tree inference
+before NJ, BIONJ, or linkage builders are called.
 Imported distance matrices can also start from one owned NJ or BIONJ tree and
 be hill-climbed by rooted NNI under the owned balanced minimum-evolution
 objective, with governed search traces that record each accepted objective
