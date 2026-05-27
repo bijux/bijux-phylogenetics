@@ -9,11 +9,21 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.dna import (
+    UNIFORM_DNA_ROOT_PRIOR,
+    normalize_unambiguous_dna_records,
+    one_hot_dna_leaf_vector,
+    validate_explicit_branch_lengths,
+    validate_tree_taxa_against_patterns,
+)
 from bijux_phylogenetics.phylo.likelihood.models import (
     Jc69BranchLengthOptimizationReport,
     Jc69BranchLengthOptimizationStep,
+    Jc69TreeLikelihoodReport,
 )
-from bijux_phylogenetics.phylo.likelihood.models import Jc69TreeLikelihoodReport
+from bijux_phylogenetics.phylo.likelihood.parameter_search import (
+    run_bounded_likelihood_search,
+)
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
     compress_alignment_site_patterns_from_records,
@@ -26,13 +36,7 @@ from bijux_phylogenetics.phylo.likelihood.sites import (
     sum_compressed_site_pattern_log_likelihoods,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.runtime.errors import AlignmentTaxonMismatchError
-from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError
-
-_JC69_STATE_ORDER = ("A", "C", "G", "T")
-_JC69_STATE_INDEX = {state: index for index, state in enumerate(_JC69_STATE_ORDER)}
-_JC69_ROOT_PRIOR = numpy.full(4, 0.25, dtype=float)
 
 
 def jc69_rate_matrix() -> numpy.ndarray:
@@ -61,7 +65,7 @@ def evaluate_jc69_tree_likelihood(
     records: list[AlignmentRecord],
 ) -> Jc69TreeLikelihoodReport:
     """Evaluate one fixed-topology JC69 likelihood from aligned DNA records."""
-    normalized_records = _normalized_jc69_records(records)
+    normalized_records = normalize_unambiguous_dna_records(records, model_name="JC69")
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
     return _evaluate_jc69_tree_likelihood_from_patterns(tree, compressed_patterns)
 
@@ -96,10 +100,10 @@ def optimize_jc69_branch_lengths(
     if max_coordinate_passes < 1:
         raise ValueError("max_coordinate_passes must be at least one")
 
-    normalized_records = _normalized_jc69_records(records)
+    normalized_records = normalize_unambiguous_dna_records(records, model_name="JC69")
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
     working_tree = tree.copy()
-    _validate_explicit_branch_lengths(working_tree)
+    validate_explicit_branch_lengths(working_tree, model_name="JC69")
     edge_nodes = [child for _parent, child in working_tree.iter_edges()]
     initial_tree_newick = dumps_newick(tree)
     initial_report = _evaluate_jc69_tree_likelihood_from_patterns(
@@ -131,23 +135,20 @@ def optimize_jc69_branch_lengths(
                 )
                 return report, report.log_likelihood
 
-            (
-                optimized_branch_length,
-                optimized_report,
-                optimized_log_likelihood,
-                search_function_evaluation_count,
-            ) = _run_bounded_jc69_branch_search(
+            search_result = run_bounded_likelihood_search(
                 lower_bound=lower_branch_length_bound,
                 upper_bound=upper_branch_length_bound,
                 evaluate=evaluate_candidate,
             )
-            function_evaluation_count += search_function_evaluation_count
+            function_evaluation_count += search_result.function_evaluation_count
+            optimized_branch_length = float(search_result.parameter_value)
+            optimized_log_likelihood = search_result.objective_value
             accepted = optimized_log_likelihood > (
                 current_report.log_likelihood + improvement_tolerance
             )
             if accepted:
                 node.branch_length = optimized_branch_length
-                current_report = optimized_report
+                current_report = search_result.payload
                 improved = True
             else:
                 node.branch_length = starting_branch_length
@@ -210,8 +211,12 @@ def _evaluate_jc69_tree_likelihood_from_patterns(
     tree: PhyloTree,
     compressed_patterns: CompressedAlignmentSitePatterns,
 ) -> Jc69TreeLikelihoodReport:
-    _validate_explicit_branch_lengths(tree)
-    _validate_tree_taxa_against_patterns(tree, compressed_patterns)
+    validate_explicit_branch_lengths(tree, model_name="JC69")
+    validate_tree_taxa_against_patterns(
+        tree,
+        compressed_patterns,
+        model_name="JC69",
+    )
 
     transition_by_node_id = {
         child.node_id: jc69_transition_probability_matrix(
@@ -225,8 +230,9 @@ def _evaluate_jc69_tree_likelihood_from_patterns(
         pruning_pass = postorder_conditional_likelihoods(
             tree,
             state_count=4,
-            leaf_likelihood=lambda node: _one_hot_leaf_vector(
+            leaf_likelihood=lambda node: one_hot_dna_leaf_vector(
                 states_by_taxon,
+                model_name="JC69",
                 node_name=node.name,
             ),
             transition_matrix_for_child=lambda child: transition_by_node_id[
@@ -236,7 +242,7 @@ def _evaluate_jc69_tree_likelihood_from_patterns(
         return log_likelihood_from_root_prior(
             tree,
             pruning_pass,
-            root_prior=_JC69_ROOT_PRIOR,
+            root_prior=UNIFORM_DNA_ROOT_PRIOR,
         )
 
     log_likelihood = sum_compressed_site_pattern_log_likelihoods(
@@ -251,150 +257,3 @@ def _evaluate_jc69_tree_likelihood_from_patterns(
         tree_newick=dumps_newick(tree),
         log_likelihood=log_likelihood,
     )
-
-
-def _normalized_jc69_records(records: list[AlignmentRecord]) -> list[AlignmentRecord]:
-    normalized_records: list[AlignmentRecord] = []
-    for record in records:
-        normalized_sequence = record.sequence.upper()
-        invalid_states = sorted(
-            {
-                state
-                for state in normalized_sequence
-                if state not in _JC69_STATE_INDEX
-            }
-        )
-        if invalid_states:
-            joined_states = ", ".join(invalid_states)
-            raise InvalidAlignmentError(
-                "JC69 likelihood currently requires unambiguous DNA states A, C, G, and T only; "
-                f"record '{record.identifier}' contains {joined_states}"
-            )
-        normalized_records.append(
-            AlignmentRecord(
-                identifier=record.identifier,
-                sequence=normalized_sequence,
-            )
-        )
-    return normalized_records
-
-
-def _validate_explicit_branch_lengths(tree: PhyloTree) -> None:
-    for _parent, child in tree.iter_edges():
-        if child.branch_length is None:
-            raise InvalidBranchLengthError(
-                "JC69 fixed-topology likelihood requires explicit branch lengths on every edge"
-            )
-        if child.branch_length < 0.0:
-            raise InvalidBranchLengthError(
-                "JC69 likelihood does not accept negative branch lengths"
-            )
-
-
-def _validate_tree_taxa_against_patterns(
-    tree: PhyloTree,
-    compressed_patterns: CompressedAlignmentSitePatterns,
-) -> None:
-    tree_taxa = [leaf.name for leaf in tree.iter_leaves()]
-    if any(name is None for name in tree_taxa):
-        raise AlignmentTaxonMismatchError(
-            "JC69 likelihood requires every tree tip to have a matching alignment identifier"
-        )
-    observed_tree_taxa = [name for name in tree_taxa if name is not None]
-    if len(set(observed_tree_taxa)) != len(observed_tree_taxa):
-        raise AlignmentTaxonMismatchError(
-            "JC69 likelihood requires uniquely named tree tips"
-        )
-    expected_taxa = compressed_patterns.taxon_order
-    if set(observed_tree_taxa) != set(expected_taxa):
-        missing_from_alignment = sorted(set(observed_tree_taxa) - set(expected_taxa))
-        missing_from_tree = sorted(set(expected_taxa) - set(observed_tree_taxa))
-        details: list[str] = []
-        if missing_from_alignment:
-            details.append(
-                f"tree-only taxa: {', '.join(missing_from_alignment)}"
-            )
-        if missing_from_tree:
-            details.append(f"alignment-only taxa: {', '.join(missing_from_tree)}")
-        raise AlignmentTaxonMismatchError(
-            "JC69 likelihood requires identical tree and alignment taxon sets"
-            + (f" ({'; '.join(details)})" if details else "")
-        )
-
-
-def _one_hot_leaf_vector(
-    states_by_taxon: dict[str, str],
-    *,
-    node_name: str | None,
-) -> numpy.ndarray:
-    if node_name is None:
-        raise AlignmentTaxonMismatchError(
-            "JC69 likelihood requires named tree tips for alignment lookup"
-        )
-    vector = numpy.zeros(4, dtype=float)
-    vector[_JC69_STATE_INDEX[states_by_taxon[node_name]]] = 1.0
-    return vector
-
-
-def _run_bounded_jc69_branch_search(
-    *,
-    lower_bound: float,
-    upper_bound: float,
-    evaluate,
-    tolerance: float = 1e-9,
-    max_iterations: int = 400,
-) -> tuple[float, Jc69TreeLikelihoodReport, float, int]:
-    if upper_bound <= lower_bound:
-        raise InvalidBranchLengthError("JC69 branch-length bounds must be strictly increasing")
-    if tolerance <= 0.0:
-        raise ValueError("JC69 branch-length search tolerance must be positive")
-    if max_iterations < 1:
-        raise ValueError("JC69 branch-length search iterations must be positive")
-
-    phi = (math.sqrt(5.0) - 1.0) / 2.0
-    cache: dict[float, tuple[Jc69TreeLikelihoodReport, float]] = {}
-
-    def evaluate_cached(branch_length: float) -> tuple[Jc69TreeLikelihoodReport, float]:
-        cache_key = round(branch_length, 12)
-        cached = cache.get(cache_key)
-        if cached is not None:
-            return cached
-        candidate = evaluate(branch_length)
-        cache[cache_key] = candidate
-        return candidate
-
-    left = upper_bound - (phi * (upper_bound - lower_bound))
-    right = lower_bound + (phi * (upper_bound - lower_bound))
-    left_report, left_objective = evaluate_cached(left)
-    right_report, right_objective = evaluate_cached(right)
-
-    iteration = 0
-    while (upper_bound - lower_bound) > tolerance and iteration < max_iterations:
-        if left_objective < right_objective:
-            lower_bound = left
-            left = right
-            left_report = right_report
-            left_objective = right_objective
-            right = lower_bound + (phi * (upper_bound - lower_bound))
-            right_report, right_objective = evaluate_cached(right)
-        else:
-            upper_bound = right
-            right = left
-            right_report = left_report
-            right_objective = left_objective
-            left = upper_bound - (phi * (upper_bound - lower_bound))
-            left_report, left_objective = evaluate_cached(left)
-        iteration += 1
-
-    midpoint = (lower_bound + upper_bound) / 2.0
-    midpoint_report, midpoint_objective = evaluate_cached(midpoint)
-    ranked = sorted(
-        [
-            (left, left_report, left_objective),
-            (right, right_report, right_objective),
-            (midpoint, midpoint_report, midpoint_objective),
-        ],
-        key=lambda item: (-item[2], item[0]),
-    )
-    best_branch_length, best_report, best_objective = ranked[0]
-    return best_branch_length, best_report, best_objective, len(cache)
