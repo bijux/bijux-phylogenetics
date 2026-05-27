@@ -2,6 +2,18 @@
 
 from __future__ import annotations
 
+from .jc69 import (
+    evaluate_jc69_tree_likelihood as evaluate_jc69_tree_likelihood,
+)
+from .jc69 import (
+    evaluate_jc69_tree_likelihood_from_alignment as evaluate_jc69_tree_likelihood_from_alignment,
+)
+from .jc69 import (
+    jc69_rate_matrix as jc69_rate_matrix,
+)
+from .jc69 import (
+    jc69_transition_probability_matrix as jc69_transition_probability_matrix,
+)
 from .models import (
     Jc69BranchLengthOptimizationReport as Jc69BranchLengthOptimizationReport,
 )
@@ -55,6 +67,10 @@ __all__ = [
     "alignment_site_columns",
     "compress_alignment_site_patterns",
     "compress_alignment_site_patterns_from_records",
+    "evaluate_jc69_tree_likelihood",
+    "evaluate_jc69_tree_likelihood_from_alignment",
+    "jc69_rate_matrix",
+    "jc69_transition_probability_matrix",
     "log_likelihood_from_root_prior",
     "postorder_conditional_likelihoods",
     "sum_alignment_site_log_likelihoods",
