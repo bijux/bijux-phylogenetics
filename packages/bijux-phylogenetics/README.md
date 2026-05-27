@@ -315,7 +315,7 @@ bijux-phylogenetics distance patristic-residuals matrix.tsv fixed-topology.nwk -
 bijux-phylogenetics distance taxon-influence matrix.tsv reference-tree.nwk --method neighbor-joining --missing-distance-policy mean-impute --out-dir artifacts/distance-taxon-influence --json
 bijux-phylogenetics distance bme-nni-search matrix.tsv --start-method bionj --out-dir artifacts/distance-bme-nni --json
 bijux-phylogenetics alignment compare-distance-to-tree alignment.fasta inferred-tree.nwk --method neighbor-joining --json
-bijux-phylogenetics alignment bootstrap-tree alignment.fasta --method neighbor-joining --replicates 200 --support-out artifacts/distance-support.tsv --tree-set-out artifacts/distance-bootstrap.trees --json
+bijux-phylogenetics alignment bootstrap-tree alignment.fasta --method neighbor-joining --replicates 200 --support-out artifacts/distance-support.tsv --tree-set-out artifacts/distance-bootstrap.trees --draws-out artifacts/distance-bootstrap-draws.tsv --json
 bijux-phylogenetics alignment distance-support-summary alignment.fasta --method neighbor-joining --replicates 50 --json
 bijux-phylogenetics alignment distance-models alignment.fasta --json
 bijux-phylogenetics alignment distance-gap-sensitivity alignment.fasta --model p-distance --json
@@ -2160,6 +2160,11 @@ influence diagnostic that rebuilds the chosen distance tree and recomputes
 patristic residual RSS after each exclusion, then ranks taxa by RSS
 improvement and rooted RF improvement against a supplied reference tree
 instead of proxying influence by raw missingness alone.
+Alignment-side distance bootstrap now also records the exact resampled site
+indices and rebuilt replicate tree for each seeded replicate, so the owned
+bootstrap workflow can prove it resamples alignment columns with replacement
+before recomputing distances and rebuilding trees rather than bootstrapping one
+already-computed distance matrix.
 Imported distance matrices can also start from one owned NJ or BIONJ tree and
 be hill-climbed by rooted NNI under the owned balanced minimum-evolution
 objective, with governed search traces that record each accepted objective
