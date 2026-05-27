@@ -365,6 +365,55 @@ class NucleotideLikelihoodNniSearchReport:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodSprTraceRow:
+    """One deterministic event row in a rooted nucleotide likelihood SPR search trace."""
+
+    event_index: int
+    event_kind: str
+    iteration: int
+    log_likelihood_before: float | None
+    log_likelihood_after: float
+    log_likelihood_delta: float | None
+    tree_before_newick: str | None
+    tree_after_newick: str
+    pruned_clade_id: str | None
+    regraft_target_branch_id: str | None
+    branch_reoptimization_policy: str
+    branch_optimization_pass_count: int
+    branch_function_evaluation_count: int
+    stopping_reason: str | None
+
+
+@dataclass(slots=True)
+class NucleotideLikelihoodSprSearchReport:
+    """Complete rooted nucleotide likelihood SPR hill-climb report."""
+
+    algorithm: str
+    model_name: str
+    tree_path: str | None
+    alignment_path: str | None
+    taxon_count: int
+    site_count: int
+    pattern_count: int
+    input_tree_newick: str
+    start_tree_newick: str
+    start_log_likelihood: float
+    final_tree_newick: str
+    final_log_likelihood: float
+    accepted_move_count: int
+    evaluated_neighbor_count: int
+    evaluation_budget: int | None
+    branch_reoptimization_policy: str
+    substitution_parameter_policy: str
+    substitution_parameter_values: dict[str, float]
+    substitution_parameter_warnings: list[str]
+    total_branch_optimization_pass_count: int
+    total_branch_function_evaluation_count: int
+    stopping_reason: str
+    trace_rows: list[NucleotideLikelihoodSprTraceRow]
+
+
+@dataclass(slots=True)
 class SiteLogLikelihoodRow:
     """One expanded site log-likelihood row from one compressed-pattern evaluation."""
 

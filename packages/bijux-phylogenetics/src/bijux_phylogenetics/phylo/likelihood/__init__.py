@@ -266,6 +266,12 @@ from .models import (
 from .models import (
     NucleotideLikelihoodNniTraceRow as NucleotideLikelihoodNniTraceRow,
 )
+from .models import (
+    NucleotideLikelihoodSprSearchReport as NucleotideLikelihoodSprSearchReport,
+)
+from .models import (
+    NucleotideLikelihoodSprTraceRow as NucleotideLikelihoodSprTraceRow,
+)
 from .nested_likelihood_ratio import (
     evaluate_nucleotide_nested_likelihood_ratio_test as evaluate_nucleotide_nested_likelihood_ratio_test,
 )
@@ -435,6 +441,8 @@ __all__ = [
     "NestedLikelihoodRatioTestReport",
     "NucleotideLikelihoodNniSearchReport",
     "NucleotideLikelihoodNniTraceRow",
+    "NucleotideLikelihoodSprSearchReport",
+    "NucleotideLikelihoodSprTraceRow",
     "NucleotideSubstitutionParameterOptimizationReport",
     "ProteinEmpiricalDiscreteGammaTreeLikelihoodReport",
     "ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport",
