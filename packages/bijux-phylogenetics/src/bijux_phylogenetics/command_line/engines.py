@@ -23,11 +23,13 @@ from bijux_phylogenetics.parsimony import (
     load_fitch_character_matrix,
     load_parsimony_character_matrix,
     load_sankoff_cost_matrix,
+    reconstruct_acctran,
     score_camin_sokal,
     score_dollo,
     score_fitch,
     score_sankoff,
     score_wagner,
+    write_parsimony_reconstruction_artifacts,
     write_camin_sokal_artifacts,
     write_dollo_artifacts,
     write_fitch_artifacts,
@@ -176,6 +178,18 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the parsimony report as JSON."
     )
     _add_manifest_argument(phylo_parsimony_camin_sokal)
+    phylo_parsimony_acctran = phylo_parsimony_subparsers.add_parser(
+        "acctran",
+        help="Resolve one unordered parsimony reconstruction toward earlier branches with ACCTRAN.",
+    )
+    phylo_parsimony_acctran.add_argument("tree_path", type=Path)
+    phylo_parsimony_acctran.add_argument("matrix_path", type=Path)
+    phylo_parsimony_acctran.add_argument("--taxon-column")
+    phylo_parsimony_acctran.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_acctran.add_argument(
+        "--json", action="store_true", help="Emit the parsimony reconstruction as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_acctran)
 
 
 def run_phylo_command(args: Any) -> int:
@@ -256,6 +270,22 @@ def run_phylo_command(args: Any) -> int:
                 "character_count": report.character_count,
                 "root_state": report.root_state,
                 "total_gains": report.total_gains,
+            }
+        elif args.phylo_parsimony_command == "acctran":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            report = reconstruct_acctran(args.tree_path, matrix)
+            artifact_paths = write_parsimony_reconstruction_artifacts(
+                args.out_dir,
+                report,
+            )
+            metrics = {
+                "algorithm": report.algorithm,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "total_steps": report.total_steps,
             }
         else:
             raise EngineWorkflowError(
