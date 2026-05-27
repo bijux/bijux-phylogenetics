@@ -54,6 +54,7 @@ def test_distance_tree_method_policies_explicitly_exclude_bionj() -> None:
     policies = {row.method: row for row in list_distance_tree_method_policies()}
     assert set(policies) == {
         "bionj",
+        "complete-linkage",
         "neighbor-joining",
         "single-linkage",
         "upgma",
@@ -61,6 +62,7 @@ def test_distance_tree_method_policies_explicitly_exclude_bionj() -> None:
     }
     assert policies["neighbor-joining"].supported is True
     assert policies["single-linkage"].supported is True
+    assert policies["complete-linkage"].supported is True
     assert policies["neighbor-joining"].reference_surface == "ape::nj"
     assert policies["upgma"].supported is True
     assert policies["wpgma"].supported is True
