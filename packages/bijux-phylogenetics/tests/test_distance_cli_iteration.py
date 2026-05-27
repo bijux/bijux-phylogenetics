@@ -54,6 +54,28 @@ def test_cli_alignment_distance_assumptions_json_output(capsys) -> None:
     assert payload["metrics"]["upgma_violation_count"] > 0
 
 
+def test_cli_distance_build_tree_supports_wpgma(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "distance-tree.nwk"
+    exit_code = main(
+        [
+            "distance",
+            "build-tree",
+            str(fixture("example_distance_matrix_wpgma_uneven_cluster.tsv")),
+            "--method",
+            "wpgma",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((((A:0.5,D:0.5)Inner1:2.25,E:2.75)Inner2:0.75,C:3.5)Inner3:0.5625,B:4.0625)Inner4;\n"
+    )
+    assert payload["metrics"]["method"] == "wpgma"
+
+
 def test_cli_alignment_bootstrap_tree_writes_outputs(tmp_path: Path, capsys) -> None:
     support_path = tmp_path / "support.tsv"
     tree_set_path = tmp_path / "bootstrap.trees"
