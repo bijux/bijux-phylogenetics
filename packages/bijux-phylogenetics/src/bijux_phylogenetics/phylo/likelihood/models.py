@@ -275,6 +275,47 @@ class NestedLikelihoodRatioTestReport:
 
 
 @dataclass(slots=True)
+class SubstitutionModelSelectionRow:
+    """One fixed-topology substitution-model selection row for one candidate surface."""
+
+    model_name: str
+    base_model_name: str
+    rate_heterogeneity_model: str
+    fit_succeeded: bool
+    parameter_count: int | None
+    log_likelihood: float | None
+    aic: float | None
+    aicc: float | None
+    bic: float | None
+    delta_aic: float | None
+    akaike_weight: float | None
+    rank: int | None
+    comparable_on_aic: bool
+    comparable_on_aicc: bool
+    comparable_on_bic: bool
+    selected_by_aic: bool
+    selected_by_aicc: bool
+    selected_by_bic: bool
+    parameter_values: dict[str, float]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class SubstitutionModelSelectionReport:
+    """Ranked fixed-topology substitution-model selection table for one alignment."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    tree_newick: str
+    rows: list[SubstitutionModelSelectionRow]
+    best_model_aic: str | None
+    best_model_aicc: str | None
+    best_model_bic: str | None
+    warnings: list[str]
+
+
+@dataclass(slots=True)
 class SiteLogLikelihoodRow:
     """One expanded site log-likelihood row from one compressed-pattern evaluation."""
 
