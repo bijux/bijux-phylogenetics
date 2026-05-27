@@ -200,6 +200,7 @@ differences.
 - adjust repeated comparative hypothesis tests with Benjamini-Hochberg correction and emit integrated comparative audit, influence, tree-comparison, pruning-comparison, and reviewer-facing report outputs
 - score unordered discrete character matrices on one tree with Fitch parsimony, emit per-character step ledgers plus per-node candidate-state sets, and fail explicitly on missing taxa, unknown states, or empty matrices
 - score ordered discrete character matrices on one tree with Wagner parsimony, emit weighted per-character costs plus internal-node ordered cost vectors, and require either ordinal labels or one explicit state order
+- score discrete character matrices on one tree with Sankoff parsimony under one user-supplied transition-cost matrix, emit minimum-cost ledgers plus per-node cost vectors and optimal-state tie sets, and reject negative, non-square, missing-state, or inconsistent-label cost matrices
 - reconstruct continuous ancestral states under Brownian or OU-style trait models
 - reconstruct discrete ancestral states under Fitch parsimony or likelihood-style ER, SYM, and ARD models with explicit ambiguity and low-confidence reporting, root-prior controls, and fitted transition-rate ledgers
 - validate discrete ancestral likelihood surfaces against governed `ape::ace` references plus root-prior, ordered, irreversible, and ambiguity policy checks
@@ -304,6 +305,7 @@ bijux-phylogenetics report supplementary-alignment-table --alignment alignment.f
 bijux-phylogenetics report supplementary-ancestral-state-table --tree tree.nwk --traits traits.tsv --trait habitat --reconstruction-kind discrete --model equal-rates --out artifacts/supplementary-ancestral-states.tsv --json
 bijux-phylogenetics phylo parsimony fitch tree.nwk discrete-character-matrix.tsv --out-dir artifacts/parsimony-fitch --json
 bijux-phylogenetics phylo parsimony wagner tree.nwk ordered-character-matrix.tsv --state-order low,medium,high,very_high --out-dir artifacts/parsimony-wagner --json
+bijux-phylogenetics phylo parsimony sankoff tree.nwk discrete-character-matrix.tsv transition-costs.tsv --out-dir artifacts/parsimony-sankoff --json
 bijux-phylogenetics report supplementary-batch-summary-table --workflow-bundle-root workflow/ --out artifacts/supplementary-batch-summary.tsv --json
 bijux-phylogenetics report supplementary-clade-support-table --tree tree.nwk --comparison-tree-set posterior-trees.nwk --out artifacts/supplementary-clade-support.tsv --json
 bijux-phylogenetics report supplementary-comparative-model-table --tree tree.nwk --traits traits.tsv --formula 'response ~ predictor_one' --formula 'response ~ predictor_one + predictor_two' --lambda-value 0.0 --out artifacts/supplementary-comparative-model.tsv --json
