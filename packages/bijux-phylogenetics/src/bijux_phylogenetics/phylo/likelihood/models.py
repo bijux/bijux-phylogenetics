@@ -205,6 +205,46 @@ class GtrExchangeabilityOptimizationReport:
 
 
 @dataclass(slots=True)
+class SubstitutionParameterOptimizationRow:
+    """One optimized substitution parameter with explicit search bounds."""
+
+    parameter_name: str
+    initial_value: float
+    optimized_value: float
+    lower_bound: float
+    upper_bound: float
+    hit_lower_bound: bool
+    hit_upper_bound: bool
+
+
+@dataclass(slots=True)
+class NucleotideSubstitutionParameterOptimizationReport:
+    """Fixed-topology nucleotide substitution-parameter optimization summary."""
+
+    model_name: str
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    tree_newick: str
+    parameter_count: int
+    base_frequency_source: str | None
+    base_frequency_a: float | None
+    base_frequency_c: float | None
+    base_frequency_g: float | None
+    base_frequency_t: float | None
+    fixed_parameter_values: dict[str, float]
+    parameter_rows: list[SubstitutionParameterOptimizationRow]
+    initial_log_likelihood: float
+    optimized_log_likelihood: float
+    initial_aic: float
+    optimized_aic: float
+    function_evaluation_count: int
+    optimization_pass_count: int
+    converged: bool
+    warnings: list[str]
+
+
+@dataclass(slots=True)
 class ProteinPoissonTreeLikelihoodReport:
     """Native 20-state protein Poisson likelihood report for one fixed topology."""
 
