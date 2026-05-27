@@ -18,9 +18,12 @@ from .models import (
     GapHandlingMode,
     GeneticDistanceMatrix,
     LowInformationPair,
-    SaturatedDistancePair,
 )
 from .shared import _iter_ultrametric_violations
+from .saturation import (
+    diagnose_distance_saturation_from_genetic_distance_matrix,
+    saturated_pairs_from_diagnostics,
+)
 
 
 def assess_distance_method_assumptions(
@@ -130,22 +133,14 @@ def inspect_distance_matrix_quality(
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
     )
+    saturation_report = diagnose_distance_saturation_from_genetic_distance_matrix(
+        matrix
+    )
     off_diagonal = [
         pair for pair in matrix.pairs if pair.left_identifier != pair.right_identifier
     ]
     defined_pairs = [pair for pair in off_diagonal if pair.distance is not None]
-    saturated_pairs = [
-        SaturatedDistancePair(
-            left_identifier=pair.left_identifier,
-            right_identifier=pair.right_identifier,
-            distance=pair.distance,
-            comparable_sites=pair.comparable_sites,
-            reason=pair.saturation_reason
-            or "distance is not usable under the selected model",
-        )
-        for pair in off_diagonal
-        if pair.saturated
-    ]
+    saturated_pairs = saturated_pairs_from_diagnostics(saturation_report)
 
     high_distance_outliers: list[DistanceOutlierPair] = []
     if defined_pairs:
