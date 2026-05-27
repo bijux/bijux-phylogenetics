@@ -9,31 +9,17 @@ from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.dna import (
-    UNIFORM_DNA_ROOT_PRIOR,
-    estimate_empirical_dna_base_frequencies,
     evaluate_fixed_topology_dna_site_log_likelihood,
-    normalize_dna_exchangeabilities_by_anchor,
     normalize_unambiguous_dna_records,
-    validate_dna_base_frequencies,
-    validate_positive_kappa,
-)
-from bijux_phylogenetics.phylo.likelihood.f81 import (
-    f81_transition_probability_matrix,
-)
-from bijux_phylogenetics.phylo.likelihood.gtr import (
-    gtr_transition_probability_matrix,
-)
-from bijux_phylogenetics.phylo.likelihood.hky85 import (
-    hky85_transition_probability_matrix,
-)
-from bijux_phylogenetics.phylo.likelihood.jc69 import (
-    jc69_transition_probability_matrix,
-)
-from bijux_phylogenetics.phylo.likelihood.k80 import (
-    k80_transition_probability_matrix,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
     FixedTopologySiteLogLikelihoodReport,
+)
+from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
+    resolve_selected_nucleotide_likelihood_specification,
+)
+from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
+    validate_selected_nucleotide_likelihood_model,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
@@ -48,19 +34,9 @@ from bijux_phylogenetics.phylo.likelihood.validation import (
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
-_NUCLEOTIDE_SITE_LOG_LIKELIHOOD_MODELS = frozenset(
-    {"jc69", "k80", "f81", "hky85", "gtr"}
-)
-
 
 def validate_nucleotide_site_log_likelihood_model(model_name: str) -> str:
-    normalized_model_name = model_name.strip().lower()
-    if normalized_model_name not in _NUCLEOTIDE_SITE_LOG_LIKELIHOOD_MODELS:
-        raise ValueError(
-            "nucleotide site-log-likelihood model must be one of "
-            + ", ".join(sorted(_NUCLEOTIDE_SITE_LOG_LIKELIHOOD_MODELS))
-        )
-    return normalized_model_name
+    return validate_selected_nucleotide_likelihood_model(model_name)
 
 
 def evaluate_nucleotide_site_log_likelihoods(
@@ -86,135 +62,24 @@ def evaluate_nucleotide_site_log_likelihoods(
         model_name=normalized_model_name.upper(),
     )
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
-    if normalized_model_name == "jc69":
-        _reject_irrelevant_parameter("JC69 site log likelihood export", "kappa", kappa)
-        _reject_irrelevant_parameter(
-            "JC69 site log likelihood export",
-            "base_frequencies",
-            base_frequencies,
-        )
-        _reject_irrelevant_parameter(
-            "JC69 site log likelihood export",
-            "exchangeabilities",
-            exchangeabilities,
-        )
-        return _evaluate_selected_dna_site_log_likelihoods_from_patterns(
-            tree,
-            compressed_patterns,
-            model_name="JC69",
-            root_prior=UNIFORM_DNA_ROOT_PRIOR,
-            parameter_values={},
-            transition_matrix_for_child=lambda child: jc69_transition_probability_matrix(
-                max(float(child.branch_length or 0.0), 0.0)
-            ),
-        )
-    if normalized_model_name == "k80":
-        _reject_irrelevant_parameter(
-            "K80 site log likelihood export",
-            "base_frequencies",
-            base_frequencies,
-        )
-        _reject_irrelevant_parameter(
-            "K80 site log likelihood export",
-            "exchangeabilities",
-            exchangeabilities,
-        )
-        if kappa is None:
-            raise ValueError("K80 site log likelihood export requires 'kappa'")
-        validated_kappa = validate_positive_kappa(kappa, model_name="K80")
-        return _evaluate_selected_dna_site_log_likelihoods_from_patterns(
-            tree,
-            compressed_patterns,
-            model_name="K80",
-            root_prior=UNIFORM_DNA_ROOT_PRIOR,
-            parameter_values={"kappa": validated_kappa},
-            transition_matrix_for_child=lambda child: k80_transition_probability_matrix(
-                max(float(child.branch_length or 0.0), 0.0),
-                kappa=validated_kappa,
-            ),
-        )
-    if normalized_model_name == "f81":
-        _reject_irrelevant_parameter("F81 site log likelihood export", "kappa", kappa)
-        _reject_irrelevant_parameter(
-            "F81 site log likelihood export",
-            "exchangeabilities",
-            exchangeabilities,
-        )
-        stationary = _resolve_dna_base_frequencies(
-            normalized_records,
-            base_frequencies=base_frequencies,
-            model_name="F81",
-        )
-        return _evaluate_selected_dna_site_log_likelihoods_from_patterns(
-            tree,
-            compressed_patterns,
-            model_name="F81",
-            root_prior=stationary,
-            parameter_values=_base_frequency_parameter_values(stationary),
-            transition_matrix_for_child=lambda child: f81_transition_probability_matrix(
-                max(float(child.branch_length or 0.0), 0.0),
-                base_frequencies=stationary,
-            ),
-        )
-    if normalized_model_name == "hky85":
-        _reject_irrelevant_parameter(
-            "HKY85 site log likelihood export",
-            "exchangeabilities",
-            exchangeabilities,
-        )
-        if kappa is None:
-            raise ValueError("HKY85 site log likelihood export requires 'kappa'")
-        stationary = _resolve_dna_base_frequencies(
-            normalized_records,
-            base_frequencies=base_frequencies,
-            model_name="HKY85",
-        )
-        validated_kappa = validate_positive_kappa(kappa, model_name="HKY85")
-        return _evaluate_selected_dna_site_log_likelihoods_from_patterns(
-            tree,
-            compressed_patterns,
-            model_name="HKY85",
-            root_prior=stationary,
-            parameter_values={
-                **_base_frequency_parameter_values(stationary),
-                "kappa": validated_kappa,
-            },
-            transition_matrix_for_child=lambda child: hky85_transition_probability_matrix(
-                max(float(child.branch_length or 0.0), 0.0),
-                base_frequencies=stationary,
-                kappa=validated_kappa,
-            ),
-        )
-    _reject_irrelevant_parameter("GTR site log likelihood export", "kappa", kappa)
-    if exchangeabilities is None:
-        raise ValueError("GTR site log likelihood export requires 'exchangeabilities'")
-    stationary = _resolve_dna_base_frequencies(
+    specification = resolve_selected_nucleotide_likelihood_specification(
         normalized_records,
+        model_name=normalized_model_name,
+        owner_name=f"{normalized_model_name.upper()} site log likelihood export",
+        kappa=kappa,
         base_frequencies=base_frequencies,
-        model_name="GTR",
-    )
-    normalized_exchangeabilities = normalize_dna_exchangeabilities_by_anchor(
-        exchangeabilities,
-        model_name="GTR",
+        exchangeabilities=exchangeabilities,
     )
     return _evaluate_selected_dna_site_log_likelihoods_from_patterns(
         tree,
         compressed_patterns,
-        model_name="GTR",
-        root_prior=stationary,
-        parameter_values={
-            **_base_frequency_parameter_values(stationary),
-            "exchangeability_ac": float(normalized_exchangeabilities[0]),
-            "exchangeability_ag": float(normalized_exchangeabilities[1]),
-            "exchangeability_at": float(normalized_exchangeabilities[2]),
-            "exchangeability_cg": float(normalized_exchangeabilities[3]),
-            "exchangeability_ct": float(normalized_exchangeabilities[4]),
-            "exchangeability_gt": float(normalized_exchangeabilities[5]),
-        },
-        transition_matrix_for_child=lambda child: gtr_transition_probability_matrix(
-            max(float(child.branch_length or 0.0), 0.0),
-            exchangeabilities=normalized_exchangeabilities,
-            base_frequencies=stationary,
+        model_name=specification.model_name,
+        root_prior=specification.root_prior,
+        parameter_values=specification.parameter_values,
+        transition_matrix_for_child=lambda child: (
+            specification.transition_matrix_for_branch_length(
+                max(float(child.branch_length or 0.0), 0.0)
+            )
         ),
     )
 
@@ -286,36 +151,3 @@ def _evaluate_selected_dna_site_log_likelihoods_from_patterns(
         log_likelihood=total_log_likelihood,
         site_log_likelihoods=site_log_likelihoods,
     )
-
-
-def _resolve_dna_base_frequencies(
-    records: list[AlignmentRecord],
-    *,
-    base_frequencies: dict[str, float] | numpy.ndarray | None,
-    model_name: str,
-) -> numpy.ndarray:
-    if base_frequencies is None:
-        return estimate_empirical_dna_base_frequencies(records)
-    return validate_dna_base_frequencies(base_frequencies, model_name=model_name)
-
-
-def _base_frequency_parameter_values(
-    stationary: numpy.ndarray,
-) -> dict[str, float]:
-    return {
-        "base_frequency_a": float(stationary[0]),
-        "base_frequency_c": float(stationary[1]),
-        "base_frequency_g": float(stationary[2]),
-        "base_frequency_t": float(stationary[3]),
-    }
-
-
-def _reject_irrelevant_parameter(
-    owner_name: str,
-    parameter_name: str,
-    value: object,
-) -> None:
-    if value is not None:
-        raise ValueError(
-            f"{owner_name} does not accept '{parameter_name}' because that model does not use it"
-        )
