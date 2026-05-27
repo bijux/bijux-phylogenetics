@@ -16,6 +16,7 @@ from .models import (
     DolloScoreReport,
     ParsimonyBootstrapReport,
     ParsimonyJackknifeReport,
+    ParsimonyNniSearchReport,
     FitchScoreReport,
     ParsimonyConsistencyIndexReport,
     ParsimonyReconstructionReport,
@@ -1580,5 +1581,121 @@ def write_parsimony_jackknife_artifacts(
         "clade_support_path": clade_support_path,
         "consensus_tree_path": consensus_tree_path,
         "clade_frequencies_path": clade_frequencies_path,
+        "run_json_path": run_json_path,
+    }
+
+
+def write_parsimony_nni_trace_table(
+    path: Path,
+    report: ParsimonyNniSearchReport,
+) -> Path:
+    """Write one deterministic rooted NNI search trace table."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "event_index",
+            "event_kind",
+            "iteration",
+            "score_before",
+            "score_after",
+            "score_delta",
+            "tree_before_newick",
+            "tree_after_newick",
+            "pivot_branch_id",
+            "sibling_clade_id",
+            "exchanged_clade_id",
+            "stopping_reason",
+        ],
+        rows=[
+            {
+                "event_index": row.event_index,
+                "event_kind": row.event_kind,
+                "iteration": row.iteration,
+                "score_before": row.score_before,
+                "score_after": row.score_after,
+                "score_delta": row.score_delta,
+                "tree_before_newick": row.tree_before_newick,
+                "tree_after_newick": row.tree_after_newick,
+                "pivot_branch_id": row.pivot_branch_id,
+                "sibling_clade_id": row.sibling_clade_id,
+                "exchanged_clade_id": row.exchanged_clade_id,
+                "stopping_reason": row.stopping_reason,
+            }
+            for row in report.trace_rows
+        ],
+    )
+
+
+def write_parsimony_nni_run_json(
+    path: Path,
+    report: ParsimonyNniSearchReport,
+) -> Path:
+    """Write one machine-readable rooted NNI search payload."""
+    return write_json_artifact(
+        path,
+        {
+            "algorithm": report.algorithm,
+            "method": report.method,
+            "tree_path": None if report.tree_path is None else str(report.tree_path),
+            "matrix_path": None
+            if report.matrix_path is None
+            else str(report.matrix_path),
+            "cost_matrix_path": None
+            if report.cost_matrix_path is None
+            else str(report.cost_matrix_path),
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "taxon_column": report.taxon_column,
+            "taxon_count": report.taxon_count,
+            "character_count": report.character_count,
+            "start_tree_newick": report.start_tree_newick,
+            "start_score": report.start_score,
+            "final_tree_newick": report.final_tree_newick,
+            "final_score": report.final_score,
+            "accepted_move_count": report.accepted_move_count,
+            "evaluated_neighbor_count": report.evaluated_neighbor_count,
+            "stopping_reason": report.stopping_reason,
+            "trace_rows": [
+                {
+                    "event_index": row.event_index,
+                    "event_kind": row.event_kind,
+                    "iteration": row.iteration,
+                    "score_before": row.score_before,
+                    "score_after": row.score_after,
+                    "score_delta": row.score_delta,
+                    "tree_before_newick": row.tree_before_newick,
+                    "tree_after_newick": row.tree_after_newick,
+                    "pivot_branch_id": row.pivot_branch_id,
+                    "sibling_clade_id": row.sibling_clade_id,
+                    "exchanged_clade_id": row.exchanged_clade_id,
+                    "stopping_reason": row.stopping_reason,
+                }
+                for row in report.trace_rows
+            ],
+        },
+    )
+
+
+def write_parsimony_nni_artifacts(
+    out_dir: Path,
+    report: ParsimonyNniSearchReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one rooted NNI search run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    start_tree_path = write_newick(
+        out_dir / "start_tree.nwk",
+        loads_newick(report.start_tree_newick),
+    )
+    final_tree_path = write_newick(
+        out_dir / "final_tree.nwk",
+        loads_newick(report.final_tree_newick),
+    )
+    trace_path = write_parsimony_nni_trace_table(out_dir / "search_trace.tsv", report)
+    run_json_path = write_parsimony_nni_run_json(out_dir / "run.json", report)
+    return {
+        "start_tree_path": start_tree_path,
+        "final_tree_path": final_tree_path,
+        "trace_path": trace_path,
         "run_json_path": run_json_path,
     }
