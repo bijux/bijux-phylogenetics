@@ -216,6 +216,7 @@ differences.
 - compute per-character and aggregate rescaled consistency index on the common supported CI and RI method set, emit rows with `character_id`, `ci`, `ri`, `rc`, and `undefined_reason`, and derive RC directly from the tested CI and RI outputs instead of recomputing separate logic
 - run one generic finite-state Felsenstein pruning kernel over rooted trees, keep the conditional-likelihood recursion independent from any one Mk trait surface, and use the same postorder owner as the native foundation for upcoming DNA and protein maximum-likelihood models
 - compress identical aligned site columns into stable integer-weighted site patterns and sum weighted site log likelihoods through the same owned likelihood foundation, so repeated-column alignments do not change total JC69-, HKY-, or GTR-style likelihoods
+- evaluate fixed-topology JC69 DNA likelihood natively from explicit branch lengths with the shared pruning kernel and site-pattern compression, and improve one supplied topology by bounded coordinate-wise branch-length optimization instead of reusing corrected-distance JC69
 - reconstruct continuous ancestral states under Brownian or OU-style trait models
 - reconstruct discrete ancestral states under Fitch parsimony or likelihood-style ER, SYM, and ARD models with explicit ambiguity and low-confidence reporting, root-prior controls, and fitted transition-rate ledgers
 - validate discrete ancestral likelihood surfaces against governed `ape::ace` references plus root-prior, ordered, irreversible, and ambiguity policy checks
