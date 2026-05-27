@@ -205,8 +205,28 @@ def test_bootstrap_distance_trees_returns_consensus_and_support() -> None:
     )
     assert len(trees) == 5
     assert report.tree_count == 5
-    assert report.consensus_newick.endswith(";")
-    assert len(report.support) > 0
+    assert report.consensus_newick == "((A:0.0125,B:0.0125)100:0.6875,C:0.0125,D:0.0125);"
+    assert [row.sampled_site_indices for row in report.replicate_rows] == [
+        [5, 2, 6, 0, 1, 1, 5, 0],
+        [3, 0, 1, 6, 6, 1, 3, 1],
+        [6, 0, 1, 3, 0, 6, 0, 3],
+        [0, 2, 4, 6, 2, 1, 4, 2],
+        [1, 3, 5, 1, 1, 0, 3, 7],
+    ]
+    assert [row.tree_newick for row in report.replicate_rows] == [
+        "((A:0,B:0)Inner1:0.625,C:0,D:0)Inner2;",
+        "((A:0,B:0)Inner1:0.75,C:0,D:0)Inner2;",
+        "((A:0,B:0)Inner1:0.75,C:0,D:0)Inner2;",
+        "((A:0,B:0)Inner1:0.625,C:0,D:0)Inner2;",
+        "((A:0.0625,B:0.0625)Inner1:0.6875,C:0.0625,D:0.0625)Inner2;",
+    ]
+    assert [(row.clade, row.tree_count, row.frequency) for row in report.support] == [
+        ("A|B", 5, 1.0)
+    ]
+    assert any(
+        len(set(row.sampled_site_indices)) < len(row.sampled_site_indices)
+        for row in report.replicate_rows
+    )
 
 
 def test_summarize_distance_bootstrap_support_reports_weak_clade_counts() -> None:
