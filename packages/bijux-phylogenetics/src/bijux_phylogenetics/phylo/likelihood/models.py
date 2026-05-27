@@ -245,6 +245,33 @@ class NucleotideSubstitutionParameterOptimizationReport:
 
 
 @dataclass(slots=True)
+class SiteLogLikelihoodRow:
+    """One expanded site log-likelihood row from one compressed-pattern evaluation."""
+
+    pattern_id: str
+    pattern_weight: int
+    site_position: int
+    site_states: tuple[str, ...]
+    log_likelihood: float
+
+
+@dataclass(slots=True)
+class FixedTopologySiteLogLikelihoodReport:
+    """Per-site fixed-topology likelihood report with explicit expansion policy."""
+
+    model_name: str
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    expansion_policy: str
+    tree_newick: str
+    parameter_values: dict[str, float]
+    log_likelihood: float
+    site_log_likelihoods: list[SiteLogLikelihoodRow]
+
+
+@dataclass(slots=True)
 class ProteinPoissonTreeLikelihoodReport:
     """Native 20-state protein Poisson likelihood report for one fixed topology."""
 
