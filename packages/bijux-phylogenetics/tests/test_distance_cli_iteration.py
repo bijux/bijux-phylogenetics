@@ -100,6 +100,30 @@ def test_cli_distance_build_tree_supports_single_linkage(
     assert payload["metrics"]["method"] == "single-linkage"
 
 
+def test_cli_distance_build_tree_supports_complete_linkage(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "distance-tree.nwk"
+    exit_code = main(
+        [
+            "distance",
+            "build-tree",
+            str(fixture("example_distance_matrix_complete_linkage_compact_cluster.tsv")),
+            "--method",
+            "complete-linkage",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "(((A:1,D:1)Inner2:2.5,E:3.5)Inner3:2,(B:1,C:1)Inner1:4.5)Inner4;\n"
+    )
+    assert payload["metrics"]["method"] == "complete-linkage"
+
+
 def test_cli_alignment_bootstrap_tree_writes_outputs(tmp_path: Path, capsys) -> None:
     support_path = tmp_path / "support.tsv"
     tree_set_path = tmp_path / "bootstrap.trees"

@@ -3896,6 +3896,19 @@ def test_build_distance_tree_constructs_single_linkage_tree() -> None:
     assert report.taxon_count == 4
 
 
+def test_build_distance_tree_constructs_complete_linkage_tree() -> None:
+    tree, report = build_distance_tree(
+        fixture("example_alignment_distance.fasta"),
+        method="complete-linkage",
+    )
+    assert (
+        dumps_newick(tree)
+        == "((A:0.0625,B:0.0625)Inner2:0.25,(C:0.0625,D:0.0625)Inner1:0.25)Inner3;"
+    )
+    assert report.method == "complete-linkage"
+    assert report.taxon_count == 4
+
+
 def test_compare_distance_tree_topologies_reports_rooting_difference() -> None:
     report = compare_distance_tree_topologies(
         fixture("example_alignment_distance.fasta")
@@ -3989,6 +4002,31 @@ def test_cli_alignment_build_tree_writes_single_linkage_newick(
         "((A:0.0625,B:0.0625)Inner2:0.1875,(C:0.0625,D:0.0625)Inner1:0.1875)Inner3;\n"
     )
     assert payload["metrics"]["method"] == "single-linkage"
+
+
+def test_cli_alignment_build_tree_writes_complete_linkage_newick(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "distance-tree.nwk"
+    exit_code = main(
+        [
+            "alignment",
+            "build-tree",
+            str(fixture("example_alignment_distance.fasta")),
+            "--method",
+            "complete-linkage",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((A:0.0625,B:0.0625)Inner2:0.25,(C:0.0625,D:0.0625)Inner1:0.25)Inner3;\n"
+    )
+    assert payload["metrics"]["method"] == "complete-linkage"
 
 
 def test_cli_alignment_compare_distance_trees_reports_rooting_difference(
