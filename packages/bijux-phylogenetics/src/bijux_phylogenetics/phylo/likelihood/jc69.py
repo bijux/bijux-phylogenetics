@@ -5,9 +5,6 @@ from pathlib import Path
 
 import numpy
 
-from bijux_phylogenetics.comparative.search import (
-    run_bounded_golden_section_maximization,
-)
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
@@ -134,20 +131,23 @@ def optimize_jc69_branch_lengths(
                 )
                 return report, report.log_likelihood
 
-            search_result = run_bounded_golden_section_maximization(
+            (
+                optimized_branch_length,
+                optimized_report,
+                optimized_log_likelihood,
+                search_function_evaluation_count,
+            ) = _run_bounded_jc69_branch_search(
                 lower_bound=lower_branch_length_bound,
                 upper_bound=upper_branch_length_bound,
                 evaluate=evaluate_candidate,
             )
-            function_evaluation_count += search_result.diagnostics.function_evaluation_count
-            optimized_branch_length = float(search_result.parameter_value)
-            optimized_log_likelihood = search_result.objective_value
+            function_evaluation_count += search_function_evaluation_count
             accepted = optimized_log_likelihood > (
                 current_report.log_likelihood + improvement_tolerance
             )
             if accepted:
                 node.branch_length = optimized_branch_length
-                current_report = search_result.payload
+                current_report = optimized_report
                 improved = True
             else:
                 node.branch_length = starting_branch_length
@@ -334,3 +334,67 @@ def _one_hot_leaf_vector(
     vector = numpy.zeros(4, dtype=float)
     vector[_JC69_STATE_INDEX[states_by_taxon[node_name]]] = 1.0
     return vector
+
+
+def _run_bounded_jc69_branch_search(
+    *,
+    lower_bound: float,
+    upper_bound: float,
+    evaluate,
+    tolerance: float = 1e-9,
+    max_iterations: int = 400,
+) -> tuple[float, Jc69TreeLikelihoodReport, float, int]:
+    if upper_bound <= lower_bound:
+        raise InvalidBranchLengthError("JC69 branch-length bounds must be strictly increasing")
+    if tolerance <= 0.0:
+        raise ValueError("JC69 branch-length search tolerance must be positive")
+    if max_iterations < 1:
+        raise ValueError("JC69 branch-length search iterations must be positive")
+
+    phi = (math.sqrt(5.0) - 1.0) / 2.0
+    cache: dict[float, tuple[Jc69TreeLikelihoodReport, float]] = {}
+
+    def evaluate_cached(branch_length: float) -> tuple[Jc69TreeLikelihoodReport, float]:
+        cache_key = round(branch_length, 12)
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+        candidate = evaluate(branch_length)
+        cache[cache_key] = candidate
+        return candidate
+
+    left = upper_bound - (phi * (upper_bound - lower_bound))
+    right = lower_bound + (phi * (upper_bound - lower_bound))
+    left_report, left_objective = evaluate_cached(left)
+    right_report, right_objective = evaluate_cached(right)
+
+    iteration = 0
+    while (upper_bound - lower_bound) > tolerance and iteration < max_iterations:
+        if left_objective < right_objective:
+            lower_bound = left
+            left = right
+            left_report = right_report
+            left_objective = right_objective
+            right = lower_bound + (phi * (upper_bound - lower_bound))
+            right_report, right_objective = evaluate_cached(right)
+        else:
+            upper_bound = right
+            right = left
+            right_report = left_report
+            right_objective = left_objective
+            left = upper_bound - (phi * (upper_bound - lower_bound))
+            left_report, left_objective = evaluate_cached(left)
+        iteration += 1
+
+    midpoint = (lower_bound + upper_bound) / 2.0
+    midpoint_report, midpoint_objective = evaluate_cached(midpoint)
+    ranked = sorted(
+        [
+            (left, left_report, left_objective),
+            (right, right_report, right_objective),
+            (midpoint, midpoint_report, midpoint_objective),
+        ],
+        key=lambda item: (-item[2], item[0]),
+    )
+    best_branch_length, best_report, best_objective = ranked[0]
+    return best_branch_length, best_report, best_objective, len(cache)
