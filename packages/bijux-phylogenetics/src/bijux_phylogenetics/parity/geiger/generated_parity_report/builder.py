@@ -67,6 +67,19 @@ def build_generated_geiger_parity_report(
         / "expected"
         / "workflow-summary.tsv"
     )
+    macroevolution_recovery_suite = compatibility_surface._load_recovery_summary(
+        compatibility_surface._repository_root()
+        / "packages"
+        / "bijux-phylogenetics"
+        / "src"
+        / "bijux_phylogenetics"
+        / "resources"
+        / "datasets"
+        / "simulation"
+        / "macroevolution_recovery_suite"
+        / "expected"
+        / "workflow-summary.tsv"
+    )
     sim_char_report = compatibility_surface._load_sim_char_summary()
     large_tree_summary = compatibility_surface._load_large_tree_benchmark_summary()
     real_dataset_summary = (
@@ -122,6 +135,16 @@ def build_generated_geiger_parity_report(
                 governed_comparison_row_key="governed_rate_comparison_row_count",
                 notes=[
                     "Stored governed expected bundle; review-only ARD cases are retained instead of being misreported as successful recovery."
+                ],
+            ),
+            simulation_recovery_row(
+                macroevolution_recovery_suite,
+                panel_id="macroevolution_recovery_suite",
+                governed_value_success_key="governed_value_pass_count",
+                governed_value_row_key="governed_value_row_count",
+                governed_comparison_row_key="governed_comparison_row_count",
+                notes=[
+                    "Suite-level governed summary aggregates the continuous and discrete geiger-backed recovery panels while keeping the known-answer truth thresholds as a separate suite surface."
                 ],
             ),
         ],
