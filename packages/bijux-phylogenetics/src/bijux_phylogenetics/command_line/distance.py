@@ -15,8 +15,10 @@ from bijux_phylogenetics.distance import (
     build_tree_from_imported_distance_matrix,
     fit_minimum_evolution_tree_from_imported_distance_matrix,
     inspect_imported_distance_matrix_quality,
+    search_balanced_minimum_evolution_nni_from_imported_distance_matrix,
     validate_distance_reference_examples,
     validate_imported_distance_matrix,
+    write_balanced_minimum_evolution_nni_artifacts,
 )
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.reports.service import (
@@ -86,6 +88,23 @@ def add_distance_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the minimum-evolution score as JSON."
     )
     _add_manifest_argument(distance_minimum_evolution)
+
+    distance_bme_nni = distance_subparsers.add_parser(
+        "bme-nni-search",
+        help="Start from NJ or BIONJ and hill-climb one imported distance matrix by rooted NNI under the balanced minimum-evolution objective.",
+    )
+    distance_bme_nni.add_argument("matrix", type=Path)
+    distance_bme_nni.add_argument(
+        "--start-method",
+        required=True,
+        choices=("neighbor-joining", "bionj"),
+        help="Distance-tree initializer used before the rooted NNI hill-climb.",
+    )
+    distance_bme_nni.add_argument("--out-dir", required=True, type=Path)
+    distance_bme_nni.add_argument(
+        "--json", action="store_true", help="Emit the BME NNI search report as JSON."
+    )
+    _add_manifest_argument(distance_bme_nni)
 
     distance_report = distance_subparsers.add_parser(
         "report",
@@ -247,6 +266,42 @@ def run_distance_command(args: Any) -> int:
                     "pair_count": report.pair_count,
                     "branch_count": report.branch_count,
                     "minimum_evolution_score": report.minimum_evolution_score,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+    if args.distance_command == "bme-nni-search":
+        report = search_balanced_minimum_evolution_nni_from_imported_distance_matrix(
+            args.matrix,
+            start_method=args.start_method,
+        )
+        artifact_paths = write_balanced_minimum_evolution_nni_artifacts(
+            args.out_dir,
+            report,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="distance",
+            inputs=[args.matrix],
+            outputs=list(artifact_paths.values()),
+        )
+        _print_result(
+            build_command_result(
+                command="distance",
+                inputs=[args.matrix],
+                outputs=outputs,
+                metrics={
+                    "algorithm": report.algorithm,
+                    "start_method": report.start_method,
+                    "taxon_count": report.taxon_count,
+                    "pair_count": report.pair_count,
+                    "start_score": report.start_score,
+                    "final_score": report.final_score,
+                    "accepted_move_count": report.accepted_move_count,
+                    "evaluated_neighbor_count": report.evaluated_neighbor_count,
+                    "stopping_reason": report.stopping_reason,
                 },
                 data=report,
             ),
