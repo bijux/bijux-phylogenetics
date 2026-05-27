@@ -3953,7 +3953,9 @@ def test_build_distance_tree_rejects_undefined_corrected_distances() -> None:
             model="jukes-cantor",
         )
     except InvalidAlignmentError as error:
-        assert "undefined entries" in error.message
+        assert "blocked before tree inference" in error.message
+        assert "A/B (undefined-corrected-distance)" in error.message
+        assert "B/C (infinite-corrected-distance)" in error.message
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected InvalidAlignmentError")
 

@@ -48,11 +48,32 @@ from .quality import (
     assess_distance_method_assumptions_from_genetic_distance_matrix,
     inspect_distance_matrix_quality,
 )
+from .saturation import diagnose_distance_saturation_from_genetic_distance_matrix
 from .shared import _require_supported_distance_tree_method
 from .complete_linkage import build_complete_linkage_tree
 from .single_linkage import build_single_linkage_tree
 from .upgma import build_upgma_tree
 from .wpgma import build_wpgma_tree
+
+
+def _block_tree_inference_on_saturated_distances(
+    report: GeneticDistanceMatrix,
+) -> None:
+    """Reject corrected distances that are unusable before topology inference."""
+    saturation_report = diagnose_distance_saturation_from_genetic_distance_matrix(
+        report
+    )
+    if not saturation_report.blocks_tree_inference:
+        return
+    blocking_pairs = ", ".join(
+        f"{row.left_identifier}/{row.right_identifier} ({row.warning_kind})"
+        for row in saturation_report.warning_rows
+        if row.blocks_tree_inference
+    )
+    raise InvalidAlignmentError(
+        "distance tree building is blocked before tree inference because one or more corrected distances are undefined or infinite: "
+        + blocking_pairs
+    )
 
 
 def build_distance_tree(
@@ -82,6 +103,7 @@ def build_distance_tree(
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
     )
+    _block_tree_inference_on_saturated_distances(report)
     return _build_distance_tree_from_genetic_distance_matrix(
         report,
         method=method_policy.method,
@@ -95,6 +117,7 @@ def _build_distance_tree_from_genetic_distance_matrix(
     method: str,
     assumptions: DistanceMethodAssumptionReport,
 ) -> tuple[PhyloTree, DistanceTreeBuildReport]:
+    _block_tree_inference_on_saturated_distances(report)
     if len(report.identifiers) < 2:
         raise InvalidAlignmentError("distance tree building requires at least two taxa")
     if method == "neighbor-joining":
