@@ -80,6 +80,16 @@ def list_distance_tree_method_policies() -> list[DistanceTreeMethodPolicy]:
             ],
         ),
         DistanceTreeMethodPolicy(
+            method="complete-linkage",
+            supported=True,
+            reference_surface=None,
+            support_scope="owned-runtime",
+            summary="complete-linkage is supported as an owned runtime clustering method that updates intercluster distance by maximum pairwise distance.",
+            limitations=[
+                "complete-linkage can exaggerate late compact-cluster separation because one distant pair controls each merged cluster distance",
+            ],
+        ),
+        DistanceTreeMethodPolicy(
             method="bionj",
             supported=False,
             reference_surface="ape::bionj",

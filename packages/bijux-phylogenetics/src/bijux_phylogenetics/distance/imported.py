@@ -27,6 +27,7 @@ from .shared import (
     _pair_key,
     _require_supported_distance_tree_method,
 )
+from .complete_linkage import build_complete_linkage_tree
 from .single_linkage import build_single_linkage_tree
 from .upgma import build_upgma_tree
 from .wpgma import build_wpgma_tree
@@ -454,6 +455,11 @@ def build_tree_from_imported_distance_matrix(
         )
     elif method_policy.method == "wpgma":
         tree, _ = build_wpgma_tree(
+            validation.identifiers,
+            _distance_lookup_from_imported(validation, entries),
+        )
+    elif method_policy.method == "complete-linkage":
+        tree, _ = build_complete_linkage_tree(
             validation.identifiers,
             _distance_lookup_from_imported(validation, entries),
         )

@@ -59,6 +59,11 @@ from .single_linkage import (
     SingleLinkageClusterHeightRow as SingleLinkageClusterHeightRow,
     SingleLinkageMergeRow as SingleLinkageMergeRow,
 )
+from .complete_linkage import (
+    CompleteLinkageBuildReport as CompleteLinkageBuildReport,
+    CompleteLinkageClusterHeightRow as CompleteLinkageClusterHeightRow,
+    CompleteLinkageMergeRow as CompleteLinkageMergeRow,
+)
 from .wpgma import (
     WPGMABuildReport as WPGMABuildReport,
     WPGMAClusterHeightRow as WPGMAClusterHeightRow,
@@ -169,6 +174,17 @@ def build_single_linkage_tree(
     )
 
     return build_single_linkage_impl(identifiers, distance_lookup)
+
+
+def build_complete_linkage_tree(
+    identifiers: list[str],
+    distance_lookup: dict[tuple[str, str], float],
+) -> tuple[PhyloTree, CompleteLinkageBuildReport]:
+    from .complete_linkage import (
+        build_complete_linkage_tree as build_complete_linkage_impl,
+    )
+
+    return build_complete_linkage_impl(identifiers, distance_lookup)
 
 
 def load_imported_distance_matrix(path: Path) -> list[ImportedDistanceEntry]:
