@@ -11,6 +11,7 @@ from bijux_phylogenetics.compare.topology import (
 DistanceModel = str
 GapHandlingMode = str
 AmbiguityPolicy = str
+MissingDistancePolicy = str
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,6 +79,7 @@ class DistanceTreeBuildReport:
     taxon_count: int
     pair_count: int
     assumptions: DistanceMethodAssumptionReport
+    missing_distance_policy_report: MissingDistancePolicyReport
 
 
 @dataclass(frozen=True, slots=True)
@@ -359,6 +361,7 @@ class ImportedDistanceTreeBuildReport:
     taxon_count: int
     pair_count: int
     assumptions: DistanceMethodAssumptionReport
+    missing_distance_policy_report: MissingDistancePolicyReport
 
 
 @dataclass(slots=True)
@@ -421,6 +424,30 @@ class SaturatedDistancePair:
     distance: float | None
     comparable_sites: int
     reason: str
+
+
+@dataclass(frozen=True, slots=True)
+class MissingDistanceImputation:
+    """One missing pair imputed under an explicit distance-policy rule."""
+
+    left_identifier: str
+    right_identifier: str
+    imputed_distance: float
+    policy: MissingDistancePolicy
+    rationale: str
+
+
+@dataclass(slots=True)
+class MissingDistancePolicyReport:
+    """Resolution report for one explicit missing-distance policy decision."""
+
+    policy: MissingDistancePolicy
+    taxon_count: int
+    requested_pair_count: int
+    missing_pairs: list[str]
+    imputed_rows: list[MissingDistanceImputation]
+    unresolved_pairs: list[str]
+    warnings: list[str]
 
 
 @dataclass(frozen=True, slots=True)
