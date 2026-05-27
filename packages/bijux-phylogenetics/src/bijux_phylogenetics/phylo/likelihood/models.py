@@ -234,3 +234,44 @@ class ProteinEmpiricalMatrixTreeLikelihoodReport:
     gap_policy: str
     missing_policy: str
     log_likelihood: float
+
+
+@dataclass(slots=True)
+class DiscreteGammaRateCategory:
+    """One discrete-gamma rate category with one stable weight."""
+
+    category_index: int
+    rate: float
+    weight: float
+
+
+@dataclass(slots=True)
+class DiscreteGammaSiteLikelihood:
+    """One emitted site likelihood row under one gamma-mixture evaluation."""
+
+    pattern_id: str
+    site_position: int
+    category_likelihoods: list[float]
+    mixture_likelihood: float
+    log_likelihood: float
+
+
+@dataclass(slots=True)
+class ProteinEmpiricalDiscreteGammaTreeLikelihoodReport:
+    """Empirical protein likelihood report with discrete-gamma rate heterogeneity."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    state_count: int
+    matrix_label: str
+    root_prior_source: str
+    gap_policy: str
+    missing_policy: str
+    alpha: float
+    category_count: int
+    category_rates: list[DiscreteGammaRateCategory]
+    site_likelihoods: list[DiscreteGammaSiteLikelihood]
+    log_likelihood: float
