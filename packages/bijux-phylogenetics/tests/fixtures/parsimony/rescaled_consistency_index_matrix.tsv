@@ -1,0 +1,5 @@
+taxon	char01_constant	char02_singleton	char03_split	char04_homoplastic
+A	0	0	0	0
+B	0	0	0	1
+C	0	0	1	0
+D	0	1	1	1
