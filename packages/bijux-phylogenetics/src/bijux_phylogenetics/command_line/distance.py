@@ -7,6 +7,7 @@ from bijux_phylogenetics.command_line.arguments import (
     _add_distance_tree_method_argument,
     _add_manifest_argument,
     _add_missing_distance_policy_argument,
+    _add_ultrametric_tolerance_argument,
 )
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
@@ -15,6 +16,7 @@ from bijux_phylogenetics.distance import (
     assess_imported_distance_method_assumptions,
     build_tree_from_imported_distance_matrix,
     compute_patristic_residual_diagnostics_from_imported_distance_matrix,
+    diagnose_imported_distance_matrix_ultrametricity,
     fit_fitch_margoliash_tree_from_imported_distance_matrix,
     fit_minimum_evolution_tree_from_imported_distance_matrix,
     fit_nonnegative_least_squares_tree_from_imported_distance_matrix,
@@ -70,6 +72,17 @@ def add_distance_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the assumption audit as JSON."
     )
     _add_manifest_argument(distance_assumptions)
+
+    distance_ultrametricity = distance_subparsers.add_parser(
+        "ultrametricity",
+        help="Test the three-point ultrametric condition across all comparable imported-matrix taxon triples.",
+    )
+    distance_ultrametricity.add_argument("matrix", type=Path)
+    _add_ultrametric_tolerance_argument(distance_ultrametricity)
+    distance_ultrametricity.add_argument(
+        "--json", action="store_true", help="Emit the ultrametricity diagnostics as JSON."
+    )
+    _add_manifest_argument(distance_ultrametricity)
 
     distance_build_tree = distance_subparsers.add_parser(
         "build-tree",
@@ -205,6 +218,32 @@ def add_distance_commands(subparsers: Any) -> None:
 
 
 def run_distance_command(args: Any) -> int:
+    if args.distance_command == "ultrametricity":
+        report = diagnose_imported_distance_matrix_ultrametricity(
+            args.matrix,
+            tolerance=args.tolerance,
+        )
+        outputs = _finalize_outputs(args, command="distance", inputs=[args.matrix])
+        _print_result(
+            build_command_result(
+                command="distance",
+                inputs=[args.matrix],
+                outputs=outputs,
+                warnings=report.warnings,
+                metrics={
+                    "taxon_count": report.taxon_count,
+                    "tested_triple_count": report.tested_triple_count,
+                    "violating_triple_count": len(report.violating_triples),
+                    "max_violation": report.max_violation,
+                    "tolerance": report.tolerance,
+                    "ultrametric": report.ultrametric,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
     if args.distance_command == "reference":
         report = validate_distance_reference_examples()
         outputs = _finalize_outputs(args, command="distance", inputs=[])

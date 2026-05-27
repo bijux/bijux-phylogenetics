@@ -224,6 +224,15 @@ def _add_missing_distance_policy_argument(parser: argparse.ArgumentParser) -> No
     )
 
 
+def _add_ultrametric_tolerance_argument(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--tolerance",
+        type=float,
+        default=1e-6,
+        help="Absolute tolerance used when comparing the two largest distances in each taxon triple.",
+    )
+
+
 def _add_external_adapter_execution_arguments(
     parser: argparse.ArgumentParser,
     *,
