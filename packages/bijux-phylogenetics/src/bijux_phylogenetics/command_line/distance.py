@@ -6,6 +6,7 @@ from typing import Any
 from bijux_phylogenetics.command_line.arguments import (
     _add_distance_tree_method_argument,
     _add_manifest_argument,
+    _add_missing_distance_policy_argument,
 )
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
@@ -76,6 +77,7 @@ def add_distance_commands(subparsers: Any) -> None:
     )
     distance_build_tree.add_argument("matrix", type=Path)
     _add_distance_tree_method_argument(distance_build_tree)
+    _add_missing_distance_policy_argument(distance_build_tree)
     distance_build_tree.add_argument("--out", required=True, type=Path)
     distance_build_tree.add_argument(
         "--json", action="store_true", help="Emit the build report as JSON."
@@ -285,6 +287,7 @@ def run_distance_command(args: Any) -> int:
         tree, report = build_tree_from_imported_distance_matrix(
             args.matrix,
             method=args.method,
+            missing_distance_policy=args.missing_distance_policy,
         )
         output_path = write_newick(args.out, tree)
         outputs = _finalize_outputs(
@@ -302,6 +305,10 @@ def run_distance_command(args: Any) -> int:
                     "method": report.method,
                     "taxon_count": report.taxon_count,
                     "pair_count": report.pair_count,
+                    "missing_distance_policy": report.missing_distance_policy_report.policy,
+                    "imputed_pair_count": len(
+                        report.missing_distance_policy_report.imputed_rows
+                    ),
                 },
                 data=report,
             ),

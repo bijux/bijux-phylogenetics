@@ -213,6 +213,17 @@ def _add_distance_tree_method_argument(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def _add_missing_distance_policy_argument(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--missing-distance-policy",
+        choices=("reject", "mean-impute", "nearest-valid", "triangle-bound"),
+        default="reject",
+        help=(
+            "Policy used when one or more pairwise distances are missing before distance analysis."
+        ),
+    )
+
+
 def _add_external_adapter_execution_arguments(
     parser: argparse.ArgumentParser,
     *,

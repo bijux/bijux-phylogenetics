@@ -6,6 +6,7 @@ from typing import Any
 from bijux_phylogenetics.command_line.arguments import (
     _add_distance_tree_method_argument,
     _add_manifest_argument,
+    _add_missing_distance_policy_argument,
 )
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
@@ -31,6 +32,7 @@ def add_distance_tree_commands(alignment_subparsers: Any) -> None:
     )
     alignment_build_tree.add_argument("alignment", type=Path)
     _add_distance_tree_method_argument(alignment_build_tree)
+    _add_missing_distance_policy_argument(alignment_build_tree)
     add_distance_model_option(alignment_build_tree)
     add_gap_handling_option(alignment_build_tree)
     add_ambiguity_policy_option(alignment_build_tree)
@@ -45,6 +47,7 @@ def add_distance_tree_commands(alignment_subparsers: Any) -> None:
         help="Compare NJ and UPGMA topologies built from the same DNA alignment.",
     )
     alignment_compare_distance_trees.add_argument("alignment", type=Path)
+    _add_missing_distance_policy_argument(alignment_compare_distance_trees)
     add_distance_model_option(alignment_compare_distance_trees)
     add_gap_handling_option(alignment_compare_distance_trees)
     add_ambiguity_policy_option(alignment_compare_distance_trees)
@@ -60,6 +63,7 @@ def add_distance_tree_commands(alignment_subparsers: Any) -> None:
     alignment_compare_distance_reference.add_argument("alignment", type=Path)
     alignment_compare_distance_reference.add_argument("reference_tree", type=Path)
     _add_distance_tree_method_argument(alignment_compare_distance_reference)
+    _add_missing_distance_policy_argument(alignment_compare_distance_reference)
     add_distance_model_option(alignment_compare_distance_reference)
     add_gap_handling_option(alignment_compare_distance_reference)
     add_ambiguity_policy_option(alignment_compare_distance_reference)
@@ -77,6 +81,7 @@ def run_distance_tree_command(args: Any) -> int | None:
             model=args.model,
             gap_handling=args.gap_handling,
             ambiguity_policy=args.ambiguity_policy,
+            missing_distance_policy=args.missing_distance_policy,
         )
         output_path = write_newick(args.out, tree)
         outputs = _finalize_outputs(
@@ -95,6 +100,10 @@ def run_distance_tree_command(args: Any) -> int | None:
                     "pair_count": report.pair_count,
                     "method": report.method,
                     "ambiguity_policy": report.ambiguity_policy,
+                    "missing_distance_policy": report.missing_distance_policy_report.policy,
+                    "imputed_pair_count": len(
+                        report.missing_distance_policy_report.imputed_rows
+                    ),
                 },
                 data=report,
             ),
@@ -108,6 +117,7 @@ def run_distance_tree_command(args: Any) -> int | None:
             model=args.model,
             gap_handling=args.gap_handling,
             ambiguity_policy=args.ambiguity_policy,
+            missing_distance_policy=args.missing_distance_policy,
         )
         outputs = _finalize_outputs(
             args,
@@ -124,6 +134,7 @@ def run_distance_tree_command(args: Any) -> int | None:
                     "robinson_foulds_distance": report.robinson_foulds_distance,
                     "same_unrooted_topology": report.same_unrooted_topology,
                     "ambiguity_policy": report.ambiguity_policy,
+                    "missing_distance_policy": args.missing_distance_policy,
                 },
                 data=report,
             ),
@@ -139,6 +150,7 @@ def run_distance_tree_command(args: Any) -> int | None:
             model=args.model,
             gap_handling=args.gap_handling,
             ambiguity_policy=args.ambiguity_policy,
+            missing_distance_policy=args.missing_distance_policy,
         )
         outputs = _finalize_outputs(
             args,
