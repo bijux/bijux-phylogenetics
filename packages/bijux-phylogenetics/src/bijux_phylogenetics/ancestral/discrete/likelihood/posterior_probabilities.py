@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy
 
 from bijux_phylogenetics.ancestral.common import node_signature
+from bijux_phylogenetics.phylo.likelihood import postorder_conditional_likelihoods
 
 from ..policy import normalize_array
 from .likelihood_math import branch_length
@@ -18,7 +19,6 @@ def estimate_marginal_state_probabilities(
     root_prior: numpy.ndarray,
 ) -> dict[str, dict[str, float]]:
     state_index = {state: index for index, state in enumerate(state_order)}
-    posterior_by_node: dict[str, numpy.ndarray] = {}
     transition_cache: dict[float, numpy.ndarray] = {}
 
     def transition(cached_branch_length: float) -> numpy.ndarray:
@@ -28,22 +28,21 @@ def estimate_marginal_state_probabilities(
             transition_cache[cached_branch_length] = cached
         return cached
 
-    def postorder(node) -> numpy.ndarray:
-        signature = node_signature(node)
-        if node.is_leaf():
-            partial = numpy.zeros(len(state_order), dtype=float)
-            partial[state_index[states_by_taxon[node.name]]] = 1.0
-            posterior_by_node[signature] = partial
-            return partial
-        partial = numpy.ones(len(state_order), dtype=float)
-        for child in node.children:
-            child_partial = postorder(child)
-            partial *= transition(branch_length(child)) @ child_partial
-        partial = normalize_array(partial)
-        posterior_by_node[signature] = partial
-        return partial
-
-    postorder(tree.root)
+    pruning_pass = postorder_conditional_likelihoods(
+        tree,
+        state_count=len(state_order),
+        leaf_likelihood=lambda node: _leaf_likelihood_vector(
+            states_by_taxon,
+            state_index=state_index,
+            state_count=len(state_order),
+            node_name=node.name,
+        ),
+        transition_matrix_for_child=lambda child: transition(branch_length(child)),
+    )
+    posterior_by_node = {
+        node_signature(node): pruning_pass.conditional_for_node(node)
+        for node in tree.iter_nodes(order="preorder")
+    }
     root_signature = node_signature(tree.root)
     posterior_by_node[root_signature] = normalize_array(
         root_prior * posterior_by_node[root_signature]
@@ -79,3 +78,17 @@ def estimate_marginal_state_probabilities(
         }
         for node, probabilities in posterior_by_node.items()
     }
+
+
+def _leaf_likelihood_vector(
+    states_by_taxon: dict[str, str],
+    *,
+    state_index: dict[str, int],
+    state_count: int,
+    node_name: str | None,
+) -> numpy.ndarray:
+    if node_name is None:
+        raise ValueError("leaf nodes in a discrete likelihood tree must be named")
+    likelihood = numpy.zeros(state_count, dtype=float)
+    likelihood[state_index[states_by_taxon[node_name]]] = 1.0
+    return likelihood
