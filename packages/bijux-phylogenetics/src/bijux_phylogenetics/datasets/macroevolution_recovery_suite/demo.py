@@ -16,7 +16,7 @@ from .workflow import run_macroevolution_recovery_suite_workflow
 def run_macroevolution_recovery_suite_demo(
     output_root: Path,
 ) -> MacroevolutionRecoverySuiteDemoResult:
-    """Materialize the packaged suite and write the governed aggregate outputs."""
+    """Materialize the packaged suite and rerun the governed recovery outputs."""
     if output_root.exists():
         shutil.rmtree(output_root)
     output_root.mkdir(parents=True, exist_ok=True)

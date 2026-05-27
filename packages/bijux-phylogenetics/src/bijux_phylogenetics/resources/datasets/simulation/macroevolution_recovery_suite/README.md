@@ -34,5 +34,6 @@ the public runtime surface. It includes:
 
 The package-owned public surface is
 `run_macroevolution_recovery_suite_demo(...)`. It materializes the component
-datasets, aggregates the governed component evidence into one suite bundle, and
-writes one overview that ties the three recovery components together.
+datasets, reruns the governed component recovery workflows, writes one live
+suite bundle, and produces one overview that ties the three recovery
+components together.
