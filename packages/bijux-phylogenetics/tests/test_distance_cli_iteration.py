@@ -66,6 +66,26 @@ def test_cli_alignment_distance_saturation_json_output(capsys) -> None:
     ]
 
 
+def test_cli_alignment_distance_ultrametricity_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "distance-ultrametricity",
+            str(fixture("example_alignment_distance.fasta")),
+            "--model",
+            "p-distance",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["tested_triple_count"] == 4
+    assert payload["metrics"]["violating_triple_count"] == 4
+    assert payload["metrics"]["max_violation"] == 0.125
+    assert payload["metrics"]["tolerance"] == 1e-6
+    assert payload["metrics"]["ultrametric"] is False
+
+
 def test_cli_alignment_distance_assumptions_json_output(capsys) -> None:
     exit_code = main(
         [
@@ -79,6 +99,24 @@ def test_cli_alignment_distance_assumptions_json_output(capsys) -> None:
     assert exit_code == 0
     assert payload["metrics"]["ultrametric_compatible"] is False
     assert payload["metrics"]["upgma_violation_count"] > 0
+
+
+def test_cli_distance_ultrametricity_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "distance",
+            "ultrametricity",
+            str(fixture("example_distance_matrix_equal_row_sum_nonultrametric.tsv")),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["tested_triple_count"] == 4
+    assert payload["metrics"]["violating_triple_count"] == 4
+    assert payload["metrics"]["max_violation"] == 3.0
+    assert payload["metrics"]["tolerance"] == 1e-6
+    assert payload["metrics"]["ultrametric"] is False
 
 
 def test_cli_distance_build_tree_supports_wpgma(tmp_path: Path, capsys) -> None:
