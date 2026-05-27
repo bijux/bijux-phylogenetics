@@ -76,6 +76,30 @@ def test_cli_distance_build_tree_supports_wpgma(tmp_path: Path, capsys) -> None:
     assert payload["metrics"]["method"] == "wpgma"
 
 
+def test_cli_distance_build_tree_supports_single_linkage(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "distance-tree.nwk"
+    exit_code = main(
+        [
+            "distance",
+            "build-tree",
+            str(fixture("example_distance_matrix_single_linkage_chain.tsv")),
+            "--method",
+            "single-linkage",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((((A:0.5,B:0.5)Inner1:0.5,C:1)Inner2:0.5,D:1.5)Inner3:0.5,E:2)Inner4;\n"
+    )
+    assert payload["metrics"]["method"] == "single-linkage"
+
+
 def test_cli_alignment_bootstrap_tree_writes_outputs(tmp_path: Path, capsys) -> None:
     support_path = tmp_path / "support.tsv"
     tree_set_path = tmp_path / "bootstrap.trees"
