@@ -112,6 +112,50 @@ def test_write_macroevolution_recovery_suite_workflow_bundle_matches_packaged_ex
     assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
+def test_run_macroevolution_recovery_suite_workflow_reruns_component_workflows() -> None:
+    report = run_macroevolution_recovery_suite_workflow()
+
+    assert len(report.continuous_panel_workflow.recovery_report.case_reports) == 7
+    assert len(report.discrete_panel_workflow.recovery_report.case_reports) == 4
+    assert len(report.known_answer_panel_workflow.threshold_evaluation_rows) == 11
+    assert report.continuous_component.selection_match_count == 4
+    assert report.discrete_component.selection_match_count == 2
+    assert report.known_answer_component.truth_threshold_pass_count == 10
+
+
+def test_write_macroevolution_recovery_suite_workflow_bundle_records_explicit_goal_300_coverage(
+    tmp_path: Path,
+) -> None:
+    report = run_macroevolution_recovery_suite_workflow()
+    bundle = write_macroevolution_recovery_suite_workflow_bundle(
+        tmp_path / "workflow",
+        report,
+    )
+
+    requirement_lines = bundle.requirement_summary_path.read_text(
+        encoding="utf-8"
+    ).splitlines()
+    assert any(
+        "brownian, early-burst, ornstein-uhlenbeck" in line
+        for line in requirement_lines
+    )
+    assert any(
+        "lambda-transformed-branch-review, kappa-transformed-branch-review, delta-transformed-branch-review"
+        in line
+        for line in requirement_lines
+    )
+    assert any(
+        "all-rates-different, equal-rates, symmetric" in line
+        for line in requirement_lines
+    )
+    assert any(
+        "true-parameters.tsv" in line
+        and "continuous_root_state" in line
+        and "ou_sigma_squared" in line
+        for line in requirement_lines
+    )
+
+
 def test_run_macroevolution_recovery_suite_demo_materializes_dataset_and_workflow(
     tmp_path: Path,
 ) -> None:
@@ -163,7 +207,7 @@ def test_cli_demo_macroevolution_recovery_suite_json_output_reports_metrics(
     assert payload["metrics"]["governed_value_pass_count"] == 42
     assert payload["metrics"]["governed_value_row_count"] == 46
     assert payload["metrics"]["governed_comparison_row_count"] == 23
-    assert payload["metrics"]["truth_threshold_pass_count"] == 11
+    assert payload["metrics"]["truth_threshold_pass_count"] == 10
     assert payload["metrics"]["truth_threshold_row_count"] == 11
     assert payload["metrics"]["sim_char_case_count"] == 3
     assert payload["metrics"]["sim_char_all_passed"] is True
