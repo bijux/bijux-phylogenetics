@@ -1,0 +1,5 @@
+taxon	char03_four_way	char04_mixed_overlap
+A	red	red
+B	blue	red
+C	green	blue
+D	yellow	green
