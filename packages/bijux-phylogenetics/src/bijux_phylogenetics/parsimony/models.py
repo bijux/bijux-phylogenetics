@@ -63,6 +63,14 @@ ParsimonyCharacterMatrix = FitchCharacterMatrix
 
 
 @dataclass(frozen=True, slots=True)
+class ParsimonyCharacterWeights:
+    """Validated per-character weights for one governed parsimony matrix."""
+
+    weights_path: Path | None
+    weights_by_character: dict[str, float]
+
+
+@dataclass(frozen=True, slots=True)
 class WagnerCharacterScore:
     """Per-character ordered Wagner weighted tree-length row."""
 
@@ -290,3 +298,31 @@ class ParsimonyReconstructionReport:
     step_rows: list[ParsimonyReconstructionCharacterScore]
     node_state_rows: list[ParsimonyReconstructionNodeState]
     branch_change_rows: list[ParsimonyReconstructionBranchChange]
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyTreeLengthCharacterScore:
+    """Per-character raw and weighted tree-length row."""
+
+    character_id: str
+    raw_score: float
+    character_weight: float
+    weighted_score: float
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyTreeLengthReport:
+    """Complete tree-length summary over one matrix scored by one parsimony method."""
+
+    algorithm: str
+    method: str
+    tree_path: Path | None
+    matrix_path: Path | None
+    cost_matrix_path: Path | None
+    weights_path: Path | None
+    taxon_column: str
+    taxon_count: int
+    character_count: int
+    raw_total_score: float
+    total_score: float
+    step_rows: list[ParsimonyTreeLengthCharacterScore]

@@ -10,6 +10,7 @@ from .models import (
     DolloScoreReport,
     FitchScoreReport,
     ParsimonyReconstructionReport,
+    ParsimonyTreeLengthReport,
     SankoffScoreReport,
     WagnerScoreReport,
 )
@@ -729,5 +730,80 @@ def write_parsimony_reconstruction_artifacts(
         "steps_path": steps_path,
         "node_states_path": node_states_path,
         "branch_changes_path": branch_changes_path,
+        "run_json_path": run_json_path,
+    }
+
+
+def write_parsimony_tree_length_scores_table(
+    path: Path,
+    report: ParsimonyTreeLengthReport,
+) -> Path:
+    """Write one deterministic per-character tree-length table."""
+    return write_taxon_rows(
+        path,
+        columns=["character_id", "raw_score", "character_weight", "weighted_score"],
+        rows=[
+            {
+                "character_id": row.character_id,
+                "raw_score": row.raw_score,
+                "character_weight": row.character_weight,
+                "weighted_score": row.weighted_score,
+            }
+            for row in report.step_rows
+        ],
+    )
+
+
+def write_parsimony_tree_length_run_json(
+    path: Path,
+    report: ParsimonyTreeLengthReport,
+) -> Path:
+    """Write one machine-readable tree-length payload."""
+    return write_json_artifact(
+        path,
+        {
+            "algorithm": report.algorithm,
+            "method": report.method,
+            "tree_path": None if report.tree_path is None else str(report.tree_path),
+            "matrix_path": None
+            if report.matrix_path is None
+            else str(report.matrix_path),
+            "cost_matrix_path": None
+            if report.cost_matrix_path is None
+            else str(report.cost_matrix_path),
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "taxon_column": report.taxon_column,
+            "taxon_count": report.taxon_count,
+            "character_count": report.character_count,
+            "raw_total_score": report.raw_total_score,
+            "total_score": report.total_score,
+            "step_rows": [
+                {
+                    "character_id": row.character_id,
+                    "raw_score": row.raw_score,
+                    "character_weight": row.character_weight,
+                    "weighted_score": row.weighted_score,
+                }
+                for row in report.step_rows
+            ],
+        },
+    )
+
+
+def write_parsimony_tree_length_artifacts(
+    out_dir: Path,
+    report: ParsimonyTreeLengthReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one tree-length run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    scores_path = write_parsimony_tree_length_scores_table(
+        out_dir / "character_scores.tsv",
+        report,
+    )
+    run_json_path = write_parsimony_tree_length_run_json(out_dir / "run.json", report)
+    return {
+        "scores_path": scores_path,
         "run_json_path": run_json_path,
     }
