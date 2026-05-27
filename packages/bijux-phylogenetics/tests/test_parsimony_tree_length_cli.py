@@ -96,3 +96,58 @@ def test_phylo_parsimony_tree_length_cli_requires_sankoff_cost_matrix(
     assert exit_code == 2
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == "parsimony_tree_length_cost_matrix_required"
+
+
+def test_phylo_parsimony_tree_length_cli_rejects_asymmetric_sankoff_cost_matrix(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "phylo",
+            "parsimony",
+            "tree-length",
+            str(fixture("sankoff_tree_5_taxa.nwk")),
+            str(fixture("sankoff_character_matrix.tsv")),
+            "--method",
+            "sankoff",
+            "--cost-matrix",
+            str(fixture("sankoff_asymmetric_cost_matrix.tsv")),
+            "--out-dir",
+            str(tmp_path / "tree-length-cli"),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == "parsimony_cost_matrix_asymmetric"
+
+
+def test_phylo_parsimony_tree_length_cli_allows_asymmetric_sankoff_cost_matrix(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "phylo",
+            "parsimony",
+            "tree-length",
+            str(fixture("sankoff_tree_5_taxa.nwk")),
+            str(fixture("sankoff_character_matrix.tsv")),
+            "--method",
+            "sankoff",
+            "--cost-matrix",
+            str(fixture("sankoff_asymmetric_cost_matrix.tsv")),
+            "--allow-asymmetric-costs",
+            "--out-dir",
+            str(tmp_path / "tree-length-cli"),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["method"] == "sankoff"
