@@ -38,6 +38,8 @@ from .models import (
     ImportedDistanceMatrixQualityReport as ImportedDistanceMatrixQualityReport,
     ImportedDistanceMatrixReport as ImportedDistanceMatrixReport,
     ImportedDistanceTreeBuildReport as ImportedDistanceTreeBuildReport,
+    DistanceSaturationDiagnosticsReport as DistanceSaturationDiagnosticsReport,
+    DistanceSaturationWarning as DistanceSaturationWarning,
     LowInformationPair as LowInformationPair,
     MinimumEvolutionBranchFit as MinimumEvolutionBranchFit,
     MinimumEvolutionScoreReport as MinimumEvolutionScoreReport,
@@ -240,6 +242,33 @@ def inspect_imported_distance_matrix_quality(
     )
 
     return inspect_quality_impl(path)
+
+
+def diagnose_distance_saturation(
+    path: Path,
+    *,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+) -> DistanceSaturationDiagnosticsReport:
+    from .saturation import diagnose_distance_saturation as diagnose_impl
+
+    return diagnose_impl(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+
+
+def diagnose_distance_saturation_from_genetic_distance_matrix(
+    report: GeneticDistanceMatrix,
+) -> DistanceSaturationDiagnosticsReport:
+    from .saturation import (
+        diagnose_distance_saturation_from_genetic_distance_matrix as diagnose_impl,
+    )
+
+    return diagnose_impl(report)
 
 
 def build_tree_from_imported_distance_matrix(

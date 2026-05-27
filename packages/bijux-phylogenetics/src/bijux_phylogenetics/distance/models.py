@@ -424,6 +424,35 @@ class SaturatedDistancePair:
 
 
 @dataclass(frozen=True, slots=True)
+class DistanceSaturationWarning:
+    """One pair-level saturation warning reviewed before tree inference."""
+
+    left_identifier: str
+    right_identifier: str
+    distance: float | None
+    comparable_sites: int
+    warning_kind: str
+    reason: str
+    blocks_tree_inference: bool
+
+
+@dataclass(slots=True)
+class DistanceSaturationDiagnosticsReport:
+    """Pair-level saturation diagnostics for one computed distance matrix."""
+
+    alignment_path: Path
+    model: DistanceModel
+    gap_handling: GapHandlingMode
+    ambiguity_policy: AmbiguityPolicy
+    taxon_count: int
+    pair_count: int
+    blocking_warning_count: int
+    warning_rows: list[DistanceSaturationWarning]
+    warnings: list[str]
+    blocks_tree_inference: bool
+
+
+@dataclass(frozen=True, slots=True)
 class DistanceOutlierPair:
     """One pair whose distance is unusually large relative to the dataset."""
 
