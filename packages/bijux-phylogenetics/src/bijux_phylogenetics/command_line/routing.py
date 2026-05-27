@@ -106,6 +106,14 @@ def _command_inputs(args: Any) -> list[Path | str]:
             if args.out is not None:
                 inputs.append(args.out)
             return inputs
+        if args.alignment_command == "distance-quality":
+            return [args.alignment]
+        if args.alignment_command == "distance-saturation":
+            return [args.alignment]
+        if args.alignment_command == "distance-suitability":
+            return [args.alignment]
+        if args.alignment_command == "distance-assumptions":
+            return [args.alignment]
         if args.alignment_command == "build-tree":
             return [args.alignment, args.out]
         if args.alignment_command == "compare-distance-trees":

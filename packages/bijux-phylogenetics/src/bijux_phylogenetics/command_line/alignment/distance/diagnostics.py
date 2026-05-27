@@ -7,6 +7,7 @@ from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.distance import (
+    diagnose_distance_saturation,
     assess_distance_method_assumptions,
     inspect_distance_matrix_quality,
 )
@@ -32,6 +33,19 @@ def add_distance_diagnostic_commands(alignment_subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the diagnostics as JSON."
     )
     _add_manifest_argument(alignment_distance_quality)
+
+    alignment_distance_saturation = alignment_subparsers.add_parser(
+        "distance-saturation",
+        help="Emit pair-level saturation warnings before corrected distances are used for tree inference.",
+    )
+    alignment_distance_saturation.add_argument("alignment", type=Path)
+    add_distance_model_option(alignment_distance_saturation)
+    add_gap_handling_option(alignment_distance_saturation)
+    add_ambiguity_policy_option(alignment_distance_saturation)
+    alignment_distance_saturation.add_argument(
+        "--json", action="store_true", help="Emit the saturation diagnostics as JSON."
+    )
+    _add_manifest_argument(alignment_distance_saturation)
 
     alignment_distance_suitability = alignment_subparsers.add_parser(
         "distance-suitability",
@@ -61,6 +75,36 @@ def add_distance_diagnostic_commands(alignment_subparsers: Any) -> None:
 
 
 def run_distance_diagnostic_command(args: Any) -> int | None:
+    if args.alignment_command == "distance-saturation":
+        report = diagnose_distance_saturation(
+            args.alignment,
+            model=args.model,
+            gap_handling=args.gap_handling,
+            ambiguity_policy=args.ambiguity_policy,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="alignment",
+            inputs=[args.alignment],
+        )
+        _print_result(
+            build_command_result(
+                command="alignment",
+                inputs=[args.alignment],
+                outputs=outputs,
+                warnings=report.warnings,
+                metrics={
+                    "taxon_count": report.taxon_count,
+                    "warning_pair_count": len(report.warning_rows),
+                    "blocking_warning_count": report.blocking_warning_count,
+                    "blocks_tree_inference": report.blocks_tree_inference,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
     if args.alignment_command == "distance-quality":
         report = inspect_distance_matrix_quality(
             args.alignment,
