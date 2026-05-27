@@ -548,6 +548,7 @@ def test_cli_distance_bme_nni_search_writes_governed_artifacts(
 def test_cli_alignment_bootstrap_tree_writes_outputs(tmp_path: Path, capsys) -> None:
     support_path = tmp_path / "support.tsv"
     tree_set_path = tmp_path / "bootstrap.trees"
+    draws_path = tmp_path / "bootstrap-draws.tsv"
     exit_code = main(
         [
             "alignment",
@@ -563,6 +564,8 @@ def test_cli_alignment_bootstrap_tree_writes_outputs(tmp_path: Path, capsys) -> 
             str(support_path),
             "--tree-set-out",
             str(tree_set_path),
+            "--draws-out",
+            str(draws_path),
             "--json",
         ]
     )
@@ -570,6 +573,26 @@ def test_cli_alignment_bootstrap_tree_writes_outputs(tmp_path: Path, capsys) -> 
     assert exit_code == 0
     assert support_path.exists()
     assert tree_set_path.exists()
+    assert draws_path.exists()
+    assert support_path.read_text(encoding="utf-8").splitlines() == [
+        "clade\ttree_count\tfrequency",
+        "A|B\t5\t1",
+    ]
+    assert tree_set_path.read_text(encoding="utf-8").splitlines() == [
+        "((A:0.0625,B:0.0625)Inner1:0.5625,C:0.0625,D:0.0625)Inner2;",
+        "((A:0.0625,B:0.0625)Inner1:0.5625,C:0.0625,D:0.0625)Inner2;",
+        "((A:0.0625,B:0.0625)Inner1:0.4375,C:0.0625,D:0.0625)Inner2;",
+        "((A:0,B:0)Inner1:1,C:0,D:0)Inner2;",
+        "((A:0,B:0)Inner1:0.5,C:0,D:0)Inner2;",
+    ]
+    assert draws_path.read_text(encoding="utf-8").splitlines() == [
+        "replicate_index\tsampled_site_indices\ttree_newick",
+        "1\t4,5,0,7,3,0,2,1\t((A:0.0625,B:0.0625)Inner1:0.5625,C:0.0625,D:0.0625)Inner2;",
+        "2\t5,7,3,6,1,3,0,3\t((A:0.0625,B:0.0625)Inner1:0.5625,C:0.0625,D:0.0625)Inner2;",
+        "3\t6,4,2,6,2,1,2,7\t((A:0.0625,B:0.0625)Inner1:0.4375,C:0.0625,D:0.0625)Inner2;",
+        "4\t2,2,0,0,3,3,2,2\t((A:0,B:0)Inner1:1,C:0,D:0)Inner2;",
+        "5\t4,5,3,3,2,3,6,4\t((A:0,B:0)Inner1:0.5,C:0,D:0)Inner2;",
+    ]
     assert payload["metrics"]["replicate_count"] == 5
 
 
