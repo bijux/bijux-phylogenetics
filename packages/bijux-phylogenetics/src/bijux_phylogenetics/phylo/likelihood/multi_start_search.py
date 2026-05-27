@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import math
 from pathlib import Path
 
 import numpy
 
-from bijux_phylogenetics.io.newick import dumps_newick
+from bijux_phylogenetics.io.newick import (
+    dumps_newick,
+    loads_newick,
+    write_newick,
+    write_newick_tree_set,
+)
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideLikelihoodMultiStartRunSummary,
@@ -187,6 +193,53 @@ def search_nucleotide_likelihood_multi_start(
     )
 
 
+def search_nucleotide_likelihood_multi_start_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    model_name: str,
+    local_search_method: str = "nni",
+    start_tree_count: int = 4,
+    start_tree_source_policy: str = "input-tree-plus-random-tree",
+    start_tree_seed: int = 1,
+    branch_reoptimization_policy: str = "coordinate-branch-lengths",
+    evaluation_budget: int | None = None,
+    kappa: float | None = None,
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+        | None
+    ) = None,
+    lower_branch_length_bound: float = 0.0,
+    upper_branch_length_bound: float = 5.0,
+    improvement_tolerance: float = 1e-9,
+    max_coordinate_passes: int = 12,
+) -> NucleotideLikelihoodMultiStartSearchReport:
+    """Search one tree path and alignment path by independent likelihood restarts."""
+    return search_nucleotide_likelihood_multi_start(
+        tree_path,
+        alignment_path,
+        model_name=model_name,
+        local_search_method=local_search_method,
+        start_tree_count=start_tree_count,
+        start_tree_source_policy=start_tree_source_policy,
+        start_tree_seed=start_tree_seed,
+        branch_reoptimization_policy=branch_reoptimization_policy,
+        evaluation_budget=evaluation_budget,
+        kappa=kappa,
+        base_frequencies=base_frequencies,
+        exchangeabilities=exchangeabilities,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        improvement_tolerance=improvement_tolerance,
+        max_coordinate_passes=max_coordinate_passes,
+    )
+
+
 def validate_likelihood_multi_start_method(local_search_method: str) -> str:
     """Validate the bounded set of local search engines used inside restarts."""
     normalized_local_search_method = local_search_method.strip().lower()
@@ -326,8 +379,6 @@ def select_best_likelihood_multi_start_run(
 
 def rooted_topology_fingerprint_from_newick(tree_newick: str) -> str:
     """Fingerprint one rooted topology from a deterministic Newick record."""
-    from bijux_phylogenetics.io.newick import loads_newick
-
     return rooted_topology_fingerprint(loads_newick(tree_newick))
 
 
@@ -403,3 +454,143 @@ def _run_local_search(
         improvement_tolerance=improvement_tolerance,
         max_coordinate_passes=max_coordinate_passes,
     )
+
+
+def write_nucleotide_likelihood_multi_start_summary_table(
+    path: Path,
+    report: NucleotideLikelihoodMultiStartSearchReport,
+) -> Path:
+    """Write one deterministic multi-start likelihood restart summary ledger."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "start_tree_source_kind",
+        "start_tree_source_label",
+        "start_tree_generation_seed",
+        "search_algorithm",
+        "start_log_likelihood",
+        "final_log_likelihood",
+        "final_topology_fingerprint",
+        "accepted_move_count",
+        "evaluated_neighbor_count",
+        "branch_reoptimization_policy",
+        "substitution_parameter_policy",
+        "stopping_reason",
+        "best_run",
+        "start_tree_newick",
+        "final_tree_newick",
+    ]
+    rows = ["\t".join(columns)]
+    for row in report.run_summaries:
+        payload = [
+            row.start_tree_source_kind,
+            row.start_tree_source_label,
+            row.start_tree_generation_seed,
+            row.search_algorithm,
+            row.start_log_likelihood,
+            row.final_log_likelihood,
+            row.final_topology_fingerprint,
+            row.accepted_move_count,
+            row.evaluated_neighbor_count,
+            row.branch_reoptimization_policy,
+            row.substitution_parameter_policy,
+            row.stopping_reason,
+            row.best_run,
+            row.start_tree_newick,
+            row.final_tree_newick,
+        ]
+        rows.append(
+            "\t".join("" if value is None else str(value) for value in payload)
+        )
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    return path
+
+
+def write_nucleotide_likelihood_multi_start_run_json(
+    path: Path,
+    report: NucleotideLikelihoodMultiStartSearchReport,
+) -> Path:
+    """Write one machine-readable rooted likelihood multi-start payload."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "algorithm": report.algorithm,
+        "model_name": report.model_name,
+        "local_search_method": report.local_search_method,
+        "tree_path": report.tree_path,
+        "alignment_path": report.alignment_path,
+        "taxon_count": report.taxon_count,
+        "site_count": report.site_count,
+        "pattern_count": report.pattern_count,
+        "input_tree_newick": report.input_tree_newick,
+        "start_tree_source_policy": report.start_tree_source_policy,
+        "input_tree_included": report.input_tree_included,
+        "generated_start_tree_count": report.generated_start_tree_count,
+        "start_tree_count": report.start_tree_count,
+        "start_tree_seed": report.start_tree_seed,
+        "evaluation_budget": report.evaluation_budget,
+        "branch_reoptimization_policy": report.branch_reoptimization_policy,
+        "best_run_source_label": report.best_run_source_label,
+        "best_final_tree_newick": report.best_final_tree_newick,
+        "best_final_log_likelihood": report.best_final_log_likelihood,
+        "best_final_topology_fingerprint": report.best_final_topology_fingerprint,
+        "run_summaries": [
+            {
+                "search_algorithm": row.search_algorithm,
+                "start_tree_source_kind": row.start_tree_source_kind,
+                "start_tree_source_label": row.start_tree_source_label,
+                "start_tree_generation_seed": row.start_tree_generation_seed,
+                "start_tree_newick": row.start_tree_newick,
+                "start_log_likelihood": row.start_log_likelihood,
+                "final_tree_newick": row.final_tree_newick,
+                "final_log_likelihood": row.final_log_likelihood,
+                "final_topology_fingerprint": row.final_topology_fingerprint,
+                "accepted_move_count": row.accepted_move_count,
+                "evaluated_neighbor_count": row.evaluated_neighbor_count,
+                "branch_reoptimization_policy": row.branch_reoptimization_policy,
+                "substitution_parameter_policy": row.substitution_parameter_policy,
+                "substitution_parameter_values": row.substitution_parameter_values,
+                "substitution_parameter_warnings": row.substitution_parameter_warnings,
+                "total_branch_optimization_pass_count": row.total_branch_optimization_pass_count,
+                "total_branch_function_evaluation_count": row.total_branch_function_evaluation_count,
+                "stopping_reason": row.stopping_reason,
+                "best_run": row.best_run,
+            }
+            for row in report.run_summaries
+        ],
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def write_nucleotide_likelihood_multi_start_artifacts(
+    out_dir: Path,
+    report: NucleotideLikelihoodMultiStartSearchReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one rooted likelihood multi-start run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    input_tree_path = write_newick(
+        out_dir / "input_tree.nwk",
+        loads_newick(report.input_tree_newick),
+    )
+    start_tree_path = write_newick_tree_set(
+        out_dir / "start_trees.nwk",
+        [loads_newick(row.start_tree_newick) for row in report.run_summaries],
+    )
+    best_tree_path = write_newick(
+        out_dir / "best_tree.nwk",
+        loads_newick(report.best_final_tree_newick),
+    )
+    summary_path = write_nucleotide_likelihood_multi_start_summary_table(
+        out_dir / "restart_summary.tsv",
+        report,
+    )
+    run_json_path = write_nucleotide_likelihood_multi_start_run_json(
+        out_dir / "run.json",
+        report,
+    )
+    return {
+        "input_tree_path": input_tree_path,
+        "start_tree_path": start_tree_path,
+        "best_tree_path": best_tree_path,
+        "summary_path": summary_path,
+        "run_json_path": run_json_path,
+    }
