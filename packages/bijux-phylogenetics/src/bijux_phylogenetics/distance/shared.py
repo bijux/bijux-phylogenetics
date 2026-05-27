@@ -70,6 +70,16 @@ def list_distance_tree_method_policies() -> list[DistanceTreeMethodPolicy]:
             ],
         ),
         DistanceTreeMethodPolicy(
+            method="single-linkage",
+            supported=True,
+            reference_surface=None,
+            support_scope="owned-runtime",
+            summary="single-linkage is supported as an owned runtime clustering method that updates intercluster distance by minimum pairwise distance.",
+            limitations=[
+                "single-linkage can produce chaining artifacts when one taxon bridges otherwise distant groups",
+            ],
+        ),
+        DistanceTreeMethodPolicy(
             method="bionj",
             supported=False,
             reference_surface="ape::bionj",

@@ -208,7 +208,7 @@ def _add_distance_tree_method_argument(parser: argparse.ArgumentParser) -> None:
         "--method",
         required=True,
         help=(
-            "Distance-tree method. Supported: neighbor-joining, upgma, wpgma. "
+            "Distance-tree method. Supported: neighbor-joining, upgma, wpgma, single-linkage. "
             "Explicitly excluded for this round: bionj."
         ),
     )

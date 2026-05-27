@@ -48,6 +48,7 @@ from .quality import (
     inspect_distance_matrix_quality,
 )
 from .shared import _require_supported_distance_tree_method
+from .single_linkage import build_single_linkage_tree
 from .upgma import build_upgma_tree
 from .wpgma import build_wpgma_tree
 
@@ -98,8 +99,13 @@ def _build_distance_tree_from_genetic_distance_matrix(
         tree = build_neighbor_joining_tree(report.identifiers, _distance_lookup(report))
     elif method == "upgma":
         tree, _ = build_upgma_tree(report.identifiers, _distance_lookup(report))
-    else:
+    elif method == "wpgma":
         tree, _ = build_wpgma_tree(report.identifiers, _distance_lookup(report))
+    else:
+        tree, _ = build_single_linkage_tree(
+            report.identifiers,
+            _distance_lookup(report),
+        )
     return tree, DistanceTreeBuildReport(
         alignment_path=report.path,
         model=report.model,
