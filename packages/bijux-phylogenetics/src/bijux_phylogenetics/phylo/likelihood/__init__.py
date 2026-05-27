@@ -479,6 +479,36 @@ from .candidate_tree_site_likelihood_matrix import (
 from .candidate_tree_site_likelihood_matrix import (
     write_candidate_tree_site_likelihood_matrix_table as write_candidate_tree_site_likelihood_matrix_table,
 )
+from .approximate_topology_test import (
+    evaluate_nucleotide_approximate_topology_test as evaluate_nucleotide_approximate_topology_test,
+)
+from .approximate_topology_test import (
+    evaluate_nucleotide_approximate_topology_test_from_alignment as evaluate_nucleotide_approximate_topology_test_from_alignment,
+)
+from .approximate_topology_test import (
+    evaluate_nucleotide_approximate_topology_test_from_matrix_report as evaluate_nucleotide_approximate_topology_test_from_matrix_report,
+)
+from .approximate_topology_test import (
+    resolve_candidate_tree_site_likelihood_vectors as resolve_candidate_tree_site_likelihood_vectors,
+)
+from .approximate_topology_test import (
+    select_observed_best_candidate_tree as select_observed_best_candidate_tree,
+)
+from .approximate_topology_test import (
+    validate_approximate_topology_test_replicate_count as validate_approximate_topology_test_replicate_count,
+)
+from .approximate_topology_test import (
+    write_approximate_topology_test_artifacts as write_approximate_topology_test_artifacts,
+)
+from .approximate_topology_test import (
+    write_approximate_topology_test_resampling_table as write_approximate_topology_test_resampling_table,
+)
+from .approximate_topology_test import (
+    write_approximate_topology_test_run_json as write_approximate_topology_test_run_json,
+)
+from .approximate_topology_test import (
+    write_approximate_topology_test_summary_table as write_approximate_topology_test_summary_table,
+)
 from .nni_search import (
     search_nucleotide_likelihood_nni as search_nucleotide_likelihood_nni,
 )
@@ -578,6 +608,9 @@ __all__ = [
     "compress_alignment_site_patterns_from_records",
     "compute_joint_state_assignment",
     "default_substitution_model_selection_candidates",
+    "evaluate_nucleotide_approximate_topology_test",
+    "evaluate_nucleotide_approximate_topology_test_from_alignment",
+    "evaluate_nucleotide_approximate_topology_test_from_matrix_report",
     "evaluate_nucleotide_candidate_tree_site_likelihood_matrix",
     "evaluate_nucleotide_candidate_tree_site_likelihood_matrix_from_alignment",
     "evaluate_f81_tree_likelihood",
@@ -652,10 +685,13 @@ __all__ = [
     "reconstruct_nucleotide_marginal_ancestral_sequences_from_report",
     "resolve_candidate_tree_alignment_records",
     "resolve_candidate_tree_records",
+    "resolve_candidate_tree_site_likelihood_vectors",
+    "select_observed_best_candidate_tree",
     "summarize_marginal_ancestral_sites",
     "sum_alignment_site_log_likelihoods",
     "sum_compressed_site_pattern_log_likelihoods",
     "transition_probability_matrix",
+    "validate_approximate_topology_test_replicate_count",
     "validate_declared_nucleotide_likelihood_ratio_pair",
     "validate_likelihood_multi_start_evaluation_budget",
     "validate_likelihood_multi_start_method",
@@ -666,6 +702,10 @@ __all__ = [
     "validate_nucleotide_site_log_likelihood_model",
     "validate_likelihood_spr_evaluation_budget",
     "validate_nucleotide_substitution_optimization_model",
+    "write_approximate_topology_test_artifacts",
+    "write_approximate_topology_test_resampling_table",
+    "write_approximate_topology_test_run_json",
+    "write_approximate_topology_test_summary_table",
     "write_candidate_tree_likelihood_summary_table",
     "write_candidate_tree_site_likelihood_matrix_artifacts",
     "write_candidate_tree_site_likelihood_matrix_run_json",
