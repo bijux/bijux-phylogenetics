@@ -116,6 +116,18 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return [args.alignment]
         if args.alignment_command == "distance-assumptions":
             return [args.alignment]
+        if args.alignment_command == "bootstrap-tree":
+            inputs = [args.alignment]
+            for optional_path in (
+                args.support_out,
+                args.tree_set_out,
+                args.draws_out,
+            ):
+                if optional_path is not None:
+                    inputs.append(optional_path)
+            return inputs
+        if args.alignment_command == "distance-support-summary":
+            return [args.alignment]
         if args.alignment_command == "build-tree":
             return [args.alignment, args.out]
         if args.alignment_command == "compare-distance-trees":

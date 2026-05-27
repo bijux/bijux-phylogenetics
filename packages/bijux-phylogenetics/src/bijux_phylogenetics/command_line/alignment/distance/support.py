@@ -12,6 +12,7 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.distance import (
     bootstrap_distance_trees,
     summarize_distance_bootstrap_support,
+    write_distance_bootstrap_draws,
     write_distance_bootstrap_support,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
@@ -41,6 +42,11 @@ def add_distance_support_commands(alignment_subparsers: Any) -> None:
     )
     alignment_bootstrap_tree.add_argument(
         "--tree-set-out", type=Path, help="Write bootstrap replicate trees as Newick."
+    )
+    alignment_bootstrap_tree.add_argument(
+        "--draws-out",
+        type=Path,
+        help="Write the deterministic bootstrap site-draw ledger as TSV.",
     )
     alignment_bootstrap_tree.add_argument(
         "--json", action="store_true", help="Emit the bootstrap report as JSON."
@@ -80,6 +86,8 @@ def run_distance_support_command(args: Any) -> int | None:
             outputs.append(write_distance_bootstrap_support(args.support_out, report))
         if args.tree_set_out is not None:
             outputs.append(write_tree_set(args.tree_set_out, trees))
+        if args.draws_out is not None:
+            outputs.append(write_distance_bootstrap_draws(args.draws_out, report))
         outputs = _finalize_outputs(
             args,
             command="alignment",
