@@ -39,6 +39,7 @@ def test_phylo_parsimony_acctran_cli_writes_governed_artifacts(
     assert payload["metrics"]["character_count"] == 1
     assert payload["metrics"]["total_steps"] == 2
     assert (out_dir / "steps.tsv").is_file()
+    assert (out_dir / "ancestral_states.tsv").is_file()
     assert (out_dir / "resolved_states.tsv").is_file()
     assert (out_dir / "branch_changes.tsv").is_file()
     assert (out_dir / "run.json").is_file()
