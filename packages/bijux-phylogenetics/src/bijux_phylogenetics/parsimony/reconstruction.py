@@ -345,13 +345,15 @@ def _assign_child_states(
             branch_change_rows.append(
                 ParsimonyReconstructionBranchChange(
                     character_id=character_id,
+                    branch_id=child_signature,
                     parent_node=node_signature(node),
                     parent_state=parent_state,
-                    node=child_signature,
-                    node_name=child.name,
-                    descendant_taxa=node_descendant_taxa(child),
+                    child_node=child_signature,
+                    child_node_name=child.name,
+                    child_descendant_taxa=node_descendant_taxa(child),
                     change_from=parent_state,
                     change_to=child_state,
+                    ambiguous=len(possible_states) > 1,
                 )
             )
         _assign_child_states(

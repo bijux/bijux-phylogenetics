@@ -322,13 +322,30 @@ class ParsimonyReconstructionBranchChange:
     """Per-branch resolved parsimony change row for one character."""
 
     character_id: str
+    branch_id: str
     parent_node: str
     parent_state: str
-    node: str
-    node_name: str | None
-    descendant_taxa: list[str]
+    child_node: str
+    child_node_name: str | None
+    child_descendant_taxa: list[str]
     change_from: str
     change_to: str
+    ambiguous: bool
+
+    @property
+    def node(self) -> str:
+        """Backward-compatible alias for the child node branch endpoint."""
+        return self.child_node
+
+    @property
+    def node_name(self) -> str | None:
+        """Backward-compatible alias for the child node label."""
+        return self.child_node_name
+
+    @property
+    def descendant_taxa(self) -> list[str]:
+        """Backward-compatible alias for the child node descendant taxa."""
+        return self.child_descendant_taxa
 
 
 @dataclass(frozen=True, slots=True)
