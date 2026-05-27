@@ -206,6 +206,12 @@ from .models import (
 from .models import (
     K80TreeLikelihoodReport as K80TreeLikelihoodReport,
 )
+from .models import (
+    NucleotideSubstitutionParameterOptimizationReport as NucleotideSubstitutionParameterOptimizationReport,
+)
+from .models import (
+    SubstitutionParameterOptimizationRow as SubstitutionParameterOptimizationRow,
+)
 from .patterns import (
     AlignmentSitePattern as AlignmentSitePattern,
 )
@@ -239,6 +245,15 @@ from .sites import (
 from .sites import (
     sum_compressed_site_pattern_log_likelihoods as sum_compressed_site_pattern_log_likelihoods,
 )
+from .substitution_parameters import (
+    optimize_nucleotide_substitution_parameters as optimize_nucleotide_substitution_parameters,
+)
+from .substitution_parameters import (
+    optimize_nucleotide_substitution_parameters_from_alignment as optimize_nucleotide_substitution_parameters_from_alignment,
+)
+from .substitution_parameters import (
+    validate_nucleotide_substitution_optimization_model as validate_nucleotide_substitution_optimization_model,
+)
 
 __all__ = [
     "AlignmentSitePattern",
@@ -258,12 +273,14 @@ __all__ = [
     "Jc69TreeLikelihoodReport",
     "K80KappaOptimizationReport",
     "K80TreeLikelihoodReport",
+    "NucleotideSubstitutionParameterOptimizationReport",
     "ProteinEmpiricalDiscreteGammaTreeLikelihoodReport",
     "ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport",
     "ProteinEmpiricalBranchLengthOptimizationReport",
     "ProteinEmpiricalInvariantMixtureTreeLikelihoodReport",
     "ProteinEmpiricalMatrixTreeLikelihoodReport",
     "ProteinPoissonTreeLikelihoodReport",
+    "SubstitutionParameterOptimizationRow",
     "InvariantMixtureSiteLikelihood",
     "alignment_site_columns",
     "build_discrete_gamma_rate_categories",
@@ -312,6 +329,8 @@ __all__ = [
     "optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment",
     "optimize_k80_kappa",
     "optimize_k80_kappa_from_alignment",
+    "optimize_nucleotide_substitution_parameters",
+    "optimize_nucleotide_substitution_parameters_from_alignment",
     "optimize_jc69_branch_lengths",
     "optimize_jc69_branch_lengths_from_alignment",
     "postorder_conditional_likelihoods",
@@ -320,4 +339,5 @@ __all__ = [
     "sum_alignment_site_log_likelihoods",
     "sum_compressed_site_pattern_log_likelihoods",
     "transition_probability_matrix",
+    "validate_nucleotide_substitution_optimization_model",
 ]
