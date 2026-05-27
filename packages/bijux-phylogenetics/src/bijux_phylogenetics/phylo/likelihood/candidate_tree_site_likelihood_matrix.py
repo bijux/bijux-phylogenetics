@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
 import numpy
 
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
-from bijux_phylogenetics.io.newick import load_newick_tree_set
+from bijux_phylogenetics.io.newick import (
+    load_newick_tree_set,
+    loads_newick,
+    write_newick_tree_set,
+)
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.models import (
     CandidateTreeSiteLikelihoodMatrixReport,
@@ -190,3 +195,144 @@ def resolve_candidate_tree_alignment_records(
         load_fasta_alignment(records) if isinstance(records, Path) else list(records)
     )
     return resolved_records, resolved_alignment_path
+
+
+def write_candidate_tree_likelihood_summary_table(
+    path: Path,
+    report: CandidateTreeSiteLikelihoodMatrixReport,
+) -> Path:
+    """Write one candidate-tree summary table with shared model totals."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "candidate_tree_id",
+        "candidate_tree_label",
+        "tree_newick",
+        "log_likelihood",
+    ]
+    rows = ["\t".join(columns)]
+    for row in report.candidate_trees:
+        rows.append(
+            "\t".join(
+                [
+                    row.candidate_tree_id,
+                    row.candidate_tree_label,
+                    row.tree_newick,
+                    repr(row.log_likelihood),
+                ]
+            )
+        )
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    return path
+
+
+def write_candidate_tree_site_likelihood_matrix_table(
+    path: Path,
+    report: CandidateTreeSiteLikelihoodMatrixReport,
+) -> Path:
+    """Write one expanded candidate-tree by site likelihood matrix TSV."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "model_name",
+        "candidate_tree_id",
+        "candidate_tree_label",
+        "taxon_order",
+        "pattern_id",
+        "pattern_weight",
+        "site_position",
+        "site_states",
+        "log_likelihood",
+    ]
+    rows = ["\t".join(columns)]
+    taxon_order = "|".join(report.taxa)
+    for row in report.matrix_rows:
+        rows.append(
+            "\t".join(
+                [
+                    report.model_name,
+                    row.candidate_tree_id,
+                    row.candidate_tree_label,
+                    taxon_order,
+                    row.pattern_id,
+                    str(row.pattern_weight),
+                    str(row.site_position),
+                    "|".join(row.site_states),
+                    repr(row.log_likelihood),
+                ]
+            )
+        )
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    return path
+
+
+def write_candidate_tree_site_likelihood_matrix_run_json(
+    path: Path,
+    report: CandidateTreeSiteLikelihoodMatrixReport,
+) -> Path:
+    """Write one machine-readable candidate-tree site-likelihood matrix payload."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "model_name": report.model_name,
+        "tree_set_path": report.tree_set_path,
+        "alignment_path": report.alignment_path,
+        "taxa": report.taxa,
+        "tree_count": report.tree_count,
+        "site_count": report.site_count,
+        "pattern_count": report.pattern_count,
+        "compression_used": report.compression_used,
+        "expansion_policy": report.expansion_policy,
+        "parameter_values": report.parameter_values,
+        "candidate_trees": [
+            {
+                "candidate_tree_id": row.candidate_tree_id,
+                "candidate_tree_label": row.candidate_tree_label,
+                "tree_newick": row.tree_newick,
+                "log_likelihood": row.log_likelihood,
+            }
+            for row in report.candidate_trees
+        ],
+        "matrix_rows": [
+            {
+                "candidate_tree_id": row.candidate_tree_id,
+                "candidate_tree_label": row.candidate_tree_label,
+                "tree_newick": row.tree_newick,
+                "pattern_id": row.pattern_id,
+                "pattern_weight": row.pattern_weight,
+                "site_position": row.site_position,
+                "site_states": list(row.site_states),
+                "log_likelihood": row.log_likelihood,
+            }
+            for row in report.matrix_rows
+        ],
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def write_candidate_tree_site_likelihood_matrix_artifacts(
+    out_dir: Path,
+    report: CandidateTreeSiteLikelihoodMatrixReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one candidate-tree site-likelihood matrix."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    candidate_tree_path = write_newick_tree_set(
+        out_dir / "candidate_trees.nwk",
+        [loads_newick(row.tree_newick) for row in report.candidate_trees],
+    )
+    summary_path = write_candidate_tree_likelihood_summary_table(
+        out_dir / "candidate_tree_summary.tsv",
+        report,
+    )
+    matrix_path = write_candidate_tree_site_likelihood_matrix_table(
+        out_dir / "site_likelihood_matrix.tsv",
+        report,
+    )
+    run_json_path = write_candidate_tree_site_likelihood_matrix_run_json(
+        out_dir / "run.json",
+        report,
+    )
+    return {
+        "candidate_tree_path": candidate_tree_path,
+        "summary_path": summary_path,
+        "matrix_path": matrix_path,
+        "run_json_path": run_json_path,
+    }
