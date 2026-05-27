@@ -25,12 +25,20 @@ def reconstruct_acctran(
     return _reconstruct_parsimony_report(tree, matrix, algorithm="acctran")
 
 
-def _reconstruct_deltran(
+def reconstruct_deltran(
     tree: PhyloTree | Path,
     matrix: FitchCharacterMatrix | Path,
 ) -> ParsimonyReconstructionReport:
     """Resolve unordered parsimony ambiguities toward later branches with DELTRAN."""
     return _reconstruct_parsimony_report(tree, matrix, algorithm="deltran")
+
+
+def _reconstruct_deltran(
+    tree: PhyloTree | Path,
+    matrix: FitchCharacterMatrix | Path,
+) -> ParsimonyReconstructionReport:
+    """Backward-compatible internal alias for DELTRAN reconstruction."""
+    return reconstruct_deltran(tree, matrix)
 
 
 def _reconstruct_parsimony_report(

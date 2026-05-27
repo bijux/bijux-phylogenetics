@@ -60,7 +60,7 @@ from .models import (
     WagnerNodeCost,
     WagnerScoreReport,
 )
-from .reconstruction import reconstruct_acctran
+from .reconstruction import reconstruct_acctran, reconstruct_deltran
 from .sankoff import score_sankoff
 from .wagner import score_wagner
 
@@ -84,6 +84,7 @@ __all__ = [
     "ParsimonyReconstructionNodeState",
     "ParsimonyReconstructionReport",
     "reconstruct_acctran",
+    "reconstruct_deltran",
     "score_camin_sokal",
     "score_dollo",
     "score_fitch",
