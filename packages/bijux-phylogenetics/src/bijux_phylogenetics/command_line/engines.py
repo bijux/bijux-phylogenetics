@@ -32,6 +32,7 @@ from bijux_phylogenetics.parsimony import (
     rescaled_consistency_index,
     retention_index,
     search_parsimony_nni,
+    search_parsimony_spr,
     score_camin_sokal,
     score_dollo,
     score_fitch,
@@ -42,6 +43,7 @@ from bijux_phylogenetics.parsimony import (
     write_parsimony_consistency_artifacts,
     write_parsimony_jackknife_artifacts,
     write_parsimony_nni_artifacts,
+    write_parsimony_spr_artifacts,
     write_parsimony_reconstruction_artifacts,
     write_parsimony_rescaled_consistency_artifacts,
     write_parsimony_retention_artifacts,
@@ -381,6 +383,47 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the NNI search report as JSON."
     )
     _add_manifest_argument(phylo_parsimony_nni_search)
+    phylo_parsimony_spr_search = phylo_parsimony_subparsers.add_parser(
+        "spr-search",
+        help="Hill-climb one rooted binary starting tree by accepting score-improving rooted subtree-prune-regraft moves.",
+    )
+    phylo_parsimony_spr_search.add_argument("tree_path", type=Path)
+    phylo_parsimony_spr_search.add_argument("matrix_path", type=Path)
+    phylo_parsimony_spr_search.add_argument(
+        "--method",
+        required=True,
+        choices=[
+            "fitch",
+            "wagner",
+            "sankoff",
+            "dollo",
+            "camin-sokal",
+            "acctran",
+            "deltran",
+        ],
+    )
+    phylo_parsimony_spr_search.add_argument("--taxon-column")
+    phylo_parsimony_spr_search.add_argument(
+        "--cost-matrix",
+        dest="cost_matrix_path",
+        type=Path,
+        help="Required when --method sankoff is selected.",
+    )
+    phylo_parsimony_spr_search.add_argument(
+        "--allow-asymmetric-costs",
+        action="store_true",
+        help="Allow asymmetric Sankoff transition costs when --method sankoff is selected.",
+    )
+    phylo_parsimony_spr_search.add_argument(
+        "--state-order",
+        help="Comma-separated explicit ordered state labels for Wagner SPR scoring.",
+    )
+    _add_parsimony_character_weights_argument(phylo_parsimony_spr_search)
+    phylo_parsimony_spr_search.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_spr_search.add_argument(
+        "--json", action="store_true", help="Emit the SPR search report as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_spr_search)
     phylo_parsimony_tree_length = phylo_parsimony_subparsers.add_parser(
         "tree-length",
         help="Summarize per-character and total tree length for one parsimony scoring method.",
@@ -761,6 +804,42 @@ def run_phylo_command(args: Any) -> int:
                 "evaluated_neighbor_count": report.evaluated_neighbor_count,
                 "stopping_reason": report.stopping_reason,
             }
+        elif args.phylo_parsimony_command == "spr-search":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            character_weights = _load_parsimony_character_weights_argument(args)
+            cost_matrix = (
+                load_sankoff_cost_matrix(
+                    args.cost_matrix_path,
+                    allow_asymmetric_costs=args.allow_asymmetric_costs,
+                )
+                if getattr(args, "cost_matrix_path", None) is not None
+                else None
+            )
+            state_order = _split_state_order(getattr(args, "state_order", None))
+            report = search_parsimony_spr(
+                args.tree_path,
+                matrix,
+                method=args.method,
+                state_order=state_order,
+                cost_matrix=cost_matrix,
+                allow_asymmetric_costs=args.allow_asymmetric_costs,
+                character_weights=character_weights,
+            )
+            artifact_paths = write_parsimony_spr_artifacts(args.out_dir, report)
+            metrics = {
+                "algorithm": report.algorithm,
+                "method": report.method,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "start_score": report.start_score,
+                "final_score": report.final_score,
+                "accepted_move_count": report.accepted_move_count,
+                "evaluated_neighbor_count": report.evaluated_neighbor_count,
+                "stopping_reason": report.stopping_reason,
+            }
         elif args.phylo_parsimony_command == "tree-length":
             matrix = load_parsimony_character_matrix(
                 args.matrix_path,
@@ -898,6 +977,10 @@ def run_phylo_command(args: Any) -> int:
                     )
                     or (
                         args.phylo_parsimony_command == "nni-search"
+                        and getattr(args, "cost_matrix_path", None) is not None
+                    )
+                    or (
+                        args.phylo_parsimony_command == "spr-search"
                         and getattr(args, "cost_matrix_path", None) is not None
                     )
                 )
