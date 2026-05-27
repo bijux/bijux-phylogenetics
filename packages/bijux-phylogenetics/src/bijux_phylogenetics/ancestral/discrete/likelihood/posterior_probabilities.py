@@ -3,11 +3,13 @@ from __future__ import annotations
 import numpy
 
 from bijux_phylogenetics.ancestral.common import node_signature
-from bijux_phylogenetics.phylo.likelihood import postorder_conditional_likelihoods
+from bijux_phylogenetics.phylo.likelihood.pruning import (
+    postorder_conditional_likelihoods,
+    transition_probability_matrix,
+)
 
 from ..policy import normalize_array
 from .likelihood_math import branch_length
-from .likelihood_math import transition_probability_matrix
 
 
 def estimate_marginal_state_probabilities(

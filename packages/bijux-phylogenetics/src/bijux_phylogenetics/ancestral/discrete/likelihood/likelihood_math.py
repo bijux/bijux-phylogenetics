@@ -4,7 +4,7 @@ import math
 
 import numpy
 
-from bijux_phylogenetics.phylo.likelihood import (
+from bijux_phylogenetics.phylo.likelihood.pruning import (
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
     transition_probability_matrix,
