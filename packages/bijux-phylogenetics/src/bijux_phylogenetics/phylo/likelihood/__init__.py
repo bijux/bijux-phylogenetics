@@ -87,6 +87,21 @@ from .k80 import (
     optimize_k80_kappa_from_alignment as optimize_k80_kappa_from_alignment,
 )
 from .models import (
+    ProteinPoissonTreeLikelihoodReport as ProteinPoissonTreeLikelihoodReport,
+)
+from .poisson import (
+    evaluate_protein_poisson_tree_likelihood as evaluate_protein_poisson_tree_likelihood,
+)
+from .poisson import (
+    evaluate_protein_poisson_tree_likelihood_from_alignment as evaluate_protein_poisson_tree_likelihood_from_alignment,
+)
+from .poisson import (
+    protein_poisson_rate_matrix as protein_poisson_rate_matrix,
+)
+from .poisson import (
+    protein_poisson_transition_probability_matrix as protein_poisson_transition_probability_matrix,
+)
+from .models import (
     F81TreeLikelihoodReport as F81TreeLikelihoodReport,
 )
 from .models import (
@@ -164,6 +179,7 @@ __all__ = [
     "Jc69TreeLikelihoodReport",
     "K80KappaOptimizationReport",
     "K80TreeLikelihoodReport",
+    "ProteinPoissonTreeLikelihoodReport",
     "alignment_site_columns",
     "compress_alignment_site_patterns",
     "compress_alignment_site_patterns_from_records",
@@ -175,6 +191,8 @@ __all__ = [
     "evaluate_hky85_tree_likelihood_from_alignment",
     "evaluate_k80_tree_likelihood",
     "evaluate_k80_tree_likelihood_from_alignment",
+    "evaluate_protein_poisson_tree_likelihood",
+    "evaluate_protein_poisson_tree_likelihood_from_alignment",
     "evaluate_jc69_tree_likelihood",
     "evaluate_jc69_tree_likelihood_from_alignment",
     "f81_rate_matrix",
@@ -197,6 +215,8 @@ __all__ = [
     "optimize_jc69_branch_lengths",
     "optimize_jc69_branch_lengths_from_alignment",
     "postorder_conditional_likelihoods",
+    "protein_poisson_rate_matrix",
+    "protein_poisson_transition_probability_matrix",
     "sum_alignment_site_log_likelihoods",
     "sum_compressed_site_pattern_log_likelihoods",
     "transition_probability_matrix",
