@@ -8,6 +8,8 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 from .models import (
     AmbiguityPolicy as AmbiguityPolicy,
+    BalancedMinimumEvolutionNniSearchReport as BalancedMinimumEvolutionNniSearchReport,
+    BalancedMinimumEvolutionNniTraceRow as BalancedMinimumEvolutionNniTraceRow,
     DistanceBootstrapReport as DistanceBootstrapReport,
     DistanceBootstrapSupportSummary as DistanceBootstrapSupportSummary,
     DistanceGapPolicySensitivityReport as DistanceGapPolicySensitivityReport,
@@ -262,6 +264,52 @@ def fit_minimum_evolution_tree_from_imported_distance_matrix(
     )
 
     return fit_impl(matrix_path, tree_path)
+
+
+def score_balanced_minimum_evolution(
+    tree: PhyloTree,
+    identifiers: list[str],
+    distance_lookup: dict[tuple[str, str], float],
+) -> float:
+    from .balanced_minimum_evolution import score_balanced_minimum_evolution as score_impl
+
+    return score_impl(tree, identifiers, distance_lookup)
+
+
+def search_balanced_minimum_evolution_nni(
+    identifiers: list[str],
+    distance_lookup: dict[tuple[str, str], float],
+    *,
+    start_method: str,
+) -> BalancedMinimumEvolutionNniSearchReport:
+    from .balanced_minimum_evolution_nni import (
+        search_balanced_minimum_evolution_nni as search_impl,
+    )
+
+    return search_impl(identifiers, distance_lookup, start_method=start_method)
+
+
+def search_balanced_minimum_evolution_nni_from_imported_distance_matrix(
+    matrix_path: Path,
+    *,
+    start_method: str,
+) -> BalancedMinimumEvolutionNniSearchReport:
+    from .balanced_minimum_evolution_nni import (
+        search_balanced_minimum_evolution_nni_from_imported_distance_matrix as search_impl,
+    )
+
+    return search_impl(matrix_path, start_method=start_method)
+
+
+def write_balanced_minimum_evolution_nni_artifacts(
+    out_dir: Path,
+    report: BalancedMinimumEvolutionNniSearchReport,
+) -> dict[str, Path]:
+    from .balanced_minimum_evolution_nni import (
+        write_balanced_minimum_evolution_nni_artifacts as write_impl,
+    )
+
+    return write_impl(out_dir, report)
 
 
 def build_distance_tree(

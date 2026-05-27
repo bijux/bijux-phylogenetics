@@ -103,6 +103,43 @@ class MinimumEvolutionScoreReport:
     branch_fits: list[MinimumEvolutionBranchFit]
 
 
+@dataclass(frozen=True, slots=True)
+class BalancedMinimumEvolutionNniTraceRow:
+    """One deterministic event row in a rooted BME NNI search trace."""
+
+    event_index: int
+    event_kind: str
+    iteration: int
+    score_before: float | None
+    score_after: float
+    score_delta: float | None
+    tree_before_newick: str | None
+    tree_after_newick: str
+    pivot_branch_id: str | None
+    sibling_clade_id: str | None
+    exchanged_clade_id: str | None
+    stopping_reason: str | None
+
+
+@dataclass(slots=True)
+class BalancedMinimumEvolutionNniSearchReport:
+    """Complete rooted NNI hill-climb report over one NJ or BIONJ starting tree."""
+
+    algorithm: str
+    matrix_path: Path | None
+    start_method: str
+    taxon_count: int
+    pair_count: int
+    start_tree_newick: str
+    start_score: float
+    final_tree_newick: str
+    final_score: float
+    accepted_move_count: int
+    evaluated_neighbor_count: int
+    stopping_reason: str
+    trace_rows: list[BalancedMinimumEvolutionNniTraceRow]
+
+
 @dataclass(slots=True)
 class DistanceTreeTopologyComparison:
     """Topology comparison between NJ and UPGMA trees built from one alignment."""
