@@ -255,6 +255,39 @@ class DistanceTaxonInfluenceReport:
 
 
 @dataclass(frozen=True, slots=True)
+class DistanceTaxonJackknifeRow:
+    """One leave-one-taxon-out rebuilt-tree jackknife observation."""
+
+    removed_taxon: str
+    retained_taxa: list[str]
+    pruned_baseline_tree_newick: str
+    rebuilt_tree_newick: str
+    pruned_baseline_residual_sum_squares: float
+    rebuilt_residual_sum_squares: float
+    residual_sum_squares_change: float
+    rooted_robinson_foulds_distance: int
+    rooted_normalized_robinson_foulds: float
+    reference_only_clades: list[str]
+    rebuilt_only_clades: list[str]
+    affected_clades: list[str]
+    topology_changed: bool
+
+
+@dataclass(slots=True)
+class DistanceTaxonJackknifeReport:
+    """Leave-one-taxon-out topology jackknife over one imported distance matrix."""
+
+    source_path: Path
+    source_kind: str
+    method: str
+    missing_distance_policy: MissingDistancePolicy
+    taxa: list[str]
+    baseline_tree_newick: str
+    baseline_residual_sum_squares: float
+    rows: list[DistanceTaxonJackknifeRow]
+
+
+@dataclass(frozen=True, slots=True)
 class DistanceUltrametricityViolation:
     """One taxon triple whose pairwise distances violate the three-point condition."""
 
