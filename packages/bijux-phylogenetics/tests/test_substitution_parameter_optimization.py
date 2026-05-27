@@ -3,7 +3,12 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.likelihood import (
+    evaluate_gtr_tree_likelihood,
+    evaluate_hky85_tree_likelihood,
+    evaluate_k80_tree_likelihood,
     optimize_nucleotide_substitution_parameters_from_alignment,
 )
 
@@ -147,3 +152,85 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
     assert gtr_rows["AG"].optimized_value > gtr_rows["CG"].optimized_value
     assert gtr_rows["AG"].optimized_value > gtr_rows["AT"].optimized_value
     assert gtr_report.optimized_log_likelihood > gtr_report.initial_log_likelihood
+
+
+def test_nucleotide_substitution_parameter_optimization_beats_hardcoded_parameters() -> (
+    None
+):
+    k80_tree = load_tree(fixture("trees", "k80_kappa_optimization_tree_2_taxa.nwk"))
+    k80_records = load_fasta_alignment(
+        fixture("alignments", "k80_kappa_optimization_alignment_2_taxa.fasta")
+    )
+    k80_baseline = evaluate_k80_tree_likelihood(k80_tree, k80_records, kappa=1.0)
+    k80_optimized = optimize_nucleotide_substitution_parameters_from_alignment(
+        fixture("trees", "k80_kappa_optimization_tree_2_taxa.nwk"),
+        fixture("alignments", "k80_kappa_optimization_alignment_2_taxa.fasta"),
+        model_name="k80",
+        initial_kappa=1.0,
+    )
+    assert k80_optimized.optimized_log_likelihood > k80_baseline.log_likelihood
+
+    hky85_tree = load_tree(fixture("trees", "hky85_kappa_optimization_tree_2_taxa.nwk"))
+    hky85_records = load_fasta_alignment(
+        fixture("alignments", "hky85_kappa_optimization_alignment_2_taxa.fasta")
+    )
+    hky85_baseline = evaluate_hky85_tree_likelihood(
+        hky85_tree,
+        hky85_records,
+        kappa=1.0,
+    )
+    hky85_optimized = optimize_nucleotide_substitution_parameters_from_alignment(
+        fixture("trees", "hky85_kappa_optimization_tree_2_taxa.nwk"),
+        fixture("alignments", "hky85_kappa_optimization_alignment_2_taxa.fasta"),
+        model_name="hky85",
+        initial_kappa=1.0,
+    )
+    assert hky85_optimized.optimized_log_likelihood > hky85_baseline.log_likelihood
+
+    gtr_tree = load_tree(
+        fixture("trees", "gtr_exchangeability_optimization_tree_2_taxa.nwk")
+    )
+    gtr_records = load_fasta_alignment(
+        fixture("alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta")
+    )
+    gtr_baseline = evaluate_gtr_tree_likelihood(
+        gtr_tree,
+        gtr_records,
+        exchangeabilities={
+            "AC": 1.0,
+            "AG": 1.0,
+            "AT": 1.0,
+            "CG": 1.0,
+            "CT": 1.0,
+            "GT": 1.0,
+        },
+    )
+    gtr_optimized = optimize_nucleotide_substitution_parameters_from_alignment(
+        fixture("trees", "gtr_exchangeability_optimization_tree_2_taxa.nwk"),
+        fixture("alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"),
+        model_name="gtr",
+    )
+    assert gtr_optimized.optimized_log_likelihood > gtr_baseline.log_likelihood
+
+
+def test_nucleotide_substitution_parameter_optimization_emits_boundary_warnings() -> (
+    None
+):
+    report = optimize_nucleotide_substitution_parameters_from_alignment(
+        fixture("trees", "k80_kappa_optimization_tree_2_taxa.nwk"),
+        fixture("alignments", "k80_kappa_optimization_alignment_2_taxa.fasta"),
+        model_name="k80",
+        initial_kappa=1.0,
+        lower_kappa_bound=0.5,
+        upper_kappa_bound=1.5,
+    )
+
+    assert report.warnings == ["kappa hit upper search boundary"]
+    assert report.parameter_rows[0].hit_lower_bound is False
+    assert report.parameter_rows[0].hit_upper_bound is True
+    assert math.isclose(
+        report.parameter_rows[0].optimized_value,
+        1.5,
+        rel_tol=0.0,
+        abs_tol=1e-9,
+    )
