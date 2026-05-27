@@ -33,10 +33,22 @@ from .empirical import (
     evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment as evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment,
 )
 from .empirical import (
+    evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture as evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
+)
+from .empirical import (
+    evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment as evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment,
+)
+from .empirical import (
     optimize_empirical_protein_tree_likelihood_with_invariant_mixture as optimize_empirical_protein_tree_likelihood_with_invariant_mixture,
 )
 from .empirical import (
     optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment as optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment,
+)
+from .empirical import (
+    optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture as optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
+)
+from .empirical import (
+    optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment as optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment,
 )
 from .gtr import (
     evaluate_gtr_tree_likelihood as evaluate_gtr_tree_likelihood,
@@ -120,7 +132,13 @@ from .models import (
     DiscreteGammaRateCategory as DiscreteGammaRateCategory,
 )
 from .models import (
+    DiscreteGammaInvariantMixtureSiteLikelihood as DiscreteGammaInvariantMixtureSiteLikelihood,
+)
+from .models import (
     DiscreteGammaSiteLikelihood as DiscreteGammaSiteLikelihood,
+)
+from .models import (
+    ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport as ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport,
 )
 from .models import (
     InvariantMixtureSiteLikelihood as InvariantMixtureSiteLikelihood,
@@ -214,6 +232,7 @@ __all__ = [
     "AlignmentSitePattern",
     "CompressedAlignmentSitePatterns",
     "DiscreteGammaRateCategory",
+    "DiscreteGammaInvariantMixtureSiteLikelihood",
     "DiscreteGammaSiteLikelihood",
     "F81TreeLikelihoodReport",
     "FiniteStatePruningPass",
@@ -227,6 +246,7 @@ __all__ = [
     "K80KappaOptimizationReport",
     "K80TreeLikelihoodReport",
     "ProteinEmpiricalDiscreteGammaTreeLikelihoodReport",
+    "ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport",
     "ProteinEmpiricalInvariantMixtureTreeLikelihoodReport",
     "ProteinEmpiricalMatrixTreeLikelihoodReport",
     "ProteinPoissonTreeLikelihoodReport",
@@ -241,6 +261,8 @@ __all__ = [
     "evaluate_empirical_protein_tree_likelihood_from_alignment",
     "evaluate_empirical_protein_tree_likelihood_with_discrete_gamma",
     "evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment",
+    "evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture",
+    "evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment",
     "evaluate_empirical_protein_tree_likelihood_with_invariant_mixture",
     "evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment",
     "evaluate_gtr_tree_likelihood",
@@ -268,6 +290,8 @@ __all__ = [
     "optimize_gtr_exchangeabilities_from_alignment",
     "optimize_hky85_kappa",
     "optimize_hky85_kappa_from_alignment",
+    "optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture",
+    "optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment",
     "optimize_empirical_protein_tree_likelihood_with_invariant_mixture",
     "optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment",
     "optimize_k80_kappa",
