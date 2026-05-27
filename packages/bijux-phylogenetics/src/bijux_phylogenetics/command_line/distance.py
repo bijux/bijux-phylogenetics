@@ -13,6 +13,7 @@ from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.distance import (
+    analyze_distance_taxon_jackknife_from_imported_distance_matrix,
     analyze_distance_taxon_influence_from_imported_distance_matrix,
     assess_imported_distance_method_assumptions,
     build_tree_from_imported_distance_matrix,
@@ -29,6 +30,7 @@ from bijux_phylogenetics.distance import (
     validate_imported_distance_matrix,
     write_distance_additivity_artifacts,
     write_balanced_minimum_evolution_nni_artifacts,
+    write_distance_taxon_jackknife_artifacts,
     write_distance_taxon_influence_artifacts,
     write_patristic_residual_artifacts,
 )
@@ -200,6 +202,21 @@ def add_distance_commands(subparsers: Any) -> None:
         help="Emit the distance taxon influence diagnostics as JSON.",
     )
     _add_manifest_argument(distance_taxon_influence)
+
+    distance_taxon_jackknife = distance_subparsers.add_parser(
+        "taxon-jackknife",
+        help="Remove each taxon, rebuild the distance tree, and compare each rebuilt topology to the pruned baseline tree.",
+    )
+    distance_taxon_jackknife.add_argument("matrix", type=Path)
+    _add_distance_tree_method_argument(distance_taxon_jackknife)
+    _add_missing_distance_policy_argument(distance_taxon_jackknife)
+    distance_taxon_jackknife.add_argument("--out-dir", required=True, type=Path)
+    distance_taxon_jackknife.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the distance taxon jackknife diagnostics as JSON.",
+    )
+    _add_manifest_argument(distance_taxon_jackknife)
 
     distance_bme_nni = distance_subparsers.add_parser(
         "bme-nni-search",
@@ -598,6 +615,37 @@ def run_distance_command(args: Any) -> int:
                         report.baseline_rooted_robinson_foulds_distance
                     ),
                     "top_taxon": None if not report.rows else report.rows[0].taxon,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+    if args.distance_command == "taxon-jackknife":
+        report = analyze_distance_taxon_jackknife_from_imported_distance_matrix(
+            args.matrix,
+            method=args.method,
+            missing_distance_policy=args.missing_distance_policy,
+        )
+        artifact_paths = write_distance_taxon_jackknife_artifacts(args.out_dir, report)
+        outputs = _finalize_outputs(
+            args,
+            command="distance",
+            inputs=[args.matrix],
+            outputs=list(artifact_paths.values()),
+        )
+        _print_result(
+            build_command_result(
+                command="distance",
+                inputs=[args.matrix],
+                outputs=outputs,
+                metrics={
+                    "criterion": "distance-taxon-jackknife",
+                    "taxon_count": len(report.taxa),
+                    "baseline_residual_sum_squares": report.baseline_residual_sum_squares,
+                    "topology_changed_taxon_count": sum(
+                        1 for row in report.rows if row.topology_changed
+                    ),
                 },
                 data=report,
             ),
