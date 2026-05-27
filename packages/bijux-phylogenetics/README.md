@@ -313,6 +313,7 @@ bijux-phylogenetics distance ordinary-least-squares matrix.tsv fixed-topology.nw
 bijux-phylogenetics distance nonnegative-least-squares matrix.tsv fixed-topology.nwk --out fitted-tree.nwk --json
 bijux-phylogenetics distance patristic-residuals matrix.tsv fixed-topology.nwk --out-dir artifacts/patristic-residuals --json
 bijux-phylogenetics distance taxon-influence matrix.tsv reference-tree.nwk --method neighbor-joining --missing-distance-policy mean-impute --out-dir artifacts/distance-taxon-influence --json
+bijux-phylogenetics distance taxon-jackknife matrix.tsv --method neighbor-joining --missing-distance-policy mean-impute --out-dir artifacts/distance-taxon-jackknife --json
 bijux-phylogenetics distance bme-nni-search matrix.tsv --start-method bionj --out-dir artifacts/distance-bme-nni --json
 bijux-phylogenetics alignment compare-distance-to-tree alignment.fasta inferred-tree.nwk --method neighbor-joining --json
 bijux-phylogenetics alignment bootstrap-tree alignment.fasta --method neighbor-joining --replicates 200 --support-out artifacts/distance-support.tsv --tree-set-out artifacts/distance-bootstrap.trees --draws-out artifacts/distance-bootstrap-draws.tsv --json
@@ -2160,6 +2161,10 @@ influence diagnostic that rebuilds the chosen distance tree and recomputes
 patristic residual RSS after each exclusion, then ranks taxa by RSS
 improvement and rooted RF improvement against a supplied reference tree
 instead of proxying influence by raw missingness alone.
+Imported distance matrices now also support one owned leave-one-taxon-out
+jackknife that prunes the baseline inferred tree, rebuilds the reduced tree for
+each removed taxon, and exports rooted RF distance, residual change, affected
+clades, and rebuilt Newick trees for every jackknife row.
 Alignment-side distance bootstrap now also records the exact resampled site
 indices and rebuilt replicate tree for each seeded replicate, so the owned
 bootstrap workflow can prove it resamples alignment columns with replacement
