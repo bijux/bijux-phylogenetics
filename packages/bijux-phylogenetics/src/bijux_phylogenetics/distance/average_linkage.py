@@ -1,41 +1,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.runtime.errors import InvalidDistanceMatrixError
 
-from .shared import _iter_ultrametric_violations, _pair_key
-
-_TIE_TOLERANCE = 1e-12
-_ZERO_TOLERANCE = 1e-15
-
-ClusterKey = tuple[str, ...]
-
-
-@dataclass(frozen=True, slots=True)
-class AverageLinkageMergeRow:
-    """One deterministic merge step during average-linkage clustering."""
-
-    merge_index: int
-    left_cluster: str
-    right_cluster: str
-    left_cluster_size: int
-    right_cluster_size: int
-    pair_distance: float
-    merge_height: float
-    resulting_cluster: str
-    resulting_cluster_size: int
-
-
-@dataclass(frozen=True, slots=True)
-class AverageLinkageClusterHeightRow:
-    """One internal-cluster height recovered during average-linkage clustering."""
-
-    merge_index: int
-    cluster: str
-    height: float
+from .linkage_common import (
+    ActiveCluster as _ActiveCluster,
+    ClusterKey,
+    LinkageClusterHeightRow as AverageLinkageClusterHeightRow,
+    LinkageMergeRow as AverageLinkageMergeRow,
+    choose_linkage_merge_pair,
+    cluster_label,
+    cluster_pair_key,
+    clustering_assumption_warnings,
+    normalized_branch_length,
+    validate_linkage_distance_lookup,
+)
 
 
 @dataclass(slots=True)
@@ -49,157 +29,12 @@ class AverageLinkageBuildResult:
     assumption_warnings: list[str]
 
 
-@dataclass(slots=True)
-class _ActiveCluster:
-    key: ClusterKey
-    node: TreeNode
-    height: float
-    size: int
-
-
-def _cluster_label(cluster: ClusterKey) -> str:
-    return "|".join(cluster)
-
-
-def _cluster_pair_key(
-    left: ClusterKey, right: ClusterKey
-) -> tuple[ClusterKey, ClusterKey]:
-    return (left, right) if left < right else (right, left)
-
-
-def _normalized_branch_length(value: float) -> float:
-    if abs(value) <= _ZERO_TOLERANCE:
-        return 0.0
-    return value
-
-
-def _require_distance(
-    distance_lookup: dict[tuple[str, str], float],
-    left_identifier: str,
-    right_identifier: str,
-) -> float:
-    try:
-        value = distance_lookup[(left_identifier, right_identifier)]
-    except KeyError as error:
-        raise InvalidDistanceMatrixError(
-            f"distance matrix is missing pair {left_identifier}/{right_identifier}"
-        ) from error
-    if not math.isfinite(value):
-        raise InvalidDistanceMatrixError(
-            f"distance matrix contains non-finite distance for {left_identifier}/{right_identifier}"
-        )
-    return value
-
-
 def validate_average_linkage_distance_lookup(
     identifiers: list[str],
     distance_lookup: dict[tuple[str, str], float],
 ) -> None:
     """Validate one full symmetric distance lookup before average-linkage clustering."""
-    if len(identifiers) < 2:
-        raise InvalidDistanceMatrixError(
-            "distance matrix must contain at least two taxa"
-        )
-    if len(set(identifiers)) != len(identifiers):
-        raise InvalidDistanceMatrixError(
-            "distance matrix contains duplicated taxon labels"
-        )
-    for left_identifier in identifiers:
-        diagonal = _require_distance(distance_lookup, left_identifier, left_identifier)
-        if not math.isclose(diagonal, 0.0, abs_tol=_TIE_TOLERANCE, rel_tol=0.0):
-            raise InvalidDistanceMatrixError(
-                "distance matrix has nonzero diagonal entries"
-            )
-        if diagonal < 0.0:
-            raise InvalidDistanceMatrixError(
-                "distance matrix contains negative distances"
-            )
-        for right_identifier in identifiers:
-            if left_identifier >= right_identifier:
-                continue
-            left_to_right = _require_distance(
-                distance_lookup,
-                left_identifier,
-                right_identifier,
-            )
-            right_to_left = _require_distance(
-                distance_lookup,
-                right_identifier,
-                left_identifier,
-            )
-            if left_to_right < 0.0 or right_to_left < 0.0:
-                raise InvalidDistanceMatrixError(
-                    "distance matrix contains negative distances"
-                )
-            if not math.isclose(
-                left_to_right,
-                right_to_left,
-                rel_tol=_TIE_TOLERANCE,
-                abs_tol=_TIE_TOLERANCE,
-            ):
-                raise InvalidDistanceMatrixError(
-                    "distance matrix contains asymmetric directional entries"
-                )
-
-
-def _assumption_warnings(
-    identifiers: list[str],
-    distance_lookup: dict[tuple[str, str], float],
-    *,
-    method_name: str,
-) -> tuple[bool, list[str]]:
-    pair_distances = {
-        _pair_key(left_identifier, right_identifier): distance
-        for (left_identifier, right_identifier), distance in distance_lookup.items()
-        if left_identifier != right_identifier
-    }
-    violations = _iter_ultrametric_violations(
-        identifiers,
-        pair_distances,
-        tolerance=_TIE_TOLERANCE,
-    )
-    if not violations:
-        return True, []
-    return (
-        False,
-        [
-            f"pairwise distances are not ultrametric, so {method_name}'s strict clock-like assumption is violated"
-        ],
-    )
-
-
-def _choose_merge_pair(
-    active_distances: dict[tuple[ClusterKey, ClusterKey], float],
-    active_keys: list[ClusterKey],
-    *,
-    method_name: str,
-) -> tuple[ClusterKey, ClusterKey]:
-    best_pair: tuple[ClusterKey, ClusterKey] | None = None
-    best_distance: float | None = None
-    for left_index, left_key in enumerate(active_keys):
-        for right_key in active_keys[left_index + 1 :]:
-            pair_key = _cluster_pair_key(left_key, right_key)
-            pair_distance = active_distances[pair_key]
-            if best_distance is None or pair_distance < best_distance - _TIE_TOLERANCE:
-                best_pair = pair_key
-                best_distance = pair_distance
-                continue
-            if (
-                best_distance is not None
-                and math.isclose(
-                    pair_distance,
-                    best_distance,
-                    rel_tol=_TIE_TOLERANCE,
-                    abs_tol=_TIE_TOLERANCE,
-                )
-                and pair_key > best_pair
-            ):
-                best_pair = pair_key
-    if best_pair is None:
-        raise InvalidDistanceMatrixError(
-            f"distance matrix did not yield a valid {method_name.upper()} merge pair"
-        )
-    return best_pair
+    validate_linkage_distance_lookup(identifiers, distance_lookup)
 
 
 def build_average_linkage_tree(
@@ -212,8 +47,8 @@ def build_average_linkage_tree(
     """Build one rooted average-linkage tree with explicit cluster-weight policy."""
     if cluster_weighting not in {"taxon-count", "equal"}:
         raise ValueError(f"unsupported average-linkage weighting: {cluster_weighting}")
-    validate_average_linkage_distance_lookup(identifiers, distance_lookup)
-    ultrametric_compatible, warnings = _assumption_warnings(
+    validate_linkage_distance_lookup(identifiers, distance_lookup)
+    ultrametric_compatible, warnings = clustering_assumption_warnings(
         identifiers,
         distance_lookup,
         method_name=method_name,
@@ -231,7 +66,7 @@ def build_average_linkage_tree(
     for left_index, left_identifier in enumerate(identifiers):
         for right_identifier in identifiers[left_index + 1 :]:
             active_distances[
-                _cluster_pair_key((left_identifier,), (right_identifier,))
+                cluster_pair_key((left_identifier,), (right_identifier,))
             ] = distance_lookup[(left_identifier, right_identifier)]
 
     merge_history: list[AverageLinkageMergeRow] = []
@@ -239,19 +74,19 @@ def build_average_linkage_tree(
     merge_index = 1
     while len(active_clusters) > 1:
         active_keys = sorted(active_clusters)
-        left_key, right_key = _choose_merge_pair(
+        left_key, right_key = choose_linkage_merge_pair(
             active_distances,
             active_keys,
             method_name=method_name,
         )
         left_cluster = active_clusters[left_key]
         right_cluster = active_clusters[right_key]
-        pair_distance = active_distances[_cluster_pair_key(left_key, right_key)]
+        pair_distance = active_distances[cluster_pair_key(left_key, right_key)]
         merge_height = pair_distance / 2.0
-        left_cluster.node.branch_length = _normalized_branch_length(
+        left_cluster.node.branch_length = normalized_branch_length(
             merge_height - left_cluster.height
         )
-        right_cluster.node.branch_length = _normalized_branch_length(
+        right_cluster.node.branch_length = normalized_branch_length(
             merge_height - right_cluster.height
         )
         merged_key = tuple(sorted(left_key + right_key))
@@ -268,20 +103,20 @@ def build_average_linkage_tree(
         merge_history.append(
             AverageLinkageMergeRow(
                 merge_index=merge_index,
-                left_cluster=_cluster_label(left_key),
-                right_cluster=_cluster_label(right_key),
+                left_cluster=cluster_label(left_key),
+                right_cluster=cluster_label(right_key),
                 left_cluster_size=left_cluster.size,
                 right_cluster_size=right_cluster.size,
                 pair_distance=pair_distance,
                 merge_height=merge_height,
-                resulting_cluster=_cluster_label(merged_key),
+                resulting_cluster=cluster_label(merged_key),
                 resulting_cluster_size=merged_cluster.size,
             )
         )
         cluster_heights.append(
             AverageLinkageClusterHeightRow(
                 merge_index=merge_index,
-                cluster=_cluster_label(merged_key),
+                cluster=cluster_label(merged_key),
                 height=merge_height,
             )
         )
@@ -296,20 +131,20 @@ def build_average_linkage_tree(
             if cluster_weighting == "taxon-count":
                 updated_distance = (
                     (
-                        active_distances[_cluster_pair_key(left_key, other_key)]
+                        active_distances[cluster_pair_key(left_key, other_key)]
                         * left_cluster.size
                     )
                     + (
-                        active_distances[_cluster_pair_key(right_key, other_key)]
+                        active_distances[cluster_pair_key(right_key, other_key)]
                         * right_cluster.size
                     )
                 ) / merged_cluster.size
             else:
                 updated_distance = (
-                    active_distances[_cluster_pair_key(left_key, other_key)]
-                    + active_distances[_cluster_pair_key(right_key, other_key)]
+                    active_distances[cluster_pair_key(left_key, other_key)]
+                    + active_distances[cluster_pair_key(right_key, other_key)]
                 ) / 2.0
-            updated_distances[_cluster_pair_key(merged_key, other_key)] = (
+            updated_distances[cluster_pair_key(merged_key, other_key)] = (
                 updated_distance
             )
         del active_clusters[left_key]
