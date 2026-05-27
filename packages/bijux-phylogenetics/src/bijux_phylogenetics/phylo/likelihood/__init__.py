@@ -110,6 +110,21 @@ from .jc69 import (
 from .jc69 import (
     optimize_jc69_branch_lengths_from_alignment as optimize_jc69_branch_lengths_from_alignment,
 )
+from .joint_ancestral_sequences import (
+    reconstruct_nucleotide_joint_ancestral_sequences as reconstruct_nucleotide_joint_ancestral_sequences,
+)
+from .joint_ancestral_sequences import (
+    reconstruct_nucleotide_joint_ancestral_sequences_from_alignment as reconstruct_nucleotide_joint_ancestral_sequences_from_alignment,
+)
+from .joint_ancestral_sequences import (
+    validate_nucleotide_joint_ancestral_sequence_model as validate_nucleotide_joint_ancestral_sequence_model,
+)
+from .joint_states import (
+    compute_joint_state_assignment as compute_joint_state_assignment,
+)
+from .joint_states import (
+    FiniteStateJointAssignmentPass as FiniteStateJointAssignmentPass,
+)
 from .k80 import (
     evaluate_k80_tree_likelihood as evaluate_k80_tree_likelihood,
 )
@@ -208,6 +223,15 @@ from .models import (
 )
 from .models import (
     FixedTopologySiteLogLikelihoodReport as FixedTopologySiteLogLikelihoodReport,
+)
+from .models import (
+    JointAncestralSequenceRecord as JointAncestralSequenceRecord,
+)
+from .models import (
+    JointAncestralSequenceReport as JointAncestralSequenceReport,
+)
+from .models import (
+    JointAncestralStateAssignmentRow as JointAncestralStateAssignmentRow,
 )
 from .models import (
     MarginalAncestralSequenceExportRecord as MarginalAncestralSequenceExportRecord,
@@ -332,6 +356,7 @@ __all__ = [
     "DiscreteGammaInvariantMixtureSiteLikelihood",
     "DiscreteGammaSiteLikelihood",
     "F81TreeLikelihoodReport",
+    "FiniteStateJointAssignmentPass",
     "FiniteStatePruningPass",
     "FixedTopologySiteLogLikelihoodReport",
     "GtrExchangeabilityOptimizationReport",
@@ -341,6 +366,9 @@ __all__ = [
     "Jc69BranchLengthOptimizationReport",
     "Jc69BranchLengthOptimizationStep",
     "Jc69TreeLikelihoodReport",
+    "JointAncestralSequenceRecord",
+    "JointAncestralSequenceReport",
+    "JointAncestralStateAssignmentRow",
     "K80KappaOptimizationReport",
     "K80TreeLikelihoodReport",
     "MarginalAncestralSequenceExportRecord",
@@ -363,6 +391,7 @@ __all__ = [
     "build_discrete_gamma_rate_categories",
     "compress_alignment_site_patterns",
     "compress_alignment_site_patterns_from_records",
+    "compute_joint_state_assignment",
     "evaluate_f81_tree_likelihood",
     "evaluate_f81_tree_likelihood_from_alignment",
     "evaluate_empirical_protein_tree_likelihood",
@@ -379,6 +408,8 @@ __all__ = [
     "evaluate_hky85_tree_likelihood_from_alignment",
     "evaluate_k80_tree_likelihood",
     "evaluate_k80_tree_likelihood_from_alignment",
+    "reconstruct_nucleotide_joint_ancestral_sequences",
+    "reconstruct_nucleotide_joint_ancestral_sequences_from_alignment",
     "evaluate_nucleotide_marginal_ancestral_probabilities",
     "evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment",
     "evaluate_protein_poisson_tree_likelihood",
@@ -424,6 +455,7 @@ __all__ = [
     "sum_alignment_site_log_likelihoods",
     "sum_compressed_site_pattern_log_likelihoods",
     "transition_probability_matrix",
+    "validate_nucleotide_joint_ancestral_sequence_model",
     "validate_nucleotide_marginal_ancestral_probability_model",
     "validate_nucleotide_site_log_likelihood_model",
     "validate_nucleotide_substitution_optimization_model",
