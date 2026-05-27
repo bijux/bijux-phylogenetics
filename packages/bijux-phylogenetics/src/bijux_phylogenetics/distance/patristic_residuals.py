@@ -107,11 +107,15 @@ def compute_patristic_residual_diagnostics_from_imported_distance_matrix(
     """Compare one imported distance matrix against one on-disk tree."""
     entries = load_imported_distance_matrix(matrix_path)
     validation = validate_imported_distance_matrix(matrix_path)
+    distance_lookup, _missing_distance_policy_report = _distance_lookup_from_imported(
+        validation,
+        entries,
+    )
     tree = load_tree(tree_path)
     return compute_patristic_residual_diagnostics(
         tree,
         validation.identifiers,
-        _distance_lookup_from_imported(validation, entries),
+        distance_lookup,
         matrix_path=matrix_path,
         tree_path=tree_path,
     )

@@ -97,10 +97,14 @@ def fit_fitch_margoliash_tree_from_imported_distance_matrix(
     """Fit one on-disk tree topology to one imported distance matrix by Fitch-Margoliash."""
     entries = load_imported_distance_matrix(matrix_path)
     validation = validate_imported_distance_matrix(matrix_path)
+    distance_lookup, _missing_distance_policy_report = _distance_lookup_from_imported(
+        validation,
+        entries,
+    )
     tree = load_tree(tree_path)
     return fit_fitch_margoliash_tree(
         tree,
         validation.identifiers,
-        _distance_lookup_from_imported(validation, entries),
+        distance_lookup,
         weighting_power=weighting_power,
     )

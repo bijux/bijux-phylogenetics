@@ -12,6 +12,7 @@ from bijux_phylogenetics.phylo.topology.bionj import build_bionj_tree
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import InvalidDistanceMatrixError
 
+from .missing_distance_policy import apply_missing_distance_policy
 from .models import (
     DistanceMatrixAsymmetry,
     DistanceMethodAssumptionReport,
@@ -20,6 +21,8 @@ from .models import (
     ImportedDistanceMatrixReport,
     ImportedDistanceTreeBuildReport,
     LowInformationPair,
+    MissingDistancePolicy,
+    MissingDistancePolicyReport,
     NonMetricDistanceObservation,
     SaturatedDistancePair,
 )
@@ -337,9 +340,9 @@ def validate_imported_distance_matrix(path: Path) -> ImportedDistanceMatrixRepor
 def _distance_lookup_from_imported(
     report: ImportedDistanceMatrixReport,
     entries: list[ImportedDistanceEntry],
-) -> dict[tuple[str, str], float]:
-    if not report.complete:
-        raise InvalidDistanceMatrixError("distance matrix is incomplete")
+    *,
+    missing_distance_policy: MissingDistancePolicy = "reject",
+) -> tuple[dict[tuple[str, str], float], MissingDistancePolicyReport]:
     if not report.zero_diagonal:
         raise InvalidDistanceMatrixError("distance matrix has nonzero diagonal entries")
     if not report.symmetric:
@@ -348,14 +351,11 @@ def _distance_lookup_from_imported(
         )
     if not report.nonnegative:
         raise InvalidDistanceMatrixError("distance matrix contains negative distances")
-    lookup: dict[tuple[str, str], float] = {
-        (identifier, identifier): 0.0 for identifier in report.identifiers
-    }
-    for pair_key, pair_distance in _symmetric_distances(entries).items():
-        left_identifier, right_identifier = pair_key
-        lookup[(left_identifier, right_identifier)] = pair_distance
-        lookup[(right_identifier, left_identifier)] = pair_distance
-    return lookup
+    return apply_missing_distance_policy(
+        report.identifiers,
+        _symmetric_distances(entries),
+        policy=missing_distance_policy,
+    )
 
 
 def inspect_imported_distance_matrix_quality(
@@ -438,42 +438,30 @@ def build_tree_from_imported_distance_matrix(
     path: Path,
     *,
     method: str,
+    missing_distance_policy: MissingDistancePolicy = "reject",
 ) -> tuple[PhyloTree, ImportedDistanceTreeBuildReport]:
     """Build a distance-based tree from an imported long-form distance matrix."""
     method_policy = _require_supported_distance_tree_method(method)
     entries = load_imported_distance_matrix(path)
     validation = validate_imported_distance_matrix(path)
     assumptions = assess_imported_distance_method_assumptions(path)
+    distance_lookup, missing_distance_policy_report = _distance_lookup_from_imported(
+        validation,
+        entries,
+        missing_distance_policy=missing_distance_policy,
+    )
     if method_policy.method == "neighbor-joining":
-        tree = build_neighbor_joining_tree(
-            validation.identifiers,
-            _distance_lookup_from_imported(validation, entries),
-        )
+        tree = build_neighbor_joining_tree(validation.identifiers, distance_lookup)
     elif method_policy.method == "bionj":
-        tree = build_bionj_tree(
-            validation.identifiers,
-            _distance_lookup_from_imported(validation, entries),
-        )
+        tree = build_bionj_tree(validation.identifiers, distance_lookup)
     elif method_policy.method == "upgma":
-        tree, _ = build_upgma_tree(
-            validation.identifiers,
-            _distance_lookup_from_imported(validation, entries),
-        )
+        tree, _ = build_upgma_tree(validation.identifiers, distance_lookup)
     elif method_policy.method == "wpgma":
-        tree, _ = build_wpgma_tree(
-            validation.identifiers,
-            _distance_lookup_from_imported(validation, entries),
-        )
+        tree, _ = build_wpgma_tree(validation.identifiers, distance_lookup)
     elif method_policy.method == "complete-linkage":
-        tree, _ = build_complete_linkage_tree(
-            validation.identifiers,
-            _distance_lookup_from_imported(validation, entries),
-        )
+        tree, _ = build_complete_linkage_tree(validation.identifiers, distance_lookup)
     else:
-        tree, _ = build_single_linkage_tree(
-            validation.identifiers,
-            _distance_lookup_from_imported(validation, entries),
-        )
+        tree, _ = build_single_linkage_tree(validation.identifiers, distance_lookup)
     return tree, ImportedDistanceTreeBuildReport(
         matrix_path=path,
         method=method_policy.method,
@@ -481,4 +469,5 @@ def build_tree_from_imported_distance_matrix(
         taxon_count=len(validation.identifiers),
         pair_count=validation.pair_count,
         assumptions=assumptions,
+        missing_distance_policy_report=missing_distance_policy_report,
     )

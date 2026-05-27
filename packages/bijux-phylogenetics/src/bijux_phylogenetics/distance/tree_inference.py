@@ -20,17 +20,21 @@ from bijux_phylogenetics.phylo.topology.neighbor_joining import (
 )
 from bijux_phylogenetics.phylo.topology.bionj import build_bionj_tree
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import (
+    InvalidAlignmentError,
+    InvalidDistanceMatrixError,
+)
 from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,
     compute_consensus_tree,
 )
 
 from .genetic_distance_matrix import (
-    _distance_lookup,
+    _build_alignment_distance_lookup,
     _load_alignment_for_model,
     compute_pairwise_genetic_distance_matrix,
 )
+from .missing_distance_policy import apply_missing_distance_policy
 from .models import (
     AmbiguityPolicy,
     DistanceBootstrapReport,
@@ -43,6 +47,7 @@ from .models import (
     DistanceTreeTopologyComparison,
     GapHandlingMode,
     GeneticDistanceMatrix,
+    MissingDistancePolicy,
 )
 from .quality import (
     assess_distance_method_assumptions_from_genetic_distance_matrix,
@@ -83,6 +88,7 @@ def build_distance_tree(
     model: DistanceModel = "p-distance",
     gap_handling: GapHandlingMode = "pairwise-deletion",
     ambiguity_policy: AmbiguityPolicy = "ignore",
+    missing_distance_policy: MissingDistancePolicy = "reject",
 ) -> tuple[PhyloTree, DistanceTreeBuildReport]:
     """Build a distance-based tree from an aligned dataset."""
     method_policy = _require_supported_distance_tree_method(method)
@@ -108,6 +114,7 @@ def build_distance_tree(
         report,
         method=method_policy.method,
         assumptions=quality.assumptions,
+        missing_distance_policy=missing_distance_policy,
     )
 
 
@@ -116,28 +123,35 @@ def _build_distance_tree_from_genetic_distance_matrix(
     *,
     method: str,
     assumptions: DistanceMethodAssumptionReport,
+    missing_distance_policy: MissingDistancePolicy,
 ) -> tuple[PhyloTree, DistanceTreeBuildReport]:
     _block_tree_inference_on_saturated_distances(report)
     if len(report.identifiers) < 2:
         raise InvalidAlignmentError("distance tree building requires at least two taxa")
+    try:
+        distance_lookup, missing_distance_policy_report = apply_missing_distance_policy(
+            report.identifiers,
+            _build_alignment_distance_lookup(report),
+            policy=missing_distance_policy,
+        )
+    except InvalidDistanceMatrixError as error:
+        raise InvalidAlignmentError(
+            error.message,
+            code=getattr(error, "code", None),
+            details=getattr(error, "details", None),
+        ) from error
     if method == "neighbor-joining":
-        tree = build_neighbor_joining_tree(report.identifiers, _distance_lookup(report))
+        tree = build_neighbor_joining_tree(report.identifiers, distance_lookup)
     elif method == "bionj":
-        tree = build_bionj_tree(report.identifiers, _distance_lookup(report))
+        tree = build_bionj_tree(report.identifiers, distance_lookup)
     elif method == "upgma":
-        tree, _ = build_upgma_tree(report.identifiers, _distance_lookup(report))
+        tree, _ = build_upgma_tree(report.identifiers, distance_lookup)
     elif method == "wpgma":
-        tree, _ = build_wpgma_tree(report.identifiers, _distance_lookup(report))
+        tree, _ = build_wpgma_tree(report.identifiers, distance_lookup)
     elif method == "complete-linkage":
-        tree, _ = build_complete_linkage_tree(
-            report.identifiers,
-            _distance_lookup(report),
-        )
+        tree, _ = build_complete_linkage_tree(report.identifiers, distance_lookup)
     else:
-        tree, _ = build_single_linkage_tree(
-            report.identifiers,
-            _distance_lookup(report),
-        )
+        tree, _ = build_single_linkage_tree(report.identifiers, distance_lookup)
     return tree, DistanceTreeBuildReport(
         alignment_path=report.path,
         model=report.model,
@@ -148,6 +162,7 @@ def _build_distance_tree_from_genetic_distance_matrix(
         taxon_count=len(report.identifiers),
         pair_count=len(report.pairs),
         assumptions=assumptions,
+        missing_distance_policy_report=missing_distance_policy_report,
     )
 
 
@@ -155,6 +170,7 @@ def build_distance_tree_from_genetic_distance_matrix(
     report: GeneticDistanceMatrix,
     *,
     method: str,
+    missing_distance_policy: MissingDistancePolicy = "reject",
 ) -> tuple[PhyloTree, DistanceTreeBuildReport]:
     """Build a distance tree directly from one in-memory genetic distance matrix."""
     method_policy = _require_supported_distance_tree_method(method)
@@ -165,6 +181,7 @@ def build_distance_tree_from_genetic_distance_matrix(
         report,
         method=method_policy.method,
         assumptions=assumptions,
+        missing_distance_policy=missing_distance_policy,
     )
 
 
@@ -174,6 +191,7 @@ def compare_distance_tree_topologies(
     model: DistanceModel = "p-distance",
     gap_handling: GapHandlingMode = "pairwise-deletion",
     ambiguity_policy: AmbiguityPolicy = "ignore",
+    missing_distance_policy: MissingDistancePolicy = "reject",
 ) -> DistanceTreeTopologyComparison:
     """Compare NJ and UPGMA topologies built from the same alignment."""
     nj_tree, _ = build_distance_tree(
@@ -182,6 +200,7 @@ def compare_distance_tree_topologies(
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
+        missing_distance_policy=missing_distance_policy,
     )
     upgma_tree, _ = build_distance_tree(
         path,
@@ -189,6 +208,7 @@ def compare_distance_tree_topologies(
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
+        missing_distance_policy=missing_distance_policy,
     )
     shared_taxa = set(nj_tree.tip_names) & set(upgma_tree.tip_names)
     rooted_metrics = robinson_foulds_metrics(
@@ -371,6 +391,7 @@ def compare_distance_tree_to_reference_tree(
     model: DistanceModel = "p-distance",
     gap_handling: GapHandlingMode = "pairwise-deletion",
     ambiguity_policy: AmbiguityPolicy = "ignore",
+    missing_distance_policy: MissingDistancePolicy = "reject",
 ) -> DistanceTreeReferenceComparisonReport:
     """Compare one built distance tree to an external ML or reviewer-supplied reference tree."""
     tree, _ = build_distance_tree(
@@ -379,6 +400,7 @@ def compare_distance_tree_to_reference_tree(
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
+        missing_distance_policy=missing_distance_policy,
     )
     temp_dir = Path(tempfile.mkdtemp(prefix="bijux-distance-reference-"))
     built_tree_path = write_newick(temp_dir / "distance-tree.nwk", tree)

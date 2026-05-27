@@ -41,6 +41,9 @@ from .models import (
     DistanceSaturationDiagnosticsReport as DistanceSaturationDiagnosticsReport,
     DistanceSaturationWarning as DistanceSaturationWarning,
     LowInformationPair as LowInformationPair,
+    MissingDistanceImputation as MissingDistanceImputation,
+    MissingDistancePolicy as MissingDistancePolicy,
+    MissingDistancePolicyReport as MissingDistancePolicyReport,
     MinimumEvolutionBranchFit as MinimumEvolutionBranchFit,
     MinimumEvolutionScoreReport as MinimumEvolutionScoreReport,
     NonMetricDistanceObservation as NonMetricDistanceObservation,
@@ -271,16 +274,32 @@ def diagnose_distance_saturation_from_genetic_distance_matrix(
     return diagnose_impl(report)
 
 
+def apply_missing_distance_policy(
+    identifiers: list[str],
+    known_pair_distances: dict[tuple[str, str], float],
+    *,
+    policy: MissingDistancePolicy = "reject",
+) -> tuple[dict[tuple[str, str], float], MissingDistancePolicyReport]:
+    from .missing_distance_policy import apply_missing_distance_policy as apply_impl
+
+    return apply_impl(identifiers, known_pair_distances, policy=policy)
+
+
 def build_tree_from_imported_distance_matrix(
     path: Path,
     *,
     method: str,
+    missing_distance_policy: MissingDistancePolicy = "reject",
 ) -> tuple[PhyloTree, ImportedDistanceTreeBuildReport]:
     from .imported import (
         build_tree_from_imported_distance_matrix as build_imported_tree_impl,
     )
 
-    return build_imported_tree_impl(path, method=method)
+    return build_imported_tree_impl(
+        path,
+        method=method,
+        missing_distance_policy=missing_distance_policy,
+    )
 
 
 def fit_minimum_evolution_tree(
@@ -469,6 +488,7 @@ def build_distance_tree(
     model: DistanceModel = "p-distance",
     gap_handling: GapHandlingMode = "pairwise-deletion",
     ambiguity_policy: AmbiguityPolicy = "ignore",
+    missing_distance_policy: MissingDistancePolicy = "reject",
 ) -> tuple[PhyloTree, DistanceTreeBuildReport]:
     from .tree_inference import build_distance_tree as build_tree_impl
 
@@ -478,6 +498,7 @@ def build_distance_tree(
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
+        missing_distance_policy=missing_distance_policy,
     )
 
 
@@ -485,12 +506,17 @@ def build_distance_tree_from_genetic_distance_matrix(
     report: GeneticDistanceMatrix,
     *,
     method: str,
+    missing_distance_policy: MissingDistancePolicy = "reject",
 ) -> tuple[PhyloTree, DistanceTreeBuildReport]:
     from .tree_inference import (
         build_distance_tree_from_genetic_distance_matrix as build_from_matrix_impl,
     )
 
-    return build_from_matrix_impl(report, method=method)
+    return build_from_matrix_impl(
+        report,
+        method=method,
+        missing_distance_policy=missing_distance_policy,
+    )
 
 
 def compare_distance_tree_topologies(
@@ -499,6 +525,7 @@ def compare_distance_tree_topologies(
     model: DistanceModel = "p-distance",
     gap_handling: GapHandlingMode = "pairwise-deletion",
     ambiguity_policy: AmbiguityPolicy = "ignore",
+    missing_distance_policy: MissingDistancePolicy = "reject",
 ) -> DistanceTreeTopologyComparison:
     from .tree_inference import compare_distance_tree_topologies as compare_trees_impl
 
@@ -507,6 +534,7 @@ def compare_distance_tree_topologies(
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
+        missing_distance_policy=missing_distance_policy,
     )
 
 
@@ -565,6 +593,7 @@ def compare_distance_tree_to_reference_tree(
     model: DistanceModel = "p-distance",
     gap_handling: GapHandlingMode = "pairwise-deletion",
     ambiguity_policy: AmbiguityPolicy = "ignore",
+    missing_distance_policy: MissingDistancePolicy = "reject",
 ) -> DistanceTreeReferenceComparisonReport:
     from .tree_inference import (
         compare_distance_tree_to_reference_tree as compare_reference_impl,
@@ -577,6 +606,7 @@ def compare_distance_tree_to_reference_tree(
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
+        missing_distance_policy=missing_distance_policy,
     )
 
 
