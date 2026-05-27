@@ -17,6 +17,7 @@ from .models import (
     ParsimonyBootstrapReport,
     ParsimonyJackknifeReport,
     ParsimonyNniSearchReport,
+    ParsimonyRatchetReport,
     ParsimonySprSearchReport,
     FitchScoreReport,
     ParsimonyConsistencyIndexReport,
@@ -1811,5 +1812,177 @@ def write_parsimony_spr_artifacts(
         "start_tree_path": start_tree_path,
         "final_tree_path": final_tree_path,
         "trace_path": trace_path,
+        "run_json_path": run_json_path,
+    }
+
+
+def write_parsimony_ratchet_cycle_table(
+    path: Path,
+    report: ParsimonyRatchetReport,
+) -> Path:
+    """Write one deterministic parsimony ratchet cycle ledger."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "cycle_index",
+            "start_score",
+            "start_tree_newick",
+            "perturbed_character_ids",
+            "perturbation_factor",
+            "perturbed_score",
+            "perturbed_tree_newick",
+            "perturbed_accepted_move_count",
+            "restored_score",
+            "restored_tree_newick",
+            "restored_accepted_move_count",
+            "best_score_after_cycle",
+            "best_tree_after_cycle",
+            "best_tree_improved",
+        ],
+        rows=[
+            {
+                "cycle_index": row.cycle_index,
+                "start_score": row.start_score,
+                "start_tree_newick": row.start_tree_newick,
+                "perturbed_character_ids": "|".join(row.perturbed_character_ids),
+                "perturbation_factor": row.perturbation_factor,
+                "perturbed_score": row.perturbed_score,
+                "perturbed_tree_newick": row.perturbed_tree_newick,
+                "perturbed_accepted_move_count": row.perturbed_accepted_move_count,
+                "restored_score": row.restored_score,
+                "restored_tree_newick": row.restored_tree_newick,
+                "restored_accepted_move_count": row.restored_accepted_move_count,
+                "best_score_after_cycle": row.best_score_after_cycle,
+                "best_tree_after_cycle": row.best_tree_after_cycle,
+                "best_tree_improved": row.best_tree_improved,
+            }
+            for row in report.cycle_rows
+        ],
+    )
+
+
+def write_parsimony_ratchet_best_tree_history_table(
+    path: Path,
+    report: ParsimonyRatchetReport,
+) -> Path:
+    """Write one deterministic ratchet best-tree history ledger."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "history_index",
+            "cycle_index",
+            "best_score",
+            "best_tree_newick",
+        ],
+        rows=[
+            {
+                "history_index": row.history_index,
+                "cycle_index": row.cycle_index,
+                "best_score": row.best_score,
+                "best_tree_newick": row.best_tree_newick,
+            }
+            for row in report.best_tree_history_rows
+        ],
+    )
+
+
+def write_parsimony_ratchet_run_json(
+    path: Path,
+    report: ParsimonyRatchetReport,
+) -> Path:
+    """Write one machine-readable parsimony ratchet payload."""
+    return write_json_artifact(
+        path,
+        {
+            "algorithm": report.algorithm,
+            "method": report.method,
+            "tree_path": None if report.tree_path is None else str(report.tree_path),
+            "matrix_path": None
+            if report.matrix_path is None
+            else str(report.matrix_path),
+            "cost_matrix_path": None
+            if report.cost_matrix_path is None
+            else str(report.cost_matrix_path),
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "taxon_column": report.taxon_column,
+            "taxon_count": report.taxon_count,
+            "character_count": report.character_count,
+            "cycle_count": report.cycle_count,
+            "random_seed": report.random_seed,
+            "perturbed_character_count": report.perturbed_character_count,
+            "perturbation_factor": report.perturbation_factor,
+            "start_tree_newick": report.start_tree_newick,
+            "start_score": report.start_score,
+            "final_tree_newick": report.final_tree_newick,
+            "final_score": report.final_score,
+            "best_tree_newick": report.best_tree_newick,
+            "best_score": report.best_score,
+            "cycle_rows": [
+                {
+                    "cycle_index": row.cycle_index,
+                    "start_score": row.start_score,
+                    "start_tree_newick": row.start_tree_newick,
+                    "perturbed_character_ids": row.perturbed_character_ids,
+                    "perturbation_factor": row.perturbation_factor,
+                    "perturbed_score": row.perturbed_score,
+                    "perturbed_tree_newick": row.perturbed_tree_newick,
+                    "perturbed_accepted_move_count": row.perturbed_accepted_move_count,
+                    "restored_score": row.restored_score,
+                    "restored_tree_newick": row.restored_tree_newick,
+                    "restored_accepted_move_count": row.restored_accepted_move_count,
+                    "best_score_after_cycle": row.best_score_after_cycle,
+                    "best_tree_after_cycle": row.best_tree_after_cycle,
+                    "best_tree_improved": row.best_tree_improved,
+                }
+                for row in report.cycle_rows
+            ],
+            "best_tree_history_rows": [
+                {
+                    "history_index": row.history_index,
+                    "cycle_index": row.cycle_index,
+                    "best_score": row.best_score,
+                    "best_tree_newick": row.best_tree_newick,
+                }
+                for row in report.best_tree_history_rows
+            ],
+        },
+    )
+
+
+def write_parsimony_ratchet_artifacts(
+    out_dir: Path,
+    report: ParsimonyRatchetReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one parsimony ratchet run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    start_tree_path = write_newick(
+        out_dir / "start_tree.nwk",
+        loads_newick(report.start_tree_newick),
+    )
+    final_tree_path = write_newick(
+        out_dir / "final_tree.nwk",
+        loads_newick(report.final_tree_newick),
+    )
+    best_tree_path = write_newick(
+        out_dir / "best_tree.nwk",
+        loads_newick(report.best_tree_newick),
+    )
+    cycle_history_path = write_parsimony_ratchet_cycle_table(
+        out_dir / "cycle_history.tsv",
+        report,
+    )
+    best_tree_history_path = write_parsimony_ratchet_best_tree_history_table(
+        out_dir / "best_tree_history.tsv",
+        report,
+    )
+    run_json_path = write_parsimony_ratchet_run_json(out_dir / "run.json", report)
+    return {
+        "start_tree_path": start_tree_path,
+        "final_tree_path": final_tree_path,
+        "best_tree_path": best_tree_path,
+        "cycle_history_path": cycle_history_path,
+        "best_tree_history_path": best_tree_history_path,
         "run_json_path": run_json_path,
     }
