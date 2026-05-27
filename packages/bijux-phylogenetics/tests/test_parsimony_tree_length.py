@@ -116,6 +116,31 @@ def test_tree_length_requires_sankoff_cost_matrix() -> None:
     assert error_info.value.code == "parsimony_tree_length_cost_matrix_required"
 
 
+def test_tree_length_rejects_asymmetric_sankoff_cost_matrix_by_default() -> None:
+    with pytest.raises(ParsimonyAnalysisError) as error_info:
+        tree_length(
+            fixture("sankoff_tree_5_taxa.nwk"),
+            fixture("sankoff_character_matrix.tsv"),
+            method="sankoff",
+            cost_matrix=fixture("sankoff_asymmetric_cost_matrix.tsv"),
+        )
+
+    assert error_info.value.code == "parsimony_cost_matrix_asymmetric"
+
+
+def test_tree_length_allows_asymmetric_sankoff_cost_matrix_when_requested() -> None:
+    report = tree_length(
+        fixture("sankoff_tree_5_taxa.nwk"),
+        fixture("sankoff_character_matrix.tsv"),
+        method="sankoff",
+        cost_matrix=fixture("sankoff_asymmetric_cost_matrix.tsv"),
+        allow_asymmetric_costs=True,
+    )
+
+    assert report.method == "sankoff"
+    assert report.raw_total_score >= 0.0
+
+
 def test_tree_length_rejects_missing_character_weights() -> None:
     with pytest.raises(ParsimonyAnalysisError) as error_info:
         tree_length(

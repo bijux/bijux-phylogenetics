@@ -9,6 +9,7 @@ import bijux_phylogenetics.parsimony as parsimony_api
 from bijux_phylogenetics.parsimony import (
     load_sankoff_cost_matrix,
     score_sankoff,
+    validate_sankoff_cost_matrix,
     write_sankoff_artifacts,
 )
 from bijux_phylogenetics.runtime.errors import ParsimonyAnalysisError
@@ -22,6 +23,7 @@ def fixture(name: str) -> Path:
 
 def test_package_parsimony_gateway_exports_sankoff_surface() -> None:
     assert parsimony_api.load_sankoff_cost_matrix is load_sankoff_cost_matrix
+    assert parsimony_api.validate_sankoff_cost_matrix is validate_sankoff_cost_matrix
     assert parsimony_api.score_sankoff is score_sankoff
     assert parsimony_api.write_sankoff_artifacts is write_sankoff_artifacts
 
@@ -116,6 +118,37 @@ def test_score_sankoff_rejects_character_states_missing_from_cost_matrix() -> No
     assert error_info.value.details["missing_states"] == ["yellow"]
 
 
+def test_score_sankoff_rejects_asymmetric_cost_matrices_before_scoring() -> None:
+    with pytest.raises(ParsimonyAnalysisError) as error_info:
+        score_sankoff(
+            fixture("sankoff_tree_5_taxa.nwk"),
+            fixture("sankoff_character_matrix.tsv"),
+            fixture("sankoff_asymmetric_cost_matrix.tsv"),
+        )
+
+    assert error_info.value.code == "parsimony_cost_matrix_asymmetric"
+
+
+def test_score_sankoff_records_diagonal_and_unused_state_warnings() -> None:
+    diagonal_report = score_sankoff(
+        fixture("sankoff_tree_5_taxa.nwk"),
+        fixture("sankoff_character_matrix.tsv"),
+        fixture("sankoff_diagonal_nonzero_cost_matrix.tsv"),
+    )
+    unused_state_report = score_sankoff(
+        fixture("sankoff_tree_5_taxa.nwk"),
+        fixture("sankoff_character_matrix.tsv"),
+        fixture("sankoff_unused_state_cost_matrix.tsv"),
+    )
+
+    assert [warning.code for warning in diagonal_report.validation_warnings] == [
+        "parsimony_cost_matrix_diagonal_nonzero"
+    ]
+    assert [warning.code for warning in unused_state_report.validation_warnings] == [
+        "parsimony_cost_matrix_unused_states"
+    ]
+
+
 def test_write_sankoff_artifacts_materializes_governed_output_family(
     tmp_path: Path,
 ) -> None:
@@ -146,3 +179,4 @@ def test_write_sankoff_artifacts_materializes_governed_output_family(
     assert payload["algorithm"] == "sankoff"
     assert payload["total_cost"] == 3.0
     assert payload["total_weighted_score"] == 3.0
+    assert payload["validation_warnings"] == []
