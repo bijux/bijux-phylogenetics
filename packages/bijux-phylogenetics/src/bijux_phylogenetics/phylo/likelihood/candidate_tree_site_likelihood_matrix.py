@@ -32,6 +32,7 @@ from bijux_phylogenetics.phylo.likelihood.site_log_likelihoods import (
 )
 from bijux_phylogenetics.phylo.likelihood.dna import normalize_unambiguous_dna_records
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 from bijux_phylogenetics.runtime.errors import TreeParseError
 
 
@@ -96,7 +97,7 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
                     )
                 ),
             )
-        except ValueError as error:
+        except PhylogeneticsError as error:
             raise ValueError(
                 f"{candidate.candidate_tree_label} is incompatible with the shared alignment/model surface: {error}"
             ) from error
