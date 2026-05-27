@@ -15,6 +15,7 @@ from .models import (
     CaminSokalScoreReport,
     DolloScoreReport,
     ParsimonyBootstrapReport,
+    ParsimonyJackknifeReport,
     FitchScoreReport,
     ParsimonyConsistencyIndexReport,
     ParsimonyReconstructionReport,
@@ -1395,6 +1396,187 @@ def write_parsimony_bootstrap_artifacts(
         "replicate_trees_path": replicate_trees_path,
         "replicate_scores_path": replicate_scores_path,
         "replicate_draws_path": replicate_draws_path,
+        "clade_support_path": clade_support_path,
+        "consensus_tree_path": consensus_tree_path,
+        "clade_frequencies_path": clade_frequencies_path,
+        "run_json_path": run_json_path,
+    }
+
+
+def write_parsimony_jackknife_replicate_scores_table(
+    path: Path,
+    report: ParsimonyJackknifeReport,
+) -> Path:
+    """Write one deterministic exact-search jackknife replicate score table."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "replicate_index",
+            "retained_character_count",
+            "best_score",
+            "optimal_tree_count",
+            "tree_newick",
+        ],
+        rows=[
+            {
+                "replicate_index": row.replicate_index,
+                "retained_character_count": row.retained_character_count,
+                "best_score": row.best_score,
+                "optimal_tree_count": row.optimal_tree_count,
+                "tree_newick": row.tree_newick,
+            }
+            for row in report.replicate_rows
+        ],
+    )
+
+
+def write_parsimony_jackknife_retained_characters_table(
+    path: Path,
+    report: ParsimonyJackknifeReport,
+) -> Path:
+    """Write one deterministic jackknife retained-character ledger."""
+    return write_taxon_rows(
+        path,
+        columns=["replicate_index", "retained_index", "source_character_id"],
+        rows=[
+            {
+                "replicate_index": row.replicate_index,
+                "retained_index": retained_index,
+                "source_character_id": source_character_id,
+            }
+            for row in report.replicate_rows
+            for retained_index, source_character_id in enumerate(
+                row.retained_character_ids,
+                start=1,
+            )
+        ],
+    )
+
+
+def write_parsimony_jackknife_clade_support_table(
+    path: Path,
+    report: ParsimonyJackknifeReport,
+) -> Path:
+    """Write one deterministic reference-tree jackknife support table."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "branch_id",
+            "node_name",
+            "descendant_taxa",
+            "supporting_tree_count",
+            "clade_frequency",
+            "support_percent",
+        ],
+        rows=[
+            {
+                "branch_id": row.branch_id,
+                "node_name": row.node_name,
+                "descendant_taxa": "|".join(row.descendant_taxa),
+                "supporting_tree_count": row.supporting_tree_count,
+                "clade_frequency": row.clade_frequency,
+                "support_percent": row.support_percent,
+            }
+            for row in report.clade_support_rows
+        ],
+    )
+
+
+def write_parsimony_jackknife_run_json(
+    path: Path,
+    report: ParsimonyJackknifeReport,
+) -> Path:
+    """Write one machine-readable exact-search parsimony jackknife payload."""
+    return write_json_artifact(
+        path,
+        {
+            "algorithm": report.algorithm,
+            "method": report.method,
+            "matrix_path": None
+            if report.matrix_path is None
+            else str(report.matrix_path),
+            "cost_matrix_path": None
+            if report.cost_matrix_path is None
+            else str(report.cost_matrix_path),
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "taxon_column": report.taxon_column,
+            "taxon_count": report.taxon_count,
+            "character_count": report.character_count,
+            "replicate_count": report.replicate_count,
+            "random_seed": report.random_seed,
+            "retain_probability": report.retain_probability,
+            "candidate_tree_count": report.candidate_tree_count,
+            "max_exact_taxa": report.max_exact_taxa,
+            "reference_score": report.reference_score,
+            "reference_optimal_tree_count": report.reference_optimal_tree_count,
+            "reference_tree_newick": report.reference_tree_newick,
+            "replicate_rows": [
+                {
+                    "replicate_index": row.replicate_index,
+                    "retained_character_count": row.retained_character_count,
+                    "retained_character_ids": row.retained_character_ids,
+                    "best_score": row.best_score,
+                    "optimal_tree_count": row.optimal_tree_count,
+                    "tree_newick": row.tree_newick,
+                }
+                for row in report.replicate_rows
+            ],
+            "clade_support_rows": [
+                {
+                    "branch_id": row.branch_id,
+                    "node_name": row.node_name,
+                    "descendant_taxa": row.descendant_taxa,
+                    "supporting_tree_count": row.supporting_tree_count,
+                    "clade_frequency": row.clade_frequency,
+                    "support_percent": row.support_percent,
+                }
+                for row in report.clade_support_rows
+            ],
+        },
+    )
+
+
+def write_parsimony_jackknife_artifacts(
+    out_dir: Path,
+    report: ParsimonyJackknifeReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one parsimony jackknife run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    reference_tree_path = write_newick(
+        out_dir / "reference_tree.nwk",
+        loads_newick(report.reference_tree_newick),
+    )
+    replicate_trees_path = write_newick_tree_set(
+        out_dir / "replicate_trees.nwk",
+        [loads_newick(row.tree_newick) for row in report.replicate_rows],
+    )
+    replicate_scores_path = write_parsimony_jackknife_replicate_scores_table(
+        out_dir / "replicate_scores.tsv",
+        report,
+    )
+    retained_characters_path = write_parsimony_jackknife_retained_characters_table(
+        out_dir / "retained_characters.tsv",
+        report,
+    )
+    clade_support_path = write_parsimony_jackknife_clade_support_table(
+        out_dir / "clade_support.tsv",
+        report,
+    )
+    consensus_tree, _consensus_report = compute_consensus_tree(replicate_trees_path)
+    consensus_tree_path = write_newick(out_dir / "consensus_tree.nwk", consensus_tree)
+    clade_frequency_report = compute_clade_frequency_table(replicate_trees_path)
+    clade_frequencies_path = write_clade_frequency_table(
+        out_dir / "clade_frequencies.tsv",
+        clade_frequency_report,
+    )
+    run_json_path = write_parsimony_jackknife_run_json(out_dir / "run.json", report)
+    return {
+        "reference_tree_path": reference_tree_path,
+        "replicate_trees_path": replicate_trees_path,
+        "replicate_scores_path": replicate_scores_path,
+        "retained_characters_path": retained_characters_path,
         "clade_support_path": clade_support_path,
         "consensus_tree_path": consensus_tree_path,
         "clade_frequencies_path": clade_frequencies_path,
