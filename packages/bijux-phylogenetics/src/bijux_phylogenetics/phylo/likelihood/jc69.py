@@ -5,10 +5,17 @@ from pathlib import Path
 
 import numpy
 
+from bijux_phylogenetics.comparative.search import (
+    run_bounded_golden_section_maximization,
+)
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.models import (
+    Jc69BranchLengthOptimizationReport,
+    Jc69BranchLengthOptimizationStep,
+)
 from bijux_phylogenetics.phylo.likelihood.models import Jc69TreeLikelihoodReport
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
@@ -70,6 +77,132 @@ def evaluate_jc69_tree_likelihood_from_alignment(
     return evaluate_jc69_tree_likelihood(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
+    )
+
+
+def optimize_jc69_branch_lengths(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    lower_branch_length_bound: float = 1e-6,
+    upper_branch_length_bound: float = 5.0,
+    max_coordinate_passes: int = 12,
+    improvement_tolerance: float = 1e-9,
+) -> Jc69BranchLengthOptimizationReport:
+    """Optimize one fixed topology under native JC69 branch likelihood."""
+    if lower_branch_length_bound <= 0.0:
+        raise InvalidBranchLengthError("JC69 branch-length lower bound must be positive")
+    if upper_branch_length_bound <= lower_branch_length_bound:
+        raise InvalidBranchLengthError(
+            "JC69 branch-length bounds must be strictly increasing"
+        )
+    if max_coordinate_passes < 1:
+        raise ValueError("max_coordinate_passes must be at least one")
+
+    normalized_records = _normalized_jc69_records(records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    working_tree = tree.copy()
+    _validate_explicit_branch_lengths(working_tree)
+    edge_nodes = [child for _parent, child in working_tree.iter_edges()]
+    initial_tree_newick = dumps_newick(tree)
+    initial_report = _evaluate_jc69_tree_likelihood_from_patterns(
+        working_tree,
+        compressed_patterns,
+    )
+    current_report = initial_report
+    function_evaluation_count = 1
+    optimization_pass_count = 0
+    converged = False
+    steps: list[Jc69BranchLengthOptimizationStep] = []
+
+    for optimization_pass in range(1, max_coordinate_passes + 1):
+        optimization_pass_count = optimization_pass
+        improved = False
+        for node in edge_nodes:
+            if node.node_id is None:
+                raise ValueError("tree node is missing a stable node_id")
+            starting_branch_length = float(node.branch_length or 0.0)
+            starting_log_likelihood = current_report.log_likelihood
+
+            def evaluate_candidate(
+                branch_length: float,
+            ) -> tuple[Jc69TreeLikelihoodReport, float]:
+                node.branch_length = branch_length
+                report = _evaluate_jc69_tree_likelihood_from_patterns(
+                    working_tree,
+                    compressed_patterns,
+                )
+                return report, report.log_likelihood
+
+            search_result = run_bounded_golden_section_maximization(
+                lower_bound=lower_branch_length_bound,
+                upper_bound=upper_branch_length_bound,
+                evaluate=evaluate_candidate,
+            )
+            function_evaluation_count += search_result.diagnostics.function_evaluation_count
+            optimized_branch_length = float(search_result.parameter_value)
+            optimized_log_likelihood = search_result.objective_value
+            accepted = optimized_log_likelihood > (
+                current_report.log_likelihood + improvement_tolerance
+            )
+            if accepted:
+                node.branch_length = optimized_branch_length
+                current_report = search_result.payload
+                improved = True
+            else:
+                node.branch_length = starting_branch_length
+            steps.append(
+                Jc69BranchLengthOptimizationStep(
+                    optimization_pass=optimization_pass,
+                    branch_id=node.node_id,
+                    child_name=node.name,
+                    descendant_taxa=node.descendant_taxa,
+                    starting_branch_length=starting_branch_length,
+                    optimized_branch_length=optimized_branch_length,
+                    starting_log_likelihood=starting_log_likelihood,
+                    optimized_log_likelihood=optimized_log_likelihood,
+                    accepted=accepted,
+                )
+            )
+        if not improved:
+            converged = True
+            break
+
+    return Jc69BranchLengthOptimizationReport(
+        taxa=current_report.taxa,
+        site_count=current_report.site_count,
+        pattern_count=current_report.pattern_count,
+        branch_count=len(edge_nodes),
+        initial_tree_newick=initial_tree_newick,
+        optimized_tree_newick=dumps_newick(working_tree),
+        initial_log_likelihood=initial_report.log_likelihood,
+        optimized_log_likelihood=current_report.log_likelihood,
+        optimization_pass_count=optimization_pass_count,
+        function_evaluation_count=function_evaluation_count,
+        converged=converged,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        steps=steps,
+    )
+
+
+def optimize_jc69_branch_lengths_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    lower_branch_length_bound: float = 1e-6,
+    upper_branch_length_bound: float = 5.0,
+    max_coordinate_passes: int = 12,
+    improvement_tolerance: float = 1e-9,
+) -> Jc69BranchLengthOptimizationReport:
+    """Optimize one fixed topology from one tree path and one alignment path."""
+    return optimize_jc69_branch_lengths(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        max_coordinate_passes=max_coordinate_passes,
+        improvement_tolerance=improvement_tolerance,
     )
 
 

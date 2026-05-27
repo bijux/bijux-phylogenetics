@@ -14,6 +14,12 @@ from .jc69 import (
 from .jc69 import (
     jc69_transition_probability_matrix as jc69_transition_probability_matrix,
 )
+from .jc69 import (
+    optimize_jc69_branch_lengths as optimize_jc69_branch_lengths,
+)
+from .jc69 import (
+    optimize_jc69_branch_lengths_from_alignment as optimize_jc69_branch_lengths_from_alignment,
+)
 from .models import (
     Jc69BranchLengthOptimizationReport as Jc69BranchLengthOptimizationReport,
 )
@@ -72,6 +78,8 @@ __all__ = [
     "jc69_rate_matrix",
     "jc69_transition_probability_matrix",
     "log_likelihood_from_root_prior",
+    "optimize_jc69_branch_lengths",
+    "optimize_jc69_branch_lengths_from_alignment",
     "postorder_conditional_likelihoods",
     "sum_alignment_site_log_likelihoods",
     "sum_compressed_site_pattern_log_likelihoods",
