@@ -16,6 +16,7 @@ from .overlap import (
     compare_clade_sets,
     prune_trees_to_shared_taxa,
 )
+from .reconciliation import reconcile_duplication_loss_transfer
 from .support import compare_support_values
 
 
@@ -208,6 +209,115 @@ def write_deep_coalescence_taxon_map_table(
         species_tree_path,
         gene_tree_path,
         taxon_map_path=taxon_map_path,
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=["gene_taxon", "species_taxon"],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.mapping_rows:
+            writer.writerow(
+                {
+                    "gene_taxon": row.gene_taxon,
+                    "species_taxon": row.species_taxon,
+                }
+            )
+    return path
+
+
+def write_duplication_loss_transfer_event_table(
+    path: Path,
+    species_tree_path: Path,
+    gene_tree_path: Path,
+    *,
+    taxon_map_path: Path | None = None,
+    duplication_cost: float = 2.0,
+    loss_cost: float = 1.0,
+    transfer_cost: float = 3.0,
+) -> Path:
+    """Write one row per event from an undated duplication-loss-transfer reconciliation."""
+    report = reconcile_duplication_loss_transfer(
+        species_tree_path,
+        gene_tree_path,
+        taxon_map_path=taxon_map_path,
+        duplication_cost=duplication_cost,
+        loss_cost=loss_cost,
+        transfer_cost=transfer_cost,
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "gene_node",
+                "gene_node_name",
+                "descendant_gene_tips",
+                "event_type",
+                "mapped_species_branch",
+                "mapped_descendant_species",
+                "left_child_gene_node",
+                "right_child_gene_node",
+                "left_child_species_branch",
+                "right_child_species_branch",
+                "transferred_child_side",
+                "transfer_recipient_branch",
+                "loss_branches",
+                "event_cost",
+                "reconciliation_score",
+                "duplication_cost",
+                "loss_cost",
+                "transfer_cost",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.event_rows:
+            writer.writerow(
+                {
+                    "gene_node": row.gene_node,
+                    "gene_node_name": row.gene_node_name or "",
+                    "descendant_gene_tips": _pipe_join(row.descendant_gene_tips),
+                    "event_type": row.event_type,
+                    "mapped_species_branch": row.mapped_species_branch,
+                    "mapped_descendant_species": _pipe_join(row.mapped_descendant_species),
+                    "left_child_gene_node": row.left_child_gene_node or "",
+                    "right_child_gene_node": row.right_child_gene_node or "",
+                    "left_child_species_branch": row.left_child_species_branch or "",
+                    "right_child_species_branch": row.right_child_species_branch or "",
+                    "transferred_child_side": row.transferred_child_side or "",
+                    "transfer_recipient_branch": row.transfer_recipient_branch or "",
+                    "loss_branches": _pipe_join(row.loss_branches),
+                    "event_cost": row.event_cost,
+                    "reconciliation_score": report.reconciliation_score,
+                    "duplication_cost": report.duplication_cost,
+                    "loss_cost": report.loss_cost,
+                    "transfer_cost": report.transfer_cost,
+                }
+            )
+    return path
+
+
+def write_duplication_loss_transfer_taxon_map_table(
+    path: Path,
+    species_tree_path: Path,
+    gene_tree_path: Path,
+    *,
+    taxon_map_path: Path | None = None,
+    duplication_cost: float = 2.0,
+    loss_cost: float = 1.0,
+    transfer_cost: float = 3.0,
+) -> Path:
+    """Write one row per resolved gene-to-species association for DLT reconciliation."""
+    report = reconcile_duplication_loss_transfer(
+        species_tree_path,
+        gene_tree_path,
+        taxon_map_path=taxon_map_path,
+        duplication_cost=duplication_cost,
+        loss_cost=loss_cost,
+        transfer_cost=transfer_cost,
     )
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as handle:
