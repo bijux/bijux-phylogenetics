@@ -68,6 +68,14 @@ from .branch_length_priors import (
     evaluate_branch_length_log_prior,
     evaluate_tree_branch_length_log_prior,
 )
+from .clock_models import (
+    CLOCK_RATE_MODEL_FAMILIES,
+    StrictClockRateBranchRow,
+    StrictClockRateModel,
+    StrictClockRateModelEvaluationReport,
+    build_strict_clock_rate_model,
+    evaluate_strict_clock_tree_log_prior,
+)
 from .evidence import BayesianEvidencePackageReport, build_bayesian_evidence_package
 from .mrbayes import (
     EffectiveSampleSize,
@@ -257,6 +265,7 @@ __all__ = [
     "BranchLengthPriorEvaluationReport",
     "BranchLengthPriorModel",
     "BIRTH_DEATH_TREE_PRIOR_FAMILIES",
+    "CLOCK_RATE_MODEL_FAMILIES",
     "COALESCENT_TREE_PRIOR_FAMILIES",
     "TIME_TREE_PRIOR_CONDITIONING_MODES",
     "BirthDeathTreePriorBranchingRow",
@@ -266,6 +275,9 @@ __all__ = [
     "ConstantPopulationCoalescentIntervalRow",
     "ConstantPopulationCoalescentPriorEvaluationReport",
     "ConstantPopulationCoalescentPriorModel",
+    "StrictClockRateBranchRow",
+    "StrictClockRateModel",
+    "StrictClockRateModelEvaluationReport",
     "SkylineCoalescentEpoch",
     "SkylineCoalescentPriorEvaluationReport",
     "SkylineCoalescentPriorModel",
@@ -320,6 +332,7 @@ __all__ = [
     "build_gamma_branch_length_prior",
     "build_lognormal_branch_length_prior",
     "build_categorical_probability_vector",
+    "build_strict_clock_rate_model",
     "build_constant_population_coalescent_tree_prior",
     "build_crown_conditioned_birth_death_tree_prior",
     "build_crown_conditioned_yule_tree_prior",
@@ -337,6 +350,7 @@ __all__ = [
     "evaluate_constant_population_coalescent_tree_log_prior",
     "evaluate_skyline_coalescent_tree_log_prior",
     "evaluate_birth_death_tree_log_prior",
+    "evaluate_strict_clock_tree_log_prior",
     "evaluate_tree_branch_length_log_prior",
     "evaluate_tree_topology_log_prior",
     "evaluate_yule_tree_log_prior",
