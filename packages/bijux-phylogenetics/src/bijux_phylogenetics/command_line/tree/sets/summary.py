@@ -8,10 +8,11 @@ from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.runtime.results import build_command_result
 from bijux_phylogenetics.trees import (
-    compute_clade_compatibility_graph,
     build_quartet_puzzling_consensus,
+    compute_clade_compatibility_graph,
     compute_clade_frequency_table,
     compute_consensus_tree,
+    compute_gene_tree_quartet_concordance_factors,
     compute_majority_rule_extended_consensus,
     compute_reference_tree_clade_support,
     compute_reference_tree_quartet_support,
@@ -22,9 +23,10 @@ from bijux_phylogenetics.trees import (
     write_clade_compatibility_graph_dot,
     write_clade_compatibility_node_table,
     write_clade_frequency_table,
-    write_majority_rule_extended_consensus_artifacts,
     write_clade_table,
     write_consensus_tree,
+    write_gene_tree_quartet_concordance_table,
+    write_majority_rule_extended_consensus_artifacts,
     write_quartet_puzzling_artifacts,
     write_reference_tree_clade_support_table,
     write_reference_tree_quartet_support_table,
@@ -126,6 +128,24 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the quartet-support report as JSON."
     )
     _add_manifest_argument(tree_set_quartet_support)
+
+    tree_set_quartet_concordance = tree_set_subparsers.add_parser(
+        "quartet-concordance-factors",
+        help="Score each informative species-tree branch by concordant, discordant-first, discordant-second, and uninformative quartet votes across a gene-tree set.",
+    )
+    tree_set_quartet_concordance.add_argument("reference_tree", type=Path)
+    tree_set_quartet_concordance.add_argument("tree_set", type=Path)
+    tree_set_quartet_concordance.add_argument(
+        "--out",
+        type=Path,
+        help="Write the species-tree quartet concordance-factor table as TSV.",
+    )
+    tree_set_quartet_concordance.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the quartet-concordance report as JSON.",
+    )
+    _add_manifest_argument(tree_set_quartet_concordance)
 
     tree_set_quartet_puzzling = tree_set_subparsers.add_parser(
         "quartet-puzzling",
@@ -434,6 +454,51 @@ def run_tree_set_summary_command(args: Any) -> int | None:
                     "concordant_quartet_count": report.concordant_quartet_count,
                     "discordant_quartet_count": report.discordant_quartet_count,
                     "uninformative_quartet_count": report.uninformative_quartet_count,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.tree_set_command == "quartet-concordance-factors":
+        report = compute_gene_tree_quartet_concordance_factors(
+            args.reference_tree,
+            args.tree_set,
+        )
+        outputs: list[Path] = []
+        if args.out is not None:
+            outputs.append(write_gene_tree_quartet_concordance_table(args.out, report))
+        outputs = _finalize_outputs(
+            args,
+            command="tree-set",
+            inputs=[args.reference_tree, args.tree_set],
+            outputs=outputs,
+        )
+        _print_result(
+            build_command_result(
+                command="tree-set",
+                inputs=[args.reference_tree, args.tree_set],
+                outputs=outputs,
+                metrics={
+                    "tree_count": report.tree_count,
+                    "runtime_seconds": report.processing.runtime_seconds,
+                    "peak_memory_bytes": report.processing.peak_memory_bytes,
+                    "skipped_malformed_tree_count": (
+                        report.processing.skipped_malformed_tree_count
+                    ),
+                    "shared_taxon_count": len(report.shared_taxa),
+                    "branch_count": report.branch_count,
+                    "total_quartet_count": report.total_quartet_count,
+                    "concordant_quartet_count": report.concordant_quartet_count,
+                    "discordant_first_quartet_count": (
+                        report.discordant_first_quartet_count
+                    ),
+                    "discordant_second_quartet_count": (
+                        report.discordant_second_quartet_count
+                    ),
+                    "uninformative_quartet_count": report.uninformative_quartet_count,
+                    "informative_quartet_count": report.informative_quartet_count,
                 },
                 data=report,
             ),
