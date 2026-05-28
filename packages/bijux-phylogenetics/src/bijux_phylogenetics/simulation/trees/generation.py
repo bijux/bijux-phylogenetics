@@ -20,10 +20,13 @@ from .._statistics import (
     _round_float,
 )
 from ..contracts import (
+    CoalescentWaitingTimeSummaryRow,
     SimulatedTreeRecord,
     TreeSimulationEnvelopeMetric,
     TreeSimulationReport,
 )
+
+_DEFAULT_COALESCENT_WAITING_TIME_TOLERANCE = 0.2
 
 
 @dataclass(slots=True)
@@ -32,6 +35,12 @@ class _Lineage:
     start_time: float
     is_root: bool
     extant: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class _CoalescentWaitingInterval:
+    lineage_count: int
+    waiting_time: float
 
 
 def _validate_tree_count(tree_count: int, tip_count: int) -> None:
@@ -165,6 +174,8 @@ def _build_tree_simulation_report(
     birth_rate: float | None = None,
     death_rate: float | None = None,
     population_size: float | None = None,
+    coalescent_waiting_time_tolerance: float | None = None,
+    coalescent_waiting_time_rows: list[CoalescentWaitingTimeSummaryRow] | None = None,
 ) -> TreeSimulationReport:
     records: list[SimulatedTreeRecord] = []
     pooled_branch_lengths: list[float] = []
@@ -218,6 +229,8 @@ def _build_tree_simulation_report(
         binary=all(tree.internal_node_count == tree.tip_count - 1 for tree in trees),
         pooled_branch_count=len(pooled_branch_lengths),
         envelope_metrics=envelope_metrics,
+        coalescent_waiting_time_tolerance=coalescent_waiting_time_tolerance,
+        coalescent_waiting_time_rows=list(coalescent_waiting_time_rows or []),
     )
 
 
@@ -405,23 +418,71 @@ def _choose_two_indices(rng: random.Random, count: int) -> tuple[int, int]:
     return tuple(sorted((left, right)))
 
 
+def _summarize_coalescent_waiting_times(
+    waiting_intervals: list[_CoalescentWaitingInterval],
+    *,
+    population_size: float,
+    tolerance: float,
+) -> list[CoalescentWaitingTimeSummaryRow]:
+    waiting_times_by_lineage_count: dict[int, list[float]] = {}
+    for interval in waiting_intervals:
+        waiting_times_by_lineage_count.setdefault(interval.lineage_count, []).append(
+            interval.waiting_time
+        )
+    rows: list[CoalescentWaitingTimeSummaryRow] = []
+    for lineage_count in sorted(waiting_times_by_lineage_count, reverse=True):
+        waiting_times = waiting_times_by_lineage_count[lineage_count]
+        coalescent_rate = lineage_count * (lineage_count - 1) / (2.0 * population_size)
+        expected_waiting_time = 1.0 / coalescent_rate
+        mean_waiting_time = _mean(waiting_times)
+        absolute_error = abs(mean_waiting_time - expected_waiting_time)
+        relative_error = (
+            0.0 if expected_waiting_time == 0.0 else absolute_error / expected_waiting_time
+        )
+        rows.append(
+            CoalescentWaitingTimeSummaryRow(
+                lineage_count=lineage_count,
+                coalescent_rate=_round_float(coalescent_rate),
+                expected_waiting_time=_round_float(expected_waiting_time),
+                observation_count=len(waiting_times),
+                mean_waiting_time=mean_waiting_time,
+                standard_deviation=_population_standard_deviation(waiting_times),
+                minimum_waiting_time=_round_float(min(waiting_times)),
+                median_waiting_time=_median(waiting_times),
+                maximum_waiting_time=_round_float(max(waiting_times)),
+                absolute_error=_round_float(absolute_error),
+                relative_error=_round_float(relative_error),
+                within_tolerance=relative_error <= tolerance,
+            )
+        )
+    return rows
+
+
 def _simulate_coalescent_tree_once(
     *,
     tip_count: int,
     population_size: float,
     seed: int,
     taxon_prefix: str,
-) -> PhyloTree:
+) -> tuple[PhyloTree, list[_CoalescentWaitingInterval]]:
     if population_size <= 0.0:
         raise ValueError(f"population_size must be positive, got {population_size}")
 
     rng = random.Random(seed)  # nosec B311
     node_heights = []
     cumulative_height = 0.0
+    waiting_intervals: list[_CoalescentWaitingInterval] = []
     for lineage_count in range(tip_count, 1, -1):
-        cumulative_height += rng.expovariate(
+        waiting_time = rng.expovariate(
             lineage_count * (lineage_count - 1) / (2.0 * population_size)
         )
+        waiting_intervals.append(
+            _CoalescentWaitingInterval(
+                lineage_count=lineage_count,
+                waiting_time=_round_float(waiting_time),
+            )
+        )
+        cumulative_height += waiting_time
         node_heights.append(cumulative_height)
     pool: list[tuple[TreeNode, float]] = [(TreeNode(), 0.0) for _ in range(tip_count)]
     for node_height in node_heights:
@@ -436,7 +497,7 @@ def _simulate_coalescent_tree_once(
     tree = PhyloTree(root=root, source_format="newick")
     tree.rooted = True
     _label_tree_leaves_randomized(tree, taxon_prefix=taxon_prefix, rng=rng)
-    return tree
+    return tree, waiting_intervals
 
 
 def simulate_coalescent_trees(
@@ -444,12 +505,18 @@ def simulate_coalescent_trees(
     tree_count: int,
     tip_count: int,
     population_size: float = 1.0,
+    waiting_time_tolerance: float = _DEFAULT_COALESCENT_WAITING_TIME_TOLERANCE,
     seed: int = 1,
     taxon_prefix: str = "Taxon",
 ) -> tuple[list[PhyloTree], TreeSimulationReport]:
     """Simulate rooted trees under a basic Kingman-style coalescent."""
     _validate_tree_count(tree_count, tip_count)
-    trees = [
+    if waiting_time_tolerance < 0.0:
+        raise ValueError(
+            "waiting_time_tolerance must be nonnegative, "
+            f"got {waiting_time_tolerance}"
+        )
+    simulated = [
         _simulate_coalescent_tree_once(
             tip_count=tip_count,
             population_size=population_size,
@@ -458,6 +525,17 @@ def simulate_coalescent_trees(
         )
         for index in range(1, tree_count + 1)
     ]
+    trees = [tree for tree, _waiting_intervals in simulated]
+    waiting_intervals = [
+        interval
+        for _tree, tree_waiting_intervals in simulated
+        for interval in tree_waiting_intervals
+    ]
+    waiting_time_rows = _summarize_coalescent_waiting_times(
+        waiting_intervals,
+        population_size=population_size,
+        tolerance=waiting_time_tolerance,
+    )
     return trees, _build_tree_simulation_report(
         model="coalescent",
         tree_count=tree_count,
@@ -466,6 +544,8 @@ def simulate_coalescent_trees(
         trees=trees,
         branch_length_model="coalescent-waiting-times",
         population_size=population_size,
+        coalescent_waiting_time_tolerance=waiting_time_tolerance,
+        coalescent_waiting_time_rows=waiting_time_rows,
     )
 
 
@@ -473,6 +553,7 @@ def simulate_coalescent_tree(
     *,
     tip_count: int,
     population_size: float = 1.0,
+    waiting_time_tolerance: float = _DEFAULT_COALESCENT_WAITING_TIME_TOLERANCE,
     seed: int = 1,
     taxon_prefix: str = "Taxon",
 ) -> tuple[PhyloTree, TreeSimulationReport]:
@@ -481,6 +562,7 @@ def simulate_coalescent_tree(
         tree_count=1,
         tip_count=tip_count,
         population_size=population_size,
+        waiting_time_tolerance=waiting_time_tolerance,
         seed=seed,
         taxon_prefix=taxon_prefix,
     )
