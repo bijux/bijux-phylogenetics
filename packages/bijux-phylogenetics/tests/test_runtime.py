@@ -10,6 +10,7 @@ import bijux_phylogenetics
 from bijux_phylogenetics.bayesian import (
     BIRTH_DEATH_TREE_PRIOR_FAMILIES,
     CATEGORICAL_MISSING_STATE_POLICIES,
+    CLOCK_RATE_MODEL_FAMILIES,
     COALESCENT_TREE_PRIOR_FAMILIES,
     CategoricalProbabilityVector,
     BeastAnalysisXmlReport,
@@ -17,6 +18,7 @@ from bijux_phylogenetics.bayesian import (
     BirthDeathTreePriorModel,
     ConstantPopulationCoalescentPriorModel,
     MrBayesParameterDiagnosticsReport,
+    StrictClockRateModel,
     SkylineCoalescentPriorModel,
     TIME_TREE_PRIOR_CONDITIONING_MODES,
     TREE_TOPOLOGY_PRIOR_FAMILIES,
@@ -32,6 +34,7 @@ from bijux_phylogenetics.bayesian import (
     build_constant_population_coalescent_tree_prior,
     build_crown_conditioned_birth_death_tree_prior,
     build_crown_conditioned_yule_tree_prior,
+    build_strict_clock_rate_model,
     build_skyline_coalescent_tree_prior,
     build_posterior_uncertainty_figure_package,
     build_uniform_rooted_tree_topology_prior,
@@ -41,6 +44,7 @@ from bijux_phylogenetics.bayesian import (
     evaluate_constant_population_coalescent_tree_log_prior,
     evaluate_birth_death_tree_log_prior,
     evaluate_skyline_coalescent_tree_log_prior,
+    evaluate_strict_clock_tree_log_prior,
     evaluate_yule_tree_log_prior,
     log_probability_add,
     logsumexp,
@@ -795,6 +799,9 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is CATEGORICAL_MISSING_STATE_POLICIES
     )
     assert (
+        bayesian_api.CLOCK_RATE_MODEL_FAMILIES is CLOCK_RATE_MODEL_FAMILIES
+    )
+    assert (
         bayesian_api.TREE_TOPOLOGY_PRIOR_FAMILIES is TREE_TOPOLOGY_PRIOR_FAMILIES
     )
     assert (
@@ -816,6 +823,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.ConstantPopulationCoalescentPriorModel
         is ConstantPopulationCoalescentPriorModel
     )
+    assert bayesian_api.StrictClockRateModel is StrictClockRateModel
     assert bayesian_api.SkylineCoalescentPriorModel is SkylineCoalescentPriorModel
     assert bayesian_api.TreeTopologyPriorModel is TreeTopologyPriorModel
     assert bayesian_api.YuleTreePriorModel is YuleTreePriorModel
@@ -842,6 +850,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_constant_population_coalescent_tree_prior
         is build_constant_population_coalescent_tree_prior
+    )
+    assert (
+        bayesian_api.build_strict_clock_rate_model
+        is build_strict_clock_rate_model
     )
     assert (
         bayesian_api.build_skyline_coalescent_tree_prior
@@ -875,6 +887,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.evaluate_constant_population_coalescent_tree_log_prior
         is evaluate_constant_population_coalescent_tree_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_strict_clock_tree_log_prior
+        is evaluate_strict_clock_tree_log_prior
     )
     assert (
         bayesian_api.evaluate_skyline_coalescent_tree_log_prior
