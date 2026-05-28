@@ -20,6 +20,7 @@ from .._statistics import (
     _round_float,
 )
 from ..contracts import (
+    CoalescentSkylineSummaryRow,
     CoalescentWaitingTimeSummaryRow,
     SimulatedTreeRecord,
     TreeSimulationEnvelopeMetric,
@@ -176,6 +177,7 @@ def _build_tree_simulation_report(
     population_size: float | None = None,
     coalescent_waiting_time_tolerance: float | None = None,
     coalescent_waiting_time_rows: list[CoalescentWaitingTimeSummaryRow] | None = None,
+    coalescent_skyline_rows: list[CoalescentSkylineSummaryRow] | None = None,
 ) -> TreeSimulationReport:
     records: list[SimulatedTreeRecord] = []
     pooled_branch_lengths: list[float] = []
@@ -231,6 +233,7 @@ def _build_tree_simulation_report(
         envelope_metrics=envelope_metrics,
         coalescent_waiting_time_tolerance=coalescent_waiting_time_tolerance,
         coalescent_waiting_time_rows=list(coalescent_waiting_time_rows or []),
+        coalescent_skyline_rows=list(coalescent_skyline_rows or []),
     )
 
 
@@ -458,6 +461,32 @@ def _summarize_coalescent_waiting_times(
     return rows
 
 
+def _summarize_coalescent_skyline(
+    waiting_time_rows: list[CoalescentWaitingTimeSummaryRow],
+) -> list[CoalescentSkylineSummaryRow]:
+    rows: list[CoalescentSkylineSummaryRow] = []
+    for row in waiting_time_rows:
+        effective_population_size_estimate = _round_float(
+            row.mean_waiting_time * row.lineage_count * (row.lineage_count - 1) / 2.0
+        )
+        rows.append(
+            CoalescentSkylineSummaryRow(
+                interval=f"{row.lineage_count}->{row.lineage_count - 1}",
+                lineage_count=row.lineage_count,
+                duration=row.mean_waiting_time,
+                effective_population_size_estimate=effective_population_size_estimate,
+                observation_count=row.observation_count,
+                relative_error=row.relative_error,
+                uncertainty_flag=(
+                    "low"
+                    if row.within_tolerance
+                    else "high"
+                ),
+            )
+        )
+    return rows
+
+
 def _simulate_coalescent_tree_once(
     *,
     tip_count: int,
@@ -536,6 +565,7 @@ def simulate_coalescent_trees(
         population_size=population_size,
         tolerance=waiting_time_tolerance,
     )
+    skyline_rows = _summarize_coalescent_skyline(waiting_time_rows)
     return trees, _build_tree_simulation_report(
         model="coalescent",
         tree_count=tree_count,
@@ -546,6 +576,7 @@ def simulate_coalescent_trees(
         population_size=population_size,
         coalescent_waiting_time_tolerance=waiting_time_tolerance,
         coalescent_waiting_time_rows=waiting_time_rows,
+        coalescent_skyline_rows=skyline_rows,
     )
 
 
@@ -697,5 +728,39 @@ def write_coalescent_waiting_time_table(
                 ),
             }
             for row in report.coalescent_waiting_time_rows
+        ],
+    )
+
+
+def write_coalescent_skyline_table(
+    path: Path,
+    report: TreeSimulationReport,
+) -> Path:
+    """Write one skyline interval row per lineage-count transition from a coalescent report."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "interval",
+            "lineage_count",
+            "duration",
+            "effective_population_size_estimate",
+            "observation_count",
+            "relative_error",
+            "uncertainty_flag",
+        ],
+        rows=[
+            {
+                "interval": row.interval,
+                "lineage_count": str(row.lineage_count),
+                "duration": format(row.duration, ".15g"),
+                "effective_population_size_estimate": format(
+                    row.effective_population_size_estimate,
+                    ".15g",
+                ),
+                "observation_count": str(row.observation_count),
+                "relative_error": format(row.relative_error, ".15g"),
+                "uncertainty_flag": row.uncertainty_flag,
+            }
+            for row in report.coalescent_skyline_rows
         ],
     )

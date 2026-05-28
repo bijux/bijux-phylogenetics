@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 from .contracts import (
     AlignmentSimulationReport,
+    CoalescentSkylineSummaryRow,
     CoalescentWaitingTimeSummaryRow,
     ContinuousTraitSimulationCollectionReport,
     ContinuousTraitSimulationReport,
@@ -41,6 +42,7 @@ _PUBLIC_NAME_TO_MODULE = {
     "simulate_multispecies_coalescent_gene_tree": ".trees",
     "simulate_random_tree": ".trees",
     "simulate_random_trees": ".trees",
+    "write_coalescent_skyline_table": ".trees",
     "write_coalescent_waiting_time_table": ".trees",
     "write_multispecies_coalescent_branch_table": ".trees",
     "write_multispecies_coalescent_event_table": ".trees",
@@ -79,6 +81,7 @@ _PUBLIC_NAME_TO_MODULE = {
 
 __all__ = [
     "AlignmentSimulationReport",
+    "CoalescentSkylineSummaryRow",
     "CoalescentWaitingTimeSummaryRow",
     "ContinuousTraitSimulationCollectionReport",
     "ContinuousTraitSimulationReport",
@@ -150,6 +153,7 @@ if TYPE_CHECKING:
         simulate_multispecies_coalescent_gene_tree,
         simulate_random_tree,
         simulate_random_trees,
+        write_coalescent_skyline_table,
         write_coalescent_waiting_time_table,
         write_multispecies_coalescent_branch_table,
         write_multispecies_coalescent_event_table,

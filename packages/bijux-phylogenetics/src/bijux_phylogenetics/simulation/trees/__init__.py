@@ -1,6 +1,7 @@
 """Tree simulation workflows."""
 
 from .generation import (
+    write_coalescent_skyline_table,
     simulate_birth_death_trees,
     simulate_coalescent_tree,
     simulate_coalescent_trees,
@@ -25,6 +26,7 @@ __all__ = [
     "simulate_multispecies_coalescent_gene_tree",
     "simulate_random_tree",
     "simulate_random_trees",
+    "write_coalescent_skyline_table",
     "write_coalescent_waiting_time_table",
     "write_multispecies_coalescent_branch_table",
     "write_multispecies_coalescent_event_table",
