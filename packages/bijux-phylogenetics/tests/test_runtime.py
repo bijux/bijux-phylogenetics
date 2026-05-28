@@ -4398,6 +4398,46 @@ def test_cli_simulate_coalescent_writes_envelope_ledgers(
     assert "total_branch_length\ttree\t2\t" in envelope_path.read_text(encoding="utf-8")
 
 
+def test_cli_simulate_coalescent_writes_waiting_time_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "simulated-coalescent.trees"
+    waiting_time_path = tmp_path / "coalescent-waiting-times.tsv"
+    exit_code = main(
+        [
+            "simulate",
+            "tree-coalescent",
+            "--tree-count",
+            "64",
+            "--tip-count",
+            "5",
+            "--population-size",
+            "2.5",
+            "--waiting-time-tolerance",
+            "0.2",
+            "--seed",
+            "7",
+            "--out",
+            str(output_path),
+            "--waiting-time-table-out",
+            str(waiting_time_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["waiting_time_lineage_count"] == 4
+    assert payload["metrics"]["waiting_time_within_tolerance_count"] == 4
+    assert payload["metrics"]["waiting_time_all_within_tolerance"] is True
+    assert payload["outputs"] == [str(output_path), str(waiting_time_path)]
+    assert output_path.read_text(encoding="utf-8").count(";\n") == 64
+    assert "lineage_count\tcoalescent_rate\texpected_waiting_time" in (
+        waiting_time_path.read_text(encoding="utf-8")
+    )
+
+
 def test_cli_simulate_discrete_history_writes_truth_outputs(
     tmp_path: Path, capsys
 ) -> None:
