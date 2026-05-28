@@ -70,10 +70,16 @@ from .branch_length_priors import (
 )
 from .clock_models import (
     CLOCK_RATE_MODEL_FAMILIES,
+    RELAXED_CLOCK_RATE_POLICIES,
+    RelaxedLognormalClockBranchRow,
+    RelaxedLognormalClockEvaluationReport,
+    RelaxedLognormalClockModel,
     StrictClockRateBranchRow,
     StrictClockRateModel,
     StrictClockRateModelEvaluationReport,
+    build_relaxed_lognormal_clock_model,
     build_strict_clock_rate_model,
+    evaluate_relaxed_lognormal_clock_tree_log_prior,
     evaluate_strict_clock_tree_log_prior,
 )
 from .evidence import BayesianEvidencePackageReport, build_bayesian_evidence_package
@@ -246,6 +252,10 @@ __all__ = [
     "CalibrationAuditReportBuildResult",
     "CATEGORICAL_MISSING_STATE_POLICIES",
     "CategoricalProbabilityVector",
+    "RELAXED_CLOCK_RATE_POLICIES",
+    "RelaxedLognormalClockBranchRow",
+    "RelaxedLognormalClockEvaluationReport",
+    "RelaxedLognormalClockModel",
     "BeastConvergenceReport",
     "BeastLogReport",
     "BeastLogParameterSummary",
@@ -332,6 +342,7 @@ __all__ = [
     "build_gamma_branch_length_prior",
     "build_lognormal_branch_length_prior",
     "build_categorical_probability_vector",
+    "build_relaxed_lognormal_clock_model",
     "build_strict_clock_rate_model",
     "build_constant_population_coalescent_tree_prior",
     "build_crown_conditioned_birth_death_tree_prior",
@@ -350,6 +361,7 @@ __all__ = [
     "evaluate_constant_population_coalescent_tree_log_prior",
     "evaluate_skyline_coalescent_tree_log_prior",
     "evaluate_birth_death_tree_log_prior",
+    "evaluate_relaxed_lognormal_clock_tree_log_prior",
     "evaluate_strict_clock_tree_log_prior",
     "evaluate_tree_branch_length_log_prior",
     "evaluate_tree_topology_log_prior",
