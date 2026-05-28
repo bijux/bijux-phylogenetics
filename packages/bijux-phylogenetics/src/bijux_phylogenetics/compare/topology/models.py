@@ -120,6 +120,51 @@ class DeepCoalescenceReport:
 
 
 @dataclass(slots=True)
+class DuplicationLossTransferAssociationRow:
+    gene_taxon: str
+    species_taxon: str
+
+
+@dataclass(slots=True)
+class DuplicationLossTransferEventRow:
+    gene_node: str
+    gene_node_name: str | None
+    descendant_gene_tips: list[str]
+    event_type: str
+    mapped_species_branch: str
+    mapped_descendant_species: list[str]
+    left_child_gene_node: str | None
+    right_child_gene_node: str | None
+    left_child_species_branch: str | None
+    right_child_species_branch: str | None
+    transferred_child_side: str | None
+    transfer_recipient_branch: str | None
+    loss_branches: list[str]
+    event_cost: float
+
+
+@dataclass(slots=True)
+class DuplicationLossTransferReport:
+    species_tree_path: Path
+    gene_tree_path: Path
+    taxon_map_path: Path | None
+    duplication_cost: float
+    loss_cost: float
+    transfer_cost: float
+    observed_species_taxa: list[str]
+    species_only_taxa: list[str]
+    gene_tip_count: int
+    root_mapping_branch: str
+    reconciliation_score: float
+    duplication_event_count: int
+    loss_event_count: int
+    transfer_event_count: int
+    speciation_event_count: int
+    mapping_rows: list[DuplicationLossTransferAssociationRow]
+    event_rows: list[DuplicationLossTransferEventRow]
+
+
+@dataclass(slots=True)
 class SharedTaxaPruningReport:
     left_path: Path
     right_path: Path
