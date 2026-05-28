@@ -227,6 +227,25 @@ class GeneTreeQuartetConcordanceReport:
 
 
 @dataclass(slots=True)
+class CandidateTreeQuartetScoreReport:
+    candidate_tree_path: Path
+    gene_tree_set_path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    branch_count: int
+    total_quartet_count: int
+    concordant_quartet_count: int
+    discordant_first_quartet_count: int
+    discordant_second_quartet_count: int
+    uninformative_quartet_count: int
+    informative_quartet_count: int
+    quartet_score: int
+    normalized_quartet_score: float | None
+    rows: list[GeneTreeQuartetConcordanceRow]
+
+
+@dataclass(slots=True)
 class QuartetTopologyScoreRow:
     quartet_taxa: list[str]
     first_split_taxa: list[str]
