@@ -8,6 +8,7 @@ from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.runtime.results import build_command_result
 from bijux_phylogenetics.trees import (
+    compute_clade_compatibility_graph,
     build_quartet_puzzling_consensus,
     compute_clade_frequency_table,
     compute_consensus_tree,
@@ -16,6 +17,9 @@ from bijux_phylogenetics.trees import (
     compute_strict_consensus_tree,
     extract_tree_set_clades,
     load_tree_set,
+    write_clade_compatibility_edge_table,
+    write_clade_compatibility_graph_dot,
+    write_clade_compatibility_node_table,
     write_clade_frequency_table,
     write_clade_table,
     write_consensus_tree,
@@ -70,6 +74,17 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the clade-frequency report as JSON."
     )
     _add_manifest_argument(tree_set_clades)
+
+    tree_set_compatibility_graph = tree_set_subparsers.add_parser(
+        "compatibility-graph",
+        help="Build a clade compatibility graph where nodes are informative clades and edges are compatibility or conflict relationships.",
+    )
+    tree_set_compatibility_graph.add_argument("tree_set", type=Path)
+    tree_set_compatibility_graph.add_argument("--out-dir", required=True, type=Path)
+    tree_set_compatibility_graph.add_argument(
+        "--json", action="store_true", help="Emit the compatibility graph report as JSON."
+    )
+    _add_manifest_argument(tree_set_compatibility_graph)
 
     tree_set_support_map = tree_set_subparsers.add_parser(
         "support-map",
@@ -244,6 +259,51 @@ def run_tree_set_summary_command(args: Any) -> int | None:
                         report.processing.skipped_malformed_tree_count
                     ),
                     "clade_count": len(report.clade_frequencies),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.tree_set_command == "compatibility-graph":
+        report = compute_clade_compatibility_graph(args.tree_set)
+        args.out_dir.mkdir(parents=True, exist_ok=True)
+        node_out = write_clade_compatibility_node_table(
+            args.out_dir / "clade-compatibility-nodes.tsv",
+            report,
+        )
+        edge_out = write_clade_compatibility_edge_table(
+            args.out_dir / "clade-compatibility-edges.tsv",
+            report,
+        )
+        dot_out = write_clade_compatibility_graph_dot(
+            args.out_dir / "clade-compatibility.dot",
+            report,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="tree-set",
+            inputs=[args.tree_set],
+            outputs=[node_out, edge_out, dot_out],
+        )
+        _print_result(
+            build_command_result(
+                command="tree-set",
+                inputs=[args.tree_set],
+                outputs=outputs,
+                metrics={
+                    "tree_count": report.tree_count,
+                    "runtime_seconds": report.processing.runtime_seconds,
+                    "peak_memory_bytes": report.processing.peak_memory_bytes,
+                    "skipped_malformed_tree_count": (
+                        report.processing.skipped_malformed_tree_count
+                    ),
+                    "shared_taxon_count": len(report.shared_taxa),
+                    "node_count": report.node_count,
+                    "edge_count": report.edge_count,
+                    "compatible_edge_count": report.compatible_edge_count,
+                    "conflict_edge_count": report.conflict_edge_count,
                 },
                 data=report,
             ),
