@@ -6,6 +6,7 @@ from pathlib import Path
 from ..tree_sets import (
     CladeFrequencyReport,
     ConsensusTreeReport,
+    GeneTreeQuartetConcordanceRow,
     TreeSetProcessingSummary,
     TreeSetReport,
     TreeSetWorkflowBudgetReport,
@@ -260,6 +261,50 @@ class CladeCredibilityConflictReport:
     high_credibility_clade_count: int
     conflict_count: int
     conflicts: list[CladeCredibilityConflict]
+
+
+@dataclass(frozen=True, slots=True)
+class GeneTreeConflictReferenceTree:
+    selection_method: str
+    rooted_topology_id: str
+    frequency: float
+    newick: str
+
+
+@dataclass(slots=True)
+class GeneTreeConflictQuartetSummary:
+    branch_count: int
+    total_quartet_count: int
+    concordant_quartet_count: int
+    discordant_first_quartet_count: int
+    discordant_second_quartet_count: int
+    uninformative_quartet_count: int
+    informative_quartet_count: int
+    rows: list[GeneTreeQuartetConcordanceRow]
+
+
+@dataclass(slots=True)
+class GeneTreeConflictSummaryReport:
+    path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    credibility_threshold: float
+    rogue_consensus_threshold: float
+    reference_tree: GeneTreeConflictReferenceTree
+    clade_frequencies: CladeFrequencyReport
+    quartet_concordance: GeneTreeConflictQuartetSummary
+    rogue_taxa: RogueTaxonDetectionReport
+    clade_conflicts: CladeCredibilityConflictReport
+
+
+@dataclass(slots=True)
+class GeneTreeConflictArtifactReport:
+    input_path: Path
+    out_dir: Path
+    prefix: str
+    summary_report: GeneTreeConflictSummaryReport
+    output_paths: dict[str, Path]
 
 
 @dataclass(frozen=True, slots=True)
