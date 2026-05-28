@@ -1157,8 +1157,16 @@ def test_summarize_clade_credibility_conflicts_reports_incompatible_high_frequen
     )
 
     assert report.high_credibility_clade_count == 4
-    assert report.conflict_count == 2
-    assert report.conflicts[0].combined_frequency == 1.0
+    assert report.conflict_count == 4
+    assert [
+        (row.left_clade, row.right_clade, row.combined_frequency)
+        for row in report.conflicts
+    ] == [
+        ("A|B", "A|C", 1.0),
+        ("A|B", "B|D", 1.0),
+        ("A|C", "C|D", 1.0),
+        ("B|D", "C|D", 1.0),
+    ]
 
 
 def test_summarize_uncertainty_aware_conclusions_separates_robust_uncertain_and_conflicting_clades() -> (
@@ -8645,6 +8653,51 @@ def test_cli_tree_set_quartet_score_includes_manifest(
     ]
     assert manifest_payload["input_checksums"][str(candidate_tree_path)]
     assert manifest_payload["input_checksums"][str(gene_tree_set_path)]
+
+
+def test_cli_tree_set_gene_tree_conflicts_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_dir = tmp_path / "gene-tree-conflicts"
+    manifest = tmp_path / "gene-tree-conflicts.manifest.json"
+    tree_set_path = fixture("example_tree_set_left.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "gene-tree-conflicts",
+            str(tree_set_path),
+            "--out-dir",
+            str(output_dir),
+            "--credibility-threshold",
+            "0.3",
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["conflict_count"] == 4
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "gene-tree-conflicts",
+        str(tree_set_path),
+        "--out-dir",
+        str(output_dir),
+        "--credibility-threshold",
+        "0.3",
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_set_path)]
 
 
 def test_cli_phylo_dating_least_squares_includes_manifest(
