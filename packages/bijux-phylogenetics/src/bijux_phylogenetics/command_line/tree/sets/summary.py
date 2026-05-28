@@ -9,6 +9,7 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.runtime.results import build_command_result
 from bijux_phylogenetics.trees import (
     build_quartet_puzzling_consensus,
+    compute_candidate_tree_quartet_score,
     compute_clade_compatibility_graph,
     compute_clade_frequency_table,
     compute_consensus_tree,
@@ -19,6 +20,7 @@ from bijux_phylogenetics.trees import (
     compute_strict_consensus_tree,
     extract_tree_set_clades,
     load_tree_set,
+    write_candidate_tree_quartet_score_table,
     write_clade_compatibility_edge_table,
     write_clade_compatibility_graph_dot,
     write_clade_compatibility_node_table,
@@ -146,6 +148,24 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         help="Emit the quartet-concordance report as JSON.",
     )
     _add_manifest_argument(tree_set_quartet_concordance)
+
+    tree_set_quartet_score = tree_set_subparsers.add_parser(
+        "quartet-score",
+        help="Score one candidate species tree by quartet agreement across a gene-tree set.",
+    )
+    tree_set_quartet_score.add_argument("reference_tree", type=Path)
+    tree_set_quartet_score.add_argument("tree_set", type=Path)
+    tree_set_quartet_score.add_argument(
+        "--out",
+        type=Path,
+        help="Write the candidate-tree quartet score table as TSV.",
+    )
+    tree_set_quartet_score.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the quartet-score report as JSON.",
+    )
+    _add_manifest_argument(tree_set_quartet_score)
 
     tree_set_quartet_puzzling = tree_set_subparsers.add_parser(
         "quartet-puzzling",
@@ -499,6 +519,53 @@ def run_tree_set_summary_command(args: Any) -> int | None:
                     ),
                     "uninformative_quartet_count": report.uninformative_quartet_count,
                     "informative_quartet_count": report.informative_quartet_count,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.tree_set_command == "quartet-score":
+        report = compute_candidate_tree_quartet_score(
+            args.reference_tree,
+            args.tree_set,
+        )
+        outputs: list[Path] = []
+        if args.out is not None:
+            outputs.append(write_candidate_tree_quartet_score_table(args.out, report))
+        outputs = _finalize_outputs(
+            args,
+            command="tree-set",
+            inputs=[args.reference_tree, args.tree_set],
+            outputs=outputs,
+        )
+        _print_result(
+            build_command_result(
+                command="tree-set",
+                inputs=[args.reference_tree, args.tree_set],
+                outputs=outputs,
+                metrics={
+                    "tree_count": report.tree_count,
+                    "runtime_seconds": report.processing.runtime_seconds,
+                    "peak_memory_bytes": report.processing.peak_memory_bytes,
+                    "skipped_malformed_tree_count": (
+                        report.processing.skipped_malformed_tree_count
+                    ),
+                    "shared_taxon_count": len(report.shared_taxa),
+                    "branch_count": report.branch_count,
+                    "total_quartet_count": report.total_quartet_count,
+                    "concordant_quartet_count": report.concordant_quartet_count,
+                    "discordant_first_quartet_count": (
+                        report.discordant_first_quartet_count
+                    ),
+                    "discordant_second_quartet_count": (
+                        report.discordant_second_quartet_count
+                    ),
+                    "uninformative_quartet_count": report.uninformative_quartet_count,
+                    "informative_quartet_count": report.informative_quartet_count,
+                    "quartet_score": report.quartet_score,
+                    "normalized_quartet_score": report.normalized_quartet_score,
                 },
                 data=report,
             ),
