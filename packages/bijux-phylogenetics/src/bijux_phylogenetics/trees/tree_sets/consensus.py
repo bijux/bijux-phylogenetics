@@ -39,13 +39,13 @@ def _mean(values: list[float]) -> float:
 def _build_consensus_node(
     taxa: frozenset[str],
     *,
-    majority_clades: set[frozenset[str]],
+    included_clades: set[frozenset[str]],
     clade_support: dict[frozenset[str], float],
     clade_lengths: dict[frozenset[str], float],
     terminal_lengths: dict[str, float],
     is_root: bool = False,
 ) -> TreeNode:
-    child_clades = _maximal_nested_clades(taxa, majority_clades)
+    child_clades = _maximal_nested_clades(taxa, included_clades)
     covered: set[str] = set()
     children: list[TreeNode] = []
     for child_clade in child_clades:
@@ -53,7 +53,7 @@ def _build_consensus_node(
         children.append(
             _build_consensus_node(
                 child_clade,
-                majority_clades=majority_clades,
+                included_clades=included_clades,
                 clade_support=clade_support,
                 clade_lengths=clade_lengths,
                 terminal_lengths=terminal_lengths,
@@ -71,13 +71,35 @@ def _build_consensus_node(
     )
 
 
+def _build_consensus_tree_from_selected_clades(
+    *,
+    shared_taxa: list[str],
+    source_format: str,
+    included_clades: set[frozenset[str]],
+    clade_support: dict[frozenset[str], float],
+    clade_lengths: dict[frozenset[str], float],
+    terminal_lengths: dict[str, float],
+) -> PhyloTree:
+    return PhyloTree(
+        root=_build_consensus_node(
+            frozenset(shared_taxa),
+            included_clades=included_clades,
+            clade_support=clade_support,
+            clade_lengths=clade_lengths,
+            terminal_lengths=terminal_lengths,
+            is_root=True,
+        ),
+        source_format=source_format,
+        rooted=True,
+    )
+
+
 def _build_consensus_tree_with_threshold(
     analysis: _TreeSetAnalysis,
     *,
     threshold: float,
 ) -> tuple[PhyloTree, ConsensusTreeReport]:
     shared_taxa = _require_exact_taxa(analysis)
-    universe = frozenset(shared_taxa)
     counts = analysis.clade_counts or {}
     majority_clades = {
         clade
@@ -98,17 +120,13 @@ def _build_consensus_tree_with_threshold(
         for taxon, lengths in analysis.terminal_lengths.items()
         if lengths
     }
-    tree = PhyloTree(
-        root=_build_consensus_node(
-            universe,
-            majority_clades=majority_clades,
-            clade_support=clade_support,
-            clade_lengths=clade_lengths,
-            terminal_lengths=terminal_length_means,
-            is_root=True,
-        ),
+    tree = _build_consensus_tree_from_selected_clades(
+        shared_taxa=shared_taxa,
         source_format=analysis.source_format,
-        rooted=True,
+        included_clades=majority_clades,
+        clade_support=clade_support,
+        clade_lengths=clade_lengths,
+        terminal_lengths=terminal_length_means,
     )
     if math.isclose(threshold, 1.0):
         consensus_method = "strict"
@@ -166,17 +184,13 @@ def _build_consensus_tree_with_threshold_from_trees(
         for taxon, lengths in terminal_lengths.items()
         if lengths
     }
-    tree = PhyloTree(
-        root=_build_consensus_node(
-            frozenset(shared_taxa),
-            majority_clades=majority_clades,
-            clade_support=clade_support,
-            clade_lengths=clade_lengths,
-            terminal_lengths=terminal_length_means,
-            is_root=True,
-        ),
+    tree = _build_consensus_tree_from_selected_clades(
+        shared_taxa=shared_taxa,
         source_format=trees[0].source_format,
-        rooted=True,
+        included_clades=majority_clades,
+        clade_support=clade_support,
+        clade_lengths=clade_lengths,
+        terminal_lengths=terminal_length_means,
     )
     return tree, len(majority_clades)
 
