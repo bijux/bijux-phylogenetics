@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import bijux_phylogenetics.parsimony as parsimony_api
+import pytest
 from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.parsimony import (
     FitchCharacterMatrix,
@@ -12,6 +13,7 @@ from bijux_phylogenetics.parsimony import (
     compute_parsimony_bremer_support,
     write_parsimony_bremer_support_artifacts,
 )
+from bijux_phylogenetics.runtime.errors import ParsimonyAnalysisError
 
 FIXTURES = Path(__file__).parent / "fixtures" / "parsimony"
 
@@ -117,3 +119,38 @@ def test_write_parsimony_bremer_support_artifacts_materializes_outputs(
     assert payload["optimal_score"] == 2.0
     assert payload["bremer_rows"][0]["branch_id"] == "B|D"
     assert payload["bremer_rows"][0]["decay_index"] == 1.0
+
+
+def test_parsimony_bremer_support_keeps_zero_decay_when_excluding_tree_is_still_optimal(
+) -> None:
+    report = compute_parsimony_bremer_support(
+        loads_newick("(((A,B),C),D);"),
+        fixture("bootstrap_matrix.tsv"),
+        method="fitch",
+    )
+
+    assert report.reference_tree_score == 5.0
+    assert report.optimal_score == 5.0
+    assert report.optimal_tree_count == 5
+    assert [
+        (
+            row.branch_id,
+            row.shortest_lacking_score,
+            row.decay_index,
+            row.shortest_lacking_tree_count,
+            row.shortest_lacking_tree_newick,
+        )
+        for row in report.bremer_rows
+    ] == [
+        ("A|B", 5.0, 0.0, 2, "((A,(C,D)),B);"),
+        ("A|B|C", 5.0, 0.0, 4, "(((A,B),D),C);"),
+    ]
+
+
+def test_parsimony_bremer_support_rejects_nonbinary_reference_tree() -> None:
+    with pytest.raises(ParsimonyAnalysisError, match="rooted binary tree"):
+        compute_parsimony_bremer_support(
+            loads_newick("(A,B,C,D);"),
+            fixture("bootstrap_matrix.tsv"),
+            method="fitch",
+        )
