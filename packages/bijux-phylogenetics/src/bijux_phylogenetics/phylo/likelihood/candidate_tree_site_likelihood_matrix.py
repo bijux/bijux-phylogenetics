@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
+import json
 from pathlib import Path
 
 import numpy
@@ -13,6 +13,7 @@ from bijux_phylogenetics.io.newick import (
     write_newick_tree_set,
 )
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.dna import normalize_unambiguous_dna_records
 from bijux_phylogenetics.phylo.likelihood.models import (
     CandidateTreeSiteLikelihoodMatrixReport,
     CandidateTreeSiteLikelihoodRow,
@@ -20,8 +21,6 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 )
 from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
     resolve_selected_nucleotide_likelihood_specification,
-)
-from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
     validate_selected_nucleotide_likelihood_model,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
@@ -30,10 +29,8 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.likelihood.site_log_likelihoods import (
     evaluate_selected_dna_site_log_likelihoods_from_patterns,
 )
-from bijux_phylogenetics.phylo.likelihood.dna import normalize_unambiguous_dna_records
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.runtime.errors import PhylogeneticsError
-from bijux_phylogenetics.runtime.errors import TreeParseError
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError, TreeParseError
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,6 +57,9 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
         | tuple[float, ...]
         | None
     ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> CandidateTreeSiteLikelihoodMatrixReport:
     """Evaluate one shared nucleotide likelihood model across multiple candidate trees."""
     resolved_tree_records, resolved_tree_set_path = resolve_candidate_tree_records(trees)
@@ -79,6 +79,9 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
         kappa=kappa,
         base_frequencies=base_frequencies,
         exchangeabilities=exchangeabilities,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
 
     candidate_trees: list[CandidateTreeSiteLikelihoodSummary] = []
@@ -155,6 +158,9 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix_from_alignment(
         | tuple[float, ...]
         | None
     ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> CandidateTreeSiteLikelihoodMatrixReport:
     """Evaluate a candidate-tree site-likelihood matrix from tree-set and alignment paths."""
     return evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
@@ -164,6 +170,9 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix_from_alignment(
         kappa=kappa,
         base_frequencies=base_frequencies,
         exchangeabilities=exchangeabilities,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
 
 

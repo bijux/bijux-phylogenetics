@@ -19,8 +19,6 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 )
 from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
     resolve_selected_nucleotide_likelihood_specification,
-)
-from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
     validate_selected_nucleotide_likelihood_model,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
@@ -56,6 +54,9 @@ def evaluate_nucleotide_marginal_ancestral_probabilities(
         | tuple[float, ...]
         | None
     ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> MarginalAncestralSequenceProbabilityReport:
     """Evaluate internal-node marginal ancestral state probabilities per site."""
     normalized_model_name = validate_nucleotide_marginal_ancestral_probability_model(
@@ -75,6 +76,9 @@ def evaluate_nucleotide_marginal_ancestral_probabilities(
         kappa=kappa,
         base_frequencies=base_frequencies,
         exchangeabilities=exchangeabilities,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
     return _evaluate_selected_nucleotide_marginal_probabilities_from_patterns(
         tree,
@@ -105,6 +109,9 @@ def evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment(
         | tuple[float, ...]
         | None
     ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> MarginalAncestralSequenceProbabilityReport:
     """Evaluate one fixed-topology nucleotide posterior report from file paths."""
     return evaluate_nucleotide_marginal_ancestral_probabilities(
@@ -114,6 +121,9 @@ def evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment(
         kappa=kappa,
         base_frequencies=base_frequencies,
         exchangeabilities=exchangeabilities,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
 
 
@@ -139,11 +149,12 @@ def _evaluate_selected_nucleotide_marginal_probabilities_from_patterns(
         states_by_taxon = dict(
             zip(compressed_patterns.taxon_order, pattern.states, strict=True)
         )
+        current_states_by_taxon = states_by_taxon
         posterior_pass = compute_marginal_state_posteriors(
             tree,
             state_count=len(DNA_STATE_ORDER),
-            leaf_likelihood=lambda node: one_hot_dna_leaf_vector(
-                states_by_taxon,
+            leaf_likelihood=lambda node, current_states_by_taxon=current_states_by_taxon: one_hot_dna_leaf_vector(
+                current_states_by_taxon,
                 model_name=model_name,
                 node_name=node.name,
             ),

@@ -17,8 +17,6 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 )
 from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
     resolve_selected_nucleotide_likelihood_specification,
-)
-from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
     validate_selected_nucleotide_likelihood_model,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
@@ -54,6 +52,9 @@ def evaluate_nucleotide_site_log_likelihoods(
         | tuple[float, ...]
         | None
     ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> FixedTopologySiteLogLikelihoodReport:
     """Evaluate one fixed-topology nucleotide likelihood with expanded site rows."""
     normalized_model_name = validate_nucleotide_site_log_likelihood_model(model_name)
@@ -69,6 +70,9 @@ def evaluate_nucleotide_site_log_likelihoods(
         kappa=kappa,
         base_frequencies=base_frequencies,
         exchangeabilities=exchangeabilities,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
     return evaluate_selected_dna_site_log_likelihoods_from_patterns(
         tree,
@@ -99,6 +103,9 @@ def evaluate_nucleotide_site_log_likelihoods_from_alignment(
         | tuple[float, ...]
         | None
     ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> FixedTopologySiteLogLikelihoodReport:
     """Evaluate one fixed-topology nucleotide likelihood from paths with site rows."""
     return evaluate_nucleotide_site_log_likelihoods(
@@ -108,6 +115,9 @@ def evaluate_nucleotide_site_log_likelihoods_from_alignment(
         kappa=kappa,
         base_frequencies=base_frequencies,
         exchangeabilities=exchangeabilities,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
 
 
