@@ -13,6 +13,10 @@ from bijux_phylogenetics.bayesian import (
     CATEGORICAL_MISSING_STATE_POLICIES,
     CLOCK_RATE_MODEL_FAMILIES,
     COALESCENT_TREE_PRIOR_FAMILIES,
+    CONTINUOUS_TRAIT_PRIOR_MODES,
+    CONTINUOUS_TRAIT_PRIOR_TARGETS,
+    CONTINUOUS_TRAIT_PROBABILITY_PRIOR_FAMILIES,
+    CONTINUOUS_TRAIT_SCALAR_PRIOR_FAMILIES,
     CategoricalProbabilityVector,
     BeastAnalysisXmlReport,
     BeastCalibration,
@@ -21,6 +25,11 @@ from bijux_phylogenetics.bayesian import (
     CalibrationPriorEvaluationReport,
     CalibrationPriorRow,
     ConstantPopulationCoalescentPriorModel,
+    ContinuousTraitModelPriorBundle,
+    ContinuousTraitModelPriorEvaluationReport,
+    ContinuousTraitModelPriorRow,
+    ContinuousTraitProbabilityPriorModel,
+    ContinuousTraitScalarPriorModel,
     DISCRETE_TRAIT_RATE_PRIOR_FAMILIES,
     DISCRETE_TRAIT_RATE_PRIOR_MODELS,
     DiscreteTraitRatePriorEvaluationReport,
@@ -51,18 +60,25 @@ from bijux_phylogenetics.bayesian import (
     assess_mrbayes_burnin_sensitivity,
     assess_mrbayes_convergence,
     build_bayesian_evidence_package,
+    build_beta_continuous_trait_probability_prior,
     build_beta_probability_substitution_parameter_prior,
     build_categorical_probability_vector,
+    build_continuous_trait_model_prior_bundle,
     build_dirichlet_simplex_substitution_parameter_prior,
     build_exponential_discrete_trait_rate_prior,
+    build_exponential_continuous_trait_scalar_prior,
     build_exponential_positive_substitution_parameter_prior,
+    build_fixed_continuous_trait_probability_prior,
+    build_fixed_continuous_trait_scalar_prior,
     build_fixed_positive_substitution_parameter_prior,
     build_fixed_probability_substitution_parameter_prior,
     build_fixed_simplex_substitution_parameter_prior,
     build_gamma_discrete_trait_rate_prior,
+    build_gamma_continuous_trait_scalar_prior,
     build_gamma_positive_substitution_parameter_prior,
     load_calibration_prior_definitions,
     build_lognormal_discrete_trait_rate_prior,
+    build_lognormal_continuous_trait_scalar_prior,
     build_lognormal_positive_substitution_parameter_prior,
     build_constant_population_coalescent_tree_prior,
     build_crown_conditioned_birth_death_tree_prior,
@@ -80,6 +96,9 @@ from bijux_phylogenetics.bayesian import (
     evaluate_constant_population_coalescent_tree_log_prior,
     evaluate_calibration_tree_log_prior,
     evaluate_birth_death_tree_log_prior,
+    evaluate_continuous_trait_model_log_prior,
+    evaluate_continuous_trait_probability_log_prior,
+    evaluate_continuous_trait_scalar_log_prior,
     evaluate_discrete_trait_rate_log_prior,
     evaluate_discrete_trait_rate_value_log_prior,
     evaluate_local_clock_tree_log_prior,
@@ -885,6 +904,19 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is COALESCENT_TREE_PRIOR_FAMILIES
     )
     assert (
+        bayesian_api.CONTINUOUS_TRAIT_SCALAR_PRIOR_FAMILIES
+        is CONTINUOUS_TRAIT_SCALAR_PRIOR_FAMILIES
+    )
+    assert (
+        bayesian_api.CONTINUOUS_TRAIT_PROBABILITY_PRIOR_FAMILIES
+        is CONTINUOUS_TRAIT_PROBABILITY_PRIOR_FAMILIES
+    )
+    assert bayesian_api.CONTINUOUS_TRAIT_PRIOR_MODES is CONTINUOUS_TRAIT_PRIOR_MODES
+    assert (
+        bayesian_api.CONTINUOUS_TRAIT_PRIOR_TARGETS
+        is CONTINUOUS_TRAIT_PRIOR_TARGETS
+    )
+    assert (
         bayesian_api.DISCRETE_TRAIT_RATE_PRIOR_FAMILIES
         is DISCRETE_TRAIT_RATE_PRIOR_FAMILIES
     )
@@ -909,6 +941,23 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.ConstantPopulationCoalescentPriorModel
         is ConstantPopulationCoalescentPriorModel
     )
+    assert (
+        bayesian_api.ContinuousTraitScalarPriorModel
+        is ContinuousTraitScalarPriorModel
+    )
+    assert (
+        bayesian_api.ContinuousTraitProbabilityPriorModel
+        is ContinuousTraitProbabilityPriorModel
+    )
+    assert (
+        bayesian_api.ContinuousTraitModelPriorBundle
+        is ContinuousTraitModelPriorBundle
+    )
+    assert (
+        bayesian_api.ContinuousTraitModelPriorEvaluationReport
+        is ContinuousTraitModelPriorEvaluationReport
+    )
+    assert bayesian_api.ContinuousTraitModelPriorRow is ContinuousTraitModelPriorRow
     assert bayesian_api.DiscreteTraitRatePriorModel is DiscreteTraitRatePriorModel
     assert (
         bayesian_api.DiscreteTraitRatePriorEvaluationReport
@@ -947,12 +996,20 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.build_bayesian_evidence_package is build_bayesian_evidence_package
     )
     assert (
+        bayesian_api.build_beta_continuous_trait_probability_prior
+        is build_beta_continuous_trait_probability_prior
+    )
+    assert (
         bayesian_api.build_beta_probability_substitution_parameter_prior
         is build_beta_probability_substitution_parameter_prior
     )
     assert (
         bayesian_api.build_categorical_probability_vector
         is build_categorical_probability_vector
+    )
+    assert (
+        bayesian_api.build_continuous_trait_model_prior_bundle
+        is build_continuous_trait_model_prior_bundle
     )
     assert (
         bayesian_api.build_dirichlet_simplex_substitution_parameter_prior
@@ -963,8 +1020,20 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_exponential_discrete_trait_rate_prior
     )
     assert (
+        bayesian_api.build_exponential_continuous_trait_scalar_prior
+        is build_exponential_continuous_trait_scalar_prior
+    )
+    assert (
         bayesian_api.build_exponential_positive_substitution_parameter_prior
         is build_exponential_positive_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_fixed_continuous_trait_probability_prior
+        is build_fixed_continuous_trait_probability_prior
+    )
+    assert (
+        bayesian_api.build_fixed_continuous_trait_scalar_prior
+        is build_fixed_continuous_trait_scalar_prior
     )
     assert (
         bayesian_api.build_fixed_positive_substitution_parameter_prior
@@ -983,6 +1052,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_gamma_discrete_trait_rate_prior
     )
     assert (
+        bayesian_api.build_gamma_continuous_trait_scalar_prior
+        is build_gamma_continuous_trait_scalar_prior
+    )
+    assert (
         bayesian_api.build_gamma_positive_substitution_parameter_prior
         is build_gamma_positive_substitution_parameter_prior
     )
@@ -993,6 +1066,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_lognormal_discrete_trait_rate_prior
         is build_lognormal_discrete_trait_rate_prior
+    )
+    assert (
+        bayesian_api.build_lognormal_continuous_trait_scalar_prior
+        is build_lognormal_continuous_trait_scalar_prior
     )
     assert (
         bayesian_api.build_lognormal_positive_substitution_parameter_prior
@@ -1049,6 +1126,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.evaluate_calibration_tree_log_prior
         is evaluate_calibration_tree_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_continuous_trait_model_log_prior
+        is evaluate_continuous_trait_model_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_continuous_trait_probability_log_prior
+        is evaluate_continuous_trait_probability_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_continuous_trait_scalar_log_prior
+        is evaluate_continuous_trait_scalar_log_prior
     )
     assert (
         bayesian_api.evaluate_discrete_trait_rate_log_prior
