@@ -56,6 +56,12 @@ from .candidate_tree_site_likelihood_matrix import (
 from .candidate_tree_site_likelihood_matrix import (
     write_candidate_tree_site_likelihood_matrix_table as write_candidate_tree_site_likelihood_matrix_table,
 )
+from .ctmc import (
+    ValidatedCtmcRateMatrix as ValidatedCtmcRateMatrix,
+)
+from .ctmc import (
+    validate_ctmc_rate_matrix as validate_ctmc_rate_matrix,
+)
 from .empirical import (
     evaluate_empirical_protein_tree_likelihood as evaluate_empirical_protein_tree_likelihood,
 )
@@ -783,7 +789,9 @@ __all__ = [
     "sum_alignment_site_log_likelihoods",
     "sum_compressed_site_pattern_log_likelihoods",
     "transition_probability_matrix",
+    "ValidatedCtmcRateMatrix",
     "validate_approximate_topology_test_replicate_count",
+    "validate_ctmc_rate_matrix",
     "validate_declared_nucleotide_likelihood_ratio_pair",
     "validate_likelihood_multi_start_evaluation_budget",
     "validate_likelihood_multi_start_method",
