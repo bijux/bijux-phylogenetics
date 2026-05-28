@@ -8331,6 +8331,55 @@ def test_cli_phylo_dating_penalized_likelihood_cross_validation_includes_manifes
     assert manifest_payload["input_checksums"][str(calibration_path)]
 
 
+def test_cli_phylo_dating_calibration_constraints_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "calibration-constraints"
+    manifest = tmp_path / "calibration-constraints.manifest.json"
+    tree_path = fixture(
+        "penalized_likelihood_cross_validation_substitution_tree_5_taxa.nwk"
+    )
+    calibration_path = fixture("dating_calibration_constraints_contradictory_5_taxa.tsv")
+
+    exit_code = main(
+        [
+            "phylo",
+            "dating",
+            "calibration-constraints",
+            str(tree_path),
+            str(calibration_path),
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 5
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "dating",
+        "calibration-constraints",
+        str(tree_path),
+        str(calibration_path),
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(calibration_path)]
+
+
 def test_cli_validate_writes_run_manifest(tmp_path: Path, capsys) -> None:
     manifest = tmp_path / "validate.manifest.json"
     exit_code = main(
