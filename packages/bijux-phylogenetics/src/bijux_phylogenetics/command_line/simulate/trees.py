@@ -11,6 +11,7 @@ from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
     simulate_coalescent_trees,
     simulate_random_trees,
+    write_coalescent_waiting_time_table,
     write_tree_set,
     write_tree_simulation_envelope_table,
     write_tree_simulation_record_table,
@@ -57,10 +58,12 @@ def add_simulate_tree_commands(simulate_subparsers: Any) -> None:
     simulate_coalescent.add_argument("--tree-count", type=int, default=1)
     simulate_coalescent.add_argument("--tip-count", type=int, required=True)
     simulate_coalescent.add_argument("--population-size", type=float, default=1.0)
+    simulate_coalescent.add_argument("--waiting-time-tolerance", type=float, default=0.2)
     simulate_coalescent.add_argument("--seed", type=int, default=1)
     simulate_coalescent.add_argument("--out", required=True, type=Path)
     simulate_coalescent.add_argument("--record-table-out", type=Path)
     simulate_coalescent.add_argument("--envelope-table-out", type=Path)
+    simulate_coalescent.add_argument("--waiting-time-table-out", type=Path)
     simulate_coalescent.add_argument(
         "--json", action="store_true", help="Emit the simulation report as JSON."
     )
@@ -98,9 +101,30 @@ def run_simulate_tree_command(args: Any) -> int | None:
         tree_count=args.tree_count,
         tip_count=args.tip_count,
         population_size=args.population_size,
+        waiting_time_tolerance=args.waiting_time_tolerance,
         seed=args.seed,
     )
-    _print_tree_result(args, trees=trees, report=report)
+    _print_tree_result(
+        args,
+        trees=trees,
+        report=report,
+        extra_outputs=(
+            []
+            if args.waiting_time_table_out is None
+            else [write_coalescent_waiting_time_table(args.waiting_time_table_out, report)]
+        ),
+        extra_metrics={
+            "waiting_time_lineage_count": len(report.coalescent_waiting_time_rows),
+            "waiting_time_within_tolerance_count": sum(
+                1
+                for row in report.coalescent_waiting_time_rows
+                if row.within_tolerance
+            ),
+            "waiting_time_all_within_tolerance": all(
+                row.within_tolerance for row in report.coalescent_waiting_time_rows
+            ),
+        },
+    )
     return 0
 
 
@@ -109,6 +133,7 @@ def _print_tree_result(
     *,
     trees: list[Any],
     report: Any,
+    extra_outputs: list[Path] | None = None,
     extra_metrics: dict[str, Any] | None = None,
 ) -> None:
     output_path = write_tree_set(args.out, trees)
@@ -121,6 +146,7 @@ def _print_tree_result(
         outputs_to_finalize.append(
             write_tree_simulation_envelope_table(args.envelope_table_out, report)
         )
+    outputs_to_finalize.extend(extra_outputs or [])
     outputs = _finalize_outputs(
         args,
         command="simulate",
