@@ -17,7 +17,9 @@ from bijux_phylogenetics.runtime.errors import (
     UnrootedTreeError,
 )
 
+TIME_TREE_PRIOR_CONDITIONING_MODES = ("fixed-tip-count-and-crown-age",)
 YULE_TREE_PRIOR_FAMILIES = ("crown-conditioned-yule",)
+BIRTH_DEATH_TREE_PRIOR_FAMILIES = ("crown-conditioned-birth-death",)
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,6 +60,48 @@ class YuleTreePriorEvaluationReport:
     interval_rows: list[YuleTreePriorIntervalRow]
 
 
+@dataclass(frozen=True, slots=True)
+class BirthDeathTreePriorModel:
+    """One validated reconstructed birth-death prior parameterization."""
+
+    family: str
+    speciation_rate: float
+    extinction_rate: float
+    sampling_fraction: float
+
+
+@dataclass(frozen=True, slots=True)
+class BirthDeathTreePriorBranchingRow:
+    """One post-root branching-time contribution under the birth-death prior."""
+
+    branching_event_index: int
+    branching_age: float
+    log_branching_probability: float
+    log_crown_normalization: float
+    log_contribution: float
+
+
+@dataclass(frozen=True, slots=True)
+class BirthDeathTreePriorEvaluationReport:
+    """One rooted ultrametric birth-death prior evaluation report."""
+
+    family: str
+    conditioning_mode: str
+    speciation_rate: float
+    extinction_rate: float
+    sampling_fraction: float
+    transformed_birth_rate: float
+    transformed_death_rate: float
+    tree_newick: str
+    tip_count: int
+    internal_node_count: int
+    post_root_speciation_count: int
+    root_age: float
+    ultrametric_tolerance: float
+    log_prior: float
+    branching_rows: list[BirthDeathTreePriorBranchingRow]
+
+
 def build_crown_conditioned_yule_tree_prior(
     speciation_rate: float,
 ) -> YuleTreePriorModel:
@@ -74,6 +118,39 @@ def build_crown_conditioned_yule_tree_prior(
     )
 
 
+def build_crown_conditioned_birth_death_tree_prior(
+    *,
+    speciation_rate: float,
+    extinction_rate: float,
+    sampling_fraction: float,
+) -> BirthDeathTreePriorModel:
+    """Build one reconstructed birth-death prior conditioned on crown age and tip count."""
+    if not math.isfinite(speciation_rate) or speciation_rate <= 0.0:
+        raise PhylogeneticsError(
+            "birth-death tree prior requires a strictly positive finite speciation rate",
+            code="birth_death_tree_prior_invalid_speciation_rate",
+            details={"speciation_rate": speciation_rate},
+        )
+    if not math.isfinite(extinction_rate) or extinction_rate < 0.0:
+        raise PhylogeneticsError(
+            "birth-death tree prior requires a non-negative finite extinction rate",
+            code="birth_death_tree_prior_invalid_extinction_rate",
+            details={"extinction_rate": extinction_rate},
+        )
+    if not math.isfinite(sampling_fraction) or not (0.0 < sampling_fraction <= 1.0):
+        raise PhylogeneticsError(
+            "birth-death tree prior requires sampling_fraction in (0, 1]",
+            code="birth_death_tree_prior_invalid_sampling_fraction",
+            details={"sampling_fraction": sampling_fraction},
+        )
+    return BirthDeathTreePriorModel(
+        family="crown-conditioned-birth-death",
+        speciation_rate=speciation_rate,
+        extinction_rate=extinction_rate,
+        sampling_fraction=sampling_fraction,
+    )
+
+
 def evaluate_yule_tree_log_prior(
     tree: PhyloTree,
     prior_model: YuleTreePriorModel,
@@ -81,7 +158,11 @@ def evaluate_yule_tree_log_prior(
     ultrametric_tolerance: float = APE_ULTRAMETRIC_TOLERANCE,
 ) -> YuleTreePriorEvaluationReport:
     """Evaluate one rooted ultrametric crown tree under a pure-birth Yule prior."""
-    _validate_yule_tree(tree)
+    _validate_time_tree_prior_tree(
+        tree,
+        prior_name="Yule tree prior",
+        code_prefix="yule_tree_prior",
+    )
     tip_depth_by_label = _tip_depth_by_label(tree)
     ultrametric_summary = summarize_ultrametric_tip_depths(
         tip_depth_by_label,
@@ -122,30 +203,105 @@ def evaluate_yule_tree_log_prior(
     )
 
 
-def _validate_yule_tree(tree: PhyloTree) -> None:
+def evaluate_birth_death_tree_log_prior(
+    tree: PhyloTree,
+    prior_model: BirthDeathTreePriorModel,
+    *,
+    ultrametric_tolerance: float = APE_ULTRAMETRIC_TOLERANCE,
+) -> BirthDeathTreePriorEvaluationReport:
+    """Evaluate one rooted ultrametric reconstructed tree under a birth-death prior."""
+    _validate_time_tree_prior_tree(
+        tree,
+        prior_name="birth-death tree prior",
+        code_prefix="birth_death_tree_prior",
+    )
+    tip_depth_by_label = _tip_depth_by_label(tree)
+    ultrametric_summary = summarize_ultrametric_tip_depths(
+        tip_depth_by_label,
+        tolerance=ultrametric_tolerance,
+    )
+    if not ultrametric_summary.ultrametric:
+        raise NonUltrametricTreeError(
+            "birth-death tree prior requires an ultrametric tree",
+            code="birth_death_tree_prior_requires_ultrametric_tree",
+            details={
+                "minimum_tip_depth": ultrametric_summary.minimum_tip_depth,
+                "maximum_tip_depth": ultrametric_summary.maximum_tip_depth,
+                "max_tip_depth_deviation": ultrametric_summary.max_tip_depth_deviation,
+                "offending_taxa": list(ultrametric_summary.offending_taxa),
+                "tolerance": ultrametric_summary.tolerance,
+            },
+        )
+    root_age = ultrametric_summary.root_age
+    branching_rows = _build_birth_death_branching_rows(
+        tree,
+        speciation_rate=prior_model.speciation_rate,
+        extinction_rate=prior_model.extinction_rate,
+        sampling_fraction=prior_model.sampling_fraction,
+        crown_age=root_age,
+    )
+    log_prior = (-math.log(tree.tip_count - 1)) + sum(
+        row.log_contribution for row in branching_rows
+    )
+    return BirthDeathTreePriorEvaluationReport(
+        family=prior_model.family,
+        conditioning_mode="fixed-tip-count-and-crown-age",
+        speciation_rate=prior_model.speciation_rate,
+        extinction_rate=prior_model.extinction_rate,
+        sampling_fraction=prior_model.sampling_fraction,
+        transformed_birth_rate=float(
+            format(
+                prior_model.speciation_rate * prior_model.sampling_fraction,
+                ".15g",
+            )
+        ),
+        transformed_death_rate=float(
+            format(
+                prior_model.extinction_rate
+                - prior_model.speciation_rate * (1.0 - prior_model.sampling_fraction),
+                ".15g",
+            )
+        ),
+        tree_newick=tree.to_newick(),
+        tip_count=tree.tip_count,
+        internal_node_count=tree.internal_node_count,
+        post_root_speciation_count=max(tree.internal_node_count - 1, 0),
+        root_age=float(format(root_age, ".15g")),
+        ultrametric_tolerance=ultrametric_tolerance,
+        log_prior=float(format(log_prior, ".15g")),
+        branching_rows=branching_rows,
+    )
+
+
+def _validate_time_tree_prior_tree(
+    tree: PhyloTree,
+    *,
+    prior_name: str,
+    code_prefix: str,
+) -> None:
     if not _tree_is_rooted(tree):
         raise UnrootedTreeError(
-            "Yule tree prior requires a rooted tree",
-            code="yule_tree_prior_requires_rooted_tree",
+            f"{prior_name} requires a rooted tree",
+            code=f"{code_prefix}_requires_rooted_tree",
         )
     if tree.tip_count < 2:
         raise PhylogeneticsError(
-            "Yule tree prior requires at least two tips",
-            code="yule_tree_prior_requires_two_or_more_tips",
+            f"{prior_name} requires at least two tips",
+            code=f"{code_prefix}_requires_two_or_more_tips",
         )
     for _parent, child in tree.iter_edges():
         if child.branch_length is None:
             raise InvalidBranchLengthError(
-                "Yule tree prior requires complete branch lengths"
+                f"{prior_name} requires complete branch lengths"
             )
         if child.branch_length < 0.0:
             raise InvalidBranchLengthError(
-                "Yule tree prior requires non-negative branch lengths"
+                f"{prior_name} requires non-negative branch lengths"
             )
     if not _tree_is_strictly_bifurcating(tree):
         raise PhylogeneticsError(
-            "Yule tree prior requires a strictly bifurcating tree",
-            code="yule_tree_prior_requires_strictly_bifurcating_tree",
+            f"{prior_name} requires a strictly bifurcating tree",
+            code=f"{code_prefix}_requires_strictly_bifurcating_tree",
         )
 
 
@@ -185,19 +341,23 @@ def _node_depth_lookup(tree: PhyloTree) -> dict[str, float]:
     return depths
 
 
+def _branching_ages_excluding_root(tree: PhyloTree, *, root_age: float) -> list[float]:
+    internal_nodes = build_ape_internal_node_map(tree)
+    node_depths = _node_depth_lookup(tree)
+    return [
+        float(format(root_age - node_depths[node.node_id or ""], ".15g"))
+        for node in internal_nodes.values()
+        if node is not tree.root
+    ]
+
+
 def _build_yule_interval_rows(
     tree: PhyloTree,
     *,
     speciation_rate: float,
     root_age: float,
 ) -> list[YuleTreePriorIntervalRow]:
-    internal_nodes = build_ape_internal_node_map(tree)
-    node_depths = _node_depth_lookup(tree)
-    branching_ages = [
-        float(format(root_age - node_depths[node.node_id or ""], ".15g"))
-        for node in internal_nodes.values()
-        if node is not tree.root
-    ]
+    branching_ages = _branching_ages_excluding_root(tree, root_age=root_age)
     events_by_age = Counter(branching_ages)
     younger_boundaries = sorted(events_by_age, reverse=True) + [0.0]
     older_boundary = float(format(root_age, ".15g"))
@@ -226,3 +386,138 @@ def _build_yule_interval_rows(
         lineage_count += event_count
         older_boundary = younger_boundary
     return rows
+
+
+def _build_birth_death_branching_rows(
+    tree: PhyloTree,
+    *,
+    speciation_rate: float,
+    extinction_rate: float,
+    sampling_fraction: float,
+    crown_age: float,
+) -> list[BirthDeathTreePriorBranchingRow]:
+    crown_normalization = _birth_death_q(
+        crown_age,
+        speciation_rate=speciation_rate,
+        extinction_rate=extinction_rate,
+        sampling_fraction=sampling_fraction,
+    )
+    if crown_normalization <= 0.0:
+        raise PhylogeneticsError(
+            "birth-death tree prior encountered a non-positive crown normalization term",
+            code="birth_death_tree_prior_invalid_crown_normalization",
+            details={
+                "crown_age": crown_age,
+                "speciation_rate": speciation_rate,
+                "extinction_rate": extinction_rate,
+                "sampling_fraction": sampling_fraction,
+                "crown_normalization": crown_normalization,
+            },
+        )
+    branching_ages = sorted(
+        _branching_ages_excluding_root(tree, root_age=crown_age),
+        reverse=True,
+    )
+    rows: list[BirthDeathTreePriorBranchingRow] = []
+    log_crown_normalization = math.log(crown_normalization)
+    for index, branching_age in enumerate(branching_ages, start=1):
+        branching_probability = _birth_death_p1(
+            branching_age,
+            speciation_rate=speciation_rate,
+            extinction_rate=extinction_rate,
+            sampling_fraction=sampling_fraction,
+        )
+        if branching_probability <= 0.0:
+            raise PhylogeneticsError(
+                "birth-death tree prior encountered a non-positive branching probability term",
+                code="birth_death_tree_prior_invalid_branching_probability",
+                details={
+                    "branching_age": branching_age,
+                    "speciation_rate": speciation_rate,
+                    "extinction_rate": extinction_rate,
+                    "sampling_fraction": sampling_fraction,
+                    "branching_probability": branching_probability,
+                },
+            )
+        log_branching_probability = math.log(branching_probability)
+        rows.append(
+            BirthDeathTreePriorBranchingRow(
+                branching_event_index=index,
+                branching_age=float(format(branching_age, ".15g")),
+                log_branching_probability=float(
+                    format(log_branching_probability, ".15g")
+                ),
+                log_crown_normalization=float(
+                    format(log_crown_normalization, ".15g")
+                ),
+                log_contribution=float(
+                    format(log_branching_probability - log_crown_normalization, ".15g")
+                ),
+            )
+        )
+    return rows
+
+
+def _birth_death_p1(
+    time_before_present: float,
+    *,
+    speciation_rate: float,
+    extinction_rate: float,
+    sampling_fraction: float,
+) -> float:
+    if math.isclose(speciation_rate, extinction_rate, abs_tol=1e-15):
+        return sampling_fraction / (
+            1.0 + (sampling_fraction * speciation_rate * time_before_present)
+        ) ** 2
+    denominator = _birth_death_denominator(
+        time_before_present,
+        speciation_rate=speciation_rate,
+        extinction_rate=extinction_rate,
+        sampling_fraction=sampling_fraction,
+    )
+    rate_gap = speciation_rate - extinction_rate
+    return (
+        sampling_fraction
+        * (rate_gap**2)
+        * math.exp(-(rate_gap * time_before_present))
+        / (denominator**2)
+    )
+
+
+def _birth_death_q(
+    time_before_present: float,
+    *,
+    speciation_rate: float,
+    extinction_rate: float,
+    sampling_fraction: float,
+) -> float:
+    if math.isclose(speciation_rate, extinction_rate, abs_tol=1e-15):
+        return (
+            sampling_fraction * time_before_present
+        ) / (1.0 + (sampling_fraction * speciation_rate * time_before_present))
+    denominator = _birth_death_denominator(
+        time_before_present,
+        speciation_rate=speciation_rate,
+        extinction_rate=extinction_rate,
+        sampling_fraction=sampling_fraction,
+    )
+    rate_gap = speciation_rate - extinction_rate
+    return (
+        sampling_fraction * (1.0 - math.exp(-(rate_gap * time_before_present)))
+    ) / denominator
+
+
+def _birth_death_denominator(
+    time_before_present: float,
+    *,
+    speciation_rate: float,
+    extinction_rate: float,
+    sampling_fraction: float,
+) -> float:
+    return (
+        speciation_rate * sampling_fraction
+        + (
+            (speciation_rate * (1.0 - sampling_fraction)) - extinction_rate
+        )
+        * math.exp(-(speciation_rate - extinction_rate) * time_before_present)
+    )
