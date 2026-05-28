@@ -12,9 +12,11 @@ from bijux_phylogenetics.diagnostics.assumptions import assess_tree_assumptions
 from bijux_phylogenetics.diagnostics.root_to_tip import (
     compute_root_to_tip_distances,
     diagnose_root_to_tip_regression,
+    diagnose_tip_date_randomization,
     diagnose_ultrametricity,
     write_root_to_tip_regression_artifacts,
     write_root_to_tip_tsv,
+    write_tip_date_randomization_artifacts,
 )
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path
 from bijux_phylogenetics.runtime.results import build_command_result
@@ -32,6 +34,8 @@ def add_diagnose_command(subparsers: Any) -> None:
     diagnose.add_argument("--out", type=Path)
     diagnose.add_argument("--out-dir", type=Path)
     diagnose.add_argument("--outlier-threshold", type=float, default=2.0)
+    diagnose.add_argument("--permutations", type=int, default=99)
+    diagnose.add_argument("--seed", type=int, default=17)
     diagnose.add_argument("--tolerance", type=float, default=1e-6)
     diagnose.add_argument(
         "--json", action="store_true", help="Emit the report as JSON."
@@ -126,6 +130,58 @@ def run_diagnose_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     "r_squared": report.r_squared,
                     "outlier_count": len(report.outliers),
                     "outlier_threshold": report.outlier_threshold,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.target == "tip-date-randomization":
+        if args.tree is None:
+            parser.exit(
+                status=2,
+                message="diagnose tip-date-randomization requires a tree path\n",
+            )
+        if args.metadata is None:
+            parser.exit(
+                status=2,
+                message="diagnose tip-date-randomization requires --metadata\n",
+            )
+        report = diagnose_tip_date_randomization(
+            args.tree,
+            args.metadata,
+            taxon_column=args.taxon_column,
+            date_column=args.date_column,
+            outlier_threshold=args.outlier_threshold,
+            permutations=args.permutations,
+            seed=args.seed,
+        )
+        diagnose_inputs: list[Path | str] = [args.tree, args.metadata]
+        outputs: list[Path | str] = []
+        if args.out_dir is not None:
+            outputs.extend(
+                write_tip_date_randomization_artifacts(args.out_dir, report).values()
+            )
+        outputs = _finalize_outputs(
+            args,
+            command="diagnose",
+            inputs=diagnose_inputs,
+            outputs=outputs,
+        )
+        _print_result(
+            build_command_result(
+                command="diagnose",
+                inputs=diagnose_inputs,
+                outputs=outputs,
+                metrics={
+                    "tip_count": report.tip_count,
+                    "observed_slope": report.observed_regression.slope,
+                    "observed_r_squared": report.observed_regression.r_squared,
+                    "permutations": report.permutations,
+                    "seed": report.seed,
+                    "p_value": report.p_value,
+                    "null_distribution_mean": report.null_distribution_mean,
                 },
                 data=report,
             ),
