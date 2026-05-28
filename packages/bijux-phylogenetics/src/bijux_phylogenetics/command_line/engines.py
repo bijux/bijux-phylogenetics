@@ -61,6 +61,10 @@ from bijux_phylogenetics.parsimony import (
     write_sankoff_artifacts,
     write_wagner_artifacts,
 )
+from bijux_phylogenetics.phylo.likelihood import (
+    fit_strict_clock_likelihood_from_alignment,
+    write_strict_clock_likelihood_artifacts,
+)
 from bijux_phylogenetics.phylo.topology import write_stepwise_addition_artifacts
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 from bijux_phylogenetics.runtime.results import build_command_result
@@ -749,6 +753,44 @@ def add_phylo_commands(subparsers: Any) -> None:
     )
     _add_manifest_argument(phylo_parsimony_rescaled_consistency)
 
+    phylo_likelihood = phylo_subparsers.add_parser(
+        "likelihood",
+        help="Fit governed fixed-topology likelihood workflows on explicit trees and alignments.",
+    )
+    phylo_likelihood_subparsers = phylo_likelihood.add_subparsers(
+        dest="phylo_likelihood_command",
+        required=True,
+    )
+    phylo_likelihood_strict_clock = phylo_likelihood_subparsers.add_parser(
+        "strict-clock",
+        help="Fit one global JC69 strict-clock rate on one time-scaled tree and one DNA alignment.",
+    )
+    phylo_likelihood_strict_clock.add_argument("tree_path", type=Path)
+    phylo_likelihood_strict_clock.add_argument("alignment_path", type=Path)
+    phylo_likelihood_strict_clock.add_argument(
+        "--model",
+        default="jc69",
+        choices=["jc69"],
+        help="Likelihood model for the strict-clock fit.",
+    )
+    phylo_likelihood_strict_clock.add_argument(
+        "--lower-clock-rate-bound",
+        type=float,
+        default=1e-6,
+        help="Positive lower bound for the shared strict-clock rate search.",
+    )
+    phylo_likelihood_strict_clock.add_argument(
+        "--upper-clock-rate-bound",
+        type=float,
+        default=5.0,
+        help="Upper bound for the shared strict-clock rate search.",
+    )
+    phylo_likelihood_strict_clock.add_argument("--out-dir", required=True, type=Path)
+    phylo_likelihood_strict_clock.add_argument(
+        "--json", action="store_true", help="Emit the strict-clock report as JSON."
+    )
+    _add_manifest_argument(phylo_likelihood_strict_clock)
+
 
 def run_phylo_command(args: Any) -> int:
     executables = {
@@ -759,6 +801,51 @@ def run_phylo_command(args: Any) -> int:
         "mrbayes": getattr(args, "mrbayes_executable", None),
         "beast": getattr(args, "beast_executable", None),
     }
+    if args.phylo_command == "likelihood":
+        if args.phylo_likelihood_command == "strict-clock":
+            report = fit_strict_clock_likelihood_from_alignment(
+                args.tree_path,
+                args.alignment_path,
+                model=args.model,
+                lower_clock_rate_bound=args.lower_clock_rate_bound,
+                upper_clock_rate_bound=args.upper_clock_rate_bound,
+            )
+            artifact_paths = write_strict_clock_likelihood_artifacts(
+                args.out_dir,
+                report,
+            )
+            outputs = _finalize_outputs(
+                args,
+                command="phylo",
+                inputs=[args.tree_path, args.alignment_path],
+                outputs=list(artifact_paths.values()),
+            )
+            _print_result(
+                build_command_result(
+                    command="phylo",
+                    inputs=[args.tree_path, args.alignment_path],
+                    outputs=outputs,
+                    metrics={
+                        "model_name": report.model_name,
+                        "taxon_count": len(report.taxa),
+                        "site_count": report.site_count,
+                        "pattern_count": report.pattern_count,
+                        "branch_count": report.branch_count,
+                        "optimized_clock_rate": report.optimized_clock_rate,
+                        "optimized_log_likelihood": report.optimized_log_likelihood,
+                        "aic": report.aic,
+                        "function_evaluation_count": report.function_evaluation_count,
+                        "converged": report.converged,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        raise EngineWorkflowError(
+            "unknown phylo likelihood command",
+            code="phylo_likelihood_command_unknown",
+        )
     if args.phylo_command == "parsimony":
         if args.phylo_parsimony_command == "fitch":
             matrix = load_fitch_character_matrix(
