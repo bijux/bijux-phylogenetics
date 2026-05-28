@@ -4504,6 +4504,135 @@ def test_cli_simulate_coalescent_includes_waiting_time_manifest(
     assert manifest_payload["output_checksums"][str(waiting_time_path)]
 
 
+def test_cli_simulate_multispecies_coalescent_writes_gene_tree_ledgers(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_path = tmp_path / "simulated-gene-tree.nwk"
+    event_path = tmp_path / "multispecies-coalescent-events.tsv"
+    branch_path = tmp_path / "multispecies-coalescent-branches.tsv"
+
+    exit_code = main(
+        [
+            "simulate",
+            "gene-tree-multispecies-coalescent",
+            str(fixture("multispecies_coalescent_species_tree_3_taxa.nwk")),
+            "--sample-count-table",
+            str(fixture("multispecies_coalescent_sample_counts_3_taxa.tsv")),
+            "--population-size-table",
+            str(fixture("multispecies_coalescent_population_sizes_3_taxa.tsv")),
+            "--population-size",
+            "1.0",
+            "--seed",
+            "7",
+            "--out",
+            str(output_path),
+            "--event-table-out",
+            str(event_path),
+            "--branch-table-out",
+            str(branch_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["species_tip_count"] == 3
+    assert payload["metrics"]["gene_tip_count"] == 4
+    assert payload["metrics"]["coalescent_event_count"] == 3
+    assert payload["metrics"]["species_branch_count"] == 5
+    assert payload["metrics"]["deep_coalescence_total"] == 1
+    assert payload["outputs"] == [
+        str(output_path),
+        str(event_path),
+        str(branch_path),
+    ]
+    assert output_path.read_text(encoding="utf-8").endswith(";\n")
+    assert "\n1\tA\ttip-branch\tA\t0.05\t" in event_path.read_text(encoding="utf-8")
+    assert "\nA|B\tinternal-branch\tA|B\t1\t1000000\t2\t0\t2\t1\ttrue\n" in (
+        branch_path.read_text(encoding="utf-8")
+    )
+
+
+def test_cli_simulate_multispecies_coalescent_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_path = tmp_path / "simulated-gene-tree.nwk"
+    event_path = tmp_path / "multispecies-coalescent-events.tsv"
+    branch_path = tmp_path / "multispecies-coalescent-branches.tsv"
+    manifest = tmp_path / "simulate-multispecies-coalescent.manifest.json"
+
+    exit_code = main(
+        [
+            "simulate",
+            "gene-tree-multispecies-coalescent",
+            str(fixture("multispecies_coalescent_species_tree_3_taxa.nwk")),
+            "--sample-count-table",
+            str(fixture("multispecies_coalescent_sample_counts_3_taxa.tsv")),
+            "--population-size-table",
+            str(fixture("multispecies_coalescent_population_sizes_3_taxa.tsv")),
+            "--population-size",
+            "1.0",
+            "--seed",
+            "7",
+            "--out",
+            str(output_path),
+            "--event-table-out",
+            str(event_path),
+            "--branch-table-out",
+            str(branch_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "simulate"
+    assert manifest_payload["arguments"] == [
+        "simulate",
+        "gene-tree-multispecies-coalescent",
+        str(fixture("multispecies_coalescent_species_tree_3_taxa.nwk")),
+        "--sample-count-table",
+        str(fixture("multispecies_coalescent_sample_counts_3_taxa.tsv")),
+        "--population-size-table",
+        str(fixture("multispecies_coalescent_population_sizes_3_taxa.tsv")),
+        "--population-size",
+        "1.0",
+        "--seed",
+        "7",
+        "--out",
+        str(output_path),
+        "--event-table-out",
+        str(event_path),
+        "--branch-table-out",
+        str(branch_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_paths"] == [
+        str(fixture("multispecies_coalescent_species_tree_3_taxa.nwk")),
+        str(fixture("multispecies_coalescent_sample_counts_3_taxa.tsv")),
+        str(fixture("multispecies_coalescent_population_sizes_3_taxa.tsv")),
+    ]
+    assert manifest_payload["output_paths"] == [
+        str(output_path),
+        str(event_path),
+        str(branch_path),
+    ]
+    assert manifest_payload["input_checksums"][
+        str(fixture("multispecies_coalescent_species_tree_3_taxa.nwk"))
+    ]
+    assert manifest_payload["output_checksums"][str(output_path)]
+
+
 def test_cli_simulate_discrete_history_writes_truth_outputs(
     tmp_path: Path, capsys
 ) -> None:
