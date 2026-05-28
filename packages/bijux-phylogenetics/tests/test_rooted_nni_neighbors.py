@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
 from bijux_phylogenetics.io.newick import loads_newick
@@ -10,7 +13,14 @@ from bijux_phylogenetics.phylo.topology import (
     expected_rooted_nni_neighbor_count,
     iter_rooted_nni_move_candidates,
     validate_rooted_nni_tree,
+    write_rooted_nni_artifacts,
 )
+
+FIXTURES = Path(__file__).parent / "fixtures" / "trees"
+
+
+def fixture(name: str) -> Path:
+    return FIXTURES / name
 
 
 def test_topology_gateway_exports_rooted_nni_neighbor_surface() -> None:
@@ -22,6 +32,7 @@ def test_topology_gateway_exports_rooted_nni_neighbor_surface() -> None:
         is expected_rooted_nni_neighbor_count
     )
     assert topology_api.validate_rooted_nni_tree is validate_rooted_nni_tree
+    assert topology_api.write_rooted_nni_artifacts is write_rooted_nni_artifacts
 
 
 def test_rooted_nni_neighbor_count_matches_formula_on_four_taxon_tree() -> None:
@@ -67,3 +78,20 @@ def test_rooted_nni_validation_accepts_binary_root_representation_without_rooted
 def test_rooted_nni_validation_rejects_nonbinary_rooted_representation() -> None:
     with pytest.raises(ValueError, match="rooted NNI enumeration requires a binary root"):
         validate_rooted_nni_tree(loads_newick("(A,B,C,D);"))
+
+
+def test_write_rooted_nni_artifacts_materializes_governed_outputs(tmp_path: Path) -> None:
+    report = enumerate_rooted_nni_neighbors(fixture("example_tree.nwk"))
+
+    outputs = write_rooted_nni_artifacts(tmp_path / "rooted-nni-neighbors", report)
+
+    assert set(outputs) == {"input_tree_path", "neighbors_path", "run_json_path"}
+    assert outputs["neighbors_path"].read_text(encoding="utf-8").startswith(
+        "neighbor_index\tparent_node_id\tchild_node_id\tsibling_node_id\texchanged_child_node_id\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tneighbor_topology_fingerprint\ttip_order\tvalidation_errors\tneighbor_tree_newick\n"
+    )
+    payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
+    assert payload["algorithm"] == "rooted-nni-neighbor-enumeration"
+    assert payload["input_tree_path"].endswith("example_tree.nwk")
+    assert payload["expected_neighbor_count"] == 4
+    assert payload["generated_neighbor_count"] == 4
+    assert len(payload["neighbor_rows"]) == 4
