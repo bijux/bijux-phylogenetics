@@ -173,14 +173,17 @@ def summarize_clade_credibility_conflicts(
     frequencies = {
         clade: round(count / len(trees), 15) for clade, count in counts.items()
     }
-    high_credibility = [
+    high_credibility = sorted(
+        [
         clade
         for clade, frequency in frequencies.items()
         if frequency >= credibility_threshold
-    ]
+        ],
+        key=_format_clade,
+    )
     conflicts: list[CladeCredibilityConflict] = []
-    for index, left_clade in enumerate(sorted(high_credibility, key=_format_clade)):
-        for right_clade in sorted(high_credibility[index + 1 :], key=_format_clade):
+    for index, left_clade in enumerate(high_credibility):
+        for right_clade in high_credibility[index + 1 :]:
             if not _clades_conflict(left_clade, right_clade):
                 continue
             conflicts.append(
