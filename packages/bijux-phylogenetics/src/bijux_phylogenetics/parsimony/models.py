@@ -63,6 +63,62 @@ class FitchScoreReport:
     node_state_rows: list[FitchNodeStateSet]
 
 
+@dataclass(frozen=True, slots=True)
+class ParsimonyPlacementAlternativeRow:
+    """One query placement scored on one candidate edge by additional Fitch steps."""
+
+    query_id: str
+    placement_rank: int
+    edge_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+    total_steps: int
+    additional_steps: int
+    total_weighted_score: float
+    additional_weighted_score: float
+    is_equally_best: bool
+    placed_tree_newick: str
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyPlacementQuerySummary:
+    """Best-placement summary for one parsimony query taxon."""
+
+    query_id: str
+    character_count: int
+    best_edge_id: str
+    best_child_name: str | None
+    best_descendant_taxa: list[str]
+    best_total_steps: int
+    best_additional_steps: int
+    best_total_weighted_score: float
+    best_additional_weighted_score: float
+    candidate_placement_count: int
+    equally_best_placement_count: int
+    selected_best_tree_newick: str
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyPlacementReport:
+    """Exact unordered-Fitch placement report for one or more query taxa."""
+
+    algorithm: str
+    method: str
+    tree_path: Path | None
+    matrix_path: Path | None
+    query_matrix_path: Path | None
+    taxon_column: str
+    reference_taxon_count: int
+    character_count: int
+    edge_count: int
+    query_count: int
+    reference_total_steps: int
+    weights_path: Path | None
+    reference_total_weighted_score: float
+    query_summaries: list[ParsimonyPlacementQuerySummary]
+    alternative_rows: list[ParsimonyPlacementAlternativeRow]
+
+
 ParsimonyCharacterMatrix = FitchCharacterMatrix
 
 
@@ -124,7 +180,7 @@ class SankoffCostMatrix:
     matrix_path: Path | None
     states: list[str]
     costs: dict[str, dict[str, float]]
-    validation_warnings: list["SankoffCostMatrixWarning"]
+    validation_warnings: list[SankoffCostMatrixWarning]
 
 
 @dataclass(frozen=True, slots=True)
