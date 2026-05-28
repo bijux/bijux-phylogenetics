@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import asdict
+import json
 import math
 from pathlib import Path
 
@@ -11,7 +13,7 @@ from bijux_phylogenetics.comparative._math import (
 )
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
-from bijux_phylogenetics.io.newick import dumps_newick
+from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import (
@@ -369,3 +371,171 @@ def _build_branch_rows(
             )
         )
     return rows
+
+
+def write_least_squares_dating_summary_tsv(
+    path: Path,
+    report: LeastSquaresDatingReport,
+) -> Path:
+    """Write one summary row for one least-squares dating run."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "tree_path",
+        "metadata_path",
+        "taxon_column",
+        "date_column",
+        "tip_count",
+        "internal_node_count",
+        "branch_count",
+        "parameter_count",
+        "minimum_tip_date",
+        "maximum_tip_date",
+        "root_date",
+        "estimated_clock_rate",
+        "residual_sum_squares",
+        "condition_number",
+        "exact_fit",
+        "optimizer_name",
+        "converged",
+    ]
+    values = [
+        report.tree_path or "",
+        report.metadata_path or "",
+        report.taxon_column,
+        report.date_column,
+        str(report.tip_count),
+        str(report.internal_node_count),
+        str(report.branch_count),
+        str(report.parameter_count),
+        format(report.minimum_tip_date, ".15g"),
+        format(report.maximum_tip_date, ".15g"),
+        format(report.root_date, ".15g"),
+        format(report.estimated_clock_rate, ".15g"),
+        format(report.residual_sum_squares, ".15g"),
+        format(report.condition_number, ".15g"),
+        str(report.exact_fit).lower(),
+        report.optimizer_name,
+        str(report.converged).lower(),
+    ]
+    path.write_text(
+        "\n".join(["\t".join(columns), "\t".join(values)]) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def write_least_squares_node_dates_tsv(
+    path: Path,
+    report: LeastSquaresDatingReport,
+) -> Path:
+    """Write one dated-node row per node in tree preorder."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "node_id",
+        "node_kind",
+        "node_label",
+        "descendant_taxa",
+        "estimated_date",
+        "fixed_tip_date",
+        "time_height",
+    ]
+    lines = ["\t".join(columns)]
+    lines.extend(
+        "\t".join(
+            [
+                row.node_id,
+                row.node_kind,
+                row.node_label or "",
+                "|".join(row.descendant_taxa),
+                format(row.estimated_date, ".15g"),
+                str(row.fixed_tip_date).lower(),
+                format(row.time_height, ".15g"),
+            ]
+        )
+        for row in report.node_rows
+    )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def write_least_squares_branch_residuals_tsv(
+    path: Path,
+    report: LeastSquaresDatingReport,
+) -> Path:
+    """Write one branch residual row per edge in tree preorder."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "branch_id",
+        "child_name",
+        "descendant_taxa",
+        "parent_date",
+        "child_date",
+        "fitted_time_duration",
+        "observed_branch_length",
+        "fitted_branch_length",
+        "residual",
+    ]
+    lines = ["\t".join(columns)]
+    lines.extend(
+        "\t".join(
+            [
+                row.branch_id,
+                row.child_name or "",
+                "|".join(row.descendant_taxa),
+                format(row.parent_date, ".15g"),
+                format(row.child_date, ".15g"),
+                format(row.fitted_time_duration, ".15g"),
+                format(row.observed_branch_length, ".15g"),
+                format(row.fitted_branch_length, ".15g"),
+                format(row.residual, ".15g"),
+            ]
+        )
+        for row in report.branch_rows
+    )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def write_least_squares_dating_run_json(
+    path: Path,
+    report: LeastSquaresDatingReport,
+) -> Path:
+    """Write the full least-squares dating report as JSON."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(asdict(report), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def write_least_squares_dating_artifacts(
+    out_dir: Path,
+    report: LeastSquaresDatingReport,
+) -> dict[str, Path]:
+    """Write governed artifact outputs for one least-squares dating run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    dated_tree_path = write_newick(
+        out_dir / "dated_tree.nwk",
+        loads_newick(report.dated_tree_newick),
+    )
+    summary_path = write_least_squares_dating_summary_tsv(
+        out_dir / "summary.tsv",
+        report,
+    )
+    node_dates_path = write_least_squares_node_dates_tsv(
+        out_dir / "node_dates.tsv",
+        report,
+    )
+    branch_residuals_path = write_least_squares_branch_residuals_tsv(
+        out_dir / "branch_residuals.tsv",
+        report,
+    )
+    run_json_path = write_least_squares_dating_run_json(out_dir / "run.json", report)
+    return {
+        "dated_tree_path": dated_tree_path,
+        "summary_path": summary_path,
+        "node_dates_path": node_dates_path,
+        "branch_residuals_path": branch_residuals_path,
+        "run_json_path": run_json_path,
+    }
