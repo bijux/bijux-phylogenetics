@@ -17,6 +17,9 @@ from bijux_phylogenetics.bayesian import (
     BeastCalibration,
     BirthDeathTreePriorModel,
     ConstantPopulationCoalescentPriorModel,
+    LOCAL_CLOCK_RATE_MODEL_FAMILIES,
+    LOCAL_CLOCK_TARGET_KINDS,
+    LocalClockRateModel,
     MrBayesParameterDiagnosticsReport,
     RELAXED_CLOCK_RATE_POLICIES,
     RelaxedLognormalClockModel,
@@ -36,6 +39,7 @@ from bijux_phylogenetics.bayesian import (
     build_constant_population_coalescent_tree_prior,
     build_crown_conditioned_birth_death_tree_prior,
     build_crown_conditioned_yule_tree_prior,
+    build_local_clock_rate_model,
     build_relaxed_lognormal_clock_model,
     build_strict_clock_rate_model,
     build_skyline_coalescent_tree_prior,
@@ -46,6 +50,7 @@ from bijux_phylogenetics.bayesian import (
     count_rooted_labeled_bifurcating_topologies,
     evaluate_constant_population_coalescent_tree_log_prior,
     evaluate_birth_death_tree_log_prior,
+    evaluate_local_clock_tree_log_prior,
     evaluate_relaxed_lognormal_clock_tree_log_prior,
     evaluate_skyline_coalescent_tree_log_prior,
     evaluate_strict_clock_tree_log_prior,
@@ -56,6 +61,7 @@ from bijux_phylogenetics.bayesian import (
     parse_beast_log,
     parse_beast_posterior_tree_samples,
     parse_mrbayes_consensus_tree,
+    load_local_clock_regime_definitions,
     run_beast_posterior_inference,
     run_mrbayes_posterior_inference,
     evaluate_tree_topology_log_prior,
@@ -806,6 +812,13 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.CLOCK_RATE_MODEL_FAMILIES is CLOCK_RATE_MODEL_FAMILIES
     )
     assert (
+        bayesian_api.LOCAL_CLOCK_RATE_MODEL_FAMILIES
+        is LOCAL_CLOCK_RATE_MODEL_FAMILIES
+    )
+    assert (
+        bayesian_api.LOCAL_CLOCK_TARGET_KINDS is LOCAL_CLOCK_TARGET_KINDS
+    )
+    assert (
         bayesian_api.RELAXED_CLOCK_RATE_POLICIES is RELAXED_CLOCK_RATE_POLICIES
     )
     assert (
@@ -830,6 +843,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.ConstantPopulationCoalescentPriorModel
         is ConstantPopulationCoalescentPriorModel
     )
+    assert bayesian_api.LocalClockRateModel is LocalClockRateModel
     assert bayesian_api.RelaxedLognormalClockModel is RelaxedLognormalClockModel
     assert bayesian_api.StrictClockRateModel is StrictClockRateModel
     assert bayesian_api.SkylineCoalescentPriorModel is SkylineCoalescentPriorModel
@@ -858,6 +872,9 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_constant_population_coalescent_tree_prior
         is build_constant_population_coalescent_tree_prior
+    )
+    assert (
+        bayesian_api.build_local_clock_rate_model is build_local_clock_rate_model
     )
     assert (
         bayesian_api.build_relaxed_lognormal_clock_model
@@ -901,6 +918,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is evaluate_constant_population_coalescent_tree_log_prior
     )
     assert (
+        bayesian_api.evaluate_local_clock_tree_log_prior
+        is evaluate_local_clock_tree_log_prior
+    )
+    assert (
         bayesian_api.evaluate_relaxed_lognormal_clock_tree_log_prior
         is evaluate_relaxed_lognormal_clock_tree_log_prior
     )
@@ -928,6 +949,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.parse_beast_posterior_tree_samples
         is parse_beast_posterior_tree_samples
+    )
+    assert (
+        bayesian_api.load_local_clock_regime_definitions
+        is load_local_clock_regime_definitions
     )
     assert bayesian_api.parse_mrbayes_consensus_tree is parse_mrbayes_consensus_tree
     assert bayesian_api.run_beast_posterior_inference is run_beast_posterior_inference
