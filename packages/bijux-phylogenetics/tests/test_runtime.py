@@ -59,6 +59,10 @@ from bijux_phylogenetics.bayesian import (
     PartitionParameterLinkagePlan,
     PartitionSubstitutionModelDefinition,
     PartitionSubstitutionParameterState,
+    PriorOnlyPhylogeneticSample,
+    PriorOnlyPhylogeneticSimulationReport,
+    PriorOnlySampledBranchRow,
+    PriorOnlySubstitutionParameterState,
     SubstitutionParameterPriorBundle,
     SubstitutionParameterPriorEvaluationReport,
     SubstitutionParameterPriorRow,
@@ -129,7 +133,9 @@ from bijux_phylogenetics.bayesian import (
     load_local_clock_regime_definitions,
     run_beast_posterior_inference,
     run_mrbayes_posterior_inference,
+    sample_prior_only_phylogenetic_state,
     evaluate_tree_topology_log_prior,
+    simulate_prior_only_phylogenetic_states,
     summarize_beast_log,
     summarize_mrbayes_posterior_trees,
     validate_partition_substitution_model_name,
@@ -1009,6 +1015,16 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.PartitionSubstitutionParameterState
         is PartitionSubstitutionParameterState
     )
+    assert bayesian_api.PriorOnlySampledBranchRow is PriorOnlySampledBranchRow
+    assert (
+        bayesian_api.PriorOnlySubstitutionParameterState
+        is PriorOnlySubstitutionParameterState
+    )
+    assert bayesian_api.PriorOnlyPhylogeneticSample is PriorOnlyPhylogeneticSample
+    assert (
+        bayesian_api.PriorOnlyPhylogeneticSimulationReport
+        is PriorOnlyPhylogeneticSimulationReport
+    )
     assert (
         bayesian_api.SubstitutionParameterPriorBundle
         is SubstitutionParameterPriorBundle
@@ -1158,6 +1174,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_partition_substitution_model_definition
         is build_partition_substitution_model_definition
+    )
+    assert (
+        bayesian_api.sample_prior_only_phylogenetic_state
+        is sample_prior_only_phylogenetic_state
+    )
+    assert (
+        bayesian_api.simulate_prior_only_phylogenetic_states
+        is simulate_prior_only_phylogenetic_states
     )
     assert (
         bayesian_api.build_posterior_uncertainty_figure_package
