@@ -47,6 +47,9 @@ def search_nucleotide_likelihood_spr(
         | tuple[float, ...]
         | None
     ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
     improvement_tolerance: float = 1e-9,
@@ -78,6 +81,9 @@ def search_nucleotide_likelihood_spr(
         kappa=kappa,
         base_frequencies=base_frequencies,
         exchangeabilities=exchangeabilities,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
     input_tree_newick = dumps_newick(resolved_tree)
     start_result = reoptimize_nucleotide_topology_tree(
@@ -264,6 +270,9 @@ def search_nucleotide_likelihood_spr_from_alignment(
         | tuple[float, ...]
         | None
     ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
     improvement_tolerance: float = 1e-9,
@@ -279,6 +288,9 @@ def search_nucleotide_likelihood_spr_from_alignment(
         kappa=kappa,
         base_frequencies=base_frequencies,
         exchangeabilities=exchangeabilities,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
         improvement_tolerance=improvement_tolerance,

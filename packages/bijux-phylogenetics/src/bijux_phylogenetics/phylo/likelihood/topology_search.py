@@ -129,6 +129,9 @@ def resolve_nucleotide_topology_search_surface(
         | tuple[float, ...]
         | None
     ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> ResolvedNucleotideTopologySearchSurface:
     """Resolve one selected nucleotide likelihood surface for topology search."""
     normalized_model_name = validate_selected_nucleotide_likelihood_model(model_name)
@@ -142,6 +145,9 @@ def resolve_nucleotide_topology_search_surface(
             normalized_records,
             model_name=normalized_model_name,
             owner_name="JC69 likelihood NNI search",
+            root_prior_policy=root_prior_policy,
+            root_prior=root_prior,
+            fixed_root_state=fixed_root_state,
         )
         return ResolvedNucleotideTopologySearchSurface(
             model_name=specification.model_name,
@@ -156,6 +162,9 @@ def resolve_nucleotide_topology_search_surface(
             normalized_records,
             model_name=normalized_model_name,
             owner_name="F81 likelihood NNI search",
+            root_prior_policy=root_prior_policy,
+            root_prior=root_prior,
+            fixed_root_state=fixed_root_state,
         )
         return ResolvedNucleotideTopologySearchSurface(
             model_name=specification.model_name,
@@ -188,6 +197,9 @@ def resolve_nucleotide_topology_search_surface(
             kappa=kappa,
             base_frequencies=base_frequencies,
             exchangeabilities=exchangeabilities,
+            root_prior_policy=root_prior_policy,
+            root_prior=root_prior,
+            fixed_root_state=fixed_root_state,
         )
         return ResolvedNucleotideTopologySearchSurface(
             model_name=specification.model_name,
@@ -212,6 +224,9 @@ def resolve_nucleotide_topology_search_surface(
         kappa=_resolved_kappa(optimization_report),
         base_frequencies=_resolved_base_frequencies(optimization_report),
         exchangeabilities=_resolved_exchangeabilities(optimization_report),
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
     return ResolvedNucleotideTopologySearchSurface(
         model_name=specification.model_name,
