@@ -11,7 +11,9 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.diagnostics.assumptions import assess_tree_assumptions
 from bijux_phylogenetics.diagnostics.root_to_tip import (
     compute_root_to_tip_distances,
+    diagnose_root_to_tip_regression,
     diagnose_ultrametricity,
+    write_root_to_tip_regression_artifacts,
     write_root_to_tip_tsv,
 )
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path
@@ -26,7 +28,10 @@ def add_diagnose_command(subparsers: Any) -> None:
     diagnose.add_argument("tree", nargs="?", type=Path)
     diagnose.add_argument("--metadata", type=Path)
     diagnose.add_argument("--taxon-column")
+    diagnose.add_argument("--date-column", default="date")
     diagnose.add_argument("--out", type=Path)
+    diagnose.add_argument("--out-dir", type=Path)
+    diagnose.add_argument("--outlier-threshold", type=float, default=2.0)
     diagnose.add_argument("--tolerance", type=float, default=1e-6)
     diagnose.add_argument(
         "--json", action="store_true", help="Emit the report as JSON."
@@ -72,6 +77,55 @@ def run_diagnose_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     "tip_count": report.tip_count,
                     "tolerance": report.tolerance,
                     "max_deviation": report.max_deviation,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.target == "root-to-tip-regression":
+        if args.tree is None:
+            parser.exit(
+                status=2,
+                message="diagnose root-to-tip-regression requires a tree path\n",
+            )
+        if args.metadata is None:
+            parser.exit(
+                status=2,
+                message="diagnose root-to-tip-regression requires --metadata\n",
+            )
+        report = diagnose_root_to_tip_regression(
+            args.tree,
+            args.metadata,
+            taxon_column=args.taxon_column,
+            date_column=args.date_column,
+            outlier_threshold=args.outlier_threshold,
+        )
+        diagnose_inputs: list[Path | str] = [args.tree, args.metadata]
+        outputs: list[Path | str] = []
+        if args.out_dir is not None:
+            outputs.extend(
+                write_root_to_tip_regression_artifacts(args.out_dir, report).values()
+            )
+        outputs = _finalize_outputs(
+            args,
+            command="diagnose",
+            inputs=diagnose_inputs,
+            outputs=outputs,
+        )
+        _print_result(
+            build_command_result(
+                command="diagnose",
+                inputs=diagnose_inputs,
+                outputs=outputs,
+                metrics={
+                    "tip_count": report.tip_count,
+                    "slope": report.slope,
+                    "intercept": report.intercept,
+                    "r_squared": report.r_squared,
+                    "outlier_count": len(report.outliers),
+                    "outlier_threshold": report.outlier_threshold,
                 },
                 data=report,
             ),
