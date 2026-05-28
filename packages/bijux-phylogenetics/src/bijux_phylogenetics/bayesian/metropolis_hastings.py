@@ -25,6 +25,10 @@ from bijux_phylogenetics.phylo.topology.rooted_spr import (
     enumerate_rooted_spr_neighbors,
     validate_rooted_spr_tree,
 )
+from bijux_phylogenetics.phylo.topology.rooted_tbr import (
+    enumerate_rooted_tbr_neighbors,
+    validate_rooted_tbr_tree,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
@@ -96,6 +100,13 @@ class _NodeHeightSlideCandidate:
     current_height: float
     lower_height_bound: float
     upper_height_bound: float
+
+
+@dataclass(frozen=True, slots=True)
+class _ReversibleRootedTbrNeighbor:
+    neighbor_row: object
+    proposed_tree: PhyloTree
+    reverse_neighbor_row: object
 
 
 def build_metropolis_hastings_proposal(
@@ -568,6 +579,80 @@ def propose_spr_topology_move(
     )
 
 
+def propose_tbr_topology_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+) -> MetropolisHastingsProposal:
+    """Propose one rooted tree-bisection-reconnection topology move."""
+    current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
+    try:
+        validate_rooted_tbr_tree(current_tree)
+    except ValueError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.topology",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    reversible_neighbors = _enumerate_reversible_rooted_tbr_neighbors(current_tree)
+    if not reversible_neighbors:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.topology",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="TBR topology proposal requires at least one legal rooted TBR move",
+        )
+    current_legal_reconnection_count = _reversible_rooted_tbr_move_count(
+        reversible_neighbors
+    )
+    selected_neighbor = reversible_neighbors[
+        rng.randrange(len(reversible_neighbors))
+    ]
+    selected_neighbor_row = selected_neighbor.neighbor_row
+    proposed_tree = selected_neighbor.proposed_tree
+    current_topology_fingerprint = rooted_topology_fingerprint(current_tree)
+    if (
+        selected_neighbor_row.neighbor_topology_fingerprint
+        == current_topology_fingerprint
+    ):
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.topology",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "TBR topology proposal must change rooted topology rather than child order"
+            ),
+        )
+    reverse_neighbor_row = selected_neighbor.reverse_neighbor_row
+    proposed_legal_reconnection_count = _reversible_rooted_tbr_move_count(
+        _enumerate_reversible_rooted_tbr_neighbors(proposed_tree)
+    )
+    log_forward_density = math.log(
+        selected_neighbor_row.supporting_reconnection_count
+    ) - math.log(current_legal_reconnection_count)
+    log_reverse_density = math.log(
+        reverse_neighbor_row.supporting_reconnection_count
+    ) - math.log(proposed_legal_reconnection_count)
+    changed_field = (
+        "tree.topology:tbr:"
+        f"{selected_neighbor_row.representative_cut_edge_id}:"
+        f"{selected_neighbor_row.representative_left_attachment_branch_id}:"
+        f"{selected_neighbor_row.representative_right_attachment_branch_id}"
+    )
+    return build_metropolis_hastings_proposal(
+        changed_fields=(changed_field,),
+        log_forward_density=log_forward_density,
+        log_reverse_density=log_reverse_density,
+        is_valid=True,
+        proposed_tree=proposed_tree,
+        proposed_model_parameters=current_state.model_parameters,
+    )
+
+
 def score_bayesian_phylogenetic_state(
     *,
     tree,
@@ -926,6 +1011,18 @@ def _copy_tree_with_slid_node_height(
     return proposed_tree
 
 
+def _materialize_missing_branch_lengths(
+    tree: PhyloTree,
+    *,
+    default_branch_length: float = 0.0,
+) -> PhyloTree:
+    proposed_tree = tree.copy()
+    for _parent, child in proposed_tree.iter_edges():
+        if child.branch_length is None:
+            child.branch_length = default_branch_length
+    return proposed_tree
+
+
 def _lognormal_scaling_density(
     *,
     current_branch_length: float,
@@ -1078,4 +1175,42 @@ def _rooted_spr_legal_move_count(report) -> int:
         report.generated_move_candidate_count
         - report.identity_move_candidate_count
         - report.self_regraft_candidate_count
+    )
+
+
+def _enumerate_reversible_rooted_tbr_neighbors(
+    current_tree: PhyloTree,
+) -> list[_ReversibleRootedTbrNeighbor]:
+    current_topology_fingerprint = rooted_topology_fingerprint(current_tree)
+    reversible_neighbors: list[_ReversibleRootedTbrNeighbor] = []
+    for neighbor_row in enumerate_rooted_tbr_neighbors(current_tree).neighbor_rows:
+        proposed_tree = _materialize_missing_branch_lengths(
+            PhyloTree.from_newick(neighbor_row.neighbor_tree_newick)
+        )
+        proposed_tree.rooted = current_tree.rooted
+        reverse_neighbor_row = next(
+            (
+                row
+                for row in enumerate_rooted_tbr_neighbors(proposed_tree).neighbor_rows
+                if row.neighbor_topology_fingerprint == current_topology_fingerprint
+            ),
+            None,
+        )
+        if reverse_neighbor_row is None:
+            continue
+        reversible_neighbors.append(
+            _ReversibleRootedTbrNeighbor(
+                neighbor_row=neighbor_row,
+                proposed_tree=proposed_tree,
+                reverse_neighbor_row=reverse_neighbor_row,
+            )
+        )
+    return reversible_neighbors
+
+
+def _reversible_rooted_tbr_move_count(
+    neighbors: list[_ReversibleRootedTbrNeighbor],
+) -> int:
+    return sum(
+        neighbor.neighbor_row.supporting_reconnection_count for neighbor in neighbors
     )
