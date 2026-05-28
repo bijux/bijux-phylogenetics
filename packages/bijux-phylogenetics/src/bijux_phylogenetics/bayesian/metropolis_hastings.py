@@ -14,6 +14,13 @@ from bijux_phylogenetics.bayesian.state import (
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
     APE_ULTRAMETRIC_TOLERANCE,
 )
+from bijux_phylogenetics.phylo.topology.clades import rooted_topology_fingerprint
+from bijux_phylogenetics.phylo.topology.rooted_nni import (
+    RootedNniMoveCandidate,
+    apply_rooted_nni_move,
+    iter_rooted_nni_move_candidates,
+    validate_rooted_nni_tree,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
@@ -388,6 +395,79 @@ def propose_node_height_sliding_move(
         current_height=proposed_height,
         proposed_height=selected_candidate.current_height,
         height_slide_standard_deviation=validated_height_slide_standard_deviation,
+    )
+    return build_metropolis_hastings_proposal(
+        changed_fields=(changed_field,),
+        log_forward_density=log_forward_density,
+        log_reverse_density=log_reverse_density,
+        is_valid=True,
+        proposed_tree=proposed_tree,
+        proposed_model_parameters=current_state.model_parameters,
+    )
+
+
+def propose_nni_topology_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+) -> MetropolisHastingsProposal:
+    """Propose one rooted nearest-neighbor interchange topology move."""
+    current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
+    try:
+        validate_rooted_nni_tree(current_tree)
+    except ValueError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.topology",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    current_neighbors = _enumerate_rooted_nni_neighbors(current_tree)
+    if not current_neighbors:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.topology",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="NNI topology proposal requires at least one legal rooted NNI move",
+        )
+    current_topology_fingerprint = rooted_topology_fingerprint(current_tree)
+    selected_candidate, proposed_tree, proposed_topology_fingerprint = current_neighbors[
+        rng.randrange(len(current_neighbors))
+    ]
+    if proposed_topology_fingerprint == current_topology_fingerprint:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.topology",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "NNI topology proposal must change rooted topology rather than child order"
+            ),
+        )
+    proposed_neighbors = _enumerate_rooted_nni_neighbors(proposed_tree)
+    reverse_match_count = sum(
+        1
+        for _candidate, _neighbor_tree, neighbor_topology_fingerprint in proposed_neighbors
+        if neighbor_topology_fingerprint == current_topology_fingerprint
+    )
+    if reverse_match_count <= 0:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.topology",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="NNI topology proposal could not find one reverse rooted interchange",
+        )
+    log_forward_density = -math.log(len(current_neighbors))
+    log_reverse_density = math.log(reverse_match_count) - math.log(
+        len(proposed_neighbors)
+    )
+    changed_field = (
+        "tree.topology:nni:"
+        f"{selected_candidate.parent_node_id}:{selected_candidate.child_node_id}:"
+        f"{selected_candidate.exchanged_child_node_id}"
     )
     return build_metropolis_hastings_proposal(
         changed_fields=(changed_field,),
@@ -886,3 +966,19 @@ def _collect_node_height_slide_candidates(
                 )
             )
     return candidates
+
+
+def _enumerate_rooted_nni_neighbors(
+    current_tree: PhyloTree,
+) -> list[tuple[RootedNniMoveCandidate, PhyloTree, str]]:
+    neighbors: list[tuple[RootedNniMoveCandidate, PhyloTree, str]] = []
+    for candidate in iter_rooted_nni_move_candidates(current_tree):
+        neighbor_tree = apply_rooted_nni_move(current_tree, candidate)
+        neighbors.append(
+            (
+                candidate,
+                neighbor_tree,
+                rooted_topology_fingerprint(neighbor_tree),
+            )
+        )
+    return neighbors
