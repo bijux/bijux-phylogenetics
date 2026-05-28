@@ -154,6 +154,7 @@ from bijux_phylogenetics.bayesian import (
     propose_global_tree_height_scaling_move,
     propose_nni_topology_move,
     propose_node_height_sliding_move,
+    propose_spr_topology_move,
     sample_prior_only_phylogenetic_state,
     evaluate_tree_topology_log_prior,
     score_bayesian_phylogenetic_state,
@@ -1241,6 +1242,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.propose_node_height_sliding_move
         is propose_node_height_sliding_move
     )
+    assert bayesian_api.propose_spr_topology_move is propose_spr_topology_move
     assert (
         bayesian_api.score_bayesian_phylogenetic_state
         is score_bayesian_phylogenetic_state
