@@ -8221,6 +8221,51 @@ def test_cli_diagnose_tip_date_randomization_includes_manifest(
     assert manifest_payload["input_checksums"][str(metadata_path)]
 
 
+def test_cli_compare_clade_ages_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    table_path = tmp_path / "clade-ages.tsv"
+    manifest = tmp_path / "clade-ages.manifest.json"
+    left_path = fixture("strict_clock_time_tree_4_taxa.nwk")
+    right_path = fixture("relaxed_rate_summary_dated_tree_4_taxa.nwk")
+
+    exit_code = main(
+        [
+            "compare",
+            "clade-ages",
+            str(left_path),
+            str(right_path),
+            "--out",
+            str(table_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["matched_clades"] == 3
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "compare"
+    assert manifest_payload["arguments"] == [
+        "compare",
+        "clade-ages",
+        str(left_path),
+        str(right_path),
+        "--out",
+        str(table_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(left_path)]
+    assert manifest_payload["input_checksums"][str(right_path)]
+
+
 def test_cli_phylo_dating_least_squares_includes_manifest(
     tmp_path: Path,
     capsys,
