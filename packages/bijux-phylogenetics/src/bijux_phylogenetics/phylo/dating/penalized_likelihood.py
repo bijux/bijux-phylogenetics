@@ -112,7 +112,7 @@ def fit_penalized_likelihood_dating(
         initial_values=initial_values,
         bounds_by_name=bounds_by_name,
         evaluate=evaluate,
-        improvement_tolerance=1e-9,
+        improvement_tolerance=1e-6,
         max_coordinate_passes=max_coordinate_passes,
     )
     best_candidate = search_result.payload
