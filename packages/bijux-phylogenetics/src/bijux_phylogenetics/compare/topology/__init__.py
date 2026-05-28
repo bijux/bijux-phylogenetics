@@ -7,9 +7,7 @@ from importlib import import_module
 _PUBLIC_SURFACES = (
     (
         "agreement",
-        (
-            "prune_trees_to_agreement_subtree",
-        ),
+        ("prune_trees_to_agreement_subtree",),
     ),
     (
         "branch_lengths",
@@ -98,6 +96,9 @@ _PUBLIC_SURFACES = (
     (
         "tables",
         (
+            "write_agreement_subtree_pruning_table",
+            "write_agreement_subtree_removed_taxa_table",
+            "write_agreement_subtree_search_table",
             "write_clade_overlap_table",
             "write_shared_taxa_pruning_table",
             "write_shared_taxa_removed_taxa_table",
