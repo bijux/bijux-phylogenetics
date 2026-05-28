@@ -20,6 +20,9 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
             "trait",
             "taxon_column",
             "model",
+            "ascertainment_policy",
+            "ascertainment_conditioning_log_probability",
+            "invariant_pattern_log_probability",
             "transform",
             "transform_parameter_name",
             "transform_parameter_value",
@@ -79,6 +82,20 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
                 "trait": report.trait,
                 "taxon_column": report.taxon_column,
                 "model": report.model,
+                "ascertainment_policy": report.ascertainment_policy,
+                "ascertainment_conditioning_log_probability": (
+                    ""
+                    if report.ascertainment_conditioning_log_probability is None
+                    else format(
+                        report.ascertainment_conditioning_log_probability,
+                        ".15g",
+                    )
+                ),
+                "invariant_pattern_log_probability": (
+                    ""
+                    if report.invariant_pattern_log_probability is None
+                    else format(report.invariant_pattern_log_probability, ".15g")
+                ),
                 "transform": ""
                 if transform_fit is None
                 else transform_fit.transform_name,
