@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 from .contracts import (
     AlignmentSimulationReport,
+    CoalescentWaitingTimeSummaryRow,
     ContinuousTraitSimulationCollectionReport,
     ContinuousTraitSimulationReport,
     ContinuousTraitSimulationSummaryRow,
@@ -70,6 +71,7 @@ _PUBLIC_NAME_TO_MODULE = {
 
 __all__ = [
     "AlignmentSimulationReport",
+    "CoalescentWaitingTimeSummaryRow",
     "ContinuousTraitSimulationCollectionReport",
     "ContinuousTraitSimulationReport",
     "ContinuousTraitSimulationSummaryRow",

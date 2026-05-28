@@ -33,6 +33,22 @@ class TreeSimulationEnvelopeMetric:
     maximum: float
 
 
+@dataclass(frozen=True, slots=True)
+class CoalescentWaitingTimeSummaryRow:
+    lineage_count: int
+    coalescent_rate: float
+    expected_waiting_time: float
+    observation_count: int
+    mean_waiting_time: float
+    standard_deviation: float
+    minimum_waiting_time: float
+    median_waiting_time: float
+    maximum_waiting_time: float
+    absolute_error: float
+    relative_error: float
+    within_tolerance: bool
+
+
 @dataclass(slots=True)
 class TreeSimulationReport:
     model: str
@@ -48,6 +64,10 @@ class TreeSimulationReport:
     binary: bool = True
     pooled_branch_count: int = 0
     envelope_metrics: list[TreeSimulationEnvelopeMetric] = field(default_factory=list)
+    coalescent_waiting_time_tolerance: float | None = None
+    coalescent_waiting_time_rows: list[CoalescentWaitingTimeSummaryRow] = field(
+        default_factory=list
+    )
 
 
 @dataclass(frozen=True, slots=True)
