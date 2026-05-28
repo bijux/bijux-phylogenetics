@@ -66,6 +66,41 @@ class CladeFrequencyReport:
 
 
 @dataclass(frozen=True, slots=True)
+class CladeCompatibilityNodeRow:
+    clade: str
+    tree_count: int
+    frequency: float
+    compatible_neighbor_count: int
+    conflict_neighbor_count: int
+
+
+@dataclass(frozen=True, slots=True)
+class CladeCompatibilityEdgeRow:
+    left_clade: str
+    right_clade: str
+    compatibility_relation: str
+    compatibility_reason: str
+    left_tree_count: int
+    right_tree_count: int
+    left_frequency: float
+    right_frequency: float
+
+
+@dataclass(slots=True)
+class CladeCompatibilityGraphReport:
+    path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    node_count: int
+    edge_count: int
+    compatible_edge_count: int
+    conflict_edge_count: int
+    nodes: list[CladeCompatibilityNodeRow]
+    edges: list[CladeCompatibilityEdgeRow]
+
+
+@dataclass(frozen=True, slots=True)
 class TreeSetCladeSupportRow:
     node_id: int
     node_kind: str
