@@ -240,6 +240,33 @@ class BeastLogSummaryReport:
 
 
 @dataclass(slots=True)
+class BeastPosteriorDecompositionRow:
+    state: int
+    log_posterior: float
+    log_likelihood: float
+    log_prior: float
+    decomposition_delta: float
+    decomposition_valid: bool
+
+
+@dataclass(slots=True)
+class BeastPosteriorDecompositionReport:
+    path: Path
+    burnin_fraction: float
+    burnin_row_count: int
+    kept_row_count: int
+    first_kept_state: int
+    last_kept_state: int
+    posterior_term_source: str
+    likelihood_term_source: str
+    prior_term_source: str
+    identity_tolerance: float
+    verified: bool
+    maximum_absolute_delta: float
+    rows: list[BeastPosteriorDecompositionRow]
+
+
+@dataclass(slots=True)
 class BeastPosteriorTreeSample:
     tree_name: str
     state: int | None

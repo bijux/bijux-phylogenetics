@@ -88,6 +88,33 @@ class MrBayesParameterDiagnosticsReport:
 
 
 @dataclass(slots=True)
+class MrBayesPosteriorDecompositionRow:
+    generation: int
+    log_posterior: float
+    log_likelihood: float
+    log_prior: float
+    decomposition_delta: float
+    decomposition_valid: bool
+
+
+@dataclass(slots=True)
+class MrBayesPosteriorDecompositionReport:
+    path: Path
+    burnin_fraction: float
+    burnin_row_count: int
+    kept_row_count: int
+    first_kept_generation: int
+    last_kept_generation: int
+    posterior_term_source: str
+    likelihood_term_source: str
+    prior_term_source: str
+    identity_tolerance: float
+    verified: bool
+    maximum_absolute_delta: float
+    rows: list[MrBayesPosteriorDecompositionRow]
+
+
+@dataclass(slots=True)
 class MrBayesConvergenceReport:
     path: Path
     sample_count: int
