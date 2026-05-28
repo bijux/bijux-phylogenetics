@@ -8119,6 +8119,53 @@ def test_cli_diagnose_ultrametric_reports_tolerance_and_deviation(capsys) -> Non
     assert payload["metrics"]["max_deviation"] == 0.2
 
 
+def test_cli_diagnose_root_to_tip_regression_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "root-to-tip-regression"
+    manifest = tmp_path / "root-to-tip-regression.manifest.json"
+    tree_path = fixture("root_to_tip_regression_diagnostic_tree_7_taxa.nwk")
+    metadata_path = fixture("root_to_tip_regression_dates_7_taxa.tsv")
+
+    exit_code = main(
+        [
+            "diagnose",
+            "root-to-tip-regression",
+            str(tree_path),
+            "--metadata",
+            str(metadata_path),
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["outlier_count"] == 1
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "diagnose"
+    assert manifest_payload["arguments"] == [
+        "diagnose",
+        "root-to-tip-regression",
+        str(tree_path),
+        "--metadata",
+        str(metadata_path),
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(metadata_path)]
+
+
 def test_cli_validate_writes_run_manifest(tmp_path: Path, capsys) -> None:
     manifest = tmp_path / "validate.manifest.json"
     exit_code = main(
