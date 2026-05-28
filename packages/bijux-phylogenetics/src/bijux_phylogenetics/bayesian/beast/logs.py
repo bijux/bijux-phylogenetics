@@ -33,8 +33,12 @@ from .models import (
     BeastLogSummaryReport,
     BeastLogValidationIssue,
     BeastPosteriorClade,
+    BeastPosteriorDecompositionReport,
+    BeastPosteriorDecompositionRow,
     BeastPosteriorLogValidationReport,
 )
+
+_POSTERIOR_DECOMPOSITION_TOLERANCE = 1e-9
 
 
 def parse_beast_log(path: Path) -> BeastLogReport:
@@ -350,6 +354,110 @@ def write_beast_log_summary_table(path: Path, report: BeastLogSummaryReport) -> 
             "last_kept_state",
         ],
         rows=rows,
+    )
+
+
+def summarize_beast_posterior_decomposition(
+    path: Path,
+    *,
+    burnin_fraction: float = 0.0,
+    identity_tolerance: float = _POSTERIOR_DECOMPOSITION_TOLERANCE,
+) -> BeastPosteriorDecompositionReport:
+    """Separate posterior, likelihood, and prior terms from a BEAST log."""
+    report = parse_beast_log(path)
+    burnin_row_count, kept_rows = _split_beast_log_rows(
+        report, burnin_fraction=burnin_fraction
+    )
+    if "posterior" not in report.columns or "likelihood" not in report.columns:
+        raise _beast_artifact_error(
+            f"BEAST posterior decomposition requires posterior and likelihood columns: {path}",
+            code="beast_log_missing_posterior_terms",
+            path=path,
+            artifact_kind="beast-log",
+            details={
+                "required_columns": ["posterior", "likelihood"],
+                "columns": list(report.columns),
+            },
+        )
+    prior_logged = "prior" in report.columns
+    rows: list[BeastPosteriorDecompositionRow] = []
+    maximum_absolute_delta = 0.0
+    verified = True
+    for row in kept_rows:
+        log_posterior = row.values["posterior"]
+        log_likelihood = row.values["likelihood"]
+        log_prior = (
+            row.values["prior"] if prior_logged else log_posterior - log_likelihood
+        )
+        decomposition_delta = log_posterior - (log_likelihood + log_prior)
+        decomposition_valid = abs(decomposition_delta) <= identity_tolerance
+        maximum_absolute_delta = max(
+            maximum_absolute_delta, abs(decomposition_delta)
+        )
+        verified = verified and decomposition_valid
+        rows.append(
+            BeastPosteriorDecompositionRow(
+                state=row.state,
+                log_posterior=log_posterior,
+                log_likelihood=log_likelihood,
+                log_prior=log_prior,
+                decomposition_delta=decomposition_delta,
+                decomposition_valid=decomposition_valid,
+            )
+        )
+    return BeastPosteriorDecompositionReport(
+        path=path,
+        burnin_fraction=burnin_fraction,
+        burnin_row_count=burnin_row_count,
+        kept_row_count=len(kept_rows),
+        first_kept_state=kept_rows[0].state,
+        last_kept_state=kept_rows[-1].state,
+        posterior_term_source="logged",
+        likelihood_term_source="logged",
+        prior_term_source=(
+            "logged" if prior_logged else "derived_from_posterior_and_likelihood"
+        ),
+        identity_tolerance=identity_tolerance,
+        verified=verified,
+        maximum_absolute_delta=maximum_absolute_delta,
+        rows=rows,
+    )
+
+
+def write_beast_posterior_decomposition_table(
+    path: Path,
+    report: BeastPosteriorDecompositionReport,
+) -> Path:
+    """Write one row per retained BEAST sample with posterior decomposition terms."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "state",
+            "log_posterior",
+            "log_likelihood",
+            "log_prior",
+            "decomposition_delta",
+            "decomposition_valid",
+            "posterior_term_source",
+            "likelihood_term_source",
+            "prior_term_source",
+            "identity_tolerance",
+        ],
+        rows=[
+            {
+                "state": str(row.state),
+                "log_posterior": format(row.log_posterior, ".15g"),
+                "log_likelihood": format(row.log_likelihood, ".15g"),
+                "log_prior": format(row.log_prior, ".15g"),
+                "decomposition_delta": format(row.decomposition_delta, ".15g"),
+                "decomposition_valid": str(row.decomposition_valid).lower(),
+                "posterior_term_source": report.posterior_term_source,
+                "likelihood_term_source": report.likelihood_term_source,
+                "prior_term_source": report.prior_term_source,
+                "identity_tolerance": format(report.identity_tolerance, ".15g"),
+            }
+            for row in report.rows
+        ],
     )
 
 
