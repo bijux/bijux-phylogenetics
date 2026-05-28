@@ -30,6 +30,10 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideSubstitutionParameterOptimizationReport,
     SubstitutionParameterOptimizationRow,
 )
+from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
+    validate_parameter_within_bounds,
+    validate_positive_parameter_bounds,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 _NUCLEOTIDE_SUBSTITUTION_OPTIMIZATION_MODELS = frozenset(
@@ -665,14 +669,31 @@ def _coalesce_kappa_search_parameters(
     lower_kappa_bound: float | None,
     upper_kappa_bound: float | None,
 ) -> tuple[float, float, float]:
+    resolved_lower_bound, resolved_upper_bound = validate_positive_parameter_bounds(
+        parameter_name="kappa",
+        lower_bound=(
+            _DEFAULT_KAPPA_BOUNDS[0]
+            if lower_kappa_bound is None
+            else float(lower_kappa_bound)
+        ),
+        upper_bound=(
+            _DEFAULT_KAPPA_BOUNDS[1]
+            if upper_kappa_bound is None
+            else float(upper_kappa_bound)
+        ),
+        owner_name="nucleotide substitution optimization",
+    )
+    resolved_initial_kappa = validate_parameter_within_bounds(
+        parameter_name="kappa",
+        value=(1.0 if initial_kappa is None else float(initial_kappa)),
+        lower_bound=resolved_lower_bound,
+        upper_bound=resolved_upper_bound,
+        owner_name="nucleotide substitution optimization",
+    )
     return (
-        1.0 if initial_kappa is None else float(initial_kappa),
-        _DEFAULT_KAPPA_BOUNDS[0]
-        if lower_kappa_bound is None
-        else float(lower_kappa_bound),
-        _DEFAULT_KAPPA_BOUNDS[1]
-        if upper_kappa_bound is None
-        else float(upper_kappa_bound),
+        resolved_initial_kappa,
+        resolved_lower_bound,
+        resolved_upper_bound,
     )
 
 
@@ -681,13 +702,19 @@ def _coalesce_exchangeability_search_bounds(
     lower_exchangeability_bound: float | None,
     upper_exchangeability_bound: float | None,
 ) -> tuple[float, float]:
-    return (
-        _DEFAULT_EXCHANGEABILITY_BOUNDS[0]
-        if lower_exchangeability_bound is None
-        else float(lower_exchangeability_bound),
-        _DEFAULT_EXCHANGEABILITY_BOUNDS[1]
-        if upper_exchangeability_bound is None
-        else float(upper_exchangeability_bound),
+    return validate_positive_parameter_bounds(
+        parameter_name="exchangeability",
+        lower_bound=(
+            _DEFAULT_EXCHANGEABILITY_BOUNDS[0]
+            if lower_exchangeability_bound is None
+            else float(lower_exchangeability_bound)
+        ),
+        upper_bound=(
+            _DEFAULT_EXCHANGEABILITY_BOUNDS[1]
+            if upper_exchangeability_bound is None
+            else float(upper_exchangeability_bound)
+        ),
+        owner_name="GTR substitution optimization",
     )
 
 

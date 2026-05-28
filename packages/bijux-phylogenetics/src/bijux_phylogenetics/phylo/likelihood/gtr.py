@@ -26,6 +26,10 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
     resolve_nucleotide_root_prior,
 )
+from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
+    validate_parameter_within_bounds,
+    validate_positive_parameter_bounds,
+)
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_coordinate_likelihood_search,
 )
@@ -205,10 +209,12 @@ def optimize_gtr_exchangeabilities(
     improvement_tolerance: float = 1e-5,
 ) -> GtrExchangeabilityOptimizationReport:
     """Optimize one fixed-topology GTR exchangeability surface with AC anchored at one."""
-    if lower_exchangeability_bound <= 0.0:
-        raise ValueError("GTR exchangeability lower bound must be positive")
-    if upper_exchangeability_bound <= lower_exchangeability_bound:
-        raise ValueError("GTR exchangeability bounds must be strictly increasing")
+    validated_lower_bound, validated_upper_bound = validate_positive_parameter_bounds(
+        parameter_name="exchangeability",
+        lower_bound=lower_exchangeability_bound,
+        upper_bound=upper_exchangeability_bound,
+        owner_name="GTR exchangeability optimization",
+    )
     if max_coordinate_passes < 1:
         raise ValueError("GTR exchangeability optimization requires at least one pass")
 
@@ -234,9 +240,17 @@ def optimize_gtr_exchangeabilities(
         label: float(normalized_exchangeabilities[index + 1])
         for index, label in enumerate(_GTR_FREE_EXCHANGEABILITY_LABELS)
     }
+    for parameter_name, parameter_value in initial_values.items():
+        validate_parameter_within_bounds(
+            parameter_name=parameter_name,
+            value=parameter_value,
+            lower_bound=validated_lower_bound,
+            upper_bound=validated_upper_bound,
+            owner_name="GTR exchangeability optimization",
+        )
     bounds_by_name = dict.fromkeys(
         _GTR_FREE_EXCHANGEABILITY_LABELS,
-        (lower_exchangeability_bound, upper_exchangeability_bound),
+        (validated_lower_bound, validated_upper_bound),
     )
     working_tree = tree.copy()
     validate_explicit_branch_lengths(working_tree, model_name="GTR")
@@ -295,8 +309,8 @@ def optimize_gtr_exchangeabilities(
         function_evaluation_count=search_result.function_evaluation_count,
         optimization_pass_count=search_result.optimization_pass_count,
         converged=search_result.converged,
-        lower_exchangeability_bound=lower_exchangeability_bound,
-        upper_exchangeability_bound=upper_exchangeability_bound,
+        lower_exchangeability_bound=validated_lower_bound,
+        upper_exchangeability_bound=validated_upper_bound,
     )
 
 

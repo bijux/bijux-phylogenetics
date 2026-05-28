@@ -24,6 +24,10 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
     resolve_nucleotide_root_prior,
 )
+from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
+    validate_parameter_within_bounds,
+    validate_positive_parameter_bounds,
+)
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_likelihood_search,
 )
@@ -166,10 +170,19 @@ def optimize_k80_kappa(
 ) -> K80KappaOptimizationReport:
     """Optimize one fixed-topology K80 kappa on fixed branch lengths."""
     validate_positive_kappa(initial_kappa, model_name="K80")
-    validate_positive_kappa(lower_kappa_bound, model_name="K80")
-    validate_positive_kappa(upper_kappa_bound, model_name="K80")
-    if upper_kappa_bound <= lower_kappa_bound:
-        raise ValueError("K80 kappa bounds must be strictly increasing")
+    validated_lower_bound, validated_upper_bound = validate_positive_parameter_bounds(
+        parameter_name="kappa",
+        lower_bound=lower_kappa_bound,
+        upper_bound=upper_kappa_bound,
+        owner_name="K80 kappa optimization",
+    )
+    validated_initial_kappa = validate_parameter_within_bounds(
+        parameter_name="kappa",
+        value=initial_kappa,
+        lower_bound=validated_lower_bound,
+        upper_bound=validated_upper_bound,
+        owner_name="K80 kappa optimization",
+    )
 
     normalized_records = normalize_unambiguous_dna_records(records, model_name="K80")
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
@@ -178,7 +191,7 @@ def optimize_k80_kappa(
     initial_report = _evaluate_k80_tree_likelihood_from_patterns(
         working_tree,
         compressed_patterns,
-        kappa=initial_kappa,
+        kappa=validated_initial_kappa,
         root_prior=UNIFORM_DNA_ROOT_PRIOR,
     )
 
@@ -194,8 +207,8 @@ def optimize_k80_kappa(
         return report, report.log_likelihood
 
     search_result = run_bounded_likelihood_search(
-        lower_bound=lower_kappa_bound,
-        upper_bound=upper_kappa_bound,
+        lower_bound=validated_lower_bound,
+        upper_bound=validated_upper_bound,
         evaluate=evaluate_candidate_kappa,
     )
     optimized_report = search_result.payload
@@ -204,14 +217,14 @@ def optimize_k80_kappa(
         site_count=optimized_report.site_count,
         pattern_count=optimized_report.pattern_count,
         tree_newick=optimized_report.tree_newick,
-        initial_kappa=initial_kappa,
+        initial_kappa=validated_initial_kappa,
         optimized_kappa=search_result.parameter_value,
         initial_log_likelihood=initial_report.log_likelihood,
         optimized_log_likelihood=optimized_report.log_likelihood,
         function_evaluation_count=search_result.function_evaluation_count + 1,
         converged=search_result.converged,
-        lower_kappa_bound=lower_kappa_bound,
-        upper_kappa_bound=upper_kappa_bound,
+        lower_kappa_bound=validated_lower_bound,
+        upper_kappa_bound=validated_upper_bound,
     )
 
 

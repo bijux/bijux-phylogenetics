@@ -25,6 +25,10 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
     resolve_nucleotide_root_prior,
 )
+from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
+    validate_parameter_within_bounds,
+    validate_positive_parameter_bounds,
+)
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_likelihood_search,
 )
@@ -163,10 +167,19 @@ def optimize_hky85_kappa(
 ) -> Hky85KappaOptimizationReport:
     """Optimize one fixed-topology HKY85 kappa on fixed branch lengths."""
     validate_positive_kappa(initial_kappa, model_name="HKY85")
-    validate_positive_kappa(lower_kappa_bound, model_name="HKY85")
-    validate_positive_kappa(upper_kappa_bound, model_name="HKY85")
-    if upper_kappa_bound <= lower_kappa_bound:
-        raise ValueError("HKY85 kappa bounds must be strictly increasing")
+    validated_lower_bound, validated_upper_bound = validate_positive_parameter_bounds(
+        parameter_name="kappa",
+        lower_bound=lower_kappa_bound,
+        upper_bound=upper_kappa_bound,
+        owner_name="HKY85 kappa optimization",
+    )
+    validated_initial_kappa = validate_parameter_within_bounds(
+        parameter_name="kappa",
+        value=initial_kappa,
+        lower_bound=validated_lower_bound,
+        upper_bound=validated_upper_bound,
+        owner_name="HKY85 kappa optimization",
+    )
 
     normalized_records = normalize_unambiguous_dna_records(records, model_name="HKY85")
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
@@ -186,7 +199,7 @@ def optimize_hky85_kappa(
         compressed_patterns,
         stationary_frequencies=stationary,
         base_frequency_source=source,
-        kappa=initial_kappa,
+        kappa=validated_initial_kappa,
         root_prior=stationary,
     )
 
@@ -204,8 +217,8 @@ def optimize_hky85_kappa(
         return report, report.log_likelihood
 
     search_result = run_bounded_likelihood_search(
-        lower_bound=lower_kappa_bound,
-        upper_bound=upper_kappa_bound,
+        lower_bound=validated_lower_bound,
+        upper_bound=validated_upper_bound,
         evaluate=evaluate_candidate_kappa,
     )
     optimized_report = search_result.payload
@@ -219,7 +232,7 @@ def optimize_hky85_kappa(
         base_frequency_c=optimized_report.base_frequency_c,
         base_frequency_g=optimized_report.base_frequency_g,
         base_frequency_t=optimized_report.base_frequency_t,
-        initial_kappa=initial_kappa,
+        initial_kappa=validated_initial_kappa,
         optimized_kappa=search_result.parameter_value,
         parameter_count=optimized_report.parameter_count,
         initial_log_likelihood=initial_report.log_likelihood,
@@ -228,8 +241,8 @@ def optimize_hky85_kappa(
         optimized_aic=optimized_report.aic,
         function_evaluation_count=search_result.function_evaluation_count + 1,
         converged=search_result.converged,
-        lower_kappa_bound=lower_kappa_bound,
-        upper_kappa_bound=upper_kappa_bound,
+        lower_kappa_bound=validated_lower_bound,
+        upper_kappa_bound=validated_upper_bound,
     )
 
 
