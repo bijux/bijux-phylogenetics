@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,7 @@ from bijux_phylogenetics.phylo.topology import (
     RootedTbrNeighborRow,
     RootedTbrNeighborhoodReport,
     validate_rooted_tbr_tree,
+    write_rooted_tbr_artifacts,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -26,6 +28,7 @@ def test_topology_gateway_exports_rooted_tbr_neighbor_contracts() -> None:
     assert topology_api.RootedTbrNeighborhoodReport is RootedTbrNeighborhoodReport
     assert topology_api.enumerate_rooted_tbr_neighbors is enumerate_rooted_tbr_neighbors
     assert topology_api.validate_rooted_tbr_tree is validate_rooted_tbr_tree
+    assert topology_api.write_rooted_tbr_artifacts is write_rooted_tbr_artifacts
 
 
 def test_rooted_tbr_neighbor_report_matches_known_five_taxon_case() -> None:
@@ -77,3 +80,32 @@ def test_rooted_tbr_validation_accepts_binary_root_representation_without_rooted
 def test_rooted_tbr_validation_rejects_nonbinary_rooted_representation() -> None:
     with pytest.raises(ValueError, match="rooted TBR enumeration requires a binary root"):
         validate_rooted_tbr_tree(loads_newick("(A,B,C,D);"))
+
+
+def test_rooted_tbr_report_preserves_input_tree_path_for_file_inputs() -> None:
+    report = enumerate_rooted_tbr_neighbors(
+        fixture("parsimony", "spr_search_start_tree_5_taxa.nwk")
+    )
+
+    assert report.input_tree_path == fixture("parsimony", "spr_search_start_tree_5_taxa.nwk")
+    assert report.input_tree_newick == "((((A,D),B),C),E);"
+    assert report.rooted is False
+
+
+def test_write_rooted_tbr_artifacts_materializes_governed_outputs(tmp_path: Path) -> None:
+    report = enumerate_rooted_tbr_neighbors(
+        fixture("parsimony", "spr_search_start_tree_5_taxa.nwk")
+    )
+
+    outputs = write_rooted_tbr_artifacts(tmp_path / "rooted-tbr-neighbors", report)
+
+    assert set(outputs) == {"input_tree_path", "neighbors_path", "run_json_path"}
+    assert outputs["neighbors_path"].read_text(encoding="utf-8").startswith(
+        "neighbor_index\trepresentative_cut_edge_id\trepresentative_cut_descendant_taxa\trepresentative_left_attachment_branch_id\trepresentative_left_attachment_descendant_taxa\trepresentative_right_attachment_branch_id\trepresentative_right_attachment_descendant_taxa\tsupporting_reconnection_count\tneighbor_topology_fingerprint\ttip_order\tvalidation_errors\tneighbor_tree_newick\n"
+    )
+    payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
+    assert payload["algorithm"] == "rooted-tbr-neighbor-enumeration"
+    assert payload["input_tree_path"].endswith("spr_search_start_tree_5_taxa.nwk")
+    assert payload["generated_cut_edge_count"] == 3
+    assert payload["generated_reconnection_count"] == 52
+    assert payload["generated_neighbor_count"] == 10
