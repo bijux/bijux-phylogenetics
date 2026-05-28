@@ -21,6 +21,11 @@ from bijux_phylogenetics.bayesian import (
     CalibrationPriorEvaluationReport,
     CalibrationPriorRow,
     ConstantPopulationCoalescentPriorModel,
+    DISCRETE_TRAIT_RATE_PRIOR_FAMILIES,
+    DISCRETE_TRAIT_RATE_PRIOR_MODELS,
+    DiscreteTraitRatePriorEvaluationReport,
+    DiscreteTraitRatePriorModel,
+    DiscreteTraitRatePriorRow,
     LOCAL_CLOCK_RATE_MODEL_FAMILIES,
     LOCAL_CLOCK_TARGET_KINDS,
     LocalClockRateModel,
@@ -49,12 +54,15 @@ from bijux_phylogenetics.bayesian import (
     build_beta_probability_substitution_parameter_prior,
     build_categorical_probability_vector,
     build_dirichlet_simplex_substitution_parameter_prior,
+    build_exponential_discrete_trait_rate_prior,
     build_exponential_positive_substitution_parameter_prior,
     build_fixed_positive_substitution_parameter_prior,
     build_fixed_probability_substitution_parameter_prior,
     build_fixed_simplex_substitution_parameter_prior,
+    build_gamma_discrete_trait_rate_prior,
     build_gamma_positive_substitution_parameter_prior,
     load_calibration_prior_definitions,
+    build_lognormal_discrete_trait_rate_prior,
     build_lognormal_positive_substitution_parameter_prior,
     build_constant_population_coalescent_tree_prior,
     build_crown_conditioned_birth_death_tree_prior,
@@ -72,6 +80,8 @@ from bijux_phylogenetics.bayesian import (
     evaluate_constant_population_coalescent_tree_log_prior,
     evaluate_calibration_tree_log_prior,
     evaluate_birth_death_tree_log_prior,
+    evaluate_discrete_trait_rate_log_prior,
+    evaluate_discrete_trait_rate_value_log_prior,
     evaluate_local_clock_tree_log_prior,
     evaluate_relaxed_lognormal_clock_tree_log_prior,
     evaluate_skyline_coalescent_tree_log_prior,
@@ -875,6 +885,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is COALESCENT_TREE_PRIOR_FAMILIES
     )
     assert (
+        bayesian_api.DISCRETE_TRAIT_RATE_PRIOR_FAMILIES
+        is DISCRETE_TRAIT_RATE_PRIOR_FAMILIES
+    )
+    assert (
+        bayesian_api.DISCRETE_TRAIT_RATE_PRIOR_MODELS
+        is DISCRETE_TRAIT_RATE_PRIOR_MODELS
+    )
+    assert (
         bayesian_api.TIME_TREE_PRIOR_CONDITIONING_MODES
         is TIME_TREE_PRIOR_CONDITIONING_MODES
     )
@@ -891,6 +909,12 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.ConstantPopulationCoalescentPriorModel
         is ConstantPopulationCoalescentPriorModel
     )
+    assert bayesian_api.DiscreteTraitRatePriorModel is DiscreteTraitRatePriorModel
+    assert (
+        bayesian_api.DiscreteTraitRatePriorEvaluationReport
+        is DiscreteTraitRatePriorEvaluationReport
+    )
+    assert bayesian_api.DiscreteTraitRatePriorRow is DiscreteTraitRatePriorRow
     assert bayesian_api.LocalClockRateModel is LocalClockRateModel
     assert bayesian_api.RelaxedLognormalClockModel is RelaxedLognormalClockModel
     assert bayesian_api.StrictClockRateModel is StrictClockRateModel
@@ -935,6 +959,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_dirichlet_simplex_substitution_parameter_prior
     )
     assert (
+        bayesian_api.build_exponential_discrete_trait_rate_prior
+        is build_exponential_discrete_trait_rate_prior
+    )
+    assert (
         bayesian_api.build_exponential_positive_substitution_parameter_prior
         is build_exponential_positive_substitution_parameter_prior
     )
@@ -951,12 +979,20 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_fixed_simplex_substitution_parameter_prior
     )
     assert (
+        bayesian_api.build_gamma_discrete_trait_rate_prior
+        is build_gamma_discrete_trait_rate_prior
+    )
+    assert (
         bayesian_api.build_gamma_positive_substitution_parameter_prior
         is build_gamma_positive_substitution_parameter_prior
     )
     assert (
         bayesian_api.load_calibration_prior_definitions
         is load_calibration_prior_definitions
+    )
+    assert (
+        bayesian_api.build_lognormal_discrete_trait_rate_prior
+        is build_lognormal_discrete_trait_rate_prior
     )
     assert (
         bayesian_api.build_lognormal_positive_substitution_parameter_prior
@@ -1013,6 +1049,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.evaluate_calibration_tree_log_prior
         is evaluate_calibration_tree_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_discrete_trait_rate_log_prior
+        is evaluate_discrete_trait_rate_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_discrete_trait_rate_value_log_prior
+        is evaluate_discrete_trait_rate_value_log_prior
     )
     assert (
         bayesian_api.evaluate_substitution_parameter_log_prior
