@@ -88,6 +88,7 @@ def test_write_local_clock_likelihood_artifacts_materializes_governed_outputs(
     outputs = write_local_clock_likelihood_artifacts(tmp_path, report)
 
     assert sorted(outputs) == [
+        "branch_likelihood_diagnostic_path",
         "branch_table_path",
         "regime_table_path",
         "run_json_path",
@@ -105,6 +106,11 @@ def test_write_local_clock_likelihood_artifacts_materializes_governed_outputs(
     )
     assert outputs["site_log_likelihood_path"].read_text(encoding="utf-8").startswith(
         "model_name\ttaxon_order\tpattern_id\tpattern_weight\tsite_position\tsite_states\tlog_likelihood\n"
+    )
+    assert outputs["branch_likelihood_diagnostic_path"].read_text(
+        encoding="utf-8"
+    ).startswith(
+        "model_name\tbranch_id\tchild_name\tdescendant_taxa\tbranch_length\tbaseline_log_likelihood\tcollapsed_branch_log_likelihood\tcontribution_proxy\twarning_flags\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["preferred_model_by_aic"] == "local-clock"
