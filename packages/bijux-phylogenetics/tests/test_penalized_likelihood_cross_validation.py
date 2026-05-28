@@ -8,6 +8,10 @@ import bijux_phylogenetics.phylo.dating as dating_api
 from bijux_phylogenetics.phylo.dating import (
     cross_validate_penalized_likelihood_smoothing_from_metadata,
 )
+from bijux_phylogenetics.phylo.dating import (
+    cross_validation as cross_validation_module,
+)
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -65,3 +69,36 @@ def test_penalized_cross_validation_selects_candidate_with_lowest_rmse() -> None
         1980.0,
         abs=1e-9,
     )
+
+
+def test_penalized_cross_validation_rejects_infeasible_calibrations_before_optimization(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail_if_called(*args, **kwargs):  # pragma: no cover - defensive assertion
+        raise AssertionError("penalized optimizer should not run for infeasible calibrations")
+
+    monkeypatch.setattr(
+        cross_validation_module,
+        "fit_penalized_likelihood_dating",
+        fail_if_called,
+    )
+
+    with pytest.raises(
+        PhylogeneticsError,
+        match="dating calibrations are infeasible",
+    ):
+        cross_validate_penalized_likelihood_smoothing_from_metadata(
+            fixture(
+                "trees",
+                "penalized_likelihood_cross_validation_substitution_tree_5_taxa.nwk",
+            ),
+            fixture(
+                "metadata",
+                "penalized_likelihood_cross_validation_tip_dates_5_taxa.tsv",
+            ),
+            fixture(
+                "metadata",
+                "penalized_likelihood_cross_validation_contradictory_calibrations_5_taxa.tsv",
+            ),
+            smoothing_parameters=[0.01, 0.1, 1.0],
+        )

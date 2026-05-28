@@ -69,3 +69,20 @@ def test_load_fixed_dating_calibrations_rejects_interval_constraints(
             ),
             calibration_path,
         )
+
+
+def test_load_fixed_dating_calibrations_rejects_contradictory_fixed_constraints() -> None:
+    with pytest.raises(
+        PhylogeneticsError,
+        match="dating calibrations are infeasible",
+    ):
+        load_fixed_dating_calibrations(
+            fixture(
+                "trees",
+                "penalized_likelihood_cross_validation_substitution_tree_5_taxa.nwk",
+            ),
+            fixture(
+                "metadata",
+                "penalized_likelihood_cross_validation_contradictory_calibrations_5_taxa.tsv",
+            ),
+        )
