@@ -587,6 +587,50 @@ class ParsimonyJackknifeReport:
 
 
 @dataclass(frozen=True, slots=True)
+class ParsimonyEqualBestTree:
+    """One retained equally optimal tree from a deterministic exact parsimony search."""
+
+    tree_index: int
+    total_score: float
+    tree_newick: str
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyConsensusSummary:
+    """One consensus summary over a retained equal-best tree set."""
+
+    consensus_method: str
+    consensus_threshold: float
+    tree_count: int
+    included_clade_count: int
+    consensus_newick: str
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyEqualBestConsensusReport:
+    """Exact parsimony search summary over the retained equally optimal tree set."""
+
+    algorithm: str
+    method: str
+    matrix_path: Path | None
+    cost_matrix_path: Path | None
+    weights_path: Path | None
+    taxon_column: str
+    taxon_count: int
+    character_count: int
+    candidate_tree_count: int
+    max_exact_taxa: int
+    max_retained_equal_best_trees: int
+    best_score: float
+    equal_best_tree_count: int
+    retained_equal_best_tree_count: int
+    retained_all_equal_best_trees: bool
+    strict_consensus: ParsimonyConsensusSummary | None
+    majority_consensus: ParsimonyConsensusSummary | None
+    equal_best_tree_rows: list[ParsimonyEqualBestTree]
+
+
+@dataclass(frozen=True, slots=True)
 class ParsimonyNniTraceRow:
     """One deterministic event row in a rooted parsimony NNI search trace."""
 
