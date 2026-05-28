@@ -1012,3 +1012,63 @@ class ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport:
     hit_upper_invariant_proportion_boundary: bool
     boundary_warnings: list[str]
     site_likelihoods: list[DiscreteGammaInvariantMixtureSiteLikelihood]
+
+
+@dataclass(frozen=True, slots=True)
+class LikelihoodPlacementAlternativeRow:
+    """One optimized query placement on one candidate reference-tree edge."""
+
+    query_id: str
+    placement_rank: int
+    edge_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+    original_branch_length: float
+    optimized_proximal_length: float
+    optimized_distal_length: float
+    optimized_pendant_length: float
+    log_likelihood: float
+    likelihood_weight_ratio: float
+    function_evaluation_count: int
+    optimization_pass_count: int
+    converged: bool
+    placed_tree_newick: str
+
+
+@dataclass(frozen=True, slots=True)
+class LikelihoodPlacementQuerySummary:
+    """Best-placement summary for one query sequence."""
+
+    query_id: str
+    site_count: int
+    pattern_count: int
+    best_edge_id: str
+    best_child_name: str | None
+    best_descendant_taxa: list[str]
+    best_original_branch_length: float
+    best_proximal_length: float
+    best_distal_length: float
+    best_pendant_length: float
+    best_log_likelihood: float
+    best_likelihood_weight_ratio: float
+    candidate_placement_count: int
+    equally_best_placement_count: int
+    best_tree_newick: str
+
+
+@dataclass(slots=True)
+class LikelihoodPlacementReport:
+    """Likelihood placement summary for multiple query sequences on one reference tree."""
+
+    model_name: str
+    reference_tree_newick: str
+    reference_taxa: list[str]
+    edge_count: int
+    query_count: int
+    site_count: int
+    lower_pendant_length_bound: float
+    upper_pendant_length_bound: float
+    max_coordinate_passes: int
+    total_function_evaluation_count: int
+    query_summaries: list[LikelihoodPlacementQuerySummary]
+    alternative_placements: list[LikelihoodPlacementAlternativeRow]

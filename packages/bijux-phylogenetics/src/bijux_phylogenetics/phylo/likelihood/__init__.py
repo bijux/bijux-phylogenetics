@@ -321,6 +321,15 @@ from .models import (
     K80TreeLikelihoodReport as K80TreeLikelihoodReport,
 )
 from .models import (
+    LikelihoodPlacementAlternativeRow as LikelihoodPlacementAlternativeRow,
+)
+from .models import (
+    LikelihoodPlacementQuerySummary as LikelihoodPlacementQuerySummary,
+)
+from .models import (
+    LikelihoodPlacementReport as LikelihoodPlacementReport,
+)
+from .models import (
     LocalClockBranchRow as LocalClockBranchRow,
 )
 from .models import (
@@ -491,6 +500,27 @@ from .patterns import (
 from .patterns import (
     compress_alignment_site_patterns_from_records as compress_alignment_site_patterns_from_records,
 )
+from .placement import (
+    place_queries_by_likelihood as place_queries_by_likelihood,
+)
+from .placement import (
+    place_queries_by_likelihood_from_alignment as place_queries_by_likelihood_from_alignment,
+)
+from .placement import (
+    write_likelihood_placement_alternative_table as write_likelihood_placement_alternative_table,
+)
+from .placement import (
+    write_likelihood_placement_artifacts as write_likelihood_placement_artifacts,
+)
+from .placement import (
+    write_likelihood_placement_run_json as write_likelihood_placement_run_json,
+)
+from .placement import (
+    write_likelihood_placement_summary_table as write_likelihood_placement_summary_table,
+)
+from .placement import (
+    write_likelihood_placement_tree_set as write_likelihood_placement_tree_set,
+)
 from .poisson import (
     evaluate_protein_poisson_tree_likelihood as evaluate_protein_poisson_tree_likelihood,
 )
@@ -615,6 +645,9 @@ __all__ = [
     "Jc69BranchLengthOptimizationReport",
     "Jc69BranchLengthOptimizationStep",
     "Jc69TreeLikelihoodReport",
+    "LikelihoodPlacementAlternativeRow",
+    "LikelihoodPlacementQuerySummary",
+    "LikelihoodPlacementReport",
     "LocalClockBranchRow",
     "LocalClockLikelihoodReport",
     "LocalClockRegimeRow",
@@ -720,6 +753,8 @@ __all__ = [
     "optimize_nucleotide_substitution_parameters_from_alignment",
     "optimize_jc69_branch_lengths",
     "optimize_jc69_branch_lengths_from_alignment",
+    "place_queries_by_likelihood",
+    "place_queries_by_likelihood_from_alignment",
     "postorder_conditional_likelihoods",
     "protein_poisson_rate_matrix",
     "protein_poisson_transition_probability_matrix",
@@ -767,6 +802,11 @@ __all__ = [
     "write_candidate_tree_site_likelihood_matrix_artifacts",
     "write_candidate_tree_site_likelihood_matrix_run_json",
     "write_candidate_tree_site_likelihood_matrix_table",
+    "write_likelihood_placement_alternative_table",
+    "write_likelihood_placement_artifacts",
+    "write_likelihood_placement_run_json",
+    "write_likelihood_placement_summary_table",
+    "write_likelihood_placement_tree_set",
     "write_marginal_ancestral_sequence_fasta",
     "write_marginal_ancestral_sequence_uncertainty_table",
     "write_nucleotide_likelihood_multi_start_artifacts",
