@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 import math
 
@@ -26,6 +26,31 @@ class ValidatedCtmcRateMatrix:
             return self.state_labels.index(state_label)
         except ValueError as error:
             raise KeyError(state_label) from error
+
+
+@dataclass(frozen=True, slots=True)
+class SolvedCtmcStationaryDistribution:
+    """One stationary distribution solved or verified for a CTMC generator."""
+
+    state_labels: tuple[str, ...]
+    probabilities: tuple[float, ...]
+    residual_by_state: tuple[float, ...]
+    normalization_error: float
+    probability_tolerance: float
+
+    @property
+    def state_count(self) -> int:
+        return len(self.state_labels)
+
+    def probability_for(self, state_label: str) -> float:
+        try:
+            index = self.state_labels.index(state_label)
+        except ValueError as error:
+            raise KeyError(state_label) from error
+        return self.probabilities[index]
+
+    def as_mapping(self) -> dict[str, float]:
+        return dict(zip(self.state_labels, self.probabilities, strict=True))
 
 
 def validate_ctmc_rate_matrix(
@@ -137,6 +162,72 @@ def validate_ctmc_rate_matrix(
     )
 
 
+def solve_ctmc_stationary_distribution(
+    rate_matrix: numpy.ndarray | Sequence[Sequence[float]] | ValidatedCtmcRateMatrix,
+    *,
+    state_labels: Sequence[str] | None = None,
+    row_sum_tolerance: float = 1e-9,
+    probability_tolerance: float = 1e-9,
+) -> SolvedCtmcStationaryDistribution:
+    validated_rate_matrix = _resolve_validated_rate_matrix(
+        rate_matrix,
+        state_labels=state_labels,
+        row_sum_tolerance=row_sum_tolerance,
+    )
+    validated_probability_tolerance = _validate_probability_tolerance(
+        probability_tolerance
+    )
+    stationary_vector = _solve_stationary_vector(validated_rate_matrix.rate_matrix)
+    _validate_stationary_vector(
+        stationary_vector,
+        validated_rate_matrix=validated_rate_matrix,
+        probability_tolerance=validated_probability_tolerance,
+    )
+    residual_vector = stationary_vector @ validated_rate_matrix.rate_matrix
+    return SolvedCtmcStationaryDistribution(
+        state_labels=validated_rate_matrix.state_labels,
+        probabilities=tuple(float(value) for value in stationary_vector),
+        residual_by_state=tuple(float(value) for value in residual_vector),
+        normalization_error=abs(float(numpy.sum(stationary_vector)) - 1.0),
+        probability_tolerance=validated_probability_tolerance,
+    )
+
+
+def verify_ctmc_stationary_distribution(
+    rate_matrix: numpy.ndarray | Sequence[Sequence[float]] | ValidatedCtmcRateMatrix,
+    stationary_distribution: Mapping[str, float] | Sequence[float] | numpy.ndarray,
+    *,
+    state_labels: Sequence[str] | None = None,
+    row_sum_tolerance: float = 1e-9,
+    probability_tolerance: float = 1e-9,
+) -> SolvedCtmcStationaryDistribution:
+    validated_rate_matrix = _resolve_validated_rate_matrix(
+        rate_matrix,
+        state_labels=state_labels,
+        row_sum_tolerance=row_sum_tolerance,
+    )
+    validated_probability_tolerance = _validate_probability_tolerance(
+        probability_tolerance
+    )
+    candidate_vector = _resolve_stationary_distribution_vector(
+        stationary_distribution,
+        validated_rate_matrix=validated_rate_matrix,
+    )
+    _validate_stationary_vector(
+        candidate_vector,
+        validated_rate_matrix=validated_rate_matrix,
+        probability_tolerance=validated_probability_tolerance,
+    )
+    residual_vector = candidate_vector @ validated_rate_matrix.rate_matrix
+    return SolvedCtmcStationaryDistribution(
+        state_labels=validated_rate_matrix.state_labels,
+        probabilities=tuple(float(value) for value in candidate_vector),
+        residual_by_state=tuple(float(value) for value in residual_vector),
+        normalization_error=abs(float(numpy.sum(candidate_vector)) - 1.0),
+        probability_tolerance=validated_probability_tolerance,
+    )
+
+
 def _resolve_state_labels(
     *,
     state_count: int,
@@ -166,6 +257,159 @@ def _resolve_state_labels(
     return resolved_labels
 
 
+def _resolve_validated_rate_matrix(
+    rate_matrix: numpy.ndarray | Sequence[Sequence[float]] | ValidatedCtmcRateMatrix,
+    *,
+    state_labels: Sequence[str] | None,
+    row_sum_tolerance: float,
+) -> ValidatedCtmcRateMatrix:
+    if isinstance(rate_matrix, ValidatedCtmcRateMatrix):
+        if state_labels is not None and tuple(state_labels) != rate_matrix.state_labels:
+            raise PhylogeneticsError(
+                "ctmc stationary-distribution state labels must match the validated rate matrix",
+                code="ctmc_stationary_distribution_state_labels_mismatch",
+                details={
+                    "validated_state_labels": list(rate_matrix.state_labels),
+                    "requested_state_labels": list(state_labels),
+                },
+            )
+        return rate_matrix
+    return validate_ctmc_rate_matrix(
+        rate_matrix,
+        state_labels=state_labels,
+        row_sum_tolerance=row_sum_tolerance,
+    )
+
+
+def _solve_stationary_vector(rate_matrix: numpy.ndarray) -> numpy.ndarray:
+    state_count = rate_matrix.shape[0]
+    linear_system = rate_matrix.T.copy()
+    linear_system[-1, :] = 1.0
+    targets = numpy.zeros(state_count, dtype=float)
+    targets[-1] = 1.0
+    try:
+        stationary_vector = numpy.linalg.solve(linear_system, targets)
+    except numpy.linalg.LinAlgError:
+        stationary_vector, *_ = numpy.linalg.lstsq(linear_system, targets, rcond=None)
+    return numpy.real_if_close(stationary_vector, tol=1000).astype(float)
+
+
+def _resolve_stationary_distribution_vector(
+    stationary_distribution: Mapping[str, float] | Sequence[float] | numpy.ndarray,
+    *,
+    validated_rate_matrix: ValidatedCtmcRateMatrix,
+) -> numpy.ndarray:
+    if isinstance(stationary_distribution, Mapping):
+        unexpected_states = sorted(
+            state
+            for state in stationary_distribution
+            if state not in set(validated_rate_matrix.state_labels)
+        )
+        if unexpected_states:
+            raise PhylogeneticsError(
+                "ctmc stationary distribution contains unexpected states",
+                code="ctmc_stationary_distribution_unexpected_states",
+                details={"unexpected_states": unexpected_states},
+            )
+        missing_states = [
+            state
+            for state in validated_rate_matrix.state_labels
+            if state not in stationary_distribution
+        ]
+        if missing_states:
+            raise PhylogeneticsError(
+                "ctmc stationary distribution is missing required states",
+                code="ctmc_stationary_distribution_missing_states",
+                details={"missing_states": missing_states},
+            )
+        return numpy.array(
+            [float(stationary_distribution[state]) for state in validated_rate_matrix.state_labels],
+            dtype=float,
+        )
+    vector = numpy.asarray(stationary_distribution, dtype=float)
+    if vector.ndim != 1 or vector.shape[0] != validated_rate_matrix.state_count:
+        raise PhylogeneticsError(
+            "ctmc stationary distribution must match the CTMC state count",
+            code="ctmc_stationary_distribution_length_mismatch",
+            details={
+                "state_count": validated_rate_matrix.state_count,
+                "distribution_shape": list(vector.shape),
+            },
+        )
+    return vector
+
+
+def _validate_stationary_vector(
+    stationary_vector: numpy.ndarray,
+    *,
+    validated_rate_matrix: ValidatedCtmcRateMatrix,
+    probability_tolerance: float,
+) -> None:
+    if not numpy.all(numpy.isfinite(stationary_vector)):
+        raise PhylogeneticsError(
+            "ctmc stationary distribution must contain only finite values",
+            code="ctmc_stationary_distribution_value_not_finite",
+        )
+    if numpy.any(stationary_vector < -probability_tolerance):
+        offending_indices = [
+            index
+            for index, value in enumerate(stationary_vector)
+            if float(value) < -probability_tolerance
+        ]
+        raise PhylogeneticsError(
+            "ctmc stationary distribution must not contain negative probabilities",
+            code="ctmc_stationary_distribution_negative",
+            details={
+                "offending_states": [
+                    validated_rate_matrix.state_labels[index]
+                    for index in offending_indices
+                ],
+                "probabilities": [
+                    float(stationary_vector[index]) for index in offending_indices
+                ],
+                "probability_tolerance": probability_tolerance,
+            },
+        )
+    clipped_vector = stationary_vector.copy()
+    clipped_vector[clipped_vector < 0.0] = 0.0
+    normalization_error = abs(float(numpy.sum(clipped_vector)) - 1.0)
+    if normalization_error > probability_tolerance:
+        raise PhylogeneticsError(
+            "ctmc stationary distribution must sum to one within tolerance",
+            code="ctmc_stationary_distribution_not_normalized",
+            details={
+                "total_probability": float(numpy.sum(clipped_vector)),
+                "expected_total": 1.0,
+                "absolute_error": normalization_error,
+                "probability_tolerance": probability_tolerance,
+            },
+        )
+    residual_vector = clipped_vector @ validated_rate_matrix.rate_matrix
+    max_abs_residual = max(abs(float(value)) for value in residual_vector)
+    if max_abs_residual > max(
+        validated_rate_matrix.row_sum_tolerance,
+        probability_tolerance,
+    ):
+        raise PhylogeneticsError(
+            "ctmc stationary distribution does not satisfy pi Q = 0 within tolerance",
+            code="ctmc_stationary_distribution_residual_nonzero",
+            details={
+                "max_absolute_residual": max_abs_residual,
+                "residual_by_state": {
+                    state_label: float(residual)
+                    for state_label, residual in zip(
+                        validated_rate_matrix.state_labels,
+                        residual_vector,
+                        strict=True,
+                    )
+                },
+                "probability_tolerance": probability_tolerance,
+                "row_sum_tolerance": validated_rate_matrix.row_sum_tolerance,
+            },
+        )
+    stationary_vector[:] = clipped_vector / float(numpy.sum(clipped_vector))
+
+
 def _validate_row_sum_tolerance(row_sum_tolerance: float) -> float:
     if (
         math.isnan(row_sum_tolerance)
@@ -178,6 +422,20 @@ def _validate_row_sum_tolerance(row_sum_tolerance: float) -> float:
             details={"row_sum_tolerance": row_sum_tolerance},
         )
     return float(row_sum_tolerance)
+
+
+def _validate_probability_tolerance(probability_tolerance: float) -> float:
+    if (
+        math.isnan(probability_tolerance)
+        or math.isinf(probability_tolerance)
+        or probability_tolerance < 0.0
+    ):
+        raise PhylogeneticsError(
+            "ctmc stationary-distribution tolerance must be finite and non-negative",
+            code="ctmc_stationary_distribution_tolerance_invalid",
+            details={"probability_tolerance": probability_tolerance},
+        )
+    return float(probability_tolerance)
 
 
 def _first_invalid_entry(
@@ -203,6 +461,9 @@ def _first_positive_diagonal_index(
 
 
 __all__ = [
+    "SolvedCtmcStationaryDistribution",
     "ValidatedCtmcRateMatrix",
+    "solve_ctmc_stationary_distribution",
     "validate_ctmc_rate_matrix",
+    "verify_ctmc_stationary_distribution",
 ]
