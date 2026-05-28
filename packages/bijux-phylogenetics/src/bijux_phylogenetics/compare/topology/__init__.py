@@ -7,7 +7,10 @@ from importlib import import_module
 _PUBLIC_SURFACES = (
     (
         "agreement",
-        ("prune_trees_to_agreement_subtree",),
+        (
+            "approximate_maximum_agreement_subtree",
+            "prune_trees_to_agreement_subtree",
+        ),
     ),
     (
         "branch_lengths",

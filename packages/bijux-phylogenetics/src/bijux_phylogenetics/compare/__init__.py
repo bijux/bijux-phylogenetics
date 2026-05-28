@@ -21,6 +21,8 @@ from .reference import (
 from .topology import (
     AgreementSubtreeCandidateRow,
     AgreementSubtreePruningReport,
+    MaximumAgreementSubtreeApproximationReport,
+    MaximumAgreementSubtreeSearchRow,
     BranchScoreComparisonReport,
     CladeOverlapComparisonReport,
     RobinsonFouldsComparisonReport,
@@ -40,6 +42,7 @@ from .topology import (
     compare_tree_paths,
     compare_tree_sets_structurally,
     compare_tree_structurally,
+    approximate_maximum_agreement_subtree,
     prune_trees_to_agreement_subtree,
     prune_trees_to_shared_taxa,
     write_agreement_subtree_pruning_table,
@@ -55,6 +58,8 @@ from .topology import (
 __all__ = [
     "AgreementSubtreeCandidateRow",
     "AgreementSubtreePruningReport",
+    "MaximumAgreementSubtreeApproximationReport",
+    "MaximumAgreementSubtreeSearchRow",
     "BranchScoreComparisonReport",
     "CladeOverlapComparisonReport",
     "ComparisonReportBuildResult",
@@ -83,6 +88,7 @@ __all__ = [
     "compare_tree_structurally",
     "compare_tree_paths",
     "build_tree_comparison_report",
+    "approximate_maximum_agreement_subtree",
     "prune_trees_to_agreement_subtree",
     "prune_trees_to_shared_taxa",
     "write_agreement_subtree_pruning_table",
