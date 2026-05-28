@@ -8501,6 +8501,62 @@ def test_cli_compare_clade_ages_includes_manifest(
     assert manifest_payload["input_checksums"][str(right_path)]
 
 
+def test_cli_compare_deep_coalescence_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    table_path = tmp_path / "deep-coalescence.tsv"
+    mapping_table_path = tmp_path / "deep-coalescence-taxon-map.tsv"
+    manifest = tmp_path / "deep-coalescence.manifest.json"
+    species_tree_path = fixture("deep_coalescence_species_tree_3_taxa.nwk")
+    gene_tree_path = fixture("deep_coalescence_gene_tree_4_tips.nwk")
+    taxon_map_path = fixture("deep_coalescence_gene_taxon_map_4_tips.tsv")
+
+    exit_code = main(
+        [
+            "compare",
+            "deep-coalescence",
+            str(species_tree_path),
+            str(gene_tree_path),
+            "--taxon-map",
+            str(taxon_map_path),
+            "--out",
+            str(table_path),
+            "--mapping-out",
+            str(mapping_table_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["deep_coalescence_total"] == 2
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "compare"
+    assert manifest_payload["arguments"] == [
+        "compare",
+        "deep-coalescence",
+        str(species_tree_path),
+        str(gene_tree_path),
+        "--taxon-map",
+        str(taxon_map_path),
+        "--out",
+        str(table_path),
+        "--mapping-out",
+        str(mapping_table_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(species_tree_path)]
+    assert manifest_payload["input_checksums"][str(gene_tree_path)]
+    assert manifest_payload["input_checksums"][str(taxon_map_path)]
+
+
 def test_cli_phylo_dating_least_squares_includes_manifest(
     tmp_path: Path,
     capsys,
