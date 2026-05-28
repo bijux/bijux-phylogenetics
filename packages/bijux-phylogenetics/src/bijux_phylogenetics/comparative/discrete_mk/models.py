@@ -17,13 +17,44 @@ DISCRETE_MK_MODEL_COMPARISON_ORDER = (
     "symmetric",
     "all-rates-different",
 )
+DISCRETE_MK_ASCERTAINMENT_POLICIES = (
+    "none",
+    "lewis-variable-only",
+)
 DISCRETE_MK_LIKELIHOOD_CONSTANT_POLICY = (
     "continuous-time-markov-pruning-loglikelihood-has-no-extra-normalizing-constant"
+)
+DISCRETE_MK_LIKELIHOOD_VARIABLE_ONLY_CONSTANT_POLICY = (
+    "continuous-time-markov-pruning-loglikelihood-conditions-on-variable-site-observation-under-the-declared-lewis-mk-ascertainment-policy"
 )
 DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY = "raw-loglikelihood-and-derived-aic-are-directly-comparable-when-all-candidate-mk-models-share-the-owned-pruning-likelihood-policy"
 DISCRETE_MK_MODEL_RANKING_POLICY = "relative-aic-and-aicc-ranking-is-permitted-only-when-all-candidate-discrete-mk-models-share-one-pruning-likelihood-policy"
 DISCRETE_MK_MODEL_CONFIDENCE_WEIGHT_BASIS = "AICc"
 DISCRETE_MK_MODEL_CONFIDENCE_DELTA_THRESHOLD = 2.0
+
+
+def validate_discrete_mk_ascertainment_policy(policy: str) -> str:
+    """Normalize and validate one owned discrete Mk ascertainment policy."""
+    normalized_policy = policy.strip().lower()
+    if normalized_policy not in DISCRETE_MK_ASCERTAINMENT_POLICIES:
+        expected = ", ".join(DISCRETE_MK_ASCERTAINMENT_POLICIES)
+        raise ValueError(
+            "unsupported discrete Mk ascertainment policy: "
+            f"{policy}; expected one of {expected}"
+        )
+    return normalized_policy
+
+
+def resolve_discrete_mk_likelihood_constant_policy(
+    ascertainment_policy: str,
+) -> str:
+    """Return the governed likelihood-constant policy for one Mk fit surface."""
+    validated_policy = validate_discrete_mk_ascertainment_policy(
+        ascertainment_policy
+    )
+    if validated_policy == "lewis-variable-only":
+        return DISCRETE_MK_LIKELIHOOD_VARIABLE_ONLY_CONSTANT_POLICY
+    return DISCRETE_MK_LIKELIHOOD_CONSTANT_POLICY
 
 
 @dataclass(slots=True)
@@ -112,11 +143,14 @@ class DiscreteMkFitReport:
     taxon_column: str
     trait: str
     model: str
+    ascertainment_policy: str
     state_ordering: str
     state_order: list[str]
     taxon_count: int
     input_audit: DiscreteMkInputAudit
     log_likelihood: float
+    ascertainment_conditioning_log_probability: float | None
+    invariant_pattern_log_probability: float | None
     parameter_count: int
     aic: float
     aicc: float
@@ -138,6 +172,7 @@ class DiscreteMkModelComparisonReport:
     tree_path: Path
     traits_path: Path
     trait: str
+    ascertainment_policy: str
     taxon_count: int
     rows: list[ComparativeModelComparisonRow]
     better_model: str
