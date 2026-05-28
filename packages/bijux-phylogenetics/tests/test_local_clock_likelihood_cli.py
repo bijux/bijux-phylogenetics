@@ -49,4 +49,5 @@ def test_phylo_likelihood_local_clock_cli_writes_governed_outputs(
     assert (out_dir / "scaled_tree.nwk").is_file()
     assert (out_dir / "branch_rates.tsv").is_file()
     assert (out_dir / "regimes.tsv").is_file()
+    assert (out_dir / "site_log_likelihoods.tsv").is_file()
     assert (out_dir / "run.json").is_file()
