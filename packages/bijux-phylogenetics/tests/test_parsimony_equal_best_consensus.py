@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 import json
 
+import pytest
+
 import bijux_phylogenetics.parsimony as parsimony_api
 from bijux_phylogenetics.parsimony import (
     ParsimonyConsensusSummary,
@@ -11,6 +13,7 @@ from bijux_phylogenetics.parsimony import (
     summarize_equal_best_parsimony_trees,
     write_parsimony_equal_best_consensus_artifacts,
 )
+from bijux_phylogenetics.runtime.errors import ParsimonyAnalysisError
 
 FIXTURES = Path(__file__).parent / "fixtures" / "parsimony"
 
@@ -94,3 +97,59 @@ def test_write_equal_best_parsimony_consensus_artifacts_materializes_outputs(
     assert payload["retained_all_equal_best_trees"] is True
     assert payload["strict_consensus"]["consensus_newick"] == "(A,B,C,D);"
     assert payload["majority_consensus"]["consensus_newick"] == "((A,B)60,(C,D)60);"
+
+
+def test_equal_best_parsimony_consensus_suppresses_consensus_when_cap_truncates() -> None:
+    report = summarize_equal_best_parsimony_trees(
+        fixture("bootstrap_matrix.tsv"),
+        method="fitch",
+        max_retained_equal_best_trees=3,
+    )
+
+    assert report.equal_best_tree_count == 5
+    assert report.retained_equal_best_tree_count == 3
+    assert report.retained_all_equal_best_trees is False
+    assert report.strict_consensus is None
+    assert report.majority_consensus is None
+    assert [row.tree_newick for row in report.equal_best_tree_rows] == [
+        "(((A,B),C),D);",
+        "(((A,B),D),C);",
+        "((A,(C,D)),B);",
+    ]
+
+
+def test_write_equal_best_parsimony_consensus_artifacts_omits_partial_consensus_files(
+    tmp_path: Path,
+) -> None:
+    report = summarize_equal_best_parsimony_trees(
+        fixture("bootstrap_matrix.tsv"),
+        method="fitch",
+        max_retained_equal_best_trees=3,
+    )
+
+    outputs = write_parsimony_equal_best_consensus_artifacts(
+        tmp_path / "equal-best-consensus-truncated",
+        report,
+    )
+
+    assert set(outputs) == {
+        "equal_best_trees_path",
+        "equal_best_scores_path",
+        "run_json_path",
+    }
+    payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
+    assert payload["retained_all_equal_best_trees"] is False
+    assert payload["strict_consensus"] is None
+    assert payload["majority_consensus"] is None
+
+
+def test_equal_best_parsimony_consensus_rejects_nonpositive_tree_cap() -> None:
+    with pytest.raises(
+        ParsimonyAnalysisError,
+        match="retained-tree cap of at least one",
+    ):
+        summarize_equal_best_parsimony_trees(
+            fixture("bootstrap_matrix.tsv"),
+            method="fitch",
+            max_retained_equal_best_trees=0,
+        )
