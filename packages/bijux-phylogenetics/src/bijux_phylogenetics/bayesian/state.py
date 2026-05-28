@@ -33,7 +33,9 @@ class BayesianTreeState:
     branch_rows: list[BayesianStateBranchRow]
 
     def to_tree(self) -> PhyloTree:
-        return PhyloTree.from_newick(self.tree_newick)
+        tree = PhyloTree.from_newick(self.tree_newick)
+        tree.rooted = self.rooted
+        return tree
 
 
 @dataclass(frozen=True, slots=True)

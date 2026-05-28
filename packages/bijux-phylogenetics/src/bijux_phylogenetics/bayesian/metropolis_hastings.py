@@ -11,6 +11,9 @@ from bijux_phylogenetics.bayesian.state import (
     BayesianPriorComponentState,
     build_bayesian_phylogenetic_state,
 )
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
+    APE_ULTRAMETRIC_TOLERANCE,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
@@ -76,6 +79,14 @@ class MetropolisHastingsRunReport:
     step_rows: list[MetropolisHastingsStepRow]
 
 
+@dataclass(frozen=True, slots=True)
+class _NodeHeightSlideCandidate:
+    node_id: str
+    current_height: float
+    lower_height_bound: float
+    upper_height_bound: float
+
+
 def build_metropolis_hastings_proposal(
     *,
     changed_fields: list[str] | tuple[str, ...],
@@ -113,6 +124,7 @@ def propose_branch_length_scaling_move(
         owner_name="branch-length scaling proposal",
     )
     current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
     candidate_branch_rows = [
         (child.node_id, float(child.branch_length))
         for _parent, child in current_tree.iter_edges()
@@ -192,6 +204,7 @@ def propose_global_tree_height_scaling_move(
         owner_name="global tree-height scaling proposal",
     )
     current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
     current_branch_lengths = [
         float(child.branch_length)
         for _parent, child in current_tree.iter_edges()
@@ -265,6 +278,119 @@ def propose_global_tree_height_scaling_move(
     )
     return build_metropolis_hastings_proposal(
         changed_fields=("tree.branch_lengths",),
+        log_forward_density=log_forward_density,
+        log_reverse_density=log_reverse_density,
+        is_valid=True,
+        proposed_tree=proposed_tree,
+        proposed_model_parameters=current_state.model_parameters,
+    )
+
+
+def propose_node_height_sliding_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+    *,
+    height_slide_standard_deviation: float,
+    ultrametric_tolerance: float = APE_ULTRAMETRIC_TOLERANCE,
+) -> MetropolisHastingsProposal:
+    """Propose one additive slide on one internal node height."""
+    validated_height_slide_standard_deviation = _validate_positive_finite_float(
+        value=height_slide_standard_deviation,
+        field_name="height_slide_standard_deviation",
+        owner_name="node-height sliding proposal",
+    )
+    validated_ultrametric_tolerance = _validate_positive_finite_float(
+        value=ultrametric_tolerance,
+        field_name="ultrametric_tolerance",
+        owner_name="node-height sliding proposal",
+    )
+    current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
+    try:
+        current_node_heights = _compute_rooted_ultrametric_node_heights(
+            current_tree=current_tree,
+            ultrametric_tolerance=validated_ultrametric_tolerance,
+        )
+    except PhylogeneticsError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.node_heights",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    candidate_nodes = _collect_node_height_slide_candidates(
+        current_tree=current_tree,
+        node_heights=current_node_heights,
+    )
+    if not candidate_nodes:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.node_heights",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "node-height sliding requires one non-root internal node with a positive age interval"
+            ),
+        )
+    selected_candidate = candidate_nodes[rng.randrange(len(candidate_nodes))]
+    proposed_height = selected_candidate.current_height + rng.gauss(
+        0.0,
+        validated_height_slide_standard_deviation,
+    )
+    changed_field = f"tree.node_height:{selected_candidate.node_id}"
+    if not math.isfinite(proposed_height):
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="node-height sliding produced a non-finite proposed height",
+        )
+    if not (
+        selected_candidate.lower_height_bound
+        < proposed_height
+        < selected_candidate.upper_height_bound
+    ):
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "node-height sliding would violate ancestor-descendant age order"
+            ),
+        )
+    proposed_tree = _copy_tree_with_slid_node_height(
+        current_tree=current_tree,
+        node_id=selected_candidate.node_id,
+        proposed_height=proposed_height,
+        node_heights=current_node_heights,
+    )
+    proposed_node_heights = _compute_rooted_ultrametric_node_heights(
+        current_tree=proposed_tree,
+        ultrametric_tolerance=validated_ultrametric_tolerance,
+    )
+    proposed_candidate_nodes = _collect_node_height_slide_candidates(
+        current_tree=proposed_tree,
+        node_heights=proposed_node_heights,
+    )
+    log_forward_density = -math.log(
+        len(candidate_nodes)
+    ) + _normal_node_height_slide_density(
+        current_height=selected_candidate.current_height,
+        proposed_height=proposed_height,
+        height_slide_standard_deviation=validated_height_slide_standard_deviation,
+    )
+    log_reverse_density = -math.log(
+        len(proposed_candidate_nodes)
+    ) + _normal_node_height_slide_density(
+        current_height=proposed_height,
+        proposed_height=selected_candidate.current_height,
+        height_slide_standard_deviation=validated_height_slide_standard_deviation,
+    )
+    return build_metropolis_hastings_proposal(
+        changed_fields=(changed_field,),
         log_forward_density=log_forward_density,
         log_reverse_density=log_reverse_density,
         is_valid=True,
@@ -609,6 +735,28 @@ def _copy_tree_with_globally_scaled_branch_lengths(
     return proposed_tree
 
 
+def _copy_tree_with_slid_node_height(
+    *,
+    current_tree: PhyloTree,
+    node_id: str,
+    proposed_height: float,
+    node_heights: dict[str, float],
+) -> PhyloTree:
+    proposed_tree = current_tree.copy()
+    proposed_node = proposed_tree.node_by_id(node_id)
+    if proposed_node.parent is None:
+        raise PhylogeneticsError(
+            "node-height sliding requires one non-root internal node",
+            code="metropolis_hastings_node_height_slide_root_not_allowed",
+        )
+    parent_height = node_heights[proposed_node.parent.node_id]
+    proposed_node.branch_length = parent_height - proposed_height
+    for child in proposed_node.children:
+        child_height = node_heights[child.node_id]
+        child.branch_length = proposed_height - child_height
+    return proposed_tree
+
+
 def _lognormal_scaling_density(
     *,
     current_branch_length: float,
@@ -644,3 +792,97 @@ def _global_tree_scaling_density(
         - (math.log(2.0 * math.pi) / 2.0)
         - ((z_score * z_score) / 2.0)
     )
+
+
+def _normal_node_height_slide_density(
+    *,
+    current_height: float,
+    proposed_height: float,
+    height_slide_standard_deviation: float,
+) -> float:
+    height_change = proposed_height - current_height
+    z_score = height_change / height_slide_standard_deviation
+    return (
+        -math.log(height_slide_standard_deviation)
+        - (math.log(2.0 * math.pi) / 2.0)
+        - ((z_score * z_score) / 2.0)
+    )
+
+
+def _compute_rooted_ultrametric_node_heights(
+    *,
+    current_tree: PhyloTree,
+    ultrametric_tolerance: float,
+) -> dict[str, float]:
+    if current_tree.rooted is not True:
+        raise PhylogeneticsError(
+            "node-height sliding requires one rooted ultrametric tree",
+            code="metropolis_hastings_node_height_slide_tree_not_rooted",
+        )
+    node_depths: dict[str, float] = {}
+    tip_depths: list[float] = []
+
+    def visit(node, current_depth: float) -> None:
+        if node.node_id is None:
+            raise PhylogeneticsError(
+                "node-height sliding requires stable node identifiers",
+                code="metropolis_hastings_node_height_slide_node_id_missing",
+            )
+        node_depths[node.node_id] = current_depth
+        if node.is_leaf():
+            tip_depths.append(current_depth)
+            return
+        for child in node.children:
+            branch_length = child.branch_length
+            if branch_length is None or not math.isfinite(branch_length):
+                raise PhylogeneticsError(
+                    "node-height sliding requires explicit finite branch lengths on every edge",
+                    code="metropolis_hastings_node_height_slide_branch_length_missing",
+                )
+            if branch_length < 0.0:
+                raise PhylogeneticsError(
+                    "node-height sliding requires non-negative branch lengths on every edge",
+                    code="metropolis_hastings_node_height_slide_branch_length_negative",
+                )
+            visit(child, current_depth + branch_length)
+
+    visit(current_tree.root, 0.0)
+    if not tip_depths:
+        raise PhylogeneticsError(
+            "node-height sliding requires at least one tip",
+            code="metropolis_hastings_node_height_slide_tip_missing",
+        )
+    root_age = max(tip_depths)
+    if root_age - min(tip_depths) > ultrametric_tolerance:
+        raise PhylogeneticsError(
+            "node-height sliding requires one rooted ultrametric tree",
+            code="metropolis_hastings_node_height_slide_tree_not_ultrametric",
+        )
+    return {
+        node_id: root_age - node_depth
+        for node_id, node_depth in node_depths.items()
+    }
+
+
+def _collect_node_height_slide_candidates(
+    *,
+    current_tree: PhyloTree,
+    node_heights: dict[str, float],
+) -> list[_NodeHeightSlideCandidate]:
+    candidates: list[_NodeHeightSlideCandidate] = []
+    for node in current_tree.iter_internal_nodes(order="preorder"):
+        if node.parent is None or node.node_id is None:
+            continue
+        current_height = node_heights[node.node_id]
+        lower_height_bound = max(node_heights[child.node_id] for child in node.children)
+        upper_height_bound = node_heights[node.parent.node_id]
+        if lower_height_bound < upper_height_bound:
+            candidates.append(
+                _NodeHeightSlideCandidate(
+                    node_id=node.node_id,
+                    current_height=current_height,
+                    lower_height_bound=lower_height_bound,
+                    upper_height_bound=upper_height_bound,
+                )
+            )
+    return candidates
