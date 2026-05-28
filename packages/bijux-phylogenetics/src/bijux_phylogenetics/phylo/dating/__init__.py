@@ -17,6 +17,10 @@ from .models import (
     PenalizedLikelihoodDatingNodeRow,
     PenalizedLikelihoodDatingReport,
 )
+from .penalized_likelihood import (
+    fit_penalized_likelihood_dating,
+    fit_penalized_likelihood_dating_from_metadata,
+)
 
 __all__ = [
     "LeastSquaresDatingBranchRow",
@@ -27,6 +31,8 @@ __all__ = [
     "PenalizedLikelihoodDatingReport",
     "fit_least_squares_dating",
     "fit_least_squares_dating_from_metadata",
+    "fit_penalized_likelihood_dating",
+    "fit_penalized_likelihood_dating_from_metadata",
     "write_least_squares_branch_residuals_tsv",
     "write_least_squares_dating_artifacts",
     "write_least_squares_dating_run_json",
