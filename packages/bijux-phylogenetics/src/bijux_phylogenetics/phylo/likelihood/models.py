@@ -85,6 +85,7 @@ class StrictClockLikelihoodReport:
     lower_clock_rate_bound: float
     upper_clock_rate_bound: float
     branch_rows: list[StrictClockBranchRow]
+    site_log_likelihoods: list[SiteLogLikelihoodRow]
 
 
 @dataclass(frozen=True, slots=True)
@@ -143,6 +144,7 @@ class LocalClockLikelihoodReport:
     upper_clock_rate_bound: float
     branch_rows: list[LocalClockBranchRow]
     regime_rows: list[LocalClockRegimeRow]
+    site_log_likelihoods: list[SiteLogLikelihoodRow]
 
 
 @dataclass(slots=True)
@@ -834,6 +836,7 @@ class ProteinPoissonTreeLikelihoodReport:
     gap_policy: str
     missing_policy: str
     log_likelihood: float
+    site_log_likelihoods: list[SiteLogLikelihoodRow]
 
 
 @dataclass(slots=True)
@@ -851,6 +854,7 @@ class ProteinEmpiricalMatrixTreeLikelihoodReport:
     gap_policy: str
     missing_policy: str
     log_likelihood: float
+    site_log_likelihoods: list[SiteLogLikelihoodRow]
 
 
 @dataclass(slots=True)
@@ -906,7 +910,9 @@ class DiscreteGammaSiteLikelihood:
     """One emitted site likelihood row under one gamma-mixture evaluation."""
 
     pattern_id: str
+    pattern_weight: int
     site_position: int
+    site_states: tuple[str, ...]
     category_likelihoods: list[float]
     mixture_likelihood: float
     log_likelihood: float
@@ -938,7 +944,9 @@ class InvariantMixtureSiteLikelihood:
     """One emitted site likelihood row under one invariant-site mixture evaluation."""
 
     pattern_id: str
+    pattern_weight: int
     site_position: int
+    site_states: tuple[str, ...]
     invariant_component_likelihood: float
     variable_component_likelihood: float
     mixture_likelihood: float
@@ -975,7 +983,9 @@ class DiscreteGammaInvariantMixtureSiteLikelihood:
     """One emitted site row under one combined discrete-gamma invariant mixture."""
 
     pattern_id: str
+    pattern_weight: int
     site_position: int
+    site_states: tuple[str, ...]
     category_likelihoods: list[float]
     invariant_component_likelihood: float
     variable_component_likelihood: float
