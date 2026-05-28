@@ -22,6 +22,12 @@ _PUBLIC_SURFACES = (
         ),
     ),
     (
+        "clade_ages",
+        (
+            "compare_clade_ages",
+        ),
+    ),
+    (
         "comparison",
         (
             "_build_tree_comparison_report",
@@ -55,7 +61,9 @@ _PUBLIC_SURFACES = (
             "BranchScoreComparisonReport",
             "BranchScoreSplit",
             "BranchScoreStatus",
+            "CladeAgeComparisonRow",
             "CladeChangeReport",
+            "DateAwareTreeComparisonReport",
             "CladeOverlapComparisonReport",
             "CladeOverlapObservation",
             "CladeOverlapRow",
