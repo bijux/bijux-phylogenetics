@@ -4,6 +4,9 @@ import math
 
 import numpy
 
+from bijux_phylogenetics.bayesian.probability_vectors import (
+    build_categorical_probability_vector,
+)
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     log_likelihood_from_root_prior,
@@ -13,6 +16,7 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import (
     AlignmentTaxonMismatchError,
     InvalidAlignmentError,
+    PhylogeneticsError,
 )
 
 DNA_STATE_ORDER = ("A", "C", "G", "T")
@@ -101,20 +105,18 @@ def validate_dna_base_frequencies(
         raise InvalidAlignmentError(
             f"{model_name} likelihood requires exactly four base frequencies in A/C/G/T order"
         )
-    if not numpy.all(numpy.isfinite(vector)):
-        raise InvalidAlignmentError(
-            f"{model_name} likelihood base frequencies must all be finite"
+    try:
+        validated_vector = build_categorical_probability_vector(
+            dict(zip(DNA_STATE_ORDER, vector.tolist(), strict=True)),
+            expected_states=DNA_STATE_ORDER,
         )
-    if numpy.any(vector < 0.0):
-        raise InvalidAlignmentError(
-            f"{model_name} likelihood base frequencies must be nonnegative"
-        )
-    total = float(vector.sum())
-    if total <= 0.0:
-        raise InvalidAlignmentError(
-            f"{model_name} likelihood base frequencies must sum to a positive value"
-        )
-    return vector / total
+    except PhylogeneticsError as error:
+        raise _dna_probability_error(
+            owner_name=f"{model_name} likelihood",
+            parameter_name="base frequencies",
+            error=error,
+        ) from error
+    return numpy.array(validated_vector.probabilities, dtype=float)
 
 
 def validate_dna_root_prior(
@@ -137,20 +139,18 @@ def validate_dna_root_prior(
         raise InvalidAlignmentError(
             f"{owner_name} requires exactly four root-prior probabilities in A/C/G/T order"
         )
-    if not numpy.all(numpy.isfinite(vector)):
-        raise InvalidAlignmentError(
-            f"{owner_name} root-prior probabilities must all be finite"
+    try:
+        validated_vector = build_categorical_probability_vector(
+            dict(zip(DNA_STATE_ORDER, vector.tolist(), strict=True)),
+            expected_states=DNA_STATE_ORDER,
         )
-    if numpy.any(vector < 0.0):
-        raise InvalidAlignmentError(
-            f"{owner_name} root-prior probabilities must be nonnegative"
-        )
-    total = float(vector.sum())
-    if total <= 0.0:
-        raise InvalidAlignmentError(
-            f"{owner_name} root-prior probabilities must sum to a positive value"
-        )
-    return vector / total
+    except PhylogeneticsError as error:
+        raise _dna_probability_error(
+            owner_name=owner_name,
+            parameter_name="root-prior probabilities",
+            error=error,
+        ) from error
+    return numpy.array(validated_vector.probabilities, dtype=float)
 
 
 def fixed_state_dna_root_prior(
@@ -341,3 +341,31 @@ def evaluate_fixed_topology_dna_site_log_likelihood(
         pruning_pass,
         root_prior=root_prior,
     )
+
+
+def _dna_probability_error(
+    *,
+    owner_name: str,
+    parameter_name: str,
+    error: PhylogeneticsError,
+) -> InvalidAlignmentError:
+    if error.code == "categorical_probability_vector_value_not_finite":
+        return InvalidAlignmentError(
+            f"{owner_name} {parameter_name} must all be finite"
+        )
+    if error.code == "categorical_probability_vector_value_negative":
+        return InvalidAlignmentError(
+            f"{owner_name} {parameter_name} must be non-negative"
+        )
+    if error.code == "categorical_probability_vector_not_normalized":
+        return InvalidAlignmentError(
+            f"{owner_name} {parameter_name} must sum to one within tolerance"
+        )
+    if error.code in {
+        "categorical_probability_vector_missing_states",
+        "categorical_probability_vector_unexpected_states",
+    }:
+        return InvalidAlignmentError(
+            f"{owner_name} requires {parameter_name} for exactly A, C, G, and T"
+        )
+    return InvalidAlignmentError(str(error))
