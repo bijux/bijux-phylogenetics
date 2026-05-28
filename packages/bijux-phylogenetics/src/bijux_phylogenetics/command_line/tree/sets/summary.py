@@ -8,6 +8,7 @@ from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.runtime.results import build_command_result
 from bijux_phylogenetics.trees import (
+    build_quartet_puzzling_consensus,
     compute_clade_frequency_table,
     compute_consensus_tree,
     compute_reference_tree_clade_support,
@@ -18,6 +19,7 @@ from bijux_phylogenetics.trees import (
     write_clade_frequency_table,
     write_clade_table,
     write_consensus_tree,
+    write_quartet_puzzling_artifacts,
     write_reference_tree_clade_support_table,
     write_reference_tree_quartet_support_table,
 )
@@ -96,6 +98,35 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the quartet-support report as JSON."
     )
     _add_manifest_argument(tree_set_quartet_support)
+
+    tree_set_quartet_puzzling = tree_set_subparsers.add_parser(
+        "quartet-puzzling",
+        help="Assemble quartet-scored trees across deterministic taxon orders and summarize a consensus tree.",
+    )
+    tree_set_quartet_puzzling.add_argument("tree_set", type=Path)
+    tree_set_quartet_puzzling.add_argument("--out-dir", required=True, type=Path)
+    tree_set_quartet_puzzling.add_argument(
+        "--max-order-count",
+        type=int,
+        default=32,
+        help="Cap the number of deterministic taxon orders assembled into the consensus tree.",
+    )
+    tree_set_quartet_puzzling.add_argument(
+        "--random-seed",
+        type=int,
+        default=0,
+        help="Seed used when additional shuffled taxon orders are needed beyond the deterministic base set.",
+    )
+    tree_set_quartet_puzzling.add_argument(
+        "--consensus-threshold",
+        type=float,
+        default=0.5,
+        help="Clade-frequency threshold applied when summarizing the assembled tree set.",
+    )
+    tree_set_quartet_puzzling.add_argument(
+        "--json", action="store_true", help="Emit the quartet-puzzling report as JSON."
+    )
+    _add_manifest_argument(tree_set_quartet_puzzling)
 
     tree_set_clade_rows = tree_set_subparsers.add_parser(
         "clades",
@@ -290,6 +321,48 @@ def run_tree_set_summary_command(args: Any) -> int | None:
                     "concordant_quartet_count": report.concordant_quartet_count,
                     "discordant_quartet_count": report.discordant_quartet_count,
                     "uninformative_quartet_count": report.uninformative_quartet_count,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.tree_set_command == "quartet-puzzling":
+        _tree, report = build_quartet_puzzling_consensus(
+            args.tree_set,
+            max_order_count=args.max_order_count,
+            random_seed=args.random_seed,
+            consensus_threshold=args.consensus_threshold,
+        )
+        artifact_paths = write_quartet_puzzling_artifacts(args.out_dir, report)
+        outputs = _finalize_outputs(
+            args,
+            command="tree-set",
+            inputs=[args.tree_set],
+            outputs=list(artifact_paths.values()),
+        )
+        _print_result(
+            build_command_result(
+                command="tree-set",
+                inputs=[args.tree_set],
+                outputs=outputs,
+                metrics={
+                    "tree_count": report.tree_count,
+                    "runtime_seconds": report.processing.runtime_seconds,
+                    "peak_memory_bytes": report.processing.peak_memory_bytes,
+                    "skipped_malformed_tree_count": (
+                        report.processing.skipped_malformed_tree_count
+                    ),
+                    "shared_taxon_count": len(report.shared_taxa),
+                    "quartet_count": report.quartet_count,
+                    "assembly_count": report.assembly_count,
+                    "unique_assembled_topology_count": (
+                        report.unique_assembled_topology_count
+                    ),
+                    "canonical_root_taxon": report.canonical_root_taxon,
+                    "consensus_threshold": report.consensus_threshold,
+                    "included_clade_count": report.included_clade_count,
                 },
                 data=report,
             ),
