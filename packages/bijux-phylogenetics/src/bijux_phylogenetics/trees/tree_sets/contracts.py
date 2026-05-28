@@ -94,6 +94,35 @@ class TreeSetCladeSupportReport:
 
 
 @dataclass(slots=True)
+class TreeSetQuartetSupportRow:
+    branch_id: str
+    left_taxa: list[str]
+    right_taxa: list[str]
+    quartet_count_per_tree: int
+    concordant_quartet_count: int
+    discordant_quartet_count: int
+    uninformative_quartet_count: int
+    concordant_frequency: float
+    discordant_frequency: float
+    uninformative_frequency: float
+
+
+@dataclass(slots=True)
+class TreeSetQuartetSupportReport:
+    reference_tree_path: Path
+    comparison_tree_set_path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    branch_count: int
+    total_quartet_count: int
+    concordant_quartet_count: int
+    discordant_quartet_count: int
+    uninformative_quartet_count: int
+    rows: list[TreeSetQuartetSupportRow]
+
+
+@dataclass(slots=True)
 class ConsensusTreeReport:
     path: Path
     tree_count: int
