@@ -9,6 +9,7 @@ import pytest
 import bijux_phylogenetics
 from bijux_phylogenetics.bayesian import (
     BIRTH_DEATH_TREE_PRIOR_FAMILIES,
+    CALIBRATION_PRIOR_FAMILIES,
     CATEGORICAL_MISSING_STATE_POLICIES,
     CLOCK_RATE_MODEL_FAMILIES,
     COALESCENT_TREE_PRIOR_FAMILIES,
@@ -16,6 +17,9 @@ from bijux_phylogenetics.bayesian import (
     BeastAnalysisXmlReport,
     BeastCalibration,
     BirthDeathTreePriorModel,
+    CalibrationPriorDefinition,
+    CalibrationPriorEvaluationReport,
+    CalibrationPriorRow,
     ConstantPopulationCoalescentPriorModel,
     LOCAL_CLOCK_RATE_MODEL_FAMILIES,
     LOCAL_CLOCK_TARGET_KINDS,
@@ -36,6 +40,7 @@ from bijux_phylogenetics.bayesian import (
     assess_mrbayes_convergence,
     build_bayesian_evidence_package,
     build_categorical_probability_vector,
+    load_calibration_prior_definitions,
     build_constant_population_coalescent_tree_prior,
     build_crown_conditioned_birth_death_tree_prior,
     build_crown_conditioned_yule_tree_prior,
@@ -49,6 +54,7 @@ from bijux_phylogenetics.bayesian import (
     compute_mrbayes_effective_sample_sizes,
     count_rooted_labeled_bifurcating_topologies,
     evaluate_constant_population_coalescent_tree_log_prior,
+    evaluate_calibration_tree_log_prior,
     evaluate_birth_death_tree_log_prior,
     evaluate_local_clock_tree_log_prior,
     evaluate_relaxed_lognormal_clock_tree_log_prior,
@@ -812,6 +818,9 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.CLOCK_RATE_MODEL_FAMILIES is CLOCK_RATE_MODEL_FAMILIES
     )
     assert (
+        bayesian_api.CALIBRATION_PRIOR_FAMILIES is CALIBRATION_PRIOR_FAMILIES
+    )
+    assert (
         bayesian_api.LOCAL_CLOCK_RATE_MODEL_FAMILIES
         is LOCAL_CLOCK_RATE_MODEL_FAMILIES
     )
@@ -839,6 +848,12 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bayesian_api.YULE_TREE_PRIOR_FAMILIES is YULE_TREE_PRIOR_FAMILIES
     assert bayesian_api.CategoricalProbabilityVector is CategoricalProbabilityVector
     assert bayesian_api.BirthDeathTreePriorModel is BirthDeathTreePriorModel
+    assert bayesian_api.CalibrationPriorDefinition is CalibrationPriorDefinition
+    assert (
+        bayesian_api.CalibrationPriorEvaluationReport
+        is CalibrationPriorEvaluationReport
+    )
+    assert bayesian_api.CalibrationPriorRow is CalibrationPriorRow
     assert (
         bayesian_api.ConstantPopulationCoalescentPriorModel
         is ConstantPopulationCoalescentPriorModel
@@ -868,6 +883,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_categorical_probability_vector
         is build_categorical_probability_vector
+    )
+    assert (
+        bayesian_api.load_calibration_prior_definitions
+        is load_calibration_prior_definitions
     )
     assert (
         bayesian_api.build_constant_population_coalescent_tree_prior
@@ -913,6 +932,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is count_rooted_labeled_bifurcating_topologies
     )
     assert bayesian_api.compare_log_probabilities is compare_log_probabilities
+    assert (
+        bayesian_api.evaluate_calibration_tree_log_prior
+        is evaluate_calibration_tree_log_prior
+    )
     assert (
         bayesian_api.evaluate_constant_population_coalescent_tree_log_prior
         is evaluate_constant_population_coalescent_tree_log_prior
