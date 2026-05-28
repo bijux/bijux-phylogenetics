@@ -3,7 +3,10 @@ from __future__ import annotations
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 import math
+import json
+from pathlib import Path
 
+from bijux_phylogenetics.io.newick import loads_newick, write_newick
 from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id
 from bijux_phylogenetics.phylo.topology.models import (
     StepwiseAdditionCandidateScore,
@@ -261,6 +264,124 @@ def summarize_stepwise_addition_tree(
         trace_rows=trace_rows,
         tree_newick=tree.to_newick(),
     )
+
+
+def write_stepwise_addition_trace_table(
+    path: Path,
+    report: StepwiseAdditionTreeReport,
+) -> Path:
+    """Write one row per tested insertion edge across the stepwise trace."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "\t".join(
+            [
+                "step_index",
+                "taxon",
+                "inserted_taxa",
+                "tested_edge_id",
+                "tested_edge_descendant_taxa",
+                "tested_edge_score",
+                "best_edge_id",
+                "best_edge_descendant_taxa",
+                "best_score",
+                "selected",
+                "candidate_tree_newick",
+            ]
+        )
+    ]
+    for row in report.trace_rows:
+        for tested_edge in row.tested_edge_rows:
+            lines.append(
+                "\t".join(
+                    [
+                        str(row.step_index),
+                        row.taxon,
+                        ",".join(row.inserted_taxa),
+                        tested_edge.branch_id,
+                        ",".join(tested_edge.descendant_taxa),
+                        str(tested_edge.score),
+                        row.best_edge_id,
+                        ",".join(row.best_edge_descendant_taxa),
+                        str(row.best_score),
+                        (
+                            "true"
+                            if tested_edge.branch_id == row.best_edge_id
+                            and math.isclose(tested_edge.score, row.best_score)
+                            and tested_edge.candidate_tree_newick == row.selected_tree_newick
+                            else "false"
+                        ),
+                        tested_edge.candidate_tree_newick,
+                    ]
+                )
+            )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def write_stepwise_addition_run_json(
+    path: Path,
+    report: StepwiseAdditionTreeReport,
+) -> Path:
+    """Write one machine-readable greedy stepwise-addition payload."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "algorithm": report.algorithm,
+        "objective_name": report.objective_name,
+        "objective_direction": report.objective_direction,
+        "insertion_order": report.insertion_order,
+        "starting_taxa": report.starting_taxa,
+        "tip_order": report.tip_order,
+        "tip_count": report.tip_count,
+        "internal_node_count": report.internal_node_count,
+        "rooted": report.rooted,
+        "strictly_bifurcating": report.strictly_bifurcating,
+        "all_requested_taxa_present_once": report.all_requested_taxa_present_once,
+        "missing_requested_taxa": report.missing_requested_taxa,
+        "duplicate_generated_taxa": report.duplicate_generated_taxa,
+        "unexpected_generated_taxa": report.unexpected_generated_taxa,
+        "validation_errors": report.validation_errors,
+        "final_score": report.final_score,
+        "trace_rows": [
+            {
+                "step_index": row.step_index,
+                "taxon": row.taxon,
+                "inserted_taxa": row.inserted_taxa,
+                "tested_edge_rows": [
+                    {
+                        "branch_id": tested_edge.branch_id,
+                        "descendant_taxa": tested_edge.descendant_taxa,
+                        "score": tested_edge.score,
+                        "candidate_tree_newick": tested_edge.candidate_tree_newick,
+                    }
+                    for tested_edge in row.tested_edge_rows
+                ],
+                "best_edge_id": row.best_edge_id,
+                "best_edge_descendant_taxa": row.best_edge_descendant_taxa,
+                "best_score": row.best_score,
+                "selected_tree_newick": row.selected_tree_newick,
+            }
+            for row in report.trace_rows
+        ],
+        "tree_newick": report.tree_newick,
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def write_stepwise_addition_artifacts(
+    out_dir: Path,
+    report: StepwiseAdditionTreeReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one stepwise-addition build."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    tree_path = write_newick(out_dir / "tree.nwk", loads_newick(report.tree_newick))
+    trace_path = write_stepwise_addition_trace_table(out_dir / "trace.tsv", report)
+    run_json_path = write_stepwise_addition_run_json(out_dir / "run.json", report)
+    return {
+        "tree_path": tree_path,
+        "trace_path": trace_path,
+        "run_json_path": run_json_path,
+    }
 
 
 def _prefer_stepwise_score(

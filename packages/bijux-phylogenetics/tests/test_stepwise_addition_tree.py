@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import pytest
 
 import bijux_phylogenetics.phylo.topology as topology_api
@@ -11,6 +13,7 @@ from bijux_phylogenetics.phylo.topology import (
     rooted_topology_signature_ids,
     validate_stepwise_addition_taxa,
     validate_stepwise_objective_direction,
+    write_stepwise_addition_artifacts,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
@@ -37,6 +40,7 @@ def test_topology_gateway_exports_stepwise_addition_validation_surface() -> None
         topology_api.build_greedy_stepwise_addition_tree
         is build_greedy_stepwise_addition_tree
     )
+    assert topology_api.write_stepwise_addition_artifacts is write_stepwise_addition_artifacts
 
 
 def test_validate_stepwise_addition_taxa_preserves_insertion_order() -> None:
@@ -142,3 +146,33 @@ def test_build_greedy_stepwise_addition_tree_records_best_scoring_edge_per_step(
     assert report.trace_rows[1].taxon == "Delta"
     assert report.trace_rows[1].best_edge_id == "Beta"
     assert len(report.trace_rows[1].tested_edge_rows) == 5
+
+
+def test_write_stepwise_addition_artifacts_materializes_governed_outputs(
+    tmp_path,
+) -> None:
+    def score_tree(tree: PhyloTree) -> float:
+        clade_ids = set(rooted_topology_signature_ids(tree))
+        score = 0.0
+        if tree.tip_count >= 3 and "Alpha|Gamma" not in clade_ids:
+            score += 10.0
+        if tree.tip_count >= 4 and "Beta|Delta" not in clade_ids:
+            score += 5.0
+        return score
+
+    _tree, report = build_greedy_stepwise_addition_tree(
+        ["Alpha", "Beta", "Gamma", "Delta"],
+        score_tree=score_tree,
+        objective_name="clade-presence",
+    )
+
+    outputs = write_stepwise_addition_artifacts(tmp_path / "stepwise-addition-run", report)
+
+    assert set(outputs) == {"tree_path", "trace_path", "run_json_path"}
+    assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
+        "step_index\ttaxon\tinserted_taxa\ttested_edge_id\ttested_edge_descendant_taxa\ttested_edge_score\tbest_edge_id\tbest_edge_descendant_taxa\tbest_score\tselected\tcandidate_tree_newick\n"
+    )
+    payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
+    assert payload["algorithm"] == "greedy-stepwise-addition-tree"
+    assert payload["objective_name"] == "clade-presence"
+    assert payload["final_score"] == 0.0
