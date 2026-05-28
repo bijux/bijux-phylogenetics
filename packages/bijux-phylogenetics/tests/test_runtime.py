@@ -8264,6 +8264,73 @@ def test_cli_phylo_dating_penalized_likelihood_includes_manifest(
     assert manifest_payload["input_checksums"][str(metadata_path)]
 
 
+def test_cli_phylo_dating_penalized_likelihood_cross_validation_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "penalized-likelihood-cross-validation"
+    manifest = tmp_path / "penalized-likelihood-cross-validation.manifest.json"
+    tree_path = fixture(
+        "penalized_likelihood_cross_validation_substitution_tree_5_taxa.nwk"
+    )
+    metadata_path = fixture("penalized_likelihood_cross_validation_tip_dates_5_taxa.tsv")
+    calibration_path = fixture(
+        "penalized_likelihood_cross_validation_calibrations_5_taxa.tsv"
+    )
+
+    exit_code = main(
+        [
+            "phylo",
+            "dating",
+            "penalized-likelihood-cross-validation",
+            str(tree_path),
+            str(metadata_path),
+            str(calibration_path),
+            "--smoothing-parameters",
+            "0.01",
+            "0.1",
+            "1.0",
+            "10.0",
+            "100.0",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 5
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "dating",
+        "penalized-likelihood-cross-validation",
+        str(tree_path),
+        str(metadata_path),
+        str(calibration_path),
+        "--smoothing-parameters",
+        "0.01",
+        "0.1",
+        "1.0",
+        "10.0",
+        "100.0",
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(metadata_path)]
+    assert manifest_payload["input_checksums"][str(calibration_path)]
+
+
 def test_cli_validate_writes_run_manifest(tmp_path: Path, capsys) -> None:
     manifest = tmp_path / "validate.manifest.json"
     exit_code = main(
