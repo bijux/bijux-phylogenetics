@@ -95,6 +95,27 @@ from .ctmc import (
 from .ctmc import (
     verify_ctmc_stationary_distribution as verify_ctmc_stationary_distribution,
 )
+from .dna_simplex_coordinates import (
+    DNA_EXCHANGEABILITY_LABELS as DNA_EXCHANGEABILITY_LABELS,
+)
+from .dna_simplex_coordinates import (
+    parameterize_dna_base_frequency_simplex as parameterize_dna_base_frequency_simplex,
+)
+from .dna_simplex_coordinates import (
+    parameterize_dna_exchangeability_simplex as parameterize_dna_exchangeability_simplex,
+)
+from .dna_simplex_coordinates import (
+    resolve_anchor_normalized_dna_exchangeabilities_from_unconstrained as resolve_anchor_normalized_dna_exchangeabilities_from_unconstrained,
+)
+from .dna_simplex_coordinates import (
+    resolve_dna_base_frequencies_from_unconstrained as resolve_dna_base_frequencies_from_unconstrained,
+)
+from .dna_simplex_coordinates import (
+    resolve_dna_base_frequency_simplex_from_unconstrained as resolve_dna_base_frequency_simplex_from_unconstrained,
+)
+from .dna_simplex_coordinates import (
+    resolve_dna_exchangeability_simplex_from_unconstrained as resolve_dna_exchangeability_simplex_from_unconstrained,
+)
 from .empirical import (
     evaluate_empirical_protein_tree_likelihood as evaluate_empirical_protein_tree_likelihood,
 )
@@ -157,6 +178,12 @@ from .gtr import (
 )
 from .gtr import (
     evaluate_gtr_tree_likelihood_from_alignment as evaluate_gtr_tree_likelihood_from_alignment,
+)
+from .gtr import (
+    evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities as evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities,
+)
+from .gtr import (
+    evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities_from_alignment as evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities_from_alignment,
 )
 from .gtr import (
     gtr_rate_matrix as gtr_rate_matrix,
@@ -602,6 +629,15 @@ from .pruning import (
 from .pruning import (
     transition_probability_matrix as transition_probability_matrix,
 )
+from .simplex_coordinates import (
+    SimplexCoordinateParameterization as SimplexCoordinateParameterization,
+)
+from .simplex_coordinates import (
+    parameterize_named_simplex as parameterize_named_simplex,
+)
+from .simplex_coordinates import (
+    resolve_named_simplex_from_unconstrained as resolve_named_simplex_from_unconstrained,
+)
 from .site_log_likelihoods import (
     evaluate_nucleotide_site_log_likelihoods as evaluate_nucleotide_site_log_likelihoods,
 )
@@ -784,9 +820,12 @@ __all__ = [
     "evaluate_protein_poisson_branch_likelihood_diagnostics_from_alignment",
     "evaluate_jc69_tree_likelihood",
     "evaluate_jc69_tree_likelihood_from_alignment",
+    "evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities",
+    "evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities_from_alignment",
     "f81_rate_matrix",
     "f81_transition_probability_matrix",
     "FiniteStateTransitionMatrixEvaluator",
+    "DNA_EXCHANGEABILITY_LABELS",
     "gtr_rate_matrix",
     "gtr_transition_probability_matrix",
     "hky85_rate_matrix",
@@ -839,7 +878,13 @@ __all__ = [
     "resolve_candidate_tree_alignment_records",
     "resolve_candidate_tree_records",
     "resolve_candidate_tree_site_likelihood_vectors",
+    "resolve_anchor_normalized_dna_exchangeabilities_from_unconstrained",
+    "resolve_dna_base_frequencies_from_unconstrained",
+    "resolve_dna_base_frequency_simplex_from_unconstrained",
+    "resolve_dna_exchangeability_simplex_from_unconstrained",
+    "resolve_named_simplex_from_unconstrained",
     "select_observed_best_candidate_tree",
+    "SimplexCoordinateParameterization",
     "summarize_marginal_ancestral_sites",
     "sum_alignment_site_log_likelihoods",
     "sum_compressed_site_pattern_log_likelihoods",
@@ -858,6 +903,9 @@ __all__ = [
     "validate_nucleotide_site_log_likelihood_model",
     "validate_likelihood_spr_evaluation_budget",
     "validate_nucleotide_substitution_optimization_model",
+    "parameterize_dna_base_frequency_simplex",
+    "parameterize_dna_exchangeability_simplex",
+    "parameterize_named_simplex",
     "write_approximate_topology_test_artifacts",
     "write_approximate_topology_test_resampling_table",
     "write_approximate_topology_test_run_json",
