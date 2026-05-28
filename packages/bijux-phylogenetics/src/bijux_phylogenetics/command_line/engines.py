@@ -26,23 +26,26 @@ from bijux_phylogenetics.parsimony import (
     consistency_index,
     jackknife_parsimony,
     load_fitch_character_matrix,
-    load_parsimony_character_weights,
     load_parsimony_character_matrix,
+    load_parsimony_character_weights,
     load_sankoff_cost_matrix,
     reconstruct_acctran,
     reconstruct_deltran,
     rescaled_consistency_index,
     retention_index,
-    summarize_equal_best_parsimony_trees,
-    search_parsimony_nni,
     run_parsimony_ratchet,
-    search_parsimony_spr,
     score_camin_sokal,
     score_dollo,
     score_fitch,
     score_sankoff,
     score_wagner,
+    search_parsimony_nni,
+    search_parsimony_spr,
+    summarize_equal_best_parsimony_trees,
     tree_length,
+    write_camin_sokal_artifacts,
+    write_dollo_artifacts,
+    write_fitch_artifacts,
     write_parsimony_bootstrap_artifacts,
     write_parsimony_bremer_support_artifacts,
     write_parsimony_consistency_artifacts,
@@ -50,16 +53,17 @@ from bijux_phylogenetics.parsimony import (
     write_parsimony_jackknife_artifacts,
     write_parsimony_nni_artifacts,
     write_parsimony_ratchet_artifacts,
-    write_parsimony_spr_artifacts,
     write_parsimony_reconstruction_artifacts,
     write_parsimony_rescaled_consistency_artifacts,
     write_parsimony_retention_artifacts,
+    write_parsimony_spr_artifacts,
     write_parsimony_tree_length_artifacts,
-    write_camin_sokal_artifacts,
-    write_dollo_artifacts,
-    write_fitch_artifacts,
     write_sankoff_artifacts,
     write_wagner_artifacts,
+)
+from bijux_phylogenetics.phylo.dating import (
+    fit_least_squares_dating_from_metadata,
+    write_least_squares_dating_artifacts,
 )
 from bijux_phylogenetics.phylo.likelihood import (
     fit_strict_clock_likelihood_from_alignment,
@@ -790,6 +794,31 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the strict-clock report as JSON."
     )
     _add_manifest_argument(phylo_likelihood_strict_clock)
+    phylo_dating = phylo_subparsers.add_parser(
+        "dating",
+        help="Fit governed dated-tree workflows on rooted substitution trees and tip-date tables.",
+    )
+    phylo_dating_subparsers = phylo_dating.add_subparsers(
+        dest="phylo_dating_command",
+        required=True,
+    )
+    phylo_dating_least_squares = phylo_dating_subparsers.add_parser(
+        "least-squares",
+        help="Fit one rooted tree to fixed tip dates by closed-form least squares and emit dated-tree artifacts.",
+    )
+    phylo_dating_least_squares.add_argument("tree_path", type=Path)
+    phylo_dating_least_squares.add_argument("metadata_path", type=Path)
+    phylo_dating_least_squares.add_argument("--taxon-column")
+    phylo_dating_least_squares.add_argument(
+        "--date-column",
+        default="date",
+        help="Column containing numeric sampling dates or tip dates.",
+    )
+    phylo_dating_least_squares.add_argument("--out-dir", required=True, type=Path)
+    phylo_dating_least_squares.add_argument(
+        "--json", action="store_true", help="Emit the least-squares dating report as JSON."
+    )
+    _add_manifest_argument(phylo_dating_least_squares)
 
 
 def run_phylo_command(args: Any) -> int:
@@ -801,6 +830,49 @@ def run_phylo_command(args: Any) -> int:
         "mrbayes": getattr(args, "mrbayes_executable", None),
         "beast": getattr(args, "beast_executable", None),
     }
+    if args.phylo_command == "dating":
+        if args.phylo_dating_command == "least-squares":
+            report = fit_least_squares_dating_from_metadata(
+                args.tree_path,
+                args.metadata_path,
+                taxon_column=args.taxon_column,
+                date_column=args.date_column,
+            )
+            artifact_paths = write_least_squares_dating_artifacts(
+                args.out_dir,
+                report,
+            )
+            outputs = _finalize_outputs(
+                args,
+                command="phylo",
+                inputs=[args.tree_path, args.metadata_path],
+                outputs=list(artifact_paths.values()),
+            )
+            _print_result(
+                build_command_result(
+                    command="phylo",
+                    inputs=[args.tree_path, args.metadata_path],
+                    outputs=outputs,
+                    metrics={
+                        "taxon_count": len(report.taxa),
+                        "tip_count": report.tip_count,
+                        "internal_node_count": report.internal_node_count,
+                        "branch_count": report.branch_count,
+                        "estimated_clock_rate": report.estimated_clock_rate,
+                        "root_date": report.root_date,
+                        "residual_sum_squares": report.residual_sum_squares,
+                        "exact_fit": report.exact_fit,
+                        "converged": report.converged,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        raise EngineWorkflowError(
+            "unknown phylo dating command",
+            code="phylo_dating_command_unknown",
+        )
     if args.phylo_command == "likelihood":
         if args.phylo_likelihood_command == "strict-clock":
             report = fit_strict_clock_likelihood_from_alignment(
