@@ -76,6 +76,8 @@ from bijux_phylogenetics.phylo.dating import (
 from bijux_phylogenetics.phylo.likelihood import (
     fit_local_clock_likelihood_from_alignment,
     fit_strict_clock_likelihood_from_alignment,
+    place_queries_by_likelihood_from_alignment,
+    write_likelihood_placement_artifacts,
     write_local_clock_likelihood_artifacts,
     write_strict_clock_likelihood_artifacts,
 )
@@ -840,6 +842,42 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the local-clock report as JSON."
     )
     _add_manifest_argument(phylo_likelihood_local_clock)
+    phylo_likelihood_placement = phylo_likelihood_subparsers.add_parser(
+        "placement",
+        help="Place query DNA sequences on every reference-tree edge with JC69 likelihood.",
+    )
+    phylo_likelihood_placement.add_argument("reference_tree_path", type=Path)
+    phylo_likelihood_placement.add_argument("reference_alignment_path", type=Path)
+    phylo_likelihood_placement.add_argument("query_alignment_path", type=Path)
+    phylo_likelihood_placement.add_argument(
+        "--model",
+        default="jc69",
+        choices=["jc69"],
+        help="Likelihood model for the placement fit.",
+    )
+    phylo_likelihood_placement.add_argument(
+        "--lower-pendant-length-bound",
+        type=float,
+        default=1e-6,
+        help="Positive lower bound for the query pendant branch-length search.",
+    )
+    phylo_likelihood_placement.add_argument(
+        "--upper-pendant-length-bound",
+        type=float,
+        default=5.0,
+        help="Upper bound for the query pendant branch-length search.",
+    )
+    phylo_likelihood_placement.add_argument(
+        "--max-coordinate-passes",
+        type=int,
+        default=12,
+        help="Maximum number of coordinate-search passes over distal and pendant placement lengths.",
+    )
+    phylo_likelihood_placement.add_argument("--out-dir", required=True, type=Path)
+    phylo_likelihood_placement.add_argument(
+        "--json", action="store_true", help="Emit the placement report as JSON."
+    )
+    _add_manifest_argument(phylo_likelihood_placement)
     phylo_dating = phylo_subparsers.add_parser(
         "dating",
         help="Fit governed dated-tree workflows on rooted substitution trees and tip-date tables.",
@@ -1211,6 +1249,53 @@ def run_phylo_command(args: Any) -> int:
             code="phylo_dating_command_unknown",
         )
     if args.phylo_command == "likelihood":
+        if args.phylo_likelihood_command == "placement":
+            report = place_queries_by_likelihood_from_alignment(
+                args.reference_tree_path,
+                args.reference_alignment_path,
+                args.query_alignment_path,
+                model=args.model,
+                lower_pendant_length_bound=args.lower_pendant_length_bound,
+                upper_pendant_length_bound=args.upper_pendant_length_bound,
+                max_coordinate_passes=args.max_coordinate_passes,
+            )
+            artifact_paths = write_likelihood_placement_artifacts(
+                args.out_dir,
+                report,
+            )
+            outputs = _finalize_outputs(
+                args,
+                command="phylo",
+                inputs=[
+                    args.reference_tree_path,
+                    args.reference_alignment_path,
+                    args.query_alignment_path,
+                ],
+                outputs=list(artifact_paths.values()),
+            )
+            _print_result(
+                build_command_result(
+                    command="phylo",
+                    inputs=[
+                        args.reference_tree_path,
+                        args.reference_alignment_path,
+                        args.query_alignment_path,
+                    ],
+                    outputs=outputs,
+                    metrics={
+                        "model_name": report.model_name,
+                        "reference_taxon_count": len(report.reference_taxa),
+                        "edge_count": report.edge_count,
+                        "query_count": report.query_count,
+                        "site_count": report.site_count,
+                        "placement_count": len(report.alternative_placements),
+                        "total_function_evaluation_count": report.total_function_evaluation_count,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
         if args.phylo_likelihood_command == "local-clock":
             report = fit_local_clock_likelihood_from_alignment(
                 args.tree_path,
