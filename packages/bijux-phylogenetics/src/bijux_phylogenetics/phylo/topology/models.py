@@ -169,3 +169,51 @@ class RandomBifurcatingTreeReport:
     unexpected_generated_taxa: list[str]
     validation_errors: list[str]
     tree_newick: str
+
+
+@dataclass(frozen=True, slots=True)
+class StepwiseAdditionCandidateScore:
+    """One evaluated insertion edge for one greedy stepwise-addition step."""
+
+    branch_id: str
+    descendant_taxa: list[str]
+    score: float
+    candidate_tree_newick: str
+
+
+@dataclass(frozen=True, slots=True)
+class StepwiseAdditionTraceRow:
+    """Trace of one taxon insertion during greedy stepwise addition."""
+
+    step_index: int
+    taxon: str
+    inserted_taxa: list[str]
+    tested_edge_rows: list[StepwiseAdditionCandidateScore]
+    best_edge_id: str
+    best_edge_descendant_taxa: list[str]
+    best_score: float
+    selected_tree_newick: str
+
+
+@dataclass(slots=True)
+class StepwiseAdditionTreeReport:
+    """Explicit record of one greedy stepwise-addition tree build."""
+
+    algorithm: str
+    objective_name: str
+    objective_direction: str
+    insertion_order: list[str]
+    starting_taxa: list[str]
+    tip_order: list[str]
+    tip_count: int
+    internal_node_count: int
+    rooted: bool | None
+    strictly_bifurcating: bool
+    all_requested_taxa_present_once: bool
+    missing_requested_taxa: list[str]
+    duplicate_generated_taxa: list[str]
+    unexpected_generated_taxa: list[str]
+    validation_errors: list[str]
+    final_score: float
+    trace_rows: list[StepwiseAdditionTraceRow]
+    tree_newick: str
