@@ -22,6 +22,7 @@ from bijux_phylogenetics.engines import (
 from bijux_phylogenetics.parsimony import (
     bootstrap_parsimony,
     build_parsimony_stepwise_addition_tree,
+    compute_parsimony_bremer_support,
     consistency_index,
     jackknife_parsimony,
     load_fitch_character_matrix,
@@ -43,6 +44,7 @@ from bijux_phylogenetics.parsimony import (
     score_wagner,
     tree_length,
     write_parsimony_bootstrap_artifacts,
+    write_parsimony_bremer_support_artifacts,
     write_parsimony_consistency_artifacts,
     write_parsimony_equal_best_consensus_artifacts,
     write_parsimony_jackknife_artifacts,
@@ -348,6 +350,53 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the jackknife report as JSON."
     )
     _add_manifest_argument(phylo_parsimony_jackknife)
+    phylo_parsimony_bremer_support = phylo_parsimony_subparsers.add_parser(
+        "bremer-support",
+        help="Compute exact small-taxon Bremer support for every informative clade on one rooted reference tree.",
+    )
+    phylo_parsimony_bremer_support.add_argument("tree_path", type=Path)
+    phylo_parsimony_bremer_support.add_argument("matrix_path", type=Path)
+    phylo_parsimony_bremer_support.add_argument(
+        "--method",
+        required=True,
+        choices=[
+            "fitch",
+            "wagner",
+            "sankoff",
+            "dollo",
+            "camin-sokal",
+            "acctran",
+            "deltran",
+        ],
+    )
+    phylo_parsimony_bremer_support.add_argument("--taxon-column")
+    phylo_parsimony_bremer_support.add_argument(
+        "--cost-matrix",
+        dest="cost_matrix_path",
+        type=Path,
+        help="Required when --method sankoff is selected.",
+    )
+    phylo_parsimony_bremer_support.add_argument(
+        "--allow-asymmetric-costs",
+        action="store_true",
+        help="Allow asymmetric Sankoff transition costs when --method sankoff is selected.",
+    )
+    phylo_parsimony_bremer_support.add_argument(
+        "--state-order",
+        help="Comma-separated explicit ordered state labels for Wagner Bremer scoring.",
+    )
+    _add_parsimony_character_weights_argument(phylo_parsimony_bremer_support)
+    phylo_parsimony_bremer_support.add_argument(
+        "--out-dir",
+        required=True,
+        type=Path,
+    )
+    phylo_parsimony_bremer_support.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the Bremer support report as JSON.",
+    )
+    _add_manifest_argument(phylo_parsimony_bremer_support)
     phylo_parsimony_equal_best_consensus = phylo_parsimony_subparsers.add_parser(
         "equal-best-consensus",
         help="Enumerate the exact equal-best parsimony tree set for a small matrix and summarize strict and majority consensus when the full set is retained.",
@@ -973,6 +1022,45 @@ def run_phylo_command(args: Any) -> int:
                 "equal_best_tree_count": report.equal_best_tree_count,
                 "retained_equal_best_tree_count": report.retained_equal_best_tree_count,
                 "retained_all_equal_best_trees": report.retained_all_equal_best_trees,
+            }
+        elif args.phylo_parsimony_command == "bremer-support":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            character_weights = _load_parsimony_character_weights_argument(args)
+            cost_matrix = (
+                load_sankoff_cost_matrix(
+                    args.cost_matrix_path,
+                    allow_asymmetric_costs=args.allow_asymmetric_costs,
+                )
+                if getattr(args, "cost_matrix_path", None) is not None
+                else None
+            )
+            state_order = _split_state_order(getattr(args, "state_order", None))
+            report = compute_parsimony_bremer_support(
+                args.tree_path,
+                matrix,
+                method=args.method,
+                state_order=state_order,
+                cost_matrix=cost_matrix,
+                allow_asymmetric_costs=args.allow_asymmetric_costs,
+                character_weights=character_weights,
+            )
+            artifact_paths = write_parsimony_bremer_support_artifacts(
+                args.out_dir,
+                report,
+            )
+            metrics = {
+                "algorithm": report.algorithm,
+                "method": report.method,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "candidate_tree_count": report.candidate_tree_count,
+                "reference_tree_score": report.reference_tree_score,
+                "optimal_score": report.optimal_score,
+                "reference_tree_is_optimal": report.reference_tree_is_optimal,
+                "bremer_row_count": len(report.bremer_rows),
             }
         elif args.phylo_parsimony_command == "stepwise-addition":
             matrix = load_parsimony_character_matrix(
