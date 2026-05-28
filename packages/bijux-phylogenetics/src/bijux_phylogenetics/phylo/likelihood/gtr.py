@@ -23,6 +23,9 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     GtrExchangeabilityOptimizationReport,
     GtrTreeLikelihoodReport,
 )
+from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
+    resolve_nucleotide_root_prior,
+)
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_coordinate_likelihood_search,
 )
@@ -120,6 +123,9 @@ def evaluate_gtr_tree_likelihood(
         | tuple[float, ...]
     ),
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> GtrTreeLikelihoodReport:
     """Evaluate one fixed-topology GTR likelihood from aligned DNA records."""
     normalized_records = normalize_unambiguous_dna_records(records, model_name="GTR")
@@ -133,12 +139,22 @@ def evaluate_gtr_tree_likelihood(
             model_name="GTR",
         )
         source = "provided"
+    resolved_root_prior = resolve_nucleotide_root_prior(
+        normalized_records,
+        owner_name="GTR likelihood",
+        default_policy="stationary",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=stationary,
+    )
     return _evaluate_gtr_tree_likelihood_from_patterns(
         tree,
         compressed_patterns,
         stationary_frequencies=stationary,
         base_frequency_source=source,
         exchangeabilities=exchangeabilities,
+        root_prior=resolved_root_prior.root_prior,
     )
 
 
@@ -154,6 +170,9 @@ def evaluate_gtr_tree_likelihood_from_alignment(
         | tuple[float, ...]
     ),
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> GtrTreeLikelihoodReport:
     """Evaluate one fixed-topology GTR likelihood from one tree path and alignment."""
     return evaluate_gtr_tree_likelihood(
@@ -161,6 +180,9 @@ def evaluate_gtr_tree_likelihood_from_alignment(
         load_fasta_alignment(alignment_path),
         exchangeabilities=exchangeabilities,
         base_frequencies=base_frequencies,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
 
 
@@ -212,10 +234,10 @@ def optimize_gtr_exchangeabilities(
         label: float(normalized_exchangeabilities[index + 1])
         for index, label in enumerate(_GTR_FREE_EXCHANGEABILITY_LABELS)
     }
-    bounds_by_name = {
-        label: (lower_exchangeability_bound, upper_exchangeability_bound)
-        for label in _GTR_FREE_EXCHANGEABILITY_LABELS
-    }
+    bounds_by_name = dict.fromkeys(
+        _GTR_FREE_EXCHANGEABILITY_LABELS,
+        (lower_exchangeability_bound, upper_exchangeability_bound),
+    )
     working_tree = tree.copy()
     validate_explicit_branch_lengths(working_tree, model_name="GTR")
     initial_report = _evaluate_gtr_tree_likelihood_from_patterns(
@@ -224,6 +246,7 @@ def optimize_gtr_exchangeabilities(
         stationary_frequencies=stationary,
         base_frequency_source=source,
         exchangeabilities=_named_exchangeabilities_to_vector(initial_values),
+        root_prior=stationary,
     )
 
     def evaluate_candidate_exchangeabilities(
@@ -235,6 +258,7 @@ def optimize_gtr_exchangeabilities(
             stationary_frequencies=stationary,
             base_frequency_source=source,
             exchangeabilities=_named_exchangeabilities_to_vector(candidate_values),
+            root_prior=stationary,
         )
         return report, report.log_likelihood
 
@@ -320,6 +344,7 @@ def _evaluate_gtr_tree_likelihood_from_patterns(
         | list[float]
         | tuple[float, ...]
     ),
+    root_prior: numpy.ndarray,
 ) -> GtrTreeLikelihoodReport:
     validate_explicit_branch_lengths(tree, model_name="GTR")
     validate_tree_taxa_against_patterns(
@@ -361,7 +386,7 @@ def _evaluate_gtr_tree_likelihood_from_patterns(
         return log_likelihood_from_root_prior(
             tree,
             pruning_pass,
-            root_prior=validated_frequencies,
+            root_prior=root_prior,
         )
 
     log_likelihood = sum_compressed_site_pattern_log_likelihoods(

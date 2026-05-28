@@ -21,6 +21,9 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     K80KappaOptimizationReport,
     K80TreeLikelihoodReport,
 )
+from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
+    resolve_nucleotide_root_prior,
+)
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_likelihood_search,
 )
@@ -40,6 +43,7 @@ from bijux_phylogenetics.phylo.likelihood.validation import (
     validate_tree_taxa_against_patterns,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+
 
 def k80_rate_matrix(kappa: float) -> numpy.ndarray:
     """Return the normalized K80 rate matrix with expected rate one."""
@@ -108,14 +112,27 @@ def evaluate_k80_tree_likelihood(
     records: list[AlignmentRecord],
     *,
     kappa: float,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> K80TreeLikelihoodReport:
     """Evaluate one fixed-topology K80 likelihood from aligned DNA records."""
     normalized_records = normalize_unambiguous_dna_records(records, model_name="K80")
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    resolved_root_prior = resolve_nucleotide_root_prior(
+        normalized_records,
+        owner_name="K80 likelihood",
+        default_policy="equal",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=UNIFORM_DNA_ROOT_PRIOR,
+    )
     return _evaluate_k80_tree_likelihood_from_patterns(
         tree,
         compressed_patterns,
         kappa=kappa,
+        root_prior=resolved_root_prior.root_prior,
     )
 
 
@@ -124,12 +141,18 @@ def evaluate_k80_tree_likelihood_from_alignment(
     alignment_path: Path,
     *,
     kappa: float,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> K80TreeLikelihoodReport:
     """Evaluate one fixed-topology K80 likelihood from one tree path and alignment."""
     return evaluate_k80_tree_likelihood(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
         kappa=kappa,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
 
 
@@ -156,6 +179,7 @@ def optimize_k80_kappa(
         working_tree,
         compressed_patterns,
         kappa=initial_kappa,
+        root_prior=UNIFORM_DNA_ROOT_PRIOR,
     )
 
     def evaluate_candidate_kappa(
@@ -165,6 +189,7 @@ def optimize_k80_kappa(
             working_tree,
             compressed_patterns,
             kappa=candidate_kappa,
+            root_prior=UNIFORM_DNA_ROOT_PRIOR,
         )
         return report, report.log_likelihood
 
@@ -213,6 +238,7 @@ def _evaluate_k80_tree_likelihood_from_patterns(
     compressed_patterns: CompressedAlignmentSitePatterns,
     *,
     kappa: float,
+    root_prior: numpy.ndarray,
 ) -> K80TreeLikelihoodReport:
     validate_positive_kappa(kappa, model_name="K80")
     validate_explicit_branch_lengths(tree, model_name="K80")
@@ -247,7 +273,7 @@ def _evaluate_k80_tree_likelihood_from_patterns(
         return log_likelihood_from_root_prior(
             tree,
             pruning_pass,
-            root_prior=UNIFORM_DNA_ROOT_PRIOR,
+            root_prior=root_prior,
         )
 
     log_likelihood = sum_compressed_site_pattern_log_likelihoods(

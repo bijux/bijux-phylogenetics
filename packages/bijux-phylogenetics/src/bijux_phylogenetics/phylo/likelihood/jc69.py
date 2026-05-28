@@ -19,6 +19,9 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     Jc69BranchLengthOptimizationStep,
     Jc69TreeLikelihoodReport,
 )
+from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
+    resolve_nucleotide_root_prior,
+)
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_likelihood_search,
 )
@@ -65,21 +68,45 @@ def jc69_transition_probability_matrix(branch_length: float) -> numpy.ndarray:
 def evaluate_jc69_tree_likelihood(
     tree: PhyloTree,
     records: list[AlignmentRecord],
+    *,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> Jc69TreeLikelihoodReport:
     """Evaluate one fixed-topology JC69 likelihood from aligned DNA records."""
     normalized_records = normalize_unambiguous_dna_records(records, model_name="JC69")
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
-    return _evaluate_jc69_tree_likelihood_from_patterns(tree, compressed_patterns)
+    resolved_root_prior = resolve_nucleotide_root_prior(
+        normalized_records,
+        owner_name="JC69 likelihood",
+        default_policy="equal",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=UNIFORM_DNA_ROOT_PRIOR,
+    )
+    return _evaluate_jc69_tree_likelihood_from_patterns(
+        tree,
+        compressed_patterns,
+        root_prior=resolved_root_prior.root_prior,
+    )
 
 
 def evaluate_jc69_tree_likelihood_from_alignment(
     tree_path: Path,
     alignment_path: Path,
+    *,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> Jc69TreeLikelihoodReport:
     """Evaluate one fixed-topology JC69 likelihood from one tree path and alignment."""
     return evaluate_jc69_tree_likelihood(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
 
 
@@ -111,6 +138,7 @@ def optimize_jc69_branch_lengths(
     initial_report = _evaluate_jc69_tree_likelihood_from_patterns(
         working_tree,
         compressed_patterns,
+        root_prior=UNIFORM_DNA_ROOT_PRIOR,
     )
     current_report = initial_report
     function_evaluation_count = 1
@@ -126,14 +154,17 @@ def optimize_jc69_branch_lengths(
                 raise ValueError("tree node is missing a stable node_id")
             starting_branch_length = float(node.branch_length or 0.0)
             starting_log_likelihood = current_report.log_likelihood
+            current_node = node
 
             def evaluate_candidate(
                 branch_length: float,
+                current_node=current_node,
             ) -> tuple[Jc69TreeLikelihoodReport, float]:
-                node.branch_length = branch_length
+                current_node.branch_length = branch_length
                 report = _evaluate_jc69_tree_likelihood_from_patterns(
                     working_tree,
                     compressed_patterns,
+                    root_prior=UNIFORM_DNA_ROOT_PRIOR,
                 )
                 return report, report.log_likelihood
 
@@ -212,6 +243,8 @@ def optimize_jc69_branch_lengths_from_alignment(
 def _evaluate_jc69_tree_likelihood_from_patterns(
     tree: PhyloTree,
     compressed_patterns: CompressedAlignmentSitePatterns,
+    *,
+    root_prior: numpy.ndarray,
 ) -> Jc69TreeLikelihoodReport:
     validate_explicit_branch_lengths(tree, model_name="JC69")
     validate_tree_taxa_against_patterns(
@@ -244,7 +277,7 @@ def _evaluate_jc69_tree_likelihood_from_patterns(
         return log_likelihood_from_root_prior(
             tree,
             pruning_pass,
-            root_prior=UNIFORM_DNA_ROOT_PRIOR,
+            root_prior=root_prior,
         )
 
     log_likelihood = sum_compressed_site_pattern_log_likelihoods(

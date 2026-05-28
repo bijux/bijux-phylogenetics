@@ -22,6 +22,9 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     Hky85KappaOptimizationReport,
     Hky85TreeLikelihoodReport,
 )
+from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
+    resolve_nucleotide_root_prior,
+)
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_likelihood_search,
 )
@@ -92,6 +95,9 @@ def evaluate_hky85_tree_likelihood(
     *,
     kappa: float,
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> Hky85TreeLikelihoodReport:
     """Evaluate one fixed-topology HKY85 likelihood from aligned DNA records."""
     normalized_records = normalize_unambiguous_dna_records(records, model_name="HKY85")
@@ -105,12 +111,22 @@ def evaluate_hky85_tree_likelihood(
             model_name="HKY85",
         )
         source = "provided"
+    resolved_root_prior = resolve_nucleotide_root_prior(
+        normalized_records,
+        owner_name="HKY85 likelihood",
+        default_policy="stationary",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=stationary,
+    )
     return _evaluate_hky85_tree_likelihood_from_patterns(
         tree,
         compressed_patterns,
         stationary_frequencies=stationary,
         base_frequency_source=source,
         kappa=kappa,
+        root_prior=resolved_root_prior.root_prior,
     )
 
 
@@ -120,6 +136,9 @@ def evaluate_hky85_tree_likelihood_from_alignment(
     *,
     kappa: float,
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> Hky85TreeLikelihoodReport:
     """Evaluate one fixed-topology HKY85 likelihood from one tree path and alignment."""
     return evaluate_hky85_tree_likelihood(
@@ -127,6 +146,9 @@ def evaluate_hky85_tree_likelihood_from_alignment(
         load_fasta_alignment(alignment_path),
         kappa=kappa,
         base_frequencies=base_frequencies,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
 
 
@@ -165,6 +187,7 @@ def optimize_hky85_kappa(
         stationary_frequencies=stationary,
         base_frequency_source=source,
         kappa=initial_kappa,
+        root_prior=stationary,
     )
 
     def evaluate_candidate_kappa(
@@ -176,6 +199,7 @@ def optimize_hky85_kappa(
             stationary_frequencies=stationary,
             base_frequency_source=source,
             kappa=candidate_kappa,
+            root_prior=stationary,
         )
         return report, report.log_likelihood
 
@@ -236,6 +260,7 @@ def _evaluate_hky85_tree_likelihood_from_patterns(
     stationary_frequencies: numpy.ndarray,
     base_frequency_source: str,
     kappa: float,
+    root_prior: numpy.ndarray,
 ) -> Hky85TreeLikelihoodReport:
     validate_explicit_branch_lengths(tree, model_name="HKY85")
     validate_tree_taxa_against_patterns(
@@ -274,7 +299,7 @@ def _evaluate_hky85_tree_likelihood_from_patterns(
         return log_likelihood_from_root_prior(
             tree,
             pruning_pass,
-            root_prior=validated_frequencies,
+            root_prior=root_prior,
         )
 
     log_likelihood = sum_compressed_site_pattern_log_likelihoods(

@@ -17,6 +17,9 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
     validate_dna_base_frequencies,
 )
 from bijux_phylogenetics.phylo.likelihood.models import F81TreeLikelihoodReport
+from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
+    resolve_nucleotide_root_prior,
+)
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
     compress_alignment_site_patterns_from_records,
@@ -92,6 +95,9 @@ def evaluate_f81_tree_likelihood(
     records: list[AlignmentRecord],
     *,
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> F81TreeLikelihoodReport:
     """Evaluate one fixed-topology F81 likelihood from aligned DNA records."""
     normalized_records = normalize_unambiguous_dna_records(records, model_name="F81")
@@ -102,11 +108,21 @@ def evaluate_f81_tree_likelihood(
     else:
         stationary = validate_dna_base_frequencies(base_frequencies, model_name="F81")
         source = "provided"
+    resolved_root_prior = resolve_nucleotide_root_prior(
+        normalized_records,
+        owner_name="F81 likelihood",
+        default_policy="stationary",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=stationary,
+    )
     return _evaluate_f81_tree_likelihood_from_patterns(
         tree,
         compressed_patterns,
         stationary_frequencies=stationary,
         base_frequency_source=source,
+        root_prior=resolved_root_prior.root_prior,
     )
 
 
@@ -115,12 +131,18 @@ def evaluate_f81_tree_likelihood_from_alignment(
     alignment_path: Path,
     *,
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> F81TreeLikelihoodReport:
     """Evaluate one fixed-topology F81 likelihood from one tree path and alignment."""
     return evaluate_f81_tree_likelihood(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
         base_frequencies=base_frequencies,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
 
 
@@ -130,6 +152,7 @@ def _evaluate_f81_tree_likelihood_from_patterns(
     *,
     stationary_frequencies: numpy.ndarray,
     base_frequency_source: str,
+    root_prior: numpy.ndarray,
 ) -> F81TreeLikelihoodReport:
     validate_explicit_branch_lengths(tree, model_name="F81")
     validate_tree_taxa_against_patterns(
@@ -166,7 +189,7 @@ def _evaluate_f81_tree_likelihood_from_patterns(
         return log_likelihood_from_root_prior(
             tree,
             pruning_pass,
-            root_prior=validated_frequencies,
+            root_prior=root_prior,
         )
 
     log_likelihood = sum_compressed_site_pattern_log_likelihoods(
