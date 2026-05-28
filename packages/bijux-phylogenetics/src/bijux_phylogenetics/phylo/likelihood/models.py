@@ -27,6 +27,8 @@ class Jc69TreeLikelihoodReport:
     pattern_count: int
     compression_used: bool
     tree_newick: str
+    state_count: int
+    observation_policy: str
     log_likelihood: float
 
 
@@ -158,6 +160,8 @@ class K80TreeLikelihoodReport:
     pattern_count: int
     compression_used: bool
     tree_newick: str
+    state_count: int
+    observation_policy: str
     kappa: float
     log_likelihood: float
 
@@ -189,6 +193,8 @@ class F81TreeLikelihoodReport:
     pattern_count: int
     compression_used: bool
     tree_newick: str
+    state_count: int
+    observation_policy: str
     base_frequency_source: str
     base_frequency_a: float
     base_frequency_c: float
@@ -208,6 +214,8 @@ class Hky85TreeLikelihoodReport:
     pattern_count: int
     compression_used: bool
     tree_newick: str
+    state_count: int
+    observation_policy: str
     base_frequency_source: str
     base_frequency_a: float
     base_frequency_c: float
@@ -254,6 +262,8 @@ class GtrTreeLikelihoodReport:
     pattern_count: int
     compression_used: bool
     tree_newick: str
+    state_count: int
+    observation_policy: str
     base_frequency_source: str
     base_frequency_a: float
     base_frequency_c: float
@@ -687,6 +697,8 @@ class FixedTopologySiteLogLikelihoodReport:
     compression_used: bool
     expansion_policy: str
     tree_newick: str
+    state_count: int
+    observation_policy: str
     parameter_values: dict[str, float]
     log_likelihood: float
     site_log_likelihoods: list[SiteLogLikelihoodRow]

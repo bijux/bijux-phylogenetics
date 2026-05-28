@@ -13,16 +13,19 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
     DNA_STATE_ORDER,
     UNIFORM_DNA_ROOT_PRIOR,
     is_dna_transition,
-    normalize_unambiguous_dna_records,
-    one_hot_dna_leaf_vector,
     validate_positive_kappa,
+)
+from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
+    augment_dna_rate_matrix_with_gap_state,
+    dna_observation_state_order,
+    estimate_empirical_gap_state_frequency,
+    normalize_dna_likelihood_records,
+    resolve_default_dna_root_prior_for_observation_policy,
+    resolve_dna_observation_leaf_vector,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
     K80KappaOptimizationReport,
     K80TreeLikelihoodReport,
-)
-from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
-    resolve_nucleotide_root_prior,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
     validate_parameter_within_bounds,
@@ -38,6 +41,7 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
+    transition_probability_matrix,
 )
 from bijux_phylogenetics.phylo.likelihood.sites import (
     sum_compressed_site_pattern_log_likelihoods,
@@ -116,14 +120,27 @@ def evaluate_k80_tree_likelihood(
     records: list[AlignmentRecord],
     *,
     kappa: float,
+    observation_policy: str = "reject",
     root_prior_policy: str | None = None,
     root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
     fixed_root_state: str | None = None,
 ) -> K80TreeLikelihoodReport:
     """Evaluate one fixed-topology K80 likelihood from aligned DNA records."""
-    normalized_records = normalize_unambiguous_dna_records(records, model_name="K80")
+    normalized_records = normalize_dna_likelihood_records(
+        records,
+        model_name="K80",
+        observation_policy=observation_policy,
+    )
+    gap_state_frequency = (
+        estimate_empirical_gap_state_frequency(
+            normalized_records,
+            model_name="K80",
+        )
+        if observation_policy == "fifth-state"
+        else None
+    )
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
-    resolved_root_prior = resolve_nucleotide_root_prior(
+    resolved_root_prior = resolve_default_dna_root_prior_for_observation_policy(
         normalized_records,
         owner_name="K80 likelihood",
         default_policy="equal",
@@ -131,12 +148,15 @@ def evaluate_k80_tree_likelihood(
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
         stationary_frequencies=UNIFORM_DNA_ROOT_PRIOR,
+        observation_policy=observation_policy,
     )
     return _evaluate_k80_tree_likelihood_from_patterns(
         tree,
         compressed_patterns,
         kappa=kappa,
         root_prior=resolved_root_prior.root_prior,
+        observation_policy=observation_policy,
+        gap_state_frequency=gap_state_frequency,
     )
 
 
@@ -145,6 +165,7 @@ def evaluate_k80_tree_likelihood_from_alignment(
     alignment_path: Path,
     *,
     kappa: float,
+    observation_policy: str = "reject",
     root_prior_policy: str | None = None,
     root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
     fixed_root_state: str | None = None,
@@ -154,6 +175,7 @@ def evaluate_k80_tree_likelihood_from_alignment(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
         kappa=kappa,
+        observation_policy=observation_policy,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
@@ -184,7 +206,11 @@ def optimize_k80_kappa(
         owner_name="K80 kappa optimization",
     )
 
-    normalized_records = normalize_unambiguous_dna_records(records, model_name="K80")
+    normalized_records = normalize_dna_likelihood_records(
+        records,
+        model_name="K80",
+        observation_policy="reject",
+    )
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
     working_tree = tree.copy()
     validate_explicit_branch_lengths(working_tree, model_name="K80")
@@ -193,6 +219,8 @@ def optimize_k80_kappa(
         compressed_patterns,
         kappa=validated_initial_kappa,
         root_prior=UNIFORM_DNA_ROOT_PRIOR,
+        observation_policy="reject",
+        gap_state_frequency=None,
     )
 
     def evaluate_candidate_kappa(
@@ -203,6 +231,8 @@ def optimize_k80_kappa(
             compressed_patterns,
             kappa=candidate_kappa,
             root_prior=UNIFORM_DNA_ROOT_PRIOR,
+            observation_policy="reject",
+            gap_state_frequency=None,
         )
         return report, report.log_likelihood
 
@@ -252,6 +282,8 @@ def _evaluate_k80_tree_likelihood_from_patterns(
     *,
     kappa: float,
     root_prior: numpy.ndarray,
+    observation_policy: str,
+    gap_state_frequency: float | None,
 ) -> K80TreeLikelihoodReport:
     validate_positive_kappa(kappa, model_name="K80")
     validate_explicit_branch_lengths(tree, model_name="K80")
@@ -260,24 +292,44 @@ def _evaluate_k80_tree_likelihood_from_patterns(
         compressed_patterns,
         model_name="K80",
     )
-
-    transition_by_node_id = {
-        child.node_id: k80_transition_probability_matrix(
-            max(float(child.branch_length or 0.0), 0.0),
-            kappa=kappa,
+    state_order = dna_observation_state_order(observation_policy=observation_policy)
+    if observation_policy == "fifth-state":
+        if gap_state_frequency is None:
+            raise ValueError(
+                "K80 fifth-state observation policy requires an explicit gap_state_frequency"
+            )
+        augmented_rate_matrix = augment_dna_rate_matrix_with_gap_state(
+            k80_rate_matrix(kappa),
+            nucleotide_frequencies=UNIFORM_DNA_ROOT_PRIOR,
+            gap_state_frequency=gap_state_frequency,
+            model_name="K80",
         )
-        for _parent, child in tree.iter_edges()
-    }
+        transition_by_node_id = {
+            child.node_id: transition_probability_matrix(
+                augmented_rate_matrix,
+                max(float(child.branch_length or 0.0), 0.0),
+            )
+            for _parent, child in tree.iter_edges()
+        }
+    else:
+        transition_by_node_id = {
+            child.node_id: k80_transition_probability_matrix(
+                max(float(child.branch_length or 0.0), 0.0),
+                kappa=kappa,
+            )
+            for _parent, child in tree.iter_edges()
+        }
 
     def site_log_likelihood(states: tuple[str, ...]) -> float:
         states_by_taxon = dict(zip(compressed_patterns.taxon_order, states, strict=True))
         pruning_pass = postorder_conditional_likelihoods(
             tree,
-            state_count=4,
-            leaf_likelihood=lambda node: one_hot_dna_leaf_vector(
+            state_count=len(state_order),
+            leaf_likelihood=lambda node: resolve_dna_observation_leaf_vector(
                 states_by_taxon,
                 model_name="K80",
                 node_name=node.name,
+                observation_policy=observation_policy,
             ),
             transition_matrix_for_child=lambda child: transition_by_node_id[
                 child.node_id or ""
@@ -299,6 +351,8 @@ def _evaluate_k80_tree_likelihood_from_patterns(
         pattern_count=compressed_patterns.pattern_count,
         compression_used=True,
         tree_newick=dumps_newick(tree),
+        state_count=len(state_order),
+        observation_policy=observation_policy,
         kappa=kappa,
         log_likelihood=log_likelihood,
     )

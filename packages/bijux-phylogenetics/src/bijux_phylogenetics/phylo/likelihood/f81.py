@@ -11,15 +11,18 @@ from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.dna import (
     DNA_STATE_ORDER,
-    estimate_empirical_dna_base_frequencies,
-    normalize_unambiguous_dna_records,
-    one_hot_dna_leaf_vector,
     validate_dna_base_frequencies,
 )
-from bijux_phylogenetics.phylo.likelihood.models import F81TreeLikelihoodReport
-from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
-    resolve_nucleotide_root_prior,
+from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
+    augment_dna_rate_matrix_with_gap_state,
+    dna_observation_state_order,
+    estimate_empirical_dna_base_frequencies_from_records,
+    estimate_empirical_gap_state_frequency,
+    normalize_dna_likelihood_records,
+    resolve_default_dna_root_prior_for_observation_policy,
+    resolve_dna_observation_leaf_vector,
 )
+from bijux_phylogenetics.phylo.likelihood.models import F81TreeLikelihoodReport
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
     compress_alignment_site_patterns_from_records,
@@ -27,6 +30,7 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
+    transition_probability_matrix,
 )
 from bijux_phylogenetics.phylo.likelihood.sites import (
     sum_compressed_site_pattern_log_likelihoods,
@@ -95,20 +99,37 @@ def evaluate_f81_tree_likelihood(
     records: list[AlignmentRecord],
     *,
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    observation_policy: str = "reject",
     root_prior_policy: str | None = None,
     root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
     fixed_root_state: str | None = None,
 ) -> F81TreeLikelihoodReport:
     """Evaluate one fixed-topology F81 likelihood from aligned DNA records."""
-    normalized_records = normalize_unambiguous_dna_records(records, model_name="F81")
+    normalized_records = normalize_dna_likelihood_records(
+        records,
+        model_name="F81",
+        observation_policy=observation_policy,
+    )
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
     if base_frequencies is None:
-        stationary = estimate_empirical_dna_base_frequencies(normalized_records)
+        stationary = estimate_empirical_dna_base_frequencies_from_records(
+            normalized_records,
+            model_name="F81",
+            observation_policy=observation_policy,
+        )
         source = "estimated"
     else:
         stationary = validate_dna_base_frequencies(base_frequencies, model_name="F81")
         source = "provided"
-    resolved_root_prior = resolve_nucleotide_root_prior(
+    gap_state_frequency = (
+        estimate_empirical_gap_state_frequency(
+            normalized_records,
+            model_name="F81",
+        )
+        if observation_policy == "fifth-state"
+        else None
+    )
+    resolved_root_prior = resolve_default_dna_root_prior_for_observation_policy(
         normalized_records,
         owner_name="F81 likelihood",
         default_policy="stationary",
@@ -116,6 +137,7 @@ def evaluate_f81_tree_likelihood(
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
         stationary_frequencies=stationary,
+        observation_policy=observation_policy,
     )
     return _evaluate_f81_tree_likelihood_from_patterns(
         tree,
@@ -123,6 +145,8 @@ def evaluate_f81_tree_likelihood(
         stationary_frequencies=stationary,
         base_frequency_source=source,
         root_prior=resolved_root_prior.root_prior,
+        observation_policy=observation_policy,
+        gap_state_frequency=gap_state_frequency,
     )
 
 
@@ -131,6 +155,7 @@ def evaluate_f81_tree_likelihood_from_alignment(
     alignment_path: Path,
     *,
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    observation_policy: str = "reject",
     root_prior_policy: str | None = None,
     root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
     fixed_root_state: str | None = None,
@@ -140,6 +165,7 @@ def evaluate_f81_tree_likelihood_from_alignment(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
         base_frequencies=base_frequencies,
+        observation_policy=observation_policy,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
@@ -153,6 +179,8 @@ def _evaluate_f81_tree_likelihood_from_patterns(
     stationary_frequencies: numpy.ndarray,
     base_frequency_source: str,
     root_prior: numpy.ndarray,
+    observation_policy: str,
+    gap_state_frequency: float | None,
 ) -> F81TreeLikelihoodReport:
     validate_explicit_branch_lengths(tree, model_name="F81")
     validate_tree_taxa_against_patterns(
@@ -164,23 +192,44 @@ def _evaluate_f81_tree_likelihood_from_patterns(
         stationary_frequencies,
         model_name="F81",
     )
-    transition_by_node_id = {
-        child.node_id: f81_transition_probability_matrix(
-            max(float(child.branch_length or 0.0), 0.0),
-            base_frequencies=validated_frequencies,
+    state_order = dna_observation_state_order(observation_policy=observation_policy)
+    if observation_policy == "fifth-state":
+        if gap_state_frequency is None:
+            raise ValueError(
+                "F81 fifth-state observation policy requires an explicit gap_state_frequency"
+            )
+        augmented_rate_matrix = augment_dna_rate_matrix_with_gap_state(
+            f81_rate_matrix(validated_frequencies),
+            nucleotide_frequencies=validated_frequencies,
+            gap_state_frequency=gap_state_frequency,
+            model_name="F81",
         )
-        for _parent, child in tree.iter_edges()
-    }
+        transition_by_node_id = {
+            child.node_id: transition_probability_matrix(
+                augmented_rate_matrix,
+                max(float(child.branch_length or 0.0), 0.0),
+            )
+            for _parent, child in tree.iter_edges()
+        }
+    else:
+        transition_by_node_id = {
+            child.node_id: f81_transition_probability_matrix(
+                max(float(child.branch_length or 0.0), 0.0),
+                base_frequencies=validated_frequencies,
+            )
+            for _parent, child in tree.iter_edges()
+        }
 
     def site_log_likelihood(states: tuple[str, ...]) -> float:
         states_by_taxon = dict(zip(compressed_patterns.taxon_order, states, strict=True))
         pruning_pass = postorder_conditional_likelihoods(
             tree,
-            state_count=4,
-            leaf_likelihood=lambda node: one_hot_dna_leaf_vector(
+            state_count=len(state_order),
+            leaf_likelihood=lambda node: resolve_dna_observation_leaf_vector(
                 states_by_taxon,
                 model_name="F81",
                 node_name=node.name,
+                observation_policy=observation_policy,
             ),
             transition_matrix_for_child=lambda child: transition_by_node_id[
                 child.node_id or ""
@@ -202,6 +251,8 @@ def _evaluate_f81_tree_likelihood_from_patterns(
         pattern_count=compressed_patterns.pattern_count,
         compression_used=True,
         tree_newick=dumps_newick(tree),
+        state_count=len(state_order),
+        observation_policy=observation_policy,
         base_frequency_source=base_frequency_source,
         base_frequency_a=float(validated_frequencies[0]),
         base_frequency_c=float(validated_frequencies[1]),

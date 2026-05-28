@@ -321,18 +321,26 @@ def evaluate_fixed_topology_dna_site_log_likelihood(
     *,
     taxon_order: list[str],
     model_name: str,
+    observation_policy: str,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...],
     transition_matrix_for_child,
 ) -> float:
     """Evaluate one DNA site log likelihood on one fixed topology."""
+    from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
+        dna_observation_state_order,
+        resolve_dna_observation_leaf_vector,
+    )
+
     states_by_taxon = dict(zip(taxon_order, states, strict=True))
+    state_count = len(dna_observation_state_order(observation_policy=observation_policy))
     pruning_pass = postorder_conditional_likelihoods(
         tree,
-        state_count=len(DNA_STATE_ORDER),
-        leaf_likelihood=lambda node: one_hot_dna_leaf_vector(
+        state_count=state_count,
+        leaf_likelihood=lambda node: resolve_dna_observation_leaf_vector(
             states_by_taxon,
             model_name=model_name,
             node_name=node.name,
+            observation_policy=observation_policy,
         ),
         transition_matrix_for_child=transition_matrix_for_child,
     )

@@ -11,16 +11,19 @@ from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.dna import (
     UNIFORM_DNA_ROOT_PRIOR,
-    normalize_unambiguous_dna_records,
-    one_hot_dna_leaf_vector,
+)
+from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
+    augment_dna_rate_matrix_with_gap_state,
+    dna_observation_state_order,
+    estimate_empirical_gap_state_frequency,
+    normalize_dna_likelihood_records,
+    resolve_default_dna_root_prior_for_observation_policy,
+    resolve_dna_observation_leaf_vector,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
     Jc69BranchLengthOptimizationReport,
     Jc69BranchLengthOptimizationStep,
     Jc69TreeLikelihoodReport,
-)
-from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
-    resolve_nucleotide_root_prior,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
     validate_increasing_parameter_bounds,
@@ -36,6 +39,7 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
+    transition_probability_matrix,
 )
 from bijux_phylogenetics.phylo.likelihood.sites import (
     sum_compressed_site_pattern_log_likelihoods,
@@ -73,14 +77,27 @@ def evaluate_jc69_tree_likelihood(
     tree: PhyloTree,
     records: list[AlignmentRecord],
     *,
+    observation_policy: str = "reject",
     root_prior_policy: str | None = None,
     root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
     fixed_root_state: str | None = None,
 ) -> Jc69TreeLikelihoodReport:
     """Evaluate one fixed-topology JC69 likelihood from aligned DNA records."""
-    normalized_records = normalize_unambiguous_dna_records(records, model_name="JC69")
+    normalized_records = normalize_dna_likelihood_records(
+        records,
+        model_name="JC69",
+        observation_policy=observation_policy,
+    )
+    gap_state_frequency = (
+        estimate_empirical_gap_state_frequency(
+            normalized_records,
+            model_name="JC69",
+        )
+        if observation_policy == "fifth-state"
+        else None
+    )
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
-    resolved_root_prior = resolve_nucleotide_root_prior(
+    resolved_root_prior = resolve_default_dna_root_prior_for_observation_policy(
         normalized_records,
         owner_name="JC69 likelihood",
         default_policy="equal",
@@ -88,11 +105,14 @@ def evaluate_jc69_tree_likelihood(
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
         stationary_frequencies=UNIFORM_DNA_ROOT_PRIOR,
+        observation_policy=observation_policy,
     )
     return _evaluate_jc69_tree_likelihood_from_patterns(
         tree,
         compressed_patterns,
         root_prior=resolved_root_prior.root_prior,
+        observation_policy=observation_policy,
+        gap_state_frequency=gap_state_frequency,
     )
 
 
@@ -100,6 +120,7 @@ def evaluate_jc69_tree_likelihood_from_alignment(
     tree_path: Path,
     alignment_path: Path,
     *,
+    observation_policy: str = "reject",
     root_prior_policy: str | None = None,
     root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
     fixed_root_state: str | None = None,
@@ -108,6 +129,7 @@ def evaluate_jc69_tree_likelihood_from_alignment(
     return evaluate_jc69_tree_likelihood(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
+        observation_policy=observation_policy,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
@@ -140,7 +162,11 @@ def optimize_jc69_branch_lengths(
     if max_coordinate_passes < 1:
         raise ValueError("max_coordinate_passes must be at least one")
 
-    normalized_records = normalize_unambiguous_dna_records(records, model_name="JC69")
+    normalized_records = normalize_dna_likelihood_records(
+        records,
+        model_name="JC69",
+        observation_policy="reject",
+    )
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
     working_tree = tree.copy()
     validate_explicit_branch_lengths(working_tree, model_name="JC69")
@@ -163,6 +189,8 @@ def optimize_jc69_branch_lengths(
         working_tree,
         compressed_patterns,
         root_prior=UNIFORM_DNA_ROOT_PRIOR,
+        observation_policy="reject",
+        gap_state_frequency=None,
     )
     current_report = initial_report
     function_evaluation_count = 1
@@ -189,6 +217,8 @@ def optimize_jc69_branch_lengths(
                     working_tree,
                     compressed_patterns,
                     root_prior=UNIFORM_DNA_ROOT_PRIOR,
+                    observation_policy="reject",
+                    gap_state_frequency=None,
                 )
                 return report, report.log_likelihood
 
@@ -269,6 +299,8 @@ def _evaluate_jc69_tree_likelihood_from_patterns(
     compressed_patterns: CompressedAlignmentSitePatterns,
     *,
     root_prior: numpy.ndarray,
+    observation_policy: str,
+    gap_state_frequency: float | None,
 ) -> Jc69TreeLikelihoodReport:
     validate_explicit_branch_lengths(tree, model_name="JC69")
     validate_tree_taxa_against_patterns(
@@ -276,23 +308,43 @@ def _evaluate_jc69_tree_likelihood_from_patterns(
         compressed_patterns,
         model_name="JC69",
     )
-
-    transition_by_node_id = {
-        child.node_id: jc69_transition_probability_matrix(
-            max(float(child.branch_length or 0.0), 0.0)
+    state_order = dna_observation_state_order(observation_policy=observation_policy)
+    if observation_policy == "fifth-state":
+        if gap_state_frequency is None:
+            raise ValueError(
+                "JC69 fifth-state observation policy requires an explicit gap_state_frequency"
+            )
+        augmented_rate_matrix = augment_dna_rate_matrix_with_gap_state(
+            jc69_rate_matrix(),
+            nucleotide_frequencies=UNIFORM_DNA_ROOT_PRIOR,
+            gap_state_frequency=gap_state_frequency,
+            model_name="JC69",
         )
-        for _parent, child in tree.iter_edges()
-    }
+        transition_by_node_id = {
+            child.node_id: transition_probability_matrix(
+                augmented_rate_matrix,
+                max(float(child.branch_length or 0.0), 0.0),
+            )
+            for _parent, child in tree.iter_edges()
+        }
+    else:
+        transition_by_node_id = {
+            child.node_id: jc69_transition_probability_matrix(
+                max(float(child.branch_length or 0.0), 0.0)
+            )
+            for _parent, child in tree.iter_edges()
+        }
 
     def site_log_likelihood(states: tuple[str, ...]) -> float:
         states_by_taxon = dict(zip(compressed_patterns.taxon_order, states, strict=True))
         pruning_pass = postorder_conditional_likelihoods(
             tree,
-            state_count=4,
-            leaf_likelihood=lambda node: one_hot_dna_leaf_vector(
+            state_count=len(state_order),
+            leaf_likelihood=lambda node: resolve_dna_observation_leaf_vector(
                 states_by_taxon,
                 model_name="JC69",
                 node_name=node.name,
+                observation_policy=observation_policy,
             ),
             transition_matrix_for_child=lambda child: transition_by_node_id[
                 child.node_id or ""
@@ -314,5 +366,7 @@ def _evaluate_jc69_tree_likelihood_from_patterns(
         pattern_count=compressed_patterns.pattern_count,
         compression_used=True,
         tree_newick=dumps_newick(tree),
+        state_count=len(state_order),
+        observation_policy=observation_policy,
         log_likelihood=log_likelihood,
     )
