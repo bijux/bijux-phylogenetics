@@ -251,6 +251,47 @@ class RootedSprNeighborhoodReport:
 
 
 @dataclass(frozen=True, slots=True)
+class RootedTbrNeighborRow:
+    """One rooted TBR neighbor with a representative cut and reconnection."""
+
+    neighbor_index: int
+    representative_cut_edge_id: str
+    representative_cut_descendant_taxa: list[str]
+    representative_left_attachment_branch_id: str
+    representative_left_attachment_descendant_taxa: list[str]
+    representative_right_attachment_branch_id: str
+    representative_right_attachment_descendant_taxa: list[str]
+    supporting_reconnection_count: int
+    neighbor_tree_newick: str
+    neighbor_topology_fingerprint: str
+    tip_order: list[str]
+    validation_errors: list[str]
+
+
+@dataclass(slots=True)
+class RootedTbrNeighborhoodReport:
+    """Explicit record of rooted TBR neighbors for one binary-root tree."""
+
+    algorithm: str
+    input_tree_path: Path | None
+    input_tree_newick: str
+    tip_count: int
+    internal_node_count: int
+    rooted: bool | None
+    strictly_bifurcating: bool
+    generated_cut_edge_count: int
+    generated_reconnection_count: int
+    identity_reconnection_count: int
+    generated_neighbor_count: int
+    unique_neighbor_topology_count: int
+    duplicate_reconnection_neighbor_topologies: list[str]
+    missing_tip_taxa: list[str]
+    unexpected_tip_taxa: list[str]
+    input_validation_errors: list[str]
+    neighbor_rows: list[RootedTbrNeighborRow]
+
+
+@dataclass(frozen=True, slots=True)
 class StepwiseAdditionCandidateScore:
     """One evaluated insertion edge for one greedy stepwise-addition step."""
 

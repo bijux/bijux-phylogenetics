@@ -83,6 +83,8 @@ _EXPORTS = {
     "write_tree_rooting_report": "rooting",
     "RootedSprMoveCandidate": "rooted_spr",
     "RootedNniMoveCandidate": "rooted_nni",
+    "RootedTbrNeighborRow": "models",
+    "RootedTbrNeighborhoodReport": "models",
     "apply_rooted_nni_move": "rooted_nni",
     "enumerate_rooted_nni_neighbors": "rooted_nni",
     "expected_rooted_nni_neighbor_count": "rooted_nni",
