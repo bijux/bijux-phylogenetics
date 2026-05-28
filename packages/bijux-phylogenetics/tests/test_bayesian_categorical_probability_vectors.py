@@ -53,3 +53,74 @@ def test_build_categorical_probability_vector_rejects_non_normalized_input() -> 
     assert error_info.value.details["total_probability"] == pytest.approx(0.9)
     assert error_info.value.details["expected_total"] == 1.0
     assert error_info.value.details["absolute_error"] == pytest.approx(0.1)
+
+
+def test_build_categorical_probability_vector_fills_missing_expected_states() -> None:
+    vector = build_categorical_probability_vector(
+        {"A": 0.7, "B": 0.3},
+        expected_states=("A", "B", "C"),
+        missing_state_policy="fill-zero",
+    )
+
+    assert vector.states == ("A", "B", "C")
+    assert vector.probabilities == (0.7, 0.3, 0.0)
+    assert vector.missing_state_policy == "fill-zero"
+    assert vector.probability_for("C") == 0.0
+
+
+def test_build_categorical_probability_vector_rejects_missing_expected_states() -> None:
+    with pytest.raises(PhylogeneticsError) as error_info:
+        build_categorical_probability_vector(
+            {"A": 0.7, "B": 0.3},
+            expected_states=("A", "B", "C"),
+        )
+
+    assert error_info.value.code == "categorical_probability_vector_missing_states"
+    assert error_info.value.details["missing_states"] == ["C"]
+    assert error_info.value.details["missing_state_policy"] == "reject"
+
+
+def test_build_categorical_probability_vector_rejects_unexpected_states() -> None:
+    with pytest.raises(PhylogeneticsError) as error_info:
+        build_categorical_probability_vector(
+            {"A": 0.5, "B": 0.4, "X": 0.1},
+            expected_states=("A", "B", "C"),
+            missing_state_policy="fill-zero",
+        )
+
+    assert error_info.value.code == "categorical_probability_vector_unexpected_states"
+    assert error_info.value.details["unexpected_states"] == ["X"]
+
+
+def test_build_categorical_probability_vector_rejects_invalid_missing_state_policy() -> None:
+    with pytest.raises(PhylogeneticsError) as error_info:
+        build_categorical_probability_vector(
+            {"A": 1.0},
+            missing_state_policy="renormalize",
+        )
+
+    assert (
+        error_info.value.code
+        == "categorical_probability_vector_missing_state_policy_invalid"
+    )
+    assert error_info.value.details["missing_state_policy"] == "renormalize"
+
+
+@pytest.mark.parametrize("normalization_tolerance", (math.nan, math.inf, -1e-9))
+def test_build_categorical_probability_vector_rejects_invalid_tolerance(
+    normalization_tolerance: float,
+) -> None:
+    with pytest.raises(PhylogeneticsError) as error_info:
+        build_categorical_probability_vector(
+            {"A": 1.0},
+            normalization_tolerance=normalization_tolerance,
+        )
+
+    assert error_info.value.code == "categorical_probability_vector_tolerance_invalid"
+    if math.isnan(normalization_tolerance):
+        assert math.isnan(error_info.value.details["normalization_tolerance"])
+    else:
+        assert (
+            error_info.value.details["normalization_tolerance"]
+            == normalization_tolerance
+        )
