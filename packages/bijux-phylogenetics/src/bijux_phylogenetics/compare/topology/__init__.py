@@ -6,6 +6,12 @@ from importlib import import_module
 
 _PUBLIC_SURFACES = (
     (
+        "agreement",
+        (
+            "prune_trees_to_agreement_subtree",
+        ),
+    ),
+    (
         "branch_lengths",
         (
             "_build_branch_score_report",
