@@ -22,6 +22,10 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
     resolve_nucleotide_root_prior,
 )
+from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
+    validate_increasing_parameter_bounds,
+    validate_parameter_within_bounds,
+)
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_likelihood_search,
 )
@@ -122,10 +126,17 @@ def optimize_jc69_branch_lengths(
     """Optimize one fixed topology under native JC69 branch likelihood."""
     if lower_branch_length_bound <= 0.0:
         raise InvalidBranchLengthError("JC69 branch-length lower bound must be positive")
-    if upper_branch_length_bound <= lower_branch_length_bound:
-        raise InvalidBranchLengthError(
-            "JC69 branch-length bounds must be strictly increasing"
+    try:
+        validated_lower_bound, validated_upper_bound = (
+            validate_increasing_parameter_bounds(
+                parameter_name="branch length",
+                lower_bound=lower_branch_length_bound,
+                upper_bound=upper_branch_length_bound,
+                owner_name="JC69 branch-length optimization",
+            )
         )
+    except ValueError as error:
+        raise InvalidBranchLengthError(str(error)) from error
     if max_coordinate_passes < 1:
         raise ValueError("max_coordinate_passes must be at least one")
 
@@ -133,6 +144,19 @@ def optimize_jc69_branch_lengths(
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
     working_tree = tree.copy()
     validate_explicit_branch_lengths(working_tree, model_name="JC69")
+    for _parent, child in working_tree.iter_edges():
+        if child.branch_length is None:
+            continue
+        try:
+            validate_parameter_within_bounds(
+                parameter_name="branch length",
+                value=float(child.branch_length),
+                lower_bound=validated_lower_bound,
+                upper_bound=validated_upper_bound,
+                owner_name="JC69 branch-length optimization",
+            )
+        except ValueError as error:
+            raise InvalidBranchLengthError(str(error)) from error
     edge_nodes = [child for _parent, child in working_tree.iter_edges()]
     initial_tree_newick = dumps_newick(tree)
     initial_report = _evaluate_jc69_tree_likelihood_from_patterns(
@@ -169,8 +193,8 @@ def optimize_jc69_branch_lengths(
                 return report, report.log_likelihood
 
             search_result = run_bounded_likelihood_search(
-                lower_bound=lower_branch_length_bound,
-                upper_bound=upper_branch_length_bound,
+                lower_bound=validated_lower_bound,
+                upper_bound=validated_upper_bound,
                 evaluate=evaluate_candidate,
             )
             function_evaluation_count += search_result.function_evaluation_count
@@ -214,8 +238,8 @@ def optimize_jc69_branch_lengths(
         optimization_pass_count=optimization_pass_count,
         function_evaluation_count=function_evaluation_count,
         converged=converged,
-        lower_branch_length_bound=lower_branch_length_bound,
-        upper_branch_length_bound=upper_branch_length_bound,
+        lower_branch_length_bound=validated_lower_bound,
+        upper_branch_length_bound=validated_upper_bound,
         steps=steps,
     )
 
