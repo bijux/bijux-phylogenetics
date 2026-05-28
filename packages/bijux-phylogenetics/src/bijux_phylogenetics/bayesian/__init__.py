@@ -134,6 +134,13 @@ from .discrete_trait_rate_priors import (
     evaluate_discrete_trait_rate_value_log_prior,
 )
 from .evidence import BayesianEvidencePackageReport, build_bayesian_evidence_package
+from .metropolis_hastings import (
+    MetropolisHastingsProposal,
+    MetropolisHastingsRunReport,
+    MetropolisHastingsStepRow,
+    run_metropolis_hastings_sampler,
+    score_bayesian_phylogenetic_state,
+)
 from .mrbayes import (
     EffectiveSampleSize,
     MrBayesBurninSensitivityReport,
@@ -449,6 +456,9 @@ __all__ = [
     "MrBayesPreparationReport",
     "MrBayesTraceReport",
     "MrBayesTraceRow",
+    "MetropolisHastingsProposal",
+    "MetropolisHastingsRunReport",
+    "MetropolisHastingsStepRow",
     "PosteriorCladeAgeSummary",
     "PosteriorNodeAgeSummaryReport",
     "PosteriorTreeSubsampleEntry",
@@ -529,6 +539,8 @@ __all__ = [
     "build_crown_conditioned_yule_tree_prior",
     "build_skyline_coalescent_tree_prior",
     "build_uniform_rooted_tree_topology_prior",
+    "run_metropolis_hastings_sampler",
+    "score_bayesian_phylogenetic_state",
     "compare_bayesian_tree_sets",
     "compare_log_probabilities",
     "compare_independent_bayesian_runs",
