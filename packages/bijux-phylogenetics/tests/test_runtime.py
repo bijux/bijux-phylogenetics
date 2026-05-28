@@ -8557,6 +8557,51 @@ def test_cli_compare_deep_coalescence_includes_manifest(
     assert manifest_payload["input_checksums"][str(taxon_map_path)]
 
 
+def test_cli_tree_set_quartet_concordance_factors_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    table_path = tmp_path / "quartet-concordance-factors.tsv"
+    manifest = tmp_path / "quartet-concordance-factors.manifest.json"
+    species_tree_path = fixture("quartet_concordance_species_tree_4_taxa.nwk")
+    gene_tree_set_path = fixture("quartet_concordance_gene_trees_4_taxa.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "quartet-concordance-factors",
+            str(species_tree_path),
+            str(gene_tree_set_path),
+            "--out",
+            str(table_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["concordant_quartet_count"] == 2
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "quartet-concordance-factors",
+        str(species_tree_path),
+        str(gene_tree_set_path),
+        "--out",
+        str(table_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(species_tree_path)]
+    assert manifest_payload["input_checksums"][str(gene_tree_set_path)]
+
+
 def test_cli_phylo_dating_least_squares_includes_manifest(
     tmp_path: Path,
     capsys,
