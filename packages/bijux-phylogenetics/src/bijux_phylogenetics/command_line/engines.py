@@ -29,6 +29,7 @@ from bijux_phylogenetics.parsimony import (
     load_parsimony_character_matrix,
     load_parsimony_character_weights,
     load_sankoff_cost_matrix,
+    place_parsimony_queries,
     reconstruct_acctran,
     reconstruct_deltran,
     rescaled_consistency_index,
@@ -52,6 +53,7 @@ from bijux_phylogenetics.parsimony import (
     write_parsimony_equal_best_consensus_artifacts,
     write_parsimony_jackknife_artifacts,
     write_parsimony_nni_artifacts,
+    write_parsimony_placement_artifacts,
     write_parsimony_ratchet_artifacts,
     write_parsimony_reconstruction_artifacts,
     write_parsimony_rescaled_consistency_artifacts,
@@ -172,6 +174,26 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the parsimony report as JSON."
     )
     _add_manifest_argument(phylo_parsimony_fitch)
+    phylo_parsimony_placement = phylo_parsimony_subparsers.add_parser(
+        "placement",
+        help="Place one or more query character vectors on every reference-tree edge by additional Fitch parsimony steps.",
+    )
+    phylo_parsimony_placement.add_argument("tree_path", type=Path)
+    phylo_parsimony_placement.add_argument("matrix_path", type=Path)
+    phylo_parsimony_placement.add_argument("query_matrix_path", type=Path)
+    phylo_parsimony_placement.add_argument(
+        "--method",
+        required=True,
+        choices=["fitch"],
+        help="Parsimony scoring method for query placement.",
+    )
+    phylo_parsimony_placement.add_argument("--taxon-column")
+    _add_parsimony_character_weights_argument(phylo_parsimony_placement)
+    phylo_parsimony_placement.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_placement.add_argument(
+        "--json", action="store_true", help="Emit the placement report as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_placement)
     phylo_parsimony_wagner = phylo_parsimony_subparsers.add_parser(
         "wagner",
         help="Score one ordered discrete character matrix on one tree with Wagner parsimony.",
@@ -1407,6 +1429,37 @@ def run_phylo_command(args: Any) -> int:
                 "total_steps": report.total_steps,
                 "total_weighted_score": report.total_weighted_score,
             }
+        elif args.phylo_parsimony_command == "placement":
+            matrix = load_fitch_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            query_matrix = load_fitch_character_matrix(
+                args.query_matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            character_weights = _load_parsimony_character_weights_argument(args)
+            report = place_parsimony_queries(
+                args.tree_path,
+                matrix,
+                query_matrix,
+                method=args.method,
+                character_weights=character_weights,
+            )
+            artifact_paths = write_parsimony_placement_artifacts(args.out_dir, report)
+            metrics = {
+                "algorithm": report.algorithm,
+                "method": report.method,
+                "reference_taxon_count": report.reference_taxon_count,
+                "character_count": report.character_count,
+                "edge_count": report.edge_count,
+                "query_count": report.query_count,
+                "reference_total_steps": report.reference_total_steps,
+                "placement_count": len(report.alternative_rows),
+                "equally_best_placement_count": sum(
+                    1 for row in report.alternative_rows if row.is_equally_best
+                ),
+            }
         elif args.phylo_parsimony_command == "wagner":
             matrix = load_parsimony_character_matrix(
                 args.matrix_path,
@@ -1958,6 +2011,11 @@ def run_phylo_command(args: Any) -> int:
         parsimony_inputs = [
             *([args.tree_path] if hasattr(args, "tree_path") else []),
             args.matrix_path,
+            *(
+                [args.query_matrix_path]
+                if hasattr(args, "query_matrix_path")
+                else []
+            ),
             *(
                 [args.cost_matrix_path]
                 if hasattr(args, "cost_matrix_path")
