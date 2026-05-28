@@ -179,6 +179,100 @@ def propose_branch_length_scaling_move(
     )
 
 
+def propose_global_tree_height_scaling_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+    *,
+    log_scale_standard_deviation: float,
+) -> MetropolisHastingsProposal:
+    """Propose one coherent multiplicative scale change across every branch."""
+    validated_log_scale_standard_deviation = _validate_positive_finite_float(
+        value=log_scale_standard_deviation,
+        field_name="log_scale_standard_deviation",
+        owner_name="global tree-height scaling proposal",
+    )
+    current_tree = current_state.tree.to_tree()
+    current_branch_lengths = [
+        float(child.branch_length)
+        for _parent, child in current_tree.iter_edges()
+        if child.branch_length is not None
+    ]
+    if not current_branch_lengths:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.branch_lengths",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="global tree-height scaling requires explicit branch lengths on every edge",
+        )
+    if len(current_branch_lengths) != sum(1 for _ in current_tree.iter_edges()):
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.branch_lengths",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="global tree-height scaling requires explicit branch lengths on every edge",
+        )
+    if any(
+        not math.isfinite(branch_length) or branch_length <= 0.0
+        for branch_length in current_branch_lengths
+    ):
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.branch_lengths",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="global tree-height scaling requires strictly positive finite branch lengths on every edge",
+        )
+    try:
+        scale_factor = math.exp(
+            rng.gauss(0.0, validated_log_scale_standard_deviation)
+        )
+    except OverflowError:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.branch_lengths",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="global tree-height scaling factor overflowed",
+        )
+    if not math.isfinite(scale_factor) or scale_factor <= 0.0:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.branch_lengths",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="global tree-height scaling factor was not strictly positive and finite",
+        )
+    proposed_tree = _copy_tree_with_globally_scaled_branch_lengths(
+        current_tree=current_tree,
+        scale_factor=scale_factor,
+    )
+    proposed_branch_lengths = [
+        float(child.branch_length)
+        for _parent, child in proposed_tree.iter_edges()
+        if child.branch_length is not None
+    ]
+    log_forward_density = _global_tree_scaling_density(
+        current_branch_lengths=current_branch_lengths,
+        proposed_branch_lengths=proposed_branch_lengths,
+        log_scale_standard_deviation=validated_log_scale_standard_deviation,
+    )
+    log_reverse_density = _global_tree_scaling_density(
+        current_branch_lengths=proposed_branch_lengths,
+        proposed_branch_lengths=current_branch_lengths,
+        log_scale_standard_deviation=validated_log_scale_standard_deviation,
+    )
+    return build_metropolis_hastings_proposal(
+        changed_fields=("tree.branch_lengths",),
+        log_forward_density=log_forward_density,
+        log_reverse_density=log_reverse_density,
+        is_valid=True,
+        proposed_tree=proposed_tree,
+        proposed_model_parameters=current_state.model_parameters,
+    )
+
+
 def score_bayesian_phylogenetic_state(
     *,
     tree,
@@ -499,6 +593,22 @@ def _copy_tree_with_scaled_branch_length(
     return proposed_tree
 
 
+def _copy_tree_with_globally_scaled_branch_lengths(
+    *,
+    current_tree: PhyloTree,
+    scale_factor: float,
+) -> PhyloTree:
+    proposed_tree = current_tree.copy()
+    for _parent, child in proposed_tree.iter_edges():
+        if child.branch_length is None:
+            raise PhylogeneticsError(
+                "global tree-height scaling requires explicit branch lengths on every edge",
+                code="metropolis_hastings_global_tree_scale_branch_length_missing",
+            )
+        child.branch_length = child.branch_length * scale_factor
+    return proposed_tree
+
+
 def _lognormal_scaling_density(
     *,
     current_branch_length: float,
@@ -509,6 +619,27 @@ def _lognormal_scaling_density(
     z_score = log_scale_change / log_scale_standard_deviation
     return (
         -math.log(proposed_branch_length)
+        - math.log(log_scale_standard_deviation)
+        - (math.log(2.0 * math.pi) / 2.0)
+        - ((z_score * z_score) / 2.0)
+    )
+
+
+def _global_tree_scaling_density(
+    *,
+    current_branch_lengths: list[float],
+    proposed_branch_lengths: list[float],
+    log_scale_standard_deviation: float,
+) -> float:
+    if len(current_branch_lengths) != len(proposed_branch_lengths):
+        raise PhylogeneticsError(
+            "global tree-height scaling requires matching branch dimensions",
+            code="metropolis_hastings_global_tree_scale_dimension_mismatch",
+        )
+    log_scale_change = math.log(proposed_branch_lengths[0] / current_branch_lengths[0])
+    z_score = log_scale_change / log_scale_standard_deviation
+    return (
+        -math.fsum(math.log(branch_length) for branch_length in proposed_branch_lengths)
         - math.log(log_scale_standard_deviation)
         - (math.log(2.0 * math.pi) / 2.0)
         - ((z_score * z_score) / 2.0)
