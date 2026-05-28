@@ -20,6 +20,7 @@ from bijux_phylogenetics.runtime.errors import (
 TIME_TREE_PRIOR_CONDITIONING_MODES = ("fixed-tip-count-and-crown-age",)
 YULE_TREE_PRIOR_FAMILIES = ("crown-conditioned-yule",)
 BIRTH_DEATH_TREE_PRIOR_FAMILIES = ("crown-conditioned-birth-death",)
+COALESCENT_TREE_PRIOR_FAMILIES = ("constant-population-coalescent",)
 
 
 @dataclass(frozen=True, slots=True)
@@ -102,6 +103,46 @@ class BirthDeathTreePriorEvaluationReport:
     branching_rows: list[BirthDeathTreePriorBranchingRow]
 
 
+@dataclass(frozen=True, slots=True)
+class ConstantPopulationCoalescentPriorModel:
+    """One validated constant-population coalescent prior parameterization."""
+
+    family: str
+    effective_population_size: float
+
+
+@dataclass(frozen=True, slots=True)
+class ConstantPopulationCoalescentIntervalRow:
+    """One backward-time coalescent interval contribution row."""
+
+    interval_index: int
+    younger_boundary_age: float
+    older_boundary_age: float
+    duration: float
+    lineage_count: int
+    coalescent_event_count: int
+    waiting_rate: float
+    waiting_log_contribution: float
+    event_log_contribution: float
+    interval_log_contribution: float
+
+
+@dataclass(frozen=True, slots=True)
+class ConstantPopulationCoalescentPriorEvaluationReport:
+    """One rooted ultrametric constant-population coalescent prior report."""
+
+    family: str
+    effective_population_size: float
+    tree_newick: str
+    tip_count: int
+    internal_node_count: int
+    root_age: float
+    total_branch_length: float
+    ultrametric_tolerance: float
+    log_prior: float
+    interval_rows: list[ConstantPopulationCoalescentIntervalRow]
+
+
 def build_crown_conditioned_yule_tree_prior(
     speciation_rate: float,
 ) -> YuleTreePriorModel:
@@ -151,6 +192,26 @@ def build_crown_conditioned_birth_death_tree_prior(
     )
 
 
+def build_constant_population_coalescent_tree_prior(
+    *,
+    effective_population_size: float,
+) -> ConstantPopulationCoalescentPriorModel:
+    """Build one constant-population Kingman coalescent prior."""
+    if (
+        not math.isfinite(effective_population_size)
+        or effective_population_size <= 0.0
+    ):
+        raise PhylogeneticsError(
+            "constant-population coalescent prior requires a strictly positive finite effective population size",
+            code="constant_population_coalescent_prior_invalid_effective_population_size",
+            details={"effective_population_size": effective_population_size},
+        )
+    return ConstantPopulationCoalescentPriorModel(
+        family="constant-population-coalescent",
+        effective_population_size=effective_population_size,
+    )
+
+
 def evaluate_yule_tree_log_prior(
     tree: PhyloTree,
     prior_model: YuleTreePriorModel,
@@ -163,24 +224,12 @@ def evaluate_yule_tree_log_prior(
         prior_name="Yule tree prior",
         code_prefix="yule_tree_prior",
     )
-    tip_depth_by_label = _tip_depth_by_label(tree)
-    ultrametric_summary = summarize_ultrametric_tip_depths(
-        tip_depth_by_label,
-        tolerance=ultrametric_tolerance,
+    ultrametric_summary = _validated_ultrametric_summary(
+        tree,
+        prior_name="Yule tree prior",
+        code_prefix="yule_tree_prior",
+        ultrametric_tolerance=ultrametric_tolerance,
     )
-    if not ultrametric_summary.ultrametric:
-        raise NonUltrametricTreeError(
-            "Yule tree prior requires an ultrametric tree",
-            code="yule_tree_prior_requires_ultrametric_tree",
-            details={
-                "minimum_tip_depth": ultrametric_summary.minimum_tip_depth,
-                "maximum_tip_depth": ultrametric_summary.maximum_tip_depth,
-                "max_tip_depth_deviation": ultrametric_summary.max_tip_depth_deviation,
-                "offending_taxa": list(ultrametric_summary.offending_taxa),
-                "tolerance": ultrametric_summary.tolerance,
-            },
-        )
-
     root_age = ultrametric_summary.root_age
     branch_rows = _build_yule_interval_rows(
         tree,
@@ -215,23 +264,12 @@ def evaluate_birth_death_tree_log_prior(
         prior_name="birth-death tree prior",
         code_prefix="birth_death_tree_prior",
     )
-    tip_depth_by_label = _tip_depth_by_label(tree)
-    ultrametric_summary = summarize_ultrametric_tip_depths(
-        tip_depth_by_label,
-        tolerance=ultrametric_tolerance,
+    ultrametric_summary = _validated_ultrametric_summary(
+        tree,
+        prior_name="birth-death tree prior",
+        code_prefix="birth_death_tree_prior",
+        ultrametric_tolerance=ultrametric_tolerance,
     )
-    if not ultrametric_summary.ultrametric:
-        raise NonUltrametricTreeError(
-            "birth-death tree prior requires an ultrametric tree",
-            code="birth_death_tree_prior_requires_ultrametric_tree",
-            details={
-                "minimum_tip_depth": ultrametric_summary.minimum_tip_depth,
-                "maximum_tip_depth": ultrametric_summary.maximum_tip_depth,
-                "max_tip_depth_deviation": ultrametric_summary.max_tip_depth_deviation,
-                "offending_taxa": list(ultrametric_summary.offending_taxa),
-                "tolerance": ultrametric_summary.tolerance,
-            },
-        )
     root_age = ultrametric_summary.root_age
     branching_rows = _build_birth_death_branching_rows(
         tree,
@@ -270,6 +308,45 @@ def evaluate_birth_death_tree_log_prior(
         ultrametric_tolerance=ultrametric_tolerance,
         log_prior=float(format(log_prior, ".15g")),
         branching_rows=branching_rows,
+    )
+
+
+def evaluate_constant_population_coalescent_tree_log_prior(
+    tree: PhyloTree,
+    prior_model: ConstantPopulationCoalescentPriorModel,
+    *,
+    ultrametric_tolerance: float = APE_ULTRAMETRIC_TOLERANCE,
+) -> ConstantPopulationCoalescentPriorEvaluationReport:
+    """Evaluate one rooted ultrametric tree under a constant-population coalescent prior."""
+    _validate_time_tree_prior_tree(
+        tree,
+        prior_name="constant-population coalescent prior",
+        code_prefix="constant_population_coalescent_prior",
+    )
+    ultrametric_summary = _validated_ultrametric_summary(
+        tree,
+        prior_name="constant-population coalescent prior",
+        code_prefix="constant_population_coalescent_prior",
+        ultrametric_tolerance=ultrametric_tolerance,
+    )
+    root_age = ultrametric_summary.root_age
+    interval_rows = _build_constant_population_coalescent_interval_rows(
+        tree,
+        effective_population_size=prior_model.effective_population_size,
+        root_age=root_age,
+    )
+    log_prior = sum(row.interval_log_contribution for row in interval_rows)
+    return ConstantPopulationCoalescentPriorEvaluationReport(
+        family=prior_model.family,
+        effective_population_size=prior_model.effective_population_size,
+        tree_newick=tree.to_newick(),
+        tip_count=tree.tip_count,
+        internal_node_count=tree.internal_node_count,
+        root_age=float(format(root_age, ".15g")),
+        total_branch_length=float(format(tree.total_branch_length(), ".15g")),
+        ultrametric_tolerance=ultrametric_tolerance,
+        log_prior=float(format(log_prior, ".15g")),
+        interval_rows=interval_rows,
     )
 
 
@@ -317,6 +394,33 @@ def _tree_is_rooted(tree: PhyloTree) -> bool:
     return len(tree.root.children) == 2
 
 
+def _validated_ultrametric_summary(
+    tree: PhyloTree,
+    *,
+    prior_name: str,
+    code_prefix: str,
+    ultrametric_tolerance: float,
+):
+    tip_depth_by_label = _tip_depth_by_label(tree)
+    ultrametric_summary = summarize_ultrametric_tip_depths(
+        tip_depth_by_label,
+        tolerance=ultrametric_tolerance,
+    )
+    if not ultrametric_summary.ultrametric:
+        raise NonUltrametricTreeError(
+            f"{prior_name} requires an ultrametric tree",
+            code=f"{code_prefix}_requires_ultrametric_tree",
+            details={
+                "minimum_tip_depth": ultrametric_summary.minimum_tip_depth,
+                "maximum_tip_depth": ultrametric_summary.maximum_tip_depth,
+                "max_tip_depth_deviation": ultrametric_summary.max_tip_depth_deviation,
+                "offending_taxa": list(ultrametric_summary.offending_taxa),
+                "tolerance": ultrametric_summary.tolerance,
+            },
+        )
+    return ultrametric_summary
+
+
 def _tip_depth_by_label(tree: PhyloTree) -> dict[str, float]:
     depths = _node_depth_lookup(tree)
     return {
@@ -348,6 +452,15 @@ def _branching_ages_excluding_root(tree: PhyloTree, *, root_age: float) -> list[
         float(format(root_age - node_depths[node.node_id or ""], ".15g"))
         for node in internal_nodes.values()
         if node is not tree.root
+    ]
+
+
+def _branching_ages_including_root(tree: PhyloTree, *, root_age: float) -> list[float]:
+    internal_nodes = build_ape_internal_node_map(tree)
+    node_depths = _node_depth_lookup(tree)
+    return [
+        float(format(root_age - node_depths[node.node_id or ""], ".15g"))
+        for node in internal_nodes.values()
     ]
 
 
@@ -455,6 +568,72 @@ def _build_birth_death_branching_rows(
                 ),
             )
         )
+    return rows
+
+
+def _build_constant_population_coalescent_interval_rows(
+    tree: PhyloTree,
+    *,
+    effective_population_size: float,
+    root_age: float,
+) -> list[ConstantPopulationCoalescentIntervalRow]:
+    branching_ages = _branching_ages_including_root(tree, root_age=root_age)
+    events_by_age = Counter(branching_ages)
+    older_boundaries = sorted(events_by_age)
+    younger_boundary = 0.0
+    lineage_count = tree.tip_count
+    rows: list[ConstantPopulationCoalescentIntervalRow] = []
+    for interval_index, older_boundary in enumerate(older_boundaries, start=1):
+        duration = older_boundary - younger_boundary
+        coalescent_event_count = events_by_age[older_boundary]
+        waiting_rate = (
+            math.comb(lineage_count, 2) / effective_population_size
+            if lineage_count >= 2
+            else 0.0
+        )
+        waiting_log_contribution = -(waiting_rate * duration)
+        event_log_contribution = 0.0
+        remaining_lineage_count = lineage_count
+        for _ in range(coalescent_event_count):
+            if remaining_lineage_count < 2:
+                raise PhylogeneticsError(
+                    "constant-population coalescent prior encountered an invalid lineage count",
+                    code="constant_population_coalescent_prior_invalid_lineage_count",
+                    details={
+                        "lineage_count": remaining_lineage_count,
+                        "coalescent_event_count": coalescent_event_count,
+                        "older_boundary_age": older_boundary,
+                    },
+                )
+            event_log_contribution += math.log(
+                math.comb(remaining_lineage_count, 2) / effective_population_size
+            )
+            remaining_lineage_count -= 1
+        interval_log_contribution = (
+            waiting_log_contribution + event_log_contribution
+        )
+        rows.append(
+            ConstantPopulationCoalescentIntervalRow(
+                interval_index=interval_index,
+                younger_boundary_age=float(format(younger_boundary, ".15g")),
+                older_boundary_age=float(format(older_boundary, ".15g")),
+                duration=float(format(duration, ".15g")),
+                lineage_count=lineage_count,
+                coalescent_event_count=coalescent_event_count,
+                waiting_rate=float(format(waiting_rate, ".15g")),
+                waiting_log_contribution=float(
+                    format(waiting_log_contribution, ".15g")
+                ),
+                event_log_contribution=float(
+                    format(event_log_contribution, ".15g")
+                ),
+                interval_log_contribution=float(
+                    format(interval_log_contribution, ".15g")
+                ),
+            )
+        )
+        lineage_count -= coalescent_event_count
+        younger_boundary = older_boundary
     return rows
 
 
