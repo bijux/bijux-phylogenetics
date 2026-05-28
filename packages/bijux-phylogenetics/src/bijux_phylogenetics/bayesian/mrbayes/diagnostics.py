@@ -16,6 +16,7 @@ from bijux_phylogenetics.bayesian.posterior_sets.diagnostics import (
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.trees import compute_clade_frequency_table
 
+from .artifacts import _mrbayes_artifact_error
 from .models import (
     EffectiveSampleSize,
     MrBayesBurninSensitivityReport,
@@ -24,11 +25,15 @@ from .models import (
     MrBayesESSReport,
     MrBayesParameterDiagnosticsReport,
     MrBayesParameterSummary,
+    MrBayesPosteriorDecompositionReport,
+    MrBayesPosteriorDecompositionRow,
     MrBayesTraceReport,
     MrBayesTraceRow,
 )
 from .posterior_trees import summarize_mrbayes_posterior_trees
 from .tabular import parse_mrbayes_parameter_traces
+
+_POSTERIOR_DECOMPOSITION_TOLERANCE = 1e-9
 
 
 def compute_mrbayes_effective_sample_sizes(path: Path) -> MrBayesESSReport:
@@ -148,6 +153,108 @@ def write_mrbayes_parameter_summary_table(
                 "last_kept_generation": str(report.last_kept_generation),
             }
             for summary in report.parameter_summaries
+        ],
+    )
+
+
+def summarize_mrbayes_posterior_decomposition(
+    path: Path,
+    *,
+    burnin_fraction: float = 0.0,
+    identity_tolerance: float = _POSTERIOR_DECOMPOSITION_TOLERANCE,
+) -> MrBayesPosteriorDecompositionReport:
+    """Separate posterior, likelihood, and prior terms from a MrBayes trace."""
+    report = parse_mrbayes_parameter_traces(path)
+    burnin_row_count, kept_rows = _split_mrbayes_trace_rows(
+        report, burnin_fraction=burnin_fraction
+    )
+    required_columns = {"LnL", "LnPr"}
+    missing_columns = sorted(required_columns.difference(report.columns))
+    if missing_columns:
+        raise _mrbayes_artifact_error(
+            f"MrBayes posterior decomposition requires LnL and LnPr columns: {path}",
+            code="mrbayes_trace_missing_posterior_terms",
+            path=path,
+            artifact_kind="mrbayes-trace",
+            details={
+                "required_columns": sorted(required_columns),
+                "columns": list(report.columns),
+                "missing_columns": missing_columns,
+            },
+        )
+    rows: list[MrBayesPosteriorDecompositionRow] = []
+    maximum_absolute_delta = 0.0
+    verified = True
+    for row in kept_rows:
+        log_likelihood = row.values["LnL"]
+        log_prior = row.values["LnPr"]
+        log_posterior = log_likelihood + log_prior
+        decomposition_delta = log_posterior - (log_likelihood + log_prior)
+        decomposition_valid = abs(decomposition_delta) <= identity_tolerance
+        maximum_absolute_delta = max(
+            maximum_absolute_delta, abs(decomposition_delta)
+        )
+        verified = verified and decomposition_valid
+        rows.append(
+            MrBayesPosteriorDecompositionRow(
+                generation=row.generation,
+                log_posterior=log_posterior,
+                log_likelihood=log_likelihood,
+                log_prior=log_prior,
+                decomposition_delta=decomposition_delta,
+                decomposition_valid=decomposition_valid,
+            )
+        )
+    return MrBayesPosteriorDecompositionReport(
+        path=path,
+        burnin_fraction=burnin_fraction,
+        burnin_row_count=burnin_row_count,
+        kept_row_count=len(kept_rows),
+        first_kept_generation=kept_rows[0].generation,
+        last_kept_generation=kept_rows[-1].generation,
+        posterior_term_source="derived_from_likelihood_and_prior",
+        likelihood_term_source="logged",
+        prior_term_source="logged",
+        identity_tolerance=identity_tolerance,
+        verified=verified,
+        maximum_absolute_delta=maximum_absolute_delta,
+        rows=rows,
+    )
+
+
+def write_mrbayes_posterior_decomposition_table(
+    path: Path,
+    report: MrBayesPosteriorDecompositionReport,
+) -> Path:
+    """Write one row per retained MrBayes sample with posterior decomposition terms."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "generation",
+            "log_posterior",
+            "log_likelihood",
+            "log_prior",
+            "decomposition_delta",
+            "decomposition_valid",
+            "posterior_term_source",
+            "likelihood_term_source",
+            "prior_term_source",
+            "identity_tolerance",
+        ],
+        rows=[
+            {
+                "generation": str(row.generation),
+                "log_posterior": format(row.log_posterior, ".15g"),
+                "log_likelihood": format(row.log_likelihood, ".15g"),
+                "log_prior": format(row.log_prior, ".15g"),
+                "decomposition_delta": format(row.decomposition_delta, ".15g"),
+                "decomposition_valid": str(row.decomposition_valid).lower(),
+                "posterior_term_source": report.posterior_term_source,
+                "likelihood_term_source": report.likelihood_term_source,
+                "prior_term_source": report.prior_term_source,
+                "identity_tolerance": format(report.identity_tolerance, ".15g"),
+            }
+            for row in report.rows
         ],
     )
 
