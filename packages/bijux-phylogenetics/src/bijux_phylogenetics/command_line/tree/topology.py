@@ -13,9 +13,11 @@ from bijux_phylogenetics.compare.reference import (
 )
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.phylo.topology import (
+    enumerate_rooted_nni_neighbors,
     reroot_tree_by_midpoint,
     root_tree_on_outgroup,
     unroot_tree,
+    write_rooted_nni_artifacts,
     write_tree_rooting_report,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
@@ -144,6 +146,19 @@ def add_topology_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the unrooting report as JSON."
     )
     _add_manifest_argument(topology_unroot)
+
+    topology_rooted_nni_neighbors = topology_subparsers.add_parser(
+        "rooted-nni-neighbors",
+        help="Enumerate every legal rooted NNI neighbor for one binary-root tree representation.",
+    )
+    topology_rooted_nni_neighbors.add_argument("tree", type=Path)
+    topology_rooted_nni_neighbors.add_argument("--out-dir", required=True, type=Path)
+    topology_rooted_nni_neighbors.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the rooted NNI neighborhood report as JSON.",
+    )
+    _add_manifest_argument(topology_rooted_nni_neighbors)
 
 
 def run_topology_command(args: Any) -> int:
@@ -283,6 +298,40 @@ def run_topology_command(args: Any) -> int:
                     "reference_case_count": report.reference_case_count,
                     "policy_case_count": report.policy_case_count,
                     "all_passed": report.all_passed,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.topology_command == "rooted-nni-neighbors":
+        report = enumerate_rooted_nni_neighbors(args.tree)
+        outputs = _finalize_outputs(
+            args,
+            command="topology",
+            inputs=[args.tree],
+            outputs=list(write_rooted_nni_artifacts(args.out_dir, report).values()),
+        )
+        _print_result(
+            build_command_result(
+                command="topology",
+                inputs=[args.tree],
+                outputs=outputs,
+                metrics={
+                    "algorithm": report.algorithm,
+                    "tip_count": report.tip_count,
+                    "internal_node_count": report.internal_node_count,
+                    "expected_neighbor_count": report.expected_neighbor_count,
+                    "generated_neighbor_count": report.generated_neighbor_count,
+                    "unique_neighbor_topology_count": (
+                        report.unique_neighbor_topology_count
+                    ),
+                    "duplicate_neighbor_topology_count": len(
+                        report.duplicate_neighbor_topologies
+                    ),
+                    "missing_tip_taxa": len(report.missing_tip_taxa),
+                    "unexpected_tip_taxa": len(report.unexpected_tip_taxa),
                 },
                 data=report,
             ),
