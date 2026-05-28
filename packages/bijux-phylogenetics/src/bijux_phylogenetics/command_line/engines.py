@@ -65,6 +65,8 @@ from bijux_phylogenetics.phylo.dating import (
     cross_validate_penalized_likelihood_smoothing_from_metadata,
     fit_least_squares_dating_from_metadata,
     fit_penalized_likelihood_dating_from_metadata,
+    solve_dating_calibration_constraints,
+    write_dating_calibration_constraint_artifacts,
     write_least_squares_dating_artifacts,
     write_penalized_likelihood_cross_validation_artifacts,
     write_penalized_likelihood_dating_artifacts,
@@ -823,6 +825,23 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the least-squares dating report as JSON."
     )
     _add_manifest_argument(phylo_dating_least_squares)
+    phylo_dating_calibration_constraints = phylo_dating_subparsers.add_parser(
+        "calibration-constraints",
+        help="Resolve min, max, and fixed calibration bounds onto one rooted tree and report contradictory node windows before dating optimization.",
+    )
+    phylo_dating_calibration_constraints.add_argument("tree_path", type=Path)
+    phylo_dating_calibration_constraints.add_argument("calibration_path", type=Path)
+    phylo_dating_calibration_constraints.add_argument(
+        "--out-dir",
+        required=True,
+        type=Path,
+    )
+    phylo_dating_calibration_constraints.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the calibration-constraint report as JSON.",
+    )
+    _add_manifest_argument(phylo_dating_calibration_constraints)
     phylo_dating_penalized_likelihood = phylo_dating_subparsers.add_parser(
         "penalized-likelihood",
         help="Fit one rooted tree to fixed tip dates with a separate data score and rate-smoothing penalty.",
@@ -918,6 +937,43 @@ def run_phylo_command(args: Any) -> int:
         "beast": getattr(args, "beast_executable", None),
     }
     if args.phylo_command == "dating":
+        if args.phylo_dating_command == "calibration-constraints":
+            report = solve_dating_calibration_constraints(
+                args.tree_path,
+                args.calibration_path,
+            )
+            artifact_paths = write_dating_calibration_constraint_artifacts(
+                args.out_dir,
+                report,
+            )
+            outputs = _finalize_outputs(
+                args,
+                command="phylo",
+                inputs=[args.tree_path, args.calibration_path],
+                outputs=list(artifact_paths.values()),
+            )
+            _print_result(
+                build_command_result(
+                    command="phylo",
+                    inputs=[args.tree_path, args.calibration_path],
+                    outputs=outputs,
+                    metrics={
+                        "taxon_count": len(report.taxa),
+                        "tip_count": report.tip_count,
+                        "internal_node_count": report.internal_node_count,
+                        "calibration_count": report.calibration_count,
+                        "valid_calibration_count": report.valid_calibration_count,
+                        "invalid_calibration_count": report.invalid_calibration_count,
+                        "resolved_calibration_count": report.resolved_calibration_count,
+                        "contradictory_calibration_count": report.contradictory_calibration_count,
+                        "contradictory_node_count": report.contradictory_node_count,
+                        "feasible": report.feasible,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
         if args.phylo_dating_command == "least-squares":
             report = fit_least_squares_dating_from_metadata(
                 args.tree_path,
