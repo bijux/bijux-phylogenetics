@@ -13,9 +13,9 @@ from bijux_phylogenetics.phylo.likelihood.gamma import (
     build_discrete_gamma_rate_categories,
 )
 from bijux_phylogenetics.phylo.likelihood.invariant import (
-    invariant_proportion_boundary_warnings,
     invariant_component_site_likelihood,
     invariant_mixture_site_likelihood,
+    invariant_proportion_boundary_warnings,
     validate_invariant_proportion,
     validate_invariant_proportion_bounds,
 )
@@ -42,14 +42,18 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.likelihood.protein import (
     PROTEIN_STATE_ORDER,
     UNIFORM_PROTEIN_ROOT_PRIOR,
-    evaluate_fixed_topology_protein_likelihood_from_patterns,
     evaluate_fixed_topology_protein_site_log_likelihood,
     normalize_unambiguous_protein_records,
     validate_empirical_protein_rate_matrix,
     validate_protein_root_prior,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
-from bijux_phylogenetics.phylo.likelihood.validation import validate_explicit_branch_lengths
+from bijux_phylogenetics.phylo.likelihood.sites import (
+    expanded_site_log_likelihood_rows_from_patterns,
+)
+from bijux_phylogenetics.phylo.likelihood.validation import (
+    validate_explicit_branch_lengths,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError
 
@@ -894,16 +898,20 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
         )
         for _parent, child in tree.iter_edges()
     }
-    log_likelihood = evaluate_fixed_topology_protein_likelihood_from_patterns(
-        tree,
+    site_log_likelihoods, log_likelihood = expanded_site_log_likelihood_rows_from_patterns(
         compressed_patterns,
-        model_name="empirical protein matrix",
-        root_prior=root_prior,
-        transition_matrix_for_child=lambda child: transition_by_node_id[
-            child.node_id or ""
-        ],
-        gap_policy=gap_policy,
-        missing_policy=missing_policy,
+        site_log_likelihood=lambda states: evaluate_fixed_topology_protein_site_log_likelihood(
+            tree,
+            states,
+            taxon_order=compressed_patterns.taxon_order,
+            model_name="empirical protein matrix",
+            root_prior=root_prior,
+            transition_matrix_for_child=lambda child: transition_by_node_id[
+                child.node_id or ""
+            ],
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+        ),
     )
     return ProteinEmpiricalMatrixTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
@@ -917,6 +925,7 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         log_likelihood=log_likelihood,
+        site_log_likelihoods=site_log_likelihoods,
     )
 
 
@@ -1189,7 +1198,9 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_pattern
             site_likelihoods.append(
                 DiscreteGammaSiteLikelihood(
                     pattern_id=pattern.pattern_id,
+                    pattern_weight=pattern.weight,
                     site_position=site_position,
+                    site_states=pattern.states,
                     category_likelihoods=list(category_likelihoods),
                     mixture_likelihood=mixture_likelihood,
                     log_likelihood=pattern_log_likelihood,
@@ -1271,7 +1282,9 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invarian
             site_likelihoods.append(
                 DiscreteGammaInvariantMixtureSiteLikelihood(
                     pattern_id=pattern.pattern_id,
+                    pattern_weight=pattern.weight,
                     site_position=site_position,
+                    site_states=pattern.states,
                     category_likelihoods=list(category_likelihoods),
                     invariant_component_likelihood=invariant_component_likelihood,
                     variable_component_likelihood=variable_component_likelihood,
@@ -1371,7 +1384,9 @@ def _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patt
             site_likelihoods.append(
                 InvariantMixtureSiteLikelihood(
                     pattern_id=pattern.pattern_id,
+                    pattern_weight=pattern.weight,
                     site_position=site_position,
+                    site_states=pattern.states,
                     invariant_component_likelihood=invariant_component_likelihood,
                     variable_component_likelihood=variable_component_likelihood,
                     mixture_likelihood=mixture_likelihood,

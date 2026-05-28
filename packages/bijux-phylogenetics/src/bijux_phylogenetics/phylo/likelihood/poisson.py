@@ -19,8 +19,11 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.likelihood.protein import (
     PROTEIN_STATE_ORDER,
     UNIFORM_PROTEIN_ROOT_PRIOR,
-    evaluate_fixed_topology_protein_likelihood_from_patterns,
+    evaluate_fixed_topology_protein_site_log_likelihood,
     normalize_unambiguous_protein_records,
+)
+from bijux_phylogenetics.phylo.likelihood.sites import (
+    expanded_site_log_likelihood_rows_from_patterns,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
@@ -101,16 +104,20 @@ def _evaluate_protein_poisson_tree_likelihood_from_patterns(
         )
         for _parent, child in tree.iter_edges()
     }
-    log_likelihood = evaluate_fixed_topology_protein_likelihood_from_patterns(
-        tree,
+    site_log_likelihoods, log_likelihood = expanded_site_log_likelihood_rows_from_patterns(
         compressed_patterns,
-        model_name="protein Poisson",
-        root_prior=UNIFORM_PROTEIN_ROOT_PRIOR,
-        transition_matrix_for_child=lambda child: transition_by_node_id[
-            child.node_id or ""
-        ],
-        gap_policy=gap_policy,
-        missing_policy=missing_policy,
+        site_log_likelihood=lambda states: evaluate_fixed_topology_protein_site_log_likelihood(
+            tree,
+            states,
+            taxon_order=compressed_patterns.taxon_order,
+            model_name="protein Poisson",
+            root_prior=UNIFORM_PROTEIN_ROOT_PRIOR,
+            transition_matrix_for_child=lambda child: transition_by_node_id[
+                child.node_id or ""
+            ],
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+        ),
     )
     return ProteinPoissonTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
@@ -122,4 +129,5 @@ def _evaluate_protein_poisson_tree_likelihood_from_patterns(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         log_likelihood=log_likelihood,
+        site_log_likelihoods=site_log_likelihoods,
     )
