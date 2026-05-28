@@ -9,7 +9,10 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
-from bijux_phylogenetics.phylo.likelihood.dna import normalize_unambiguous_dna_records
+from bijux_phylogenetics.phylo.likelihood.dna import (
+    UNIFORM_DNA_ROOT_PRIOR,
+    normalize_unambiguous_dna_records,
+)
 from bijux_phylogenetics.phylo.likelihood.jc69 import (
     _evaluate_jc69_tree_likelihood_from_patterns,
 )
@@ -30,7 +33,11 @@ from .models import (
     LocalClockLikelihoodReport,
     LocalClockRegimeRow,
 )
-from .strict_clock import fit_strict_clock_likelihood
+from .sites import write_site_log_likelihood_table
+from .strict_clock import (
+    _evaluate_jc69_site_log_likelihood_rows,
+    fit_strict_clock_likelihood,
+)
 from .validation import (
     validate_explicit_branch_lengths,
     validate_tree_taxa_against_patterns,
@@ -431,6 +438,7 @@ def fit_local_clock_likelihood(
         report = _evaluate_jc69_tree_likelihood_from_patterns(
             scaled_tree,
             compressed_patterns,
+            root_prior=UNIFORM_DNA_ROOT_PRIOR,
         )
         return scaled_tree, report.log_likelihood
 
@@ -444,6 +452,11 @@ def fit_local_clock_likelihood(
     optimized_report = _evaluate_jc69_tree_likelihood_from_patterns(
         optimized_scaled_tree,
         compressed_patterns,
+        root_prior=UNIFORM_DNA_ROOT_PRIOR,
+    )
+    site_log_likelihood_report = _evaluate_jc69_site_log_likelihood_rows(
+        optimized_scaled_tree,
+        compressed_patterns=compressed_patterns,
     )
     optimized_rate_by_regime_id = dict(search_result.parameter_values)
     regime_rows = _build_local_clock_regime_rows(
@@ -491,6 +504,7 @@ def fit_local_clock_likelihood(
         upper_clock_rate_bound=upper_clock_rate_bound,
         branch_rows=branch_rows,
         regime_rows=regime_rows,
+        site_log_likelihoods=site_log_likelihood_report.site_log_likelihoods,
     )
 
 
@@ -596,8 +610,10 @@ def write_local_clock_run_json(
     report: LocalClockLikelihoodReport,
 ) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
+    payload = asdict(report)
+    payload.pop("site_log_likelihoods", None)
     path.write_text(
-        json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n",
+        json.dumps(payload, default=str, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     return path
@@ -620,10 +636,15 @@ def write_local_clock_likelihood_artifacts(
         out_dir / "regimes.tsv",
         report,
     )
+    site_log_likelihood_path = write_site_log_likelihood_table(
+        out_dir / "site_log_likelihoods.tsv",
+        report,
+    )
     run_json_path = write_local_clock_run_json(out_dir / "run.json", report)
     return {
         "scaled_tree_path": scaled_tree_path,
         "branch_table_path": branch_table_path,
         "regime_table_path": regime_table_path,
+        "site_log_likelihood_path": site_log_likelihood_path,
         "run_json_path": run_json_path,
     }

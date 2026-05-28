@@ -1,17 +1,21 @@
 from __future__ import annotations
 
 import csv
-import json
 from dataclasses import asdict
+import json
 from pathlib import Path
 
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
-from bijux_phylogenetics.phylo.likelihood.dna import normalize_unambiguous_dna_records
+from bijux_phylogenetics.phylo.likelihood.dna import (
+    UNIFORM_DNA_ROOT_PRIOR,
+    normalize_unambiguous_dna_records,
+)
 from bijux_phylogenetics.phylo.likelihood.jc69 import (
     _evaluate_jc69_tree_likelihood_from_patterns,
+    jc69_transition_probability_matrix,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_likelihood_search,
@@ -19,11 +23,18 @@ from bijux_phylogenetics.phylo.likelihood.parameter_search import (
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     compress_alignment_site_patterns_from_records,
 )
+from bijux_phylogenetics.phylo.likelihood.site_log_likelihoods import (
+    evaluate_selected_dna_site_log_likelihoods_from_patterns,
+)
+from bijux_phylogenetics.phylo.likelihood.sites import write_site_log_likelihood_table
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError
 
 from .models import StrictClockBranchRow, StrictClockLikelihoodReport
-from .validation import validate_explicit_branch_lengths, validate_tree_taxa_against_patterns
+from .validation import (
+    validate_explicit_branch_lengths,
+    validate_tree_taxa_against_patterns,
+)
 
 _SUPPORTED_MODELS = {"jc69": "JC69"}
 
@@ -91,6 +102,23 @@ def _build_branch_rows(
     return branch_rows
 
 
+def _evaluate_jc69_site_log_likelihood_rows(
+    tree: PhyloTree,
+    *,
+    compressed_patterns,
+):
+    return evaluate_selected_dna_site_log_likelihoods_from_patterns(
+        tree,
+        compressed_patterns,
+        model_name="JC69",
+        root_prior=UNIFORM_DNA_ROOT_PRIOR,
+        parameter_values={},
+        transition_matrix_for_child=lambda child: jc69_transition_probability_matrix(
+            max(float(child.branch_length or 0.0), 0.0)
+        ),
+    )
+
+
 def _fit_jc69_strict_clock_likelihood(
     tree: PhyloTree,
     records: list[AlignmentRecord],
@@ -126,6 +154,7 @@ def _fit_jc69_strict_clock_likelihood(
     initial_report = _evaluate_jc69_tree_likelihood_from_patterns(
         initial_scaled_tree,
         compressed_patterns,
+        root_prior=UNIFORM_DNA_ROOT_PRIOR,
     )
 
     def evaluate_candidate(
@@ -138,6 +167,7 @@ def _fit_jc69_strict_clock_likelihood(
         report = _evaluate_jc69_tree_likelihood_from_patterns(
             scaled_tree,
             compressed_patterns,
+            root_prior=UNIFORM_DNA_ROOT_PRIOR,
         )
         return scaled_tree, report.log_likelihood
 
@@ -150,6 +180,11 @@ def _fit_jc69_strict_clock_likelihood(
     optimized_report = _evaluate_jc69_tree_likelihood_from_patterns(
         optimized_scaled_tree,
         compressed_patterns,
+        root_prior=UNIFORM_DNA_ROOT_PRIOR,
+    )
+    site_log_likelihood_report = _evaluate_jc69_site_log_likelihood_rows(
+        optimized_scaled_tree,
+        compressed_patterns=compressed_patterns,
     )
     optimized_clock_rate = float(search_result.parameter_value)
     branch_rows = _build_branch_rows(
@@ -177,6 +212,7 @@ def _fit_jc69_strict_clock_likelihood(
         lower_clock_rate_bound=lower_clock_rate_bound,
         upper_clock_rate_bound=upper_clock_rate_bound,
         branch_rows=branch_rows,
+        site_log_likelihoods=site_log_likelihood_report.site_log_likelihoods,
     )
 
 
@@ -262,8 +298,10 @@ def write_strict_clock_run_json(
     report: StrictClockLikelihoodReport,
 ) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
+    payload = asdict(report)
+    payload.pop("site_log_likelihoods", None)
     path.write_text(
-        json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n",
+        json.dumps(payload, default=str, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     return path
@@ -282,9 +320,14 @@ def write_strict_clock_likelihood_artifacts(
         out_dir / "branch_rates.tsv",
         report,
     )
+    site_log_likelihood_path = write_site_log_likelihood_table(
+        out_dir / "site_log_likelihoods.tsv",
+        report,
+    )
     run_json_path = write_strict_clock_run_json(out_dir / "run.json", report)
     return {
         "scaled_tree_path": scaled_tree_path,
         "branch_table_path": branch_table_path,
+        "site_log_likelihood_path": site_log_likelihood_path,
         "run_json_path": run_json_path,
     }
