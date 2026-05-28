@@ -11,6 +11,12 @@ from .clade_support import (
     write_clade_frequency_table,
     write_reference_tree_clade_support_table,
 )
+from .clade_compatibility import (
+    compute_clade_compatibility_graph,
+    write_clade_compatibility_edge_table,
+    write_clade_compatibility_graph_dot,
+    write_clade_compatibility_node_table,
+)
 from .quartet_support import (
     compute_reference_tree_quartet_support,
     write_reference_tree_quartet_support_table,
@@ -28,6 +34,9 @@ from .consensus import (
 from .contracts import (
     CladeFrequency,
     CladeFrequencyReport,
+    CladeCompatibilityEdgeRow,
+    CladeCompatibilityGraphReport,
+    CladeCompatibilityNodeRow,
     ConsensusTreeReport,
     TreeDistanceMatrixReport,
     TreeDistancePair,
@@ -50,6 +59,9 @@ from .inventory import load_tree_set
 __all__ = [
     "CladeFrequency",
     "CladeFrequencyReport",
+    "CladeCompatibilityEdgeRow",
+    "CladeCompatibilityGraphReport",
+    "CladeCompatibilityNodeRow",
     "ConsensusTreeReport",
     "TreeDistanceMatrixReport",
     "TreeDistancePair",
@@ -68,6 +80,7 @@ __all__ = [
     "build_quartet_puzzling_consensus",
     "build_tree_set_budget_report",
     "build_tree_set_workflow_budget",
+    "compute_clade_compatibility_graph",
     "compute_clade_frequency_table",
     "compute_consensus_tree",
     "compute_consensus_tree_with_threshold",
@@ -77,6 +90,9 @@ __all__ = [
     "compute_tree_distance_matrix",
     "enforce_tree_set_tree_budget",
     "load_tree_set",
+    "write_clade_compatibility_edge_table",
+    "write_clade_compatibility_graph_dot",
+    "write_clade_compatibility_node_table",
     "write_clade_frequency_table",
     "write_consensus_tree",
     "write_quartet_puzzling_artifacts",
