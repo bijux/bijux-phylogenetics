@@ -13,6 +13,8 @@ from bijux_phylogenetics.bayesian import (
     BeastAnalysisXmlReport,
     BeastCalibration,
     MrBayesParameterDiagnosticsReport,
+    TREE_TOPOLOGY_PRIOR_FAMILIES,
+    TreeTopologyPriorModel,
     assess_beast_burnin_sensitivity,
     assess_beast_convergence,
     assess_mrbayes_burnin_sensitivity,
@@ -20,8 +22,10 @@ from bijux_phylogenetics.bayesian import (
     build_bayesian_evidence_package,
     build_categorical_probability_vector,
     build_posterior_uncertainty_figure_package,
+    build_uniform_rooted_tree_topology_prior,
     compare_log_probabilities,
     compute_mrbayes_effective_sample_sizes,
+    count_rooted_labeled_bifurcating_topologies,
     log_probability_add,
     logsumexp,
     normalize_log_probabilities,
@@ -30,8 +34,10 @@ from bijux_phylogenetics.bayesian import (
     parse_mrbayes_consensus_tree,
     run_beast_posterior_inference,
     run_mrbayes_posterior_inference,
+    evaluate_tree_topology_log_prior,
     summarize_beast_log,
     summarize_mrbayes_posterior_trees,
+    validate_tree_topology_prior_taxa,
     write_beast_log_summary_table,
     write_mrbayes_parameter_summary_table,
     write_posterior_tree_subsample,
@@ -772,7 +778,11 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.CATEGORICAL_MISSING_STATE_POLICIES
         is CATEGORICAL_MISSING_STATE_POLICIES
     )
+    assert (
+        bayesian_api.TREE_TOPOLOGY_PRIOR_FAMILIES is TREE_TOPOLOGY_PRIOR_FAMILIES
+    )
     assert bayesian_api.CategoricalProbabilityVector is CategoricalProbabilityVector
+    assert bayesian_api.TreeTopologyPriorModel is TreeTopologyPriorModel
     assert (
         bayesian_api.MrBayesParameterDiagnosticsReport
         is MrBayesParameterDiagnosticsReport
@@ -794,6 +804,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_categorical_probability_vector
     )
     assert (
+        bayesian_api.build_uniform_rooted_tree_topology_prior
+        is build_uniform_rooted_tree_topology_prior
+    )
+    assert (
         bayesian_api.build_posterior_uncertainty_figure_package
         is build_posterior_uncertainty_figure_package
     )
@@ -801,7 +815,15 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.compute_mrbayes_effective_sample_sizes
         is compute_mrbayes_effective_sample_sizes
     )
+    assert (
+        bayesian_api.count_rooted_labeled_bifurcating_topologies
+        is count_rooted_labeled_bifurcating_topologies
+    )
     assert bayesian_api.compare_log_probabilities is compare_log_probabilities
+    assert (
+        bayesian_api.evaluate_tree_topology_log_prior
+        is evaluate_tree_topology_log_prior
+    )
     assert bayesian_api.log_probability_add is log_probability_add
     assert bayesian_api.logsumexp is logsumexp
     assert bayesian_api.normalize_log_probabilities is normalize_log_probabilities
@@ -826,6 +848,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is write_mrbayes_parameter_summary_table
     )
     assert bayesian_api.write_posterior_tree_subsample is write_posterior_tree_subsample
+    assert (
+        bayesian_api.validate_tree_topology_prior_taxa
+        is validate_tree_topology_prior_taxa
+    )
     assert (
         bayesian_api.write_supplementary_bayesian_diagnostics_table
         is write_supplementary_bayesian_diagnostics_table
