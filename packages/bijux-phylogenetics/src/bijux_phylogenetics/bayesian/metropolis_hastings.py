@@ -11,6 +11,7 @@ from bijux_phylogenetics.bayesian.state import (
     BayesianPriorComponentState,
     build_bayesian_phylogenetic_state,
 )
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 BayesianPriorUpdate = Callable[
@@ -96,6 +97,85 @@ def build_metropolis_hastings_proposal(
             proposed_tree=proposed_tree,
             proposed_model_parameters=proposed_model_parameters,
         )
+    )
+
+
+def propose_branch_length_scaling_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+    *,
+    log_scale_standard_deviation: float,
+) -> MetropolisHastingsProposal:
+    """Propose one multiplicative change to one positive branch length."""
+    validated_log_scale_standard_deviation = _validate_positive_finite_float(
+        value=log_scale_standard_deviation,
+        field_name="log_scale_standard_deviation",
+        owner_name="branch-length scaling proposal",
+    )
+    current_tree = current_state.tree.to_tree()
+    candidate_branch_rows = [
+        (child.node_id, float(child.branch_length))
+        for _parent, child in current_tree.iter_edges()
+        if child.node_id is not None
+        and child.branch_length is not None
+        and math.isfinite(child.branch_length)
+        and child.branch_length > 0.0
+    ]
+    if not candidate_branch_rows:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.branch_lengths",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="tree has no strictly positive finite branch lengths",
+        )
+    selected_branch_id, current_branch_length = candidate_branch_rows[
+        rng.randrange(len(candidate_branch_rows))
+    ]
+    try:
+        scale_factor = math.exp(
+            rng.gauss(0.0, validated_log_scale_standard_deviation)
+        )
+    except OverflowError:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(f"tree.branch_length:{selected_branch_id}",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="branch-length scaling factor overflowed",
+        )
+    proposed_branch_length = current_branch_length * scale_factor
+    if not math.isfinite(proposed_branch_length) or proposed_branch_length <= 0.0:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(f"tree.branch_length:{selected_branch_id}",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="branch-length scaling produced a non-positive finite branch length",
+        )
+    proposed_tree = _copy_tree_with_scaled_branch_length(
+        current_tree=current_tree,
+        branch_id=selected_branch_id,
+        proposed_branch_length=proposed_branch_length,
+    )
+    branch_selection_log_probability = -math.log(len(candidate_branch_rows))
+    log_forward_density = branch_selection_log_probability + _lognormal_scaling_density(
+        current_branch_length=current_branch_length,
+        proposed_branch_length=proposed_branch_length,
+        log_scale_standard_deviation=validated_log_scale_standard_deviation,
+    )
+    log_reverse_density = branch_selection_log_probability + _lognormal_scaling_density(
+        current_branch_length=proposed_branch_length,
+        proposed_branch_length=current_branch_length,
+        log_scale_standard_deviation=validated_log_scale_standard_deviation,
+    )
+    return build_metropolis_hastings_proposal(
+        changed_fields=(f"tree.branch_length:{selected_branch_id}",),
+        log_forward_density=log_forward_density,
+        log_reverse_density=log_reverse_density,
+        is_valid=True,
+        proposed_tree=proposed_tree,
+        proposed_model_parameters=current_state.model_parameters,
     )
 
 
@@ -335,6 +415,26 @@ def _validate_finite_float(
     return normalized_value
 
 
+def _validate_positive_finite_float(
+    *,
+    value: float,
+    field_name: str,
+    owner_name: str,
+) -> float:
+    normalized_value = _validate_finite_float(
+        value=value,
+        field_name=field_name,
+        owner_name=owner_name,
+    )
+    if normalized_value <= 0.0:
+        raise PhylogeneticsError(
+            f"{owner_name} requires '{field_name}' to be strictly positive",
+            code="metropolis_hastings_positive_float_required",
+            details={"field_name": field_name},
+        )
+    return normalized_value
+
+
 def _validate_changed_fields(
     changed_fields: tuple[str, ...],
 ) -> tuple[str, ...]:
@@ -386,3 +486,30 @@ def _validate_invalid_reason(
             code="metropolis_hastings_invalid_reason_required",
         )
     return invalid_reason.strip()
+
+
+def _copy_tree_with_scaled_branch_length(
+    *,
+    current_tree: PhyloTree,
+    branch_id: str,
+    proposed_branch_length: float,
+) -> PhyloTree:
+    proposed_tree = current_tree.copy()
+    proposed_tree.node_by_id(branch_id).branch_length = proposed_branch_length
+    return proposed_tree
+
+
+def _lognormal_scaling_density(
+    *,
+    current_branch_length: float,
+    proposed_branch_length: float,
+    log_scale_standard_deviation: float,
+) -> float:
+    log_scale_change = math.log(proposed_branch_length / current_branch_length)
+    z_score = log_scale_change / log_scale_standard_deviation
+    return (
+        -math.log(proposed_branch_length)
+        - math.log(log_scale_standard_deviation)
+        - (math.log(2.0 * math.pi) / 2.0)
+        - ((z_score * z_score) / 2.0)
+    )
