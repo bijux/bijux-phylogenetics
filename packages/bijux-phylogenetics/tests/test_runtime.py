@@ -8,6 +8,8 @@ import pytest
 
 import bijux_phylogenetics
 from bijux_phylogenetics.bayesian import (
+    CATEGORICAL_MISSING_STATE_POLICIES,
+    CategoricalProbabilityVector,
     BeastAnalysisXmlReport,
     BeastCalibration,
     MrBayesParameterDiagnosticsReport,
@@ -16,6 +18,7 @@ from bijux_phylogenetics.bayesian import (
     assess_mrbayes_burnin_sensitivity,
     assess_mrbayes_convergence,
     build_bayesian_evidence_package,
+    build_categorical_probability_vector,
     build_posterior_uncertainty_figure_package,
     compare_log_probabilities,
     compute_mrbayes_effective_sample_sizes,
@@ -766,6 +769,11 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bayesian_api.BeastAnalysisXmlReport is BeastAnalysisXmlReport
     assert bayesian_api.BeastCalibration is BeastCalibration
     assert (
+        bayesian_api.CATEGORICAL_MISSING_STATE_POLICIES
+        is CATEGORICAL_MISSING_STATE_POLICIES
+    )
+    assert bayesian_api.CategoricalProbabilityVector is CategoricalProbabilityVector
+    assert (
         bayesian_api.MrBayesParameterDiagnosticsReport
         is MrBayesParameterDiagnosticsReport
     )
@@ -780,6 +788,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bayesian_api.assess_mrbayes_convergence is assess_mrbayes_convergence
     assert (
         bayesian_api.build_bayesian_evidence_package is build_bayesian_evidence_package
+    )
+    assert (
+        bayesian_api.build_categorical_probability_vector
+        is build_categorical_probability_vector
     )
     assert (
         bayesian_api.build_posterior_uncertainty_figure_package
