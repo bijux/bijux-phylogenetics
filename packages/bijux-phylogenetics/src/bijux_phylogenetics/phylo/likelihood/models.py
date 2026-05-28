@@ -87,6 +87,64 @@ class StrictClockLikelihoodReport:
     branch_rows: list[StrictClockBranchRow]
 
 
+@dataclass(frozen=True, slots=True)
+class LocalClockRegimeRow:
+    """One fitted local-clock regime and the branches it owns."""
+
+    regime_id: str
+    target_kind: str
+    target_label: str | None
+    descendant_taxa: list[str]
+    node_id: str | None
+    branch_count: int
+    optimized_clock_rate: float
+
+
+@dataclass(frozen=True, slots=True)
+class LocalClockBranchRow:
+    """One branch assignment under a fitted local-clock likelihood model."""
+
+    branch_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+    regime_id: str
+    target_kind: str
+    time_duration: float
+    optimized_branch_length: float
+    optimized_clock_rate: float
+
+
+@dataclass(slots=True)
+class LocalClockLikelihoodReport:
+    """One fixed-topology local-clock JC69 likelihood fit on a time-scaled tree."""
+
+    model_name: str
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    branch_count: int
+    regime_count: int
+    compression_used: bool
+    time_tree_newick: str
+    scaled_tree_newick: str
+    strict_clock_rate: float
+    strict_clock_log_likelihood: float
+    strict_clock_aic: float
+    initial_clock_rate: float
+    optimized_log_likelihood: float
+    parameter_count: int
+    aic: float
+    aic_delta_vs_strict_clock: float
+    preferred_model_by_aic: str
+    function_evaluation_count: int
+    optimization_pass_count: int
+    converged: bool
+    lower_clock_rate_bound: float
+    upper_clock_rate_bound: float
+    branch_rows: list[LocalClockBranchRow]
+    regime_rows: list[LocalClockRegimeRow]
+
+
 @dataclass(slots=True)
 class K80TreeLikelihoodReport:
     """Native K80 likelihood report for one fixed topology and alignment."""
