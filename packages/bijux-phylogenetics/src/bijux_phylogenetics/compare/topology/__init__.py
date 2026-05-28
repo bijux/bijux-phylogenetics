@@ -116,6 +116,7 @@ _PUBLIC_SURFACES = (
             "write_maximum_agreement_subtree_removed_taxa_table",
             "write_maximum_agreement_subtree_search_table",
             "write_clade_overlap_table",
+            "write_date_aware_tree_comparison_table",
             "write_shared_taxa_pruning_table",
             "write_shared_taxa_removed_taxa_table",
             "write_support_comparison_table",

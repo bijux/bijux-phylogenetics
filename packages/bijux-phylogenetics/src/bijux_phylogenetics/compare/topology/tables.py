@@ -3,17 +3,18 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from .branch_lengths import compare_branch_lengths
 from .agreement import (
     approximate_maximum_agreement_subtree,
     prune_trees_to_agreement_subtree,
 )
+from .branch_lengths import compare_branch_lengths
+from .clade_ages import compare_clade_ages
+from .models import RobinsonFouldsMode
 from .overlap import (
     compare_clade_overlap,
     compare_clade_sets,
     prune_trees_to_shared_taxa,
 )
-from .models import RobinsonFouldsMode
 from .support import compare_support_values
 
 
@@ -702,6 +703,66 @@ def write_support_comparison_table(
                     "support_strength": row.support_strength,
                     "conflict_classification": row.conflict_classification,
                     "detail": row.detail,
+                }
+            )
+    return path
+
+
+def write_date_aware_tree_comparison_table(
+    path: Path,
+    left_path: Path,
+    right_path: Path,
+    *,
+    taxon_overlap_policy: str = "prune-to-shared",
+) -> Path:
+    """Write one row per matched clade from a date-aware tree comparison."""
+    report = compare_clade_ages(
+        left_path,
+        right_path,
+        taxon_overlap_policy=taxon_overlap_policy,
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "clade_id",
+                "node_kind",
+                "taxon_count",
+                "descendant_taxa",
+                "left_age",
+                "right_age",
+                "age_difference",
+                "absolute_age_difference",
+                "age_rmse",
+                "unstable_age",
+                "comparison_scope",
+                "taxon_overlap_policy",
+                "topology_equal",
+                "robinson_foulds_distance",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.clade_rows:
+            writer.writerow(
+                {
+                    "clade_id": row.clade_id,
+                    "node_kind": row.node_kind,
+                    "taxon_count": row.taxon_count,
+                    "descendant_taxa": _pipe_join(row.descendant_taxa),
+                    "left_age": row.left_age,
+                    "right_age": row.right_age,
+                    "age_difference": row.age_difference,
+                    "absolute_age_difference": row.absolute_age_difference,
+                    "age_rmse": report.age_rmse,
+                    "unstable_age": str(row.unstable_age).lower(),
+                    "comparison_scope": report.comparison_scope,
+                    "taxon_overlap_policy": report.taxon_overlap_policy,
+                    "topology_equal": str(report.topology.topology_equal).lower(),
+                    "robinson_foulds_distance": (
+                        report.topology.robinson_foulds_distance
+                    ),
                 }
             )
     return path
