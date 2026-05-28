@@ -15,6 +15,7 @@ from .models import (
     CaminSokalScoreReport,
     DolloScoreReport,
     ParsimonyBootstrapReport,
+    ParsimonyEqualBestConsensusReport,
     ParsimonyJackknifeReport,
     ParsimonyNniSearchReport,
     ParsimonyRatchetReport,
@@ -1585,6 +1586,126 @@ def write_parsimony_jackknife_artifacts(
         "clade_frequencies_path": clade_frequencies_path,
         "run_json_path": run_json_path,
     }
+
+
+def write_parsimony_equal_best_scores_table(
+    path: Path,
+    report: ParsimonyEqualBestConsensusReport,
+) -> Path:
+    """Write one deterministic ledger of retained equally optimal trees."""
+    return write_taxon_rows(
+        path,
+        columns=["tree_index", "total_score", "tree_newick"],
+        rows=[
+            {
+                "tree_index": row.tree_index,
+                "total_score": row.total_score,
+                "tree_newick": row.tree_newick,
+            }
+            for row in report.equal_best_tree_rows
+        ],
+    )
+
+
+def write_parsimony_equal_best_consensus_run_json(
+    path: Path,
+    report: ParsimonyEqualBestConsensusReport,
+) -> Path:
+    """Write one machine-readable exact equal-best consensus payload."""
+    return write_json_artifact(
+        path,
+        {
+            "algorithm": report.algorithm,
+            "method": report.method,
+            "matrix_path": None
+            if report.matrix_path is None
+            else str(report.matrix_path),
+            "cost_matrix_path": None
+            if report.cost_matrix_path is None
+            else str(report.cost_matrix_path),
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "taxon_column": report.taxon_column,
+            "taxon_count": report.taxon_count,
+            "character_count": report.character_count,
+            "candidate_tree_count": report.candidate_tree_count,
+            "max_exact_taxa": report.max_exact_taxa,
+            "max_retained_equal_best_trees": report.max_retained_equal_best_trees,
+            "best_score": report.best_score,
+            "equal_best_tree_count": report.equal_best_tree_count,
+            "retained_equal_best_tree_count": report.retained_equal_best_tree_count,
+            "retained_all_equal_best_trees": report.retained_all_equal_best_trees,
+            "strict_consensus": None
+            if report.strict_consensus is None
+            else {
+                "consensus_method": report.strict_consensus.consensus_method,
+                "consensus_threshold": report.strict_consensus.consensus_threshold,
+                "tree_count": report.strict_consensus.tree_count,
+                "included_clade_count": report.strict_consensus.included_clade_count,
+                "consensus_newick": report.strict_consensus.consensus_newick,
+            },
+            "majority_consensus": None
+            if report.majority_consensus is None
+            else {
+                "consensus_method": report.majority_consensus.consensus_method,
+                "consensus_threshold": report.majority_consensus.consensus_threshold,
+                "tree_count": report.majority_consensus.tree_count,
+                "included_clade_count": report.majority_consensus.included_clade_count,
+                "consensus_newick": report.majority_consensus.consensus_newick,
+            },
+            "equal_best_tree_rows": [
+                {
+                    "tree_index": row.tree_index,
+                    "total_score": row.total_score,
+                    "tree_newick": row.tree_newick,
+                }
+                for row in report.equal_best_tree_rows
+            ],
+        },
+    )
+
+
+def write_parsimony_equal_best_consensus_artifacts(
+    out_dir: Path,
+    report: ParsimonyEqualBestConsensusReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one exact equal-best consensus run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    equal_best_trees = [loads_newick(row.tree_newick) for row in report.equal_best_tree_rows]
+    equal_best_trees_path = write_newick_tree_set(
+        out_dir / "equal_best_trees.nwk",
+        equal_best_trees,
+    )
+    equal_best_scores_path = write_parsimony_equal_best_scores_table(
+        out_dir / "equal_best_scores.tsv",
+        report,
+    )
+    run_json_path = write_parsimony_equal_best_consensus_run_json(
+        out_dir / "run.json",
+        report,
+    )
+    outputs = {
+        "equal_best_trees_path": equal_best_trees_path,
+        "equal_best_scores_path": equal_best_scores_path,
+        "run_json_path": run_json_path,
+    }
+    if report.strict_consensus is not None:
+        outputs["strict_consensus_tree_path"] = write_newick(
+            out_dir / "strict_consensus_tree.nwk",
+            loads_newick(report.strict_consensus.consensus_newick),
+        )
+    if report.majority_consensus is not None:
+        outputs["majority_consensus_tree_path"] = write_newick(
+            out_dir / "majority_consensus_tree.nwk",
+            loads_newick(report.majority_consensus.consensus_newick),
+        )
+        clade_frequency_report = compute_clade_frequency_table(equal_best_trees_path)
+        outputs["clade_frequencies_path"] = write_clade_frequency_table(
+            out_dir / "clade_frequencies.tsv",
+            clade_frequency_report,
+        )
+    return outputs
 
 
 def write_parsimony_nni_trace_table(
