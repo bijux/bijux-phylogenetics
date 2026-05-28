@@ -81,6 +81,46 @@ class UnstableTaxaReport:
 
 
 @dataclass(frozen=True, slots=True)
+class RogueTaxonScoreRow:
+    taxon: str
+    rank: int
+    mean_terminal_branch_length: float | None
+    baseline_consensus_resolution: float
+    pruned_consensus_resolution: float
+    consensus_resolution_delta: float
+    baseline_mean_support_percent: float
+    pruned_mean_support_percent: float
+    mean_support_percent_delta: float
+    baseline_mean_normalized_robinson_foulds: float
+    pruned_mean_normalized_robinson_foulds: float
+    normalized_robinson_foulds_stability_delta: float
+    baseline_rooted_topology_count: int
+    pruned_rooted_topology_count: int
+    rooted_topology_count_delta: int
+    baseline_dominant_topology_frequency: float
+    pruned_dominant_topology_frequency: float
+    dominant_topology_frequency_delta: float
+    pruned_consensus_newick: str
+
+
+@dataclass(slots=True)
+class RogueTaxonDetectionReport:
+    path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    consensus_threshold: float
+    ranking_objective: str
+    baseline_consensus_newick: str
+    baseline_consensus_resolution: float
+    baseline_mean_support_percent: float
+    baseline_mean_normalized_robinson_foulds: float
+    baseline_rooted_topology_count: int
+    baseline_dominant_topology_frequency: float
+    rows: list[RogueTaxonScoreRow]
+
+
+@dataclass(frozen=True, slots=True)
 class UnstableClade:
     clade: str
     tree_count: int

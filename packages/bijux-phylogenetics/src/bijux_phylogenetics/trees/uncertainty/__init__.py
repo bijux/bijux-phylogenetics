@@ -26,6 +26,9 @@ from .instability import (
 from .instability import (
     detect_unstable_taxa as detect_unstable_taxa,
 )
+from .rogue_taxa import (
+    detect_rogue_taxa as detect_rogue_taxa,
+)
 from .instability import (
     summarize_clade_credibility_conflicts as summarize_clade_credibility_conflicts,
 )
@@ -40,6 +43,9 @@ from .instability import (
 )
 from .instability import (
     write_unstable_clade_table as write_unstable_clade_table,
+)
+from .rogue_taxa import (
+    write_rogue_taxon_table as write_rogue_taxon_table,
 )
 from .methods_text import (
     TreeSetUncertaintyMethodReport as TreeSetUncertaintyMethodReport,
@@ -103,6 +109,12 @@ from .models import (
 )
 from .models import (
     PosteriorTreeSetComparisonReport as PosteriorTreeSetComparisonReport,
+)
+from .models import (
+    RogueTaxonDetectionReport as RogueTaxonDetectionReport,
+)
+from .models import (
+    RogueTaxonScoreRow as RogueTaxonScoreRow,
 )
 from .models import (
     TaxonPlacementSignature as TaxonPlacementSignature,
@@ -206,6 +218,8 @@ __all__ = [
     "PosteriorTopologyMode",
     "PosteriorTopologyMultimodalityReport",
     "PosteriorTreeSetComparisonReport",
+    "RogueTaxonDetectionReport",
+    "RogueTaxonScoreRow",
     "TaxonPlacementSignature",
     "TreeDistanceDistributionRow",
     "TreeSetBenchmarkRow",
@@ -241,6 +255,7 @@ __all__ = [
     "compare_consensus_thresholds",
     "compare_posterior_topological_diversity",
     "compare_posterior_tree_sets",
+    "detect_rogue_taxa",
     "detect_posterior_topology_multimodality",
     "detect_unstable_clades",
     "detect_unstable_taxa",
@@ -252,6 +267,7 @@ __all__ = [
     "write_bootstrap_tree_set_summary_table",
     "write_bootstrap_unstable_branch_table",
     "write_clade_credibility_conflict_table",
+    "write_rogue_taxon_table",
     "write_topology_cluster_table",
     "write_tree_distance_distribution_table",
     "write_tree_set_uncertainty_methods_summary_text",
