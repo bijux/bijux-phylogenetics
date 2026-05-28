@@ -32,6 +32,9 @@ from bijux_phylogenetics.bayesian import (
     ContinuousTraitScalarPriorModel,
     DISCRETE_TRAIT_RATE_PRIOR_FAMILIES,
     DISCRETE_TRAIT_RATE_PRIOR_MODELS,
+    PARTITION_MODEL_PRIOR_TARGETS,
+    PARTITION_PARAMETER_LINKAGE_POLICIES,
+    PARTITION_SUBSTITUTION_BASE_MODELS,
     DiscreteTraitRatePriorEvaluationReport,
     DiscreteTraitRatePriorModel,
     DiscreteTraitRatePriorRow,
@@ -50,6 +53,12 @@ from bijux_phylogenetics.bayesian import (
     TIME_TREE_PRIOR_CONDITIONING_MODES,
     TREE_TOPOLOGY_PRIOR_FAMILIES,
     TreeTopologyPriorModel,
+    PartitionModelPriorBundle,
+    PartitionModelPriorEvaluationReport,
+    PartitionModelPriorRow,
+    PartitionParameterLinkagePlan,
+    PartitionSubstitutionModelDefinition,
+    PartitionSubstitutionParameterState,
     SubstitutionParameterPriorBundle,
     SubstitutionParameterPriorEvaluationReport,
     SubstitutionParameterPriorRow,
@@ -83,6 +92,9 @@ from bijux_phylogenetics.bayesian import (
     build_constant_population_coalescent_tree_prior,
     build_crown_conditioned_birth_death_tree_prior,
     build_crown_conditioned_yule_tree_prior,
+    build_partition_model_prior_bundle,
+    build_partition_parameter_linkage_plan,
+    build_partition_substitution_model_definition,
     build_local_clock_rate_model,
     build_relaxed_lognormal_clock_model,
     build_strict_clock_rate_model,
@@ -101,6 +113,7 @@ from bijux_phylogenetics.bayesian import (
     evaluate_continuous_trait_scalar_log_prior,
     evaluate_discrete_trait_rate_log_prior,
     evaluate_discrete_trait_rate_value_log_prior,
+    evaluate_partition_model_log_prior,
     evaluate_local_clock_tree_log_prior,
     evaluate_relaxed_lognormal_clock_tree_log_prior,
     evaluate_skyline_coalescent_tree_log_prior,
@@ -119,6 +132,7 @@ from bijux_phylogenetics.bayesian import (
     evaluate_tree_topology_log_prior,
     summarize_beast_log,
     summarize_mrbayes_posterior_trees,
+    validate_partition_substitution_model_name,
     validate_tree_topology_prior_taxa,
     write_beast_log_summary_table,
     write_mrbayes_parameter_summary_table,
@@ -925,6 +939,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is DISCRETE_TRAIT_RATE_PRIOR_MODELS
     )
     assert (
+        bayesian_api.PARTITION_MODEL_PRIOR_TARGETS
+        is PARTITION_MODEL_PRIOR_TARGETS
+    )
+    assert (
+        bayesian_api.PARTITION_PARAMETER_LINKAGE_POLICIES
+        is PARTITION_PARAMETER_LINKAGE_POLICIES
+    )
+    assert (
+        bayesian_api.PARTITION_SUBSTITUTION_BASE_MODELS
+        is PARTITION_SUBSTITUTION_BASE_MODELS
+    )
+    assert (
         bayesian_api.TIME_TREE_PRIOR_CONDITIONING_MODES
         is TIME_TREE_PRIOR_CONDITIONING_MODES
     )
@@ -968,6 +994,21 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bayesian_api.RelaxedLognormalClockModel is RelaxedLognormalClockModel
     assert bayesian_api.StrictClockRateModel is StrictClockRateModel
     assert bayesian_api.SkylineCoalescentPriorModel is SkylineCoalescentPriorModel
+    assert bayesian_api.PartitionModelPriorBundle is PartitionModelPriorBundle
+    assert (
+        bayesian_api.PartitionModelPriorEvaluationReport
+        is PartitionModelPriorEvaluationReport
+    )
+    assert bayesian_api.PartitionModelPriorRow is PartitionModelPriorRow
+    assert bayesian_api.PartitionParameterLinkagePlan is PartitionParameterLinkagePlan
+    assert (
+        bayesian_api.PartitionSubstitutionModelDefinition
+        is PartitionSubstitutionModelDefinition
+    )
+    assert (
+        bayesian_api.PartitionSubstitutionParameterState
+        is PartitionSubstitutionParameterState
+    )
     assert (
         bayesian_api.SubstitutionParameterPriorBundle
         is SubstitutionParameterPriorBundle
@@ -1107,6 +1148,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_crown_conditioned_yule_tree_prior
     )
     assert (
+        bayesian_api.build_partition_model_prior_bundle
+        is build_partition_model_prior_bundle
+    )
+    assert (
+        bayesian_api.build_partition_parameter_linkage_plan
+        is build_partition_parameter_linkage_plan
+    )
+    assert (
+        bayesian_api.build_partition_substitution_model_definition
+        is build_partition_substitution_model_definition
+    )
+    assert (
         bayesian_api.build_posterior_uncertainty_figure_package
         is build_posterior_uncertainty_figure_package
     )
@@ -1146,6 +1199,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.evaluate_discrete_trait_rate_value_log_prior
         is evaluate_discrete_trait_rate_value_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_partition_model_log_prior
+        is evaluate_partition_model_log_prior
     )
     assert (
         bayesian_api.evaluate_substitution_parameter_log_prior
@@ -1191,6 +1248,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.load_local_clock_regime_definitions
         is load_local_clock_regime_definitions
+    )
+    assert (
+        bayesian_api.validate_partition_substitution_model_name
+        is validate_partition_substitution_model_name
     )
     assert bayesian_api.parse_mrbayes_consensus_tree is parse_mrbayes_consensus_tree
     assert bayesian_api.run_beast_posterior_inference is run_beast_posterior_inference
