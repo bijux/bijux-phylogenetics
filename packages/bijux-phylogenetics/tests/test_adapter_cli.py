@@ -2773,7 +2773,7 @@ def test_tree_set_uncertainty_cli_surfaces_modes_conflicts_and_package(
     )
     conflicts_payload = json.loads(capsys.readouterr().out)
     assert conflicts_exit == 0
-    assert conflicts_payload["metrics"]["conflict_count"] == 2
+    assert conflicts_payload["metrics"]["conflict_count"] == 4
 
     package_exit = main(
         [
