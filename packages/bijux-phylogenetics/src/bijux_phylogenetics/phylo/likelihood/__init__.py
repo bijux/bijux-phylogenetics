@@ -558,6 +558,12 @@ from .pruning import (
     FiniteStatePruningPass as FiniteStatePruningPass,
 )
 from .pruning import (
+    FiniteStateTransitionMatrixEvaluator as FiniteStateTransitionMatrixEvaluator,
+)
+from .pruning import (
+    build_transition_matrix_evaluator as build_transition_matrix_evaluator,
+)
+from .pruning import (
     log_likelihood_from_root_prior as log_likelihood_from_root_prior,
 )
 from .pruning import (
@@ -742,6 +748,7 @@ __all__ = [
     "evaluate_jc69_tree_likelihood_from_alignment",
     "f81_rate_matrix",
     "f81_transition_probability_matrix",
+    "FiniteStateTransitionMatrixEvaluator",
     "gtr_rate_matrix",
     "gtr_transition_probability_matrix",
     "hky85_rate_matrix",
@@ -752,6 +759,7 @@ __all__ = [
     "jc69_transition_probability_matrix",
     "list_declared_nucleotide_likelihood_ratio_pairs",
     "log_likelihood_from_root_prior",
+    "build_transition_matrix_evaluator",
     "optimize_gtr_exchangeabilities",
     "optimize_gtr_exchangeabilities_from_alignment",
     "optimize_hky85_kappa",
