@@ -25,13 +25,20 @@ from bijux_phylogenetics.bayesian import (
     LOCAL_CLOCK_TARGET_KINDS,
     LocalClockRateModel,
     MrBayesParameterDiagnosticsReport,
+    POSITIVE_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES,
+    PROBABILITY_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES,
     RELAXED_CLOCK_RATE_POLICIES,
     RelaxedLognormalClockModel,
+    SIMPLEX_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES,
     StrictClockRateModel,
+    SUBSTITUTION_PARAMETER_PRIOR_TARGETS,
     SkylineCoalescentPriorModel,
     TIME_TREE_PRIOR_CONDITIONING_MODES,
     TREE_TOPOLOGY_PRIOR_FAMILIES,
     TreeTopologyPriorModel,
+    SubstitutionParameterPriorBundle,
+    SubstitutionParameterPriorEvaluationReport,
+    SubstitutionParameterPriorRow,
     YULE_TREE_PRIOR_FAMILIES,
     YuleTreePriorModel,
     assess_beast_burnin_sensitivity,
@@ -39,14 +46,23 @@ from bijux_phylogenetics.bayesian import (
     assess_mrbayes_burnin_sensitivity,
     assess_mrbayes_convergence,
     build_bayesian_evidence_package,
+    build_beta_probability_substitution_parameter_prior,
     build_categorical_probability_vector,
+    build_dirichlet_simplex_substitution_parameter_prior,
+    build_exponential_positive_substitution_parameter_prior,
+    build_fixed_positive_substitution_parameter_prior,
+    build_fixed_probability_substitution_parameter_prior,
+    build_fixed_simplex_substitution_parameter_prior,
+    build_gamma_positive_substitution_parameter_prior,
     load_calibration_prior_definitions,
+    build_lognormal_positive_substitution_parameter_prior,
     build_constant_population_coalescent_tree_prior,
     build_crown_conditioned_birth_death_tree_prior,
     build_crown_conditioned_yule_tree_prior,
     build_local_clock_rate_model,
     build_relaxed_lognormal_clock_model,
     build_strict_clock_rate_model,
+    build_substitution_parameter_prior_bundle,
     build_skyline_coalescent_tree_prior,
     build_posterior_uncertainty_figure_package,
     build_uniform_rooted_tree_topology_prior,
@@ -60,6 +76,7 @@ from bijux_phylogenetics.bayesian import (
     evaluate_relaxed_lognormal_clock_tree_log_prior,
     evaluate_skyline_coalescent_tree_log_prior,
     evaluate_strict_clock_tree_log_prior,
+    evaluate_substitution_parameter_log_prior,
     evaluate_yule_tree_log_prior,
     log_probability_add,
     logsumexp,
@@ -821,6 +838,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.CALIBRATION_PRIOR_FAMILIES is CALIBRATION_PRIOR_FAMILIES
     )
     assert (
+        bayesian_api.POSITIVE_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
+        is POSITIVE_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
+    )
+    assert (
+        bayesian_api.PROBABILITY_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
+        is PROBABILITY_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
+    )
+    assert (
         bayesian_api.LOCAL_CLOCK_RATE_MODEL_FAMILIES
         is LOCAL_CLOCK_RATE_MODEL_FAMILIES
     )
@@ -829,6 +854,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     )
     assert (
         bayesian_api.RELAXED_CLOCK_RATE_POLICIES is RELAXED_CLOCK_RATE_POLICIES
+    )
+    assert (
+        bayesian_api.SIMPLEX_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
+        is SIMPLEX_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
+    )
+    assert (
+        bayesian_api.SUBSTITUTION_PARAMETER_PRIOR_TARGETS
+        is SUBSTITUTION_PARAMETER_PRIOR_TARGETS
     )
     assert (
         bayesian_api.TREE_TOPOLOGY_PRIOR_FAMILIES is TREE_TOPOLOGY_PRIOR_FAMILIES
@@ -862,6 +895,15 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bayesian_api.RelaxedLognormalClockModel is RelaxedLognormalClockModel
     assert bayesian_api.StrictClockRateModel is StrictClockRateModel
     assert bayesian_api.SkylineCoalescentPriorModel is SkylineCoalescentPriorModel
+    assert (
+        bayesian_api.SubstitutionParameterPriorBundle
+        is SubstitutionParameterPriorBundle
+    )
+    assert (
+        bayesian_api.SubstitutionParameterPriorEvaluationReport
+        is SubstitutionParameterPriorEvaluationReport
+    )
+    assert bayesian_api.SubstitutionParameterPriorRow is SubstitutionParameterPriorRow
     assert bayesian_api.TreeTopologyPriorModel is TreeTopologyPriorModel
     assert bayesian_api.YuleTreePriorModel is YuleTreePriorModel
     assert (
@@ -881,12 +923,44 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.build_bayesian_evidence_package is build_bayesian_evidence_package
     )
     assert (
+        bayesian_api.build_beta_probability_substitution_parameter_prior
+        is build_beta_probability_substitution_parameter_prior
+    )
+    assert (
         bayesian_api.build_categorical_probability_vector
         is build_categorical_probability_vector
     )
     assert (
+        bayesian_api.build_dirichlet_simplex_substitution_parameter_prior
+        is build_dirichlet_simplex_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_exponential_positive_substitution_parameter_prior
+        is build_exponential_positive_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_fixed_positive_substitution_parameter_prior
+        is build_fixed_positive_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_fixed_probability_substitution_parameter_prior
+        is build_fixed_probability_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_fixed_simplex_substitution_parameter_prior
+        is build_fixed_simplex_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_gamma_positive_substitution_parameter_prior
+        is build_gamma_positive_substitution_parameter_prior
+    )
+    assert (
         bayesian_api.load_calibration_prior_definitions
         is load_calibration_prior_definitions
+    )
+    assert (
+        bayesian_api.build_lognormal_positive_substitution_parameter_prior
+        is build_lognormal_positive_substitution_parameter_prior
     )
     assert (
         bayesian_api.build_constant_population_coalescent_tree_prior
@@ -924,6 +998,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_posterior_uncertainty_figure_package
     )
     assert (
+        bayesian_api.build_substitution_parameter_prior_bundle
+        is build_substitution_parameter_prior_bundle
+    )
+    assert (
         bayesian_api.compute_mrbayes_effective_sample_sizes
         is compute_mrbayes_effective_sample_sizes
     )
@@ -935,6 +1013,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.evaluate_calibration_tree_log_prior
         is evaluate_calibration_tree_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_substitution_parameter_log_prior
+        is evaluate_substitution_parameter_log_prior
     )
     assert (
         bayesian_api.evaluate_constant_population_coalescent_tree_log_prior
