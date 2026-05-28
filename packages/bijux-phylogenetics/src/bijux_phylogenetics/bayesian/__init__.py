@@ -56,6 +56,18 @@ from .beast import (
     write_beast_posterior_decomposition_table,
     write_beast_posterior_tree_set,
 )
+from .branch_length_priors import (
+    BRANCH_LENGTH_PRIOR_FAMILIES,
+    BranchLengthPriorBranchRow,
+    BranchLengthPriorEvaluationReport,
+    BranchLengthPriorModel,
+    build_exponential_branch_length_prior,
+    build_fixed_branch_length_prior,
+    build_gamma_branch_length_prior,
+    build_lognormal_branch_length_prior,
+    evaluate_branch_length_log_prior,
+    evaluate_tree_branch_length_log_prior,
+)
 from .evidence import BayesianEvidencePackageReport, build_bayesian_evidence_package
 from .mrbayes import (
     EffectiveSampleSize,
@@ -163,6 +175,7 @@ from .probability_vectors import (
 )
 
 __all__ = [
+    "BRANCH_LENGTH_PRIOR_FAMILIES",
     "BayesianEvidencePackageReport",
     "BayesianLimitationsTextResult",
     "BayesianMethodsSummaryTextResult",
@@ -204,6 +217,9 @@ __all__ = [
     "BeastPosteriorTreeSample",
     "BeastPosteriorTreeSetReport",
     "BeastPreparationReport",
+    "BranchLengthPriorBranchRow",
+    "BranchLengthPriorEvaluationReport",
+    "BranchLengthPriorModel",
     "CalibrationValidationIssue",
     "FossilCalibrationValidationReport",
     "ImpossibleCalibrationConstraintReport",
@@ -243,6 +259,10 @@ __all__ = [
     "assess_mrbayes_burnin_sensitivity",
     "assess_mrbayes_convergence",
     "build_bayesian_evidence_package",
+    "build_exponential_branch_length_prior",
+    "build_fixed_branch_length_prior",
+    "build_gamma_branch_length_prior",
+    "build_lognormal_branch_length_prior",
     "build_categorical_probability_vector",
     "compare_bayesian_tree_sets",
     "compare_log_probabilities",
@@ -251,6 +271,8 @@ __all__ = [
     "compare_posterior_tree_sets_by_clock",
     "compare_posterior_tree_sets_by_prior",
     "compute_mrbayes_effective_sample_sizes",
+    "evaluate_branch_length_log_prior",
+    "evaluate_tree_branch_length_log_prior",
     "assess_time_tree_readiness",
     "assess_beast_convergence",
     "detect_impossible_calibration_constraints",
