@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass
 import json
 import math
 from pathlib import Path
+import random
 
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.diagnostics.validation import _load_tree, validate_tree_path
@@ -84,6 +85,35 @@ class RootToTipRegressionReport:
     outliers: list[RootToTipOutlier]
 
 
+@dataclass(slots=True)
+class TipDateRandomizationRow:
+    permutation_index: int
+    permuted_slope: float
+    permuted_intercept: float
+    permuted_r_squared: float
+    permuted_residual_mean_square: float
+    at_or_above_observed: bool
+
+
+@dataclass(slots=True)
+class TipDateRandomizationReport:
+    tree_path: Path
+    metadata_path: Path
+    source_format: str
+    taxon_column: str
+    date_column: str
+    tip_count: int
+    permutations: int
+    seed: int
+    p_value: float
+    permuted_r_squared_at_or_above_observed: int
+    null_distribution_minimum: float
+    null_distribution_mean: float
+    null_distribution_maximum: float
+    observed_regression: RootToTipRegressionReport
+    permutation_rows: list[TipDateRandomizationRow]
+
+
 def compute_root_to_tip_distances(
     path: Path, *, source_format: str | None = None
 ) -> RootToTipDistanceReport:
@@ -150,6 +180,142 @@ def diagnose_root_to_tip_regression(
         )
         for row in distance_report.distances
     ]
+    return _build_root_to_tip_regression_report(
+        observations,
+        tree_path=tree_path,
+        metadata_path=metadata_path,
+        source_format=distance_report.source_format,
+        taxon_column=resolved_taxon_column,
+        date_column=date_column,
+        outlier_threshold=outlier_threshold,
+    )
+
+
+def diagnose_tip_date_randomization(
+    tree_path: Path,
+    metadata_path: Path,
+    *,
+    source_format: str | None = None,
+    taxon_column: str | None = None,
+    date_column: str = "date",
+    outlier_threshold: float = 2.0,
+    permutations: int = 99,
+    seed: int = 17,
+) -> TipDateRandomizationReport:
+    """Permute tip dates repeatedly and compare the observed root-to-tip fit to the null distribution."""
+    if permutations < 2:
+        raise PhylogeneticsError(
+            "tip-date randomization requires at least two permutations",
+            code="tip_date_randomization_error",
+        )
+    validate_tree_path(tree_path, source_format=source_format, require_rooted=True)
+    distance_report = compute_root_to_tip_distances(
+        tree_path,
+        source_format=source_format,
+    )
+    if any(row.distance is None for row in distance_report.distances):
+        raise InvalidBranchLengthError(
+            "tip-date randomization requires complete branch lengths"
+        )
+    sampling_times, resolved_taxon_column = _load_sampling_times(
+        metadata_path,
+        tree_taxa=[row.tip for row in distance_report.distances],
+        taxon_column=taxon_column,
+        date_column=date_column,
+    )
+    observations = [
+        (
+            row.tip,
+            sampling_times[row.tip],
+            float(row.distance),
+        )
+        for row in distance_report.distances
+    ]
+    observed_regression = _build_root_to_tip_regression_report(
+        observations,
+        tree_path=tree_path,
+        metadata_path=metadata_path,
+        source_format=distance_report.source_format,
+        taxon_column=resolved_taxon_column,
+        date_column=date_column,
+        outlier_threshold=outlier_threshold,
+    )
+    randomizer = random.Random(seed)  # nosec B311
+    sampling_values = [sampling_time for _tip, sampling_time, _distance in observations]
+    distances_by_tip = {
+        tip: distance for tip, _sampling_time, distance in observations
+    }
+    permutation_rows: list[TipDateRandomizationRow] = []
+    exceed_count = 0
+    for permutation_index in range(1, permutations + 1):
+        permuted_sampling_values = list(sampling_values)
+        randomizer.shuffle(permuted_sampling_values)
+        permuted_observations = [
+            (tip, permuted_sampling_values[index], distances_by_tip[tip])
+            for index, (tip, _sampling_time, _distance) in enumerate(observations)
+        ]
+        permuted_report = _build_root_to_tip_regression_report(
+            permuted_observations,
+            tree_path=tree_path,
+            metadata_path=metadata_path,
+            source_format=distance_report.source_format,
+            taxon_column=resolved_taxon_column,
+            date_column=date_column,
+            outlier_threshold=outlier_threshold,
+        )
+        at_or_above_observed = (
+            permuted_report.r_squared >= observed_regression.r_squared
+        )
+        if at_or_above_observed:
+            exceed_count += 1
+        permutation_rows.append(
+            TipDateRandomizationRow(
+                permutation_index=permutation_index,
+                permuted_slope=permuted_report.slope,
+                permuted_intercept=permuted_report.intercept,
+                permuted_r_squared=permuted_report.r_squared,
+                permuted_residual_mean_square=permuted_report.residual_mean_square,
+                at_or_above_observed=at_or_above_observed,
+            )
+        )
+    permuted_r_squared_values = [
+        row.permuted_r_squared for row in permutation_rows
+    ]
+    return TipDateRandomizationReport(
+        tree_path=tree_path,
+        metadata_path=metadata_path,
+        source_format=distance_report.source_format,
+        taxon_column=resolved_taxon_column,
+        date_column=date_column,
+        tip_count=observed_regression.tip_count,
+        permutations=permutations,
+        seed=seed,
+        p_value=(exceed_count + 1) / (permutations + 1),
+        permuted_r_squared_at_or_above_observed=exceed_count,
+        null_distribution_minimum=min(permuted_r_squared_values),
+        null_distribution_mean=sum(permuted_r_squared_values)
+        / len(permuted_r_squared_values),
+        null_distribution_maximum=max(permuted_r_squared_values),
+        observed_regression=observed_regression,
+        permutation_rows=permutation_rows,
+    )
+
+
+def _build_root_to_tip_regression_report(
+    observations: list[tuple[str, float, float]],
+    *,
+    tree_path: Path,
+    metadata_path: Path,
+    source_format: str,
+    taxon_column: str,
+    date_column: str,
+    outlier_threshold: float,
+) -> RootToTipRegressionReport:
+    if len(observations) < 3:
+        raise PhylogeneticsError(
+            "root-to-tip regression requires at least three dated tips",
+            code="root_to_tip_regression_error",
+        )
     sampling_values = [sampling_time for _tip, sampling_time, _distance in observations]
     distance_values = [distance for _tip, _sampling_time, distance in observations]
     mean_sampling_time = sum(sampling_values) / len(sampling_values)
@@ -245,8 +411,8 @@ def diagnose_root_to_tip_regression(
     return RootToTipRegressionReport(
         tree_path=tree_path,
         metadata_path=metadata_path,
-        source_format=distance_report.source_format,
-        taxon_column=resolved_taxon_column,
+        source_format=source_format,
+        taxon_column=taxon_column,
         date_column=date_column,
         tip_count=len(observations),
         slope=slope,
@@ -390,25 +556,7 @@ def write_root_to_tip_regression_run_json(
 ) -> Path:
     """Write the full root-to-tip regression payload as JSON."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    payload = {
-        "tree_path": str(report.tree_path),
-        "metadata_path": str(report.metadata_path),
-        "source_format": report.source_format,
-        "taxon_column": report.taxon_column,
-        "date_column": report.date_column,
-        "tip_count": report.tip_count,
-        "slope": report.slope,
-        "intercept": report.intercept,
-        "r_squared": report.r_squared,
-        "residual_mean_square": report.residual_mean_square,
-        "outlier_threshold": report.outlier_threshold,
-        "sampling_time_min": report.sampling_time_min,
-        "sampling_time_max": report.sampling_time_max,
-        "root_to_tip_min": report.root_to_tip_min,
-        "root_to_tip_max": report.root_to_tip_max,
-        "rows": [asdict(row) for row in report.rows],
-        "outliers": [asdict(row) for row in report.outliers],
-    }
+    payload = _root_to_tip_regression_payload(report)
     path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -439,6 +587,162 @@ def write_root_to_tip_regression_artifacts(
         "summary": summary_path,
         "residuals": residuals_path,
         "outliers": outliers_path,
+        "run_json": run_json_path,
+    }
+
+
+def write_tip_date_randomization_summary_tsv(
+    path: Path,
+    report: TipDateRandomizationReport,
+) -> Path:
+    """Write one summary row for one tip-date randomization run."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "tree_path",
+        "metadata_path",
+        "source_format",
+        "taxon_column",
+        "date_column",
+        "tip_count",
+        "observed_slope",
+        "observed_intercept",
+        "observed_r_squared",
+        "observed_residual_mean_square",
+        "observed_outlier_count",
+        "outlier_threshold",
+        "permutations",
+        "seed",
+        "permuted_r_squared_at_or_above_observed",
+        "tip_date_randomization_p_value",
+        "null_distribution_minimum",
+        "null_distribution_mean",
+        "null_distribution_maximum",
+    ]
+    values = [
+        str(report.tree_path),
+        str(report.metadata_path),
+        report.source_format,
+        report.taxon_column,
+        report.date_column,
+        str(report.tip_count),
+        format(report.observed_regression.slope, ".15g"),
+        format(report.observed_regression.intercept, ".15g"),
+        format(report.observed_regression.r_squared, ".15g"),
+        format(report.observed_regression.residual_mean_square, ".15g"),
+        str(len(report.observed_regression.outliers)),
+        format(report.observed_regression.outlier_threshold, ".15g"),
+        str(report.permutations),
+        str(report.seed),
+        str(report.permuted_r_squared_at_or_above_observed),
+        format(report.p_value, ".15g"),
+        format(report.null_distribution_minimum, ".15g"),
+        format(report.null_distribution_mean, ".15g"),
+        format(report.null_distribution_maximum, ".15g"),
+    ]
+    path.write_text(
+        "\n".join(["\t".join(columns), "\t".join(values)]) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def write_tip_date_randomization_permutations_tsv(
+    path: Path,
+    report: TipDateRandomizationReport,
+) -> Path:
+    """Write one null-distribution row per tip-date permutation."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "permutation_index",
+        "permuted_slope",
+        "permuted_intercept",
+        "permuted_r_squared",
+        "permuted_residual_mean_square",
+        "at_or_above_observed",
+    ]
+    lines = ["\t".join(columns)]
+    lines.extend(
+        "\t".join(
+            [
+                str(row.permutation_index),
+                format(row.permuted_slope, ".15g"),
+                format(row.permuted_intercept, ".15g"),
+                format(row.permuted_r_squared, ".15g"),
+                format(row.permuted_residual_mean_square, ".15g"),
+                str(row.at_or_above_observed).lower(),
+            ]
+        )
+        for row in report.permutation_rows
+    )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def write_tip_date_randomization_run_json(
+    path: Path,
+    report: TipDateRandomizationReport,
+) -> Path:
+    """Write the full tip-date randomization payload as JSON."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "tree_path": str(report.tree_path),
+        "metadata_path": str(report.metadata_path),
+        "source_format": report.source_format,
+        "taxon_column": report.taxon_column,
+        "date_column": report.date_column,
+        "tip_count": report.tip_count,
+        "permutations": report.permutations,
+        "seed": report.seed,
+        "p_value": report.p_value,
+        "permuted_r_squared_at_or_above_observed": (
+            report.permuted_r_squared_at_or_above_observed
+        ),
+        "null_distribution_minimum": report.null_distribution_minimum,
+        "null_distribution_mean": report.null_distribution_mean,
+        "null_distribution_maximum": report.null_distribution_maximum,
+        "observed_regression": _root_to_tip_regression_payload(
+            report.observed_regression
+        ),
+        "permutation_rows": [asdict(row) for row in report.permutation_rows],
+    }
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def write_tip_date_randomization_artifacts(
+    out_dir: Path,
+    report: TipDateRandomizationReport,
+) -> dict[str, Path]:
+    """Write governed artifact outputs for one tip-date randomization run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    summary_path = write_tip_date_randomization_summary_tsv(
+        out_dir / "summary.tsv",
+        report,
+    )
+    permutations_path = write_tip_date_randomization_permutations_tsv(
+        out_dir / "permutations.tsv",
+        report,
+    )
+    residuals_path = write_root_to_tip_regression_residuals_tsv(
+        out_dir / "observed_residuals.tsv",
+        report.observed_regression,
+    )
+    outliers_path = write_root_to_tip_regression_outliers_tsv(
+        out_dir / "observed_outliers.tsv",
+        report.observed_regression,
+    )
+    run_json_path = write_tip_date_randomization_run_json(
+        out_dir / "run.json",
+        report,
+    )
+    return {
+        "summary": summary_path,
+        "permutations": permutations_path,
+        "observed_residuals": residuals_path,
+        "observed_outliers": outliers_path,
         "run_json": run_json_path,
     }
 
@@ -519,3 +823,25 @@ def _load_sampling_times(
                 f"taxon '{taxon}' has a non-numeric sampling time '{raw_value}'"
             ) from error
     return sampling_times, table.taxon_column
+
+
+def _root_to_tip_regression_payload(report: RootToTipRegressionReport) -> dict[str, object]:
+    return {
+        "tree_path": str(report.tree_path),
+        "metadata_path": str(report.metadata_path),
+        "source_format": report.source_format,
+        "taxon_column": report.taxon_column,
+        "date_column": report.date_column,
+        "tip_count": report.tip_count,
+        "slope": report.slope,
+        "intercept": report.intercept,
+        "r_squared": report.r_squared,
+        "residual_mean_square": report.residual_mean_square,
+        "outlier_threshold": report.outlier_threshold,
+        "sampling_time_min": report.sampling_time_min,
+        "sampling_time_max": report.sampling_time_max,
+        "root_to_tip_min": report.root_to_tip_min,
+        "root_to_tip_max": report.root_to_tip_max,
+        "rows": [asdict(row) for row in report.rows],
+        "outliers": [asdict(row) for row in report.outliers],
+    }
