@@ -122,3 +122,74 @@ class PenalizedLikelihoodDatingReport:
     converged: bool
     node_rows: list[PenalizedLikelihoodDatingNodeRow]
     branch_rows: list[PenalizedLikelihoodDatingBranchRow]
+
+
+@dataclass(frozen=True, slots=True)
+class DatingCalibrationAnchor:
+    """One fixed internal-node calibration resolved onto one rooted tree."""
+
+    calibration_id: str
+    target_kind: str
+    target_label: str
+    descendant_taxa: list[str]
+    node_id: str
+    node_kind: str
+    fixed_date: float
+
+
+@dataclass(frozen=True, slots=True)
+class PenalizedLikelihoodCrossValidationCandidateRow:
+    """One smoothing-parameter candidate summarized over held-out calibrations."""
+
+    smoothing_parameter: float
+    fold_count: int
+    mean_absolute_error: float
+    mean_squared_error: float
+    root_mean_squared_error: float
+    max_absolute_error: float
+    selected: bool
+
+
+@dataclass(frozen=True, slots=True)
+class PenalizedLikelihoodCrossValidationPredictionRow:
+    """One held-out calibration prediction under one smoothing parameter."""
+
+    smoothing_parameter: float
+    held_out_calibration_id: str
+    held_out_target_label: str
+    held_out_descendant_taxa: list[str]
+    held_out_node_id: str
+    training_calibration_count: int
+    observed_date: float
+    predicted_date: float
+    absolute_error: float
+    squared_error: float
+    optimization_pass_count: int
+    function_evaluation_count: int
+    converged: bool
+
+
+@dataclass(slots=True)
+class PenalizedLikelihoodCrossValidationReport:
+    """Held-out calibration cross-validation over penalized dating smoothing values."""
+
+    tree_newick: str
+    taxa: list[str]
+    tip_count: int
+    internal_node_count: int
+    branch_count: int
+    tree_path: str | None
+    metadata_path: str | None
+    calibration_path: str | None
+    taxon_column: str
+    date_column: str
+    usable_calibration_count: int
+    candidate_count: int
+    selected_smoothing_parameter: float
+    selected_mean_absolute_error: float
+    selected_mean_squared_error: float
+    selected_root_mean_squared_error: float
+    calibration_rows: list[DatingCalibrationAnchor]
+    candidate_rows: list[PenalizedLikelihoodCrossValidationCandidateRow]
+    prediction_rows: list[PenalizedLikelihoodCrossValidationPredictionRow]
+    selected_fit: PenalizedLikelihoodDatingReport

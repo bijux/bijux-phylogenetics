@@ -11,7 +11,6 @@ from bijux_phylogenetics.comparative._math import (
     matrix_condition_number,
     matrix_vector_multiply,
 )
-from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
 from bijux_phylogenetics.io.trees import load_tree
@@ -23,6 +22,7 @@ from bijux_phylogenetics.runtime.errors import (
     UnrootedTreeError,
 )
 
+from .inputs import load_tip_dates_for_tree, validate_tip_dates_against_tree
 from .models import (
     LeastSquaresDatingBranchRow,
     LeastSquaresDatingNodeRow,
@@ -51,7 +51,7 @@ def fit_least_squares_dating(
         raise InvalidBranchLengthError(
             "least-squares dating requires complete branch lengths"
         )
-    _validate_tip_dates_against_tree(tree, tip_dates)
+    validate_tip_dates_against_tree(tree, tip_dates)
     internal_nodes = list(tree.iter_internal_nodes(order="preorder"))
     if not internal_nodes:
         raise PhylogeneticsError(
@@ -141,7 +141,7 @@ def fit_least_squares_dating_from_metadata(
         raise InvalidBranchLengthError(
             "least-squares dating requires complete branch lengths"
         )
-    tip_dates, resolved_taxon_column = _load_tip_dates(
+    tip_dates, resolved_taxon_column = load_tip_dates_for_tree(
         metadata_path,
         tree_taxa=tree.tip_names,
         taxon_column=taxon_column,
@@ -155,48 +155,6 @@ def fit_least_squares_dating_from_metadata(
         taxon_column=resolved_taxon_column,
         date_column=date_column,
     )
-
-
-def _load_tip_dates(
-    metadata_path: Path,
-    *,
-    tree_taxa: list[str],
-    taxon_column: str | None,
-    date_column: str,
-) -> tuple[dict[str, float], str]:
-    table = load_taxon_table(metadata_path, taxon_column=taxon_column)
-    if date_column not in table.columns:
-        raise MetadataJoinError(
-            f"missing date column '{date_column}' in {metadata_path}"
-        )
-    tree_taxa_set = set(tree_taxa)
-    table_taxa_set = set(table.taxa)
-    missing_tree_taxa = sorted(tree_taxa_set - table_taxa_set)
-    if missing_tree_taxa:
-        raise MetadataJoinError(
-            "tip-date table is missing tree taxa: " + ", ".join(missing_tree_taxa)
-        )
-    extra_table_taxa = sorted(table_taxa_set - tree_taxa_set)
-    if extra_table_taxa:
-        raise MetadataJoinError(
-            "tip-date table contains taxa absent from the tree: "
-            + ", ".join(extra_table_taxa)
-        )
-    tip_dates: dict[str, float] = {}
-    for row in table.rows:
-        taxon = row[table.taxon_column]
-        raw_value = row.get(date_column, "")
-        if not raw_value:
-            raise MetadataJoinError(
-                f"taxon '{taxon}' is missing a numeric date in column '{date_column}'"
-            )
-        try:
-            tip_dates[taxon] = float(raw_value)
-        except ValueError as error:
-            raise MetadataJoinError(
-                f"taxon '{taxon}' has a non-numeric date '{raw_value}'"
-            ) from error
-    return tip_dates, table.taxon_column
 
 
 def _build_linear_system(
@@ -278,25 +236,6 @@ def _build_dated_tree(tree: PhyloTree, node_dates: Mapping[str, float]) -> Phylo
             )
         child.branch_length = max(duration, 0.0)
     return dated_tree
-
-
-def _validate_tip_dates_against_tree(
-    tree: PhyloTree,
-    tip_dates: Mapping[str, float],
-) -> None:
-    tree_taxa = set(tree.tip_names)
-    tip_date_taxa = set(tip_dates)
-    missing_tree_taxa = sorted(tree_taxa - tip_date_taxa)
-    if missing_tree_taxa:
-        raise MetadataJoinError(
-            "tip-date mapping is missing tree taxa: " + ", ".join(missing_tree_taxa)
-        )
-    extra_tip_taxa = sorted(tip_date_taxa - tree_taxa)
-    if extra_tip_taxa:
-        raise MetadataJoinError(
-            "tip-date mapping contains taxa absent from the tree: "
-            + ", ".join(extra_tip_taxa)
-        )
 
 
 def _build_node_rows(
