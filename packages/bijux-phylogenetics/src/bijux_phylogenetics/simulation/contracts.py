@@ -71,6 +71,59 @@ class TreeSimulationReport:
 
 
 @dataclass(frozen=True, slots=True)
+class MultispeciesCoalescentSampleRow:
+    species_taxon: str
+    sample_count: int
+    gene_taxa: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class MultispeciesCoalescentEventRow:
+    event_index: int
+    species_branch: str
+    branch_role: str
+    descendant_species: list[str]
+    population_size: float
+    branch_start_age: float
+    branch_end_age: float | None
+    event_age: float
+    waiting_time: float
+    input_lineage_count: int
+    output_lineage_count: int
+    left_gene_clade: list[str]
+    right_gene_clade: list[str]
+    resulting_gene_clade: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class MultispeciesCoalescentBranchRow:
+    species_branch: str
+    branch_role: str
+    descendant_species: list[str]
+    branch_duration: float | None
+    population_size: float
+    lineage_count_entering: int
+    coalescent_event_count: int
+    lineage_count_exiting: int
+    extra_lineage_count: int
+    included_in_deep_coalescence_total: bool
+
+
+@dataclass(slots=True)
+class MultispeciesCoalescentReport:
+    model: str
+    species_tree_path: Path
+    seed: int
+    species_tip_count: int
+    gene_tip_count: int
+    default_population_size: float
+    deep_coalescence_total: int
+    sample_rows: list[MultispeciesCoalescentSampleRow]
+    branch_rows: list[MultispeciesCoalescentBranchRow]
+    event_rows: list[MultispeciesCoalescentEventRow]
+
+
+@dataclass(frozen=True, slots=True)
 class SimulatedContinuousTrait:
     taxon: str
     value: float
