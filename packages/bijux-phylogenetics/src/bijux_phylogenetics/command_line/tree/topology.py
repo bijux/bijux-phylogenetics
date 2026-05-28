@@ -14,10 +14,12 @@ from bijux_phylogenetics.compare.reference import (
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.phylo.topology import (
     enumerate_rooted_nni_neighbors,
+    enumerate_rooted_spr_neighbors,
     reroot_tree_by_midpoint,
     root_tree_on_outgroup,
     unroot_tree,
     write_rooted_nni_artifacts,
+    write_rooted_spr_artifacts,
     write_tree_rooting_report,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
@@ -159,6 +161,19 @@ def add_topology_commands(subparsers: Any) -> None:
         help="Emit the rooted NNI neighborhood report as JSON.",
     )
     _add_manifest_argument(topology_rooted_nni_neighbors)
+
+    topology_rooted_spr_neighbors = topology_subparsers.add_parser(
+        "rooted-spr-neighbors",
+        help="Enumerate rooted SPR neighbors for one binary-root tree representation.",
+    )
+    topology_rooted_spr_neighbors.add_argument("tree", type=Path)
+    topology_rooted_spr_neighbors.add_argument("--out-dir", required=True, type=Path)
+    topology_rooted_spr_neighbors.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the rooted SPR neighborhood report as JSON.",
+    )
+    _add_manifest_argument(topology_rooted_spr_neighbors)
 
 
 def run_topology_command(args: Any) -> int:
@@ -332,6 +347,46 @@ def run_topology_command(args: Any) -> int:
                     ),
                     "missing_tip_taxa": len(report.missing_tip_taxa),
                     "unexpected_tip_taxa": len(report.unexpected_tip_taxa),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.topology_command == "rooted-spr-neighbors":
+        report = enumerate_rooted_spr_neighbors(args.tree)
+        outputs = _finalize_outputs(
+            args,
+            command="topology",
+            inputs=[args.tree],
+            outputs=list(write_rooted_spr_artifacts(args.out_dir, report).values()),
+        )
+        _print_result(
+            build_command_result(
+                command="topology",
+                inputs=[args.tree],
+                outputs=outputs,
+                metrics={
+                    "algorithm": report.algorithm,
+                    "tip_count": report.tip_count,
+                    "internal_node_count": report.internal_node_count,
+                    "generated_move_candidate_count": (
+                        report.generated_move_candidate_count
+                    ),
+                    "identity_move_candidate_count": (
+                        report.identity_move_candidate_count
+                    ),
+                    "self_regraft_candidate_count": (
+                        report.self_regraft_candidate_count
+                    ),
+                    "generated_neighbor_count": report.generated_neighbor_count,
+                    "unique_neighbor_topology_count": (
+                        report.unique_neighbor_topology_count
+                    ),
+                    "duplicate_move_neighbor_topology_count": len(
+                        report.duplicate_move_neighbor_topologies
+                    ),
                 },
                 data=report,
             ),
