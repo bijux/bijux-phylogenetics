@@ -72,7 +72,9 @@ from bijux_phylogenetics.phylo.dating import (
     write_penalized_likelihood_dating_artifacts,
 )
 from bijux_phylogenetics.phylo.likelihood import (
+    fit_local_clock_likelihood_from_alignment,
     fit_strict_clock_likelihood_from_alignment,
+    write_local_clock_likelihood_artifacts,
     write_strict_clock_likelihood_artifacts,
 )
 from bijux_phylogenetics.phylo.topology import write_stepwise_addition_artifacts
@@ -800,6 +802,42 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the strict-clock report as JSON."
     )
     _add_manifest_argument(phylo_likelihood_strict_clock)
+    phylo_likelihood_local_clock = phylo_likelihood_subparsers.add_parser(
+        "local-clock",
+        help="Fit user-defined branch and clade regimes as separate JC69 clock rates on one time-scaled tree and one DNA alignment.",
+    )
+    phylo_likelihood_local_clock.add_argument("tree_path", type=Path)
+    phylo_likelihood_local_clock.add_argument("alignment_path", type=Path)
+    phylo_likelihood_local_clock.add_argument("regime_path", type=Path)
+    phylo_likelihood_local_clock.add_argument(
+        "--model",
+        default="jc69",
+        choices=["jc69"],
+        help="Likelihood model for the local-clock fit.",
+    )
+    phylo_likelihood_local_clock.add_argument(
+        "--lower-clock-rate-bound",
+        type=float,
+        default=1e-6,
+        help="Positive lower bound for every fitted local-clock rate.",
+    )
+    phylo_likelihood_local_clock.add_argument(
+        "--upper-clock-rate-bound",
+        type=float,
+        default=5.0,
+        help="Upper bound for every fitted local-clock rate.",
+    )
+    phylo_likelihood_local_clock.add_argument(
+        "--max-coordinate-passes",
+        type=int,
+        default=12,
+        help="Maximum number of coordinate-search passes over local-clock rates.",
+    )
+    phylo_likelihood_local_clock.add_argument("--out-dir", required=True, type=Path)
+    phylo_likelihood_local_clock.add_argument(
+        "--json", action="store_true", help="Emit the local-clock report as JSON."
+    )
+    _add_manifest_argument(phylo_likelihood_local_clock)
     phylo_dating = phylo_subparsers.add_parser(
         "dating",
         help="Fit governed dated-tree workflows on rooted substitution trees and tip-date tables.",
@@ -1103,6 +1141,53 @@ def run_phylo_command(args: Any) -> int:
             code="phylo_dating_command_unknown",
         )
     if args.phylo_command == "likelihood":
+        if args.phylo_likelihood_command == "local-clock":
+            report = fit_local_clock_likelihood_from_alignment(
+                args.tree_path,
+                args.alignment_path,
+                args.regime_path,
+                model=args.model,
+                lower_clock_rate_bound=args.lower_clock_rate_bound,
+                upper_clock_rate_bound=args.upper_clock_rate_bound,
+                max_coordinate_passes=args.max_coordinate_passes,
+            )
+            artifact_paths = write_local_clock_likelihood_artifacts(
+                args.out_dir,
+                report,
+            )
+            outputs = _finalize_outputs(
+                args,
+                command="phylo",
+                inputs=[args.tree_path, args.alignment_path, args.regime_path],
+                outputs=list(artifact_paths.values()),
+            )
+            _print_result(
+                build_command_result(
+                    command="phylo",
+                    inputs=[args.tree_path, args.alignment_path, args.regime_path],
+                    outputs=outputs,
+                    metrics={
+                        "model_name": report.model_name,
+                        "taxon_count": len(report.taxa),
+                        "site_count": report.site_count,
+                        "pattern_count": report.pattern_count,
+                        "branch_count": report.branch_count,
+                        "regime_count": report.regime_count,
+                        "parameter_count": report.parameter_count,
+                        "optimized_log_likelihood": report.optimized_log_likelihood,
+                        "strict_clock_aic": report.strict_clock_aic,
+                        "local_clock_aic": report.aic,
+                        "aic_delta_vs_strict_clock": report.aic_delta_vs_strict_clock,
+                        "preferred_model_by_aic": report.preferred_model_by_aic,
+                        "function_evaluation_count": report.function_evaluation_count,
+                        "optimization_pass_count": report.optimization_pass_count,
+                        "converged": report.converged,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
         if args.phylo_likelihood_command == "strict-clock":
             report = fit_strict_clock_likelihood_from_alignment(
                 args.tree_path,
