@@ -11,6 +11,7 @@ from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,
     compute_consensus_tree,
     compute_reference_tree_clade_support,
+    compute_reference_tree_quartet_support,
     compute_strict_consensus_tree,
     extract_tree_set_clades,
     load_tree_set,
@@ -18,6 +19,7 @@ from bijux_phylogenetics.trees import (
     write_clade_table,
     write_consensus_tree,
     write_reference_tree_clade_support_table,
+    write_reference_tree_quartet_support_table,
 )
 
 
@@ -80,6 +82,20 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the support-mapping report as JSON."
     )
     _add_manifest_argument(tree_set_support_map)
+
+    tree_set_quartet_support = tree_set_subparsers.add_parser(
+        "quartet-support",
+        help="Score each informative reference-tree branch by concordant, discordant, and uninformative induced quartets across a tree set.",
+    )
+    tree_set_quartet_support.add_argument("reference_tree", type=Path)
+    tree_set_quartet_support.add_argument("tree_set", type=Path)
+    tree_set_quartet_support.add_argument(
+        "--out", type=Path, help="Write the reference-tree quartet support table as TSV."
+    )
+    tree_set_quartet_support.add_argument(
+        "--json", action="store_true", help="Emit the quartet-support report as JSON."
+    )
+    _add_manifest_argument(tree_set_quartet_support)
 
     tree_set_clade_rows = tree_set_subparsers.add_parser(
         "clades",
@@ -235,6 +251,45 @@ def run_tree_set_summary_command(args: Any) -> int | None:
                     "absent_clade_count": report.absent_clade_count,
                     "unscored_clade_count": report.unscored_clade_count,
                     "reference_internal_node_count": len(report.rows),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.tree_set_command == "quartet-support":
+        report = compute_reference_tree_quartet_support(
+            args.reference_tree,
+            args.tree_set,
+        )
+        outputs: list[Path] = []
+        if args.out is not None:
+            outputs.append(write_reference_tree_quartet_support_table(args.out, report))
+        outputs = _finalize_outputs(
+            args,
+            command="tree-set",
+            inputs=[args.reference_tree, args.tree_set],
+            outputs=outputs,
+        )
+        _print_result(
+            build_command_result(
+                command="tree-set",
+                inputs=[args.reference_tree, args.tree_set],
+                outputs=outputs,
+                metrics={
+                    "tree_count": report.tree_count,
+                    "runtime_seconds": report.processing.runtime_seconds,
+                    "peak_memory_bytes": report.processing.peak_memory_bytes,
+                    "skipped_malformed_tree_count": (
+                        report.processing.skipped_malformed_tree_count
+                    ),
+                    "shared_taxon_count": len(report.shared_taxa),
+                    "branch_count": report.branch_count,
+                    "total_quartet_count": report.total_quartet_count,
+                    "concordant_quartet_count": report.concordant_quartet_count,
+                    "discordant_quartet_count": report.discordant_quartet_count,
+                    "uninformative_quartet_count": report.uninformative_quartet_count,
                 },
                 data=report,
             ),
