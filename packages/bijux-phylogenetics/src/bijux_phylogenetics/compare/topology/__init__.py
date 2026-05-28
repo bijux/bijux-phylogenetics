@@ -45,6 +45,8 @@ _PUBLIC_SURFACES = (
         (
             "AgreementSubtreeCandidateRow",
             "AgreementSubtreePruningReport",
+            "MaximumAgreementSubtreeApproximationReport",
+            "MaximumAgreementSubtreeSearchRow",
             "BranchLengthComparisonReport",
             "BranchLengthPair",
             "BranchScoreComparisonReport",
