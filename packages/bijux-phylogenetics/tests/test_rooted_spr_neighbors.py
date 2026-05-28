@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,7 @@ from bijux_phylogenetics.phylo.topology import (
     RootedSprNeighborhoodReport,
     enumerate_rooted_spr_neighbors,
     validate_rooted_spr_tree,
+    write_rooted_spr_artifacts,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures" / "trees"
@@ -27,6 +29,7 @@ def test_topology_gateway_exports_rooted_spr_neighbor_contracts() -> None:
     assert topology_api.RootedSprNeighborhoodReport is RootedSprNeighborhoodReport
     assert topology_api.enumerate_rooted_spr_neighbors is enumerate_rooted_spr_neighbors
     assert topology_api.validate_rooted_spr_tree is validate_rooted_spr_tree
+    assert topology_api.write_rooted_spr_artifacts is write_rooted_spr_artifacts
 
 
 def test_rooted_spr_neighbor_report_collapses_identity_and_duplicate_moves() -> None:
@@ -73,3 +76,20 @@ def test_rooted_spr_validation_accepts_binary_root_representation_without_rooted
 def test_rooted_spr_validation_rejects_nonbinary_rooted_representation() -> None:
     with pytest.raises(ValueError, match="rooted SPR enumeration requires a binary root"):
         validate_rooted_spr_tree(loads_newick("(A,B,C,D);"))
+
+
+def test_write_rooted_spr_artifacts_materializes_governed_outputs(tmp_path: Path) -> None:
+    report = enumerate_rooted_spr_neighbors(fixture("example_tree.nwk"))
+
+    outputs = write_rooted_spr_artifacts(tmp_path / "rooted-spr-neighbors", report)
+
+    assert set(outputs) == {"input_tree_path", "neighbors_path", "run_json_path"}
+    assert outputs["neighbors_path"].read_text(encoding="utf-8").startswith(
+        "neighbor_index\trepresentative_pruned_node_id\trepresentative_pruned_clade_id\trepresentative_pruned_descendant_taxa\trepresentative_regraft_target_branch_id\trepresentative_regraft_target_descendant_taxa\tsupporting_move_count\tneighbor_topology_fingerprint\ttip_order\tvalidation_errors\tneighbor_tree_newick\n"
+    )
+    payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
+    assert payload["algorithm"] == "rooted-spr-neighbor-enumeration"
+    assert payload["input_tree_path"].endswith("example_tree.nwk")
+    assert payload["generated_move_candidate_count"] == 32
+    assert payload["identity_move_candidate_count"] == 8
+    assert payload["generated_neighbor_count"] == 12
