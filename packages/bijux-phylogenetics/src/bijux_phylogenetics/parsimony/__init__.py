@@ -65,6 +65,7 @@ from .artifacts import (
     write_wagner_steps_table,
 )
 from .bootstrap import bootstrap_parsimony
+from .bremer import compute_parsimony_bremer_support
 from .camin_sokal import score_camin_sokal
 from .consistency import consistency_index
 from .cost_matrix import load_sankoff_cost_matrix
@@ -147,6 +148,7 @@ __all__ = [
     "CaminSokalCharacterScore",
     "CaminSokalScoreReport",
     "bootstrap_parsimony",
+    "compute_parsimony_bremer_support",
     "build_parsimony_stepwise_addition_tree",
     "consistency_index",
     "DolloBranchChange",
