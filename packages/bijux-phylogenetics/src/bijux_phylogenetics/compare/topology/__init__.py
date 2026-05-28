@@ -39,6 +39,8 @@ _PUBLIC_SURFACES = (
     (
         "models",
         (
+            "AgreementSubtreeCandidateRow",
+            "AgreementSubtreePruningReport",
             "BranchLengthComparisonReport",
             "BranchLengthPair",
             "BranchScoreComparisonReport",

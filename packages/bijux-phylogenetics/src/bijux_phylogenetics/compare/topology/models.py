@@ -68,6 +68,36 @@ class SharedTaxaPruningReport:
 
 
 @dataclass(slots=True)
+class AgreementSubtreeCandidateRow:
+    candidate_index: int
+    retained_taxon_count: int
+    retained_taxa: list[str]
+    removed_taxa: list[str]
+    robinson_foulds_distance: int
+    normalized_robinson_foulds: float
+    topology_equal: bool
+
+
+@dataclass(slots=True)
+class AgreementSubtreePruningReport:
+    left_path: Path
+    right_path: Path
+    shared_taxa: list[str]
+    left_only_taxa: list[str]
+    right_only_taxa: list[str]
+    rf_mode: str
+    search_strategy: str
+    possible_retained_subset_count: int
+    evaluated_candidate_count: int
+    retained_taxa: list[str]
+    agreement_removed_taxa: list[str]
+    left_pruning: RequestedTaxaPruningReport
+    right_pruning: RequestedTaxaPruningReport
+    post_pruning_comparison: TreeComparisonReport
+    candidate_rows: list[AgreementSubtreeCandidateRow]
+
+
+@dataclass(slots=True)
 class CladeSupportPair:
     split_id: str
     left_support: float | None
