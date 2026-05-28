@@ -12,6 +12,7 @@ from bijux_phylogenetics.simulation import (
     simulate_coalescent_trees,
     simulate_multispecies_coalescent_gene_tree,
     simulate_random_trees,
+    write_coalescent_skyline_table,
     write_coalescent_waiting_time_table,
     write_multispecies_coalescent_branch_table,
     write_multispecies_coalescent_event_table,
@@ -68,6 +69,7 @@ def add_simulate_tree_commands(simulate_subparsers: Any) -> None:
     simulate_coalescent.add_argument("--record-table-out", type=Path)
     simulate_coalescent.add_argument("--envelope-table-out", type=Path)
     simulate_coalescent.add_argument("--waiting-time-table-out", type=Path)
+    simulate_coalescent.add_argument("--skyline-table-out", type=Path)
     simulate_coalescent.add_argument(
         "--json", action="store_true", help="Emit the simulation report as JSON."
     )
@@ -128,14 +130,26 @@ def run_simulate_tree_command(args: Any) -> int | None:
             trees=trees,
             report=report,
             extra_outputs=(
-                []
-                if args.waiting_time_table_out is None
-                else [
-                    write_coalescent_waiting_time_table(
-                        args.waiting_time_table_out,
-                        report,
-                    )
-                ]
+                (
+                    []
+                    if args.waiting_time_table_out is None
+                    else [
+                        write_coalescent_waiting_time_table(
+                            args.waiting_time_table_out,
+                            report,
+                        )
+                    ]
+                )
+                + (
+                    []
+                    if args.skyline_table_out is None
+                    else [
+                        write_coalescent_skyline_table(
+                            args.skyline_table_out,
+                            report,
+                        )
+                    ]
+                )
             ),
             extra_metrics={
                 "waiting_time_lineage_count": len(report.coalescent_waiting_time_rows),
@@ -146,6 +160,12 @@ def run_simulate_tree_command(args: Any) -> int | None:
                 ),
                 "waiting_time_all_within_tolerance": all(
                     row.within_tolerance for row in report.coalescent_waiting_time_rows
+                ),
+                "skyline_interval_count": len(report.coalescent_skyline_rows),
+                "skyline_high_uncertainty_count": sum(
+                    1
+                    for row in report.coalescent_skyline_rows
+                    if row.uncertainty_flag == "high"
                 ),
             },
         )
