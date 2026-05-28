@@ -56,6 +56,8 @@ class PriorOnlyPhylogeneticSample:
     sample_index: int
     tree_newick: str
     topology_id: str
+    tree_topology_prior_family: str
+    branch_length_prior_family: str
     topology_log_prior: float
     branch_length_log_prior: float
     substitution_log_prior: float
@@ -194,6 +196,8 @@ def _sample_prior_only_phylogenetic_state(
         sample_index=sample_index,
         tree_newick=sampled_tree.to_newick(),
         topology_id=topology_report.topology_id,
+        tree_topology_prior_family=topology_report.family,
+        branch_length_prior_family=branch_length_report.family,
         topology_log_prior=topology_report.log_prior,
         branch_length_log_prior=branch_length_report.total_log_prior,
         substitution_log_prior=substitution_log_prior,
