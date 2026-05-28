@@ -48,6 +48,13 @@ def add_compare_command(subparsers: Any) -> None:
         default="prune-to-shared",
         help="Either prune both trees to shared taxa or require identical taxon sets.",
     )
+    compare.add_argument(
+        "--max-evaluated-candidates",
+        type=int,
+        help=(
+            "Explicit candidate budget for heuristic compare workflows that search retained taxon subsets."
+        ),
+    )
     compare.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(compare)
 

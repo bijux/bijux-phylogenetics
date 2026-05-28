@@ -20,7 +20,14 @@ def run_compare_topology_distance_command(
     if args.left == "table":
         return _run_compare_table_command(args, parser=parser)
 
-    if args.left in {"clades", "prune", "changes", "branch-lengths"}:
+    if args.left in {
+        "clades",
+        "prune",
+        "agreement-subtree",
+        "maximum-agreement-subtree",
+        "changes",
+        "branch-lengths",
+    }:
         return None
 
     return _run_compare_topology_distance(args)
