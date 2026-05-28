@@ -173,6 +173,15 @@ from .probability_vectors import (
     CategoricalProbabilityVector,
     build_categorical_probability_vector,
 )
+from .tree_topology_priors import (
+    TREE_TOPOLOGY_PRIOR_FAMILIES,
+    TreeTopologyPriorEvaluationReport,
+    TreeTopologyPriorModel,
+    build_uniform_rooted_tree_topology_prior,
+    count_rooted_labeled_bifurcating_topologies,
+    evaluate_tree_topology_log_prior,
+    validate_tree_topology_prior_taxa,
+)
 
 __all__ = [
     "BRANCH_LENGTH_PRIOR_FAMILIES",
@@ -253,6 +262,9 @@ __all__ = [
     "TimeTreePublicationAudit",
     "TimeTreeReadinessReport",
     "TimeTreeReadinessReportBuildResult",
+    "TREE_TOPOLOGY_PRIOR_FAMILIES",
+    "TreeTopologyPriorEvaluationReport",
+    "TreeTopologyPriorModel",
     "assess_calibration_dominance",
     "assess_beast_burnin_sensitivity",
     "assess_beast_chain_mixing",
@@ -264,6 +276,7 @@ __all__ = [
     "build_gamma_branch_length_prior",
     "build_lognormal_branch_length_prior",
     "build_categorical_probability_vector",
+    "build_uniform_rooted_tree_topology_prior",
     "compare_bayesian_tree_sets",
     "compare_log_probabilities",
     "compare_independent_bayesian_runs",
@@ -271,8 +284,10 @@ __all__ = [
     "compare_posterior_tree_sets_by_clock",
     "compare_posterior_tree_sets_by_prior",
     "compute_mrbayes_effective_sample_sizes",
+    "count_rooted_labeled_bifurcating_topologies",
     "evaluate_branch_length_log_prior",
     "evaluate_tree_branch_length_log_prior",
+    "evaluate_tree_topology_log_prior",
     "assess_time_tree_readiness",
     "assess_beast_convergence",
     "detect_impossible_calibration_constraints",
@@ -318,6 +333,7 @@ __all__ = [
     "validate_beast_posterior_log",
     "validate_beast_analysis_xml",
     "validate_fossil_calibration_table",
+    "validate_tree_topology_prior_taxa",
     "validate_tip_dating_metadata",
     "write_bayesian_limitations_text",
     "write_bayesian_methods_summary_text",
