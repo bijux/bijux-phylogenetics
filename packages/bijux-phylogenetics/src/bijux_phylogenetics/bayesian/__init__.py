@@ -143,6 +143,7 @@ from .metropolis_hastings import (
     propose_global_tree_height_scaling_move,
     propose_nni_topology_move,
     propose_node_height_sliding_move,
+    propose_spr_topology_move,
     run_metropolis_hastings_sampler,
     score_bayesian_phylogenetic_state,
 )
@@ -549,6 +550,7 @@ __all__ = [
     "propose_global_tree_height_scaling_move",
     "propose_nni_topology_move",
     "propose_node_height_sliding_move",
+    "propose_spr_topology_move",
     "run_metropolis_hastings_sampler",
     "score_bayesian_phylogenetic_state",
     "compare_bayesian_tree_sets",
