@@ -9,13 +9,14 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.runtime.results import build_command_result
 from bijux_phylogenetics.trees import (
-    detect_rogue_taxa,
     detect_posterior_topology_multimodality,
+    detect_rogue_taxa,
     detect_unstable_clades,
     detect_unstable_taxa,
     summarize_clade_credibility_conflicts,
     summarize_uncertainty_aware_conclusions,
     write_consensus_tree,
+    write_gene_tree_conflict_artifacts,
     write_rogue_taxon_table,
 )
 
@@ -37,6 +38,36 @@ def add_tree_set_uncertainty_commands(tree_set_subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the rogue-taxon report as JSON."
     )
     _add_manifest_argument(tree_set_rogue_taxa)
+
+    tree_set_gene_tree_conflicts = tree_set_subparsers.add_parser(
+        "gene-tree-conflicts",
+        help="Write clade, quartet, rogue-taxon, and conflict tables for one gene-tree set.",
+    )
+    tree_set_gene_tree_conflicts.add_argument("tree_set", type=Path)
+    tree_set_gene_tree_conflicts.add_argument("--out-dir", required=True, type=Path)
+    tree_set_gene_tree_conflicts.add_argument(
+        "--prefix",
+        default="gene-tree-conflicts",
+        help="Prefix for written artifacts.",
+    )
+    tree_set_gene_tree_conflicts.add_argument(
+        "--credibility-threshold",
+        type=float,
+        default=0.5,
+        help="Clade-frequency threshold used when flagging conflicting high-credibility clades.",
+    )
+    tree_set_gene_tree_conflicts.add_argument(
+        "--rogue-consensus-threshold",
+        type=float,
+        default=0.5,
+        help="Consensus threshold used when ranking rogue taxa.",
+    )
+    tree_set_gene_tree_conflicts.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the gene-tree conflict bundle report as JSON.",
+    )
+    _add_manifest_argument(tree_set_gene_tree_conflicts)
 
     tree_set_unstable_taxa = tree_set_subparsers.add_parser(
         "unstable-taxa",
@@ -97,6 +128,54 @@ def add_tree_set_uncertainty_commands(tree_set_subparsers: Any) -> None:
 
 
 def run_tree_set_uncertainty_command(args: Any) -> int | None:
+    if args.tree_set_command == "gene-tree-conflicts":
+        report = write_gene_tree_conflict_artifacts(
+            args.tree_set,
+            out_dir=args.out_dir,
+            prefix=args.prefix,
+            credibility_threshold=args.credibility_threshold,
+            rogue_consensus_threshold=args.rogue_consensus_threshold,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="tree-set",
+            inputs=[args.tree_set],
+            outputs=list(report.output_paths.values()),
+        )
+        _print_result(
+            build_command_result(
+                command="tree-set",
+                inputs=[args.tree_set],
+                outputs=outputs,
+                metrics={
+                    "tree_count": report.summary_report.tree_count,
+                    "runtime_seconds": report.summary_report.processing.runtime_seconds,
+                    "peak_memory_bytes": report.summary_report.processing.peak_memory_bytes,
+                    "skipped_malformed_tree_count": (
+                        report.summary_report.processing.skipped_malformed_tree_count
+                    ),
+                    "shared_taxon_count": len(report.summary_report.shared_taxa),
+                    "reference_tree_frequency": (
+                        report.summary_report.reference_tree.frequency
+                    ),
+                    "clade_count": len(
+                        report.summary_report.clade_frequencies.clade_frequencies
+                    ),
+                    "quartet_branch_count": (
+                        report.summary_report.quartet_concordance.branch_count
+                    ),
+                    "conflict_count": report.summary_report.clade_conflicts.conflict_count,
+                    "rogue_taxon_count": len(report.summary_report.rogue_taxa.rows),
+                    "top_ranked_rogue_taxon": (
+                        report.summary_report.rogue_taxa.rows[0].taxon
+                    ),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
     if args.tree_set_command == "rogue-taxa":
         report = detect_rogue_taxa(
             args.tree_set,
