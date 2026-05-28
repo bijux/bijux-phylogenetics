@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+import json
 import math
 from pathlib import Path
 
@@ -9,7 +10,7 @@ import numpy
 
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
-from bijux_phylogenetics.io.newick import dumps_newick
+from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_coordinate_likelihood_search,
@@ -600,3 +601,192 @@ def _build_dated_tree(
             raise ValueError("candidate dated tree is not chronological")
         child.branch_length = max(duration, 0.0)
     return dated_tree
+
+
+def write_penalized_likelihood_dating_summary_tsv(
+    path: Path,
+    report: PenalizedLikelihoodDatingReport,
+) -> Path:
+    """Write one summary row for one penalized likelihood dating run."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "tree_path",
+        "metadata_path",
+        "taxon_column",
+        "date_column",
+        "tip_count",
+        "internal_node_count",
+        "branch_count",
+        "parameter_count",
+        "minimum_tip_date",
+        "maximum_tip_date",
+        "root_date",
+        "smoothing_parameter",
+        "data_score",
+        "penalty_score",
+        "total_score",
+        "condition_number",
+        "optimizer_name",
+        "optimization_pass_count",
+        "function_evaluation_count",
+        "converged",
+    ]
+    values = [
+        report.tree_path or "",
+        report.metadata_path or "",
+        report.taxon_column,
+        report.date_column,
+        str(report.tip_count),
+        str(report.internal_node_count),
+        str(report.branch_count),
+        str(report.parameter_count),
+        format(report.minimum_tip_date, ".15g"),
+        format(report.maximum_tip_date, ".15g"),
+        format(report.root_date, ".15g"),
+        format(report.smoothing_parameter, ".15g"),
+        format(report.data_score, ".15g"),
+        format(report.penalty_score, ".15g"),
+        format(report.total_score, ".15g"),
+        format(report.condition_number, ".15g"),
+        report.optimizer_name,
+        str(report.optimization_pass_count),
+        str(report.function_evaluation_count),
+        str(report.converged).lower(),
+    ]
+    path.write_text(
+        "\n".join(["\t".join(columns), "\t".join(values)]) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def write_penalized_likelihood_node_dates_tsv(
+    path: Path,
+    report: PenalizedLikelihoodDatingReport,
+) -> Path:
+    """Write one dated-node row per node in tree preorder."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "node_id",
+        "node_kind",
+        "node_label",
+        "descendant_taxa",
+        "estimated_date",
+        "fixed_tip_date",
+        "time_height",
+        "estimated_log_rate",
+        "estimated_rate",
+    ]
+    lines = ["\t".join(columns)]
+    lines.extend(
+        "\t".join(
+            [
+                row.node_id,
+                row.node_kind,
+                row.node_label or "",
+                "|".join(row.descendant_taxa),
+                format(row.estimated_date, ".15g"),
+                str(row.fixed_tip_date).lower(),
+                format(row.time_height, ".15g"),
+                format(row.estimated_log_rate, ".15g"),
+                format(row.estimated_rate, ".15g"),
+            ]
+        )
+        for row in report.node_rows
+    )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def write_penalized_likelihood_branch_rate_tsv(
+    path: Path,
+    report: PenalizedLikelihoodDatingReport,
+) -> Path:
+    """Write one branch rate row per edge in tree preorder."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "branch_id",
+        "child_name",
+        "descendant_taxa",
+        "parent_date",
+        "child_date",
+        "fitted_time_duration",
+        "observed_branch_length",
+        "observed_log_rate",
+        "fitted_log_rate",
+        "estimated_branch_rate",
+        "fitted_branch_length",
+        "data_score_contribution",
+        "smoothing_penalty_contribution",
+    ]
+    lines = ["\t".join(columns)]
+    lines.extend(
+        "\t".join(
+            [
+                row.branch_id,
+                row.child_name or "",
+                "|".join(row.descendant_taxa),
+                format(row.parent_date, ".15g"),
+                format(row.child_date, ".15g"),
+                format(row.fitted_time_duration, ".15g"),
+                format(row.observed_branch_length, ".15g"),
+                format(row.observed_log_rate, ".15g"),
+                format(row.fitted_log_rate, ".15g"),
+                format(row.estimated_branch_rate, ".15g"),
+                format(row.fitted_branch_length, ".15g"),
+                format(row.data_score_contribution, ".15g"),
+                format(row.smoothing_penalty_contribution, ".15g"),
+            ]
+        )
+        for row in report.branch_rows
+    )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def write_penalized_likelihood_dating_run_json(
+    path: Path,
+    report: PenalizedLikelihoodDatingReport,
+) -> Path:
+    """Write the full penalized likelihood dating report as JSON."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(asdict(report), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def write_penalized_likelihood_dating_artifacts(
+    out_dir: Path,
+    report: PenalizedLikelihoodDatingReport,
+) -> dict[str, Path]:
+    """Write governed artifact outputs for one penalized likelihood dating run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    dated_tree_path = write_newick(
+        out_dir / "dated_tree.nwk",
+        loads_newick(report.dated_tree_newick),
+    )
+    summary_path = write_penalized_likelihood_dating_summary_tsv(
+        out_dir / "summary.tsv",
+        report,
+    )
+    node_dates_path = write_penalized_likelihood_node_dates_tsv(
+        out_dir / "node_dates.tsv",
+        report,
+    )
+    branch_rates_path = write_penalized_likelihood_branch_rate_tsv(
+        out_dir / "branch_rates.tsv",
+        report,
+    )
+    run_json_path = write_penalized_likelihood_dating_run_json(
+        out_dir / "run.json",
+        report,
+    )
+    return {
+        "dated_tree_path": dated_tree_path,
+        "summary_path": summary_path,
+        "node_dates_path": node_dates_path,
+        "branch_rates_path": branch_rates_path,
+        "run_json_path": run_json_path,
+    }
