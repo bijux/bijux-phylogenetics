@@ -136,6 +136,7 @@ def fit_least_squares_dating_from_metadata(
     """Fit least-squares node dates from one rooted substitution tree and one tip-date table."""
     validate_tree_path(tree_path, require_rooted=True)
     tree = load_tree(tree_path)
+    tree.rooted = True
     if any(length is None for length in tree.branch_lengths()):
         raise InvalidBranchLengthError(
             "least-squares dating requires complete branch lengths"
