@@ -32,6 +32,12 @@ def add_discrete_model_comparative_evolution_commands(
         help="Choose the discrete Mk rate-constraint surface to fit.",
     )
     comparative_discrete_mk.add_argument(
+        "--ascertainment",
+        choices=("none", "lewis-variable-only"),
+        default="none",
+        help="Condition the Mk likelihood on the retained character-observation policy.",
+    )
+    comparative_discrete_mk.add_argument(
         "--transform",
         choices=("lambda", "kappa", "delta", "early-burst"),
         help="Apply one governed branch-length transform before fitting the discrete Mk surface.",
@@ -66,6 +72,7 @@ def run_discrete_model_comparative_evolution_command(
         trait=args.trait,
         taxon_column=args.taxon_column,
         model=args.model,
+        ascertainment_policy=args.ascertainment,
         transform=args.transform,
     )
     outputs: list[Path | str] = []
@@ -88,6 +95,7 @@ def run_discrete_model_comparative_evolution_command(
             metrics={
                 "taxon_count": report.taxon_count,
                 "model": report.model,
+                "ascertainment_policy": report.ascertainment_policy,
                 "transform": (
                     None
                     if report.transform_fit is None
@@ -99,6 +107,12 @@ def run_discrete_model_comparative_evolution_command(
                     report.input_audit.pruned_missing_value_taxa
                 ),
                 "log_likelihood": report.log_likelihood,
+                "ascertainment_conditioning_log_probability": (
+                    report.ascertainment_conditioning_log_probability
+                ),
+                "invariant_pattern_log_probability": (
+                    report.invariant_pattern_log_probability
+                ),
                 "parameter_count": report.parameter_count,
                 "aic": report.aic,
                 "aicc": report.aicc,
