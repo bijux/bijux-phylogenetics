@@ -21,6 +21,10 @@ from bijux_phylogenetics.phylo.topology.rooted_nni import (
     iter_rooted_nni_move_candidates,
     validate_rooted_nni_tree,
 )
+from bijux_phylogenetics.phylo.topology.rooted_spr import (
+    enumerate_rooted_spr_neighbors,
+    validate_rooted_spr_tree,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
@@ -468,6 +472,91 @@ def propose_nni_topology_move(
         "tree.topology:nni:"
         f"{selected_candidate.parent_node_id}:{selected_candidate.child_node_id}:"
         f"{selected_candidate.exchanged_child_node_id}"
+    )
+    return build_metropolis_hastings_proposal(
+        changed_fields=(changed_field,),
+        log_forward_density=log_forward_density,
+        log_reverse_density=log_reverse_density,
+        is_valid=True,
+        proposed_tree=proposed_tree,
+        proposed_model_parameters=current_state.model_parameters,
+    )
+
+
+def propose_spr_topology_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+) -> MetropolisHastingsProposal:
+    """Propose one rooted subtree-prune-regraft topology move."""
+    current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
+    try:
+        validate_rooted_spr_tree(current_tree)
+    except ValueError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.topology",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    current_report = enumerate_rooted_spr_neighbors(current_tree)
+    if not current_report.neighbor_rows:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.topology",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="SPR topology proposal requires at least one legal rooted SPR move",
+        )
+    current_legal_move_count = _rooted_spr_legal_move_count(current_report)
+    selected_neighbor_row = current_report.neighbor_rows[
+        rng.randrange(len(current_report.neighbor_rows))
+    ]
+    proposed_tree = PhyloTree.from_newick(selected_neighbor_row.neighbor_tree_newick)
+    proposed_tree.rooted = current_state.tree.rooted
+    current_topology_fingerprint = rooted_topology_fingerprint(current_tree)
+    if (
+        selected_neighbor_row.neighbor_topology_fingerprint
+        == current_topology_fingerprint
+    ):
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.topology",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "SPR topology proposal must change rooted topology rather than child order"
+            ),
+        )
+    proposed_report = enumerate_rooted_spr_neighbors(proposed_tree)
+    reverse_neighbor_row = next(
+        (
+            row
+            for row in proposed_report.neighbor_rows
+            if row.neighbor_topology_fingerprint == current_topology_fingerprint
+        ),
+        None,
+    )
+    if reverse_neighbor_row is None:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("tree.topology",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="SPR topology proposal could not find one reverse rooted prune-regraft move",
+        )
+    proposed_legal_move_count = _rooted_spr_legal_move_count(proposed_report)
+    log_forward_density = math.log(
+        selected_neighbor_row.supporting_move_count
+    ) - math.log(current_legal_move_count)
+    log_reverse_density = math.log(
+        reverse_neighbor_row.supporting_move_count
+    ) - math.log(proposed_legal_move_count)
+    changed_field = (
+        "tree.topology:spr:"
+        f"{selected_neighbor_row.representative_pruned_node_id}:"
+        f"{selected_neighbor_row.representative_regraft_target_branch_id}"
     )
     return build_metropolis_hastings_proposal(
         changed_fields=(changed_field,),
@@ -982,3 +1071,11 @@ def _enumerate_rooted_nni_neighbors(
             )
         )
     return neighbors
+
+
+def _rooted_spr_legal_move_count(report) -> int:
+    return (
+        report.generated_move_candidate_count
+        - report.identity_move_candidate_count
+        - report.self_regraft_candidate_count
+    )
