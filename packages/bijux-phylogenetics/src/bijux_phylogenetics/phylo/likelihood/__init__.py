@@ -57,10 +57,19 @@ from .candidate_tree_site_likelihood_matrix import (
     write_candidate_tree_site_likelihood_matrix_table as write_candidate_tree_site_likelihood_matrix_table,
 )
 from .ctmc import (
+    SolvedCtmcStationaryDistribution as SolvedCtmcStationaryDistribution,
+)
+from .ctmc import (
     ValidatedCtmcRateMatrix as ValidatedCtmcRateMatrix,
 )
 from .ctmc import (
+    solve_ctmc_stationary_distribution as solve_ctmc_stationary_distribution,
+)
+from .ctmc import (
     validate_ctmc_rate_matrix as validate_ctmc_rate_matrix,
+)
+from .ctmc import (
+    verify_ctmc_stationary_distribution as verify_ctmc_stationary_distribution,
 )
 from .empirical import (
     evaluate_empirical_protein_tree_likelihood as evaluate_empirical_protein_tree_likelihood,
