@@ -12,6 +12,7 @@ from bijux_phylogenetics.phylo.topology import (
     RootedSprNeighborRow,
     RootedSprNeighborhoodReport,
     enumerate_rooted_spr_neighbors,
+    rooted_topology_fingerprint,
     validate_rooted_spr_tree,
     write_rooted_spr_artifacts,
 )
@@ -61,12 +62,17 @@ def test_rooted_spr_neighbor_report_matches_known_five_taxon_case() -> None:
 
 
 def test_rooted_spr_neighbors_preserve_taxa_and_exclude_input_topology() -> None:
-    report = enumerate_rooted_spr_neighbors(loads_newick("(((A,C),B),D);"))
+    tree = loads_newick("(((A,C),B),D);")
+    report = enumerate_rooted_spr_neighbors(tree)
+    input_topology_fingerprint = rooted_topology_fingerprint(tree)
 
     assert all(sorted(row.tip_order) == ["A", "B", "C", "D"] for row in report.neighbor_rows)
     assert all(row.validation_errors == [] for row in report.neighbor_rows)
     assert all(row.supporting_move_count >= 1 for row in report.neighbor_rows)
-    assert all(row.neighbor_tree_newick != "(((A,C),B),D);" for row in report.neighbor_rows)
+    assert all(
+        row.neighbor_topology_fingerprint != input_topology_fingerprint
+        for row in report.neighbor_rows
+    )
 
 
 def test_rooted_spr_validation_accepts_binary_root_representation_without_rooted_flag() -> None:
@@ -76,6 +82,22 @@ def test_rooted_spr_validation_accepts_binary_root_representation_without_rooted
 def test_rooted_spr_validation_rejects_nonbinary_rooted_representation() -> None:
     with pytest.raises(ValueError, match="rooted SPR enumeration requires a binary root"):
         validate_rooted_spr_tree(loads_newick("(A,B,C,D);"))
+
+
+def test_rooted_spr_report_preserves_input_tree_path_for_file_inputs() -> None:
+    report = enumerate_rooted_spr_neighbors(fixture("example_tree.nwk"))
+
+    assert report.input_tree_path == fixture("example_tree.nwk")
+    assert report.input_tree_newick == "((A:0.1,B:0.1):0.2,(C:0.2,D:0.2):0.1);"
+    assert report.rooted is False
+
+
+def test_rooted_spr_neighbor_enumeration_rejects_internal_polytomies() -> None:
+    with pytest.raises(
+        ValueError,
+        match="rooted SPR enumeration requires a strictly bifurcating tree",
+    ):
+        enumerate_rooted_spr_neighbors(loads_newick("((A,B,C),D);"))
 
 
 def test_write_rooted_spr_artifacts_materializes_governed_outputs(tmp_path: Path) -> None:
