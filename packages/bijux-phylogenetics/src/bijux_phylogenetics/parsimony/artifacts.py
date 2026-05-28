@@ -15,6 +15,7 @@ from .models import (
     CaminSokalScoreReport,
     DolloScoreReport,
     ParsimonyBootstrapReport,
+    ParsimonyBremerSupportReport,
     ParsimonyEqualBestConsensusReport,
     ParsimonyJackknifeReport,
     ParsimonyNniSearchReport,
@@ -1706,6 +1707,117 @@ def write_parsimony_equal_best_consensus_artifacts(
             clade_frequency_report,
         )
     return outputs
+
+
+def write_parsimony_bremer_support_table(
+    path: Path,
+    report: ParsimonyBremerSupportReport,
+) -> Path:
+    """Write one deterministic Bremer support table for a rooted reference tree."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "branch_id",
+            "node_name",
+            "descendant_taxa",
+            "shortest_lacking_score",
+            "decay_index",
+            "shortest_lacking_tree_count",
+            "shortest_lacking_tree_newick",
+        ],
+        rows=[
+            {
+                "branch_id": row.branch_id,
+                "node_name": row.node_name,
+                "descendant_taxa": "|".join(row.descendant_taxa),
+                "shortest_lacking_score": row.shortest_lacking_score,
+                "decay_index": row.decay_index,
+                "shortest_lacking_tree_count": row.shortest_lacking_tree_count,
+                "shortest_lacking_tree_newick": row.shortest_lacking_tree_newick,
+            }
+            for row in report.bremer_rows
+        ],
+    )
+
+
+def write_parsimony_bremer_support_run_json(
+    path: Path,
+    report: ParsimonyBremerSupportReport,
+) -> Path:
+    """Write one machine-readable exact Bremer support payload."""
+    return write_json_artifact(
+        path,
+        {
+            "algorithm": report.algorithm,
+            "method": report.method,
+            "tree_path": None if report.tree_path is None else str(report.tree_path),
+            "matrix_path": None
+            if report.matrix_path is None
+            else str(report.matrix_path),
+            "cost_matrix_path": None
+            if report.cost_matrix_path is None
+            else str(report.cost_matrix_path),
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "taxon_column": report.taxon_column,
+            "taxon_count": report.taxon_count,
+            "character_count": report.character_count,
+            "candidate_tree_count": report.candidate_tree_count,
+            "max_exact_taxa": report.max_exact_taxa,
+            "reference_tree_newick": report.reference_tree_newick,
+            "reference_tree_score": report.reference_tree_score,
+            "optimal_score": report.optimal_score,
+            "optimal_tree_count": report.optimal_tree_count,
+            "optimal_tree_newick": report.optimal_tree_newick,
+            "reference_tree_score_delta_from_optimal": (
+                report.reference_tree_score_delta_from_optimal
+            ),
+            "reference_tree_is_optimal": report.reference_tree_is_optimal,
+            "bremer_rows": [
+                {
+                    "branch_id": row.branch_id,
+                    "node_name": row.node_name,
+                    "descendant_taxa": row.descendant_taxa,
+                    "shortest_lacking_score": row.shortest_lacking_score,
+                    "decay_index": row.decay_index,
+                    "shortest_lacking_tree_count": row.shortest_lacking_tree_count,
+                    "shortest_lacking_tree_newick": row.shortest_lacking_tree_newick,
+                }
+                for row in report.bremer_rows
+            ],
+        },
+    )
+
+
+def write_parsimony_bremer_support_artifacts(
+    out_dir: Path,
+    report: ParsimonyBremerSupportReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one exact Bremer support run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    reference_tree_path = write_newick(
+        out_dir / "reference_tree.nwk",
+        loads_newick(report.reference_tree_newick),
+    )
+    optimal_tree_path = write_newick(
+        out_dir / "optimal_tree.nwk",
+        loads_newick(report.optimal_tree_newick),
+    )
+    bremer_support_path = write_parsimony_bremer_support_table(
+        out_dir / "bremer_support.tsv",
+        report,
+    )
+    run_json_path = write_parsimony_bremer_support_run_json(
+        out_dir / "run.json",
+        report,
+    )
+    return {
+        "reference_tree_path": reference_tree_path,
+        "optimal_tree_path": optimal_tree_path,
+        "bremer_support_path": bremer_support_path,
+        "run_json_path": run_json_path,
+    }
 
 
 def write_parsimony_nni_trace_table(

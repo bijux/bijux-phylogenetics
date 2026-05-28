@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import bijux_phylogenetics.parsimony as parsimony_api
@@ -9,6 +10,7 @@ from bijux_phylogenetics.parsimony import (
     ParsimonyBremerSupportReport,
     ParsimonyBremerSupportRow,
     compute_parsimony_bremer_support,
+    write_parsimony_bremer_support_artifacts,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures" / "parsimony"
@@ -24,6 +26,10 @@ def test_package_parsimony_gateway_exports_bremer_support_surface() -> None:
     assert (
         parsimony_api.compute_parsimony_bremer_support
         is compute_parsimony_bremer_support
+    )
+    assert (
+        parsimony_api.write_parsimony_bremer_support_artifacts
+        is write_parsimony_bremer_support_artifacts
     )
 
 
@@ -70,3 +76,44 @@ def test_parsimony_bremer_support_reports_positive_decay_index() -> None:
         ("B|D", ["B", "D"], 3.0, 1.0, 6, "(((A,B),D),C);"),
         ("A|B|D", ["A", "B", "D"], 2.0, 0.0, 2, "((A,C),(B,D));"),
     ]
+
+
+def test_write_parsimony_bremer_support_artifacts_materializes_outputs(
+    tmp_path: Path,
+) -> None:
+    matrix = FitchCharacterMatrix(
+        matrix_path=None,
+        taxon_column="taxon",
+        character_ids=["char01_terminal_a", "char02_clade_bd"],
+        states_by_taxon={
+            "A": {"char01_terminal_a": "1", "char02_clade_bd": "0"},
+            "B": {"char01_terminal_a": "0", "char02_clade_bd": "1"},
+            "C": {"char01_terminal_a": "0", "char02_clade_bd": "0"},
+            "D": {"char01_terminal_a": "0", "char02_clade_bd": "1"},
+        },
+    )
+    report = compute_parsimony_bremer_support(
+        loads_newick("((A,(B,D)),C);"),
+        matrix,
+        method="dollo",
+    )
+
+    outputs = write_parsimony_bremer_support_artifacts(
+        tmp_path / "bremer-support",
+        report,
+    )
+
+    assert set(outputs) == {
+        "reference_tree_path",
+        "optimal_tree_path",
+        "bremer_support_path",
+        "run_json_path",
+    }
+    assert outputs["bremer_support_path"].read_text(encoding="utf-8").startswith(
+        "branch_id\tnode_name\tdescendant_taxa\tshortest_lacking_score\tdecay_index\tshortest_lacking_tree_count\tshortest_lacking_tree_newick\n"
+    )
+    payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
+    assert payload["algorithm"] == "parsimony-bremer-support"
+    assert payload["optimal_score"] == 2.0
+    assert payload["bremer_rows"][0]["branch_id"] == "B|D"
+    assert payload["bremer_rows"][0]["decay_index"] == 1.0
