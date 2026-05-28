@@ -28,6 +28,9 @@ from bijux_phylogenetics.phylo.likelihood.jc69 import (
 from bijux_phylogenetics.phylo.likelihood.k80 import (
     k80_transition_probability_matrix,
 )
+from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
+    resolve_nucleotide_root_prior,
+)
 
 _SELECTED_NUCLEOTIDE_MODELS = frozenset({"jc69", "k80", "f81", "hky85", "gtr"})
 
@@ -38,6 +41,7 @@ class SelectedNucleotideLikelihoodSpecification:
 
     model_name: str
     root_prior: numpy.ndarray
+    root_prior_source: str
     parameter_values: dict[str, float]
     transition_matrix_for_branch_length: Callable[[float], numpy.ndarray]
 
@@ -67,15 +71,28 @@ def resolve_selected_nucleotide_likelihood_specification(
         | tuple[float, ...]
         | None
     ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
 ) -> SelectedNucleotideLikelihoodSpecification:
     normalized_model_name = validate_selected_nucleotide_likelihood_model(model_name)
     if normalized_model_name == "jc69":
         _reject_irrelevant_parameter(owner_name, "kappa", kappa)
         _reject_irrelevant_parameter(owner_name, "base_frequencies", base_frequencies)
         _reject_irrelevant_parameter(owner_name, "exchangeabilities", exchangeabilities)
+        resolved_root_prior = resolve_nucleotide_root_prior(
+            records,
+            owner_name=owner_name,
+            default_policy="equal",
+            root_prior_policy=root_prior_policy,
+            root_prior=root_prior,
+            fixed_root_state=fixed_root_state,
+            stationary_frequencies=UNIFORM_DNA_ROOT_PRIOR,
+        )
         return SelectedNucleotideLikelihoodSpecification(
             model_name="JC69",
-            root_prior=UNIFORM_DNA_ROOT_PRIOR,
+            root_prior=resolved_root_prior.root_prior,
+            root_prior_source=resolved_root_prior.root_prior_source,
             parameter_values={},
             transition_matrix_for_branch_length=jc69_transition_probability_matrix,
         )
@@ -85,9 +102,19 @@ def resolve_selected_nucleotide_likelihood_specification(
         if kappa is None:
             raise ValueError(f"{owner_name} requires 'kappa'")
         validated_kappa = validate_positive_kappa(kappa, model_name="K80")
+        resolved_root_prior = resolve_nucleotide_root_prior(
+            records,
+            owner_name=owner_name,
+            default_policy="equal",
+            root_prior_policy=root_prior_policy,
+            root_prior=root_prior,
+            fixed_root_state=fixed_root_state,
+            stationary_frequencies=UNIFORM_DNA_ROOT_PRIOR,
+        )
         return SelectedNucleotideLikelihoodSpecification(
             model_name="K80",
-            root_prior=UNIFORM_DNA_ROOT_PRIOR,
+            root_prior=resolved_root_prior.root_prior,
+            root_prior_source=resolved_root_prior.root_prior_source,
             parameter_values={"kappa": validated_kappa},
             transition_matrix_for_branch_length=lambda branch_length: (
                 k80_transition_probability_matrix(
@@ -104,9 +131,19 @@ def resolve_selected_nucleotide_likelihood_specification(
             base_frequencies=base_frequencies,
             model_name="F81",
         )
+        resolved_root_prior = resolve_nucleotide_root_prior(
+            records,
+            owner_name=owner_name,
+            default_policy="stationary",
+            root_prior_policy=root_prior_policy,
+            root_prior=root_prior,
+            fixed_root_state=fixed_root_state,
+            stationary_frequencies=stationary,
+        )
         return SelectedNucleotideLikelihoodSpecification(
             model_name="F81",
-            root_prior=stationary,
+            root_prior=resolved_root_prior.root_prior,
+            root_prior_source=resolved_root_prior.root_prior_source,
             parameter_values=_base_frequency_parameter_values(stationary),
             transition_matrix_for_branch_length=lambda branch_length: (
                 f81_transition_probability_matrix(
@@ -125,9 +162,19 @@ def resolve_selected_nucleotide_likelihood_specification(
             model_name="HKY85",
         )
         validated_kappa = validate_positive_kappa(kappa, model_name="HKY85")
+        resolved_root_prior = resolve_nucleotide_root_prior(
+            records,
+            owner_name=owner_name,
+            default_policy="stationary",
+            root_prior_policy=root_prior_policy,
+            root_prior=root_prior,
+            fixed_root_state=fixed_root_state,
+            stationary_frequencies=stationary,
+        )
         return SelectedNucleotideLikelihoodSpecification(
             model_name="HKY85",
-            root_prior=stationary,
+            root_prior=resolved_root_prior.root_prior,
+            root_prior_source=resolved_root_prior.root_prior_source,
             parameter_values={
                 **_base_frequency_parameter_values(stationary),
                 "kappa": validated_kappa,
@@ -153,9 +200,19 @@ def resolve_selected_nucleotide_likelihood_specification(
         exchangeabilities,
         model_name="GTR",
     )
+    resolved_root_prior = resolve_nucleotide_root_prior(
+        records,
+        owner_name=owner_name,
+        default_policy="stationary",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=stationary,
+    )
     return SelectedNucleotideLikelihoodSpecification(
         model_name="GTR",
-        root_prior=stationary,
+        root_prior=resolved_root_prior.root_prior,
+        root_prior_source=resolved_root_prior.root_prior_source,
         parameter_values={
             **_base_frequency_parameter_values(stationary),
             "exchangeability_ac": float(normalized_exchangeabilities[0]),

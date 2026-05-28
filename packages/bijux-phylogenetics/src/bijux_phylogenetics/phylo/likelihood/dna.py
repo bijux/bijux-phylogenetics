@@ -4,14 +4,16 @@ import math
 
 import numpy
 
+from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
 )
-from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.runtime.errors import AlignmentTaxonMismatchError
-from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import (
+    AlignmentTaxonMismatchError,
+    InvalidAlignmentError,
+)
 
 DNA_STATE_ORDER = ("A", "C", "G", "T")
 DNA_STATE_INDEX = {state: index for index, state in enumerate(DNA_STATE_ORDER)}
@@ -113,6 +115,57 @@ def validate_dna_base_frequencies(
             f"{model_name} likelihood base frequencies must sum to a positive value"
         )
     return vector / total
+
+
+def validate_dna_root_prior(
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...],
+    *,
+    owner_name: str,
+) -> numpy.ndarray:
+    if isinstance(root_prior, dict):
+        if set(root_prior) != set(DNA_STATE_ORDER):
+            raise InvalidAlignmentError(
+                f"{owner_name} requires root-prior probabilities for exactly A, C, G, and T"
+            )
+        vector = numpy.array(
+            [float(root_prior[state]) for state in DNA_STATE_ORDER],
+            dtype=float,
+        )
+    else:
+        vector = numpy.asarray(root_prior, dtype=float)
+    if vector.shape != (len(DNA_STATE_ORDER),):
+        raise InvalidAlignmentError(
+            f"{owner_name} requires exactly four root-prior probabilities in A/C/G/T order"
+        )
+    if not numpy.all(numpy.isfinite(vector)):
+        raise InvalidAlignmentError(
+            f"{owner_name} root-prior probabilities must all be finite"
+        )
+    if numpy.any(vector < 0.0):
+        raise InvalidAlignmentError(
+            f"{owner_name} root-prior probabilities must be nonnegative"
+        )
+    total = float(vector.sum())
+    if total <= 0.0:
+        raise InvalidAlignmentError(
+            f"{owner_name} root-prior probabilities must sum to a positive value"
+        )
+    return vector / total
+
+
+def fixed_state_dna_root_prior(
+    state: str,
+    *,
+    owner_name: str,
+) -> numpy.ndarray:
+    normalized_state = state.strip().upper()
+    if normalized_state not in DNA_STATE_INDEX:
+        raise InvalidAlignmentError(
+            f"{owner_name} fixed root state must be one of A, C, G, and T"
+        )
+    root_prior = numpy.zeros(len(DNA_STATE_ORDER), dtype=float)
+    root_prior[DNA_STATE_INDEX[normalized_state]] = 1.0
+    return root_prior
 
 
 def validate_dna_exchangeabilities(
