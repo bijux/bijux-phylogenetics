@@ -20,7 +20,10 @@ from bijux_phylogenetics.runtime.errors import (
 TIME_TREE_PRIOR_CONDITIONING_MODES = ("fixed-tip-count-and-crown-age",)
 YULE_TREE_PRIOR_FAMILIES = ("crown-conditioned-yule",)
 BIRTH_DEATH_TREE_PRIOR_FAMILIES = ("crown-conditioned-birth-death",)
-COALESCENT_TREE_PRIOR_FAMILIES = ("constant-population-coalescent",)
+COALESCENT_TREE_PRIOR_FAMILIES = (
+    "constant-population-coalescent",
+    "skyline-coalescent",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -143,6 +146,69 @@ class ConstantPopulationCoalescentPriorEvaluationReport:
     interval_rows: list[ConstantPopulationCoalescentIntervalRow]
 
 
+@dataclass(frozen=True, slots=True)
+class SkylineCoalescentEpoch:
+    """One piecewise-constant population-size epoch for a skyline coalescent prior."""
+
+    younger_boundary_age: float
+    older_boundary_age: float | None
+    effective_population_size: float
+
+
+@dataclass(frozen=True, slots=True)
+class SkylineCoalescentPriorModel:
+    """One validated skyline coalescent prior parameterization."""
+
+    family: str
+    epochs: list[SkylineCoalescentEpoch]
+
+
+@dataclass(frozen=True, slots=True)
+class SkylineCoalescentSegmentRow:
+    """One skyline-overlap segment from a coalescent interval."""
+
+    coalescent_interval_index: int
+    skyline_epoch_index: int
+    segment_younger_boundary_age: float
+    segment_older_boundary_age: float
+    duration: float
+    lineage_count: int
+    coalescent_event_count: int
+    effective_population_size: float
+    waiting_rate: float
+    waiting_log_contribution: float
+    event_log_contribution: float
+    segment_log_contribution: float
+
+
+@dataclass(frozen=True, slots=True)
+class SkylineCoalescentPriorEvaluationReport:
+    """One rooted ultrametric skyline coalescent prior report."""
+
+    family: str
+    epoch_count: int
+    tree_newick: str
+    tip_count: int
+    internal_node_count: int
+    root_age: float
+    total_branch_length: float
+    ultrametric_tolerance: float
+    log_prior: float
+    segment_rows: list[SkylineCoalescentSegmentRow]
+
+
+@dataclass(frozen=True, slots=True)
+class _CoalescentInterval:
+    """One backward-time coalescent interval before skyline segmentation."""
+
+    interval_index: int
+    younger_boundary_age: float
+    older_boundary_age: float
+    duration: float
+    lineage_count: int
+    coalescent_event_count: int
+
+
 def build_crown_conditioned_yule_tree_prior(
     speciation_rate: float,
 ) -> YuleTreePriorModel:
@@ -209,6 +275,17 @@ def build_constant_population_coalescent_tree_prior(
     return ConstantPopulationCoalescentPriorModel(
         family="constant-population-coalescent",
         effective_population_size=effective_population_size,
+    )
+
+
+def build_skyline_coalescent_tree_prior(
+    epochs: list[SkylineCoalescentEpoch],
+) -> SkylineCoalescentPriorModel:
+    """Build one skyline coalescent prior with validated piecewise epochs."""
+    validated_epochs = _validate_skyline_coalescent_epochs(epochs)
+    return SkylineCoalescentPriorModel(
+        family="skyline-coalescent",
+        epochs=validated_epochs,
     )
 
 
@@ -350,6 +427,45 @@ def evaluate_constant_population_coalescent_tree_log_prior(
     )
 
 
+def evaluate_skyline_coalescent_tree_log_prior(
+    tree: PhyloTree,
+    prior_model: SkylineCoalescentPriorModel,
+    *,
+    ultrametric_tolerance: float = APE_ULTRAMETRIC_TOLERANCE,
+) -> SkylineCoalescentPriorEvaluationReport:
+    """Evaluate one rooted ultrametric tree under a skyline coalescent prior."""
+    _validate_time_tree_prior_tree(
+        tree,
+        prior_name="skyline coalescent prior",
+        code_prefix="skyline_coalescent_prior",
+    )
+    ultrametric_summary = _validated_ultrametric_summary(
+        tree,
+        prior_name="skyline coalescent prior",
+        code_prefix="skyline_coalescent_prior",
+        ultrametric_tolerance=ultrametric_tolerance,
+    )
+    root_age = ultrametric_summary.root_age
+    segment_rows = _build_skyline_coalescent_segment_rows(
+        tree,
+        epochs=prior_model.epochs,
+        root_age=root_age,
+    )
+    log_prior = sum(row.segment_log_contribution for row in segment_rows)
+    return SkylineCoalescentPriorEvaluationReport(
+        family=prior_model.family,
+        epoch_count=len(prior_model.epochs),
+        tree_newick=tree.to_newick(),
+        tip_count=tree.tip_count,
+        internal_node_count=tree.internal_node_count,
+        root_age=float(format(root_age, ".15g")),
+        total_branch_length=float(format(tree.total_branch_length(), ".15g")),
+        ultrametric_tolerance=ultrametric_tolerance,
+        log_prior=float(format(log_prior, ".15g")),
+        segment_rows=segment_rows,
+    )
+
+
 def _validate_time_tree_prior_tree(
     tree: PhyloTree,
     *,
@@ -421,6 +537,99 @@ def _validated_ultrametric_summary(
     return ultrametric_summary
 
 
+def _validate_skyline_coalescent_epochs(
+    epochs: list[SkylineCoalescentEpoch],
+) -> list[SkylineCoalescentEpoch]:
+    if not epochs:
+        raise PhylogeneticsError(
+            "skyline coalescent prior requires at least one epoch",
+            code="skyline_coalescent_prior_requires_one_or_more_epochs",
+        )
+    validated_epochs: list[SkylineCoalescentEpoch] = []
+    expected_younger_boundary = 0.0
+    for index, epoch in enumerate(epochs, start=1):
+        if (
+            not math.isfinite(epoch.younger_boundary_age)
+            or epoch.younger_boundary_age < 0.0
+        ):
+            raise PhylogeneticsError(
+                "skyline coalescent prior requires non-negative finite younger epoch boundaries",
+                code="skyline_coalescent_prior_invalid_younger_boundary_age",
+                details={
+                    "epoch_index": index,
+                    "younger_boundary_age": epoch.younger_boundary_age,
+                },
+            )
+        if not math.isclose(
+            epoch.younger_boundary_age,
+            expected_younger_boundary,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ):
+            raise PhylogeneticsError(
+                "skyline coalescent prior requires contiguous epochs from age zero",
+                code="skyline_coalescent_prior_requires_contiguous_epochs",
+                details={
+                    "epoch_index": index,
+                    "expected_younger_boundary_age": expected_younger_boundary,
+                    "younger_boundary_age": epoch.younger_boundary_age,
+                },
+            )
+        if (
+            not math.isfinite(epoch.effective_population_size)
+            or epoch.effective_population_size <= 0.0
+        ):
+            raise PhylogeneticsError(
+                "skyline coalescent prior requires strictly positive finite epoch effective population sizes",
+                code="skyline_coalescent_prior_invalid_effective_population_size",
+                details={
+                    "epoch_index": index,
+                    "effective_population_size": epoch.effective_population_size,
+                },
+            )
+        if epoch.older_boundary_age is None:
+            if index != len(epochs):
+                raise PhylogeneticsError(
+                    "skyline coalescent prior requires only the final epoch to be open ended",
+                    code="skyline_coalescent_prior_nonterminal_open_epoch",
+                    details={"epoch_index": index},
+                )
+            older_boundary_age = None
+        else:
+            if (
+                not math.isfinite(epoch.older_boundary_age)
+                or epoch.older_boundary_age <= epoch.younger_boundary_age
+            ):
+                raise PhylogeneticsError(
+                    "skyline coalescent prior requires each finite epoch to end after it starts",
+                    code="skyline_coalescent_prior_invalid_older_boundary_age",
+                    details={
+                        "epoch_index": index,
+                        "younger_boundary_age": epoch.younger_boundary_age,
+                        "older_boundary_age": epoch.older_boundary_age,
+                    },
+                )
+            older_boundary_age = float(format(epoch.older_boundary_age, ".15g"))
+            expected_younger_boundary = older_boundary_age
+        validated_epochs.append(
+            SkylineCoalescentEpoch(
+                younger_boundary_age=float(
+                    format(epoch.younger_boundary_age, ".15g")
+                ),
+                older_boundary_age=older_boundary_age,
+                effective_population_size=float(
+                    format(epoch.effective_population_size, ".15g")
+                ),
+            )
+        )
+    if validated_epochs[-1].older_boundary_age is not None:
+        raise PhylogeneticsError(
+            "skyline coalescent prior requires the final epoch to be open ended",
+            code="skyline_coalescent_prior_requires_open_final_epoch",
+        )
+    return validated_epochs
+
+
 def _tip_depth_by_label(tree: PhyloTree) -> dict[str, float]:
     depths = _node_depth_lookup(tree)
     return {
@@ -462,6 +671,35 @@ def _branching_ages_including_root(tree: PhyloTree, *, root_age: float) -> list[
         float(format(root_age - node_depths[node.node_id or ""], ".15g"))
         for node in internal_nodes.values()
     ]
+
+
+def _build_coalescent_intervals(
+    tree: PhyloTree,
+    *,
+    root_age: float,
+) -> list[_CoalescentInterval]:
+    branching_ages = _branching_ages_including_root(tree, root_age=root_age)
+    events_by_age = Counter(branching_ages)
+    older_boundaries = sorted(events_by_age)
+    younger_boundary = 0.0
+    lineage_count = tree.tip_count
+    intervals: list[_CoalescentInterval] = []
+    for interval_index, older_boundary in enumerate(older_boundaries, start=1):
+        duration = older_boundary - younger_boundary
+        coalescent_event_count = events_by_age[older_boundary]
+        intervals.append(
+            _CoalescentInterval(
+                interval_index=interval_index,
+                younger_boundary_age=float(format(younger_boundary, ".15g")),
+                older_boundary_age=float(format(older_boundary, ".15g")),
+                duration=float(format(duration, ".15g")),
+                lineage_count=lineage_count,
+                coalescent_event_count=coalescent_event_count,
+            )
+        )
+        lineage_count -= coalescent_event_count
+        younger_boundary = older_boundary
+    return intervals
 
 
 def _build_yule_interval_rows(
@@ -577,32 +815,26 @@ def _build_constant_population_coalescent_interval_rows(
     effective_population_size: float,
     root_age: float,
 ) -> list[ConstantPopulationCoalescentIntervalRow]:
-    branching_ages = _branching_ages_including_root(tree, root_age=root_age)
-    events_by_age = Counter(branching_ages)
-    older_boundaries = sorted(events_by_age)
-    younger_boundary = 0.0
-    lineage_count = tree.tip_count
+    coalescent_intervals = _build_coalescent_intervals(tree, root_age=root_age)
     rows: list[ConstantPopulationCoalescentIntervalRow] = []
-    for interval_index, older_boundary in enumerate(older_boundaries, start=1):
-        duration = older_boundary - younger_boundary
-        coalescent_event_count = events_by_age[older_boundary]
+    for interval in coalescent_intervals:
         waiting_rate = (
-            math.comb(lineage_count, 2) / effective_population_size
-            if lineage_count >= 2
+            math.comb(interval.lineage_count, 2) / effective_population_size
+            if interval.lineage_count >= 2
             else 0.0
         )
-        waiting_log_contribution = -(waiting_rate * duration)
+        waiting_log_contribution = -(waiting_rate * interval.duration)
         event_log_contribution = 0.0
-        remaining_lineage_count = lineage_count
-        for _ in range(coalescent_event_count):
+        remaining_lineage_count = interval.lineage_count
+        for _ in range(interval.coalescent_event_count):
             if remaining_lineage_count < 2:
                 raise PhylogeneticsError(
                     "constant-population coalescent prior encountered an invalid lineage count",
                     code="constant_population_coalescent_prior_invalid_lineage_count",
                     details={
                         "lineage_count": remaining_lineage_count,
-                        "coalescent_event_count": coalescent_event_count,
-                        "older_boundary_age": older_boundary,
+                        "coalescent_event_count": interval.coalescent_event_count,
+                        "older_boundary_age": interval.older_boundary_age,
                     },
                 )
             event_log_contribution += math.log(
@@ -614,12 +846,12 @@ def _build_constant_population_coalescent_interval_rows(
         )
         rows.append(
             ConstantPopulationCoalescentIntervalRow(
-                interval_index=interval_index,
-                younger_boundary_age=float(format(younger_boundary, ".15g")),
-                older_boundary_age=float(format(older_boundary, ".15g")),
-                duration=float(format(duration, ".15g")),
-                lineage_count=lineage_count,
-                coalescent_event_count=coalescent_event_count,
+                interval_index=interval.interval_index,
+                younger_boundary_age=interval.younger_boundary_age,
+                older_boundary_age=interval.older_boundary_age,
+                duration=interval.duration,
+                lineage_count=interval.lineage_count,
+                coalescent_event_count=interval.coalescent_event_count,
                 waiting_rate=float(format(waiting_rate, ".15g")),
                 waiting_log_contribution=float(
                     format(waiting_log_contribution, ".15g")
@@ -632,9 +864,91 @@ def _build_constant_population_coalescent_interval_rows(
                 ),
             )
         )
-        lineage_count -= coalescent_event_count
-        younger_boundary = older_boundary
     return rows
+
+
+def _build_skyline_coalescent_segment_rows(
+    tree: PhyloTree,
+    *,
+    epochs: list[SkylineCoalescentEpoch],
+    root_age: float,
+) -> list[SkylineCoalescentSegmentRow]:
+    coalescent_intervals = _build_coalescent_intervals(tree, root_age=root_age)
+    rows: list[SkylineCoalescentSegmentRow] = []
+    for interval in coalescent_intervals:
+        segment_start = interval.younger_boundary_age
+        while segment_start < interval.older_boundary_age - 1e-15:
+            skyline_epoch_index, epoch = _locate_skyline_epoch(
+                epochs,
+                age=segment_start,
+            )
+            epoch_end = (
+                interval.older_boundary_age
+                if epoch.older_boundary_age is None
+                else min(interval.older_boundary_age, epoch.older_boundary_age)
+            )
+            duration = epoch_end - segment_start
+            waiting_rate = math.comb(interval.lineage_count, 2) / epoch.effective_population_size
+            waiting_log_contribution = -(waiting_rate * duration)
+            ends_with_event = math.isclose(
+                epoch_end,
+                interval.older_boundary_age,
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            )
+            event_log_contribution = (
+                math.log(waiting_rate) * interval.coalescent_event_count
+                if ends_with_event
+                else 0.0
+            )
+            segment_log_contribution = (
+                waiting_log_contribution + event_log_contribution
+            )
+            rows.append(
+                SkylineCoalescentSegmentRow(
+                    coalescent_interval_index=interval.interval_index,
+                    skyline_epoch_index=skyline_epoch_index,
+                    segment_younger_boundary_age=float(format(segment_start, ".15g")),
+                    segment_older_boundary_age=float(format(epoch_end, ".15g")),
+                    duration=float(format(duration, ".15g")),
+                    lineage_count=interval.lineage_count,
+                    coalescent_event_count=(
+                        interval.coalescent_event_count if ends_with_event else 0
+                    ),
+                    effective_population_size=epoch.effective_population_size,
+                    waiting_rate=float(format(waiting_rate, ".15g")),
+                    waiting_log_contribution=float(
+                        format(waiting_log_contribution, ".15g")
+                    ),
+                    event_log_contribution=float(
+                        format(event_log_contribution, ".15g")
+                    ),
+                    segment_log_contribution=float(
+                        format(segment_log_contribution, ".15g")
+                    ),
+                )
+            )
+            segment_start = epoch_end
+    return rows
+
+
+def _locate_skyline_epoch(
+    epochs: list[SkylineCoalescentEpoch],
+    *,
+    age: float,
+) -> tuple[int, SkylineCoalescentEpoch]:
+    for index, epoch in enumerate(epochs, start=1):
+        older_boundary_age = epoch.older_boundary_age
+        if older_boundary_age is None:
+            if age >= epoch.younger_boundary_age:
+                return index, epoch
+        elif epoch.younger_boundary_age <= age < older_boundary_age:
+            return index, epoch
+    raise PhylogeneticsError(
+        "skyline coalescent prior does not cover one or more coalescent ages",
+        code="skyline_coalescent_prior_age_outside_epoch_coverage",
+        details={"age": age},
+    )
 
 
 def _birth_death_p1(
