@@ -32,6 +32,7 @@ from bijux_phylogenetics.parsimony import (
     reconstruct_deltran,
     rescaled_consistency_index,
     retention_index,
+    summarize_equal_best_parsimony_trees,
     search_parsimony_nni,
     run_parsimony_ratchet,
     search_parsimony_spr,
@@ -43,6 +44,7 @@ from bijux_phylogenetics.parsimony import (
     tree_length,
     write_parsimony_bootstrap_artifacts,
     write_parsimony_consistency_artifacts,
+    write_parsimony_equal_best_consensus_artifacts,
     write_parsimony_jackknife_artifacts,
     write_parsimony_nni_artifacts,
     write_parsimony_ratchet_artifacts,
@@ -346,6 +348,58 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the jackknife report as JSON."
     )
     _add_manifest_argument(phylo_parsimony_jackknife)
+    phylo_parsimony_equal_best_consensus = phylo_parsimony_subparsers.add_parser(
+        "equal-best-consensus",
+        help="Enumerate the exact equal-best parsimony tree set for a small matrix and summarize strict and majority consensus when the full set is retained.",
+    )
+    phylo_parsimony_equal_best_consensus.add_argument("matrix_path", type=Path)
+    phylo_parsimony_equal_best_consensus.add_argument(
+        "--method",
+        required=True,
+        choices=[
+            "fitch",
+            "wagner",
+            "sankoff",
+            "dollo",
+            "camin-sokal",
+            "acctran",
+            "deltran",
+        ],
+    )
+    phylo_parsimony_equal_best_consensus.add_argument("--taxon-column")
+    phylo_parsimony_equal_best_consensus.add_argument(
+        "--max-retained-equal-best-trees",
+        type=int,
+        default=128,
+        help="Maximum number of equally optimal trees to retain; consensus summaries are omitted if the exact-best set exceeds this cap.",
+    )
+    phylo_parsimony_equal_best_consensus.add_argument(
+        "--cost-matrix",
+        dest="cost_matrix_path",
+        type=Path,
+        help="Required when --method sankoff is selected.",
+    )
+    phylo_parsimony_equal_best_consensus.add_argument(
+        "--allow-asymmetric-costs",
+        action="store_true",
+        help="Allow asymmetric Sankoff transition costs when --method sankoff is selected.",
+    )
+    phylo_parsimony_equal_best_consensus.add_argument(
+        "--state-order",
+        help="Comma-separated explicit ordered state labels for Wagner exact consensus scoring.",
+    )
+    _add_parsimony_character_weights_argument(phylo_parsimony_equal_best_consensus)
+    phylo_parsimony_equal_best_consensus.add_argument(
+        "--out-dir",
+        required=True,
+        type=Path,
+    )
+    phylo_parsimony_equal_best_consensus.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the equal-best consensus report as JSON.",
+    )
+    _add_manifest_argument(phylo_parsimony_equal_best_consensus)
     phylo_parsimony_stepwise_addition = phylo_parsimony_subparsers.add_parser(
         "stepwise-addition",
         help="Build one rooted tree by greedy taxon insertion under governed parsimony tree-length scoring.",
@@ -881,6 +935,45 @@ def run_phylo_command(args: Any) -> int:
                 "reference_score": report.reference_score,
                 "support_row_count": len(report.clade_support_rows),
             }
+        elif args.phylo_parsimony_command == "equal-best-consensus":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            character_weights = _load_parsimony_character_weights_argument(args)
+            cost_matrix = (
+                load_sankoff_cost_matrix(
+                    args.cost_matrix_path,
+                    allow_asymmetric_costs=args.allow_asymmetric_costs,
+                )
+                if getattr(args, "cost_matrix_path", None) is not None
+                else None
+            )
+            state_order = _split_state_order(getattr(args, "state_order", None))
+            report = summarize_equal_best_parsimony_trees(
+                matrix,
+                method=args.method,
+                state_order=state_order,
+                cost_matrix=cost_matrix,
+                allow_asymmetric_costs=args.allow_asymmetric_costs,
+                character_weights=character_weights,
+                max_retained_equal_best_trees=args.max_retained_equal_best_trees,
+            )
+            artifact_paths = write_parsimony_equal_best_consensus_artifacts(
+                args.out_dir,
+                report,
+            )
+            metrics = {
+                "algorithm": report.algorithm,
+                "method": report.method,
+                "taxon_count": report.taxon_count,
+                "character_count": report.character_count,
+                "candidate_tree_count": report.candidate_tree_count,
+                "best_score": report.best_score,
+                "equal_best_tree_count": report.equal_best_tree_count,
+                "retained_equal_best_tree_count": report.retained_equal_best_tree_count,
+                "retained_all_equal_best_trees": report.retained_all_equal_best_trees,
+            }
         elif args.phylo_parsimony_command == "stepwise-addition":
             matrix = load_parsimony_character_matrix(
                 args.matrix_path,
@@ -1160,6 +1253,10 @@ def run_phylo_command(args: Any) -> int:
                     )
                     or (
                         args.phylo_parsimony_command == "bootstrap"
+                        and getattr(args, "cost_matrix_path", None) is not None
+                    )
+                    or (
+                        args.phylo_parsimony_command == "equal-best-consensus"
                         and getattr(args, "cost_matrix_path", None) is not None
                     )
                     or (
