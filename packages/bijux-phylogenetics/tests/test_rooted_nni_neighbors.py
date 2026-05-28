@@ -69,6 +69,14 @@ def test_rooted_nni_neighbors_preserve_taxa_and_generate_unique_valid_topologies
     assert all(row.validation_errors == [] for row in report.neighbor_rows)
 
 
+def test_rooted_nni_report_preserves_input_tree_path_for_file_inputs() -> None:
+    report = enumerate_rooted_nni_neighbors(fixture("example_tree.nwk"))
+
+    assert report.input_tree_path == fixture("example_tree.nwk")
+    assert report.input_tree_newick == "((A:0.1,B:0.1):0.2,(C:0.2,D:0.2):0.1);"
+    assert report.rooted is False
+
+
 def test_rooted_nni_validation_accepts_binary_root_representation_without_rooted_flag() -> None:
     tree = loads_newick("(((A,C),B),D);")
 
@@ -78,6 +86,14 @@ def test_rooted_nni_validation_accepts_binary_root_representation_without_rooted
 def test_rooted_nni_validation_rejects_nonbinary_rooted_representation() -> None:
     with pytest.raises(ValueError, match="rooted NNI enumeration requires a binary root"):
         validate_rooted_nni_tree(loads_newick("(A,B,C,D);"))
+
+
+def test_rooted_nni_neighbor_count_rejects_internal_polytomies() -> None:
+    with pytest.raises(
+        ValueError,
+        match="rooted NNI enumeration requires a strictly bifurcating tree",
+    ):
+        expected_rooted_nni_neighbor_count(loads_newick("((A,B,C),D);"))
 
 
 def test_write_rooted_nni_artifacts_materializes_governed_outputs(tmp_path: Path) -> None:
