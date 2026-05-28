@@ -139,6 +139,7 @@ from .metropolis_hastings import (
     MetropolisHastingsRunReport,
     MetropolisHastingsStepRow,
     build_metropolis_hastings_proposal,
+    propose_branch_length_scaling_move,
     run_metropolis_hastings_sampler,
     score_bayesian_phylogenetic_state,
 )
@@ -541,6 +542,7 @@ __all__ = [
     "build_skyline_coalescent_tree_prior",
     "build_uniform_rooted_tree_topology_prior",
     "build_metropolis_hastings_proposal",
+    "propose_branch_length_scaling_move",
     "run_metropolis_hastings_sampler",
     "score_bayesian_phylogenetic_state",
     "compare_bayesian_tree_sets",
