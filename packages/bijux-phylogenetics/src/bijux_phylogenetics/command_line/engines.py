@@ -62,9 +62,11 @@ from bijux_phylogenetics.parsimony import (
     write_wagner_artifacts,
 )
 from bijux_phylogenetics.phylo.dating import (
+    cross_validate_penalized_likelihood_smoothing_from_metadata,
     fit_least_squares_dating_from_metadata,
     fit_penalized_likelihood_dating_from_metadata,
     write_least_squares_dating_artifacts,
+    write_penalized_likelihood_cross_validation_artifacts,
     write_penalized_likelihood_dating_artifacts,
 )
 from bijux_phylogenetics.phylo.likelihood import (
@@ -856,6 +858,54 @@ def add_phylo_commands(subparsers: Any) -> None:
         help="Emit the penalized likelihood dating report as JSON.",
     )
     _add_manifest_argument(phylo_dating_penalized_likelihood)
+    phylo_dating_penalized_likelihood_cross_validation = (
+        phylo_dating_subparsers.add_parser(
+            "penalized-likelihood-cross-validation",
+            help="Select one penalized-dating smoothing value by held-out fixed-calibration prediction error.",
+        )
+    )
+    phylo_dating_penalized_likelihood_cross_validation.add_argument(
+        "tree_path",
+        type=Path,
+    )
+    phylo_dating_penalized_likelihood_cross_validation.add_argument(
+        "metadata_path",
+        type=Path,
+    )
+    phylo_dating_penalized_likelihood_cross_validation.add_argument(
+        "calibration_path",
+        type=Path,
+    )
+    phylo_dating_penalized_likelihood_cross_validation.add_argument("--taxon-column")
+    phylo_dating_penalized_likelihood_cross_validation.add_argument(
+        "--date-column",
+        default="date",
+        help="Column containing numeric sampling dates or tip dates.",
+    )
+    phylo_dating_penalized_likelihood_cross_validation.add_argument(
+        "--smoothing-parameters",
+        nargs="+",
+        type=float,
+        default=[0.01, 0.1, 1.0, 10.0, 100.0],
+        help="Positive smoothing-parameter candidates to score by held-out calibration prediction error.",
+    )
+    phylo_dating_penalized_likelihood_cross_validation.add_argument(
+        "--max-coordinate-passes",
+        type=int,
+        default=8,
+        help="Maximum number of bounded coordinate-search passes over dated-node parameters.",
+    )
+    phylo_dating_penalized_likelihood_cross_validation.add_argument(
+        "--out-dir",
+        required=True,
+        type=Path,
+    )
+    phylo_dating_penalized_likelihood_cross_validation.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the smoothing cross-validation report as JSON.",
+    )
+    _add_manifest_argument(phylo_dating_penalized_likelihood_cross_validation)
 
 
 def run_phylo_command(args: Any) -> int:
@@ -943,6 +993,49 @@ def run_phylo_command(args: Any) -> int:
                         "optimization_pass_count": report.optimization_pass_count,
                         "function_evaluation_count": report.function_evaluation_count,
                         "converged": report.converged,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.phylo_dating_command == "penalized-likelihood-cross-validation":
+            report = cross_validate_penalized_likelihood_smoothing_from_metadata(
+                args.tree_path,
+                args.metadata_path,
+                args.calibration_path,
+                smoothing_parameters=args.smoothing_parameters,
+                max_coordinate_passes=args.max_coordinate_passes,
+                taxon_column=args.taxon_column,
+                date_column=args.date_column,
+            )
+            artifact_paths = write_penalized_likelihood_cross_validation_artifacts(
+                args.out_dir,
+                report,
+            )
+            outputs = _finalize_outputs(
+                args,
+                command="phylo",
+                inputs=[args.tree_path, args.metadata_path, args.calibration_path],
+                outputs=list(artifact_paths.values()),
+            )
+            _print_result(
+                build_command_result(
+                    command="phylo",
+                    inputs=[args.tree_path, args.metadata_path, args.calibration_path],
+                    outputs=outputs,
+                    metrics={
+                        "taxon_count": len(report.taxa),
+                        "tip_count": report.tip_count,
+                        "internal_node_count": report.internal_node_count,
+                        "branch_count": report.branch_count,
+                        "usable_calibration_count": report.usable_calibration_count,
+                        "candidate_count": report.candidate_count,
+                        "selected_smoothing_parameter": report.selected_smoothing_parameter,
+                        "selected_root_mean_squared_error": report.selected_root_mean_squared_error,
+                        "final_total_score": report.selected_fit.total_score,
+                        "final_root_date": report.selected_fit.root_date,
+                        "final_converged": report.selected_fit.converged,
                     },
                     data=report,
                 ),
