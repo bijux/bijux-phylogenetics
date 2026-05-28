@@ -223,6 +223,13 @@ def _command_inputs(args: Any) -> list[Path | str]:
             if getattr(args, "out", None) is not None:
                 inputs.append(args.out)
             return inputs
+        if args.left == "clade-ages":
+            inputs = [Path(args.right)]
+            if getattr(args, "third", None) is not None:
+                inputs.append(Path(args.third))
+            if getattr(args, "out", None) is not None:
+                inputs.append(args.out)
+            return inputs
         if getattr(args, "third", None) is not None:
             return [Path(args.right), Path(args.third)]
         return [Path(args.left), Path(args.right)]

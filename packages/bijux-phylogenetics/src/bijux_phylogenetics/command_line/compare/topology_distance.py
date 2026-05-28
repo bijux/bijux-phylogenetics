@@ -27,6 +27,7 @@ def run_compare_topology_distance_command(
         "maximum-agreement-subtree",
         "changes",
         "branch-lengths",
+        "clade-ages",
     }:
         return None
 

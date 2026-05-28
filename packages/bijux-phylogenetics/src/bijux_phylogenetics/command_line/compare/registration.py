@@ -8,6 +8,7 @@ from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.registry import get_command_spec
 
 from .branch_lengths import run_compare_branch_lengths_command
+from .clade_ages import run_compare_clade_ages_command
 from .clades import run_compare_clade_command
 from .influence import run_compare_influence_command
 from .presentation import run_compare_presentation_command
@@ -72,6 +73,9 @@ def run_compare_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
     clade_result = run_compare_clade_command(args, parser=parser)
     if clade_result is not None:
         return clade_result
+    clade_age_result = run_compare_clade_ages_command(args, parser=parser)
+    if clade_age_result is not None:
+        return clade_age_result
     pruning_result = run_compare_pruning_command(args, parser=parser)
     if pruning_result is not None:
         return pruning_result
