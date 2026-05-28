@@ -40,6 +40,12 @@ _PUBLIC_SURFACES = (
         ),
     ),
     (
+        "deep_coalescence",
+        (
+            "count_deep_coalescences",
+        ),
+    ),
+    (
         "distance",
         (
             "TopologyDistanceReport",
@@ -63,6 +69,9 @@ _PUBLIC_SURFACES = (
             "BranchScoreStatus",
             "CladeAgeComparisonRow",
             "CladeChangeReport",
+            "DeepCoalescenceBranchRow",
+            "DeepCoalescenceReport",
+            "DeepCoalescenceTaxonMapRow",
             "DateAwareTreeComparisonReport",
             "CladeOverlapComparisonReport",
             "CladeOverlapObservation",
@@ -116,6 +125,8 @@ _PUBLIC_SURFACES = (
             "write_maximum_agreement_subtree_removed_taxa_table",
             "write_maximum_agreement_subtree_search_table",
             "write_clade_overlap_table",
+            "write_deep_coalescence_branch_table",
+            "write_deep_coalescence_taxon_map_table",
             "write_date_aware_tree_comparison_table",
             "write_shared_taxa_pruning_table",
             "write_shared_taxa_removed_taxa_table",

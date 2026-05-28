@@ -9,6 +9,7 @@ from .agreement import (
 )
 from .branch_lengths import compare_branch_lengths
 from .clade_ages import compare_clade_ages
+from .deep_coalescence import count_deep_coalescences
 from .models import RobinsonFouldsMode
 from .overlap import (
     compare_clade_overlap,
@@ -140,6 +141,89 @@ def write_shared_taxa_removed_taxa_table(
                         "reason": removed.reason,
                     }
                 )
+    return path
+
+
+def write_deep_coalescence_branch_table(
+    path: Path,
+    species_tree_path: Path,
+    gene_tree_path: Path,
+    *,
+    taxon_map_path: Path | None = None,
+) -> Path:
+    """Write one row per species-tree branch from a deep-coalescence reconciliation."""
+    report = count_deep_coalescences(
+        species_tree_path,
+        gene_tree_path,
+        taxon_map_path=taxon_map_path,
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "species_branch",
+                "branch_role",
+                "descendant_species",
+                "lineage_count_entering",
+                "coalescent_event_count",
+                "lineage_count_exiting",
+                "extra_lineage_count",
+                "included_in_deep_coalescence_total",
+                "deep_coalescence_total",
+                "gene_tip_count",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.branch_rows:
+            writer.writerow(
+                {
+                    "species_branch": row.species_branch,
+                    "branch_role": row.branch_role,
+                    "descendant_species": _pipe_join(row.descendant_species),
+                    "lineage_count_entering": row.lineage_count_entering,
+                    "coalescent_event_count": row.coalescent_event_count,
+                    "lineage_count_exiting": row.lineage_count_exiting,
+                    "extra_lineage_count": row.extra_lineage_count,
+                    "included_in_deep_coalescence_total": str(
+                        row.included_in_deep_coalescence_total
+                    ).lower(),
+                    "deep_coalescence_total": report.deep_coalescence_total,
+                    "gene_tip_count": report.gene_tip_count,
+                }
+            )
+    return path
+
+
+def write_deep_coalescence_taxon_map_table(
+    path: Path,
+    species_tree_path: Path,
+    gene_tree_path: Path,
+    *,
+    taxon_map_path: Path | None = None,
+) -> Path:
+    """Write one row per resolved gene-to-species taxon mapping."""
+    report = count_deep_coalescences(
+        species_tree_path,
+        gene_tree_path,
+        taxon_map_path=taxon_map_path,
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=["gene_taxon", "species_taxon"],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.mapping_rows:
+            writer.writerow(
+                {
+                    "gene_taxon": row.gene_taxon,
+                    "species_taxon": row.species_taxon,
+                }
+            )
     return path
 
 
