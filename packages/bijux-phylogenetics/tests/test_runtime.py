@@ -8166,6 +8166,61 @@ def test_cli_diagnose_root_to_tip_regression_includes_manifest(
     assert manifest_payload["input_checksums"][str(metadata_path)]
 
 
+def test_cli_diagnose_tip_date_randomization_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "tip-date-randomization"
+    manifest = tmp_path / "tip-date-randomization.manifest.json"
+    tree_path = fixture("root_to_tip_regression_diagnostic_tree_7_taxa.nwk")
+    metadata_path = fixture("root_to_tip_regression_dates_7_taxa.tsv")
+
+    exit_code = main(
+        [
+            "diagnose",
+            "tip-date-randomization",
+            str(tree_path),
+            "--metadata",
+            str(metadata_path),
+            "--permutations",
+            "19",
+            "--seed",
+            "17",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["p_value"] == 0.05
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "diagnose"
+    assert manifest_payload["arguments"] == [
+        "diagnose",
+        "tip-date-randomization",
+        str(tree_path),
+        "--metadata",
+        str(metadata_path),
+        "--permutations",
+        "19",
+        "--seed",
+        "17",
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(metadata_path)]
+
+
 def test_cli_phylo_dating_least_squares_includes_manifest(
     tmp_path: Path,
     capsys,
