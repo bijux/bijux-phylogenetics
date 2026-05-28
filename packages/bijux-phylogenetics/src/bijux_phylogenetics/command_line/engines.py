@@ -66,10 +66,12 @@ from bijux_phylogenetics.phylo.dating import (
     fit_least_squares_dating_from_metadata,
     fit_penalized_likelihood_dating_from_metadata,
     solve_dating_calibration_constraints,
+    summarize_relaxed_rate_branches_from_paths,
     write_dating_calibration_constraint_artifacts,
     write_least_squares_dating_artifacts,
     write_penalized_likelihood_cross_validation_artifacts,
     write_penalized_likelihood_dating_artifacts,
+    write_relaxed_rate_branch_summary_artifacts,
 )
 from bijux_phylogenetics.phylo.likelihood import (
     fit_local_clock_likelihood_from_alignment,
@@ -963,6 +965,32 @@ def add_phylo_commands(subparsers: Any) -> None:
         help="Emit the smoothing cross-validation report as JSON.",
     )
     _add_manifest_argument(phylo_dating_penalized_likelihood_cross_validation)
+    phylo_dating_relaxed_rate_summary = phylo_dating_subparsers.add_parser(
+        "relaxed-rate-summary",
+        help="Summarize branch-specific rates by dividing substitution branch lengths by dated branch durations on one matched rooted tree pair.",
+    )
+    phylo_dating_relaxed_rate_summary.add_argument(
+        "substitution_tree_path",
+        type=Path,
+    )
+    phylo_dating_relaxed_rate_summary.add_argument("dated_tree_path", type=Path)
+    phylo_dating_relaxed_rate_summary.add_argument(
+        "--outlier-threshold",
+        type=float,
+        default=2.0,
+        help="Absolute branch-rate z-score threshold used to flag outlier branches.",
+    )
+    phylo_dating_relaxed_rate_summary.add_argument(
+        "--out-dir",
+        required=True,
+        type=Path,
+    )
+    phylo_dating_relaxed_rate_summary.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the relaxed-rate branch summary as JSON.",
+    )
+    _add_manifest_argument(phylo_dating_relaxed_rate_summary)
 
 
 def run_phylo_command(args: Any) -> int:
@@ -1130,6 +1158,48 @@ def run_phylo_command(args: Any) -> int:
                         "final_total_score": report.selected_fit.total_score,
                         "final_root_date": report.selected_fit.root_date,
                         "final_converged": report.selected_fit.converged,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.phylo_dating_command == "relaxed-rate-summary":
+            report = summarize_relaxed_rate_branches_from_paths(
+                args.substitution_tree_path,
+                args.dated_tree_path,
+                outlier_threshold=args.outlier_threshold,
+            )
+            artifact_paths = write_relaxed_rate_branch_summary_artifacts(
+                args.out_dir,
+                report,
+            )
+            outputs = _finalize_outputs(
+                args,
+                command="phylo",
+                inputs=[args.substitution_tree_path, args.dated_tree_path],
+                outputs=list(artifact_paths.values()),
+            )
+            _print_result(
+                build_command_result(
+                    command="phylo",
+                    inputs=[args.substitution_tree_path, args.dated_tree_path],
+                    outputs=outputs,
+                    metrics={
+                        "taxon_count": len(report.taxa),
+                        "tip_count": report.tip_count,
+                        "internal_node_count": report.internal_node_count,
+                        "branch_count": report.branch_count,
+                        "outlier_threshold": report.outlier_threshold,
+                        "mean_branch_rate": report.mean_branch_rate,
+                        "minimum_branch_rate": report.minimum_branch_rate,
+                        "maximum_branch_rate": report.maximum_branch_rate,
+                        "outlier_count": report.outlier_count,
+                        "top_outlier_branch_id": (
+                            None
+                            if not report.outlier_rows
+                            else report.outlier_rows[0].branch_id
+                        ),
                     },
                     data=report,
                 ),
