@@ -8868,6 +8868,59 @@ def test_cli_phylo_likelihood_local_clock_includes_manifest(
     assert manifest_payload["input_checksums"][str(regime_path)]
 
 
+def test_cli_phylo_likelihood_placement_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "likelihood-placement"
+    manifest = tmp_path / "likelihood-placement.manifest.json"
+    tree_path = fixture("likelihood_placement_reference_tree_4_taxa.nwk")
+    reference_alignment_path = fixture(
+        "likelihood_placement_reference_alignment_4_taxa.fasta"
+    )
+    query_alignment_path = fixture("likelihood_placement_query_alignment_2_taxa.fasta")
+
+    exit_code = main(
+        [
+            "phylo",
+            "likelihood",
+            "placement",
+            str(tree_path),
+            str(reference_alignment_path),
+            str(query_alignment_path),
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["query_count"] == 2
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "likelihood",
+        "placement",
+        str(tree_path),
+        str(reference_alignment_path),
+        str(query_alignment_path),
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(reference_alignment_path)]
+    assert manifest_payload["input_checksums"][str(query_alignment_path)]
+
+
 def test_cli_phylo_dating_penalized_likelihood_includes_manifest(
     tmp_path: Path,
     capsys,
