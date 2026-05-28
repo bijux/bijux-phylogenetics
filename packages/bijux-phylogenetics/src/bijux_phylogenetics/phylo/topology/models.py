@@ -172,6 +172,45 @@ class RandomBifurcatingTreeReport:
 
 
 @dataclass(frozen=True, slots=True)
+class RootedNniNeighborRow:
+    """One generated rooted NNI neighbor with its defining move metadata."""
+
+    neighbor_index: int
+    parent_node_id: str
+    child_node_id: str
+    sibling_node_id: str
+    exchanged_child_node_id: str
+    pivot_branch_id: str
+    sibling_clade_id: str
+    exchanged_clade_id: str
+    neighbor_tree_newick: str
+    neighbor_topology_fingerprint: str
+    tip_order: list[str]
+    validation_errors: list[str]
+
+
+@dataclass(slots=True)
+class RootedNniNeighborhoodReport:
+    """Explicit record of rooted NNI neighbors for one rooted binary tree."""
+
+    algorithm: str
+    input_tree_path: Path | None
+    input_tree_newick: str
+    tip_count: int
+    internal_node_count: int
+    rooted: bool | None
+    strictly_bifurcating: bool
+    expected_neighbor_count: int
+    generated_neighbor_count: int
+    unique_neighbor_topology_count: int
+    duplicate_neighbor_topologies: list[str]
+    missing_tip_taxa: list[str]
+    unexpected_tip_taxa: list[str]
+    input_validation_errors: list[str]
+    neighbor_rows: list[RootedNniNeighborRow]
+
+
+@dataclass(frozen=True, slots=True)
 class StepwiseAdditionCandidateScore:
     """One evaluated insertion edge for one greedy stepwise-addition step."""
 
