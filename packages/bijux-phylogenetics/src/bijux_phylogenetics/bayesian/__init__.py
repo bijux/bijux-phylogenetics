@@ -100,6 +100,27 @@ from .clock_models import (
     evaluate_strict_clock_tree_log_prior,
     load_local_clock_regime_definitions,
 )
+from .continuous_trait_model_priors import (
+    CONTINUOUS_TRAIT_PRIOR_MODES,
+    CONTINUOUS_TRAIT_PRIOR_TARGETS,
+    CONTINUOUS_TRAIT_PROBABILITY_PRIOR_FAMILIES,
+    CONTINUOUS_TRAIT_SCALAR_PRIOR_FAMILIES,
+    ContinuousTraitModelPriorBundle,
+    ContinuousTraitModelPriorEvaluationReport,
+    ContinuousTraitModelPriorRow,
+    ContinuousTraitProbabilityPriorModel,
+    ContinuousTraitScalarPriorModel,
+    build_beta_continuous_trait_probability_prior,
+    build_continuous_trait_model_prior_bundle,
+    build_exponential_continuous_trait_scalar_prior,
+    build_fixed_continuous_trait_probability_prior,
+    build_fixed_continuous_trait_scalar_prior,
+    build_gamma_continuous_trait_scalar_prior,
+    build_lognormal_continuous_trait_scalar_prior,
+    evaluate_continuous_trait_model_log_prior,
+    evaluate_continuous_trait_probability_log_prior,
+    evaluate_continuous_trait_scalar_log_prior,
+)
 from .discrete_trait_rate_priors import (
     DISCRETE_TRAIT_RATE_PRIOR_FAMILIES,
     DISCRETE_TRAIT_RATE_PRIOR_MODELS,
