@@ -228,6 +228,7 @@ def fit_discrete_mk_surface(
     dataset: AncestralDiscreteDataset,
     *,
     model: str,
+    ascertainment_policy: str,
     transform: str | None,
     state_ordering: str,
     state_order: list[str],
@@ -253,6 +254,7 @@ def fit_discrete_mk_surface(
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
             root_prior_mode="observed",
+            ascertainment_policy=ascertainment_policy,
         )
         return dataset.tree, rate_matrix, root_prior, optimizer_diagnostics, None, []
     if transform not in {"lambda", "kappa", "delta", "early-burst"}:
@@ -270,6 +272,7 @@ def fit_discrete_mk_surface(
     return fit_discrete_mk_parameterized_transform_surface(
         dataset,
         model=model,
+        ascertainment_policy=ascertainment_policy,
         transform=transform,
         state_ordering=state_ordering,
         state_order=state_order,
@@ -282,6 +285,7 @@ def fit_discrete_mk_parameterized_transform_surface(
     dataset: AncestralDiscreteDataset,
     *,
     model: str,
+    ascertainment_policy: str,
     transform: str,
     state_ordering: str,
     state_order: list[str],
@@ -308,6 +312,7 @@ def fit_discrete_mk_parameterized_transform_surface(
             evaluate_discrete_mk_transform_search_candidate(
                 dataset,
                 model=model,
+                ascertainment_policy=ascertainment_policy,
                 transform=transform,
                 state_ordering=state_ordering,
                 state_order=state_order,
@@ -376,6 +381,7 @@ def evaluate_discrete_mk_transform_candidate(
     dataset: AncestralDiscreteDataset,
     *,
     model: str,
+    ascertainment_policy: str,
     transform: str,
     state_ordering: str,
     state_order: list[str],
@@ -396,6 +402,7 @@ def evaluate_discrete_mk_transform_candidate(
         state_ordering=state_ordering,
         allowed_transition_pairs=allowed_transition_pairs,
         root_prior_mode="observed",
+        ascertainment_policy=ascertainment_policy,
     )
     log_likelihood = _tree_log_likelihood(
         transformed_tree,
@@ -404,6 +411,7 @@ def evaluate_discrete_mk_transform_candidate(
         rate_matrix=rate_matrix,
         root_prior=root_prior,
         root_prior_mode="observed",
+        ascertainment_policy=ascertainment_policy,
     )
     return (
         transformed_tree,
@@ -418,6 +426,7 @@ def evaluate_discrete_mk_transform_search_candidate(
     dataset: AncestralDiscreteDataset,
     *,
     model: str,
+    ascertainment_policy: str,
     transform: str,
     state_ordering: str,
     state_order: list[str],
@@ -433,6 +442,7 @@ def evaluate_discrete_mk_transform_search_candidate(
     ) = evaluate_discrete_mk_transform_candidate(
         dataset,
         model=model,
+        ascertainment_policy=ascertainment_policy,
         transform=transform,
         state_ordering=state_ordering,
         state_order=state_order,

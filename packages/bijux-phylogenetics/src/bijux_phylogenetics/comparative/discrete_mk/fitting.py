@@ -11,7 +11,13 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteTransitionRateRow,
 )
 from bijux_phylogenetics.ancestral.discrete.likelihood.likelihood_math import (
+    invariant_pattern_log_probability as _invariant_pattern_log_probability,
+)
+from bijux_phylogenetics.ancestral.discrete.likelihood.likelihood_math import (
     tree_log_likelihood as _tree_log_likelihood,
+)
+from bijux_phylogenetics.ancestral.discrete.likelihood.likelihood_math import (
+    variable_pattern_log_probability as _variable_pattern_log_probability,
 )
 from bijux_phylogenetics.ancestral.discrete.likelihood.rate_matrix import (
     build_transition_rate_rows as _build_transition_rate_rows,
@@ -39,10 +45,11 @@ from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
 
 from .models import (
     DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY,
-    DISCRETE_MK_LIKELIHOOD_CONSTANT_POLICY,
     DiscreteMkFitReport,
     DiscreteMkInputAudit,
     DiscreteMkTransformBaselineComparison,
+    resolve_discrete_mk_likelihood_constant_policy,
+    validate_discrete_mk_ascertainment_policy,
 )
 from .transforms import (
     DISCRETE_DELTA_LOWER_BOUND,
@@ -82,6 +89,7 @@ def fit_discrete_mk_model(
     trait: str,
     taxon_column: str | None = None,
     model: str = "equal-rates",
+    ascertainment_policy: str = "none",
     transform: str | None = None,
     state_ordering: str = "unordered",
     ordered_states: list[str] | None = None,
@@ -107,6 +115,7 @@ def fit_discrete_mk_model(
     return fit_discrete_mk_model_from_dataset(
         dataset,
         model=model,
+        ascertainment_policy=ascertainment_policy,
         transform=transform,
         state_ordering=state_ordering,
         ordered_states=ordered_states,
@@ -122,6 +131,7 @@ def fit_discrete_mk_model_from_dataset(
     dataset: AncestralDiscreteDataset,
     *,
     model: str = "equal-rates",
+    ascertainment_policy: str = "none",
     transform: str | None = None,
     state_ordering: str = "unordered",
     ordered_states: list[str] | None = None,
@@ -139,6 +149,9 @@ def fit_discrete_mk_model_from_dataset(
 ) -> DiscreteMkFitReport:
     """Fit one Mk discrete-trait model from a native discrete dataset."""
     resolved_model = _resolve_discrete_model_name(model)
+    resolved_ascertainment_policy = validate_discrete_mk_ascertainment_policy(
+        ascertainment_policy
+    )
     resolved_transform = resolve_discrete_transform_name(transform)
     state_order = _resolve_state_order(
         dataset.observed_states,
@@ -171,6 +184,7 @@ def fit_discrete_mk_model_from_dataset(
     ) = fit_discrete_mk_surface(
         dataset,
         model=resolved_model,
+        ascertainment_policy=resolved_ascertainment_policy,
         transform=resolved_transform,
         state_ordering=state_ordering,
         state_order=state_order,
@@ -187,7 +201,29 @@ def fit_discrete_mk_model_from_dataset(
         rate_matrix=rate_matrix,
         root_prior=root_prior,
         root_prior_mode="observed",
+        ascertainment_policy=resolved_ascertainment_policy,
     )
+    ascertainment_conditioning_log_probability: float | None = None
+    invariant_pattern_log_probability: float | None = None
+    if resolved_ascertainment_policy == "lewis-variable-only":
+        ascertainment_conditioning_log_probability = (
+            _variable_pattern_log_probability(
+                fit_tree,
+                taxa=list(dataset.taxa),
+                state_order=state_order,
+                rate_matrix=rate_matrix,
+                root_prior=root_prior,
+                root_prior_mode="observed",
+            )
+        )
+        invariant_pattern_log_probability = _invariant_pattern_log_probability(
+            fit_tree,
+            taxa=list(dataset.taxa),
+            state_order=state_order,
+            rate_matrix=rate_matrix,
+            root_prior=root_prior,
+            root_prior_mode="observed",
+        )
     parameter_count = discrete_parameter_count(
         state_count=len(state_order),
         model=resolved_model,
@@ -211,6 +247,7 @@ def fit_discrete_mk_model_from_dataset(
         baseline_fit = fit_discrete_mk_model_from_dataset(
             dataset,
             model="equal-rates",
+            ascertainment_policy=resolved_ascertainment_policy,
             transform=resolved_transform,
             state_ordering=state_ordering,
             ordered_states=state_order,
@@ -235,6 +272,7 @@ def fit_discrete_mk_model_from_dataset(
         transform_baseline_fit = fit_discrete_mk_model_from_dataset(
             dataset,
             model=resolved_model,
+            ascertainment_policy=resolved_ascertainment_policy,
             transform=None,
             state_ordering=state_ordering,
             ordered_states=state_order,
@@ -300,15 +338,22 @@ def fit_discrete_mk_model_from_dataset(
         taxon_column=dataset.taxon_column,
         trait=dataset.trait,
         model=resolved_model,
+        ascertainment_policy=resolved_ascertainment_policy,
         state_ordering=state_ordering,
         state_order=state_order,
         taxon_count=len(dataset.taxa),
         input_audit=input_audit,
         log_likelihood=log_likelihood,
+        ascertainment_conditioning_log_probability=(
+            ascertainment_conditioning_log_probability
+        ),
+        invariant_pattern_log_probability=invariant_pattern_log_probability,
         parameter_count=parameter_count,
         aic=aic,
         aicc=aicc,
-        likelihood_constant_policy=DISCRETE_MK_LIKELIHOOD_CONSTANT_POLICY,
+        likelihood_constant_policy=resolve_discrete_mk_likelihood_constant_policy(
+            resolved_ascertainment_policy
+        ),
         likelihood_comparison_policy=DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY,
         transition_rate_rows=_normalize_transition_rate_rows(
             _build_transition_rate_rows(
