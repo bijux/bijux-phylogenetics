@@ -49,6 +49,17 @@ class CoalescentWaitingTimeSummaryRow:
     within_tolerance: bool
 
 
+@dataclass(frozen=True, slots=True)
+class CoalescentSkylineSummaryRow:
+    interval: str
+    lineage_count: int
+    duration: float
+    effective_population_size_estimate: float
+    observation_count: int
+    relative_error: float
+    uncertainty_flag: str
+
+
 @dataclass(slots=True)
 class TreeSimulationReport:
     model: str
@@ -66,6 +77,9 @@ class TreeSimulationReport:
     envelope_metrics: list[TreeSimulationEnvelopeMetric] = field(default_factory=list)
     coalescent_waiting_time_tolerance: float | None = None
     coalescent_waiting_time_rows: list[CoalescentWaitingTimeSummaryRow] = field(
+        default_factory=list
+    )
+    coalescent_skyline_rows: list[CoalescentSkylineSummaryRow] = field(
         default_factory=list
     )
 
