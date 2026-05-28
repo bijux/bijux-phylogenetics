@@ -59,6 +59,11 @@ from bijux_phylogenetics.bayesian import (
     PartitionParameterLinkagePlan,
     PartitionSubstitutionModelDefinition,
     PartitionSubstitutionParameterState,
+    BayesianModelParameterState,
+    BayesianPhylogeneticState,
+    BayesianPriorComponentState,
+    BayesianStateBranchRow,
+    BayesianTreeState,
     PriorOnlyPhylogeneticSample,
     PriorOnlyPhylogeneticSimulationReport,
     PriorOnlySampledBranchRow,
@@ -99,6 +104,11 @@ from bijux_phylogenetics.bayesian import (
     build_partition_model_prior_bundle,
     build_partition_parameter_linkage_plan,
     build_partition_substitution_model_definition,
+    build_bayesian_model_parameter_state,
+    build_bayesian_phylogenetic_state,
+    build_bayesian_phylogenetic_state_from_prior_only_sample,
+    build_bayesian_prior_component_state,
+    build_bayesian_tree_state,
     build_local_clock_rate_model,
     build_relaxed_lognormal_clock_model,
     build_strict_clock_rate_model,
@@ -133,8 +143,12 @@ from bijux_phylogenetics.bayesian import (
     load_local_clock_regime_definitions,
     run_beast_posterior_inference,
     run_mrbayes_posterior_inference,
+    deserialize_bayesian_phylogenetic_state,
+    deserialize_bayesian_phylogenetic_state_json,
     sample_prior_only_phylogenetic_state,
     evaluate_tree_topology_log_prior,
+    serialize_bayesian_phylogenetic_state,
+    serialize_bayesian_phylogenetic_state_json,
     simulate_prior_only_phylogenetic_states,
     summarize_beast_log,
     summarize_mrbayes_posterior_trees,
@@ -1015,6 +1029,11 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.PartitionSubstitutionParameterState
         is PartitionSubstitutionParameterState
     )
+    assert bayesian_api.BayesianStateBranchRow is BayesianStateBranchRow
+    assert bayesian_api.BayesianTreeState is BayesianTreeState
+    assert bayesian_api.BayesianModelParameterState is BayesianModelParameterState
+    assert bayesian_api.BayesianPriorComponentState is BayesianPriorComponentState
+    assert bayesian_api.BayesianPhylogeneticState is BayesianPhylogeneticState
     assert bayesian_api.PriorOnlySampledBranchRow is PriorOnlySampledBranchRow
     assert (
         bayesian_api.PriorOnlySubstitutionParameterState
@@ -1175,6 +1194,23 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.build_partition_substitution_model_definition
         is build_partition_substitution_model_definition
     )
+    assert bayesian_api.build_bayesian_tree_state is build_bayesian_tree_state
+    assert (
+        bayesian_api.build_bayesian_model_parameter_state
+        is build_bayesian_model_parameter_state
+    )
+    assert (
+        bayesian_api.build_bayesian_prior_component_state
+        is build_bayesian_prior_component_state
+    )
+    assert (
+        bayesian_api.build_bayesian_phylogenetic_state
+        is build_bayesian_phylogenetic_state
+    )
+    assert (
+        bayesian_api.build_bayesian_phylogenetic_state_from_prior_only_sample
+        is build_bayesian_phylogenetic_state_from_prior_only_sample
+    )
     assert (
         bayesian_api.sample_prior_only_phylogenetic_state
         is sample_prior_only_phylogenetic_state
@@ -1255,6 +1291,22 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.evaluate_birth_death_tree_log_prior
         is evaluate_birth_death_tree_log_prior
+    )
+    assert (
+        bayesian_api.serialize_bayesian_phylogenetic_state
+        is serialize_bayesian_phylogenetic_state
+    )
+    assert (
+        bayesian_api.serialize_bayesian_phylogenetic_state_json
+        is serialize_bayesian_phylogenetic_state_json
+    )
+    assert (
+        bayesian_api.deserialize_bayesian_phylogenetic_state
+        is deserialize_bayesian_phylogenetic_state
+    )
+    assert (
+        bayesian_api.deserialize_bayesian_phylogenetic_state_json
+        is deserialize_bayesian_phylogenetic_state_json
     )
     assert (
         bayesian_api.evaluate_tree_topology_log_prior
