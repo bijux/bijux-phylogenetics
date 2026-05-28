@@ -8213,6 +8213,61 @@ def test_cli_phylo_dating_least_squares_includes_manifest(
     assert manifest_payload["input_checksums"][str(metadata_path)]
 
 
+def test_cli_phylo_likelihood_local_clock_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "local-clock-likelihood"
+    manifest = tmp_path / "local-clock-likelihood.manifest.json"
+    tree_path = fixture("strict_clock_time_tree_4_taxa.nwk")
+    alignment_path = fixture("local_clock_likelihood_alignment_4_taxa.fasta")
+    regime_path = fixture("local_clock_regimes_4_taxa.tsv")
+
+    exit_code = main(
+        [
+            "phylo",
+            "likelihood",
+            "local-clock",
+            str(tree_path),
+            str(alignment_path),
+            str(regime_path),
+            "--model",
+            "jc69",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 4
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "likelihood",
+        "local-clock",
+        str(tree_path),
+        str(alignment_path),
+        str(regime_path),
+        "--model",
+        "jc69",
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(alignment_path)]
+    assert manifest_payload["input_checksums"][str(regime_path)]
+
+
 def test_cli_phylo_dating_penalized_likelihood_includes_manifest(
     tmp_path: Path,
     capsys,
