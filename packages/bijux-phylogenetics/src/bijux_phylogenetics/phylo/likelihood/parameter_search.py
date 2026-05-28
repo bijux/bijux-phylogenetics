@@ -5,6 +5,11 @@ from dataclasses import dataclass
 import math
 from typing import Generic, TypeVar
 
+from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
+    validate_increasing_parameter_bounds,
+    validate_parameter_within_bounds,
+)
+
 _PayloadT = TypeVar("_PayloadT")
 
 
@@ -40,8 +45,12 @@ def run_bounded_likelihood_search(
     max_iterations: int = 400,
 ) -> BoundedLikelihoodSearchResult[_PayloadT]:
     """Maximize one bounded likelihood-like objective by golden-section search."""
-    if upper_bound <= lower_bound:
-        raise ValueError("bounded likelihood search requires increasing parameter bounds")
+    validated_lower_bound, validated_upper_bound = validate_increasing_parameter_bounds(
+        parameter_name="search parameter",
+        lower_bound=lower_bound,
+        upper_bound=upper_bound,
+        owner_name="bounded likelihood search",
+    )
     if tolerance <= 0.0:
         raise ValueError("bounded likelihood search tolerance must be positive")
     if max_iterations < 1:
@@ -51,38 +60,55 @@ def run_bounded_likelihood_search(
     cache: dict[float, tuple[_PayloadT, float]] = {}
 
     def evaluate_cached(parameter_value: float) -> tuple[_PayloadT, float]:
-        cache_key = round(parameter_value, 12)
+        validated_parameter_value = validate_parameter_within_bounds(
+            parameter_name="search parameter",
+            value=parameter_value,
+            lower_bound=validated_lower_bound,
+            upper_bound=validated_upper_bound,
+            owner_name="bounded likelihood search",
+        )
+        cache_key = round(validated_parameter_value, 12)
         cached = cache.get(cache_key)
         if cached is not None:
             return cached
-        candidate = evaluate(parameter_value)
+        candidate = evaluate(validated_parameter_value)
         cache[cache_key] = candidate
         return candidate
 
-    left = upper_bound - (phi * (upper_bound - lower_bound))
-    right = lower_bound + (phi * (upper_bound - lower_bound))
+    left = validated_upper_bound - (
+        phi * (validated_upper_bound - validated_lower_bound)
+    )
+    right = validated_lower_bound + (
+        phi * (validated_upper_bound - validated_lower_bound)
+    )
     left_payload, left_objective = evaluate_cached(left)
     right_payload, right_objective = evaluate_cached(right)
     iteration = 0
 
-    while (upper_bound - lower_bound) > tolerance and iteration < max_iterations:
+    while (
+        validated_upper_bound - validated_lower_bound
+    ) > tolerance and iteration < max_iterations:
         if left_objective < right_objective:
-            lower_bound = left
+            validated_lower_bound = left
             left = right
             left_payload = right_payload
             left_objective = right_objective
-            right = lower_bound + (phi * (upper_bound - lower_bound))
+            right = validated_lower_bound + (
+                phi * (validated_upper_bound - validated_lower_bound)
+            )
             right_payload, right_objective = evaluate_cached(right)
         else:
-            upper_bound = right
+            validated_upper_bound = right
             right = left
             right_payload = left_payload
             right_objective = left_objective
-            left = upper_bound - (phi * (upper_bound - lower_bound))
+            left = validated_upper_bound - (
+                phi * (validated_upper_bound - validated_lower_bound)
+            )
             left_payload, left_objective = evaluate_cached(left)
         iteration += 1
 
-    midpoint = (lower_bound + upper_bound) / 2.0
+    midpoint = (validated_lower_bound + validated_upper_bound) / 2.0
     midpoint_payload, midpoint_objective = evaluate_cached(midpoint)
     best_parameter, best_payload, best_objective = sorted(
         [
@@ -97,7 +123,7 @@ def run_bounded_likelihood_search(
         payload=best_payload,
         objective_value=best_objective,
         function_evaluation_count=len(cache),
-        converged=(upper_bound - lower_bound) <= tolerance,
+        converged=(validated_upper_bound - validated_lower_bound) <= tolerance,
     )
 
 
@@ -122,14 +148,21 @@ def run_bounded_coordinate_likelihood_search(
         for name, value in initial_values.items()
     }
     for name, (lower_bound, upper_bound) in bounds_by_name.items():
-        if upper_bound <= lower_bound:
-            raise ValueError(
-                f"coordinate likelihood search requires increasing bounds for '{name}'"
+        validated_lower_bound, validated_upper_bound = (
+            validate_increasing_parameter_bounds(
+                parameter_name=name,
+                lower_bound=lower_bound,
+                upper_bound=upper_bound,
+                owner_name="coordinate likelihood search",
             )
-        if not (lower_bound <= current_values[name] <= upper_bound):
-            raise ValueError(
-                f"initial coordinate value for '{name}' must lie within its bounds"
-            )
+        )
+        current_values[name] = validate_parameter_within_bounds(
+            parameter_name=name,
+            value=current_values[name],
+            lower_bound=validated_lower_bound,
+            upper_bound=validated_upper_bound,
+            owner_name="coordinate likelihood search",
+        )
 
     current_payload, current_objective = evaluate(dict(current_values))
     function_evaluation_count = 1
@@ -144,6 +177,7 @@ def run_bounded_coordinate_likelihood_search(
 
             def evaluate_coordinate(
                 candidate_value: float,
+                name: str = name,
             ) -> tuple[_PayloadT, float]:
                 candidate_values = dict(current_values)
                 candidate_values[name] = candidate_value
