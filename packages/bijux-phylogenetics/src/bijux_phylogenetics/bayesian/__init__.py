@@ -142,6 +142,12 @@ from .presentation.time_tree_figure_bundle import (
     TimeTreePublicationAudit,
     build_time_tree_figure_package,
 )
+from .probability import (
+    compare_log_probabilities,
+    log_probability_add,
+    logsumexp,
+    normalize_log_probabilities,
+)
 
 __all__ = [
     "BayesianEvidencePackageReport",
@@ -219,6 +225,7 @@ __all__ = [
     "assess_mrbayes_convergence",
     "build_bayesian_evidence_package",
     "compare_bayesian_tree_sets",
+    "compare_log_probabilities",
     "compare_independent_bayesian_runs",
     "compare_ml_tree_to_bayesian_posterior",
     "compare_posterior_tree_sets_by_clock",
@@ -234,6 +241,9 @@ __all__ = [
     "parse_mrbayes_parameter_traces",
     "parse_mrbayes_posterior_tree_samples",
     "prepare_beast_time_tree_analysis",
+    "log_probability_add",
+    "logsumexp",
+    "normalize_log_probabilities",
     "run_beast_posterior_inference",
     "summarize_beast_analysis_xml",
     "prepare_mrbayes_analysis",
