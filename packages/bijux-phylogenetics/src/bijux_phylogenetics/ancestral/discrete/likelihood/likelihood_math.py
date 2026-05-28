@@ -5,10 +5,20 @@ import math
 import numpy
 
 from bijux_phylogenetics.phylo.likelihood.pruning import (
+    build_transition_matrix_evaluator,
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
-    transition_probability_matrix,
 )
+from bijux_phylogenetics.phylo.likelihood.pruning import (
+    transition_probability_matrix as finite_state_transition_probability_matrix,
+)
+
+
+def transition_probability_matrix(
+    rate_matrix: numpy.ndarray,
+    branch_length: float,
+) -> numpy.ndarray:
+    return finite_state_transition_probability_matrix(rate_matrix, branch_length)
 
 
 def tree_log_likelihood(
@@ -20,14 +30,7 @@ def tree_log_likelihood(
     root_prior: numpy.ndarray | None,
     root_prior_mode: str = "given",
 ) -> float:
-    transition_cache: dict[float, numpy.ndarray] = {}
-
-    def transition(cached_branch_length: float) -> numpy.ndarray:
-        cached = transition_cache.get(cached_branch_length)
-        if cached is None:
-            cached = transition_probability_matrix(rate_matrix, cached_branch_length)
-            transition_cache[cached_branch_length] = cached
-        return cached
+    transition_evaluator = build_transition_matrix_evaluator(rate_matrix)
 
     state_index = {state: index for index, state in enumerate(state_order)}
     pruning_pass = postorder_conditional_likelihoods(
@@ -39,7 +42,9 @@ def tree_log_likelihood(
             state_count=len(state_order),
             node_name=node.name,
         ),
-        transition_matrix_for_child=lambda child: transition(branch_length(child)),
+        transition_matrix_for_child=lambda child: (
+            transition_evaluator.transition_probability_matrix(branch_length(child))
+        ),
     )
     root_partial = pruning_pass.conditional_for_node(tree.root)
     if root_prior_mode == "observed":

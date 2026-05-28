@@ -7,7 +7,7 @@ from bijux_phylogenetics.phylo.likelihood.posteriors import (
     compute_marginal_state_posteriors,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import (
-    transition_probability_matrix,
+    build_transition_matrix_evaluator,
 )
 
 from .likelihood_math import branch_length
@@ -22,14 +22,7 @@ def estimate_marginal_state_probabilities(
     root_prior: numpy.ndarray,
 ) -> dict[str, dict[str, float]]:
     state_index = {state: index for index, state in enumerate(state_order)}
-    transition_cache: dict[float, numpy.ndarray] = {}
-
-    def transition(cached_branch_length: float) -> numpy.ndarray:
-        cached = transition_cache.get(cached_branch_length)
-        if cached is None:
-            cached = transition_probability_matrix(rate_matrix, cached_branch_length)
-            transition_cache[cached_branch_length] = cached
-        return cached
+    transition_evaluator = build_transition_matrix_evaluator(rate_matrix)
 
     posterior_pass = compute_marginal_state_posteriors(
         tree,
@@ -40,7 +33,9 @@ def estimate_marginal_state_probabilities(
             state_count=len(state_order),
             node_name=node.name,
         ),
-        transition_matrix_for_child=lambda child: transition(branch_length(child)),
+        transition_matrix_for_child=lambda child: (
+            transition_evaluator.transition_probability_matrix(branch_length(child))
+        ),
         root_prior=root_prior,
     )
     return {
