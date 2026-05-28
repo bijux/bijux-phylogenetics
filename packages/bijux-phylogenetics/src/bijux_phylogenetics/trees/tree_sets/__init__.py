@@ -15,6 +15,10 @@ from .quartet_support import (
     compute_reference_tree_quartet_support,
     write_reference_tree_quartet_support_table,
 )
+from .quartet_puzzling import (
+    build_quartet_puzzling_consensus,
+    write_quartet_puzzling_artifacts,
+)
 from .consensus import (
     compute_consensus_tree,
     compute_consensus_tree_with_threshold,
@@ -29,6 +33,9 @@ from .contracts import (
     TreeDistancePair,
     TreeSetCladeSupportReport,
     TreeSetCladeSupportRow,
+    QuartetPuzzlingAssemblyRow,
+    QuartetPuzzlingReport,
+    QuartetTopologyScoreRow,
     TreeSetQuartetSupportReport,
     TreeSetQuartetSupportRow,
     TreeSetProcessingSummary,
@@ -48,6 +55,9 @@ __all__ = [
     "TreeDistancePair",
     "TreeSetCladeSupportReport",
     "TreeSetCladeSupportRow",
+    "QuartetPuzzlingAssemblyRow",
+    "QuartetPuzzlingReport",
+    "QuartetTopologyScoreRow",
     "TreeSetQuartetSupportReport",
     "TreeSetQuartetSupportRow",
     "TreeSetProcessingSummary",
@@ -55,6 +65,7 @@ __all__ = [
     "TreeSetReport",
     "TreeSetWorkflowBudget",
     "TreeSetWorkflowBudgetReport",
+    "build_quartet_puzzling_consensus",
     "build_tree_set_budget_report",
     "build_tree_set_workflow_budget",
     "compute_clade_frequency_table",
@@ -68,6 +79,7 @@ __all__ = [
     "load_tree_set",
     "write_clade_frequency_table",
     "write_consensus_tree",
+    "write_quartet_puzzling_artifacts",
     "write_reference_tree_clade_support_table",
     "write_reference_tree_quartet_support_table",
     "write_tree_distance_matrix",
