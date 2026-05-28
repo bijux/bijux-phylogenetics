@@ -8631,6 +8631,62 @@ def test_cli_compare_deep_coalescence_includes_manifest(
     assert manifest_payload["input_checksums"][str(taxon_map_path)]
 
 
+def test_cli_compare_duplication_loss_transfer_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    table_path = tmp_path / "duplication-loss-transfer.tsv"
+    mapping_table_path = tmp_path / "duplication-loss-transfer-taxon-map.tsv"
+    manifest = tmp_path / "duplication-loss-transfer.manifest.json"
+    species_tree_path = fixture("duplication_loss_transfer_species_tree_4_taxa.nwk")
+    gene_tree_path = fixture("duplication_loss_transfer_gene_tree_4_tips.nwk")
+    taxon_map_path = fixture("duplication_loss_transfer_gene_taxon_map_4_tips.tsv")
+
+    exit_code = main(
+        [
+            "compare",
+            "duplication-loss-transfer",
+            str(species_tree_path),
+            str(gene_tree_path),
+            "--taxon-map",
+            str(taxon_map_path),
+            "--out",
+            str(table_path),
+            "--mapping-out",
+            str(mapping_table_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["reconciliation_score"] == 6.0
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "compare"
+    assert manifest_payload["arguments"] == [
+        "compare",
+        "duplication-loss-transfer",
+        str(species_tree_path),
+        str(gene_tree_path),
+        "--taxon-map",
+        str(taxon_map_path),
+        "--out",
+        str(table_path),
+        "--mapping-out",
+        str(mapping_table_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(species_tree_path)]
+    assert manifest_payload["input_checksums"][str(gene_tree_path)]
+    assert manifest_payload["input_checksums"][str(taxon_map_path)]
+
+
 def test_cli_tree_set_quartet_concordance_factors_includes_manifest(
     tmp_path: Path,
     capsys,
