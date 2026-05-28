@@ -1,0 +1,4 @@
+calibration_id	clade_name	taxa	minimum_age	maximum_age	distribution
+cal-root		A|B|C|D|E	1995	1996	uniform
+cal-abc		A|B|C	1988	1992	uniform
+cal-ab		A|B	1991	1991	uniform

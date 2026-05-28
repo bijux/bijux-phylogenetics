@@ -138,6 +138,74 @@ class DatingCalibrationAnchor:
 
 
 @dataclass(frozen=True, slots=True)
+class DatingCalibrationConstraintRow:
+    """One calibration constraint resolved onto one rooted node."""
+
+    calibration_id: str
+    target_kind: str
+    target_label: str
+    descendant_taxa: list[str]
+    node_id: str
+    node_kind: str
+    minimum_bound: float | None
+    maximum_bound: float | None
+    fixed_date: float | None
+    contradictory: bool
+    issue_codes: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class DatingCalibrationNodeWindowRow:
+    """One calibrated node with aggregated and propagated feasible date bounds."""
+
+    node_id: str
+    node_kind: str
+    node_label: str | None
+    descendant_taxa: list[str]
+    calibration_ids: list[str]
+    minimum_bound: float | None
+    maximum_bound: float | None
+    effective_lower_bound: float | None
+    effective_upper_bound: float | None
+    contradictory: bool
+    issue_codes: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class DatingCalibrationConstraintIssue:
+    """One contradiction or validation issue in a dating calibration set."""
+
+    scope_kind: str
+    scope_id: str
+    code: str
+    message: str
+    related_node_ids: list[str]
+    related_calibration_ids: list[str]
+
+
+@dataclass(slots=True)
+class DatingCalibrationConstraintReport:
+    """Dating calibration constraints resolved onto one rooted tree."""
+
+    tree_newick: str
+    taxa: list[str]
+    tip_count: int
+    internal_node_count: int
+    tree_path: str
+    calibration_path: str
+    calibration_count: int
+    valid_calibration_count: int
+    invalid_calibration_count: int
+    resolved_calibration_count: int
+    contradictory_calibration_count: int
+    contradictory_node_count: int
+    feasible: bool
+    constraint_rows: list[DatingCalibrationConstraintRow]
+    node_window_rows: list[DatingCalibrationNodeWindowRow]
+    issue_rows: list[DatingCalibrationConstraintIssue]
+
+
+@dataclass(frozen=True, slots=True)
 class PenalizedLikelihoodCrossValidationCandidateRow:
     """One smoothing-parameter candidate summarized over held-out calibrations."""
 

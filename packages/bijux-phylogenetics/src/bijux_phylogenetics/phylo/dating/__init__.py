@@ -1,6 +1,16 @@
 from __future__ import annotations
 
 from .calibrations import load_fixed_dating_calibrations
+from .constraints import (
+    require_feasible_dating_calibration_constraints,
+    solve_dating_calibration_constraints,
+    write_dating_calibration_constraint_artifacts,
+    write_dating_calibration_constraint_run_json,
+    write_dating_calibration_constraint_summary_tsv,
+    write_dating_calibration_constraints_tsv,
+    write_dating_calibration_issues_tsv,
+    write_dating_calibration_node_windows_tsv,
+)
 from .cross_validation import (
     cross_validate_penalized_likelihood_smoothing,
     cross_validate_penalized_likelihood_smoothing_from_metadata,
@@ -22,6 +32,10 @@ from .least_squares import (
 )
 from .models import (
     DatingCalibrationAnchor,
+    DatingCalibrationConstraintIssue,
+    DatingCalibrationConstraintReport,
+    DatingCalibrationConstraintRow,
+    DatingCalibrationNodeWindowRow,
     LeastSquaresDatingBranchRow,
     LeastSquaresDatingNodeRow,
     LeastSquaresDatingReport,
@@ -44,6 +58,10 @@ from .penalized_likelihood import (
 
 __all__ = [
     "DatingCalibrationAnchor",
+    "DatingCalibrationConstraintIssue",
+    "DatingCalibrationConstraintReport",
+    "DatingCalibrationConstraintRow",
+    "DatingCalibrationNodeWindowRow",
     "LeastSquaresDatingBranchRow",
     "LeastSquaresDatingNodeRow",
     "LeastSquaresDatingReport",
@@ -53,6 +71,7 @@ __all__ = [
     "PenalizedLikelihoodDatingBranchRow",
     "PenalizedLikelihoodDatingNodeRow",
     "PenalizedLikelihoodDatingReport",
+    "require_feasible_dating_calibration_constraints",
     "cross_validate_penalized_likelihood_smoothing",
     "cross_validate_penalized_likelihood_smoothing_from_metadata",
     "fit_least_squares_dating",
@@ -60,6 +79,13 @@ __all__ = [
     "fit_penalized_likelihood_dating",
     "fit_penalized_likelihood_dating_from_metadata",
     "load_fixed_dating_calibrations",
+    "solve_dating_calibration_constraints",
+    "write_dating_calibration_constraint_artifacts",
+    "write_dating_calibration_constraint_run_json",
+    "write_dating_calibration_constraint_summary_tsv",
+    "write_dating_calibration_constraints_tsv",
+    "write_dating_calibration_issues_tsv",
+    "write_dating_calibration_node_windows_tsv",
     "write_least_squares_branch_residuals_tsv",
     "write_least_squares_dating_artifacts",
     "write_least_squares_dating_run_json",
