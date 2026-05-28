@@ -56,6 +56,40 @@ class TreeComparisonReport:
 
 
 @dataclass(slots=True)
+class CladeAgeComparisonRow:
+    clade_id: str
+    node_kind: str
+    taxon_count: int
+    descendant_taxa: list[str]
+    left_age: float
+    right_age: float
+    age_difference: float
+    absolute_age_difference: float
+    unstable_age: bool
+
+
+@dataclass(slots=True)
+class DateAwareTreeComparisonReport:
+    left_path: Path
+    right_path: Path
+    shared_taxa: list[str]
+    left_only_taxa: list[str]
+    right_only_taxa: list[str]
+    taxon_overlap_policy: str
+    comparison_scope: str
+    left_root_age: float
+    right_root_age: float
+    age_rmse: float
+    mean_absolute_age_difference: float
+    max_absolute_age_difference: float
+    unstable_age_threshold: float
+    unstable_clade_count: int
+    matched_clade_count: int
+    topology: TreeComparisonReport
+    clade_rows: list[CladeAgeComparisonRow]
+
+
+@dataclass(slots=True)
 class SharedTaxaPruningReport:
     left_path: Path
     right_path: Path
