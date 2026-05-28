@@ -6,6 +6,7 @@ import pytest
 
 from bijux_phylogenetics.bayesian.metropolis_hastings import (
     MetropolisHastingsProposal,
+    build_metropolis_hastings_proposal,
     run_metropolis_hastings_sampler,
     score_bayesian_phylogenetic_state,
 )
@@ -27,12 +28,15 @@ def test_metropolis_hastings_recovers_standard_normal_target() -> None:
     ) -> MetropolisHastingsProposal:
         current_x = current_state.model_parameters.scalar_parameters["x"]
         proposed_x = current_x + rng.gauss(0.0, 1.0)
-        return MetropolisHastingsProposal(
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.x",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=True,
             proposed_tree=current_state.tree.to_tree(),
             proposed_model_parameters=build_bayesian_model_parameter_state(
                 scalar_parameters={"x": proposed_x}
             ),
-            log_hastings_ratio=0.0,
         )
 
     report = run_metropolis_hastings_sampler(
@@ -59,6 +63,10 @@ def test_metropolis_hastings_recovers_standard_normal_target() -> None:
     assert report.accepted_count > 0
     assert report.rejected_count > 0
     assert 0.2 < report.acceptance_rate < 0.8
+    assert all(
+        step.proposal_changed_fields == ("scalar_parameters.x",)
+        for step in report.step_rows
+    )
 
 
 def test_metropolis_hastings_uses_hastings_ratio_in_acceptance_decision() -> None:
@@ -68,20 +76,26 @@ def test_metropolis_hastings_uses_hastings_ratio_in_acceptance_decision() -> Non
         current_state: BayesianPhylogeneticState,
         _rng,
     ) -> MetropolisHastingsProposal:
-        return MetropolisHastingsProposal(
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.x",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=True,
             proposed_tree=current_state.tree.to_tree(),
             proposed_model_parameters=current_state.model_parameters,
-            log_hastings_ratio=0.0,
         )
 
     def penalized_zero_shift_proposal(
         current_state: BayesianPhylogeneticState,
         _rng,
     ) -> MetropolisHastingsProposal:
-        return MetropolisHastingsProposal(
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.x",),
+            log_forward_density=10.0,
+            log_reverse_density=0.0,
+            is_valid=True,
             proposed_tree=current_state.tree.to_tree(),
             proposed_model_parameters=current_state.model_parameters,
-            log_hastings_ratio=-10.0,
         )
 
     accepted_report = run_metropolis_hastings_sampler(
@@ -109,6 +123,10 @@ def test_metropolis_hastings_uses_hastings_ratio_in_acceptance_decision() -> Non
         math.isclose(step.log_hastings_ratio, -10.0, rel_tol=0.0, abs_tol=1e-12)
         for step in rejected_report.step_rows
     )
+    assert all(
+        math.isclose(step.log_forward_density, 10.0, rel_tol=0.0, abs_tol=1e-12)
+        for step in rejected_report.step_rows
+    )
 
 
 def test_metropolis_hastings_requires_positive_iteration_count() -> None:
@@ -118,10 +136,13 @@ def test_metropolis_hastings_requires_positive_iteration_count() -> None:
     ):
         run_metropolis_hastings_sampler(
             initial_state=_build_scored_normal_target_state(0.0),
-            propose_state=lambda current_state, rng: MetropolisHastingsProposal(
+            propose_state=lambda current_state, rng: build_metropolis_hastings_proposal(
+                changed_fields=("scalar_parameters.x",),
+                log_forward_density=0.0,
+                log_reverse_density=0.0,
+                is_valid=True,
                 proposed_tree=current_state.tree.to_tree(),
                 proposed_model_parameters=current_state.model_parameters,
-                log_hastings_ratio=0.0,
             ),
             update_prior_components=_normal_target_prior_components,
             update_log_likelihood=_zero_log_likelihood,
@@ -130,22 +151,96 @@ def test_metropolis_hastings_requires_positive_iteration_count() -> None:
         )
 
 
-def test_metropolis_hastings_requires_finite_hastings_ratio() -> None:
+def test_metropolis_hastings_requires_finite_forward_density() -> None:
     with pytest.raises(
         PhylogeneticsError,
-        match="requires 'log_hastings_ratio' to be finite",
+        match="requires 'log_forward_density' to be finite",
     ):
         run_metropolis_hastings_sampler(
             initial_state=_build_scored_normal_target_state(0.0),
-            propose_state=lambda current_state, rng: MetropolisHastingsProposal(
+            propose_state=lambda current_state, rng: build_metropolis_hastings_proposal(
+                changed_fields=("scalar_parameters.x",),
+                log_forward_density=math.inf,
+                log_reverse_density=0.0,
+                is_valid=True,
                 proposed_tree=current_state.tree.to_tree(),
                 proposed_model_parameters=current_state.model_parameters,
-                log_hastings_ratio=math.inf,
             ),
             update_prior_components=_normal_target_prior_components,
             update_log_likelihood=_zero_log_likelihood,
             iteration_count=1,
             seed=0,
+        )
+
+
+def test_invalid_metropolis_hastings_proposal_never_reaches_scoring() -> None:
+    scored_callback_count = 0
+
+    def update_prior_components(
+        state: BayesianPhylogeneticState,
+    ) -> list[BayesianPriorComponentState]:
+        nonlocal scored_callback_count
+        scored_callback_count += 1
+        return _normal_target_prior_components(state)
+
+    def update_log_likelihood(state: BayesianPhylogeneticState) -> float:
+        nonlocal scored_callback_count
+        scored_callback_count += 1
+        return _zero_log_likelihood(state)
+
+    initial_state = score_bayesian_phylogenetic_state(
+        tree=PhyloTree(
+            TreeNode(
+                children=[
+                    TreeNode(name="A", branch_length=0.1),
+                    TreeNode(name="B", branch_length=0.2),
+                ]
+            ),
+            rooted=True,
+        ),
+        model_parameters=build_bayesian_model_parameter_state(
+            scalar_parameters={"x": 0.0}
+        ),
+        update_prior_components=update_prior_components,
+        update_log_likelihood=update_log_likelihood,
+    )
+
+    report = run_metropolis_hastings_sampler(
+        initial_state=initial_state,
+        propose_state=lambda current_state, rng: build_metropolis_hastings_proposal(
+            changed_fields=("branch_lengths",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="proposed branch length was negative",
+        ),
+        update_prior_components=update_prior_components,
+        update_log_likelihood=update_log_likelihood,
+        iteration_count=1,
+        seed=0,
+    )
+
+    assert scored_callback_count == 2
+    assert report.accepted_count == 0
+    assert report.rejected_count == 1
+    assert report.step_rows[0].proposal_valid is False
+    assert report.step_rows[0].proposal_invalid_reason == (
+        "proposed branch length was negative"
+    )
+    assert report.step_rows[0].proposed_posterior_log_score is None
+    assert report.step_rows[0].log_acceptance_ratio is None
+
+
+def test_invalid_metropolis_hastings_proposal_requires_rejection_reason() -> None:
+    with pytest.raises(
+        PhylogeneticsError,
+        match="requires one nonblank invalid reason",
+    ):
+        build_metropolis_hastings_proposal(
+            changed_fields=("branch_lengths",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
         )
 
 
