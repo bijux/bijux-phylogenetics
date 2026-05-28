@@ -427,7 +427,7 @@ from bijux_phylogenetics.validation import (
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
-FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
+FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected", "parsimony")
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -8919,6 +8919,61 @@ def test_cli_phylo_likelihood_placement_includes_manifest(
     assert manifest_payload["input_checksums"][str(tree_path)]
     assert manifest_payload["input_checksums"][str(reference_alignment_path)]
     assert manifest_payload["input_checksums"][str(query_alignment_path)]
+
+
+def test_cli_phylo_parsimony_placement_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "parsimony-placement"
+    manifest = tmp_path / "parsimony-placement.manifest.json"
+    tree_path = fixture("placement_reference_tree_4_taxa.nwk")
+    matrix_path = fixture("placement_reference_matrix.tsv")
+    query_matrix_path = fixture("placement_query_matrix.tsv")
+
+    exit_code = main(
+        [
+            "phylo",
+            "parsimony",
+            "placement",
+            str(tree_path),
+            str(matrix_path),
+            str(query_matrix_path),
+            "--method",
+            "fitch",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["query_count"] == 2
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "parsimony",
+        "placement",
+        str(tree_path),
+        str(matrix_path),
+        str(query_matrix_path),
+        "--method",
+        "fitch",
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(matrix_path)]
+    assert manifest_payload["input_checksums"][str(query_matrix_path)]
 
 
 def test_cli_phylo_dating_penalized_likelihood_includes_manifest(
