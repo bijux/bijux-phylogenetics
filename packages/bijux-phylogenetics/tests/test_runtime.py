@@ -152,6 +152,7 @@ from bijux_phylogenetics.bayesian import (
     run_metropolis_hastings_sampler,
     propose_branch_length_scaling_move,
     propose_global_tree_height_scaling_move,
+    propose_nni_topology_move,
     propose_node_height_sliding_move,
     sample_prior_only_phylogenetic_state,
     evaluate_tree_topology_log_prior,
@@ -1235,6 +1236,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.propose_global_tree_height_scaling_move
         is propose_global_tree_height_scaling_move
     )
+    assert bayesian_api.propose_nni_topology_move is propose_nni_topology_move
     assert (
         bayesian_api.propose_node_height_sliding_move
         is propose_node_height_sliding_move
