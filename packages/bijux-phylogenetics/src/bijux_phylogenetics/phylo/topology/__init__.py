@@ -107,6 +107,8 @@ _EXPORTS = {
     "write_rooted_spr_artifacts": "rooted_spr",
     "write_rooted_spr_neighbor_table": "rooted_spr",
     "write_rooted_spr_run_json": "rooted_spr",
+    "enumerate_rooted_tbr_neighbors": "rooted_tbr",
+    "validate_rooted_tbr_tree": "rooted_tbr",
     "_build_subtree": "subtree",
     "_common_prefix_length": "subtree",
     "_extract_subtree_report": "subtree",
