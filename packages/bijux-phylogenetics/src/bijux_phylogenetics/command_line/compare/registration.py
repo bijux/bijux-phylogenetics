@@ -10,6 +10,7 @@ from bijux_phylogenetics.command_line.registry import get_command_spec
 from .branch_lengths import run_compare_branch_lengths_command
 from .clade_ages import run_compare_clade_ages_command
 from .clades import run_compare_clade_command
+from .coalescence import run_compare_deep_coalescence_command
 from .influence import run_compare_influence_command
 from .presentation import run_compare_presentation_command
 from .pruning import run_compare_pruning_command
@@ -32,6 +33,16 @@ def add_compare_command(subparsers: Any) -> None:
         help="Add another tree path for compare clades.",
     )
     compare.add_argument("--out", type=Path)
+    compare.add_argument(
+        "--taxon-map",
+        type=Path,
+        help="Map gene-tree tip labels onto species-tree taxa for deep-coalescence workflows.",
+    )
+    compare.add_argument(
+        "--mapping-out",
+        type=Path,
+        help="Write the resolved gene-to-species taxon mapping as TSV.",
+    )
     compare.add_argument(
         "--split-table-out",
         type=Path,
@@ -76,6 +87,11 @@ def run_compare_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
     clade_age_result = run_compare_clade_ages_command(args, parser=parser)
     if clade_age_result is not None:
         return clade_age_result
+    deep_coalescence_result = run_compare_deep_coalescence_command(
+        args, parser=parser
+    )
+    if deep_coalescence_result is not None:
+        return deep_coalescence_result
     pruning_result = run_compare_pruning_command(args, parser=parser)
     if pruning_result is not None:
         return pruning_result

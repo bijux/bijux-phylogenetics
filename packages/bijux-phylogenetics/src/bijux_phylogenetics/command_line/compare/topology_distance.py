@@ -28,6 +28,7 @@ def run_compare_topology_distance_command(
         "changes",
         "branch-lengths",
         "clade-ages",
+        "deep-coalescence",
     }:
         return None
 
