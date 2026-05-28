@@ -14,6 +14,7 @@ from .coalescence import run_compare_deep_coalescence_command
 from .influence import run_compare_influence_command
 from .presentation import run_compare_presentation_command
 from .pruning import run_compare_pruning_command
+from .reconciliation import run_compare_duplication_loss_transfer_command
 from .support import run_compare_support_command
 from .topology_distance import run_compare_topology_distance_command
 
@@ -42,6 +43,24 @@ def add_compare_command(subparsers: Any) -> None:
         "--mapping-out",
         type=Path,
         help="Write the resolved gene-to-species taxon mapping as TSV.",
+    )
+    compare.add_argument(
+        "--duplication-cost",
+        type=float,
+        default=2.0,
+        help="Per-event cost assigned to duplication steps in DLT reconciliation.",
+    )
+    compare.add_argument(
+        "--loss-cost",
+        type=float,
+        default=1.0,
+        help="Per-branch cost assigned to loss steps in DLT reconciliation.",
+    )
+    compare.add_argument(
+        "--transfer-cost",
+        type=float,
+        default=3.0,
+        help="Per-event cost assigned to transfer or switch steps in DLT reconciliation.",
     )
     compare.add_argument(
         "--split-table-out",
@@ -87,6 +106,9 @@ def run_compare_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
     clade_age_result = run_compare_clade_ages_command(args, parser=parser)
     if clade_age_result is not None:
         return clade_age_result
+    dlt_result = run_compare_duplication_loss_transfer_command(args, parser=parser)
+    if dlt_result is not None:
+        return dlt_result
     deep_coalescence_result = run_compare_deep_coalescence_command(
         args, parser=parser
     )
