@@ -129,6 +129,7 @@ from .rescaled_consistency import rescaled_consistency_index
 from .retention import retention_index
 from .sankoff import score_sankoff
 from .tree_length import load_parsimony_character_weights, tree_length
+from .stepwise_addition import build_parsimony_stepwise_addition_tree
 from .wagner import score_wagner
 from .weights import resolve_parsimony_character_weights
 
@@ -137,6 +138,7 @@ __all__ = [
     "CaminSokalCharacterScore",
     "CaminSokalScoreReport",
     "bootstrap_parsimony",
+    "build_parsimony_stepwise_addition_tree",
     "consistency_index",
     "DolloBranchChange",
     "DolloCharacterScore",
