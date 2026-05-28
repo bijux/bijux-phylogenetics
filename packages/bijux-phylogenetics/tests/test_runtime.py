@@ -112,6 +112,7 @@ from bijux_phylogenetics.bayesian import (
     build_bayesian_phylogenetic_state_from_prior_only_sample,
     build_bayesian_prior_component_state,
     build_bayesian_tree_state,
+    build_metropolis_hastings_proposal,
     build_local_clock_rate_model,
     build_relaxed_lognormal_clock_model,
     build_strict_clock_rate_model,
@@ -1218,6 +1219,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_bayesian_phylogenetic_state_from_prior_only_sample
         is build_bayesian_phylogenetic_state_from_prior_only_sample
+    )
+    assert (
+        bayesian_api.build_metropolis_hastings_proposal
+        is build_metropolis_hastings_proposal
     )
     assert (
         bayesian_api.score_bayesian_phylogenetic_state
