@@ -86,6 +86,7 @@ class StrictClockLikelihoodReport:
     upper_clock_rate_bound: float
     branch_rows: list[StrictClockBranchRow]
     site_log_likelihoods: list[SiteLogLikelihoodRow]
+    branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow]
 
 
 @dataclass(frozen=True, slots=True)
@@ -145,6 +146,7 @@ class LocalClockLikelihoodReport:
     branch_rows: list[LocalClockBranchRow]
     regime_rows: list[LocalClockRegimeRow]
     site_log_likelihoods: list[SiteLogLikelihoodRow]
+    branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow]
 
 
 @dataclass(slots=True)
@@ -691,6 +693,33 @@ class FixedTopologySiteLogLikelihoodReport:
 
 
 @dataclass(slots=True)
+class BranchLikelihoodDiagnosticRow:
+    """One branchwise likelihood diagnostic derived from branch-collapse replay."""
+
+    branch_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+    branch_length: float
+    collapsed_branch_log_likelihood: float
+    contribution_proxy: float
+    warning_flags: list[str]
+
+
+@dataclass(slots=True)
+class FixedTreeBranchLikelihoodDiagnosticsReport:
+    """Fixed-tree branchwise likelihood diagnostics under one sequence model."""
+
+    model_name: str
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    branch_count: int
+    tree_newick: str
+    baseline_log_likelihood: float
+    branch_diagnostics: list[BranchLikelihoodDiagnosticRow]
+
+
+@dataclass(slots=True)
 class MarginalAncestralStateProbabilityRow:
     """One internal-node posterior probability for one site and one state."""
 
@@ -837,6 +866,7 @@ class ProteinPoissonTreeLikelihoodReport:
     missing_policy: str
     log_likelihood: float
     site_log_likelihoods: list[SiteLogLikelihoodRow]
+    branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
 
 
 @dataclass(slots=True)
@@ -855,6 +885,7 @@ class ProteinEmpiricalMatrixTreeLikelihoodReport:
     missing_policy: str
     log_likelihood: float
     site_log_likelihoods: list[SiteLogLikelihoodRow]
+    branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
 
 
 @dataclass(slots=True)
@@ -937,6 +968,7 @@ class ProteinEmpiricalDiscreteGammaTreeLikelihoodReport:
     category_rates: list[DiscreteGammaRateCategory]
     site_likelihoods: list[DiscreteGammaSiteLikelihood]
     log_likelihood: float
+    branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
 
 
 @dataclass(slots=True)
@@ -976,6 +1008,7 @@ class ProteinEmpiricalInvariantMixtureTreeLikelihoodReport:
     lower_invariant_proportion_bound: float
     upper_invariant_proportion_bound: float
     site_likelihoods: list[InvariantMixtureSiteLikelihood]
+    branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
 
 
 @dataclass(slots=True)
@@ -1022,6 +1055,7 @@ class ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport:
     hit_upper_invariant_proportion_boundary: bool
     boundary_warnings: list[str]
     site_likelihoods: list[DiscreteGammaInvariantMixtureSiteLikelihood]
+    branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
 
 
 @dataclass(frozen=True, slots=True)
