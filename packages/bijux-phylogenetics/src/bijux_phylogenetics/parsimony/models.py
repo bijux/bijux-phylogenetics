@@ -631,6 +631,44 @@ class ParsimonyEqualBestConsensusReport:
 
 
 @dataclass(frozen=True, slots=True)
+class ParsimonyBremerSupportRow:
+    """One rooted reference-tree clade with its exact Bremer decay summary."""
+
+    branch_id: str
+    node_name: str | None
+    descendant_taxa: list[str]
+    shortest_lacking_score: float
+    decay_index: float
+    shortest_lacking_tree_count: int
+    shortest_lacking_tree_newick: str
+
+
+@dataclass(frozen=True, slots=True)
+class ParsimonyBremerSupportReport:
+    """Exact small-taxon Bremer support summary over one reference tree and matrix."""
+
+    algorithm: str
+    method: str
+    tree_path: Path | None
+    matrix_path: Path | None
+    cost_matrix_path: Path | None
+    weights_path: Path | None
+    taxon_column: str
+    taxon_count: int
+    character_count: int
+    candidate_tree_count: int
+    max_exact_taxa: int
+    reference_tree_newick: str
+    reference_tree_score: float
+    optimal_score: float
+    optimal_tree_count: int
+    optimal_tree_newick: str
+    reference_tree_score_delta_from_optimal: float
+    reference_tree_is_optimal: bool
+    bremer_rows: list[ParsimonyBremerSupportRow]
+
+
+@dataclass(frozen=True, slots=True)
 class ParsimonyNniTraceRow:
     """One deterministic event row in a rooted parsimony NNI search trace."""
 
