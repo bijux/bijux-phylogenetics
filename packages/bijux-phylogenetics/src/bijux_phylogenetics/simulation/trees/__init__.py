@@ -1,12 +1,12 @@
 """Tree simulation workflows."""
 
 from .generation import (
-    write_coalescent_skyline_table,
     simulate_birth_death_trees,
     simulate_coalescent_tree,
     simulate_coalescent_trees,
     simulate_random_tree,
     simulate_random_trees,
+    write_coalescent_skyline_table,
     write_coalescent_waiting_time_table,
     write_simulated_tree,
     write_tree_set,

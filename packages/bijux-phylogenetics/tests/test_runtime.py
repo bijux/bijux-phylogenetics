@@ -4512,6 +4512,72 @@ def test_cli_simulate_coalescent_includes_waiting_time_manifest(
     assert manifest_payload["output_checksums"][str(waiting_time_path)]
 
 
+def test_cli_simulate_coalescent_includes_skyline_manifest(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "simulated-coalescent.trees"
+    skyline_path = tmp_path / "coalescent-skyline.tsv"
+    manifest = tmp_path / "simulate-coalescent-skyline.manifest.json"
+    exit_code = main(
+        [
+            "simulate",
+            "tree-coalescent",
+            "--tree-count",
+            "8",
+            "--tip-count",
+            "5",
+            "--population-size",
+            "2.5",
+            "--waiting-time-tolerance",
+            "0.2",
+            "--seed",
+            "19",
+            "--out",
+            str(output_path),
+            "--skyline-table-out",
+            str(skyline_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "simulate"
+    assert manifest_payload["arguments"] == [
+        "simulate",
+        "tree-coalescent",
+        "--tree-count",
+        "8",
+        "--tip-count",
+        "5",
+        "--population-size",
+        "2.5",
+        "--waiting-time-tolerance",
+        "0.2",
+        "--seed",
+        "19",
+        "--out",
+        str(output_path),
+        "--skyline-table-out",
+        str(skyline_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_paths"] == []
+    assert manifest_payload["output_paths"] == [
+        str(output_path),
+        str(skyline_path),
+    ]
+    assert manifest_payload["output_checksums"][str(output_path)]
+    assert manifest_payload["output_checksums"][str(skyline_path)]
+
+
 def test_cli_simulate_multispecies_coalescent_writes_gene_tree_ledgers(
     tmp_path: Path,
     capsys,
