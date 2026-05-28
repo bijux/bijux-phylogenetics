@@ -9,6 +9,10 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.branch_likelihood_diagnostics import (
+    summarize_fixed_tree_branch_likelihood_diagnostics,
+    write_branch_likelihood_diagnostic_table,
+)
 from bijux_phylogenetics.phylo.likelihood.dna import (
     UNIFORM_DNA_ROOT_PRIOR,
     normalize_unambiguous_dna_records,
@@ -186,6 +190,19 @@ def _fit_jc69_strict_clock_likelihood(
         optimized_scaled_tree,
         compressed_patterns=compressed_patterns,
     )
+    branch_diagnostic_report = summarize_fixed_tree_branch_likelihood_diagnostics(
+        optimized_scaled_tree,
+        taxa=compressed_patterns.taxon_order,
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        model_name="JC69",
+        baseline_log_likelihood=optimized_report.log_likelihood,
+        evaluate_tree_log_likelihood=lambda candidate_tree: _evaluate_jc69_tree_likelihood_from_patterns(
+            candidate_tree,
+            compressed_patterns,
+            root_prior=UNIFORM_DNA_ROOT_PRIOR,
+        ).log_likelihood,
+    )
     optimized_clock_rate = float(search_result.parameter_value)
     branch_rows = _build_branch_rows(
         time_tree=time_tree,
@@ -213,6 +230,7 @@ def _fit_jc69_strict_clock_likelihood(
         upper_clock_rate_bound=upper_clock_rate_bound,
         branch_rows=branch_rows,
         site_log_likelihoods=site_log_likelihood_report.site_log_likelihoods,
+        branch_likelihood_diagnostics=branch_diagnostic_report.branch_diagnostics,
     )
 
 
@@ -299,6 +317,7 @@ def write_strict_clock_run_json(
 ) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = asdict(report)
+    payload.pop("branch_likelihood_diagnostics", None)
     payload.pop("site_log_likelihoods", None)
     path.write_text(
         json.dumps(payload, default=str, indent=2, sort_keys=True) + "\n",
@@ -324,10 +343,15 @@ def write_strict_clock_likelihood_artifacts(
         out_dir / "site_log_likelihoods.tsv",
         report,
     )
+    branch_likelihood_diagnostic_path = write_branch_likelihood_diagnostic_table(
+        out_dir / "branch_likelihood_diagnostics.tsv",
+        report,
+    )
     run_json_path = write_strict_clock_run_json(out_dir / "run.json", report)
     return {
         "scaled_tree_path": scaled_tree_path,
         "branch_table_path": branch_table_path,
         "site_log_likelihood_path": site_log_likelihood_path,
+        "branch_likelihood_diagnostic_path": branch_likelihood_diagnostic_path,
         "run_json_path": run_json_path,
     }
