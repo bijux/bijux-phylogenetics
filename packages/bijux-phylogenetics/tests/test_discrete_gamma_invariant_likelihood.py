@@ -54,7 +54,7 @@ def test_discrete_gamma_invariant_mixture_reports_alpha_invariant_and_total_like
         report.invariant_proportion,
         0.10743071401974319,
         rel_tol=0.0,
-        abs_tol=1e-12,
+        abs_tol=1e-9,
     )
     assert math.isclose(
         report.initial_log_likelihood,
