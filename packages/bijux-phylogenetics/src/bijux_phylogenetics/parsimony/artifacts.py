@@ -3,7 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
-from bijux_phylogenetics.io.newick import loads_newick, write_newick, write_newick_tree_set
+from bijux_phylogenetics.io.newick import (
+    loads_newick,
+    write_newick,
+    write_newick_tree_set,
+)
 from bijux_phylogenetics.reports.service.artifacts import write_json_artifact
 from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,
@@ -14,18 +18,19 @@ from bijux_phylogenetics.trees import (
 from .models import (
     CaminSokalScoreReport,
     DolloScoreReport,
+    FitchScoreReport,
     ParsimonyBootstrapReport,
     ParsimonyBremerSupportReport,
+    ParsimonyConsistencyIndexReport,
     ParsimonyEqualBestConsensusReport,
     ParsimonyJackknifeReport,
     ParsimonyNniSearchReport,
+    ParsimonyPlacementReport,
     ParsimonyRatchetReport,
-    ParsimonySprSearchReport,
-    FitchScoreReport,
-    ParsimonyConsistencyIndexReport,
     ParsimonyReconstructionReport,
     ParsimonyRescaledConsistencyIndexReport,
     ParsimonyRetentionIndexReport,
+    ParsimonySprSearchReport,
     ParsimonyTreeLengthReport,
     SankoffScoreReport,
     WagnerScoreReport,
@@ -1707,6 +1712,188 @@ def write_parsimony_equal_best_consensus_artifacts(
             clade_frequency_report,
         )
     return outputs
+
+
+def write_parsimony_placement_summary_table(
+    path: Path,
+    report: ParsimonyPlacementReport,
+) -> Path:
+    """Write one deterministic summary row per placed parsimony query."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "query_id",
+            "character_count",
+            "best_edge_id",
+            "best_child_name",
+            "best_descendant_taxa",
+            "best_total_steps",
+            "best_additional_steps",
+            "best_total_weighted_score",
+            "best_additional_weighted_score",
+            "candidate_placement_count",
+            "equally_best_placement_count",
+        ],
+        rows=[
+            {
+                "query_id": row.query_id,
+                "character_count": row.character_count,
+                "best_edge_id": row.best_edge_id,
+                "best_child_name": row.best_child_name,
+                "best_descendant_taxa": "|".join(row.best_descendant_taxa),
+                "best_total_steps": row.best_total_steps,
+                "best_additional_steps": row.best_additional_steps,
+                "best_total_weighted_score": row.best_total_weighted_score,
+                "best_additional_weighted_score": row.best_additional_weighted_score,
+                "candidate_placement_count": row.candidate_placement_count,
+                "equally_best_placement_count": row.equally_best_placement_count,
+            }
+            for row in report.query_summaries
+        ],
+    )
+
+
+def write_parsimony_placement_alternative_table(
+    path: Path,
+    report: ParsimonyPlacementReport,
+) -> Path:
+    """Write one deterministic ledger of scored parsimony edge placements."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "query_id",
+            "placement_rank",
+            "edge_id",
+            "child_name",
+            "descendant_taxa",
+            "total_steps",
+            "additional_steps",
+            "total_weighted_score",
+            "additional_weighted_score",
+            "is_equally_best",
+        ],
+        rows=[
+            {
+                "query_id": row.query_id,
+                "placement_rank": row.placement_rank,
+                "edge_id": row.edge_id,
+                "child_name": row.child_name,
+                "descendant_taxa": "|".join(row.descendant_taxa),
+                "total_steps": row.total_steps,
+                "additional_steps": row.additional_steps,
+                "total_weighted_score": row.total_weighted_score,
+                "additional_weighted_score": row.additional_weighted_score,
+                "is_equally_best": row.is_equally_best,
+            }
+            for row in report.alternative_rows
+        ],
+    )
+
+
+def write_parsimony_placement_tree_set(
+    path: Path,
+    report: ParsimonyPlacementReport,
+) -> Path:
+    """Write the complete equally optimal placement tree set across all queries."""
+    return write_newick_tree_set(
+        path,
+        [
+            loads_newick(row.placed_tree_newick)
+            for row in report.alternative_rows
+            if row.is_equally_best
+        ],
+    )
+
+
+def write_parsimony_placement_run_json(
+    path: Path,
+    report: ParsimonyPlacementReport,
+) -> Path:
+    """Write one machine-readable parsimony placement payload."""
+    return write_json_artifact(
+        path,
+        {
+            "algorithm": report.algorithm,
+            "method": report.method,
+            "tree_path": None if report.tree_path is None else str(report.tree_path),
+            "matrix_path": None
+            if report.matrix_path is None
+            else str(report.matrix_path),
+            "query_matrix_path": None
+            if report.query_matrix_path is None
+            else str(report.query_matrix_path),
+            "taxon_column": report.taxon_column,
+            "reference_taxon_count": report.reference_taxon_count,
+            "character_count": report.character_count,
+            "edge_count": report.edge_count,
+            "query_count": report.query_count,
+            "reference_total_steps": report.reference_total_steps,
+            "weights_path": None
+            if report.weights_path is None
+            else str(report.weights_path),
+            "reference_total_weighted_score": report.reference_total_weighted_score,
+            "query_summaries": [
+                {
+                    "query_id": row.query_id,
+                    "character_count": row.character_count,
+                    "best_edge_id": row.best_edge_id,
+                    "best_child_name": row.best_child_name,
+                    "best_descendant_taxa": row.best_descendant_taxa,
+                    "best_total_steps": row.best_total_steps,
+                    "best_additional_steps": row.best_additional_steps,
+                    "best_total_weighted_score": row.best_total_weighted_score,
+                    "best_additional_weighted_score": row.best_additional_weighted_score,
+                    "candidate_placement_count": row.candidate_placement_count,
+                    "equally_best_placement_count": row.equally_best_placement_count,
+                    "selected_best_tree_newick": row.selected_best_tree_newick,
+                }
+                for row in report.query_summaries
+            ],
+            "alternative_rows": [
+                {
+                    "query_id": row.query_id,
+                    "placement_rank": row.placement_rank,
+                    "edge_id": row.edge_id,
+                    "child_name": row.child_name,
+                    "descendant_taxa": row.descendant_taxa,
+                    "total_steps": row.total_steps,
+                    "additional_steps": row.additional_steps,
+                    "total_weighted_score": row.total_weighted_score,
+                    "additional_weighted_score": row.additional_weighted_score,
+                    "is_equally_best": row.is_equally_best,
+                    "placed_tree_newick": row.placed_tree_newick,
+                }
+                for row in report.alternative_rows
+            ],
+        },
+    )
+
+
+def write_parsimony_placement_artifacts(
+    out_dir: Path,
+    report: ParsimonyPlacementReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one parsimony placement run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    equally_best_tree_path = write_parsimony_placement_tree_set(
+        out_dir / "equally_best_placements.nwk",
+        report,
+    )
+    summary_path = write_parsimony_placement_summary_table(
+        out_dir / "summary.tsv",
+        report,
+    )
+    alternative_path = write_parsimony_placement_alternative_table(
+        out_dir / "alternative_placements.tsv",
+        report,
+    )
+    run_json_path = write_parsimony_placement_run_json(out_dir / "run.json", report)
+    return {
+        "equally_best_tree_path": equally_best_tree_path,
+        "summary_path": summary_path,
+        "alternative_path": alternative_path,
+        "run_json_path": run_json_path,
+    }
 
 
 def write_parsimony_bremer_support_table(
