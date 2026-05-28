@@ -21,6 +21,7 @@ from bijux_phylogenetics.engines import (
 )
 from bijux_phylogenetics.parsimony import (
     bootstrap_parsimony,
+    build_parsimony_stepwise_addition_tree,
     consistency_index,
     jackknife_parsimony,
     load_fitch_character_matrix,
@@ -56,6 +57,7 @@ from bijux_phylogenetics.parsimony import (
     write_sankoff_artifacts,
     write_wagner_artifacts,
 )
+from bijux_phylogenetics.phylo.topology import write_stepwise_addition_artifacts
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 from bijux_phylogenetics.runtime.results import build_command_result
 
@@ -344,6 +346,50 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the jackknife report as JSON."
     )
     _add_manifest_argument(phylo_parsimony_jackknife)
+    phylo_parsimony_stepwise_addition = phylo_parsimony_subparsers.add_parser(
+        "stepwise-addition",
+        help="Build one rooted tree by greedy taxon insertion under governed parsimony tree-length scoring.",
+    )
+    phylo_parsimony_stepwise_addition.add_argument("matrix_path", type=Path)
+    phylo_parsimony_stepwise_addition.add_argument(
+        "--method",
+        required=True,
+        choices=[
+            "fitch",
+            "wagner",
+            "sankoff",
+            "dollo",
+            "camin-sokal",
+            "acctran",
+            "deltran",
+        ],
+    )
+    phylo_parsimony_stepwise_addition.add_argument("--taxon-column")
+    phylo_parsimony_stepwise_addition.add_argument(
+        "--insertion-order",
+        help="Optional comma-separated taxon order for greedy insertion; defaults to matrix row order.",
+    )
+    phylo_parsimony_stepwise_addition.add_argument(
+        "--cost-matrix",
+        dest="cost_matrix_path",
+        type=Path,
+        help="Required when --method sankoff is selected.",
+    )
+    phylo_parsimony_stepwise_addition.add_argument(
+        "--allow-asymmetric-costs",
+        action="store_true",
+        help="Allow asymmetric Sankoff transition costs when --method sankoff is selected.",
+    )
+    phylo_parsimony_stepwise_addition.add_argument(
+        "--state-order",
+        help="Comma-separated explicit ordered state labels for Wagner stepwise scoring.",
+    )
+    _add_parsimony_character_weights_argument(phylo_parsimony_stepwise_addition)
+    phylo_parsimony_stepwise_addition.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_stepwise_addition.add_argument(
+        "--json", action="store_true", help="Emit the stepwise-addition report as JSON."
+    )
+    _add_manifest_argument(phylo_parsimony_stepwise_addition)
     phylo_parsimony_nni_search = phylo_parsimony_subparsers.add_parser(
         "nni-search",
         help="Hill-climb one rooted binary starting tree by accepting score-improving rooted NNI moves.",
@@ -835,6 +881,41 @@ def run_phylo_command(args: Any) -> int:
                 "reference_score": report.reference_score,
                 "support_row_count": len(report.clade_support_rows),
             }
+        elif args.phylo_parsimony_command == "stepwise-addition":
+            matrix = load_parsimony_character_matrix(
+                args.matrix_path,
+                taxon_column=args.taxon_column,
+            )
+            character_weights = _load_parsimony_character_weights_argument(args)
+            cost_matrix = (
+                load_sankoff_cost_matrix(
+                    args.cost_matrix_path,
+                    allow_asymmetric_costs=args.allow_asymmetric_costs,
+                )
+                if getattr(args, "cost_matrix_path", None) is not None
+                else None
+            )
+            state_order = _split_state_order(getattr(args, "state_order", None))
+            insertion_order = _split_taxon_order(getattr(args, "insertion_order", None))
+            _tree, report = build_parsimony_stepwise_addition_tree(
+                matrix,
+                method=args.method,
+                insertion_order=insertion_order,
+                state_order=state_order,
+                cost_matrix=cost_matrix,
+                allow_asymmetric_costs=args.allow_asymmetric_costs,
+                character_weights=character_weights,
+            )
+            artifact_paths = write_stepwise_addition_artifacts(args.out_dir, report)
+            metrics = {
+                "algorithm": report.algorithm,
+                "method": args.method,
+                "objective_name": report.objective_name,
+                "taxon_count": report.tip_count,
+                "character_count": matrix.character_count,
+                "final_score": report.final_score,
+                "insertion_step_count": len(report.trace_rows),
+            }
         elif args.phylo_parsimony_command == "nni-search":
             matrix = load_parsimony_character_matrix(
                 args.matrix_path,
@@ -1082,6 +1163,10 @@ def run_phylo_command(args: Any) -> int:
                         and getattr(args, "cost_matrix_path", None) is not None
                     )
                     or (
+                        args.phylo_parsimony_command == "stepwise-addition"
+                        and getattr(args, "cost_matrix_path", None) is not None
+                    )
+                    or (
                         args.phylo_parsimony_command == "tree-length"
                         and getattr(args, "cost_matrix_path", None) is not None
                     )
@@ -1305,6 +1390,13 @@ def run_phylo_command(args: Any) -> int:
 
 
 def _split_state_order(raw: str | None) -> list[str] | None:
+    if raw is None:
+        return None
+    values = [value.strip() for value in raw.split(",")]
+    return [value for value in values if value]
+
+
+def _split_taxon_order(raw: str | None) -> list[str] | None:
     if raw is None:
         return None
     values = [value.strip() for value in raw.split(",")]
