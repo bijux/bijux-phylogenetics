@@ -101,6 +101,40 @@ class CladeCompatibilityGraphReport:
 
 
 @dataclass(frozen=True, slots=True)
+class MajorityRuleExtendedAcceptedCladeRow:
+    insertion_rank: int
+    clade: str
+    tree_count: int
+    frequency: float
+    inclusion_stage: str
+
+
+@dataclass(frozen=True, slots=True)
+class MajorityRuleExtendedRejectedCladeRow:
+    clade: str
+    tree_count: int
+    frequency: float
+    blocking_clades: list[str]
+
+
+@dataclass(slots=True)
+class MajorityRuleExtendedConsensusReport:
+    path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    consensus_method: str
+    majority_threshold: float
+    included_clade_count: int
+    majority_included_clade_count: int
+    extension_included_clade_count: int
+    rejected_conflict_count: int
+    consensus_newick: str
+    accepted_clades: list[MajorityRuleExtendedAcceptedCladeRow]
+    rejected_clades: list[MajorityRuleExtendedRejectedCladeRow]
+
+
+@dataclass(frozen=True, slots=True)
 class TreeSetCladeSupportRow:
     node_id: int
     node_kind: str
