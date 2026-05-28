@@ -17,7 +17,11 @@ from bijux_phylogenetics.bayesian import (
     assess_mrbayes_convergence,
     build_bayesian_evidence_package,
     build_posterior_uncertainty_figure_package,
+    compare_log_probabilities,
     compute_mrbayes_effective_sample_sizes,
+    log_probability_add,
+    logsumexp,
+    normalize_log_probabilities,
     parse_beast_log,
     parse_beast_posterior_tree_samples,
     parse_mrbayes_consensus_tree,
@@ -785,6 +789,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.compute_mrbayes_effective_sample_sizes
         is compute_mrbayes_effective_sample_sizes
     )
+    assert bayesian_api.compare_log_probabilities is compare_log_probabilities
+    assert bayesian_api.log_probability_add is log_probability_add
+    assert bayesian_api.logsumexp is logsumexp
+    assert bayesian_api.normalize_log_probabilities is normalize_log_probabilities
     assert bayesian_api.parse_beast_log is parse_beast_log
     assert (
         bayesian_api.parse_beast_posterior_tree_samples
