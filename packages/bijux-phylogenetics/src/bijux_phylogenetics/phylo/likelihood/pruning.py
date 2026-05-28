@@ -8,7 +8,7 @@ import numpy
 
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
-from .ctmc import validate_ctmc_rate_matrix
+from .ctmc import ValidatedCtmcRateMatrix, validate_ctmc_rate_matrix
 
 
 @dataclass(slots=True)
@@ -31,13 +31,88 @@ class FiniteStatePruningPass:
         return self.subtree_log_scaling_by_node_id[node.node_id]
 
 
+@dataclass(slots=True)
+class FiniteStateTransitionMatrixEvaluator:
+    """Branch-length transition evaluator for one validated finite-state model."""
+
+    validated_rate_matrix: ValidatedCtmcRateMatrix
+    cache_matrices: bool
+    transition_matrix_by_branch_length: dict[float, numpy.ndarray]
+    matrix_exponential_evaluation_count: int = 0
+
+    @property
+    def cached_branch_length_count(self) -> int:
+        return len(self.transition_matrix_by_branch_length)
+
+    def transition_probability_matrix(self, branch_length: float) -> numpy.ndarray:
+        normalized_branch_length = _normalize_branch_length(branch_length)
+        if not self.cache_matrices:
+            self.matrix_exponential_evaluation_count += 1
+            return _compute_transition_probability_matrix(
+                self.validated_rate_matrix,
+                normalized_branch_length,
+            )
+        cached_matrix = self.transition_matrix_by_branch_length.get(
+            normalized_branch_length
+        )
+        if cached_matrix is None:
+            cached_matrix = _compute_transition_probability_matrix(
+                self.validated_rate_matrix,
+                normalized_branch_length,
+            )
+            cached_matrix.setflags(write=False)
+            self.transition_matrix_by_branch_length[normalized_branch_length] = (
+                cached_matrix
+            )
+            self.matrix_exponential_evaluation_count += 1
+        return cached_matrix.copy()
+
+
+def build_transition_matrix_evaluator(
+    rate_matrix: numpy.ndarray | ValidatedCtmcRateMatrix,
+    *,
+    cache_matrices: bool = True,
+) -> FiniteStateTransitionMatrixEvaluator:
+    """Build one reusable transition evaluator for a single finite-state model."""
+    validated_rate_matrix = _validated_rate_matrix(rate_matrix)
+    return FiniteStateTransitionMatrixEvaluator(
+        validated_rate_matrix=validated_rate_matrix,
+        cache_matrices=cache_matrices,
+        transition_matrix_by_branch_length={},
+    )
+
+
 def transition_probability_matrix(
     rate_matrix: numpy.ndarray,
     branch_length: float,
 ) -> numpy.ndarray:
     """Exponentiate one finite-state rate matrix into a branch transition matrix."""
-    validated_rate_matrix = validate_ctmc_rate_matrix(rate_matrix)
+    validated_rate_matrix = _validated_rate_matrix(rate_matrix)
+    return _compute_transition_probability_matrix(
+        validated_rate_matrix,
+        _normalize_branch_length(branch_length),
+    )
+
+
+def _validated_rate_matrix(
+    rate_matrix: numpy.ndarray | ValidatedCtmcRateMatrix,
+) -> ValidatedCtmcRateMatrix:
+    if isinstance(rate_matrix, ValidatedCtmcRateMatrix):
+        return rate_matrix
+    return validate_ctmc_rate_matrix(rate_matrix)
+
+
+def _normalize_branch_length(branch_length: float) -> float:
     if branch_length <= 0.0:
+        return 0.0
+    return float(branch_length)
+
+
+def _compute_transition_probability_matrix(
+    validated_rate_matrix: ValidatedCtmcRateMatrix,
+    branch_length: float,
+) -> numpy.ndarray:
+    if branch_length == 0.0:
         return numpy.eye(validated_rate_matrix.state_count, dtype=float)
     eigenvalues, eigenvectors = numpy.linalg.eig(validated_rate_matrix.rate_matrix)
     inverse_vectors = numpy.linalg.inv(eigenvectors)
