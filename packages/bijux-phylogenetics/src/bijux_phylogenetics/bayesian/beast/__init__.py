@@ -20,6 +20,9 @@ from .logs import (
     summarize_beast_log as summarize_beast_log,
 )
 from .logs import (
+    summarize_beast_posterior_decomposition as summarize_beast_posterior_decomposition,
+)
+from .logs import (
     validate_beast_posterior_log as validate_beast_posterior_log,
 )
 from .logs import (
@@ -27,6 +30,9 @@ from .logs import (
 )
 from .logs import (
     write_beast_log_summary_table as write_beast_log_summary_table,
+)
+from .logs import (
+    write_beast_posterior_decomposition_table as write_beast_posterior_decomposition_table,
 )
 from .models import (
     BeastAnalysisXmlIssue as BeastAnalysisXmlIssue,
@@ -75,6 +81,12 @@ from .models import (
 )
 from .models import (
     BeastPosteriorConsensusReport as BeastPosteriorConsensusReport,
+)
+from .models import (
+    BeastPosteriorDecompositionReport as BeastPosteriorDecompositionReport,
+)
+from .models import (
+    BeastPosteriorDecompositionRow as BeastPosteriorDecompositionRow,
 )
 from .models import (
     BeastPosteriorLogValidationReport as BeastPosteriorLogValidationReport,
@@ -177,6 +189,8 @@ __all__ = [
     "BeastLogRow",
     "BeastLogReport",
     "BeastLogParameterSummary",
+    "BeastPosteriorDecompositionReport",
+    "BeastPosteriorDecompositionRow",
     "BeastLogSummaryReport",
     "BeastPosteriorTreeSample",
     "BeastPosteriorClade",
@@ -202,6 +216,7 @@ __all__ = [
     "run_beast_posterior_inference",
     "summarize_beast_analysis_xml",
     "summarize_beast_log",
+    "summarize_beast_posterior_decomposition",
     "summarize_beast_posterior_topology_diversity",
     "summarize_beast_posterior_trees",
     "validate_beast_analysis_xml",
@@ -210,5 +225,6 @@ __all__ = [
     "validate_tip_dating_metadata",
     "write_beast_burnin_sensitivity_slice_table",
     "write_beast_log_summary_table",
+    "write_beast_posterior_decomposition_table",
     "write_beast_posterior_tree_set",
 ]

@@ -14,10 +14,16 @@ from .diagnostics import (
     summarize_mrbayes_parameter_diagnostics as summarize_mrbayes_parameter_diagnostics,
 )
 from .diagnostics import (
+    summarize_mrbayes_posterior_decomposition as summarize_mrbayes_posterior_decomposition,
+)
+from .diagnostics import (
     write_mrbayes_burnin_sensitivity_slice_table as write_mrbayes_burnin_sensitivity_slice_table,
 )
 from .diagnostics import (
     write_mrbayes_parameter_summary_table as write_mrbayes_parameter_summary_table,
+)
+from .diagnostics import (
+    write_mrbayes_posterior_decomposition_table as write_mrbayes_posterior_decomposition_table,
 )
 from .execution import (
     run_mrbayes_posterior_inference as run_mrbayes_posterior_inference,
@@ -51,6 +57,12 @@ from .models import (
 )
 from .models import (
     MrBayesParameterSummary as MrBayesParameterSummary,
+)
+from .models import (
+    MrBayesPosteriorDecompositionReport as MrBayesPosteriorDecompositionReport,
+)
+from .models import (
+    MrBayesPosteriorDecompositionRow as MrBayesPosteriorDecompositionRow,
 )
 from .models import (
     MrBayesPosteriorSummaryReport as MrBayesPosteriorSummaryReport,
@@ -100,6 +112,8 @@ __all__ = [
     "MrBayesMcmcRow",
     "MrBayesParameterDiagnosticsReport",
     "MrBayesParameterSummary",
+    "MrBayesPosteriorDecompositionReport",
+    "MrBayesPosteriorDecompositionRow",
     "MrBayesPosteriorSummaryReport",
     "MrBayesPosteriorTreeSample",
     "MrBayesPosteriorTreeSetReport",
@@ -115,8 +129,10 @@ __all__ = [
     "parse_mrbayes_posterior_tree_samples",
     "prepare_mrbayes_analysis",
     "run_mrbayes_posterior_inference",
+    "summarize_mrbayes_posterior_decomposition",
     "summarize_mrbayes_parameter_diagnostics",
     "summarize_mrbayes_posterior_trees",
     "write_mrbayes_burnin_sensitivity_slice_table",
+    "write_mrbayes_posterior_decomposition_table",
     "write_mrbayes_parameter_summary_table",
 ]
