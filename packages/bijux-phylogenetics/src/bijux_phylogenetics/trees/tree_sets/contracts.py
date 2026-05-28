@@ -192,6 +192,41 @@ class TreeSetQuartetSupportReport:
 
 
 @dataclass(slots=True)
+class GeneTreeQuartetConcordanceRow:
+    branch_id: str
+    left_taxa: list[str]
+    right_taxa: list[str]
+    quartet_count_per_tree: int
+    concordant_quartet_count: int
+    discordant_first_quartet_count: int
+    discordant_second_quartet_count: int
+    uninformative_quartet_count: int
+    informative_quartet_count: int
+    concordance_factor: float | None
+    concordant_frequency: float
+    discordant_first_frequency: float
+    discordant_second_frequency: float
+    uninformative_frequency: float
+
+
+@dataclass(slots=True)
+class GeneTreeQuartetConcordanceReport:
+    species_tree_path: Path
+    gene_tree_set_path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    branch_count: int
+    total_quartet_count: int
+    concordant_quartet_count: int
+    discordant_first_quartet_count: int
+    discordant_second_quartet_count: int
+    uninformative_quartet_count: int
+    informative_quartet_count: int
+    rows: list[GeneTreeQuartetConcordanceRow]
+
+
+@dataclass(slots=True)
 class QuartetTopologyScoreRow:
     quartet_taxa: list[str]
     first_split_taxa: list[str]
