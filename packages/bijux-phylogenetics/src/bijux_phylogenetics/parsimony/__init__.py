@@ -70,6 +70,7 @@ from .dollo import score_dollo
 from .fitch import (
     score_fitch,
 )
+from .equal_best_consensus import summarize_equal_best_parsimony_trees
 from .jackknife import jackknife_parsimony
 from .matrix import load_fitch_character_matrix, load_parsimony_character_matrix
 from .nni import search_parsimony_nni
@@ -152,6 +153,7 @@ __all__ = [
     "FitchScoreReport",
     "load_fitch_character_matrix",
     "jackknife_parsimony",
+    "summarize_equal_best_parsimony_trees",
     "search_parsimony_nni",
     "run_parsimony_ratchet",
     "search_parsimony_spr",

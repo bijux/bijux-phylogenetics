@@ -185,10 +185,30 @@ def select_best_tree(
     allow_asymmetric_costs: bool,
     character_weights: ParsimonyCharacterWeights,
 ) -> tuple[PhyloTree, float, int]:
-    best_tree: PhyloTree | None = None
-    best_newick: str | None = None
+    equal_best_trees, best_score = select_equal_best_trees(
+        candidate_trees,
+        matrix,
+        method=method,
+        state_order=state_order,
+        cost_matrix=cost_matrix,
+        allow_asymmetric_costs=allow_asymmetric_costs,
+        character_weights=character_weights,
+    )
+    return equal_best_trees[0].copy(), best_score, len(equal_best_trees)
+
+
+def select_equal_best_trees(
+    candidate_trees: tuple[PhyloTree, ...],
+    matrix: FitchCharacterMatrix,
+    *,
+    method: str,
+    state_order: list[str] | None,
+    cost_matrix: SankoffCostMatrix | None,
+    allow_asymmetric_costs: bool,
+    character_weights: ParsimonyCharacterWeights,
+) -> tuple[tuple[PhyloTree, ...], float]:
     best_score: float | None = None
-    optimal_tree_count = 0
+    best_trees_by_newick: dict[str, PhyloTree] = {}
     for tree in candidate_trees:
         score_report = tree_length(
             tree,
@@ -202,20 +222,17 @@ def select_best_tree(
         score = score_report.total_score
         candidate_newick = dumps_newick(tree)
         if best_score is None or score < best_score and not math.isclose(score, best_score):
-            best_tree = tree
-            best_newick = candidate_newick
             best_score = score
-            optimal_tree_count = 1
+            best_trees_by_newick = {candidate_newick: tree.copy()}
             continue
         if best_score is not None and math.isclose(score, best_score):
-            optimal_tree_count += 1
-            if best_newick is None or candidate_newick < best_newick:
-                best_tree = tree
-                best_newick = candidate_newick
-                best_score = score
-    if best_tree is None or best_score is None:
+            best_trees_by_newick.setdefault(candidate_newick, tree.copy())
+    if best_score is None or not best_trees_by_newick:
         raise AssertionError("exact parsimony search produced no candidate trees")
-    return best_tree.copy(), best_score, optimal_tree_count
+    return (
+        tuple(best_trees_by_newick[key].copy() for key in sorted(best_trees_by_newick)),
+        best_score,
+    )
 
 
 def build_resampled_matrix(

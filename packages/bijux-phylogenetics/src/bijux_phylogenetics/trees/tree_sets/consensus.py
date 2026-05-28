@@ -4,10 +4,18 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
+from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clades
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 from .contracts import ConsensusTreeReport
-from .inventory import _analyze_tree_set, _require_exact_taxa, _TreeSetAnalysis
+from .inventory import (
+    _analyze_tree_set,
+    _clade_branch_lengths,
+    _require_exact_taxa,
+    _terminal_branch_lengths,
+    _TreeSetAnalysis,
+    _validate_same_taxa,
+)
 
 
 def _maximal_nested_clades(
@@ -118,6 +126,59 @@ def _build_consensus_tree_with_threshold(
         included_clade_count=len(majority_clades),
         consensus_newick=dumps_newick(tree),
     )
+
+
+def _build_consensus_tree_with_threshold_from_trees(
+    trees: list[PhyloTree],
+    *,
+    threshold: float,
+) -> tuple[PhyloTree, int]:
+    shared_taxa = _validate_same_taxa(trees)
+    shared_taxa_set = set(shared_taxa)
+    counts: dict[frozenset[str], int] = {}
+    clade_branch_lengths: dict[frozenset[str], list[float]] = {}
+    terminal_lengths: dict[str, list[float]] = {}
+    for tree in trees:
+        for clade in informative_rooted_clades(tree, shared_taxa_set):
+            counts[clade] = counts.get(clade, 0) + 1
+        for clade, length in _clade_branch_lengths(tree, shared_taxa_set).items():
+            if length is not None:
+                clade_branch_lengths.setdefault(clade, []).append(float(length))
+        for taxon, length in _terminal_branch_lengths(tree).items():
+            if length is not None:
+                terminal_lengths.setdefault(taxon, []).append(float(length))
+    majority_clades = {
+        clade
+        for clade, count in counts.items()
+        if count / len(trees) >= threshold
+    }
+    clade_support = {
+        clade: round((counts[clade] / len(trees)) * 100.0, 15)
+        for clade in majority_clades
+    }
+    clade_lengths = {
+        clade: _mean(lengths)
+        for clade, lengths in clade_branch_lengths.items()
+        if clade in majority_clades and lengths
+    }
+    terminal_length_means = {
+        taxon: _mean(lengths)
+        for taxon, lengths in terminal_lengths.items()
+        if lengths
+    }
+    tree = PhyloTree(
+        root=_build_consensus_node(
+            frozenset(shared_taxa),
+            majority_clades=majority_clades,
+            clade_support=clade_support,
+            clade_lengths=clade_lengths,
+            terminal_lengths=terminal_length_means,
+            is_root=True,
+        ),
+        source_format=trees[0].source_format,
+        rooted=True,
+    )
+    return tree, len(majority_clades)
 
 
 def compute_consensus_tree(path: Path) -> tuple[PhyloTree, ConsensusTreeReport]:
