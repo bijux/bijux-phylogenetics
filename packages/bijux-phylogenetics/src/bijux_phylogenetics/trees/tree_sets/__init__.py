@@ -24,6 +24,7 @@ from .consensus import (
     write_consensus_tree,
 )
 from .contracts import (
+    CandidateTreeQuartetScoreReport,
     CladeCompatibilityEdgeRow,
     CladeCompatibilityGraphReport,
     CladeCompatibilityNodeRow,
@@ -66,12 +67,17 @@ from .quartet_puzzling import (
     build_quartet_puzzling_consensus,
     write_quartet_puzzling_artifacts,
 )
+from .quartet_score import (
+    compute_candidate_tree_quartet_score,
+    write_candidate_tree_quartet_score_table,
+)
 from .quartet_support import (
     compute_reference_tree_quartet_support,
     write_reference_tree_quartet_support_table,
 )
 
 __all__ = [
+    "CandidateTreeQuartetScoreReport",
     "CladeFrequency",
     "CladeFrequencyReport",
     "CladeCompatibilityEdgeRow",
@@ -100,6 +106,7 @@ __all__ = [
     "build_quartet_puzzling_consensus",
     "build_tree_set_budget_report",
     "build_tree_set_workflow_budget",
+    "compute_candidate_tree_quartet_score",
     "compute_clade_compatibility_graph",
     "compute_clade_frequency_table",
     "compute_consensus_tree",
@@ -112,6 +119,7 @@ __all__ = [
     "compute_tree_distance_matrix",
     "enforce_tree_set_tree_budget",
     "load_tree_set",
+    "write_candidate_tree_quartet_score_table",
     "write_clade_compatibility_edge_table",
     "write_clade_compatibility_graph_dot",
     "write_clade_compatibility_node_table",
