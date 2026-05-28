@@ -90,6 +90,36 @@ class DateAwareTreeComparisonReport:
 
 
 @dataclass(slots=True)
+class DeepCoalescenceTaxonMapRow:
+    gene_taxon: str
+    species_taxon: str
+
+
+@dataclass(slots=True)
+class DeepCoalescenceBranchRow:
+    species_branch: str
+    branch_role: str
+    descendant_species: list[str]
+    lineage_count_entering: int
+    coalescent_event_count: int
+    lineage_count_exiting: int
+    extra_lineage_count: int
+    included_in_deep_coalescence_total: bool
+
+
+@dataclass(slots=True)
+class DeepCoalescenceReport:
+    species_tree_path: Path
+    gene_tree_path: Path
+    observed_species_taxa: list[str]
+    species_only_taxa: list[str]
+    gene_tip_count: int
+    deep_coalescence_total: int
+    mapping_rows: list[DeepCoalescenceTaxonMapRow]
+    branch_rows: list[DeepCoalescenceBranchRow]
+
+
+@dataclass(slots=True)
 class SharedTaxaPruningReport:
     left_path: Path
     right_path: Path
