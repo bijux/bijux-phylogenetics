@@ -68,6 +68,14 @@ from .branch_length_priors import (
     evaluate_branch_length_log_prior,
     evaluate_tree_branch_length_log_prior,
 )
+from .calibration_priors import (
+    CALIBRATION_PRIOR_FAMILIES,
+    CalibrationPriorDefinition,
+    CalibrationPriorEvaluationReport,
+    CalibrationPriorRow,
+    evaluate_calibration_tree_log_prior,
+    load_calibration_prior_definitions,
+)
 from .clock_models import (
     CLOCK_RATE_MODEL_FAMILIES,
     LOCAL_CLOCK_RATE_MODEL_FAMILIES,
@@ -236,6 +244,7 @@ from .tree_topology_priors import (
 
 __all__ = [
     "BRANCH_LENGTH_PRIOR_FAMILIES",
+    "CALIBRATION_PRIOR_FAMILIES",
     "BayesianEvidencePackageReport",
     "BayesianLimitationsTextResult",
     "BayesianMethodsSummaryTextResult",
@@ -260,6 +269,9 @@ __all__ = [
     "CalibrationDominanceObservation",
     "CalibrationDominanceReport",
     "CalibrationAuditReportBuildResult",
+    "CalibrationPriorDefinition",
+    "CalibrationPriorEvaluationReport",
+    "CalibrationPriorRow",
     "CATEGORICAL_MISSING_STATE_POLICIES",
     "CategoricalProbabilityVector",
     "LOCAL_CLOCK_RATE_MODEL_FAMILIES",
@@ -376,6 +388,7 @@ __all__ = [
     "compute_mrbayes_effective_sample_sizes",
     "count_rooted_labeled_bifurcating_topologies",
     "evaluate_branch_length_log_prior",
+    "evaluate_calibration_tree_log_prior",
     "evaluate_constant_population_coalescent_tree_log_prior",
     "evaluate_skyline_coalescent_tree_log_prior",
     "evaluate_birth_death_tree_log_prior",
@@ -395,6 +408,7 @@ __all__ = [
     "parse_mrbayes_parameter_traces",
     "parse_mrbayes_posterior_tree_samples",
     "prepare_beast_time_tree_analysis",
+    "load_calibration_prior_definitions",
     "load_local_clock_regime_definitions",
     "log_probability_add",
     "logsumexp",
