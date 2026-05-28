@@ -8,8 +8,10 @@ from bijux_phylogenetics.bayesian import (
     assess_beast_convergence,
     parse_beast_log,
     summarize_beast_log,
+    summarize_beast_posterior_decomposition,
     write_beast_burnin_sensitivity_slice_table,
     write_beast_log_summary_table,
+    write_beast_posterior_decomposition_table,
 )
 from bijux_phylogenetics.bayesian.posterior_sets.burnin import (
     DEFAULT_BURNIN_FRACTIONS,
@@ -38,6 +40,11 @@ def add_beast_diagnostic_commands(adapter_subparsers: Any) -> None:
         "--summary-out",
         type=Path,
         help="Write a TSV parameter-summary table for the parsed log.",
+    )
+    adapter_beast_log.add_argument(
+        "--decomposition-out",
+        type=Path,
+        help="Write a TSV posterior, likelihood, and prior decomposition table for the retained log samples.",
     )
     adapter_beast_log.add_argument(
         "--json", action="store_true", help="Emit the parsed log report as JSON."
@@ -83,6 +90,11 @@ def add_beast_diagnostic_commands(adapter_subparsers: Any) -> None:
         help="Write a TSV parameter-summary table for the retained log samples.",
     )
     adapter_beast_parameters.add_argument(
+        "--decomposition-out",
+        type=Path,
+        help="Write a TSV posterior, likelihood, and prior decomposition table for the retained log samples.",
+    )
+    adapter_beast_parameters.add_argument(
         "--json", action="store_true", help="Emit the parameter diagnostics as JSON."
     )
     _add_manifest_argument(adapter_beast_parameters)
@@ -114,9 +126,22 @@ def run_beast_diagnostic_command(args: Any) -> int | None:
         summary = summarize_beast_log(
             args.input_path, burnin_fraction=args.burnin_fraction
         )
+        decomposition = None
+        if args.decomposition_out is not None:
+            decomposition = summarize_beast_posterior_decomposition(
+                args.input_path,
+                burnin_fraction=args.burnin_fraction,
+            )
         outputs: list[Path | str] = []
         if args.summary_out is not None:
             outputs.append(write_beast_log_summary_table(args.summary_out, summary))
+        if args.decomposition_out is not None:
+            outputs.append(
+                write_beast_posterior_decomposition_table(
+                    args.decomposition_out,
+                    decomposition,
+                )
+            )
         outputs = _finalize_outputs(
             args,
             command="adapter",
@@ -138,8 +163,26 @@ def run_beast_diagnostic_command(args: Any) -> int | None:
                     "prior_parameter_count": len(summary.prior_parameters),
                     "clock_parameter_count": len(summary.clock_parameters),
                     "tree_parameter_count": len(summary.tree_parameters),
+                    **(
+                        {}
+                        if decomposition is None
+                        else {
+                            "decomposition_verified": decomposition.verified,
+                            "decomposition_maximum_absolute_delta": (
+                                decomposition.maximum_absolute_delta
+                            ),
+                        }
+                    ),
                 },
-                data={"log": report, "summary": summary},
+                data={
+                    "log": report,
+                    "summary": summary,
+                    **(
+                        {}
+                        if decomposition is None
+                        else {"decomposition": decomposition}
+                    ),
+                },
             ),
             json_output=args.json,
         )
@@ -201,9 +244,22 @@ def run_beast_diagnostic_command(args: Any) -> int | None:
             args.input_path,
             burnin_fraction=args.burnin_fraction,
         )
+        decomposition = None
+        if args.decomposition_out is not None:
+            decomposition = summarize_beast_posterior_decomposition(
+                args.input_path,
+                burnin_fraction=args.burnin_fraction,
+            )
         outputs: list[Path | str] = []
         if args.summary_out is not None:
             outputs.append(write_beast_log_summary_table(args.summary_out, report))
+        if args.decomposition_out is not None:
+            outputs.append(
+                write_beast_posterior_decomposition_table(
+                    args.decomposition_out,
+                    decomposition,
+                )
+            )
         outputs = _finalize_outputs(
             args,
             command="adapter",
@@ -220,8 +276,22 @@ def run_beast_diagnostic_command(args: Any) -> int | None:
                     "kept_row_count": report.kept_row_count,
                     "parameter_count": len(report.parameter_summaries),
                     "posterior_parameter_count": len(report.posterior_parameters),
+                    **(
+                        {}
+                        if decomposition is None
+                        else {
+                            "decomposition_verified": decomposition.verified,
+                            "decomposition_maximum_absolute_delta": (
+                                decomposition.maximum_absolute_delta
+                            ),
+                        }
+                    ),
                 },
-                data=report,
+                data=(
+                    report
+                    if decomposition is None
+                    else {"summary": report, "decomposition": decomposition}
+                ),
             ),
             json_output=args.json,
         )

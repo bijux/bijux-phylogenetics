@@ -7,8 +7,10 @@ from bijux_phylogenetics.bayesian import (
     assess_mrbayes_burnin_sensitivity,
     assess_mrbayes_convergence,
     summarize_mrbayes_parameter_diagnostics,
+    summarize_mrbayes_posterior_decomposition,
     write_mrbayes_burnin_sensitivity_slice_table,
     write_mrbayes_parameter_summary_table,
+    write_mrbayes_posterior_decomposition_table,
 )
 from bijux_phylogenetics.bayesian.posterior_sets.burnin import (
     DEFAULT_BURNIN_FRACTIONS,
@@ -37,6 +39,11 @@ def add_mrbayes_parameter_review_commands(adapter_subparsers: Any) -> None:
         "--summary-out",
         type=Path,
         help="Write a TSV parameter-summary table for the retained trace samples.",
+    )
+    adapter_mrbayes_parameters.add_argument(
+        "--decomposition-out",
+        type=Path,
+        help="Write a TSV posterior, likelihood, and prior decomposition table for the retained trace samples.",
     )
     adapter_mrbayes_parameters.add_argument(
         "--json", action="store_true", help="Emit the parameter diagnostics as JSON."
@@ -88,12 +95,25 @@ def run_mrbayes_parameter_review_command(args: Any) -> int | None:
             args.input_path,
             burnin_fraction=args.burnin_fraction,
         )
+        decomposition = None
+        if args.decomposition_out is not None:
+            decomposition = summarize_mrbayes_posterior_decomposition(
+                args.input_path,
+                burnin_fraction=args.burnin_fraction,
+            )
         outputs: list[Path | str] = []
         if args.summary_out is not None:
             outputs.append(
                 write_mrbayes_parameter_summary_table(
                     args.summary_out,
                     report,
+                )
+            )
+        if args.decomposition_out is not None:
+            outputs.append(
+                write_mrbayes_posterior_decomposition_table(
+                    args.decomposition_out,
+                    decomposition,
                 )
             )
         outputs = _finalize_outputs(
@@ -111,8 +131,22 @@ def run_mrbayes_parameter_review_command(args: Any) -> int | None:
                     "burnin_fraction": report.burnin_fraction,
                     "kept_row_count": report.kept_row_count,
                     "parameter_count": len(report.parameter_summaries),
+                    **(
+                        {}
+                        if decomposition is None
+                        else {
+                            "decomposition_verified": decomposition.verified,
+                            "decomposition_maximum_absolute_delta": (
+                                decomposition.maximum_absolute_delta
+                            ),
+                        }
+                    ),
                 },
-                data=report,
+                data=(
+                    report
+                    if decomposition is None
+                    else {"summary": report, "decomposition": decomposition}
+                ),
             ),
             json_output=args.json,
         )
