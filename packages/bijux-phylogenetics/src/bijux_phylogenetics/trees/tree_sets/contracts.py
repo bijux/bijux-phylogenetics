@@ -123,6 +123,49 @@ class TreeSetQuartetSupportReport:
 
 
 @dataclass(slots=True)
+class QuartetTopologyScoreRow:
+    quartet_taxa: list[str]
+    first_split_taxa: list[str]
+    first_split_tree_count: int
+    second_split_taxa: list[str]
+    second_split_tree_count: int
+    third_split_taxa: list[str]
+    third_split_tree_count: int
+    uninformative_tree_count: int
+    best_split_taxa: list[str] | None
+    best_split_support_frequency: float | None
+    tied_best_split_taxa: list[list[str]]
+
+
+@dataclass(slots=True)
+class QuartetPuzzlingAssemblyRow:
+    order_index: int
+    taxon_order: list[str]
+    quartet_score: float
+    assembled_topology_id: str
+    assembled_tree_newick: str
+
+
+@dataclass(slots=True)
+class QuartetPuzzlingReport:
+    tree_set_path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    quartet_count: int
+    assembly_count: int
+    unique_assembled_topology_count: int
+    canonical_root_taxon: str
+    canonical_rooting_strategy: str
+    consensus_method: str
+    consensus_threshold: float
+    included_clade_count: int
+    consensus_newick: str
+    quartet_rows: list[QuartetTopologyScoreRow]
+    assembly_rows: list[QuartetPuzzlingAssemblyRow]
+
+
+@dataclass(slots=True)
 class ConsensusTreeReport:
     path: Path
     tree_count: int
