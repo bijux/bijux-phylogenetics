@@ -882,6 +882,22 @@ class ProteinPoissonTreeLikelihoodReport:
 
 
 @dataclass(slots=True)
+class CodonCtmcTreeLikelihoodReport:
+    """Native sense-codon CTMC likelihood report for one fixed topology."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    state_count: int
+    genetic_code_id: int
+    genetic_code_name: str
+    codon_frequency_source: str
+    log_likelihood: float
+
+
+@dataclass(slots=True)
 class ProteinEmpiricalMatrixTreeLikelihoodReport:
     """Native empirical 20-state protein likelihood report for one fixed topology."""
 
