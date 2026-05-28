@@ -4,7 +4,10 @@ import csv
 from pathlib import Path
 
 from .branch_lengths import compare_branch_lengths
-from .agreement import prune_trees_to_agreement_subtree
+from .agreement import (
+    approximate_maximum_agreement_subtree,
+    prune_trees_to_agreement_subtree,
+)
 from .overlap import (
     compare_clade_overlap,
     compare_clade_sets,
@@ -336,6 +339,224 @@ def write_agreement_subtree_search_table(
                     "robinson_foulds_distance": row.robinson_foulds_distance,
                     "normalized_robinson_foulds": row.normalized_robinson_foulds,
                     "topology_equal": str(row.topology_equal).lower(),
+                }
+            )
+    return path
+
+
+def write_maximum_agreement_subtree_pruning_table(
+    path: Path,
+    left_path: Path,
+    right_path: Path,
+    *,
+    rf_mode: RobinsonFouldsMode = "rooted",
+    max_evaluated_candidate_count: int,
+) -> Path:
+    """Write one row per tree summarizing heuristic maximum-agreement pruning."""
+    _, _, report = approximate_maximum_agreement_subtree(
+        left_path,
+        right_path,
+        rf_mode=rf_mode,
+        max_evaluated_candidate_count=max_evaluated_candidate_count,
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "tree_side",
+                "tree_path",
+                "rf_mode",
+                "search_strategy",
+                "selection_objective",
+                "approximation_status",
+                "possible_retained_subset_count",
+                "max_evaluated_candidate_count",
+                "evaluated_candidate_count",
+                "maximum_agreement_retained_taxa",
+                "maximum_agreement_removed_taxa",
+                "original_tip_count",
+                "retained_tip_count",
+                "removed_tip_count",
+                "requested_taxa",
+                "kept_taxa",
+                "removed_taxa",
+                "absent_requested_taxa",
+                "removed_taxa_with_reasons",
+                "transformation",
+                "root_to_tip_complete",
+                "min_root_to_tip",
+                "max_root_to_tip",
+                "unary_internal_nodes",
+                "original_total_branch_length",
+                "pruned_total_branch_length",
+                "branch_length_delta",
+                "lost_taxa_count",
+                "lost_taxa_fraction",
+                "lost_clade_count",
+                "lost_clade_fraction",
+                "lost_branch_length",
+                "lost_branch_length_fraction",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for tree_side, pruning in (
+            ("left", report.left_pruning),
+            ("right", report.right_pruning),
+        ):
+            writer.writerow(
+                {
+                    "tree_side": tree_side,
+                    "tree_path": str(pruning.tree_path),
+                    "rf_mode": report.rf_mode,
+                    "search_strategy": report.search_strategy,
+                    "selection_objective": report.selection_objective,
+                    "approximation_status": report.approximation_status,
+                    "possible_retained_subset_count": report.possible_retained_subset_count,
+                    "max_evaluated_candidate_count": report.max_evaluated_candidate_count,
+                    "evaluated_candidate_count": report.evaluated_candidate_count,
+                    "maximum_agreement_retained_taxa": _pipe_join(report.retained_taxa),
+                    "maximum_agreement_removed_taxa": _pipe_join(
+                        report.approximation_removed_taxa
+                    ),
+                    "original_tip_count": pruning.original_tip_count,
+                    "retained_tip_count": len(pruning.kept_taxa),
+                    "removed_tip_count": len(pruning.removed_taxa),
+                    "requested_taxa": _pipe_join(pruning.requested_taxa),
+                    "kept_taxa": _pipe_join(pruning.kept_taxa),
+                    "removed_taxa": _pipe_join(pruning.removed_taxa),
+                    "absent_requested_taxa": _pipe_join(pruning.absent_requested_taxa),
+                    "removed_taxa_with_reasons": _pipe_join(
+                        [
+                            f"{row.taxon}:{row.reason}"
+                            for row in pruning.removed_taxa_with_reasons
+                        ]
+                    ),
+                    "transformation": pruning.summary.transformation,
+                    "root_to_tip_complete": str(
+                        pruning.pruning_audit.root_to_tip_complete
+                    ).lower(),
+                    "min_root_to_tip": pruning.pruning_audit.min_root_to_tip,
+                    "max_root_to_tip": pruning.pruning_audit.max_root_to_tip,
+                    "unary_internal_nodes": _pipe_join(
+                        pruning.pruning_audit.unary_internal_nodes
+                    ),
+                    "original_total_branch_length": (
+                        pruning.pruning_audit.original_total_branch_length
+                    ),
+                    "pruned_total_branch_length": (
+                        pruning.pruning_audit.pruned_total_branch_length
+                    ),
+                    "branch_length_delta": pruning.pruning_audit.branch_length_delta,
+                    "lost_taxa_count": pruning.information_loss.lost_taxa_count,
+                    "lost_taxa_fraction": pruning.information_loss.lost_taxa_fraction,
+                    "lost_clade_count": pruning.information_loss.lost_clade_count,
+                    "lost_clade_fraction": pruning.information_loss.lost_clade_fraction,
+                    "lost_branch_length": pruning.information_loss.lost_branch_length,
+                    "lost_branch_length_fraction": (
+                        pruning.information_loss.lost_branch_length_fraction
+                    ),
+                }
+            )
+    return path
+
+
+def write_maximum_agreement_subtree_removed_taxa_table(
+    path: Path,
+    left_path: Path,
+    right_path: Path,
+    *,
+    rf_mode: RobinsonFouldsMode = "rooted",
+    max_evaluated_candidate_count: int,
+) -> Path:
+    """Write one row per taxon removed by heuristic maximum-agreement pruning."""
+    _, _, report = approximate_maximum_agreement_subtree(
+        left_path,
+        right_path,
+        rf_mode=rf_mode,
+        max_evaluated_candidate_count=max_evaluated_candidate_count,
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "tree_side",
+                "tree_path",
+                "taxon",
+                "reason",
+                "shared_taxon",
+                "removed_for_maximum_agreement_subtree",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for tree_side, pruning in (
+            ("left", report.left_pruning),
+            ("right", report.right_pruning),
+        ):
+            for removed in pruning.removed_taxa_with_reasons:
+                writer.writerow(
+                    {
+                        "tree_side": tree_side,
+                        "tree_path": str(pruning.tree_path),
+                        "taxon": removed.taxon,
+                        "reason": removed.reason,
+                        "shared_taxon": str(removed.taxon in report.shared_taxa).lower(),
+                        "removed_for_maximum_agreement_subtree": str(
+                            removed.taxon in report.approximation_removed_taxa
+                        ).lower(),
+                    }
+                )
+    return path
+
+
+def write_maximum_agreement_subtree_search_table(
+    path: Path,
+    left_path: Path,
+    right_path: Path,
+    *,
+    rf_mode: RobinsonFouldsMode = "rooted",
+    max_evaluated_candidate_count: int,
+) -> Path:
+    """Write one row per heuristic candidate evaluated during maximum-agreement search."""
+    _, _, report = approximate_maximum_agreement_subtree(
+        left_path,
+        right_path,
+        rf_mode=rf_mode,
+        max_evaluated_candidate_count=max_evaluated_candidate_count,
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "evaluation_index",
+                "step_index",
+                "retained_taxon_count",
+                "retained_taxa",
+                "removed_taxa",
+                "robinson_foulds_distance",
+                "normalized_robinson_foulds",
+                "topology_equal",
+                "selected_for_next_step",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.search_rows:
+            writer.writerow(
+                {
+                    "evaluation_index": row.evaluation_index,
+                    "step_index": row.step_index,
+                    "retained_taxon_count": row.retained_taxon_count,
+                    "retained_taxa": _pipe_join(row.retained_taxa),
+                    "removed_taxa": _pipe_join(row.removed_taxa),
+                    "robinson_foulds_distance": row.robinson_foulds_distance,
+                    "normalized_robinson_foulds": row.normalized_robinson_foulds,
+                    "topology_equal": str(row.topology_equal).lower(),
+                    "selected_for_next_step": str(row.selected_for_next_step).lower(),
                 }
             )
     return path
