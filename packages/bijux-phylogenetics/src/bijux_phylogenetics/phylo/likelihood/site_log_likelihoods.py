@@ -10,7 +10,9 @@ from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.dna import (
     evaluate_fixed_topology_dna_site_log_likelihood,
-    normalize_unambiguous_dna_records,
+)
+from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
+    normalize_dna_likelihood_records,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
     FixedTopologySiteLogLikelihoodReport,
@@ -42,6 +44,7 @@ def evaluate_nucleotide_site_log_likelihoods(
     records: list[AlignmentRecord],
     *,
     model_name: str,
+    observation_policy: str = "reject",
     kappa: float | None = None,
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
     exchangeabilities: (
@@ -58,15 +61,17 @@ def evaluate_nucleotide_site_log_likelihoods(
 ) -> FixedTopologySiteLogLikelihoodReport:
     """Evaluate one fixed-topology nucleotide likelihood with expanded site rows."""
     normalized_model_name = validate_nucleotide_site_log_likelihood_model(model_name)
-    normalized_records = normalize_unambiguous_dna_records(
+    normalized_records = normalize_dna_likelihood_records(
         records,
         model_name=normalized_model_name.upper(),
+        observation_policy=observation_policy,
     )
     compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
     specification = resolve_selected_nucleotide_likelihood_specification(
         normalized_records,
         model_name=normalized_model_name,
         owner_name=f"{normalized_model_name.upper()} site log likelihood export",
+        observation_policy=observation_policy,
         kappa=kappa,
         base_frequencies=base_frequencies,
         exchangeabilities=exchangeabilities,
@@ -78,6 +83,8 @@ def evaluate_nucleotide_site_log_likelihoods(
         tree,
         compressed_patterns,
         model_name=specification.model_name,
+        state_count=specification.state_count,
+        observation_policy=specification.observation_policy,
         root_prior=specification.root_prior,
         parameter_values=specification.parameter_values,
         transition_matrix_for_child=lambda child: (
@@ -93,6 +100,7 @@ def evaluate_nucleotide_site_log_likelihoods_from_alignment(
     alignment_path: Path,
     *,
     model_name: str,
+    observation_policy: str = "reject",
     kappa: float | None = None,
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
     exchangeabilities: (
@@ -112,6 +120,7 @@ def evaluate_nucleotide_site_log_likelihoods_from_alignment(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
         model_name=model_name,
+        observation_policy=observation_policy,
         kappa=kappa,
         base_frequencies=base_frequencies,
         exchangeabilities=exchangeabilities,
@@ -126,6 +135,8 @@ def evaluate_selected_dna_site_log_likelihoods_from_patterns(
     compressed_patterns: CompressedAlignmentSitePatterns,
     *,
     model_name: str,
+    state_count: int,
+    observation_policy: str,
     root_prior: numpy.ndarray,
     parameter_values: dict[str, float],
     transition_matrix_for_child,
@@ -144,6 +155,7 @@ def evaluate_selected_dna_site_log_likelihoods_from_patterns(
                 states,
                 taxon_order=compressed_patterns.taxon_order,
                 model_name=model_name,
+                observation_policy=observation_policy,
                 root_prior=root_prior,
                 transition_matrix_for_child=transition_matrix_for_child,
             ),
@@ -157,6 +169,8 @@ def evaluate_selected_dna_site_log_likelihoods_from_patterns(
         compression_used=True,
         expansion_policy="expanded-site-rows",
         tree_newick=dumps_newick(tree),
+        state_count=state_count,
+        observation_policy=observation_policy,
         parameter_values=parameter_values,
         log_likelihood=total_log_likelihood,
         site_log_likelihoods=site_log_likelihoods,
