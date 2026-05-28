@@ -6,6 +6,7 @@ from pathlib import Path
 from bijux_phylogenetics.phylo.likelihood.codon import (
     evaluate_codon_ctmc_tree_likelihood_from_alignment,
 )
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -30,3 +31,16 @@ def test_codon_ctmc_likelihood_returns_finite_report() -> None:
     assert report.codon_frequency_source == "uniform"
     assert report.tree_newick == "(A:0.1,B:0.2);"
     assert math.isfinite(report.log_likelihood)
+
+
+def test_codon_ctmc_likelihood_rejects_stop_codon_states() -> None:
+    try:
+        evaluate_codon_ctmc_tree_likelihood_from_alignment(
+            fixture("trees", "codon_likelihood_tree_2_taxa.nwk"),
+            fixture("alignments", "codon_likelihood_alignment_stop_2_taxa.fasta"),
+        )
+    except InvalidAlignmentError as error:
+        assert "excludes stop codon states" in str(error)
+        assert "TAA" in str(error)
+    else:
+        raise AssertionError("stop-codon codon site should be rejected")
