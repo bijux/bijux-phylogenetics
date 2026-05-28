@@ -9,6 +9,7 @@ from bijux_phylogenetics.simulation import (
     simulate_coalescent_trees,
     simulate_random_tree,
     simulate_random_trees,
+    write_coalescent_waiting_time_table,
     write_tree_simulation_envelope_table,
     write_tree_simulation_record_table,
 )
@@ -157,3 +158,33 @@ def test_write_tree_simulation_tables_emit_reviewable_ledgers(tmp_path: Path) ->
     assert "normalized_colless_imbalance" in record_text
     assert "branch_length\tedge\t12\t" in envelope_text
     assert "cherry_count\ttree\t2\t" in envelope_text
+
+
+def test_write_coalescent_waiting_time_table_emits_lineage_ledgers(
+    tmp_path: Path,
+) -> None:
+    _trees, report = simulate_coalescent_trees(
+        tree_count=64,
+        tip_count=5,
+        population_size=2.5,
+        waiting_time_tolerance=0.2,
+        seed=19,
+    )
+
+    waiting_time_path = write_coalescent_waiting_time_table(
+        tmp_path / "coalescent-waiting-times.tsv",
+        report,
+    )
+    waiting_time_text = waiting_time_path.read_text(encoding="utf-8")
+    waiting_time_rows = [
+        line.split("\t") for line in waiting_time_text.strip().splitlines()[1:]
+    ]
+
+    assert waiting_time_path.is_file()
+    assert waiting_time_text.startswith(
+        "lineage_count\tcoalescent_rate\texpected_waiting_time\tobservation_count\t"
+    )
+    assert "\twithin_tolerance\twaiting_time_tolerance\n" in waiting_time_text
+    assert len(waiting_time_rows) == 4
+    assert waiting_time_rows[0][:4] == ["5", "4", "0.25", "64"]
+    assert all(row[-1] == "0.2" for row in waiting_time_rows)
