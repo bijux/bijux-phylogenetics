@@ -234,6 +234,12 @@ from .models import (
     Jc69TreeLikelihoodReport as Jc69TreeLikelihoodReport,
 )
 from .models import (
+    StrictClockBranchRow as StrictClockBranchRow,
+)
+from .models import (
+    StrictClockLikelihoodReport as StrictClockLikelihoodReport,
+)
+from .models import (
     K80KappaOptimizationReport as K80KappaOptimizationReport,
 )
 from .models import (
@@ -410,6 +416,21 @@ from .site_log_likelihoods import (
 from .site_log_likelihoods import (
     validate_nucleotide_site_log_likelihood_model as validate_nucleotide_site_log_likelihood_model,
 )
+from .strict_clock import (
+    fit_strict_clock_likelihood as fit_strict_clock_likelihood,
+)
+from .strict_clock import (
+    fit_strict_clock_likelihood_from_alignment as fit_strict_clock_likelihood_from_alignment,
+)
+from .strict_clock import (
+    write_strict_clock_branch_table as write_strict_clock_branch_table,
+)
+from .strict_clock import (
+    write_strict_clock_likelihood_artifacts as write_strict_clock_likelihood_artifacts,
+)
+from .strict_clock import (
+    write_strict_clock_run_json as write_strict_clock_run_json,
+)
 from .marginal_ancestral_probabilities import (
     evaluate_nucleotide_marginal_ancestral_probabilities as evaluate_nucleotide_marginal_ancestral_probabilities,
 )
@@ -567,6 +588,8 @@ __all__ = [
     "Jc69BranchLengthOptimizationReport",
     "Jc69BranchLengthOptimizationStep",
     "Jc69TreeLikelihoodReport",
+    "StrictClockBranchRow",
+    "StrictClockLikelihoodReport",
     "JointAncestralSequenceRecord",
     "JointAncestralSequenceReport",
     "JointAncestralStateAssignmentRow",
@@ -678,6 +701,8 @@ __all__ = [
     "search_nucleotide_likelihood_spr",
     "search_nucleotide_likelihood_spr_from_alignment",
     "select_best_likelihood_multi_start_run",
+    "fit_strict_clock_likelihood",
+    "fit_strict_clock_likelihood_from_alignment",
     "evaluate_nucleotide_site_log_likelihoods",
     "evaluate_nucleotide_site_log_likelihoods_from_alignment",
     "reconstruct_nucleotide_marginal_ancestral_sequences",
@@ -722,4 +747,7 @@ __all__ = [
     "write_nucleotide_likelihood_spr_run_json",
     "write_nucleotide_likelihood_spr_trace_table",
     "write_site_log_likelihood_table",
+    "write_strict_clock_branch_table",
+    "write_strict_clock_likelihood_artifacts",
+    "write_strict_clock_run_json",
 ]

@@ -50,6 +50,43 @@ class Jc69BranchLengthOptimizationReport:
     steps: list[Jc69BranchLengthOptimizationStep]
 
 
+@dataclass(frozen=True, slots=True)
+class StrictClockBranchRow:
+    """One branch duration and its optimized strict-clock substitution length."""
+
+    branch_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+    time_duration: float
+    optimized_branch_length: float
+    optimized_clock_rate: float
+
+
+@dataclass(slots=True)
+class StrictClockLikelihoodReport:
+    """One fixed-topology strict-clock likelihood fit on a time-scaled tree."""
+
+    model_name: str
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    branch_count: int
+    compression_used: bool
+    time_tree_newick: str
+    scaled_tree_newick: str
+    initial_clock_rate: float
+    optimized_clock_rate: float
+    initial_log_likelihood: float
+    optimized_log_likelihood: float
+    parameter_count: int
+    aic: float
+    function_evaluation_count: int
+    converged: bool
+    lower_clock_rate_bound: float
+    upper_clock_rate_bound: float
+    branch_rows: list[StrictClockBranchRow]
+
+
 @dataclass(slots=True)
 class K80TreeLikelihoodReport:
     """Native K80 likelihood report for one fixed topology and alignment."""
