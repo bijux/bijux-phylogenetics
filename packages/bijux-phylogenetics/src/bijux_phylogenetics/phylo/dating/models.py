@@ -261,3 +261,53 @@ class PenalizedLikelihoodCrossValidationReport:
     candidate_rows: list[PenalizedLikelihoodCrossValidationCandidateRow]
     prediction_rows: list[PenalizedLikelihoodCrossValidationPredictionRow]
     selected_fit: PenalizedLikelihoodDatingReport
+
+
+@dataclass(frozen=True, slots=True)
+class RelaxedRateBranchSummaryRow:
+    """One branch-level rate summary recovered from one dated tree pair."""
+
+    branch_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+    substitution_branch_length: float
+    dated_time_duration: float
+    branch_rate: float
+    rate_z_score: float
+    outlier: bool
+
+
+@dataclass(frozen=True, slots=True)
+class RelaxedRateBranchOutlier:
+    """One ranked branch-rate outlier from one dated tree pair."""
+
+    rank: int
+    branch_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+    substitution_branch_length: float
+    dated_time_duration: float
+    branch_rate: float
+    rate_z_score: float
+
+
+@dataclass(slots=True)
+class RelaxedRateBranchSummaryReport:
+    """Branch-rate summary computed from one substitution tree and one dated tree."""
+
+    substitution_tree_newick: str
+    dated_tree_newick: str
+    taxa: list[str]
+    tip_count: int
+    internal_node_count: int
+    branch_count: int
+    substitution_tree_path: str | None
+    dated_tree_path: str | None
+    outlier_threshold: float
+    mean_branch_rate: float
+    standard_deviation_branch_rate: float
+    minimum_branch_rate: float
+    maximum_branch_rate: float
+    outlier_count: int
+    branch_rows: list[RelaxedRateBranchSummaryRow]
+    outlier_rows: list[RelaxedRateBranchOutlier]
