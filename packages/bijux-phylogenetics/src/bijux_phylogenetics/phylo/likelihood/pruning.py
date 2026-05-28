@@ -6,8 +6,9 @@ import math
 
 import numpy
 
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.phylo.topology.tree import TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
+
+from .ctmc import validate_ctmc_rate_matrix
 
 
 @dataclass(slots=True)
@@ -35,11 +36,10 @@ def transition_probability_matrix(
     branch_length: float,
 ) -> numpy.ndarray:
     """Exponentiate one finite-state rate matrix into a branch transition matrix."""
-    if rate_matrix.ndim != 2 or rate_matrix.shape[0] != rate_matrix.shape[1]:
-        raise ValueError("rate_matrix must be square")
+    validated_rate_matrix = validate_ctmc_rate_matrix(rate_matrix)
     if branch_length <= 0.0:
-        return numpy.eye(rate_matrix.shape[0], dtype=float)
-    eigenvalues, eigenvectors = numpy.linalg.eig(rate_matrix)
+        return numpy.eye(validated_rate_matrix.state_count, dtype=float)
+    eigenvalues, eigenvectors = numpy.linalg.eig(validated_rate_matrix.rate_matrix)
     inverse_vectors = numpy.linalg.inv(eigenvectors)
     diagonal = numpy.diag(numpy.exp(eigenvalues * branch_length))
     transition = eigenvectors @ diagonal @ inverse_vectors
