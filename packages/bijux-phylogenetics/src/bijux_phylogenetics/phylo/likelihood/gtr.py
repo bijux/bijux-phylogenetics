@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy
@@ -18,6 +19,9 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
     one_hot_dna_leaf_vector,
     validate_dna_base_frequencies,
     validate_dna_exchangeabilities,
+)
+from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
+    resolve_anchor_normalized_dna_exchangeabilities_from_unconstrained,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
     GtrExchangeabilityOptimizationReport,
@@ -183,6 +187,55 @@ def evaluate_gtr_tree_likelihood_from_alignment(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
         exchangeabilities=exchangeabilities,
+        base_frequencies=base_frequencies,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+
+
+def evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    unconstrained_exchangeabilities: Sequence[float],
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
+) -> GtrTreeLikelihoodReport:
+    """Evaluate one fixed-topology GTR likelihood from unconstrained simplex coordinates."""
+    anchored_exchangeabilities = (
+        resolve_anchor_normalized_dna_exchangeabilities_from_unconstrained(
+            unconstrained_exchangeabilities
+        )
+    )
+    return evaluate_gtr_tree_likelihood(
+        tree,
+        records,
+        exchangeabilities=anchored_exchangeabilities,
+        base_frequencies=base_frequencies,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+
+
+def evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    unconstrained_exchangeabilities: Sequence[float],
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
+) -> GtrTreeLikelihoodReport:
+    """Evaluate one fixed-topology GTR likelihood from unconstrained coordinates and file inputs."""
+    return evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        unconstrained_exchangeabilities=unconstrained_exchangeabilities,
         base_frequencies=base_frequencies,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
