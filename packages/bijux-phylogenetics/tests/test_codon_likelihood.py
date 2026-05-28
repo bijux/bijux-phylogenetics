@@ -6,6 +6,7 @@ from pathlib import Path
 from bijux_phylogenetics.phylo.likelihood.codon import (
     evaluate_codon_ctmc_tree_likelihood_from_alignment,
 )
+from bijux_phylogenetics.phylo.likelihood.codon_states import resolve_codon_state_space
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -44,3 +45,30 @@ def test_codon_ctmc_likelihood_rejects_stop_codon_states() -> None:
         assert "TAA" in str(error)
     else:
         raise AssertionError("stop-codon codon site should be rejected")
+
+
+def test_codon_ctmc_likelihood_changes_with_codon_frequencies() -> None:
+    uniform_report = evaluate_codon_ctmc_tree_likelihood_from_alignment(
+        fixture("trees", "codon_likelihood_tree_2_taxa.nwk"),
+        fixture("alignments", "codon_likelihood_alignment_2_taxa.fasta"),
+    )
+    state_space = resolve_codon_state_space()
+    biased_frequencies = dict.fromkeys(state_space.state_order, 1.0)
+    biased_frequencies["AAA"] = 20.0
+    biased_frequencies["AAG"] = 15.0
+    biased_frequencies["GCT"] = 0.5
+    biased_frequencies["GCC"] = 0.5
+
+    biased_report = evaluate_codon_ctmc_tree_likelihood_from_alignment(
+        fixture("trees", "codon_likelihood_tree_2_taxa.nwk"),
+        fixture("alignments", "codon_likelihood_alignment_2_taxa.fasta"),
+        codon_frequencies=biased_frequencies,
+    )
+
+    assert biased_report.codon_frequency_source == "provided"
+    assert not math.isclose(
+        biased_report.log_likelihood,
+        uniform_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
