@@ -63,7 +63,9 @@ from bijux_phylogenetics.parsimony import (
 )
 from bijux_phylogenetics.phylo.dating import (
     fit_least_squares_dating_from_metadata,
+    fit_penalized_likelihood_dating_from_metadata,
     write_least_squares_dating_artifacts,
+    write_penalized_likelihood_dating_artifacts,
 )
 from bijux_phylogenetics.phylo.likelihood import (
     fit_strict_clock_likelihood_from_alignment,
@@ -819,6 +821,41 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the least-squares dating report as JSON."
     )
     _add_manifest_argument(phylo_dating_least_squares)
+    phylo_dating_penalized_likelihood = phylo_dating_subparsers.add_parser(
+        "penalized-likelihood",
+        help="Fit one rooted tree to fixed tip dates with a separate data score and rate-smoothing penalty.",
+    )
+    phylo_dating_penalized_likelihood.add_argument("tree_path", type=Path)
+    phylo_dating_penalized_likelihood.add_argument("metadata_path", type=Path)
+    phylo_dating_penalized_likelihood.add_argument("--taxon-column")
+    phylo_dating_penalized_likelihood.add_argument(
+        "--date-column",
+        default="date",
+        help="Column containing numeric sampling dates or tip dates.",
+    )
+    phylo_dating_penalized_likelihood.add_argument(
+        "--smoothing-parameter",
+        type=float,
+        default=1.0,
+        help="Strictly positive weight applied to the adjacent-rate smoothing penalty.",
+    )
+    phylo_dating_penalized_likelihood.add_argument(
+        "--max-coordinate-passes",
+        type=int,
+        default=8,
+        help="Maximum number of bounded coordinate-search passes over dated-node parameters.",
+    )
+    phylo_dating_penalized_likelihood.add_argument(
+        "--out-dir",
+        required=True,
+        type=Path,
+    )
+    phylo_dating_penalized_likelihood.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the penalized likelihood dating report as JSON.",
+    )
+    _add_manifest_argument(phylo_dating_penalized_likelihood)
 
 
 def run_phylo_command(args: Any) -> int:
@@ -862,6 +899,49 @@ def run_phylo_command(args: Any) -> int:
                         "root_date": report.root_date,
                         "residual_sum_squares": report.residual_sum_squares,
                         "exact_fit": report.exact_fit,
+                        "converged": report.converged,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.phylo_dating_command == "penalized-likelihood":
+            report = fit_penalized_likelihood_dating_from_metadata(
+                args.tree_path,
+                args.metadata_path,
+                smoothing_parameter=args.smoothing_parameter,
+                max_coordinate_passes=args.max_coordinate_passes,
+                taxon_column=args.taxon_column,
+                date_column=args.date_column,
+            )
+            artifact_paths = write_penalized_likelihood_dating_artifacts(
+                args.out_dir,
+                report,
+            )
+            outputs = _finalize_outputs(
+                args,
+                command="phylo",
+                inputs=[args.tree_path, args.metadata_path],
+                outputs=list(artifact_paths.values()),
+            )
+            _print_result(
+                build_command_result(
+                    command="phylo",
+                    inputs=[args.tree_path, args.metadata_path],
+                    outputs=outputs,
+                    metrics={
+                        "taxon_count": len(report.taxa),
+                        "tip_count": report.tip_count,
+                        "internal_node_count": report.internal_node_count,
+                        "branch_count": report.branch_count,
+                        "smoothing_parameter": report.smoothing_parameter,
+                        "data_score": report.data_score,
+                        "penalty_score": report.penalty_score,
+                        "total_score": report.total_score,
+                        "root_date": report.root_date,
+                        "optimization_pass_count": report.optimization_pass_count,
+                        "function_evaluation_count": report.function_evaluation_count,
                         "converged": report.converged,
                     },
                     data=report,
