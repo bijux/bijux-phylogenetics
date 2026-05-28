@@ -25,6 +25,8 @@ _EXPORTS = {
     "RandomBifurcatingTreeReport": "models",
     "RootedNniNeighborRow": "models",
     "RootedNniNeighborhoodReport": "models",
+    "RootedSprNeighborRow": "models",
+    "RootedSprNeighborhoodReport": "models",
     "StepwiseAdditionCandidateScore": "models",
     "StepwiseAdditionTraceRow": "models",
     "StepwiseAdditionTreeReport": "models",

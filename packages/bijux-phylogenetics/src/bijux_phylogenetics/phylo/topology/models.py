@@ -211,6 +211,46 @@ class RootedNniNeighborhoodReport:
 
 
 @dataclass(frozen=True, slots=True)
+class RootedSprNeighborRow:
+    """One rooted SPR neighbor with a representative move and multiplicity."""
+
+    neighbor_index: int
+    representative_pruned_node_id: str
+    representative_pruned_clade_id: str
+    representative_pruned_descendant_taxa: list[str]
+    representative_regraft_target_branch_id: str
+    representative_regraft_target_descendant_taxa: list[str] | None
+    supporting_move_count: int
+    neighbor_tree_newick: str
+    neighbor_topology_fingerprint: str
+    tip_order: list[str]
+    validation_errors: list[str]
+
+
+@dataclass(slots=True)
+class RootedSprNeighborhoodReport:
+    """Explicit record of rooted SPR neighbors for one binary-root tree."""
+
+    algorithm: str
+    input_tree_path: Path | None
+    input_tree_newick: str
+    tip_count: int
+    internal_node_count: int
+    rooted: bool | None
+    strictly_bifurcating: bool
+    generated_move_candidate_count: int
+    identity_move_candidate_count: int
+    self_regraft_candidate_count: int
+    generated_neighbor_count: int
+    unique_neighbor_topology_count: int
+    duplicate_move_neighbor_topologies: list[str]
+    missing_tip_taxa: list[str]
+    unexpected_tip_taxa: list[str]
+    input_validation_errors: list[str]
+    neighbor_rows: list[RootedSprNeighborRow]
+
+
+@dataclass(frozen=True, slots=True)
 class StepwiseAdditionCandidateScore:
     """One evaluated insertion edge for one greedy stepwise-addition step."""
 
