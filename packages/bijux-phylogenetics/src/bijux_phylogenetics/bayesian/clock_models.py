@@ -12,7 +12,8 @@ from bijux_phylogenetics.runtime.errors import (
     UnrootedTreeError,
 )
 
-CLOCK_RATE_MODEL_FAMILIES = ("strict-clock",)
+CLOCK_RATE_MODEL_FAMILIES = ("strict-clock", "relaxed-lognormal")
+RELAXED_CLOCK_RATE_POLICIES = ("independent", "autocorrelated")
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +60,65 @@ class StrictClockRateModelEvaluationReport:
     branch_rows: list[StrictClockRateBranchRow]
 
 
+@dataclass(frozen=True, slots=True)
+class RelaxedLognormalClockModel:
+    """One validated relaxed lognormal clock model over dated and substitution trees."""
+
+    family: str
+    rate_policy: str
+    mean_clock_rate: float
+    log_standard_deviation: float
+
+
+@dataclass(frozen=True, slots=True)
+class RelaxedLognormalClockBranchRow:
+    """One branch-level relaxed clock rate prior contribution row."""
+
+    branch_id: str
+    child_name: str | None
+    descendant_taxa: list[str]
+    anchor_branch_id: str | None
+    dated_time_duration: float
+    observed_substitution_branch_length: float
+    anchor_rate: float
+    branch_rate: float
+    expected_substitution_branch_length: float
+    branch_rate_deviation: float
+    log_prior_contribution: float
+
+
+@dataclass(frozen=True, slots=True)
+class RelaxedLognormalClockEvaluationReport:
+    """One relaxed lognormal clock prior evaluation report."""
+
+    family: str
+    rate_policy: str
+    mean_clock_rate: float
+    log_standard_deviation: float
+    dated_tree_newick: str
+    substitution_tree_newick: str
+    taxa: list[str]
+    tip_count: int
+    internal_node_count: int
+    branch_count: int
+    minimum_branch_rate: float
+    maximum_branch_rate: float
+    total_log_prior: float
+    branch_rows: list[RelaxedLognormalClockBranchRow]
+
+
+@dataclass(frozen=True, slots=True)
+class _MatchedClockBranch:
+    """One matched rooted branch pair between dated and substitution trees."""
+
+    branch_id: str
+    parent_branch_id: str | None
+    child_name: str | None
+    descendant_taxa: list[str]
+    dated_time_duration: float
+    observed_substitution_branch_length: float
+
+
 def build_strict_clock_rate_model(
     *,
     global_clock_rate: float,
@@ -81,6 +141,43 @@ def build_strict_clock_rate_model(
         family="strict-clock",
         global_clock_rate=float(format(global_clock_rate, ".15g")),
         branch_length_tolerance=float(format(branch_length_tolerance, ".15g")),
+    )
+
+
+def build_relaxed_lognormal_clock_model(
+    *,
+    rate_policy: str,
+    mean_clock_rate: float,
+    log_standard_deviation: float,
+) -> RelaxedLognormalClockModel:
+    """Build one relaxed lognormal clock model under one explicit rate policy."""
+    normalized_rate_policy = rate_policy.strip().casefold()
+    if normalized_rate_policy not in RELAXED_CLOCK_RATE_POLICIES:
+        raise PhylogeneticsError(
+            "relaxed lognormal clock model requires a supported rate policy",
+            code="relaxed_lognormal_clock_model_invalid_rate_policy",
+            details={
+                "rate_policy": rate_policy,
+                "allowed_rate_policies": list(RELAXED_CLOCK_RATE_POLICIES),
+            },
+        )
+    if not math.isfinite(mean_clock_rate) or mean_clock_rate <= 0.0:
+        raise PhylogeneticsError(
+            "relaxed lognormal clock model requires a strictly positive finite mean clock rate",
+            code="relaxed_lognormal_clock_model_invalid_mean_clock_rate",
+            details={"mean_clock_rate": mean_clock_rate},
+        )
+    if not math.isfinite(log_standard_deviation) or log_standard_deviation <= 0.0:
+        raise PhylogeneticsError(
+            "relaxed lognormal clock model requires a strictly positive finite log standard deviation",
+            code="relaxed_lognormal_clock_model_invalid_log_standard_deviation",
+            details={"log_standard_deviation": log_standard_deviation},
+        )
+    return RelaxedLognormalClockModel(
+        family="relaxed-lognormal",
+        rate_policy=normalized_rate_policy,
+        mean_clock_rate=float(format(mean_clock_rate, ".15g")),
+        log_standard_deviation=float(format(log_standard_deviation, ".15g")),
     )
 
 
@@ -198,6 +295,94 @@ def evaluate_strict_clock_tree_log_prior(
     )
 
 
+def evaluate_relaxed_lognormal_clock_tree_log_prior(
+    substitution_tree: PhyloTree,
+    dated_tree: PhyloTree,
+    rate_model: RelaxedLognormalClockModel,
+) -> RelaxedLognormalClockEvaluationReport:
+    """Evaluate one rooted tree pair under one relaxed lognormal clock prior."""
+    if rate_model.family != "relaxed-lognormal":
+        raise PhylogeneticsError(
+            "relaxed lognormal clock model family is unsupported",
+            code="relaxed_lognormal_clock_model_family_invalid",
+            details={"family": rate_model.family},
+        )
+    matched_branches = _collect_matched_clock_branches(
+        substitution_tree,
+        dated_tree,
+        workflow_name="relaxed lognormal clock model",
+        require_positive_dated_durations=True,
+    )
+    branch_rate_by_branch_id: dict[str, float] = {}
+    branch_rows: list[RelaxedLognormalClockBranchRow] = []
+    for matched_branch in matched_branches:
+        branch_rate = (
+            matched_branch.observed_substitution_branch_length
+            / matched_branch.dated_time_duration
+        )
+        if rate_model.rate_policy == "independent":
+            anchor_branch_id = None
+            anchor_rate = rate_model.mean_clock_rate
+        else:
+            anchor_branch_id = matched_branch.parent_branch_id
+            anchor_rate = (
+                rate_model.mean_clock_rate
+                if anchor_branch_id is None
+                else branch_rate_by_branch_id[anchor_branch_id]
+            )
+        log_prior_contribution = _relaxed_clock_lognormal_log_density(
+            branch_rate=branch_rate,
+            anchor_rate=anchor_rate,
+            log_standard_deviation=rate_model.log_standard_deviation,
+        )
+        branch_rows.append(
+            RelaxedLognormalClockBranchRow(
+                branch_id=matched_branch.branch_id,
+                child_name=matched_branch.child_name,
+                descendant_taxa=matched_branch.descendant_taxa,
+                anchor_branch_id=anchor_branch_id,
+                dated_time_duration=float(
+                    format(matched_branch.dated_time_duration, ".15g")
+                ),
+                observed_substitution_branch_length=float(
+                    format(
+                        matched_branch.observed_substitution_branch_length,
+                        ".15g",
+                    )
+                ),
+                anchor_rate=float(format(anchor_rate, ".15g")),
+                branch_rate=float(format(branch_rate, ".15g")),
+                expected_substitution_branch_length=float(
+                    format(anchor_rate * matched_branch.dated_time_duration, ".15g")
+                ),
+                branch_rate_deviation=float(
+                    format(branch_rate - anchor_rate, ".15g")
+                ),
+                log_prior_contribution=log_prior_contribution,
+            )
+        )
+        branch_rate_by_branch_id[matched_branch.branch_id] = branch_rate
+
+    total_log_prior = sum(row.log_prior_contribution for row in branch_rows)
+    branch_rates = [row.branch_rate for row in branch_rows]
+    return RelaxedLognormalClockEvaluationReport(
+        family=rate_model.family,
+        rate_policy=rate_model.rate_policy,
+        mean_clock_rate=rate_model.mean_clock_rate,
+        log_standard_deviation=rate_model.log_standard_deviation,
+        dated_tree_newick=dumps_newick(dated_tree),
+        substitution_tree_newick=dumps_newick(substitution_tree),
+        taxa=sorted(substitution_tree.tip_names),
+        tip_count=substitution_tree.tip_count,
+        internal_node_count=substitution_tree.internal_node_count,
+        branch_count=len(branch_rows),
+        minimum_branch_rate=min(branch_rates),
+        maximum_branch_rate=max(branch_rates),
+        total_log_prior=total_log_prior,
+        branch_rows=branch_rows,
+    )
+
+
 def _validate_rooted_tree(
     tree: PhyloTree,
     *,
@@ -251,6 +436,69 @@ def _branch_lookup_by_descendant_taxa(
     }
 
 
+def _collect_matched_clock_branches(
+    substitution_tree: PhyloTree,
+    dated_tree: PhyloTree,
+    *,
+    workflow_name: str,
+    require_positive_dated_durations: bool,
+) -> list[_MatchedClockBranch]:
+    _validate_rooted_tree(
+        substitution_tree,
+        workflow_name=workflow_name,
+        tree_role="substitution",
+    )
+    _validate_rooted_tree(
+        dated_tree,
+        workflow_name=workflow_name,
+        tree_role="dated",
+    )
+    _require_complete_branch_lengths(
+        substitution_tree,
+        message=f"{workflow_name} requires complete substitution branch lengths",
+    )
+    _require_complete_branch_lengths(
+        dated_tree,
+        message=f"{workflow_name} requires complete dated branch durations",
+    )
+    _require_nonnegative_branch_lengths(
+        substitution_tree,
+        message=f"{workflow_name} requires non-negative substitution branch lengths",
+    )
+    _require_nonnegative_branch_lengths(
+        dated_tree,
+        message=f"{workflow_name} requires non-negative dated branch durations",
+    )
+    _require_matching_topology(substitution_tree, dated_tree)
+
+    dated_branch_by_signature = _branch_lookup_by_descendant_taxa(dated_tree)
+    matched_branches: list[_MatchedClockBranch] = []
+    for parent, child in substitution_tree.iter_edges():
+        if child.node_id is None:
+            raise PhylogeneticsError(
+                f"{workflow_name} requires stable branch ids on substitution trees",
+                code="clock_rate_model_requires_stable_branch_ids",
+            )
+        parent_branch_id = None if parent is substitution_tree.root else parent.node_id
+        dated_child = dated_branch_by_signature[tuple(child.descendant_taxa)]
+        dated_time_duration = float(dated_child.branch_length or 0.0)
+        if require_positive_dated_durations and dated_time_duration <= 0.0:
+            raise InvalidBranchLengthError(
+                f"{workflow_name} requires strictly positive dated branch durations"
+            )
+        matched_branches.append(
+            _MatchedClockBranch(
+                branch_id=child.node_id,
+                parent_branch_id=parent_branch_id,
+                child_name=child.name,
+                descendant_taxa=child.descendant_taxa,
+                dated_time_duration=dated_time_duration,
+                observed_substitution_branch_length=float(child.branch_length or 0.0),
+            )
+        )
+    return matched_branches
+
+
 def _copy_with_scaled_branch_lengths(
     dated_tree: PhyloTree,
     *,
@@ -260,3 +508,24 @@ def _copy_with_scaled_branch_lengths(
     for _parent, child in scaled_tree.iter_edges():
         child.branch_length = float(child.branch_length or 0.0) * clock_rate
     return scaled_tree
+
+
+def _relaxed_clock_lognormal_log_density(
+    *,
+    branch_rate: float,
+    anchor_rate: float,
+    log_standard_deviation: float,
+) -> float:
+    if branch_rate <= 0.0 or anchor_rate <= 0.0:
+        return -math.inf
+    mean_log_rate = math.log(anchor_rate) - (
+        (log_standard_deviation * log_standard_deviation) / 2.0
+    )
+    log_rate = math.log(branch_rate)
+    z_score = (log_rate - mean_log_rate) / log_standard_deviation
+    return (
+        -math.log(branch_rate)
+        - math.log(log_standard_deviation)
+        - (math.log(2.0 * math.pi) / 2.0)
+        - ((z_score * z_score) / 2.0)
+    )
