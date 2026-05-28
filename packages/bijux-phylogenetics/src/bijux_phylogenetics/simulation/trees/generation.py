@@ -652,3 +652,50 @@ def write_tree_simulation_envelope_table(
             for row in report.envelope_metrics
         ],
     )
+
+
+def write_coalescent_waiting_time_table(
+    path: Path,
+    report: TreeSimulationReport,
+) -> Path:
+    """Write one row per lineage-count waiting-time summary from a coalescent report."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "lineage_count",
+            "coalescent_rate",
+            "expected_waiting_time",
+            "observation_count",
+            "mean_waiting_time",
+            "standard_deviation",
+            "minimum_waiting_time",
+            "median_waiting_time",
+            "maximum_waiting_time",
+            "absolute_error",
+            "relative_error",
+            "within_tolerance",
+            "waiting_time_tolerance",
+        ],
+        rows=[
+            {
+                "lineage_count": str(row.lineage_count),
+                "coalescent_rate": format(row.coalescent_rate, ".15g"),
+                "expected_waiting_time": format(row.expected_waiting_time, ".15g"),
+                "observation_count": str(row.observation_count),
+                "mean_waiting_time": format(row.mean_waiting_time, ".15g"),
+                "standard_deviation": format(row.standard_deviation, ".15g"),
+                "minimum_waiting_time": format(row.minimum_waiting_time, ".15g"),
+                "median_waiting_time": format(row.median_waiting_time, ".15g"),
+                "maximum_waiting_time": format(row.maximum_waiting_time, ".15g"),
+                "absolute_error": format(row.absolute_error, ".15g"),
+                "relative_error": format(row.relative_error, ".15g"),
+                "within_tolerance": str(row.within_tolerance).lower(),
+                "waiting_time_tolerance": (
+                    ""
+                    if report.coalescent_waiting_time_tolerance is None
+                    else format(report.coalescent_waiting_time_tolerance, ".15g")
+                ),
+            }
+            for row in report.coalescent_waiting_time_rows
+        ],
+    )
