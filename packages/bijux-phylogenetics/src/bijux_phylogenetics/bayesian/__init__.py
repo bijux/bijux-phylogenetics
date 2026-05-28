@@ -148,6 +148,11 @@ from .probability import (
     logsumexp,
     normalize_log_probabilities,
 )
+from .probability_vectors import (
+    CATEGORICAL_MISSING_STATE_POLICIES,
+    CategoricalProbabilityVector,
+    build_categorical_probability_vector,
+)
 
 __all__ = [
     "BayesianEvidencePackageReport",
@@ -174,6 +179,8 @@ __all__ = [
     "CalibrationDominanceObservation",
     "CalibrationDominanceReport",
     "CalibrationAuditReportBuildResult",
+    "CATEGORICAL_MISSING_STATE_POLICIES",
+    "CategoricalProbabilityVector",
     "BeastConvergenceReport",
     "BeastLogReport",
     "BeastLogParameterSummary",
@@ -224,6 +231,7 @@ __all__ = [
     "assess_mrbayes_burnin_sensitivity",
     "assess_mrbayes_convergence",
     "build_bayesian_evidence_package",
+    "build_categorical_probability_vector",
     "compare_bayesian_tree_sets",
     "compare_log_probabilities",
     "compare_independent_bayesian_runs",
