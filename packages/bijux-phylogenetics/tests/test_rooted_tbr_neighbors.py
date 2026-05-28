@@ -82,6 +82,14 @@ def test_rooted_tbr_validation_rejects_nonbinary_rooted_representation() -> None
         validate_rooted_tbr_tree(loads_newick("(A,B,C,D);"))
 
 
+def test_rooted_tbr_neighbor_enumeration_rejects_internal_polytomies() -> None:
+    with pytest.raises(
+        ValueError,
+        match="rooted TBR enumeration requires a strictly bifurcating tree",
+    ):
+        enumerate_rooted_tbr_neighbors(loads_newick("((A,B,C),D);"))
+
+
 def test_rooted_tbr_report_preserves_input_tree_path_for_file_inputs() -> None:
     report = enumerate_rooted_tbr_neighbors(
         fixture("parsimony", "spr_search_start_tree_5_taxa.nwk")
@@ -109,3 +117,14 @@ def test_write_rooted_tbr_artifacts_materializes_governed_outputs(tmp_path: Path
     assert payload["generated_cut_edge_count"] == 3
     assert payload["generated_reconnection_count"] == 52
     assert payload["generated_neighbor_count"] == 10
+
+
+def test_rooted_tbr_balanced_four_taxon_tree_excludes_identity_reconnections() -> None:
+    report = enumerate_rooted_tbr_neighbors(fixture("trees", "example_tree.nwk"))
+
+    assert report.generated_cut_edge_count == 2
+    assert report.generated_reconnection_count == 24
+    assert report.identity_reconnection_count == 24
+    assert report.generated_neighbor_count == 0
+    assert report.unique_neighbor_topology_count == 0
+    assert report.neighbor_rows == []
