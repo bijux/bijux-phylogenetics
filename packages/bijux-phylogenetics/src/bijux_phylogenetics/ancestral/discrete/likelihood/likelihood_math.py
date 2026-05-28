@@ -4,6 +4,7 @@ import math
 
 import numpy
 
+from bijux_phylogenetics.bayesian.probability import logsumexp
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     build_transition_matrix_evaluator,
     log_likelihood_from_root_prior,
@@ -22,6 +23,93 @@ def transition_probability_matrix(
 
 
 def tree_log_likelihood(
+    tree,
+    states_by_taxon: dict[str, str],
+    *,
+    state_order: list[str],
+    rate_matrix: numpy.ndarray,
+    root_prior: numpy.ndarray | None,
+    root_prior_mode: str = "given",
+    ascertainment_policy: str = "none",
+) -> float:
+    base_log_likelihood = _tree_log_likelihood_without_ascertainment(
+        tree,
+        states_by_taxon,
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
+        root_prior_mode=root_prior_mode,
+    )
+    if ascertainment_policy == "none":
+        return base_log_likelihood
+    if ascertainment_policy != "lewis-variable-only":
+        raise ValueError(
+            "unsupported discrete likelihood ascertainment policy: "
+            f"{ascertainment_policy}"
+        )
+    conditioning_log_probability = variable_pattern_log_probability(
+        tree,
+        taxa=sorted(states_by_taxon),
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
+        root_prior_mode=root_prior_mode,
+    )
+    if conditioning_log_probability == float("-inf"):
+        return float("-inf")
+    return base_log_likelihood - conditioning_log_probability
+
+
+def variable_pattern_log_probability(
+    tree,
+    *,
+    taxa: list[str],
+    state_order: list[str],
+    rate_matrix: numpy.ndarray,
+    root_prior: numpy.ndarray | None,
+    root_prior_mode: str = "given",
+) -> float:
+    invariant_log_probability = invariant_pattern_log_probability(
+        tree,
+        taxa=taxa,
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
+        root_prior_mode=root_prior_mode,
+    )
+    if invariant_log_probability == float("-inf"):
+        return 0.0
+    invariant_probability = math.exp(invariant_log_probability)
+    if invariant_probability >= 1.0:
+        return float("-inf")
+    return math.log1p(-invariant_probability)
+
+
+def invariant_pattern_log_probability(
+    tree,
+    *,
+    taxa: list[str],
+    state_order: list[str],
+    rate_matrix: numpy.ndarray,
+    root_prior: numpy.ndarray | None,
+    root_prior_mode: str = "given",
+) -> float:
+    return logsumexp(
+        [
+            _tree_log_likelihood_without_ascertainment(
+                tree,
+                dict.fromkeys(taxa, state),
+                state_order=state_order,
+                rate_matrix=rate_matrix,
+                root_prior=root_prior,
+                root_prior_mode=root_prior_mode,
+            )
+            for state in state_order
+        ]
+    )
+
+
+def _tree_log_likelihood_without_ascertainment(
     tree,
     states_by_taxon: dict[str, str],
     *,

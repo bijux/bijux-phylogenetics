@@ -19,16 +19,17 @@ from ..policy import (
     uniform_root_prior,
 )
 from .likelihood_math import tree_log_likelihood
-from .optimizer_search import _DiscreteOptimizationRun
-from .optimizer_search import build_discrete_initial_candidates
-from .optimizer_search import DISCRETE_LOG_PARAMETER_LOWER_BOUND
-from .optimizer_search import DISCRETE_LOG_PARAMETER_UPPER_BOUND
-from .optimizer_search import optimize_log_parameters
-from .optimizer_search import optimize_single_log_parameter
-from .optimizer_search import regularize_plateau_log_parameters
+from .optimizer_search import (
+    DISCRETE_LOG_PARAMETER_LOWER_BOUND,
+    DISCRETE_LOG_PARAMETER_UPPER_BOUND,
+    _DiscreteOptimizationRun,
+    build_discrete_initial_candidates,
+    optimize_log_parameters,
+    optimize_single_log_parameter,
+    regularize_plateau_log_parameters,
+)
 from .posterior_probabilities import estimate_marginal_state_probabilities
-from .rate_matrix import build_transition_rate_rows
-from .rate_matrix import rate_matrix_from_log_parameters
+from .rate_matrix import build_transition_rate_rows, rate_matrix_from_log_parameters
 
 
 def reconstruct_likelihood_estimates(
@@ -210,6 +211,7 @@ def fit_discrete_mk_model(
     state_ordering: str,
     allowed_transition_pairs: set[tuple[int, int]],
     root_prior_mode: str = "equal",
+    ascertainment_policy: str = "none",
 ) -> tuple[numpy.ndarray, numpy.ndarray, DiscreteOptimizerDiagnostics]:
     count = parameter_count(
         len(state_order),
@@ -230,6 +232,7 @@ def fit_discrete_mk_model(
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
             root_prior_mode=root_prior_mode,
+            ascertainment_policy=ascertainment_policy,
         )
         best_log_parameters = best_run.log_parameters
     else:
@@ -249,6 +252,7 @@ def fit_discrete_mk_model(
                 state_ordering=state_ordering,
                 allowed_transition_pairs=allowed_transition_pairs,
                 root_prior_mode=root_prior_mode,
+                ascertainment_policy=ascertainment_policy,
                 initial_log_parameters=initial,
                 initial_scale=initial_scale,
             )
@@ -268,6 +272,7 @@ def fit_discrete_mk_model(
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
             root_prior_mode=root_prior_mode,
+            ascertainment_policy=ascertainment_policy,
             log_parameters=best_log_parameters,
             reference_log_likelihood=best_log_likelihood,
         )

@@ -70,6 +70,7 @@ def optimize_log_parameters(
     state_ordering: str,
     allowed_transition_pairs: set[tuple[int, int]],
     root_prior_mode: str,
+    ascertainment_policy: str,
     initial_log_parameters: numpy.ndarray,
     initial_scale: float,
 ) -> _DiscreteOptimizationRun:
@@ -99,6 +100,7 @@ def optimize_log_parameters(
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
             root_prior_mode=root_prior_mode,
+            ascertainment_policy=ascertainment_policy,
             log_parameters=vertex,
         )
         for vertex in simplex
@@ -140,6 +142,7 @@ def optimize_log_parameters(
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
             root_prior_mode=root_prior_mode,
+            ascertainment_policy=ascertainment_policy,
             log_parameters=reflected,
         )
         function_evaluation_count += 1
@@ -161,6 +164,7 @@ def optimize_log_parameters(
                 state_ordering=state_ordering,
                 allowed_transition_pairs=allowed_transition_pairs,
                 root_prior_mode=root_prior_mode,
+                ascertainment_policy=ascertainment_policy,
                 log_parameters=expanded,
             )
             function_evaluation_count += 1
@@ -191,6 +195,7 @@ def optimize_log_parameters(
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
             root_prior_mode=root_prior_mode,
+            ascertainment_policy=ascertainment_policy,
             log_parameters=contracted,
         )
         function_evaluation_count += 1
@@ -218,6 +223,7 @@ def optimize_log_parameters(
                     state_ordering=state_ordering,
                     allowed_transition_pairs=allowed_transition_pairs,
                     root_prior_mode=root_prior_mode,
+                    ascertainment_policy=ascertainment_policy,
                     log_parameters=shrunk,
                 )
             )
@@ -247,6 +253,7 @@ def optimize_single_log_parameter(
     state_ordering: str,
     allowed_transition_pairs: set[tuple[int, int]],
     root_prior_mode: str,
+    ascertainment_policy: str,
 ) -> _DiscreteOptimizationRun:
     from bijux_phylogenetics.comparative.search import (
         run_bounded_golden_section_maximization,
@@ -263,6 +270,7 @@ def optimize_single_log_parameter(
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
             root_prior_mode=root_prior_mode,
+            ascertainment_policy=ascertainment_policy,
             parameter=parameter,
         ),
         optimizer_name="golden-section-search",
@@ -290,6 +298,7 @@ def evaluate_single_log_parameter_candidate(
     state_ordering: str,
     allowed_transition_pairs: set[tuple[int, int]],
     root_prior_mode: str,
+    ascertainment_policy: str,
     parameter: float,
 ) -> tuple[float, float]:
     objective_value = evaluate_log_likelihood(
@@ -300,6 +309,7 @@ def evaluate_single_log_parameter_candidate(
         state_ordering=state_ordering,
         allowed_transition_pairs=allowed_transition_pairs,
         root_prior_mode=root_prior_mode,
+        ascertainment_policy=ascertainment_policy,
         log_parameters=numpy.array([parameter], dtype=float),
     )
     return parameter, objective_value
@@ -314,6 +324,7 @@ def evaluate_log_likelihood(
     state_ordering: str,
     allowed_transition_pairs: set[tuple[int, int]],
     root_prior_mode: str,
+    ascertainment_policy: str,
     log_parameters: numpy.ndarray,
 ) -> float:
     rate_matrix = rate_matrix_from_log_parameters(
@@ -332,6 +343,7 @@ def evaluate_log_likelihood(
         if root_prior_mode == "observed"
         else uniform_root_prior(len(state_order)),
         root_prior_mode=root_prior_mode,
+        ascertainment_policy=ascertainment_policy,
     )
 
 
@@ -344,6 +356,7 @@ def regularize_plateau_log_parameters(
     state_ordering: str,
     allowed_transition_pairs: set[tuple[int, int]],
     root_prior_mode: str,
+    ascertainment_policy: str,
     log_parameters: numpy.ndarray,
     reference_log_likelihood: float,
 ) -> numpy.ndarray:
@@ -360,6 +373,7 @@ def regularize_plateau_log_parameters(
             state_ordering=state_ordering,
             allowed_transition_pairs=allowed_transition_pairs,
             root_prior_mode=root_prior_mode,
+            ascertainment_policy=ascertainment_policy,
             log_parameters=regularized,
         )
         if current_reference_log_likelihood < (
@@ -380,6 +394,7 @@ def regularize_plateau_log_parameters(
                 state_ordering=state_ordering,
                 allowed_transition_pairs=allowed_transition_pairs,
                 root_prior_mode=root_prior_mode,
+                ascertainment_policy=ascertainment_policy,
                 log_parameters=candidate,
             )
             if (
