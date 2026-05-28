@@ -15,17 +15,21 @@ from bijux_phylogenetics.bayesian import (
     MrBayesParameterDiagnosticsReport,
     TREE_TOPOLOGY_PRIOR_FAMILIES,
     TreeTopologyPriorModel,
+    YULE_TREE_PRIOR_FAMILIES,
+    YuleTreePriorModel,
     assess_beast_burnin_sensitivity,
     assess_beast_convergence,
     assess_mrbayes_burnin_sensitivity,
     assess_mrbayes_convergence,
     build_bayesian_evidence_package,
     build_categorical_probability_vector,
+    build_crown_conditioned_yule_tree_prior,
     build_posterior_uncertainty_figure_package,
     build_uniform_rooted_tree_topology_prior,
     compare_log_probabilities,
     compute_mrbayes_effective_sample_sizes,
     count_rooted_labeled_bifurcating_topologies,
+    evaluate_yule_tree_log_prior,
     log_probability_add,
     logsumexp,
     normalize_log_probabilities,
@@ -781,8 +785,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.TREE_TOPOLOGY_PRIOR_FAMILIES is TREE_TOPOLOGY_PRIOR_FAMILIES
     )
+    assert bayesian_api.YULE_TREE_PRIOR_FAMILIES is YULE_TREE_PRIOR_FAMILIES
     assert bayesian_api.CategoricalProbabilityVector is CategoricalProbabilityVector
     assert bayesian_api.TreeTopologyPriorModel is TreeTopologyPriorModel
+    assert bayesian_api.YuleTreePriorModel is YuleTreePriorModel
     assert (
         bayesian_api.MrBayesParameterDiagnosticsReport
         is MrBayesParameterDiagnosticsReport
@@ -808,6 +814,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_uniform_rooted_tree_topology_prior
     )
     assert (
+        bayesian_api.build_crown_conditioned_yule_tree_prior
+        is build_crown_conditioned_yule_tree_prior
+    )
+    assert (
         bayesian_api.build_posterior_uncertainty_figure_package
         is build_posterior_uncertainty_figure_package
     )
@@ -824,6 +834,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.evaluate_tree_topology_log_prior
         is evaluate_tree_topology_log_prior
     )
+    assert bayesian_api.evaluate_yule_tree_log_prior is evaluate_yule_tree_log_prior
     assert bayesian_api.log_probability_add is log_probability_add
     assert bayesian_api.logsumexp is logsumexp
     assert bayesian_api.normalize_log_probabilities is normalize_log_probabilities
