@@ -8213,6 +8213,57 @@ def test_cli_phylo_dating_least_squares_includes_manifest(
     assert manifest_payload["input_checksums"][str(metadata_path)]
 
 
+def test_cli_phylo_dating_penalized_likelihood_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "penalized-likelihood-dating"
+    manifest = tmp_path / "penalized-likelihood-dating.manifest.json"
+    tree_path = fixture("penalized_likelihood_dating_substitution_tree_4_taxa.nwk")
+    metadata_path = fixture("penalized_likelihood_dating_tip_dates_4_taxa.tsv")
+
+    exit_code = main(
+        [
+            "phylo",
+            "dating",
+            "penalized-likelihood",
+            str(tree_path),
+            str(metadata_path),
+            "--smoothing-parameter",
+            "0.01",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 4
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "dating",
+        "penalized-likelihood",
+        str(tree_path),
+        str(metadata_path),
+        "--smoothing-parameter",
+        "0.01",
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(metadata_path)]
+
+
 def test_cli_validate_writes_run_manifest(tmp_path: Path, capsys) -> None:
     manifest = tmp_path / "validate.manifest.json"
     exit_code = main(
