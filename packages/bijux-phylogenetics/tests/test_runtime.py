@@ -64,6 +64,9 @@ from bijux_phylogenetics.bayesian import (
     BayesianPriorComponentState,
     BayesianStateBranchRow,
     BayesianTreeState,
+    MetropolisHastingsProposal,
+    MetropolisHastingsRunReport,
+    MetropolisHastingsStepRow,
     PriorOnlyPhylogeneticSample,
     PriorOnlyPhylogeneticSimulationReport,
     PriorOnlySampledBranchRow,
@@ -145,8 +148,10 @@ from bijux_phylogenetics.bayesian import (
     run_mrbayes_posterior_inference,
     deserialize_bayesian_phylogenetic_state,
     deserialize_bayesian_phylogenetic_state_json,
+    run_metropolis_hastings_sampler,
     sample_prior_only_phylogenetic_state,
     evaluate_tree_topology_log_prior,
+    score_bayesian_phylogenetic_state,
     serialize_bayesian_phylogenetic_state,
     serialize_bayesian_phylogenetic_state_json,
     simulate_prior_only_phylogenetic_states,
@@ -1034,6 +1039,9 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bayesian_api.BayesianModelParameterState is BayesianModelParameterState
     assert bayesian_api.BayesianPriorComponentState is BayesianPriorComponentState
     assert bayesian_api.BayesianPhylogeneticState is BayesianPhylogeneticState
+    assert bayesian_api.MetropolisHastingsProposal is MetropolisHastingsProposal
+    assert bayesian_api.MetropolisHastingsStepRow is MetropolisHastingsStepRow
+    assert bayesian_api.MetropolisHastingsRunReport is MetropolisHastingsRunReport
     assert bayesian_api.PriorOnlySampledBranchRow is PriorOnlySampledBranchRow
     assert (
         bayesian_api.PriorOnlySubstitutionParameterState
@@ -1210,6 +1218,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_bayesian_phylogenetic_state_from_prior_only_sample
         is build_bayesian_phylogenetic_state_from_prior_only_sample
+    )
+    assert (
+        bayesian_api.score_bayesian_phylogenetic_state
+        is score_bayesian_phylogenetic_state
+    )
+    assert (
+        bayesian_api.run_metropolis_hastings_sampler
+        is run_metropolis_hastings_sampler
     )
     assert (
         bayesian_api.sample_prior_only_phylogenetic_state
