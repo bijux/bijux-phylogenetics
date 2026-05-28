@@ -10,10 +10,12 @@ import bijux_phylogenetics
 from bijux_phylogenetics.bayesian import (
     BIRTH_DEATH_TREE_PRIOR_FAMILIES,
     CATEGORICAL_MISSING_STATE_POLICIES,
+    COALESCENT_TREE_PRIOR_FAMILIES,
     CategoricalProbabilityVector,
     BeastAnalysisXmlReport,
     BeastCalibration,
     BirthDeathTreePriorModel,
+    ConstantPopulationCoalescentPriorModel,
     MrBayesParameterDiagnosticsReport,
     TIME_TREE_PRIOR_CONDITIONING_MODES,
     TREE_TOPOLOGY_PRIOR_FAMILIES,
@@ -26,6 +28,7 @@ from bijux_phylogenetics.bayesian import (
     assess_mrbayes_convergence,
     build_bayesian_evidence_package,
     build_categorical_probability_vector,
+    build_constant_population_coalescent_tree_prior,
     build_crown_conditioned_birth_death_tree_prior,
     build_crown_conditioned_yule_tree_prior,
     build_posterior_uncertainty_figure_package,
@@ -33,6 +36,7 @@ from bijux_phylogenetics.bayesian import (
     compare_log_probabilities,
     compute_mrbayes_effective_sample_sizes,
     count_rooted_labeled_bifurcating_topologies,
+    evaluate_constant_population_coalescent_tree_log_prior,
     evaluate_birth_death_tree_log_prior,
     evaluate_yule_tree_log_prior,
     log_probability_add,
@@ -795,12 +799,20 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is BIRTH_DEATH_TREE_PRIOR_FAMILIES
     )
     assert (
+        bayesian_api.COALESCENT_TREE_PRIOR_FAMILIES
+        is COALESCENT_TREE_PRIOR_FAMILIES
+    )
+    assert (
         bayesian_api.TIME_TREE_PRIOR_CONDITIONING_MODES
         is TIME_TREE_PRIOR_CONDITIONING_MODES
     )
     assert bayesian_api.YULE_TREE_PRIOR_FAMILIES is YULE_TREE_PRIOR_FAMILIES
     assert bayesian_api.CategoricalProbabilityVector is CategoricalProbabilityVector
     assert bayesian_api.BirthDeathTreePriorModel is BirthDeathTreePriorModel
+    assert (
+        bayesian_api.ConstantPopulationCoalescentPriorModel
+        is ConstantPopulationCoalescentPriorModel
+    )
     assert bayesian_api.TreeTopologyPriorModel is TreeTopologyPriorModel
     assert bayesian_api.YuleTreePriorModel is YuleTreePriorModel
     assert (
@@ -822,6 +834,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_categorical_probability_vector
         is build_categorical_probability_vector
+    )
+    assert (
+        bayesian_api.build_constant_population_coalescent_tree_prior
+        is build_constant_population_coalescent_tree_prior
     )
     assert (
         bayesian_api.build_crown_conditioned_birth_death_tree_prior
@@ -848,6 +864,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is count_rooted_labeled_bifurcating_topologies
     )
     assert bayesian_api.compare_log_probabilities is compare_log_probabilities
+    assert (
+        bayesian_api.evaluate_constant_population_coalescent_tree_log_prior
+        is evaluate_constant_population_coalescent_tree_log_prior
+    )
     assert (
         bayesian_api.evaluate_birth_death_tree_log_prior
         is evaluate_birth_death_tree_log_prior
