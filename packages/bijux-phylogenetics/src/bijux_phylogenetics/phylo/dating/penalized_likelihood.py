@@ -8,7 +8,6 @@ from pathlib import Path
 
 import numpy
 
-from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
 from bijux_phylogenetics.io.trees import load_tree
@@ -18,11 +17,11 @@ from bijux_phylogenetics.phylo.likelihood.parameter_search import (
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import (
     InvalidBranchLengthError,
-    MetadataJoinError,
     PhylogeneticsError,
     UnrootedTreeError,
 )
 
+from .inputs import load_tip_dates_for_tree, validate_tip_dates_against_tree
 from .least_squares import fit_least_squares_dating
 from .models import (
     PenalizedLikelihoodDatingBranchRow,
@@ -41,9 +40,10 @@ class _PenalizedLikelihoodTreeLayout:
     internal_nodes: list[TreeNode]
     internal_non_root_nodes: list[TreeNode]
     node_index: dict[str, int]
-    minimum_tip_date_by_node_id: dict[str, float]
+    upper_date_by_node_id: dict[str, float]
     alpha_parameter_by_node_id: dict[str, str]
     tip_node_id_by_name: dict[str, str]
+    fixed_node_dates: dict[str, float]
 
 
 @dataclass(frozen=True, slots=True)
@@ -64,6 +64,7 @@ def fit_penalized_likelihood_dating(
     tree: PhyloTree,
     tip_dates: Mapping[str, float],
     *,
+    fixed_node_dates: Mapping[str, float] | None = None,
     smoothing_parameter: float = 1.0,
     max_coordinate_passes: int = 8,
     tree_path: Path | None = None,
@@ -71,10 +72,15 @@ def fit_penalized_likelihood_dating(
     taxon_column: str = "taxon",
     date_column: str = "date",
 ) -> PenalizedLikelihoodDatingReport:
-    """Fit one rooted tree to fixed tip dates with a data score plus rate-smoothing penalty."""
+    """Fit one rooted tree to tip dates and optional fixed node dates with penalized rate smoothing."""
+    normalized_fixed_node_dates = _normalize_fixed_node_dates(
+        tree,
+        fixed_node_dates=fixed_node_dates,
+    )
     _validate_penalized_likelihood_inputs(
         tree,
         tip_dates,
+        fixed_node_dates=normalized_fixed_node_dates,
         smoothing_parameter=smoothing_parameter,
     )
     least_squares_report = fit_least_squares_dating(
@@ -85,7 +91,11 @@ def fit_penalized_likelihood_dating(
         taxon_column=taxon_column,
         date_column=date_column,
     )
-    layout = _build_tree_layout(tree, tip_dates)
+    layout = _build_tree_layout(
+        tree,
+        tip_dates,
+        fixed_node_dates=normalized_fixed_node_dates,
+    )
     initial_values, bounds_by_name = _build_initial_parameters(
         tree,
         layout=layout,
@@ -163,7 +173,7 @@ def fit_penalized_likelihood_dating_from_metadata(
     validate_tree_path(tree_path, require_rooted=True)
     tree = load_tree(tree_path)
     tree.rooted = True
-    tip_dates, resolved_taxon_column = _load_tip_dates(
+    tip_dates, resolved_taxon_column = load_tip_dates_for_tree(
         metadata_path,
         tree_taxa=tree.tip_names,
         taxon_column=taxon_column,
@@ -185,6 +195,7 @@ def _validate_penalized_likelihood_inputs(
     tree: PhyloTree,
     tip_dates: Mapping[str, float],
     *,
+    fixed_node_dates: Mapping[str, float],
     smoothing_parameter: float,
 ) -> None:
     if tree.rooted is not True:
@@ -197,12 +208,30 @@ def _validate_penalized_likelihood_inputs(
             "penalized likelihood dating requires a strictly positive smoothing parameter",
             code="penalized_likelihood_dating_error",
         )
-    _validate_tip_dates_against_tree(tree, tip_dates)
+    validate_tip_dates_against_tree(tree, tip_dates)
     if len(set(tip_dates.values())) < 2:
         raise PhylogeneticsError(
             "penalized likelihood dating requires variation in tip dates",
             code="penalized_likelihood_dating_error",
         )
+    for node_id, fixed_date in fixed_node_dates.items():
+        node = tree.node_by_id(node_id)
+        if node is tree.root:
+            continue
+        parent = node.parent
+        if parent is None:
+            raise PhylogeneticsError(
+                "penalized likelihood dating requires stable rooted parentage",
+                code="penalized_likelihood_dating_error",
+            )
+        parent_node_id = parent.node_id or ""
+        if parent_node_id in fixed_node_dates and fixed_date <= (
+            fixed_node_dates[parent_node_id] + _DATE_TOLERANCE
+        ):
+            raise PhylogeneticsError(
+                "fixed node dates must remain chronological along the rooted tree",
+                code="penalized_likelihood_dating_error",
+            )
     for branch_length in tree.branch_lengths():
         if branch_length is None:
             raise InvalidBranchLengthError(
@@ -214,70 +243,35 @@ def _validate_penalized_likelihood_inputs(
             )
 
 
-def _load_tip_dates(
-    metadata_path: Path,
+def _normalize_fixed_node_dates(
+    tree: PhyloTree,
     *,
-    tree_taxa: list[str],
-    taxon_column: str | None,
-    date_column: str,
-) -> tuple[dict[str, float], str]:
-    table = load_taxon_table(metadata_path, taxon_column=taxon_column)
-    if date_column not in table.columns:
-        raise MetadataJoinError(
-            f"missing date column '{date_column}' in {metadata_path}"
-        )
-    tree_taxa_set = set(tree_taxa)
-    table_taxa_set = set(table.taxa)
-    missing_tree_taxa = sorted(tree_taxa_set - table_taxa_set)
-    if missing_tree_taxa:
-        raise MetadataJoinError(
-            "tip-date table is missing tree taxa: " + ", ".join(missing_tree_taxa)
-        )
-    extra_table_taxa = sorted(table_taxa_set - tree_taxa_set)
-    if extra_table_taxa:
-        raise MetadataJoinError(
-            "tip-date table contains taxa absent from the tree: "
-            + ", ".join(extra_table_taxa)
-        )
-    tip_dates: dict[str, float] = {}
-    for row in table.rows:
-        taxon = row[table.taxon_column]
-        raw_value = row.get(date_column, "")
-        if not raw_value:
-            raise MetadataJoinError(
-                f"taxon '{taxon}' is missing a numeric date in column '{date_column}'"
+    fixed_node_dates: Mapping[str, float] | None,
+) -> dict[str, float]:
+    if fixed_node_dates is None:
+        return {}
+    normalized: dict[str, float] = {}
+    for node_id, raw_date in fixed_node_dates.items():
+        if tree.node_by_id(node_id) is None:
+            raise PhylogeneticsError(
+                f"fixed node date references unknown node_id '{node_id}'",
+                code="penalized_likelihood_dating_error",
             )
         try:
-            tip_dates[taxon] = float(raw_value)
-        except ValueError as error:
-            raise MetadataJoinError(
-                f"taxon '{taxon}' has a non-numeric date '{raw_value}'"
+            normalized[node_id] = float(raw_date)
+        except (TypeError, ValueError) as error:
+            raise PhylogeneticsError(
+                f"fixed node date for '{node_id}' must be numeric",
+                code="penalized_likelihood_dating_error",
             ) from error
-    return tip_dates, table.taxon_column
-
-
-def _validate_tip_dates_against_tree(
-    tree: PhyloTree,
-    tip_dates: Mapping[str, float],
-) -> None:
-    tree_taxa = set(tree.tip_names)
-    tip_date_taxa = set(tip_dates)
-    missing_tree_taxa = sorted(tree_taxa - tip_date_taxa)
-    if missing_tree_taxa:
-        raise MetadataJoinError(
-            "tip-date mapping is missing tree taxa: " + ", ".join(missing_tree_taxa)
-        )
-    extra_tip_taxa = sorted(tip_date_taxa - tree_taxa)
-    if extra_tip_taxa:
-        raise MetadataJoinError(
-            "tip-date mapping contains taxa absent from the tree: "
-            + ", ".join(extra_tip_taxa)
-        )
+    return normalized
 
 
 def _build_tree_layout(
     tree: PhyloTree,
     tip_dates: Mapping[str, float],
+    *,
+    fixed_node_dates: Mapping[str, float],
 ) -> _PenalizedLikelihoodTreeLayout:
     all_nodes = list(tree.iter_nodes(order="preorder"))
     internal_nodes = list(tree.iter_internal_nodes(order="preorder"))
@@ -287,13 +281,15 @@ def _build_tree_layout(
     node_index = {
         node.node_id or "": index for index, node in enumerate(all_nodes)
     }
-    minimum_tip_date_by_node_id = {
-        node.node_id or "": min(tip_dates[taxon] for taxon in node.descendant_taxa)
-        for node in all_nodes
-    }
+    upper_date_by_node_id = _build_upper_date_bounds(
+        tree,
+        tip_dates=tip_dates,
+        fixed_node_dates=fixed_node_dates,
+    )
     alpha_parameter_by_node_id = {
         node.node_id or "": f"alpha::{node.node_id}"
         for node in internal_non_root_nodes
+        if (node.node_id or "") not in fixed_node_dates
     }
     tip_node_id_by_name = {}
     for node in tree.iter_leaves():
@@ -308,10 +304,38 @@ def _build_tree_layout(
         internal_nodes=internal_nodes,
         internal_non_root_nodes=internal_non_root_nodes,
         node_index=node_index,
-        minimum_tip_date_by_node_id=minimum_tip_date_by_node_id,
+        upper_date_by_node_id=upper_date_by_node_id,
         alpha_parameter_by_node_id=alpha_parameter_by_node_id,
         tip_node_id_by_name=tip_node_id_by_name,
+        fixed_node_dates=dict(fixed_node_dates),
     )
+
+
+def _build_upper_date_bounds(
+    tree: PhyloTree,
+    *,
+    tip_dates: Mapping[str, float],
+    fixed_node_dates: Mapping[str, float],
+) -> dict[str, float]:
+    upper_date_by_node_id: dict[str, float] = {}
+
+    def visit(node: TreeNode) -> float:
+        node_id = node.node_id or ""
+        if node.is_leaf():
+            if node.name is None:
+                raise PhylogeneticsError(
+                    "penalized likelihood dating requires stable named tips",
+                    code="penalized_likelihood_dating_error",
+                )
+            return float(tip_dates[node.name])
+        proper_descendant_upper = min(visit(child) for child in node.children)
+        upper_date_by_node_id[node_id] = proper_descendant_upper
+        if node_id in fixed_node_dates:
+            return min(fixed_node_dates[node_id], proper_descendant_upper)
+        return proper_descendant_upper
+
+    visit(tree.root)
+    return upper_date_by_node_id
 
 
 def _build_initial_parameters(
@@ -324,35 +348,42 @@ def _build_initial_parameters(
     minimum_tip_date = min(tip_dates.values())
     maximum_tip_date = max(tip_dates.values())
     tip_span = max(maximum_tip_date - minimum_tip_date, 1.0)
-    initial_root_height = max(
-        minimum_tip_date - least_squares_report.root_date,
-        _ROOT_HEIGHT_EPSILON * 10.0,
-    )
     max_root_to_tip_branch_length = max(_root_to_tip_branch_lengths(tree), default=1.0)
     rate_floor = max(least_squares_report.estimated_clock_rate * 0.1, 1e-6)
-    root_height_upper = max(
-        initial_root_height * 20.0,
-        tip_span + (max_root_to_tip_branch_length / rate_floor),
-        initial_root_height + tip_span + 1.0,
+    initial_node_dates = _build_initial_node_dates(
+        tree,
+        layout=layout,
+        least_squares_report=least_squares_report,
+        tip_dates=tip_dates,
     )
-    initial_values = {"root_height": initial_root_height}
-    bounds_by_name = {
-        "root_height": (_ROOT_HEIGHT_EPSILON, root_height_upper),
-    }
-    least_squares_node_dates = {
-        row.node_id: row.estimated_date for row in least_squares_report.node_rows
-    }
+    initial_values: dict[str, float] = {}
+    bounds_by_name: dict[str, tuple[float, float]] = {}
+    root_node_id = tree.root.node_id or ""
+    if root_node_id not in layout.fixed_node_dates:
+        initial_root_height = max(
+            minimum_tip_date - initial_node_dates[root_node_id],
+            _ROOT_HEIGHT_EPSILON * 10.0,
+        )
+        root_height_upper = max(
+            initial_root_height * 20.0,
+            tip_span + (max_root_to_tip_branch_length / rate_floor),
+            initial_root_height + tip_span + 1.0,
+        )
+        initial_values["root_height"] = initial_root_height
+        bounds_by_name["root_height"] = (_ROOT_HEIGHT_EPSILON, root_height_upper)
     for node in layout.internal_non_root_nodes:
         node_id = node.node_id or ""
+        if node_id in layout.fixed_node_dates:
+            continue
         parent = node.parent
         if parent is None or parent.node_id is None:
             raise PhylogeneticsError(
                 "penalized likelihood dating requires stable rooted parentage",
                 code="penalized_likelihood_dating_error",
             )
-        parent_date = least_squares_node_dates[parent.node_id]
-        upper_date = layout.minimum_tip_date_by_node_id[node_id]
-        numerator = least_squares_node_dates[node_id] - parent_date
+        parent_date = initial_node_dates[parent.node_id]
+        upper_date = layout.upper_date_by_node_id[node_id]
+        numerator = initial_node_dates[node_id] - parent_date
         denominator = max(upper_date - parent_date, _DATE_TOLERANCE)
         initial_alpha = min(
             max(numerator / denominator, _ALPHA_EPSILON),
@@ -362,6 +393,103 @@ def _build_initial_parameters(
         initial_values[parameter_name] = initial_alpha
         bounds_by_name[parameter_name] = (_ALPHA_EPSILON, 1.0 - _ALPHA_EPSILON)
     return initial_values, bounds_by_name
+
+
+def _build_initial_node_dates(
+    tree: PhyloTree,
+    *,
+    layout: _PenalizedLikelihoodTreeLayout,
+    least_squares_report,
+    tip_dates: Mapping[str, float],
+) -> dict[str, float]:
+    least_squares_node_dates = {
+        row.node_id: row.estimated_date for row in least_squares_report.node_rows
+    }
+    minimum_tip_date = min(tip_dates.values())
+    maximum_tip_date = max(tip_dates.values())
+    tip_span = max(maximum_tip_date - minimum_tip_date, 1.0)
+    node_dates: dict[str, float] = {}
+    root_node_id = tree.root.node_id or ""
+    root_upper_date = layout.upper_date_by_node_id[root_node_id]
+    if root_node_id in layout.fixed_node_dates:
+        root_date = layout.fixed_node_dates[root_node_id]
+    else:
+        root_date = min(
+            least_squares_node_dates[root_node_id],
+            root_upper_date - max((tip_span * 0.1), (_ROOT_HEIGHT_EPSILON * 10.0)),
+        )
+    _require_chronological_node_date(
+        node_label="root",
+        fixed_date=root_date,
+        lower_date=None,
+        upper_date=root_upper_date,
+    )
+    node_dates[root_node_id] = root_date
+    for node in layout.internal_non_root_nodes:
+        node_id = node.node_id or ""
+        parent = node.parent
+        if parent is None or parent.node_id is None:
+            raise PhylogeneticsError(
+                "penalized likelihood dating requires stable rooted parentage",
+                code="penalized_likelihood_dating_error",
+            )
+        lower_date = node_dates[parent.node_id]
+        upper_date = layout.upper_date_by_node_id[node_id]
+        if node_id in layout.fixed_node_dates:
+            node_date = layout.fixed_node_dates[node_id]
+            _require_chronological_node_date(
+                node_label=node_id,
+                fixed_date=node_date,
+                lower_date=lower_date,
+                upper_date=upper_date,
+            )
+        else:
+            node_date = _clamp_initial_node_date(
+                guess=least_squares_node_dates[node_id],
+                lower_date=lower_date,
+                upper_date=upper_date,
+            )
+        node_dates[node_id] = node_date
+    return node_dates
+
+
+def _clamp_initial_node_date(
+    *,
+    guess: float,
+    lower_date: float,
+    upper_date: float,
+) -> float:
+    margin = _chronology_margin(lower_date, upper_date)
+    clamped = min(max(guess, lower_date + margin), upper_date - margin)
+    if not (lower_date + _DATE_TOLERANCE < clamped < upper_date - _DATE_TOLERANCE):
+        raise PhylogeneticsError(
+            "penalized likelihood dating could not place an initial chronological node date",
+            code="penalized_likelihood_dating_error",
+        )
+    return clamped
+
+
+def _require_chronological_node_date(
+    *,
+    node_label: str,
+    fixed_date: float,
+    lower_date: float | None,
+    upper_date: float,
+) -> None:
+    if lower_date is not None and fixed_date <= (lower_date + _DATE_TOLERANCE):
+        raise PhylogeneticsError(
+            f"fixed node date for '{node_label}' is not younger than its parent",
+            code="penalized_likelihood_dating_error",
+        )
+    if fixed_date >= (upper_date - _DATE_TOLERANCE):
+        raise PhylogeneticsError(
+            f"fixed node date for '{node_label}' is not older than its descendants",
+            code="penalized_likelihood_dating_error",
+        )
+
+
+def _chronology_margin(lower_date: float, upper_date: float) -> float:
+    return max((upper_date - lower_date) * 1e-6, _DATE_TOLERANCE * 10.0)
 
 
 def _root_to_tip_branch_lengths(tree: PhyloTree) -> list[float]:
@@ -443,7 +571,10 @@ def _build_node_dates(
 ) -> dict[str, float]:
     minimum_tip_date = min(tip_dates.values())
     root_node_id = tree.root.node_id or ""
-    root_date = minimum_tip_date - float(parameter_values["root_height"])
+    if root_node_id in layout.fixed_node_dates:
+        root_date = layout.fixed_node_dates[root_node_id]
+    else:
+        root_date = minimum_tip_date - float(parameter_values["root_height"])
     node_dates = {root_node_id: root_date}
     for node in layout.internal_non_root_nodes:
         node_id = node.node_id or ""
@@ -451,14 +582,22 @@ def _build_node_dates(
         if parent is None or parent.node_id is None:
             raise ValueError("internal node is missing one rooted parent")
         parent_date = node_dates[parent.node_id]
-        upper_date = layout.minimum_tip_date_by_node_id[node_id]
-        alpha = float(parameter_values[layout.alpha_parameter_by_node_id[node_id]])
-        node_date = parent_date + (alpha * (upper_date - parent_date))
-        if (
-            node_date <= (parent_date + _DATE_TOLERANCE)
-            or node_date >= (upper_date - _DATE_TOLERANCE)
-        ):
-            raise ValueError("candidate dates are not chronological")
+        upper_date = layout.upper_date_by_node_id[node_id]
+        if node_id in layout.fixed_node_dates:
+            node_date = layout.fixed_node_dates[node_id]
+            if (
+                node_date <= (parent_date + _DATE_TOLERANCE)
+                or node_date >= (upper_date - _DATE_TOLERANCE)
+            ):
+                raise ValueError("fixed node dates are not chronological")
+        else:
+            alpha = float(parameter_values[layout.alpha_parameter_by_node_id[node_id]])
+            node_date = parent_date + (alpha * (upper_date - parent_date))
+            if (
+                node_date <= (parent_date + _DATE_TOLERANCE)
+                or node_date >= (upper_date - _DATE_TOLERANCE)
+            ):
+                raise ValueError("candidate dates are not chronological")
         node_dates[node_id] = node_date
     for tip_name, tip_date in tip_dates.items():
         node_dates[layout.tip_node_id_by_name[tip_name]] = tip_date
