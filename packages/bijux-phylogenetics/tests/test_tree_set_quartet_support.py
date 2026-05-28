@@ -124,3 +124,45 @@ def test_write_reference_tree_quartet_support_table_writes_expected_columns(
         "discordant_frequency\tuninformative_frequency"
     )
     assert lines[1] == "A|B::C|D\tA|B\tC|D\t1\t1\t2\t1\t0.25\t0.5\t0.25"
+
+
+def test_compute_reference_tree_quartet_support_handles_multiple_quartets_per_branch(
+    tmp_path: Path,
+) -> None:
+    reference_tree = tmp_path / "quartet-reference-tree-five-taxa.nwk"
+    comparison_tree_set = tmp_path / "quartet-support-tree-set-five-taxa.nwk"
+    reference_tree.write_text("(((A,B),C),(D,E));\n", encoding="utf-8")
+    comparison_tree_set.write_text(
+        "\n".join(
+            [
+                "(((A,B),C),(D,E));",
+                "((E,D),(C,(B,A)));",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    report = compute_reference_tree_quartet_support(
+        reference_tree,
+        comparison_tree_set,
+    )
+
+    assert report.branch_count == 2
+    assert report.total_quartet_count == 12
+    assert report.concordant_quartet_count == 12
+    assert report.discordant_quartet_count == 0
+    assert report.uninformative_quartet_count == 0
+    assert [
+        (
+            row.branch_id,
+            row.left_taxa,
+            row.right_taxa,
+            row.quartet_count_per_tree,
+            row.concordant_quartet_count,
+        )
+        for row in report.rows
+    ] == [
+        ("A|B::C|D|E", ["A", "B"], ["C", "D", "E"], 3, 6),
+        ("D|E::A|B|C", ["D", "E"], ["A", "B", "C"], 3, 6),
+    ]
