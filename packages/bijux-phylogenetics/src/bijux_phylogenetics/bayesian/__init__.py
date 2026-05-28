@@ -173,6 +173,14 @@ from .probability_vectors import (
     CategoricalProbabilityVector,
     build_categorical_probability_vector,
 )
+from .time_tree_priors import (
+    YULE_TREE_PRIOR_FAMILIES,
+    YuleTreePriorEvaluationReport,
+    YuleTreePriorIntervalRow,
+    YuleTreePriorModel,
+    build_crown_conditioned_yule_tree_prior,
+    evaluate_yule_tree_log_prior,
+)
 from .tree_topology_priors import (
     TREE_TOPOLOGY_PRIOR_FAMILIES,
     TreeTopologyPriorEvaluationReport,
@@ -263,8 +271,12 @@ __all__ = [
     "TimeTreeReadinessReport",
     "TimeTreeReadinessReportBuildResult",
     "TREE_TOPOLOGY_PRIOR_FAMILIES",
+    "YULE_TREE_PRIOR_FAMILIES",
     "TreeTopologyPriorEvaluationReport",
     "TreeTopologyPriorModel",
+    "YuleTreePriorEvaluationReport",
+    "YuleTreePriorIntervalRow",
+    "YuleTreePriorModel",
     "assess_calibration_dominance",
     "assess_beast_burnin_sensitivity",
     "assess_beast_chain_mixing",
@@ -276,6 +288,7 @@ __all__ = [
     "build_gamma_branch_length_prior",
     "build_lognormal_branch_length_prior",
     "build_categorical_probability_vector",
+    "build_crown_conditioned_yule_tree_prior",
     "build_uniform_rooted_tree_topology_prior",
     "compare_bayesian_tree_sets",
     "compare_log_probabilities",
@@ -288,6 +301,7 @@ __all__ = [
     "evaluate_branch_length_log_prior",
     "evaluate_tree_branch_length_log_prior",
     "evaluate_tree_topology_log_prior",
+    "evaluate_yule_tree_log_prior",
     "assess_time_tree_readiness",
     "assess_beast_convergence",
     "detect_impossible_calibration_constraints",
