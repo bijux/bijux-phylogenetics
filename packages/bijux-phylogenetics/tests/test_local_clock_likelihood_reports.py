@@ -92,6 +92,7 @@ def test_write_local_clock_likelihood_artifacts_materializes_governed_outputs(
         "regime_table_path",
         "run_json_path",
         "scaled_tree_path",
+        "site_log_likelihood_path",
     ]
     assert outputs["scaled_tree_path"].read_text(encoding="utf-8").strip() == (
         report.scaled_tree_newick
@@ -101,6 +102,9 @@ def test_write_local_clock_likelihood_artifacts_materializes_governed_outputs(
     )
     assert outputs["regime_table_path"].read_text(encoding="utf-8").startswith(
         "regime_id\ttarget_kind\ttarget_label\tdescendant_taxa\t"
+    )
+    assert outputs["site_log_likelihood_path"].read_text(encoding="utf-8").startswith(
+        "model_name\ttaxon_order\tpattern_id\tpattern_weight\tsite_position\tsite_states\tlog_likelihood\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["preferred_model_by_aic"] == "local-clock"
