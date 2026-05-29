@@ -21,6 +21,9 @@ from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
     resolve_dna_base_frequency_simplex_from_unconstrained,
     resolve_dna_exchangeability_simplex_from_unconstrained,
 )
+from bijux_phylogenetics.phylo.likelihood.gamma import (
+    validate_discrete_gamma_alpha,
+)
 from bijux_phylogenetics.phylo.topology.clades import rooted_topology_fingerprint
 from bijux_phylogenetics.phylo.topology.rooted_nni import (
     RootedNniMoveCandidate,
@@ -531,6 +534,95 @@ def propose_base_frequency_simplex_move(
         proposed_model_parameters=build_bayesian_model_parameter_state(
             scalar_parameters=current_state.model_parameters.scalar_parameters,
             vector_parameters=proposed_vector_parameters,
+        ),
+    )
+
+
+def propose_gamma_alpha_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+    *,
+    log_scale_standard_deviation: float,
+) -> MetropolisHastingsProposal:
+    """Propose one multiplicative change to one positive discrete-gamma alpha."""
+    validated_log_scale_standard_deviation = _validate_positive_finite_float(
+        value=log_scale_standard_deviation,
+        field_name="log_scale_standard_deviation",
+        owner_name="gamma-alpha proposal",
+    )
+    current_gamma_alpha = current_state.model_parameters.scalar_parameters.get(
+        "gamma-alpha"
+    )
+    if current_gamma_alpha is None:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.gamma-alpha",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "gamma-alpha proposal requires one 'gamma-alpha' scalar parameter"
+            ),
+        )
+    try:
+        validated_current_gamma_alpha = validate_discrete_gamma_alpha(
+            current_gamma_alpha
+        )
+    except ValueError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.gamma-alpha",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    try:
+        scale_factor = math.exp(
+            rng.gauss(0.0, validated_log_scale_standard_deviation)
+        )
+    except OverflowError:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.gamma-alpha",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="gamma-alpha scaling factor overflowed",
+        )
+    proposed_gamma_alpha = validated_current_gamma_alpha * scale_factor
+    try:
+        validated_proposed_gamma_alpha = validate_discrete_gamma_alpha(
+            proposed_gamma_alpha
+        )
+    except ValueError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.gamma-alpha",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    proposed_scalar_parameters = dict(current_state.model_parameters.scalar_parameters)
+    proposed_scalar_parameters["gamma-alpha"] = validated_proposed_gamma_alpha
+    log_forward_density = _lognormal_scaling_density(
+        current_branch_length=validated_current_gamma_alpha,
+        proposed_branch_length=validated_proposed_gamma_alpha,
+        log_scale_standard_deviation=validated_log_scale_standard_deviation,
+    )
+    log_reverse_density = _lognormal_scaling_density(
+        current_branch_length=validated_proposed_gamma_alpha,
+        proposed_branch_length=validated_current_gamma_alpha,
+        log_scale_standard_deviation=validated_log_scale_standard_deviation,
+    )
+    current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
+    return build_metropolis_hastings_proposal(
+        changed_fields=("scalar_parameters.gamma-alpha",),
+        log_forward_density=log_forward_density,
+        log_reverse_density=log_reverse_density,
+        is_valid=True,
+        proposed_tree=current_tree,
+        proposed_model_parameters=build_bayesian_model_parameter_state(
+            scalar_parameters=proposed_scalar_parameters,
+            vector_parameters=current_state.model_parameters.vector_parameters,
         ),
     )
 
