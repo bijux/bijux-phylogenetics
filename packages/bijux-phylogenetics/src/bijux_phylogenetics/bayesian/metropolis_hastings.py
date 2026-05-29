@@ -16,7 +16,9 @@ from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
     APE_ULTRAMETRIC_TOLERANCE,
 )
 from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
+    parameterize_dna_base_frequency_simplex,
     parameterize_dna_exchangeability_simplex,
+    resolve_dna_base_frequency_simplex_from_unconstrained,
     resolve_dna_exchangeability_simplex_from_unconstrained,
 )
 from bijux_phylogenetics.phylo.topology.clades import rooted_topology_fingerprint
@@ -394,6 +396,123 @@ def propose_gtr_exchangeability_move(
         for parameter_name, component_values in current_state.model_parameters.vector_parameters.items()
     }
     proposed_vector_parameters["exchangeabilities"] = (
+        proposed_parameterization.constrained_mapping()
+    )
+    proposal_density = (
+        -math.log(len(current_unconstrained_values))
+        + _gaussian_random_walk_density(
+            coordinate_change=proposed_coordinate_value - current_coordinate_value,
+            standard_deviation=validated_coordinate_standard_deviation,
+        )
+    )
+    return build_metropolis_hastings_proposal(
+        changed_fields=(changed_field,),
+        log_forward_density=proposal_density,
+        log_reverse_density=proposal_density,
+        is_valid=True,
+        proposed_tree=current_state.tree.to_tree(),
+        proposed_model_parameters=build_bayesian_model_parameter_state(
+            scalar_parameters=current_state.model_parameters.scalar_parameters,
+            vector_parameters=proposed_vector_parameters,
+        ),
+    )
+
+
+def propose_base_frequency_simplex_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+    *,
+    unconstrained_coordinate_standard_deviation: float,
+) -> MetropolisHastingsProposal:
+    """Propose one simplex-preserving DNA base-frequency parameter move."""
+    validated_coordinate_standard_deviation = _validate_positive_finite_float(
+        value=unconstrained_coordinate_standard_deviation,
+        field_name="unconstrained_coordinate_standard_deviation",
+        owner_name="base-frequency simplex proposal",
+    )
+    current_base_frequencies = current_state.model_parameters.vector_parameters.get(
+        "base-frequencies"
+    )
+    if current_base_frequencies is None:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("vector_parameters.base-frequencies",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "base-frequency simplex proposal requires one 'base-frequencies' vector parameter"
+            ),
+        )
+    try:
+        current_parameterization = parameterize_dna_base_frequency_simplex(
+            current_base_frequencies
+        )
+    except (InvalidAlignmentError, PhylogeneticsError) as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("vector_parameters.base-frequencies",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    current_unconstrained_values = list(current_parameterization.unconstrained_values)
+    coordinate_component_names = _simplex_coordinate_component_names(
+        current_parameterization.component_names,
+        reference_component_name=current_parameterization.reference_component_name,
+    )
+    selected_coordinate_index = rng.randrange(len(current_unconstrained_values))
+    current_coordinate_value = current_unconstrained_values[selected_coordinate_index]
+    proposed_coordinate_value = current_coordinate_value + rng.gauss(
+        0.0,
+        validated_coordinate_standard_deviation,
+    )
+    changed_field = (
+        "vector_parameters.base-frequencies."
+        f"{coordinate_component_names[selected_coordinate_index]}"
+    )
+    if not math.isfinite(proposed_coordinate_value):
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "base-frequency simplex proposal produced one non-finite simplex coordinate"
+            ),
+        )
+    current_unconstrained_values[selected_coordinate_index] = proposed_coordinate_value
+    try:
+        proposed_parameterization = (
+            resolve_dna_base_frequency_simplex_from_unconstrained(
+                current_unconstrained_values
+            )
+        )
+    except (InvalidAlignmentError, PhylogeneticsError) as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    if (
+        proposed_parameterization.constrained_values
+        == current_parameterization.constrained_values
+    ):
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "base-frequency simplex proposal must change normalized base frequencies"
+            ),
+        )
+    proposed_vector_parameters = {
+        parameter_name: dict(component_values)
+        for parameter_name, component_values in current_state.model_parameters.vector_parameters.items()
+    }
+    proposed_vector_parameters["base-frequencies"] = (
         proposed_parameterization.constrained_mapping()
     )
     proposal_density = (
