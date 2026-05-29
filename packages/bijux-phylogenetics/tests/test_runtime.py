@@ -150,6 +150,7 @@ from bijux_phylogenetics.bayesian import (
     deserialize_bayesian_phylogenetic_state,
     deserialize_bayesian_phylogenetic_state_json,
     run_metropolis_hastings_sampler,
+    propose_base_frequency_simplex_move,
     propose_branch_length_scaling_move,
     propose_gtr_exchangeability_move,
     propose_global_tree_height_scaling_move,
@@ -1230,6 +1231,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_metropolis_hastings_proposal
         is build_metropolis_hastings_proposal
+    )
+    assert (
+        bayesian_api.propose_base_frequency_simplex_move
+        is propose_base_frequency_simplex_move
     )
     assert (
         bayesian_api.propose_branch_length_scaling_move
