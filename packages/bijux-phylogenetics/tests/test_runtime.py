@@ -153,6 +153,7 @@ from bijux_phylogenetics.bayesian import (
     propose_base_frequency_simplex_move,
     propose_branch_length_scaling_move,
     propose_clock_rate_move,
+    propose_discrete_trait_rate_move,
     propose_gamma_alpha_move,
     propose_gtr_exchangeability_move,
     propose_global_tree_height_scaling_move,
@@ -1244,6 +1245,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is propose_branch_length_scaling_move
     )
     assert bayesian_api.propose_clock_rate_move is propose_clock_rate_move
+    assert (
+        bayesian_api.propose_discrete_trait_rate_move
+        is propose_discrete_trait_rate_move
+    )
     assert bayesian_api.propose_gamma_alpha_move is propose_gamma_alpha_move
     assert (
         bayesian_api.propose_gtr_exchangeability_move
