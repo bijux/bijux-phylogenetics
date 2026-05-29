@@ -733,6 +733,124 @@ def propose_clock_rate_move(
     )
 
 
+def propose_discrete_trait_rate_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+    *,
+    log_scale_standard_deviation: float,
+    parameter_name: str = "discrete-trait-rates",
+) -> MetropolisHastingsProposal:
+    """Propose one multiplicative change to one positive Mk transition-rate parameter."""
+    validated_log_scale_standard_deviation = _validate_positive_finite_float(
+        value=log_scale_standard_deviation,
+        field_name="log_scale_standard_deviation",
+        owner_name="discrete-trait rate proposal",
+    )
+    validated_parameter_name = _validate_parameter_name(
+        value=parameter_name,
+        field_name="parameter_name",
+        owner_name="discrete-trait rate proposal",
+    )
+    current_rate_parameters = current_state.model_parameters.vector_parameters.get(
+        validated_parameter_name
+    )
+    if current_rate_parameters is None:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(f"vector_parameters.{validated_parameter_name}",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "discrete-trait rate proposal requires one "
+                f"'{validated_parameter_name}' vector parameter"
+            ),
+        )
+    if not current_rate_parameters:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(f"vector_parameters.{validated_parameter_name}",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "discrete-trait rate proposal requires at least one named transition-rate parameter"
+            ),
+        )
+    validated_current_rate_parameters = {
+        component_name: _validate_positive_finite_float(
+            value=component_value,
+            field_name=f"{validated_parameter_name}.{component_name}",
+            owner_name="discrete-trait rate proposal",
+        )
+        for component_name, component_value in current_rate_parameters.items()
+    }
+    component_names = sorted(validated_current_rate_parameters)
+    selected_component_name = component_names[rng.randrange(len(component_names))]
+    current_rate_value = validated_current_rate_parameters[selected_component_name]
+    try:
+        scale_factor = math.exp(
+            rng.gauss(0.0, validated_log_scale_standard_deviation)
+        )
+    except OverflowError:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(
+                f"vector_parameters.{validated_parameter_name}.{selected_component_name}",
+            ),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="discrete-trait rate scaling factor overflowed",
+        )
+    proposed_rate_value = current_rate_value * scale_factor
+    try:
+        validated_proposed_rate_value = _validate_positive_finite_float(
+            value=proposed_rate_value,
+            field_name=f"{validated_parameter_name}.{selected_component_name}",
+            owner_name="discrete-trait rate proposal",
+        )
+    except PhylogeneticsError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(
+                f"vector_parameters.{validated_parameter_name}.{selected_component_name}",
+            ),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    proposed_vector_parameters = {
+        parameter_label: dict(component_values)
+        for parameter_label, component_values in current_state.model_parameters.vector_parameters.items()
+    }
+    proposed_vector_parameters[validated_parameter_name][selected_component_name] = (
+        validated_proposed_rate_value
+    )
+    log_forward_density = -math.log(len(component_names)) + _lognormal_scaling_density(
+        current_branch_length=current_rate_value,
+        proposed_branch_length=validated_proposed_rate_value,
+        log_scale_standard_deviation=validated_log_scale_standard_deviation,
+    )
+    log_reverse_density = -math.log(len(component_names)) + _lognormal_scaling_density(
+        current_branch_length=validated_proposed_rate_value,
+        proposed_branch_length=current_rate_value,
+        log_scale_standard_deviation=validated_log_scale_standard_deviation,
+    )
+    current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
+    return build_metropolis_hastings_proposal(
+        changed_fields=(
+            f"vector_parameters.{validated_parameter_name}.{selected_component_name}",
+        ),
+        log_forward_density=log_forward_density,
+        log_reverse_density=log_reverse_density,
+        is_valid=True,
+        proposed_tree=current_tree,
+        proposed_model_parameters=build_bayesian_model_parameter_state(
+            scalar_parameters=current_state.model_parameters.scalar_parameters,
+            vector_parameters=proposed_vector_parameters,
+        ),
+    )
+
+
 def propose_invariant_proportion_move(
     current_state: BayesianPhylogeneticState,
     rng: random.Random,
