@@ -24,6 +24,9 @@ from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
 from bijux_phylogenetics.phylo.likelihood.gamma import (
     validate_discrete_gamma_alpha,
 )
+from bijux_phylogenetics.phylo.likelihood.invariant import (
+    validate_invariant_proportion,
+)
 from bijux_phylogenetics.phylo.topology.clades import rooted_topology_fingerprint
 from bijux_phylogenetics.phylo.topology.rooted_nni import (
     RootedNniMoveCandidate,
@@ -616,6 +619,110 @@ def propose_gamma_alpha_move(
     current_tree.rooted = current_state.tree.rooted
     return build_metropolis_hastings_proposal(
         changed_fields=("scalar_parameters.gamma-alpha",),
+        log_forward_density=log_forward_density,
+        log_reverse_density=log_reverse_density,
+        is_valid=True,
+        proposed_tree=current_tree,
+        proposed_model_parameters=build_bayesian_model_parameter_state(
+            scalar_parameters=proposed_scalar_parameters,
+            vector_parameters=current_state.model_parameters.vector_parameters,
+        ),
+    )
+
+
+def propose_invariant_proportion_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+    *,
+    logit_standard_deviation: float,
+) -> MetropolisHastingsProposal:
+    """Propose one bounded change to one invariant-site mixture proportion."""
+    validated_logit_standard_deviation = _validate_positive_finite_float(
+        value=logit_standard_deviation,
+        field_name="logit_standard_deviation",
+        owner_name="invariant-proportion proposal",
+    )
+    current_invariant_proportion = current_state.model_parameters.scalar_parameters.get(
+        "invariant-proportion"
+    )
+    if current_invariant_proportion is None:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.invariant-proportion",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "invariant-proportion proposal requires one 'invariant-proportion' scalar parameter"
+            ),
+        )
+    try:
+        validated_current_invariant_proportion = validate_invariant_proportion(
+            current_invariant_proportion,
+            model_name="invariant-proportion proposal",
+        )
+    except ValueError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.invariant-proportion",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    if not 0.0 < validated_current_invariant_proportion < 1.0:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.invariant-proportion",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "invariant-proportion proposal requires one interior invariant proportion in (0, 1)"
+            ),
+        )
+    current_logit = _logit_probability(validated_current_invariant_proportion)
+    proposed_logit = current_logit + rng.gauss(0.0, validated_logit_standard_deviation)
+    if not math.isfinite(proposed_logit):
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.invariant-proportion",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "invariant-proportion proposal produced one non-finite logit coordinate"
+            ),
+        )
+    proposed_invariant_proportion = _inverse_logit_probability(proposed_logit)
+    try:
+        validated_proposed_invariant_proportion = validate_invariant_proportion(
+            proposed_invariant_proportion,
+            model_name="invariant-proportion proposal",
+        )
+    except ValueError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.invariant-proportion",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    proposed_scalar_parameters = dict(current_state.model_parameters.scalar_parameters)
+    proposed_scalar_parameters["invariant-proportion"] = (
+        validated_proposed_invariant_proportion
+    )
+    coordinate_change = proposed_logit - current_logit
+    gaussian_density = _gaussian_random_walk_density(
+        coordinate_change=coordinate_change,
+        standard_deviation=validated_logit_standard_deviation,
+    )
+    log_forward_density = gaussian_density + _log_probability_logit_jacobian(
+        validated_proposed_invariant_proportion
+    )
+    log_reverse_density = gaussian_density + _log_probability_logit_jacobian(
+        validated_current_invariant_proportion
+    )
+    current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
+    return build_metropolis_hastings_proposal(
+        changed_fields=("scalar_parameters.invariant-proportion",),
         log_forward_density=log_forward_density,
         log_reverse_density=log_reverse_density,
         is_valid=True,
@@ -1369,6 +1476,22 @@ def _gaussian_random_walk_density(
         - (math.log(2.0 * math.pi) / 2.0)
         - ((z_score * z_score) / 2.0)
     )
+
+
+def _logit_probability(value: float) -> float:
+    return math.log(value) - math.log1p(-value)
+
+
+def _inverse_logit_probability(value: float) -> float:
+    if value >= 0.0:
+        decay = math.exp(-value)
+        return 1.0 / (1.0 + decay)
+    growth = math.exp(value)
+    return growth / (1.0 + growth)
+
+
+def _log_probability_logit_jacobian(value: float) -> float:
+    return -math.log(value) - math.log1p(-value)
 
 
 def _global_tree_scaling_density(
