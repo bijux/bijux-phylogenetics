@@ -630,6 +630,109 @@ def propose_gamma_alpha_move(
     )
 
 
+def propose_clock_rate_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+    *,
+    log_scale_standard_deviation: float,
+    parameter_name: str = "clock-rate",
+) -> MetropolisHastingsProposal:
+    """Propose one multiplicative change to one positive scalar clock-rate parameter."""
+    validated_log_scale_standard_deviation = _validate_positive_finite_float(
+        value=log_scale_standard_deviation,
+        field_name="log_scale_standard_deviation",
+        owner_name="clock-rate proposal",
+    )
+    validated_parameter_name = _validate_parameter_name(
+        value=parameter_name,
+        field_name="parameter_name",
+        owner_name="clock-rate proposal",
+    )
+    changed_field = f"scalar_parameters.{validated_parameter_name}"
+    current_clock_rate = current_state.model_parameters.scalar_parameters.get(
+        validated_parameter_name
+    )
+    if current_clock_rate is None:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "clock-rate proposal requires one "
+                f"'{validated_parameter_name}' scalar parameter"
+            ),
+        )
+    try:
+        validated_current_clock_rate = _validate_positive_finite_float(
+            value=current_clock_rate,
+            field_name=validated_parameter_name,
+            owner_name="clock-rate proposal",
+        )
+    except PhylogeneticsError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    try:
+        scale_factor = math.exp(
+            rng.gauss(0.0, validated_log_scale_standard_deviation)
+        )
+    except OverflowError:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="clock-rate scaling factor overflowed",
+        )
+    proposed_clock_rate = validated_current_clock_rate * scale_factor
+    try:
+        validated_proposed_clock_rate = _validate_positive_finite_float(
+            value=proposed_clock_rate,
+            field_name=validated_parameter_name,
+            owner_name="clock-rate proposal",
+        )
+    except PhylogeneticsError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    proposed_scalar_parameters = dict(current_state.model_parameters.scalar_parameters)
+    proposed_scalar_parameters[validated_parameter_name] = (
+        validated_proposed_clock_rate
+    )
+    log_forward_density = _lognormal_scaling_density(
+        current_branch_length=validated_current_clock_rate,
+        proposed_branch_length=validated_proposed_clock_rate,
+        log_scale_standard_deviation=validated_log_scale_standard_deviation,
+    )
+    log_reverse_density = _lognormal_scaling_density(
+        current_branch_length=validated_proposed_clock_rate,
+        proposed_branch_length=validated_current_clock_rate,
+        log_scale_standard_deviation=validated_log_scale_standard_deviation,
+    )
+    current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
+    return build_metropolis_hastings_proposal(
+        changed_fields=(changed_field,),
+        log_forward_density=log_forward_density,
+        log_reverse_density=log_reverse_density,
+        is_valid=True,
+        proposed_tree=current_tree,
+        proposed_model_parameters=build_bayesian_model_parameter_state(
+            scalar_parameters=proposed_scalar_parameters,
+            vector_parameters=current_state.model_parameters.vector_parameters,
+        ),
+    )
+
+
 def propose_invariant_proportion_move(
     current_state: BayesianPhylogeneticState,
     rng: random.Random,
@@ -1386,6 +1489,21 @@ def _validate_invalid_reason(
             code="metropolis_hastings_invalid_reason_required",
         )
     return invalid_reason.strip()
+
+
+def _validate_parameter_name(
+    *,
+    value: str,
+    field_name: str,
+    owner_name: str,
+) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise PhylogeneticsError(
+            f"{owner_name} requires '{field_name}' to be one nonblank parameter name",
+            code="metropolis_hastings_parameter_name_invalid",
+            details={"field_name": field_name},
+        )
+    return value.strip()
 
 
 def _copy_tree_with_scaled_branch_length(
