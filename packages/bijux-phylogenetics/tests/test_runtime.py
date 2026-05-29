@@ -151,6 +151,7 @@ from bijux_phylogenetics.bayesian import (
     deserialize_bayesian_phylogenetic_state_json,
     run_metropolis_hastings_sampler,
     propose_branch_length_scaling_move,
+    propose_gtr_exchangeability_move,
     propose_global_tree_height_scaling_move,
     propose_nni_topology_move,
     propose_node_height_sliding_move,
@@ -1233,6 +1234,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.propose_branch_length_scaling_move
         is propose_branch_length_scaling_move
+    )
+    assert (
+        bayesian_api.propose_gtr_exchangeability_move
+        is propose_gtr_exchangeability_move
     )
     assert (
         bayesian_api.propose_global_tree_height_scaling_move
