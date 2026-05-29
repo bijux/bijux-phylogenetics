@@ -5,7 +5,10 @@ from dataclasses import dataclass
 import math
 
 from bijux_phylogenetics.ancestral.discrete import DiscreteTransitionRateRow
-from bijux_phylogenetics.ancestral.discrete.policy import resolve_discrete_model_name
+from bijux_phylogenetics.bayesian.discrete_trait_rate_parameters import (
+    DISCRETE_TRAIT_RATE_PARAMETER_MODELS,
+    parameterize_discrete_trait_rate_rows,
+)
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 DISCRETE_TRAIT_RATE_PRIOR_FAMILIES = (
@@ -13,12 +16,7 @@ DISCRETE_TRAIT_RATE_PRIOR_FAMILIES = (
     "gamma",
     "lognormal",
 )
-DISCRETE_TRAIT_RATE_PRIOR_MODELS = (
-    "equal-rates",
-    "symmetric",
-    "all-rates-different",
-)
-_RATE_GROUP_TOLERANCE = 1e-12
+DISCRETE_TRAIT_RATE_PRIOR_MODELS = DISCRETE_TRAIT_RATE_PARAMETER_MODELS
 
 
 @dataclass(frozen=True, slots=True)
@@ -173,31 +171,33 @@ def evaluate_discrete_trait_rate_log_prior(
     prior_model: DiscreteTraitRatePriorModel,
 ) -> DiscreteTraitRatePriorEvaluationReport:
     """Evaluate one prior over the governed rate parameters of one Mk fit surface."""
-    resolved_model = _resolve_supported_discrete_trait_rate_model(model)
-    rate_groups = _resolve_rate_parameter_groups(
-        model=resolved_model,
-        transition_rate_rows=transition_rate_rows,
-    )
+    try:
+        parameterization = parameterize_discrete_trait_rate_rows(
+            model=model,
+            transition_rate_rows=transition_rate_rows,
+        )
+    except PhylogeneticsError as error:
+        raise _translate_parameterization_error_for_prior(error) from error
     rows = [
         DiscreteTraitRatePriorRow(
-            parameter_name=parameter_name,
-            transition_pairs=transition_pairs,
-            rate_value=float(format(rate_value, ".15g")),
+            parameter_name=group.parameter_name,
+            transition_pairs=group.transition_pairs,
+            rate_value=group.rate_value,
             log_prior_contribution=float(
                 format(
                     evaluate_discrete_trait_rate_value_log_prior(
-                        rate_value=rate_value,
+                        rate_value=group.rate_value,
                         prior_model=prior_model,
                     ),
                     ".15g",
                 )
             ),
         )
-        for parameter_name, transition_pairs, rate_value in rate_groups
+        for group in parameterization.groups
     ]
     total_log_prior = math.fsum(row.log_prior_contribution for row in rows)
     return DiscreteTraitRatePriorEvaluationReport(
-        model=resolved_model,
+        model=parameterization.model,
         family=prior_model.family,
         parameter_count=len(rows),
         parameter_values=prior_model.parameter_values(),
@@ -235,125 +235,6 @@ def _lognormal_log_density(
             / (2.0 * (log_standard_deviation**2))
         )
     )
-
-
-def _resolve_supported_discrete_trait_rate_model(model: str) -> str:
-    resolved_model = resolve_discrete_model_name(model)
-    if resolved_model not in DISCRETE_TRAIT_RATE_PRIOR_MODELS:
-        raise PhylogeneticsError(
-            "discrete-trait rate priors support only ER, SYM, and ARD transition-rate surfaces",
-            code="discrete_trait_rate_prior_model_unsupported",
-            details={
-                "model": model,
-                "resolved_model": resolved_model,
-                "allowed_models": list(DISCRETE_TRAIT_RATE_PRIOR_MODELS),
-            },
-        )
-    return resolved_model
-
-
-def _resolve_rate_parameter_groups(
-    *,
-    model: str,
-    transition_rate_rows: Sequence[DiscreteTransitionRateRow],
-) -> list[tuple[str, list[tuple[str, str]], float]]:
-    allowed_rows = [
-        row for row in transition_rate_rows if row.transition_allowed
-    ]
-    if not allowed_rows:
-        raise PhylogeneticsError(
-            "discrete-trait rate prior evaluation requires at least one allowed transition rate",
-            code="discrete_trait_rate_prior_no_allowed_rates",
-        )
-    validated_rows = [
-        (
-            row.source_state,
-            row.target_state,
-            _validate_positive_finite_value(
-                parameter_name=f"{row.source_state}->{row.target_state} rate",
-                value=row.rate,
-                owner_name="discrete-trait rate prior evaluation",
-            ),
-        )
-        for row in allowed_rows
-    ]
-    if model == "equal-rates":
-        shared_rate = validated_rows[0][2]
-        if any(
-            not _rates_close(rate_value, shared_rate)
-            for _source_state, _target_state, rate_value in validated_rows[1:]
-        ):
-            raise PhylogeneticsError(
-                "equal-rates prior evaluation requires one shared transition rate",
-                code="discrete_trait_rate_prior_equal_rates_inconsistent",
-            )
-        return [
-            (
-                "shared-rate",
-                sorted(
-                    (source_state, target_state)
-                    for source_state, target_state, _rate_value in validated_rows
-                ),
-                shared_rate,
-            )
-        ]
-    if model == "symmetric":
-        pair_groups: dict[tuple[str, str], list[tuple[str, str, float]]] = {}
-        for source_state, target_state, rate_value in validated_rows:
-            pair_groups.setdefault(
-                tuple(sorted((source_state, target_state))),
-                [],
-            ).append((source_state, target_state, rate_value))
-        resolved_groups: list[tuple[str, list[tuple[str, str]], float]] = []
-        for pair_key in sorted(pair_groups):
-            grouped_rows = pair_groups[pair_key]
-            transition_pairs = sorted(
-                (source_state, target_state)
-                for source_state, target_state, _rate_value in grouped_rows
-            )
-            if len(grouped_rows) != 2:
-                raise PhylogeneticsError(
-                    "symmetric prior evaluation requires one forward and one reverse transition per rate parameter",
-                    code="discrete_trait_rate_prior_symmetric_pair_incomplete",
-                    details={"pair": list(pair_key)},
-                )
-            first_rate = grouped_rows[0][2]
-            if any(
-                not _rates_close(rate_value, first_rate)
-                for _source_state, _target_state, rate_value in grouped_rows[1:]
-            ):
-                raise PhylogeneticsError(
-                    "symmetric prior evaluation requires matched forward and reverse transition rates",
-                    code="discrete_trait_rate_prior_symmetric_pair_mismatched",
-                    details={"pair": list(pair_key)},
-                )
-            resolved_groups.append(
-                (
-                    f"{pair_key[0]}<->{pair_key[1]}",
-                    transition_pairs,
-                    first_rate,
-                )
-            )
-        return resolved_groups
-    return [
-        (
-            f"{source_state}->{target_state}",
-            [(source_state, target_state)],
-            rate_value,
-        )
-        for source_state, target_state, rate_value in sorted(validated_rows)
-    ]
-
-
-def _rates_close(left: float, right: float) -> bool:
-    return math.isclose(
-        left,
-        right,
-        rel_tol=_RATE_GROUP_TOLERANCE,
-        abs_tol=_RATE_GROUP_TOLERANCE,
-    )
-
-
 def _validate_positive_finite_value(
     *,
     parameter_name: str,
@@ -376,6 +257,43 @@ def _validate_positive_finite_value(
             },
         )
     return validated_value
+
+
+def _translate_parameterization_error_for_prior(
+    error: PhylogeneticsError,
+) -> PhylogeneticsError:
+    code = error.code
+    if code == "discrete_trait_rate_parameter_model_unsupported":
+        return PhylogeneticsError(
+            "discrete-trait rate priors support only ER, SYM, and ARD transition-rate surfaces",
+            code="discrete_trait_rate_prior_model_unsupported",
+            details=error.details,
+        )
+    if code == "discrete_trait_rate_parameter_no_allowed_rates":
+        return PhylogeneticsError(
+            "discrete-trait rate prior evaluation requires at least one allowed transition rate",
+            code="discrete_trait_rate_prior_no_allowed_rates",
+            details=error.details,
+        )
+    if code == "discrete_trait_rate_parameter_equal_rates_inconsistent":
+        return PhylogeneticsError(
+            "equal-rates prior evaluation requires one shared transition rate",
+            code="discrete_trait_rate_prior_equal_rates_inconsistent",
+            details=error.details,
+        )
+    if code == "discrete_trait_rate_parameter_symmetric_pair_incomplete":
+        return PhylogeneticsError(
+            "symmetric prior evaluation requires one forward and one reverse transition per rate parameter",
+            code="discrete_trait_rate_prior_symmetric_pair_incomplete",
+            details=error.details,
+        )
+    if code == "discrete_trait_rate_parameter_symmetric_pair_mismatched":
+        return PhylogeneticsError(
+            "symmetric prior evaluation requires matched forward and reverse transition rates",
+            code="discrete_trait_rate_prior_symmetric_pair_mismatched",
+            details=error.details,
+        )
+    return error
 
 
 def _validate_finite_value(
