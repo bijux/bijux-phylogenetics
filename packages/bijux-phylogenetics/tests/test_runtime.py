@@ -155,6 +155,7 @@ from bijux_phylogenetics.bayesian import (
     propose_gamma_alpha_move,
     propose_gtr_exchangeability_move,
     propose_global_tree_height_scaling_move,
+    propose_invariant_proportion_move,
     propose_nni_topology_move,
     propose_node_height_sliding_move,
     propose_spr_topology_move,
@@ -1249,6 +1250,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.propose_global_tree_height_scaling_move
         is propose_global_tree_height_scaling_move
+    )
+    assert (
+        bayesian_api.propose_invariant_proportion_move
+        is propose_invariant_proportion_move
     )
     assert bayesian_api.propose_nni_topology_move is propose_nni_topology_move
     assert (
