@@ -9,10 +9,15 @@ from bijux_phylogenetics.bayesian.state import (
     BayesianModelParameterState,
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
+    build_bayesian_model_parameter_state,
     build_bayesian_phylogenetic_state,
 )
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
     APE_ULTRAMETRIC_TOLERANCE,
+)
+from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
+    parameterize_dna_exchangeability_simplex,
+    resolve_dna_exchangeability_simplex_from_unconstrained,
 )
 from bijux_phylogenetics.phylo.topology.clades import rooted_topology_fingerprint
 from bijux_phylogenetics.phylo.topology.rooted_nni import (
@@ -30,7 +35,10 @@ from bijux_phylogenetics.phylo.topology.rooted_tbr import (
     validate_rooted_tbr_tree,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.runtime.errors import PhylogeneticsError
+from bijux_phylogenetics.runtime.errors import (
+    InvalidAlignmentError,
+    PhylogeneticsError,
+)
 
 BayesianPriorUpdate = Callable[
     [BayesianPhylogeneticState],
@@ -305,6 +313,106 @@ def propose_global_tree_height_scaling_move(
         is_valid=True,
         proposed_tree=proposed_tree,
         proposed_model_parameters=current_state.model_parameters,
+    )
+
+
+def propose_gtr_exchangeability_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+    *,
+    unconstrained_coordinate_standard_deviation: float,
+) -> MetropolisHastingsProposal:
+    """Propose one simplex-preserving GTR exchangeability parameter move."""
+    validated_coordinate_standard_deviation = _validate_positive_finite_float(
+        value=unconstrained_coordinate_standard_deviation,
+        field_name="unconstrained_coordinate_standard_deviation",
+        owner_name="GTR exchangeability proposal",
+    )
+    current_exchangeabilities = current_state.model_parameters.vector_parameters.get(
+        "exchangeabilities"
+    )
+    if current_exchangeabilities is None:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("vector_parameters.exchangeabilities",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="GTR exchangeability proposal requires one 'exchangeabilities' vector parameter",
+        )
+    try:
+        current_parameterization = parameterize_dna_exchangeability_simplex(
+            current_exchangeabilities
+        )
+    except (InvalidAlignmentError, PhylogeneticsError) as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("vector_parameters.exchangeabilities",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    current_unconstrained_values = list(current_parameterization.unconstrained_values)
+    coordinate_component_names = _simplex_coordinate_component_names(
+        current_parameterization.component_names,
+        reference_component_name=current_parameterization.reference_component_name,
+    )
+    selected_coordinate_index = rng.randrange(len(current_unconstrained_values))
+    current_coordinate_value = current_unconstrained_values[selected_coordinate_index]
+    proposed_coordinate_value = current_coordinate_value + rng.gauss(
+        0.0,
+        validated_coordinate_standard_deviation,
+    )
+    changed_field = (
+        "vector_parameters.exchangeabilities."
+        f"{coordinate_component_names[selected_coordinate_index]}"
+    )
+    if not math.isfinite(proposed_coordinate_value):
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="GTR exchangeability proposal produced one non-finite simplex coordinate",
+        )
+    current_unconstrained_values[selected_coordinate_index] = proposed_coordinate_value
+    proposed_parameterization = resolve_dna_exchangeability_simplex_from_unconstrained(
+        current_unconstrained_values
+    )
+    if (
+        proposed_parameterization.constrained_values
+        == current_parameterization.constrained_values
+    ):
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="GTR exchangeability proposal must change normalized exchangeabilities",
+        )
+    proposed_vector_parameters = {
+        parameter_name: dict(component_values)
+        for parameter_name, component_values in current_state.model_parameters.vector_parameters.items()
+    }
+    proposed_vector_parameters["exchangeabilities"] = (
+        proposed_parameterization.constrained_mapping()
+    )
+    proposal_density = (
+        -math.log(len(current_unconstrained_values))
+        + _gaussian_random_walk_density(
+            coordinate_change=proposed_coordinate_value - current_coordinate_value,
+            standard_deviation=validated_coordinate_standard_deviation,
+        )
+    )
+    return build_metropolis_hastings_proposal(
+        changed_fields=(changed_field,),
+        log_forward_density=proposal_density,
+        log_reverse_density=proposal_density,
+        is_valid=True,
+        proposed_tree=current_state.tree.to_tree(),
+        proposed_model_parameters=build_bayesian_model_parameter_state(
+            scalar_parameters=current_state.model_parameters.scalar_parameters,
+            vector_parameters=proposed_vector_parameters,
+        ),
     )
 
 
@@ -1039,6 +1147,19 @@ def _lognormal_scaling_density(
     )
 
 
+def _gaussian_random_walk_density(
+    *,
+    coordinate_change: float,
+    standard_deviation: float,
+) -> float:
+    z_score = coordinate_change / standard_deviation
+    return (
+        -math.log(standard_deviation)
+        - (math.log(2.0 * math.pi) / 2.0)
+        - ((z_score * z_score) / 2.0)
+    )
+
+
 def _global_tree_scaling_density(
     *,
     current_branch_lengths: list[float],
@@ -1213,4 +1334,16 @@ def _reversible_rooted_tbr_move_count(
 ) -> int:
     return sum(
         neighbor.neighbor_row.supporting_reconnection_count for neighbor in neighbors
+    )
+
+
+def _simplex_coordinate_component_names(
+    component_names: tuple[str, ...],
+    *,
+    reference_component_name: str,
+) -> tuple[str, ...]:
+    return tuple(
+        component_name
+        for component_name in component_names
+        if component_name != reference_component_name
     )
