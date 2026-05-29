@@ -141,6 +141,7 @@ from .metropolis_hastings import (
     build_metropolis_hastings_proposal,
     propose_base_frequency_simplex_move,
     propose_branch_length_scaling_move,
+    propose_clock_rate_move,
     propose_gamma_alpha_move,
     propose_global_tree_height_scaling_move,
     propose_gtr_exchangeability_move,
