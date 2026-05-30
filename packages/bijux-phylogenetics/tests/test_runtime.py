@@ -8,6 +8,10 @@ import pytest
 
 import bijux_phylogenetics
 from bijux_phylogenetics.bayesian import (
+    AdaptiveMetropolisHastingsRunReport,
+    AdaptiveTuningController,
+    AdaptiveTuningReport,
+    AdaptiveTuningWindowRow,
     BIRTH_DEATH_TREE_PRIOR_FAMILIES,
     CALIBRATION_PRIOR_FAMILIES,
     CATEGORICAL_MISSING_STATE_POLICIES,
@@ -80,6 +84,9 @@ from bijux_phylogenetics.bayesian import (
     assess_beast_convergence,
     assess_mrbayes_burnin_sensitivity,
     assess_mrbayes_convergence,
+    build_adaptive_tuning_controller,
+    build_adaptive_tuning_report,
+    build_adaptive_tuning_window_row,
     build_bayesian_evidence_package,
     build_beta_continuous_trait_probability_prior,
     build_beta_probability_substitution_parameter_prior,
@@ -166,6 +173,7 @@ from bijux_phylogenetics.bayesian import (
     propose_tbr_topology_move,
     resolve_partition_parameter_linkage_plan_from_model_parameters,
     resolve_partition_parameter_states_from_model_parameters,
+    run_adaptive_tuned_metropolis_hastings_sampler,
     sample_prior_only_phylogenetic_state,
     evaluate_tree_topology_log_prior,
     score_bayesian_phylogenetic_state,
@@ -1052,6 +1060,13 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.PartitionSubstitutionParameterState
         is PartitionSubstitutionParameterState
     )
+    assert bayesian_api.AdaptiveTuningController is AdaptiveTuningController
+    assert bayesian_api.AdaptiveTuningWindowRow is AdaptiveTuningWindowRow
+    assert bayesian_api.AdaptiveTuningReport is AdaptiveTuningReport
+    assert (
+        bayesian_api.AdaptiveMetropolisHastingsRunReport
+        is AdaptiveMetropolisHastingsRunReport
+    )
     assert bayesian_api.BayesianStateBranchRow is BayesianStateBranchRow
     assert bayesian_api.BayesianTreeState is BayesianTreeState
     assert bayesian_api.BayesianModelParameterState is BayesianModelParameterState
@@ -1213,6 +1228,12 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_partition_model_prior_bundle
     )
     assert (
+        bayesian_api.build_adaptive_tuning_controller
+        is build_adaptive_tuning_controller
+    )
+    assert bayesian_api.build_adaptive_tuning_window_row is build_adaptive_tuning_window_row
+    assert bayesian_api.build_adaptive_tuning_report is build_adaptive_tuning_report
+    assert (
         bayesian_api.build_partition_model_parameter_state
         is build_partition_model_parameter_state
     )
@@ -1294,6 +1315,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     )
     assert bayesian_api.propose_spr_topology_move is propose_spr_topology_move
     assert bayesian_api.propose_tbr_topology_move is propose_tbr_topology_move
+    assert (
+        bayesian_api.run_adaptive_tuned_metropolis_hastings_sampler
+        is run_adaptive_tuned_metropolis_hastings_sampler
+    )
     assert (
         bayesian_api.score_bayesian_phylogenetic_state
         is score_bayesian_phylogenetic_state
