@@ -42,6 +42,7 @@ class BayesianTreeState:
 class BayesianModelParameterState:
     """One model-parameter snapshot for a Bayesian state."""
 
+    categorical_parameters: dict[str, str] = field(default_factory=dict)
     scalar_parameters: dict[str, float] = field(default_factory=dict)
     vector_parameters: dict[str, dict[str, float]] = field(default_factory=dict)
 
@@ -100,10 +101,22 @@ def build_bayesian_tree_state(tree: PhyloTree) -> BayesianTreeState:
 
 def build_bayesian_model_parameter_state(
     *,
+    categorical_parameters: Mapping[str, str] | None = None,
     scalar_parameters: Mapping[str, float] | None = None,
     vector_parameters: Mapping[str, Mapping[str, float]] | None = None,
 ) -> BayesianModelParameterState:
     """Build one validated Bayesian model-parameter snapshot."""
+    normalized_categorical_parameters = {
+        parameter_name: _validate_nonblank_name(
+            field_name=parameter_name,
+            value=parameter_value,
+            owner_name="bayesian categorical parameter state",
+        )
+        for parameter_name, parameter_value in sorted(
+            (categorical_parameters or {}).items(),
+            key=lambda item: item[0],
+        )
+    }
     normalized_scalar_parameters = {
         parameter_name: _validate_finite_float(
             parameter_name=parameter_name,
@@ -133,6 +146,10 @@ def build_bayesian_model_parameter_state(
         )
     }
     _require_nonblank_parameter_names(
+        list(normalized_categorical_parameters),
+        owner_name="bayesian categorical parameter state",
+    )
+    _require_nonblank_parameter_names(
         list(normalized_scalar_parameters),
         owner_name="bayesian scalar parameter state",
     )
@@ -152,6 +169,7 @@ def build_bayesian_model_parameter_state(
             owner_name=f"bayesian vector parameter state for '{parameter_name}'",
         )
     return BayesianModelParameterState(
+        categorical_parameters=normalized_categorical_parameters,
         scalar_parameters=normalized_scalar_parameters,
         vector_parameters=normalized_vector_parameters,
     )
@@ -333,6 +351,10 @@ def deserialize_bayesian_phylogenetic_state(
         ],
     )
     model_parameter_state = build_bayesian_model_parameter_state(
+        categorical_parameters=_require_string_mapping(
+            model_parameter_payload,
+            key="categorical_parameters",
+        ),
         scalar_parameters=_require_float_mapping(model_parameter_payload, key="scalar_parameters"),
         vector_parameters=_require_nested_float_mapping(
             model_parameter_payload,
@@ -514,6 +536,28 @@ def _require_float_mapping(
                 code="bayesian_state_float_mapping_value_invalid",
             )
         normalized_mapping[item_key] = float(item_value)
+    return normalized_mapping
+
+
+def _require_string_mapping(
+    payload: Mapping[str, object],
+    *,
+    key: str,
+) -> dict[str, str]:
+    raw_mapping = _require_mapping(payload, key=key)
+    normalized_mapping: dict[str, str] = {}
+    for item_key, item_value in sorted(raw_mapping.items(), key=lambda item: str(item[0])):
+        if not isinstance(item_key, str):
+            raise PhylogeneticsError(
+                f"bayesian state deserialization requires '{key}' mapping keys to be strings",
+                code="bayesian_state_string_mapping_key_invalid",
+            )
+        if not isinstance(item_value, str):
+            raise PhylogeneticsError(
+                f"bayesian state deserialization requires '{key}' mapping values to be strings",
+                code="bayesian_state_string_mapping_value_invalid",
+            )
+        normalized_mapping[item_key] = item_value
     return normalized_mapping
 
 

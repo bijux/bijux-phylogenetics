@@ -99,6 +99,7 @@ def test_bayesian_state_deserialization_rejects_tampered_posterior_score() -> No
             rooted=True,
         ),
         model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters={"substitution-model": "K80"},
             scalar_parameters={"kappa": 2.0}
         ),
         prior_components=[
