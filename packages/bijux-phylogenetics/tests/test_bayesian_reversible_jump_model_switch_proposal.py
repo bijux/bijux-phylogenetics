@@ -226,6 +226,74 @@ def test_reversible_jump_model_switch_requires_substitution_model_label() -> Non
     assert proposal.proposed_model_parameters is None
 
 
+def test_reversible_jump_model_switch_rejects_inconsistent_jc69_state_with_kappa() -> None:
+    current_state = score_bayesian_phylogenetic_state(
+        tree=load_tree(fixture("trees", "k80_likelihood_tree_2_taxa.nwk")),
+        model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters={"substitution-model": "JC69"},
+            scalar_parameters={"kappa": 2.0},
+        ),
+        update_prior_components=_flat_prior_components,
+        update_log_likelihood=_zero_log_likelihood,
+    )
+
+    proposal = propose_reversible_jump_model_switch_move(
+        current_state,
+        Random(0),
+    )
+
+    assert proposal.is_valid is False
+    assert proposal.invalid_reason == (
+        "reversible-jump model-switch proposal requires JC69 states to omit "
+        "the standalone 'kappa' scalar parameter"
+    )
+
+
+def test_reversible_jump_model_switch_rejects_inconsistent_k80_state_without_kappa() -> None:
+    current_state = score_bayesian_phylogenetic_state(
+        tree=load_tree(fixture("trees", "k80_likelihood_tree_2_taxa.nwk")),
+        model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters={"substitution-model": "K80"}
+        ),
+        update_prior_components=_flat_prior_components,
+        update_log_likelihood=_zero_log_likelihood,
+    )
+
+    proposal = propose_reversible_jump_model_switch_move(
+        current_state,
+        Random(0),
+    )
+
+    assert proposal.is_valid is False
+    assert proposal.invalid_reason == (
+        "reversible-jump model-switch proposal requires K80 states to include "
+        "one positive 'kappa' scalar parameter"
+    )
+
+
+def test_reversible_jump_model_switch_rejects_unsupported_model_label() -> None:
+    current_state = score_bayesian_phylogenetic_state(
+        tree=load_tree(fixture("trees", "k80_likelihood_tree_2_taxa.nwk")),
+        model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters={"substitution-model": "HKY85"},
+            scalar_parameters={"kappa": 2.0},
+        ),
+        update_prior_components=_flat_prior_components,
+        update_log_likelihood=_zero_log_likelihood,
+    )
+
+    proposal = propose_reversible_jump_model_switch_move(
+        current_state,
+        Random(0),
+    )
+
+    assert proposal.is_valid is False
+    assert proposal.invalid_reason == (
+        "reversible-jump model-switch proposal supports only JC69 and K80 "
+        "within the nucleotide-substitution-model family"
+    )
+
+
 def _build_scored_jc69_state() -> BayesianPhylogeneticState:
     return score_bayesian_phylogenetic_state(
         tree=load_tree(fixture("trees", "k80_likelihood_tree_2_taxa.nwk")),
