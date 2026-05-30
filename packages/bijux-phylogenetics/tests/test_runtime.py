@@ -37,6 +37,7 @@ from bijux_phylogenetics.bayesian import (
     DISCRETE_TRAIT_RATE_PRIOR_FAMILIES,
     DISCRETE_TRAIT_RATE_PRIOR_MODELS,
     FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS,
+    JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS,
     PARTITION_MODEL_PRIOR_TARGETS,
     PARTITION_PARAMETER_LINKAGE_POLICIES,
     PARTITION_SUBSTITUTION_BASE_MODELS,
@@ -73,6 +74,10 @@ from bijux_phylogenetics.bayesian import (
     FixedTopologyDnaPosteriorRow,
     FixedTopologyDnaProposalSchedule,
     FixedTopologyDnaRunReport,
+    JointTopologyDnaModelDefinition,
+    JointTopologyDnaPosteriorRow,
+    JointTopologyDnaProposalSchedule,
+    JointTopologyDnaRunReport,
     MetropolisHastingsProposal,
     MetropolisHastingsRunReport,
     MetropolisHastingsStepRow,
@@ -111,6 +116,8 @@ from bijux_phylogenetics.bayesian import (
     build_gamma_discrete_trait_rate_prior,
     build_gamma_continuous_trait_scalar_prior,
     build_gamma_positive_substitution_parameter_prior,
+    build_joint_topology_dna_model_definition,
+    build_joint_topology_dna_proposal_schedule,
     load_calibration_prior_definitions,
     build_lognormal_discrete_trait_rate_prior,
     build_lognormal_continuous_trait_scalar_prior,
@@ -162,6 +169,7 @@ from bijux_phylogenetics.bayesian import (
     load_local_clock_regime_definitions,
     run_beast_posterior_inference,
     run_fixed_topology_dna_metropolis_hastings,
+    run_joint_topology_dna_metropolis_hastings,
     run_mrbayes_posterior_inference,
     deserialize_bayesian_phylogenetic_state,
     deserialize_bayesian_phylogenetic_state_json,
@@ -1086,6 +1094,16 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is FixedTopologyDnaProposalSchedule
     )
     assert bayesian_api.FixedTopologyDnaRunReport is FixedTopologyDnaRunReport
+    assert (
+        bayesian_api.JointTopologyDnaModelDefinition
+        is JointTopologyDnaModelDefinition
+    )
+    assert bayesian_api.JointTopologyDnaPosteriorRow is JointTopologyDnaPosteriorRow
+    assert (
+        bayesian_api.JointTopologyDnaProposalSchedule
+        is JointTopologyDnaProposalSchedule
+    )
+    assert bayesian_api.JointTopologyDnaRunReport is JointTopologyDnaRunReport
     assert bayesian_api.BayesianStateBranchRow is BayesianStateBranchRow
     assert bayesian_api.BayesianTreeState is BayesianTreeState
     assert bayesian_api.BayesianModelParameterState is BayesianModelParameterState
@@ -1202,6 +1220,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_gamma_positive_substitution_parameter_prior
         is build_gamma_positive_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_joint_topology_dna_model_definition
+        is build_joint_topology_dna_model_definition
+    )
+    assert (
+        bayesian_api.build_joint_topology_dna_proposal_schedule
+        is build_joint_topology_dna_proposal_schedule
     )
     assert (
         bayesian_api.load_calibration_prior_definitions
@@ -1360,6 +1386,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is run_fixed_topology_dna_metropolis_hastings
     )
     assert (
+        bayesian_api.run_joint_topology_dna_metropolis_hastings
+        is run_joint_topology_dna_metropolis_hastings
+    )
+    assert (
         bayesian_api.sample_prior_only_phylogenetic_state
         is sample_prior_only_phylogenetic_state
     )
@@ -1419,6 +1449,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS
         is FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS
+    )
+    assert (
+        bayesian_api.JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS
+        is JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS
     )
     assert (
         bayesian_api.evaluate_constant_population_coalescent_tree_log_prior
