@@ -208,6 +208,12 @@ from .partition_model_priors import (
     evaluate_partition_model_log_prior,
     validate_partition_substitution_model_name,
 )
+from .partition_model_state import (
+    build_partition_model_parameter_state,
+    resolve_partition_parameter_linkage_plan_from_model_parameters,
+    resolve_partition_parameter_states_from_model_parameters,
+    strip_partition_model_parameter_state,
+)
 from .posterior_sets.comparison import (
     BayesianIndependentRunComparisonReport,
     BayesianMlTreeComparisonReport,
@@ -537,6 +543,7 @@ __all__ = [
     "build_lognormal_positive_substitution_parameter_prior",
     "build_categorical_probability_vector",
     "build_partition_model_prior_bundle",
+    "build_partition_model_parameter_state",
     "build_partition_parameter_linkage_plan",
     "build_partition_substitution_model_definition",
     "build_local_clock_rate_model",
@@ -600,6 +607,8 @@ __all__ = [
     "serialize_bayesian_phylogenetic_state_json",
     "deserialize_bayesian_phylogenetic_state",
     "deserialize_bayesian_phylogenetic_state_json",
+    "resolve_partition_parameter_linkage_plan_from_model_parameters",
+    "resolve_partition_parameter_states_from_model_parameters",
     "assess_time_tree_readiness",
     "assess_beast_convergence",
     "detect_impossible_calibration_constraints",
@@ -616,6 +625,7 @@ __all__ = [
     "logsumexp",
     "normalize_log_probabilities",
     "run_beast_posterior_inference",
+    "strip_partition_model_parameter_state",
     "summarize_beast_analysis_xml",
     "prepare_mrbayes_analysis",
     "render_bayesian_diagnostics_report",
