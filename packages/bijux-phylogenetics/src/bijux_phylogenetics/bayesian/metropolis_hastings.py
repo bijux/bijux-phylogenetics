@@ -1561,6 +1561,91 @@ def propose_clock_rate_move(
     )
 
 
+def propose_continuous_trait_location_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+    *,
+    standard_deviation: float,
+    parameter_name: str = "root-state",
+) -> MetropolisHastingsProposal:
+    """Propose one additive Gaussian move on one real-valued continuous-trait location parameter."""
+    validated_standard_deviation = _validate_positive_finite_float(
+        value=standard_deviation,
+        field_name="standard_deviation",
+        owner_name="continuous-trait location proposal",
+    )
+    validated_parameter_name = _validate_parameter_name(
+        value=parameter_name,
+        field_name="parameter_name",
+        owner_name="continuous-trait location proposal",
+    )
+    changed_field = f"scalar_parameters.{validated_parameter_name}"
+    current_location = current_state.model_parameters.scalar_parameters.get(
+        validated_parameter_name
+    )
+    if current_location is None:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "continuous-trait location proposal requires one "
+                f"'{validated_parameter_name}' scalar parameter"
+            ),
+        )
+    try:
+        validated_current_location = _validate_finite_float(
+            value=current_location,
+            field_name=validated_parameter_name,
+            owner_name="continuous-trait location proposal",
+        )
+    except PhylogeneticsError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    proposed_location = validated_current_location + rng.gauss(
+        0.0,
+        validated_standard_deviation,
+    )
+    try:
+        validated_proposed_location = _validate_finite_float(
+            value=proposed_location,
+            field_name=validated_parameter_name,
+            owner_name="continuous-trait location proposal",
+        )
+    except PhylogeneticsError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(changed_field,),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    proposed_scalar_parameters = dict(current_state.model_parameters.scalar_parameters)
+    proposed_scalar_parameters[validated_parameter_name] = (
+        validated_proposed_location
+    )
+    current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
+    return build_metropolis_hastings_proposal(
+        changed_fields=(changed_field,),
+        log_forward_density=0.0,
+        log_reverse_density=0.0,
+        is_valid=True,
+        proposed_tree=current_tree,
+        proposed_model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters=current_state.model_parameters.categorical_parameters,
+            scalar_parameters=proposed_scalar_parameters,
+            vector_parameters=current_state.model_parameters.vector_parameters,
+        ),
+    )
+
+
 def propose_discrete_trait_rate_move(
     current_state: BayesianPhylogeneticState,
     rng: random.Random,
