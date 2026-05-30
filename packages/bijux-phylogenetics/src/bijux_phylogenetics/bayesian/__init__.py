@@ -78,6 +78,17 @@ from .branch_length_priors import (
     evaluate_branch_length_log_prior,
     evaluate_tree_branch_length_log_prior,
 )
+from .brownian_continuous_trait import (
+    BROWNIAN_CONTINUOUS_TRAIT_MODELS,
+    BrownianContinuousTraitModelDefinition,
+    BrownianContinuousTraitParameterSummary,
+    BrownianContinuousTraitPosteriorRow,
+    BrownianContinuousTraitProposalSchedule,
+    BrownianContinuousTraitRunReport,
+    build_brownian_continuous_trait_model_definition,
+    build_brownian_continuous_trait_proposal_schedule,
+    run_brownian_continuous_trait_metropolis_hastings,
+)
 from .calibration_priors import (
     CALIBRATION_PRIOR_FAMILIES,
     CalibrationPriorDefinition,
@@ -109,6 +120,13 @@ from .clock_models import (
     evaluate_relaxed_lognormal_clock_tree_log_prior,
     evaluate_strict_clock_tree_log_prior,
     load_local_clock_regime_definitions,
+)
+from .continuous_trait_location_priors import (
+    CONTINUOUS_TRAIT_LOCATION_PRIOR_FAMILIES,
+    ContinuousTraitLocationPriorModel,
+    build_fixed_continuous_trait_location_prior,
+    build_normal_continuous_trait_location_prior,
+    evaluate_continuous_trait_location_log_prior,
 )
 from .continuous_trait_model_priors import (
     CONTINUOUS_TRAIT_PRIOR_MODES,
@@ -203,6 +221,7 @@ from .metropolis_hastings import (
     propose_base_frequency_simplex_move,
     propose_branch_length_scaling_move,
     propose_clock_rate_move,
+    propose_continuous_trait_location_move,
     propose_discrete_trait_rate_move,
     propose_gamma_alpha_move,
     propose_global_tree_height_scaling_move,
