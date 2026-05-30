@@ -179,6 +179,165 @@ def validate_reversible_jump_model_switch_family(model_family: str) -> str:
     return validated_model_family
 
 
+def propose_reversible_jump_model_switch_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+    *,
+    model_family: str = "nucleotide-substitution-model",
+    log_kappa_standard_deviation: float = 0.5,
+) -> MetropolisHastingsProposal:
+    """Propose one reversible-jump model switch within one declared family."""
+    validated_model_family = validate_reversible_jump_model_switch_family(model_family)
+    if validated_model_family != "nucleotide-substitution-model":
+        raise AssertionError(
+            "reversible-jump model-switch proposal reached one unsupported family handler"
+        )
+    validated_log_kappa_standard_deviation = _validate_positive_finite_float(
+        value=log_kappa_standard_deviation,
+        field_name="log_kappa_standard_deviation",
+        owner_name="reversible-jump model-switch proposal",
+    )
+    current_model_name = current_state.model_parameters.categorical_parameters.get(
+        "substitution-model"
+    )
+    changed_fields = (
+        "categorical_parameters.substitution-model",
+        "scalar_parameters.kappa",
+    )
+    if current_model_name is None:
+        return build_metropolis_hastings_proposal(
+            changed_fields=changed_fields,
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "reversible-jump model-switch proposal requires one "
+                "'substitution-model' categorical parameter"
+            ),
+        )
+    normalized_current_model_name = current_model_name.strip().upper()
+    if normalized_current_model_name not in {"JC69", "K80"}:
+        return build_metropolis_hastings_proposal(
+            changed_fields=changed_fields,
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "reversible-jump model-switch proposal supports only JC69 and K80 "
+                "within the nucleotide-substitution-model family"
+            ),
+        )
+    current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
+    proposed_categorical_parameters = dict(
+        current_state.model_parameters.categorical_parameters
+    )
+    proposed_scalar_parameters = dict(current_state.model_parameters.scalar_parameters)
+    proposed_vector_parameters = {
+        parameter_name: dict(component_values)
+        for parameter_name, component_values in current_state.model_parameters.vector_parameters.items()
+    }
+    if normalized_current_model_name == "JC69":
+        if "kappa" in proposed_scalar_parameters:
+            return build_metropolis_hastings_proposal(
+                changed_fields=changed_fields,
+                log_forward_density=0.0,
+                log_reverse_density=0.0,
+                is_valid=False,
+                invalid_reason=(
+                    "reversible-jump model-switch proposal requires JC69 states to omit "
+                    "the standalone 'kappa' scalar parameter"
+                ),
+            )
+        try:
+            proposed_kappa = math.exp(
+                rng.gauss(0.0, validated_log_kappa_standard_deviation)
+            )
+        except OverflowError:
+            return build_metropolis_hastings_proposal(
+                changed_fields=changed_fields,
+                log_forward_density=0.0,
+                log_reverse_density=0.0,
+                is_valid=False,
+                invalid_reason="reversible-jump model-switch proposal overflowed while drawing K80 kappa",
+            )
+        try:
+            validated_proposed_kappa = float(
+                format(
+                    validate_positive_kappa(
+                        proposed_kappa,
+                        model_name="reversible-jump model-switch proposal",
+                    ),
+                    ".15g",
+                )
+            )
+        except ValueError as error:
+            return build_metropolis_hastings_proposal(
+                changed_fields=changed_fields,
+                log_forward_density=0.0,
+                log_reverse_density=0.0,
+                is_valid=False,
+                invalid_reason=str(error),
+            )
+        proposed_categorical_parameters["substitution-model"] = "K80"
+        proposed_scalar_parameters["kappa"] = validated_proposed_kappa
+        log_forward_density = _lognormal_positive_draw_density(
+            proposed_value=validated_proposed_kappa,
+            log_standard_deviation=validated_log_kappa_standard_deviation,
+        )
+        log_reverse_density = 0.0
+    else:
+        current_kappa = proposed_scalar_parameters.get("kappa")
+        if current_kappa is None:
+            return build_metropolis_hastings_proposal(
+                changed_fields=changed_fields,
+                log_forward_density=0.0,
+                log_reverse_density=0.0,
+                is_valid=False,
+                invalid_reason=(
+                    "reversible-jump model-switch proposal requires K80 states to include "
+                    "one positive 'kappa' scalar parameter"
+                ),
+            )
+        try:
+            validated_current_kappa = float(
+                format(
+                    validate_positive_kappa(
+                        current_kappa,
+                        model_name="reversible-jump model-switch proposal",
+                    ),
+                    ".15g",
+                )
+            )
+        except ValueError as error:
+            return build_metropolis_hastings_proposal(
+                changed_fields=changed_fields,
+                log_forward_density=0.0,
+                log_reverse_density=0.0,
+                is_valid=False,
+                invalid_reason=str(error),
+            )
+        proposed_categorical_parameters["substitution-model"] = "JC69"
+        proposed_scalar_parameters.pop("kappa", None)
+        log_forward_density = 0.0
+        log_reverse_density = _lognormal_positive_draw_density(
+            proposed_value=validated_current_kappa,
+            log_standard_deviation=validated_log_kappa_standard_deviation,
+        )
+    return build_metropolis_hastings_proposal(
+        changed_fields=changed_fields,
+        log_forward_density=log_forward_density,
+        log_reverse_density=log_reverse_density,
+        is_valid=True,
+        proposed_tree=current_tree,
+        proposed_model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters=proposed_categorical_parameters,
+            scalar_parameters=proposed_scalar_parameters,
+            vector_parameters=proposed_vector_parameters,
+        ),
+    )
+
+
 def propose_branch_length_scaling_move(
     current_state: BayesianPhylogeneticState,
     rng: random.Random,
@@ -1486,6 +1645,22 @@ def _validate_positive_integer(
             details={"field_name": field_name},
         )
     return value
+
+
+def _lognormal_positive_draw_density(
+    *,
+    proposed_value: float,
+    log_standard_deviation: float,
+) -> float:
+    return (
+        -math.log(proposed_value)
+        - math.log(log_standard_deviation)
+        - (0.5 * math.log(2.0 * math.pi))
+        - (
+            math.log(proposed_value) ** 2
+            / (2.0 * (log_standard_deviation**2))
+        )
+    )
 
 
 def _validate_metropolis_hastings_proposal(
