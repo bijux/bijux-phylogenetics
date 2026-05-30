@@ -105,6 +105,7 @@ from bijux_phylogenetics.bayesian import (
     build_crown_conditioned_birth_death_tree_prior,
     build_crown_conditioned_yule_tree_prior,
     build_partition_model_prior_bundle,
+    build_partition_model_parameter_state,
     build_partition_parameter_linkage_plan,
     build_partition_substitution_model_definition,
     build_bayesian_model_parameter_state,
@@ -160,14 +161,18 @@ from bijux_phylogenetics.bayesian import (
     propose_invariant_proportion_move,
     propose_nni_topology_move,
     propose_node_height_sliding_move,
+    propose_partition_linking_move,
     propose_spr_topology_move,
     propose_tbr_topology_move,
+    resolve_partition_parameter_linkage_plan_from_model_parameters,
+    resolve_partition_parameter_states_from_model_parameters,
     sample_prior_only_phylogenetic_state,
     evaluate_tree_topology_log_prior,
     score_bayesian_phylogenetic_state,
     serialize_bayesian_phylogenetic_state,
     serialize_bayesian_phylogenetic_state_json,
     simulate_prior_only_phylogenetic_states,
+    strip_partition_model_parameter_state,
     summarize_beast_log,
     summarize_mrbayes_posterior_trees,
     validate_partition_substitution_model_name,
@@ -1208,12 +1213,28 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_partition_model_prior_bundle
     )
     assert (
+        bayesian_api.build_partition_model_parameter_state
+        is build_partition_model_parameter_state
+    )
+    assert (
         bayesian_api.build_partition_parameter_linkage_plan
         is build_partition_parameter_linkage_plan
     )
     assert (
         bayesian_api.build_partition_substitution_model_definition
         is build_partition_substitution_model_definition
+    )
+    assert (
+        bayesian_api.resolve_partition_parameter_linkage_plan_from_model_parameters
+        is resolve_partition_parameter_linkage_plan_from_model_parameters
+    )
+    assert (
+        bayesian_api.resolve_partition_parameter_states_from_model_parameters
+        is resolve_partition_parameter_states_from_model_parameters
+    )
+    assert (
+        bayesian_api.strip_partition_model_parameter_state
+        is strip_partition_model_parameter_state
     )
     assert bayesian_api.build_bayesian_tree_state is build_bayesian_tree_state
     assert (
@@ -1266,6 +1287,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.propose_node_height_sliding_move
         is propose_node_height_sliding_move
+    )
+    assert (
+        bayesian_api.propose_partition_linking_move
+        is propose_partition_linking_move
     )
     assert bayesian_api.propose_spr_topology_move is propose_spr_topology_move
     assert bayesian_api.propose_tbr_topology_move is propose_tbr_topology_move
