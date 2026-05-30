@@ -17,6 +17,7 @@ from bijux_phylogenetics.bayesian import (
     CATEGORICAL_MISSING_STATE_POLICIES,
     CLOCK_RATE_MODEL_FAMILIES,
     COALESCENT_TREE_PRIOR_FAMILIES,
+    CONTINUOUS_TRAIT_LOCATION_PRIOR_FAMILIES,
     CONTINUOUS_TRAIT_PRIOR_MODES,
     CONTINUOUS_TRAIT_PRIOR_TARGETS,
     CONTINUOUS_TRAIT_PROBABILITY_PRIOR_FAMILIES,
@@ -29,6 +30,7 @@ from bijux_phylogenetics.bayesian import (
     CalibrationPriorEvaluationReport,
     CalibrationPriorRow,
     ConstantPopulationCoalescentPriorModel,
+    ContinuousTraitLocationPriorModel,
     ContinuousTraitModelPriorBundle,
     ContinuousTraitModelPriorEvaluationReport,
     ContinuousTraitModelPriorRow,
@@ -40,6 +42,7 @@ from bijux_phylogenetics.bayesian import (
     DISCRETE_TRAIT_RATE_PRIOR_MODELS,
     FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS,
     JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS,
+    BROWNIAN_CONTINUOUS_TRAIT_MODELS,
     PARTITION_MODEL_PRIOR_TARGETS,
     PARTITION_PARAMETER_LINKAGE_POLICIES,
     PARTITION_SUBSTITUTION_BASE_MODELS,
@@ -77,6 +80,11 @@ from bijux_phylogenetics.bayesian import (
     DiscreteTraitMkPosteriorRow,
     DiscreteTraitMkProposalSchedule,
     DiscreteTraitMkRunReport,
+    BrownianContinuousTraitModelDefinition,
+    BrownianContinuousTraitParameterSummary,
+    BrownianContinuousTraitPosteriorRow,
+    BrownianContinuousTraitProposalSchedule,
+    BrownianContinuousTraitRunReport,
     FixedTopologyDnaModelDefinition,
     FixedTopologyDnaPosteriorRow,
     FixedTopologyDnaProposalSchedule,
@@ -105,6 +113,8 @@ from bijux_phylogenetics.bayesian import (
     build_adaptive_tuning_report,
     build_adaptive_tuning_window_row,
     build_bayesian_evidence_package,
+    build_brownian_continuous_trait_model_definition,
+    build_brownian_continuous_trait_proposal_schedule,
     build_beta_continuous_trait_probability_prior,
     build_beta_probability_substitution_parameter_prior,
     build_categorical_probability_vector,
@@ -117,6 +127,7 @@ from bijux_phylogenetics.bayesian import (
     build_exponential_positive_substitution_parameter_prior,
     build_fixed_topology_dna_model_definition,
     build_fixed_topology_dna_proposal_schedule,
+    build_fixed_continuous_trait_location_prior,
     build_fixed_continuous_trait_probability_prior,
     build_fixed_continuous_trait_scalar_prior,
     build_fixed_positive_substitution_parameter_prior,
@@ -131,6 +142,7 @@ from bijux_phylogenetics.bayesian import (
     build_lognormal_discrete_trait_rate_prior,
     build_lognormal_continuous_trait_scalar_prior,
     build_lognormal_positive_substitution_parameter_prior,
+    build_normal_continuous_trait_location_prior,
     build_constant_population_coalescent_tree_prior,
     build_crown_conditioned_birth_death_tree_prior,
     build_crown_conditioned_yule_tree_prior,
@@ -157,6 +169,7 @@ from bijux_phylogenetics.bayesian import (
     evaluate_constant_population_coalescent_tree_log_prior,
     evaluate_calibration_tree_log_prior,
     evaluate_birth_death_tree_log_prior,
+    evaluate_continuous_trait_location_log_prior,
     evaluate_continuous_trait_model_log_prior,
     evaluate_continuous_trait_probability_log_prior,
     evaluate_continuous_trait_scalar_log_prior,
@@ -177,6 +190,7 @@ from bijux_phylogenetics.bayesian import (
     parse_mrbayes_consensus_tree,
     load_local_clock_regime_definitions,
     run_beast_posterior_inference,
+    run_brownian_continuous_trait_metropolis_hastings,
     run_discrete_trait_mk_metropolis_hastings,
     run_fixed_topology_dna_metropolis_hastings,
     run_joint_topology_dna_metropolis_hastings,
@@ -187,6 +201,7 @@ from bijux_phylogenetics.bayesian import (
     propose_base_frequency_simplex_move,
     propose_branch_length_scaling_move,
     propose_clock_rate_move,
+    propose_continuous_trait_location_move,
     propose_discrete_trait_rate_move,
     propose_gamma_alpha_move,
     propose_gtr_exchangeability_move,
@@ -1000,6 +1015,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is CONTINUOUS_TRAIT_SCALAR_PRIOR_FAMILIES
     )
     assert (
+        bayesian_api.CONTINUOUS_TRAIT_LOCATION_PRIOR_FAMILIES
+        is CONTINUOUS_TRAIT_LOCATION_PRIOR_FAMILIES
+    )
+    assert (
         bayesian_api.CONTINUOUS_TRAIT_PROBABILITY_PRIOR_FAMILIES
         is CONTINUOUS_TRAIT_PROBABILITY_PRIOR_FAMILIES
     )
@@ -1029,6 +1048,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is PARTITION_SUBSTITUTION_BASE_MODELS
     )
     assert (
+        bayesian_api.BROWNIAN_CONTINUOUS_TRAIT_MODELS
+        is BROWNIAN_CONTINUOUS_TRAIT_MODELS
+    )
+    assert (
         bayesian_api.TIME_TREE_PRIOR_CONDITIONING_MODES
         is TIME_TREE_PRIOR_CONDITIONING_MODES
     )
@@ -1044,6 +1067,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.ConstantPopulationCoalescentPriorModel
         is ConstantPopulationCoalescentPriorModel
+    )
+    assert (
+        bayesian_api.ContinuousTraitLocationPriorModel
+        is ContinuousTraitLocationPriorModel
     )
     assert (
         bayesian_api.ContinuousTraitScalarPriorModel
@@ -1107,6 +1134,26 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.AdaptiveMetropolisHastingsRunReport
         is AdaptiveMetropolisHastingsRunReport
+    )
+    assert (
+        bayesian_api.BrownianContinuousTraitModelDefinition
+        is BrownianContinuousTraitModelDefinition
+    )
+    assert (
+        bayesian_api.BrownianContinuousTraitParameterSummary
+        is BrownianContinuousTraitParameterSummary
+    )
+    assert (
+        bayesian_api.BrownianContinuousTraitPosteriorRow
+        is BrownianContinuousTraitPosteriorRow
+    )
+    assert (
+        bayesian_api.BrownianContinuousTraitProposalSchedule
+        is BrownianContinuousTraitProposalSchedule
+    )
+    assert (
+        bayesian_api.BrownianContinuousTraitRunReport
+        is BrownianContinuousTraitRunReport
     )
     assert (
         bayesian_api.FixedTopologyDnaModelDefinition
@@ -1174,6 +1221,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.build_bayesian_evidence_package is build_bayesian_evidence_package
     )
     assert (
+        bayesian_api.build_brownian_continuous_trait_model_definition
+        is build_brownian_continuous_trait_model_definition
+    )
+    assert (
+        bayesian_api.build_brownian_continuous_trait_proposal_schedule
+        is build_brownian_continuous_trait_proposal_schedule
+    )
+    assert (
         bayesian_api.build_beta_continuous_trait_probability_prior
         is build_beta_continuous_trait_probability_prior
     )
@@ -1220,6 +1275,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_fixed_topology_dna_proposal_schedule
         is build_fixed_topology_dna_proposal_schedule
+    )
+    assert (
+        bayesian_api.build_fixed_continuous_trait_location_prior
+        is build_fixed_continuous_trait_location_prior
     )
     assert (
         bayesian_api.build_fixed_continuous_trait_probability_prior
@@ -1276,6 +1335,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_lognormal_positive_substitution_parameter_prior
         is build_lognormal_positive_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_normal_continuous_trait_location_prior
+        is build_normal_continuous_trait_location_prior
     )
     assert (
         bayesian_api.build_constant_population_coalescent_tree_prior
@@ -1373,6 +1436,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     )
     assert bayesian_api.propose_clock_rate_move is propose_clock_rate_move
     assert (
+        bayesian_api.propose_continuous_trait_location_move
+        is propose_continuous_trait_location_move
+    )
+    assert (
         bayesian_api.propose_discrete_trait_rate_move
         is propose_discrete_trait_rate_move
     )
@@ -1402,6 +1469,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bayesian_api.propose_spr_topology_move is propose_spr_topology_move
     assert bayesian_api.propose_tbr_topology_move is propose_tbr_topology_move
     assert (
+        bayesian_api.evaluate_continuous_trait_location_log_prior
+        is evaluate_continuous_trait_location_log_prior
+    )
+    assert (
         bayesian_api.run_adaptive_tuned_metropolis_hastings_sampler
         is run_adaptive_tuned_metropolis_hastings_sampler
     )
@@ -1412,6 +1483,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.run_metropolis_hastings_sampler
         is run_metropolis_hastings_sampler
+    )
+    assert (
+        bayesian_api.run_brownian_continuous_trait_metropolis_hastings
+        is run_brownian_continuous_trait_metropolis_hastings
     )
     assert (
         bayesian_api.run_discrete_trait_mk_metropolis_hastings
