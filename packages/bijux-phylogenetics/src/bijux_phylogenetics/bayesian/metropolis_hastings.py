@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+import json
 import math
 import random
 
@@ -22,6 +23,8 @@ from bijux_phylogenetics.bayesian.state import (
     BayesianPriorComponentState,
     build_bayesian_model_parameter_state,
     build_bayesian_phylogenetic_state,
+    deserialize_bayesian_phylogenetic_state,
+    serialize_bayesian_phylogenetic_state,
 )
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
     APE_ULTRAMETRIC_TOLERANCE,
@@ -123,6 +126,75 @@ class MetropolisHastingsRunReport:
 
 
 @dataclass(frozen=True, slots=True)
+class MetropolisHastingsRandomState:
+    """One serialized Python random-generator state for exact chain resumption."""
+
+    version: int
+    internal_state: list[int]
+    gaussian_spare: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class MetropolisHastingsCheckpoint:
+    """One resumable Metropolis-Hastings sampler checkpoint."""
+
+    iteration_count: int
+    sample_every: int
+    seed: int
+    completed_iteration_count: int
+    accepted_count: int
+    initial_state: BayesianPhylogeneticState
+    current_state: BayesianPhylogeneticState
+    sampled_states: list[BayesianPhylogeneticState]
+    step_rows: list[MetropolisHastingsStepRow]
+    random_state: MetropolisHastingsRandomState
+
+
+@dataclass(frozen=True, slots=True)
+class CheckpointedMetropolisHastingsRunReport:
+    """One checkpoint-aware Metropolis-Hastings execution report."""
+
+    iteration_count: int
+    completed_iteration_count: int
+    sample_every: int
+    seed: int
+    resumed: bool
+    completed: bool
+    accepted_count: int
+    rejected_count: int
+    acceptance_rate: float
+    initial_state: BayesianPhylogeneticState
+    current_state: BayesianPhylogeneticState
+    sampled_states: list[BayesianPhylogeneticState]
+    step_rows: list[MetropolisHastingsStepRow]
+    checkpoints: list[MetropolisHastingsCheckpoint]
+
+    def to_chain_report(self) -> MetropolisHastingsRunReport:
+        """Convert one completed checkpoint-aware execution into a chain report."""
+        if self.completed is False:
+            raise PhylogeneticsError(
+                "checkpointed metropolis-hastings execution can convert to one chain report only after all iterations complete",
+                code="metropolis_hastings_checkpointed_execution_incomplete",
+                details={
+                    "iteration_count": self.iteration_count,
+                    "completed_iteration_count": self.completed_iteration_count,
+                },
+            )
+        return MetropolisHastingsRunReport(
+            iteration_count=self.iteration_count,
+            sample_every=self.sample_every,
+            seed=self.seed,
+            accepted_count=self.accepted_count,
+            rejected_count=self.rejected_count,
+            acceptance_rate=self.acceptance_rate,
+            initial_state=self.initial_state,
+            final_state=self.current_state,
+            sampled_states=list(self.sampled_states),
+            step_rows=list(self.step_rows),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class _NodeHeightSlideCandidate:
     node_id: str
     current_height: float
@@ -164,6 +236,308 @@ def build_metropolis_hastings_proposal(
             proposed_model_parameters=proposed_model_parameters,
         )
     )
+
+
+def build_metropolis_hastings_random_state(
+    *,
+    version: int,
+    internal_state: Sequence[int],
+    gaussian_spare: float | None,
+) -> MetropolisHastingsRandomState:
+    """Build one validated serialized random-generator state."""
+    validated_version = _validate_integer_field(
+        value=version,
+        field_name="version",
+        owner_name="metropolis-hastings random state",
+    )
+    validated_internal_state = _validate_integer_sequence(
+        values=internal_state,
+        field_name="internal_state",
+        owner_name="metropolis-hastings random state",
+        minimum_length=1,
+    )
+    validated_gaussian_spare = (
+        _validate_finite_float(
+            value=gaussian_spare,
+            field_name="gaussian_spare",
+            owner_name="metropolis-hastings random state",
+        )
+        if gaussian_spare is not None
+        else None
+    )
+    return MetropolisHastingsRandomState(
+        version=validated_version,
+        internal_state=validated_internal_state,
+        gaussian_spare=validated_gaussian_spare,
+    )
+
+
+def build_metropolis_hastings_checkpoint(
+    *,
+    iteration_count: int,
+    sample_every: int,
+    seed: int,
+    completed_iteration_count: int,
+    accepted_count: int,
+    initial_state: BayesianPhylogeneticState,
+    current_state: BayesianPhylogeneticState,
+    sampled_states: Sequence[BayesianPhylogeneticState],
+    step_rows: Sequence[MetropolisHastingsStepRow],
+    random_state: MetropolisHastingsRandomState,
+) -> MetropolisHastingsCheckpoint:
+    """Build one validated sampler checkpoint for exact chain resumption."""
+    validated_iteration_count = _validate_positive_integer(
+        value=iteration_count,
+        field_name="iteration_count",
+        owner_name="metropolis-hastings checkpoint",
+    )
+    validated_sample_every = _validate_positive_integer(
+        value=sample_every,
+        field_name="sample_every",
+        owner_name="metropolis-hastings checkpoint",
+    )
+    validated_seed = _validate_integer_seed(seed)
+    validated_completed_iteration_count = _validate_nonnegative_integer(
+        value=completed_iteration_count,
+        field_name="completed_iteration_count",
+        owner_name="metropolis-hastings checkpoint",
+    )
+    if validated_completed_iteration_count > validated_iteration_count:
+        raise PhylogeneticsError(
+            "metropolis-hastings checkpoint requires 'completed_iteration_count' to be less than or equal to 'iteration_count'",
+            code="metropolis_hastings_checkpoint_iteration_range_invalid",
+            details={
+                "iteration_count": validated_iteration_count,
+                "completed_iteration_count": validated_completed_iteration_count,
+            },
+        )
+    validated_accepted_count = _validate_nonnegative_integer(
+        value=accepted_count,
+        field_name="accepted_count",
+        owner_name="metropolis-hastings checkpoint",
+    )
+    if validated_accepted_count > validated_completed_iteration_count:
+        raise PhylogeneticsError(
+            "metropolis-hastings checkpoint requires 'accepted_count' to be less than or equal to 'completed_iteration_count'",
+            code="metropolis_hastings_checkpoint_acceptance_count_invalid",
+            details={
+                "accepted_count": validated_accepted_count,
+                "completed_iteration_count": validated_completed_iteration_count,
+            },
+        )
+    if not isinstance(initial_state, BayesianPhylogeneticState):
+        raise PhylogeneticsError(
+            "metropolis-hastings checkpoint requires one BayesianPhylogeneticState initial_state",
+            code="metropolis_hastings_checkpoint_initial_state_type_invalid",
+        )
+    if not isinstance(current_state, BayesianPhylogeneticState):
+        raise PhylogeneticsError(
+            "metropolis-hastings checkpoint requires one BayesianPhylogeneticState current_state",
+            code="metropolis_hastings_checkpoint_current_state_type_invalid",
+        )
+    validated_sampled_states = _validate_sampled_states(
+        sampled_states=sampled_states,
+        initial_state=initial_state,
+        current_state=current_state,
+        completed_iteration_count=validated_completed_iteration_count,
+        sample_every=validated_sample_every,
+        owner_name="metropolis-hastings checkpoint",
+    )
+    validated_step_rows = _validate_step_rows(
+        step_rows=step_rows,
+        completed_iteration_count=validated_completed_iteration_count,
+        current_state=current_state,
+        owner_name="metropolis-hastings checkpoint",
+    )
+    if validated_accepted_count != sum(
+        1 for step_row in validated_step_rows if step_row.accepted
+    ):
+        raise PhylogeneticsError(
+            "metropolis-hastings checkpoint requires 'accepted_count' to match accepted step rows",
+            code="metropolis_hastings_checkpoint_accepted_count_mismatch",
+            details={
+                "accepted_count": validated_accepted_count,
+                "accepted_step_row_count": sum(
+                    1 for step_row in validated_step_rows if step_row.accepted
+                ),
+            },
+        )
+    if not isinstance(random_state, MetropolisHastingsRandomState):
+        raise PhylogeneticsError(
+            "metropolis-hastings checkpoint requires one MetropolisHastingsRandomState",
+            code="metropolis_hastings_checkpoint_random_state_type_invalid",
+        )
+    if (
+        validated_completed_iteration_count == 0
+        and current_state != initial_state
+    ):
+        raise PhylogeneticsError(
+            "metropolis-hastings checkpoint requires zero-iteration checkpoints to preserve the initial state as the current state",
+            code="metropolis_hastings_checkpoint_zero_iteration_state_invalid",
+        )
+    return MetropolisHastingsCheckpoint(
+        iteration_count=validated_iteration_count,
+        sample_every=validated_sample_every,
+        seed=validated_seed,
+        completed_iteration_count=validated_completed_iteration_count,
+        accepted_count=validated_accepted_count,
+        initial_state=initial_state,
+        current_state=current_state,
+        sampled_states=validated_sampled_states,
+        step_rows=validated_step_rows,
+        random_state=random_state,
+    )
+
+
+def serialize_metropolis_hastings_checkpoint(
+    checkpoint: MetropolisHastingsCheckpoint,
+) -> dict[str, object]:
+    """Serialize one Metropolis-Hastings checkpoint into one JSON-safe payload."""
+    if not isinstance(checkpoint, MetropolisHastingsCheckpoint):
+        raise PhylogeneticsError(
+            "metropolis-hastings checkpoint serialization requires one MetropolisHastingsCheckpoint",
+            code="metropolis_hastings_checkpoint_serialization_type_invalid",
+        )
+    return {
+        "iteration_count": checkpoint.iteration_count,
+        "sample_every": checkpoint.sample_every,
+        "seed": checkpoint.seed,
+        "completed_iteration_count": checkpoint.completed_iteration_count,
+        "accepted_count": checkpoint.accepted_count,
+        "initial_state": serialize_bayesian_phylogenetic_state(checkpoint.initial_state),
+        "current_state": serialize_bayesian_phylogenetic_state(checkpoint.current_state),
+        "sampled_states": [
+            serialize_bayesian_phylogenetic_state(sampled_state)
+            for sampled_state in checkpoint.sampled_states
+        ],
+        "step_rows": [
+            {
+                **asdict(step_row),
+                "proposal_changed_fields": list(step_row.proposal_changed_fields),
+            }
+            for step_row in checkpoint.step_rows
+        ],
+        "random_state": asdict(checkpoint.random_state),
+    }
+
+
+def deserialize_metropolis_hastings_checkpoint(
+    payload: Mapping[str, object],
+) -> MetropolisHastingsCheckpoint:
+    """Deserialize one Metropolis-Hastings checkpoint payload with consistency checks."""
+    initial_state_payload = _require_mapping_payload(
+        payload,
+        key="initial_state",
+        owner_name="metropolis-hastings checkpoint deserialization",
+    )
+    current_state_payload = _require_mapping_payload(
+        payload,
+        key="current_state",
+        owner_name="metropolis-hastings checkpoint deserialization",
+    )
+    sampled_state_payloads = _require_list_payload(
+        payload,
+        key="sampled_states",
+        owner_name="metropolis-hastings checkpoint deserialization",
+    )
+    step_row_payloads = _require_list_payload(
+        payload,
+        key="step_rows",
+        owner_name="metropolis-hastings checkpoint deserialization",
+    )
+    random_state_payload = _require_mapping_payload(
+        payload,
+        key="random_state",
+        owner_name="metropolis-hastings checkpoint deserialization",
+    )
+    return build_metropolis_hastings_checkpoint(
+        iteration_count=_require_integer_payload(
+            payload,
+            key="iteration_count",
+            owner_name="metropolis-hastings checkpoint deserialization",
+        ),
+        sample_every=_require_integer_payload(
+            payload,
+            key="sample_every",
+            owner_name="metropolis-hastings checkpoint deserialization",
+        ),
+        seed=_require_integer_payload(
+            payload,
+            key="seed",
+            owner_name="metropolis-hastings checkpoint deserialization",
+        ),
+        completed_iteration_count=_require_integer_payload(
+            payload,
+            key="completed_iteration_count",
+            owner_name="metropolis-hastings checkpoint deserialization",
+        ),
+        accepted_count=_require_integer_payload(
+            payload,
+            key="accepted_count",
+            owner_name="metropolis-hastings checkpoint deserialization",
+        ),
+        initial_state=deserialize_bayesian_phylogenetic_state(initial_state_payload),
+        current_state=deserialize_bayesian_phylogenetic_state(current_state_payload),
+        sampled_states=[
+            deserialize_bayesian_phylogenetic_state(
+                _require_mapping_payload(
+                    sampled_state_payload,
+                    owner_name="metropolis-hastings sampled state payload",
+                )
+            )
+            for sampled_state_payload in sampled_state_payloads
+        ],
+        step_rows=[
+            _deserialize_metropolis_hastings_step_row(
+                _require_mapping_payload(
+                    step_row_payload,
+                    owner_name="metropolis-hastings step row payload",
+                )
+            )
+            for step_row_payload in step_row_payloads
+        ],
+        random_state=build_metropolis_hastings_random_state(
+            version=_require_integer_payload(
+                random_state_payload,
+                key="version",
+                owner_name="metropolis-hastings random state deserialization",
+            ),
+            internal_state=_require_integer_list_payload(
+                random_state_payload,
+                key="internal_state",
+                owner_name="metropolis-hastings random state deserialization",
+            ),
+            gaussian_spare=_optional_float_payload(
+                random_state_payload,
+                key="gaussian_spare",
+                owner_name="metropolis-hastings random state deserialization",
+            ),
+        ),
+    )
+
+
+def serialize_metropolis_hastings_checkpoint_json(
+    checkpoint: MetropolisHastingsCheckpoint,
+) -> str:
+    """Serialize one Metropolis-Hastings checkpoint into canonical JSON text."""
+    return json.dumps(
+        serialize_metropolis_hastings_checkpoint(checkpoint),
+        indent=2,
+        sort_keys=True,
+    )
+
+
+def deserialize_metropolis_hastings_checkpoint_json(
+    payload: str,
+) -> MetropolisHastingsCheckpoint:
+    """Deserialize one Metropolis-Hastings checkpoint from JSON text."""
+    raw_payload = json.loads(payload)
+    if not isinstance(raw_payload, dict):
+        raise PhylogeneticsError(
+            "metropolis-hastings checkpoint json payload must decode to one mapping",
+            code="metropolis_hastings_checkpoint_json_payload_type_invalid",
+        )
+    return deserialize_metropolis_hastings_checkpoint(raw_payload)
 
 
 def list_reversible_jump_model_switch_families() -> tuple[str, ...]:
@@ -1707,24 +2081,152 @@ def run_metropolis_hastings_sampler(
     seed: int = 0,
 ) -> MetropolisHastingsRunReport:
     """Run one native Metropolis-Hastings chain over Bayesian phylogenetic states."""
+    return run_checkpointed_metropolis_hastings_sampler(
+        initial_state=initial_state,
+        propose_state=propose_state,
+        update_prior_components=update_prior_components,
+        update_log_likelihood=update_log_likelihood,
+        iteration_count=iteration_count,
+        sample_every=sample_every,
+        seed=seed,
+    ).to_chain_report()
+
+
+def run_checkpointed_metropolis_hastings_sampler(
+    *,
+    initial_state: BayesianPhylogeneticState,
+    propose_state: BayesianStateProposal,
+    update_prior_components: BayesianPriorUpdate,
+    update_log_likelihood: BayesianLikelihoodUpdate,
+    iteration_count: int,
+    sample_every: int = 1,
+    seed: int = 0,
+    checkpoint_iteration_indexes: Sequence[int] = (),
+    stop_after_iteration_index: int | None = None,
+) -> CheckpointedMetropolisHastingsRunReport:
+    """Run one checkpoint-aware Metropolis-Hastings execution."""
     validated_iteration_count = _validate_positive_integer(
         value=iteration_count,
         field_name="iteration_count",
-        owner_name="metropolis-hastings sampler",
+        owner_name="checkpointed metropolis-hastings sampler",
     )
     validated_sample_every = _validate_positive_integer(
         value=sample_every,
         field_name="sample_every",
-        owner_name="metropolis-hastings sampler",
+        owner_name="checkpointed metropolis-hastings sampler",
     )
     validated_seed = _validate_integer_seed(seed)
+    validated_checkpoint_iteration_indexes = _validate_checkpoint_iteration_indexes(
+        checkpoint_iteration_indexes=checkpoint_iteration_indexes,
+        iteration_count=validated_iteration_count,
+    )
+    validated_stop_after_iteration_index = _validate_stop_after_iteration_index(
+        stop_after_iteration_index=stop_after_iteration_index,
+        checkpoint_iteration_indexes=validated_checkpoint_iteration_indexes,
+        completed_iteration_count=0,
+        iteration_count=validated_iteration_count,
+        owner_name="checkpointed metropolis-hastings sampler",
+    )
     rng = random.Random(validated_seed)  # nosec B311
-    current_state = initial_state
-    step_rows: list[MetropolisHastingsStepRow] = []
-    sampled_states: list[BayesianPhylogeneticState] = [current_state]
-    accepted_count = 0
+    return _run_metropolis_hastings_execution(
+        initial_state=initial_state,
+        current_state=initial_state,
+        propose_state=propose_state,
+        update_prior_components=update_prior_components,
+        update_log_likelihood=update_log_likelihood,
+        iteration_count=validated_iteration_count,
+        sample_every=validated_sample_every,
+        seed=validated_seed,
+        resumed=False,
+        completed_iteration_count=0,
+        accepted_count=0,
+        sampled_states=[initial_state],
+        step_rows=[],
+        rng=rng,
+        checkpoint_iteration_indexes=validated_checkpoint_iteration_indexes,
+        stop_after_iteration_index=validated_stop_after_iteration_index,
+    )
 
-    for iteration_index in range(1, validated_iteration_count + 1):
+
+def resume_metropolis_hastings_sampler(
+    *,
+    checkpoint: MetropolisHastingsCheckpoint,
+    propose_state: BayesianStateProposal,
+    update_prior_components: BayesianPriorUpdate,
+    update_log_likelihood: BayesianLikelihoodUpdate,
+    checkpoint_iteration_indexes: Sequence[int] = (),
+    stop_after_iteration_index: int | None = None,
+) -> CheckpointedMetropolisHastingsRunReport:
+    """Resume one checkpointed Metropolis-Hastings execution without restarting the chain."""
+    validated_checkpoint = build_metropolis_hastings_checkpoint(
+        iteration_count=checkpoint.iteration_count,
+        sample_every=checkpoint.sample_every,
+        seed=checkpoint.seed,
+        completed_iteration_count=checkpoint.completed_iteration_count,
+        accepted_count=checkpoint.accepted_count,
+        initial_state=checkpoint.initial_state,
+        current_state=checkpoint.current_state,
+        sampled_states=checkpoint.sampled_states,
+        step_rows=checkpoint.step_rows,
+        random_state=checkpoint.random_state,
+    )
+    validated_checkpoint_iteration_indexes = _validate_checkpoint_iteration_indexes(
+        checkpoint_iteration_indexes=checkpoint_iteration_indexes,
+        iteration_count=validated_checkpoint.iteration_count,
+    )
+    validated_stop_after_iteration_index = _validate_stop_after_iteration_index(
+        stop_after_iteration_index=stop_after_iteration_index,
+        checkpoint_iteration_indexes=validated_checkpoint_iteration_indexes,
+        completed_iteration_count=validated_checkpoint.completed_iteration_count,
+        iteration_count=validated_checkpoint.iteration_count,
+        owner_name="metropolis-hastings sampler resume",
+    )
+    rng = random.Random()
+    rng.setstate(_restore_rng_state_tuple(validated_checkpoint.random_state))
+    return _run_metropolis_hastings_execution(
+        initial_state=validated_checkpoint.initial_state,
+        current_state=validated_checkpoint.current_state,
+        propose_state=propose_state,
+        update_prior_components=update_prior_components,
+        update_log_likelihood=update_log_likelihood,
+        iteration_count=validated_checkpoint.iteration_count,
+        sample_every=validated_checkpoint.sample_every,
+        seed=validated_checkpoint.seed,
+        resumed=True,
+        completed_iteration_count=validated_checkpoint.completed_iteration_count,
+        accepted_count=validated_checkpoint.accepted_count,
+        sampled_states=list(validated_checkpoint.sampled_states),
+        step_rows=list(validated_checkpoint.step_rows),
+        rng=rng,
+        checkpoint_iteration_indexes=validated_checkpoint_iteration_indexes,
+        stop_after_iteration_index=validated_stop_after_iteration_index,
+    )
+
+
+def _run_metropolis_hastings_execution(
+    *,
+    initial_state: BayesianPhylogeneticState,
+    current_state: BayesianPhylogeneticState,
+    propose_state: BayesianStateProposal,
+    update_prior_components: BayesianPriorUpdate,
+    update_log_likelihood: BayesianLikelihoodUpdate,
+    iteration_count: int,
+    sample_every: int,
+    seed: int,
+    resumed: bool,
+    completed_iteration_count: int,
+    accepted_count: int,
+    sampled_states: list[BayesianPhylogeneticState],
+    step_rows: list[MetropolisHastingsStepRow],
+    rng: random.Random,
+    checkpoint_iteration_indexes: tuple[int, ...],
+    stop_after_iteration_index: int | None,
+) -> CheckpointedMetropolisHastingsRunReport:
+    final_iteration_index = stop_after_iteration_index or iteration_count
+    checkpoint_iteration_index_set = set(checkpoint_iteration_indexes)
+    emitted_checkpoints: list[MetropolisHastingsCheckpoint] = []
+
+    for iteration_index in range(completed_iteration_count + 1, final_iteration_index + 1):
         previous_state = current_state
         proposal = _validate_metropolis_hastings_proposal(
             propose_state(current_state, rng)
@@ -1751,7 +2253,7 @@ def run_metropolis_hastings_sampler(
             if accepted:
                 current_state = proposed_state
                 accepted_count += 1
-        if iteration_index % validated_sample_every == 0:
+        if iteration_index % sample_every == 0:
             sampled_states.append(current_state)
         step_rows.append(
             MetropolisHastingsStepRow(
@@ -1773,19 +2275,43 @@ def run_metropolis_hastings_sampler(
                 recorded_posterior_log_score=current_state.posterior_log_score,
             )
         )
+        if iteration_index in checkpoint_iteration_index_set:
+            emitted_checkpoints.append(
+                build_metropolis_hastings_checkpoint(
+                    iteration_count=iteration_count,
+                    sample_every=sample_every,
+                    seed=seed,
+                    completed_iteration_count=iteration_index,
+                    accepted_count=accepted_count,
+                    initial_state=initial_state,
+                    current_state=current_state,
+                    sampled_states=sampled_states,
+                    step_rows=step_rows,
+                    random_state=_capture_rng_state(rng),
+                )
+            )
 
-    rejected_count = validated_iteration_count - accepted_count
-    return MetropolisHastingsRunReport(
-        iteration_count=validated_iteration_count,
-        sample_every=validated_sample_every,
-        seed=validated_seed,
+    realized_completed_iteration_count = final_iteration_index
+    rejected_count = realized_completed_iteration_count - accepted_count
+    return CheckpointedMetropolisHastingsRunReport(
+        iteration_count=iteration_count,
+        completed_iteration_count=realized_completed_iteration_count,
+        sample_every=sample_every,
+        seed=seed,
+        resumed=resumed,
+        completed=realized_completed_iteration_count == iteration_count,
         accepted_count=accepted_count,
         rejected_count=rejected_count,
-        acceptance_rate=accepted_count / validated_iteration_count,
+        acceptance_rate=(
+            accepted_count / realized_completed_iteration_count
+            if realized_completed_iteration_count > 0
+            else 0.0
+        ),
         initial_state=initial_state,
-        final_state=current_state,
-        sampled_states=sampled_states,
-        step_rows=step_rows,
+        current_state=current_state,
+        sampled_states=list(sampled_states),
+        step_rows=list(step_rows),
+        checkpoints=emitted_checkpoints,
     )
 
 
@@ -1797,6 +2323,483 @@ def _accept_metropolis_hastings_proposal(
     if log_acceptance_ratio >= 0.0:
         return True
     return math.log(rng.random()) <= log_acceptance_ratio
+
+
+def _capture_rng_state(rng: random.Random) -> MetropolisHastingsRandomState:
+    version, internal_state, gaussian_spare = rng.getstate()
+    if not isinstance(internal_state, tuple):
+        raise PhylogeneticsError(
+            "metropolis-hastings sampler expected one tuple-backed random internal state",
+            code="metropolis_hastings_random_state_internal_type_invalid",
+        )
+    return build_metropolis_hastings_random_state(
+        version=version,
+        internal_state=internal_state,
+        gaussian_spare=gaussian_spare,
+    )
+
+
+def _restore_rng_state_tuple(
+    random_state: MetropolisHastingsRandomState,
+) -> tuple[int, tuple[int, ...], float | None]:
+    return (
+        random_state.version,
+        tuple(random_state.internal_state),
+        random_state.gaussian_spare,
+    )
+
+
+def _deserialize_metropolis_hastings_step_row(
+    payload: Mapping[str, object],
+) -> MetropolisHastingsStepRow:
+    iteration_index = _require_integer_payload(
+        payload,
+        key="iteration_index",
+        owner_name="metropolis-hastings step row deserialization",
+    )
+    proposal_changed_fields = _require_string_list_payload(
+        payload,
+        key="proposal_changed_fields",
+        owner_name="metropolis-hastings step row deserialization",
+    )
+    proposal_valid = _require_boolean_payload(
+        payload,
+        key="proposal_valid",
+        owner_name="metropolis-hastings step row deserialization",
+    )
+    proposal_invalid_reason = _optional_string_payload(
+        payload,
+        key="proposal_invalid_reason",
+        owner_name="metropolis-hastings step row deserialization",
+    )
+    if proposal_valid and proposal_invalid_reason is not None:
+        raise PhylogeneticsError(
+            "metropolis-hastings step row deserialization requires valid rows to omit proposal_invalid_reason",
+            code="metropolis_hastings_step_row_invalid_reason_unexpected",
+        )
+    if proposal_valid is False and proposal_invalid_reason is None:
+        raise PhylogeneticsError(
+            "metropolis-hastings step row deserialization requires invalid rows to include proposal_invalid_reason",
+            code="metropolis_hastings_step_row_invalid_reason_missing",
+        )
+    proposed_posterior_log_score = _optional_float_payload(
+        payload,
+        key="proposed_posterior_log_score",
+        owner_name="metropolis-hastings step row deserialization",
+    )
+    log_acceptance_ratio = _optional_float_payload(
+        payload,
+        key="log_acceptance_ratio",
+        owner_name="metropolis-hastings step row deserialization",
+    )
+    return MetropolisHastingsStepRow(
+        iteration_index=iteration_index,
+        proposal_changed_fields=tuple(proposal_changed_fields),
+        proposal_valid=proposal_valid,
+        proposal_invalid_reason=proposal_invalid_reason,
+        log_forward_density=_require_float_payload(
+            payload,
+            key="log_forward_density",
+            owner_name="metropolis-hastings step row deserialization",
+        ),
+        log_reverse_density=_require_float_payload(
+            payload,
+            key="log_reverse_density",
+            owner_name="metropolis-hastings step row deserialization",
+        ),
+        accepted=_require_boolean_payload(
+            payload,
+            key="accepted",
+            owner_name="metropolis-hastings step row deserialization",
+        ),
+        log_hastings_ratio=_require_float_payload(
+            payload,
+            key="log_hastings_ratio",
+            owner_name="metropolis-hastings step row deserialization",
+        ),
+        current_posterior_log_score=_require_float_payload(
+            payload,
+            key="current_posterior_log_score",
+            owner_name="metropolis-hastings step row deserialization",
+        ),
+        proposed_posterior_log_score=proposed_posterior_log_score,
+        log_acceptance_ratio=log_acceptance_ratio,
+        recorded_posterior_log_score=_require_float_payload(
+            payload,
+            key="recorded_posterior_log_score",
+            owner_name="metropolis-hastings step row deserialization",
+        ),
+    )
+
+
+def _validate_checkpoint_iteration_indexes(
+    *,
+    checkpoint_iteration_indexes: Sequence[int],
+    iteration_count: int,
+) -> tuple[int, ...]:
+    validated_checkpoint_iteration_indexes = tuple(checkpoint_iteration_indexes)
+    if len(validated_checkpoint_iteration_indexes) != len(
+        set(validated_checkpoint_iteration_indexes)
+    ):
+        raise PhylogeneticsError(
+            "checkpointed metropolis-hastings sampler requires unique checkpoint iteration indexes",
+            code="metropolis_hastings_checkpoint_iteration_duplicate",
+        )
+    for checkpoint_iteration_index in validated_checkpoint_iteration_indexes:
+        _validate_positive_integer(
+            value=checkpoint_iteration_index,
+            field_name="checkpoint_iteration_index",
+            owner_name="checkpointed metropolis-hastings sampler",
+        )
+        if checkpoint_iteration_index > iteration_count:
+            raise PhylogeneticsError(
+                "checkpointed metropolis-hastings sampler requires checkpoint iteration indexes to lie within the chain length",
+                code="metropolis_hastings_checkpoint_iteration_out_of_range",
+                details={
+                    "checkpoint_iteration_index": checkpoint_iteration_index,
+                    "iteration_count": iteration_count,
+                },
+            )
+    return tuple(sorted(validated_checkpoint_iteration_indexes))
+
+
+def _validate_stop_after_iteration_index(
+    *,
+    stop_after_iteration_index: int | None,
+    checkpoint_iteration_indexes: tuple[int, ...],
+    completed_iteration_count: int,
+    iteration_count: int,
+    owner_name: str,
+) -> int | None:
+    if stop_after_iteration_index is None:
+        return None
+    validated_stop_after_iteration_index = _validate_positive_integer(
+        value=stop_after_iteration_index,
+        field_name="stop_after_iteration_index",
+        owner_name=owner_name,
+    )
+    if validated_stop_after_iteration_index <= completed_iteration_count:
+        raise PhylogeneticsError(
+            f"{owner_name} requires 'stop_after_iteration_index' to advance beyond the completed trace position",
+            code="metropolis_hastings_stop_after_iteration_not_ahead",
+            details={
+                "stop_after_iteration_index": validated_stop_after_iteration_index,
+                "completed_iteration_count": completed_iteration_count,
+            },
+        )
+    if validated_stop_after_iteration_index > iteration_count:
+        raise PhylogeneticsError(
+            f"{owner_name} requires 'stop_after_iteration_index' to be less than or equal to 'iteration_count'",
+            code="metropolis_hastings_stop_after_iteration_out_of_range",
+            details={
+                "stop_after_iteration_index": validated_stop_after_iteration_index,
+                "iteration_count": iteration_count,
+            },
+        )
+    if (
+        validated_stop_after_iteration_index != iteration_count
+        and validated_stop_after_iteration_index not in checkpoint_iteration_indexes
+    ):
+        raise PhylogeneticsError(
+            f"{owner_name} requires partial executions to stop only on one declared checkpoint iteration index",
+            code="metropolis_hastings_stop_after_iteration_not_checkpointed",
+            details={
+                "stop_after_iteration_index": validated_stop_after_iteration_index,
+                "checkpoint_iteration_indexes": list(checkpoint_iteration_indexes),
+            },
+        )
+    return validated_stop_after_iteration_index
+
+
+def _validate_sampled_states(
+    *,
+    sampled_states: Sequence[BayesianPhylogeneticState],
+    initial_state: BayesianPhylogeneticState,
+    current_state: BayesianPhylogeneticState,
+    completed_iteration_count: int,
+    sample_every: int,
+    owner_name: str,
+) -> list[BayesianPhylogeneticState]:
+    validated_sampled_states = list(sampled_states)
+    if not validated_sampled_states:
+        raise PhylogeneticsError(
+            f"{owner_name} requires at least one sampled state",
+            code="metropolis_hastings_sampled_states_empty",
+        )
+    if any(
+        not isinstance(sampled_state, BayesianPhylogeneticState)
+        for sampled_state in validated_sampled_states
+    ):
+        raise PhylogeneticsError(
+            f"{owner_name} requires every sampled state to be one BayesianPhylogeneticState",
+            code="metropolis_hastings_sampled_state_type_invalid",
+        )
+    expected_sampled_state_count = 1 + (completed_iteration_count // sample_every)
+    if len(validated_sampled_states) != expected_sampled_state_count:
+        raise PhylogeneticsError(
+            f"{owner_name} requires sampled state count to match the retained trace positions",
+            code="metropolis_hastings_sampled_state_count_invalid",
+            details={
+                "expected_sampled_state_count": expected_sampled_state_count,
+                "actual_sampled_state_count": len(validated_sampled_states),
+            },
+        )
+    if validated_sampled_states[0] != initial_state:
+        raise PhylogeneticsError(
+            f"{owner_name} requires the first sampled state to equal the initial state",
+            code="metropolis_hastings_sampled_state_initial_mismatch",
+        )
+    if (
+        completed_iteration_count % sample_every == 0
+        and validated_sampled_states[-1] != current_state
+    ):
+        raise PhylogeneticsError(
+            f"{owner_name} requires checkpoints at sampled iteration boundaries to retain the current state in sampled_states",
+            code="metropolis_hastings_sampled_state_current_mismatch",
+        )
+    return validated_sampled_states
+
+
+def _validate_step_rows(
+    *,
+    step_rows: Sequence[MetropolisHastingsStepRow],
+    completed_iteration_count: int,
+    current_state: BayesianPhylogeneticState,
+    owner_name: str,
+) -> list[MetropolisHastingsStepRow]:
+    validated_step_rows = list(step_rows)
+    if len(validated_step_rows) != completed_iteration_count:
+        raise PhylogeneticsError(
+            f"{owner_name} requires step row count to equal completed_iteration_count",
+            code="metropolis_hastings_step_row_count_invalid",
+            details={
+                "completed_iteration_count": completed_iteration_count,
+                "step_row_count": len(validated_step_rows),
+            },
+        )
+    for expected_iteration_index, step_row in enumerate(validated_step_rows, start=1):
+        if not isinstance(step_row, MetropolisHastingsStepRow):
+            raise PhylogeneticsError(
+                f"{owner_name} requires every step row to be one MetropolisHastingsStepRow",
+                code="metropolis_hastings_step_row_type_invalid",
+            )
+        if step_row.iteration_index != expected_iteration_index:
+            raise PhylogeneticsError(
+                f"{owner_name} requires contiguous step row iteration indexes",
+                code="metropolis_hastings_step_row_iteration_gap",
+                details={
+                    "expected_iteration_index": expected_iteration_index,
+                    "actual_iteration_index": step_row.iteration_index,
+                },
+            )
+    if validated_step_rows and (
+        validated_step_rows[-1].recorded_posterior_log_score
+        != current_state.posterior_log_score
+    ):
+        raise PhylogeneticsError(
+            f"{owner_name} requires the last recorded posterior score to match the current state",
+            code="metropolis_hastings_step_row_current_score_mismatch",
+            details={
+                "last_recorded_posterior_log_score": validated_step_rows[-1].recorded_posterior_log_score,
+                "current_posterior_log_score": current_state.posterior_log_score,
+            },
+        )
+    return validated_step_rows
+
+
+def _require_mapping_payload(
+    payload: Mapping[str, object] | object,
+    *,
+    key: str | None = None,
+    owner_name: str,
+) -> Mapping[str, object]:
+    raw_value = payload if key is None else payload.get(key)
+    if not isinstance(raw_value, Mapping):
+        subject = owner_name if key is None else f"'{key}'"
+        raise PhylogeneticsError(
+            f"{owner_name} requires {subject} to be one mapping",
+            code="metropolis_hastings_mapping_required",
+        )
+    return raw_value
+
+
+def _require_list_payload(
+    payload: Mapping[str, object],
+    *,
+    key: str,
+    owner_name: str,
+) -> list[object]:
+    raw_value = payload.get(key)
+    if not isinstance(raw_value, list):
+        raise PhylogeneticsError(
+            f"{owner_name} requires '{key}' to be one list",
+            code="metropolis_hastings_list_required",
+        )
+    return raw_value
+
+
+def _require_integer_payload(
+    payload: Mapping[str, object],
+    *,
+    key: str,
+    owner_name: str,
+) -> int:
+    raw_value = payload.get(key)
+    if isinstance(raw_value, bool) or not isinstance(raw_value, int):
+        raise PhylogeneticsError(
+            f"{owner_name} requires '{key}' to be one integer",
+            code="metropolis_hastings_integer_payload_required",
+        )
+    return raw_value
+
+
+def _require_integer_list_payload(
+    payload: Mapping[str, object],
+    *,
+    key: str,
+    owner_name: str,
+) -> list[int]:
+    raw_values = _require_list_payload(
+        payload,
+        key=key,
+        owner_name=owner_name,
+    )
+    return _validate_integer_sequence(
+        values=raw_values,
+        field_name=key,
+        owner_name=owner_name,
+        minimum_length=1,
+    )
+
+
+def _require_string_list_payload(
+    payload: Mapping[str, object],
+    *,
+    key: str,
+    owner_name: str,
+) -> list[str]:
+    raw_values = _require_list_payload(
+        payload,
+        key=key,
+        owner_name=owner_name,
+    )
+    string_values: list[str] = []
+    for raw_value in raw_values:
+        if not isinstance(raw_value, str):
+            raise PhylogeneticsError(
+                f"{owner_name} requires every '{key}' item to be one string",
+                code="metropolis_hastings_string_list_required",
+            )
+        string_values.append(raw_value)
+    return string_values
+
+
+def _require_float_payload(
+    payload: Mapping[str, object],
+    *,
+    key: str,
+    owner_name: str,
+) -> float:
+    raw_value = payload.get(key)
+    if isinstance(raw_value, bool) or not isinstance(raw_value, (int, float)):
+        raise PhylogeneticsError(
+            f"{owner_name} requires '{key}' to be numeric",
+            code="metropolis_hastings_float_payload_required",
+        )
+    normalized_value = float(raw_value)
+    if not math.isfinite(normalized_value):
+        raise PhylogeneticsError(
+            f"{owner_name} requires '{key}' to be finite",
+            code="metropolis_hastings_float_payload_nonfinite",
+        )
+    return normalized_value
+
+
+def _optional_float_payload(
+    payload: Mapping[str, object],
+    *,
+    key: str,
+    owner_name: str,
+) -> float | None:
+    raw_value = payload.get(key)
+    if raw_value is None:
+        return None
+    return _require_float_payload(payload, key=key, owner_name=owner_name)
+
+
+def _require_boolean_payload(
+    payload: Mapping[str, object],
+    *,
+    key: str,
+    owner_name: str,
+) -> bool:
+    raw_value = payload.get(key)
+    if not isinstance(raw_value, bool):
+        raise PhylogeneticsError(
+            f"{owner_name} requires '{key}' to be boolean",
+            code="metropolis_hastings_boolean_payload_required",
+        )
+    return raw_value
+
+
+def _optional_string_payload(
+    payload: Mapping[str, object],
+    *,
+    key: str,
+    owner_name: str,
+) -> str | None:
+    raw_value = payload.get(key)
+    if raw_value is None:
+        return None
+    if not isinstance(raw_value, str):
+        raise PhylogeneticsError(
+            f"{owner_name} requires optional '{key}' values to be strings",
+            code="metropolis_hastings_optional_string_payload_required",
+        )
+    return raw_value
+
+
+def _validate_integer_field(
+    *,
+    value: int,
+    field_name: str,
+    owner_name: str,
+) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise PhylogeneticsError(
+            f"{owner_name} requires '{field_name}' to be one integer",
+            code="metropolis_hastings_integer_field_invalid",
+            details={"field_name": field_name},
+        )
+    return value
+
+
+def _validate_integer_sequence(
+    *,
+    values: Sequence[object],
+    field_name: str,
+    owner_name: str,
+    minimum_length: int = 0,
+) -> list[int]:
+    normalized_values: list[int] = []
+    for value in values:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise PhylogeneticsError(
+                f"{owner_name} requires every '{field_name}' value to be one integer",
+                code="metropolis_hastings_integer_sequence_invalid",
+                details={"field_name": field_name},
+            )
+        normalized_values.append(value)
+    if len(normalized_values) < minimum_length:
+        raise PhylogeneticsError(
+            f"{owner_name} requires '{field_name}' to contain at least {minimum_length} integers",
+            code="metropolis_hastings_integer_sequence_too_short",
+            details={
+                "field_name": field_name,
+                "minimum_length": minimum_length,
+            },
+        )
+    return normalized_values
 
 
 def _validate_positive_integer(
@@ -1818,6 +2821,26 @@ def _validate_positive_integer(
             details={"field_name": field_name},
         )
     return value
+
+
+def _validate_nonnegative_integer(
+    *,
+    value: int,
+    field_name: str,
+    owner_name: str,
+) -> int:
+    normalized_value = _validate_integer_field(
+        value=value,
+        field_name=field_name,
+        owner_name=owner_name,
+    )
+    if normalized_value < 0:
+        raise PhylogeneticsError(
+            f"{owner_name} requires '{field_name}' to be nonnegative",
+            code="metropolis_hastings_nonnegative_integer_required",
+            details={"field_name": field_name},
+        )
+    return normalized_value
 
 
 def _lognormal_positive_draw_density(
