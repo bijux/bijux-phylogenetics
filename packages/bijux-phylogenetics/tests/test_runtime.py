@@ -34,6 +34,8 @@ from bijux_phylogenetics.bayesian import (
     ContinuousTraitModelPriorRow,
     ContinuousTraitProbabilityPriorModel,
     ContinuousTraitScalarPriorModel,
+    DISCRETE_TRAIT_MK_MODELS,
+    DISCRETE_TRAIT_MK_ROOT_PRIOR_MODES,
     DISCRETE_TRAIT_RATE_PRIOR_FAMILIES,
     DISCRETE_TRAIT_RATE_PRIOR_MODELS,
     FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS,
@@ -70,6 +72,11 @@ from bijux_phylogenetics.bayesian import (
     BayesianPriorComponentState,
     BayesianStateBranchRow,
     BayesianTreeState,
+    DiscreteTraitMkModelDefinition,
+    DiscreteTraitMkNodeStateSummary,
+    DiscreteTraitMkPosteriorRow,
+    DiscreteTraitMkProposalSchedule,
+    DiscreteTraitMkRunReport,
     FixedTopologyDnaModelDefinition,
     FixedTopologyDnaPosteriorRow,
     FixedTopologyDnaProposalSchedule,
@@ -102,6 +109,8 @@ from bijux_phylogenetics.bayesian import (
     build_beta_probability_substitution_parameter_prior,
     build_categorical_probability_vector,
     build_continuous_trait_model_prior_bundle,
+    build_discrete_trait_mk_model_definition,
+    build_discrete_trait_mk_proposal_schedule,
     build_dirichlet_simplex_substitution_parameter_prior,
     build_exponential_discrete_trait_rate_prior,
     build_exponential_continuous_trait_scalar_prior,
@@ -168,6 +177,7 @@ from bijux_phylogenetics.bayesian import (
     parse_mrbayes_consensus_tree,
     load_local_clock_regime_definitions,
     run_beast_posterior_inference,
+    run_discrete_trait_mk_metropolis_hastings,
     run_fixed_topology_dna_metropolis_hastings,
     run_joint_topology_dna_metropolis_hastings,
     run_mrbayes_posterior_inference,
@@ -1058,6 +1068,20 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is DiscreteTraitRatePriorEvaluationReport
     )
     assert bayesian_api.DiscreteTraitRatePriorRow is DiscreteTraitRatePriorRow
+    assert (
+        bayesian_api.DiscreteTraitMkModelDefinition
+        is DiscreteTraitMkModelDefinition
+    )
+    assert (
+        bayesian_api.DiscreteTraitMkNodeStateSummary
+        is DiscreteTraitMkNodeStateSummary
+    )
+    assert bayesian_api.DiscreteTraitMkPosteriorRow is DiscreteTraitMkPosteriorRow
+    assert (
+        bayesian_api.DiscreteTraitMkProposalSchedule
+        is DiscreteTraitMkProposalSchedule
+    )
+    assert bayesian_api.DiscreteTraitMkRunReport is DiscreteTraitMkRunReport
     assert bayesian_api.LocalClockRateModel is LocalClockRateModel
     assert bayesian_api.RelaxedLognormalClockModel is RelaxedLognormalClockModel
     assert bayesian_api.StrictClockRateModel is StrictClockRateModel
@@ -1164,6 +1188,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_continuous_trait_model_prior_bundle
         is build_continuous_trait_model_prior_bundle
+    )
+    assert (
+        bayesian_api.build_discrete_trait_mk_model_definition
+        is build_discrete_trait_mk_model_definition
+    )
+    assert (
+        bayesian_api.build_discrete_trait_mk_proposal_schedule
+        is build_discrete_trait_mk_proposal_schedule
     )
     assert (
         bayesian_api.build_dirichlet_simplex_substitution_parameter_prior
@@ -1382,6 +1414,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is run_metropolis_hastings_sampler
     )
     assert (
+        bayesian_api.run_discrete_trait_mk_metropolis_hastings
+        is run_discrete_trait_mk_metropolis_hastings
+    )
+    assert (
         bayesian_api.run_fixed_topology_dna_metropolis_hastings
         is run_fixed_topology_dna_metropolis_hastings
     )
@@ -1445,6 +1481,13 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.evaluate_substitution_parameter_log_prior
         is evaluate_substitution_parameter_log_prior
+    )
+    assert (
+        bayesian_api.DISCRETE_TRAIT_MK_MODELS is DISCRETE_TRAIT_MK_MODELS
+    )
+    assert (
+        bayesian_api.DISCRETE_TRAIT_MK_ROOT_PRIOR_MODES
+        is DISCRETE_TRAIT_MK_ROOT_PRIOR_MODES
     )
     assert (
         bayesian_api.FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS
