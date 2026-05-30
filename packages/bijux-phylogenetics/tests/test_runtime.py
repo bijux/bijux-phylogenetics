@@ -43,6 +43,7 @@ from bijux_phylogenetics.bayesian import (
     FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS,
     JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS,
     BROWNIAN_CONTINUOUS_TRAIT_MODELS,
+    ORNSTEIN_UHLENBECK_CONTINUOUS_TRAIT_MODELS,
     PARTITION_MODEL_PRIOR_TARGETS,
     PARTITION_PARAMETER_LINKAGE_POLICIES,
     PARTITION_SUBSTITUTION_BASE_MODELS,
@@ -85,6 +86,12 @@ from bijux_phylogenetics.bayesian import (
     BrownianContinuousTraitPosteriorRow,
     BrownianContinuousTraitProposalSchedule,
     BrownianContinuousTraitRunReport,
+    OrnsteinUhlenbeckContinuousTraitIdentifiabilityWarning,
+    OrnsteinUhlenbeckContinuousTraitModelDefinition,
+    OrnsteinUhlenbeckContinuousTraitParameterSummary,
+    OrnsteinUhlenbeckContinuousTraitPosteriorRow,
+    OrnsteinUhlenbeckContinuousTraitProposalSchedule,
+    OrnsteinUhlenbeckContinuousTraitRunReport,
     FixedTopologyDnaModelDefinition,
     FixedTopologyDnaPosteriorRow,
     FixedTopologyDnaProposalSchedule,
@@ -115,6 +122,8 @@ from bijux_phylogenetics.bayesian import (
     build_bayesian_evidence_package,
     build_brownian_continuous_trait_model_definition,
     build_brownian_continuous_trait_proposal_schedule,
+    build_ornstein_uhlenbeck_continuous_trait_model_definition,
+    build_ornstein_uhlenbeck_continuous_trait_proposal_schedule,
     build_beta_continuous_trait_probability_prior,
     build_beta_probability_substitution_parameter_prior,
     build_categorical_probability_vector,
@@ -191,6 +200,7 @@ from bijux_phylogenetics.bayesian import (
     load_local_clock_regime_definitions,
     run_beast_posterior_inference,
     run_brownian_continuous_trait_metropolis_hastings,
+    run_ornstein_uhlenbeck_continuous_trait_metropolis_hastings,
     run_discrete_trait_mk_metropolis_hastings,
     run_fixed_topology_dna_metropolis_hastings,
     run_joint_topology_dna_metropolis_hastings,
@@ -1052,6 +1062,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is BROWNIAN_CONTINUOUS_TRAIT_MODELS
     )
     assert (
+        bayesian_api.ORNSTEIN_UHLENBECK_CONTINUOUS_TRAIT_MODELS
+        is ORNSTEIN_UHLENBECK_CONTINUOUS_TRAIT_MODELS
+    )
+    assert (
         bayesian_api.TIME_TREE_PRIOR_CONDITIONING_MODES
         is TIME_TREE_PRIOR_CONDITIONING_MODES
     )
@@ -1156,6 +1170,30 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is BrownianContinuousTraitRunReport
     )
     assert (
+        bayesian_api.OrnsteinUhlenbeckContinuousTraitIdentifiabilityWarning
+        is OrnsteinUhlenbeckContinuousTraitIdentifiabilityWarning
+    )
+    assert (
+        bayesian_api.OrnsteinUhlenbeckContinuousTraitModelDefinition
+        is OrnsteinUhlenbeckContinuousTraitModelDefinition
+    )
+    assert (
+        bayesian_api.OrnsteinUhlenbeckContinuousTraitParameterSummary
+        is OrnsteinUhlenbeckContinuousTraitParameterSummary
+    )
+    assert (
+        bayesian_api.OrnsteinUhlenbeckContinuousTraitPosteriorRow
+        is OrnsteinUhlenbeckContinuousTraitPosteriorRow
+    )
+    assert (
+        bayesian_api.OrnsteinUhlenbeckContinuousTraitProposalSchedule
+        is OrnsteinUhlenbeckContinuousTraitProposalSchedule
+    )
+    assert (
+        bayesian_api.OrnsteinUhlenbeckContinuousTraitRunReport
+        is OrnsteinUhlenbeckContinuousTraitRunReport
+    )
+    assert (
         bayesian_api.FixedTopologyDnaModelDefinition
         is FixedTopologyDnaModelDefinition
     )
@@ -1227,6 +1265,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_brownian_continuous_trait_proposal_schedule
         is build_brownian_continuous_trait_proposal_schedule
+    )
+    assert (
+        bayesian_api.build_ornstein_uhlenbeck_continuous_trait_model_definition
+        is build_ornstein_uhlenbeck_continuous_trait_model_definition
+    )
+    assert (
+        bayesian_api.build_ornstein_uhlenbeck_continuous_trait_proposal_schedule
+        is build_ornstein_uhlenbeck_continuous_trait_proposal_schedule
     )
     assert (
         bayesian_api.build_beta_continuous_trait_probability_prior
@@ -1487,6 +1533,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.run_brownian_continuous_trait_metropolis_hastings
         is run_brownian_continuous_trait_metropolis_hastings
+    )
+    assert (
+        bayesian_api.run_ornstein_uhlenbeck_continuous_trait_metropolis_hastings
+        is run_ornstein_uhlenbeck_continuous_trait_metropolis_hastings
     )
     assert (
         bayesian_api.run_discrete_trait_mk_metropolis_hastings
