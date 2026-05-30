@@ -243,6 +243,18 @@ from .metropolis_hastings import (
     serialize_metropolis_hastings_checkpoint_json,
     validate_reversible_jump_model_switch_family,
 )
+from .ornstein_uhlenbeck_continuous_trait import (
+    ORNSTEIN_UHLENBECK_CONTINUOUS_TRAIT_MODELS,
+    OrnsteinUhlenbeckContinuousTraitIdentifiabilityWarning,
+    OrnsteinUhlenbeckContinuousTraitModelDefinition,
+    OrnsteinUhlenbeckContinuousTraitParameterSummary,
+    OrnsteinUhlenbeckContinuousTraitPosteriorRow,
+    OrnsteinUhlenbeckContinuousTraitProposalSchedule,
+    OrnsteinUhlenbeckContinuousTraitRunReport,
+    build_ornstein_uhlenbeck_continuous_trait_model_definition,
+    build_ornstein_uhlenbeck_continuous_trait_proposal_schedule,
+    run_ornstein_uhlenbeck_continuous_trait_metropolis_hastings,
+)
 from .mrbayes import (
     EffectiveSampleSize,
     MrBayesBurninSensitivityReport,
