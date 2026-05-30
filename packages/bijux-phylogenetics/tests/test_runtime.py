@@ -36,6 +36,7 @@ from bijux_phylogenetics.bayesian import (
     ContinuousTraitScalarPriorModel,
     DISCRETE_TRAIT_RATE_PRIOR_FAMILIES,
     DISCRETE_TRAIT_RATE_PRIOR_MODELS,
+    FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS,
     PARTITION_MODEL_PRIOR_TARGETS,
     PARTITION_PARAMETER_LINKAGE_POLICIES,
     PARTITION_SUBSTITUTION_BASE_MODELS,
@@ -68,6 +69,10 @@ from bijux_phylogenetics.bayesian import (
     BayesianPriorComponentState,
     BayesianStateBranchRow,
     BayesianTreeState,
+    FixedTopologyDnaModelDefinition,
+    FixedTopologyDnaPosteriorRow,
+    FixedTopologyDnaProposalSchedule,
+    FixedTopologyDnaRunReport,
     MetropolisHastingsProposal,
     MetropolisHastingsRunReport,
     MetropolisHastingsStepRow,
@@ -96,6 +101,8 @@ from bijux_phylogenetics.bayesian import (
     build_exponential_discrete_trait_rate_prior,
     build_exponential_continuous_trait_scalar_prior,
     build_exponential_positive_substitution_parameter_prior,
+    build_fixed_topology_dna_model_definition,
+    build_fixed_topology_dna_proposal_schedule,
     build_fixed_continuous_trait_probability_prior,
     build_fixed_continuous_trait_scalar_prior,
     build_fixed_positive_substitution_parameter_prior,
@@ -154,6 +161,7 @@ from bijux_phylogenetics.bayesian import (
     parse_mrbayes_consensus_tree,
     load_local_clock_regime_definitions,
     run_beast_posterior_inference,
+    run_fixed_topology_dna_metropolis_hastings,
     run_mrbayes_posterior_inference,
     deserialize_bayesian_phylogenetic_state,
     deserialize_bayesian_phylogenetic_state_json,
@@ -166,6 +174,7 @@ from bijux_phylogenetics.bayesian import (
     propose_gtr_exchangeability_move,
     propose_global_tree_height_scaling_move,
     propose_invariant_proportion_move,
+    propose_kappa_move,
     propose_nni_topology_move,
     propose_node_height_sliding_move,
     propose_partition_linking_move,
@@ -1067,6 +1076,16 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.AdaptiveMetropolisHastingsRunReport
         is AdaptiveMetropolisHastingsRunReport
     )
+    assert (
+        bayesian_api.FixedTopologyDnaModelDefinition
+        is FixedTopologyDnaModelDefinition
+    )
+    assert bayesian_api.FixedTopologyDnaPosteriorRow is FixedTopologyDnaPosteriorRow
+    assert (
+        bayesian_api.FixedTopologyDnaProposalSchedule
+        is FixedTopologyDnaProposalSchedule
+    )
+    assert bayesian_api.FixedTopologyDnaRunReport is FixedTopologyDnaRunReport
     assert bayesian_api.BayesianStateBranchRow is BayesianStateBranchRow
     assert bayesian_api.BayesianTreeState is BayesianTreeState
     assert bayesian_api.BayesianModelParameterState is BayesianModelParameterState
@@ -1143,6 +1162,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_exponential_positive_substitution_parameter_prior
         is build_exponential_positive_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_fixed_topology_dna_model_definition
+        is build_fixed_topology_dna_model_definition
+    )
+    assert (
+        bayesian_api.build_fixed_topology_dna_proposal_schedule
+        is build_fixed_topology_dna_proposal_schedule
     )
     assert (
         bayesian_api.build_fixed_continuous_trait_probability_prior
@@ -1304,6 +1331,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.propose_invariant_proportion_move
         is propose_invariant_proportion_move
     )
+    assert bayesian_api.propose_kappa_move is propose_kappa_move
     assert bayesian_api.propose_nni_topology_move is propose_nni_topology_move
     assert (
         bayesian_api.propose_node_height_sliding_move
@@ -1326,6 +1354,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.run_metropolis_hastings_sampler
         is run_metropolis_hastings_sampler
+    )
+    assert (
+        bayesian_api.run_fixed_topology_dna_metropolis_hastings
+        is run_fixed_topology_dna_metropolis_hastings
     )
     assert (
         bayesian_api.sample_prior_only_phylogenetic_state
@@ -1383,6 +1415,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.evaluate_substitution_parameter_log_prior
         is evaluate_substitution_parameter_log_prior
+    )
+    assert (
+        bayesian_api.FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS
+        is FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS
     )
     assert (
         bayesian_api.evaluate_constant_population_coalescent_tree_log_prior
