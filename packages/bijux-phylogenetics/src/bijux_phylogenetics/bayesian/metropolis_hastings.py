@@ -1,10 +1,21 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 import math
 import random
 
+from bijux_phylogenetics.bayesian.partition_model_priors import (
+    PARTITION_MODEL_PRIOR_TARGETS,
+    PartitionSubstitutionModelDefinition,
+    build_partition_parameter_linkage_plan,
+)
+from bijux_phylogenetics.bayesian.partition_model_state import (
+    build_partition_model_parameter_state,
+    resolve_partition_parameter_linkage_plan_from_model_parameters,
+    resolve_partition_parameter_states_from_model_parameters,
+    strip_partition_model_parameter_state,
+)
 from bijux_phylogenetics.bayesian.state import (
     BayesianModelParameterState,
     BayesianPhylogeneticState,
@@ -335,6 +346,168 @@ def propose_reversible_jump_model_switch_move(
             scalar_parameters=proposed_scalar_parameters,
             vector_parameters=proposed_vector_parameters,
         ),
+    )
+
+
+def propose_partition_linking_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+    *,
+    partition_models: Sequence[PartitionSubstitutionModelDefinition],
+    target_name: str | None = None,
+) -> MetropolisHastingsProposal:
+    """Propose one linkage toggle between linked and unlinked partition states."""
+    validated_partition_models = _validate_partition_linking_partition_models(
+        partition_models
+    )
+    validated_target_name = (
+        _validate_partition_linking_target_name(target_name)
+        if target_name is not None
+        else None
+    )
+    eligible_target_names = _eligible_partition_linking_targets(
+        validated_partition_models
+    )
+    if not eligible_target_names:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("categorical_parameters.partition-linkage",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=(
+                "partition-linking proposal requires at least one target used by "
+                "more than one partition"
+            ),
+        )
+    if validated_target_name is None:
+        selected_target_name = eligible_target_names[
+            rng.randrange(len(eligible_target_names))
+        ]
+        selection_log_density = -math.log(len(eligible_target_names))
+    else:
+        selected_target_name = validated_target_name
+        if selected_target_name not in eligible_target_names:
+            return build_metropolis_hastings_proposal(
+                changed_fields=(
+                    f"categorical_parameters.partition-linkage:{selected_target_name}",
+                ),
+                log_forward_density=0.0,
+                log_reverse_density=0.0,
+                is_valid=False,
+                invalid_reason=(
+                    "partition-linking proposal can switch only targets used by "
+                    "more than one partition"
+                ),
+            )
+        selection_log_density = 0.0
+    current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
+    partition_names = tuple(
+        partition_model.partition_name
+        for partition_model in validated_partition_models
+    )
+    try:
+        current_linkage_plan = (
+            resolve_partition_parameter_linkage_plan_from_model_parameters(
+                model_parameters=current_state.model_parameters,
+                partition_names=partition_names,
+            )
+        )
+        current_partition_states = resolve_partition_parameter_states_from_model_parameters(
+            model_parameters=current_state.model_parameters,
+            partition_models=validated_partition_models,
+            linkage_plan=current_linkage_plan,
+        )
+    except PhylogeneticsError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(
+                f"categorical_parameters.partition-linkage:{selected_target_name}",
+            ),
+            log_forward_density=selection_log_density,
+            log_reverse_density=selection_log_density,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    required_partition_names = tuple(
+        partition_model.partition_name
+        for partition_model in validated_partition_models
+        if selected_target_name in partition_model.required_targets()
+    )
+    current_target_groups = current_linkage_plan.groups_for_target(selected_target_name)
+    target_linkage_state = _classify_partition_linkage_state(
+        group_by_partition_name={
+            partition_name: current_target_groups[partition_name]
+            for partition_name in required_partition_names
+        }
+    )
+    if target_linkage_state is None:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(
+                f"categorical_parameters.partition-linkage:{selected_target_name}",
+            ),
+            log_forward_density=selection_log_density,
+            log_reverse_density=selection_log_density,
+            is_valid=False,
+            invalid_reason=(
+                "partition-linking proposal currently supports only fully linked or "
+                "fully unlinked states for one target"
+            ),
+        )
+    proposed_group_assignments = {
+        candidate_target_name: current_linkage_plan.groups_for_target(
+            candidate_target_name
+        )
+        for candidate_target_name in PARTITION_MODEL_PRIOR_TARGETS
+    }
+    if target_linkage_state == "linked":
+        for partition_name in required_partition_names:
+            proposed_group_assignments[selected_target_name][partition_name] = (
+                partition_name
+            )
+    else:
+        for partition_name in required_partition_names:
+            proposed_group_assignments[selected_target_name][partition_name] = (
+                f"{selected_target_name}-shared"
+            )
+    stripped_model_parameters = strip_partition_model_parameter_state(
+        current_state.model_parameters
+    )
+    proposed_linkage_plan = build_partition_parameter_linkage_plan(
+        partition_names=partition_names,
+        group_assignments=proposed_group_assignments,
+    )
+    try:
+        proposed_model_parameters = build_partition_model_parameter_state(
+            partition_models=validated_partition_models,
+            linkage_plan=proposed_linkage_plan,
+            partition_parameter_states=current_partition_states,
+            preserved_categorical_parameters=(
+                stripped_model_parameters.categorical_parameters
+            ),
+            preserved_scalar_parameters=stripped_model_parameters.scalar_parameters,
+            preserved_vector_parameters=stripped_model_parameters.vector_parameters,
+        )
+    except PhylogeneticsError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=(
+                f"categorical_parameters.partition-linkage:{selected_target_name}",
+            ),
+            log_forward_density=selection_log_density,
+            log_reverse_density=selection_log_density,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    changed_fields = _diff_model_parameter_changed_fields(
+        current_state.model_parameters,
+        proposed_model_parameters,
+    )
+    return build_metropolis_hastings_proposal(
+        changed_fields=changed_fields,
+        log_forward_density=selection_log_density,
+        log_reverse_density=selection_log_density,
+        is_valid=True,
+        proposed_tree=current_tree,
+        proposed_model_parameters=proposed_model_parameters,
     )
 
 
@@ -1827,6 +2000,113 @@ def _validate_parameter_name(
             details={"field_name": field_name},
         )
     return value.strip()
+
+
+def _validate_partition_linking_partition_models(
+    partition_models: Sequence[PartitionSubstitutionModelDefinition],
+) -> tuple[PartitionSubstitutionModelDefinition, ...]:
+    validated_partition_models = tuple(partition_models)
+    if not validated_partition_models:
+        raise PhylogeneticsError(
+            "partition-linking proposal requires at least one partition model definition",
+            code="partition_linking_partition_models_empty",
+        )
+    partition_names = tuple(
+        partition_model.partition_name for partition_model in validated_partition_models
+    )
+    duplicate_partition_names = sorted(
+        {
+            partition_name
+            for partition_name in partition_names
+            if partition_names.count(partition_name) > 1
+        }
+    )
+    if duplicate_partition_names:
+        raise PhylogeneticsError(
+            "partition-linking proposal requires unique partition names",
+            code="partition_linking_partition_names_duplicated",
+            details={"duplicate_partition_names": duplicate_partition_names},
+        )
+    return validated_partition_models
+
+
+def _validate_partition_linking_target_name(target_name: str) -> str:
+    validated_target_name = _validate_parameter_name(
+        value=target_name,
+        field_name="target_name",
+        owner_name="partition-linking proposal",
+    )
+    if validated_target_name not in PARTITION_MODEL_PRIOR_TARGETS:
+        raise PhylogeneticsError(
+            "partition-linking proposal requires one supported partition target",
+            code="partition_linking_target_invalid",
+            details={
+                "target_name": target_name,
+                "allowed_target_names": list(PARTITION_MODEL_PRIOR_TARGETS),
+            },
+        )
+    return validated_target_name
+
+
+def _eligible_partition_linking_targets(
+    partition_models: Sequence[PartitionSubstitutionModelDefinition],
+) -> tuple[str, ...]:
+    eligible_target_names: list[str] = []
+    for target_name in PARTITION_MODEL_PRIOR_TARGETS:
+        required_partition_count = sum(
+            target_name in partition_model.required_targets()
+            for partition_model in partition_models
+        )
+        if required_partition_count >= 2:
+            eligible_target_names.append(target_name)
+    return tuple(eligible_target_names)
+
+
+def _classify_partition_linkage_state(
+    *,
+    group_by_partition_name: Mapping[str, str],
+) -> str | None:
+    group_names = tuple(group_by_partition_name.values())
+    if len(set(group_names)) == 1:
+        return "linked"
+    if len(set(group_names)) == len(group_names):
+        return "unlinked"
+    return None
+
+
+def _diff_model_parameter_changed_fields(
+    current_model_parameters: BayesianModelParameterState,
+    proposed_model_parameters: BayesianModelParameterState,
+) -> tuple[str, ...]:
+    changed_fields: list[str] = []
+    for parameter_name in sorted(
+        set(current_model_parameters.categorical_parameters)
+        | set(proposed_model_parameters.categorical_parameters)
+    ):
+        if (
+            current_model_parameters.categorical_parameters.get(parameter_name)
+            != proposed_model_parameters.categorical_parameters.get(parameter_name)
+        ):
+            changed_fields.append(f"categorical_parameters.{parameter_name}")
+    for parameter_name in sorted(
+        set(current_model_parameters.scalar_parameters)
+        | set(proposed_model_parameters.scalar_parameters)
+    ):
+        if (
+            current_model_parameters.scalar_parameters.get(parameter_name)
+            != proposed_model_parameters.scalar_parameters.get(parameter_name)
+        ):
+            changed_fields.append(f"scalar_parameters.{parameter_name}")
+    for parameter_name in sorted(
+        set(current_model_parameters.vector_parameters)
+        | set(proposed_model_parameters.vector_parameters)
+    ):
+        if (
+            current_model_parameters.vector_parameters.get(parameter_name)
+            != proposed_model_parameters.vector_parameters.get(parameter_name)
+        ):
+            changed_fields.append(f"vector_parameters.{parameter_name}")
+    return tuple(changed_fields)
 
 
 def _copy_tree_with_scaled_branch_length(
