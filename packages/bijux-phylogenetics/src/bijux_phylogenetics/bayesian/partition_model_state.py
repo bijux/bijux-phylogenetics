@@ -33,6 +33,8 @@ _VECTOR_PARTITION_TARGETS = frozenset(
         "base-frequencies",
     }
 )
+_DNA_BASE_FREQUENCY_COMPONENT_NAMES = ("A", "C", "G", "T")
+_DNA_EXCHANGEABILITY_COMPONENT_NAMES = ("AC", "AG", "AT", "CG", "CT", "GT")
 
 
 def build_partition_model_parameter_state(
@@ -284,7 +286,10 @@ def _extract_partition_target_value(
                 code="partition_model_state_exchangeabilities_missing",
                 details={"partition_name": state.partition_name},
             )
-        return _normalize_vector_value(state.exchangeabilities)
+        return _normalize_vector_value(
+            target_name=target_name,
+            raw_value=state.exchangeabilities,
+        )
     if target_name == "base-frequencies":
         if state.base_frequencies is None:
             raise PhylogeneticsError(
@@ -292,7 +297,10 @@ def _extract_partition_target_value(
                 code="partition_model_state_base_frequencies_missing",
                 details={"partition_name": state.partition_name},
             )
-        return _normalize_vector_value(state.base_frequencies)
+        return _normalize_vector_value(
+            target_name=target_name,
+            raw_value=state.base_frequencies,
+        )
     if target_name == "gamma-alpha":
         if state.gamma_alpha is None:
             raise PhylogeneticsError(
@@ -337,6 +345,8 @@ def _partition_target_values_equal(
 
 
 def _normalize_vector_value(
+    *,
+    target_name: str,
     raw_value: Mapping[tuple[str, str], float]
     | Mapping[str, float]
     | Sequence[float],
@@ -351,9 +361,28 @@ def _normalize_vector_value(
             for component_name, component_value in raw_value.items()
         }
         return dict(sorted(normalized.items(), key=lambda item: item[0]))
+    expected_component_names = (
+        _DNA_EXCHANGEABILITY_COMPONENT_NAMES
+        if target_name == "exchangeabilities"
+        else _DNA_BASE_FREQUENCY_COMPONENT_NAMES
+    )
+    if len(raw_value) != len(expected_component_names):
+        raise PhylogeneticsError(
+            "partition model state encoding received one vector with an unexpected component count",
+            code="partition_model_state_vector_component_count_invalid",
+            details={
+                "target_name": target_name,
+                "expected_component_count": len(expected_component_names),
+                "observed_component_count": len(raw_value),
+            },
+        )
     return {
-        str(component_index): float(component_value)
-        for component_index, component_value in enumerate(raw_value)
+        component_name: float(component_value)
+        for component_name, component_value in zip(
+            expected_component_names,
+            raw_value,
+            strict=True,
+        )
     }
 
 

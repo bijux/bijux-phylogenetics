@@ -83,16 +83,16 @@ def test_partition_model_state_round_trip_preserves_linkage_and_partition_values
     assert resolved_states[0].kappa == 2.0
     assert resolved_states[1].kappa == 2.0
     assert resolved_states[0].base_frequencies == {
-        "0": 0.3,
-        "1": 0.2,
-        "2": 0.1,
-        "3": 0.4,
+        "A": 0.3,
+        "C": 0.2,
+        "G": 0.1,
+        "T": 0.4,
     }
     assert resolved_states[1].base_frequencies == {
-        "0": 0.25,
-        "1": 0.15,
-        "2": 0.25,
-        "3": 0.35,
+        "A": 0.25,
+        "C": 0.15,
+        "G": 0.25,
+        "T": 0.35,
     }
 
 
