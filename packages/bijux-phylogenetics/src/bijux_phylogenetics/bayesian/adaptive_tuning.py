@@ -1,8 +1,21 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 import math
+import random
 
+from bijux_phylogenetics.bayesian.metropolis_hastings import (
+    MetropolisHastingsProposal,
+    MetropolisHastingsRunReport,
+    MetropolisHastingsStepRow,
+    build_metropolis_hastings_proposal,
+    score_bayesian_phylogenetic_state,
+)
+from bijux_phylogenetics.bayesian.state import (
+    BayesianPhylogeneticState,
+    BayesianPriorComponentState,
+)
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 _ADAPTIVE_TUNING_ACTIONS = ("decrease", "frozen", "hold", "increase")
@@ -56,6 +69,30 @@ class AdaptiveTuningReport:
     burnin_sample_count: int
     retained_sample_count: int
     window_rows: list[AdaptiveTuningWindowRow]
+
+
+@dataclass(frozen=True, slots=True)
+class AdaptiveMetropolisHastingsRunReport:
+    """One completed adaptive Metropolis-Hastings run with a tuning report."""
+
+    chain_report: MetropolisHastingsRunReport
+    burnin_iteration_count: int
+    freeze_iteration_index: int
+    burnin_sample_count: int
+    retained_sample_count: int
+    retained_sampled_states: list[BayesianPhylogeneticState]
+    tuning_report: AdaptiveTuningReport
+
+
+AdaptiveTuningProposal = Callable[
+    [BayesianPhylogeneticState, random.Random, float],
+    MetropolisHastingsProposal,
+]
+AdaptivePriorUpdate = Callable[
+    [BayesianPhylogeneticState],
+    list[BayesianPriorComponentState],
+]
+AdaptiveLikelihoodUpdate = Callable[[BayesianPhylogeneticState], float]
 
 
 def build_adaptive_tuning_controller(
@@ -292,6 +329,169 @@ def build_adaptive_tuning_report(
     )
 
 
+def run_adaptive_tuned_metropolis_hastings_sampler(
+    *,
+    initial_state: BayesianPhylogeneticState,
+    propose_state: AdaptiveTuningProposal,
+    tuning_controller: AdaptiveTuningController,
+    update_prior_components: AdaptivePriorUpdate,
+    update_log_likelihood: AdaptiveLikelihoodUpdate,
+    iteration_count: int,
+    sample_every: int = 1,
+    seed: int = 0,
+) -> AdaptiveMetropolisHastingsRunReport:
+    """Run one burn-in-adaptive Metropolis-Hastings chain with a frozen post-burn-in scale."""
+    validated_iteration_count = _validate_positive_integer(
+        value=iteration_count,
+        field_name="iteration_count",
+        owner_name="adaptive metropolis-hastings sampler",
+    )
+    validated_sample_every = _validate_positive_integer(
+        value=sample_every,
+        field_name="sample_every",
+        owner_name="adaptive metropolis-hastings sampler",
+    )
+    validated_seed = _validate_integer_seed(seed)
+    if tuning_controller.burnin_iteration_count >= validated_iteration_count:
+        raise PhylogeneticsError(
+            "adaptive metropolis-hastings sampler requires 'iteration_count' to exceed the tuning-controller burn-in so retained posterior samples begin after tuning freezes",
+            code="adaptive_metropolis_hastings_burnin_not_before_retention",
+            details={
+                "iteration_count": validated_iteration_count,
+                "burnin_iteration_count": tuning_controller.burnin_iteration_count,
+            },
+        )
+    rng = random.Random(validated_seed)  # nosec B311
+    current_state = initial_state
+    sampled_states: list[BayesianPhylogeneticState] = [current_state]
+    retained_sampled_states: list[BayesianPhylogeneticState] = []
+    step_rows: list[MetropolisHastingsStepRow] = []
+    tuning_window_rows: list[AdaptiveTuningWindowRow] = []
+    accepted_count = 0
+    current_scale = tuning_controller.initial_scale
+    scale_before_window = current_scale
+    window_start_iteration = 1
+    window_attempted_count = 0
+    window_accepted_count = 0
+
+    for iteration_index in range(1, validated_iteration_count + 1):
+        previous_state = current_state
+        raw_proposal = propose_state(current_state, rng, current_scale)
+        proposal = _validate_metropolis_hastings_proposal_instance(raw_proposal)
+        proposed_state: BayesianPhylogeneticState | None = None
+        log_acceptance_ratio: float | None = None
+        accepted = False
+        if proposal.is_valid:
+            proposed_state = score_bayesian_phylogenetic_state(
+                tree=proposal.proposed_tree,
+                model_parameters=proposal.proposed_model_parameters,
+                update_prior_components=update_prior_components,
+                update_log_likelihood=update_log_likelihood,
+            )
+            log_acceptance_ratio = (
+                proposed_state.posterior_log_score
+                - current_state.posterior_log_score
+                + proposal.log_hastings_ratio
+            )
+            accepted = _accept_metropolis_hastings_proposal(
+                log_acceptance_ratio=log_acceptance_ratio,
+                rng=rng,
+            )
+            if accepted:
+                current_state = proposed_state
+                accepted_count += 1
+        window_attempted_count += 1
+        if accepted:
+            window_accepted_count += 1
+        if iteration_index % validated_sample_every == 0:
+            sampled_states.append(current_state)
+            if iteration_index > tuning_controller.burnin_iteration_count:
+                retained_sampled_states.append(current_state)
+        step_rows.append(
+            MetropolisHastingsStepRow(
+                iteration_index=iteration_index,
+                proposal_changed_fields=proposal.changed_fields,
+                proposal_valid=proposal.is_valid,
+                proposal_invalid_reason=proposal.invalid_reason,
+                log_forward_density=proposal.log_forward_density,
+                log_reverse_density=proposal.log_reverse_density,
+                accepted=accepted,
+                log_hastings_ratio=proposal.log_hastings_ratio,
+                current_posterior_log_score=previous_state.posterior_log_score,
+                proposed_posterior_log_score=(
+                    proposed_state.posterior_log_score
+                    if proposed_state is not None
+                    else None
+                ),
+                log_acceptance_ratio=log_acceptance_ratio,
+                recorded_posterior_log_score=current_state.posterior_log_score,
+            )
+        )
+        if _should_close_tuning_window(
+            iteration_index=iteration_index,
+            iteration_count=validated_iteration_count,
+            burnin_iteration_count=tuning_controller.burnin_iteration_count,
+            adaptation_window_size=tuning_controller.adaptation_window_size,
+            window_attempted_count=window_attempted_count,
+        ):
+            current_scale, action = _resolve_next_adaptive_scale(
+                controller=tuning_controller,
+                window_end_iteration=iteration_index,
+                current_scale=current_scale,
+                accepted_count=window_accepted_count,
+                attempted_count=window_attempted_count,
+            )
+            tuning_window_rows.append(
+                build_adaptive_tuning_window_row(
+                    window_index=len(tuning_window_rows) + 1,
+                    window_start_iteration=window_start_iteration,
+                    window_end_iteration=iteration_index,
+                    within_burnin=(
+                        iteration_index <= tuning_controller.burnin_iteration_count
+                    ),
+                    attempted_count=window_attempted_count,
+                    accepted_count=window_accepted_count,
+                    target_acceptance_rate=tuning_controller.target_acceptance_rate,
+                    scale_before_window=scale_before_window,
+                    scale_after_window=current_scale,
+                    action=action,
+                )
+            )
+            scale_before_window = current_scale
+            window_start_iteration = iteration_index + 1
+            window_attempted_count = 0
+            window_accepted_count = 0
+
+    chain_report = MetropolisHastingsRunReport(
+        iteration_count=validated_iteration_count,
+        sample_every=validated_sample_every,
+        seed=validated_seed,
+        accepted_count=accepted_count,
+        rejected_count=validated_iteration_count - accepted_count,
+        acceptance_rate=accepted_count / validated_iteration_count,
+        initial_state=initial_state,
+        final_state=current_state,
+        sampled_states=sampled_states,
+        step_rows=step_rows,
+    )
+    tuning_report = build_adaptive_tuning_report(
+        controller=tuning_controller,
+        freeze_iteration_index=tuning_controller.burnin_iteration_count + 1,
+        burnin_sample_count=len(sampled_states) - len(retained_sampled_states),
+        retained_sample_count=len(retained_sampled_states),
+        window_rows=tuning_window_rows,
+    )
+    return AdaptiveMetropolisHastingsRunReport(
+        chain_report=chain_report,
+        burnin_iteration_count=tuning_controller.burnin_iteration_count,
+        freeze_iteration_index=tuning_report.freeze_iteration_index,
+        burnin_sample_count=tuning_report.burnin_sample_count,
+        retained_sample_count=tuning_report.retained_sample_count,
+        retained_sampled_states=retained_sampled_states,
+        tuning_report=tuning_report,
+    )
+
+
 def _validate_nonblank_name(
     *,
     value: str,
@@ -305,6 +505,15 @@ def _validate_nonblank_name(
             details={"field_name": field_name},
         )
     return value.strip()
+
+
+def _validate_integer_seed(seed: int) -> int:
+    if isinstance(seed, bool) or not isinstance(seed, int):
+        raise PhylogeneticsError(
+            "adaptive metropolis-hastings sampler requires 'seed' to be one integer",
+            code="adaptive_tuning_seed_invalid",
+        )
+    return seed
 
 
 def _validate_adaptive_tuning_action(action: str) -> str:
@@ -531,3 +740,71 @@ def _validate_adaptive_tuning_window_rows(
                     code="adaptive_tuning_window_frozen_scale_invalid",
                 )
         previous_window_end_iteration = window_row.window_end_iteration
+
+
+def _validate_metropolis_hastings_proposal_instance(
+    proposal: MetropolisHastingsProposal,
+) -> MetropolisHastingsProposal:
+    if not isinstance(proposal, MetropolisHastingsProposal):
+        raise PhylogeneticsError(
+            "adaptive metropolis-hastings sampler requires the proposal callback to return one MetropolisHastingsProposal",
+            code="adaptive_tuning_proposal_type_invalid",
+        )
+    return build_metropolis_hastings_proposal(
+        changed_fields=proposal.changed_fields,
+        log_forward_density=proposal.log_forward_density,
+        log_reverse_density=proposal.log_reverse_density,
+        is_valid=proposal.is_valid,
+        invalid_reason=proposal.invalid_reason,
+        proposed_tree=proposal.proposed_tree,
+        proposed_model_parameters=proposal.proposed_model_parameters,
+    )
+
+
+def _accept_metropolis_hastings_proposal(
+    *,
+    log_acceptance_ratio: float,
+    rng: random.Random,
+) -> bool:
+    if log_acceptance_ratio >= 0.0:
+        return True
+    return math.log(rng.random()) <= log_acceptance_ratio
+
+
+def _should_close_tuning_window(
+    *,
+    iteration_index: int,
+    iteration_count: int,
+    burnin_iteration_count: int,
+    adaptation_window_size: int,
+    window_attempted_count: int,
+) -> bool:
+    return (
+        window_attempted_count >= adaptation_window_size
+        or iteration_index == burnin_iteration_count
+        or iteration_index == iteration_count
+    )
+
+
+def _resolve_next_adaptive_scale(
+    *,
+    controller: AdaptiveTuningController,
+    window_end_iteration: int,
+    current_scale: float,
+    accepted_count: int,
+    attempted_count: int,
+) -> tuple[float, str]:
+    acceptance_rate = accepted_count / attempted_count
+    if window_end_iteration > controller.burnin_iteration_count:
+        return current_scale, "frozen"
+    if acceptance_rate < controller.target_acceptance_rate:
+        return (
+            max(controller.minimum_scale, current_scale * controller.decrease_factor),
+            "decrease",
+        )
+    if acceptance_rate > controller.target_acceptance_rate:
+        return (
+            min(controller.maximum_scale, current_scale * controller.increase_factor),
+            "increase",
+        )
+    return current_scale, "hold"
