@@ -1154,6 +1154,7 @@ def propose_gtr_exchangeability_move(
         is_valid=True,
         proposed_tree=current_state.tree.to_tree(),
         proposed_model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters=current_state.model_parameters.categorical_parameters,
             scalar_parameters=current_state.model_parameters.scalar_parameters,
             vector_parameters=proposed_vector_parameters,
         ),
@@ -1271,6 +1272,7 @@ def propose_base_frequency_simplex_move(
         is_valid=True,
         proposed_tree=current_state.tree.to_tree(),
         proposed_model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters=current_state.model_parameters.categorical_parameters,
             scalar_parameters=current_state.model_parameters.scalar_parameters,
             vector_parameters=proposed_vector_parameters,
         ),
@@ -1360,6 +1362,95 @@ def propose_gamma_alpha_move(
         is_valid=True,
         proposed_tree=current_tree,
         proposed_model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters=current_state.model_parameters.categorical_parameters,
+            scalar_parameters=proposed_scalar_parameters,
+            vector_parameters=current_state.model_parameters.vector_parameters,
+        ),
+    )
+
+
+def propose_kappa_move(
+    current_state: BayesianPhylogeneticState,
+    rng: random.Random,
+    *,
+    log_scale_standard_deviation: float,
+) -> MetropolisHastingsProposal:
+    """Propose one multiplicative change to one positive nucleotide kappa parameter."""
+    validated_log_scale_standard_deviation = _validate_positive_finite_float(
+        value=log_scale_standard_deviation,
+        field_name="log_scale_standard_deviation",
+        owner_name="kappa proposal",
+    )
+    current_kappa = current_state.model_parameters.scalar_parameters.get("kappa")
+    if current_kappa is None:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.kappa",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="kappa proposal requires one 'kappa' scalar parameter",
+        )
+    try:
+        validated_current_kappa = validate_positive_kappa(
+            current_kappa,
+            model_name="kappa proposal",
+        )
+    except ValueError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.kappa",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    try:
+        scale_factor = math.exp(
+            rng.gauss(0.0, validated_log_scale_standard_deviation)
+        )
+    except OverflowError:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.kappa",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason="kappa scaling factor overflowed",
+        )
+    proposed_kappa = validated_current_kappa * scale_factor
+    try:
+        validated_proposed_kappa = validate_positive_kappa(
+            proposed_kappa,
+            model_name="kappa proposal",
+        )
+    except ValueError as error:
+        return build_metropolis_hastings_proposal(
+            changed_fields=("scalar_parameters.kappa",),
+            log_forward_density=0.0,
+            log_reverse_density=0.0,
+            is_valid=False,
+            invalid_reason=str(error),
+        )
+    proposed_scalar_parameters = dict(current_state.model_parameters.scalar_parameters)
+    proposed_scalar_parameters["kappa"] = validated_proposed_kappa
+    log_forward_density = _lognormal_scaling_density(
+        current_branch_length=validated_current_kappa,
+        proposed_branch_length=validated_proposed_kappa,
+        log_scale_standard_deviation=validated_log_scale_standard_deviation,
+    )
+    log_reverse_density = _lognormal_scaling_density(
+        current_branch_length=validated_proposed_kappa,
+        proposed_branch_length=validated_current_kappa,
+        log_scale_standard_deviation=validated_log_scale_standard_deviation,
+    )
+    current_tree = current_state.tree.to_tree()
+    current_tree.rooted = current_state.tree.rooted
+    return build_metropolis_hastings_proposal(
+        changed_fields=("scalar_parameters.kappa",),
+        log_forward_density=log_forward_density,
+        log_reverse_density=log_reverse_density,
+        is_valid=True,
+        proposed_tree=current_tree,
+        proposed_model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters=current_state.model_parameters.categorical_parameters,
             scalar_parameters=proposed_scalar_parameters,
             vector_parameters=current_state.model_parameters.vector_parameters,
         ),
@@ -1463,6 +1554,7 @@ def propose_clock_rate_move(
         is_valid=True,
         proposed_tree=current_tree,
         proposed_model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters=current_state.model_parameters.categorical_parameters,
             scalar_parameters=proposed_scalar_parameters,
             vector_parameters=current_state.model_parameters.vector_parameters,
         ),
@@ -1581,6 +1673,7 @@ def propose_discrete_trait_rate_move(
         is_valid=True,
         proposed_tree=current_tree,
         proposed_model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters=current_state.model_parameters.categorical_parameters,
             scalar_parameters=current_state.model_parameters.scalar_parameters,
             vector_parameters=proposed_vector_parameters,
         ),
@@ -1685,6 +1778,7 @@ def propose_invariant_proportion_move(
         is_valid=True,
         proposed_tree=current_tree,
         proposed_model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters=current_state.model_parameters.categorical_parameters,
             scalar_parameters=proposed_scalar_parameters,
             vector_parameters=current_state.model_parameters.vector_parameters,
         ),
