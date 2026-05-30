@@ -15,6 +15,7 @@ from bijux_phylogenetics.bayesian.state import (
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
     APE_ULTRAMETRIC_TOLERANCE,
 )
+from bijux_phylogenetics.phylo.likelihood.dna import validate_positive_kappa
 from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
     parameterize_dna_base_frequency_simplex,
     parameterize_dna_exchangeability_simplex,
@@ -125,6 +126,11 @@ class _ReversibleRootedTbrNeighbor:
     reverse_neighbor_row: object
 
 
+_REVERSIBLE_JUMP_MODEL_SWITCH_FAMILIES = (
+    "nucleotide-substitution-model",
+)
+
+
 def build_metropolis_hastings_proposal(
     *,
     changed_fields: list[str] | tuple[str, ...],
@@ -147,6 +153,30 @@ def build_metropolis_hastings_proposal(
             proposed_model_parameters=proposed_model_parameters,
         )
     )
+
+
+def list_reversible_jump_model_switch_families() -> tuple[str, ...]:
+    """List declared reversible-jump model-switch proposal families."""
+    return _REVERSIBLE_JUMP_MODEL_SWITCH_FAMILIES
+
+
+def validate_reversible_jump_model_switch_family(model_family: str) -> str:
+    """Validate one declared reversible-jump model-switch proposal family."""
+    validated_model_family = _validate_parameter_name(
+        value=model_family,
+        field_name="model_family",
+        owner_name="reversible-jump model-switch proposal",
+    )
+    if validated_model_family not in _REVERSIBLE_JUMP_MODEL_SWITCH_FAMILIES:
+        raise PhylogeneticsError(
+            "reversible-jump model-switch proposal requires one declared model family",
+            code="reversible_jump_model_switch_family_invalid",
+            details={
+                "model_family": model_family,
+                "allowed_model_families": list(_REVERSIBLE_JUMP_MODEL_SWITCH_FAMILIES),
+            },
+        )
+    return validated_model_family
 
 
 def propose_branch_length_scaling_move(
