@@ -56,6 +56,9 @@ def test_base_frequency_simplex_proposal_changes_likelihood_and_keeps_simplex_va
         rooted_topology_fingerprint(proposed_tree)
         == rooted_topology_fingerprint(current_state.tree.to_tree())
     )
+    assert (
+        proposed_model_parameters.categorical_parameters["substitution-model"] == "F81"
+    )
     proposed_base_frequencies = proposed_model_parameters.vector_parameters[
         "base-frequencies"
     ]
@@ -164,6 +167,7 @@ def _build_scored_base_frequency_state() -> BayesianPhylogeneticState:
     return score_bayesian_phylogenetic_state(
         tree=load_tree(fixture("trees", "f81_likelihood_tree_2_taxa.nwk")),
         model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters={"substitution-model": "F81"},
             vector_parameters={
                 "base-frequencies": parameterize_dna_base_frequency_simplex(
                     {

@@ -58,6 +58,9 @@ def test_gtr_exchangeability_proposal_changes_likelihood_and_keeps_simplex_valid
         rooted_topology_fingerprint(proposed_tree)
         == rooted_topology_fingerprint(current_state.tree.to_tree())
     )
+    assert (
+        proposed_model_parameters.categorical_parameters["substitution-model"] == "GTR"
+    )
     proposed_exchangeabilities = proposed_model_parameters.vector_parameters[
         "exchangeabilities"
     ]
@@ -163,6 +166,7 @@ def _build_scored_gtr_exchangeability_state() -> BayesianPhylogeneticState:
     return score_bayesian_phylogenetic_state(
         tree=load_tree(fixture("trees", "gtr_likelihood_tree_2_taxa.nwk")),
         model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters={"substitution-model": "GTR"},
             vector_parameters={
                 "exchangeabilities": parameterize_dna_exchangeability_simplex(
                     {
