@@ -81,6 +81,7 @@ def test_likelihood_nni_search_uses_likelihood_objective_and_reaches_local_optim
             row.branch_reoptimization_scope,
             row.optimized_branch_count,
             row.optimized_branch_clade_ids,
+            row.branch_reoptimization_converged,
             row.branch_optimization_pass_count,
             row.branch_function_evaluation_count,
             row.stopping_reason,
@@ -98,6 +99,7 @@ def test_likelihood_nni_search_uses_likelihood_objective_and_reaches_local_optim
             "all-branches",
             6,
             ["A", "B", "C", "D", "A|C", "A|B|C"],
+            True,
             2,
             565,
             None,
@@ -113,6 +115,7 @@ def test_likelihood_nni_search_uses_likelihood_objective_and_reaches_local_optim
             "all-branches",
             6,
             ["A", "B", "C", "D", "A|B", "A|B|C"],
+            True,
             3,
             847,
             None,
@@ -128,6 +131,7 @@ def test_likelihood_nni_search_uses_likelihood_objective_and_reaches_local_optim
             "all-branches",
             6,
             ["A", "B", "C", "D", "A|B", "C|D"],
+            True,
             2,
             565,
             None,
@@ -143,6 +147,7 @@ def test_likelihood_nni_search_uses_likelihood_objective_and_reaches_local_optim
             "none",
             0,
             [],
+            None,
             0,
             0,
             "no-improving-neighbor",
@@ -181,6 +186,7 @@ def test_likelihood_nni_search_local_branch_reoptimization_reports_neighborhood_
     assert local_report.branch_reoptimization_policy == "nni-local-affected-branches"
     assert local_report.trace_rows[0].branch_reoptimization_scope == "all-branches"
     assert local_report.trace_rows[0].optimized_branch_count == 6
+    assert local_report.trace_rows[0].branch_reoptimization_converged is True
     accepted_rows = [
         row for row in local_report.trace_rows if row.event_kind == "accepted-move"
     ]
@@ -207,6 +213,7 @@ def test_likelihood_nni_search_local_branch_reoptimization_reports_neighborhood_
         "C|D",
     }
     assert local_report.trace_rows[-1].branch_reoptimization_scope == "none"
+    assert local_report.trace_rows[-1].branch_reoptimization_converged is None
     assert (
         local_report.trace_rows[1].optimized_branch_count
         < full_report.trace_rows[1].optimized_branch_count
