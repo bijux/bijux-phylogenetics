@@ -942,6 +942,39 @@ class NucleotideLikelihoodMultiStartSearchReport:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodSearchTraceReplayStep:
+    """One accepted search-trace step replayed against the evolving tree."""
+
+    trace_event_index: int
+    iteration: int
+    move_type: str
+    trace_reason: str
+    candidate_topology_fingerprint: str
+    replayed_topology_fingerprint: str | None
+    matched_candidate_count: int
+    step_replayed: bool
+
+
+@dataclass(slots=True)
+class NucleotideLikelihoodSearchTraceReplayReport:
+    """Replay summary for one native likelihood local-search trace."""
+
+    algorithm: str
+    source_search_algorithm: str
+    accepted_trace_event_count: int
+    replayed_step_count: int
+    start_tree_newick: str
+    stored_final_tree_newick: str
+    stored_final_topology_fingerprint: str
+    replayed_final_tree_newick: str | None
+    replayed_final_topology_fingerprint: str | None
+    final_topology_matches: bool
+    replay_failed: bool
+    failure_reason: str | None
+    step_rows: list[NucleotideLikelihoodSearchTraceReplayStep]
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodStartingTreeSummary:
     """One scored starting tree inside a native likelihood start-tree pool."""
 
