@@ -70,14 +70,39 @@ def validate_rooted_spr_enumeration_budget(
     return budget
 
 
-def iter_rooted_spr_move_candidates(tree: PhyloTree):
+def iter_rooted_spr_move_candidates(
+    tree: PhyloTree,
+    *,
+    budget: RootedSprEnumerationBudget | None = None,
+):
     """Yield deterministic rooted SPR candidates for one rooted tree."""
+    candidates, _skipped_pruned, _skipped_regraft_targets = (
+        _collect_rooted_spr_move_candidates(tree, budget=budget)
+    )
+    yield from candidates
+
+
+def _collect_rooted_spr_move_candidates(
+    tree: PhyloTree,
+    *,
+    budget: RootedSprEnumerationBudget | None,
+) -> tuple[list[RootedSprMoveCandidate], int, int]:
+    normalized_budget = validate_rooted_spr_enumeration_budget(budget)
     seen_candidates: set[tuple[str, str]] = set()
     sorted_prune_nodes = sorted(
         (node for node in tree.iter_nodes(order="preorder") if node is not tree.root),
         key=rooted_spr_node_sort_key,
     )
-    for prune_node in sorted_prune_nodes:
+    if normalized_budget.max_pruned_clade_count is None:
+        limited_prune_nodes = sorted_prune_nodes
+    else:
+        limited_prune_nodes = sorted_prune_nodes[
+            : normalized_budget.max_pruned_clade_count
+        ]
+    skipped_pruned_clade_count = len(sorted_prune_nodes) - len(limited_prune_nodes)
+    skipped_regraft_target_count = 0
+    candidates: list[RootedSprMoveCandidate] = []
+    for prune_node in limited_prune_nodes:
         pruned_clade_id = rooted_spr_clade_id(prune_node)
         remainder_tree, _pruned_subtree = prune_rooted_spr_subtree(
             tree,
@@ -96,18 +121,30 @@ def iter_rooted_spr_move_candidates(tree: PhyloTree):
                 )
             ],
         ]
+        if normalized_budget.max_regraft_target_count_per_pruned_clade is not None:
+            regraft_target_limit = (
+                normalized_budget.max_regraft_target_count_per_pruned_clade
+            )
+            skipped_regraft_target_count += max(
+                0,
+                len(regraft_targets) - regraft_target_limit,
+            )
+            regraft_targets = regraft_targets[:regraft_target_limit]
         for regraft_target_branch_id, regraft_target_descendant_taxa in regraft_targets:
             signature = (pruned_clade_id, regraft_target_branch_id)
             if signature in seen_candidates:
                 continue
             seen_candidates.add(signature)
-            yield RootedSprMoveCandidate(
-                pruned_node_id=require_rooted_spr_node_id(prune_node),
-                pruned_clade_id=pruned_clade_id,
-                pruned_descendant_taxa=tuple(sorted(prune_node.descendant_taxa)),
-                regraft_target_branch_id=regraft_target_branch_id,
-                regraft_target_descendant_taxa=regraft_target_descendant_taxa,
+            candidates.append(
+                RootedSprMoveCandidate(
+                    pruned_node_id=require_rooted_spr_node_id(prune_node),
+                    pruned_clade_id=pruned_clade_id,
+                    pruned_descendant_taxa=tuple(sorted(prune_node.descendant_taxa)),
+                    regraft_target_branch_id=regraft_target_branch_id,
+                    regraft_target_descendant_taxa=regraft_target_descendant_taxa,
+                )
             )
+    return candidates, skipped_pruned_clade_count, skipped_regraft_target_count
 
 
 def apply_rooted_spr_move(
@@ -229,10 +266,13 @@ def validate_rooted_spr_tree(tree: PhyloTree) -> None:
 
 def enumerate_rooted_spr_neighbors(
     tree: PhyloTree | Path,
+    *,
+    budget: RootedSprEnumerationBudget | None = None,
 ) -> RootedSprNeighborhoodReport:
     """Enumerate rooted SPR neighbors exactly once by unique non-identity topology."""
     resolved_tree, input_tree_path = _resolve_rooted_spr_tree(tree)
     validate_rooted_spr_tree(resolved_tree)
+    normalized_budget = validate_rooted_spr_enumeration_budget(budget)
     input_tip_taxa = set(resolved_tree.tip_names)
     input_topology_fingerprint = rooted_topology_fingerprint(resolved_tree)
     generated_move_candidate_count = 0
@@ -240,7 +280,12 @@ def enumerate_rooted_spr_neighbors(
     self_regraft_candidate_count = 0
     duplicate_move_topology_counts: dict[str, int] = {}
     neighbor_row_by_fingerprint: dict[str, RootedSprNeighborRow] = {}
-    for candidate in iter_rooted_spr_move_candidates(resolved_tree):
+    (
+        move_candidates,
+        skipped_pruned_clade_count,
+        skipped_regraft_target_count,
+    ) = _collect_rooted_spr_move_candidates(resolved_tree, budget=normalized_budget)
+    for candidate in move_candidates:
         generated_move_candidate_count += 1
         if _candidate_is_self_regraft(candidate):
             self_regraft_candidate_count += 1
@@ -295,6 +340,12 @@ def enumerate_rooted_spr_neighbors(
         internal_node_count=resolved_tree.internal_node_count,
         rooted=resolved_tree.rooted,
         strictly_bifurcating=True,
+        max_pruned_clade_count=normalized_budget.max_pruned_clade_count,
+        max_regraft_target_count_per_pruned_clade=(
+            normalized_budget.max_regraft_target_count_per_pruned_clade
+        ),
+        skipped_pruned_clade_count=skipped_pruned_clade_count,
+        skipped_regraft_target_count=skipped_regraft_target_count,
         generated_move_candidate_count=generated_move_candidate_count,
         identity_move_candidate_count=identity_move_candidate_count,
         self_regraft_candidate_count=self_regraft_candidate_count,
@@ -424,6 +475,12 @@ def write_rooted_spr_run_json(
         "internal_node_count": report.internal_node_count,
         "rooted": report.rooted,
         "strictly_bifurcating": report.strictly_bifurcating,
+        "max_pruned_clade_count": report.max_pruned_clade_count,
+        "max_regraft_target_count_per_pruned_clade": (
+            report.max_regraft_target_count_per_pruned_clade
+        ),
+        "skipped_pruned_clade_count": report.skipped_pruned_clade_count,
+        "skipped_regraft_target_count": report.skipped_regraft_target_count,
         "generated_move_candidate_count": report.generated_move_candidate_count,
         "identity_move_candidate_count": report.identity_move_candidate_count,
         "self_regraft_candidate_count": report.self_regraft_candidate_count,
