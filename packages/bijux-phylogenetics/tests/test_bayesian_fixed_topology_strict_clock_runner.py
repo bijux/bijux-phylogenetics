@@ -133,6 +133,46 @@ def test_fixed_topology_strict_clock_runner_clock_rate_posterior_changes_under_c
     )
 
 
+def test_fixed_topology_strict_clock_runner_seeds_rate_from_root_calibration_center() -> (
+    None
+):
+    model_definition = build_fixed_topology_strict_clock_model_definition(
+        time_tree_prior=build_crown_conditioned_yule_tree_prior(speciation_rate=0.4),
+        global_clock_rate_prior=build_exponential_clock_model_scalar_prior(rate=1.5),
+        calibration_priors=load_calibration_prior_definitions(
+            fixture("trees", "strict_clock_time_tree_4_taxa.nwk"),
+            fixture("metadata", "strict_clock_calibrations_root_deep_4_taxa.tsv"),
+        ),
+    )
+    proposal_schedule = build_fixed_topology_strict_clock_proposal_schedule(
+        model_definition=model_definition,
+        global_clock_rate_move_weight=1.0,
+        global_clock_rate_log_scale_standard_deviation=0.12,
+    )
+
+    report = run_fixed_topology_strict_clock_metropolis_hastings(
+        substitution_tree=_build_strict_clock_substitution_tree_fixture(clock_rate=0.5),
+        model_definition=model_definition,
+        proposal_schedule=proposal_schedule,
+        iteration_count=4,
+        sample_every=1,
+        seed=3,
+    )
+
+    assert math.isclose(
+        report.posterior_rows[0].global_clock_rate,
+        0.25,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        report.posterior_rows[0].root_age,
+        6.0,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
 def test_fixed_topology_strict_clock_runner_rejects_unrooted_substitution_tree() -> None:
     model_definition = build_fixed_topology_strict_clock_model_definition(
         time_tree_prior=build_crown_conditioned_yule_tree_prior(speciation_rate=0.4),
