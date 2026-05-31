@@ -43,6 +43,8 @@ from .contracts import (
     TreeDistancePair,
     TreeSetCladeSupportReport,
     TreeSetCladeSupportRow,
+    TreeSetMaximumCladeCredibilityCandidateRow,
+    TreeSetMaximumCladeCredibilityReport,
     TreeSetProcessingSummary,
     TreeSetQuartetSupportReport,
     TreeSetQuartetSupportRow,
@@ -61,6 +63,11 @@ from .extended_consensus import (
     write_majority_rule_extended_consensus_rejected_conflict_table,
 )
 from .inventory import load_tree_set
+from .maximum_clade_credibility import (
+    compute_maximum_clade_credibility_tree,
+    write_maximum_clade_credibility_artifacts,
+    write_maximum_clade_credibility_score_table,
+)
 from .quartet_concordance import (
     compute_gene_tree_quartet_concordance_factors,
     write_gene_tree_quartet_concordance_table,
@@ -100,6 +107,8 @@ __all__ = [
     "TreeDistancePair",
     "TreeSetCladeSupportReport",
     "TreeSetCladeSupportRow",
+    "TreeSetMaximumCladeCredibilityCandidateRow",
+    "TreeSetMaximumCladeCredibilityReport",
     "QuartetPuzzlingAssemblyRow",
     "QuartetPuzzlingReport",
     "QuartetTopologyScoreRow",
@@ -122,6 +131,7 @@ __all__ = [
     "compute_consensus_tree",
     "compute_gene_tree_quartet_concordance_factors",
     "compute_majority_rule_extended_consensus",
+    "compute_maximum_clade_credibility_tree",
     "compute_consensus_tree_with_threshold",
     "compute_reference_tree_clade_support",
     "compute_reference_tree_quartet_support",
@@ -140,6 +150,8 @@ __all__ = [
     "write_majority_rule_extended_consensus_artifacts",
     "write_majority_rule_extended_consensus_inclusion_table",
     "write_majority_rule_extended_consensus_rejected_conflict_table",
+    "write_maximum_clade_credibility_artifacts",
+    "write_maximum_clade_credibility_score_table",
     "write_quartet_puzzling_artifacts",
     "write_reference_tree_clade_support_table",
     "write_reference_tree_quartet_support_table",
