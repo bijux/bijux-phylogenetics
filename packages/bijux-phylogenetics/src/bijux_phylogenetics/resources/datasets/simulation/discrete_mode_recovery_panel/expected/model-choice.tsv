@@ -5,7 +5,7 @@ er-three-state-rate-recovery	equal-rates		bijux	equal-rates	all-rates-different	
 er-three-state-rate-recovery	equal-rates		geiger	equal-rates	all-rates-different	6	-10.0241320873922	32.0482641747845	36.9894406453727	false	false
 er-three-state-rate-recovery	equal-rates		geiger	equal-rates	equal-rates	1	-11.3554700571941	24.7109401143882	24.8927582962064	false	true
 er-three-state-rate-recovery	equal-rates		geiger	equal-rates	symmetric	3	-11.0295258930593	28.0590517861186	29.2590517861186	false	false
-sym-three-state-rate-recovery	symmetric		bijux	symmetric	symmetric	3	-16.079715377726	38.159430755452	39.359430755452	false	true
+sym-three-state-rate-recovery	symmetric		bijux	symmetric	symmetric	3	-16.0797153777259	38.1594307554519	39.3594307554519	false	true
 sym-three-state-rate-recovery	symmetric		bijux	symmetric	equal-rates	1	-20.4291258429543	42.8582516859085	43.0400698677267	false	false
 sym-three-state-rate-recovery	symmetric		bijux	symmetric	all-rates-different	6	-15.3411970945203	42.6823941890407	47.6235706596289	false	false
 sym-three-state-rate-recovery	symmetric		geiger	symmetric	all-rates-different	6	-15.3411646945736	42.6823293891473	47.6235058597355	false	false
@@ -19,7 +19,7 @@ ard-three-state-weak-identification-review	all-rates-different		geiger		equal-ra
 ard-three-state-weak-identification-review	all-rates-different		geiger		symmetric	3	-12.3421358927888	30.6842717855776	31.8842717855776	false	false
 ard-five-state-overparameterized-review	all-rates-different		bijux		equal-rates	1	-15.0379876282483	32.0759752564965	32.4759752564965	false	true
 ard-five-state-overparameterized-review	all-rates-different		bijux		symmetric	6	-12.1510430399968	36.3020860799936	53.1020860799936	false	false
-ard-five-state-overparameterized-review	all-rates-different		bijux		all-rates-different	12	-9.79640918560989	43.5928183712198	inf	false	false
+ard-five-state-overparameterized-review	all-rates-different		bijux		all-rates-different	12	-9.79640918560569	43.5928183712114	inf	false	false
 ard-five-state-overparameterized-review	all-rates-different		geiger		all-rates-different	12	-9.78008108369976	43.5601621673995	-268.4398378326	true	true
 ard-five-state-overparameterized-review	all-rates-different		geiger		equal-rates	1	-15.037987568042	32.075975136084	32.475975136084	false	false
 ard-five-state-overparameterized-review	all-rates-different		geiger		symmetric	6	-12.1508002301495	36.3016004602991	53.1016004602991	false	false
