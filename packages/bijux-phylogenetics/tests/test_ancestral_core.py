@@ -424,6 +424,56 @@ def test_discrete_reconstruction_supports_likelihood_models() -> None:
     assert isinstance(report.unstable_nodes, list)
 
 
+def test_discrete_reconstruction_matches_governed_ard_probability_fixture() -> None:
+    report = reconstruct_discrete_ancestral_states(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_geography_biased.tsv"),
+        trait="region",
+        taxon_column="taxon",
+        model="all-rates-different",
+    )
+    internal_estimates = {
+        estimate.node: estimate for estimate in report.estimates if not estimate.is_tip
+    }
+
+    expected_probabilities = {
+        "A|B|C|D|E|F": {
+            "island": 0.532202345485066,
+            "north": 0.0563498359339132,
+            "south": 0.41144781858102,
+        },
+        "A|B|C|D": {
+            "island": 0.134323458950047,
+            "north": 0.806889166520943,
+            "south": 0.05878737452901,
+        },
+        "A|B": {
+            "island": 0.0640940564112071,
+            "north": 0.914130423465446,
+            "south": 0.021775520123347,
+        },
+        "C|D": {
+            "island": 0.0640940564112071,
+            "north": 0.914130423465446,
+            "south": 0.021775520123347,
+        },
+        "E|F": {
+            "island": 0.389284284222312,
+            "north": 0.00013599404628342,
+            "south": 0.610579721731405,
+        },
+    }
+    for node, expected_node_probabilities in expected_probabilities.items():
+        observed_probabilities = internal_estimates[node].state_probabilities
+        for state, expected_probability in expected_node_probabilities.items():
+            assert math.isclose(
+                observed_probabilities[state],
+                expected_probability,
+                rel_tol=0.0,
+                abs_tol=1e-15,
+            )
+
+
 def test_discrete_reconstruction_supports_ordered_state_models() -> None:
     report = reconstruct_discrete_ancestral_states(
         fixture("example_tree.nwk"),
