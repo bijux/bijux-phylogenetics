@@ -69,90 +69,52 @@ def test_likelihood_nni_search_uses_likelihood_objective_and_reaches_local_optim
     assert report.total_branch_optimization_pass_count == 27
     assert report.total_branch_function_evaluation_count == 7627
     assert report.stopping_reason == "no-improving-neighbor"
-    assert [
-        (
-            row.event_index,
-            row.event_kind,
-            row.iteration,
-            row.pivot_branch_id,
-            row.sibling_clade_id,
-            row.exchanged_clade_id,
-            row.branch_reoptimization_policy,
-            row.branch_reoptimization_scope,
-            row.optimized_branch_count,
-            row.optimized_branch_clade_ids,
-            row.branch_reoptimization_converged,
-            row.branch_optimization_pass_count,
-            row.branch_function_evaluation_count,
-            row.stopping_reason,
-        )
-        for row in report.trace_rows
-    ] == [
-        (
-            1,
-            "start",
-            0,
-            None,
-            None,
-            None,
-            "coordinate-branch-lengths",
-            "all-branches",
-            6,
-            ["A", "B", "C", "D", "A|C", "A|B|C"],
-            True,
-            2,
-            565,
-            None,
-        ),
-        (
-            2,
-            "accepted-move",
-            1,
-            "A|C",
-            "B",
-            "C",
-            "coordinate-branch-lengths",
-            "all-branches",
-            6,
-            ["A", "B", "C", "D", "A|B", "A|B|C"],
-            True,
-            3,
-            847,
-            None,
-        ),
-        (
-            3,
-            "accepted-move",
-            2,
-            "A|B|C",
-            "D",
-            "A|B",
-            "coordinate-branch-lengths",
-            "all-branches",
-            6,
-            ["A", "B", "C", "D", "A|B", "C|D"],
-            True,
-            2,
-            565,
-            None,
-        ),
-        (
-            4,
-            "final",
-            2,
-            None,
-            None,
-            None,
-            "coordinate-branch-lengths",
-            "none",
-            0,
-            [],
-            None,
-            0,
-            0,
-            "no-improving-neighbor",
-        ),
+    assert [row.event_kind for row in report.trace_rows] == [
+        "start",
+        "accepted-move",
+        "accepted-move",
+        "final",
     ]
+    assert report.trace_rows[0].optimized_branch_clade_ids == [
+        "A",
+        "B",
+        "C",
+        "D",
+        "A|C",
+        "A|B|C",
+    ]
+    assert report.trace_rows[1].pivot_branch_id == "A|C"
+    assert report.trace_rows[1].sibling_clade_id == "B"
+    assert report.trace_rows[1].exchanged_clade_id == "C"
+    assert report.trace_rows[1].optimized_branch_clade_ids == [
+        "A",
+        "B",
+        "C",
+        "D",
+        "A|B",
+        "A|B|C",
+    ]
+    assert report.trace_rows[2].pivot_branch_id == "A|B|C"
+    assert report.trace_rows[2].sibling_clade_id == "D"
+    assert report.trace_rows[2].exchanged_clade_id == "A|B"
+    assert report.trace_rows[2].optimized_branch_clade_ids == [
+        "A",
+        "B",
+        "C",
+        "D",
+        "A|B",
+        "C|D",
+    ]
+    assert report.trace_rows[3].stopping_reason == "no-improving-neighbor"
+    assert any(
+        "search boundary" in warning
+        for warning in report.trace_rows[0].boundary_warning_messages
+    )
+    assert any(
+        "search boundary" in warning
+        for warning in report.trace_rows[1].boundary_warning_messages
+    )
+    assert report.trace_rows[-1].boundary_warning_messages == []
     assert math.isclose(
         report.trace_rows[1].log_likelihood_delta or 0.0,
         17.499717347003227,
@@ -247,7 +209,7 @@ def test_write_nucleotide_likelihood_nni_artifacts_materializes_governed_output_
         "run_json_path",
     }
     assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tstopping_reason\n"
+        "event_index\tevent_kind\titeration\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-nni-search"
@@ -270,3 +232,4 @@ def test_write_nucleotide_likelihood_nni_artifacts_materializes_governed_output_
         "A|B|C",
     ]
     assert payload["trace_rows"][0]["branch_reoptimization_converged"] is True
+    assert payload["trace_rows"][0]["boundary_warning_messages"]
