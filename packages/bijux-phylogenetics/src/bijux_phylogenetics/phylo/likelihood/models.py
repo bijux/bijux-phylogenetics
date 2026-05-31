@@ -976,6 +976,52 @@ class NucleotideLikelihoodTreeInferenceReport:
 
 
 @dataclass(slots=True)
+class LikelihoodWrapperCorrespondenceObservation:
+    """One governed native-versus-wrapper ML correspondence case."""
+
+    case_id: str
+    wrapper_engine: str
+    native_surface: str
+    wrapper_surface: str
+    comparison_policy: str
+    status: str
+    supported: bool
+    blocking: bool
+    tolerance: float | None
+    rationale: str
+    input_fixtures: list[str]
+    expected_output: dict[str, object]
+    observed_output: dict[str, object]
+
+
+@dataclass(slots=True)
+class LikelihoodWrapperCorrespondenceSummaryRow:
+    """One status-level summary row across governed ML correspondence cases."""
+
+    status: str
+    case_count: int
+    blocking_case_count: int
+    case_ids: list[str]
+
+
+@dataclass(slots=True)
+class LikelihoodWrapperCorrespondenceReport:
+    """One governed correspondence report across cached ML wrapper references."""
+
+    observations: list[LikelihoodWrapperCorrespondenceObservation]
+    summary_rows: list[LikelihoodWrapperCorrespondenceSummaryRow]
+    case_count: int
+    supported_case_count: int
+    exact_match_case_count: int
+    tolerance_match_case_count: int
+    expected_model_assumption_difference_case_count: int
+    unsupported_case_count: int
+    native_bug_case_count: int
+    blocking_case_count: int
+    all_supported_cases_clear: bool
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodBootstrapReplicateRow:
     """One site-resampled native ML tree-inference replicate."""
 
