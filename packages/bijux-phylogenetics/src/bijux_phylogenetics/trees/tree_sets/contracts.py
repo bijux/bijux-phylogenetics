@@ -178,6 +178,33 @@ class PosteriorNodeAgeSummaryReport:
 
 
 @dataclass(frozen=True, slots=True)
+class PosteriorAgreementSubtreeCandidateRow:
+    candidate_index: int
+    retained_taxon_count: int
+    retained_taxa: list[str]
+    removed_taxa: list[str]
+    rooted_topology_count: int
+    dominant_rooted_topology_frequency: float
+    stable_topology_reached: bool
+
+
+@dataclass(slots=True)
+class PosteriorAgreementSubtreeReport:
+    path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    search_strategy: str
+    possible_retained_subset_count: int
+    evaluated_candidate_count: int
+    retained_taxa: list[str]
+    agreement_removed_taxa: list[str]
+    stable_rooted_topology_id: str
+    agreement_subtree_newick: str
+    candidate_rows: list[PosteriorAgreementSubtreeCandidateRow]
+
+
+@dataclass(frozen=True, slots=True)
 class CladeCompatibilityNodeRow:
     clade: str
     tree_count: int
