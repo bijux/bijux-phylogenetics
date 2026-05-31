@@ -240,7 +240,7 @@ def test_write_nucleotide_likelihood_nni_artifacts_materializes_governed_output_
         "run_json_path",
     }
     assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tbranch_reoptimization_policy\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tstopping_reason\n"
+        "event_index\tevent_kind\titeration\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tstopping_reason\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-nni-search"
@@ -252,3 +252,13 @@ def test_write_nucleotide_likelihood_nni_artifacts_materializes_governed_output_
     assert payload["total_branch_optimization_pass_count"] == 27
     assert payload["total_branch_function_evaluation_count"] == 7627
     assert payload["stopping_reason"] == "no-improving-neighbor"
+    assert payload["trace_rows"][0]["branch_reoptimization_scope"] == "all-branches"
+    assert payload["trace_rows"][0]["optimized_branch_count"] == 6
+    assert payload["trace_rows"][0]["optimized_branch_clade_ids"] == [
+        "A",
+        "B",
+        "C",
+        "D",
+        "A|C",
+        "A|B|C",
+    ]
