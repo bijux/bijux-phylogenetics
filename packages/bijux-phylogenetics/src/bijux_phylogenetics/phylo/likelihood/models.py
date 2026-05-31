@@ -467,6 +467,29 @@ class NucleotideLikelihoodNniTraceRow:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodNniCandidateRow:
+    """One evaluated rooted NNI neighbor inside one best-improvement iteration."""
+
+    iteration: int
+    candidate_order: int
+    pivot_branch_id: str
+    sibling_clade_id: str
+    exchanged_clade_id: str
+    candidate_tree_newick: str
+    log_likelihood: float
+    log_likelihood_delta: float
+    improving_move: bool
+    selected_best_move: bool
+    branch_reoptimization_scope: str
+    optimized_branch_count: int
+    optimized_branch_clade_ids: list[str]
+    branch_reoptimization_converged: bool
+    branch_optimization_pass_count: int
+    branch_function_evaluation_count: int
+    boundary_warning_messages: list[str]
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodNniSearchReport:
     """Complete rooted nucleotide likelihood NNI hill-climb report."""
 
@@ -492,6 +515,7 @@ class NucleotideLikelihoodNniSearchReport:
     total_branch_function_evaluation_count: int
     stopping_reason: str
     trace_rows: list[NucleotideLikelihoodNniTraceRow]
+    candidate_rows: list[NucleotideLikelihoodNniCandidateRow]
 
 
 @dataclass(slots=True)
