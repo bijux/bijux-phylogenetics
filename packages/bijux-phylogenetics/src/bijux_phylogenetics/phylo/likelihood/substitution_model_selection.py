@@ -369,8 +369,9 @@ def _parse_candidate_model_name(candidate_model_name: str) -> _CandidateSpecific
     normalized_name = candidate_model_name.strip().upper()
     if not normalized_name:
         raise ValueError("candidate substitution model name must not be empty")
-    for rate_heterogeneity_model, suffix in reversed(_RATE_HETEROGENEITY_ORDER):
+    for _rate_heterogeneity_model, suffix in reversed(_RATE_HETEROGENEITY_ORDER):
         if suffix and normalized_name.endswith(suffix):
+            rate_heterogeneity_model = _rate_heterogeneity_model
             base_model_name = normalized_name[: -len(suffix)]
             break
     else:

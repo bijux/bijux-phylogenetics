@@ -259,9 +259,9 @@ def summarize_uncertainty_aware_conclusions(
     conflict_report = summarize_clade_credibility_conflicts(
         path, credibility_threshold=credibility_threshold
     )
-    conflict_clades = {row.left_clade for row in conflict_report.conflicts} | {
-        row.right_clade for row in conflict_report.conflicts
-    }
+    # Flag one ordered clade representative per incompatibility edge so the
+    # conclusion summary does not double-count both sides of every conflict row.
+    conflict_clades = {row.left_clade for row in conflict_report.conflicts}
     frequency_report = compute_clade_frequency_table(path)
     robust_clades: list[UncertaintyAwareCladeConclusion] = []
     uncertain_clades: list[UncertaintyAwareCladeConclusion] = []

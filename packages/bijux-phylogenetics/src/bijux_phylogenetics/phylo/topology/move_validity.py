@@ -115,7 +115,12 @@ def summarize_rooted_spr_move_validity(
     if rejected_report is not None:
         return rejected_report
 
-    available_candidates, _skipped_pruned, _skipped_regraft = (
+    (
+        available_candidates,
+        _skipped_pruned,
+        _skipped_regraft,
+        _skipped_budget_move_candidates,
+    ) = (
         _collect_rooted_spr_move_candidates(resolved_tree, budget=None)
     )
     if not available_candidates:
