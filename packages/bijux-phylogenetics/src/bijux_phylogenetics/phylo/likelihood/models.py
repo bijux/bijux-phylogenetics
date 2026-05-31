@@ -695,6 +695,78 @@ class NucleotideLikelihoodStochasticTopologyPerturbationSearchReport:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodRatchetCycle:
+    """One temporary-reweighting cycle inside a native likelihood ratchet search."""
+
+    cycle_index: int
+    start_log_likelihood: float
+    start_tree_newick: str
+    reweighted_site_positions: list[int]
+    temporary_site_weights: dict[int, int]
+    perturbation_factor: int
+    perturbed_alignment_length: int
+    perturbed_pattern_count: int
+    perturbed_search_algorithm: str
+    perturbed_score: float
+    perturbed_tree_newick: str
+    perturbed_accepted_move_count: int
+    perturbed_evaluated_neighbor_count: int
+    perturbed_stopping_reason: str
+    restored_search_algorithm: str
+    restored_score: float
+    restored_tree_newick: str
+    restored_accepted_move_count: int
+    restored_evaluated_neighbor_count: int
+    restored_stopping_reason: str
+    best_score_after_cycle: float
+    best_tree_after_cycle: str
+    best_tree_improved: bool
+
+
+@dataclass(slots=True)
+class NucleotideLikelihoodRatchetBestTreeHistory:
+    """One retained best-tree checkpoint inside a native likelihood ratchet search."""
+
+    history_index: int
+    cycle_index: int
+    best_log_likelihood: float
+    best_tree_newick: str
+    best_topology_fingerprint: str
+
+
+@dataclass(slots=True)
+class NucleotideLikelihoodRatchetReport:
+    """Complete native likelihood ratchet search summary."""
+
+    algorithm: str
+    model_name: str
+    local_search_method: str
+    tree_path: str | None
+    alignment_path: str | None
+    taxon_count: int
+    site_count: int
+    pattern_count: int
+    cycle_count: int
+    perturbation_seed: int
+    perturbed_site_count: int
+    perturbation_factor: int
+    input_tree_newick: str
+    start_tree_newick: str
+    start_log_likelihood: float
+    final_tree_newick: str
+    final_log_likelihood: float
+    best_tree_newick: str
+    best_log_likelihood: float
+    branch_reoptimization_policy: str
+    evaluation_budget: int | None
+    substitution_parameter_policy: str
+    substitution_parameter_values: dict[str, float]
+    substitution_parameter_warnings: list[str]
+    cycle_rows: list[NucleotideLikelihoodRatchetCycle]
+    best_tree_history_rows: list[NucleotideLikelihoodRatchetBestTreeHistory]
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodMultiStartRunSummary:
     """One independently searched start tree inside a multi-start likelihood workflow."""
 
