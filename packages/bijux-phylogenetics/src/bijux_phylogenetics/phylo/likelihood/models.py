@@ -643,6 +643,58 @@ class NucleotideLikelihoodTbrSearchReport:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodTopologyPerturbationStep:
+    """One random legal topology perturbation applied before native local search."""
+
+    step_index: int
+    move_family: str
+    tree_before_newick: str
+    tree_after_newick: str
+    topology_fingerprint_before: str
+    topology_fingerprint_after: str
+    pivot_branch_id: str | None
+    sibling_clade_id: str | None
+    exchanged_clade_id: str | None
+    pruned_clade_id: str | None
+    regraft_target_branch_id: str | None
+
+
+@dataclass(slots=True)
+class NucleotideLikelihoodStochasticTopologyPerturbationSearchReport:
+    """Complete stochastic topology-perturbation workflow over one local search run."""
+
+    algorithm: str
+    model_name: str
+    perturbation_move_family: str
+    local_search_method: str
+    branch_reoptimization_policy: str
+    tree_path: str | None
+    alignment_path: str | None
+    taxon_count: int
+    site_count: int
+    pattern_count: int
+    perturbation_seed: int
+    perturbation_move_count_requested: int
+    perturbation_move_count_applied: int
+    input_tree_newick: str
+    perturbed_tree_newick: str
+    perturbed_topology_fingerprint: str
+    local_search_algorithm: str
+    local_search_start_tree_newick: str
+    local_search_start_log_likelihood: float
+    final_tree_newick: str
+    final_log_likelihood: float
+    final_topology_fingerprint: str
+    local_search_accepted_move_count: int
+    local_search_evaluated_neighbor_count: int
+    local_search_stopping_reason: str
+    substitution_parameter_policy: str
+    substitution_parameter_values: dict[str, float]
+    substitution_parameter_warnings: list[str]
+    perturbation_steps: list[NucleotideLikelihoodTopologyPerturbationStep]
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodMultiStartRunSummary:
     """One independently searched start tree inside a multi-start likelihood workflow."""
 
