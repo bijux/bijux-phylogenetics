@@ -599,6 +599,16 @@ from .trace_autocorrelation import (
     summarize_independent_metropolis_hastings_trace_autocorrelation,
     summarize_metropolis_hastings_trace_autocorrelation,
 )
+from .trace_effective_sample_size import (
+    IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport,
+    IndependentMetropolisHastingsTraceEffectiveSampleSizeReport,
+    MetropolisHastingsTraceEffectiveSampleSizeReport,
+    TraceEffectiveSampleSizeRow,
+    compute_trace_effective_sample_size,
+    compute_trace_integrated_autocorrelation_time,
+    summarize_independent_metropolis_hastings_trace_effective_sample_size,
+    summarize_metropolis_hastings_trace_effective_sample_size,
+)
 from .time_tree_priors import (
     BIRTH_DEATH_TREE_PRIOR_FAMILIES,
     COALESCENT_TREE_PRIOR_FAMILIES,
@@ -1086,6 +1096,8 @@ __all__ = [
     "summarize_posterior_model_averaged_estimates",
     "summarize_posterior_predictive_p_values",
     "summarize_posterior_node_ages",
+    "summarize_independent_metropolis_hastings_trace_effective_sample_size",
+    "summarize_metropolis_hastings_trace_effective_sample_size",
     "summarize_independent_metropolis_hastings_trace_autocorrelation",
     "summarize_metropolis_hastings_trace_autocorrelation",
     "thin_posterior_tree_set",
@@ -1093,6 +1105,12 @@ __all__ = [
     "TipDatingValidationReport",
     "ValidatedCalibration",
     "ValidatedTipDate",
+    "TraceEffectiveSampleSizeRow",
+    "MetropolisHastingsTraceEffectiveSampleSizeReport",
+    "IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport",
+    "IndependentMetropolisHastingsTraceEffectiveSampleSizeReport",
+    "compute_trace_effective_sample_size",
+    "compute_trace_integrated_autocorrelation_time",
     "TraceAutocorrelationLagRow",
     "TraceAutocorrelationParameterReport",
     "MetropolisHastingsTraceAutocorrelationReport",
