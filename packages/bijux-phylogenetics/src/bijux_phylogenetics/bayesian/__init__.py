@@ -427,6 +427,11 @@ from .posterior_predictive_simulation import (
     simulate_joint_topology_dna_posterior_predictive,
     simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive,
 )
+from .posterior_predictive_p_values import (
+    PosteriorPredictivePValueReport,
+    PosteriorPredictivePValueRow,
+    summarize_posterior_predictive_p_values,
+)
 from .presentation.html_reports import (
     BayesianDiagnosticsReportBuildResult,
     BayesianMlComparisonReportBuildResult,
@@ -728,6 +733,8 @@ __all__ = [
     "PosteriorPredictiveDiscreteTraitReplicate",
     "PosteriorPredictiveDiscreteTraitSimulationReport",
     "PosteriorPredictiveObservedStatisticRow",
+    "PosteriorPredictivePValueReport",
+    "PosteriorPredictivePValueRow",
     "PosteriorPredictiveReplicateStatisticRow",
     "PosteriorPredictiveSimulationDefinition",
     "PosteriorPredictiveStatisticSummaryRow",
@@ -949,6 +956,7 @@ __all__ = [
     "summarize_discrete_trait_mk_posterior_ancestral_states",
     "summarize_nucleotide_posterior_ancestral_sequences",
     "summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states",
+    "summarize_posterior_predictive_p_values",
     "summarize_posterior_node_ages",
     "thin_posterior_tree_set",
     "TipDatingValidationIssue",
