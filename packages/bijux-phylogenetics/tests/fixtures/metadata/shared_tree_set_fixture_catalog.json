@@ -81,6 +81,16 @@
       "notes": "Three rooted five-taxon posterior-style trees where removing one unstable taxon yields one exact shared rooted topology across the full tree set."
     },
     {
+      "fixture_id": "posterior_clade_correlation_tree_set",
+      "relative_path": "trees/posterior_clade_correlation_tree_set.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 4,
+      "shared_taxa": ["A", "B", "C", "D"],
+      "feature_tags": ["multiple-trees", "shared-taxon-set", "posterior-like", "clade-correlation", "mutually-exclusive-clades"],
+      "notes": "Four rooted four-taxon posterior-style trees where one clade pair always co-occurs and one conflicting clade pair never co-occurs, so posterior clade correlation is positive for the first pair and negative for the second."
+    },
+    {
       "fixture_id": "prop_clades_duplicate_conflict_tree_set",
       "relative_path": "trees/example_tree_set_left.nwk",
       "source_format": "newick",
