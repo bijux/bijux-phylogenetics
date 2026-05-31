@@ -10,6 +10,10 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 from .ctmc import ValidatedCtmcRateMatrix, validate_ctmc_rate_matrix
 
+_EIGENVALUE_REAL_PART_TOLERANCE = 1e-12
+_TRANSITION_NEGATIVE_TOLERANCE = 1e-12
+_TRANSITION_ROW_SUM_TOLERANCE = 1e-12
+
 
 @dataclass(slots=True)
 class FiniteStatePruningPass:
@@ -120,6 +124,8 @@ def _validated_rate_matrix(
 
 
 def _normalize_branch_length(branch_length: float) -> float:
+    if not math.isfinite(branch_length):
+        raise ValueError("branch length must be finite")
     if branch_length <= 0.0:
         return 0.0
     return float(branch_length)
@@ -161,13 +167,67 @@ def _compute_transition_probability_matrix(
     eigenvalues = eigendecomposition.eigenvalues
     eigenvectors = eigendecomposition.eigenvectors
     inverse_vectors = eigendecomposition.inverse_vectors
-    diagonal = numpy.diag(numpy.exp(eigenvalues * branch_length))
+    validated_eigenvalues = _validated_transition_eigenvalues(eigenvalues)
+    diagonal = numpy.diag(numpy.exp(validated_eigenvalues * branch_length))
     transition = eigenvectors @ diagonal @ inverse_vectors
-    transition = numpy.real_if_close(transition, tol=1000).astype(float)
-    transition[transition < 0.0] = 0.0
-    row_sums = transition.sum(axis=1, keepdims=True)
-    row_sums[row_sums == 0.0] = 1.0
-    return transition / row_sums
+    return _stabilize_transition_probability_matrix(
+        transition,
+        state_count=validated_rate_matrix.state_count,
+    )
+
+
+def _validated_transition_eigenvalues(eigenvalues: numpy.ndarray) -> numpy.ndarray:
+    candidate = numpy.asarray(eigenvalues, dtype=complex).copy()
+    for index, eigenvalue in enumerate(candidate):
+        real_part = float(eigenvalue.real)
+        if real_part > _EIGENVALUE_REAL_PART_TOLERANCE:
+            raise ValueError(
+                "validated CTMC rate matrix produced an eigenvalue with positive real part"
+            )
+        if abs(real_part) <= _EIGENVALUE_REAL_PART_TOLERANCE:
+            candidate[index] = complex(0.0, eigenvalue.imag)
+    return candidate
+
+
+def _stabilize_transition_probability_matrix(
+    transition: numpy.ndarray,
+    *,
+    state_count: int,
+) -> numpy.ndarray:
+    candidate = numpy.real_if_close(transition, tol=1000)
+    if numpy.iscomplexobj(candidate):
+        raise ValueError(
+            "transition matrix exponentiation produced non-negligible complex values"
+        )
+    stabilized = numpy.asarray(candidate, dtype=float)
+    if stabilized.shape != (state_count, state_count):
+        raise ValueError("transition matrix exponentiation returned an invalid shape")
+    if not numpy.all(numpy.isfinite(stabilized)):
+        raise ValueError(
+            "transition matrix exponentiation produced non-finite probabilities"
+        )
+    if numpy.any(stabilized < -_TRANSITION_NEGATIVE_TOLERANCE):
+        raise ValueError(
+            "transition matrix exponentiation produced materially negative probabilities"
+        )
+    stabilized[stabilized < 0.0] = 0.0
+    row_sums = stabilized.sum(axis=1, keepdims=True)
+    if numpy.any(row_sums <= 0.0) or not numpy.all(numpy.isfinite(row_sums)):
+        raise ValueError(
+            "transition matrix exponentiation produced rows that cannot be normalized"
+        )
+    stabilized = stabilized / row_sums
+    final_row_sums = stabilized.sum(axis=1)
+    if not numpy.allclose(
+        final_row_sums,
+        numpy.ones(state_count, dtype=float),
+        rtol=0.0,
+        atol=_TRANSITION_ROW_SUM_TOLERANCE,
+    ):
+        raise ValueError(
+            "transition matrix exponentiation produced unstable row sums"
+        )
+    return stabilized
 
 
 def postorder_conditional_likelihoods(
