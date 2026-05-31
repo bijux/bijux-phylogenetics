@@ -4,7 +4,9 @@ import math
 from pathlib import Path
 
 import numpy
+import pytest
 
+from bijux_phylogenetics.phylo.likelihood import empirical as empirical_impl
 from bijux_phylogenetics.phylo.likelihood import (
     evaluate_empirical_protein_tree_likelihood_from_alignment,
     evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment,
@@ -207,6 +209,59 @@ def test_empirical_protein_large_gamma_alpha_with_zero_invariant_approaches_equa
     )
 
 
+def test_empirical_protein_gamma_rejects_invalid_alpha_before_pattern_scoring(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        empirical_impl,
+        "_empirical_protein_discrete_gamma_category_log_likelihoods",
+        _unexpected_scoring_call,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="discrete-gamma alpha must be a finite positive value",
+    ):
+        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+            fixture(
+                "alignments",
+                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+            ),
+            rate_matrix=_compact_polar_rate_matrix(),
+            root_prior=_biased_root_prior(),
+            matrix_label="compact-polar",
+            alpha=0.0,
+            category_count=4,
+        )
+
+
+def test_empirical_protein_invariant_mixture_rejects_invalid_proportion_before_pattern_scoring(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        empirical_impl,
+        "_empirical_protein_site_log_likelihood",
+        _unexpected_scoring_call,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="empirical protein matrix \\+I invariant proportion must be in the half-open interval \\[0, 1\\)",
+    ):
+        evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+            fixture(
+                "alignments",
+                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+            ),
+            rate_matrix=_compact_polar_rate_matrix(),
+            root_prior=_biased_root_prior(),
+            matrix_label="compact-polar",
+            invariant_proportion=1.0,
+        )
+
+
 def _compact_polar_rate_matrix() -> numpy.ndarray:
     return _build_empirical_rate_matrix(
         boosted_pairs={
@@ -274,3 +329,7 @@ def _protein_state_order() -> tuple[str, ...]:
 
 def _protein_state_index() -> dict[str, int]:
     return {state: index for index, state in enumerate(_protein_state_order())}
+
+
+def _unexpected_scoring_call(*_args: object, **_kwargs: object) -> object:
+    raise AssertionError("boundary validation should fail before scoring")
