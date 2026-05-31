@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 from pathlib import Path
+from statistics import median
 
 import numpy
 
@@ -89,6 +90,40 @@ def validate_nucleotide_topology_search_tree(
         raise ValueError(
             f"{workflow_name} requires a strictly binary tree: {invalid_internal_nodes}"
         )
+
+
+def initialize_generated_nucleotide_topology_search_tree(
+    tree: PhyloTree,
+    *,
+    lower_branch_length_bound: float,
+    upper_branch_length_bound: float,
+) -> PhyloTree:
+    """Seed missing and out-of-bound branch lengths on one generated topology candidate."""
+    working_tree = tree.copy().refresh()
+    existing_branch_lengths = [
+        child.branch_length
+        for _parent, child in working_tree.iter_edges()
+        if child.branch_length is not None
+    ]
+    default_branch_length = (
+        float(median(existing_branch_lengths))
+        if existing_branch_lengths
+        else lower_branch_length_bound
+    )
+    seeded_default_branch_length = min(
+        upper_branch_length_bound,
+        max(lower_branch_length_bound, default_branch_length),
+    )
+    for _parent, child in working_tree.iter_edges():
+        branch_length = child.branch_length
+        if branch_length is None:
+            child.branch_length = seeded_default_branch_length
+            continue
+        child.branch_length = min(
+            upper_branch_length_bound,
+            max(lower_branch_length_bound, float(branch_length)),
+        )
+    return working_tree.refresh()
 
 
 def validate_branch_reoptimization_policy(policy: str) -> str:
