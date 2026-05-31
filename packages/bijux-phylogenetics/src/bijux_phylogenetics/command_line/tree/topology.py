@@ -18,6 +18,7 @@ from bijux_phylogenetics.phylo.topology import (
     enumerate_rooted_tbr_neighbors,
     reroot_tree_by_midpoint,
     root_tree_on_outgroup,
+    RootedSprEnumerationBudget,
     summarize_rooted_nni_move_application,
     unroot_tree,
     write_rooted_nni_artifacts,
@@ -186,6 +187,16 @@ def add_topology_commands(subparsers: Any) -> None:
     )
     topology_rooted_spr_neighbors.add_argument("tree", type=Path)
     topology_rooted_spr_neighbors.add_argument("--out-dir", required=True, type=Path)
+    topology_rooted_spr_neighbors.add_argument(
+        "--max-pruned-clades",
+        type=int,
+        help="Limit rooted SPR enumeration to this many deterministically ordered pruned clades.",
+    )
+    topology_rooted_spr_neighbors.add_argument(
+        "--max-regraft-targets-per-pruned-clade",
+        type=int,
+        help="Limit each retained pruned clade to this many deterministically ordered regraft targets.",
+    )
     topology_rooted_spr_neighbors.add_argument(
         "--json",
         action="store_true",
@@ -420,7 +431,13 @@ def run_topology_command(args: Any) -> int:
         return 0
 
     if args.topology_command == "rooted-spr-neighbors":
-        report = enumerate_rooted_spr_neighbors(args.tree)
+        budget = RootedSprEnumerationBudget(
+            max_pruned_clade_count=args.max_pruned_clades,
+            max_regraft_target_count_per_pruned_clade=(
+                args.max_regraft_targets_per_pruned_clade
+            ),
+        )
+        report = enumerate_rooted_spr_neighbors(args.tree, budget=budget)
         outputs = _finalize_outputs(
             args,
             command="topology",
@@ -436,6 +453,12 @@ def run_topology_command(args: Any) -> int:
                     "algorithm": report.algorithm,
                     "tip_count": report.tip_count,
                     "internal_node_count": report.internal_node_count,
+                    "max_pruned_clade_count": report.max_pruned_clade_count,
+                    "max_regraft_target_count_per_pruned_clade": (
+                        report.max_regraft_target_count_per_pruned_clade
+                    ),
+                    "skipped_pruned_clade_count": report.skipped_pruned_clade_count,
+                    "skipped_regraft_target_count": report.skipped_regraft_target_count,
                     "generated_move_candidate_count": (
                         report.generated_move_candidate_count
                     ),
