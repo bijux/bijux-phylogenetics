@@ -9,17 +9,16 @@ import numpy
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
-from bijux_phylogenetics.phylo.likelihood.dna import (
-    evaluate_fixed_topology_dna_site_log_likelihood,
-    normalize_unambiguous_dna_records,
+from bijux_phylogenetics.phylo.likelihood.dna import normalize_unambiguous_dna_records
+from bijux_phylogenetics.phylo.likelihood.fixed_topology_branch_lengths import (
+    BranchReoptimizationResult,
+    evaluate_selected_nucleotide_log_likelihood_from_patterns,
+    optimize_selected_nucleotide_branch_lengths,
 )
 from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
     SelectedNucleotideLikelihoodSpecification,
     resolve_selected_nucleotide_likelihood_specification,
     validate_selected_nucleotide_likelihood_model,
-)
-from bijux_phylogenetics.phylo.likelihood.parameter_search import (
-    run_bounded_coordinate_likelihood_search,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
@@ -28,12 +27,8 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.likelihood.substitution_parameters import (
     optimize_nucleotide_substitution_parameters,
 )
-from bijux_phylogenetics.phylo.likelihood.validation import (
-    validate_explicit_branch_lengths,
-    validate_tree_taxa_against_patterns,
-)
+from bijux_phylogenetics.phylo.likelihood.validation import validate_explicit_branch_lengths
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError
 
 _SUPPORTED_BRANCH_REOPTIMIZATION_POLICIES = frozenset({"coordinate-branch-lengths"})
 
@@ -47,17 +42,6 @@ class ResolvedNucleotideTopologySearchSurface:
     substitution_parameter_values: dict[str, float]
     substitution_parameter_warnings: list[str]
     specification: SelectedNucleotideLikelihoodSpecification
-
-
-@dataclass(frozen=True, slots=True)
-class BranchReoptimizationResult:
-    """Optimized branch-length result for one fixed topology under one likelihood surface."""
-
-    optimized_tree: PhyloTree
-    log_likelihood: float
-    optimization_pass_count: int
-    function_evaluation_count: int
-    converged: bool
 
 
 def resolve_nucleotide_topology_search_tree(
@@ -249,82 +233,6 @@ def normalize_nucleotide_topology_search_records(
     )
 
 
-def optimize_selected_nucleotide_branch_lengths(
-    tree: PhyloTree,
-    compressed_patterns: CompressedAlignmentSitePatterns,
-    *,
-    specification: SelectedNucleotideLikelihoodSpecification,
-    lower_branch_length_bound: float = 0.0,
-    upper_branch_length_bound: float = 5.0,
-    improvement_tolerance: float = 1e-9,
-    max_coordinate_passes: int = 12,
-) -> BranchReoptimizationResult:
-    """Reoptimize one fixed-topology nucleotide tree under one resolved likelihood surface."""
-    if lower_branch_length_bound < 0.0:
-        raise InvalidBranchLengthError(
-            "nucleotide likelihood branch-length lower bound must be nonnegative"
-        )
-    if upper_branch_length_bound <= lower_branch_length_bound:
-        raise InvalidBranchLengthError(
-            "nucleotide likelihood branch-length bounds must be strictly increasing"
-        )
-    if max_coordinate_passes < 1:
-        raise ValueError("max_coordinate_passes must be at least one")
-
-    working_tree = tree.copy().refresh()
-    validate_explicit_branch_lengths(working_tree, model_name=specification.model_name)
-    validate_tree_taxa_against_patterns(
-        working_tree,
-        compressed_patterns,
-        model_name=specification.model_name,
-    )
-    edge_nodes = [child for _parent, child in working_tree.iter_edges()]
-    initial_values: dict[str, float] = {}
-    bounds_by_name: dict[str, tuple[float, float]] = {}
-    for node in edge_nodes:
-        if node.node_id is None:
-            raise ValueError("tree node is missing a stable node_id")
-        branch_length = float(node.branch_length or 0.0)
-        if not (
-            lower_branch_length_bound <= branch_length <= upper_branch_length_bound
-        ):
-            raise InvalidBranchLengthError(
-                "every starting branch length must lie within the declared optimization bounds"
-            )
-        initial_values[node.node_id] = branch_length
-        bounds_by_name[node.node_id] = (
-            lower_branch_length_bound,
-            upper_branch_length_bound,
-        )
-
-    def evaluate_candidate(
-        branch_lengths_by_id: dict[str, float],
-    ) -> tuple[float, float]:
-        assign_branch_lengths(working_tree, branch_lengths_by_id)
-        log_likelihood = evaluate_selected_nucleotide_log_likelihood_from_patterns(
-            working_tree,
-            compressed_patterns,
-            specification=specification,
-        )
-        return log_likelihood, log_likelihood
-
-    search_result = run_bounded_coordinate_likelihood_search(
-        initial_values=initial_values,
-        bounds_by_name=bounds_by_name,
-        evaluate=evaluate_candidate,
-        improvement_tolerance=improvement_tolerance,
-        max_coordinate_passes=max_coordinate_passes,
-    )
-    assign_branch_lengths(working_tree, search_result.parameter_values)
-    return BranchReoptimizationResult(
-        optimized_tree=working_tree.refresh(),
-        log_likelihood=float(search_result.objective_value),
-        optimization_pass_count=search_result.optimization_pass_count,
-        function_evaluation_count=search_result.function_evaluation_count,
-        converged=search_result.converged,
-    )
-
-
 def reoptimize_nucleotide_topology_tree(
     tree: PhyloTree,
     *,
@@ -354,45 +262,6 @@ def reoptimize_nucleotide_topology_tree(
         improvement_tolerance=improvement_tolerance,
         max_coordinate_passes=max_coordinate_passes,
     )
-
-
-def assign_branch_lengths(tree: PhyloTree, branch_lengths_by_id: dict[str, float]) -> None:
-    """Assign one branch-length vector to one refreshed tree by node identity."""
-    for _parent, child in tree.iter_edges():
-        if child.node_id is None:
-            raise ValueError("tree node is missing a stable node_id")
-        child.branch_length = branch_lengths_by_id[child.node_id]
-
-
-def evaluate_selected_nucleotide_log_likelihood_from_patterns(
-    tree: PhyloTree,
-    compressed_patterns: CompressedAlignmentSitePatterns,
-    *,
-    specification: SelectedNucleotideLikelihoodSpecification,
-) -> float:
-    """Evaluate one resolved selected nucleotide likelihood on compressed site patterns."""
-    validate_explicit_branch_lengths(tree, model_name=specification.model_name)
-    validate_tree_taxa_against_patterns(
-        tree,
-        compressed_patterns,
-        model_name=specification.model_name,
-    )
-    total_log_likelihood = 0.0
-    for pattern in compressed_patterns.patterns:
-        total_log_likelihood += pattern.weight * evaluate_fixed_topology_dna_site_log_likelihood(
-            tree,
-            pattern.states,
-            taxon_order=compressed_patterns.taxon_order,
-            model_name=specification.model_name,
-            observation_policy=specification.observation_policy,
-            root_prior=specification.root_prior,
-            transition_matrix_for_child=lambda child: (
-                specification.transition_matrix_for_branch_length(
-                    max(float(child.branch_length or 0.0), 0.0)
-                )
-            ),
-        )
-    return total_log_likelihood
 
 
 def prefer_higher_likelihood(

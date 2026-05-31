@@ -22,8 +22,10 @@ from .stepwise_addition import build_likelihood_stepwise_addition_tree
 from .starting_tree_validation import (
     validate_nucleotide_likelihood_starting_tree,
 )
-from .topology_search import (
+from .fixed_topology_branch_lengths import (
     evaluate_selected_nucleotide_log_likelihood_from_patterns,
+)
+from .topology_search import (
     normalize_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_surface,

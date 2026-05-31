@@ -17,10 +17,10 @@ from bijux_phylogenetics.phylo.topology import (
 
 from .topology_search import (
     normalize_nucleotide_topology_search_records,
-    optimize_selected_nucleotide_branch_lengths,
     resolve_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_surface,
 )
+from .fixed_topology_branch_lengths import optimize_selected_nucleotide_branch_lengths
 
 _SUPPORTED_LIKELIHOOD_STEPWISE_ADDITION_MODELS = frozenset({"jc69"})
 
