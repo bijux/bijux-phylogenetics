@@ -467,6 +467,14 @@ class NucleotideLikelihoodNniTraceRow:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodSearchConvergenceDecision:
+    """Resolved stop-or-continue decision for one native likelihood tree search iteration."""
+
+    should_stop: bool
+    stopping_reason: str | None
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodNniCandidateRow:
     """One evaluated rooted NNI neighbor inside one best-improvement iteration."""
 
