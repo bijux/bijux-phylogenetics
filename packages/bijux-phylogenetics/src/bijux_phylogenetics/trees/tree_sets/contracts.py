@@ -108,6 +108,29 @@ class TreeSetMaximumCladeCredibilityReport:
 
 
 @dataclass(frozen=True, slots=True)
+class TreeSetCredibleCladeRow:
+    inclusion_rank: int
+    clade: str
+    tree_count: int
+    frequency: float
+    cumulative_frequency: float
+
+
+@dataclass(slots=True)
+class TreeSetCredibleCladeSetReport:
+    path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    credible_threshold: float
+    included_clade_count: int
+    excluded_clade_count: int
+    included_cumulative_frequency: float
+    included_clades: list[TreeSetCredibleCladeRow]
+    excluded_clades: list[TreeSetCredibleCladeRow]
+
+
+@dataclass(frozen=True, slots=True)
 class CladeCompatibilityNodeRow:
     clade: str
     tree_count: int
