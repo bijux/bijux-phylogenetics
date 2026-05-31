@@ -987,6 +987,33 @@ class FixedTopologyNucleotideBranchLengthOptimizationReport:
 
 
 @dataclass(slots=True)
+class FixedTopologyNucleotideSingleBranchOptimizationReport:
+    """Fixed-topology optimization summary for one selected nucleotide branch."""
+
+    model_name: str
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    branch_count: int
+    initial_tree_newick: str
+    optimized_tree_newick: str
+    state_count: int
+    observation_policy: str
+    root_prior_source: str
+    parameter_count: int
+    fixed_parameter_values: dict[str, float]
+    selected_branch: BranchLengthOptimizationRow
+    unchanged_branch_count: int
+    unchanged_branch_ids: list[str]
+    initial_log_likelihood: float
+    optimized_log_likelihood: float
+    function_evaluation_count: int
+    converged: bool
+    lower_branch_length_bound: float
+    upper_branch_length_bound: float
+
+
+@dataclass(slots=True)
 class ProteinEmpiricalBranchLengthOptimizationReport:
     """Fixed-topology branch-length optimization summary for one empirical protein model."""
 

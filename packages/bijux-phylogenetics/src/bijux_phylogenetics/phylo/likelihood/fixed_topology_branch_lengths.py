@@ -18,6 +18,7 @@ from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
 from bijux_phylogenetics.phylo.likelihood.models import (
     BranchLengthOptimizationRow,
     FixedTopologyNucleotideBranchLengthOptimizationReport,
+    FixedTopologyNucleotideSingleBranchOptimizationReport,
 )
 from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
     SelectedNucleotideLikelihoodSpecification,
@@ -53,6 +54,19 @@ class BranchReoptimizationResult:
 def validate_fixed_topology_nucleotide_branch_length_model(model_name: str) -> str:
     """Validate one selected nucleotide model for fixed-topology branch optimization."""
     return validate_selected_nucleotide_likelihood_model(model_name)
+
+
+def validate_fixed_topology_nucleotide_single_branch_id(
+    tree: PhyloTree,
+    *,
+    branch_id: str,
+) -> str:
+    """Validate one selected branch identifier on one fixed-topology tree."""
+    available_branch_lengths = _collect_branch_lengths_by_id(tree.copy().refresh())
+    return _validate_target_branch_ids(
+        available_branch_lengths,
+        optimized_branch_ids=[branch_id],
+    )[0]
 
 
 def optimize_fixed_topology_nucleotide_branch_lengths(
@@ -211,6 +225,166 @@ def optimize_fixed_topology_nucleotide_branch_lengths_from_alignment(
         upper_branch_length_bound=upper_branch_length_bound,
         improvement_tolerance=improvement_tolerance,
         max_coordinate_passes=max_coordinate_passes,
+    )
+
+
+def optimize_fixed_topology_nucleotide_single_branch_length(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    model_name: str,
+    branch_id: str,
+    observation_policy: str = "reject",
+    kappa: float | None = None,
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+        | None
+    ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
+    lower_branch_length_bound: float = 0.0,
+    upper_branch_length_bound: float = 5.0,
+) -> FixedTopologyNucleotideSingleBranchOptimizationReport:
+    """Optimize one selected branch length while holding all others fixed."""
+    normalized_model_name = validate_fixed_topology_nucleotide_branch_length_model(
+        model_name
+    )
+    if lower_branch_length_bound < 0.0:
+        raise InvalidBranchLengthError(
+            "fixed-topology nucleotide single-branch lower bound must be nonnegative"
+        )
+    if upper_branch_length_bound <= lower_branch_length_bound:
+        raise InvalidBranchLengthError(
+            "fixed-topology nucleotide single-branch bounds must be strictly increasing"
+        )
+    normalized_observation_policy = observation_policy.strip().lower()
+    normalized_records = normalize_dna_likelihood_records(
+        records,
+        model_name=f"{normalized_model_name.upper()} fixed-topology single-branch optimization",
+        observation_policy=normalized_observation_policy,
+    )
+    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    specification = resolve_selected_nucleotide_likelihood_specification(
+        normalized_records,
+        model_name=normalized_model_name,
+        owner_name=f"{normalized_model_name.upper()} fixed-topology single-branch optimization",
+        observation_policy=normalized_observation_policy,
+        kappa=kappa,
+        base_frequencies=base_frequencies,
+        exchangeabilities=exchangeabilities,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+    starting_tree = tree.copy().refresh()
+    initial_branch_lengths = _collect_branch_lengths_by_id(starting_tree)
+    selected_branch_id = _validate_target_branch_ids(
+        initial_branch_lengths,
+        optimized_branch_ids=[branch_id],
+    )[0]
+    for branch_length in initial_branch_lengths.values():
+        if not (
+            lower_branch_length_bound <= branch_length <= upper_branch_length_bound
+        ):
+            raise InvalidBranchLengthError(
+                "fixed-topology nucleotide single-branch optimization requires every starting branch length to lie within the declared bounds"
+            )
+    selected_branch_node = starting_tree.node_by_id(selected_branch_id)
+    initial_tree_newick = dumps_newick(starting_tree)
+    initial_log_likelihood = evaluate_selected_nucleotide_log_likelihood_from_patterns(
+        starting_tree,
+        compressed_patterns,
+        specification=specification,
+    )
+    search_result = optimize_selected_nucleotide_branch_length_subset(
+        starting_tree,
+        compressed_patterns,
+        specification=specification,
+        optimized_branch_ids=[selected_branch_id],
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        max_coordinate_passes=1,
+    )
+    optimized_branch_lengths = _collect_branch_lengths_by_id(search_result.optimized_tree)
+    return FixedTopologyNucleotideSingleBranchOptimizationReport(
+        model_name=specification.model_name,
+        taxa=compressed_patterns.taxon_order,
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        branch_count=len(initial_branch_lengths),
+        initial_tree_newick=initial_tree_newick,
+        optimized_tree_newick=dumps_newick(search_result.optimized_tree),
+        state_count=specification.state_count,
+        observation_policy=specification.observation_policy,
+        root_prior_source=specification.root_prior_source,
+        parameter_count=len(specification.parameter_values),
+        fixed_parameter_values=dict(specification.parameter_values),
+        selected_branch=BranchLengthOptimizationRow(
+            branch_id=selected_branch_id,
+            child_name=selected_branch_node.name,
+            descendant_taxa=selected_branch_node.descendant_taxa,
+            initial_branch_length=initial_branch_lengths[selected_branch_id],
+            optimized_branch_length=optimized_branch_lengths[selected_branch_id],
+        ),
+        unchanged_branch_count=len(initial_branch_lengths) - 1,
+        unchanged_branch_ids=sorted(
+            branch_length_id
+            for branch_length_id in initial_branch_lengths
+            if branch_length_id != selected_branch_id
+        ),
+        initial_log_likelihood=initial_log_likelihood,
+        optimized_log_likelihood=search_result.log_likelihood,
+        function_evaluation_count=search_result.function_evaluation_count,
+        converged=search_result.converged,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
+
+
+def optimize_fixed_topology_nucleotide_single_branch_length_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    model_name: str,
+    branch_id: str,
+    observation_policy: str = "reject",
+    kappa: float | None = None,
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+        | None
+    ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
+    lower_branch_length_bound: float = 0.0,
+    upper_branch_length_bound: float = 5.0,
+) -> FixedTopologyNucleotideSingleBranchOptimizationReport:
+    """Optimize one selected branch length from one tree path and one alignment path."""
+    return optimize_fixed_topology_nucleotide_single_branch_length(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        model_name=model_name,
+        branch_id=branch_id,
+        observation_policy=observation_policy,
+        kappa=kappa,
+        base_frequencies=base_frequencies,
+        exchangeabilities=exchangeabilities,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
     )
 
 
