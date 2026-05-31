@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.datasets.macroevolution_recovery_suite as macroevolution_recovery_suite_api
 from bijux_phylogenetics.command_line import main
+import bijux_phylogenetics.datasets.macroevolution_recovery_suite as macroevolution_recovery_suite_api
 from bijux_phylogenetics.datasets.macroevolution_recovery_suite import (
     export_macroevolution_recovery_suite_dataset,
     load_macroevolution_recovery_suite_dataset,
@@ -115,7 +115,10 @@ def test_write_macroevolution_recovery_suite_workflow_bundle_matches_packaged_ex
     assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
-def test_run_macroevolution_recovery_suite_workflow_reruns_component_workflows() -> None:
+@pytest.mark.slow
+def test_run_macroevolution_recovery_suite_workflow_reruns_component_workflows() -> (
+    None
+):
     report = run_macroevolution_recovery_suite_workflow()
 
     assert len(report.continuous_panel_workflow.recovery_report.case_reports) == 7
@@ -126,6 +129,7 @@ def test_run_macroevolution_recovery_suite_workflow_reruns_component_workflows()
     assert report.known_answer_component.truth_threshold_pass_count == 10
 
 
+@pytest.mark.slow
 def test_write_macroevolution_recovery_suite_workflow_bundle_records_explicit_goal_300_coverage(
     tmp_path: Path,
 ) -> None:
@@ -159,6 +163,7 @@ def test_write_macroevolution_recovery_suite_workflow_bundle_records_explicit_go
     )
 
 
+@pytest.mark.slow
 def test_run_macroevolution_recovery_suite_demo_materializes_dataset_and_workflow(
     tmp_path: Path,
 ) -> None:
@@ -180,6 +185,7 @@ def test_run_macroevolution_recovery_suite_demo_materializes_dataset_and_workflo
     assert "known-answer truth thresholds passed" in overview_text
 
 
+@pytest.mark.slow
 def test_cli_demo_macroevolution_recovery_suite_json_output_reports_metrics(
     tmp_path: Path,
     capsys,
