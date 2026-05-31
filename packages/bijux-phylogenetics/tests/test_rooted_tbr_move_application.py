@@ -55,6 +55,17 @@ def test_rooted_tbr_move_application_report_emits_cut_sizes_and_reconnection_edg
     assert report.missing_tip_taxa == []
     assert report.unexpected_tip_taxa == []
     assert report.moved_validation_errors == []
+    assert report.affected_subtree_report.affected_branch_clade_ids == [
+        "B|D",
+        "A|B|C",
+    ]
+    assert report.affected_subtree_report.unaffected_branch_clade_ids == [
+        "A",
+        "B",
+        "C",
+        "D",
+        "A|C",
+    ]
 
 
 def test_rooted_tbr_move_application_reports_reverse_move_when_available() -> None:

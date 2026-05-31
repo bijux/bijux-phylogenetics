@@ -46,3 +46,6 @@ def test_write_rooted_tbr_move_artifacts_materializes_governed_outputs(
     assert payload["moved_topology_changed"] is True
     assert payload["reverse_move_available"] is True
     assert payload["reverse_available_move_count"] == 2
+    assert payload["affected_subtrees"]["affected_branch_clade_ids"] == (
+        report.affected_subtree_report.affected_branch_clade_ids
+    )

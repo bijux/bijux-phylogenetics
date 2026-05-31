@@ -60,6 +60,18 @@ def test_rooted_spr_move_application_report_emits_pruned_regraft_and_affected_cl
     assert report.missing_tip_taxa == []
     assert report.unexpected_tip_taxa == []
     assert report.moved_validation_errors == []
+    assert report.affected_subtree_report.affected_branch_clade_ids == [
+        "A|C",
+        "B|C",
+        "A|B|C",
+        "B|C|D",
+    ]
+    assert report.affected_subtree_report.unaffected_branch_clade_ids == [
+        "A",
+        "B",
+        "C",
+        "D",
+    ]
     assert report.affected_clade_ids == ["A", "A|B|C", "A|C", "B|C", "B|C|D"]
 
 

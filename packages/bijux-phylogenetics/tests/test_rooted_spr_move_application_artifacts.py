@@ -53,6 +53,12 @@ def test_write_rooted_spr_move_artifacts_materializes_governed_outputs(
     assert payload["max_pruned_clade_count"] == 1
     assert payload["max_regraft_target_count_per_pruned_clade"] == 3
     assert payload["moved_topology_changed"] is True
+    assert payload["affected_subtrees"]["affected_branch_clade_ids"] == (
+        report.affected_subtree_report.affected_branch_clade_ids
+    )
+    assert payload["affected_subtrees"]["unaffected_branch_clade_ids"] == (
+        report.affected_subtree_report.unaffected_branch_clade_ids
+    )
     assert payload["selected_pruned_clade_id"] == report.selected_pruned_clade_id
     assert (
         payload["selected_regraft_target_branch_id"]
