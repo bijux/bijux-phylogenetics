@@ -36,6 +36,9 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree, descendant_taxa
 _SUPPORTED_NNI_BRANCH_REOPTIMIZATION_POLICIES = frozenset(
     {"coordinate-branch-lengths", "nni-local-affected-branches"}
 )
+_SUPPORTED_NNI_IMPROVEMENT_POLICIES = frozenset(
+    {"best-improvement", "first-improvement"}
+)
 
 
 def search_nucleotide_likelihood_nni(
@@ -43,6 +46,7 @@ def search_nucleotide_likelihood_nni(
     records: list[AlignmentRecord] | Path,
     *,
     model_name: str,
+    improvement_policy: str = "best-improvement",
     branch_reoptimization_policy: str = "coordinate-branch-lengths",
     kappa: float | None = None,
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
@@ -69,6 +73,9 @@ def search_nucleotide_likelihood_nni(
     )
     validated_branch_reoptimization_policy = validate_nucleotide_likelihood_nni_branch_reoptimization_policy(
         branch_reoptimization_policy
+    )
+    validated_improvement_policy = validate_nucleotide_likelihood_nni_improvement_policy(
+        improvement_policy
     )
     validate_nucleotide_topology_search_tree(
         resolved_tree,
@@ -226,6 +233,8 @@ def search_nucleotide_likelihood_nni(
                 improving_candidate = candidate
                 improving_result = neighbor_result
                 improving_newick = neighbor_newick
+                if validated_improvement_policy == "first-improvement":
+                    break
         if improving_candidate is not None:
             for row in iteration_candidate_rows:
                 if (
@@ -301,6 +310,7 @@ def search_nucleotide_likelihood_nni(
     return NucleotideLikelihoodNniSearchReport(
         algorithm="nucleotide-likelihood-nni-search",
         model_name=resolved_surface.model_name,
+        improvement_policy=validated_improvement_policy,
         tree_path=None if resolved_tree_path is None else str(resolved_tree_path),
         alignment_path=None
         if resolved_alignment_path is None
@@ -332,6 +342,7 @@ def search_nucleotide_likelihood_nni_from_alignment(
     alignment_path: Path,
     *,
     model_name: str,
+    improvement_policy: str = "best-improvement",
     branch_reoptimization_policy: str = "coordinate-branch-lengths",
     kappa: float | None = None,
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
@@ -356,6 +367,7 @@ def search_nucleotide_likelihood_nni_from_alignment(
         tree_path,
         alignment_path,
         model_name=model_name,
+        improvement_policy=improvement_policy,
         branch_reoptimization_policy=branch_reoptimization_policy,
         kappa=kappa,
         base_frequencies=base_frequencies,
@@ -377,6 +389,17 @@ def validate_nucleotide_likelihood_nni_branch_reoptimization_policy(policy: str)
         raise ValueError(
             "branch_reoptimization_policy must be one of "
             + ", ".join(sorted(_SUPPORTED_NNI_BRANCH_REOPTIMIZATION_POLICIES))
+        )
+    return normalized_policy
+
+
+def validate_nucleotide_likelihood_nni_improvement_policy(policy: str) -> str:
+    """Validate one rooted likelihood NNI improvement policy."""
+    normalized_policy = policy.strip().lower()
+    if normalized_policy not in _SUPPORTED_NNI_IMPROVEMENT_POLICIES:
+        raise ValueError(
+            "improvement_policy must be one of "
+            + ", ".join(sorted(_SUPPORTED_NNI_IMPROVEMENT_POLICIES))
         )
     return normalized_policy
 
@@ -545,6 +568,7 @@ def write_nucleotide_likelihood_nni_run_json(
     payload = {
         "algorithm": report.algorithm,
         "model_name": report.model_name,
+        "improvement_policy": report.improvement_policy,
         "tree_path": report.tree_path,
         "alignment_path": report.alignment_path,
         "taxon_count": report.taxon_count,
